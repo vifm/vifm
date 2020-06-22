@@ -1,6 +1,6 @@
 " Mail file type extension to pick files for attachments via vifm
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: January 02, 2018
+" Last Change: June 22, 2020
 
 " Insert attachment picked via vifm after 'Subject' header
 function! s:AddMailAttachments()
@@ -41,9 +41,7 @@ endfunction
 
 function! s:HandleRunResults(exitcode, listf)
 	if a:exitcode != 0
-		echohl WarningMsg
-		echo 'Got non-zero code from vifm: ' . a:exitcode
-		echohl None
+		echoerr 'Got non-zero code from vifm: ' . a:exitcode
 		call delete(a:listf)
 		return
 	endif

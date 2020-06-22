@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 May 1
+" Last Change: 2020 June 22
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -51,7 +51,7 @@ command! -bar -nargs=* -count -complete=dir TabVifm
 			\ :call s:StartVifm('<mods>', <count>, s:tab_drop_cmd, <f-args>)
 
 function! s:StartVifm(mods, count, editcmd, ...) abort
-	echohl WarningMsg | echo 'vifm executable wasn''t found' | echohl None
+	echoerr 'vifm executable wasn''t found'
 endfunction
 
 call vifm#globals#Init()
@@ -77,7 +77,7 @@ endif
 
 function! s:StartVifm(mods, count, editcmd, ...) abort
 	if a:0 > 2
-		echohl WarningMsg | echo 'Too many arguments' | echohl None
+		echoerr 'Too many arguments'
 		return
 	endif
 
@@ -225,9 +225,7 @@ endfunction
 
 function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 	if a:exitcode != 0
-		echohl WarningMsg
-		echo 'Got non-zero code from vifm: ' . a:exitcode
-		echohl None
+		echoerr 'Got non-zero code from vifm: ' . a:exitcode
 		call delete(a:listf)
 		call delete(a:typef)
 		return
@@ -238,7 +236,7 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 	" running.
 
 	if !file_readable(a:listf)
-		echohl WarningMsg | echo 'Failed to read list of files' | echohl None
+		echoerr 'Failed to read list of files'
 		call delete(a:listf)
 		call delete(a:typef)
 		return
