@@ -27,7 +27,7 @@ vifm_choose_files(view_t *view, int nfiles, char *files[])
 }
 
 void
-vifm_finish(const view_t *view, int nfiles, char *files[])
+vifm_finish(const char message[])
 {
 	/* Do nothing. */
 }
