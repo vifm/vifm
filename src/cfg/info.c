@@ -212,6 +212,8 @@ static void merge_tabs(int vinfo, int fullest, JSON_Object *current,
 		const JSON_Object *admixture);
 static void merge_dhistory(int fullest, JSON_Object *current,
 		const JSON_Object *admixture);
+static void merge_dhistory_by_order(JSON_Object *current,
+		const JSON_Object *admixture);
 static JSON_Object ** merge_timestamped_data(const JSON_Array *current,
 		const JSON_Array *updated);
 static JSON_Object ** make_timestamp_ordering(const JSON_Array *array);
@@ -222,6 +224,8 @@ static void merge_commands(JSON_Object *current, const JSON_Object *admixture);
 static void merge_marks(JSON_Object *current, const JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, const JSON_Object *admixture);
 static void merge_history(int fullest, JSON_Object *current,
+		const JSON_Object *admixture, const char node[]);
+static void merge_history_by_order(JSON_Object *current,
 		const JSON_Object *admixture, const char node[]);
 static void merge_regs(JSON_Object *current, const JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, const JSON_Object *admixture);
@@ -1587,6 +1591,12 @@ merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
 		return;
 	}
 
+	if(fullest)
+	{
+		merge_dhistory_by_order(current, admixture);
+		return;
+	}
+
 	JSON_Object **combined = merge_timestamped_data(history, updated);
 	int total = json_array_get_count(history) + json_array_get_count(updated);
 
@@ -1625,6 +1635,33 @@ merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
 	}
 
 	free(combined);
+
+	json_object_set_value(current, "history", merged_value);
+}
+
+/* Merges two directory histories not paying attention to timestamps thus giving
+ * priority to data in the current parameter. */
+static void
+merge_dhistory_by_order(JSON_Object *current, const JSON_Object *admixture)
+{
+	JSON_Array *history = json_object_get_array(current, "history");
+	JSON_Array *updated = json_object_get_array(admixture, "history");
+
+	int i, n;
+	JSON_Value *merged_value = json_value_init_array();
+	JSON_Array *merged = json_array(merged_value);
+
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		JSON_Value *value = json_array_get_value(updated, i);
+		json_array_append_value(merged, json_value_deep_copy(value));
+	}
+
+	for(i = 0, n = json_array_get_count(history); i < n; ++i)
+	{
+		JSON_Value *value = json_array_get_value(history, i);
+		json_array_append_value(merged, json_value_deep_copy(value));
+	}
 
 	json_object_set_value(current, "history", merged_value);
 }
@@ -1828,6 +1865,12 @@ merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 		return;
 	}
 
+	if(fullest)
+	{
+		merge_history_by_order(current, admixture, node);
+		return;
+	}
+
 	trie_t *trie = trie_create();
 	int i, n;
 
@@ -1881,6 +1924,55 @@ merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 
 	json_value_free(combined_value);
 	free(entries_sorted);
+
+	json_object_set_value(current, node, merged_value);
+}
+
+/* Merges two states of a particular kind of history not paying attention to
+ * timestamps thus giving priority to data in the current parameter. */
+static void
+merge_history_by_order(JSON_Object *current, const JSON_Object *admixture,
+		const char node[])
+{
+	JSON_Array *entries = json_object_get_array(current, node);
+	JSON_Array *updated = json_object_get_array(admixture, node);
+
+	int i, n;
+	trie_t *trie = trie_create();
+
+	JSON_Value *merged_value = json_value_init_array();
+	JSON_Array *merged = json_array(merged_value);
+
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
+	{
+		const char *text;
+		if(get_str(json_array_get_object(entries, i), "text", &text))
+		{
+			trie_put(trie, text);
+		}
+	}
+
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		const char *text;
+		if(get_str(json_array_get_object(updated, i), "text", &text))
+		{
+			void *data;
+			if(trie_get(trie, text, &data) != 0)
+			{
+				JSON_Value *entry = json_array_get_value(updated, i);
+				json_array_append_value(merged, json_value_deep_copy(entry));
+			}
+		}
+	}
+
+	trie_free(trie);
+
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
+	{
+		JSON_Value *entry = json_array_get_value(entries, i);
+		json_array_append_value(merged, json_value_deep_copy(entry));
+	}
 
 	json_object_set_value(current, node, merged_value);
 }

@@ -7,6 +7,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
 #include "../../src/utils/hist.h"
+#include "../../src/flist_hist.h"
 #include "../../src/status.h"
 
 SETUP_ONCE()
@@ -224,6 +225,93 @@ TEST(session_is_merged_after_switching)
 
 	assert_int_equal(4, curr_stats.cmd_hist.size);
 
+	remove_file(SANDBOX_PATH "/sessions/session-b.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+	remove_file(SANDBOX_PATH "/vifminfo.json");
+}
+
+TEST(session_histories_have_priority_over_vifminfo)
+{
+	cfg.vifm_info = VINFO_CHISTORY;
+	cfg.session_options = VINFO_CHISTORY;
+
+	histories_init(10);
+	assert_success(sessions_create("session-a"));
+	hist_add(&curr_stats.cmd_hist, "command0", 0);
+	hist_add(&curr_stats.cmd_hist, "command2", 2);
+
+	state_store();
+
+	histories_init(10);
+	assert_success(sessions_create("session-b"));
+	hist_add(&curr_stats.cmd_hist, "command1", 1);
+	hist_add(&curr_stats.cmd_hist, "command3", 3);
+
+	state_store();
+
+	histories_init(10);
+	sessions_load("session-a");
+
+	assert_int_equal(4, curr_stats.cmd_hist.size);
+
+	assert_string_equal("command2", curr_stats.cmd_hist.items[0].text);
+	assert_int_equal(2, curr_stats.cmd_hist.items[0].timestamp);
+	assert_string_equal("command0", curr_stats.cmd_hist.items[1].text);
+	assert_int_equal(0, curr_stats.cmd_hist.items[1].timestamp);
+	assert_string_equal("command3", curr_stats.cmd_hist.items[2].text);
+	assert_int_equal(3, curr_stats.cmd_hist.items[2].timestamp);
+	assert_string_equal("command1", curr_stats.cmd_hist.items[3].text);
+	assert_int_equal(1, curr_stats.cmd_hist.items[3].timestamp);
+
+	remove_file(SANDBOX_PATH "/sessions/session-a.json");
+	remove_file(SANDBOX_PATH "/sessions/session-b.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+	remove_file(SANDBOX_PATH "/vifminfo.json");
+}
+
+TEST(session_dhistory_has_priority_over_vifminfo)
+{
+	cfg.vifm_info = VINFO_DHISTORY;
+	cfg.session_options = VINFO_DHISTORY;
+
+	histories_init(10);
+	assert_success(sessions_create("session-a"));
+	flist_hist_setup(&lwin, "/dir1", "file1", 1, 1);
+	flist_hist_setup(&lwin, "/dir2", "file2", 2, 2);
+
+	state_store();
+
+	histories_init(10);
+	assert_success(sessions_create("session-b"));
+	flist_hist_setup(&lwin, "/dir3", "file3", 3, 3);
+	flist_hist_setup(&lwin, "/dir4", "file4", 4, 4);
+
+	state_store();
+
+	histories_init(10);
+	sessions_load("session-a");
+
+	assert_int_equal(3, lwin.history_pos);
+	assert_int_equal(4, lwin.history_num);
+
+	assert_string_equal("/dir3", lwin.history[0].dir);
+	assert_string_equal("file3", lwin.history[0].file);
+	assert_int_equal(3, lwin.history[0].timestamp);
+	assert_int_equal(3, lwin.history[0].rel_pos);
+	assert_string_equal("/dir4", lwin.history[1].dir);
+	assert_string_equal("file4", lwin.history[1].file);
+	assert_int_equal(4, lwin.history[1].timestamp);
+	assert_int_equal(4, lwin.history[1].rel_pos);
+	assert_string_equal("/dir1", lwin.history[2].dir);
+	assert_string_equal("file1", lwin.history[2].file);
+	assert_int_equal(1, lwin.history[2].timestamp);
+	assert_int_equal(1, lwin.history[2].rel_pos);
+	assert_string_equal("/dir2", lwin.history[3].dir);
+	assert_string_equal("file2", lwin.history[3].file);
+	assert_int_equal(2, lwin.history[3].timestamp);
+	assert_int_equal(2, lwin.history[3].rel_pos);
+
+	remove_file(SANDBOX_PATH "/sessions/session-a.json");
 	remove_file(SANDBOX_PATH "/sessions/session-b.json");
 	remove_dir(SANDBOX_PATH "/sessions");
 	remove_file(SANDBOX_PATH "/vifminfo.json");
