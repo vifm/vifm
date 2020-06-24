@@ -768,6 +768,7 @@ const char *tags[] = {
 	"vifm-selectors",
 	"vifm-servername-variable",
 	"vifm-session-variable",
+	"vifm-sessions",
 	"vifm-set-options",
 	"vifm-startup",
 	"vifm-system()",
