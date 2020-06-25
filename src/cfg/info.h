@@ -22,6 +22,9 @@
 
 #include "../utils/test_helpers.h"
 
+/* Type of callback invoked after changing active session. */
+typedef void (*sessions_changed)(const char new_session[]);
+
 /* Reads vifminfo file populating internal structures with information it
  * contains.  Reread should be set to non-zero value when vifminfo is read not
  * during startup process. */
@@ -30,6 +33,10 @@ void state_load(int reread);
 /* Stores state of the application.  Always writes vifminfo and stores session
  * if any is active. */
 void state_store(void);
+
+/* Sets callback to be invoked when active session has changed.  The parameter
+ * can be NULL. */
+void sessions_set_callback(sessions_changed callback);
 
 /* Starts a new session, its creation is completed when its stored, until then
  * it exists only in memory.  Returns zero if it was started successfully,

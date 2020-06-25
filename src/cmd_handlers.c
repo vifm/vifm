@@ -3860,10 +3860,6 @@ session_cmd(const cmd_info_t *cmd_info)
 		char *current = strdup(sessions_current());
 		if(sessions_stop() == 0)
 		{
-			var_t var = var_from_str("");
-			setvar("v:session", var);
-			var_free(var);
-
 			ui_sb_msgf("Detached from session without saving: %s", current);
 			free(current);
 			return 1;
@@ -3891,10 +3887,6 @@ session_cmd(const cmd_info_t *cmd_info)
 		state_store();
 	}
 
-	var_t var = var_from_str(session_name);
-	setvar("v:session", var);
-	var_free(var);
-
 	if(sessions_create(session_name) == 0)
 	{
 		ui_sb_msgf("Switched to a new session: %s", sessions_current());
@@ -3904,12 +3896,6 @@ session_cmd(const cmd_info_t *cmd_info)
 	tabs_only(&lwin);
 	tabs_only(&rwin);
 	vifm_restart(session_name);
-
-	/* Set it second time to its current value just in case anything went
-	 * wrong. */
-	var = var_from_str(sessions_current());
-	setvar("v:session", var);
-	var_free(var);
 
 	ui_sb_msgf("Loaded session: %s", sessions_current());
 	return 1;

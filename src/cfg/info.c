@@ -287,6 +287,8 @@ static void get_session_dir(char buf[], size_t buf_size);
 static filemon_t vifminfo_mon;
 /* Monitor to check for changes of file that backs current session. */
 static filemon_t session_mon;
+/* Callback to be invoked when active session has changed.  Can be NULL. */
+static sessions_changed session_changed_cb;
 
 void
 state_store(void)
@@ -2812,6 +2814,12 @@ clone_array(JSON_Object *parent, const JSON_Array *array, const char node[])
 	json_object_set_value(parent, node, json_value_deep_copy(value));
 }
 
+void
+sessions_set_callback(sessions_changed callback)
+{
+	session_changed_cb = callback;
+}
+
 int
 sessions_create(const char name[])
 {
@@ -2923,6 +2931,10 @@ static void
 set_session(const char new_session[])
 {
 	update_string(&cfg.session, new_session);
+	if(session_changed_cb != NULL)
+	{
+		session_changed_cb(sessions_current());
+	}
 }
 
 /* Writes session file updating it with state of the current instance if
