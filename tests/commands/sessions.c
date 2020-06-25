@@ -23,9 +23,6 @@ TEARDOWN_ONCE()
 {
 	curr_view = NULL;
 	other_view = NULL;
-
-	cfg.config_dir[0] = '\0';
-	cfg.session_options = 0;
 }
 
 SETUP()
@@ -36,6 +33,9 @@ SETUP()
 TEARDOWN()
 {
 	(void)exec_commands("session", &lwin, CIT_COMMAND);
+
+	cfg.config_dir[0] = '\0';
+	cfg.session_options = 0;
 }
 
 TEST(can_create_a_session)
@@ -196,6 +196,26 @@ TEST(vsession_is_empty_after_detaching)
 	char *value = var_to_str(getvar("v:session"));
 	assert_string_equal("", value);
 	free(value);
+}
+
+TEST(vsession_is_emptied_on_failure_to_load_a_session)
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	cfg.session_options = VINFO_CHISTORY;
+
+	create_dir(SANDBOX_PATH "/sessions");
+	create_file(SANDBOX_PATH "/sessions/empty.json");
+
+	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session empty", &lwin, CIT_COMMAND));
+	char *value = var_to_str(getvar("v:session"));
+	assert_string_equal("", value);
+	free(value);
+
+	remove_file(SANDBOX_PATH "/sessions/empty.json");
+	remove_file(SANDBOX_PATH "/sessions/sess.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+	remove_file(SANDBOX_PATH "/vifminfo.json");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
