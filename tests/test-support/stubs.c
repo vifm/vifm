@@ -1,6 +1,7 @@
 #include <stdlib.h> /* abort() */
 
 #include "../../src/cfg/info.h"
+#include "../../src/vifm.h"
 
 struct view_t;
 
@@ -30,13 +31,13 @@ vifm_choose_files(struct view_t *view, int nfiles, char *files[])
 void
 vifm_finish(const char message[])
 {
-	/* Do nothing. */
+	abort();
 }
 
 void
 vifm_exit(int exit_code)
 {
-	/* Do nothing. */
+	abort();
 }
 
 int
