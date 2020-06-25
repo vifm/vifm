@@ -120,7 +120,7 @@ TEST(session_can_be_loaded)
 	state_store();
 
 	histories_init(10);
-	sessions_load("session");
+	assert_success(sessions_load("session"));
 
 	assert_int_equal(2, curr_stats.cmd_hist.size);
 
@@ -147,7 +147,7 @@ TEST(loading_nonexisting_session_just_loads_vifminfo)
 	state_store();
 
 	histories_init(10);
-	sessions_load("session");
+	assert_failure(sessions_load("session"));
 
 	assert_int_equal(2, curr_stats.cmd_hist.size);
 
@@ -181,7 +181,7 @@ TEST(session_is_merged_on_storing)
 	state_store();
 
 	histories_init(10);
-	sessions_load("session");
+	assert_success(sessions_load("session"));
 
 	assert_int_equal(4, curr_stats.cmd_hist.size);
 
@@ -221,7 +221,7 @@ TEST(session_is_merged_after_switching)
 	state_store();
 
 	histories_init(10);
-	sessions_load("session-b");
+	assert_success(sessions_load("session-b"));
 
 	assert_int_equal(4, curr_stats.cmd_hist.size);
 
@@ -250,7 +250,7 @@ TEST(session_histories_have_priority_over_vifminfo)
 	state_store();
 
 	histories_init(10);
-	sessions_load("session-a");
+	assert_success(sessions_load("session-a"));
 
 	assert_int_equal(4, curr_stats.cmd_hist.size);
 
@@ -289,7 +289,7 @@ TEST(session_dhistory_has_priority_over_vifminfo)
 	state_store();
 
 	histories_init(10);
-	sessions_load("session-a");
+	assert_success(sessions_load("session-a"));
 
 	assert_int_equal(3, lwin.history_pos);
 	assert_int_equal(4, lwin.history_num);
@@ -378,7 +378,7 @@ TEST(directories_are_not_considered_on_removal)
 TEST(failure_to_load_a_session_resets_current_one)
 {
 	assert_success(sessions_create("session"));
-	sessions_load("no-such-session");
+	assert_failure(sessions_load("no-such-session"));
 	assert_false(sessions_active());
 }
 

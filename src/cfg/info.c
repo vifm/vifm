@@ -2886,7 +2886,7 @@ sessions_exists(const char name[])
 	return (!is_dir(session_file) && path_exists(session_file, DEREF));
 }
 
-void
+int
 sessions_load(const char name[])
 {
 	char sessions_dir[PATH_MAX + 16];
@@ -2903,7 +2903,7 @@ sessions_load(const char name[])
 		restore_locale(locale);
 		state_load(1);
 		set_session(NULL);
-		return;
+		return 1;
 	}
 
 	char info_file[PATH_MAX + 16];
@@ -2924,6 +2924,8 @@ sessions_load(const char name[])
 
 	set_session(name);
 	(void)filemon_from_file(session_file, FMT_MODIFIED, &session_mon);
+
+	return 0;
 }
 
 /* Changes active session.  The parameter can be NULL. */

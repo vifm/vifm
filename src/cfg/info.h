@@ -64,8 +64,8 @@ int sessions_active(void);
 int sessions_exists(const char name[]);
 
 /* Loads session.  This includes loading of vifminfo, so call either this one
- * or state_load(). */
-void sessions_load(const char name[]);
+ * or state_load().  Returns zero on success, otherwise non-zero is returned. */
+int sessions_load(const char name[]);
 
 /* Deletes a session.  Returns zero on success and non-zero if something went
  * wrong. */
