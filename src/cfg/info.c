@@ -278,6 +278,7 @@ static void clone_object(JSON_Object *parent, const JSON_Object *object,
 		const char node[]);
 static void clone_array(JSON_Object *parent, const JSON_Array *array,
 		const char node[]);
+static void set_session(const char new_session[]);
 static void write_session_file(void);
 static void store_file(const char path[], filemon_t *mon, int vinfo);
 static void get_session_dir(char buf[], size_t buf_size);
@@ -2830,7 +2831,7 @@ sessions_create(const char name[])
 		return 1;
 	}
 
-	update_string(&cfg.session, name);
+	set_session(name);
 	filemon_reset(&session_mon);
 	return 0;
 }
@@ -2843,7 +2844,7 @@ sessions_stop(void)
 		return 1;
 	}
 
-	update_string(&cfg.session, NULL);
+	set_session(NULL);
 	return 0;
 }
 
@@ -2912,8 +2913,15 @@ sessions_load(const char name[])
 	load_state(json_object(session), 0);
 	json_value_free(session);
 
-	update_string(&cfg.session, name);
+	set_session(name);
 	(void)filemon_from_file(session_file, FMT_MODIFIED, &session_mon);
+}
+
+/* Changes active session.  The parameter can be NULL. */
+static void
+set_session(const char new_session[])
+{
+	update_string(&cfg.session, new_session);
 }
 
 /* Writes session file updating it with state of the current instance if
