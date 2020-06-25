@@ -375,5 +375,12 @@ TEST(directories_are_not_considered_on_removal)
 	remove_dir(SANDBOX_PATH "/sessions");
 }
 
+TEST(failure_to_load_a_session_resets_current_one)
+{
+	assert_success(sessions_create("session"));
+	sessions_load("no-such-session");
+	assert_false(sessions_active());
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

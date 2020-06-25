@@ -2894,6 +2894,7 @@ sessions_load(const char name[])
 	{
 		restore_locale(locale);
 		state_load(1);
+		set_session(NULL);
 		return;
 	}
 
