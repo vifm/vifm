@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 24
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2163,7 +2163,7 @@ order using the '.' operator.  Any whitespace is ignored.
     free a lot of things (histories, commands, etc.), reread vifminfo, vifmrc
     and session files and run startup commands passed in the argument list,
     thus losing all unsaved changes (e.g. recent history or keys mapped after
-    starting this instance).
+    starting this instance).  Session that wasn't yet stored gets reset.
 
     While many things get reset, some basic UI state and current locations
     are preserved, including tabs.
