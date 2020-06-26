@@ -773,10 +773,10 @@ load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
 
 	if(get_int(gtab, "active-pane", &layout.active_pane) && apply && !reread)
 	{
-		if(layout.active_pane == 1)
+		view_t *active = (layout.active_pane == 1 ? &rwin : &lwin);
+		if(curr_view != active)
 		{
-			curr_view = &rwin;
-			other_view = &lwin;
+			swap_view_roles();
 			ui_views_update_titles();
 		}
 	}

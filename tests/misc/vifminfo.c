@@ -474,5 +474,23 @@ TEST(things_missing_from_vifminfo_option_are_dropped)
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }
 
+TEST(active_pane_is_respected_both_ways)
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	make_file(SANDBOX_PATH "/vifminfo.json", "{\"gtabs\":[{\"active-pane\":1}]}");
+	state_load(0);
+	assert_true(curr_view == &rwin);
+	assert_true(other_view == &lwin);
+
+	make_file(SANDBOX_PATH "/vifminfo.json", "{\"gtabs\":[{\"active-pane\":0}]}");
+	state_load(0);
+	assert_true(curr_view == &lwin);
+	assert_true(other_view == &rwin);
+
+	remove_file(SANDBOX_PATH "/vifminfo.json");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
