@@ -66,6 +66,9 @@ void create_file(const char path[]);
 /* Creates executable file at the path. */
 void create_executable(const char path[]);
 
+/* Makes a file with specified contents. */
+void make_file(const char path[], const char contents[]);
+
 /* Removes empty directory at specified path. */
 void remove_dir(const char path[]);
 

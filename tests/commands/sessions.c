@@ -4,12 +4,14 @@
 
 #include <stdlib.h> /* free() */
 
+#include <stubs.h>
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/variables.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/env.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
@@ -174,6 +176,34 @@ TEST(can_delete_a_session)
 	remove_dir(SANDBOX_PATH "/sessions");
 }
 
+TEST(can_fail_to_switch_and_still_be_in_a_session)
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	curr_stats.load_stage = -1;
+	env_set("MYVIFMRC", SANDBOX_PATH "/vifmrc");
+	vifm_tests_finish_restart_hook = &cfg_load;
+
+	create_dir(SANDBOX_PATH "/sessions");
+	create_file(SANDBOX_PATH "/sessions/empty.json");
+	make_file(SANDBOX_PATH "/vifmrc", "session bla");
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("session empty", &lwin, CIT_COMMAND));
+	assert_string_equal("Session switching has failed, active session: bla",
+			ui_sb_last());
+	char *value = var_to_str(getvar("v:session"));
+	assert_string_equal("bla", value);
+	free(value);
+
+	remove_file(SANDBOX_PATH "/vifmrc");
+	remove_file(SANDBOX_PATH "/sessions/empty.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+
+	vifm_tests_finish_restart_hook = NULL;
+	curr_stats.load_stage = 0;
+	env_remove("MYVIFMRC");
+}
+
 TEST(vsession_is_empty_initially)
 {
 	char *value = var_to_str(getvar("v:session"));
@@ -207,7 +237,10 @@ TEST(vsession_is_emptied_on_failure_to_load_a_session)
 	create_file(SANDBOX_PATH "/sessions/empty.json");
 
 	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	ui_sb_msg("");
 	assert_failure(exec_commands("session empty", &lwin, CIT_COMMAND));
+	assert_string_equal("Session switching has failed, no active session",
+			ui_sb_last());
 	char *value = var_to_str(getvar("v:session"));
 	assert_string_equal("", value);
 	free(value);

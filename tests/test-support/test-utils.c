@@ -276,6 +276,19 @@ create_executable(const char path[])
 }
 
 void
+make_file(const char path[], const char contents[])
+{
+	FILE *fp = fopen(path, "wb");
+	assert_non_null(fp);
+
+	if(fp != NULL)
+	{
+		fputs(contents, fp);
+		fclose(fp);
+	}
+}
+
+void
 remove_dir(const char path[])
 {
 	assert_success(rmdir(path));

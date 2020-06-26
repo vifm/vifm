@@ -693,8 +693,11 @@ cfg_load(void)
 	 * views. */
 	curr_stats.global_local_settings = 1;
 
-	/* Try to load global configuration. */
-	(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
+	if(curr_stats.load_stage >= 0)
+	{
+		/* Try to load global configuration. */
+		(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
+	}
 
 	/* Try to load local configuration. */
 	rc = env_get(MYVIFMRC_EV);

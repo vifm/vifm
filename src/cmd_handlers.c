@@ -259,6 +259,7 @@ static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
 static int session_cmd(const cmd_info_t *cmd_info);
+static int restart_into_session(const char session[]);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
@@ -3721,7 +3722,7 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	vifm_restart(cfg.session);
+	(void)restart_into_session(cfg.session);
 	return 0;
 }
 
@@ -3895,10 +3896,44 @@ session_cmd(const cmd_info_t *cmd_info)
 
 	tabs_only(&lwin);
 	tabs_only(&rwin);
-	vifm_restart(session_name);
+	if(restart_into_session(session_name) != 0)
+	{
+		if(sessions_active())
+		{
+			ui_sb_errf("Session switching has failed, active session: %s",
+					sessions_current());
+		}
+		else
+		{
+			ui_sb_err("Session switching has failed, no active session");
+		}
+		return 1;
+	}
 
 	ui_sb_msgf("Loaded session: %s", sessions_current());
 	return 1;
+}
+
+/* Performs restart and optional (re)loading of a session.  Returns zero on
+ * success, otherwise non-zero is returned. */
+static int
+restart_into_session(const char session[])
+{
+	vifm_start_restart();
+
+	int result;
+	if(session == NULL)
+	{
+		state_load(1);
+		result = 0;
+	}
+	else
+	{
+		result = sessions_load(session);
+	}
+
+	vifm_finish_restart();
+	return result;
 }
 
 /* Updates/displays global and local options. */

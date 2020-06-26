@@ -2,19 +2,25 @@
 
 #include <stdlib.h> /* abort() */
 
-#include "../../src/cfg/info.h"
 #include "../../src/vifm.h"
 
 struct view_t;
 
 int vifm_tests_exited;
+void (*vifm_tests_finish_restart_hook)(void);
 
 void
-vifm_restart(const char session[])
+vifm_start_restart(void)
 {
-	if(session != NULL)
+	/* Do nothing. */
+}
+
+void
+vifm_finish_restart(void)
+{
+	if(vifm_tests_finish_restart_hook != NULL)
 	{
-		sessions_load(session);
+		vifm_tests_finish_restart_hook();
 	}
 }
 
