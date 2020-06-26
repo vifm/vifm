@@ -1,3 +1,5 @@
+#include "stubs.h"
+
 #include <stdlib.h> /* abort() */
 
 #include "../../src/cfg/info.h"

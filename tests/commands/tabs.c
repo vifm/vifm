@@ -4,6 +4,7 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() */
 
+#include <stubs.h>
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -189,8 +190,6 @@ TEST(quit_commands_close_tabs)
 
 TEST(quit_all_commands_ignore_tabs)
 {
-	extern int vifm_tests_exited;
-
 	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
 
 	vifm_tests_exited = 0;
