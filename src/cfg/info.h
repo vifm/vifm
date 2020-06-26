@@ -82,7 +82,7 @@ TSTATIC_DEFS(
 	char * drop_locale(void);
 	void restore_locale(char locale[]);
 	JSON_Value * serialize_state(int vinfo);
-	void merge_states(int vinfo, int fullest, JSON_Object *current,
+	void merge_states(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture);
 )
 

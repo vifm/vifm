@@ -206,11 +206,11 @@ static void update_info_file(const char filename[], int vinfo, int merge);
 TSTATIC char * drop_locale(void);
 TSTATIC void restore_locale(char locale[]);
 TSTATIC JSON_Value * serialize_state(int vinfo);
-TSTATIC void merge_states(int vinfo, int fullest, JSON_Object *current,
+TSTATIC void merge_states(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture);
-static void merge_tabs(int vinfo, int fullest, JSON_Object *current,
+static void merge_tabs(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture);
-static void merge_dhistory(int fullest, JSON_Object *current,
+static void merge_dhistory(int session_load, JSON_Object *current,
 		const JSON_Object *admixture);
 static void merge_dhistory_by_order(JSON_Object *current,
 		const JSON_Object *admixture);
@@ -223,7 +223,7 @@ static void merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 static void merge_commands(JSON_Object *current, const JSON_Object *admixture);
 static void merge_marks(JSON_Object *current, const JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, const JSON_Object *admixture);
-static void merge_history(int fullest, JSON_Object *current,
+static void merge_history(int session_load, JSON_Object *current,
 		const JSON_Object *admixture, const char node[]);
 static void merge_history_by_order(JSON_Object *current,
 		const JSON_Object *admixture, const char node[]);
@@ -1438,10 +1438,10 @@ serialize_state(int vinfo)
 /* Adds parts of admixture to current state to avoid losing state stored by
  * other instances. */
 TSTATIC void
-merge_states(int vinfo, int fullest, JSON_Object *current,
+merge_states(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture)
 {
-	merge_tabs(vinfo, fullest, current, admixture);
+	merge_tabs(vinfo, session_load, current, admixture);
 
 	if(vinfo & VINFO_FILETYPES)
 	{
@@ -1467,22 +1467,22 @@ merge_states(int vinfo, int fullest, JSON_Object *current,
 
 	if(vinfo & VINFO_CHISTORY)
 	{
-		merge_history(fullest, current, admixture, "cmd-hist");
+		merge_history(session_load, current, admixture, "cmd-hist");
 	}
 
 	if(vinfo & VINFO_SHISTORY)
 	{
-		merge_history(fullest, current, admixture, "search-hist");
+		merge_history(session_load, current, admixture, "search-hist");
 	}
 
 	if(vinfo & VINFO_PHISTORY)
 	{
-		merge_history(fullest, current, admixture, "prompt-hist");
+		merge_history(session_load, current, admixture, "prompt-hist");
 	}
 
 	if(vinfo & VINFO_FHISTORY)
 	{
-		merge_history(fullest, current, admixture, "lfilt-hist");
+		merge_history(session_load, current, admixture, "lfilt-hist");
 	}
 
 	if(vinfo & VINFO_REGISTERS)
@@ -1502,7 +1502,7 @@ merge_states(int vinfo, int fullest, JSON_Object *current,
 
 	merge_trash(current, admixture);
 
-	if(fullest)
+	if(session_load)
 	{
 		clone_missing(current, admixture);
 	}
@@ -1511,7 +1511,7 @@ merge_states(int vinfo, int fullest, JSON_Object *current,
 /* Merges two sets of tabs if there is only one tab at each level (global and
  * pane). */
 static void
-merge_tabs(int vinfo, int fullest, JSON_Object *current,
+merge_tabs(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture)
 {
 	if(!(vinfo & VINFO_DHISTORY))
@@ -1542,7 +1542,7 @@ merge_tabs(int vinfo, int fullest, JSON_Object *current,
 	if(current_panes == NULL || json_array_get_count(current_panes) == 0)
 	{
 		clone_array(current_gtab, updated_panes, "panes");
-		if(fullest)
+		if(session_load)
 		{
 			clone_missing(current_gtab, updated_gtab);
 		}
@@ -1568,15 +1568,15 @@ merge_tabs(int vinfo, int fullest, JSON_Object *current,
 		{
 			JSON_Object *current_ptab = json_array_get_object(current_ptabs, 0);
 			JSON_Object *updated_ptab = json_array_get_object(updated_ptabs, 0);
-			merge_dhistory(fullest, current_ptab, updated_ptab);
-			if(fullest)
+			merge_dhistory(session_load, current_ptab, updated_ptab);
+			if(session_load)
 			{
 				clone_missing(current_ptab, updated_ptab);
 			}
 		}
 	}
 
-	if(fullest)
+	if(session_load)
 	{
 		clone_missing(current_gtab, updated_gtab);
 	}
@@ -1584,7 +1584,8 @@ merge_tabs(int vinfo, int fullest, JSON_Object *current,
 
 /* Merges two directory histories. */
 static void
-merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
+merge_dhistory(int session_load, JSON_Object *current,
+		const JSON_Object *admixture)
 {
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
@@ -1594,7 +1595,7 @@ merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
 		return;
 	}
 
-	if(fullest)
+	if(session_load)
 	{
 		merge_dhistory_by_order(current, admixture);
 		return;
@@ -1630,7 +1631,7 @@ merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
 	JSON_Array *merged = json_array(merged_value);
 
 	int i;
-	int lower_limit = (fullest ? 0 : total - cfg.history_len);
+	int lower_limit = (session_load ? 0 : total - cfg.history_len);
 	for(i = MAX(0, lower_limit); i < total; ++i)
 	{
 		JSON_Value *value = json_object_get_wrapping_value(combined[i]);
@@ -1852,8 +1853,8 @@ merge_bmarks(JSON_Object *current, const JSON_Object *admixture)
 
 /* Merges two states of a particular kind of history. */
 static void
-merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
-		const char node[])
+merge_history(int session_load, JSON_Object *current,
+		const JSON_Object *admixture, const char node[])
 {
 	JSON_Array *updated = json_object_get_array(admixture, node);
 	if(json_array_get_count(updated) == 0)
@@ -1868,7 +1869,7 @@ merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 		return;
 	}
 
-	if(fullest)
+	if(session_load)
 	{
 		merge_history_by_order(current, admixture, node);
 		return;
@@ -1918,7 +1919,7 @@ merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 	JSON_Value *merged_value = json_value_init_array();
 	JSON_Array *merged = json_array(merged_value);
 
-	int lower_limit = (fullest ? 0 : n - cfg.history_len);
+	int lower_limit = (session_load ? 0 : n - cfg.history_len);
 	for(n = json_array_get_count(combined), i = MAX(0, lower_limit); i < n; ++i)
 	{
 		JSON_Value *entry = json_object_get_wrapping_value(entries_sorted[i]);
