@@ -192,56 +192,52 @@ TEST(no_sdquoted_completion_does_nothing)
 
 TEST(spaces_escaping_leading)
 {
-	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
-	assert_success(chdir(curr_view->curr_dir));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/ begins-with-space");
 
 	ASSERT_COMPLETION(L"touch \\ ", L"touch \\ begins-with-space");
+
+	remove_file(SANDBOX_PATH "/ begins-with-space");
 }
 
-TEST(spaces_escaping_everywhere)
+/* Windows doesn't allow file names with trailing spaces. */
+TEST(spaces_escaping_everywhere, IF(not_windows))
 {
-	assert_success(chdir("../spaces-in-names"));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/ spaces everywhere ");
 
-	/* Whether trailing space is there depends on file system and OS. */
-	if(access("\\ spaces\\ everywhere\\ ", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere\\ ");
-	}
-	/* Only one condition is true, but don't use else to make one of asserts fail
-	 * if there are two files somehow. */
-	if(access("\\ spaces\\ everywhere", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere");
-	}
+	ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere\\ ");
+
+	remove_file(SANDBOX_PATH "/ spaces everywhere ");
 }
 
-TEST(spaces_escaping_trailing)
+/* Windows doesn't allow file names with trailing spaces. */
+TEST(spaces_escaping_trailing, IF(not_windows))
 {
-	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
-	assert_success(chdir(curr_view->curr_dir));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/ends-with-space ");
 
-	/* Whether trailing space is there depends on file system and OS. */
-	if(access("ends-with-space\\ ", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch e", L"touch ends-with-space\\ ");
-	}
-	/* Only one condition is true, but don't use else to make one of asserts fail
-	 * if there are too files somehow. */
-	if(access("ends-with-space", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch e", L"touch ends-with-space");
-	}
+	ASSERT_COMPLETION(L"touch e", L"touch ends-with-space\\ ");
+
+	remove_file(SANDBOX_PATH "/ends-with-space ");
 }
 
 TEST(spaces_escaping_middle)
 {
-	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
-	assert_success(chdir(curr_view->curr_dir));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/spaces in the middle");
 
 	ASSERT_COMPLETION(L"touch s", L"touch spaces\\ in\\ the\\ middle");
+
+	remove_file(SANDBOX_PATH "/spaces in the middle");
 }
 
 TEST(squoted_completion)

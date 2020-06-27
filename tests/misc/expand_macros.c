@@ -500,28 +500,36 @@ TEST(singly_not_expanded_multiple_macros_multiple_files)
 
 TEST(singly_no_crash_on_wrong_register_name)
 {
-	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", NULL);
+	create_file(SANDBOX_PATH "/spaces in the middle");
+
 	regs_init();
 
 	assert_success(regs_append('r', "spaces in the middle"));
 	free(ma_expand_single("%r "));
 
 	regs_reset();
+
+	remove_file(SANDBOX_PATH "/spaces in the middle");
 }
 
 TEST(singly_expanded_single_file_register)
 {
-	char *expanded;
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", NULL);
+	create_file(SANDBOX_PATH "/spaces in the middle");
 
-	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
 	regs_init();
 
 	assert_success(regs_append('r', "spaces in the middle"));
-	expanded = ma_expand_single("%rr");
+	char *expanded = ma_expand_single("%rr");
 	assert_string_equal("spaces in the middle", expanded);
 	free(expanded);
 
 	regs_reset();
+
+	remove_file(SANDBOX_PATH "/spaces in the middle");
 }
 
 TEST(singly_not_expanded_multiple_files_register)

@@ -124,11 +124,11 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 TEST(cds_does_the_replacement)
 {
 	char path[PATH_MAX + 1];
-	snprintf(path, sizeof(path), "%s/spaces-in-names", test_data);
+	snprintf(path, sizeof(path), "%s/syntax-highlight", test_data);
 	assert_success(chdir(path));
 	strcpy(lwin.curr_dir, path);
 
-	assert_success(exec_commands("cds spaces-in-names rename", &lwin,
+	assert_success(exec_commands("cds syntax-highlight rename", &lwin,
 				CIT_COMMAND));
 
 	snprintf(path, sizeof(path), "%s/rename", test_data);
@@ -152,11 +152,11 @@ TEST(cds_aborts_on_broken_)
 TEST(cds_acts_like_substitute)
 {
 	char path[PATH_MAX + 1];
-	snprintf(path, sizeof(path), "%s/spaces-in-names", test_data);
+	snprintf(path, sizeof(path), "%s/syntax-highlight", test_data);
 	assert_success(chdir(path));
 	strcpy(lwin.curr_dir, path);
 
-	assert_success(exec_commands("cds/spaces-IN-[a-z]*/rename/i", &lwin,
+	assert_success(exec_commands("cds/SYNtax-?hi[a-z]*/rename/i", &lwin,
 				CIT_COMMAND));
 
 	snprintf(path, sizeof(path), "%s/rename", test_data);
@@ -166,11 +166,11 @@ TEST(cds_acts_like_substitute)
 TEST(cds_can_change_path_of_both_panes)
 {
 	char path[PATH_MAX + 1];
-	snprintf(path, sizeof(path), "%s/spaces-in-names", test_data);
+	snprintf(path, sizeof(path), "%s/syntax-highlight", test_data);
 	assert_success(chdir(path));
 	strcpy(lwin.curr_dir, path);
 
-	assert_success(exec_commands("cds! spaces-in-names rename", &lwin,
+	assert_success(exec_commands("cds! syntax-highlight rename", &lwin,
 				CIT_COMMAND));
 
 	snprintf(path, sizeof(path), "%s/rename", test_data);
