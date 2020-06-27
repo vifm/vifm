@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 May 26
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -25,6 +25,7 @@
 |vifm-compare-views|      Kinds, properties and differences of compare views.
 |vifm-startup|            Determining of environment variables on startup.
 |vifm-configure|          Configuration of vifm.
+|vifm-sessions|           Managing sessions.
 |vifm-fuse|               Using automated FUSE mounts.
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            Some details about ls-like view.
@@ -69,7 +70,7 @@ or
 vifm /path/to/directory/one /path/to/directory/two
 
 Specifying two directories triggers split view even when vifm was in
-single-view mode on finishing previous session.  To suppress this behaviour
+single-view mode on finishing previous run.  To suppress this behaviour
 |vifm-:only| command can be put in the vifmrc file.
 
 When only one path argument is found on command-line, the left/top pane is
@@ -604,7 +605,7 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 .                                              *vifm-.*
     repeat last command-line command (not normal mode command) of this
-    session (does nothing right after startup or |vifm-:restart| command).
+    run (does nothing right after startup or |vifm-:restart| command).
     The command doesn't depend on command-line history and can be used
     with completely disabled history.
 
@@ -1497,6 +1498,11 @@ The builtin commands are:
 :delm[arks] marks ...
     delete specified marks, each argument is treated as a set of marks.
 
+                                               *vifm-:delsession*
+:delsession name
+    delete specified session if it was stored previously.  Deleting current
+    session doesn't detach it.
+
                                                *vifm-:display* *vifm-:di*
 :di[splay]
     display menu with registers content.
@@ -2130,7 +2136,7 @@ order using the '.' operator.  Any whitespace is ignored.
 
 :q[uit][!]                                     *vifm-:quit* *vifm-:q*
     if there is more than one tab, close the current one, otherwise exit
-    vifm (add ! to skip saving changes and checking for active backgrounded
+    vifm (add ! to skip saving state and checking for active backgrounded
     commands).
 
 :redr[aw]                                      *vifm-:redraw* *vifm-:redr*
@@ -2154,10 +2160,10 @@ order using the '.' operator.  Any whitespace is ignored.
     rename each of selected files to a corresponding name.
 
 :restart                                       *vifm-:restart*
-    free a lot of things (histories, commands, etc.), reread vifminfo and
-    vifmrc files and run startup commands passed in the argument list, thus
-    losing all unsaved changes (e.g. recent history or keys mapped in current
-    session).
+    free a lot of things (histories, commands, etc.), reread vifminfo, vifmrc
+    and session files and run startup commands passed in the argument list,
+    thus losing all unsaved changes (e.g. recent history or keys mapped after
+    starting this instance).  Session that wasn't yet stored gets reset.
 
     While many things get reset, some basic UI state and current locations
     are preserved, including tabs.
@@ -2211,6 +2217,17 @@ yet supported) and might be changed in future releases, or get an alias.
     beforehand.
 :[range]select! [{pattern}|!{external command}]
     same as above, but resets previously selected items before proceeding.
+
+                                               *vifm-:session*
+:session?
+    print name of the current session.
+:session
+    detach current session without saving it.  Resets |vifm-v:session|.
+:session name
+    create or load and switch to a session with the specified name.  Name
+    can't contain slashes.  Session active at the moment is saved before the
+    switch.  Session is also automatically saved when quiting the
+    application in usual ways.  Sets |vifm-v:session|.
 
                                                *vifm-:set* *vifm-:se*
 :se[t]
@@ -2478,15 +2495,16 @@ yet supported) and might be changed in future releases, or get an alias.
       - , - other pane
 
 :w[rite]                                       *vifm-:write* *vifm-:w*
-    write current state to vifminfo file.
+    write current state to vifminfo and session files (if a session is
+    active).
 
 :wq[!]                                         *vifm-:wq*
-    same as |vifm-:quit|, but "!" disables only check of backgrounded
-    commands, while vifminfo is always written.
+    same as |vifm-:quit|, but "!" disables only the check of backgrounded
+    commands, while state of the application is always written.
 
 :wqa[ll][!]                                    *vifm-:wqall* *vifm-:wqa*
-    same as |vifm-:qall|, but ! only disables check of backgrounded
-    commands.
+    same as |vifm-:qall|, but ! disables only the check of backgrounded
+    commands, while state of the application is always written.
 
 :xa[ll][!]                                     *vifm-:xall* *vifm-:xa*
     same as |vifm-:qall|.
@@ -3601,6 +3619,18 @@ want cursor line to always be in the middle of the view (except at the
 beginning or end of the file list), set this option to some large value
 (e.g. 999).
 
+                                               *vifm-'sessionoptions'*
+                                               *vifm-'ssop'*
+sessionoptions ssop
+type: set
+default: tui,state,tabs,savedirs,dhistory
+
+An equivalent of |vifm-'vifminfo'| for sessions, uses the same values.  When
+both options include the same value, data from session file has higher
+priority (data from vifminfo isn't necessarily completely discarded,
+instead it's merged with the state of a session the same way state of
+multiple instances is merged on exit).
+
                                                *vifm-'shell'* *vifm-'sh'*
 shell sh
 type: string
@@ -4101,7 +4131,7 @@ Controls what will be saved in the $VIFM/vifminfo file:
    phistory  - prompt history
    fhistory  - history of local filter (see |vifm-=|)
    dirstack  - directory stack overwrites previous stack, unless stack of
-               current session is empty
+               current instance is empty
    registers - registers content
    tabs      - global or pane tabs
    options   - all options that can be set with the :set command (obsolete)
@@ -4493,6 +4523,10 @@ v:count                                        *vifm-count-variable*
                                                *vifm-v:count1*
 v:count1                                       *vifm-count1-variable*
     same as v:count, but 1 by default.
+
+                                               *vifm-v:session*
+v:session                                      *vifm-session-variable*
+    name of the current session or empty string.
 
 See also |vifm-v:servername|.
 
@@ -5148,7 +5182,7 @@ Files are gathered in this way:
 --------------------------------------------------------------------------------
 *vifm-startup*
 
-On startup vifm determines several variables that are used during the session.
+On startup vifm determines several variables that are used during execution.
 They are determined in the order they appear below.
 
                                                *vifm-$HOME*
@@ -5199,21 +5233,23 @@ set<space here>
 equals "set  smartcase".
 
                                                *vifm-vifminfo*
-The $VIFM/vifminfo file contains session settings.  You may edit it by hand
-to change the settings, but it's not recommended to do that, edit vifmrc
-instead.  You can control what settings will be saved in vifminfo by setting
-|vifm-'vifminfo'| option.  Vifm always writes this file on exit unless
-|vifm-'vifminfo'| option is empty.  Marks, bookmarks, commands, histories,
-filetypes, fileviewers and registers in the file are merged with vifm
-configuration.
+The $VIFM/vifminfo file contains generic state of the application.  You can
+control what is stored vifminfo by setting |vifm-'vifminfo'| option.  Vifm
+always writes this file on exit unless |vifm-'vifminfo'| option is empty.
+Marks, bookmarks, commands, histories, filetypes, fileviewers and registers
+in the file are merged with vifm configuration.
 
 Generally, runtime configuration has bigger priority during merging, but there
 are some exceptions:
  - directory stack stored in the file is not overwritten unless something is
-   changed in vifm session that performs merge;
+   changed in vifm instance that performs merge;
  - each mark or bookmark is marked with a timestamp, so that newer value is
    not overwritten by older one, thus no matter from where it comes, the
-   newer one wins.
+   newer one wins;
+ - all histories are marked with timestamps on storing, this means that last
+   instance to quit puts its elements on top of the list;
+ - tabs are merged only if both current instance and stored state contain
+   exactly one tab of any kind.
 
                                                *vifm-scripts*
 The $VIFM/scripts directory can contain shell scripts.  vifm modifies
@@ -5232,6 +5268,71 @@ and for this reason the following rules apply during lookup:
  - if there is no file with .vifm extension, all regular files are listed;
  - otherwise only files with .vifm extension are listed (with the extension
    being truncated).
+
+--------------------------------------------------------------------------------
+*vifm-sessions*
+
+Sessions provide a way to have multiple persistent runtime configurations.
+Think of them as additional named |vifm-vifminfo| files.  However, they aren't
+a complete replacement for vifminfo, but an addition to them.  In principle,
+one can empty |vifm-'vifminfo'| option and rely only on sessions, but in
+practice you might want to share some state among instances in different
+sessions or have an "out-of-sessions" state for tasks that don't deserve a
+session of their own.
+
+This leads to two-level structure where data in session files has higher
+priority than data in vifminfo files (where this makes sense) following the
+same rules that merging of vifminfo file obeys.  In addition to that, history
+items from session files are never ordered before history items from vifminfo
+file.
+
+Format~
+
+Sessions have the format of vifminfo files, they do not consist of sequence
+of command-line commands and are not meant to be sourced via |vifm-:source|
+command.
+
+Storage and naming~
+
+`$VIFM/sessions/` directory serves as a storage for sessions.  Consequently
+names should be valid filenames.  The structure of the storage is flat meaning
+that there are no subdirectories, that's why names of sessions can't contain
+slashes.
+
+Usage model~
+
+Contrary to Vim, vifm automates basic management of sessions.  You can start,
+switch, stop or delete a session using builtin means.
+
+Current session is saved at the same time vifminfo is saved (on normal exits
+or explicitly on |vifm-:write| command) and right before switching to another
+session.  To avoid saving in those cases use |vifm-:session| command to detach
+(without saving) from a session before proceeding.
+
+Generic session~
+
+It might be convenient to have a separate session for everything that doesn't
+have its own session.  This avoids asymmetry of having "out-of-session" state
+use only vifminfo, while sessions use both vifminfo and session files, which
+can affect what's preserved (depends on values of |vifm-'vifminfo'| and
+|vifm-'sessionoptions'|) or how things are merged (sessions can store their
+histories to vifminfo ordering them higher than "out-of-session" changes).
+
+To enter the "generic" (name is just an example) session automatically
+put this at the very end of your |vifm-vifmrc| file. >
+
+    if v:session == ''
+        session generic
+    endif
+
+Putting it at the top and adding |vifm-:finish| will prevent proper
+initialization of this session.
+
+Related topics~
+
+Commands: |vifm-:session|, |vifm-:delsession|
+Options: |vifm-'sessionoptions'|
+Variables: |vifm-v:session|
 
 --------------------------------------------------------------------------------
 *vifm-fuse*

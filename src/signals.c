@@ -162,7 +162,7 @@ shutdown_nicely(int sig, const char descr[])
 	ui_shutdown();
 	term_title_update(NULL);
 	fuse_unmount_all();
-	write_info_file();
+	state_store();
 	fprintf(stdout, "Vifm killed by signal: %d (%s).\n", sig, descr);
 
 	/* Alternatively we could do this sequence:

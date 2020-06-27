@@ -4,7 +4,7 @@
 
 #include <sys/stat.h> /* chmod() */
 #include <sys/time.h> /* timeval utimes() */
-#include <unistd.h> /* access() usleep() */
+#include <unistd.h> /* access() rmdir() usleep() */
 
 #ifdef _WIN32
 #include <windows.h>
@@ -12,7 +12,7 @@
 
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* FILE fclose() fopen() fread() */
+#include <stdio.h> /* FILE fclose() fopen() fread() remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() strdup() */
 
@@ -242,6 +242,20 @@ columns_teardown(void)
 }
 
 void
+histories_init(int size)
+{
+	cfg_resize_histories(0);
+	cfg_resize_histories(size);
+}
+
+void
+create_dir(const char path[])
+{
+	assert_success(os_mkdir(path, 0700));
+	assert_true(is_dir(path));
+}
+
+void
 create_file(const char path[])
 {
 	FILE *const f = fopen(path, "w");
@@ -259,6 +273,43 @@ create_executable(const char path[])
 	assert_success(access(path, F_OK));
 	chmod(path, 0755);
 	assert_success(access(path, X_OK));
+}
+
+void
+make_file(const char path[], const char contents[])
+{
+	FILE *fp = fopen(path, "wb");
+	assert_non_null(fp);
+
+	if(fp != NULL)
+	{
+		fputs(contents, fp);
+		fclose(fp);
+	}
+}
+
+void
+remove_dir(const char path[])
+{
+	assert_success(rmdir(path));
+}
+
+void
+no_remove_dir(const char path[])
+{
+	assert_failure(rmdir(path));
+}
+
+void
+remove_file(const char path[])
+{
+	assert_success(remove(path));
+}
+
+void
+no_remove_file(const char path[])
+{
+	assert_failure(remove(path));
 }
 
 void

@@ -70,7 +70,7 @@ TEST(names_of_global_tabs_are_restored)
 	write_info_file();
 	tabs_only(&lwin);
 	tabs_rename(&lwin, NULL);
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(3, tabs_count(&lwin));
 	tab_info_t tab_info;
@@ -98,7 +98,7 @@ TEST(names_of_pane_tabs_are_restored)
 	tabs_rename(&lwin, NULL);
 	tabs_only(&rwin);
 	tabs_rename(&rwin, NULL);
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(2, tabs_count(&lwin));
 	assert_int_equal(2, tabs_count(&rwin));
@@ -123,7 +123,7 @@ TEST(active_global_tab_is_restored)
 
 	write_info_file();
 	tabs_only(&lwin);
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(1, tabs_current(&lwin));
 }
@@ -147,7 +147,7 @@ TEST(active_pane_tab_is_restored)
 	write_info_file();
 	tabs_only(&lwin);
 	tabs_only(&rwin);
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(1, tabs_current(&lwin));
 	assert_int_equal(2, tabs_current(&rwin));
@@ -167,7 +167,7 @@ TEST(layout_of_global_tab_is_restored)
 
 	write_info_file();
 	tabs_only(&lwin);
-	read_info_file(0);
+	state_load(0);
 
 	tabs_goto(0);
 	assert_int_equal(2, curr_stats.number_of_windows);
@@ -194,7 +194,7 @@ TEST(layout_of_pane_tab_is_restored)
 	write_info_file();
 	tabs_only(&lwin);
 	tabs_only(&rwin);
-	read_info_file(0);
+	state_load(0);
 
 	assert_true(curr_stats.preview.on);
 	tabs_goto(0);

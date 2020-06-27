@@ -33,6 +33,7 @@
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
+#include "../engine/completion.h"
 #include "../engine/options.h"
 #include "../io/iop.h"
 #include "../ui/fileview.h"
@@ -199,16 +200,19 @@ static void ensure_history_not_full(hist_t *hist);
 static void put_dhistory_entry(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos, time_t timestamp);
 static void set_manual_filter(view_t *view, const char value[]);
+TSTATIC void write_info_file(void);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int vinfo, int merge);
 TSTATIC char * drop_locale(void);
 TSTATIC void restore_locale(char locale[]);
 TSTATIC JSON_Value * serialize_state(int vinfo);
-TSTATIC void merge_states(int vinfo, int fullest, JSON_Object *current,
+TSTATIC void merge_states(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture);
-static void merge_tabs(int vinfo, int fullest, JSON_Object *current,
+static void merge_tabs(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture);
-static void merge_dhistory(int fullest, JSON_Object *current,
+static void merge_dhistory(int session_load, JSON_Object *current,
+		const JSON_Object *admixture);
+static void merge_dhistory_by_order(JSON_Object *current,
 		const JSON_Object *admixture);
 static JSON_Object ** merge_timestamped_data(const JSON_Array *current,
 		const JSON_Array *updated);
@@ -219,7 +223,9 @@ static void merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 static void merge_commands(JSON_Object *current, const JSON_Object *admixture);
 static void merge_marks(JSON_Object *current, const JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, const JSON_Object *admixture);
-static void merge_history(int fullest, JSON_Object *current,
+static void merge_history(int session_load, JSON_Object *current,
+		const JSON_Object *admixture, const char node[]);
+static void merge_history_by_order(JSON_Object *current,
 		const JSON_Object *admixture, const char node[]);
 static void merge_regs(JSON_Object *current, const JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, const JSON_Object *admixture);
@@ -272,12 +278,31 @@ static void clone_object(JSON_Object *parent, const JSON_Object *object,
 		const char node[]);
 static void clone_array(JSON_Object *parent, const JSON_Array *array,
 		const char node[]);
+static void set_session(const char new_session[]);
+static void write_session_file(void);
+static void store_file(const char path[], filemon_t *mon, int vinfo);
+static void get_session_dir(char buf[], size_t buf_size);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
+/* Monitor to check for changes of file that backs current session. */
+static filemon_t session_mon;
+/* Callback to be invoked when active session has changed.  Can be NULL. */
+static sessions_changed session_changed_cb;
 
 void
-read_info_file(int reread)
+state_store(void)
+{
+	write_info_file();
+
+	if(sessions_active())
+	{
+		write_session_file();
+	}
+}
+
+void
+state_load(int reread)
 {
 	char info_file[PATH_MAX + 16];
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
@@ -748,10 +773,10 @@ load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
 
 	if(get_int(gtab, "active-pane", &layout.active_pane) && apply && !reread)
 	{
-		if(layout.active_pane == 1)
+		view_t *active = (layout.active_pane == 1 ? &rwin : &lwin);
+		if(curr_view != active)
 		{
-			curr_view = &rwin;
-			other_view = &lwin;
+			swap_view_roles();
 			ui_views_update_titles();
 		}
 	}
@@ -1231,31 +1256,14 @@ set_manual_filter(view_t *view, const char value[])
 	view->manual_filter = matcher;
 }
 
-void
+/* Writes vifminfo file updating it with state of the current instance. */
+TSTATIC void
 write_info_file(void)
 {
 	char info_file[PATH_MAX + 16];
-	char tmp_file[PATH_MAX + 32];
-
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
-	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());
 
-	if(os_access(info_file, R_OK) != 0 || copy_file(info_file, tmp_file) == 0)
-	{
-		filemon_t current_vifminfo_mon;
-		int vifminfo_changed =
-			filemon_from_file(info_file, FMT_MODIFIED, &current_vifminfo_mon) != 0 ||
-			!filemon_equal(&vifminfo_mon, &current_vifminfo_mon);
-
-		update_info_file(tmp_file, cfg.vifm_info, vifminfo_changed);
-		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &vifminfo_mon);
-
-		if(rename_file(tmp_file, info_file) != 0)
-		{
-			LOG_ERROR_MSG("Can't replace vifminfo.json file with its temporary copy");
-			(void)remove(tmp_file);
-		}
-	}
+	store_file(info_file, &vifminfo_mon, cfg.vifm_info);
 }
 
 /* Copies the src file to the dst location.  Returns zero on success. */
@@ -1430,10 +1438,10 @@ serialize_state(int vinfo)
 /* Adds parts of admixture to current state to avoid losing state stored by
  * other instances. */
 TSTATIC void
-merge_states(int vinfo, int fullest, JSON_Object *current,
+merge_states(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture)
 {
-	merge_tabs(vinfo, fullest, current, admixture);
+	merge_tabs(vinfo, session_load, current, admixture);
 
 	if(vinfo & VINFO_FILETYPES)
 	{
@@ -1459,22 +1467,22 @@ merge_states(int vinfo, int fullest, JSON_Object *current,
 
 	if(vinfo & VINFO_CHISTORY)
 	{
-		merge_history(fullest, current, admixture, "cmd-hist");
+		merge_history(session_load, current, admixture, "cmd-hist");
 	}
 
 	if(vinfo & VINFO_SHISTORY)
 	{
-		merge_history(fullest, current, admixture, "search-hist");
+		merge_history(session_load, current, admixture, "search-hist");
 	}
 
 	if(vinfo & VINFO_PHISTORY)
 	{
-		merge_history(fullest, current, admixture, "prompt-hist");
+		merge_history(session_load, current, admixture, "prompt-hist");
 	}
 
 	if(vinfo & VINFO_FHISTORY)
 	{
-		merge_history(fullest, current, admixture, "lfilt-hist");
+		merge_history(session_load, current, admixture, "lfilt-hist");
 	}
 
 	if(vinfo & VINFO_REGISTERS)
@@ -1494,7 +1502,7 @@ merge_states(int vinfo, int fullest, JSON_Object *current,
 
 	merge_trash(current, admixture);
 
-	if(fullest)
+	if(session_load)
 	{
 		clone_missing(current, admixture);
 	}
@@ -1503,7 +1511,7 @@ merge_states(int vinfo, int fullest, JSON_Object *current,
 /* Merges two sets of tabs if there is only one tab at each level (global and
  * pane). */
 static void
-merge_tabs(int vinfo, int fullest, JSON_Object *current,
+merge_tabs(int vinfo, int session_load, JSON_Object *current,
 		const JSON_Object *admixture)
 {
 	if(!(vinfo & VINFO_DHISTORY))
@@ -1534,7 +1542,7 @@ merge_tabs(int vinfo, int fullest, JSON_Object *current,
 	if(current_panes == NULL || json_array_get_count(current_panes) == 0)
 	{
 		clone_array(current_gtab, updated_panes, "panes");
-		if(fullest)
+		if(session_load)
 		{
 			clone_missing(current_gtab, updated_gtab);
 		}
@@ -1560,15 +1568,15 @@ merge_tabs(int vinfo, int fullest, JSON_Object *current,
 		{
 			JSON_Object *current_ptab = json_array_get_object(current_ptabs, 0);
 			JSON_Object *updated_ptab = json_array_get_object(updated_ptabs, 0);
-			merge_dhistory(fullest, current_ptab, updated_ptab);
-			if(fullest)
+			merge_dhistory(session_load, current_ptab, updated_ptab);
+			if(session_load)
 			{
 				clone_missing(current_ptab, updated_ptab);
 			}
 		}
 	}
 
-	if(fullest)
+	if(session_load)
 	{
 		clone_missing(current_gtab, updated_gtab);
 	}
@@ -1576,13 +1584,20 @@ merge_tabs(int vinfo, int fullest, JSON_Object *current,
 
 /* Merges two directory histories. */
 static void
-merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
+merge_dhistory(int session_load, JSON_Object *current,
+		const JSON_Object *admixture)
 {
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
 	if(history == NULL)
 	{
 		clone_array(current, updated, "history");
+		return;
+	}
+
+	if(session_load)
+	{
+		merge_dhistory_by_order(current, admixture);
 		return;
 	}
 
@@ -1616,7 +1631,7 @@ merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
 	JSON_Array *merged = json_array(merged_value);
 
 	int i;
-	int lower_limit = (fullest ? 0 : total - cfg.history_len);
+	int lower_limit = (session_load ? 0 : total - cfg.history_len);
 	for(i = MAX(0, lower_limit); i < total; ++i)
 	{
 		JSON_Value *value = json_object_get_wrapping_value(combined[i]);
@@ -1624,6 +1639,33 @@ merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
 	}
 
 	free(combined);
+
+	json_object_set_value(current, "history", merged_value);
+}
+
+/* Merges two directory histories not paying attention to timestamps thus giving
+ * priority to data in the current parameter. */
+static void
+merge_dhistory_by_order(JSON_Object *current, const JSON_Object *admixture)
+{
+	JSON_Array *history = json_object_get_array(current, "history");
+	JSON_Array *updated = json_object_get_array(admixture, "history");
+
+	int i, n;
+	JSON_Value *merged_value = json_value_init_array();
+	JSON_Array *merged = json_array(merged_value);
+
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		JSON_Value *value = json_array_get_value(updated, i);
+		json_array_append_value(merged, json_value_deep_copy(value));
+	}
+
+	for(i = 0, n = json_array_get_count(history); i < n; ++i)
+	{
+		JSON_Value *value = json_array_get_value(history, i);
+		json_array_append_value(merged, json_value_deep_copy(value));
+	}
 
 	json_object_set_value(current, "history", merged_value);
 }
@@ -1811,8 +1853,8 @@ merge_bmarks(JSON_Object *current, const JSON_Object *admixture)
 
 /* Merges two states of a particular kind of history. */
 static void
-merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
-		const char node[])
+merge_history(int session_load, JSON_Object *current,
+		const JSON_Object *admixture, const char node[])
 {
 	JSON_Array *updated = json_object_get_array(admixture, node);
 	if(json_array_get_count(updated) == 0)
@@ -1824,6 +1866,12 @@ merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 	if(entries == NULL)
 	{
 		clone_array(current, updated, node);
+		return;
+	}
+
+	if(session_load)
+	{
+		merge_history_by_order(current, admixture, node);
 		return;
 	}
 
@@ -1871,7 +1919,7 @@ merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 	JSON_Value *merged_value = json_value_init_array();
 	JSON_Array *merged = json_array(merged_value);
 
-	int lower_limit = (fullest ? 0 : n - cfg.history_len);
+	int lower_limit = (session_load ? 0 : n - cfg.history_len);
 	for(n = json_array_get_count(combined), i = MAX(0, lower_limit); i < n; ++i)
 	{
 		JSON_Value *entry = json_object_get_wrapping_value(entries_sorted[i]);
@@ -1880,6 +1928,55 @@ merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 
 	json_value_free(combined_value);
 	free(entries_sorted);
+
+	json_object_set_value(current, node, merged_value);
+}
+
+/* Merges two states of a particular kind of history not paying attention to
+ * timestamps thus giving priority to data in the current parameter. */
+static void
+merge_history_by_order(JSON_Object *current, const JSON_Object *admixture,
+		const char node[])
+{
+	JSON_Array *entries = json_object_get_array(current, node);
+	JSON_Array *updated = json_object_get_array(admixture, node);
+
+	int i, n;
+	trie_t *trie = trie_create();
+
+	JSON_Value *merged_value = json_value_init_array();
+	JSON_Array *merged = json_array(merged_value);
+
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
+	{
+		const char *text;
+		if(get_str(json_array_get_object(entries, i), "text", &text))
+		{
+			trie_put(trie, text);
+		}
+	}
+
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		const char *text;
+		if(get_str(json_array_get_object(updated, i), "text", &text))
+		{
+			void *data;
+			if(trie_get(trie, text, &data) != 0)
+			{
+				JSON_Value *entry = json_array_get_value(updated, i);
+				json_array_append_value(merged, json_value_deep_copy(entry));
+			}
+		}
+	}
+
+	trie_free(trie);
+
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
+	{
+		JSON_Value *entry = json_array_get_value(entries, i);
+		json_array_append_value(merged, json_value_deep_copy(entry));
+	}
 
 	json_object_set_value(current, node, merged_value);
 }
@@ -2198,6 +2295,8 @@ store_global_options(JSON_Object *root)
 
 	append_dstr(options, format_str("vifminfo=%s",
 			escape_spaces(vle_opts_get("vifminfo", OPT_GLOBAL))));
+	append_dstr(options, format_str("sessionoptions=%s",
+			escape_spaces(vle_opts_get("sessionoptions", OPT_GLOBAL))));
 
 	append_dstr(options, format_str("%svimhelp", cfg.use_vim_help ? "" : "no"));
 	append_dstr(options, format_str("%swildmenu", cfg.wild_menu ? "" : "no"));
@@ -2714,6 +2813,223 @@ clone_array(JSON_Object *parent, const JSON_Array *array, const char node[])
 {
 	JSON_Value *value = json_array_get_wrapping_value(array);
 	json_object_set_value(parent, node, json_value_deep_copy(value));
+}
+
+void
+sessions_set_callback(sessions_changed callback)
+{
+	session_changed_cb = callback;
+}
+
+int
+sessions_create(const char name[])
+{
+	if(sessions_current_is(name))
+	{
+		/* Active session might not exist on a disk yet. */
+		return 1;
+	}
+
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+	if(path_exists(session_file, NODEREF))
+	{
+		return 1;
+	}
+
+	set_session(name);
+	filemon_reset(&session_mon);
+	return 0;
+}
+
+int
+sessions_stop(void)
+{
+	if(!sessions_active())
+	{
+		return 1;
+	}
+
+	set_session(NULL);
+	return 0;
+}
+
+const char *
+sessions_current(void)
+{
+	return (cfg.session == NULL ? "" : cfg.session);
+}
+
+int
+sessions_current_is(const char name[])
+{
+	return (sessions_active() && stroscmp(sessions_current(), name) == 0);
+}
+
+int
+sessions_active(void)
+{
+	return (cfg.session != NULL);
+}
+
+int
+sessions_exists(const char name[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+
+	return (!is_dir(session_file) && path_exists(session_file, DEREF));
+}
+
+int
+sessions_load(const char name[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+
+	char *locale = drop_locale();
+	JSON_Value *session = json_parse_file(session_file);
+
+	if(session == NULL)
+	{
+		restore_locale(locale);
+		state_load(1);
+		set_session(NULL);
+		return 1;
+	}
+
+	char info_file[PATH_MAX + 16];
+	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
+	JSON_Value *common = json_parse_file(info_file);
+	restore_locale(locale);
+
+	if(common != NULL)
+	{
+		merge_states(FULL_VINFO, 1, json_object(session), json_object(common));
+		json_value_free(common);
+
+		(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
+	}
+
+	load_state(json_object(session), 0);
+	json_value_free(session);
+
+	set_session(name);
+	(void)filemon_from_file(session_file, FMT_MODIFIED, &session_mon);
+
+	return 0;
+}
+
+/* Changes active session.  The parameter can be NULL. */
+static void
+set_session(const char new_session[])
+{
+	update_string(&cfg.session, new_session);
+	if(session_changed_cb != NULL)
+	{
+		session_changed_cb(sessions_current());
+	}
+}
+
+/* Writes session file updating it with state of the current instance if
+ * necessary.  Writing is skipped if set state stored per session is empty. */
+static void
+write_session_file(void)
+{
+	if(cfg.session_options == EMPTY_VINFO)
+	{
+		return;
+	}
+
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	(void)create_path(sessions_dir, S_IRWXU);
+
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			cfg.session);
+
+	store_file(session_file, &session_mon, cfg.session_options);
+}
+
+/* Writes file updating it with state of the current instance if necessary. */
+static void
+store_file(const char path[], filemon_t *mon, int vinfo)
+{
+	char tmp_file[PATH_MAX + 64];
+	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", path, get_pid());
+
+	if(os_access(path, R_OK) != 0 || copy_file(path, tmp_file) == 0)
+	{
+		filemon_t current_mon;
+		int file_changed = filemon_from_file(path, FMT_MODIFIED, &current_mon) != 0
+		                || !filemon_equal(mon, &current_mon);
+
+		update_info_file(tmp_file, vinfo, file_changed);
+		(void)filemon_from_file(tmp_file, FMT_MODIFIED, mon);
+
+		if(rename_file(tmp_file, path) != 0)
+		{
+			LOG_ERROR_MSG("Can't replace \"%s\" file with updated temporary", path);
+			(void)remove(tmp_file);
+		}
+	}
+}
+
+int
+sessions_remove(const char name[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+	return (is_dir(session_file) || remove(session_file) != 0);
+}
+
+void
+sessions_complete(const char prefix[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+
+	int len = 0;
+	char **list = list_regular_files(sessions_dir, NULL, &len);
+
+	size_t prefix_len = strlen(prefix);
+	int i;
+	for(i = 0; i < len; ++i)
+	{
+		if(list[i][0] != '.' && cut_suffix(list[i], ".json"))
+		{
+			if(strnoscmp(list[i], prefix, prefix_len) == 0)
+			{
+				vle_compl_put_match(list[i], "");
+				list[i] = NULL;
+			}
+		}
+	}
+
+	free_string_array(list, len);
+
+	vle_compl_finish_group();
+	vle_compl_add_last_match(prefix);
+}
+
+/* Fills buffer with the path at which sessions are stored. */
+static void
+get_session_dir(char buf[], size_t buf_size)
+{
+	snprintf(buf, buf_size, "%s/sessions", cfg.config_dir);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

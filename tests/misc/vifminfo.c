@@ -63,7 +63,7 @@ TEST(view_sorting_is_read_from_vifminfo)
 
 	/* ls-like view blocks view column updates. */
 	lwin.ls_view = 1;
-	read_info_file(1);
+	state_load(1);
 	lwin.ls_view = 0;
 
 	opt_handlers_setup();
@@ -119,7 +119,7 @@ TEST(correct_manual_filters_are_read_from_vifminfo)
 	fprintf(f, "%c%s\n", LINE_TYPE_RWIN_FILT, "cba");
 	fclose(f);
 
-	read_info_file(1);
+	state_load(1);
 
 	assert_string_equal("abc", lwin.prev_manual_filter);
 	assert_string_equal("abc", matcher_get_expr(lwin.manual_filter));
@@ -136,7 +136,7 @@ TEST(incorrect_manual_filters_in_vifminfo_are_cleared)
 	fprintf(f, "%c%s\n", LINE_TYPE_RWIN_FILT, "?");
 	fclose(f);
 
-	read_info_file(1);
+	state_load(1);
 
 	assert_string_equal("", lwin.prev_manual_filter);
 	assert_string_equal("", matcher_get_expr(lwin.manual_filter));
@@ -156,7 +156,7 @@ TEST(file_with_newline_and_dash_in_history_does_not_cause_abort)
 
 	cfg_resize_histories(1);
 
-	read_info_file(1);
+	state_load(1);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }
@@ -172,7 +172,7 @@ TEST(optional_number_should_not_be_preceded_by_a_whitespace)
 	fputs(" 10\n", f);
 	fclose(f);
 
-	read_info_file(1);
+	state_load(1);
 
 	assert_int_equal(1, lwin.history_pos);
 	/* First entry is correct. */
@@ -200,7 +200,7 @@ TEST(history_is_automatically_extended)
 	fputs("d/path2\n\tfile2\n", f);
 	fclose(f);
 
-	read_info_file(1);
+	state_load(1);
 
 	assert_int_equal(12, lwin.history_num);
 
@@ -251,7 +251,7 @@ TEST(histories_are_merged_correctly)
 	cfg_resize_histories(0);
 	cfg_resize_histories(10);
 
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(3, curr_stats.cmd_hist.size);
 	assert_int_equal(3, curr_stats.search_hist.size);
@@ -306,7 +306,7 @@ TEST(view_sorting_round_trip)
 	write_info_file();
 	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
 	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(SK_BY_NAME, lwin.sort_g[0]);
 	assert_int_equal(SK_BY_NAME, rwin.sort_g[0]);
@@ -327,7 +327,7 @@ TEST(view_sorting_round_trip)
 	write_info_file();
 	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
 	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(SK_BY_NITEMS, lwin.sort_g[0]);
 	assert_int_equal(-SK_BY_EXTENSION, lwin.sort_g[1]);
@@ -375,7 +375,7 @@ TEST(view_filters_round_trip)
 	rwin.hide_dot = -1;
 	assert_success(filter_set(&rwin.auto_filter, "auto-clear"));
 	assert_success(replace_matcher(&rwin.manual_filter, "^manual-clear$"));
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(0, lwin.invert);
 	assert_int_equal(1, lwin.hide_dot);
@@ -399,7 +399,7 @@ TEST(savedirs_works_on_its_own)
 	write_info_file();
 	lwin.curr_dir[0] = '\0';
 	rwin.curr_dir[0] = '\0';
-	read_info_file(0);
+	state_load(0);
 
 	assert_string_equal("/ldir", lwin.curr_dir);
 	assert_string_equal("/rdir", rwin.curr_dir);
@@ -430,7 +430,7 @@ TEST(dhistory_is_merged_correctly)
 	cfg_resize_histories(0);
 	cfg_resize_histories(10);
 
-	read_info_file(0);
+	state_load(0);
 
 	assert_int_equal(2, lwin.history_pos);
 	assert_int_equal(3, lwin.history_num);
@@ -472,6 +472,24 @@ TEST(things_missing_from_vifminfo_option_are_dropped)
 	restore_locale(locale);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
+}
+
+TEST(active_pane_is_respected_both_ways)
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	make_file(SANDBOX_PATH "/vifminfo.json", "{\"gtabs\":[{\"active-pane\":1}]}");
+	state_load(0);
+	assert_true(curr_view == &rwin);
+	assert_true(other_view == &lwin);
+
+	make_file(SANDBOX_PATH "/vifminfo.json", "{\"gtabs\":[{\"active-pane\":0}]}");
+	state_load(0);
+	assert_true(curr_view == &lwin);
+	assert_true(other_view == &rwin);
+
+	remove_file(SANDBOX_PATH "/vifminfo.json");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

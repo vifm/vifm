@@ -11,7 +11,7 @@ set -e
 coverage_path=../vifm-coverage
 
 # cd to the root of the repository
-cd "$(readlink -f "$(dirname "$0")")/.."
+cd "$(dirname "$(readlink -f "$0")")/.."
 
 original_worktree=$(readlink -f .)
 coverage_worktree=$(readlink -f "$coverage_path")

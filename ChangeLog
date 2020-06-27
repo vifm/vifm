@@ -25,6 +25,15 @@
 	Added HardLink highlight group for regular files with more than one hard
 	link.  Patch by Hans Bieshaar.
 
+	Added 'sessionoptions' option, which is an alternative to 'vifminfo' for
+	session files.
+
+	Added :session and :delsession commands to manage sessions.  Thanks to
+	Marcos Cruz.
+
+	Added v:session builtin variable that provides name of current session or
+	is set to an empty string.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

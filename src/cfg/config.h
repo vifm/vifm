@@ -131,6 +131,9 @@ enum
 	VINFO_SAVEDIRS  = 1 << 15, /* Restore last used directories on startup. */
 	VINFO_TABS      = 1 << 16, /* Restore global or pane tabs. */
 	NUM_VINFO       = 17,      /* Number of VINFO_* constants. */
+
+	EMPTY_VINFO = 0,                   /* Empty set of flags. */
+	FULL_VINFO  = (1 << NUM_VINFO) - 1 /* Full set of flags. */
 };
 
 /* When cursor position should be adjusted according to directory history. */
@@ -159,6 +162,8 @@ typedef struct config_t
 	                                   stored. */
 	char colors_dir[PATH_MAX + 16]; /* Where local color files are stored. */
 	char data_dir[PATH_MAX + 1];    /* Where to store data files. */
+
+	char *session; /* Name of current session or NULL. */
 
 	/* This one should be set using trash_set_specs() function. */
 	char trash_dir[PATH_MAX + 64];
@@ -211,7 +216,10 @@ typedef struct config_t
 	int ignore_case;
 	int smart_case;
 	int hl_search;
-	int vifm_info;
+
+	/* Values of these two are combinations of VINFO_* flags. */
+	int vifm_info;       /* What is stored in vifminfo file. */
+	int session_options; /* What is stored in a session. */
 
 	char *shell;          /* Shell interpreter command. */
 	char *shell_cmd_flag; /* Argument for the shell to pass command. */

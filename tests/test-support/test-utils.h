@@ -54,11 +54,32 @@ void columns_setup_column(int id);
 /* Unregisters all columns and resets print function. */
 void columns_teardown(void);
 
+/* Initializes empty histories of specified size. */
+void histories_init(int size);
+
+/* Creates empty directory at specified path. */
+void create_dir(const char path[]);
+
 /* Creates file at the path. */
 void create_file(const char path[]);
 
 /* Creates executable file at the path. */
 void create_executable(const char path[]);
+
+/* Makes a file with specified contents. */
+void make_file(const char path[], const char contents[]);
+
+/* Removes empty directory at specified path. */
+void remove_dir(const char path[]);
+
+/* Removes empty directory at specified path checking that the removal fails. */
+void no_remove_dir(const char path[]);
+
+/* Removes file at specified path. */
+void remove_file(const char path[]);
+
+/* Removes empty file at specified path checking that the removal fails. */
+void no_remove_file(const char path[]);
 
 /* Either puts base/sub or cwd/base/sub into the buf.  If cwd is NULL, current
  * working directory is used. */

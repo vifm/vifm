@@ -708,5 +708,18 @@ TEST(tablabel)
 	assert_string_equal("%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t", cfg.tab_label);
 }
 
+TEST(sessionoptions)
+{
+	assert_success(exec_commands("set sessionoptions=dhistory", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(VINFO_DHISTORY, cfg.session_options);
+
+	assert_success(exec_commands("set ssop=savedirs,tui", &lwin, CIT_COMMAND));
+	assert_int_equal(VINFO_SAVEDIRS | VINFO_TUI, cfg.session_options);
+
+	assert_success(exec_commands("set ssop=", &lwin, CIT_COMMAND));
+	assert_int_equal(0, cfg.session_options);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -158,6 +158,7 @@ static void remove_bmark(const char path[], const char tags[], time_t timestamp,
 		void *arg);
 static char * get_bmark_dir(const cmd_info_t *cmd_info);
 static char * make_bmark_path(const char path[]);
+static int delsession_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int dmap_cmd(const cmd_info_t *cmd_info);
 static int dnoremap_cmd(const cmd_info_t *cmd_info);
@@ -257,6 +258,8 @@ static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
+static int session_cmd(const cmd_info_t *cmd_info);
+static int restart_into_session(const char session[]);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
@@ -451,6 +454,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "delete bookmarks",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &delbmarks_cmd,   .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "delsession",        .abbr = NULL,    .id = COM_DELSESSION,
+	  .descr = "remove a session",
+	  .flags = HAS_COMMENT,
+	  .handler = &delsession_cmd,  .min_args = 1,   .max_args = 1, },
 	{ .name = "display",           .abbr = "di",    .id = -1,
 	  .descr = "display registers",
 	  .flags = 0,
@@ -743,6 +750,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "select files matching pattern or range",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_REGEXP_ARGS,
 	  .handler = &select_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "session",           .abbr = NULL,    .id = COM_SESSION,
+	  .descr = "shows, detaches or switches active session",
+	  .flags = HAS_COMMENT | HAS_QMARK_NO_ARGS,
+	  .handler = &session_cmd,     .min_args = 0,   .max_args = 1, },
 	/* engine/options unit handles comments to resolve parsing ambiguity. */
 	{ .name = "set",               .abbr = "se",    .id = COM_SET,
 	  .descr = "set global and local options",
@@ -1998,6 +2009,27 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 			ui_sb_errf("Unknown comparison property: %s", property);
 			return 1;
 		}
+	}
+
+	return 0;
+}
+
+/* Deletes a session. */
+static int
+delsession_cmd(const cmd_info_t *cmd_info)
+{
+	const char *session_name = cmd_info->argv[0];
+
+	if(!sessions_exists(session_name))
+	{
+		ui_sb_msgf("No stored sessions with such name: %s", session_name);
+		return 1;
+	}
+
+	if(sessions_remove(session_name) != 0)
+	{
+		ui_sb_msgf("Failed to delete a session: %s", session_name);
+		return 1;
 	}
 
 	return 0;
@@ -3690,7 +3722,7 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	vifm_restart();
+	(void)restart_into_session(cfg.session);
 	return 0;
 }
 
@@ -3804,6 +3836,104 @@ select_cmd(const cmd_info_t *cmd_info)
 	}
 
 	return (error ? CMDS_ERR_CUSTOM : 0);
+}
+
+/* Displays current session, detaches from a session or switches to a (possibly
+ * new) session. */
+static int
+session_cmd(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->qmark)
+	{
+		if(sessions_active())
+		{
+			ui_sb_msgf("Active session: %s", sessions_current());
+		}
+		else
+		{
+			ui_sb_msg("No active session");
+		}
+		return 1;
+	}
+
+	if(cmd_info->argc == 0)
+	{
+		char *current = strdup(sessions_current());
+		if(sessions_stop() == 0)
+		{
+			ui_sb_msgf("Detached from session without saving: %s", current);
+			free(current);
+			return 1;
+		}
+		ui_sb_msg("No active session");
+		free(current);
+		return 1;
+	}
+
+	const char *session_name = cmd_info->argv[0];
+	if(contains_slash(session_name))
+	{
+		ui_sb_err("Session name can't include path separators");
+		return 1;
+	}
+
+	if(sessions_active())
+	{
+		if(sessions_current_is(session_name))
+		{
+			ui_sb_msgf("Already active session: %s", session_name);
+			return 1;
+		}
+
+		state_store();
+	}
+
+	if(sessions_create(session_name) == 0)
+	{
+		ui_sb_msgf("Switched to a new session: %s", sessions_current());
+		return 1;
+	}
+
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+	if(restart_into_session(session_name) != 0)
+	{
+		if(sessions_active())
+		{
+			ui_sb_errf("Session switching has failed, active session: %s",
+					sessions_current());
+		}
+		else
+		{
+			ui_sb_err("Session switching has failed, no active session");
+		}
+		return 1;
+	}
+
+	ui_sb_msgf("Loaded session: %s", sessions_current());
+	return 1;
+}
+
+/* Performs restart and optional (re)loading of a session.  Returns zero on
+ * success, otherwise non-zero is returned. */
+static int
+restart_into_session(const char session[])
+{
+	vifm_start_restart();
+
+	int result;
+	if(session == NULL)
+	{
+		state_load(1);
+		result = 0;
+	}
+	else
+	{
+		result = sessions_load(session);
+	}
+
+	vifm_finish_restart();
+	return result;
 }
 
 /* Updates/displays global and local options. */
@@ -4781,7 +4911,7 @@ winrun(view_t *view, const char cmd[])
 static int
 write_cmd(const cmd_info_t *cmd_info)
 {
-	write_info_file();
+	state_store();
 	return 0;
 }
 

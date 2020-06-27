@@ -23,12 +23,17 @@
 
 struct view_t;
 
-/* Resets internal state and reloads configuration files. */
-void vifm_restart(void);
+/* Resets internal state to default/empty value. */
+void vifm_start_restart(void);
+
+/* Loads color scheme, processes configuration file and so on to finish restart.
+ * Does NOT load state of the application, it's expected to be done between
+ * calls to vifm_start_restart() and this function. */
+void vifm_finish_restart(void);
 
 /* Tries to quit fully initialized vifm.  Might fail if background tasks are
  * present and user chooses not to stop them. */
-void vifm_try_leave(int write_info, int cquit, int force);
+void vifm_try_leave(int store_state, int cquit, int force);
 
 /* Communicates chosen files to something external. */
 void _gnuc_noreturn vifm_choose_files(struct view_t *view, int nfiles,

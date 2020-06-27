@@ -39,6 +39,8 @@
 	} \
 	while (0)
 
+#define ASSERT_NO_COMPLETION(initial) ASSERT_COMPLETION((initial), (initial))
+
 #define ASSERT_NEXT_MATCH(str) \
 	do \
 	{ \
@@ -185,61 +187,57 @@ TEST(test_set_completion)
 
 TEST(no_sdquoted_completion_does_nothing)
 {
-	ASSERT_COMPLETION(L"command '", L"command '");
+	ASSERT_NO_COMPLETION(L"command '");
 }
 
 TEST(spaces_escaping_leading)
 {
-	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
-	assert_success(chdir(curr_view->curr_dir));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/ begins-with-space");
 
 	ASSERT_COMPLETION(L"touch \\ ", L"touch \\ begins-with-space");
+
+	remove_file(SANDBOX_PATH "/ begins-with-space");
 }
 
-TEST(spaces_escaping_everywhere)
+/* Windows doesn't allow file names with trailing spaces. */
+TEST(spaces_escaping_everywhere, IF(not_windows))
 {
-	assert_success(chdir("../spaces-in-names"));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/ spaces everywhere ");
 
-	/* Whether trailing space is there depends on file system and OS. */
-	if(access("\\ spaces\\ everywhere\\ ", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere\\ ");
-	}
-	/* Only one condition is true, but don't use else to make one of asserts fail
-	 * if there are two files somehow. */
-	if(access("\\ spaces\\ everywhere", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere");
-	}
+	ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere\\ ");
+
+	remove_file(SANDBOX_PATH "/ spaces everywhere ");
 }
 
-TEST(spaces_escaping_trailing)
+/* Windows doesn't allow file names with trailing spaces. */
+TEST(spaces_escaping_trailing, IF(not_windows))
 {
-	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
-	assert_success(chdir(curr_view->curr_dir));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/ends-with-space ");
 
-	/* Whether trailing space is there depends on file system and OS. */
-	if(access("ends-with-space\\ ", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch e", L"touch ends-with-space\\ ");
-	}
-	/* Only one condition is true, but don't use else to make one of asserts fail
-	 * if there are too files somehow. */
-	if(access("ends-with-space", F_OK) == 0)
-	{
-		ASSERT_COMPLETION(L"touch e", L"touch ends-with-space");
-	}
+	ASSERT_COMPLETION(L"touch e", L"touch ends-with-space\\ ");
+
+	remove_file(SANDBOX_PATH "/ends-with-space ");
 }
 
 TEST(spaces_escaping_middle)
 {
-	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
-	assert_success(chdir(curr_view->curr_dir));
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(saved_cwd));
+	create_file(SANDBOX_PATH "/spaces in the middle");
 
 	ASSERT_COMPLETION(L"touch s", L"touch spaces\\ in\\ the\\ middle");
+
+	remove_file(SANDBOX_PATH "/spaces in the middle");
 }
 
 TEST(squoted_completion)
@@ -258,7 +256,7 @@ TEST(squoted_completion_escaping)
 
 TEST(dquoted_completion)
 {
-	ASSERT_COMPLETION(L"touch 'b", L"touch 'b");
+	ASSERT_COMPLETION(L"touch \"", L"touch \"a");
 }
 
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
@@ -365,7 +363,7 @@ TEST(percent_completion)
 
 	/* Two percent symbols. */
 
-	ASSERT_COMPLETION(L"cd %%", L"cd %%");
+	ASSERT_NO_COMPLETION(L"cd %%");
 	ASSERT_NEXT_MATCH("%%");
 	ASSERT_NEXT_MATCH("%%");
 
@@ -384,7 +382,7 @@ TEST(abbreviations)
 	ASSERT_COMPLETION(L"cabbrev l", L"cabbrev lhs");
 	ASSERT_COMPLETION(L"cnoreabbrev l", L"cnoreabbrev lhs");
 	ASSERT_COMPLETION(L"cunabbrev l", L"cunabbrev lhs");
-	ASSERT_COMPLETION(L"cabbrev l l", L"cabbrev l l");
+	ASSERT_NO_COMPLETION(L"cabbrev l l");
 
 	vle_abbr_reset();
 }
@@ -479,7 +477,7 @@ TEST(bmark_tags_are_completed)
 
 	ASSERT_COMPLETION(L"bmark tag", L"bmark tag1");
 	ASSERT_COMPLETION(L"bmark! fake/path2 tag", L"bmark! fake/path2 tag1");
-	ASSERT_COMPLETION(L"bmark! fake/path2 ../", L"bmark! fake/path2 ../");
+	ASSERT_NO_COMPLETION(L"bmark! fake/path2 ../");
 	ASSERT_COMPLETION(L"bmark! fake/path2 ", L"bmark! fake/path2 tag1");
 }
 
@@ -492,7 +490,7 @@ TEST(bmark_path_is_completed)
 	assert_success(chdir(curr_view->curr_dir));
 	create_executable("exec-for-completion" EXE_SUFFIX);
 
-	/* ASSERT_COMPLETION(L"bmark! exec", L"bmark! exec-for-completion" EXE_SUFFIX); */
+	ASSERT_COMPLETION(L"bmark! exec", L"bmark! exec-for-completion" EXE_SUFFIX);
 
 	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
 }
@@ -503,13 +501,13 @@ TEST(delbmark_tags_are_completed)
 
 	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
 
-	ASSERT_COMPLETION(L"delbmark ../", L"delbmark ../");
+	ASSERT_COMPLETION(L"delbmark ta", L"delbmark tag1");
 }
 
 TEST(selective_sync_completion)
 {
 	ASSERT_COMPLETION(L"sync! a", L"sync! all");
-	ASSERT_COMPLETION(L"sync! ../", L"sync! ../");
+	ASSERT_NO_COMPLETION(L"sync! ../");
 }
 
 TEST(colorscheme_completion)
@@ -519,7 +517,7 @@ TEST(colorscheme_completion)
 	ASSERT_COMPLETION(L"colorscheme set-", L"colorscheme set-env");
 	ASSERT_COMPLETION(L"colorscheme set-env ../",
 			L"colorscheme set-env ../color-schemes/");
-	ASSERT_COMPLETION(L"colorscheme ../", L"colorscheme ../");
+	ASSERT_NO_COMPLETION(L"colorscheme ../");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
@@ -530,13 +528,13 @@ TEST(colorscheme_completion)
 TEST(wincmd_completion)
 {
 	ASSERT_COMPLETION(L"wincmd ", L"wincmd +");
-	ASSERT_COMPLETION(L"wincmd + ", L"wincmd + ");
+	ASSERT_NO_COMPLETION(L"wincmd + ");
 }
 
 TEST(grep_completion)
 {
-	ASSERT_COMPLETION(L"grep -", L"grep -");
-	ASSERT_COMPLETION(L"grep .", L"grep .");
+	ASSERT_NO_COMPLETION(L"grep -");
+	ASSERT_NO_COMPLETION(L"grep .");
 	ASSERT_COMPLETION(L"grep -o ..", L"grep -o ../");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
@@ -550,13 +548,13 @@ TEST(find_completion)
 {
 #ifdef _WIN32
 	/* Windows escaping code doesn't prepend "./". */
-	ASSERT_COMPLETION(L"find -", L"find -");
+	ASSERT_NO_COMPLETION(L"find -");
 #else
 	ASSERT_COMPLETION(L"find -", L"find ./-");
 #endif
 
 	ASSERT_COMPLETION(L"find ..", L"find ../");
-	ASSERT_COMPLETION(L"find . .", L"find . .");
+	ASSERT_NO_COMPLETION(L"find . .");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
@@ -570,7 +568,7 @@ TEST(aucmd_events_are_completed)
 	ASSERT_COMPLETION(L"autocmd ", L"autocmd DirEnter");
 	ASSERT_COMPLETION(L"autocmd Dir", L"autocmd DirEnter");
 	ASSERT_COMPLETION(L"autocmd! Dir", L"autocmd! DirEnter");
-	ASSERT_COMPLETION(L"autocmd DirEnter ", L"autocmd DirEnter ");
+	ASSERT_NO_COMPLETION(L"autocmd DirEnter ");
 }
 
 TEST(prefixless_option_name_is_completed)
@@ -642,9 +640,9 @@ TEST(select_is_completed)
 	env_set("RRRRRARE_VARIABLE1", "1");
 	env_set("RRRRRARE_VARIABLE2", "2");
 
-	ASSERT_COMPLETION(L"select $RRRRRARE_VARIA", L"select $RRRRRARE_VARIA");
-	ASSERT_COMPLETION(L"select !/$RRRRRARE_VARIA", L"select !/$RRRRRARE_VARIA");
-	ASSERT_COMPLETION(L"select !cmd some-arg", L"select !cmd some-arg");
+	ASSERT_NO_COMPLETION(L"select $RRRRRARE_VARIA");
+	ASSERT_NO_COMPLETION(L"select !/$RRRRRARE_VARIA");
+	ASSERT_NO_COMPLETION(L"select !cmd some-arg");
 
 	/* Check that not memory violations occur here. */
 	prepare_for_line_completion(L"select !cmd ");
@@ -706,6 +704,70 @@ TEST(non_latin_prefix_does_not_break_completion, IF(utf8_locale))
 
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"абвгд | set all", stats.line);
+}
+
+TEST(session_is_completed)
+{
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "",
+			saved_cwd);
+
+	create_dir(SANDBOX_PATH "/sessions");
+	create_dir(SANDBOX_PATH "/sessions/subdir.json");
+	create_file(SANDBOX_PATH "/sessions/subdir.json/file.json");
+	create_file(SANDBOX_PATH "/sessions/session-a.json");
+	create_file(SANDBOX_PATH "/sessions/session-b.json");
+
+	ASSERT_COMPLETION(L"session ", L"session session-a");
+	ASSERT_NEXT_MATCH("session-b");
+	ASSERT_NEXT_MATCH("");
+
+	ASSERT_NO_COMPLETION(L"session session-a ..");
+
+	ASSERT_NO_COMPLETION(L"session! ses");
+	ASSERT_NO_COMPLETION(L"session? ses");
+
+	remove_file(SANDBOX_PATH "/sessions/session-b.json");
+	remove_file(SANDBOX_PATH "/sessions/session-a.json");
+	remove_file(SANDBOX_PATH "/sessions/subdir.json/file.json");
+	remove_dir(SANDBOX_PATH "/sessions/subdir.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+
+	cfg.config_dir[0] = '\0';
+}
+
+TEST(delsession_is_completed)
+{
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "",
+			saved_cwd);
+
+	create_dir(SANDBOX_PATH "/sessions");
+	create_dir(SANDBOX_PATH "/sessions/subdir.json");
+	create_file(SANDBOX_PATH "/sessions/subdir.json/file.json");
+	create_file(SANDBOX_PATH "/sessions/session-a.json");
+	create_file(SANDBOX_PATH "/sessions/session-b.json");
+
+	ASSERT_COMPLETION(L"delsession ", L"delsession session-a");
+	ASSERT_NEXT_MATCH("session-b");
+	ASSERT_NEXT_MATCH("");
+
+	ASSERT_NO_COMPLETION(L"delsession session-a ..");
+
+	ASSERT_NO_COMPLETION(L"delsession! ses");
+	ASSERT_NO_COMPLETION(L"delsession? ses");
+
+	remove_file(SANDBOX_PATH "/sessions/session-b.json");
+	remove_file(SANDBOX_PATH "/sessions/session-a.json");
+	remove_file(SANDBOX_PATH "/sessions/subdir.json/file.json");
+	remove_dir(SANDBOX_PATH "/sessions/subdir.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+
+	cfg.config_dir[0] = '\0';
 }
 
 static int

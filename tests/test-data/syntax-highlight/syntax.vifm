@@ -434,6 +434,13 @@ tabpreviou
 tabprevious
 cds
 hideui
+session
+delsession
+
+" the words following ":" should be highlighted as :commands
+nnoremap lhs :session
+nnoremap lhs :delsession
+nnoremap lhs :tabonly
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
@@ -469,6 +476,7 @@ hi User9
 " "mediaprg" should be highlighted as 'option'
 " "shellflagcmd" and "shcf" should be highlighted as 'option'
 " "tablabel" should be highlighted as 'option'
+" "sessionoptions" and "ssop" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -483,7 +491,7 @@ set quickview noquickview invquickview
 set syncregs
 set mediaprg
 set shellflagcmd shcf
-set tablabel
+set sessionoptions ssop
 
 " "term" should be highlighted as a function()
 echo term('cmd')

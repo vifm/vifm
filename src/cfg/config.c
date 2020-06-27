@@ -110,6 +110,8 @@ static void show_sourcing_error(const char filename[], int line_num);
 void
 cfg_init(void)
 {
+	cfg.session = NULL;
+
 	cfg.history_len = 15;
 
 	cfg.auto_execute = 0;
@@ -138,6 +140,8 @@ cfg_init(void)
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
 	cfg.vifm_info = VINFO_MARKS | VINFO_BOOKMARKS;
+	cfg.session_options = VINFO_TUI | VINFO_STATE | VINFO_TABS | VINFO_SAVEDIRS
+	                    | VINFO_DHISTORY;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
 	cfg.scroll_bind = 0;
@@ -689,8 +693,11 @@ cfg_load(void)
 	 * views. */
 	curr_stats.global_local_settings = 1;
 
-	/* Try to load global configuration. */
-	(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
+	if(curr_stats.load_stage >= 0)
+	{
+		/* Try to load global configuration. */
+		(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
+	}
 
 	/* Try to load local configuration. */
 	rc = env_get(MYVIFMRC_EV);

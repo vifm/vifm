@@ -1,13 +1,27 @@
+#include "stubs.h"
+
 #include <stdlib.h> /* abort() */
 
-#include "../../src/ui/ui.h"
+#include "../../src/vifm.h"
+
+struct view_t;
 
 int vifm_tests_exited;
+void (*vifm_tests_finish_restart_hook)(void);
 
 void
-vifm_restart(void)
+vifm_start_restart(void)
 {
 	/* Do nothing. */
+}
+
+void
+vifm_finish_restart(void)
+{
+	if(vifm_tests_finish_restart_hook != NULL)
+	{
+		vifm_tests_finish_restart_hook();
+	}
 }
 
 void
@@ -17,21 +31,21 @@ vifm_try_leave(int write_info, int cquit, int force)
 }
 
 void
-vifm_choose_files(view_t *view, int nfiles, char *files[])
+vifm_choose_files(struct view_t *view, int nfiles, char *files[])
 {
 	abort();
 }
 
 void
-vifm_finish(const view_t *view, int nfiles, char *files[])
+vifm_finish(const char message[])
 {
-	/* Do nothing. */
+	abort();
 }
 
 void
 vifm_exit(int exit_code)
 {
-	/* Do nothing. */
+	abort();
 }
 
 int

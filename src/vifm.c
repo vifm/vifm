@@ -233,7 +233,7 @@ vifm_main(int argc, char *argv[])
 	{
 		/* vifminfo must be processed this early so that it can restore last visited
 		 * directory. */
-		read_info_file(0);
+		state_load(0);
 	}
 
 	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
@@ -524,7 +524,7 @@ load_scheme(void)
 }
 
 void
-vifm_restart(void)
+vifm_start_restart(void)
 {
 	view_t *tmp_view;
 
@@ -578,7 +578,11 @@ vifm_restart(void)
 	update_path_env(1);
 
 	reset_views();
-	read_info_file(1);
+}
+
+void
+vifm_finish_restart(void)
+{
 	flist_hist_save(&lwin);
 	flist_hist_save(&rwin);
 
@@ -624,7 +628,7 @@ exec_startup_commands(const args_t *args)
 }
 
 void
-vifm_try_leave(int write_info, int cquit, int force)
+vifm_try_leave(int store_state, int cquit, int force)
 {
 	if(!force && bg_has_active_jobs(1))
 	{
@@ -637,9 +641,9 @@ vifm_try_leave(int write_info, int cquit, int force)
 
 	fuse_unmount_all();
 
-	if(write_info)
+	if(store_state)
 	{
-		write_info_file();
+		state_store();
 	}
 
 	if(stats_file_choose_action_set())
@@ -679,7 +683,7 @@ vifm_choose_files(view_t *view, int nfiles, char *files[])
 		exit_code = EXIT_FAILURE;
 	}
 
-	write_info_file();
+	state_store();
 
 	vifm_leave(exit_code, 0);
 }
@@ -712,7 +716,7 @@ vifm_finish(const char message[])
 	 * default value of 'vifminfo' option. */
 	if(curr_stats.load_stage == 3)
 	{
-		write_info_file();
+		state_store();
 	}
 
 	fprintf(stderr, "%s\n", message);

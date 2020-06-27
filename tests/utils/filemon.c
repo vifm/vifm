@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <sys/time.h> /* timeval utimes() */
-
 #include <stdio.h> /* FILE fclose() fopen() */
 
 #include <test-utils.h>
@@ -11,6 +9,13 @@
 TEST(uninitialized_is_not_equal_even_to_itself)
 {
 	filemon_t mon = {};
+	assert_false(filemon_equal(&mon, &mon));
+}
+
+TEST(reset_filemon_is_not_equal_even_to_itself)
+{
+	filemon_t mon;
+	filemon_reset(&mon);
 	assert_false(filemon_equal(&mon, &mon));
 }
 
@@ -54,7 +59,7 @@ TEST(equal_after_assignment)
 	assert_true(filemon_equal(&mon1, &mon2));
 }
 
-TEST(modification_is_detected, IF(not_windows))
+TEST(modification_is_detected)
 {
 	FILE *f = fopen(SANDBOX_PATH "/file", "w");
 	fclose(f);
@@ -62,15 +67,24 @@ TEST(modification_is_detected, IF(not_windows))
 	filemon_t mon1;
 	filemon_from_file(SANDBOX_PATH "/file", FMT_MODIFIED, &mon1);
 
-#ifndef _WIN32
-	struct timeval tvs[2] = {};
-	assert_success(utimes(SANDBOX_PATH "/file", tvs));
-#endif
+	reset_timestamp(SANDBOX_PATH "/file");
 
 	filemon_t mon2;
 	filemon_from_file(SANDBOX_PATH "/file", FMT_MODIFIED, &mon2);
 
 	assert_false(filemon_equal(&mon1, &mon2));
+}
+
+TEST(failed_read_from_file_resets_filemon)
+{
+	filemon_t mon = {};
+	assert_success(filemon_from_file(TEST_DATA_PATH "/existing-files/a",
+				FMT_MODIFIED, &mon));
+	assert_true(filemon_equal(&mon, &mon));
+
+	assert_failure(filemon_from_file("there/is/no/such/file", FMT_MODIFIED,
+				&mon));
+	assert_false(filemon_equal(&mon, &mon));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
