@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 25
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5308,25 +5308,6 @@ Current session is saved at the same time vifminfo is saved (on normal exits
 or explicitly on |vifm-:write| command) and right before switching to another
 session.  To avoid saving in those cases use |vifm-:session| command to detach
 (without saving) from a session before proceeding.
-
-Generic session~
-
-It might be convenient to have a separate session for everything that doesn't
-have its own session.  This avoids asymmetry of having "out-of-session" state
-use only vifminfo, while sessions use both vifminfo and session files, which
-can affect what's preserved (depends on values of |vifm-'vifminfo'| and
-|vifm-'sessionoptions'|) or how things are merged (sessions can store their
-histories to vifminfo ordering them higher than "out-of-session" changes).
-
-To enter the "generic" (name is just an example) session automatically
-put this at the very end of your |vifm-vifmrc| file. >
-
-    if v:session == ''
-        session generic
-    endif
-
-Putting it at the top and adding |vifm-:finish| will prevent proper
-initialization of this session.
 
 Related topics~
 
