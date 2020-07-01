@@ -34,6 +34,10 @@
 	Added v:session builtin variable that provides name of current session or
 	is set to an empty string.
 
+	Added global Default-256 color scheme to be used in terminals that support
+	256-color palette (automatically in sample vifmrc).  Thanks to Shakil
+	Akhtar.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

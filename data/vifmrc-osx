@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 23 May, 2020)
+" Sample configuration file for vifm on OSX (last updated: 2 July, 2020)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -62,9 +62,9 @@ set vimhelp
 
 set norunexec
 
-" Selected color scheme
+" List of color schemes to try (picks the first one supported by the terminal)
 
-colorscheme Default
+colorscheme Default-256 Default
 
 " Format for displaying time in file list. For example:
 " TIME_STAMP_FORMAT=%m/%d-%H:%M
