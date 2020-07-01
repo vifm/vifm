@@ -380,10 +380,8 @@ TEST(left_view_mode_is_fine_with_tabs)
 
 TEST(hidden_tabs_are_updated_on_cs_invalidation)
 {
-	char cwd[PATH_MAX + 1], sandbox[PATH_MAX + 1], cs[PATH_MAX + 1];
-	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
-	make_abs_path(cs, sizeof(cs), TEST_DATA_PATH, "color-schemes", cwd);
+	char cs[PATH_MAX + 1];
+	make_abs_path(cs, sizeof(cs), TEST_DATA_PATH, "color-schemes", NULL);
 
 	strcpy(lwin.curr_dir, cs);
 	assert_success(populate_dir_list(&lwin, 0));
