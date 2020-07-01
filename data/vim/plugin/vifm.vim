@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 June 22
+" Last Change: 2020 July 1
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -162,6 +162,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 
 			let oldbuf = bufname('%')
 			execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
+			setlocal nonumber norelativenumber
 			execute bufnr(oldbuf).'bwipeout'
 			" Use execute to not break highlighting.
 			execute 'startinsert'
