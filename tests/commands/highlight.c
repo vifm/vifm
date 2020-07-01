@@ -1,11 +1,17 @@
 #include <stic.h>
 
+#include <limits.h> /* INT_MAX */
+#include <string.h> /* strcpy() */
+
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/color_scheme.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/cmd_core.h"
+#include "../../src/filelist.h"
 #include "../../src/status.h"
 
 SETUP_ONCE()
@@ -260,6 +266,31 @@ TEST(incorrect_highlight_groups_are_not_added)
 	const char *const COMMANDS = "highlight {*.jpg} ctersmfg=red";
 	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.cs.file_hi_count);
+}
+
+TEST(can_color_uncolored_file)
+{
+	view_setup(&lwin);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"color-schemes", NULL);
+
+	assert_success(populate_dir_list(&lwin, 0));
+
+	curr_stats.cs = &cfg.cs;
+	curr_stats.load_stage = 2;
+
+	assert_null(cs_get_file_hi(curr_stats.cs, "some.vifm",
+				&lwin.dir_entry[0].hi_num));
+	assert_int_equal(INT_MAX, lwin.dir_entry[0].hi_num);
+
+	assert_success(exec_commands("highlight {*.vifm} cterm=bold", &lwin,
+				CIT_COMMAND));
+	assert_non_null(cs_get_file_hi(curr_stats.cs, "some.vifm",
+				&lwin.dir_entry[0].hi_num));
+	assert_int_equal(0, lwin.dir_entry[0].hi_num);
+
+	view_teardown(&lwin);
+	curr_stats.load_stage = 0;
 }
 
 TEST(tabs_are_allowed)

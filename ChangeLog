@@ -296,6 +296,9 @@
 	Fixed Default colorscheme not being available on processing sample vifmrc
 	on first run of the application.
 
+	Fixed `:highlight {new-pattern}` not being immediately applied due to
+	caching.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
