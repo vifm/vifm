@@ -307,7 +307,6 @@ vifm_main(int argc, char *argv[])
 	free_string_array(files, nfiles);
 
 	cs_load_pairs();
-	cs_write();
 	setup_signals();
 
 	if(cfg.use_trash)

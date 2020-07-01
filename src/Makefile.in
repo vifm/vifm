@@ -101,12 +101,13 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 DIST_COMMON = $(srcdir)/Makefile.am $(dist_bin_SCRIPTS) \
 	$(dist_pkgdata_SCRIPTS) $(dist_bashcompl_DATA) \
 	$(dist_desktopapp_DATA) $(dist_desktoppix_DATA) \
-	$(dist_docs_DATA) $(dist_pkgdata_DATA) \
-	$(dist_vim_autoload_vifm__DATA) $(dist_vim_colors__DATA) \
-	$(dist_vim_doc__DATA) $(dist_vim_ftdetect__DATA) \
-	$(dist_vim_ftplugin__DATA) $(dist_vim_plugin__DATA) \
-	$(dist_vim_syntax__DATA) $(dist_vimdoc_doc__DATA) \
-	$(dist_zshcompl_DATA) $(am__DIST_COMMON)
+	$(dist_docs_DATA) $(dist_global_colors__DATA) \
+	$(dist_pkgdata_DATA) $(dist_sample_colors__DATA) \
+	$(dist_vim_autoload_vifm__DATA) $(dist_vim_doc__DATA) \
+	$(dist_vim_ftdetect__DATA) $(dist_vim_ftplugin__DATA) \
+	$(dist_vim_plugin__DATA) $(dist_vim_syntax__DATA) \
+	$(dist_vimdoc_doc__DATA) $(dist_zshcompl_DATA) \
+	$(am__DIST_COMMON)
 mkinstalldirs = $(SHELL) $(top_srcdir)/build-aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/build-aux/config.h
 CONFIG_CLEAN_FILES =
@@ -115,9 +116,10 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(man1dir)" \
 	"$(DESTDIR)$(bashcompldir)" "$(DESTDIR)$(desktopappdir)" \
 	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" \
-	"$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" \
-	"$(DESTDIR)$(vim_colors_dir)" "$(DESTDIR)$(vim_doc_dir)" \
-	"$(DESTDIR)$(vim_ftdetect_dir)" \
+	"$(DESTDIR)$(global_colors_dir)" "$(DESTDIR)$(pkgdatadir)" \
+	"$(DESTDIR)$(sample_colors_dir)" \
+	"$(DESTDIR)$(vim_autoload_vifm_dir)" \
+	"$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" \
 	"$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" \
 	"$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" \
 	"$(DESTDIR)$(zshcompldir)" "$(DESTDIR)$(pkgdatadir)" \
@@ -264,8 +266,9 @@ man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(dist_man_MANS)
 DATA = $(dist_bashcompl_DATA) $(dist_desktopapp_DATA) \
-	$(dist_desktoppix_DATA) $(dist_docs_DATA) $(dist_pkgdata_DATA) \
-	$(dist_vim_autoload_vifm__DATA) $(dist_vim_colors__DATA) \
+	$(dist_desktoppix_DATA) $(dist_docs_DATA) \
+	$(dist_global_colors__DATA) $(dist_pkgdata_DATA) \
+	$(dist_sample_colors__DATA) $(dist_vim_autoload_vifm__DATA) \
 	$(dist_vim_doc__DATA) $(dist_vim_ftdetect__DATA) \
 	$(dist_vim_ftplugin__DATA) $(dist_vim_plugin__DATA) \
 	$(dist_vim_syntax__DATA) $(dist_vimdoc_doc__DATA) \
@@ -581,8 +584,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 vim_dir = $(pkgdatadir)/vim
-vim_colors_dir = $(pkgdatadir)/colors
+sample_colors_dir = $(pkgdatadir)/colors
 vimdoc_dir = $(pkgdatadir)/vim-doc
+global_colors_dir = $(sysconfdir)/vifm/colors
 vim_autoload_vifm_dir = $(vim_dir)/autoload/vifm
 vim_doc_dir = $(vim_dir)/doc
 vim_ftdetect_dir = $(vim_dir)/ftdetect
@@ -591,7 +595,7 @@ vim_plugin_dir = $(vim_dir)/plugin
 vim_syntax_dir = $(vim_dir)/syntax
 vimdoc_doc_dir = $(vimdoc_dir)/doc
 dist_vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
-dist_vim_colors__DATA = ../data/colors/astrell-root.vifm \
+dist_sample_colors__DATA = ../data/colors/astrell-root.vifm \
 									 ../data/colors/astrell-user.vifm \
 									 ../data/colors/dmilith-root.vifm \
 									 ../data/colors/dmilith-user.vifm \
@@ -612,6 +616,7 @@ dist_vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
 
 dist_vim_plugin__DATA = ../data/vim/plugin/vifm.vim
 dist_vim_syntax__DATA = ../data/vim/syntax/vifm.vim
+dist_global_colors__DATA = ../data/colors/Default-256.vifm
 dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt
 nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
 dist_pkgdata_DATA = ../data/vifmrc@DATA_SUFFIX@
@@ -1602,6 +1607,27 @@ uninstall-dist_docsDATA:
 	@list='$(dist_docs_DATA)'; test -n "$(docsdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(docsdir)'; $(am__uninstall_files_from_dir)
+install-dist_global_colors_DATA: $(dist_global_colors__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_global_colors__DATA)'; test -n "$(global_colors_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(global_colors_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(global_colors_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(global_colors_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(global_colors_dir)" || exit $$?; \
+	done
+
+uninstall-dist_global_colors_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_global_colors__DATA)'; test -n "$(global_colors_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(global_colors_dir)'; $(am__uninstall_files_from_dir)
 install-dist_pkgdataDATA: $(dist_pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
@@ -1623,6 +1649,27 @@ uninstall-dist_pkgdataDATA:
 	@list='$(dist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(pkgdatadir)'; $(am__uninstall_files_from_dir)
+install-dist_sample_colors_DATA: $(dist_sample_colors__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_sample_colors__DATA)'; test -n "$(sample_colors_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(sample_colors_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(sample_colors_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(sample_colors_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(sample_colors_dir)" || exit $$?; \
+	done
+
+uninstall-dist_sample_colors_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_sample_colors__DATA)'; test -n "$(sample_colors_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(sample_colors_dir)'; $(am__uninstall_files_from_dir)
 install-dist_vim_autoload_vifm_DATA: $(dist_vim_autoload_vifm__DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_vim_autoload_vifm__DATA)'; test -n "$(vim_autoload_vifm_dir)" || list=; \
@@ -1644,27 +1691,6 @@ uninstall-dist_vim_autoload_vifm_DATA:
 	@list='$(dist_vim_autoload_vifm__DATA)'; test -n "$(vim_autoload_vifm_dir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(vim_autoload_vifm_dir)'; $(am__uninstall_files_from_dir)
-install-dist_vim_colors_DATA: $(dist_vim_colors__DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(dist_vim_colors__DATA)'; test -n "$(vim_colors_dir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(vim_colors_dir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(vim_colors_dir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(vim_colors_dir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(vim_colors_dir)" || exit $$?; \
-	done
-
-uninstall-dist_vim_colors_DATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_vim_colors__DATA)'; test -n "$(vim_colors_dir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(vim_colors_dir)'; $(am__uninstall_files_from_dir)
 install-dist_vim_doc_DATA: $(dist_vim_doc__DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_vim_doc__DATA)'; test -n "$(vim_doc_dir)" || list=; \
@@ -2127,7 +2153,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompldir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_colors_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" "$(DESTDIR)$(zshcompldir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompldir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" "$(DESTDIR)$(global_colors_dir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(sample_colors_dir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" "$(DESTDIR)$(zshcompldir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -2211,10 +2237,10 @@ info-am:
 
 install-data-am: install-dist_bashcomplDATA \
 	install-dist_desktopappDATA install-dist_desktoppixDATA \
-	install-dist_docsDATA install-dist_pkgdataDATA \
-	install-dist_pkgdataSCRIPTS \
-	install-dist_vim_autoload_vifm_DATA \
-	install-dist_vim_colors_DATA install-dist_vim_doc_DATA \
+	install-dist_docsDATA install-dist_global_colors_DATA \
+	install-dist_pkgdataDATA install-dist_pkgdataSCRIPTS \
+	install-dist_sample_colors_DATA \
+	install-dist_vim_autoload_vifm_DATA install-dist_vim_doc_DATA \
 	install-dist_vim_ftdetect_DATA install-dist_vim_ftplugin_DATA \
 	install-dist_vim_plugin_DATA install-dist_vim_syntax_DATA \
 	install-dist_vimdoc_doc_DATA install-dist_zshcomplDATA \
@@ -2267,10 +2293,11 @@ ps-am:
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_bashcomplDATA \
 	uninstall-dist_binSCRIPTS uninstall-dist_desktopappDATA \
 	uninstall-dist_desktoppixDATA uninstall-dist_docsDATA \
-	uninstall-dist_pkgdataDATA uninstall-dist_pkgdataSCRIPTS \
+	uninstall-dist_global_colors_DATA uninstall-dist_pkgdataDATA \
+	uninstall-dist_pkgdataSCRIPTS \
+	uninstall-dist_sample_colors_DATA \
 	uninstall-dist_vim_autoload_vifm_DATA \
-	uninstall-dist_vim_colors_DATA uninstall-dist_vim_doc_DATA \
-	uninstall-dist_vim_ftdetect_DATA \
+	uninstall-dist_vim_doc_DATA uninstall-dist_vim_ftdetect_DATA \
 	uninstall-dist_vim_ftplugin_DATA \
 	uninstall-dist_vim_plugin_DATA uninstall-dist_vim_syntax_DATA \
 	uninstall-dist_vimdoc_doc_DATA uninstall-dist_zshcomplDATA \
@@ -2289,9 +2316,9 @@ uninstall-man: uninstall-man1
 	install-data install-data-am install-dist_bashcomplDATA \
 	install-dist_binSCRIPTS install-dist_desktopappDATA \
 	install-dist_desktoppixDATA install-dist_docsDATA \
-	install-dist_pkgdataDATA install-dist_pkgdataSCRIPTS \
-	install-dist_vim_autoload_vifm_DATA \
-	install-dist_vim_colors_DATA install-dist_vim_doc_DATA \
+	install-dist_global_colors_DATA install-dist_pkgdataDATA \
+	install-dist_pkgdataSCRIPTS install-dist_sample_colors_DATA \
+	install-dist_vim_autoload_vifm_DATA install-dist_vim_doc_DATA \
 	install-dist_vim_ftdetect_DATA install-dist_vim_ftplugin_DATA \
 	install-dist_vim_plugin_DATA install-dist_vim_syntax_DATA \
 	install-dist_vimdoc_doc_DATA install-dist_zshcomplDATA \
@@ -2307,10 +2334,11 @@ uninstall-man: uninstall-man1
 	uninstall-binPROGRAMS uninstall-dist_bashcomplDATA \
 	uninstall-dist_binSCRIPTS uninstall-dist_desktopappDATA \
 	uninstall-dist_desktoppixDATA uninstall-dist_docsDATA \
-	uninstall-dist_pkgdataDATA uninstall-dist_pkgdataSCRIPTS \
+	uninstall-dist_global_colors_DATA uninstall-dist_pkgdataDATA \
+	uninstall-dist_pkgdataSCRIPTS \
+	uninstall-dist_sample_colors_DATA \
 	uninstall-dist_vim_autoload_vifm_DATA \
-	uninstall-dist_vim_colors_DATA uninstall-dist_vim_doc_DATA \
-	uninstall-dist_vim_ftdetect_DATA \
+	uninstall-dist_vim_doc_DATA uninstall-dist_vim_ftdetect_DATA \
 	uninstall-dist_vim_ftplugin_DATA \
 	uninstall-dist_vim_plugin_DATA uninstall-dist_vim_syntax_DATA \
 	uninstall-dist_vimdoc_doc_DATA uninstall-dist_zshcomplDATA \

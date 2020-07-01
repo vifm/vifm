@@ -46,6 +46,7 @@
 #include "../int/term_title.h"
 #include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
+#include "../ui/color_scheme.h"
 #include "../ui/statusbar.h"
 #include "../ui/tabs.h"
 #include "../ui/ui.h"
@@ -590,6 +591,7 @@ setup_dirs(void)
 
 	copy_help_file();
 	copy_rc_file();
+	cs_write();
 
 	/* Ensure that just copied sample vifmrc file is used right away. */
 	snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);

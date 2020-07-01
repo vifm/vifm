@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 25, 2020" "vifm 0.10.1"
+.TH VIFM 1 "June 30, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6257,27 +6257,6 @@ Current session is saved at the same time vifminfo is saved (on normal exits
 or explicitly on :write command) and right before switching to another
 session.  To avoid saving in those cases use :session command to detach
 (without saving) from a session before proceeding.
-
-.B Generic session
-
-It might be convenient to have a separate session for everything that doesn't
-have its own session.  This avoids asymmetry of having "out-of-session" state
-use only vifminfo, while sessions use both vifminfo and session files, which
-can affect what's preserved (depends on values of 'vifminfo' and
-\(aqsessionoptions\(aq) or how things are merged (sessions can store their
-histories to vifminfo ordering them higher than "out-of-session" changes).
-
-To enter the "generic" (name is just an example) session automatically
-put this at the very end of your vifmrc file.
-
-.EX
-    if v:session == ''
-        session generic
-    endif
-.EE
-
-Putting it at the top and adding :finish will prevent proper
-initialization of this session.
 
 .B Related topics
 

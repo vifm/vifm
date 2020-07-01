@@ -2712,8 +2712,14 @@ highlight_file(const cmd_info_t *cmd_info)
 	}
 
 	cs_add_file_hi(matchers, &color);
+	/* We don't need to invalidate anything on startup and while loading a color
+	 * scheme. */
+	if(curr_stats.load_stage > 1 && curr_stats.cs->state != CSS_LOADING)
+	{
+		ui_invalidate_cs(curr_stats.cs);
+	}
 
-	/* Redraw is enough to update filename specific highlights. */
+	/* Redraw to update filename specific highlights. */
 	stats_redraw_later();
 
 	return result;
