@@ -2440,6 +2440,8 @@ add_to_trie(trie_t *trie, view_t *view, dir_entry_t *entry)
 
 	if(trie_set(trie, entry->name, entry) != 0)
 	{
+		LOG_INFO_MSG("Duplicated entry is `%s` in `%s`", entry->name,
+				entry->origin);
 		entry->temporary = 1;
 		view->has_dups = 1;
 	}
