@@ -31,6 +31,7 @@
 #include "utils/matchers.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/path.h"
 #include "utils/utils.h"
 
 static const char * find_existing_cmd(const assoc_list_t *record_list,
@@ -92,6 +93,7 @@ ft_exists(const char cmd[])
 
 	char cmd_name[NAME_MAX + 1];
 	(void)extract_cmd_name(cmd, 0, sizeof(cmd_name), cmd_name);
+	system_to_internal_slashes(cmd_name);
 	return external_command_exists_func(cmd_name);
 }
 
