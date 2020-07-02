@@ -24,6 +24,8 @@
 #include <fcntl.h>
 #include <sys/stat.h> /* stat umask() */
 #include <sys/types.h> /* mode_t */
+#include <time.h> /* clock_gettime() */
+#include <math.h> /* pow() */
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
@@ -103,10 +105,12 @@ progress_data_t;
 
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
+static unsigned long long calc_io_rate(const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
+static char * format_io_rate(unsigned long long rate);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
@@ -225,6 +229,44 @@ calc_io_progress(const io_progress_t *state, int *skip)
 	}
 }
 
+/* Calculates rate of operation. */
+static unsigned long long
+calc_io_rate(const ioeta_estim_t *estim)
+{
+	struct timespec current_time;
+	/* Current time in milliseconds */
+	long current_time_ms = 0;
+	/* Elapsed time in milliseconds */
+	long elapsed_time_ms = 0;
+	unsigned long long bytes_difference = 0;
+	/* Rate in bytes per millisecond */
+	static unsigned long long rate = 0;
+	/* Time of last rate calculation */
+	static long last_calc_time = 0;
+	static unsigned long long previous_byte = 0;
+
+	clock_gettime(CLOCK_MONOTONIC, &current_time);
+
+	/* Current time in milliseconds */
+	current_time_ms = current_time.tv_sec * 1000 + current_time.tv_nsec / 1000000;
+
+	elapsed_time_ms = current_time_ms - last_calc_time;
+
+	/* Calculate rate each 3000 milliseconds */
+	if (elapsed_time_ms > 3000 || rate == 0)
+	{
+		if (estim->current_byte > previous_byte)
+			bytes_difference = estim->current_byte - previous_byte;
+		last_calc_time = current_time_ms;
+		/* Bytes per millisecond */
+		rate = bytes_difference / elapsed_time_ms;
+		previous_byte = estim->current_byte;
+	}
+
+	/* Convert bytes per millisecond to bytes per second */
+	return rate * 1000;
+}
+
 /* Takes care of progress for foreground operations. */
 static void
 io_progress_fg(const io_progress_t *state, int progress)
@@ -303,17 +345,19 @@ io_progress_fg(const io_progress_t *state, int progress)
 	{
 		char *const file_progress = format_file_progress(estim, IO_PRECISION);
 
+		char *rate_str = format_io_rate(calc_io_rate(estim));
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
-				"Overall:  %s/%s (%2d%%)\n"
+				"Overall:  %s/%s (%2d%%) %s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
 				replace_home_part(ops->target_dir), item_num,
 				(unsigned long long)estim->total_items, current_size_str,
-				total_size_str, progress/IO_PRECISION, item_name, src_path, as_part,
+				total_size_str, progress/IO_PRECISION, rate_str, item_name, src_path, as_part,
 				file_progress);
 
 		free(file_progress);
+		free(rate_str);
 	}
 	pdata->width = getmaxx(error_win);
 
@@ -413,6 +457,27 @@ format_file_progress(const ioeta_estim_t *estim, int precision)
 
 	return format_str("\nprogress %s/%s (%2d%%)", current_size, total_size,
 			file_progress/precision);
+}
+
+/* Formats file progress rate */
+static char *
+format_io_rate(unsigned long long rate)
+{
+	char* formated_rate = NULL;
+	const unsigned long kilo = pow(2, 10);
+	const unsigned long mega = pow(2, 20);
+	const unsigned long giga = pow(2, 30);
+
+	if (rate >= mega && rate < giga)
+		formated_rate = format_str("%llu MB/s", (rate / mega));
+	else if (rate >= kilo && rate < mega)
+		formated_rate = format_str("%llu KB/s", (rate / kilo));
+	else if (rate >= giga)
+		formated_rate = format_str("%llu GB/s", (rate / giga));
+	else
+		formated_rate = format_str("%llu B/s", rate);
+
+	return formated_rate;
 }
 
 /* Pretty prints path shortening it by skipping base directory path if
