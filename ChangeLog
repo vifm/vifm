@@ -309,6 +309,9 @@
 	backslashes are present in path.  Thanks to anonymous and n.e. at Vifm Q2A
 	site.
 
+	Fixed running tests on OS X, which were broken due to `/home/` being a
+	symbolic link.  Thanks to Jason Dreisbach (a.k.a. jtdreisb).
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
