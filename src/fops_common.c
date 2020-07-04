@@ -116,7 +116,6 @@ static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
-static char * format_io_rate(unsigned long long rate);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
@@ -263,7 +262,11 @@ update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
 		pdata->rate = bytes_difference / elapsed_time_ms;
 		pdata->last_seen_byte = estim->current_byte;
 
-		put_string(&pdata->rate_str, format_io_rate(pdata->rate*1000));
+		char rate_str[64];
+		(void)friendly_size_notation(pdata->rate*1000, sizeof(rate_str) - 8,
+				rate_str);
+		strcat(rate_str, "/s");
+		replace_string(&pdata->rate_str, rate_str);
 	}
 }
 
@@ -457,27 +460,6 @@ format_file_progress(const ioeta_estim_t *estim, int precision)
 
 	return format_str("\nprogress %s/%s (%2d%%)", current_size, total_size,
 			file_progress/precision);
-}
-
-/* Formats file progress rate */
-static char *
-format_io_rate(unsigned long long rate)
-{
-	char* formated_rate = NULL;
-	const unsigned long kilo = pow(2, 10);
-	const unsigned long mega = pow(2, 20);
-	const unsigned long giga = pow(2, 30);
-
-	if (rate >= mega && rate < giga)
-		formated_rate = format_str("%llu MB/s", (rate / mega));
-	else if (rate >= kilo && rate < mega)
-		formated_rate = format_str("%llu KB/s", (rate / kilo));
-	else if (rate >= giga)
-		formated_rate = format_str("%llu GB/s", (rate / giga));
-	else
-		formated_rate = format_str("%llu B/s", rate);
-
-	return formated_rate;
 }
 
 /* Pretty prints path shortening it by skipping base directory path if
