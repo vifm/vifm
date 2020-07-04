@@ -38,6 +38,8 @@
 	256-color palette (automatically in sample vifmrc).  Thanks to Shakil
 	Akhtar.
 
+	Added rate to progress dialog.  Patch by Alborz Jafari.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

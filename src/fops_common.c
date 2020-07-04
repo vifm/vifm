@@ -21,14 +21,15 @@
 
 #include <regex.h>
 
-#include <fcntl.h>
 #include <sys/stat.h> /* stat umask() */
 #include <sys/types.h> /* mode_t */
+#include <fcntl.h>
+#include <unistd.h> /* unlink() */
+
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
 #endif
-#include <unistd.h> /* unlink() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -36,7 +37,8 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
-#include <string.h> /* memcmp() strcmp() strdup() strlen() */
+#include <string.h> /* memcmp() strcat() strcmp() strdup() strlen() */
+#include <time.h> /* clock_gettime() */
 
 #include "cfg/config.h"
 #include "compat/dtype.h"
@@ -94,6 +96,12 @@ typedef struct
 	int last_progress; /* Progress of the operation during previous call. */
 	IoPs last_stage;   /* Stage of the operation during previous call. */
 
+	/* State of rate calculation. */
+	long long last_calc_time; /* Time of last rate calculation. */
+	uint64_t last_seen_byte;  /* Position at the time of last call. */
+	uint64_t rate;            /* Rate in bytes per millisecond. */
+	char *rate_str;           /* Rate formatted as a string. */
+
 	/* Whether progress is displayed in a dialog, rather than on status bar. */
 	int dialog;
 
@@ -103,6 +111,7 @@ progress_data_t;
 
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
+static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
@@ -112,6 +121,7 @@ static void format_pretty_path(const char base_dir[], const char path[],
 static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
 static progress_data_t * alloc_progress_data(int bg, void *info);
+static long long time_in_ms(void);
 
 line_prompt_func fops_line_prompt;
 options_prompt_func fops_options_prompt;
@@ -225,6 +235,32 @@ calc_io_progress(const io_progress_t *state, int *skip)
 	}
 }
 
+/* Updates rate of operation. */
+static void
+update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
+{
+	long long current_time_ms = time_in_ms();
+	long long elapsed_time_ms = current_time_ms - pdata->last_calc_time;
+
+	if(elapsed_time_ms == 0 ||
+			(pdata->last_seen_byte != 0 && elapsed_time_ms < 3000))
+	{
+		/* Rate is updated initially and then once in 3000 milliseconds. */
+		return;
+	}
+
+	uint64_t bytes_difference = estim->current_byte - pdata->last_seen_byte;
+	pdata->rate = bytes_difference/elapsed_time_ms;
+	pdata->last_calc_time = current_time_ms;
+	pdata->last_seen_byte = estim->current_byte;
+
+	char rate_str[64];
+	(void)friendly_size_notation(pdata->rate*1000, sizeof(rate_str) - 8,
+			rate_str);
+	strcat(rate_str, "/s");
+	replace_string(&pdata->rate_str, rate_str);
+}
+
 /* Takes care of progress for foreground operations. */
 static void
 io_progress_fg(const io_progress_t *state, int progress)
@@ -287,17 +323,19 @@ io_progress_fg(const io_progress_t *state, int progress)
 
 	item_num = MIN(estim->current_item + 1, estim->total_items);
 
+	update_io_rate(pdata, estim);
+
 	if(progress < 0)
 	{
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
-				"Overall:  %s\n"
+				"Overall:  %s %s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s",
 				replace_home_part(ops->target_dir), item_num,
-				(unsigned long long)estim->total_items, total_size_str, item_name,
-				src_path, as_part);
+				(unsigned long long)estim->total_items, total_size_str, pdata->rate_str,
+				item_name, src_path, as_part);
 	}
 	else
 	{
@@ -305,13 +343,13 @@ io_progress_fg(const io_progress_t *state, int progress)
 
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
-				"Overall:  %s/%s (%2d%%)\n"
+				"Overall:  %s/%s (%2d%%) %s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
 				replace_home_part(ops->target_dir), item_num,
 				(unsigned long long)estim->total_items, current_size_str,
-				total_size_str, progress/IO_PRECISION, item_name, src_path, as_part,
-				file_progress);
+				total_size_str, progress/IO_PRECISION, pdata->rate_str, item_name,
+				src_path, as_part, file_progress);
 
 		free(file_progress);
 	}
@@ -830,10 +868,30 @@ alloc_progress_data(int bg, void *info)
 
 	pdata->last_progress = -1;
 	pdata->last_stage = (IoPs)-1;
+
+	/* Time of starting the operation to have meaningful first rate. */
+	pdata->last_calc_time = time_in_ms();
+	pdata->last_seen_byte = 0;
+	pdata->rate = 0;
+	pdata->rate_str = strdup("? B/s");
+
 	pdata->dialog = 0;
 	pdata->width = 0;
 
 	return pdata;
+}
+
+/* Retrieves current time in milliseconds. */
+static long long
+time_in_ms(void)
+{
+	struct timespec current_time;
+	if(clock_gettime(CLOCK_MONOTONIC, &current_time) != 0)
+	{
+		return 0;
+	}
+
+	return current_time.tv_sec*1000 + current_time.tv_nsec/1000000;
 }
 
 void
@@ -859,7 +917,9 @@ fops_free_ops(ops_t *ops)
 			free(title);
 		}
 
-		free(ops->estim->param);
+		progress_data_t *pdata = ops->estim->param;
+		free(pdata->rate_str);
+		free(pdata);
 	}
 	ops_free(ops);
 }

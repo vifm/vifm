@@ -140,3 +140,5 @@ Stephen Horst (a.k.a. sjhorst) fixed adding files with spaces in their names
 as e-mail attachments in the plugin.
 
 Hans Bieshaar added HardLink highlight group.
+
+Alborz Jafari added rate to progress dialog.
