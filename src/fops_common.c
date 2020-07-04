@@ -329,23 +329,24 @@ io_progress_fg(const io_progress_t *state, int progress)
 
 	item_num = MIN(estim->current_item + 1, estim->total_items);
 
+	char *rate_str = format_io_rate(calc_io_rate(estim));
+
 	if(progress < 0)
 	{
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
-				"Overall:  %s\n"
+				"Overall:  %s %s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s",
 				replace_home_part(ops->target_dir), item_num,
-				(unsigned long long)estim->total_items, total_size_str, item_name,
-				src_path, as_part);
+				(unsigned long long)estim->total_items, total_size_str, rate_str,
+				item_name, src_path, as_part);
 	}
 	else
 	{
 		char *const file_progress = format_file_progress(estim, IO_PRECISION);
 
-		char *rate_str = format_io_rate(calc_io_rate(estim));
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
 				"Overall:  %s/%s (%2d%%) %s\n"
@@ -353,14 +354,14 @@ io_progress_fg(const io_progress_t *state, int progress)
 				"file %s\nfrom %s%s%s",
 				replace_home_part(ops->target_dir), item_num,
 				(unsigned long long)estim->total_items, current_size_str,
-				total_size_str, progress/IO_PRECISION, rate_str, item_name, src_path, as_part,
-				file_progress);
+				total_size_str, progress/IO_PRECISION, rate_str, item_name, src_path,
+				as_part, file_progress);
 
 		free(file_progress);
-		free(rate_str);
 	}
 	pdata->width = getmaxx(error_win);
 
+	free(rate_str);
 	free(as_part);
 }
 
