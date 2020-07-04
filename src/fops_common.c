@@ -96,6 +96,11 @@ typedef struct
 	int last_progress; /* Progress of the operation during previous call. */
 	IoPs last_stage;   /* Stage of the operation during previous call. */
 
+	/* State of rate calculation. */
+	long last_calc_time;     /* Time of last rate calculation. */
+	uint64_t last_seen_byte; /* Position at the time of last call. */
+	uint64_t rate;           /* Rate in bytes per millisecond. */
+
 	/* Whether progress is displayed in a dialog, rather than on status bar. */
 	int dialog;
 
@@ -105,7 +110,7 @@ progress_data_t;
 
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
-static unsigned long long calc_io_rate(const ioeta_estim_t *estim);
+static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
@@ -229,9 +234,9 @@ calc_io_progress(const io_progress_t *state, int *skip)
 	}
 }
 
-/* Calculates rate of operation. */
-static unsigned long long
-calc_io_rate(const ioeta_estim_t *estim)
+/* Updates rate of operation. */
+static void
+update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
 {
 	struct timespec current_time;
 	/* Current time in milliseconds */
@@ -239,32 +244,24 @@ calc_io_rate(const ioeta_estim_t *estim)
 	/* Elapsed time in milliseconds */
 	long elapsed_time_ms = 0;
 	unsigned long long bytes_difference = 0;
-	/* Rate in bytes per millisecond */
-	static unsigned long long rate = 0;
-	/* Time of last rate calculation */
-	static long last_calc_time = 0;
-	static unsigned long long previous_byte = 0;
 
 	clock_gettime(CLOCK_MONOTONIC, &current_time);
 
 	/* Current time in milliseconds */
 	current_time_ms = current_time.tv_sec * 1000 + current_time.tv_nsec / 1000000;
 
-	elapsed_time_ms = current_time_ms - last_calc_time;
+	elapsed_time_ms = current_time_ms - pdata->last_calc_time;
 
 	/* Calculate rate each 3000 milliseconds */
-	if (elapsed_time_ms > 0 && (elapsed_time_ms > 3000 || rate == 0))
+	if (elapsed_time_ms > 0 && (elapsed_time_ms > 3000 || pdata->rate == 0))
 	{
-		if (estim->current_byte > previous_byte)
-			bytes_difference = estim->current_byte - previous_byte;
-		last_calc_time = current_time_ms;
+		if (estim->current_byte > pdata->last_seen_byte)
+			bytes_difference = estim->current_byte - pdata->last_seen_byte;
+		pdata->last_calc_time = current_time_ms;
 		/* Bytes per millisecond */
-		rate = bytes_difference / elapsed_time_ms;
-		previous_byte = estim->current_byte;
+		pdata->rate = bytes_difference / elapsed_time_ms;
+		pdata->last_seen_byte = estim->current_byte;
 	}
-
-	/* Convert bytes per millisecond to bytes per second */
-	return rate * 1000;
 }
 
 /* Takes care of progress for foreground operations. */
@@ -329,7 +326,8 @@ io_progress_fg(const io_progress_t *state, int progress)
 
 	item_num = MIN(estim->current_item + 1, estim->total_items);
 
-	char *rate_str = format_io_rate(calc_io_rate(estim));
+	update_io_rate(pdata, estim);
+	char *rate_str = format_io_rate(pdata->rate*1000);
 
 	if(progress < 0)
 	{
@@ -896,6 +894,11 @@ alloc_progress_data(int bg, void *info)
 
 	pdata->last_progress = -1;
 	pdata->last_stage = (IoPs)-1;
+
+	pdata->last_calc_time = 0;
+	pdata->last_seen_byte = 0;
+	pdata->rate = 0;
+
 	pdata->dialog = 0;
 	pdata->width = 0;
 
