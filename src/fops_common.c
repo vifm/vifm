@@ -239,27 +239,29 @@ static void
 update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
 {
 	struct timespec current_time;
-	/* Current time in milliseconds */
+	/* Current time in milliseconds. */
 	long current_time_ms = 0;
-	/* Elapsed time in milliseconds */
+	/* Elapsed time in milliseconds. */
 	long elapsed_time_ms = 0;
 	unsigned long long bytes_difference = 0;
 
 	clock_gettime(CLOCK_MONOTONIC, &current_time);
 
-	/* Current time in milliseconds */
-	current_time_ms = current_time.tv_sec * 1000 + current_time.tv_nsec / 1000000;
+	/* Current time in milliseconds. */
+	current_time_ms = current_time.tv_sec*1000 + current_time.tv_nsec/1000000;
 
 	elapsed_time_ms = current_time_ms - pdata->last_calc_time;
 
-	/* Calculate rate each 3000 milliseconds */
-	if (elapsed_time_ms > 0 && (elapsed_time_ms > 3000 || pdata->rate == 0))
+	/* Calculate rate each 3000 milliseconds. */
+	if(elapsed_time_ms > 0 && (elapsed_time_ms > 3000 || pdata->rate == 0))
 	{
-		if (estim->current_byte > pdata->last_seen_byte)
+		if(estim->current_byte > pdata->last_seen_byte)
+		{
 			bytes_difference = estim->current_byte - pdata->last_seen_byte;
+		}
 		pdata->last_calc_time = current_time_ms;
-		/* Bytes per millisecond */
-		pdata->rate = bytes_difference / elapsed_time_ms;
+		/* Bytes per millisecond. */
+		pdata->rate = bytes_difference/elapsed_time_ms;
 		pdata->last_seen_byte = estim->current_byte;
 
 		char rate_str[64];
