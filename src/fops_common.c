@@ -100,6 +100,7 @@ typedef struct
 	long last_calc_time;     /* Time of last rate calculation. */
 	uint64_t last_seen_byte; /* Position at the time of last call. */
 	uint64_t rate;           /* Rate in bytes per millisecond. */
+	char *rate_str;          /* Rate formatted as a string. */
 
 	/* Whether progress is displayed in a dialog, rather than on status bar. */
 	int dialog;
@@ -261,6 +262,8 @@ update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
 		/* Bytes per millisecond */
 		pdata->rate = bytes_difference / elapsed_time_ms;
 		pdata->last_seen_byte = estim->current_byte;
+
+		put_string(&pdata->rate_str, format_io_rate(pdata->rate*1000));
 	}
 }
 
@@ -327,7 +330,6 @@ io_progress_fg(const io_progress_t *state, int progress)
 	item_num = MIN(estim->current_item + 1, estim->total_items);
 
 	update_io_rate(pdata, estim);
-	char *rate_str = format_io_rate(pdata->rate*1000);
 
 	if(progress < 0)
 	{
@@ -338,7 +340,7 @@ io_progress_fg(const io_progress_t *state, int progress)
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s",
 				replace_home_part(ops->target_dir), item_num,
-				(unsigned long long)estim->total_items, total_size_str, rate_str,
+				(unsigned long long)estim->total_items, total_size_str, pdata->rate_str,
 				item_name, src_path, as_part);
 	}
 	else
@@ -352,14 +354,13 @@ io_progress_fg(const io_progress_t *state, int progress)
 				"file %s\nfrom %s%s%s",
 				replace_home_part(ops->target_dir), item_num,
 				(unsigned long long)estim->total_items, current_size_str,
-				total_size_str, progress/IO_PRECISION, rate_str, item_name, src_path,
-				as_part, file_progress);
+				total_size_str, progress/IO_PRECISION, pdata->rate_str, item_name,
+				src_path, as_part, file_progress);
 
 		free(file_progress);
 	}
 	pdata->width = getmaxx(error_win);
 
-	free(rate_str);
 	free(as_part);
 }
 
@@ -898,6 +899,7 @@ alloc_progress_data(int bg, void *info)
 	pdata->last_calc_time = 0;
 	pdata->last_seen_byte = 0;
 	pdata->rate = 0;
+	pdata->rate_str = NULL;
 
 	pdata->dialog = 0;
 	pdata->width = 0;
@@ -928,7 +930,9 @@ fops_free_ops(ops_t *ops)
 			free(title);
 		}
 
-		free(ops->estim->param);
+		progress_data_t *pdata = ops->estim->param;
+		free(pdata->rate_str);
+		free(pdata);
 	}
 	ops_free(ops);
 }
