@@ -253,7 +253,7 @@ calc_io_rate(const ioeta_estim_t *estim)
 	elapsed_time_ms = current_time_ms - last_calc_time;
 
 	/* Calculate rate each 3000 milliseconds */
-	if (elapsed_time_ms > 3000 || rate == 0)
+	if (elapsed_time_ms > 0 && (elapsed_time_ms > 3000 || rate == 0))
 	{
 		if (estim->current_byte > previous_byte)
 			bytes_difference = estim->current_byte - previous_byte;
