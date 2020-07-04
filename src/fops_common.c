@@ -21,16 +21,15 @@
 
 #include <regex.h>
 
-#include <fcntl.h>
 #include <sys/stat.h> /* stat umask() */
 #include <sys/types.h> /* mode_t */
-#include <time.h> /* clock_gettime() */
-#include <math.h> /* pow() */
+#include <fcntl.h>
+#include <unistd.h> /* unlink() */
+
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
 #endif
-#include <unistd.h> /* unlink() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -39,6 +38,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
 #include <string.h> /* memcmp() strcmp() strdup() strlen() */
+#include <time.h> /* clock_gettime() */
 
 #include "cfg/config.h"
 #include "compat/dtype.h"
