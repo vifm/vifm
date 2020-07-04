@@ -11,7 +11,7 @@ hi AuxWin       cterm=none                    ctermfg=default  ctermbg=233
 hi TopLine      cterm=none                    ctermfg=black    ctermbg=white
 hi TopLineSel   cterm=bold                    ctermfg=16       ctermbg=default
 hi StatusLine   cterm=none                    ctermfg=black    ctermbg=white
-hi Border       cterm=none                    ctermfg=white    ctermbg=default
+hi Border       cterm=none                    ctermfg=white    ctermbg=232
 
 hi CurrLine     cterm=bold,reverse            ctermfg=default  ctermbg=default
 hi OtherLine    cterm=reverse                 ctermfg=234      ctermbg=white

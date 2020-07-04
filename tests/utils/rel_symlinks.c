@@ -13,19 +13,19 @@ TEST(in_one_dir)
 {
 	const char *buf;
 
-	buf = make_rel_path("/home/a", "/home/");
+	buf = make_rel_path("/vifm-test/a", "/vifm-test/");
 	assert_string_equal("a", buf);
 
-	buf = make_rel_path("/home/", "/home/");
+	buf = make_rel_path("/vifm-test/", "/vifm-test/");
 	assert_string_equal(".", buf);
 
-	buf = make_rel_path("/home", "/home/");
+	buf = make_rel_path("/vifm-test", "/vifm-test/");
 	assert_string_equal(".", buf);
 
-	buf = make_rel_path("/home/", "/home");
+	buf = make_rel_path("/vifm-test/", "/vifm-test");
 	assert_string_equal(".", buf);
 
-	buf = make_rel_path("/home", "/home");
+	buf = make_rel_path("/vifm-test", "/vifm-test");
 	assert_string_equal(".", buf);
 }
 
@@ -33,16 +33,16 @@ TEST(slashes)
 {
 	const char *buf;
 
-	buf = make_rel_path("/home/a", "/home");
+	buf = make_rel_path("/vifm-test/a", "/vifm-test");
 	assert_string_equal("a", buf);
 
-	buf = make_rel_path("/home/a", "/home/");
+	buf = make_rel_path("/vifm-test/a", "/vifm-test/");
 	assert_string_equal("a", buf);
 
-	buf = make_rel_path("/home/a/", "/home");
+	buf = make_rel_path("/vifm-test/a/", "/vifm-test");
 	assert_string_equal("a", buf);
 
-	buf = make_rel_path("/home/a/", "/home/");
+	buf = make_rel_path("/vifm-test/a/", "/vifm-test/");
 	assert_string_equal("a", buf);
 }
 
@@ -50,10 +50,10 @@ TEST(under_dir)
 {
 	const char *buf;
 
-	buf = make_rel_path("/home/a/b", "/home/");
+	buf = make_rel_path("/vifm-test/a/b", "/vifm-test/");
 	assert_string_equal("a/b", buf);
 
-	buf = make_rel_path("/home/a/b///c", "/home/");
+	buf = make_rel_path("/vifm-test/a/b///c", "/vifm-test/");
 	assert_string_equal("a/b/c", buf);
 }
 
@@ -61,13 +61,13 @@ TEST(parent_dir)
 {
 	const char *buf;
 
-	buf = make_rel_path("/", "/home/");
+	buf = make_rel_path("/", "/vifm-test/");
 	assert_string_equal("..", buf);
 
-	buf = make_rel_path("/", "/home/user/");
+	buf = make_rel_path("/", "/vifm-test/user/");
 	assert_string_equal("../..", buf);
 
-	buf = make_rel_path("/", "/home/////user/dir/");
+	buf = make_rel_path("/", "/vifm-test/////user/dir/");
 	assert_string_equal("../../..", buf);
 }
 
@@ -75,22 +75,23 @@ TEST(different_subtree)
 {
 	const char *buf;
 
-	buf = make_rel_path("/home/user1///u1dir1", "/home/user2/././/u2dir1/.");
+	buf = make_rel_path("/vifm-test/user1///u1dir1",
+			"/vifm-test/user2/././/u2dir1/.");
 	assert_string_equal("../../user1/u1dir1", buf);
 
-	buf = make_rel_path("/home/file", "/dir-in-root");
-	assert_string_equal("../home/file", buf);
+	buf = make_rel_path("/vifm-test/file", "/dir-in-root");
+	assert_string_equal("../vifm-test/file", buf);
 }
 
 TEST(windows_specific, IF(windows))
 {
 	const char *buf;
 
-	buf = make_rel_path("c:/home/user1/dir1", "c:/home/user1/");
+	buf = make_rel_path("c:/vifm-test/user1/dir1", "c:/vifm-test/user1/");
 	assert_string_equal("dir1", buf);
 
-	buf = make_rel_path("c:/home/user1/", "d:/home/user1/dir1");
-	assert_string_equal("c:/home/user1/", buf);
+	buf = make_rel_path("c:/vifm-test/user1/", "d:/vifm-test/user1/dir1");
+	assert_string_equal("c:/vifm-test/user1/", buf);
 }
 
 TEST(relative_links_are_built_for_real_paths, IF(not_windows))

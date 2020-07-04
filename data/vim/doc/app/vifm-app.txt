@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 30
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 July 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5273,14 +5273,15 @@ and for this reason the following rules apply during lookup:
 *vifm-sessions*
 
 Sessions provide a way to have multiple persistent runtime configurations.
-Think of them as additional named |vifm-vifminfo| files.  However, they aren't
-a complete replacement for vifminfo, but an addition to them.  In principle,
-one can empty |vifm-'vifminfo'| option and rely only on sessions, but in
-practice you might want to share some state among instances in different
+Think of them as second-level |vifm-vifminfo| files in addition to the
+first-level one used by all sessions.  In other words, they aren't a
+replacement for vifminfo file that exists without sessions, but an addition to
+it.  One can empty |vifm-'vifminfo'| option and rely solely on sessions, but in
+practice one might want to share some state among instances in different
 sessions or have an "out-of-sessions" state for tasks that don't deserve a
 session of their own.
 
-This leads to two-level structure where data in session files has higher
+This leads to a two-level structure where data in session files has higher
 priority than data in vifminfo files (where this makes sense) following the
 same rules that merging of vifminfo file obeys.  In addition to that, history
 items from session files are never ordered before history items from vifminfo
