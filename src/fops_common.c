@@ -97,10 +97,10 @@ typedef struct
 	IoPs last_stage;   /* Stage of the operation during previous call. */
 
 	/* State of rate calculation. */
-	long last_calc_time;     /* Time of last rate calculation. */
-	uint64_t last_seen_byte; /* Position at the time of last call. */
-	uint64_t rate;           /* Rate in bytes per millisecond. */
-	char *rate_str;          /* Rate formatted as a string. */
+	long long last_calc_time; /* Time of last rate calculation. */
+	uint64_t last_seen_byte;  /* Position at the time of last call. */
+	uint64_t rate;            /* Rate in bytes per millisecond. */
+	char *rate_str;           /* Rate formatted as a string. */
 
 	/* Whether progress is displayed in a dialog, rather than on status bar. */
 	int dialog;
@@ -241,9 +241,9 @@ update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
 	struct timespec current_time;
 	clock_gettime(CLOCK_MONOTONIC, &current_time);
 
-	long current_time_ms = current_time.tv_sec*1000
-	                     + current_time.tv_nsec/1000000;
-	long elapsed_time_ms = current_time_ms - pdata->last_calc_time;
+	long long current_time_ms = current_time.tv_sec*1000
+	                          + current_time.tv_nsec/1000000;
+	long long elapsed_time_ms = current_time_ms - pdata->last_calc_time;
 
 	/* Calculate rate each 3000 milliseconds. */
 	if(elapsed_time_ms > 0 && (elapsed_time_ms > 3000 || pdata->rate == 0))
