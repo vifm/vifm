@@ -95,6 +95,8 @@ typedef struct
 
 	int last_progress; /* Progress of the operation during previous call. */
 	IoPs last_stage;   /* Stage of the operation during previous call. */
+	char *progress_bar; /* String of progress bar */
+	int progress_bar_value; /* Value of progress bar during previous call. */
 
 	/* State of rate calculation. */
 	long long last_calc_time; /* Time of last rate calculation. */
@@ -112,6 +114,7 @@ progress_data_t;
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
 static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
+static void update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
@@ -261,6 +264,19 @@ update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
 	replace_string(&pdata->rate_str, rate_str);
 }
 
+/* Updates progress bar of operation */
+static void
+update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim)
+{
+	pdata->progress_bar_value = ((float)pdata->last_progress/1000)*pdata->width;
+	if (pdata->width > 4 && pdata->progress_bar_value >= pdata->width-4)
+		pdata->progress_bar_value = pdata->width-4;
+
+	pdata->progress_bar = malloc(pdata->width * sizeof(char));
+
+	memset(pdata->progress_bar, '\0', pdata->width);
+	memset(pdata->progress_bar, '|', pdata->progress_bar_value);
+}
 /* Takes care of progress for foreground operations. */
 static void
 io_progress_fg(const io_progress_t *state, int progress)
@@ -340,19 +356,23 @@ io_progress_fg(const io_progress_t *state, int progress)
 	else
 	{
 		char *const file_progress = format_file_progress(estim, IO_PRECISION);
+		update_progress_bar(pdata, estim);
 
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
 				"Overall:  %s/%s (%2d%%) %s\n"
+				"%s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
 				replace_home_part(ops->target_dir), item_num,
-				(unsigned long long)estim->total_items, current_size_str,
-				total_size_str, progress/IO_PRECISION, pdata->rate_str, item_name,
+				(unsigned long long)estim->total_items, current_size_str, total_size_str,
+				progress/IO_PRECISION, pdata->rate_str, pdata->progress_bar, item_name,
 				src_path, as_part, file_progress);
 
+		free(pdata->progress_bar);
 		free(file_progress);
 	}
+
 	pdata->width = getmaxx(error_win);
 
 	free(as_part);
