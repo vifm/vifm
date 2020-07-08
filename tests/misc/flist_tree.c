@@ -21,6 +21,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/marks.h"
+#include "../../src/running.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
 
@@ -567,6 +568,31 @@ TEST(tree_out_of_cv_with_two_elements)
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH, cwd));
 	assert_int_equal(5, lwin.list_rows);
+}
+
+TEST(opening_non_toplevel_dummy_is_not_the_same_as_leaving_tree)
+{
+	create_dir(SANDBOX_PATH "/a");
+	create_dir(SANDBOX_PATH "/a/b");
+
+	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
+	assert_int_equal(3, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[2].name);
+
+	char *saved_cwd = save_cwd();
+
+	lwin.list_pos = 2;
+	rn_open(&lwin, FHE_NO_RUN);
+
+	restore_cwd(saved_cwd);
+
+	char expected_path[PATH_MAX + 1];
+	make_abs_path(expected_path, sizeof(expected_path), SANDBOX_PATH, "a", cwd);
+
+	assert_true(paths_are_same(expected_path, flist_get_dir(&lwin)));
+
+	remove_dir(SANDBOX_PATH "/a/b");
+	remove_dir(SANDBOX_PATH "/a");
 }
 
 static void
