@@ -4063,7 +4063,8 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 
 	/* The prev_count != 0 check is to make sure that we won't create leaf instead
 	 * of the whole tree (this is handled in flist_custom_finish()). */
-	if(!no_direct_parent && prev_count != 0 &&
+	int show_empty_dir_leafs = (cfg.dot_dirs & DD_TREE_LEAFS_PARENT);
+	if(show_empty_dir_leafs && !no_direct_parent && prev_count != 0 &&
 			view->custom.entry_count == prev_count)
 	{
 		/* To be able to perform operations inside directory (e.g., create files),

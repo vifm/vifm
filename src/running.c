@@ -709,15 +709,16 @@ follow_link(view_t *view, int follow_dirs)
 static void
 enter_dir(view_t *view)
 {
-	char full_path[PATH_MAX + 1];
+	dir_entry_t *const curr = get_current_entry(view);
 
-	if(is_parent_dir(get_current_file_name(view)))
+	if(is_parent_dir(curr->name) && curr->origin == view->curr_dir)
 	{
 		rn_leave(view, 1);
 		return;
 	}
 
-	get_current_full_path(view, sizeof(full_path), full_path);
+	char full_path[PATH_MAX + 1];
+	get_full_path_of(curr, sizeof(full_path), full_path);
 
 	if(cd_is_possible(full_path))
 	{

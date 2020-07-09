@@ -40,6 +40,9 @@
 
 	Added rate to progress dialog.  Patch by Alborz Jafari.
 
+	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
+	and Melandel.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
@@ -299,7 +302,7 @@
 	Fixed dialogs not being visible when UI updates are silenced via <silent>
 	mappings.
 
-	Fixed Default colorscheme not being available on processing sample vifmrc
+	Fixed Default color scheme not being available on processing sample vifmrc
 	on first run of the application.
 
 	Fixed `:highlight {new-pattern}` not being immediately applied due to
@@ -311,6 +314,9 @@
 
 	Fixed running tests on OS X, which were broken due to `/home/` being a
 	symbolic link.  Thanks to Jason Dreisbach (a.k.a. jtdreisb).
+
+	Fixed opening non-top-level ".." in a :tree incorrectly behaving as
+	`:cd ..`.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

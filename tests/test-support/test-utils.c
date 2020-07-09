@@ -87,6 +87,8 @@ conf_setup(void)
 	update_string(&cfg.shell_cmd_flag, "/C");
 #endif
 	stats_update_shell_type(cfg.shell);
+
+	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
 }
 
 void
@@ -109,6 +111,8 @@ conf_teardown(void)
 	update_string(&cfg.tab_label, NULL);
 	update_string(&cfg.shell, NULL);
 	update_string(&cfg.shell_cmd_flag, NULL);
+
+	cfg.dot_dirs = 0;
 }
 
 void

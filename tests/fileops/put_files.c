@@ -5,6 +5,7 @@
 
 #include <string.h> /* strcpy() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
@@ -224,6 +225,7 @@ TEST(put_files_copies_files_according_to_tree_structure)
 {
 	char path[PATH_MAX + 1];
 
+	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
 	create_empty_dir(SANDBOX_PATH "/dir");
 
 	flist_load_tree(&lwin, lwin.curr_dir);
