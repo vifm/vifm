@@ -158,7 +158,7 @@ cfg_init(void)
 	cfg.lines = INT_MIN;
 	cfg.columns = INT_MIN;
 
-	cfg.dot_dirs = DD_NONROOT_PARENT;
+	cfg.dot_dirs = DD_NONROOT_PARENT | DD_TREE_LEAFS_PARENT;
 
 	cfg.filter_inverted_by_default = 1;
 

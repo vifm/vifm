@@ -36,6 +36,7 @@ static char test_data[PATH_MAX + 1];
 SETUP_ONCE()
 {
 	cfg.sizefmt.base = 1;
+	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
 
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 

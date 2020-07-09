@@ -196,6 +196,7 @@ TEST(cpmv_considers_tree_structure)
 	char new_fname[] = "new_name";
 	char *list[] = { &new_fname[0] };
 
+	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
 	create_empty_dir("dir");
 
 	/* Move from tree root to nested dir. */

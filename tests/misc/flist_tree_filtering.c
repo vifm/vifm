@@ -243,7 +243,7 @@ TEST(sorting_of_filtered_list_accounts_for_tree)
 
 TEST(filtering_does_not_break_the_tree_with_empty_dir)
 {
-	cfg.dot_dirs = DD_NONROOT_PARENT;
+	cfg.dot_dirs |= DD_NONROOT_PARENT;
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
@@ -256,7 +256,6 @@ TEST(filtering_does_not_break_the_tree_with_empty_dir)
 	local_filter_cancel(&lwin);
 
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
-	cfg.dot_dirs = 0;
 }
 
 TEST(filtering_does_not_confuse_leafs_with_parent_ref)

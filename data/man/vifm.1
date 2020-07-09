@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 4, 2020" "vifm 0.10.1"
+.TH VIFM 1 "July 10, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3820,11 +3820,12 @@ occasionally size of directories is possible.
 .BI 'dotdirs'
 type: set
 .br
-default: nonrootparent
+default: nonrootparent,treeleafsparent
 .br
 Controls displaying of dot directories.  The following values are possible:
- \- rootparent    \- show "../" in root directory of file system
- \- nonrootparent \- show "../" in non-root directories of file system
+ \- rootparent      \- show "../" in root directory of file system
+ \- nonrootparent   \- show "../" in non-root directories of file system
+ \- treeleafsparent \- show "../" in empty directories of tree view
 
 Note that empty directories always contain "../" entry regardless of value of
 this option.  "../" disappears at the moment at least one file is created.

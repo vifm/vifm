@@ -304,10 +304,12 @@ static const char *confirm_vals[][2] = {
 
 /* Possible values of 'dotdirs'. */
 static const char *dotdirs_vals[][2] = {
-	[BIT(DD_ROOT_PARENT)]    = { "rootparent",
-	                             "show .. in FS root" },
-	[BIT(DD_NONROOT_PARENT)] = { "nonrootparent",
-	                             "show .. in non-root directories" },
+	[BIT(DD_ROOT_PARENT)]       = { "rootparent",
+	                                "show .. in FS root" },
+	[BIT(DD_NONROOT_PARENT)]    = { "nonrootparent",
+	                                "show .. in non-root directories" },
+	[BIT(DD_TREE_LEAFS_PARENT)] = { "treeleafsparent",
+	                                "show .. in empty directories of :tree" },
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 

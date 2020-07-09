@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 July 4
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 July 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3165,11 +3165,12 @@ occasionally size of directories is possible.
                                                *vifm-'dotdirs'*
 dotdirs
 type: set
-default: nonrootparent
+default: nonrootparent,treeleafsparent
 
 Controls displaying of dot directories.  The following values are possible:
- - rootparent    - show "../" in root directory of file system
- - nonrootparent - show "../" in non-root directories of file system
+ - rootparent      - show "../" in root directory of file system
+ - nonrootparent   - show "../" in non-root directories of file system
+ - treeleafsparent - show "../" in empty directories of tree view
 
 Note that empty directories always contain "../" entry regardless of value of
 this option.  "../" disappears at the moment at least one file is created.

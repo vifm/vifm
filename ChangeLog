@@ -40,6 +40,9 @@
 
 	Added rate to progress dialog.  Patch by Alborz Jafari.
 
+	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
+	and Melandel.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

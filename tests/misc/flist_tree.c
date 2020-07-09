@@ -80,13 +80,11 @@ TEST(empty_directory_tree_is_created)
 
 TEST(empty_directory_tree_is_created_dotdirs_option)
 {
-	cfg.dot_dirs = DD_NONROOT_PARENT;
+	cfg.dot_dirs |= DD_NONROOT_PARENT;
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
 	assert_int_equal(1, lwin.list_rows);
 	validate_tree(&lwin);
-
-	cfg.dot_dirs = 0;
 }
 
 TEST(complex_tree_is_built_correctly)
@@ -461,7 +459,7 @@ TEST(tree_prefixes_are_correct)
 
 TEST(dotdirs_do_not_mess_up_change_detection)
 {
-	cfg.dot_dirs = DD_NONROOT_PARENT;
+	cfg.dot_dirs |= DD_NONROOT_PARENT;
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", cwd));
 
@@ -475,8 +473,6 @@ TEST(dotdirs_do_not_mess_up_change_detection)
 	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
 	check_if_filelist_has_changed(&lwin);
 	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
-
-	cfg.dot_dirs = 0;
 }
 
 TEST(tree_reload_preserves_selection)
@@ -590,6 +586,22 @@ TEST(opening_non_toplevel_dummy_is_not_the_same_as_leaving_tree)
 	make_abs_path(expected_path, sizeof(expected_path), SANDBOX_PATH, "a", cwd);
 
 	assert_true(paths_are_same(expected_path, flist_get_dir(&lwin)));
+
+	remove_dir(SANDBOX_PATH "/a/b");
+	remove_dir(SANDBOX_PATH "/a");
+}
+
+TEST(dummies_of_leaf_directories_can_be_disabled)
+{
+	create_dir(SANDBOX_PATH "/a");
+	create_dir(SANDBOX_PATH "/a/b");
+
+	cfg.dot_dirs &= ~DD_TREE_LEAFS_PARENT;
+
+	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("b", lwin.dir_entry[1].name);
 
 	remove_dir(SANDBOX_PATH "/a/b");
 	remove_dir(SANDBOX_PATH "/a");

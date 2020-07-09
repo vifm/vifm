@@ -39,11 +39,13 @@
 /* Path to global directory for color schemes. */
 #define GLOBAL_COLORS_DIR PACKAGE_SYSCONF_DIR "/colors/"
 
+/* When to show "../" directories. */
 typedef enum
 {
-	DD_ROOT_PARENT    = 1 << 0,
-	DD_NONROOT_PARENT = 1 << 1,
-	NUM_DOT_DIRS      =      2
+	DD_ROOT_PARENT       = 1 << 0, /* In root directories of file systems. */
+	DD_NONROOT_PARENT    = 1 << 1, /* In non-root directories of file systems. */
+	DD_TREE_LEAFS_PARENT = 1 << 2, /* In empty directories of tree view. */
+	NUM_DOT_DIRS         =      3  /* Number of options for compile checks. */
 }
 DotDirs;
 
