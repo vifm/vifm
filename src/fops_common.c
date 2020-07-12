@@ -37,7 +37,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
-#include <string.h> /* memcmp() strcat() strcmp() strdup() strlen() */
+#include <string.h> /* memcmp() memset() strcat() strcmp() strdup() strlen() */
 #include <time.h> /* clock_gettime() */
 
 #include "cfg/config.h"
@@ -79,6 +79,9 @@
  * on progress percentage counting. */
 #define IO_PRECISION 10
 
+/* Maximum value of progress_data_t::last_progress. */
+#define IO_MAX_PROGRESS (100*(IO_PRECISION))
+
 /* Key used to switch to progress dialog. */
 #define IO_DETAILS_KEY 'i'
 
@@ -93,8 +96,13 @@ typedef struct
 		bg_op_t *bg_op; /* Information for background operation. */
 	};
 
-	int last_progress; /* Progress of the operation during previous call. */
+	int last_progress; /* Progress of the operation during previous call.
+	                      Range is [-1; IO_MAX_PROGRESS]. */
 	IoPs last_stage;   /* Stage of the operation during previous call. */
+
+	char *progress_bar;     /* String of progress bar. */
+	int progress_bar_value; /* Value of progress bar during previous call. */
+	int progress_bar_max;   /* Width of progress bar during previous call. */
 
 	/* State of rate calculation. */
 	long long last_calc_time; /* Time of last rate calculation. */
@@ -112,6 +120,7 @@ progress_data_t;
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
 static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
+static void update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
@@ -197,7 +206,7 @@ io_progress_changed(const io_progress_t *state)
 
 /* Calculates current IO operation progress.  *skip will be set to non-zero
  * value to indicate that progress change is irrelevant.  Returns progress in
- * the range [-1; 100], where -1 means "unknown". */
+ * the range [-1; IO_MAX_PROGRESS], where -1 means "unknown". */
 static int
 calc_io_progress(const io_progress_t *state, int *skip)
 {
@@ -216,9 +225,9 @@ calc_io_progress(const io_progress_t *state, int *skip)
 			return 0;
 		}
 		/* When files are empty, use their number for progress counting. */
-		return (estim->current_item*100*IO_PRECISION)/estim->total_items;
+		return (estim->current_item*IO_MAX_PROGRESS)/estim->total_items;
 	}
-	else if(pdata->last_progress >= 100*IO_PRECISION &&
+	else if(pdata->last_progress >= IO_MAX_PROGRESS &&
 			estim->current_byte == estim->total_bytes)
 	{
 		/* Special handling for unknown total size. */
@@ -231,7 +240,7 @@ calc_io_progress(const io_progress_t *state, int *skip)
 	}
 	else
 	{
-		return (estim->current_byte*100*IO_PRECISION)/estim->total_bytes;
+		return (estim->current_byte*IO_MAX_PROGRESS)/estim->total_bytes;
 	}
 }
 
@@ -259,6 +268,34 @@ update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
 			rate_str);
 	strcat(rate_str, "/s");
 	replace_string(&pdata->rate_str, rate_str);
+}
+
+/* Updates progress bar of operation. */
+static void
+update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim)
+{
+	int max_width = pdata->width - 6;
+	if(max_width <= 0)
+	{
+		return;
+	}
+
+	int value = (pdata->last_progress*max_width)/IO_MAX_PROGRESS;
+	if(value == pdata->progress_bar_value && max_width == pdata->progress_bar_max)
+	{
+		return;
+	}
+
+	pdata->progress_bar_value = value;
+	pdata->progress_bar_max = max_width;
+
+	pdata->progress_bar = malloc(max_width + 3);
+
+	pdata->progress_bar[0] = '[';
+	memset(pdata->progress_bar + 1, '=', value);
+	memset(pdata->progress_bar + 1 + value, ' ', max_width - value);
+	pdata->progress_bar[1 + max_width] = ']';
+	pdata->progress_bar[1 + max_width + 1] = '\0';
 }
 
 /* Takes care of progress for foreground operations. */
@@ -340,19 +377,22 @@ io_progress_fg(const io_progress_t *state, int progress)
 	else
 	{
 		char *const file_progress = format_file_progress(estim, IO_PRECISION);
+		update_progress_bar(pdata, estim);
 
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
 				"Overall:  %s/%s (%2d%%) %s\n"
+				"%s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
 				replace_home_part(ops->target_dir), item_num,
 				(unsigned long long)estim->total_items, current_size_str,
-				total_size_str, progress/IO_PRECISION, pdata->rate_str, item_name,
-				src_path, as_part, file_progress);
+				total_size_str, progress/IO_PRECISION, pdata->rate_str,
+				pdata->progress_bar, item_name, src_path, as_part, file_progress);
 
 		free(file_progress);
 	}
+
 	pdata->width = getmaxx(error_win);
 
 	free(as_part);
@@ -869,6 +909,10 @@ alloc_progress_data(int bg, void *info)
 	pdata->last_progress = -1;
 	pdata->last_stage = (IoPs)-1;
 
+	pdata->progress_bar = strdup("");
+	pdata->progress_bar_value = 0;
+	pdata->progress_bar_max = 0;
+
 	/* Time of starting the operation to have meaningful first rate. */
 	pdata->last_calc_time = time_in_ms();
 	pdata->last_seen_byte = 0;
@@ -918,6 +962,7 @@ fops_free_ops(ops_t *ops)
 		}
 
 		progress_data_t *pdata = ops->estim->param;
+		free(pdata->progress_bar);
 		free(pdata->rate_str);
 		free(pdata);
 	}

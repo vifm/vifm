@@ -38,7 +38,7 @@
 	256-color palette (automatically in sample vifmrc).  Thanks to Shakil
 	Akhtar.
 
-	Added rate to progress dialog.  Patch by Alborz Jafari.
+	Added rate and progress bar to progress dialog.  Patch by Alborz Jafari.
 
 	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
 	and Melandel.
