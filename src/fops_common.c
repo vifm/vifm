@@ -79,6 +79,9 @@
  * on progress percentage counting. */
 #define IO_PRECISION 10
 
+/* Maximum value of progress_data_t::last_progress. */
+#define IO_MAX_PROGRESS (100*(IO_PRECISION))
+
 /* Key used to switch to progress dialog. */
 #define IO_DETAILS_KEY 'i'
 
@@ -93,7 +96,8 @@ typedef struct
 		bg_op_t *bg_op; /* Information for background operation. */
 	};
 
-	int last_progress; /* Progress of the operation during previous call. */
+	int last_progress; /* Progress of the operation during previous call.
+	                      Range is [-1; IO_MAX_PROGRESS]. */
 	IoPs last_stage;   /* Stage of the operation during previous call. */
 
 	char *progress_bar;     /* String of progress bar. */
@@ -202,7 +206,7 @@ io_progress_changed(const io_progress_t *state)
 
 /* Calculates current IO operation progress.  *skip will be set to non-zero
  * value to indicate that progress change is irrelevant.  Returns progress in
- * the range [-1; 100], where -1 means "unknown". */
+ * the range [-1; IO_MAX_PROGRESS], where -1 means "unknown". */
 static int
 calc_io_progress(const io_progress_t *state, int *skip)
 {
@@ -221,9 +225,9 @@ calc_io_progress(const io_progress_t *state, int *skip)
 			return 0;
 		}
 		/* When files are empty, use their number for progress counting. */
-		return (estim->current_item*100*IO_PRECISION)/estim->total_items;
+		return (estim->current_item*IO_MAX_PROGRESS)/estim->total_items;
 	}
-	else if(pdata->last_progress >= 100*IO_PRECISION &&
+	else if(pdata->last_progress >= IO_MAX_PROGRESS &&
 			estim->current_byte == estim->total_bytes)
 	{
 		/* Special handling for unknown total size. */
@@ -236,7 +240,7 @@ calc_io_progress(const io_progress_t *state, int *skip)
 	}
 	else
 	{
-		return (estim->current_byte*100*IO_PRECISION)/estim->total_bytes;
+		return (estim->current_byte*IO_MAX_PROGRESS)/estim->total_bytes;
 	}
 }
 
@@ -276,7 +280,7 @@ update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim)
 		return;
 	}
 
-	int value = (pdata->last_progress*max_width)/(100*IO_PRECISION);
+	int value = (pdata->last_progress*max_width)/IO_MAX_PROGRESS;
 	if(value == pdata->progress_bar_value && max_width == pdata->progress_bar_max)
 	{
 		return;
