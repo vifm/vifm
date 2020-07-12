@@ -1,6 +1,8 @@
 " vim: filetype=vifm :
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
+"
+" This file last updated: 13 July, 2020
 
 highlight clear
 
@@ -53,11 +55,11 @@ highlight {*.7z,*.ace,*.arj,*.bz2,*.cpio,*.deb,*.dz,*.gz,*.jar,*.lzh,*.lzma,
           \*.rar,*.rpm,*.rz,*.tar,*.taz,*.tb2,*.tbz,*.tbz2,*.tgz,*.tlz,*.trz,
           \*.txz,*.tz,*.tz2,*.xz,*.z,*.zip,*.zoo,*.apk,*.gzip}
         \ cterm=none ctermfg=215 ctermbg=default
-" documents
+" documents, configuration, text-based formats
 highlight {*.djvu,*.htm,*.html,*.shtml,*.css,*.markdown,*.md,*[^0-9].[1-9],
           \*.mkd,*.org,*.pandoc,*.pdc,*.pdf,*.epub,*.fb2,*.tex,*.txt,*.xhtml,
           \*.xml,*.pptx,*.ppt,*.doc,*.docx,*.xls,*.xlsm,*.xlsx,*.mobi,*.rtf,
-          \*.less,*.scss,*.log,*.rss,*.xul,*.json,*.yaml,*.yml}
+          \*.less,*.scss,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.desktop,*.csv}
         \ cterm=none ctermfg=217 ctermbg=default
 " media
 highlight {*.aac,*.anx,*.asf,*.au,*.avi,*.ts,*.axa,*.axv,*.divx,*.flac,*.m2a,
@@ -75,8 +77,8 @@ highlight {*.sh,*.bash,*.zsh,*.bat,*.btm,*.cmd,*.com,*.dll,*.exe,*.run,*.msu,
           \*.msi,*.fish}
         \ cterm=none ctermfg=77 ctermbg=default
 " source code
-highlight {*.patch,*.diff,*.py,*.[ch]pp,*.mk,*.c,*.h,*.cpp,*.hpp,*.cc,*.hs,
+highlight {*.patch,*.diff,*.py,*.cpp,*.hpp,*.mk,*.c,*.h,*.cpp,*.hpp,*.cc,*.hs,
           \*.php,*.lua,*.vim,*.vifm,*.asm,*.s,*.java,*.cxx,*.c++,*.go,
           \*.pl,*.pm,*.t,*.cs,*.asp,*.dart,*.js,*.rb,*.scala,*.ts,*.coffee,
-          \*.ml,*.mli,*.rs,*.sql}
+          \*.ml,*.mli,*.rs,*.sql,*.qml}
         \ cterm=none ctermfg=193 ctermbg=default
