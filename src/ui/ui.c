@@ -438,12 +438,12 @@ correct_size(view_t *view)
 static void
 only_layout(view_t *view, int screen_x)
 {
-	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
-	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
+	const int pos_correction = cfg.side_borders_visible ? 1 : 0;
+	const int size_correction = cfg.side_borders_visible ? -2 : 0;
 	const int y = get_tabline_height();
 
-	wresize(view->title, 1, screen_x - 2);
-	mvwin(view->title, y, 1);
+	wresize(view->title, 1, screen_x + size_correction);
+	mvwin(view->title, y, pos_correction);
 
 	mvwin(ltop_line1, y, 0);
 	mvwin(ltop_line2, y, 0);
@@ -454,9 +454,8 @@ only_layout(view_t *view, int screen_x)
 	wresize(tab_line, 1, screen_x);
 	mvwin(tab_line, 0, 0);
 
-	wresize(view->win, get_working_area_height(),
-			screen_x + vborder_size_correction);
-	mvwin(view->win, y + 1, vborder_pos_correction);
+	wresize(view->win, get_working_area_height(), screen_x + size_correction);
+	mvwin(view->win, y + 1, pos_correction);
 }
 
 /* Updates TUI elements sizes and coordinates for vertical configuration of
@@ -464,8 +463,8 @@ only_layout(view_t *view, int screen_x)
 static void
 vertical_layout(int screen_x)
 {
-	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
-	const int vborder_size_correction = cfg.side_borders_visible ? -1 : 0;
+	const int pos_correction = cfg.side_borders_visible ? 1 : 0;
+	const int size_correction = cfg.side_borders_visible ? -1 : 0;
 	const int border_height = get_working_area_height();
 	const int y = get_tabline_height();
 
@@ -483,11 +482,11 @@ vertical_layout(int screen_x)
 	if(curr_stats.splitter_pos >= 0)
 		curr_stats.splitter_pos = splitter_pos;
 
-	wresize(lwin.title, 1, splitter_pos - 1);
-	mvwin(lwin.title, y, 1);
+	wresize(lwin.title, 1, splitter_pos + size_correction);
+	mvwin(lwin.title, y, pos_correction);
 
-	wresize(lwin.win, border_height, splitter_pos + vborder_size_correction);
-	mvwin(lwin.win, y + 1, vborder_pos_correction);
+	wresize(lwin.win, border_height, splitter_pos + size_correction);
+	mvwin(lwin.win, y + 1, pos_correction);
 
 	ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(mborder, border_height, splitter_width);
@@ -505,11 +504,12 @@ vertical_layout(int screen_x)
 	mvwin(rtop_line1, y, screen_x - 1);
 	mvwin(rtop_line2, y, screen_x - 1);
 
-	wresize(rwin.title, 1, screen_x - (splitter_pos + splitter_width + 1));
+	wresize(rwin.title, 1,
+			screen_x - (splitter_pos + splitter_width) + size_correction);
 	mvwin(rwin.title, y, splitter_pos + splitter_width);
 
 	wresize(rwin.win, border_height,
-			screen_x - (splitter_pos + splitter_width) + vborder_size_correction);
+			screen_x - (splitter_pos + splitter_width) + size_correction);
 	mvwin(rwin.win, y + 1, splitter_pos + splitter_width);
 }
 
@@ -518,8 +518,8 @@ vertical_layout(int screen_x)
 static void
 horizontal_layout(int screen_x, int screen_y)
 {
-	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
-	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
+	const int pos_correction = cfg.side_borders_visible ? 1 : 0;
+	const int size_correction = cfg.side_borders_visible ? -2 : 0;
 	const int y = get_tabline_height();
 
 	int splitter_pos;
@@ -535,18 +535,18 @@ horizontal_layout(int screen_x, int screen_y)
 	if(curr_stats.splitter_pos >= 0)
 		curr_stats.splitter_pos = splitter_pos;
 
-	wresize(lwin.title, 1, screen_x - 2);
-	mvwin(lwin.title, y, 1);
+	wresize(lwin.title, 1, screen_x + size_correction);
+	mvwin(lwin.title, y, pos_correction);
 
-	wresize(rwin.title, 1, screen_x - 2);
-	mvwin(rwin.title, splitter_pos, 1);
+	wresize(rwin.title, 1, screen_x + size_correction);
+	mvwin(rwin.title, splitter_pos, pos_correction);
 
-	wresize(lwin.win, splitter_pos - (y + 1), screen_x + vborder_size_correction);
-	mvwin(lwin.win, y + 1, vborder_pos_correction);
+	wresize(lwin.win, splitter_pos - (y + 1), screen_x + size_correction);
+	mvwin(lwin.win, y + 1, pos_correction);
 
 	wresize(rwin.win, get_working_area_height() - splitter_pos + y,
-			screen_x + vborder_size_correction);
-	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
+			screen_x + size_correction);
+	mvwin(rwin.win, splitter_pos + 1, pos_correction);
 
 	ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(mborder, 1, screen_x);
@@ -975,15 +975,15 @@ touch_all_windows(void)
 			update_view(&rwin);
 		}
 
-		/* This needs to be updated before things like status bar and status line to
-		 * account for cases when they hide the top line. */
-		update_window_lazy(ltop_line1);
-		update_window_lazy(ltop_line2);
-		update_window_lazy(rtop_line1);
-		update_window_lazy(rtop_line2);
-
 		if(cfg.side_borders_visible)
 		{
+			/* This needs to be updated before things like status bar and status line
+			 * to account for cases when they hide the top line. */
+			update_window_lazy(ltop_line1);
+			update_window_lazy(ltop_line2);
+			update_window_lazy(rtop_line1);
+			update_window_lazy(rtop_line2);
+
 			update_window_lazy(lborder);
 			update_window_lazy(rborder);
 		}
@@ -1150,29 +1150,30 @@ update_attributes(void)
 		werase(lborder);
 		ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 		werase(rborder);
+
+		ui_set_bg(ltop_line1, &cfg.cs.color[TOP_LINE_COLOR],
+				cfg.cs.pair[TOP_LINE_COLOR]);
+		werase(ltop_line1);
+
+		ui_set_bg(ltop_line2, &cfg.cs.color[TOP_LINE_COLOR],
+				cfg.cs.pair[TOP_LINE_COLOR]);
+		werase(ltop_line2);
+
+		ui_set_bg(top_line, &cfg.cs.color[TOP_LINE_COLOR],
+				cfg.cs.pair[TOP_LINE_COLOR]);
+		werase(top_line);
+
+		ui_set_bg(rtop_line1, &cfg.cs.color[TOP_LINE_COLOR],
+				cfg.cs.pair[TOP_LINE_COLOR]);
+		werase(rtop_line1);
+
+		ui_set_bg(rtop_line2, &cfg.cs.color[TOP_LINE_COLOR],
+				cfg.cs.pair[TOP_LINE_COLOR]);
+		werase(rtop_line2);
 	}
+
 	ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	werase(mborder);
-
-	ui_set_bg(ltop_line1, &cfg.cs.color[TOP_LINE_COLOR],
-			cfg.cs.pair[TOP_LINE_COLOR]);
-	werase(ltop_line1);
-
-	ui_set_bg(ltop_line2, &cfg.cs.color[TOP_LINE_COLOR],
-			cfg.cs.pair[TOP_LINE_COLOR]);
-	werase(ltop_line2);
-
-	ui_set_bg(top_line, &cfg.cs.color[TOP_LINE_COLOR],
-			cfg.cs.pair[TOP_LINE_COLOR]);
-	werase(top_line);
-
-	ui_set_bg(rtop_line1, &cfg.cs.color[TOP_LINE_COLOR],
-			cfg.cs.pair[TOP_LINE_COLOR]);
-	werase(rtop_line1);
-
-	ui_set_bg(rtop_line2, &cfg.cs.color[TOP_LINE_COLOR],
-			cfg.cs.pair[TOP_LINE_COLOR]);
-	werase(rtop_line2);
 
 	ui_set_bg(tab_line, &cfg.cs.color[TAB_LINE_COLOR],
 			cfg.cs.pair[TAB_LINE_COLOR]);

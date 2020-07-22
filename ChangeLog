@@ -170,6 +170,9 @@
 	Invalidate cached directory size when using it to compute size of some
 	parent directory.
 
+	Reduce width of top line when side borders are hidden (`set
+	tuioptions-=s`).  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
