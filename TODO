@@ -99,7 +99,6 @@ Possible things to add:
   * "Rename existing file" option on name conflicts.
   * Make use of new job information in :jobs menu.
   * Update visible symlinks in the other pane on updating current pane.
-  * Try drawing progress bar in progress dialog.
   * Mouse support. (partially done)
   * Permanent tabs.
   * Asynchronous quick preview?
