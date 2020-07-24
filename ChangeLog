@@ -179,6 +179,10 @@
 	Create $VIFM/colors directory with default color scheme only on the first
 	run.  Thanks to ranousse.
 
+	Improve differentiation between association and list forms of :colorscheme
+	command on startup.  This is important if list contains name of color
+	scheme that doesn't exist.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

@@ -143,6 +143,7 @@ static int copy_cmd(const cmd_info_t *cmd_info);
 static int cquit_cmd(const cmd_info_t *cmd_info);
 static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
+static int is_colorscheme_assoc_form(const cmd_info_t *cmd_info);
 static int assoc_colorscheme(const char name[], const char path[]);
 static void set_colorscheme(char *names[], int count);
 static int command_cmd(const cmd_info_t *cmd_info);
@@ -1653,7 +1654,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		return show_colorschemes_menu(curr_view) != 0;
 	}
 
-	const int assoc_form = (cmd_info->argc == 2 && !cs_exists(cmd_info->argv[1]));
+	const int assoc_form = is_colorscheme_assoc_form(cmd_info);
 	if((cmd_info->argc == 1 || assoc_form) && !cs_exists(cmd_info->argv[0]))
 	{
 		ui_sb_errf("Cannot find colorscheme %s" , cmd_info->argv[0]);
@@ -1669,6 +1670,27 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Checks whether :colorscheme was invoked to associate a color scheme with a
+ * directory.  Returns non-zero if so, otherwise zero is returned. */
+static int
+is_colorscheme_assoc_form(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->argc != 2 || cs_exists(cmd_info->argv[1]))
+	{
+		return 0;
+	}
+
+	/* The path in :colorscheme command cannot be relative in startup scripts. */
+	if(curr_stats.load_stage < 3)
+	{
+		char *path = expand_tilde(cmd_info->argv[1]);
+		int is_abs_path = is_path_absolute(path);
+		free(path);
+		return is_abs_path;
+	}
+	return 1;
+}
+
 /* Associates colorscheme with a subtree.  Returns value to be returned by
  * command handler. */
 static int
@@ -1678,14 +1700,6 @@ assoc_colorscheme(const char name[], const char path[])
 	char *directory = expand_tilde(path);
 	if(!is_path_absolute(directory))
 	{
-		if(curr_stats.load_stage < 3)
-		{
-			ui_sb_errf("The path in :colorscheme command cannot be relative in "
-					"startup scripts (%s)", directory);
-			free(directory);
-			return 1;
-		}
-
 		snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(curr_view),
 				directory);
 		(void)replace_string(&directory, path_buf);
