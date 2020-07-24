@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 10, 2020" "vifm 0.10.1"
+.TH VIFM 1 "July 24, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2083,6 +2083,7 @@ their content (e.g. regular files in views)
  \- Border \- color of vertical parts of the border
  \- TabLine \- tab line color (for 'tabscope' set to "global")
  \- TabLineSel \- color of the tip of selected tab (regardless of 'tabscope')
+ \- TabNr \- tab number color
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
  \- CmdLine \- the command line/status bar color
@@ -2259,8 +2260,10 @@ transparency:
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
+        TabNr
   TabLine
     TabLineSel
+      TabNr
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.

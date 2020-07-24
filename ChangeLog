@@ -43,6 +43,9 @@
 	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
 	and Melandel.
 
+	Added TabNr highlight group for highlighting tab number in tab's label.
+	Thanks to iSeeU816.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

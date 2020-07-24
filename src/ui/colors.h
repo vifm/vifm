@@ -68,6 +68,7 @@ enum
 	USER8_COLOR,        /* User color #8. */
 	USER9_COLOR,        /* User color #9. */
 	OTHER_WIN_COLOR,    /* Background and highlighting for inactive pane. */
+	TAB_NUM_COLOR,      /* Color of tab's number. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 

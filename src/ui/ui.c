@@ -1927,7 +1927,14 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 		if(width > extra_width)
 		{
-			wprintw(win, "[%d:%s]", i + 1, title);
+			col_attr_t numCol = col;
+			cs_mix_colors(&numCol, &cfg.cs.color[TAB_NUM_COLOR]);
+
+			waddch(win, '[');
+			ui_set_attr(win, &numCol, -1);
+			wprintw(win, "%d", i + 1);
+			ui_set_attr(win, &col, -1);
+			wprintw(win, ":%s]", title);
 		}
 
 		/* Here result of `utf8_strsw(title)` might be different from one computed
