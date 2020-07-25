@@ -46,6 +46,9 @@
 	Added TabNr highlight group for highlighting tab number in tab's label.
 	Thanks to iSeeU816.
 
+	Added LineNr highlight group for highlighting line number column of views.
+	Thanks to Anton Gepting.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

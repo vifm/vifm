@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 July 24
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 July 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1790,6 +1790,7 @@ Available group-name values:
  - SuggestBox - color of key suggestion box
  - CurrLine - line at cursor position in active view
  - OtherLine - line at cursor position in inactive view
+ - LineNr - line number column of views
  - Selected - color of selected files
  - Directory - color of directories
  - Link - color of symbolic links in the views
@@ -1952,7 +1953,9 @@ transparency:
           Executable
             Selected
               CurrLine
+                LineNr (in active pane)
               OtherLine
+                LineNr (in inactive pane)
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
