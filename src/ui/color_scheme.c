@@ -86,6 +86,7 @@ char *HI_GROUPS[] = {
 	[OTHER_WIN_COLOR]    = "OtherWin",
 	[TAB_NUM_COLOR]      = "TabNr",
 	[LINE_NUM_COLOR]     = "LineNr",
+	[ODD_LINE_COLOR]     = "OddLine",
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
@@ -127,6 +128,7 @@ const char *HI_GROUPS_DESCR[] = {
 	[OTHER_WIN_COLOR]    = "additional highlighting of inactive pane",
 	[TAB_NUM_COLOR]      = "color of tab's number",
 	[LINE_NUM_COLOR]     = "color of line number column in panes",
+	[ODD_LINE_COLOR]     = "color of every second entry in a pane",
 };
 ARRAY_GUARD(HI_GROUPS_DESCR, ARRAY_LEN(HI_GROUPS));
 
@@ -440,6 +442,7 @@ static const col_attr_t default_cs[] = {
 	[OTHER_WIN_COLOR]    = { -1,            -1,          -1                      },
 	[TAB_NUM_COLOR]      = { -1,            -1,          -1                      },
 	[LINE_NUM_COLOR]     = { -1,            -1,          -1                      },
+	[ODD_LINE_COLOR]     = { -1,            -1,          -1                      },
 };
 ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 

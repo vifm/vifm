@@ -1286,6 +1286,11 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 		cs_mix_colors(&col, &cs->color[AUX_WIN_COLOR]);
 	}
 
+	if(cdt->line_pos%2 == 1)
+	{
+		cs_mix_colors(&col, &cs->color[ODD_LINE_COLOR]);
+	}
+
 	if(cdt->line_pos != -1)
 	{
 		/* File-specific highlight affects only primary field for non-current lines

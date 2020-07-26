@@ -2,13 +2,14 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 25 July, 2020
+" This file last updated: 27 July, 2020
 
 highlight clear
 
 hi Win          cterm=none                    ctermfg=white    ctermbg=232
 hi OtherWin     cterm=none                    ctermfg=default  ctermbg=default
 hi AuxWin       cterm=none                    ctermfg=default  ctermbg=233
+hi OddLine                                    ctermfg=default  ctermbg=default
 
 hi TopLine      cterm=none                    ctermfg=black    ctermbg=white
 hi TopLineSel   cterm=bold                    ctermfg=16       ctermbg=default

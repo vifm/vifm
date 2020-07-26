@@ -49,6 +49,9 @@
 	Added LineNr highlight group for highlighting line number column of views.
 	Thanks to Anton Gepting.
 
+	Added OddLine highlight group for highlighting every second entry of a
+	pane.  Thanks to iSeeU816.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
