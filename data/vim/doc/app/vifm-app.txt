@@ -4533,6 +4533,10 @@ v:count                                        *vifm-count-variable*
 v:count1                                       *vifm-count1-variable*
     same as v:count, but 1 by default.
 
+                                               *vifm-v:jobcount*
+v:jobcount                                     *vifm-jobcount-variable*
+    number of active jobs (as can be seen in the |vifm-:jobs| menu).
+
                                                *vifm-v:session*
 v:session                                      *vifm-session-variable*
     name of the current session or empty string.

@@ -41,9 +41,12 @@
 
 #include "cfg/config.h"
 #include "compat/pthread.h"
+#include "engine/var.h"
+#include "engine/variables.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "ui/statusline.h"
+#include "ui/ui.h"
 #include "utils/cancellation.h"
 #include "utils/env.h"
 #include "utils/fs.h"
@@ -109,6 +112,7 @@ typedef struct
 }
 background_task_args;
 
+static void set_jobcount_var(int count);
 static void job_check(bg_job_t *job);
 static void job_free(bg_job_t *job);
 static void * error_thread(void *p);
@@ -176,13 +180,12 @@ void
 bg_check(void)
 {
 	bg_job_t *head = bg_jobs;
-	bg_job_t *prev;
-	bg_job_t *p;
 
 	/* Quit if there is no jobs or list is unavailable (e.g. used by another
 	 * invocation of this function). */
 	if(head == NULL)
 	{
+		set_jobcount_var(0);
 		return;
 	}
 
@@ -191,19 +194,20 @@ bg_check(void)
 		return;
 	}
 
+	int active_jobs = 0;
+
 	head = bg_jobs;
 	bg_jobs = NULL;
 
-	p = head;
-	prev = NULL;
+	bg_job_t *p = head;
+	bg_job_t *prev = NULL;
 	while(p != NULL)
 	{
-		int can_remove;
-
 		job_check(p);
 
 		pthread_spin_lock(&p->status_lock);
-		can_remove = (!p->running && !p->in_use);
+		int can_remove = (!p->running && !p->in_use);
+		active_jobs += (p->running != 0);
 		pthread_spin_unlock(&p->status_lock);
 
 		/* Remove job if it is finished now. */
@@ -235,6 +239,24 @@ bg_check(void)
 	bg_jobs = head;
 
 	bg_jobs_unfreeze();
+
+	set_jobcount_var(active_jobs);
+}
+
+/* Updates builtin variable that holds number of active jobs.  Schedules UI
+ * redraw on change. */
+static void
+set_jobcount_var(int count)
+{
+	int old_count = var_to_int(getvar("v:jobcount"));
+	if(count != old_count)
+	{
+		var_t var = var_from_int(count);
+		setvar("v:jobcount", var);
+		var_free(var);
+
+		stats_redraw_later();
+	}
 }
 
 /* Checks status of the job.  Processes error stream or checks whether process
