@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* free() snprintf() */
 #include <string.h> /* strcpy() */
 
 #include <test-utils.h>
@@ -104,7 +104,32 @@ TEST(colorscheme_is_not_associated_to_a_file)
 TEST(colorscheme_is_not_associated_to_relpath_on_startup)
 {
 	strcpy(lwin.curr_dir, saved_cwd);
-	assert_failure(exec_commands("colorscheme good .", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("colorscheme good .", &lwin, CIT_COMMAND));
+	assert_false(cs_load_local(1, "."));
+
+	assert_success(exec_commands("colorscheme name1 name2", &lwin, CIT_COMMAND));
+	assert_false(cs_load_local(1, "name2"));
+}
+
+TEST(colorscheme_is_associated_to_tildepath_on_startup)
+{
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), SANDBOX_PATH, "/",
+			saved_cwd);
+	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), SANDBOX_PATH, "colors",
+			saved_cwd);
+
+	create_dir(SANDBOX_PATH "/colors");
+	create_file(SANDBOX_PATH "/colors/cs.vifm");
+
+	assert_success(exec_commands("colorscheme cs ~/colors", &lwin,
+				CIT_COMMAND));
+	char *path = expand_tilde("~/colors");
+	assert_true(cs_load_local(1, path));
+	free(path);
+
+	remove_file(SANDBOX_PATH "/colors/cs.vifm");
+	remove_dir(SANDBOX_PATH "/colors");
 }
 
 TEST(colorscheme_is_restored_on_bad_name)

@@ -84,6 +84,9 @@ char *HI_GROUPS[] = {
 	[USER8_COLOR]        = "User8",
 	[USER9_COLOR]        = "User9",
 	[OTHER_WIN_COLOR]    = "OtherWin",
+	[TAB_NUM_COLOR]      = "TabNr",
+	[LINE_NUM_COLOR]     = "LineNr",
+	[ODD_LINE_COLOR]     = "OddLine",
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
@@ -122,7 +125,10 @@ const char *HI_GROUPS_DESCR[] = {
 	[USER7_COLOR]        = "user color #7",
 	[USER8_COLOR]        = "user color #8",
 	[USER9_COLOR]        = "user color #9",
-	[OTHER_WIN_COLOR]    = "additional highlighting of inactive window",
+	[OTHER_WIN_COLOR]    = "additional highlighting of inactive pane",
+	[TAB_NUM_COLOR]      = "color of tab's number",
+	[LINE_NUM_COLOR]     = "color of line number column in panes",
+	[ODD_LINE_COLOR]     = "color of every second entry in a pane",
 };
 ARRAY_GUARD(HI_GROUPS_DESCR, ARRAY_LEN(HI_GROUPS));
 
@@ -434,6 +440,9 @@ static const col_attr_t default_cs[] = {
 	[USER8_COLOR]        = { -1,            -1,          -1                      },
 	[USER9_COLOR]        = { -1,            -1,          -1                      },
 	[OTHER_WIN_COLOR]    = { -1,            -1,          -1                      },
+	[TAB_NUM_COLOR]      = { -1,            -1,          -1                      },
+	[LINE_NUM_COLOR]     = { -1,            -1,          -1                      },
+	[ODD_LINE_COLOR]     = { -1,            -1,          -1                      },
 };
 ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 

@@ -449,6 +449,7 @@ hi AuxWin
 hi OtherWin
 hi TabLine
 hi TabLineSel
+hi TabNr
 hi HardLink
 hi User1
 hi User2
@@ -459,6 +460,8 @@ hi User6
 hi User7
 hi User8
 hi User9
+hi LineNr
+hi OddLine
 
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'

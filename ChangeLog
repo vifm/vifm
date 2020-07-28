@@ -43,6 +43,18 @@
 	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
 	and Melandel.
 
+	Added TabNr highlight group for highlighting tab number in tab's label.
+	Thanks to iSeeU816.
+
+	Added LineNr highlight group for highlighting line number column of views.
+	Thanks to Anton Gepting.
+
+	Added OddLine highlight group for highlighting every second entry of a
+	pane.  Thanks to iSeeU816.
+
+	Added v:jobcount builtin variable that provides number of active
+	jobs (number of lines in :jobs menu).  Thanks to iSeeU816.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
@@ -169,6 +181,16 @@
 
 	Invalidate cached directory size when using it to compute size of some
 	parent directory.
+
+	Reduce width of top line when side borders are hidden (`set
+	tuioptions-=s`).  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
+	Create $VIFM/colors directory with default color scheme only on the first
+	run.  Thanks to ranousse.
+
+	Improve differentiation between association and list forms of :colorscheme
+	command on startup.  This is important if list contains name of color
+	scheme that doesn't exist.
 
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).

@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 10, 2020" "vifm 0.10.1"
+.TH VIFM 1 "July 27, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2083,6 +2083,7 @@ their content (e.g. regular files in views)
  \- Border \- color of vertical parts of the border
  \- TabLine \- tab line color (for 'tabscope' set to "global")
  \- TabLineSel \- color of the tip of selected tab (regardless of 'tabscope')
+ \- TabNr \- tab number color
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
  \- CmdLine \- the command line/status bar color
@@ -2093,6 +2094,8 @@ their content (e.g. regular files in views)
  \- SuggestBox \- color of key suggestion box
  \- CurrLine \- line at cursor position in active view
  \- OtherLine \- line at cursor position in inactive view
+ \- OddLine \- color of every second entry in a pane
+ \- LineNr \- line number column of views
  \- Selected \- color of selected files
  \- Directory \- color of directories
  \- Link \- color of symbolic links in the views
@@ -2244,23 +2247,28 @@ transparency:
   Win
     OtherWin
       AuxWin
-        File name specific highlights
-          Directory
-          Link
-          BrokenLink
-          HardLink
-          Socket
-          Device
-          Fifo
-          Executable
-            Selected
-              CurrLine
-              OtherLine
+        OddLine
+          File name specific highlights
+            Directory
+            Link
+            BrokenLink
+            HardLink
+            Socket
+            Device
+            Fifo
+            Executable
+              Selected
+                CurrLine
+                  LineNr (in active pane)
+                OtherLine
+                  LineNr (in inactive pane)
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
+        TabNr
   TabLine
     TabLineSel
+      TabNr
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.
@@ -5426,6 +5434,10 @@ the count to a different command.
 .B "v:count1"
 .br
   same as v:count, but 1 by default.
+.br
+.B "v:jobcount"
+.br
+  number of active jobs (as can be seen in the :jobs menu).
 .br
 .B "v:session"
 .br
