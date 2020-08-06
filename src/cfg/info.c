@@ -764,7 +764,7 @@ load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
 	}
 	if(get_int(splitter, "pos", &layout.splitter_pos) && apply)
 	{
-		curr_stats.splitter_pos = layout.splitter_pos;
+		stats_set_splitter_pos(layout.splitter_pos);
 	}
 	if(get_bool(splitter, "expanded", &layout.only_mode) && apply && !reread)
 	{

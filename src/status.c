@@ -364,6 +364,16 @@ stats_set_quickview(int on)
 }
 
 void
+stats_set_splitter_pos(int position)
+{
+	if(curr_stats.splitter_pos != position)
+	{
+		curr_stats.splitter_pos = position;
+		stats_redraw_later();
+	}
+}
+
+void
 stats_redraw_later(void)
 {
 	pending_redraw = 1;

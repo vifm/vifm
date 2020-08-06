@@ -834,8 +834,7 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 void
 modnorm_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.splitter_pos = -1;
-	update_screen(UT_REDRAW);
+	stats_set_splitter_pos(-1);
 }
 
 void

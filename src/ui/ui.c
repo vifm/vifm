@@ -480,7 +480,7 @@ vertical_layout(int screen_x)
 	if(splitter_pos > screen_x - 4 - splitter_width)
 		splitter_pos = screen_x - 4 - splitter_width;
 	if(curr_stats.splitter_pos >= 0)
-		curr_stats.splitter_pos = splitter_pos;
+		stats_set_splitter_pos(splitter_pos);
 
 	wresize(lwin.title, 1, splitter_pos + size_correction);
 	mvwin(lwin.title, y, pos_correction);
@@ -533,7 +533,7 @@ horizontal_layout(int screen_x, int screen_y)
 	if(splitter_pos > get_working_area_height() - 1)
 		splitter_pos = get_working_area_height() - 1;
 	if(curr_stats.splitter_pos >= 0)
-		curr_stats.splitter_pos = splitter_pos;
+		stats_set_splitter_pos(splitter_pos);
 
 	wresize(lwin.title, 1, screen_x + size_correction);
 	mvwin(lwin.title, y, pos_correction);
@@ -752,9 +752,9 @@ ui_resize_all(void)
 	if(curr_stats.splitter_pos >= 0)
 	{
 		if(curr_stats.split == HSPLIT)
-			curr_stats.splitter_pos *= screen_h/prev_h;
+			stats_set_splitter_pos(curr_stats.splitter_pos*(screen_h/prev_h));
 		else
-			curr_stats.splitter_pos *= screen_w/prev_w;
+			stats_set_splitter_pos(curr_stats.splitter_pos*(screen_w/prev_w));
 	}
 
 	prev_w = screen_w;
@@ -1519,9 +1519,11 @@ split_view(SPLIT orientation)
 	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
 	{
 		if(orientation == VSPLIT)
-			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
+			stats_set_splitter_pos(curr_stats.splitter_pos*
+					((float)getmaxx(stdscr)/getmaxy(stdscr)));
 		else
-			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
+			stats_set_splitter_pos(curr_stats.splitter_pos*
+					(float)getmaxy(stdscr)/getmaxx(stdscr));
 	}
 
 	curr_stats.split = orientation;
@@ -1543,20 +1545,22 @@ only(void)
 void
 move_splitter(int by, int fact)
 {
+	int pos = curr_stats.splitter_pos;
+
 	/* Determine exact splitter position if it's centered at the moment. */
 	if(curr_stats.splitter_pos < 0)
 	{
-		if(curr_stats.split == VSPLIT)
+		if(curr_stats.split == HSPLIT)
 		{
-			curr_stats.splitter_pos = getmaxx(stdscr)/2 - 1 + getmaxx(stdscr)%2;
+			pos = getmaxy(stdscr)/2 - 1;
 		}
 		else
 		{
-			curr_stats.splitter_pos = getmaxy(stdscr)/2 - 1;
+			pos = getmaxx(stdscr)/2 - 1 + getmaxx(stdscr)%2;
 		}
 	}
 
-	set_splitter(curr_stats.splitter_pos + fact*by);
+	set_splitter(pos + fact*by);
 }
 
 void
@@ -1583,8 +1587,7 @@ ui_view_resize(view_t *view, int to)
 static void
 set_splitter(int pos)
 {
-	curr_stats.splitter_pos = (pos < 0) ? 0 : pos;
-	update_screen(UT_REDRAW);
+	stats_set_splitter_pos(pos < 0 ? 0 : pos);
 }
 
 void

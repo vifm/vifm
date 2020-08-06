@@ -389,7 +389,7 @@ tabs_goto_global(int idx)
 	}
 	curr_stats.number_of_windows = (gtabs[idx].only_mode ? 1 : 2);
 	curr_stats.split = gtabs[idx].split;
-	curr_stats.splitter_pos = gtabs[idx].splitter_pos;
+	stats_set_splitter_pos(gtabs[idx].splitter_pos);
 	assign_preview(&curr_stats.preview, &gtabs[idx].preview);
 
 	current_gtab = idx;
