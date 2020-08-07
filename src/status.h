@@ -163,8 +163,11 @@ typedef struct
 	SPLIT split;
 	/* Splitter position relative to viewport, negative values mean "centred".
 	 * Handling it as a special case prevents drifting from center on resizes due
-	 * to rounding. */
+	 * to rounding.  Should be updated using stats_set_splitter_*(). */
 	int splitter_pos;
+	/* Splitter position as a ratio relative to terminal's width or height.
+	 * Should be updated using stats_set_splitter_*().*/
+	double splitter_ratio;
 
 	SourcingState sourcing_state;
 
@@ -263,6 +266,14 @@ void stats_save_msg(const char msg[]);
 /* Updates curr_stats.preview.on field and performs necessary updates in other
  * parts of the application. */
 void stats_set_quickview(int on);
+
+/* Updates position of the splitter and schedules a redraw if it has changed. */
+void stats_set_splitter_pos(int position);
+
+/* Updates position of the splitter based on a ratio and schedules a redraw if
+ * it has changed.  The parameter equal to -1.0 sets ratio based on current
+ * position of the splitter. */
+void stats_set_splitter_ratio(double ratio);
 
 /* Scheduled updates. */
 

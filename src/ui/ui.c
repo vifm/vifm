@@ -126,6 +126,7 @@ static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static void create_windows(void);
 static void update_geometry(void);
+static void adjust_splitter(int screen_w, int screen_h);
 static int get_working_area_height(void);
 static void clear_border(WINDOW *border);
 static int middle_border_is_visible(void);
@@ -480,7 +481,7 @@ vertical_layout(int screen_x)
 	if(splitter_pos > screen_x - 4 - splitter_width)
 		splitter_pos = screen_x - 4 - splitter_width;
 	if(curr_stats.splitter_pos >= 0)
-		curr_stats.splitter_pos = splitter_pos;
+		stats_set_splitter_pos(splitter_pos);
 
 	wresize(lwin.title, 1, splitter_pos + size_correction);
 	mvwin(lwin.title, y, pos_correction);
@@ -533,7 +534,7 @@ horizontal_layout(int screen_x, int screen_y)
 	if(splitter_pos > get_working_area_height() - 1)
 		splitter_pos = get_working_area_height() - 1;
 	if(curr_stats.splitter_pos >= 0)
-		curr_stats.splitter_pos = splitter_pos;
+		stats_set_splitter_pos(splitter_pos);
 
 	wresize(lwin.title, 1, screen_x + size_correction);
 	mvwin(lwin.title, y, pos_correction);
@@ -730,8 +731,6 @@ update_screen(UpdateType update_kind)
 void
 ui_resize_all(void)
 {
-	static float prev_w = -1.f, prev_h = -1.f;
-
 	update_geometry();
 
 	int screen_w, screen_h;
@@ -743,22 +742,7 @@ ui_resize_all(void)
 		return;
 	}
 
-	if(prev_w < 0)
-	{
-		prev_w = screen_w;
-		prev_h = screen_h;
-	}
-
-	if(curr_stats.splitter_pos >= 0)
-	{
-		if(curr_stats.split == HSPLIT)
-			curr_stats.splitter_pos *= screen_h/prev_h;
-		else
-			curr_stats.splitter_pos *= screen_w/prev_w;
-	}
-
-	prev_w = screen_w;
-	prev_h = screen_h;
+	adjust_splitter(screen_w, screen_h);
 
 	wresize(stdscr, screen_h, screen_w);
 	wresize(menu_win, screen_h - 1, screen_w);
@@ -806,6 +790,27 @@ ui_resize_all(void)
 	update_statusbar_layout();
 
 	curs_set(0);
+}
+
+/* Adjusts splitter position after screen resize. */
+static void
+adjust_splitter(int screen_w, int screen_h)
+{
+	static int prev_w = -1, prev_h = -1;
+
+	if(curr_stats.splitter_pos < 0)
+	{
+		prev_w = -1;
+		prev_h = -1;
+		return;
+	}
+
+	if(prev_w != screen_w || prev_h != screen_h)
+	{
+		stats_set_splitter_ratio(curr_stats.splitter_ratio);
+		prev_w = screen_w;
+		prev_h = screen_h;
+	}
 }
 
 /* Clears border, possibly by filling it with a pattern (depends on
@@ -1516,16 +1521,13 @@ split_view(SPLIT orientation)
 	if(curr_stats.number_of_windows == 2 && curr_stats.split == orientation)
 		return;
 
-	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
-	{
-		if(orientation == VSPLIT)
-			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
-		else
-			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
-	}
-
 	curr_stats.split = orientation;
 	curr_stats.number_of_windows = 2;
+
+	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
+	{
+		stats_set_splitter_ratio(curr_stats.splitter_ratio);
+	}
 
 	stats_redraw_later();
 }
@@ -1543,20 +1545,22 @@ only(void)
 void
 move_splitter(int by, int fact)
 {
+	int pos = curr_stats.splitter_pos;
+
 	/* Determine exact splitter position if it's centered at the moment. */
 	if(curr_stats.splitter_pos < 0)
 	{
-		if(curr_stats.split == VSPLIT)
+		if(curr_stats.split == HSPLIT)
 		{
-			curr_stats.splitter_pos = getmaxx(stdscr)/2 - 1 + getmaxx(stdscr)%2;
+			pos = getmaxy(stdscr)/2 - 1;
 		}
 		else
 		{
-			curr_stats.splitter_pos = getmaxy(stdscr)/2 - 1;
+			pos = getmaxx(stdscr)/2 - 1 + getmaxx(stdscr)%2;
 		}
 	}
 
-	set_splitter(curr_stats.splitter_pos + fact*by);
+	set_splitter(pos + fact*by);
 }
 
 void
@@ -1583,8 +1587,7 @@ ui_view_resize(view_t *view, int to)
 static void
 set_splitter(int pos)
 {
-	curr_stats.splitter_pos = (pos < 0) ? 0 : pos;
-	update_screen(UT_REDRAW);
+	stats_set_splitter_pos(pos < 0 ? 0 : pos);
 }
 
 void

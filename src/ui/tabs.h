@@ -27,11 +27,12 @@
  * only field that can differ from current state. */
 typedef struct
 {
-	int active_pane;  /* 0 -- left, 1 -- right. */
-	int only_mode;    /* Whether in single-pane mode. */
-	SPLIT split;      /* State of window split. */
-	int splitter_pos; /* Splitter position. */
-	int preview;      /* Whether preview mode is active. */
+	int active_pane;       /* 0 -- left, 1 -- right. */
+	int only_mode;         /* Whether in single-pane mode. */
+	SPLIT split;           /* State of window split. */
+	int splitter_pos;      /* Position of the splitter. */
+	double splitter_ratio; /* Relative position of the splitter. */
+	int preview;           /* Whether preview mode is active. */
 }
 tab_layout_t;
 

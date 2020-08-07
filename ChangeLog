@@ -192,6 +192,10 @@
 	command on startup.  This is important if list contains name of color
 	scheme that doesn't exist.
 
+	Try harder to preserve position of the splitter.  Avoid its drift on
+	terminal resizes and preserve ratio of windows on startup and tab
+	switches.  Thanks to Shakil Akhtar.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

@@ -167,6 +167,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->scroll_bind_off = 0;
 	stats->split = VSPLIT;
 	stats->splitter_pos = -1;
+	stats->splitter_ratio = 0.5;
 
 	stats->sourcing_state = SOURCING_NONE;
 
@@ -361,6 +362,46 @@ stats_set_quickview(int on)
 {
 	curr_stats.preview.on = on;
 	load_quickview_option();
+}
+
+void
+stats_set_splitter_pos(int position)
+{
+	double max = (curr_stats.split == HSPLIT ? cfg.lines : cfg.columns);
+	double ratio = (position < 0 ? 0.5 : (max == INT_MIN ? -1 : position/max));
+
+	curr_stats.splitter_ratio = ratio;
+	if(curr_stats.splitter_pos != position)
+	{
+		curr_stats.splitter_pos = position;
+		stats_redraw_later();
+	}
+}
+
+void
+stats_set_splitter_ratio(double ratio)
+{
+	if(ratio == -1)
+	{
+		stats_set_splitter_pos(curr_stats.splitter_pos);
+		return;
+	}
+
+	curr_stats.splitter_ratio = ratio;
+
+	int max = (curr_stats.split == HSPLIT ? cfg.lines : cfg.columns);
+	if(max == INT_MIN)
+	{
+		/* Can't compute position from ratio, so leave it as is. */
+		return;
+	}
+
+	int position = max*ratio + 0.5;
+	if(curr_stats.splitter_pos != position)
+	{
+		curr_stats.splitter_pos = position;
+		stats_redraw_later();
+	}
 }
 
 void

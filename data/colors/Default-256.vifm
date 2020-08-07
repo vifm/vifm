@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 27 July, 2020
+" This file last updated: 31 July, 2020
 
 highlight clear
 
@@ -68,7 +68,7 @@ highlight {*.djvu,*.htm,*.html,*.shtml,*.css,*.markdown,*.md,*[^0-9].[1-9],
           \*.mkd,*.org,*.pandoc,*.pdc,*.pdf,*.epub,*.fb2,*.tex,*.txt,*.xhtml,
           \*.xml,*.pptx,*.ppt,*.doc,*.docx,*.xls,*.xlsm,*.xlsx,*.mobi,*.rtf,
           \*.less,*.scss,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.desktop,*.csv,
-          \*.plist,*.ini,*.cfg,*.rc,*.conf,*.spec}
+          \*.plist,*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc}
         \ cterm=none ctermfg=217 ctermbg=default
 " media
 highlight {*.aac,*.anx,*.asf,*.au,*.avi,*.ts,*.axa,*.axv,*.divx,*.flac,*.m2a,
