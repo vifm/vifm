@@ -367,8 +367,8 @@ stats_set_quickview(int on)
 void
 stats_set_splitter_pos(int position)
 {
-	double max = (curr_stats.split == HSPLIT ? getmaxy(stdscr) : getmaxx(stdscr));
-	double ratio = (position < 0 ? 0.5 : (max == -1 ? -1 : position/max));
+	double max = (curr_stats.split == HSPLIT ? cfg.lines : cfg.columns);
+	double ratio = (position < 0 ? 0.5 : (max == INT_MIN ? -1 : position/max));
 
 	curr_stats.splitter_ratio = ratio;
 	if(curr_stats.splitter_pos != position)
@@ -389,14 +389,14 @@ stats_set_splitter_ratio(double ratio)
 
 	curr_stats.splitter_ratio = ratio;
 
-	int max = (curr_stats.split == HSPLIT ? getmaxy(stdscr) : getmaxx(stdscr));
-	if(max == -1)
+	int max = (curr_stats.split == HSPLIT ? cfg.lines : cfg.columns);
+	if(max == INT_MIN)
 	{
 		/* Can't compute position from ratio, so leave it as is. */
 		return;
 	}
 
-	int position = (max == -1 ? -1 : max*ratio + 0.5);
+	int position = max*ratio + 0.5;
 	if(curr_stats.splitter_pos != position)
 	{
 		curr_stats.splitter_pos = position;
