@@ -10,6 +10,7 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/status.h"
 
 static char cwd[PATH_MAX + 1];
 
@@ -71,6 +72,16 @@ TEST(sibl_navigate_correctly)
 	(void)vle_keys_exec_timed_out(WK_RB WK_R);
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "color-schemes", cwd);
 	assert_true(paths_are_same(lwin.curr_dir, path));
+}
+
+TEST(center_splitter)
+{
+	stats_set_splitter_pos(10);
+
+	(void)vle_keys_exec_timed_out(WK_C_w WK_EQUALS);
+
+	assert_int_equal(-1, curr_stats.splitter_pos);
+	assert_true(curr_stats.splitter_ratio == 0.5);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
