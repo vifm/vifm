@@ -1,9 +1,11 @@
 #include <stic.h>
 
+#include <limits.h> /* INT_MIN */
 #include <string.h> /* memset() */
 
 #include <test-utils.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
@@ -76,6 +78,9 @@ TEST(sibl_navigate_correctly)
 
 TEST(center_splitter)
 {
+	cfg.lines = INT_MIN;
+	cfg.columns = INT_MIN;
+
 	stats_set_splitter_pos(10);
 
 	(void)vle_keys_exec_timed_out(WK_C_w WK_EQUALS);
