@@ -796,24 +796,21 @@ ui_resize_all(void)
 static void
 adjust_splitter(int screen_w, int screen_h)
 {
-	static float prev_w = -1.f, prev_h = -1.f;
+	static int prev_w = -1, prev_h = -1;
 
-	if(prev_w < 0)
+	if(curr_stats.splitter_pos < 0)
 	{
+		prev_w = -1;
+		prev_h = -1;
+		return;
+	}
+
+	if(prev_w != screen_w || prev_h != screen_h)
+	{
+		stats_set_splitter_ratio(curr_stats.splitter_ratio);
 		prev_w = screen_w;
 		prev_h = screen_h;
 	}
-
-	if(curr_stats.splitter_pos >= 0)
-	{
-		if(curr_stats.split == HSPLIT)
-			stats_set_splitter_pos(curr_stats.splitter_pos*(screen_h/prev_h));
-		else
-			stats_set_splitter_pos(curr_stats.splitter_pos*(screen_w/prev_w));
-	}
-
-	prev_w = screen_w;
-	prev_h = screen_h;
 }
 
 /* Clears border, possibly by filling it with a pattern (depends on
@@ -1524,18 +1521,13 @@ split_view(SPLIT orientation)
 	if(curr_stats.number_of_windows == 2 && curr_stats.split == orientation)
 		return;
 
-	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
-	{
-		if(orientation == VSPLIT)
-			stats_set_splitter_pos(curr_stats.splitter_pos*
-					((float)getmaxx(stdscr)/getmaxy(stdscr)));
-		else
-			stats_set_splitter_pos(curr_stats.splitter_pos*
-					(float)getmaxy(stdscr)/getmaxx(stdscr));
-	}
-
 	curr_stats.split = orientation;
 	curr_stats.number_of_windows = 2;
+
+	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
+	{
+		stats_set_splitter_ratio(curr_stats.splitter_ratio);
+	}
 
 	stats_redraw_later();
 }

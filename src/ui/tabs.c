@@ -63,13 +63,14 @@ typedef struct
 	pane_tabs_t left;  /* Collection of tabs for the left pane. */
 	pane_tabs_t right; /* Collection of tabs for the right pane. */
 
-	int active_pane;   /* 0 -- left, 1 -- right. */
-	int only_mode;     /* Whether in single-pane mode. */
-	SPLIT split;       /* State of window split. */
-	int splitter_pos;  /* Splitter position. */
-	preview_t preview; /* Information about state of the quickview. */
-	char *name;        /* Name of the tab.  Might be NULL. */
-	int visited;       /* Whether this tab has already been active. */
+	int active_pane;       /* 0 -- left, 1 -- right. */
+	int only_mode;         /* Whether in single-pane mode. */
+	SPLIT split;           /* State of window split. */
+	int splitter_pos;      /* Splitter position. */
+	double splitter_ratio; /* Relative position of the splitter. */
+	preview_t preview;     /* Information about state of the quickview. */
+	char *name;            /* Name of the tab.  Might be NULL. */
+	int visited;           /* Whether this tab has already been active. */
 }
 global_tab_t;
 
@@ -389,7 +390,14 @@ tabs_goto_global(int idx)
 	}
 	curr_stats.number_of_windows = (gtabs[idx].only_mode ? 1 : 2);
 	curr_stats.split = gtabs[idx].split;
-	stats_set_splitter_pos(gtabs[idx].splitter_pos);
+	if(gtabs[idx].splitter_ratio == -1 || gtabs[idx].splitter_pos < 0)
+	{
+		stats_set_splitter_pos(gtabs[idx].splitter_pos);
+	}
+	else
+	{
+		stats_set_splitter_ratio(gtabs[idx].splitter_ratio);
+	}
 	assign_preview(&curr_stats.preview, &gtabs[idx].preview);
 
 	current_gtab = idx;
@@ -640,6 +648,7 @@ get_global_tab(view_t *side, int idx, tab_info_t *tab_info, int return_active)
 	tab_info->layout.only_mode = gtab->only_mode;
 	tab_info->layout.split = gtab->split;
 	tab_info->layout.splitter_pos = gtab->splitter_pos;
+	tab_info->layout.splitter_ratio = gtab->splitter_ratio;
 	tab_info->layout.preview = gtab->preview.on;
 	return 1;
 }
@@ -828,6 +837,7 @@ tabs_layout_fill(tab_layout_t *layout)
 	layout->only_mode = (curr_stats.number_of_windows == 1);
 	layout->split = curr_stats.split;
 	layout->splitter_pos = curr_stats.splitter_pos;
+	layout->splitter_ratio = curr_stats.splitter_ratio;
 	layout->preview = curr_stats.preview.on;
 }
 
@@ -857,6 +867,7 @@ apply_layout(global_tab_t *gtab, const tab_layout_t *layout)
 	gtab->only_mode = layout->only_mode;
 	gtab->split = layout->split;
 	gtab->splitter_pos = layout->splitter_pos;
+	gtab->splitter_ratio = layout->splitter_ratio;
 	gtab->preview.on = layout->preview;
 }
 
