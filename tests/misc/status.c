@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <limits.h> /* INT_MIN */
+
 #include "../../src/cfg/config.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"

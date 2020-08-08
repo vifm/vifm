@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 July 27
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 8
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1780,8 +1780,9 @@ Available group-name values:
  - TabLineSel - color of the tip of selected tab (regardless of
                 |vifm-'tabscope'|)
  - TabNr - tab number color
- - TopLineSel - top line color of the current pane
+ - TabNrSel - tab number color for current tab
  - TopLine - top line color of the other pane
+ - TopLineSel - top line color of the current pane
  - CmdLine - the command line/status bar color
  - ErrorMsg - color of error messages in the status bar
  - StatusLine - color of the line above the status bar
@@ -1790,7 +1791,7 @@ Available group-name values:
  - SuggestBox - color of key suggestion box
  - CurrLine - line at cursor position in active view
  - OtherLine - line at cursor position in inactive view
- - OddLine - color of every second entry in a pane
+ - OddLine - color of every second entry line in a pane
  - LineNr - line number column of views
  - Selected - color of selected files
  - Directory - color of directories
@@ -1962,9 +1963,11 @@ transparency:
     TopLineSel
       TabLineSel (for pane tabs)
         TabNr
+          TabNrSel
   TabLine
     TabLineSel
       TabNr
+        TabNrSel
 
 "none" means default terminal color for highlight groups at the first level
 of the hierarchy and transparency for all others.

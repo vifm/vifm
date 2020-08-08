@@ -43,13 +43,13 @@
 	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
 	and Melandel.
 
-	Added TabNr highlight group for highlighting tab number in tab's label.
-	Thanks to iSeeU816.
+	Added TabNr and TabNrSel highlight groups for highlighting tab number in
+	tab's label.  Thanks to iSeeU816.
 
 	Added LineNr highlight group for highlighting line number column of views.
 	Thanks to Anton Gepting.
 
-	Added OddLine highlight group for highlighting every second entry of a
+	Added OddLine highlight group for highlighting every second entry line of a
 	pane.  Thanks to iSeeU816.
 
 	Added v:jobcount builtin variable that provides number of active
