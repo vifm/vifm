@@ -41,8 +41,6 @@
 #include "engine/autocmds.h"
 #include "engine/parsing.h"
 #include "compat/fs_limits.h"
-#include "engine/cmds.h"
-#include "engine/keys.h"
 #include "engine/mode.h"
 #include "engine/options.h"
 #include "engine/variables.h"
@@ -73,12 +71,10 @@
 #include "utils/utils.h"
 #include "args.h"
 #include "background.h"
-#include "bmarks.h"
 #include "bracket_notation.h"
 #include "builtin_functions.h"
 #include "cmd_completion.h"
 #include "cmd_core.h"
-#include "dir_stack.h"
 #include "event_loop.h"
 #include "filelist.h"
 #include "filetype.h"
@@ -523,91 +519,9 @@ load_scheme(void)
 }
 
 void
-vifm_start_restart(void)
+vifm_reexec_startup_commands(void)
 {
-	view_t *tmp_view;
-
-	curr_stats.restart_in_progress = 1;
-
-	/* All user mappings in all modes. */
-	vle_keys_user_clear();
-
-	/* User defined commands. */
-	vle_cmds_run("comclear");
-
-	/* Autocommands. */
-	vle_aucmd_remove(NULL, NULL);
-
-	/* All kinds of histories. */
-	cfg_resize_histories(0);
-
-	/* Session status.  Must be reset _before_ options, because options take some
-	 * of values from status. */
-	(void)stats_reset(&cfg);
-
-	/* Options of current pane. */
-	vle_opts_restore_defaults();
-	/* Options of other pane. */
-	tmp_view = curr_view;
-	curr_view = other_view;
-	load_view_options(other_view);
-	vle_opts_restore_defaults();
-	curr_view = tmp_view;
-
-	/* File types and viewers. */
-	ft_reset(curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
-
-	/* Undo list. */
-	un_reset();
-
-	/* Directory stack. */
-	dir_stack_clear();
-
-	/* Registers. */
-	regs_reset();
-
-	/* Clear all marks and bookmarks. */
-	marks_clear_all();
-	bmarks_clear();
-
-	/* Reset variables. */
-	clear_envvars();
-	init_variables();
-	/* This update is needed as clear_variables() will reset $PATH. */
-	update_path_env(1);
-
-	reset_views();
-}
-
-void
-vifm_finish_restart(void)
-{
-	flist_hist_save(&lwin);
-	flist_hist_save(&rwin);
-
-	/* Color schemes. */
-	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&
-			cs_exists(curr_stats.color_scheme))
-	{
-		cs_load_primary(curr_stats.color_scheme);
-	}
-	else
-	{
-		cs_load_defaults();
-	}
-	cs_load_pairs();
-
-	cfg_load();
-
 	exec_startup_commands(&vifm_args);
-
-	curr_stats.restart_in_progress = 0;
-
-	/* Trigger auto-commands for initial directories. */
-	vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
-	vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
-
-	update_screen(UT_REDRAW);
 }
 
 /* Executes list of startup commands. */

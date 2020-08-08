@@ -226,6 +226,7 @@ there for instructions.
     |  |-- fops_misc.c - most of high-level operations on files
     |  |-- fops_put.c - putting of files
     |  |-- fops_rename.c - renaming files in various ways
+    |  |-- instance.c - manages generic state of the instance
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- marks.c - stores information about marked directories

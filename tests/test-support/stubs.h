@@ -2,7 +2,6 @@
 #define VIFM_TESTS__TEST_SUPPORT__STUBS_H__
 
 extern int vifm_tests_exited;
-extern void (*vifm_tests_finish_restart_hook)(void);
 
 #endif /* VIFM_TESTS__TEST_SUPPORT__STUBS_H__ */
 
