@@ -1932,6 +1932,10 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		{
 			col_attr_t numCol = col;
 			cs_mix_colors(&numCol, &cfg.cs.color[TAB_NUM_COLOR]);
+			if(tab_info.view == view)
+			{
+				cs_mix_colors(&numCol, &cfg.cs.color[TAB_NUM_SEL_COLOR]);
+			}
 
 			waddch(win, '[');
 			ui_set_attr(win, &numCol, -1);
