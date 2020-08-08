@@ -70,7 +70,7 @@ enum
 	OTHER_WIN_COLOR,    /* Background and highlighting for inactive pane. */
 	TAB_NUM_COLOR,      /* Color of tab's number. */
 	LINE_NUM_COLOR,     /* Color of line number column of panes. */
-	ODD_LINE_COLOR,     /* Color of every second entry in a pane. */
+	ODD_LINE_COLOR,     /* Color of every second entry line in a pane. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 

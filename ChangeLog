@@ -49,7 +49,7 @@
 	Added LineNr highlight group for highlighting line number column of views.
 	Thanks to Anton Gepting.
 
-	Added OddLine highlight group for highlighting every second entry of a
+	Added OddLine highlight group for highlighting every second entry line of a
 	pane.  Thanks to iSeeU816.
 
 	Added v:jobcount builtin variable that provides number of active

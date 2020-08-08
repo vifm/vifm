@@ -128,7 +128,7 @@ const char *HI_GROUPS_DESCR[] = {
 	[OTHER_WIN_COLOR]    = "additional highlighting of inactive pane",
 	[TAB_NUM_COLOR]      = "color of tab's number",
 	[LINE_NUM_COLOR]     = "color of line number column in panes",
-	[ODD_LINE_COLOR]     = "color of every second entry in a pane",
+	[ODD_LINE_COLOR]     = "color of every second entry line in a pane",
 };
 ARRAY_GUARD(HI_GROUPS_DESCR, ARRAY_LEN(HI_GROUPS));
 
