@@ -695,7 +695,7 @@ cfg_load(void)
 	 * views. */
 	curr_stats.global_local_settings = 1;
 
-	if(curr_stats.load_stage >= 0)
+	if(!vifm_testing())
 	{
 		/* Try to load global configuration. */
 		(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
