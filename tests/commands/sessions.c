@@ -7,7 +7,9 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/keys.h"
 #include "../../src/engine/variables.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
@@ -28,6 +30,14 @@ TEARDOWN_ONCE()
 
 SETUP()
 {
+	view_setup(&lwin);
+	view_setup(&rwin);
+
+	lwin.columns = columns_create();
+	rwin.columns = columns_create();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+
 	init_commands();
 	opt_handlers_setup();
 }
@@ -40,6 +50,16 @@ TEARDOWN()
 	cfg.session_options = 0;
 
 	opt_handlers_teardown();
+	vle_keys_reset();
+
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	columns_free(rwin.columns);
+	rwin.columns = NULL;
+	columns_teardown();
 }
 
 TEST(can_create_a_session)
