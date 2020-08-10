@@ -363,6 +363,9 @@ int cfg_source_file(const char filename[]);
  * configuration variables. */
 const char * cfg_get_vicmd(int *bg);
 
+/* Clears histories.  Leaving directory history as is used during restart. */
+void cfg_clear_histories(int clear_dhistory);
+
 /* Changes size of all histories.  Zero or negative length disables history. */
 void cfg_resize_histories(int new_len);
 

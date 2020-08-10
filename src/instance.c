@@ -26,6 +26,7 @@
 #include "engine/options.h"
 #include "engine/variables.h"
 #include "int/path_env.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/str.h"
 #include "bmarks.h"
@@ -55,7 +56,7 @@ instance_start_restart(void)
 	vle_aucmd_remove(NULL, NULL);
 
 	/* All kinds of histories. */
-	cfg_resize_histories(0);
+	cfg_clear_histories(tabs_count(&lwin) == 0 && tabs_count(&rwin) == 0);
 
 	/* Session status.  Must be reset _before_ options, because options take some
 	 * of values from status. */

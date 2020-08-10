@@ -855,6 +855,22 @@ cfg_get_vicmd(int *bg)
 }
 
 void
+cfg_clear_histories(int clear_dhistory)
+{
+	if(clear_dhistory)
+	{
+		cfg_resize_histories(0);
+	}
+	else
+	{
+		hists_resize(0);
+		cfg.history_len = 0;
+		/* Directory histories keep their data, which will be truncated or updated
+		 * later. */
+	}
+}
+
+void
 cfg_resize_histories(int new_size)
 {
 	hists_resize(new_size);
