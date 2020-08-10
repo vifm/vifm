@@ -69,19 +69,38 @@ TEST(negative_one_splitter_ratio)
 	assert_true(curr_stats.splitter_ratio == 0.5);
 }
 
+TEST(setting_splitter_ratio_to_half_updates_position_accordingly)
+{
+	cfg.lines = 20;
+	cfg.columns = 20;
+
+	assert_int_equal(UT_NONE, stats_update_fetch());
+
+	stats_set_splitter_pos(5);
+	assert_true(curr_stats.splitter_ratio == 0.25);
+	assert_int_equal(UT_REDRAW, stats_update_fetch());
+
+	stats_set_splitter_ratio(0.5);
+	assert_int_equal(-1, curr_stats.splitter_pos);
+	assert_int_equal(UT_REDRAW, stats_update_fetch());
+
+	cfg.lines = INT_MIN;
+	cfg.columns = INT_MIN;
+}
+
 TEST(setting_splitter_ratio_updates_position_and_schedules_redraw)
 {
 	cfg.lines = 20;
 	cfg.columns = 20;
 
 	assert_int_equal(UT_NONE, stats_update_fetch());
-	stats_set_splitter_ratio(0.5);
+	stats_set_splitter_ratio(0.75);
 
-	assert_int_equal(10, curr_stats.splitter_pos);
-	assert_true(curr_stats.splitter_ratio == 0.5);
+	assert_int_equal(15, curr_stats.splitter_pos);
+	assert_true(curr_stats.splitter_ratio == 0.75);
 	assert_int_equal(UT_REDRAW, stats_update_fetch());
 
-	stats_set_splitter_ratio(0.5);
+	stats_set_splitter_ratio(0.75);
 	assert_int_equal(UT_NONE, stats_update_fetch());
 
 	cfg.lines = INT_MIN;

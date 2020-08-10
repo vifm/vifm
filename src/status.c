@@ -396,7 +396,7 @@ stats_set_splitter_ratio(double ratio)
 		return;
 	}
 
-	int position = max*ratio + 0.5;
+	int position = (ratio == 0.5 ? -1 : max*ratio + 0.5);
 	if(curr_stats.splitter_pos != position)
 	{
 		curr_stats.splitter_pos = position;
