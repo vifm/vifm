@@ -7,21 +7,11 @@
 struct view_t;
 
 int vifm_tests_exited;
-void (*vifm_tests_finish_restart_hook)(void);
 
 void
-vifm_start_restart(void)
+vifm_reexec_startup_commands(void)
 {
 	/* Do nothing. */
-}
-
-void
-vifm_finish_restart(void)
-{
-	if(vifm_tests_finish_restart_hook != NULL)
-	{
-		vifm_tests_finish_restart_hook();
-	}
 }
 
 void

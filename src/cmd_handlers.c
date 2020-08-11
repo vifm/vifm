@@ -100,6 +100,7 @@
 #include "fops_misc.h"
 #include "fops_put.h"
 #include "fops_rename.h"
+#include "instance.h"
 #include "macros.h"
 #include "marks.h"
 #include "ops.h"
@@ -3939,7 +3940,7 @@ session_cmd(const cmd_info_t *cmd_info)
 static int
 restart_into_session(const char session[])
 {
-	vifm_start_restart();
+	instance_start_restart();
 
 	int result;
 	if(session == NULL)
@@ -3952,7 +3953,7 @@ restart_into_session(const char session[])
 		result = sessions_load(session);
 	}
 
-	vifm_finish_restart();
+	instance_finish_restart();
 	return result;
 }
 

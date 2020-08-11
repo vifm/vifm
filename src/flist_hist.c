@@ -122,12 +122,22 @@ flist_hist_resize(view_t *view, int new_size)
 		reduce_view_history(view, new_size);
 	}
 
+	if(delta > 0 && view->history_num >= new_size)
+	{
+		/* We must be restarting, don't truncate history. */
+		return;
+	}
+
 	view->history = reallocarray(view->history, new_size, sizeof(history_t));
 
 	if(delta > 0)
 	{
-		const size_t hist_item_len = sizeof(history_t)*delta;
-		memset(view->history + old_size, 0, hist_item_len);
+		int real_delta = new_size - MAX(view->history_num, old_size);
+		if(real_delta > 0)
+		{
+			size_t hist_item_len = sizeof(history_t)*real_delta;
+			memset(view->history + view->history_num, 0, hist_item_len);
+		}
 	}
 }
 
@@ -220,13 +230,15 @@ flist_hist_setup(view_t *view, const char path[], const char file[],
 	}
 	x = view->history_num;
 
-	if(x == cfg.history_len)
+	/* Directory history can exceed cfg.history_len during restart. */
+	if(x >= cfg.history_len)
 	{
-		free_view_history_items(view->history, 1);
-		memmove(view->history, view->history + 1,
+		int surplus = x - cfg.history_len + 1;
+		free_view_history_items(view->history, surplus);
+		memmove(view->history, view->history + surplus,
 				sizeof(history_t)*(cfg.history_len - 1));
 
-		--x;
+		x = cfg.history_len - 1;
 		view->history_num = x;
 	}
 	view->history[x].dir = strdup(path);

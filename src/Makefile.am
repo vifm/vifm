@@ -246,6 +246,7 @@ vifm_SOURCES = \
 	flist_hist.c flist_hist.h \
 	flist_pos.c flist_pos.h \
 	flist_sel.c flist_sel.h \
+	instance.c instance.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
 	marks.c marks.h \

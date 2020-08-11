@@ -85,10 +85,10 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
                 cmd_core.c cmd_handlers.c compare.c compile_info.c dir_stack.c \
                 event_loop.c filelist.c filename_modifiers.c fops_common.c \
                 fops_cpmv.c fops_misc.c fops_put.c fops_rename.c filetype.c \
-                filtering.c flist_hist.c flist_pos.c flist_sel.c ipc.c \
-                macros.c marks.c ops.c opt_handlers.c registers.c running.c \
-                search.c signals.c sort.c status.c tags.c trash.c types.c \
-                undo.c version.c viewcolumns_parser.c vifmres.o vifm.c
+                filtering.c flist_hist.c flist_pos.c flist_sel.c instance.c \
+                ipc.c macros.c marks.c ops.c opt_handlers.c registers.c \
+                running.c search.c signals.c sort.c status.c tags.c trash.c \
+                types.c undo.c version.c viewcolumns_parser.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

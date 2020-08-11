@@ -7,12 +7,12 @@ starting it.  The are multiple reasons for this:
  - not all ways of implementing a feature are equal, some might be preferred
    just for the sake of keeping things consistent;
  - the code base is quite large and stuff that's already there might save you
-   time.
+   some time.
 
 Changes can be sent as a pull request on [github][github] or as a patch via
 [email][email].
 
-Some information on development is available at [wiki][wiki].
+Some information on development is available on the [wiki][wiki].
 
 [github]: https://github.com/vifm/vifm/pulls
 [email]: mailto:xaizek@posteo.net
@@ -226,6 +226,7 @@ there for instructions.
     |  |-- fops_misc.c - most of high-level operations on files
     |  |-- fops_put.c - putting of files
     |  |-- fops_rename.c - renaming files in various ways
+    |  |-- instance.c - manages generic state of the instance
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- marks.c - stores information about marked directories

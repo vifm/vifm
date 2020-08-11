@@ -4,11 +4,12 @@
 
 #include <stdlib.h> /* free() */
 
-#include <stubs.h>
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/keys.h"
 #include "../../src/engine/variables.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
@@ -29,7 +30,16 @@ TEARDOWN_ONCE()
 
 SETUP()
 {
+	view_setup(&lwin);
+	view_setup(&rwin);
+
+	lwin.columns = columns_create();
+	rwin.columns = columns_create();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+
 	init_commands();
+	opt_handlers_setup();
 }
 
 TEARDOWN()
@@ -38,6 +48,18 @@ TEARDOWN()
 
 	cfg.config_dir[0] = '\0';
 	cfg.session_options = 0;
+
+	opt_handlers_teardown();
+	vle_keys_reset();
+
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	columns_free(rwin.columns);
+	rwin.columns = NULL;
+	columns_teardown();
 }
 
 TEST(can_create_a_session)
@@ -181,7 +203,6 @@ TEST(can_fail_to_switch_and_still_be_in_a_session)
 	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
 	curr_stats.load_stage = -1;
 	env_set("MYVIFMRC", SANDBOX_PATH "/vifmrc");
-	vifm_tests_finish_restart_hook = &cfg_load;
 
 	create_dir(SANDBOX_PATH "/sessions");
 	create_file(SANDBOX_PATH "/sessions/empty.json");
@@ -199,7 +220,6 @@ TEST(can_fail_to_switch_and_still_be_in_a_session)
 	remove_file(SANDBOX_PATH "/sessions/empty.json");
 	remove_dir(SANDBOX_PATH "/sessions");
 
-	vifm_tests_finish_restart_hook = NULL;
 	curr_stats.load_stage = 0;
 	env_remove("MYVIFMRC");
 }

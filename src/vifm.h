@@ -23,13 +23,8 @@
 
 struct view_t;
 
-/* Resets internal state to default/empty value. */
-void vifm_start_restart(void);
-
-/* Loads color scheme, processes configuration file and so on to finish restart.
- * Does NOT load state of the application, it's expected to be done between
- * calls to vifm_start_restart() and this function. */
-void vifm_finish_restart(void);
+/* Re-executes list of startup commands. */
+void vifm_reexec_startup_commands(void);
 
 /* Tries to quit fully initialized vifm.  Might fail if background tasks are
  * present and user chooses not to stop them. */
