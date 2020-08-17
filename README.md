@@ -8,7 +8,7 @@ _This file last updated on 13 April, 2020_
 
 ## Brief Description ##
 
-Vifm is a curses based vi[m] like file manager extended with some useful
+**Vifm** is a curses based vi[m] like file manager extended with some useful
 ideas from mutt.  If you use vi[m], vifm gives you complete keyboard control
 over your files without having to learn a new set of commands.  It goes not
 just about vi[m] like keybindings, but also about modes, options, registers,
@@ -21,31 +21,29 @@ functionality should be enough for most of use cases.
 
 ## Resources and Contacts ##
 
-**Website:** https://vifm.info/
-
-**Wiki:**    https://wiki.vifm.info/
-
-**Q&A:**     https://q2a.vifm.info/
+| Usage     | Link                     |
+| :-------: | :----:                   |
+| Website   | https://vifm.info/       |
+| Wiki      | https://wiki.vifm.info/  |
+| Q & A     | https://q2a.vifm.info/   |
 
 ### Communication ###
 
-Bugs and feature requests can be reported via [GitHub][bugs-github] or
-[SourceForge][bugs-sourceforge].
-
-The preferred way of posting usage questions is [Q&A][q2a] site.
-
-Bugs, suggestions and comments can also be communicated via [email][email].
-
-Read-only and very low traffic news mailing list vifm-announce has
-subscription form [here][list].
+| Reason                                                            | Source                                                                        |
+| :-------:                                                         | :------:                                                                      |
+| Bugs & Feature Requests                                           | [GitHub][bugs-github], [SourceForge][bugs-sourceforge] or via [email][email]  |
+| Questions                                                         | (Preferred for questions) Posting on the [Q&A][q2a] site                      |
+| Read-only and very low traffic news mailing list vifm-announce    | [Click here][list]                                                            |
 
 ### Other resources ###
 
-Repositories are on [GitHub][repo-github] and [SourceForge][repo-sourceforge].
-
-Plugins are available for [Vim][vim-plugin] and [NeoVim][neovim-plugin].
-
-Collection of color schemes is maintained [here][colors].
+| Usage                     | Where to find                                                             |
+| :---:                     | :---:                                                                     |
+| Repositories              | [GitHub][repo-github] and [SourceForge][repo-sourceforge]                 |
+| Plugins                   | [Vim][vim-plugin] and [NeoVim][neovim-plugin]                             |
+| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]     | 
+| Favicons (in process)     | [Repository][favicons]                                                    |
+| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)   |
 
 ## Screenshot ##
 
@@ -67,6 +65,10 @@ GNU General Public License, version 2 or later.
 [vim-plugin]: https://github.com/vifm/vifm.vim
 [neovim-plugin]: https://github.com/vifm/neovim-vifm
 [colors]: https://github.com/vifm/vifm-colors
+[colorscheme-preview]: https://vifm.info/colorschemes.shtml
+[favicons]: https://github.com/TornaxO7/vifm-favicons
+[vifmimg]: https://github.com/cirala/vifmimg
+[ueberzug]: https://github.com/seebye/ueberzug
 [bugs-github]: https://github.com/vifm/vifm/issues
 [bugs-sourceforge]: https://sourceforge.net/p/vifm/_list/tickets
 [repo-github]: https://github.com/vifm/vifm
