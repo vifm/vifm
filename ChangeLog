@@ -344,6 +344,9 @@
 	Fixed opening non-top-level ".." in a :tree incorrectly behaving as
 	`:cd ..`.
 
+	Fixed user mappings not being resolved for suggestions.  Thanks to
+	TornaxO7.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

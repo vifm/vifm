@@ -92,6 +92,36 @@ TEST(only_custom_suggestions)
 	assert_int_equal(2, nsuggestions);
 }
 
+TEST(suggestions_after_user_mapped_user_prefix)
+{
+	vle_keys_user_add(L"x", L"h", NORMAL_MODE, KEYS_FLAG_NONE);
+
+	vle_keys_suggest(L"x", &process_suggestion, 0, 0);
+	assert_int_equal(4, nsuggestions);
+	assert_wstring_equal(L"j", rhs);
+	assert_string_equal("", descr);
+}
+
+TEST(suggestions_after_user_mapped_builtin_prefix)
+{
+	vle_keys_user_add(L"x", L"g", NORMAL_MODE, KEYS_FLAG_NONE);
+
+	vle_keys_suggest(L"x", &process_suggestion, 0, 0);
+	assert_int_equal(3, nsuggestions);
+	assert_wstring_equal(L"", rhs);
+	assert_string_equal("", descr);
+}
+
+TEST(suggestions_after_user_noremapped_builtin_prefix)
+{
+	vle_keys_user_add(L"x", L"g", NORMAL_MODE, KEYS_FLAG_NOREMAP);
+
+	vle_keys_suggest(L"x", &process_suggestion, 0, 0);
+	assert_int_equal(3, nsuggestions);
+	assert_wstring_equal(L"", rhs);
+	assert_string_equal("", descr);
+}
+
 static void
 process_suggestion(const wchar_t lhs[], const wchar_t r[], const char d[])
 {
