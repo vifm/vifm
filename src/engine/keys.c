@@ -1335,6 +1335,18 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 
 	if(!custom_only && *keys == L'\0')
 	{
+		if(curr->type == USER_CMD)
+		{
+			if(!curr->no_remap)
+			{
+				keys_suggest(&user_cmds_root[vle_mode_get()], curr->conf.data.cmd,
+						prefix, cb, custom_only, fold_subkeys);
+			}
+			keys_suggest(&builtin_cmds_root[vle_mode_get()], curr->conf.data.cmd,
+					prefix, cb, custom_only, fold_subkeys);
+			return;
+		}
+
 		suggest_children(curr, prefix, cb, fold_subkeys);
 	}
 
