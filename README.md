@@ -4,7 +4,7 @@
 
 ### **vifm** - vi[m] like file manager, _v0.10.1_, _2001 – 2020_
 
-_This file last updated on 13 April, 2020_
+_This file last updated on 23 August, 2020_
 
 ## Brief Description ##
 
@@ -41,8 +41,8 @@ functionality should be enough for most of use cases.
 | :---:                     | :---:                                                                     |
 | Repositories              | [GitHub][repo-github] and [SourceForge][repo-sourceforge]                 |
 | Plugins                   | [Vim][vim-plugin] and [NeoVim][neovim-plugin]                             |
-| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]     | 
-| Favicons (in process)     | [Repository][favicons]                                                    |
+| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]      |
+| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2], [[3]][devicons-3]                   |
 | vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)   |
 
 ## Screenshot ##
@@ -66,7 +66,9 @@ GNU General Public License, version 2 or later.
 [neovim-plugin]: https://github.com/vifm/neovim-vifm
 [colors]: https://github.com/vifm/vifm-colors
 [colorscheme-preview]: https://vifm.info/colorschemes.shtml
-[favicons]: https://github.com/TornaxO7/vifm-favicons
+[devicons-1]: https://github.com/cirala/vifm_devicons
+[devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
+[devicons-3]: https://github.com/TornaxO7/vifm-favicons
 [vifmimg]: https://github.com/cirala/vifmimg
 [ueberzug]: https://github.com/seebye/ueberzug
 [bugs-github]: https://github.com/vifm/vifm/issues
