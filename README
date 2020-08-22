@@ -3,7 +3,7 @@ Vifm - vi[m] like file manager
 
 Version: 0.10.1
 
-This file last updated: 13 April, 2020
+This file last updated: 23 August, 2020
 
 Brief Description
 
@@ -43,9 +43,18 @@ Contacts
     * https://sourceforge.net/projects/vifm/
     * https://github.com/vifm/vifm
 
-    Vim plugin repositories:
+    Vim plugin:
     * https://github.com/vifm/vifm.vim
-    * https://github.com/vifm/neovim-vifm
 
     Collection of color schemes is available at:
     * https://github.com/vifm/vifm-colors
+    Their previews can be found at:
+    * https://vifm.info/colorschemes.shtml
+
+    Configurations for iconic fonts:
+    * https://github.com/cirala/vifm_devicons
+    * https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
+    * https://github.com/TornaxO7/vifm-favicons
+
+    Preview script:
+    * https://github.com/cirala/vifmimg
