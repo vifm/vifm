@@ -40,7 +40,7 @@ functionality should be enough for most of use cases.
 | Usage                     | Where to find                                                             |
 | :---:                     | :---:                                                                     |
 | Repositories              | [GitHub][repo-github] and [SourceForge][repo-sourceforge]                 |
-| Plugins                   | [Vim][vim-plugin] and [NeoVim][neovim-plugin]                             |
+| Plugin                    | [Repository][vim-plugin]                                                  |
 | Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]      |
 | Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2], [[3]][devicons-3]                   |
 | vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)   |
@@ -63,7 +63,6 @@ GNU General Public License, version 2 or later.
 [email]: mailto:xaizek@posteo.net
 [list]: https://lists.sourceforge.net/lists/listinfo/vifm-announce
 [vim-plugin]: https://github.com/vifm/vifm.vim
-[neovim-plugin]: https://github.com/vifm/neovim-vifm
 [colors]: https://github.com/vifm/vifm-colors
 [colorscheme-preview]: https://vifm.info/colorschemes.shtml
 [devicons-1]: https://github.com/cirala/vifm_devicons
