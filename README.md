@@ -29,21 +29,21 @@ functionality should be enough for most of use cases.
 
 ### Communication ###
 
-| Reason                                                            | Source                                                                        |
-| :-------:                                                         | :------:                                                                      |
-| Bugs & Feature Requests                                           | [GitHub][bugs-github], [SourceForge][bugs-sourceforge] or via [email][email]  |
-| Questions                                                         | (Preferred for questions) Posting on the [Q&A][q2a] site                      |
-| Read-only and very low traffic news mailing list vifm-announce    | [Click here][list]                                                            |
+| Reason                                           | Source                                                          |
+| :-------:                                        | :------:                                                        |
+| Bugs & Feature Requests                          | [GitHub][bugs-gh], [SourceForge][bugs-sf] or via [email][email] |
+| Preferred place for asking usage questions       | Posting on the [Q&A][q2a] site                                  |
+| Read-only and very low traffic news mailing list | [vifm-announce][list]                                           |
 
 ### Other resources ###
 
-| Usage                     | Where to find                                                             |
-| :---:                     | :---:                                                                     |
-| Repositories              | [GitHub][repo-github] and [SourceForge][repo-sourceforge]                 |
-| Plugin                    | [Repository][vim-plugin]                                                  |
-| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]      |
-| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2], [[3]][devicons-3]                   |
-| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)   |
+| Usage                     | Where to find                                                                                      |
+| :---:                     | :---:                                                                                              |
+| Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                                                       |
+| Plugin                    | [Repository][vim-plugin]                                                                           |
+| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]                               |
+| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2], [[3]][devicons-3]                                            |
+| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images), also see [PR][vifmimg-pr] |
 
 ## Screenshot ##
 
@@ -69,11 +69,12 @@ GNU General Public License, version 2 or later.
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 [devicons-3]: https://github.com/TornaxO7/vifm-favicons
 [vifmimg]: https://github.com/cirala/vifmimg
+[vifmimg-pr]: https://github.com/cirala/vifmimg/pull/17
 [ueberzug]: https://github.com/seebye/ueberzug
-[bugs-github]: https://github.com/vifm/vifm/issues
-[bugs-sourceforge]: https://sourceforge.net/p/vifm/_list/tickets
-[repo-github]: https://github.com/vifm/vifm
-[repo-sourceforge]: https://sourceforge.net/projects/vifm/
+[bugs-gh]: https://github.com/vifm/vifm/issues
+[bugs-sf]: https://sourceforge.net/p/vifm/_list/tickets
+[repo-gh]: https://github.com/vifm/vifm
+[repo-sf]: https://sourceforge.net/projects/vifm/
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
 
