@@ -1287,11 +1287,23 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 			}
 		}
 
-		/* Go to the next character if a match found. */
+		/* Go to the next character if a match is found. */
 		if(p != NULL && p->key == *keys)
 		{
 			++keys;
 			curr = p;
+
+			/* Branch into matching selectors at every step to handle situation when
+			 * multichar selector and multichar command continuation are available at
+			 * the same time.. */
+			if(curr->type == BUILTIN_WAIT_POINT &&
+					curr->conf.followed == FOLLOWED_BY_SELECTOR)
+			{
+				/* Suggest selectors. */
+				keys_suggest(&selectors_root[vle_mode_get()], keys, L"sel: ", cb,
+						custom_only, fold_subkeys);
+			}
+
 			continue;
 		}
 
@@ -1350,21 +1362,13 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 		suggest_children(curr, prefix, cb, fold_subkeys);
 	}
 
-	if(curr->type == BUILTIN_WAIT_POINT)
+	if(curr->type == BUILTIN_WAIT_POINT &&
+			curr->conf.followed == FOLLOWED_BY_MULTIKEY)
 	{
-		if(curr->conf.followed == FOLLOWED_BY_SELECTOR)
+		/* Invoke optional external function to provide suggestions. */
+		if(curr->conf.suggest != NULL)
 		{
-			/* Suggest selectors. */
-			keys_suggest(&selectors_root[vle_mode_get()], keys, L"sel: ", cb,
-					custom_only, fold_subkeys);
-		}
-		else if(curr->conf.followed == FOLLOWED_BY_MULTIKEY)
-		{
-			/* Invoke optional external function to provide suggestions. */
-			if(curr->conf.suggest != NULL)
-			{
-				curr->conf.suggest(cb);
-			}
+			curr->conf.suggest(cb);
 		}
 	}
 }

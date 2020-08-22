@@ -122,6 +122,15 @@ TEST(suggestions_after_user_noremapped_builtin_prefix)
 	assert_string_equal("", descr);
 }
 
+TEST(suggestions_on_common_selector_or_command_prefix)
+{
+	/* We should get both "gugu" and "gugg". */
+	vle_keys_suggest(L"gug", &process_suggestion, 0, 0);
+	assert_int_equal(2, nsuggestions);
+	assert_wstring_equal(L"", rhs);
+	assert_string_equal("", descr);
+}
+
 static void
 process_suggestion(const wchar_t lhs[], const wchar_t r[], const char d[])
 {
