@@ -350,6 +350,9 @@
 	Fixed selectors not being suggested if there are matches among commands.
 	Thanks to iSeeU816.
 
+	Fixed commented line following `fileviewer *.ext` not being highlighted
+	appropriately.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

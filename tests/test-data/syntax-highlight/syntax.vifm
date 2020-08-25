@@ -296,7 +296,7 @@ highlight //// cterm=bold ctermfg=yellow
 highlight {} cterm=bold ctermfg=yellow
 highlight {{}} cterm=bold ctermfg=yellow
 highlight <> cterm=bold ctermfg=yellow
-" patterns here should be highlighted
+" patterns here should be highlighted (except for {{}} suffix)
 highlight /a/ cterm=bold ctermfg=yellow
 highlight //full/path/to\/file// cterm=bold ctermfg=yellow
 highlight //fullpath// cterm=bold ctermfg=yellow
@@ -334,6 +334,14 @@ autocmd DirEnter ~/downloads,~/downloads/torrents setlocal sort=-mtime,dir "comm
 " "not comment should NOT be highlighted
 fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm   "not comment
          \ imgt %px %py %pw %ph %c  "not comment
+
+" "fileviewer" should be highlighted as :command
+" `" \ comment1` should be highlighted as comment
+" `" \ comment2` should be highlighted as comment
+fileviewer *.ext
+         " \ comment1
+         " \ comment2
+         \ cmd
 
 if $sort_type == 'size'
     set sort=+mtime
