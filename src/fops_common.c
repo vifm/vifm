@@ -720,6 +720,7 @@ fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const io_cancellation_t cancellation = { .hook = &ui_cancellation_hook };
 		ops->estim = ioeta_alloc(pdata, cancellation);
 	}
+	ui_cancellation_push_off();
 	return ops;
 }
 
@@ -948,6 +949,7 @@ fops_free_ops(ops_t *ops)
 
 	if(!ops->bg)
 	{
+		ui_cancellation_pop();
 		ui_drain_input();
 	}
 

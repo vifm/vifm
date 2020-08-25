@@ -110,8 +110,6 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 			return 0;
 	}
 
-	ui_cancellation_reset();
-
 	nmarked_files = fops_enqueue_marked_files(ops, view, dst_dir, 0);
 
 	un_group_open(undo_msg);
@@ -222,8 +220,6 @@ fops_replace(view_t *view, const char dst[], int force)
 			replace_home_part(src_full), dst_dir);
 
 	un_group_open(undo_msg);
-
-	ui_cancellation_reset();
 
 	if(path_exists(dst, NODEREF) && force)
 	{

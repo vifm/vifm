@@ -460,10 +460,10 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 			replace_home_part(flist_get_dir(view)));
 	len = strlen(undo_msg);
 
-	ui_cancellation_reset();
+	ui_cancellation_push_off();
 
 	entry = NULL;
-	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry))
 	{
 		if(len >= 2U && undo_msg[len - 2U] != ':')
 		{
@@ -488,6 +488,8 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 	}
 
 	un_group_close();
+
+	ui_cancellation_pop();
 }
 
 static void

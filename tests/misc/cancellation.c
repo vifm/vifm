@@ -6,12 +6,12 @@ TEST(generic)
 {
 	assert_false(ui_cancellation_requested());
 
-	ui_cancellation_enable();
+	ui_cancellation_push_on();
 	ui_cancellation_request();
 	ui_cancellation_disable();
 
 	assert_true(ui_cancellation_requested());
-	ui_cancellation_reset();
+	ui_cancellation_pop();
 	assert_false(ui_cancellation_requested());
 }
 

@@ -327,10 +327,9 @@ view_file(const char path[], const preview_area_t *parea,
 	{
 		max_lines = ui_qv_height(parea->view);
 
-		ui_cancellation_reset();
-		ui_cancellation_enable();
+		ui_cancellation_push_on();
 		fp = view_dir(path, max_lines);
-		ui_cancellation_disable();
+		ui_cancellation_pop();
 
 		if(fp == NULL)
 		{
@@ -373,8 +372,7 @@ view_file(const char path[], const preview_area_t *parea,
 		}
 	}
 
-	ui_cancellation_reset();
-	ui_cancellation_enable();
+	ui_cancellation_push_on();
 
 	/* We want to wipe the view if it was displaying graphics, but won't anymore.
 	 * Do this only if we didn't already cleared the window. */
@@ -391,7 +389,7 @@ view_file(const char path[], const preview_area_t *parea,
 
 	fclose(fp);
 
-	ui_cancellation_disable();
+	ui_cancellation_pop();
 
 	draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 }

@@ -547,27 +547,19 @@ execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 	cmd_stream = read_cmd_output(cmd, preserve_stdin);
 	free(cmd);
 
-	int cancellation_state = 0;
 	if(interactive)
 	{
-		ui_cancellation_enable();
+		ui_cancellation_push_on();
 	}
 	else
 	{
-		cancellation_state = ui_cancellation_pause();
+		ui_cancellation_push_off();
 	}
 
 	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
 	fclose(cmd_stream);
 
-	if(interactive)
-	{
-		ui_cancellation_disable();
-	}
-	else
-	{
-		ui_cancellation_resume(cancellation_state);
-	}
+	ui_cancellation_pop();
 
 	if(result_str == NULL)
 	{
