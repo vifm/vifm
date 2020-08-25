@@ -970,8 +970,8 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
 		}
 		else
 		{
-			/* ui_cancellation_reset() should be called outside this unit to allow
-			 * bulking several operations together. */
+			/* ui_cancellation_push_off() should be called outside of this unit to
+			 * allow bulking several operations together. */
 			ui_cancellation_enable();
 			args->cancellation.hook = &ui_cancellation_hook;
 		}
@@ -1132,9 +1132,9 @@ prompt_user(const io_args_t *args, const char title[], const char msg[],
 {
 	/* Active cancellation conflicts with input processing by putting terminal in
 	 * a cooked mode. */
-	const int cancellation_state = ui_cancellation_pause();
+	ui_cancellation_push_off();
 	const char response = prompt_msg_custom(title, msg, variants);
-	ui_cancellation_resume(cancellation_state);
+	ui_cancellation_pop();
 
 	return response;
 }
@@ -1170,7 +1170,7 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 	else
 	{
 		int result;
-		/* ui_cancellation_reset() should be called outside this unit to allow
+		/* ui_cancellation_push_off() should be called outside this unit to allow
 		 * bulking several operations together. */
 		ui_cancellation_enable();
 		result = bg_and_wait_for_errors(cmd, &ui_cancellation_info);

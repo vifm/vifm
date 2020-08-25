@@ -114,8 +114,7 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 		return 1;
 	}
 
-	ui_cancellation_reset();
-	ui_cancellation_enable();
+	ui_cancellation_push_on();
 
 	if(!interactive)
 	{
@@ -126,7 +125,7 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 	lines = read_stream_lines(file, &nlines, 1,
 			interactive ? NULL : &show_progress_cb, descr);
 
-	ui_cancellation_disable();
+	ui_cancellation_pop();
 	fclose(file);
 
 	for(i = 0; i < nlines; ++i)

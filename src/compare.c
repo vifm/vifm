@@ -105,14 +105,13 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 	entries_t curr, other;
 
 	trie_t *const trie = trie_create();
-	ui_cancellation_reset();
-	ui_cancellation_enable();
+	ui_cancellation_push_on();
 
 	curr = make_diff_list(trie, curr_view, &next_id, ct, skip_empty, 0);
 	other = make_diff_list(trie, other_view, &next_id, ct, skip_empty,
 			lt == LT_DUPS);
 
-	ui_cancellation_disable();
+	ui_cancellation_pop();
 	trie_free_with_data(trie, &free_compare_records);
 
 	/* Clear progress message displayed by make_diff_list(). */
@@ -387,12 +386,11 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 	entries_t curr;
 
 	trie_t *trie = trie_create();
-	ui_cancellation_reset();
-	ui_cancellation_enable();
+	ui_cancellation_push_on();
 
 	curr = make_diff_list(trie, view, &next_id, ct, skip_empty, 0);
 
-	ui_cancellation_disable();
+	ui_cancellation_pop();
 	trie_free_with_data(trie, &free_compare_records);
 
 	/* Clear progress message displayed by make_diff_list(). */

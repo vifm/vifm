@@ -3772,8 +3772,7 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 
 	show_progress("Building tree...", 0);
 
-	ui_cancellation_reset();
-	ui_cancellation_enable();
+	ui_cancellation_push_on();
 	if(from_custom)
 	{
 		nfiltered = 0;
@@ -3785,7 +3784,7 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 		nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
 		type = CV_TREE;
 	}
-	ui_cancellation_disable();
+	ui_cancellation_pop();
 
 	ui_sb_quick_msg_clear();
 

@@ -322,15 +322,14 @@ initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 		}
 	}
 
-	ui_cancellation_reset();
-	ui_cancellation_enable();
+	ui_cancellation_push_on();
 
 	for(i = 0; i < reg->nfiles && !ui_cancellation_requested(); ++i)
 	{
 		ops_enqueue(put_confirm.ops, reg->files[i], dst_dir);
 	}
 
-	ui_cancellation_disable();
+	ui_cancellation_pop();
 
 	return put_files_i(view, 1);
 }
@@ -448,8 +447,6 @@ put_files_i(view_t *view, int start)
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
 	}
-
-	ui_cancellation_reset();
 
 	while(put_confirm.index < put_confirm.reg->nfiles)
 	{

@@ -242,10 +242,9 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	}
 	else
 	{
-		ui_cancellation_reset();
-		ui_cancellation_enable();
+		ui_cancellation_push_on();
 		status = run_fuse_command(buf, &ui_cancellation_info, &cancelled);
-		ui_cancellation_disable();
+		ui_cancellation_pop();
 	}
 
 	ui_sb_clear();

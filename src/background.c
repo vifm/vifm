@@ -593,9 +593,9 @@ report_error_msg(const char title[], const char text[])
 	bg_job_t *const job = pthread_getspecific(current_job);
 	if(job == NULL)
 	{
-		const int cancellation_state = ui_cancellation_pause();
+		ui_cancellation_push_off();
 		show_error_msg(title, text);
-		ui_cancellation_resume(cancellation_state);
+		ui_cancellation_pop();
 	}
 	else
 	{

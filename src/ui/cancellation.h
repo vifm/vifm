@@ -19,45 +19,65 @@
 #ifndef VIFM__UI__CANCELLATION_H__
 #define VIFM__UI__CANCELLATION_H__
 
-/* Managing foreground operation cancellation.  Typical usage:
+/* Managing foreground operation cancellation.  Usage example:
  *
- *   ui_cancellation_reset();
- *   ui_cancellation_enable();
+ *   ui_cancellation_push_on();
  *   ...
  *   Some code possibly checking ui_cancellation_requested() or just interacting
  *   with child process which will get Ctrl-C request from the user.
  *   ...
- *   ui_cancellation_disable(); */
+ *     ui_cancellation_push_off();
+ *     ...
+ *     Can receive Ctrl-C as input or call ui_cancellation_requested() here.
+ *     ...
+ *     ui_cancellation_enable();
+ *       ...
+ *       Some code possibly checking ui_cancellation_requested() or just
+ *       interacting with child process which will get Ctrl-C request from the
+ *       user.
+ *       ...
+ *     ui_cancellation_disable();
+ *     ...
+ *     Can receive Ctrl-C as input or call ui_cancellation_requested() here.
+ *     ...
+ *     ui_cancellation_pop();
+ *   ...
+ *   Some code possibly checking ui_cancellation_requested() or just interacting
+ *   with child process which will get Ctrl-C request from the user.
+ *   ...
+ *   ui_cancellation_pop();
+ *   ...
+ *   Can call ui_cancellation_requested() here.
+ *
+ * As the example demonstrates cancellation states can be stacked to do not
+ * affect each other. */
 
 /* Convenience object for cases when UI cancellation is in use. */
 extern const struct cancellation_t ui_cancellation_info;
 
-/* Resets state so that ui_cancellation_requested() returns zero. */
-void ui_cancellation_reset(void);
+/* Pushes new state making sure that cancellation is enabled after the call. */
+void ui_cancellation_push_on(void);
 
-/* Enables handling of cancellation requests through the UI. */
+/* Pushes new state making sure that cancellation is disabled after the call. */
+void ui_cancellation_push_off(void);
+
+/* Enables handling of cancellation requests as interrupts. */
 void ui_cancellation_enable(void);
 
 /* External callback for notifying this unit about cancellation request.  Should
- * be called between ui_cancellation_enable() and ui_cancellation_disable(). */
+ * be called when cancellation is enabled. */
 void ui_cancellation_request(void);
 
-/* If cancellation is enabled, checks whether cancelling of current operation is
- * requested.  Should be called between ui_cancellation_enable() and
- * ui_cancellation_disable().  Returns non-zero if so, otherwise zero is
- * returned. */
+/* If cancellation is enabled, checks whether cancelling current operation is
+ * requested.  Can be called when cancellation is disabled.  Returns non-zero if
+ * so, otherwise zero is returned. */
 int ui_cancellation_requested(void);
 
-/* Disables handling of cancellation requests through the UI. */
+/* Disables handling of cancellation requests as interrupts. */
 void ui_cancellation_disable(void);
 
-/* Pauses cancellation if it's active, otherwise does nothing.  This effectively
- * prevents cancellation from affecting environment until cancellation is
- * restored.  Returns state to be passed to ui_cancellation_resume() later. */
-int ui_cancellation_pause(void);
-
-/* Restores cancellation paused via ui_cancellation_pause(). */
-void ui_cancellation_resume(int state);
+/* Removes the topmost state from the stack restoring previous state. */
+void ui_cancellation_pop(void);
 
 #endif /* VIFM__UI__CANCELLATION_H__ */
 

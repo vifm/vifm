@@ -145,8 +145,6 @@ fops_delete(view_t *view, int reg, int use_trash)
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
 			curr_dir);
 
-	ui_cancellation_reset();
-
 	nmarked_files = fops_enqueue_marked_files(ops, view, NULL, use_trash);
 
 	entry = NULL;
@@ -213,8 +211,6 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
 			curr_dir);
-
-	ui_cancellation_reset();
 
 	entry = &view->dir_entry[view->list_pos];
 
@@ -686,8 +682,6 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	ops = fops_get_ops(OP_COPY, "Cloning", curr_dir,
 			with_dir ? list[0] : curr_dir);
 
-	ui_cancellation_reset();
-
 	nmarked_files = fops_enqueue_marked_files(ops, view, dst_path, 0);
 
 	custom_fnames = (nlines > 0);
@@ -874,8 +868,6 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 		}
 	}
 
-	ui_cancellation_reset();
-
 	snprintf(buf, sizeof(buf), "mkdir in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
@@ -953,8 +945,6 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 			return 1;
 		}
 	}
-
-	ui_cancellation_reset();
 
 	ops = fops_get_ops(OP_MKFILE, "touching", dst_dir, dst_dir);
 
@@ -1036,8 +1026,6 @@ fops_restore(view_t *view)
 		show_error_msg("Restore error", "Not a top-level trash directory.");
 		return 0;
 	}
-
-	ui_cancellation_reset();
 
 	un_group_open("restore: ");
 	un_group_close();
@@ -1255,8 +1243,6 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 	ops_t *ops;
 	dir_entry_t *entry;
 	const char *const curr_dir = flist_get_dir(view);
-
-	ui_cancellation_reset();
 
 	snprintf(undo_msg, sizeof(undo_msg), "ch%s in %s: ",
 			((u && g) || u) ? "own" : "grp", replace_home_part(curr_dir));

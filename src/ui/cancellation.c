@@ -23,6 +23,7 @@
 #include <assert.h> /* assert() */
 
 #include "../utils/cancellation.h"
+#include "../utils/int_stack.h"
 #include "../status.h"
 
 /* State of cancellation request processing. */
@@ -37,12 +38,16 @@ cancellation_request_state;
 
 static int ui_cancellation_hook(void *arg);
 static int ui_cancellation_enabled(void);
+static int is_enabled(cancellation_request_state state);
 
 const cancellation_t ui_cancellation_info = { .hook = &ui_cancellation_hook };
 
 /* Whether cancellation was requested.  Used by ui_cancellation_* group of
  * functions. */
 static cancellation_request_state cancellation_state;
+
+/* Previous cancellation states. */
+static int_stack_t cancellation_stack;
 
 /* Implementation of cancellation hook for. */
 static int
@@ -52,9 +57,27 @@ ui_cancellation_hook(void *arg)
 }
 
 void
-ui_cancellation_reset(void)
+ui_cancellation_push_on(void)
 {
-	assert(!ui_cancellation_enabled() && "Can't reset while active.");
+	int_stack_push(&cancellation_stack, cancellation_state);
+
+	if(!ui_cancellation_enabled())
+	{
+		ui_cancellation_enable();
+	}
+
+	cancellation_state = CRS_ENABLED;
+}
+
+void
+ui_cancellation_push_off(void)
+{
+	int_stack_push(&cancellation_stack, cancellation_state);
+
+	if(ui_cancellation_enabled())
+	{
+		ui_cancellation_disable();
+	}
 
 	cancellation_state = CRS_DISABLED;
 }
@@ -62,6 +85,9 @@ ui_cancellation_reset(void)
 void
 ui_cancellation_enable(void)
 {
+	/* TODO: consider enabling this assert:
+	assert(!int_stack_is_empty(&cancellation_stack) && "Must push state first.");
+	*/
 	assert(!ui_cancellation_enabled() && "Can't enable twice in a row.");
 
 	cancellation_state = (cancellation_state == CRS_DISABLED)
@@ -97,6 +123,9 @@ ui_cancellation_requested(void)
 void
 ui_cancellation_disable(void)
 {
+	/* TODO: consider enabling this assert:
+	assert(!int_stack_is_empty(&cancellation_stack) && "Must push state first.");
+	*/
 	assert(ui_cancellation_enabled() && "Can't disable what disabled.");
 
 	/* The check is here for tests, which are running with uninitialized
@@ -113,36 +142,30 @@ ui_cancellation_disable(void)
 	                   : CRS_DISABLED;
 }
 
-int
-ui_cancellation_pause(void)
-{
-	if(!ui_cancellation_enabled())
-	{
-		return 0;
-	}
-
-	/* The check is here for tests, which are running with uninitialized
-	 * curses. */
-	if(curr_stats.load_stage > 2)
-	{
-		raw();
-	}
-	return 1;
-}
-
 void
-ui_cancellation_resume(int state)
+ui_cancellation_pop(void)
 {
-	if(state)
+	assert(!int_stack_is_empty(&cancellation_stack) && "Underflow.");
+
+	cancellation_request_state next = int_stack_get_top(&cancellation_stack);
+
+	if(ui_cancellation_enabled())
 	{
-		assert(ui_cancellation_enabled() && "Invalid cancellation resume");
-		/* The check is here for tests, which are running with uninitialized
-		 * curses. */
-		if(curr_stats.load_stage > 2)
+		if(!is_enabled(next))
 		{
-			noraw();
+			ui_cancellation_disable();
 		}
 	}
+	else
+	{
+		if(is_enabled(next))
+		{
+			ui_cancellation_enable();
+		}
+	}
+
+	int_stack_pop(&cancellation_stack);
+	cancellation_state = next;
 }
 
 /* Checks whether cancellation processing is enabled.  Returns non-zero if so,
@@ -150,8 +173,16 @@ ui_cancellation_resume(int state)
 static int
 ui_cancellation_enabled(void)
 {
-	return cancellation_state == CRS_ENABLED
-	    || cancellation_state == CRS_ENABLED_REQUESTED;
+	return is_enabled(cancellation_state);
+}
+
+/* Checks if state is an enabled state.  Returns non-zero if so, otherwise zero
+ * is returned. */
+static int
+is_enabled(cancellation_request_state state)
+{
+	return state == CRS_ENABLED
+	    || state == CRS_ENABLED_REQUESTED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

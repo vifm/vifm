@@ -684,7 +684,7 @@ static void
 cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.confirmed = 0;
-	ui_cancellation_reset();
+	ui_cancellation_push_off();
 
 	ui_sb_msg("Redoing...");
 
@@ -723,6 +723,7 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	curr_stats.save_msg = 1;
+	ui_cancellation_pop();
 }
 
 /* Scroll view up by half of its height. */
@@ -1842,7 +1843,7 @@ static void
 cmd_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.confirmed = 0;
-	ui_cancellation_reset();
+	ui_cancellation_push_off();
 
 	ui_sb_msg("Undoing...");
 
@@ -1881,6 +1882,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	curr_stats.save_msg = 1;
+	ui_cancellation_pop();
 }
 
 /* Yanks files. */

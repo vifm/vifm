@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: August 8, 2020
+" Last Change: August 25, 2020
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -222,9 +222,11 @@ syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
 		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation,vifmStringInExpr
 syntax region vifmFtCommandSt start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
-		\ contains=vifmFtCommand,vifmComment,vifmFtBeginning
+		\ contained
+		\ contains=vifmFtBeginning,vifmComment
 syntax region vifmFtCommandStN start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$\|\(<[cC][rR]>\)' keepend
+		\ contained
 		\ contains=vifmComment,vifmNotation,vifmFtBeginning
 syntax region vifmMapSt start='^\(\s\|:\)*\(map\|mm\%[ap]\|mn\%[oremap]\|mu\%[nmap]\|nm\%[ap]\|nn\%[oremap]\|no\%[remap]\|nun\%[map]\|qm\%[ap]\|qn\%[oremap]\|qun\%[map]\|unm\%[ap]\|vm\%[ap]\|vn\%[oremap]\|vu\%[nmap]\)'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
@@ -312,8 +314,7 @@ syntax region vifmHi
 		\,vifmPattern
 syntax region vifmFtBeginning contained
 		\ start='\<\(filet\%[ype]\|filext\%[ype]\|filev\%[iewer]\)\>\s\+\S'
-		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
-		\ end='\s' keepend
+		\ end='\s\|$' keepend
 		\ contains=vifmFtCommand,vifmPattern
 
 " common highlight for :command arguments without highlighting of angle-bracket
