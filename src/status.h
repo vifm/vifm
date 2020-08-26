@@ -94,6 +94,8 @@ typedef enum
 	ST_NORMAL,
 	/* Dumb cmd.exe shell on Windows. */
 	ST_CMD,
+	/* PowerShell on Windows. (Any less dumb?  I wish...) */
+	ST_PS,
 }
 ShellType;
 

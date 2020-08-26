@@ -325,7 +325,7 @@ enclose_in_dquotes(const char str[])
 	*p++ = '"';
 	while(*str != '\0')
 	{
-		if(*str == '\\' || *str == '"' ||
+		if((curr_stats.shell_type != ST_PS && *str == '\\') || *str == '"' ||
 				(curr_stats.shell_type == ST_NORMAL && (*str == '$' || *str == '`')))
 		{
 			*p++ = '\\';

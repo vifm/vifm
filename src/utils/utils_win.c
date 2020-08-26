@@ -64,6 +64,7 @@ static const char PATHEXT_EXT_DEF[] = ".bat;.exe;.com";
 
 TSTATIC int should_wait_for_program(const char cmd[]);
 static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
+static char * base64_encode(const char str[]);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
 static FILE * read_cmd_output_internal(const char cmd[], int out_pipe[2],
@@ -79,6 +80,10 @@ pause_shell(void)
 	{
 		run_in_shell_no_cls("pause", SHELL_BY_APP);
 	}
+	else if(curr_stats.shell_type == ST_PS)
+	{
+		/* TODO: make pausing work. */
+	}
 	else
 	{
 		run_in_shell_no_cls(PAUSE_CMD, SHELL_BY_APP);
@@ -92,7 +97,7 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 	char *const sh_cmd = win_make_sh_cmd(command, by);
 
 	/* XXX: why do we use different functions for different cases? */
-	if(curr_stats.shell_type == ST_CMD)
+	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_PS)
 	{
 		ret = os_system(sh_cmd);
 	}
@@ -209,6 +214,18 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 		 * special characters work at the same time. */
 		fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
 	}
+	else if(curr_stats.shell_type == ST_PS)
+	{
+		fmt = "%s %s %s";
+		sh_flag = "-encodedCommand";
+
+		char *actual_cmd = format_str("& %s", cmd);
+
+		free_me = base64_encode(actual_cmd);
+		cmd = free_me;
+
+		free(actual_cmd);
+	}
 	else
 	{
 		sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
@@ -239,6 +256,53 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 	snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
 	free(free_me);
 	return strdup(buf);
+}
+
+/* Base64-encodes the string after converting it to Unicode.  Returns the
+ * encoded version. */
+static char *
+base64_encode(const char str[])
+{
+	const char *dict = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	                   "abcdefghijklmnopqrstuvwxyz"
+	                   "0123456789+/";
+
+	wchar_t *wstr = to_wide(str);
+	int bytes = wcslen(wstr)*sizeof(wchar_t);
+
+	str = (const char *)wstr;
+
+	char *out = malloc(DIV_ROUND_UP(bytes, 3)*4 + 1);
+	char *p = out;
+
+	while(bytes > 0)
+	{
+		unsigned int x = 0;
+
+		int i;
+		for(i = 0; i < 3 && bytes > 0; ++i, --bytes)
+		{
+			x = (x << 8) | (unsigned char)*str++;
+		}
+
+		x <<= 8*(3 - i);
+
+		while(i-- > -1)
+		{
+			*p++ = dict[(x >> 18) & 0x3f];
+			x <<= 6;
+		}
+	}
+
+	while((p - out)%4 != 0)
+	{
+		*p++ = '=';
+	}
+
+	*p = '\0';
+
+	free(wstr);
+	return out;
 }
 
 /* Handles process execution.  Returns system error code when sets
@@ -548,10 +612,14 @@ get_shell_type(const char shell_cmd[])
 	{
 		return ST_CMD;
 	}
-	else
+	if(stroscmp(shell_name, "powershell") == 0 ||
+			stroscmp(shell_name, "powershell.exe") == 0 ||
+			stroscmp(shell_name, "pwsh") == 0 ||
+			stroscmp(shell_name, "pwsh.exe") == 0)
 	{
-		return ST_NORMAL;
+		return ST_PS;
 	}
+	return ST_NORMAL;
 }
 
 int

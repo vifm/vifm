@@ -1071,6 +1071,11 @@ gen_normal_cmd(const char cmd[], int pause)
 		{
 			cmd_with_pause_fmt = "%s" PAUSE_STR;
 		}
+		else if(curr_stats.shell_type == ST_PS)
+		{
+			/* TODO: make pausing work. */
+			cmd_with_pause_fmt = "%s";
+		}
 		else
 		{
 			cmd_with_pause_fmt = "%s; " PAUSE_CMD;

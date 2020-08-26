@@ -55,6 +55,9 @@
 	Added v:jobcount builtin variable that provides number of active
 	jobs (number of lines in :jobs menu).  Thanks to iSeeU816.
 
+	Added basic support for using PowerShell on Windows (pausing doesn't work).
+	Thanks to Fang (a.k.a. peromage).
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
