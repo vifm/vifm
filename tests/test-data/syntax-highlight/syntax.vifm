@@ -343,6 +343,10 @@ fileviewer *.ext
          " \ comment2
          \ cmd
 
+" "fileviewer" should be highlighted as :command
+" "/,*/" should not be highlighted as a pattern
+fileviewer .*/,*/ tree %f
+
 if $sort_type == 'size'
     set sort=+mtime
     let $sort_type = 'mtime'

@@ -359,6 +359,8 @@
 	Fixed panic on some redraw operations mixing with file operations during
 	terminal resizing.  Thanks to aca.
 
+	Fixed highlighting of `fileviewer .*/,*/` as if it contains a pattern.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

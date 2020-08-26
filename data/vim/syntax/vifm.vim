@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: August 25, 2020
+" Last Change: August 26, 2020
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -67,7 +67,7 @@ syntax keyword vifmExprCommand contained if ec[ho] elsei[f] exe[cute]
 syntax keyword vifmNormalCommand contained norm[al]
 		\ nextgroup=vifmColonSubcommand
 syntax match vifmPatternCommands contained /\<\(filter\(!\|\>\)\|select\(!\|\>\)\|unselect\>\)/ skipwhite
-		\ nextgroup=vifmPattern
+		\ nextgroup=vifmPatterns
 
 " List of event names for autocommands (case insensitive)
 syntax case ignore
@@ -305,17 +305,22 @@ syntax region vifmPattern contained
 syntax region vifmPattern contained
 		\ start='!\?<[^>]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='>' keepend
 		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
+syntax region vifmPatterns contained
+		\ start='\(^\|\s\zs\)[/{<!]'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ end='\(/[a-zA-Z]\{,4}\|[}>iI]\)\(\s\|$\)' keepend
+		\ contains=vifmPattern
 syntax match vifmNotPattern contained '!\?\({{}}\|\<//\>\|////\)'
 syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmHiCommand,vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors
 		\,vifmNumber,vifmComment,vifmInlineComment,vifmNotComment,vifmHiClear
-		\,vifmPattern
+		\,vifmPatterns
 syntax region vifmFtBeginning contained
 		\ start='\<\(filet\%[ype]\|filext\%[ype]\|filev\%[iewer]\)\>\s\+\S'
 		\ end='\s\|$' keepend
-		\ contains=vifmFtCommand,vifmPattern
+		\ contains=vifmFtCommand,vifmPatterns
 
 " common highlight for :command arguments without highlighting of angle-bracket
 " notation
