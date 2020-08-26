@@ -51,7 +51,7 @@
 #include "color_scheme.h"
 #include "ui.h"
 
-/* Line paired with parallel character of arrays that specify user colors. */
+/* Line paired with parallel array of character that specify user colors. */
 typedef struct
 {
 	char *line;       /* Text of the line. */
