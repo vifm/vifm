@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 8
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3659,6 +3659,9 @@ default: "-c" or "/C" (for cmd.exe on MS-Windows)
 
 Command-line option used to pass a command to |vifm-'shell'|.  It's used in
 contexts where command comes from the user.
+
+Note that this option is ignored when |vifm-'shell'| is set to PowerShell due
+to the internal use of `-encodedCommand`.
 
                                                *vifm-'shortmess'* *vifm-'shm'*
 shortmess shm

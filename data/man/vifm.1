@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 8, 2020" "vifm 0.10.1"
+.TH VIFM 1 "August 26, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4366,6 +4366,9 @@ default: "\-c" or "/C" (for cmd.exe on MS-Windows)
 .br
 Command-line option used to pass a command to 'shell'.  It's used in contexts
 where command comes from the user.
+
+Note that this option is ignored when 'shell' is set to PowerShell due
+to the internal use of `\-encodedCommand`.
 .TP
 .BI "'shortmess' 'shm'"
 type: charset
