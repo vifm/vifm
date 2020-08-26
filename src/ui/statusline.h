@@ -78,9 +78,9 @@ TSTATIC_DEFS(
 		char *attrs;      /* Specifies when to enable which user highlight group. */
 		size_t attrs_len; /* Length of attrs field. */
 	}
-	LineWithAttrs;
+	colored_line_t;
 
-	LineWithAttrs expand_status_line_macros(struct view_t *view,
+	colored_line_t expand_status_line_macros(struct view_t *view,
 		const char format[]);
 )
 
