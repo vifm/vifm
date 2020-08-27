@@ -52,6 +52,7 @@
 #include "../modes/modes.h"
 #include "../modes/view.h"
 #include "../modes/wk.h"
+#include "../utils/colored_line.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -2049,22 +2050,31 @@ make_tab_title(const tab_info_t *tab_info, path_func pf)
 		tree_flag = (cv_tree(view->custom.type) ? "*" : "");
 	}
 
+	char *name = escape_unreadable(tab_info->name == NULL ? "" : tab_info->name);
+	char *escaped_path = escape_unreadable(path);
+	char *cv_title = escape_unreadable(custom_title);
+
 	char *view_title = format_view_title(view, pf);
+	char *escaped_view_title = escape_unreadable(view_title);
+	free(view_title);
+
 	custom_macro_t macros[] = {
-		{ .letter = 'n', .value = (tab_info->name == NULL ? "" : tab_info->name) },
-		{ .letter = 't', .value = view_title },
-		{ .letter = 'p', .value = path, .expand_mods = 1, .parent = "/" },
-		{ .letter = 'c', .value = custom_title },
+		{ .letter = 'n', .value = name },
+		{ .letter = 't', .value = escaped_view_title },
+		{ .letter = 'p', .value = escaped_path, .expand_mods = 1, .parent = "/" },
+		{ .letter = 'c', .value = cv_title },
 		{ .letter = 'T', .value = tree_flag, .flag = 1 },
 	};
 
-	char *unescaped_title = ma_expand_custom(cfg.tab_label, ARRAY_LEN(macros),
+	cline_t title = ma_expand_colored_custom(cfg.tab_label, ARRAY_LEN(macros),
 			macros, MA_OPT);
-	free(view_title);
+	free(escaped_view_title);
+	free(cv_title);
+	free(escaped_path);
+	free(name);
 
-	char *escaped_title = escape_unreadable(unescaped_title);
-	free(unescaped_title);
-	return escaped_title;
+	free(title.attrs);
+	return title.line;
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.
