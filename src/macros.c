@@ -31,9 +31,11 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/quickview.h"
 #include "ui/ui.h"
+#include "utils/colored_line.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "filelist.h"
 #include "filename_modifiers.h"
@@ -73,7 +75,7 @@ static preview_area_t get_preview_area(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
-static char * expand_custom(const char **pattern, size_t nmacros,
+static cline_t expand_custom(const char **pattern, size_t nmacros,
 		custom_macro_t macros[], int with_opt, int in_opt);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
@@ -631,18 +633,21 @@ char *
 ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[],
 		int with_opt)
 {
-	return expand_custom(&pattern, nmacros, macros, with_opt, 0);
+	cline_t result = expand_custom(&pattern, nmacros, macros, with_opt, 0);
+	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
+	free(result.attrs);
+	return result.line;
 }
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
  * macros specification and accounting for nesting inside %[ and %].  Updates
- * *pattern pointer.  Returns expanded string. */
-static char *
+ * *pattern pointer.  Returns colored line. */
+static cline_t
 expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		int with_opt, int in_opt)
 {
-	char *expanded = strdup("");
-	size_t len = 0;
+	cline_t result = { .line = strdup(""), .attrs = strdup("") };
+
 	int nexpansions = 0;
 	while(**pattern != '\0')
 	{
@@ -650,30 +655,33 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		if(pat[0] != '%')
 		{
 			const char single_char[] = { *pat, '\0' };
-			expanded = extend_string(expanded, single_char, &len);
+			result.line = extend_string(result.line, single_char, &result.line_len);
 		}
 		else if(pat[1] == '%' || pat[1] == '\0')
 		{
-			expanded = extend_string(expanded, "%", &len);
+			result.line = extend_string(result.line, "%", &result.line_len);
 			*pattern += (pat[1] == '%');
 		}
 		else if(with_opt && pat[1] == '[')
 		{
 			++*pattern;
-			char *nested = expand_custom(pattern, nmacros, macros, with_opt, 1);
-			expanded = extend_string(expanded, nested, &len);
-			nexpansions += (nested[0] != '\0');
-			free(nested);
+			cline_t opt = expand_custom(pattern, nmacros, macros, with_opt, 1);
+			cline_splice_attrs(&result, &opt);
+			result.line = extend_string(result.line, opt.line, &result.line_len);
+			nexpansions += (opt.line[0] != '\0');
+			free(opt.line);
 			continue;
 		}
 		else if(in_opt && pat[1] == ']')
 		{
 			++*pattern;
-			if(nexpansions == 0 && expanded != NULL)
+			if(nexpansions == 0 && result.line != NULL)
 			{
-				expanded[0] = '\0';
+				result.line[0] = '\0';
+				result.line_len = 0;
 			}
-			return expanded;
+			cline_finish(&result);
+			return result;
 		}
 		else
 		{
@@ -697,7 +705,7 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 
 				if(!macros[i].flag)
 				{
-					expanded = extend_string(expanded, value, &len);
+					result.line = extend_string(result.line, value, &result.line_len);
 				}
 				--macros[i].uses_left;
 				macros[i].explicit_use = 1;
@@ -709,14 +717,18 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 	/* Unmatched %[. */
 	if(in_opt)
 	{
-		(void)strprepend(&expanded, &len, "%[");
+		(void)strprepend(&result.line, &result.line_len, "%[");
+		(void)strprepend(&result.attrs, &result.attrs_len, "  ");
 	}
 
 	if(!in_opt)
 	{
-		expanded = add_missing_macros(expanded, len, nmacros, macros);
+		result.line = add_missing_macros(result.line, result.line_len, nmacros,
+				macros);
 	}
-	return expanded;
+
+	cline_finish(&result);
+	return result;
 }
 
 /* Ensures that the expanded string contains required number of mandatory
