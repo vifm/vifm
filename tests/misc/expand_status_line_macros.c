@@ -18,7 +18,7 @@
 #define ASSERT_EXPANDED(format) \
 	do \
 	{ \
-		colored_line_t result = expand_status_line_macros(&lwin, format); \
+		cline_t result = expand_status_line_macros(&lwin, format); \
 		free(result.attrs); \
 		char *const expanded = result.line; \
 		assert_false(strcmp(expanded, format) == 0); \
@@ -30,7 +30,7 @@
 #define ASSERT_EXPANDED_TO(format, expected) \
 	do \
 	{ \
-		colored_line_t result = expand_status_line_macros(&lwin, format); \
+		cline_t result = expand_status_line_macros(&lwin, format); \
 		free(result.attrs); \
 		char *const expanded = result.line; \
 		assert_string_equal(expected, expanded); \
@@ -43,7 +43,7 @@
 #define ASSERT_EXPANDED_TO_WITH_HI(format, expected, highlighting) \
 	do \
 	{ \
-		colored_line_t result = expand_status_line_macros(&lwin, format); \
+		cline_t result = expand_status_line_macros(&lwin, format); \
 		char *const expanded = result.line; \
 		assert_string_equal(expected, expanded); \
 		assert_string_equal(highlighting, result.attrs); \

@@ -190,6 +190,7 @@ vifm_SOURCES = \
 	ui/ui.c ui/ui.h \
 	\
 	utils/cancellation.c utils/cancellation.h \
+	utils/colored_line.c utils/colored_line.h \
 	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \

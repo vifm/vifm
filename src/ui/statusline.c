@@ -36,6 +36,7 @@
 #include "../engine/parsing.h"
 #include "../engine/var.h"
 #include "../modes/modes.h"
+#include "../utils/colored_line.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -51,25 +52,13 @@
 #include "color_scheme.h"
 #include "ui.h"
 
-/* Line paired with parallel array of character that specify user colors. */
-typedef struct
-{
-	char *line;       /* Text of the line. */
-	size_t line_len;  /* Length of line field. */
-	char *attrs;      /* Specifies when to enable which user highlight group. */
-	size_t attrs_len; /* Length of attrs field. */
-}
-colored_line_t;
-
 static void print_with_attrs(WINDOW *win, const char line[], const char attrs[],
 		const cchar_t *default_attr);
 static void update_stat_window_old(view_t *view, int lazy_redraw);
 static void refresh_window(WINDOW *win, int lazily);
-TSTATIC colored_line_t expand_status_line_macros(view_t *view,
-		const char format[]);
-static colored_line_t parse_view_macros(view_t *view, const char **format,
+TSTATIC cline_t expand_status_line_macros(view_t *view, const char format[]);
+static cline_t parse_view_macros(view_t *view, const char **format,
 		const char macros[], int opt);
-static int sync_attrs(colored_line_t *result, int extra_width);
 static int expand_num(char buf[], size_t buf_len, int val);
 static const char * get_tip(void);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
@@ -122,7 +111,7 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	setcchar(&default_attr, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
 			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
 
-	colored_line_t result = expand_status_line_macros(view, cfg.status_line);
+	cline_t result = expand_status_line_macros(view, cfg.status_line);
 	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
 	result.line = break_in_two(result.line, width, "%=");
 	result.attrs = break_in_two(result.attrs, width, "=");
@@ -254,14 +243,14 @@ refresh_window(WINDOW *win, int lazily)
  * contains a character in the set [0-9 ] (space included) per utf-8 character
  * of the former that specifies which user highlight group should be used
  * starting with that character. */
-TSTATIC colored_line_t
+TSTATIC cline_t
 expand_status_line_macros(view_t *view, const char format[])
 {
 	const dir_entry_t *const curr = get_current_entry(view);
 	if(curr == NULL || fentry_is_fake(curr))
 	{
 		/* Fake entries don't have valid information. */
-		colored_line_t result = { .line = strdup(""), .attrs = strdup("") };
+		cline_t result = { .line = strdup(""), .attrs = strdup("") };
 		return result;
 	}
 
@@ -273,7 +262,7 @@ expand_status_line_macros(view_t *view, const char format[])
 char *
 expand_view_macros(view_t *view, const char format[], const char macros[])
 {
-	colored_line_t result = parse_view_macros(view, &format, macros, 0);
+	cline_t result = parse_view_macros(view, &format, macros, 0);
 	free(result.attrs);
 	return result.line;
 }
@@ -282,12 +271,12 @@ expand_view_macros(view_t *view, const char format[], const char macros[])
  * opt represents conditional expression state, should be zero for non-recursive
  * calls.  Returns newly allocated string, which should be freed by the
  * caller. */
-static colored_line_t
+static cline_t
 parse_view_macros(view_t *view, const char **format, const char macros[],
 		int opt)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
-	colored_line_t result = { .line = strdup(""), .attrs = strdup("") };
+	cline_t result = { .line = strdup(""), .attrs = strdup("") };
 	char c;
 	int nexpansions = 0;
 	int has_expander = 0;
@@ -318,7 +307,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 
 		if(*next == '=')
 		{
-			(void)sync_attrs(&result, 0);
+			(void)cline_sync(&result, 0);
 
 			if(strappend(&result.line, &result.line_len, "%=") != 0 ||
 					strappendch(&result.attrs, &result.attrs_len, '=') != 0)
@@ -448,12 +437,12 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				break;
 			case '[':
 				{
-					colored_line_t opt = parse_view_macros(view, format, macros, 1);
+					cline_t opt = parse_view_macros(view, format, macros, 1);
 					copy_str(buf, sizeof(buf), opt.line);
 					free(opt.line);
 
 					char *attrs = opt.attrs;
-					if(sync_attrs(&result, 0) && opt.attrs_len > 0U)
+					if(cline_sync(&result, 0) && opt.attrs_len > 0U)
 					{
 						if(*attrs != ' ')
 						{
@@ -475,7 +464,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 						result.line_len = 0U;
 						result.attrs_len = 0U;
 					}
-					if(sync_attrs(&result, 0))
+					if(cline_sync(&result, 0))
 					{
 						result.attrs[--result.attrs_len] = '\0';
 					}
@@ -539,7 +528,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					width = 0;
 					break;
 				}
-				(void)sync_attrs(&result, 1);
+				(void)cline_sync(&result, 1);
 				result.attrs[result.attrs_len - 1] = '0' + width;
 				width = 0;
 				break;
@@ -580,29 +569,11 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 		(void)strprepend(&result.line, &result.line_len, "%[");
 	}
 
-	if(sync_attrs(&result, 0))
+	if(cline_sync(&result, 0))
 	{
 		result.attrs[--result.attrs_len] = '\0';
 	}
 	return result;
-}
-
-/* Makes sure that result->attrs has at least as many elements as result->line
- * contains characters + extra_width.  Returns non-zero if result->attrs has
- * extra characters compared to result->line. */
-static int
-sync_attrs(colored_line_t *result, int extra_width)
-{
-	const size_t nchars = utf8_strsw(result->line) + extra_width;
-	if(result->attrs_len < nchars)
-	{
-		char *const new_attrs = format_str("%s%*s", result->attrs,
-				(int)(nchars - result->attrs_len), "");
-		free(result->attrs);
-		result->attrs = new_attrs;
-		result->attrs_len = nchars;
-	}
-	return (result->attrs_len > nchars);
 }
 
 /* Prints number into the buffer.  Returns non-zero if numeric value is

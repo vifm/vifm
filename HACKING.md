@@ -171,6 +171,7 @@ there for instructions.
     |  |  |
     |  |  |-- private/ - internal headers of utilities
     |  |  |-- cancellation.c - kind of cancellation token
+    |  |  |-- colored_line.c - text with %x* highlighting
     |  |  |-- darray.c - macros for managin dynamic arrays
     |  |  |-- dynarray.c - array reallocation with fewer memory copies
     |  |  |-- env.c - environment variables related functions
