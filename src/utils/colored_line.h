@@ -28,7 +28,7 @@
  * starting with that offset on the screen. */
 
 /* Line paired with parallel array of character that specify user colors. */
-typedef struct
+typedef struct cline_t
 {
 	char *line;       /* Text of the line. */
 	size_t line_len;  /* Length of line field. */

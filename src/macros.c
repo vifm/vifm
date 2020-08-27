@@ -20,7 +20,7 @@
 #include "macros.h"
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* tolower() */
+#include <ctype.h> /* isdigit() tolower() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realloc() free() calloc() */
@@ -633,10 +633,18 @@ char *
 ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[],
 		int with_opt)
 {
-	cline_t result = expand_custom(&pattern, nmacros, macros, with_opt, 0);
-	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
+	cline_t result = ma_expand_colored_custom(pattern, nmacros, macros, with_opt);
 	free(result.attrs);
 	return result.line;
+}
+
+cline_t
+ma_expand_colored_custom(const char pattern[], size_t nmacros,
+		custom_macro_t macros[], int with_opt)
+{
+	cline_t result = expand_custom(&pattern, nmacros, macros, with_opt, 0);
+	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
+	return result;
 }
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
@@ -661,6 +669,12 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		{
 			result.line = extend_string(result.line, "%", &result.line_len);
 			*pattern += (pat[1] == '%');
+		}
+		else if(isdigit(pat[1]) && pat[2] == '*')
+		{
+			(void)cline_sync(&result, 1);
+			result.attrs[result.attrs_len - 1] = pat[1];
+			*pattern += 2;
 		}
 		else if(with_opt && pat[1] == '[')
 		{
