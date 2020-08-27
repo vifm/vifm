@@ -441,17 +441,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					copy_str(buf, sizeof(buf), opt.line);
 					free(opt.line);
 
-					char *attrs = opt.attrs;
-					if(cline_sync(&result, 0) && opt.attrs_len > 0U)
-					{
-						if(*attrs != ' ')
-						{
-							result.attrs[result.attrs_len - 1U] = *attrs;
-						}
-						++attrs;
-					}
-					strappend(&result.attrs, &result.attrs_len, attrs);
-					free(opt.attrs);
+					cline_splice_attrs(&result, &opt);
 					break;
 				}
 			case ']':

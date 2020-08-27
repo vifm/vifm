@@ -48,5 +48,21 @@ cline_finish(cline_t *cline)
 	}
 }
 
+void
+cline_splice_attrs(cline_t *cline, cline_t *admixture)
+{
+	char *attrs = admixture->attrs;
+	if(cline_sync(cline, 0) && admixture->attrs_len > 0U)
+	{
+		if(*attrs != ' ')
+		{
+			cline->attrs[cline->attrs_len - 1U] = *attrs;
+		}
+		++attrs;
+	}
+	strappend(&cline->attrs, &cline->attrs_len, attrs);
+	free(admixture->attrs);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

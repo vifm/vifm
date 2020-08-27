@@ -40,6 +40,9 @@ int cline_sync(cline_t *cline, int extra_width);
  * attributes match each other. */
 void cline_finish(cline_t *cline);
 
+/* Appends attributes from admixture freeing them (but not the line). */
+void cline_splice_attrs(cline_t *cline, cline_t *admixture);
+
 #endif /* VIFM__UTILS__COLORED_LINE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
