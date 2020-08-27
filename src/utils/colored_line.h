@@ -21,6 +21,12 @@
 
 #include <stddef.h> /* size_t */
 
+/* This unit provides a type that bundles line with attributes.  Attributes are
+ * stored in a parallel array of characters.  It contains a character in the
+ * set [0-9 ] (space included) per screen position of the UTF-8 line.  Each
+ * attribute character specifies which user highlight group should be used
+ * starting with that offset on the screen. */
+
 /* Line paired with parallel array of character that specify user colors. */
 typedef struct
 {
@@ -32,8 +38,8 @@ typedef struct
 cline_t;
 
 /* Makes sure that cline->attrs has at least as many elements as cline->line
- * contains UTF-8 characters + extra_width.  Returns non-zero if cline->attrs
- * has extra characters compared to cline->line. */
+ * contains screen positions for its UTF-8 characters + extra_width.  Returns
+ * non-zero if cline->attrs has extra characters compared to cline->line. */
 int cline_sync(cline_t *cline, int extra_width);
 
 /* Finalizes cline by synchronizing and truncating it to make contents and

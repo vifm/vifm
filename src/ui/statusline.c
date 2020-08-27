@@ -239,10 +239,7 @@ refresh_window(WINDOW *win, int lazily)
 }
 
 /* Expands view macros to be displayed on the status line according to the
- * format string.  Returns expanded line and attribute line, the latter one
- * contains a character in the set [0-9 ] (space included) per utf-8 character
- * of the former that specifies which user highlight group should be used
- * starting with that character. */
+ * format string.  Returns colored line. */
 TSTATIC cline_t
 expand_status_line_macros(view_t *view, const char format[])
 {
@@ -269,8 +266,7 @@ expand_view_macros(view_t *view, const char format[], const char macros[])
 
 /* Expands macros in the *format string advancing the pointer as it goes.  The
  * opt represents conditional expression state, should be zero for non-recursive
- * calls.  Returns newly allocated string, which should be freed by the
- * caller. */
+ * calls.  Returns colored line. */
 static cline_t
 parse_view_macros(view_t *view, const char **format, const char macros[],
 		int opt)
