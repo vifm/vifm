@@ -36,6 +36,10 @@ cline_t;
  * has extra characters compared to cline->line. */
 int cline_sync(cline_t *cline, int extra_width);
 
+/* Finalizes cline by synchronizing and truncating it to make contents and
+ * attributes match each other. */
+void cline_finish(cline_t *cline);
+
 #endif /* VIFM__UTILS__COLORED_LINE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -464,10 +464,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 						result.line_len = 0U;
 						result.attrs_len = 0U;
 					}
-					if(cline_sync(&result, 0))
-					{
-						result.attrs[--result.attrs_len] = '\0';
-					}
+					cline_finish(&result);
 					return result;
 				}
 
@@ -569,10 +566,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 		(void)strprepend(&result.line, &result.line_len, "%[");
 	}
 
-	if(cline_sync(&result, 0))
-	{
-		result.attrs[--result.attrs_len] = '\0';
-	}
+	cline_finish(&result);
 	return result;
 }
 

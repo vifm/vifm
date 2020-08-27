@@ -39,5 +39,14 @@ cline_sync(cline_t *cline, int extra_width)
 	return (cline->attrs_len > nchars);
 }
 
+void
+cline_finish(cline_t *cline)
+{
+	if(cline_sync(cline, 0))
+	{
+		cline->attrs[--cline->attrs_len] = '\0';
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
