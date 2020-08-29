@@ -21,7 +21,7 @@
 #define VIFM__UI__COLORS_H__
 
 /* Color information structure. */
-typedef struct
+typedef struct col_attr_t
 {
 	int fg;   /* Foreground color. */
 	int bg;   /* Background color. */

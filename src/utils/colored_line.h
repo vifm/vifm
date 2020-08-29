@@ -19,6 +19,8 @@
 #ifndef VIFM__UTILS__COLORED_LINE_H__
 #define VIFM__UTILS__COLORED_LINE_H__
 
+#include <curses.h> /* WINDOW cchar_t */
+
 #include <stddef.h> /* size_t */
 
 /* This unit provides a type that bundles line with attributes.  Attributes are
@@ -48,6 +50,13 @@ void cline_finish(cline_t *cline);
 
 /* Appends attributes from admixture freeing them (but not the line). */
 void cline_splice_attrs(cline_t *cline, cline_t *admixture);
+
+struct col_attr_t;
+
+/* Prints colored line onto a window highlighting it according to the
+ * attributes. */
+void cline_print(const cline_t *cline, WINDOW *win,
+		const struct col_attr_t *def_col);
 
 /* Frees all resources allocated by cline.  The parameter can't be NULL. */
 void cline_dispose(cline_t *cline);

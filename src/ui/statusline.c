@@ -52,8 +52,6 @@
 #include "color_scheme.h"
 #include "ui.h"
 
-static void print_with_attrs(WINDOW *win, const char line[], const char attrs[],
-		const cchar_t *default_attr);
 static void update_stat_window_old(view_t *view, int lazy_redraw);
 static void refresh_window(WINDOW *win, int lazily);
 TSTATIC cline_t expand_status_line_macros(view_t *view, const char format[]);
@@ -107,49 +105,14 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	werase(stat_win);
 	checked_wmove(stat_win, 0, 0);
 
-	cchar_t default_attr;
-	setcchar(&default_attr, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
-			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
-
 	cline_t result = expand_status_line_macros(view, cfg.status_line);
 	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
 	result.line = break_in_two(result.line, width, "%=");
 	result.attrs = break_in_two(result.attrs, width, "=");
-	print_with_attrs(stat_win, result.line, result.attrs, &default_attr);
+	cline_print(&result, stat_win, &cfg.cs.color[STATUS_LINE_COLOR]);
 	cline_dispose(&result);
 
 	refresh_window(stat_win, lazy_redraw);
-}
-
-/* Prints line onto a window highlighting it according to attrs, which should
- * specify 0-9 color groups for every character in line. */
-static void
-print_with_attrs(WINDOW *win, const char line[], const char attrs[],
-		const cchar_t *default_attr)
-{
-	cchar_t attr = *default_attr;
-	while(*line != '\0')
-	{
-		if(*attrs == '0')
-		{
-			attr = *default_attr;
-		}
-		else if(*attrs != ' ')
-		{
-			const int color = (USER1_COLOR + (*attrs - '1'));
-			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
-			cs_mix_colors(&col, &cfg.cs.color[color]);
-			setcchar(&attr, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
-		}
-
-		const size_t len = utf8_chrw(line);
-		char char_buf[len + 1];
-		copy_str(char_buf, sizeof(char_buf), line);
-		wprinta(win, char_buf, &attr, 0);
-
-		line += len;
-		attrs += utf8_chrsw(char_buf);
-	}
 }
 
 /* Formats status line in the "old way" (before introduction of 'statusline'

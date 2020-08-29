@@ -21,6 +21,10 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 
+#include "../cfg/config.h"
+#include "../ui/color_manager.h"
+#include "../ui/color_scheme.h"
+#include "../ui/ui.h"
 #include "str.h"
 #include "utf8.h"
 
@@ -62,6 +66,41 @@ cline_splice_attrs(cline_t *cline, cline_t *admixture)
 	}
 	strappend(&cline->attrs, &cline->attrs_len, attrs);
 	free(admixture->attrs);
+}
+
+void
+cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
+{
+	cchar_t def_attr;
+	setcchar(&def_attr, L" ", def_col->attr,
+			colmgr_get_pair(def_col->fg, def_col->bg), NULL);
+
+	const char *line = cline->line;
+	const char *attrs = cline->attrs;
+
+	cchar_t attr = def_attr;
+	while(*line != '\0')
+	{
+		if(*attrs == '0')
+		{
+			attr = def_attr;
+		}
+		else if(*attrs != ' ')
+		{
+			const int color = (USER1_COLOR + (*attrs - '1'));
+			col_attr_t col = *def_col;
+			cs_mix_colors(&col, &cfg.cs.color[color]);
+			setcchar(&attr, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+		}
+
+		const size_t len = utf8_chrw(line);
+		char char_buf[len + 1];
+		copy_str(char_buf, sizeof(char_buf), line);
+		wprinta(win, char_buf, &attr, 0);
+
+		line += len;
+		attrs += utf8_chrsw(char_buf);
+	}
 }
 
 void
