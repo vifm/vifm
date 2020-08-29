@@ -58,6 +58,11 @@ struct col_attr_t;
 void cline_print(const cline_t *cline, WINDOW *win,
 		const struct col_attr_t *def_col);
 
+/* Ensures that cline is of width (in character positions) less than or equal to
+ * max_width and is right aligned putting ellipsis on the left side if
+ * needed. */
+void cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[]);
+
 /* Frees all resources allocated by cline.  The parameter can't be NULL. */
 void cline_dispose(cline_t *cline);
 

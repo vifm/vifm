@@ -766,9 +766,10 @@ void ui_view_redrawn(view_t *view);
 UiUpdateEvent ui_view_query_scheduled_event(view_t *view);
 
 TSTATIC_DEFS(
+	struct cline_t;
 	struct tab_info_t;
 	typedef char * (*path_func)(const char[]);
-	char * make_tab_title(const struct tab_info_t *tab_info, path_func pf,
+	struct cline_t make_tab_title(const struct tab_info_t *tab_info, path_func pf,
 		int tab_num);
 )
 

@@ -8,9 +8,11 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/colored_line.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
+static void check_tab_title(const tab_info_t *tab_info, const char text[]);
 static char * identity(const char path[]);
 
 SETUP_ONCE()
@@ -35,9 +37,7 @@ TEST(make_tab_title_uses_name_if_present_and_no_format)
 {
 	update_string(&cfg.tab_label, "");
 	tab_info_t tab_info = { .view = &lwin, .name = "name", };
-	char *title = make_tab_title(&tab_info, &identity, 0);
-	assert_string_equal("name", title);
-	free(title);
+	check_tab_title(&tab_info, "name");
 }
 
 TEST(make_tab_title_uses_path_if_name_is_missing_and_no_format)
@@ -45,9 +45,7 @@ TEST(make_tab_title_uses_path_if_name_is_missing_and_no_format)
 	update_string(&cfg.tab_label, "");
 	strcpy(lwin.curr_dir, "/lpath");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity, 0);
-	assert_string_equal("/lpath", title);
-	free(title);
+	check_tab_title(&tab_info, "/lpath");
 }
 
 TEST(make_tab_title_uses_format_in_regular_view)
@@ -55,9 +53,7 @@ TEST(make_tab_title_uses_format_in_regular_view)
 	update_string(&cfg.tab_label, "tail:%p:t");
 	strcpy(lwin.curr_dir, "/lpath/ltail");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity, 0);
-	assert_string_equal("tail:ltail", title);
-	free(title);
+	check_tab_title(&tab_info, "tail:ltail");
 }
 
 TEST(make_tab_title_uses_format_in_custom_view)
@@ -69,9 +65,7 @@ TEST(make_tab_title_uses_format_in_custom_view)
 
 	update_string(&cfg.tab_label, "!%c!%p:t");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity, 0);
-	assert_string_equal("!test!test-data", title);
-	free(title);
+	check_tab_title(&tab_info, "!test!test-data");
 }
 
 TEST(make_tab_title_uses_format_after_custom_view)
@@ -84,9 +78,7 @@ TEST(make_tab_title_uses_format_after_custom_view)
 
 	update_string(&cfg.tab_label, "!%c!");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity, 0);
-	assert_string_equal("!!", title);
-	free(title);
+	check_tab_title(&tab_info, "!!");
 }
 
 TEST(make_tab_title_handles_explore_mode_for_format)
@@ -100,9 +92,7 @@ TEST(make_tab_title_handles_explore_mode_for_format)
 
 	update_string(&cfg.tab_label, "!%p:t!");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity, 0);
-	assert_string_equal("!a!", title);
-	free(title);
+	check_tab_title(&tab_info, "!a!");
 
 	lwin.explore_mode = 0;
 }
@@ -111,9 +101,15 @@ TEST(make_tab_expands_tab_number)
 {
 	update_string(&cfg.tab_label, "%N");
 	tab_info_t tab_info = { .view = &lwin, .name = "name", };
-	char *title = make_tab_title(&tab_info, &identity, 0);
-	assert_string_equal("1", title);
-	free(title);
+	check_tab_title(&tab_info, "1");
+}
+
+static void
+check_tab_title(const tab_info_t *tab_info, const char text[])
+{
+	cline_t title = make_tab_title(tab_info, &identity, 0);
+	assert_string_equal(text, title.line);
+	cline_dispose(&title);
 }
 
 static char *

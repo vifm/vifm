@@ -152,8 +152,10 @@ static void print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col,
 		path_func pf);
 static void compute_avg_width(int *avg_width, int *spare_width, int max_width,
 		view_t *view, path_func pf);
-TSTATIC char * make_tab_title(const tab_info_t *tab_info, path_func pf,
+TSTATIC cline_t make_tab_title(const tab_info_t *tab_info, path_func pf,
 		int tab_num);
+static cline_t format_tab_part(const char fmt[], const tab_info_t *tab_info,
+		path_func pf, int tab_num);
 static char * format_view_title(const view_t *view, path_func pf);
 static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
@@ -1894,10 +1896,11 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		char *title = make_tab_title(&tab_info, pf, i);
-		const int width_needed = utf8_strsw(title);
-		char buffer_dummy[1];
-		const int extra_width = snprintf(buffer_dummy, 0U, "[%d:]", i + 1);
+		cline_t prefix = format_tab_part(cfg.tab_prefix, &tab_info, pf, i);
+		cline_t title = make_tab_title(&tab_info, pf, i);
+		cline_t suffix = format_tab_part(cfg.tab_suffix, &tab_info, pf, i);
+		const int width_needed = title.attrs_len;
+		const int extra_width = prefix.attrs_len + suffix.attrs_len;
 		int width = max_width;
 
 		col_attr_t col = base_col;
@@ -1914,43 +1917,32 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 		if(width < width_needed + extra_width)
 		{
-			char *ellipsed;
-
 			if(spare_width > 0)
 			{
 				width += 1;
 				--spare_width;
 			}
 
-			ellipsed = left_ellipsis(title, MAX(0, width - extra_width),
+			cline_left_ellipsis(&title, MAX(0, width - extra_width),
 					curr_stats.ellipsis);
-			free(title);
-			title = ellipsed;
 		}
 
 		ui_set_attr(win, &col, -1);
 
 		if(width > extra_width)
 		{
-			col_attr_t numCol = col;
-			cs_mix_colors(&numCol, &cfg.cs.color[TAB_NUM_COLOR]);
-			if(tab_info.view == view)
-			{
-				cs_mix_colors(&numCol, &cfg.cs.color[TAB_NUM_SEL_COLOR]);
-			}
-
-			waddch(win, '[');
-			ui_set_attr(win, &numCol, -1);
-			wprintw(win, "%d", i + 1);
-			ui_set_attr(win, &col, -1);
-			wprintw(win, ":%s]", title);
+			cline_print(&prefix, win, &col);
+			cline_print(&title, win, &col);
+			cline_print(&suffix, win, &col);
 		}
 
 		/* Here result of `utf8_strsw(title)` might be different from one computed
 		 * above. */
-		width_used += extra_width + utf8_strsw(title);
+		width_used += extra_width + title.attrs_len;
 
-		free(title);
+		cline_dispose(&prefix);
+		cline_dispose(&title);
+		cline_dispose(&suffix);
 	}
 
 	wnoutrefresh(win);
@@ -1972,9 +1964,13 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		char *const title = make_tab_title(&tab_info, pf, i);
-		widths[i] = utf8_strsw(title) + snprintf(title, 0U, "[%d:]", i + 1);
-		free(title);
+		cline_t prefix = format_tab_part(cfg.tab_prefix, &tab_info, pf, i);
+		cline_t title = make_tab_title(&tab_info, pf, i);
+		cline_t suffix = format_tab_part(cfg.tab_suffix, &tab_info, pf, i);
+		widths[i] = prefix.attrs_len + title.attrs_len + suffix.attrs_len;
+		cline_dispose(&prefix);
+		cline_dispose(&title);
+		cline_dispose(&suffix);
 
 		if(tab_info.view == view && tabs_count(view) != 1)
 		{
@@ -2014,12 +2010,10 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 	while(new_avg_width != *avg_width);
 }
 
-/* Gets title of the tab.  Returns newly allocated string. */
-TSTATIC char *
+/* Gets title of the tab.  Returns colored line. */
+TSTATIC cline_t
 make_tab_title(const tab_info_t *tab_info, path_func pf, int tab_num)
 {
-	view_t *view = tab_info->view;
-
 	if(cfg.tail_tab_line_paths)
 	{
 		/* We can just do the replacement, because shortening home part doesn't make
@@ -2029,8 +2023,41 @@ make_tab_title(const tab_info_t *tab_info, path_func pf, int tab_num)
 
 	if(is_null_or_empty(cfg.tab_label))
 	{
-		return (tab_info->name != NULL) ? strdup(tab_info->name)
-		                                : format_view_title(view, pf);
+		cline_t result = {
+			.attrs = strdup("")
+		};
+
+		if(tab_info->name != NULL)
+		{
+			result.line = strdup(tab_info->name);
+		}
+		else
+		{
+			char *view_title = format_view_title(tab_info->view, pf);
+			result.line = escape_unreadable(view_title);
+			free(view_title);
+		}
+
+		result.line_len = strlen(result.line);
+		cline_finish(&result);
+		return result;
+	}
+
+	return format_tab_part(cfg.tab_label, tab_info, pf, tab_num);
+}
+
+/* Formats part of a tab label.  Returns colored line. */
+static cline_t
+format_tab_part(const char fmt[], const tab_info_t *tab_info, path_func pf,
+		int tab_num)
+{
+	view_t *view = tab_info->view;
+
+	if(cfg.tail_tab_line_paths)
+	{
+		/* We can just do the replacement, because shortening home part doesn't make
+		 * sense for a single path entry. */
+		pf = &get_last_path_component;
 	}
 
 	char path[PATH_MAX + 1];
@@ -2070,16 +2097,15 @@ make_tab_title(const tab_info_t *tab_info, path_func pf, int tab_num)
 		{ .letter = 'T', .value = tree_flag, .flag = 1 },
 	};
 
-	cline_t title = ma_expand_colored_custom(cfg.tab_label, ARRAY_LEN(macros),
-			macros, MA_OPT);
+	cline_t title = ma_expand_colored_custom(fmt, ARRAY_LEN(macros), macros,
+			MA_OPT);
 	free(num);
 	free(escaped_view_title);
 	free(cv_title);
 	free(escaped_path);
 	free(name);
 
-	free(title.attrs);
-	return title.line;
+	return title;
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.

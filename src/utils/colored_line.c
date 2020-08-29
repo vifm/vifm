@@ -20,6 +20,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
+#include <string.h> /* memmove() */
 
 #include "../cfg/config.h"
 #include "../ui/color_manager.h"
@@ -101,6 +102,62 @@ cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 		line += len;
 		attrs += utf8_chrsw(char_buf);
 	}
+}
+
+void
+cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[])
+{
+	if(max_width == 0U)
+	{
+		/* No room to print anything. */
+		cline->line[0] = '\0';
+		cline->line_len = 0;
+		cline->attrs[0] = '\0';
+		cline->attrs_len = 0;
+		return;
+	}
+
+	size_t width = utf8_strsw(cline->line);
+	if(width <= max_width)
+	{
+		/* No need to change the string. */
+		return;
+	}
+
+	size_t ell_width = utf8_strsw(ell);
+	if(max_width <= ell_width)
+	{
+		/* Insert as many characters of ellipsis as we can. */
+		const int prefix = (int)utf8_nstrsnlen(ell, max_width);
+		cline->line = format_str("%.*s", prefix, ell);
+		cline->line_len = prefix;
+		cline->attrs[0] = '\0';
+		cline->attrs_len = 0;
+		cline_finish(cline);
+		return;
+	}
+
+	char *line = cline->line;
+	char *attrs = cline->attrs;
+
+	while(width > max_width - ell_width)
+	{
+		int cw = utf8_chrsw(line);
+		width -= cw;
+		line += utf8_chrw(line);
+		attrs += cw;
+	}
+
+	cline->line_len = cline->line_len - (line - cline->line);
+	memmove(cline->line, line, cline->line_len + 1);
+	cline->attrs_len = cline->attrs_len - (attrs - cline->attrs);
+	memmove(cline->attrs, attrs, cline->attrs_len + 1);
+
+	strprepend(&cline->line, &cline->line_len, ell);
+	char spaces[ell_width + 1];
+	memset(spaces, ' ', sizeof(spaces) - 1);
+	spaces[ell_width] = '\0';
+	strprepend(&cline->attrs, &cline->attrs_len, spaces);
 }
 
 void
