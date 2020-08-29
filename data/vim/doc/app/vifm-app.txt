@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 26
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3943,6 +3943,7 @@ When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
 
 The following macros can appear in the format:
+    %N - number of the tab
     %T - flag of a tree mode (see below)
     %c - description of a custom view
     %n - name of the tab

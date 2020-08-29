@@ -768,7 +768,8 @@ UiUpdateEvent ui_view_query_scheduled_event(view_t *view);
 TSTATIC_DEFS(
 	struct tab_info_t;
 	typedef char * (*path_func)(const char[]);
-	char * make_tab_title(const struct tab_info_t *tab_info, path_func pf);
+	char * make_tab_title(const struct tab_info_t *tab_info, path_func pf,
+		int tab_num);
 )
 
 #endif /* VIFM__UI__UI_H__ */

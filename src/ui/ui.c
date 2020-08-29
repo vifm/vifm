@@ -152,7 +152,8 @@ static void print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col,
 		path_func pf);
 static void compute_avg_width(int *avg_width, int *spare_width, int max_width,
 		view_t *view, path_func pf);
-TSTATIC char * make_tab_title(const tab_info_t *tab_info, path_func pf);
+TSTATIC char * make_tab_title(const tab_info_t *tab_info, path_func pf,
+		int tab_num);
 static char * format_view_title(const view_t *view, path_func pf);
 static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
@@ -1893,7 +1894,7 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		char *title = make_tab_title(&tab_info, pf);
+		char *title = make_tab_title(&tab_info, pf, i);
 		const int width_needed = utf8_strsw(title);
 		char buffer_dummy[1];
 		const int extra_width = snprintf(buffer_dummy, 0U, "[%d:]", i + 1);
@@ -1971,7 +1972,7 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		char *const title = make_tab_title(&tab_info, pf);
+		char *const title = make_tab_title(&tab_info, pf, i);
 		widths[i] = utf8_strsw(title) + snprintf(title, 0U, "[%d:]", i + 1);
 		free(title);
 
@@ -2015,7 +2016,7 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 
 /* Gets title of the tab.  Returns newly allocated string. */
 TSTATIC char *
-make_tab_title(const tab_info_t *tab_info, path_func pf)
+make_tab_title(const tab_info_t *tab_info, path_func pf, int tab_num)
 {
 	view_t *view = tab_info->view;
 
@@ -2058,8 +2059,11 @@ make_tab_title(const tab_info_t *tab_info, path_func pf)
 	char *escaped_view_title = escape_unreadable(view_title);
 	free(view_title);
 
+	char *num = format_str("%d", tab_num + 1);
+
 	custom_macro_t macros[] = {
 		{ .letter = 'n', .value = name },
+		{ .letter = 'N', .value = num },
 		{ .letter = 't', .value = escaped_view_title },
 		{ .letter = 'p', .value = escaped_path, .expand_mods = 1, .parent = "/" },
 		{ .letter = 'c', .value = cv_title },
@@ -2068,6 +2072,7 @@ make_tab_title(const tab_info_t *tab_info, path_func pf)
 
 	cline_t title = ma_expand_colored_custom(cfg.tab_label, ARRAY_LEN(macros),
 			macros, MA_OPT);
+	free(num);
 	free(escaped_view_title);
 	free(cv_title);
 	free(escaped_path);

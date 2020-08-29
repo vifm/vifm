@@ -35,7 +35,7 @@ TEST(make_tab_title_uses_name_if_present_and_no_format)
 {
 	update_string(&cfg.tab_label, "");
 	tab_info_t tab_info = { .view = &lwin, .name = "name", };
-	char *title = make_tab_title(&tab_info, &identity);
+	char *title = make_tab_title(&tab_info, &identity, 0);
 	assert_string_equal("name", title);
 	free(title);
 }
@@ -45,7 +45,7 @@ TEST(make_tab_title_uses_path_if_name_is_missing_and_no_format)
 	update_string(&cfg.tab_label, "");
 	strcpy(lwin.curr_dir, "/lpath");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity);
+	char *title = make_tab_title(&tab_info, &identity, 0);
 	assert_string_equal("/lpath", title);
 	free(title);
 }
@@ -55,7 +55,7 @@ TEST(make_tab_title_uses_format_in_regular_view)
 	update_string(&cfg.tab_label, "tail:%p:t");
 	strcpy(lwin.curr_dir, "/lpath/ltail");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity);
+	char *title = make_tab_title(&tab_info, &identity, 0);
 	assert_string_equal("tail:ltail", title);
 	free(title);
 }
@@ -69,7 +69,7 @@ TEST(make_tab_title_uses_format_in_custom_view)
 
 	update_string(&cfg.tab_label, "!%c!%p:t");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity);
+	char *title = make_tab_title(&tab_info, &identity, 0);
 	assert_string_equal("!test!test-data", title);
 	free(title);
 }
@@ -84,7 +84,7 @@ TEST(make_tab_title_uses_format_after_custom_view)
 
 	update_string(&cfg.tab_label, "!%c!");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity);
+	char *title = make_tab_title(&tab_info, &identity, 0);
 	assert_string_equal("!!", title);
 	free(title);
 }
@@ -100,11 +100,20 @@ TEST(make_tab_title_handles_explore_mode_for_format)
 
 	update_string(&cfg.tab_label, "!%p:t!");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };
-	char *title = make_tab_title(&tab_info, &identity);
+	char *title = make_tab_title(&tab_info, &identity, 0);
 	assert_string_equal("!a!", title);
 	free(title);
 
 	lwin.explore_mode = 0;
+}
+
+TEST(make_tab_expands_tab_number)
+{
+	update_string(&cfg.tab_label, "%N");
+	tab_info_t tab_info = { .view = &lwin, .name = "name", };
+	char *title = make_tab_title(&tab_info, &identity, 0);
+	assert_string_equal("1", title);
+	free(title);
 }
 
 static char *
