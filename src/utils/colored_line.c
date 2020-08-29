@@ -64,5 +64,14 @@ cline_splice_attrs(cline_t *cline, cline_t *admixture)
 	free(admixture->attrs);
 }
 
+void
+cline_dispose(cline_t *cline)
+{
+	update_string(&cline->line, NULL);
+	cline->line_len = 0;
+	update_string(&cline->attrs, NULL);
+	cline->attrs_len = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -116,8 +116,7 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	result.line = break_in_two(result.line, width, "%=");
 	result.attrs = break_in_two(result.attrs, width, "=");
 	print_with_attrs(stat_win, result.line, result.attrs, &default_attr);
-	free(result.line);
-	free(result.attrs);
+	cline_dispose(&result);
 
 	refresh_window(stat_win, lazy_redraw);
 }

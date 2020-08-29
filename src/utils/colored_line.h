@@ -49,6 +49,9 @@ void cline_finish(cline_t *cline);
 /* Appends attributes from admixture freeing them (but not the line). */
 void cline_splice_attrs(cline_t *cline, cline_t *admixture);
 
+/* Frees all resources allocated by cline.  The parameter can't be NULL. */
+void cline_dispose(cline_t *cline);
+
 #endif /* VIFM__UTILS__COLORED_LINE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
