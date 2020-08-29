@@ -4712,8 +4712,7 @@ type: string
 .br
 default: ""
 .br
-When non-empty, determines format of a single tab's label, excluding tab number
-and tab delimiters.
+When non-empty, determines format of the main part of a single tab's label.
 
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
@@ -4762,6 +4761,14 @@ expanded to a non-empty value or is a set flag macro.
 .EE
 .RE
 .TP
+.BI 'tabprefix'
+type: string
+.br
+default: "[%N:"
+.br
+Determines prefix of a tab's label.  Formatting is done as for 'tablabel'
+option.
+.TP
 .BI 'tabscope'
 type: enumeration
 .br
@@ -4777,6 +4784,14 @@ type: integer
 default: value from curses library
 .br
 Number of spaces that a Tab in the file counts for.
+.TP
+.BI 'tabsuffix'
+type: string
+.br
+default: "]"
+.br
+Determines suffix of a tab's label.  Formatting is done as for 'tablabel'
+option.
 .TP
 .BI 'timefmt'
 type: string

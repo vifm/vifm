@@ -3936,8 +3936,7 @@ tablabel
 type: string
 default: ""
 
-When non-empty, determines format of a single tab's label, excluding tab
-number and tab delimiters.
+When non-empty, determines format of the main part of a single tab's label.
 
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
@@ -3972,6 +3971,14 @@ Example: >
  " %p:t            -- tail part of view's location
  set tablabel=%[(%n)%]%[%[%T{tree}%]%[{%c}%]@%]%p:t
 <
+                                               *vifm-'tabprefix'*
+tabprefix
+type: string
+default: "[%N:"
+
+Determines prefix of a tab's label.  Formatting is done as for
+|vifm-'tablabel'| option.
+
                                                *vifm-'tabscope'*
 tabscope
 type: enumeration
@@ -3988,6 +3995,14 @@ type: integer
 default: value from curses library
 
 Number of spaces that a Tab in the file counts for.
+
+                                               *vifm-'tabsuffix'*
+tabsuffix
+type: string
+default: "]"
+
+Determines suffix of a tab's label.  Formatting is done as for
+|vifm-'tablabel'| option.
 
                                                *vifm-'timefmt'*
 timefmt

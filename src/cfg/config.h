@@ -333,7 +333,9 @@ typedef struct config_t
 	/* Settings related to tabs. */
 	int pane_tabs;     /* Whether tabs are local to panes. */
 	int show_tab_line; /* When tab line should be displayed. */
+	char *tab_prefix;  /* Format of single tab's label prefix. */
 	char *tab_label;   /* Format of a single tab's label. */
+	char *tab_suffix;  /* Format of single tab's label suffix. */
 
 	/* Control over automatic cursor positioning. */
 	int auto_ch_pos; /* Weird option that drops positions from histories. */

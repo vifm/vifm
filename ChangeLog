@@ -58,6 +58,9 @@
 	Added basic support for using PowerShell on Windows (pausing doesn't work).
 	Thanks to Fang (a.k.a. peromage).
 
+	Added 'tabprefix' and 'tabsuffix' options that allow customizing
+	tabline separators.  Thanks to CoreCube.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

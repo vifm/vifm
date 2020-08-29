@@ -493,6 +493,8 @@ hi OddLine
 " "shellflagcmd" and "shcf" should be highlighted as 'option'
 " "tablabel" should be highlighted as 'option'
 " "sessionoptions" and "ssop" should be highlighted as 'option'
+" "tabprefix" should be highlighted as 'option'
+" "tabsuffix" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -507,7 +509,10 @@ set quickview noquickview invquickview
 set syncregs
 set mediaprg
 set shellflagcmd shcf
+set tablabel
 set sessionoptions ssop
+set tabprefix
+set tabsuffix
 
 " "term" should be highlighted as a function()
 echo term('cmd')
