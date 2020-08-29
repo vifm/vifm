@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 29, 2020" "vifm 0.10.1"
+.TH VIFM 1 "August 30, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4720,23 +4720,27 @@ title (usually current path) for unnamed tabs.
 The following macros can appear in the format:
 .RS
 .IP \- 2
-%N \- number of the tab
+%N      \- number of the tab
 .IP \- 2
-%T \- flag of a tree mode (see below)
+%T      \- flag of a tree mode (see below)
 .IP \- 2
-%c \- description of a custom view
+%c      \- description of a custom view
 .IP \- 2
-%n \- name of the tab
+%n      \- name of the tab
 .IP \- 2
-%p \- path of the view (handles filename modifiers)
+%p      \- path of the view (handles filename modifiers)
 .IP \- 2
-%t \- title of the view (affected by 'shortmess' flags)
+%t      \- title of the view (affected by 'shortmess' flags)
 .IP \- 2
-%% \- literal percent sign
+%%      \- literal percent sign
 .IP \- 2
-%[ \- designates beginning of an optional block
+%[      \- designates beginning of an optional block
 .IP \- 2
-%] \- designates end of an optional block
+%]      \- designates end of an optional block
+.IP \- 2
+%*, %0* \- resets highlighting
+.IP \- 2
+%1-%9   \- applies one of User1..User9 highlight groups
 .RE
 
 .RS

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 29
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3942,15 +3942,17 @@ When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
 
 The following macros can appear in the format:
-    %N - number of the tab
-    %T - flag of a tree mode (see below)
-    %c - description of a custom view
-    %n - name of the tab
-    %p - path of the view (handles |vifm-filename-modifiers|)
-    %t - title of the view (affected by |vifm-'shortmess'| flags)
-    %% - literal percent sign
-    %[ - designates beginning of an optional block
-    %] - designates end of an optional block
+    %N      - number of the tab
+    %T      - flag of a tree mode (see below)
+    %c      - description of a custom view
+    %n      - name of the tab
+    %p      - path of the view (handles |vifm-filename-modifiers|)
+    %t      - title of the view (affected by |vifm-'shortmess'| flags)
+    %%      - literal percent sign
+    %[      - designates beginning of an optional block
+    %]      - designates end of an optional block
+    %*, %0* - resets highlighting
+    %1-%9   - applies one of User1..User9 highlight groups
 
 In global tabs the view in bullets above refers to currently active view of that
 tab.
