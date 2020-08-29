@@ -42,7 +42,7 @@ functionality should be enough for most of use cases.
 | Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                                                       |
 | Plugin                    | [Repository][vim-plugin]                                                                           |
 | Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]                               |
-| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2], [[3]][devicons-3]                                            |
+| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                                               |
 | vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images), also see [PR][vifmimg-pr] |
 
 ## Screenshot ##
@@ -67,7 +67,6 @@ GNU General Public License, version 2 or later.
 [colorscheme-preview]: https://vifm.info/colorschemes.shtml
 [devicons-1]: https://github.com/cirala/vifm_devicons
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
-[devicons-3]: https://github.com/TornaxO7/vifm-favicons
 [vifmimg]: https://github.com/cirala/vifmimg
 [vifmimg-pr]: https://github.com/cirala/vifmimg/pull/17
 [ueberzug]: https://github.com/seebye/ueberzug
