@@ -296,6 +296,13 @@ TEST(highlighting_is_set_correctly)
 	                           " 1   0");
 }
 
+TEST(highlighting_is_set_correctly_for_optional)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%[%1*a",
+	                           "%[a",
+	                           "  1");
+}
+
 TEST(highlighting_has_equals_macro_preserved)
 {
 	ASSERT_EXPANDED_TO_WITH_HI("%9*%t %= %t%7*",

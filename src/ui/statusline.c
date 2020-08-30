@@ -508,6 +508,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 	if(opt)
 	{
 		(void)strprepend(&result.line, &result.line_len, "%[");
+		(void)strprepend(&result.attrs, &result.attrs_len, "  ");
 	}
 
 	cline_finish(&result);
