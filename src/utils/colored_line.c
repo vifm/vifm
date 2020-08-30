@@ -45,6 +45,13 @@ cline_sync(cline_t *cline, int extra_width)
 }
 
 void
+cline_set_attr(cline_t *cline, char attr)
+{
+	(void)cline_sync(cline, 1);
+	cline->attrs[cline->attrs_len - 1] = attr;
+}
+
+void
 cline_finish(cline_t *cline)
 {
 	if(cline_sync(cline, 0))

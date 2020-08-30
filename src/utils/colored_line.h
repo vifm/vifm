@@ -44,6 +44,9 @@ cline_t;
  * non-zero if cline->attrs has extra characters compared to cline->line. */
 int cline_sync(cline_t *cline, int extra_width);
 
+/* Sets attribute to be used for text appended later on. */
+void cline_set_attr(cline_t *cline, char attr);
+
 /* Finalizes cline by synchronizing and truncating it to make contents and
  * attributes match each other. */
 void cline_finish(cline_t *cline);

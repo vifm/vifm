@@ -473,8 +473,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					width = 0;
 					break;
 				}
-				(void)cline_sync(&result, 1);
-				result.attrs[result.attrs_len - 1] = '0' + width;
+				cline_set_attr(&result, '0' + width);
 				width = 0;
 				break;
 

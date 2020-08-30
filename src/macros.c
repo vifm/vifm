@@ -672,14 +672,12 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		}
 		else if(pat[1] == '*')
 		{
-			(void)cline_sync(&result, 1);
-			result.attrs[result.attrs_len - 1] = '0';
+			cline_set_attr(&result, '0');
 			++*pattern;
 		}
 		else if(isdigit(pat[1]) && pat[2] == '*')
 		{
-			(void)cline_sync(&result, 1);
-			result.attrs[result.attrs_len - 1] = pat[1];
+			cline_set_attr(&result, pat[1]);
 			*pattern += 2;
 		}
 		else if(with_opt && pat[1] == '[')
