@@ -291,9 +291,9 @@ TEST(ignore_mismatched_opening_curly_bracket)
 
 TEST(highlighting_is_set_correctly)
 {
-	ASSERT_EXPANDED_TO_WITH_HI("%1*%t%*",
-	                           "file",
-	                           "1   ");
+	ASSERT_EXPANDED_TO_WITH_HI("[%1*%t%*]",
+	                           "[file]",
+	                           " 1   0");
 }
 
 TEST(highlighting_has_equals_macro_preserved)
