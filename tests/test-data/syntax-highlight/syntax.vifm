@@ -461,8 +461,6 @@ hi AuxWin
 hi OtherWin
 hi TabLine
 hi TabLineSel
-hi TabNr
-hi TabNrSel
 hi HardLink
 hi User1
 hi User2

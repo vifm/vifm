@@ -2083,8 +2083,6 @@ their content (e.g. regular files in views)
  \- Border \- color of vertical parts of the border
  \- TabLine \- tab line color (for 'tabscope' set to "global")
  \- TabLineSel \- color of the tip of selected tab (regardless of 'tabscope')
- \- TabNr \- tab number color
- \- TabNrSel \- tab number color for current tab
  \- TopLine \- top line color of the other pane
  \- TopLineSel \- top line color of the current pane
  \- CmdLine \- the command line/status bar color
@@ -2266,12 +2264,10 @@ transparency:
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
-        TabNr
-          TabNrSel
+        User1..User9
   TabLine
     TabLineSel
-      TabNr
-        TabNrSel
+      User1..User9
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.
@@ -4717,14 +4713,14 @@ When non-empty, determines format of the main part of a single tab's label.
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
 
-The following macros can appear in the format:
+The following macros can appear in the format (see below for what a flag is):
 .RS
 .IP \- 2
-%C      \- flag of a current tab (see below)
+%C      \- flag of a current tab
 .IP \- 2
 %N      \- number of the tab
 .IP \- 2
-%T      \- flag of a tree mode (see below)
+%T      \- flag of a tree mode
 .IP \- 2
 %c      \- description of a custom view
 .IP \- 2

@@ -43,9 +43,6 @@
 	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
 	and Melandel.
 
-	Added TabNr and TabNrSel highlight groups for highlighting tab number in
-	tab's label.  Thanks to iSeeU816.
-
 	Added LineNr highlight group for highlighting line number column of views.
 	Thanks to Anton Gepting.
 

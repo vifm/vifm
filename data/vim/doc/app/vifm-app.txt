@@ -1779,8 +1779,6 @@ Available group-name values:
  - TabLine - tab line color (for |vifm-'tabscope'| set to "global")
  - TabLineSel - color of the tip of selected tab (regardless of
                 |vifm-'tabscope'|)
- - TabNr - tab number color
- - TabNrSel - tab number color for current tab
  - TopLine - top line color of the other pane
  - TopLineSel - top line color of the current pane
  - CmdLine - the command line/status bar color
@@ -1962,12 +1960,10 @@ transparency:
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
-        TabNr
-          TabNrSel
+        User1..User9
   TabLine
     TabLineSel
-      TabNr
-        TabNrSel
+      User1..User9
 
 "none" means default terminal color for highlight groups at the first level
 of the hierarchy and transparency for all others.
@@ -3941,10 +3937,10 @@ When non-empty, determines format of the main part of a single tab's label.
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
 
-The following macros can appear in the format:
-    %C      - flag of a current tab (see below)
+The following macros can appear in the format (see below for what a flag is):
+    %C      - flag of a current tab
     %N      - number of the tab
-    %T      - flag of a tree mode (see below)
+    %T      - flag of a tree mode
     %c      - description of a custom view
     %n      - name of the tab
     %p      - path of the view (handles |vifm-filename-modifiers|)
@@ -3981,6 +3977,14 @@ default: "[%N:"
 
 Determines prefix of a tab's label.  Formatting is done as for
 |vifm-'tablabel'| option.
+
+Example of highlighting tab number: >
+ " setup color for non-current tabs
+ highlight User7 ctermfg=red
+ " setup color for current tabs
+ highlight User8 ctermbg=blue ctermfg=none
+ " use optional group predicated on current-tab flag
+ set tabprefix=[%7*%[%8*%C%]%N%*:
 
                                                *vifm-'tabscope'*
 tabscope
