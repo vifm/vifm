@@ -695,9 +695,7 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 			++*pattern;
 			if(nexpansions == 0 && result.line != NULL)
 			{
-				result.line[0] = '\0';
-				result.line_len = 0;
-				cline_finish(&result);
+				cline_clear(&result);
 			}
 			return result;
 		}

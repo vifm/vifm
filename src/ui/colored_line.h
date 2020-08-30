@@ -47,6 +47,9 @@ int cline_sync(cline_t *cline, int extra_width);
 /* Sets attribute to be used for text appended later on. */
 void cline_set_attr(cline_t *cline, char attr);
 
+/* Makes cline empty. */
+void cline_clear(cline_t *cline);
+
 /* Finalizes cline by synchronizing and truncating it to make contents and
  * attributes match each other. */
 void cline_finish(cline_t *cline);

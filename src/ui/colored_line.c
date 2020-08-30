@@ -52,6 +52,15 @@ cline_set_attr(cline_t *cline, char attr)
 }
 
 void
+cline_clear(cline_t *cline)
+{
+	cline->line[0] = '\0';
+	cline->line_len = 0;
+	cline->attrs[0] = '\0';
+	cline->attrs_len = 0;
+}
+
+void
 cline_finish(cline_t *cline)
 {
 	if(cline_sync(cline, 0))
@@ -117,10 +126,7 @@ cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[])
 	if(max_width == 0U)
 	{
 		/* No room to print anything. */
-		cline->line[0] = '\0';
-		cline->line_len = 0;
-		cline->attrs[0] = '\0';
-		cline->attrs_len = 0;
+		cline_clear(cline);
 		return;
 	}
 

@@ -407,10 +407,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				{
 					if(nexpansions == 0)
 					{
-						replace_string(&result.line, "");
-						replace_string(&result.attrs, "");
-						result.line_len = 0U;
-						result.attrs_len = 0U;
+						cline_clear(&result);
 					}
 					cline_finish(&result);
 					return result;
