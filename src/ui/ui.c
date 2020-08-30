@@ -163,8 +163,8 @@ static int view_shows_tabline(const view_t *view);
 static int get_tabline_height(void);
 static void print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col,
 		path_func pf);
-static void compute_avg_width(int *avg_width, int *spare_width, int max_width,
-		view_t *view, path_func pf);
+static void compute_avg_width(int *avg_width, int *spare_width,
+		int min_widths[], int max_width, view_t *view, path_func pf);
 TSTATIC cline_t make_tab_title(const tab_title_info_t *title_info);
 TSTATIC tab_title_info_t make_tab_title_info(const tab_info_t *tab_info,
 		path_func pf, int tab_num, int current_tab);
@@ -1903,15 +1903,37 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	int width_used = 0;
 	int avg_width, spare_width;
 
+	int min_widths[tabs_count(view)];
+
 	ui_set_bg(win, &base_col, -1);
 	werase(win);
 	checked_wmove(win, 0, 0);
 
-	compute_avg_width(&avg_width, &spare_width, max_width, view, pf);
+	compute_avg_width(&avg_width, &spare_width, min_widths, max_width, view,
+			pf);
 
-	for(i = 0; tabs_get(view, i, &tab_info); ++i)
+	int tab_count = tabs_count(view);
+	int min_width = 0;
+	for(i = 0; i < tab_count; ++i)
+	{
+		min_width += min_widths[i];
+	}
+
+	int before_current = 1;
+
+	for(i = 0; tabs_get(view, i, &tab_info) && width_used < max_width; ++i)
 	{
 		int current = (tab_info.view == view);
+		if(current)
+		{
+			before_current = 0;
+		}
+		else if(before_current && min_width > max_width)
+		{
+			min_width -= min_widths[i];
+			spare_width = max_width - min_width;
+			continue;
+		}
 
 		tab_title_info_t title_info = make_tab_title_info(&tab_info, pf, i,
 				current);
@@ -1950,16 +1972,20 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 		ui_set_attr(win, &col, -1);
 
-		if(width > extra_width)
+		int real_width = prefix.attrs_len + title.attrs_len + suffix.attrs_len;
+
+		if(width < real_width && max_width - width_used >= real_width)
+		{
+			width = real_width;
+		}
+		if(width >= real_width)
 		{
 			cline_print(&prefix, win, &col);
 			cline_print(&title, win, &col);
 			cline_print(&suffix, win, &col);
 		}
 
-		/* Here result of `utf8_strsw(title)` might be different from one computed
-		 * above. */
-		width_used += extra_width + title.attrs_len;
+		width_used += real_width;
 
 		cline_dispose(&prefix);
 		cline_dispose(&title);
@@ -1972,8 +1998,8 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 /* Computes average width of tab tips as well as number of spare character
  * positions. */
 static void
-compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
-		path_func pf)
+compute_avg_width(int *avg_width, int *spare_width, int min_widths[],
+		int max_width, view_t *view, path_func pf)
 {
 	int left = max_width;
 	int widths[tabs_count(view)];
@@ -1995,15 +2021,24 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 		dispose_tab_title_info(&title_info);
 
 		widths[i] = prefix.attrs_len + title.attrs_len + suffix.attrs_len;
+		min_widths[i] = prefix.attrs_len + suffix.attrs_len;
+
 		cline_dispose(&prefix);
 		cline_dispose(&title);
 		cline_dispose(&suffix);
 
-		if(current && tabs_count(view) != 1)
+		if(current)
 		{
-			left = MAX(max_width - widths[i], 0);
-			*avg_width = left/(tabs_count(view) - 1);
-			*spare_width = left%(tabs_count(view) - 1);
+			min_widths[i] = MIN(max_width, widths[i]);
+
+			if(tabs_count(view) != 1)
+			{
+				int tab_count = tabs_count(view);
+
+				left = MAX(max_width - widths[i], 0);
+				*avg_width = left/(tab_count - 1);
+				*spare_width = left%(tab_count - 1);
+			}
 		}
 	}
 
