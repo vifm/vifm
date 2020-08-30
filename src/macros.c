@@ -697,8 +697,8 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 			{
 				result.line[0] = '\0';
 				result.line_len = 0;
+				cline_finish(&result);
 			}
-			cline_finish(&result);
 			return result;
 		}
 		else
@@ -732,20 +732,19 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		}
 	}
 
-	/* Unmatched %[. */
 	if(in_opt)
 	{
+		/* Unmatched %[. */
 		(void)strprepend(&result.line, &result.line_len, "%[");
 		(void)strprepend(&result.attrs, &result.attrs_len, "  ");
 	}
-
-	if(!in_opt)
+	else
 	{
 		result.line = add_missing_macros(result.line, result.line_len, nmacros,
 				macros);
+		cline_finish(&result);
 	}
 
-	cline_finish(&result);
 	return result;
 }
 

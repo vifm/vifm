@@ -380,6 +380,21 @@ TEST(highlighting_is_set_correctly)
 			"       1  0      ");
 }
 
+TEST(opt_can_alter_highlighting_only)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'C', .value = "", .flag = 1, },
+	};
+	check_hi("%1*%[%2*%C%]!", ARRAY_LEN(macros), macros, MA_OPT,
+			"!",
+			"1");
+
+	macros[0].value = "*";
+	check_hi("%1*%[%2*%C%]!", ARRAY_LEN(macros), macros, MA_OPT,
+			"!",
+			"2");
+}
+
 TEST(bad_user_group_remains_in_line_partially)
 {
 	custom_macro_t macros[1];
