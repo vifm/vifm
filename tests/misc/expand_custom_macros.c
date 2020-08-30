@@ -375,9 +375,9 @@ TEST(highlighting_is_set_correctly)
 	custom_macro_t macros[] = {
 		{ .letter = 'i', .value = "xyz", .uses_left = 0, .group = -1, },
 	};
-	check_hi("prefix %1*%i%2* suffix", ARRAY_LEN(macros), macros, MA_NOOPT,
+	check_hi("prefix %1*%i%* suffix", ARRAY_LEN(macros), macros, MA_NOOPT,
 			"prefix xyz suffix",
-			"       1  2      ");
+			"       1  0      ");
 }
 
 TEST(bad_user_group_remains_in_line_partially)

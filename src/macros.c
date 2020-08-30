@@ -670,6 +670,12 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 			result.line = extend_string(result.line, "%", &result.line_len);
 			*pattern += (pat[1] == '%');
 		}
+		else if(pat[1] == '*')
+		{
+			(void)cline_sync(&result, 1);
+			result.attrs[result.attrs_len - 1] = '0';
+			++*pattern;
+		}
 		else if(isdigit(pat[1]) && pat[2] == '*')
 		{
 			(void)cline_sync(&result, 1);
