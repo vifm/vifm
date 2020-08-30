@@ -39,6 +39,9 @@ typedef struct cline_t
 }
 cline_t;
 
+/* Creates an empty colored line. */
+cline_t cline_make(void);
+
 /* Makes sure that cline->attrs has at least as many elements as cline->line
  * contains screen positions for its UTF-8 characters + extra_width.  Returns
  * non-zero if cline->attrs has extra characters compared to cline->line. */

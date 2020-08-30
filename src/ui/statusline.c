@@ -209,8 +209,7 @@ expand_status_line_macros(view_t *view, const char format[])
 	if(curr == NULL || fentry_is_fake(curr))
 	{
 		/* Fake entries don't have valid information. */
-		cline_t result = { .line = strdup(""), .attrs = strdup("") };
-		return result;
+		return cline_make();
 	}
 
 	return parse_view_macros(view, &format, "tTfaAugsEdD-xlLSz%[]{*", 0);
@@ -234,7 +233,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 		int opt)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
-	cline_t result = { .line = strdup(""), .attrs = strdup("") };
+	cline_t result = cline_make();
 	char c;
 	int nexpansions = 0;
 	int has_expander = 0;

@@ -654,7 +654,7 @@ static cline_t
 expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		int with_opt, int in_opt)
 {
-	cline_t result = { .line = strdup(""), .attrs = strdup("") };
+	cline_t result = cline_make();
 
 	int nexpansions = 0;
 	while(**pattern != '\0')

@@ -20,7 +20,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memmove() */
+#include <string.h> /* memmove() strdup() */
 
 #include "../cfg/config.h"
 #include "../utils/str.h"
@@ -28,6 +28,13 @@
 #include "color_manager.h"
 #include "color_scheme.h"
 #include "ui.h"
+
+cline_t
+cline_make(void)
+{
+	cline_t result = { .line = strdup(""), .attrs = strdup("") };
+	return result;
+}
 
 int
 cline_sync(cline_t *cline, int extra_width)

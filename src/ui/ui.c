@@ -2046,17 +2046,15 @@ make_tab_title(const tab_title_info_t *title_info)
 		return format_tab_part(cfg.tab_label, title_info);
 	}
 
-	cline_t result = {
-		.attrs = strdup("")
-	};
+	cline_t result = cline_make();
 
 	if(is_null_or_empty(title_info->name))
 	{
-		result.line = strdup(title_info->escaped_view_title);
+		replace_string(&result.line, title_info->escaped_view_title);
 	}
 	else
 	{
-		result.line = strdup(title_info->name);
+		replace_string(&result.line, title_info->name);
 	}
 
 	result.line_len = strlen(result.line);
