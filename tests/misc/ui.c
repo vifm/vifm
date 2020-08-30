@@ -107,7 +107,10 @@ TEST(make_tab_expands_tab_number)
 static void
 check_tab_title(const tab_info_t *tab_info, const char text[])
 {
-	cline_t title = make_tab_title(tab_info, &identity, 0);
+	tab_title_info_t title_info = make_tab_title_info(tab_info, &identity, 0);
+	cline_t title = make_tab_title(&title_info);
+	dispose_tab_title_info(&title_info);
+
 	assert_string_equal(text, title.line);
 	cline_dispose(&title);
 }

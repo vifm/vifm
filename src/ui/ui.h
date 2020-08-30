@@ -766,11 +766,25 @@ void ui_view_redrawn(view_t *view);
 UiUpdateEvent ui_view_query_scheduled_event(view_t *view);
 
 TSTATIC_DEFS(
+	/* Information for formatting tab title. */
+	typedef struct
+	{
+		char *name;               /* Tab name. */
+		char *num;                /* Tab number. */
+		char *escaped_view_title; /* Auto-formatted title. */
+		char *escaped_path;       /* Current path (could be a file path). */
+		char *cv_title;           /* Prefix of custom view. */
+		const char *tree_flag;    /* Tree flag. */
+	}
+	tab_title_info_t;
+
 	struct cline_t;
 	struct tab_info_t;
 	typedef char * (*path_func)(const char[]);
-	struct cline_t make_tab_title(const struct tab_info_t *tab_info, path_func pf,
-		int tab_num);
+	tab_title_info_t make_tab_title_info(const struct tab_info_t *tab_info,
+		path_func pf, int tab_num);
+	void dispose_tab_title_info(tab_title_info_t *title_info);
+	struct cline_t make_tab_title(const tab_title_info_t *title_info);
 )
 
 #endif /* VIFM__UI__UI_H__ */
