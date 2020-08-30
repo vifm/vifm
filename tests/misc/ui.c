@@ -6,9 +6,9 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/colored_line.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/colored_line.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 

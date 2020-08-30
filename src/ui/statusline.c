@@ -36,7 +36,6 @@
 #include "../engine/parsing.h"
 #include "../engine/var.h"
 #include "../modes/modes.h"
-#include "../utils/colored_line.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -50,6 +49,7 @@
 #include "../filelist.h"
 #include "color_manager.h"
 #include "color_scheme.h"
+#include "colored_line.h"
 #include "ui.h"
 
 static void update_stat_window_old(view_t *view, int lazy_redraw);

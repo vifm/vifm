@@ -4,7 +4,7 @@
 
 #include <test-utils.h>
 
-#include "../../src/utils/colored_line.h"
+#include "../../src/ui/colored_line.h"
 #include "../../src/utils/macros.h"
 #include "../../src/macros.h"
 

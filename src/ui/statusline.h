@@ -70,7 +70,7 @@ void ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
 		size_t max_width);
 
 #ifdef TEST
-#include "../utils/colored_line.h"
+#include "colored_line.h"
 #endif
 TSTATIC_DEFS(
 	cline_t expand_status_line_macros(struct view_t *view, const char format[]);

@@ -158,6 +158,7 @@ there for instructions.
     |  |  |-- cancellation.c - managing operation cancellation
     |  |  |-- color_manager.c - manager of curses color pairs
     |  |  |-- color_scheme.c - color schemes
+    |  |  |-- colored_line.c - text with %x* highlighting
     |  |  |-- column_view.c - column formatting unit
     |  |  |-- escape.c - escape sequences related stuff
     |  |  |-- fileview.c - display/redraw/manage file view
@@ -171,7 +172,6 @@ there for instructions.
     |  |  |
     |  |  |-- private/ - internal headers of utilities
     |  |  |-- cancellation.c - kind of cancellation token
-    |  |  |-- colored_line.c - text with %x* highlighting
     |  |  |-- darray.c - macros for managin dynamic arrays
     |  |  |-- dynarray.c - array reallocation with fewer memory copies
     |  |  |-- env.c - environment variables related functions

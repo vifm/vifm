@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UTILS__COLORED_LINE_H__
-#define VIFM__UTILS__COLORED_LINE_H__
+#ifndef VIFM__UI__COLORED_LINE_H__
+#define VIFM__UI__COLORED_LINE_H__
 
 #include <curses.h> /* WINDOW cchar_t */
 
@@ -69,7 +69,7 @@ void cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[]);
 /* Frees all resources allocated by cline.  The parameter can't be NULL. */
 void cline_dispose(cline_t *cline);
 
-#endif /* VIFM__UTILS__COLORED_LINE_H__ */
+#endif /* VIFM__UI__COLORED_LINE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

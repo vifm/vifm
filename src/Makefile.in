@@ -164,11 +164,11 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	modes/normal.$(OBJEXT) modes/view.$(OBJEXT) \
 	modes/visual.$(OBJEXT) ui/cancellation.$(OBJEXT) \
 	ui/color_manager.$(OBJEXT) ui/color_scheme.$(OBJEXT) \
-	ui/column_view.$(OBJEXT) ui/escape.$(OBJEXT) \
-	ui/fileview.$(OBJEXT) ui/quickview.$(OBJEXT) \
-	ui/statusbar.$(OBJEXT) ui/statusline.$(OBJEXT) \
-	ui/tabs.$(OBJEXT) ui/ui.$(OBJEXT) utils/cancellation.$(OBJEXT) \
-	utils/colored_line.$(OBJEXT) utils/dynarray.$(OBJEXT) \
+	ui/colored_line.$(OBJEXT) ui/column_view.$(OBJEXT) \
+	ui/escape.$(OBJEXT) ui/fileview.$(OBJEXT) \
+	ui/quickview.$(OBJEXT) ui/statusbar.$(OBJEXT) \
+	ui/statusline.$(OBJEXT) ui/tabs.$(OBJEXT) ui/ui.$(OBJEXT) \
+	utils/cancellation.$(OBJEXT) utils/dynarray.$(OBJEXT) \
 	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
 	utils/filemon.$(OBJEXT) utils/filter.$(OBJEXT) \
 	utils/fs.$(OBJEXT) utils/fsdata.$(OBJEXT) \
@@ -744,6 +744,7 @@ vifm_SOURCES = \
 	ui/cancellation.c ui/cancellation.h \
 	ui/color_manager.c ui/color_manager.h \
 	ui/color_scheme.c ui/color_scheme.h \
+	ui/colored_line.c ui/colored_line.h \
 	ui/colors.h \
 	ui/column_view.c ui/column_view.h \
 	ui/escape.c ui/escape.h \
@@ -756,7 +757,6 @@ vifm_SOURCES = \
 	ui/ui.c ui/ui.h \
 	\
 	utils/cancellation.c utils/cancellation.h \
-	utils/colored_line.c utils/colored_line.h \
 	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
@@ -1148,6 +1148,8 @@ ui/color_manager.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/color_scheme.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
+ui/colored_line.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
 ui/column_view.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/escape.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
@@ -1167,8 +1169,6 @@ utils/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) utils/$(DEPDIR)
 	@: > utils/$(DEPDIR)/$(am__dirstamp)
 utils/cancellation.$(OBJEXT): utils/$(am__dirstamp) \
-	utils/$(DEPDIR)/$(am__dirstamp)
-utils/colored_line.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/dynarray.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
@@ -1434,6 +1434,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_scheme.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/colored_line.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/column_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/escape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/fileview.Po@am__quote@
@@ -1443,7 +1444,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/tabs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/cancellation.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/colored_line.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/dynarray.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@

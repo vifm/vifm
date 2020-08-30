@@ -23,11 +23,11 @@
 #include <string.h> /* memmove() */
 
 #include "../cfg/config.h"
-#include "../ui/color_manager.h"
-#include "../ui/color_scheme.h"
-#include "../ui/ui.h"
-#include "str.h"
-#include "utf8.h"
+#include "../utils/str.h"
+#include "../utils/utf8.h"
+#include "color_manager.h"
+#include "color_scheme.h"
+#include "ui.h"
 
 int
 cline_sync(cline_t *cline, int extra_width)
