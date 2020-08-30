@@ -3942,6 +3942,7 @@ When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
 
 The following macros can appear in the format:
+    %C      - flag of a current tab (see below)
     %N      - number of the tab
     %T      - flag of a tree mode (see below)
     %c      - description of a custom view

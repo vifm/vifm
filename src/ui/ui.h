@@ -774,7 +774,8 @@ TSTATIC_DEFS(
 		char *escaped_view_title; /* Auto-formatted title. */
 		char *escaped_path;       /* Current path (could be a file path). */
 		char *cv_title;           /* Prefix of custom view. */
-		const char *tree_flag;    /* Tree flag. */
+		int tree;                 /* Whether in tree mode. */
+		int current;              /* Whether it's a current tab. */
 	}
 	tab_title_info_t;
 
@@ -782,7 +783,7 @@ TSTATIC_DEFS(
 	struct tab_info_t;
 	typedef char * (*path_func)(const char[]);
 	tab_title_info_t make_tab_title_info(const struct tab_info_t *tab_info,
-		path_func pf, int tab_num);
+		path_func pf, int tab_num, int current_tab);
 	void dispose_tab_title_info(tab_title_info_t *title_info);
 	struct cline_t make_tab_title(const tab_title_info_t *title_info);
 )

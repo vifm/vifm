@@ -104,10 +104,34 @@ TEST(make_tab_expands_tab_number)
 	check_tab_title(&tab_info, "1");
 }
 
+TEST(make_tab_expands_current_flag)
+{
+	update_string(&cfg.tab_label, "%1*%[%2*%C%]%N");
+	tab_info_t tab_info = { .view = &lwin, .name = "name", };
+	tab_title_info_t title_info;
+	cline_t title;
+
+	title_info = make_tab_title_info(&tab_info, &identity, 2, 1);
+	title = make_tab_title(&title_info);
+	dispose_tab_title_info(&title_info);
+
+	assert_string_equal("3", title.line);
+	assert_string_equal("2", title.attrs);
+	cline_dispose(&title);
+
+	title_info = make_tab_title_info(&tab_info, &identity, 1, 0);
+	title = make_tab_title(&title_info);
+	dispose_tab_title_info(&title_info);
+
+	assert_string_equal("2", title.line);
+	assert_string_equal("1", title.attrs);
+	cline_dispose(&title);
+}
+
 static void
 check_tab_title(const tab_info_t *tab_info, const char text[])
 {
-	tab_title_info_t title_info = make_tab_title_info(tab_info, &identity, 0);
+	tab_title_info_t title_info = make_tab_title_info(tab_info, &identity, 0, 0);
 	cline_t title = make_tab_title(&title_info);
 	dispose_tab_title_info(&title_info);
 

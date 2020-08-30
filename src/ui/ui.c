@@ -88,7 +88,8 @@ typedef struct
 	char *escaped_view_title; /* Auto-formatted title. */
 	char *escaped_path;       /* Current path (could be a file path). */
 	char *cv_title;           /* Prefix of custom view. */
-	const char *tree_flag;    /* Tree flag. */
+	int tree;                 /* Whether in tree mode. */
+	int current;              /* Whether it's a current tab. */
 }
 tab_title_info_t;
 
@@ -166,7 +167,7 @@ static void compute_avg_width(int *avg_width, int *spare_width, int max_width,
 		view_t *view, path_func pf);
 TSTATIC cline_t make_tab_title(const tab_title_info_t *title_info);
 TSTATIC tab_title_info_t make_tab_title_info(const tab_info_t *tab_info,
-		path_func pf, int tab_num);
+		path_func pf, int tab_num, int current_tab);
 TSTATIC void dispose_tab_title_info(tab_title_info_t *title_info);
 static cline_t format_tab_part(const char fmt[],
 		const tab_title_info_t *title_info);
@@ -1910,7 +1911,10 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		tab_title_info_t title_info = make_tab_title_info(&tab_info, pf, i);
+		int current = (tab_info.view == view);
+
+		tab_title_info_t title_info = make_tab_title_info(&tab_info, pf, i,
+				current);
 		cline_t prefix = format_tab_part(cfg.tab_prefix, &title_info);
 		cline_t title = make_tab_title(&title_info);
 		cline_t suffix = format_tab_part(cfg.tab_suffix, &title_info);
@@ -1921,12 +1925,12 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		int width = max_width;
 
 		col_attr_t col = base_col;
-		if(tab_info.view == view)
+		if(current)
 		{
 			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
 		}
 
-		if(tab_info.view != view)
+		if(!current)
 		{
 			width = tab_info.last ? (max_width - width_used)
 			                      : MIN(avg_width, extra_width + width_needed);
@@ -1981,7 +1985,10 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		tab_title_info_t title_info = make_tab_title_info(&tab_info, pf, i);
+		int current = (tab_info.view == view);
+
+		tab_title_info_t title_info = make_tab_title_info(&tab_info, pf, i,
+				current);
 		cline_t prefix = format_tab_part(cfg.tab_prefix, &title_info);
 		cline_t title = make_tab_title(&title_info);
 		cline_t suffix = format_tab_part(cfg.tab_suffix, &title_info);
@@ -1992,7 +1999,7 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 		cline_dispose(&title);
 		cline_dispose(&suffix);
 
-		if(tab_info.view == view && tabs_count(view) != 1)
+		if(current && tabs_count(view) != 1)
 		{
 			left = MAX(max_width - widths[i], 0);
 			*avg_width = left/(tabs_count(view) - 1);
@@ -2060,7 +2067,8 @@ make_tab_title(const tab_title_info_t *title_info)
 /* Produces and stores information needed to format tab title.  Returns the
  * information. */
 TSTATIC tab_title_info_t
-make_tab_title_info(const tab_info_t *tab_info, path_func pf, int tab_num)
+make_tab_title_info(const tab_info_t *tab_info, path_func pf, int tab_num,
+		int current_tab)
 {
 	view_t *view = tab_info->view;
 
@@ -2082,14 +2090,14 @@ make_tab_title_info(const tab_info_t *tab_info, path_func pf, int tab_num)
 	}
 
 	tab_title_info_t result = {
-		.tree_flag = "",
+		.current = current_tab,
 	};
 
 	const char *custom_title = "";
 	if(flist_custom_active(view))
 	{
 		custom_title = view->custom.title;
-		result.tree_flag = (cv_tree(view->custom.type) ? "*" : "");
+		result.tree = cv_tree(view->custom.type);
 	}
 
 	result.name = escape_unreadable(tab_info->name == NULL ? "" : tab_info->name);
@@ -2127,7 +2135,10 @@ format_tab_part(const char fmt[], const tab_title_info_t *title_info)
 		{ .letter = 'p', .value = title_info->escaped_path,
 			.expand_mods = 1, .parent = "/" },
 		{ .letter = 'c', .value = title_info->cv_title },
-		{ .letter = 'T', .value = title_info->tree_flag,
+
+		{ .letter = 'C', .value = (title_info->current ? "*" : ""),
+		  .flag = 1},
+		{ .letter = 'T', .value = (title_info->tree ? "*" : ""),
 			.flag = 1 },
 	};
 
