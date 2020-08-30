@@ -240,11 +240,9 @@ TEST(optional_empty)
 TEST(optional_unmatched)
 {
 	custom_macro_t macros[] = {};
-
-	const char *pattern = "%[a";
-	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
-	assert_string_equal("%[a", expanded);
-	free(expanded);
+	check_hi("%[%1*a", ARRAY_LEN(macros), macros, MA_OPT,
+			"%[a",
+			"  1");
 }
 
 TEST(optional_with_empty_value)
