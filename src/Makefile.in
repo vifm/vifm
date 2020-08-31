@@ -164,28 +164,29 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	modes/normal.$(OBJEXT) modes/view.$(OBJEXT) \
 	modes/visual.$(OBJEXT) ui/cancellation.$(OBJEXT) \
 	ui/color_manager.$(OBJEXT) ui/color_scheme.$(OBJEXT) \
-	ui/column_view.$(OBJEXT) ui/escape.$(OBJEXT) \
-	ui/fileview.$(OBJEXT) ui/quickview.$(OBJEXT) \
-	ui/statusbar.$(OBJEXT) ui/statusline.$(OBJEXT) \
-	ui/tabs.$(OBJEXT) ui/ui.$(OBJEXT) utils/cancellation.$(OBJEXT) \
-	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
-	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
-	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/fsdata.$(OBJEXT) utils/fsddata.$(OBJEXT) \
-	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
-	utils/gmux_nix.$(OBJEXT) utils/hist.$(OBJEXT) \
-	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/matcher.$(OBJEXT) utils/matchers.$(OBJEXT) \
-	utils/parson.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/regexp.$(OBJEXT) utils/selector_nix.$(OBJEXT) \
-	utils/shmem_nix.$(OBJEXT) utils/str.$(OBJEXT) \
-	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
-	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
-	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
-	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) cmd_completion.$(OBJEXT) \
-	cmd_core.$(OBJEXT) cmd_handlers.$(OBJEXT) compare.$(OBJEXT) \
-	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	ui/colored_line.$(OBJEXT) ui/column_view.$(OBJEXT) \
+	ui/escape.$(OBJEXT) ui/fileview.$(OBJEXT) \
+	ui/quickview.$(OBJEXT) ui/statusbar.$(OBJEXT) \
+	ui/statusline.$(OBJEXT) ui/tabs.$(OBJEXT) ui/ui.$(OBJEXT) \
+	utils/cancellation.$(OBJEXT) utils/dynarray.$(OBJEXT) \
+	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
+	utils/filemon.$(OBJEXT) utils/filter.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/fsdata.$(OBJEXT) \
+	utils/fsddata.$(OBJEXT) utils/fswatch_nix.$(OBJEXT) \
+	utils/globs.$(OBJEXT) utils/gmux_nix.$(OBJEXT) \
+	utils/hist.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
+	utils/matchers.$(OBJEXT) utils/parson.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/regexp.$(OBJEXT) \
+	utils/selector_nix.$(OBJEXT) utils/shmem_nix.$(OBJEXT) \
+	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
+	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	cmd_completion.$(OBJEXT) cmd_core.$(OBJEXT) \
+	cmd_handlers.$(OBJEXT) compare.$(OBJEXT) dir_stack.$(OBJEXT) \
+	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fops_common.$(OBJEXT) \
 	fops_cpmv.$(OBJEXT) fops_misc.$(OBJEXT) fops_put.$(OBJEXT) \
 	fops_rename.$(OBJEXT) filetype.$(OBJEXT) filtering.$(OBJEXT) \
@@ -743,6 +744,7 @@ vifm_SOURCES = \
 	ui/cancellation.c ui/cancellation.h \
 	ui/color_manager.c ui/color_manager.h \
 	ui/color_scheme.c ui/color_scheme.h \
+	ui/colored_line.c ui/colored_line.h \
 	ui/colors.h \
 	ui/column_view.c ui/column_view.h \
 	ui/escape.c ui/escape.h \
@@ -1146,6 +1148,8 @@ ui/color_manager.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/color_scheme.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
+ui/colored_line.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
 ui/column_view.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/escape.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
@@ -1430,6 +1434,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_scheme.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/colored_line.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/column_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/escape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/fileview.Po@am__quote@

@@ -178,6 +178,7 @@ vifm_SOURCES = \
 	ui/cancellation.c ui/cancellation.h \
 	ui/color_manager.c ui/color_manager.h \
 	ui/color_scheme.c ui/color_scheme.h \
+	ui/colored_line.c ui/colored_line.h \
 	ui/colors.h \
 	ui/column_view.c ui/column_view.h \
 	ui/escape.c ui/escape.h \

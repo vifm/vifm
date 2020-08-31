@@ -43,9 +43,6 @@
 	Added "treeleafsparent" value to 'dotdirs' option.  Thanks to filterfalse
 	and Melandel.
 
-	Added TabNr and TabNrSel highlight groups for highlighting tab number in
-	tab's label.  Thanks to iSeeU816.
-
 	Added LineNr highlight group for highlighting line number column of views.
 	Thanks to Anton Gepting.
 
@@ -57,6 +54,9 @@
 
 	Added basic support for using PowerShell on Windows (pausing doesn't work).
 	Thanks to Fang (a.k.a. peromage).
+
+	Added 'tabprefix' and 'tabsuffix' options that allow customizing
+	tabline separators.  Thanks to CoreCube.
 
 	Made documentation of :command more comprehensible.
 
@@ -360,6 +360,10 @@
 	terminal resizing.  Thanks to aca.
 
 	Fixed highlighting of `fileviewer .*/,*/` as if it contains a pattern.
+
+	Fixed highlighting of statusline being shifted due to unmatched `%[`.
+
+	Fixed weird tabline layout on very large number of tabs.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

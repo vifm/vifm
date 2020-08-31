@@ -18,7 +18,7 @@
 #define ASSERT_EXPANDED(format) \
 	do \
 	{ \
-		LineWithAttrs result = expand_status_line_macros(&lwin, format); \
+		cline_t result = expand_status_line_macros(&lwin, format); \
 		free(result.attrs); \
 		char *const expanded = result.line; \
 		assert_false(strcmp(expanded, format) == 0); \
@@ -30,7 +30,7 @@
 #define ASSERT_EXPANDED_TO(format, expected) \
 	do \
 	{ \
-		LineWithAttrs result = expand_status_line_macros(&lwin, format); \
+		cline_t result = expand_status_line_macros(&lwin, format); \
 		free(result.attrs); \
 		char *const expanded = result.line; \
 		assert_string_equal(expected, expanded); \
@@ -43,7 +43,7 @@
 #define ASSERT_EXPANDED_TO_WITH_HI(format, expected, highlighting) \
 	do \
 	{ \
-		LineWithAttrs result = expand_status_line_macros(&lwin, format); \
+		cline_t result = expand_status_line_macros(&lwin, format); \
 		char *const expanded = result.line; \
 		assert_string_equal(expected, expanded); \
 		assert_string_equal(highlighting, result.attrs); \
@@ -291,9 +291,16 @@ TEST(ignore_mismatched_opening_curly_bracket)
 
 TEST(highlighting_is_set_correctly)
 {
-	ASSERT_EXPANDED_TO_WITH_HI("%1*%t%*",
-	                           "file",
-	                           "1   ");
+	ASSERT_EXPANDED_TO_WITH_HI("[%1*%t%*]",
+	                           "[file]",
+	                           " 1   0");
+}
+
+TEST(highlighting_is_set_correctly_for_optional)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%[%1*a",
+	                           "%[a",
+	                           "  1");
 }
 
 TEST(highlighting_has_equals_macro_preserved)

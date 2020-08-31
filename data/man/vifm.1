@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 26, 2020" "vifm 0.10.1"
+.TH VIFM 1 "August 30, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2083,8 +2083,6 @@ their content (e.g. regular files in views)
  \- Border \- color of vertical parts of the border
  \- TabLine \- tab line color (for 'tabscope' set to "global")
  \- TabLineSel \- color of the tip of selected tab (regardless of 'tabscope')
- \- TabNr \- tab number color
- \- TabNrSel \- tab number color for current tab
  \- TopLine \- top line color of the other pane
  \- TopLineSel \- top line color of the current pane
  \- CmdLine \- the command line/status bar color
@@ -2266,12 +2264,10 @@ transparency:
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
-        TabNr
-          TabNrSel
+        User1..User9
   TabLine
     TabLineSel
-      TabNr
-        TabNrSel
+      User1..User9
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.
@@ -4712,30 +4708,37 @@ type: string
 .br
 default: ""
 .br
-When non-empty, determines format of a single tab's label, excluding tab number
-and tab delimiters.
+When non-empty, determines format of the main part of a single tab's label.
 
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
 
-The following macros can appear in the format:
+The following macros can appear in the format (see below for what a flag is):
 .RS
 .IP \- 2
-%T \- flag of a tree mode (see below)
+%C      \- flag of a current tab
 .IP \- 2
-%c \- description of a custom view
+%N      \- number of the tab
 .IP \- 2
-%n \- name of the tab
+%T      \- flag of a tree mode
 .IP \- 2
-%p \- path of the view (handles filename modifiers)
+%c      \- description of a custom view
 .IP \- 2
-%t \- title of the view (affected by 'shortmess' flags)
+%n      \- name of the tab
 .IP \- 2
-%% \- literal percent sign
+%p      \- path of the view (handles filename modifiers)
 .IP \- 2
-%[ \- designates beginning of an optional block
+%t      \- title of the view (affected by 'shortmess' flags)
 .IP \- 2
-%] \- designates end of an optional block
+%%      \- literal percent sign
+.IP \- 2
+%[      \- designates beginning of an optional block
+.IP \- 2
+%]      \- designates end of an optional block
+.IP \- 2
+%*, %0* \- resets highlighting
+.IP \- 2
+%1-%9   \- applies one of User1..User9 highlight groups
 .RE
 
 .RS
@@ -4760,6 +4763,14 @@ expanded to a non-empty value or is a set flag macro.
 .EE
 .RE
 .TP
+.BI 'tabprefix'
+type: string
+.br
+default: "[%N:"
+.br
+Determines prefix of a tab's label.  Formatting is done as for 'tablabel'
+option.
+.TP
 .BI 'tabscope'
 type: enumeration
 .br
@@ -4775,6 +4786,14 @@ type: integer
 default: value from curses library
 .br
 Number of spaces that a Tab in the file counts for.
+.TP
+.BI 'tabsuffix'
+type: string
+.br
+default: "]"
+.br
+Determines suffix of a tab's label.  Formatting is done as for 'tablabel'
+option.
 .TP
 .BI 'timefmt'
 type: string

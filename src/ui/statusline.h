@@ -69,19 +69,11 @@ void ui_stat_job_bar_check_for_updates(void);
 void ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
 		size_t max_width);
 
+#ifdef TEST
+#include "colored_line.h"
+#endif
 TSTATIC_DEFS(
-	/* Line paired with parallel character of arrays that specify user colors. */
-	typedef struct
-	{
-		char *line;       /* Text of the line. */
-		size_t line_len;  /* Length of line field. */
-		char *attrs;      /* Specifies when to enable which user highlight group. */
-		size_t attrs_len; /* Length of attrs field. */
-	}
-	LineWithAttrs;
-
-	LineWithAttrs expand_status_line_macros(struct view_t *view,
-		const char format[]);
+	cline_t expand_status_line_macros(struct view_t *view, const char format[]);
 )
 
 #endif /* VIFM__UI__STATUSLINE_H__ */

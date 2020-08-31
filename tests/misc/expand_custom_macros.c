@@ -2,8 +2,15 @@
 
 #include <stdlib.h>
 
+#include <test-utils.h>
+
+#include "../../src/ui/colored_line.h"
 #include "../../src/utils/macros.h"
 #include "../../src/macros.h"
+
+static void check_hi(const char pattern[], size_t nmacros,
+		custom_macro_t macros[], int with_opt, const char line[],
+		const char attrs[]);
 
 TEST(empty_string_ok)
 {
@@ -230,6 +237,14 @@ TEST(optional_empty)
 	free(expanded);
 }
 
+TEST(optional_unmatched)
+{
+	custom_macro_t macros[] = {};
+	check_hi("%[%1*a", ARRAY_LEN(macros), macros, MA_OPT,
+			"%[a",
+			"  1");
+}
+
 TEST(optional_with_empty_value)
 {
 	custom_macro_t macros[] = {
@@ -339,6 +354,98 @@ TEST(non_empty_flag_after_mod)
 	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
 	assert_string_equal("(non-empty)", expanded);
 	free(expanded);
+}
+
+TEST(highlighting_is_ignored_by_uncolored_version)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'i', .value = "xyz", .uses_left = 0, .group = -1, },
+	};
+
+	const char *pattern = "prefix %1*%i%2* suffix";
+	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
+	assert_string_equal("prefix xyz suffix", expanded);
+	free(expanded);
+}
+
+TEST(highlighting_is_set_correctly)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'i', .value = "xyz", .uses_left = 0, .group = -1, },
+	};
+	check_hi("prefix %1*%i%* suffix", ARRAY_LEN(macros), macros, MA_NOOPT,
+			"prefix xyz suffix",
+			"       1  0      ");
+}
+
+TEST(opt_can_alter_highlighting_only)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'C', .value = "", .flag = 1, },
+	};
+	check_hi("%1*%[%2*%C%]!", ARRAY_LEN(macros), macros, MA_OPT,
+			"!",
+			"1");
+
+	macros[0].value = "*";
+	check_hi("%1*%[%2*%C%]!", ARRAY_LEN(macros), macros, MA_OPT,
+			"!",
+			"2");
+}
+
+TEST(bad_user_group_remains_in_line_partially)
+{
+	custom_macro_t macros[1];
+	check_hi("%10*", 0, macros, MA_NOOPT,
+			"0*",
+			"  ");
+}
+
+TEST(empty_optional_drops_attrs)
+{
+	custom_macro_t macros[1];
+	check_hi("%1*%[%2*%]%3*", 0, macros, MA_OPT,
+			"",
+			"");
+}
+
+TEST(non_empty_optional_preserves_attrs)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 't', .value = "file", .uses_left = 0, .group = -1, },
+	};
+
+	check_hi("%1*%[%t%2*%t%]%3*", ARRAY_LEN(macros), macros, MA_OPT,
+			"filefile",
+			"1   2   ");
+
+	check_hi("%1*%[%2*%t%3*%t%]%4*", ARRAY_LEN(macros), macros, MA_OPT,
+			"filefile",
+			"2   3   ");
+
+	check_hi("%1*%[%2*%t%3*%]%4*", ARRAY_LEN(macros), macros, MA_OPT,
+			"file",
+			"2   ");
+}
+
+TEST(wide_characters_do_not_break_highlighting, IF(utf8_locale))
+{
+	custom_macro_t macros[1];
+	check_hi("%1*螺丝 %= 螺%2*丝", 0, macros, MA_NOOPT,
+			"螺丝  螺丝",
+			"1       2 ");
+}
+
+static void
+check_hi(const char pattern[], size_t nmacros, custom_macro_t macros[],
+		int with_opt, const char line[], const char attrs[])
+{
+	cline_t expanded = ma_expand_colored_custom(pattern, nmacros, macros,
+			with_opt);
+	assert_string_equal(line, expanded.line);
+	assert_string_equal(attrs, expanded.attrs);
+	free(expanded.line);
+	free(expanded.attrs);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

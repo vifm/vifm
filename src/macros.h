@@ -92,6 +92,11 @@ const char * ma_get_clear_cmd(const char cmd[]);
 char * ma_expand_custom(const char pattern[], size_t nmacros,
 		custom_macro_t macros[], int with_opt);
 
+/* Same as ma_expand_custom() but supports %x* macros for specifying color
+ * groups.  Returns colored line. */
+struct cline_t ma_expand_colored_custom(const char pattern[], size_t nmacros,
+		custom_macro_t macros[], int with_opt);
+
 /* Maps flag to corresponding string representation of the macro using %-syntax.
  * Returns the string representation. */
 const char * ma_flags_to_str(MacroFlags flags);

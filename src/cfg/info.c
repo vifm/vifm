@@ -2266,9 +2266,13 @@ store_global_options(JSON_Object *root)
 			escape_spaces(vle_opts_get("syncregs", OPT_GLOBAL))));
 	append_dstr(options, format_str("tablabel=%s",
 			escape_spaces(vle_opts_get("tablabel", OPT_GLOBAL))));
+	append_dstr(options, format_str("tabprefix=%s",
+				escape_spaces(vle_opts_get("tabprefix", OPT_GLOBAL))));
 	append_dstr(options, format_str("tabscope=%s",
 			escape_spaces(vle_opts_get("tabscope", OPT_GLOBAL))));
 	append_dstr(options, format_str("tabstop=%d", cfg.tab_stop));
+	append_dstr(options, format_str("tabsuffix=%s",
+				escape_spaces(vle_opts_get("tabsuffix", OPT_GLOBAL))));
 	append_dstr(options, format_str("timefmt=%s",
 				escape_spaces(cfg.time_format)));
 	append_dstr(options, format_str("timeoutlen=%d", cfg.timeout_len));

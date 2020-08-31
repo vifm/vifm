@@ -214,8 +214,10 @@ static void reset_suggestoptions(void);
 static void syncregs_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tablabel_handler(OPT_OP op, optval_t val);
+static void tabprefix_handler(OPT_OP op, optval_t val);
 static void tabscope_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
+static void tabsuffix_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
 static void title_handler(OPT_OP op, optval_t val);
@@ -776,9 +778,13 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &syscalls_handler, NULL,
 	  { .ref.bool_val = &cfg.use_system_calls },
 	},
-	{ "tablabel", "", "format of a single tab's label",
+	{ "tablabel", "", "format of main part of a single tab's label",
 	  OPT_STR, 0, NULL, &tablabel_handler, NULL,
 	  { .ref.str_val = &cfg.tab_label },
+	},
+	{ "tabprefix", "", "format of prefix of a tab's label",
+	  OPT_STR, 0, NULL, &tabprefix_handler, NULL,
+	  { .ref.str_val = &cfg.tab_prefix },
 	},
 	{ "tabscope", "", "level at which tabs operate",
 	  OPT_ENUM, ARRAY_LEN(tabscope_vals), tabscope_vals, &tabscope_handler, NULL,
@@ -787,6 +793,10 @@ options[] = {
 	{ "tabstop", "ts", "widths of one tabulation",
 	  OPT_INT, 0, NULL, &tabstop_handler, NULL,
 	  { .ref.int_val = &cfg.tab_stop },
+	},
+	{ "tabsuffix", "", "format of suffix of a tab's label",
+	  OPT_STR, 0, NULL, &tabsuffix_handler, NULL,
+	  { .ref.str_val = &cfg.tab_suffix },
 	},
 	{ "timefmt", "", "time format",
 	  OPT_STR, 0, NULL, &timefmt_handler, NULL,
@@ -3261,11 +3271,19 @@ syscalls_handler(OPT_OP op, optval_t val)
 	cfg.use_system_calls = val.bool_val;
 }
 
-/* Sets format string for tab label. */
+/* Sets format string for main part of tab label. */
 static void
 tablabel_handler(OPT_OP op, optval_t val)
 {
 	replace_string(&cfg.tab_label, val.str_val);
+	stats_redraw_later();
+}
+
+/* Sets format string for tab label's prefix. */
+static void
+tabprefix_handler(OPT_OP op, optval_t val)
+{
+	replace_string(&cfg.tab_prefix, val.str_val);
 	stats_redraw_later();
 }
 
@@ -3300,6 +3318,14 @@ tabstop_handler(OPT_OP op, optval_t val)
 
 	cfg.tab_stop = val.int_val;
 	text_option_changed();
+}
+
+/* Sets format string for tab label's suffix. */
+static void
+tabsuffix_handler(OPT_OP op, optval_t val)
+{
+	replace_string(&cfg.tab_suffix, val.str_val);
+	stats_redraw_later();
 }
 
 /* Sets format according to which time is displayed. */

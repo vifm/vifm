@@ -72,12 +72,26 @@
 #include "cancellation.h"
 #include "color_manager.h"
 #include "color_scheme.h"
+#include "colored_line.h"
 #include "colors.h"
 #include "fileview.h"
 #include "quickview.h"
 #include "statusbar.h"
 #include "statusline.h"
 #include "tabs.h"
+
+/* Information for formatting tab title. */
+typedef struct
+{
+	char *name;               /* Tab name. */
+	char *num;                /* Tab number. */
+	char *escaped_view_title; /* Auto-formatted title. */
+	char *escaped_path;       /* Current path (could be a file path). */
+	char *cv_title;           /* Prefix of custom view. */
+	int tree;                 /* Whether in tree mode. */
+	int current;              /* Whether it's a current tab. */
+}
+tab_title_info_t;
 
 /* Type of path transformation function for format_view_title(). */
 typedef char * (*path_func)(const char[]);
@@ -147,11 +161,16 @@ static void refresh_bottom_lines(void);
 static char * path_identity(const char path[]);
 static int view_shows_tabline(const view_t *view);
 static int get_tabline_height(void);
-static void print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col,
+static void print_tabline(WINDOW *win, view_t *view, col_attr_t base_col,
 		path_func pf);
-static void compute_avg_width(int *avg_width, int *spare_width, int max_width,
-		view_t *view, path_func pf);
-TSTATIC char * make_tab_title(const tab_info_t *tab_info, path_func pf);
+static void compute_avg_width(int *avg_width, int *spare_width,
+		int min_widths[], int max_width, view_t *view, path_func pf);
+TSTATIC cline_t make_tab_title(const tab_title_info_t *title_info);
+TSTATIC tab_title_info_t make_tab_title_info(const tab_info_t *tab_info,
+		path_func pf, int tab_num, int current_tab);
+TSTATIC void dispose_tab_title_info(tab_title_info_t *title_info);
+static cline_t format_tab_part(const char fmt[],
+		const tab_title_info_t *title_info);
 static char * format_view_title(const view_t *view, path_func pf);
 static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
@@ -1825,7 +1844,7 @@ ui_view_title_update(view_t *view)
 
 	if(view_shows_tabline(view))
 	{
-		print_tab_title(view->title, view, title_col, pf);
+		print_tabline(view->title, view, title_col, pf);
 	}
 	else
 	{
@@ -1837,7 +1856,7 @@ ui_view_title_update(view_t *view)
 
 	if(view == curr_view && get_tabline_height() > 0)
 	{
-		print_tab_title(tab_line, view, cfg.cs.color[TAB_LINE_COLOR], pf);
+		print_tabline(tab_line, view, cfg.cs.color[TAB_LINE_COLOR], pf);
 	}
 }
 
@@ -1875,36 +1894,64 @@ get_tabline_height(void)
 
 /* Prints title of the tab on specified curses window. */
 static void
-print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
+print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 {
 	int i;
 	tab_info_t tab_info;
 
-	const int max_width = getmaxx(win);
+	const int max_width = cfg.columns;
 	int width_used = 0;
 	int avg_width, spare_width;
+
+	int min_widths[tabs_count(view)];
 
 	ui_set_bg(win, &base_col, -1);
 	werase(win);
 	checked_wmove(win, 0, 0);
 
-	compute_avg_width(&avg_width, &spare_width, max_width, view, pf);
+	compute_avg_width(&avg_width, &spare_width, min_widths, max_width, view, pf);
 
-	for(i = 0; tabs_get(view, i, &tab_info); ++i)
+	int tab_count = tabs_count(view);
+	int min_width = 0;
+	for(i = 0; i < tab_count; ++i)
 	{
-		char *title = make_tab_title(&tab_info, pf);
-		const int width_needed = utf8_strsw(title);
-		char buffer_dummy[1];
-		const int extra_width = snprintf(buffer_dummy, 0U, "[%d:]", i + 1);
+		min_width += min_widths[i];
+	}
+
+	int before_current = 1;
+
+	for(i = 0; tabs_get(view, i, &tab_info) && width_used < max_width; ++i)
+	{
+		int current = (tab_info.view == view);
+		if(current)
+		{
+			before_current = 0;
+		}
+		else if(before_current && min_width > max_width)
+		{
+			min_width -= min_widths[i];
+			spare_width = max_width - min_width;
+			continue;
+		}
+
+		tab_title_info_t title_info = make_tab_title_info(&tab_info, pf, i,
+				current);
+		cline_t prefix = format_tab_part(cfg.tab_prefix, &title_info);
+		cline_t title = make_tab_title(&title_info);
+		cline_t suffix = format_tab_part(cfg.tab_suffix, &title_info);
+		dispose_tab_title_info(&title_info);
+
+		const int width_needed = title.attrs_len;
+		const int extra_width = prefix.attrs_len + suffix.attrs_len;
 		int width = max_width;
 
 		col_attr_t col = base_col;
-		if(tab_info.view == view)
+		if(current)
 		{
 			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
 		}
 
-		if(tab_info.view != view)
+		if(!current)
 		{
 			width = tab_info.last ? (max_width - width_used)
 			                      : MIN(avg_width, extra_width + width_needed);
@@ -1912,43 +1959,36 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 		if(width < width_needed + extra_width)
 		{
-			char *ellipsed;
-
 			if(spare_width > 0)
 			{
 				width += 1;
 				--spare_width;
 			}
 
-			ellipsed = left_ellipsis(title, MAX(0, width - extra_width),
+			cline_left_ellipsis(&title, MAX(0, width - extra_width),
 					curr_stats.ellipsis);
-			free(title);
-			title = ellipsed;
 		}
 
 		ui_set_attr(win, &col, -1);
 
-		if(width > extra_width)
-		{
-			col_attr_t numCol = col;
-			cs_mix_colors(&numCol, &cfg.cs.color[TAB_NUM_COLOR]);
-			if(tab_info.view == view)
-			{
-				cs_mix_colors(&numCol, &cfg.cs.color[TAB_NUM_SEL_COLOR]);
-			}
+		int real_width = prefix.attrs_len + title.attrs_len + suffix.attrs_len;
 
-			waddch(win, '[');
-			ui_set_attr(win, &numCol, -1);
-			wprintw(win, "%d", i + 1);
-			ui_set_attr(win, &col, -1);
-			wprintw(win, ":%s]", title);
+		if(width < real_width && max_width - width_used >= real_width)
+		{
+			width = real_width;
+		}
+		if(width >= real_width)
+		{
+			cline_print(&prefix, win, &col);
+			cline_print(&title, win, &col);
+			cline_print(&suffix, win, &col);
 		}
 
-		/* Here result of `utf8_strsw(title)` might be different from one computed
-		 * above. */
-		width_used += extra_width + utf8_strsw(title);
+		width_used += real_width;
 
-		free(title);
+		cline_dispose(&prefix);
+		cline_dispose(&title);
+		cline_dispose(&suffix);
 	}
 
 	wnoutrefresh(win);
@@ -1957,8 +1997,8 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 /* Computes average width of tab tips as well as number of spare character
  * positions. */
 static void
-compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
-		path_func pf)
+compute_avg_width(int *avg_width, int *spare_width, int min_widths[],
+		int max_width, view_t *view, path_func pf)
 {
 	int left = max_width;
 	int widths[tabs_count(view)];
@@ -1970,15 +2010,34 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		char *const title = make_tab_title(&tab_info, pf);
-		widths[i] = utf8_strsw(title) + snprintf(title, 0U, "[%d:]", i + 1);
-		free(title);
+		int current = (tab_info.view == view);
 
-		if(tab_info.view == view && tabs_count(view) != 1)
+		tab_title_info_t title_info = make_tab_title_info(&tab_info, pf, i,
+				current);
+		cline_t prefix = format_tab_part(cfg.tab_prefix, &title_info);
+		cline_t title = make_tab_title(&title_info);
+		cline_t suffix = format_tab_part(cfg.tab_suffix, &title_info);
+		dispose_tab_title_info(&title_info);
+
+		widths[i] = prefix.attrs_len + title.attrs_len + suffix.attrs_len;
+		min_widths[i] = prefix.attrs_len + suffix.attrs_len;
+
+		cline_dispose(&prefix);
+		cline_dispose(&title);
+		cline_dispose(&suffix);
+
+		if(current)
 		{
-			left = MAX(max_width - widths[i], 0);
-			*avg_width = left/(tabs_count(view) - 1);
-			*spare_width = left%(tabs_count(view) - 1);
+			min_widths[i] = MIN(max_width, widths[i]);
+
+			if(tabs_count(view) != 1)
+			{
+				int tab_count = tabs_count(view);
+
+				left = MAX(max_width - widths[i], 0);
+				*avg_width = left/(tab_count - 1);
+				*spare_width = left%(tab_count - 1);
+			}
 		}
 	}
 
@@ -2012,9 +2071,36 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 	while(new_avg_width != *avg_width);
 }
 
-/* Gets title of the tab.  Returns newly allocated string. */
-TSTATIC char *
-make_tab_title(const tab_info_t *tab_info, path_func pf)
+/* Gets title of the tab.  Returns colored line. */
+TSTATIC cline_t
+make_tab_title(const tab_title_info_t *title_info)
+{
+	if(!is_null_or_empty(cfg.tab_label))
+	{
+		return format_tab_part(cfg.tab_label, title_info);
+	}
+
+	cline_t result = cline_make();
+
+	if(is_null_or_empty(title_info->name))
+	{
+		replace_string(&result.line, title_info->escaped_view_title);
+	}
+	else
+	{
+		replace_string(&result.line, title_info->name);
+	}
+
+	result.line_len = strlen(result.line);
+	cline_finish(&result);
+	return result;
+}
+
+/* Produces and stores information needed to format tab title.  Returns the
+ * information. */
+TSTATIC tab_title_info_t
+make_tab_title_info(const tab_info_t *tab_info, path_func pf, int tab_num,
+		int current_tab)
 {
 	view_t *view = tab_info->view;
 
@@ -2023,12 +2109,6 @@ make_tab_title(const tab_info_t *tab_info, path_func pf)
 		/* We can just do the replacement, because shortening home part doesn't make
 		 * sense for a single path entry. */
 		pf = &get_last_path_component;
-	}
-
-	if(is_null_or_empty(cfg.tab_label))
-	{
-		return (tab_info->name != NULL) ? strdup(tab_info->name)
-		                                : format_view_title(view, pf);
 	}
 
 	char path[PATH_MAX + 1];
@@ -2041,30 +2121,63 @@ make_tab_title(const tab_info_t *tab_info, path_func pf)
 		copy_str(path, sizeof(path), flist_get_dir(view));
 	}
 
+	tab_title_info_t result = {
+		.current = current_tab,
+	};
+
 	const char *custom_title = "";
-	const char *tree_flag = "";
 	if(flist_custom_active(view))
 	{
 		custom_title = view->custom.title;
-		tree_flag = (cv_tree(view->custom.type) ? "*" : "");
+		result.tree = cv_tree(view->custom.type);
 	}
 
-	char *view_title = format_view_title(view, pf);
-	custom_macro_t macros[] = {
-		{ .letter = 'n', .value = (tab_info->name == NULL ? "" : tab_info->name) },
-		{ .letter = 't', .value = view_title },
-		{ .letter = 'p', .value = path, .expand_mods = 1, .parent = "/" },
-		{ .letter = 'c', .value = custom_title },
-		{ .letter = 'T', .value = tree_flag, .flag = 1 },
-	};
+	result.name = escape_unreadable(tab_info->name == NULL ? "" : tab_info->name);
+	result.escaped_path = escape_unreadable(path);
+	result.cv_title = escape_unreadable(custom_title);
 
-	char *unescaped_title = ma_expand_custom(cfg.tab_label, ARRAY_LEN(macros),
-			macros, MA_OPT);
+	char *view_title = format_view_title(view, pf);
+	result.escaped_view_title = escape_unreadable(view_title);
 	free(view_title);
 
-	char *escaped_title = escape_unreadable(unescaped_title);
-	free(unescaped_title);
-	return escaped_title;
+	result.num = format_str("%d", tab_num + 1);
+
+	return result;
+}
+
+/* Frees information used to format tab title. */
+TSTATIC void
+dispose_tab_title_info(tab_title_info_t *title_info)
+{
+	free(title_info->num);
+	free(title_info->escaped_view_title);
+	free(title_info->cv_title);
+	free(title_info->escaped_path);
+	free(title_info->name);
+}
+
+/* Formats part of a tab label.  Returns colored line. */
+static cline_t
+format_tab_part(const char fmt[], const tab_title_info_t *title_info)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'n', .value = title_info->name },
+		{ .letter = 'N', .value = title_info->num },
+		{ .letter = 't', .value = title_info->escaped_view_title },
+		{ .letter = 'p', .value = title_info->escaped_path,
+			.expand_mods = 1, .parent = "/" },
+		{ .letter = 'c', .value = title_info->cv_title },
+
+		{ .letter = 'C', .value = (title_info->current ? "*" : ""),
+		  .flag = 1},
+		{ .letter = 'T', .value = (title_info->tree ? "*" : ""),
+			.flag = 1 },
+	};
+
+	cline_t title = ma_expand_colored_custom(fmt, ARRAY_LEN(macros), macros,
+			MA_OPT);
+
+	return title;
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.

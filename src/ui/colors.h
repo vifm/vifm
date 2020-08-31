@@ -21,7 +21,7 @@
 #define VIFM__UI__COLORS_H__
 
 /* Color information structure. */
-typedef struct
+typedef struct col_attr_t
 {
 	int fg;   /* Foreground color. */
 	int bg;   /* Background color. */
@@ -68,8 +68,6 @@ enum
 	USER8_COLOR,        /* User color #8. */
 	USER9_COLOR,        /* User color #9. */
 	OTHER_WIN_COLOR,    /* Background and highlighting for inactive pane. */
-	TAB_NUM_COLOR,      /* Color of tab's number. */
-	TAB_NUM_SEL_COLOR,  /* Color of selected tab's number. */
 	LINE_NUM_COLOR,     /* Color of line number column of panes. */
 	ODD_LINE_COLOR,     /* Color of every second entry line in a pane. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */

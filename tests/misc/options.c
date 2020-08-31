@@ -703,9 +703,14 @@ TEST(shellcmdflag)
 
 TEST(tablabel)
 {
+	assert_success(exec_commands("set tabprefix={", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("set tablabel=%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t",
 				&lwin, CIT_COMMAND));
+	assert_success(exec_commands("set tabsuffix=}", &lwin, CIT_COMMAND));
+
+	assert_string_equal("{", cfg.tab_prefix);
 	assert_string_equal("%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t", cfg.tab_label);
+	assert_string_equal("}", cfg.tab_suffix);
 }
 
 TEST(sessionoptions)

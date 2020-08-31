@@ -571,25 +571,23 @@ right_ellipsis(const char str[], size_t max_width, const char ell[])
 static char *
 ellipsis(const char str[], size_t max_width, const char ell[], int right)
 {
-	size_t ell_width, width;
-
 	if(max_width == 0U)
 	{
 		/* No room to print anything. */
 		return strdup("");
 	}
 
-	width = utf8_strsw(str);
+	size_t width = utf8_strsw(str);
 	if(width <= max_width)
 	{
 		/* No need to change the string. */
 		return strdup(str);
 	}
 
-	ell_width = utf8_strsw(ell);
+	size_t ell_width = utf8_strsw(ell);
 	if(max_width <= ell_width)
 	{
-		/* Insert as many characters as we can. */
+		/* Insert as many characters of ellipsis as we can. */
 		const int prefix = (int)utf8_nstrsnlen(ell, max_width);
 		return format_str("%.*s", prefix, ell);
 	}

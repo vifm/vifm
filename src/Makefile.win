@@ -68,15 +68,15 @@ modes := $(dialogs) cmdline.c file_info.c menu.c modes.c more.c normal.c \
          view.c visual.c
 modes := $(addprefix modes/, $(modes))
 
-ui := cancellation.c color_manager.c color_scheme.c column_view.c escape.c
-ui += fileview.c statusbar.c statusline.c tabs.c quickview.c ui.c
+ui := cancellation.c color_manager.c color_scheme.c colored_line.c column_view.c
+ui += escape.c fileview.c statusbar.c statusline.c tabs.c quickview.c ui.c
 ui := $(addprefix ui/, $(ui))
 
-utilities := cancellation.c dynarray.c env.c file_streams.c filemon.c filter.c \
-             fs.c fsdata.c fsddata.c fswatch_win.c globs.c gmux_win.c hist.c \
-             int_stack.c log.c matcher.c matchers.c parson.c path.c regexp.c \
-             selector_win.c shmem_win.c str.c string_array.c trie.c utf8.c \
-             utils.c utils_win.c
+utilities := cancellation.c dynarray.c env.c file_streams.c \
+             filemon.c filter.c fs.c fsdata.c fsddata.c fswatch_win.c globs.c \
+             gmux_win.c hist.c int_stack.c log.c matcher.c matchers.c parson.c \
+             path.c regexp.c selector_win.c shmem_win.c str.c string_array.c \
+             trie.c utf8.c utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \

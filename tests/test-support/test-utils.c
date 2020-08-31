@@ -77,7 +77,9 @@ conf_setup(void)
 	update_string(&cfg.locate_prg, "");
 	update_string(&cfg.media_prg, "");
 	update_string(&cfg.border_filler, "");
+	update_string(&cfg.tab_prefix, "");
 	update_string(&cfg.tab_label, "");
+	update_string(&cfg.tab_suffix, "");
 
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");

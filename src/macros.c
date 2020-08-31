@@ -20,7 +20,7 @@
 #include "macros.h"
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* tolower() */
+#include <ctype.h> /* isdigit() tolower() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realloc() free() calloc() */
@@ -29,11 +29,13 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "ui/colored_line.h"
 #include "ui/quickview.h"
 #include "ui/ui.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "filelist.h"
 #include "filename_modifiers.h"
@@ -73,7 +75,7 @@ static preview_area_t get_preview_area(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
-static char * expand_custom(const char **pattern, size_t nmacros,
+static cline_t expand_custom(const char **pattern, size_t nmacros,
 		custom_macro_t macros[], int with_opt, int in_opt);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
@@ -631,18 +633,29 @@ char *
 ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[],
 		int with_opt)
 {
-	return expand_custom(&pattern, nmacros, macros, with_opt, 0);
+	cline_t result = ma_expand_colored_custom(pattern, nmacros, macros, with_opt);
+	free(result.attrs);
+	return result.line;
+}
+
+cline_t
+ma_expand_colored_custom(const char pattern[], size_t nmacros,
+		custom_macro_t macros[], int with_opt)
+{
+	cline_t result = expand_custom(&pattern, nmacros, macros, with_opt, 0);
+	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
+	return result;
 }
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
  * macros specification and accounting for nesting inside %[ and %].  Updates
- * *pattern pointer.  Returns expanded string. */
-static char *
+ * *pattern pointer.  Returns colored line. */
+static cline_t
 expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		int with_opt, int in_opt)
 {
-	char *expanded = strdup("");
-	size_t len = 0;
+	cline_t result = cline_make();
+
 	int nexpansions = 0;
 	while(**pattern != '\0')
 	{
@@ -650,30 +663,41 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		if(pat[0] != '%')
 		{
 			const char single_char[] = { *pat, '\0' };
-			expanded = extend_string(expanded, single_char, &len);
+			result.line = extend_string(result.line, single_char, &result.line_len);
 		}
 		else if(pat[1] == '%' || pat[1] == '\0')
 		{
-			expanded = extend_string(expanded, "%", &len);
+			result.line = extend_string(result.line, "%", &result.line_len);
 			*pattern += (pat[1] == '%');
+		}
+		else if(pat[1] == '*')
+		{
+			cline_set_attr(&result, '0');
+			++*pattern;
+		}
+		else if(isdigit(pat[1]) && pat[2] == '*')
+		{
+			cline_set_attr(&result, pat[1]);
+			*pattern += 2;
 		}
 		else if(with_opt && pat[1] == '[')
 		{
 			++*pattern;
-			char *nested = expand_custom(pattern, nmacros, macros, with_opt, 1);
-			expanded = extend_string(expanded, nested, &len);
-			nexpansions += (nested[0] != '\0');
-			free(nested);
+			cline_t opt = expand_custom(pattern, nmacros, macros, with_opt, 1);
+			cline_splice_attrs(&result, &opt);
+			result.line = extend_string(result.line, opt.line, &result.line_len);
+			nexpansions += (opt.line[0] != '\0');
+			free(opt.line);
 			continue;
 		}
 		else if(in_opt && pat[1] == ']')
 		{
 			++*pattern;
-			if(nexpansions == 0 && expanded != NULL)
+			if(nexpansions == 0 && result.line != NULL)
 			{
-				expanded[0] = '\0';
+				cline_clear(&result);
 			}
-			return expanded;
+			return result;
 		}
 		else
 		{
@@ -697,7 +721,7 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 
 				if(!macros[i].flag)
 				{
-					expanded = extend_string(expanded, value, &len);
+					result.line = extend_string(result.line, value, &result.line_len);
 				}
 				--macros[i].uses_left;
 				macros[i].explicit_use = 1;
@@ -706,17 +730,20 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		}
 	}
 
-	/* Unmatched %[. */
 	if(in_opt)
 	{
-		(void)strprepend(&expanded, &len, "%[");
+		/* Unmatched %[. */
+		(void)strprepend(&result.line, &result.line_len, "%[");
+		(void)strprepend(&result.attrs, &result.attrs_len, "  ");
+	}
+	else
+	{
+		result.line = add_missing_macros(result.line, result.line_len, nmacros,
+				macros);
+		cline_finish(&result);
 	}
 
-	if(!in_opt)
-	{
-		expanded = add_missing_macros(expanded, len, nmacros, macros);
-	}
-	return expanded;
+	return result;
 }
 
 /* Ensures that the expanded string contains required number of mandatory
