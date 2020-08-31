@@ -128,6 +128,33 @@ TEST(make_tab_expands_current_flag)
 	cline_dispose(&title);
 }
 
+TEST(tabline_formatting_smoke)
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+	setup_grid(&lwin, 1, 1, 1);
+	view_setup(&rwin);
+	setup_grid(&rwin, 1, 1, 1);
+	curr_stats.load_stage = 2;
+
+	cfg.columns = 10;
+	opt_handlers_setup();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+
+	tabs_new("long tab title", NULL);
+	ui_view_title_update(&lwin);
+	tabs_only(&lwin);
+
+	opt_handlers_teardown();
+	columns_teardown();
+
+	curr_stats.load_stage = 0;
+	view_teardown(&rwin);
+	curr_view = NULL;
+	other_view = NULL;
+}
+
 static void
 check_tab_title(const tab_info_t *tab_info, const char text[])
 {

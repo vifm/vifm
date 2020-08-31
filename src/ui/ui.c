@@ -161,7 +161,7 @@ static void refresh_bottom_lines(void);
 static char * path_identity(const char path[]);
 static int view_shows_tabline(const view_t *view);
 static int get_tabline_height(void);
-static void print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col,
+static void print_tabline(WINDOW *win, view_t *view, col_attr_t base_col,
 		path_func pf);
 static void compute_avg_width(int *avg_width, int *spare_width,
 		int min_widths[], int max_width, view_t *view, path_func pf);
@@ -1844,7 +1844,7 @@ ui_view_title_update(view_t *view)
 
 	if(view_shows_tabline(view))
 	{
-		print_tab_title(view->title, view, title_col, pf);
+		print_tabline(view->title, view, title_col, pf);
 	}
 	else
 	{
@@ -1856,7 +1856,7 @@ ui_view_title_update(view_t *view)
 
 	if(view == curr_view && get_tabline_height() > 0)
 	{
-		print_tab_title(tab_line, view, cfg.cs.color[TAB_LINE_COLOR], pf);
+		print_tabline(tab_line, view, cfg.cs.color[TAB_LINE_COLOR], pf);
 	}
 }
 
@@ -1894,12 +1894,12 @@ get_tabline_height(void)
 
 /* Prints title of the tab on specified curses window. */
 static void
-print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
+print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 {
 	int i;
 	tab_info_t tab_info;
 
-	const int max_width = getmaxx(win);
+	const int max_width = cfg.columns;
 	int width_used = 0;
 	int avg_width, spare_width;
 
@@ -1909,8 +1909,7 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	werase(win);
 	checked_wmove(win, 0, 0);
 
-	compute_avg_width(&avg_width, &spare_width, min_widths, max_width, view,
-			pf);
+	compute_avg_width(&avg_width, &spare_width, min_widths, max_width, view, pf);
 
 	int tab_count = tabs_count(view);
 	int min_width = 0;
