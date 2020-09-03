@@ -365,6 +365,9 @@
 
 	Fixed weird tabline layout on very large number of tabs.
 
+	Fixed highlighting of regex patterns.  They could consume too much and
+	would stop at `\/`.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

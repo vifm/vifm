@@ -286,7 +286,7 @@ syntax region vifmSubcommandN start='\s*\(\s*\n\s*\\\)\?:\?\s*\S\+'
 " [!]/regexp/[iI]*
 syntax region vifmPattern contained
 		\ start='!\?/\ze\(\n\s*\\\|\n\s*".*$\|[^/]\|\\/\)\+/'
-		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='/[iI]*\ze\s\|/\ze\S\+\s' keepend
+		\ skip='\\/\|\(\n\s*\\\)\|\(\n\s*".*$\)' end='/[iI]*\ze\|/\ze\S\+' keepend
 		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
 " [!]//regexp//[iI]*
 syntax region vifmPattern contained

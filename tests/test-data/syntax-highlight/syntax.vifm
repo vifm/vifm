@@ -298,6 +298,7 @@ highlight {{}} cterm=bold ctermfg=yellow
 highlight <> cterm=bold ctermfg=yellow
 " patterns here should be highlighted (except for {{}} suffix)
 highlight /a/ cterm=bold ctermfg=yellow
+highlight /a\/b/ cterm=bold ctermfg=yellow
 highlight //full/path/to\/file// cterm=bold ctermfg=yellow
 highlight //fullpath// cterm=bold ctermfg=yellow
 highlight <text/*>//a//{things}{{}} cterm=bold ctermfg=yellow
@@ -305,6 +306,8 @@ highlight {{?}} cterm=bold ctermfg=yellow
 filetype *.vifm {Open in Vim} vim
 filextype {{*.vifm}} {Open in Vim} vim
 filextype <text/plain>{*.vifm},/regex/<application/pdf>{*.pdf}
+       \ {Open in Vim} vim
+filextype <text/plain>{*.vifm},/regex/,<application/pdf>{*.pdf}
        \ {Open in Vim} vim
 filetype <text/plain>{*.vifm},<application/pdf>{{*.pdf}}
        \ {Open in Vim} vim
