@@ -54,6 +54,8 @@ static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc_record(assoc_record_t *record);
 static void undouble_commas(char s[]);
 static void free_assoc(assoc_t *assoc);
+static int assoc_records_contains(assoc_records_t *assocs, const char command[],
+		const char description[]);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
 
@@ -478,6 +480,11 @@ void
 ft_assoc_record_add(assoc_records_t *records, const char *command,
 		const char *description)
 {
+	if(assoc_records_contains(records, command, description))
+	{
+		return;
+	}
+
 	void *p;
 	p = reallocarray(records->list, records->count + 1, sizeof(assoc_record_t));
 	if(p == NULL)
@@ -517,13 +524,35 @@ ft_assoc_record_add_all(assoc_records_t *assocs, const assoc_records_t *src)
 
 	for(i = 0; i < src_count; ++i)
 	{
-		assocs->list[assocs->count + i].command = strdup(src->list[i].command);
-		assocs->list[assocs->count + i].description =
-				strdup(src->list[i].description);
-		assocs->list[assocs->count + i].type = src->list[i].type;
-	}
+		assoc_record_t *record = &src->list[i];
+		if(assoc_records_contains(assocs, record->command, record->description))
+		{
+			continue;
+		}
 
-	assocs->count += src_count;
+		assocs->list[assocs->count].command = strdup(record->command);
+		assocs->list[assocs->count].description = strdup(record->description);
+		assocs->list[assocs->count].type = record->type;
+		++assocs->count;
+	}
+}
+
+/* Checks if list of records contains specified command-description pair.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+assoc_records_contains(assoc_records_t *assocs, const char command[],
+		const char description[])
+{
+	int i;
+	for(i = 0; i < assocs->count; ++i)
+	{
+		if(strcmp(assocs->list[i].command, command) == 0
+				&& strcmp(assocs->list[i].description, description) == 0)
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 static void
