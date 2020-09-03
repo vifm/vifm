@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: August 30, 2020
+" Last Change: September 3, 2020
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -283,12 +283,12 @@ syntax region vifmSubcommandN start='\s*\(\s*\n\s*\\\)\?:\?\s*\S\+'
 		\ contains=vifmStatementCN
 " Non-empty pattern or form [!][{]{*.ext,*.e}[}], [!][/]/regex/[/][iI] or
 " <mime-type-globs>, possibly multi-line.
-" [!]/regexp/[iI]+
+" [!]/regexp/[iI]*
 syntax region vifmPattern contained
 		\ start='!\?/\ze\(\n\s*\\\|\n\s*".*$\|[^/]\|\\/\)\+/'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='/[iI]*\ze\s\|/\ze\S\+\s' keepend
 		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
-" [!]//regexp//[iI]+
+" [!]//regexp//[iI]*
 syntax region vifmPattern contained
 		\ start='!\?//\ze\(/[^/]\|\n\s*\\\|\n\s*".*$\|[^/]\|\\/\)\+//'
 		\ skip='/[^/]\|\(\n\s*\\\)\|\(\n\s*".*$\)' end='//[iI]*' keepend
