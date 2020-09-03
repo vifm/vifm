@@ -381,6 +381,9 @@
 	Fixed :wincmd being affected by mappings (e.g., of Ctrl-W key).  Thanks to
 	Philipp at Vifm Q2A site.
 
+	Fixed columns in a :file menu being misaligned for mix of entries with and
+	without description.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
