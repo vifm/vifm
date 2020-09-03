@@ -3,6 +3,7 @@
 #include <unistd.h> /* symlink() unlink() */
 
 #include <stdio.h> /* fopen() fclose() */
+#include <string.h> /* strcmp() */
 
 #include <test-utils.h>
 
@@ -21,6 +22,18 @@ TEST(escaping_for_determining_mime_type, IF(has_mime_type_detection))
 	check_empty_file(SANDBOX_PATH "/start'end");
 	check_empty_file(SANDBOX_PATH "/start\"end");
 	check_empty_file(SANDBOX_PATH "/start`end");
+}
+
+TEST(mimetype_cache_can_be_invalidated, IF(has_mime_type_detection))
+{
+	copy_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/file");
+	assert_string_equal("text/plain", get_mimetype(SANDBOX_PATH "/file", 0));
+
+	copy_file(TEST_DATA_PATH "/read/binary-data", SANDBOX_PATH "/file");
+	assert_false(strcmp("text/plain", get_mimetype(SANDBOX_PATH "/file", 0)) ==
+			0);
+
+	remove_file(SANDBOX_PATH "/file");
 }
 
 TEST(relatively_large_file_name_does_not_crash,

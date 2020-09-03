@@ -29,17 +29,32 @@
 #endif
 
 #include <stddef.h> /* size_t */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() malloc() */
 #include <stdio.h> /* popen() */
 #include <string.h> /* strdup() */
 
 #include "../compat/os.h"
+#include "../utils/filemon.h"
+#include "../utils/fsddata.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../filetype.h"
 #include "../status.h"
 #include "desktop.h"
 
+/* Cache entry. */
+typedef struct
+{
+	char *mime;        /* Mime-type. */
+	filemon_t filemon; /* Timestamp. */
+}
+cache_data_t;
+
+static fsddata_t * get_cache(void);
+static int lookup_in_cache(fsddata_t *cache, const char path[],
+		filemon_t *filemon, cache_data_t **data);
+static void update_cache(fsddata_t *cache, const char path[],
+		const char mimetype[], filemon_t *filemon, cache_data_t *data);
 static int get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_magic_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_file_mimetype(const char filename[], char buf[], size_t buf_sz);
@@ -69,6 +84,16 @@ get_mimetype(const char file[], int resolve_symlinks)
 		}
 	}
 
+	fsddata_t *mime_cache = get_cache();
+
+	filemon_t filemon;
+	cache_data_t *cache_data = NULL;
+	if(lookup_in_cache(mime_cache, file, &filemon, &cache_data))
+	{
+		copy_str(mimetype, sizeof(mimetype), cache_data->mime);
+		return mimetype;
+	}
+
 	if(get_gtk_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 	{
 		if(get_magic_mimetype(file, mimetype, sizeof(mimetype)) == -1)
@@ -80,7 +105,60 @@ get_mimetype(const char file[], int resolve_symlinks)
 		}
 	}
 
+	update_cache(mime_cache, file, mimetype, &filemon, cache_data);
+
 	return mimetype;
+}
+
+/* Retrieves mime-type cache, creating it on first call.  Returns the cache. */
+static fsddata_t *
+get_cache(void)
+{
+	static fsddata_t *mime_cache;
+	if(mime_cache == NULL)
+	{
+		mime_cache = fsddata_create(0, 0);
+	}
+	return mime_cache;
+}
+
+/* Looks up cache entry for the specified path.  On success, *filemon is
+ * initialized from the file.  Returns non-zero if entry is found, otherwise
+ * zero is returned. */
+static int
+lookup_in_cache(fsddata_t *cache, const char path[], filemon_t *filemon,
+		cache_data_t **data)
+{
+	void *value = NULL;
+	if(fsddata_get(cache, path, &value) == 0)
+	{
+		*data = value;
+
+		(void)filemon_from_file(path, FMT_MODIFIED, filemon);
+		return filemon_equal(filemon, &(*data)->filemon);
+	}
+	return 0;
+}
+
+/* Updates cache for the path. */
+static void
+update_cache(fsddata_t *cache, const char path[], const char mimetype[],
+		filemon_t *filemon, cache_data_t *data)
+{
+	if(data != NULL)
+	{
+		/* Simply update cache entry in place. */
+		replace_string(&data->mime, mimetype);
+		data->filemon = *filemon;
+		return;
+	}
+
+	(void)filemon_from_file(path, FMT_MODIFIED, filemon);
+
+	data = malloc(sizeof(*data));
+	data->mime = strdup(mimetype);
+	data->filemon = *filemon;
+	fsddata_set(cache, path, data);
 }
 
 static int
