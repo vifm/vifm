@@ -368,6 +368,9 @@
 	Fixed highlighting of regex patterns.  They could consume too much and
 	would stop at `\/`.
 
+	Fixed highlighting of multiline matchers for :filetype, :filextype and
+	:fileviewer commands.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

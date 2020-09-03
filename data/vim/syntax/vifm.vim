@@ -306,10 +306,10 @@ syntax region vifmPattern contained
 		\ start='!\?<[^>]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='>' keepend
 		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
 syntax region vifmPatterns contained
-		\ start='\(^\|\s\zs\)[/{<!]'
+		\ start='\(^\|\s\)\zs[/{<!]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
-		\ end='\(/[a-zA-Z]\{,4}\|[}>iI]\)\(\s\|$\)' keepend
-		\ contains=vifmPattern
+		\ end='\(/[a-zA-Z]\{,4}\|[}>iI]\)\(\s\)' keepend
+		\ contains=vifmPattern,vifmComment
 syntax match vifmNotPattern contained '!\?\({{}}\|\<//\>\|////\)'
 syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
@@ -319,8 +319,9 @@ syntax region vifmHi
 		\,vifmPatterns
 syntax region vifmFtBeginning contained
 		\ start='\<\(filet\%[ype]\|filext\%[ype]\|filev\%[iewer]\)\>\s\+\S'
-		\ end='\s\|$' keepend
-		\ contains=vifmFtCommand,vifmPatterns
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ end='\(\S\zs\s\)' keepend
+		\ contains=vifmFtCommand,vifmPatterns,vifmComment
 
 " common highlight for :command arguments without highlighting of angle-bracket
 " notation
@@ -426,7 +427,8 @@ syntax match vifmNotation '<\(esc\|cr\|space\|del\|nop\|\(s-\)\?tab\|home\|end\|
 syntax case match
 
 " Whole line comment
-syntax region vifmComment contained contains=@Spell start='^\(\s\|:\)*"' end='$'
+syntax region vifmComment contained extend
+		\ contains=@Spell start='^\(\s\|:\)*"' end='$'
 " Comment at the end of a line
 syntax match vifmInlineComment contained contains=@Spell '\s"[^"]*$'
 " This prevents highlighting non-first line of multi-line command
