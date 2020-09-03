@@ -40,8 +40,6 @@
 #include "../status.h"
 #include "desktop.h"
 
-static assoc_records_t handlers;
-
 static int get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_magic_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_file_mimetype(const char filename[], char buf[], size_t buf_sz);
@@ -196,6 +194,7 @@ get_file_mimetype(const char filename[], char buf[], size_t buf_sz)
 static assoc_records_t
 get_handlers(const char mime_type[])
 {
+	static assoc_records_t handlers;
 	ft_assoc_records_free(&handlers);
 
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
