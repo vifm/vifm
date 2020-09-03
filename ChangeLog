@@ -203,6 +203,9 @@
 
 	Deduplicate elements of the :file menu.
 
+	Use mime-types in associations in sample vifmrc.  Thanks to Shakil
+	Akhtar.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
