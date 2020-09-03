@@ -421,6 +421,21 @@ TEST(wincmd_can_switch_views)
 	vle_keys_reset();
 }
 
+TEST(wincmd_ignores_mappings)
+{
+	init_modes();
+	opt_handlers_setup();
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	assert_success(exec_commands("nnoremap <c-w> <nop>", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("wincmd H", curr_view, CIT_COMMAND));
+	assert_true(curr_view == &lwin);
+
+	opt_handlers_teardown();
+	vle_keys_reset();
+}
+
 TEST(yank_works_with_ranges)
 {
 	char path[PATH_MAX + 1];
