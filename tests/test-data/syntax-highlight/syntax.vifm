@@ -298,6 +298,7 @@ highlight {{}} cterm=bold ctermfg=yellow
 highlight <> cterm=bold ctermfg=yellow
 " patterns here should be highlighted (except for {{}} suffix)
 highlight /a/ cterm=bold ctermfg=yellow
+highlight /a\/b/ cterm=bold ctermfg=yellow
 highlight //full/path/to\/file// cterm=bold ctermfg=yellow
 highlight //fullpath// cterm=bold ctermfg=yellow
 highlight <text/*>//a//{things}{{}} cterm=bold ctermfg=yellow
@@ -305,6 +306,8 @@ highlight {{?}} cterm=bold ctermfg=yellow
 filetype *.vifm {Open in Vim} vim
 filextype {{*.vifm}} {Open in Vim} vim
 filextype <text/plain>{*.vifm},/regex/<application/pdf>{*.pdf}
+       \ {Open in Vim} vim
+filextype <text/plain>{*.vifm},/regex/,<application/pdf>{*.pdf}
        \ {Open in Vim} vim
 filetype <text/plain>{*.vifm},<application/pdf>{{*.pdf}}
        \ {Open in Vim} vim
@@ -346,6 +349,26 @@ fileviewer *.ext
 " "fileviewer" should be highlighted as :command
 " "/,*/" should not be highlighted as a pattern
 fileviewer .*/,*/ tree %f
+
+" "," must not be highlighted
+filextype /regex/,{*.pdf}
+filextype /reg\/ex/,{*.pdf}
+
+filetype {*.spx,*.opus},
+        \<audio/mpeg,audio/x-wav>
+       \ {Play using ffplay}
+       \ ffplay -nodisp -autoexit %c
+
+filetype {*.wav}
+        \<audio/mpeg,audio/x-wav>
+       \ {Play using ffplay}
+       \ ffplay -nodisp -autoexit %c
+
+filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+          \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+          \*.as[fx]}
+        \ {View using ffplay}
+        \ ffplay -fs -autoexit %f
 
 if $sort_type == 'size'
     set sort=+mtime

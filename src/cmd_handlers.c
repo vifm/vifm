@@ -4844,7 +4844,7 @@ wincmd_cmd(const cmd_info_t *cmd_info)
 	}
 	free(cmd);
 
-	(void)vle_keys_exec_timed_out(wcmd);
+	(void)vle_keys_exec_timed_out_no_remap(wcmd);
 	free(wcmd);
 	return 0;
 }

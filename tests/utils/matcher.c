@@ -402,14 +402,17 @@ TEST(mime_type_of_link_is_that_of_its_target,
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
 	assert_success(symlink(".", "link"));
+	assert_success(symlink("link", "link2"));
 #endif
 
 	assert_non_null(m = matcher_alloc("<inode/directory>", 0, 1, "", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "link"));
+	assert_true(matcher_matches(m, "link2"));
 	matcher_free(m);
 
 	assert_success(remove("link"));
+	assert_success(remove("link2"));
 }
 
 static void
