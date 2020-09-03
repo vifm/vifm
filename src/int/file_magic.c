@@ -33,7 +33,7 @@
 #include <stdio.h> /* popen() */
 #include <string.h> /* strdup() */
 
-#include "../utils/fs.h"
+#include "../compat/os.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../filetype.h"
@@ -65,19 +65,10 @@ get_mimetype(const char file[], int resolve_symlinks)
 	char target[PATH_MAX + 1];
 	if(resolve_symlinks)
 	{
-		char *const symlink_base = strdup(file);
-
-		if(!is_root_dir(symlink_base))
-		{
-			remove_last_path_component(symlink_base);
-		}
-
-		if(get_link_target_abs(file, symlink_base, target, sizeof(target)) == 0)
+		if(os_realpath(file, target) == target)
 		{
 			file = target;
 		}
-
-		free(symlink_base);
 	}
 
 	if(get_gtk_mimetype(file, mimetype, sizeof(mimetype)) == -1)
