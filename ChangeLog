@@ -58,6 +58,9 @@
 	Added 'tabprefix' and 'tabsuffix' options that allow customizing
 	tabline separators.  Thanks to CoreCube.
 
+	Added real (fully resolved) path to the File Info dialog.  Thanks to
+	Alexandre Viau.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

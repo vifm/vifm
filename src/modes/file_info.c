@@ -347,6 +347,7 @@ static int
 print_link_info(const dir_entry_t *curr, int curr_y)
 {
 	int old_curr_y = curr_y;
+	int max_x = getmaxx(menu_win);
 
 	char full_path[PATH_MAX + 1];
 	char linkto[PATH_MAX + NAME_MAX];
@@ -374,7 +375,6 @@ print_link_info(const dir_entry_t *curr, int curr_y)
 
 	if(get_link_target(full_path, linkto, sizeof(linkto)) == 0)
 	{
-		int max_x = getmaxx(menu_win);
 		mvwaddnstr(menu_win, curr_y, target_offset, linkto, max_x - target_offset);
 
 		if(!path_exists(linkto, DEREF))
@@ -385,6 +385,22 @@ print_link_info(const dir_entry_t *curr, int curr_y)
 	else
 	{
 		mvwaddstr(menu_win, curr_y, target_offset, "Couldn't Resolve Link");
+	}
+
+	if(curr->type == FT_LINK)
+	{
+		curr_y += 2;
+		mvwaddstr(menu_win, curr_y, 2, "Real Path: ");
+
+		char real[PATH_MAX + 1];
+		if(os_realpath(full_path, real) == real)
+		{
+			mvwaddnstr(menu_win, curr_y, 13, real, max_x - 13);
+		}
+		else
+		{
+			waddstr(menu_win, "Couldn't Resolve Path");
+		}
 	}
 
 	return curr_y - old_curr_y;
