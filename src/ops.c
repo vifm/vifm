@@ -767,12 +767,15 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
 		int result;
-#ifdef _WIN32
-		char exe_dir[PATH_MAX + 2];
-#endif
 
+#ifndef _WIN32
 		escaped_src = shell_like_escape(src, 0);
 		escaped_dst = shell_like_escape(dst, 0);
+#else
+		escaped_src = strdup(enclose_in_dquotes(src));
+		escaped_dst = strdup(enclose_in_dquotes(dst));
+#endif
+
 		if(escaped_src == NULL || escaped_dst == NULL)
 		{
 			free(escaped_dst);
@@ -785,6 +788,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
 		result = run_operation_command(ops, cmd, 1);
 #else
+		char exe_dir[PATH_MAX + 2];
 		if(get_exe_dir(exe_dir, ARRAY_LEN(exe_dir)) != 0)
 		{
 			free(escaped_dst);

@@ -746,8 +746,8 @@ iop_ln_internal(io_args_t *args)
 		}
 	}
 
-	escaped_path = shell_like_escape(path, 0);
-	escaped_target = shell_like_escape(target, 0);
+	escaped_path = strdup(enclose_in_dquotes(path));
+	escaped_target = strdup(enclose_in_dquotes(target));
 	if(escaped_path == NULL || escaped_target == NULL)
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
