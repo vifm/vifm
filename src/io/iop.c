@@ -729,18 +729,21 @@ iop_ln_internal(io_args_t *args)
 	char *escaped_path, *escaped_target;
 	char base_dir[PATH_MAX + 2];
 
-	if(!overwrite && path_exists(target, DEREF))
+	if(path_exists(target, NODEREF))
 	{
-		(void)ioe_errlst_append(&args->result.errors, target, EEXIST,
-				"Destination path already exists");
-		return -1;
-	}
+		if(!overwrite)
+		{
+			(void)ioe_errlst_append(&args->result.errors, target, EEXIST,
+					"Destination path already exists");
+			return -1;
+		}
 
-	if(overwrite && !is_symlink(target))
-	{
-		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
-				"Target is not a symbolic link");
-		return -1;
+		if(!is_symlink(target))
+		{
+			(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
+					"Target is not a symbolic link");
+			return -1;
+		}
 	}
 
 	escaped_path = shell_like_escape(path, 0);
