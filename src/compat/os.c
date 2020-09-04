@@ -191,7 +191,7 @@ os_realpath(const char path[], char resolved_path[])
 	return resolved_path;
 }
 
-/* Resolves path to its destination.  Returns pointer a newly allocated
+/* Resolves path to its destination.  Returns pointer to a newly allocated
  * memory. */
 static char *
 resolve_mount_points(const char path[])
