@@ -200,24 +200,13 @@ resolve_mount_points(const char path[])
 
 	DWORD attr;
 	wchar_t *utf16_path;
-	HANDLE hfind;
-	WIN32_FIND_DATAW ffd;
 	HANDLE hfile;
 	char rdb[2048];
 	char *t;
 	int offset;
 	REPARSE_DATA_BUFFER *rdbp;
 
-	utf16_path = utf8_to_utf16(path);
-	attr = GetFileAttributesW(utf16_path);
-	free(utf16_path);
-
-	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		return strdup(path);
-	}
-
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+	if(win_get_reparse_point_type(path) != IO_REPARSE_TAG_MOUNT_POINT)
 	{
 		return strdup(path);
 	}
@@ -226,21 +215,6 @@ resolve_mount_points(const char path[])
 	chosp(resolved_path);
 
 	utf16_path = utf8_to_utf16(resolved_path);
-	hfind = FindFirstFileW(utf16_path, &ffd);
-
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		free(utf16_path);
-		return strdup(path);
-	}
-
-	FindClose(hfind);
-
-	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
-	{
-		free(utf16_path);
-		return strdup(path);
-	}
 
 	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
 			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,

@@ -209,43 +209,7 @@ is_symlink(const char path[])
 	struct stat st;
 	return os_lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
 #else
-	char filename[PATH_MAX + 1];
-	DWORD attr;
-	wchar_t *utf16_filename;
-	HANDLE hfind;
-	WIN32_FIND_DATAW ffd;
-
-	attr = win_get_file_attrs(path);
-	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		LOG_WERROR(GetLastError());
-		return 0;
-	}
-
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-	{
-		return 0;
-	}
-
-	copy_str(filename, sizeof(filename), path);
-	chosp(filename);
-
-	utf16_filename = utf8_to_utf16(path);
-	hfind = FindFirstFileW(utf16_filename, &ffd);
-	free(utf16_filename);
-
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		LOG_WERROR(GetLastError());
-		return 0;
-	}
-
-	if(!FindClose(hfind))
-	{
-		LOG_WERROR(GetLastError());
-	}
-
-	return ffd.dwReserved0 == IO_REPARSE_TAG_SYMLINK;
+	return (win_get_reparse_point_type(path) == IO_REPARSE_TAG_SYMLINK);
 #endif
 }
 

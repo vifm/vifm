@@ -1078,6 +1078,48 @@ win_get_file_attrs(const char path[])
 	return attr;
 }
 
+DWORD
+win_get_reparse_point_type(const char path[])
+{
+	char path_copy[PATH_MAX + 1];
+	DWORD attr;
+	wchar_t *utf16_filename;
+	HANDLE hfind;
+	WIN32_FIND_DATAW ffd;
+
+	attr = win_get_file_attrs(path);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_WERROR(GetLastError());
+		return 0;
+	}
+
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+	{
+		return 0;
+	}
+
+	copy_str(path_copy, sizeof(path_copy), path);
+	chosp(path_copy);
+
+	utf16_filename = utf8_to_utf16(path_copy);
+	hfind = FindFirstFileW(utf16_filename, &ffd);
+	free(utf16_filename);
+
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
+		return 0;
+	}
+
+	if(!FindClose(hfind))
+	{
+		LOG_WERROR(GetLastError());
+	}
+
+	return ffd.dwReserved0;
+}
+
 int
 win_symlink_read(const char link[], char buf[], int buf_len)
 {

@@ -88,6 +88,10 @@ time_t win_to_unix_time(FILETIME ft);
  * INVALID_FILE_ATTRIBUTES on error. */
 DWORD win_get_file_attrs(const char path[]);
 
+/* Obtains type of reparse point at the location.  Returns the type or 0 on
+ * error (including when path doesn't point at a reparse point). */
+DWORD win_get_reparse_point_type(const char path[]);
+
 /* Fills the buf of size buf_len with the path symbolic link specified by link
  * parameter.  Returns zero on success, otherwise non-zero is returned. */
 int win_symlink_read(const char link[], char buf[], int buf_len);
