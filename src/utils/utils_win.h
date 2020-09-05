@@ -92,6 +92,10 @@ DWORD win_get_file_attrs(const char path[]);
  * error (including when path doesn't point at a reparse point). */
 DWORD win_get_reparse_point_type(const char path[]);
 
+/* Fills buffer with REPARSE_DATA_BUFFER structure characterizing the path.
+ * Returns zero on success, otherwise non-zero is returned. */
+int win_reparse_point_read(const char path[], char buf[], size_t buf_len);
+
 /* Fills the buf of size buf_len with the path symbolic link specified by link
  * parameter.  Returns zero on success, otherwise non-zero is returned. */
 int win_symlink_read(const char link[], char buf[], int buf_len);

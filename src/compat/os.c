@@ -198,50 +198,24 @@ resolve_mount_points(const char path[])
 {
 	char resolved_path[PATH_MAX + 1];
 
-	DWORD attr;
-	wchar_t *utf16_path;
-	HANDLE hfile;
-	char rdb[2048];
-	char *t;
-	int offset;
-	REPARSE_DATA_BUFFER *rdbp;
-
 	if(win_get_reparse_point_type(path) != IO_REPARSE_TAG_MOUNT_POINT)
 	{
 		return strdup(path);
 	}
 
-	copy_str(resolved_path, sizeof(resolved_path), path);
-	chosp(resolved_path);
-
-	utf16_path = utf8_to_utf16(resolved_path);
-
-	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-			NULL);
-
-	free(utf16_path);
-
-	if(hfile == INVALID_HANDLE_VALUE)
+	char rdb[2048];
+	if(win_reparse_point_read(path, rdb, sizeof(rdb)) != 0)
 	{
 		return strdup(path);
 	}
 
-	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb, sizeof(rdb),
-			&attr, NULL))
-	{
-		CloseHandle(hfile);
-		return strdup(path);
-	}
-	CloseHandle(hfile);
+	REPARSE_DATA_BUFFER *rdbp = (REPARSE_DATA_BUFFER *)rdb;
+	char *mb = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
 
-	rdbp = (REPARSE_DATA_BUFFER *)rdb;
-	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
+	int offset = starts_with_lit(mb, "\\??\\") ? 4 : 0;
+	strcpy(resolved_path, mb + offset);
 
-	offset = starts_with_lit(t, "\\??\\") ? 4 : 0;
-	strcpy(resolved_path, t + offset);
-
-	free(t);
+	free(mb);
 
 	return strdup(resolved_path);
 }

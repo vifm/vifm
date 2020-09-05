@@ -1121,27 +1121,14 @@ win_get_reparse_point_type(const char path[])
 }
 
 int
-win_symlink_read(const char link[], char buf[], int buf_len)
+win_reparse_point_read(const char path[], char buf[], size_t buf_len)
 {
-	char filename[PATH_MAX + 1];
-	DWORD attr;
-	wchar_t *utf16_filename;
-	HANDLE hfile;
-	char rdb[2048];
-	char *t;
-	REPARSE_DATA_BUFFER *sbuf;
-	WCHAR *path;
+	char path_copy[PATH_MAX + 1];
+	copy_str(path_copy, sizeof(path_copy), path);
+	chosp(path_copy);
 
-	if(!is_symlink(link))
-	{
-		return -1;
-	}
-
-	copy_str(filename, sizeof(filename), link);
-	chosp(filename);
-
-	utf16_filename = to_wide(filename);
-	hfile = CreateFileW(utf16_filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+	wchar_t *utf16_filename = to_wide(path_copy);
+	HANDLE hfile = CreateFileW(utf16_filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
 			NULL, OPEN_EXISTING,
 			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
 	free(utf16_filename);
@@ -1152,8 +1139,9 @@ win_symlink_read(const char link[], char buf[], int buf_len)
 		return -1;
 	}
 
-	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
-			sizeof(rdb), &attr, NULL))
+	DWORD attr;
+	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, buf,
+			buf_len, &attr, NULL))
 	{
 		LOG_WERROR(GetLastError());
 		CloseHandle(hfile);
@@ -1161,18 +1149,35 @@ win_symlink_read(const char link[], char buf[], int buf_len)
 	}
 	CloseHandle(hfile);
 
-	sbuf = (REPARSE_DATA_BUFFER *)rdb;
-	path = sbuf->SymbolicLinkReparseBuffer.PathBuffer;
+	return 0;
+}
+
+int
+win_symlink_read(const char link[], char buf[], int buf_len)
+{
+	if(!is_symlink(link))
+	{
+		return -1;
+	}
+
+	char rdb[2048];
+	if(win_reparse_point_read(link, rdb, sizeof(rdb)) != 0)
+	{
+		return -1;
+	}
+
+	REPARSE_DATA_BUFFER *sbuf = (REPARSE_DATA_BUFFER *)rdb;
+	WCHAR *path = sbuf->SymbolicLinkReparseBuffer.PathBuffer;
 	path[sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR) +
 			sbuf->SymbolicLinkReparseBuffer.PrintNameLength/sizeof(WCHAR)] = L'\0';
-	t = to_multibyte(path +
+	char *mb = to_multibyte(path +
 			sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR));
-	if(strncmp(t, "\\??\\", 4) == 0)
-		strncpy(buf, t + 4, buf_len);
+	if(strncmp(mb, "\\??\\", 4) == 0)
+		strncpy(buf, mb + 4, buf_len);
 	else
-		strncpy(buf, t, buf_len);
+		strncpy(buf, mb, buf_len);
 	buf[buf_len - 1] = '\0';
-	free(t);
+	free(mb);
 	system_to_internal_slashes(buf);
 	return 0;
 }
