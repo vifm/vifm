@@ -12,5 +12,6 @@
 * noremap shows wrong keys?
 * "*" at the beginning of a glob doesn't match empty string.
 * :filetype checks don't expand ~ and environment variables.
+* 'chaselinks' resolves mount points on Windows, should it?
 * :apropos command doesn't escape its arguments.
 * gid/uid are displayed as -1 on some file systems.

@@ -31,7 +31,7 @@
 #include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcpy() strdup() strlen() */
-#include <stdio.h> /* FILE snprintf() */
+#include <stdio.h> /* FILE */
 #include <wchar.h> /* _waccess() _wchmod() _wmkdir() _wrename() _wsystem() */
 
 #include "../utils/fs.h"
@@ -171,26 +171,58 @@ os_realpath(const char path[], char resolved_path[])
 		return NULL;
 	}
 
-	char *resolved = resolve_mount_points(path);
-	if(resolved == NULL)
+	char base_path[PATH_MAX + 1];
+	if(get_cwd(base_path, sizeof(base_path)) != base_path)
 	{
-		resolved = strdup(path);
+		errno = ENOENT;
+		return NULL;
 	}
 
-	if(!is_path_absolute(resolved))
+	char curr_path[PATH_MAX + 1];
+	to_canonic_path(path, base_path, curr_path, sizeof(curr_path));
+
+	char next_path[PATH_MAX + 1];
+
+	while(1)
 	{
-		/* Try to compose absolute path. */
-		char cwd[PATH_MAX + 1];
-		if(get_cwd(cwd, sizeof(cwd)) == cwd)
+		DWORD type = win_get_reparse_point_type(curr_path);
+		if(type == IO_REPARSE_TAG_MOUNT_POINT)
 		{
-			snprintf(resolved_path, PATH_MAX, "%s/%s", cwd, resolved);
+			char *resolved = resolve_mount_points(curr_path);
+			if(resolved == NULL)
+			{
+				errno = ENOENT;
+				return NULL;
+			}
+
+			to_canonic_path(resolved, base_path, next_path, sizeof(next_path));
+
 			free(resolved);
-			return resolved_path;
+		}
+		else if(type == IO_REPARSE_TAG_SYMLINK)
+		{
+			if(get_link_target_abs(curr_path, base_path, next_path,
+						sizeof(next_path)) != 0)
+			{
+				errno = ENOENT;
+				return NULL;
+			}
+		}
+		else
+		{
+			break;
+		}
+
+		copy_str(curr_path, sizeof(curr_path), next_path);
+
+		copy_str(base_path, sizeof(base_path), curr_path);
+		if(!is_root_dir(base_path))
+		{
+			remove_last_path_component(base_path);
 		}
 	}
 
-	copy_str(resolved_path, PATH_MAX, resolved);
-	free(resolved);
+	copy_str(resolved_path, PATH_MAX, curr_path);
 	return resolved_path;
 }
 

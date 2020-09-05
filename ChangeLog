@@ -400,6 +400,8 @@
 	Fixed creating symbolic links on Windows with spaces in source or target
 	paths.
 
+	Fixed 'chaselinks' on Windows (symbolic links weren't resolved).
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
