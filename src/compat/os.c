@@ -165,13 +165,16 @@ os_mkdir(const char pathname[], int mode)
 char *
 os_realpath(const char path[], char resolved_path[])
 {
-	char *const resolved = resolve_mount_points(path);
-
 	if(!path_exists(path, NODEREF))
 	{
 		errno = ENOENT;
-		free(resolved);
 		return NULL;
+	}
+
+	char *resolved = resolve_mount_points(path);
+	if(resolved == NULL)
+	{
+		resolved = strdup(path);
 	}
 
 	if(!is_path_absolute(resolved))
@@ -192,7 +195,7 @@ os_realpath(const char path[], char resolved_path[])
 }
 
 /* Resolves path to its destination.  Returns pointer to a newly allocated
- * memory. */
+ * memory or NULL on error. */
 static char *
 resolve_mount_points(const char path[])
 {
@@ -200,13 +203,13 @@ resolve_mount_points(const char path[])
 
 	if(win_get_reparse_point_type(path) != IO_REPARSE_TAG_MOUNT_POINT)
 	{
-		return strdup(path);
+		return NULL;
 	}
 
 	char rdb[2048];
 	if(win_reparse_point_read(path, rdb, sizeof(rdb)) != 0)
 	{
-		return strdup(path);
+		return NULL;
 	}
 
 	REPARSE_DATA_BUFFER *rdbp = (REPARSE_DATA_BUFFER *)rdb;
