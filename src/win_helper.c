@@ -27,7 +27,7 @@ static int is_dir(const char *file);
 int
 main(int argc, char **argv)
 {
-	if(strcmp(argv[1], "-s") == 0)
+	if(argc > 1 && strcmp(argv[1], "-s") == 0)
 	{
 		if(argc != 4)
 		{
@@ -35,6 +35,10 @@ main(int argc, char **argv)
 			return 1;
 		}
 		return create_symlink(argv[3], argv[2]);
+	}
+	else
+	{
+		puts("Invalid first argument, should be -s");
 	}
 	return 1;
 }
