@@ -6,6 +6,7 @@
 
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/background.h"
 #include "../../src/status.h"
@@ -34,6 +35,7 @@ SETUP()
 	strcpy(lwin.curr_dir, "/non-existing-dir");
 	strcpy(rwin.curr_dir, "/non-existing-dir");
 	curr_stats.save_msg = 0;
+	env_remove("MYVIFMRC");
 }
 
 TEARDOWN()
