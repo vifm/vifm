@@ -1057,6 +1057,27 @@ win_to_unix_time(FILETIME ft)
 	return win_time/WINDOWS_TICK - SEC_TO_UNIX_EPOCH;
 }
 
+DWORD
+win_get_file_attrs(const char path[])
+{
+	DWORD attr;
+	wchar_t *utf16_path;
+
+	if(is_path_absolute(path) && !is_unc_path(path))
+	{
+		if(isalpha(path[0]) && !drive_exists(path[0]))
+		{
+			return INVALID_FILE_ATTRIBUTES;
+		}
+	}
+
+	utf16_path = utf8_to_utf16(path);
+	attr = GetFileAttributesW(utf16_path);
+	free(utf16_path);
+
+	return attr;
+}
+
 int
 win_symlink_read(const char link[], char buf[], int buf_len)
 {

@@ -54,8 +54,6 @@ static int path_exists_internal(const char path[], const char filename[],
 
 #ifndef _WIN32
 static int is_directory(const char path[], int dereference_links);
-#else
-static DWORD win_get_file_attrs(const char path[]);
 #endif
 
 int
@@ -866,30 +864,6 @@ is_directory(const char path[], int dereference_links)
 }
 
 #else
-
-/* Obtains attributes of a file.  Skips check for unmounted disks.  Doesn't
- * dereference symbolic links.  Returns the attributes, which is
- * INVALID_FILE_ATTRIBUTES on error. */
-static DWORD
-win_get_file_attrs(const char path[])
-{
-	DWORD attr;
-	wchar_t *utf16_path;
-
-	if(is_path_absolute(path) && !is_unc_path(path))
-	{
-		if(isalpha(path[0]) && !drive_exists(path[0]))
-		{
-			return INVALID_FILE_ATTRIBUTES;
-		}
-	}
-
-	utf16_path = utf8_to_utf16(path);
-	attr = GetFileAttributesW(utf16_path);
-	free(utf16_path);
-
-	return attr;
-}
 
 int
 S_ISLNK(mode_t mode)
