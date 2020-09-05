@@ -54,8 +54,6 @@ static int path_exists_internal(const char path[], const char filename[],
 
 #ifndef _WIN32
 static int is_directory(const char path[], int dereference_links);
-#else
-static DWORD win_get_file_attrs(const char path[]);
 #endif
 
 int
@@ -211,43 +209,7 @@ is_symlink(const char path[])
 	struct stat st;
 	return os_lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
 #else
-	char filename[PATH_MAX + 1];
-	DWORD attr;
-	wchar_t *utf16_filename;
-	HANDLE hfind;
-	WIN32_FIND_DATAW ffd;
-
-	attr = win_get_file_attrs(path);
-	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		LOG_WERROR(GetLastError());
-		return 0;
-	}
-
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-	{
-		return 0;
-	}
-
-	copy_str(filename, sizeof(filename), path);
-	chosp(filename);
-
-	utf16_filename = utf8_to_utf16(path);
-	hfind = FindFirstFileW(utf16_filename, &ffd);
-	free(utf16_filename);
-
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		LOG_WERROR(GetLastError());
-		return 0;
-	}
-
-	if(!FindClose(hfind))
-	{
-		LOG_WERROR(GetLastError());
-	}
-
-	return ffd.dwReserved0 == IO_REPARSE_TAG_SYMLINK;
+	return (win_get_reparse_point_type(path) == IO_REPARSE_TAG_SYMLINK);
 #endif
 }
 
@@ -866,30 +828,6 @@ is_directory(const char path[], int dereference_links)
 }
 
 #else
-
-/* Obtains attributes of a file.  Skips check for unmounted disks.  Doesn't
- * dereference symbolic links.  Returns the attributes, which is
- * INVALID_FILE_ATTRIBUTES on error. */
-static DWORD
-win_get_file_attrs(const char path[])
-{
-	DWORD attr;
-	wchar_t *utf16_path;
-
-	if(is_path_absolute(path) && !is_unc_path(path))
-	{
-		if(isalpha(path[0]) && !drive_exists(path[0]))
-		{
-			return INVALID_FILE_ATTRIBUTES;
-		}
-	}
-
-	utf16_path = utf8_to_utf16(path);
-	attr = GetFileAttributesW(utf16_path);
-	free(utf16_path);
-
-	return attr;
-}
 
 int
 S_ISLNK(mode_t mode)

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 August 30
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 September 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -473,6 +473,9 @@ otherwise only current file is updated.
 gf                                             *vifm-gf*
     find link destination (like l with |vifm-'followlinks'| off, but also
     finds directories).  On Windows additionally follows .lnk-files.
+
+gF                                             *vifm-gF*
+    Same as gf, but resolves final path of the chain of symbolic links.
 
                                                *vifm-gr*
 gr                                             {only for MS-Windows}

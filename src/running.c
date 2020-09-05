@@ -79,8 +79,9 @@
 /* Kinds of symbolic link file treatment on file handling. */
 typedef enum
 {
-	FHL_NO_FOLLOW, /* Don't follow (navigate to instead of navigation inside). */
-	FHL_FOLLOW,    /* Follow (end up on the link target, not inside it). */
+	FHL_NO_FOLLOW,  /* Don't follow (navigate to instead of navigation inside). */
+	FHL_FOLLOW,     /* Follow (end up on the link target, not inside it). */
+	FHL_FOLLOW_ALL, /* Follow all the way (end up on final link's target). */
 }
 FileHandleLink;
 
@@ -104,7 +105,7 @@ static void run_explicit_prog(const char prog_spec[], int pause, int force_bg);
 static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
 		int force_bg);
 static void view_current_file(const view_t *view);
-static void follow_link(view_t *view, int follow_dirs);
+static void follow_link(view_t *view, int follow_dirs, int ultimate);
 static void enter_dir(struct view_t *view);
 static int cd_to_parent_dir(view_t *view);
 static void extract_last_path_component(const char path[], char buf[]);
@@ -137,7 +138,7 @@ rn_open(view_t *view, FileHandleExec exec)
 }
 
 void
-rn_follow(view_t *view)
+rn_follow(view_t *view, int ultimate)
 {
 	if(flist_custom_active(view))
 	{
@@ -155,7 +156,7 @@ rn_follow(view_t *view)
 		return;
 	}
 
-	handle_file(view, FHE_RUN, FHL_FOLLOW);
+	handle_file(view, FHE_RUN, ultimate ? FHL_FOLLOW_ALL : FHL_FOLLOW);
 }
 
 static void
@@ -186,7 +187,8 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 		}
 	}
 
-	int runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
+	int runnable = is_runnable(view, full_path, curr->type,
+			follow != FHL_NO_FOLLOW);
 	int executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
 	if(stats_file_choose_action_set() && (executable || runnable))
@@ -207,7 +209,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	}
 	else if(curr->type == FT_LINK || is_shortcut(curr->name))
 	{
-		follow_link(view, follow == FHL_FOLLOW);
+		follow_link(view, follow != FHL_NO_FOLLOW, follow == FHL_FOLLOW_ALL);
 	}
 }
 
@@ -640,31 +642,42 @@ view_current_file(const view_t *view)
  * or navigates to directory where target is located placing cursor at it (the
  * follow_dirs flag controls the behaviour). */
 static void
-follow_link(view_t *view, int follow_dirs)
+follow_link(view_t *view, int follow_dirs, int ultimate)
 {
 	char *dir, *file;
 	char linkto[PATH_MAX + NAME_MAX + 1];
-	const dir_entry_t *const curr = get_current_entry(curr_view);
+	const dir_entry_t *const curr = get_current_entry(view);
 
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	/* We resolve origin to a real path because relative symbolic links are
-	 * relative to real location of the link.  Can't simply do realpath() on full
-	 * path as it would resolve symbolic links recursively, while we want to
-	 * follow only one level deep. */
-
-	char origin_real[PATH_MAX + 1];
-	if(os_realpath(curr->origin, origin_real) != origin_real)
+	if(ultimate)
 	{
-		show_error_msg("Error", "Can't resolve origin of the link.");
-		return;
+		if(os_realpath(full_path, linkto) != linkto)
+		{
+			show_error_msg("Error", "Can't resolve the link.");
+			return;
+		}
 	}
-
-	if(get_link_target_abs(full_path, origin_real, linkto, sizeof(linkto)) != 0)
+	else
 	{
-		show_error_msg("Error", "Can't read link.");
-		return;
+		/* We resolve origin to a real path because relative symbolic links are
+		 * relative to real location of the link.  Can't simply do realpath() on
+		 * full path as it would resolve symbolic links recursively, while we want
+		 * to follow only one level deep. */
+
+		char origin_real[PATH_MAX + 1];
+		if(os_realpath(curr->origin, origin_real) != origin_real)
+		{
+			show_error_msg("Error", "Can't resolve origin of the link.");
+			return;
+		}
+
+		if(get_link_target_abs(full_path, origin_real, linkto, sizeof(linkto)) != 0)
+		{
+			show_error_msg("Error", "Can't read link.");
+			return;
+		}
 	}
 
 	if(!path_exists(linkto, NODEREF))

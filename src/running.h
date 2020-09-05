@@ -48,7 +48,7 @@ void rn_open(struct view_t *view, FileHandleExec exec);
 
 /* Follows file to find its true location (e.g. target of symbolic link) or just
  * opens it. */
-void rn_follow(struct view_t *view);
+void rn_follow(struct view_t *view, int ultimate);
 
 /* Runs current file of the view guided by program specification with additional
  * options. */

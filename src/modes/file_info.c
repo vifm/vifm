@@ -58,6 +58,7 @@
 static void leave_file_info_mode(void);
 static int print_item(const char label[], const char path[], int curr_y);
 static int show_file_type(view_t *view, int curr_y);
+static int print_link_info(const dir_entry_t *curr, int curr_y);
 static int show_mime_type(view_t *view, int curr_y);
 static void format_time(time_t t, char buf[], size_t buf_size);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -182,6 +183,9 @@ modfinfo_redraw(void)
 	curr_y += print_item("Attributes: ", perm_buf, curr_y);
 #endif
 
+	snprintf(buf, sizeof(buf), "%d", curr->nlinks);
+	curr_y += print_item("Hard Links: ", buf, curr_y);
+
 	format_time(curr->mtime, buf, sizeof(buf));
 	curr_y += print_item("Modified: ", buf, curr_y);
 
@@ -243,52 +247,14 @@ static int
 show_file_type(view_t *view, int curr_y)
 {
 	const dir_entry_t *curr;
-	int x;
 	int old_curr_y = curr_y;
-	x = getmaxx(menu_win);
 
 	curr = get_current_entry(view);
 
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
 	if(curr->type == FT_LINK || is_shortcut(curr->name))
 	{
-		char full_path[PATH_MAX + 1];
-		char linkto[PATH_MAX + NAME_MAX];
-
-		get_current_full_path(view, sizeof(full_path), full_path);
-
-		int broken_offset;
-		int target_offset;
-		if(curr->type == FT_LINK)
-		{
-			mvwaddstr(menu_win, curr_y, 8, "Link");
-			curr_y += 2;
-			mvwaddstr(menu_win, curr_y, 2, "Link To: ");
-			broken_offset = 12;
-			target_offset = 11;
-		}
-		else
-		{
-			mvwaddstr(menu_win, curr_y, 8, "Shortcut");
-			curr_y += 2;
-			mvwaddstr(menu_win, curr_y, 2, "Shortcut To: ");
-			broken_offset = 16;
-			target_offset = 15;
-		}
-
-		if(get_link_target(full_path, linkto, sizeof(linkto)) == 0)
-		{
-			mvwaddnstr(menu_win, curr_y, target_offset, linkto, x - target_offset);
-
-			if(!path_exists(linkto, DEREF))
-			{
-				mvwaddstr(menu_win, curr_y - 2, broken_offset, " (BROKEN)");
-			}
-		}
-		else
-		{
-			mvwaddstr(menu_win, curr_y, target_offset, "Couldn't Resolve Link");
-		}
+		curr_y += print_link_info(curr, curr_y);
 	}
 	else if(curr->type == FT_EXEC || curr->type == FT_REG)
 	{
@@ -317,10 +283,11 @@ show_file_type(view_t *view, int curr_y)
 
 		pclose(pipe);
 
-		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
-		if(x > 9 && strlen(buf) > (size_t)(x - 9))
+		int max_x = getmaxx(menu_win);
+		mvwaddnstr(menu_win, curr_y, 8, buf, max_x - 9);
+		if(max_x > 9 && strlen(buf) > (size_t)(max_x - 9))
 		{
-			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
+			mvwaddnstr(menu_win, curr_y + 1, 8, buf + max_x - 9, max_x - 9);
 		}
 #else /* #ifdef HAVE_FILE_PROG */
 		if(curr->type == FT_EXEC)
@@ -374,6 +341,70 @@ show_file_type(view_t *view, int curr_y)
 		mvwaddstr(menu_win, curr_y, 8, "Unknown");
 	}
 	curr_y += 2;
+
+	return curr_y - old_curr_y;
+}
+
+/* Prints information about a link entry.  Returns increment for curr_y. */
+static int
+print_link_info(const dir_entry_t *curr, int curr_y)
+{
+	int old_curr_y = curr_y;
+	int max_x = getmaxx(menu_win);
+
+	char full_path[PATH_MAX + 1];
+	char linkto[PATH_MAX + NAME_MAX];
+
+	get_full_path_of(curr, sizeof(full_path), full_path);
+
+	int broken_offset;
+	int target_offset;
+	if(curr->type == FT_LINK)
+	{
+		mvwaddstr(menu_win, curr_y, 8, "Link");
+		curr_y += 2;
+		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
+		broken_offset = 12;
+		target_offset = 11;
+	}
+	else
+	{
+		mvwaddstr(menu_win, curr_y, 8, "Shortcut");
+		curr_y += 2;
+		mvwaddstr(menu_win, curr_y, 2, "Shortcut To: ");
+		broken_offset = 16;
+		target_offset = 15;
+	}
+
+	if(get_link_target(full_path, linkto, sizeof(linkto)) == 0)
+	{
+		mvwaddnstr(menu_win, curr_y, target_offset, linkto, max_x - target_offset);
+
+		if(!path_exists(linkto, DEREF))
+		{
+			mvwaddstr(menu_win, curr_y - 2, broken_offset, " (BROKEN)");
+		}
+	}
+	else
+	{
+		mvwaddstr(menu_win, curr_y, target_offset, "Couldn't Resolve Link");
+	}
+
+	if(curr->type == FT_LINK)
+	{
+		curr_y += 2;
+		mvwaddstr(menu_win, curr_y, 2, "Real Path: ");
+
+		char real[PATH_MAX + 1];
+		if(os_realpath(full_path, real) == real)
+		{
+			mvwaddnstr(menu_win, curr_y, 13, real, max_x - 13);
+		}
+		else
+		{
+			waddstr(menu_win, "Couldn't Resolve Path");
+		}
+	}
 
 	return curr_y - old_curr_y;
 }

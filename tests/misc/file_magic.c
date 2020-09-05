@@ -30,6 +30,7 @@ TEST(mimetype_cache_can_be_invalidated, IF(has_mime_type_detection))
 	assert_string_equal("text/plain", get_mimetype(SANDBOX_PATH "/file", 0));
 
 	copy_file(TEST_DATA_PATH "/read/binary-data", SANDBOX_PATH "/file");
+	reset_timestamp(SANDBOX_PATH "/file");
 	assert_false(strcmp("text/plain", get_mimetype(SANDBOX_PATH "/file", 0)) ==
 			0);
 

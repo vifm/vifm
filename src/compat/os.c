@@ -31,7 +31,7 @@
 #include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcpy() strdup() strlen() */
-#include <stdio.h> /* FILE snprintf() */
+#include <stdio.h> /* FILE */
 #include <wchar.h> /* _waccess() _wchmod() _wmkdir() _wrename() _wsystem() */
 
 #include "../utils/fs.h"
@@ -165,109 +165,92 @@ os_mkdir(const char pathname[], int mode)
 char *
 os_realpath(const char path[], char resolved_path[])
 {
-	char *const resolved = resolve_mount_points(path);
-
 	if(!path_exists(path, NODEREF))
 	{
 		errno = ENOENT;
-		free(resolved);
 		return NULL;
 	}
 
-	if(!is_path_absolute(resolved))
+	char base_path[PATH_MAX + 1];
+	if(get_cwd(base_path, sizeof(base_path)) != base_path)
 	{
-		/* Try to compose absolute path. */
-		char cwd[PATH_MAX + 1];
-		if(get_cwd(cwd, sizeof(cwd)) == cwd)
+		errno = ENOENT;
+		return NULL;
+	}
+
+	char curr_path[PATH_MAX + 1];
+	to_canonic_path(path, base_path, curr_path, sizeof(curr_path));
+
+	char next_path[PATH_MAX + 1];
+
+	while(1)
+	{
+		DWORD type = win_get_reparse_point_type(curr_path);
+		if(type == IO_REPARSE_TAG_MOUNT_POINT)
 		{
-			snprintf(resolved_path, PATH_MAX, "%s/%s", cwd, resolved);
+			char *resolved = resolve_mount_points(curr_path);
+			if(resolved == NULL)
+			{
+				errno = ENOENT;
+				return NULL;
+			}
+
+			to_canonic_path(resolved, base_path, next_path, sizeof(next_path));
+
 			free(resolved);
-			return resolved_path;
+		}
+		else if(type == IO_REPARSE_TAG_SYMLINK)
+		{
+			if(get_link_target_abs(curr_path, base_path, next_path,
+						sizeof(next_path)) != 0)
+			{
+				errno = ENOENT;
+				return NULL;
+			}
+		}
+		else
+		{
+			break;
+		}
+
+		copy_str(curr_path, sizeof(curr_path), next_path);
+
+		copy_str(base_path, sizeof(base_path), curr_path);
+		if(!is_root_dir(base_path))
+		{
+			remove_last_path_component(base_path);
 		}
 	}
 
-	copy_str(resolved_path, PATH_MAX, resolved);
-	free(resolved);
+	copy_str(resolved_path, PATH_MAX, curr_path);
 	return resolved_path;
 }
 
-/* Resolves path to its destination.  Returns pointer a newly allocated
- * memory. */
+/* Resolves path to its destination.  Returns pointer to a newly allocated
+ * memory or NULL on error. */
 static char *
 resolve_mount_points(const char path[])
 {
 	char resolved_path[PATH_MAX + 1];
 
-	DWORD attr;
-	wchar_t *utf16_path;
-	HANDLE hfind;
-	WIN32_FIND_DATAW ffd;
-	HANDLE hfile;
+	if(win_get_reparse_point_type(path) != IO_REPARSE_TAG_MOUNT_POINT)
+	{
+		return NULL;
+	}
+
 	char rdb[2048];
-	char *t;
-	int offset;
-	REPARSE_DATA_BUFFER *rdbp;
-
-	utf16_path = utf8_to_utf16(path);
-	attr = GetFileAttributesW(utf16_path);
-	free(utf16_path);
-
-	if(attr == INVALID_FILE_ATTRIBUTES)
+	if(win_reparse_point_read(path, rdb, sizeof(rdb)) != 0)
 	{
-		return strdup(path);
+		return NULL;
 	}
 
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-	{
-		return strdup(path);
-	}
+	REPARSE_DATA_BUFFER *rdbp = (REPARSE_DATA_BUFFER *)rdb;
+	char *mb = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
 
-	copy_str(resolved_path, sizeof(resolved_path), path);
-	chosp(resolved_path);
+	int offset = starts_with_lit(mb, "\\??\\") ? 4 : 0;
+	strcpy(resolved_path, mb + offset);
 
-	utf16_path = utf8_to_utf16(resolved_path);
-	hfind = FindFirstFileW(utf16_path, &ffd);
-
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		free(utf16_path);
-		return strdup(path);
-	}
-
-	FindClose(hfind);
-
-	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
-	{
-		free(utf16_path);
-		return strdup(path);
-	}
-
-	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-			NULL);
-
-	free(utf16_path);
-
-	if(hfile == INVALID_HANDLE_VALUE)
-	{
-		return strdup(path);
-	}
-
-	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb, sizeof(rdb),
-			&attr, NULL))
-	{
-		CloseHandle(hfile);
-		return strdup(path);
-	}
-	CloseHandle(hfile);
-
-	rdbp = (REPARSE_DATA_BUFFER *)rdb;
-	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
-
-	offset = starts_with_lit(t, "\\??\\") ? 4 : 0;
-	strcpy(resolved_path, t + offset);
-
-	free(t);
+	free(mb);
 
 	return strdup(resolved_path);
 }
