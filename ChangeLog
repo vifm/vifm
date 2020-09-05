@@ -63,6 +63,9 @@
 
 	Added number of hard links to the File Info dialog.
 
+	Added gF normal mode key which acts like gf, but goes all the way to the
+	ultimate target of the chain of symbolic links.  Thanks to Alexandre Viau.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

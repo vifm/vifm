@@ -613,6 +613,7 @@ const char *tags[] = {
 	"vifm-functions",
 	"vifm-fuse",
 	"vifm-gA",
+	"vifm-gF",
 	"vifm-gT",
 	"vifm-gU",
 	"vifm-gUU",

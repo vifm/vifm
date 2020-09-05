@@ -173,6 +173,7 @@ static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gA(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ga(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gF(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gh(key_info_t key_info, keys_info_t *keys_info);
 #ifdef _WIN32
@@ -352,6 +353,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_g WK_A,        {{&cmd_gA}, .descr = "(re)calculate size"}},
 	{WK_g WK_a,        {{&cmd_ga}, .descr = "calculate size"}},
 	{WK_g WK_f,        {{&cmd_gf}, .descr = "navigate to link target"}},
+	{WK_g WK_F,        {{&cmd_gF}, .descr = "navigate to ultimate link target"}},
 	{WK_g WK_g,        {{&cmd_gg}, .descr = "go to the first item"}},
 	{WK_g WK_h,        {{&cmd_gh}, .descr = "go to parent directory"}},
 	{WK_g WK_j,        {{&cmd_j},  .descr = "go to item below"}},
@@ -1041,11 +1043,21 @@ cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 	fops_size_bg(curr_view, 0);
 }
 
+/* Changes current directory to symlink's target (follows just one link). */
 static void
 cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 {
 	flist_sel_stash(curr_view);
-	rn_follow(curr_view);
+	rn_follow(curr_view, 0);
+	redraw_current_view();
+}
+
+/* Changes current directory to the ultimate target (follows all links). */
+static void
+cmd_gF(key_info_t key_info, keys_info_t *keys_info)
+{
+	flist_sel_stash(curr_view);
+	rn_follow(curr_view, 1);
 	redraw_current_view();
 }
 

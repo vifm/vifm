@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <unistd.h> /* chdir() symlink() */
+
 #include <limits.h> /* INT_MIN */
 #include <string.h> /* memset() */
 
@@ -12,6 +14,7 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/filelist.h"
 #include "../../src/status.h"
 
 static char cwd[PATH_MAX + 1];
@@ -87,6 +90,64 @@ TEST(center_splitter)
 
 	assert_int_equal(-1, curr_stats.splitter_pos);
 	assert_true(curr_stats.splitter_ratio == 0.5);
+}
+
+TEST(gf, IF(not_windows))
+{
+	char dir_path[PATH_MAX + 1];
+	make_abs_path(dir_path, sizeof(dir_path), SANDBOX_PATH, "dir", cwd);
+
+	create_dir(SANDBOX_PATH "/dir");
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("dir", SANDBOX_PATH "/link1"));
+	assert_success(symlink("link1", SANDBOX_PATH "/link2"));
+#endif
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	load_dir_list(&lwin, 0);
+
+	lwin.list_pos = 2;
+	assert_string_equal("link2", get_current_file_name(&lwin));
+	(void)vle_keys_exec_timed_out(WK_g WK_f);
+	assert_string_equal("link1", get_current_file_name(&lwin));
+	(void)vle_keys_exec_timed_out(WK_g WK_f);
+	assert_string_equal("dir", get_current_file_name(&lwin));
+	(void)vle_keys_exec_timed_out(WK_g WK_f);
+	assert_true(paths_are_same(dir_path, lwin.curr_dir));
+
+	chdir(cwd);
+	remove_file(SANDBOX_PATH "/link2");
+	remove_file(SANDBOX_PATH "/link1");
+	remove_dir(SANDBOX_PATH "/dir");
+}
+
+TEST(gF, IF(not_windows))
+{
+	char dir_path[PATH_MAX + 1];
+	make_abs_path(dir_path, sizeof(dir_path), SANDBOX_PATH, "dir", cwd);
+
+	create_dir(SANDBOX_PATH "/dir");
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("dir", SANDBOX_PATH "/link1"));
+	assert_success(symlink("link1", SANDBOX_PATH "/link2"));
+#endif
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	load_dir_list(&lwin, 0);
+
+	lwin.list_pos = 2;
+	assert_string_equal("link2", get_current_file_name(&lwin));
+	(void)vle_keys_exec_timed_out(WK_g WK_F);
+	assert_string_equal("dir", get_current_file_name(&lwin));
+	(void)vle_keys_exec_timed_out(WK_g WK_F);
+	assert_true(paths_are_same(dir_path, lwin.curr_dir));
+
+	chdir(cwd);
+	remove_file(SANDBOX_PATH "/link2");
+	remove_file(SANDBOX_PATH "/link1");
+	remove_dir(SANDBOX_PATH "/dir");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
