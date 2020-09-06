@@ -197,22 +197,46 @@ static TitleKind
 query_title_kind(void)
 {
 #ifndef _WIN32
-	(void)setupterm((char *)env_get("TERM"), 1, (int *)0);
+	int need_cleanup = 0;
+	if(cur_term == NULL)
+	{
+		(void)setupterm((char *)env_get("TERM"), 1, (int *)0);
+		need_cleanup = 1;
+	}
 
-	char *tsl = tigetstr("tsl");
+	int success = 1;
+
+	const char *tsl = tigetstr("tsl");
 	if(tsl == NULL || tsl == (char *)-1)
 	{
-		return TK_ABSENT;
+		success = 0;
 	}
-	update_string(&title_state.tsl, tsl);
+	else
+	{
+		update_string(&title_state.tsl, tsl);
+	}
 
 	const char *fsl = tigetstr("fsl");
 	if(tsl == NULL || tsl == (char *)-1)
 	{
+		success = 0;
+	}
+	else
+	{
+		update_string(&title_state.fsl, fsl);
+	}
+
+	if(need_cleanup)
+	{
+		del_curterm(cur_term);
+	}
+
+	if(!success)
+	{
 		update_string(&title_state.tsl, NULL);
+		update_string(&title_state.fsl, NULL);
 		return TK_ABSENT;
 	}
-	update_string(&title_state.fsl, fsl);
 #endif
 
 	return TK_REGULAR;
