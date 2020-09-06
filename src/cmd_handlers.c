@@ -3915,8 +3915,6 @@ session_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	tabs_only(&lwin);
-	tabs_only(&rwin);
 	if(restart_into_session(session_name) != 0)
 	{
 		if(sessions_active())
@@ -3941,6 +3939,11 @@ static int
 restart_into_session(const char session[])
 {
 	instance_start_restart();
+
+	if(session != NULL)
+	{
+		tabs_reinit();
+	}
 
 	int result;
 	if(session == NULL)
