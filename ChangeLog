@@ -66,6 +66,10 @@
 	Added gF normal mode key which acts like gf, but goes all the way to the
 	ultimate target of the chain of symbolic links.  Thanks to Alexandre Viau.
 
+	Added optional "full" parameter for the :restart command, which makes it
+	discard essentially all context.  This is useful with persistent tabs.
+	Thanks to Yusuf Aktepe.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

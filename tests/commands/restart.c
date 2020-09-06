@@ -6,6 +6,7 @@
 #include "../../src/engine/keys.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/column_view.h"
+#include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
 #include "../../src/flist_hist.h"
@@ -35,6 +36,9 @@ SETUP()
 
 TEARDOWN()
 {
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+
 	columns_free(lwin.columns);
 	lwin.columns = NULL;
 	columns_free(rwin.columns);
@@ -64,6 +68,11 @@ TEST(history_survives_in_tabs_on_restart_without_persistance)
 	check_first_tab();
 }
 
+TEST(restart_checks_its_parameter)
+{
+	assert_failure(exec_commands("restart wrong", &lwin, CIT_COMMAND));
+}
+
 TEST(history_survives_in_tabs_on_restart_with_persistance)
 {
 	histories_init(10);
@@ -79,6 +88,28 @@ TEST(history_survives_in_tabs_on_restart_with_persistance)
 	check_first_tab();
 
 	remove_file(SANDBOX_PATH "/vifminfo.json");
+}
+
+TEST(partial_restart_preserves_tabs)
+{
+	histories_init(10);
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	cfg.vifm_info = VINFO_DHISTORY | VINFO_TABS;
+
+	setup_tabs();
+	assert_success(exec_commands("restart", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+}
+
+TEST(full_restart_drops_tabs)
+{
+	histories_init(10);
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	cfg.vifm_info = VINFO_DHISTORY | VINFO_TABS;
+
+	setup_tabs();
+	assert_success(exec_commands("restart full", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
 }
 
 static void

@@ -261,7 +261,7 @@ static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
 static int session_cmd(const cmd_info_t *cmd_info);
-static int restart_into_session(const char session[]);
+static int restart_into_session(const char session[], int full);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
@@ -734,7 +734,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "restart",           .abbr = NULL,    .id = -1,
 	  .descr = "reset state and reread configuration",
 	  .flags = HAS_COMMENT,
-	  .handler = &restart_cmd,     .min_args = 0,   .max_args = 0, },
+	  .handler = &restart_cmd,     .min_args = 0,   .max_args = 1, },
 	{ .name = "restore",           .abbr = NULL,    .id = -1,
 	  .descr = "restore files from a trash",
 	  .flags = HAS_RANGE | HAS_COMMENT | HAS_SELECTION_SCOPE,
@@ -3743,7 +3743,18 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	(void)restart_into_session(cfg.session);
+	int full = 0;
+	if(cmd_info->argc == 1)
+	{
+		if(strcmp(cmd_info->argv[0], "full") != 0)
+		{
+			ui_sb_errf("Unexpected argument: %s", cmd_info->argv[0]);
+			return CMDS_ERR_CUSTOM;
+		}
+		full = 1;
+	}
+
+	(void)restart_into_session(cfg.session, full);
 	return 0;
 }
 
@@ -3915,7 +3926,7 @@ session_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	if(restart_into_session(session_name) != 0)
+	if(restart_into_session(session_name, 0) != 0)
 	{
 		if(sessions_active())
 		{
@@ -3936,11 +3947,11 @@ session_cmd(const cmd_info_t *cmd_info)
 /* Performs restart and optional (re)loading of a session.  Returns zero on
  * success, otherwise non-zero is returned. */
 static int
-restart_into_session(const char session[])
+restart_into_session(const char session[], int full)
 {
 	instance_start_restart();
 
-	if(session != NULL)
+	if(full || session != NULL)
 	{
 		tabs_reinit();
 	}
@@ -3948,7 +3959,7 @@ restart_into_session(const char session[])
 	int result;
 	if(session == NULL)
 	{
-		state_load(1);
+		state_load(!full);
 		result = 0;
 	}
 	else

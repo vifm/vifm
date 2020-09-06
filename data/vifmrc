@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 3 September, 2020)
+" Sample configuration file for vifm (last updated: 6 September, 2020)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -140,7 +140,7 @@ command! run !! ./%f
 command! make !!make %a
 command! mkcd :mkdir %a | cd %a
 command! vgrep vim "+grep %a"
-command! reload :write | restart
+command! reload :write | restart full
 
 " ------------------------------------------------------------------------------
 
