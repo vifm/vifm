@@ -22,6 +22,10 @@ mkdir mkdir
 nnoremap o :!<cr>
 " this should be highlighted as a comment
 
+" "edit" should be highlighted as :commands
+edit file
+" this should be highlighted as a comment
+
 " "<cr>" should be highlighted as angle bracket notation
 nnoremap ,b :set viewcolumns=-{name}..,6{}.<cr>
 nnoremap ,b :set viewcolumns='-{name}..,6{}.'<cr>

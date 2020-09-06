@@ -163,7 +163,7 @@ reduce_view_history(view_t *view, int new_size)
 		return;
 	}
 
-	free_view_history_items(view->history, MIN(new_size, delta));
+	free_view_history_items(view->history, delta);
 	memmove(view->history, view->history + delta,
 			sizeof(history_t)*(view->history_num - delta));
 

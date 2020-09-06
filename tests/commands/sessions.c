@@ -7,10 +7,12 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/autocmds.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/variables.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/statusbar.h"
+#include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
 #include "../../src/cmd_core.h"
@@ -269,6 +271,86 @@ TEST(vsession_is_emptied_on_failure_to_load_a_session)
 	remove_file(SANDBOX_PATH "/sessions/sess.json");
 	remove_dir(SANDBOX_PATH "/sessions");
 	remove_file(SANDBOX_PATH "/vifminfo.json");
+}
+
+TEST(autocmd_is_called_for_all_global_tabs)
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	make_file(SANDBOX_PATH "/vifmrc", "autocmd DirEnter * setl dotfiles");
+	cfg.session_options = VINFO_TABS | VINFO_DHISTORY | VINFO_SAVEDIRS;
+
+	curr_stats.load_stage = -1;
+
+	setup_grid(&lwin, 1, 1, 1);
+	setup_grid(&rwin, 1, 1, 1);
+
+	create_dir(SANDBOX_PATH "/sessions");
+
+	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("write", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tabnext", &lwin, CIT_COMMAND));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_false(tab_info.view->hide_dot);
+	}
+
+	remove_file(SANDBOX_PATH "/sessions/sess.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+	remove_file(SANDBOX_PATH "/vifminfo.json");
+	remove_file(SANDBOX_PATH "/vifmrc");
+
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+
+	vle_aucmd_remove(NULL, NULL);
+	curr_stats.load_stage = 0;
+}
+
+TEST(autocmd_is_called_for_all_pane_tabs)
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	make_file(SANDBOX_PATH "/vifmrc", "autocmd DirEnter * setl dotfiles");
+	cfg.session_options = VINFO_TABS | VINFO_DHISTORY | VINFO_SAVEDIRS;
+
+	cfg.pane_tabs = 1;
+	curr_stats.load_stage = -1;
+
+	setup_grid(&lwin, 1, 1, 1);
+	setup_grid(&rwin, 1, 1, 1);
+
+	create_dir(SANDBOX_PATH "/sessions");
+
+	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("write", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tabnext", &lwin, CIT_COMMAND));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_false(tab_info.view->hide_dot);
+	}
+
+	remove_file(SANDBOX_PATH "/sessions/sess.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+	remove_file(SANDBOX_PATH "/vifminfo.json");
+	remove_file(SANDBOX_PATH "/vifmrc");
+
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+
+	vle_aucmd_remove(NULL, NULL);
+	curr_stats.load_stage = 0;
+	cfg.pane_tabs = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

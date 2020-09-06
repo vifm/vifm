@@ -49,6 +49,9 @@ struct tab_info_t
 /* Performs initialization of the unit. */
 void tabs_init(void);
 
+/* Re-initializes the unit in preparation for restarting. */
+void tabs_reinit(void);
+
 /* Creates a new tab and switches to it.  Name can be NULL.  Path specifies
  * location of active pane and can be NULL.  Returns zero on success, otherwise
  * non-zero is returned. */

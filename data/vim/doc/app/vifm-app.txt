@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 September 5
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 September 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2169,7 +2169,8 @@ order using the '.' operator.  Any whitespace is ignored.
 :[range]rename name1 name2...
     rename each of selected files to a corresponding name.
 
-:restart                                       *vifm-:restart*
+                                               *vifm-:restart*
+:restart
     free a lot of things (histories, commands, etc.), reread vifminfo, vifmrc
     and session files and run startup commands passed in the argument list,
     thus losing all unsaved changes (e.g. recent history or keys mapped after
@@ -2177,6 +2178,8 @@ order using the '.' operator.  Any whitespace is ignored.
 
     While many things get reset, some basic UI state and current locations
     are preserved, including tabs.
+:restart full
+    variation of :restart that makes no attempt to preserve anything.
 
 :[range]restore                                *vifm-:restore*
     restore file from |vifm-trash| directory, doesn't work outside one of trash

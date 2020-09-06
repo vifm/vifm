@@ -41,10 +41,11 @@
 /* Pane-specific tab (contains information about only one view). */
 typedef struct
 {
-	view_t view;       /* Buffer holding state of the view when it's hidden. */
-	preview_t preview; /* Information about state of the quickview. */
-	char *name;        /* Name of the tab.  Might be NULL. */
-	int visited;       /* Whether this tab has already been active. */
+	view_t view;            /* Buffer holding state of the view when it's
+	                           hidden. */
+	preview_t preview;      /* Information about state of the quickview. */
+	char *name;             /* Name of the tab.  Might be NULL. */
+	unsigned int init_mark; /* Which initialization this tab has seen. */
 }
 pane_tab_t;
 
@@ -63,14 +64,14 @@ typedef struct
 	pane_tabs_t left;  /* Collection of tabs for the left pane. */
 	pane_tabs_t right; /* Collection of tabs for the right pane. */
 
-	int active_pane;       /* 0 -- left, 1 -- right. */
-	int only_mode;         /* Whether in single-pane mode. */
-	SPLIT split;           /* State of window split. */
-	int splitter_pos;      /* Splitter position. */
-	double splitter_ratio; /* Relative position of the splitter. */
-	preview_t preview;     /* Information about state of the quickview. */
-	char *name;            /* Name of the tab.  Might be NULL. */
-	int visited;           /* Whether this tab has already been active. */
+	int active_pane;        /* 0 -- left, 1 -- right. */
+	int only_mode;          /* Whether in single-pane mode. */
+	SPLIT split;            /* State of window split. */
+	int splitter_pos;       /* Splitter position. */
+	double splitter_ratio;  /* Relative position of the splitter. */
+	preview_t preview;      /* Information about state of the quickview. */
+	char *name;             /* Name of the tab.  Might be NULL. */
+	unsigned int init_mark; /* Which initialization this tab has seen. */
 }
 global_tab_t;
 
@@ -98,6 +99,8 @@ static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side);
 static void apply_layout(global_tab_t *gtab, const tab_layout_t *layout);
 
+/* Number of time this unit was (re-)initialized. */
+static unsigned int init_counter;
 /* List of global tabs. */
 static global_tab_t *gtabs;
 /* Declarations to enable use of DA_* on gtabs. */
@@ -108,9 +111,21 @@ static int current_gtab;
 void
 tabs_init(void)
 {
+	assert(init_counter == 0 && "Mustn't initialize more than once.");
 	const int result = tabs_new_global(NULL, NULL, 0, 0);
 	assert(result == 0 && "Failed to initialize first tab.");
 	(void)result;
+
+	init_counter = 1;
+}
+
+void
+tabs_reinit(void)
+{
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+
+	++init_counter;
 }
 
 int
@@ -330,8 +345,11 @@ tabs_goto_pane(int idx)
 
 	const int prev = ptabs->current;
 
-	/* Mark the tab we started at as visited. */
-	ptabs->tabs[ptabs->current].visited = (curr_stats.load_stage >= 3);
+	if(curr_stats.load_stage >= 3 && !curr_stats.restart_in_progress)
+	{
+		/* Mark the tab we started at as visited. */
+		ptabs->tabs[ptabs->current].init_mark = init_counter;
+	}
 
 	ptabs->tabs[ptabs->current].view = *curr_view;
 	assign_preview(&ptabs->tabs[ptabs->current].preview, &curr_stats.preview);
@@ -344,14 +362,17 @@ tabs_goto_pane(int idx)
 
 	load_view_options(curr_view);
 
-	if(!ptabs->tabs[ptabs->current].visited &&
+	if(ptabs->tabs[ptabs->current].init_mark != init_counter &&
 			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
 	{
-		clone_viewport(curr_view, &ptabs->tabs[prev].view);
-		populate_dir_list(curr_view, 0);
-		fview_dir_updated(curr_view);
+		if(ptabs->tabs[ptabs->current].init_mark == 0)
+		{
+			clone_viewport(curr_view, &ptabs->tabs[prev].view);
+			populate_dir_list(curr_view, 0);
+			fview_dir_updated(curr_view);
+		}
 		vle_aucmd_execute("DirEnter", flist_get_dir(curr_view), curr_view);
-		ptabs->tabs[ptabs->current].visited = 1;
+		ptabs->tabs[ptabs->current].init_mark = init_counter;
 	}
 
 	(void)vifm_chdir(flist_get_dir(curr_view));
@@ -374,8 +395,11 @@ tabs_goto_global(int idx)
 	ui_qv_cleanup_if_needed();
 	modview_hide_graphics();
 
-	/* Mark the tab we started at as visited. */
-	gtabs[current_gtab].visited = (curr_stats.load_stage >= 3);
+	if(curr_stats.load_stage >= 3 && !curr_stats.restart_in_progress)
+	{
+		/* Mark the tab we started at as visited. */
+		gtabs[current_gtab].init_mark = init_counter;
+	}
 
 	gtabs[current_gtab].left.tabs[gtabs[current_gtab].left.current].view = lwin;
 	gtabs[current_gtab].right.tabs[gtabs[current_gtab].right.current].view = rwin;
@@ -408,20 +432,23 @@ tabs_goto_global(int idx)
 
 	load_view_options(curr_view);
 
-	if(!gtabs[current_gtab].visited &&
+	if(gtabs[current_gtab].init_mark != init_counter &&
 			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
 	{
 		if(curr_stats.load_stage >= 3)
 		{
 			ui_resize_all();
 		}
-		populate_dir_list(&lwin, 0);
-		populate_dir_list(&rwin, 0);
-		fview_dir_updated(other_view);
-		fview_dir_updated(curr_view);
+		if(gtabs[current_gtab].init_mark == 0)
+		{
+			populate_dir_list(&lwin, 0);
+			populate_dir_list(&rwin, 0);
+			fview_dir_updated(other_view);
+			fview_dir_updated(curr_view);
+		}
 		vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
 		vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
-		gtabs[current_gtab].visited = 1;
+		gtabs[current_gtab].init_mark = init_counter;
 	}
 
 	(void)vifm_chdir(flist_get_dir(curr_view));

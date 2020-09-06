@@ -325,5 +325,18 @@ TEST(history_with_suffix_is_cloned)
 	assert_int_equal(2, rwin.history[2].rel_pos);
 }
 
+TEST(reducing_history_does_not_leak)
+{
+	flist_hist_setup(&lwin, "/dir1", "file1", 1, 1);
+	flist_hist_setup(&lwin, "/dir2", "file2", 2, 1);
+	flist_hist_setup(&lwin, "/dir3", "file3", 2, 1);
+	flist_hist_setup(&lwin, "/dir4", "file4", 2, 1);
+	flist_hist_setup(&lwin, "/dir5", "file5", 2, 1);
+
+	/* The leak happened when new_size < old_size - new_size.  old_size == 5,
+	 * old_size - new_size == 3. */
+	cfg_resize_histories(2);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

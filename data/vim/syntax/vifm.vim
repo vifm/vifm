@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: September 3, 2020
+" Last Change: September 6, 2020
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -328,7 +328,7 @@ syntax region vifmFtBeginning contained
 syntax region vifmArgs start='!\?\zs\(\s*\S\+\|[^a-zA-Z]\)'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='|\|$'
 		\ contained
-		\ contains=vifmStringInExpr
+		\ contains=vifmStringInExpr,vifmComment
 " common highlight for :command arguments with highlighting of angle-bracket
 " notation
 syntax region vifmArgsCN start='!\?\zs\(\s*\S\+\|[^a-zA-Z]\)'
