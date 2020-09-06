@@ -77,7 +77,7 @@ TEST(history_survives_in_tabs_on_restart_with_persistance)
 {
 	histories_init(10);
 	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
-	cfg.session_options = VINFO_DHISTORY | VINFO_TABS;
+	cfg.vifm_info = VINFO_DHISTORY | VINFO_TABS;
 
 	setup_tabs();
 
@@ -117,22 +117,26 @@ setup_tabs(void)
 {
 	flist_hist_setup(&lwin, "/t1ldir1", "t1lfile1", 1, 1);
 	flist_hist_setup(&lwin, "/t1ldir2", "t1lfile2", 2, 1);
+	flist_hist_setup(&lwin, "/path", "", 3, 1);
 	flist_hist_setup(&rwin, "/t1rdir1", "t1rfile1", 1, 1);
 	flist_hist_setup(&rwin, "/t1rdir2", "t1rfile2", 2, 1);
+	flist_hist_setup(&rwin, "/path", "", 3, 1);
 
 	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
 
 	flist_hist_setup(&lwin, "/t2ldir1", "t2lfile1", 1, 1);
 	flist_hist_setup(&lwin, "/t2ldir2", "t2lfile2", 2, 1);
+	flist_hist_setup(&lwin, "/path", "", 3, 1);
 	flist_hist_setup(&rwin, "/t2rdir1", "t2rfile1", 1, 1);
 	flist_hist_setup(&rwin, "/t2rdir2", "t2rfile2", 2, 1);
+	flist_hist_setup(&rwin, "/path", "", 3, 1);
 }
 
 static void
 check_first_tab(void)
 {
-	assert_int_equal(3, lwin.history_num);
-	if(lwin.history_num >= 3)
+	assert_int_equal(4, lwin.history_num);
+	if(lwin.history_num >= 4)
 	{
 		assert_string_equal("/path", lwin.history[0].dir);
 		assert_string_equal("", lwin.history[0].file);
@@ -140,10 +144,12 @@ check_first_tab(void)
 		assert_string_equal("t1lfile1", lwin.history[1].file);
 		assert_string_equal("/t1ldir2", lwin.history[2].dir);
 		assert_string_equal("t1lfile2", lwin.history[2].file);
+		assert_string_equal("/path", lwin.history[3].dir);
+		assert_string_equal("", lwin.history[3].file);
 	}
 
-	assert_int_equal(3, rwin.history_num);
-	if(rwin.history_num >= 3)
+	assert_int_equal(4, rwin.history_num);
+	if(rwin.history_num >= 4)
 	{
 		assert_string_equal("/path", rwin.history[0].dir);
 		assert_string_equal("", rwin.history[0].file);
@@ -151,14 +157,16 @@ check_first_tab(void)
 		assert_string_equal("t1rfile1", rwin.history[1].file);
 		assert_string_equal("/t1rdir2", rwin.history[2].dir);
 		assert_string_equal("t1rfile2", rwin.history[2].file);
+		assert_string_equal("/path", rwin.history[3].dir);
+		assert_string_equal("", rwin.history[3].file);
 	}
 }
 
 static void
 check_second_tab(void)
 {
-	assert_int_equal(6, lwin.history_num);
-	if(lwin.history_num >= 6)
+	assert_int_equal(7, lwin.history_num);
+	if(lwin.history_num >= 7)
 	{
 		assert_string_equal("/path", lwin.history[0].dir);
 		assert_string_equal("", lwin.history[0].file);
@@ -172,10 +180,12 @@ check_second_tab(void)
 		assert_string_equal("t2lfile1", lwin.history[4].file);
 		assert_string_equal("/t2ldir2", lwin.history[5].dir);
 		assert_string_equal("t2lfile2", lwin.history[5].file);
+		assert_string_equal("/path", lwin.history[6].dir);
+		assert_string_equal("", lwin.history[6].file);
 	}
 
-	assert_int_equal(6, rwin.history_num);
-	if(rwin.history_num >= 6)
+	assert_int_equal(7, rwin.history_num);
+	if(rwin.history_num >= 7)
 	{
 		assert_string_equal("/path", rwin.history[0].dir);
 		assert_string_equal("", rwin.history[0].file);
@@ -189,6 +199,8 @@ check_second_tab(void)
 		assert_string_equal("t2rfile1", rwin.history[4].file);
 		assert_string_equal("/t2rdir2", rwin.history[5].dir);
 		assert_string_equal("t2rfile2", rwin.history[5].file);
+		assert_string_equal("/path", rwin.history[6].dir);
+		assert_string_equal("", rwin.history[6].file);
 	}
 }
 
