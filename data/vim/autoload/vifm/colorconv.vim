@@ -14,14 +14,18 @@ function! s:ConvertGroup(gr, to, deffg, defbg)
 
 	" handle foreground
 	if empty(fg)
-		let errors += ['" - incomplete color scheme: missing fg of ' . a:gr]
+		let errors += [
+			\'" - incomplete source color scheme: missing fg of ' . a:gr
+		\]
 		let fg = a:deffg
 	endif
 	let line .= " ctermfg=" . fg
 
 	" handle background
 	if empty(bg)
-		let errors += ['" - incomplete color scheme: missing bg of ' . a:gr]
+		let errors += [
+			\'" - incomplete source color scheme: missing bg of ' . a:gr
+		\]
 		let bg = a:defbg
 	endif
 	let line .= " ctermbg=" . bg
@@ -47,43 +51,58 @@ function! s:ConvertCurrentScheme()
 	let map = [
 		\["Normal",       "Win",         7,   0],
 		\["NonText",      "OtherWin",    8,   -1],
-		\["VertSplit",    "Border",      0,   17],
-		\["TabLine",      "TabLine",     0,   7],
-		\["TabLineSel",   "TabLineSel",  7,   15],
+		\["AuxWin"],
+		\["OddLine"],
+		\[],
 		\["StatusLineNC", "TopLine",     7,   15],
 		\["StatusLine",   "TopLineSel",  7,   0],
-		\["Normal",       "CmdLine",     7,   0],
-		\["ErrorMsg",     "ErrorMsg",    15,  1],
-		\["StatusLine",   "StatusLine",  7,   0],
+		\[],
+		\["TabLine",      "TabLine",     0,   7],
+		\["TabLineSel",   "TabLineSel",  7,   15],
+		\[],
 		\["MsgSeparator", "JobLine",     6,   0],
-		\["Pmenu",        "WildMenu",    0,   225],
-		\["Normal",       "SuggestBox",  0,   14],
+		\["StatusLine",   "StatusLine",  7,   0],
+		\["VertSplit",    "Border",      0,   17],
+		\[],
 		\["Cursor",       "CurrLine",    0,   12],
 		\["lCursor",      "OtherLine",   0,   4],
+		\["LineNr",       "LineNr",      -1,  -1],
+		\[],
 		\["Visual",       "Selected",    0,   10],
+		\["DiffChange",   "CmpMismatch", 0,   225],
+		\[],
+		\["Normal",       "SuggestBox",  0,   14],
+		\["Pmenu",        "WildMenu",    0,   225],
+		\[],
+		\["Normal",       "CmdLine",     7,   0],
+		\["ErrorMsg",     "ErrorMsg",    15,  1],
+		\[],
 		\["Keyword",      "Directory",   130, -1],
-		\["Number",       "Link",        1,   -1],
-		\["Todo",         "BrokenLink",  0,   11],
+		\["Macro",        "Executable",  5,   -1],
 		\["Debug",        "Socket",      5,   -1],
 		\["Delimiter",    "Device",      5,   -1],
-		\["Macro",        "Executable",  5,   -1],
 		\["String",       "Fifo",        1,   -1],
-		\["DiffChange",   "CmpMismatch", 0,   225],
-		\["LineNr",       "LineNr",      -1,  -1]
+		\["Number",       "Link",        1,   -1],
+		\["Todo",         "BrokenLink",  0,   11],
+		\["HardLink"],
+		\[],
+		\["User1..User9"]
 	\]
-	" groups that aren't handled at the moment:
-	" - AuxWin
-	" - OddLine
-	" - HardLink
-	" - User1..User9
 
-	let output = ["highlight clear"]
+	let output = ["highlight clear", '']
 	let allerrors = []
 
 	for item in map
-		let [errors, line] = s:ConvertGroup(item[0], item[1], item[2], item[3])
-		let allerrors += errors
-		let output += [line]
+		if len(item) == 4
+			let [errors, line] = s:ConvertGroup(item[0], item[1], item[2],
+			                                  \ item[3])
+			let allerrors += errors
+			let output += [line]
+		elseif len(item) == 1
+			let output += ['" no conversion defined for ' . item[0]]
+		elseif empty(item)
+			let output += ['']
+		endif
 	endfor
 
 	if !empty(allerrors)
@@ -108,7 +127,10 @@ function! vifm#colorconv#convert(...) abort
 	try
 		let schemes = (a:0 > 0 ? a:000 : [g:colors_name])
 		for scheme in schemes
-			let output = ['" converted from Vim color scheme ' . scheme]
+			let output = [
+				\'" automatically converted from Vim color scheme ' . scheme,
+				\''
+			\]
 			try
 				execute "colorscheme" scheme
 				let output += s:ConvertCurrentScheme()
