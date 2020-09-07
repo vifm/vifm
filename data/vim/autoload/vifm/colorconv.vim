@@ -3,27 +3,28 @@
 " Maintainer:  xaizek <xaizek@posteo.net>
 " Last Change: September 7, 2020
 
-function! s:ConvertGroup(gr, to, defg, debg)
+function! s:ConvertGroup(gr, to, deffg, defbg)
 	let syn = synIDtrans(hlID(a:gr))
 	let fg = synIDattr(syn, "fg")
 	let bg = synIDattr(syn, "bg")
 	let bold = (synIDattr(syn, "bold") == "1")
 	let reverse = (synIDattr(syn, "reverse") == "1")
-	let result = "highlight ".a:to
+	let errors = []
+	let line = "highlight " . a:to
 
 	" handle foreground
 	if empty(fg)
-		call append(0, "\" incomplete color scheme, missing fg " . a:gr)
-		let fg = a:defg
+		let errors += ['" - incomplete color scheme: missing fg of ' . a:gr]
+		let fg = a:deffg
 	endif
-	let result = result . " ctermfg=".fg
+	let line .= " ctermfg=" . fg
 
 	" handle background
 	if empty(bg)
-		call append(0, "\" incomplete color scheme, missing bg " . a:gr)
-		let bg = a:debg
+		let errors += ['" - incomplete color scheme: missing bg of ' . a:gr]
+		let bg = a:defbg
 	endif
-	let result = result." ctermbg=".bg
+	let line .= " ctermbg=" . bg
 
 	" handle attributes
 	if bold || reverse
@@ -34,11 +35,11 @@ function! s:ConvertGroup(gr, to, defg, debg)
 		if reverse
 			let attrs += ["reverse"]
 		endif
-		let result .= " cterm=".join(attrs, ',')
+		let line .= " cterm=" . join(attrs, ',')
 	else
-		let result .= " cterm=none"
+		let line .= " cterm=none"
 	endif
-	return [result]
+	return [errors, line]
 endfun
 
 function! s:ConvertCurrentScheme()
@@ -70,30 +71,38 @@ function! s:ConvertCurrentScheme()
 		\["DiffChange",   "CmpMismatch", 0,   225]
 	\]
 
-	let result = ["highlight clear"]
+	let output = ["highlight clear"]
+	let allerrors = []
 
 	for item in map
-		let result += s:ConvertGroup(item[0], item[1], item[2], item[3])
+		let [errors, line] = s:ConvertGroup(item[0], item[1], item[2], item[3])
+		let allerrors += errors
+		let output += [line]
 	endfor
 
-	call append(0, result)
+	if !empty(allerrors)
+		let allerrors = ['', '" warnings:'] + allerrors
+	endif
+
+	return output + allerrors
 endfun
 
 function! vifm#colorconv#convert(...) abort
 	if has('gui_running')
 		echoerr 'Should be run in a terminal'
+		return
 	endif
 	if &t_Co != 256
 		echoerr 'Should be run in 256-color mode'
+		return
 	endif
 
 	let schemes = (a:0 > 0 ? a:000 : [g:colors_name])
 	for scheme in schemes
-		enew
-		call append(0, "\" converted from Vim color scheme ". scheme)
-		exec "color " scheme
-		call s:ConvertCurrentScheme()
-		exec "write! " scheme . ".vifm"
+		let output = ['" converted from Vim color scheme ' . scheme]
+		execute "colorscheme" scheme
+		let output += s:ConvertCurrentScheme()
+		call writefile(output, scheme . ".vifm")
 	endfor
 endfunction
 
