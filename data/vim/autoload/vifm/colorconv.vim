@@ -42,31 +42,39 @@ function! s:ConvertGroup(gr, to, defg, debg)
 endfun
 
 function! s:ConvertCurrentScheme()
+	"     Vim group       Vifm group   deffg defbg
+	let map = [
+		\["Normal",       "Win",         7,   0],
+		\["NonText",      "OtherWin",    8,   0],
+		\["VertSplit",    "Border",      0,   17],
+		\["TabLine",      "TabLine",     0,   7],
+		\["TabLineSel",   "TabLineSel",  7,   15],
+		\["StatusLineNC", "TopLine",     7,   15],
+		\["StatusLine",   "TopLineSel",  7,   0],
+		\["Normal",       "CmdLine",     7,   0],
+		\["ErrorMsg",     "ErrorMsg",    15,  1],
+		\["StatusLine",   "StatusLine",  7,   0],
+		\["MsgSeparator", "JobLine",     6,   0],
+		\["Pmenu",        "WildMenu",    0,   225],
+		\["Normal",       "SuggestBox",  0,   14],
+		\["Cursor",       "CurrLine",    0,   12],
+		\["lCursor",      "OtherLine",   0,   4],
+		\["Visual",       "Selected",    0,   10],
+		\["Keyword",      "Directory",   130, 0],
+		\["Number",       "Link",        1,   0],
+		\["Todo",         "BrokenLink",  0,   11],
+		\["Debug",        "Socket",      5,   0],
+		\["Delimiter",    "Device",      5,   0],
+		\["Macro",        "Executable",  5,   0],
+		\["String",       "Fifo",        1,   0],
+		\["DiffChange",   "CmpMismatch", 0,   225]
+	\]
+
 	let result = ["highlight clear"]
-	let result += s:ConvertGroup("Normal", "Win", 7, 0)
-	let result += s:ConvertGroup("NonText", "OtherWin", 8, 0)
-	let result += s:ConvertGroup("VertSplit", "Border", 0, 17)
-	let result += s:ConvertGroup("TabLine", "TabLine", 0, 7)
-	let result += s:ConvertGroup("TabLineSel", "TabLineSel", 7, 15)
-	let result += s:ConvertGroup("StatusLineNC", "TopLine", 7, 15)
-	let result += s:ConvertGroup("StatusLine", "TopLineSel", 7, 0)
-	let result += s:ConvertGroup("Normal", "CmdLine", 7, 0)
-	let result += s:ConvertGroup("ErrorMsg", "ErrorMsg", 15, 1)
-	let result += s:ConvertGroup("StatusLine", "StatusLine", 7, 0)
-	let result += s:ConvertGroup("MsgSeparator", "JobLine", 6, 0)
-	let result += s:ConvertGroup("Pmenu", "WildMenu", 0, 225)
-	let result += s:ConvertGroup("Normal", "SuggestBox", 0, 14)
-	let result += s:ConvertGroup("Cursor", "CurrLine", 0, 12)
-	let result += s:ConvertGroup("lCursor", "OtherLine", 0, 4)
-	let result += s:ConvertGroup("Visual", "Selected", 0, 10)
-	let result += s:ConvertGroup("Keyword", "Directory", 130, 0)
-	let result += s:ConvertGroup("Number", "Link", 1, 0)
-	let result += s:ConvertGroup("Todo", "BrokenLink", 0, 11)
-	let result += s:ConvertGroup("Debug", "Socket", 5, 0)
-	let result += s:ConvertGroup("Delimiter", "Device", 5, 0)
-	let result += s:ConvertGroup("Macro", "Executable", 5, 0)
-	let result += s:ConvertGroup("String", "Fifo", 1, 0)
-	let result += s:ConvertGroup("DiffChange", "CmpMismatch", 0, 225)
+
+	for item in map
+		let result += s:ConvertGroup(item[0], item[1], item[2], item[3])
+	endfor
 
 	call append(0, result)
 endfun
