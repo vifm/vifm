@@ -46,7 +46,7 @@ function! s:ConvertCurrentScheme()
 	"     Vim group       Vifm group   deffg defbg
 	let map = [
 		\["Normal",       "Win",         7,   0],
-		\["NonText",      "OtherWin",    8,   0],
+		\["NonText",      "OtherWin",    8,   -1],
 		\["VertSplit",    "Border",      0,   17],
 		\["TabLine",      "TabLine",     0,   7],
 		\["TabLineSel",   "TabLineSel",  7,   15],
@@ -61,13 +61,13 @@ function! s:ConvertCurrentScheme()
 		\["Cursor",       "CurrLine",    0,   12],
 		\["lCursor",      "OtherLine",   0,   4],
 		\["Visual",       "Selected",    0,   10],
-		\["Keyword",      "Directory",   130, 0],
-		\["Number",       "Link",        1,   0],
+		\["Keyword",      "Directory",   130, -1],
+		\["Number",       "Link",        1,   -1],
 		\["Todo",         "BrokenLink",  0,   11],
-		\["Debug",        "Socket",      5,   0],
-		\["Delimiter",    "Device",      5,   0],
-		\["Macro",        "Executable",  5,   0],
-		\["String",       "Fifo",        1,   0],
+		\["Debug",        "Socket",      5,   -1],
+		\["Delimiter",    "Device",      5,   -1],
+		\["Macro",        "Executable",  5,   -1],
+		\["String",       "Fifo",        1,   -1],
 		\["DiffChange",   "CmpMismatch", 0,   225],
 		\["LineNr",       "LineNr",      -1,  -1]
 	\]
