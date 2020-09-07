@@ -103,9 +103,12 @@ function! vifm#colorconv#convert(...) abort
 		let schemes = (a:0 > 0 ? a:000 : [g:colors_name])
 		for scheme in schemes
 			let output = ['" converted from Vim color scheme ' . scheme]
-			execute "colorscheme" scheme
-			let output += s:ConvertCurrentScheme()
-			call writefile(output, scheme . ".vifm")
+			try
+				execute "colorscheme" scheme
+				let output += s:ConvertCurrentScheme()
+				call writefile(output, scheme . ".vifm")
+			catch /E185:/ " cannot find color scheme
+			endtry
 		endfor
 	finally
 		execute "colorscheme" cs
