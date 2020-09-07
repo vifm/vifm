@@ -111,26 +111,3 @@ function! vifm#colorconv#convert(...) abort
 		execute "colorscheme" cs
 	endtry
 endfunction
-
-"- TabLine - tab line color (for vifm-'tabscope' set to "global")
-"- TabLineSel - color of the tip of selected tab (regardless of
-"               vifm-'tabscope')
-"- TopLineSel - top line color of the current pane
-"- TopLine - top line color of the other pane
-"- CmdLine - the command line/status bar color
-"- ErrorMsg - color of error messages in the status bar
-"- StatusLine - color of the line above the status bar
-"- JobLine - color of job line that appears above the status line
-"- WildMenu - color of the wild menu items
-"- SuggestBox - color of key suggestion box
-"- CurrLine - line at cursor position in active view
-"- OtherLine - line at cursor position in inactive view
-"- Selected - color of selected files
-"- Directory - color of directories
-"- Link - color of symbolic links in the views
-"- BrokenLink - color of broken symbolic links
-"- Socket - color of sockets
-"- Device - color of block and character devices
-"- Executable - color of executable files
-"- Fifo - color of fifo pipes
-"- CmpMismatch - color of mismatched files in side-by-side comparison by paths
