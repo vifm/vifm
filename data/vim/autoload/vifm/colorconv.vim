@@ -97,13 +97,19 @@ function! vifm#colorconv#convert(...) abort
 		return
 	endif
 
-	let schemes = (a:0 > 0 ? a:000 : [g:colors_name])
-	for scheme in schemes
-		let output = ['" converted from Vim color scheme ' . scheme]
-		execute "colorscheme" scheme
-		let output += s:ConvertCurrentScheme()
-		call writefile(output, scheme . ".vifm")
-	endfor
+	let cs = g:colors_name
+
+	try
+		let schemes = (a:0 > 0 ? a:000 : [g:colors_name])
+		for scheme in schemes
+			let output = ['" converted from Vim color scheme ' . scheme]
+			execute "colorscheme" scheme
+			let output += s:ConvertCurrentScheme()
+			call writefile(output, scheme . ".vifm")
+		endfor
+	finally
+		execute "colorscheme" cs
+	endtry
 endfunction
 
 "- TabLine - tab line color (for vifm-'tabscope' set to "global")
