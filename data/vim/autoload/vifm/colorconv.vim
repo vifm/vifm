@@ -68,8 +68,14 @@ function! s:ConvertCurrentScheme()
 		\["Delimiter",    "Device",      5,   0],
 		\["Macro",        "Executable",  5,   0],
 		\["String",       "Fifo",        1,   0],
-		\["DiffChange",   "CmpMismatch", 0,   225]
+		\["DiffChange",   "CmpMismatch", 0,   225],
+		\["LineNr",       "LineNr",      -1,  -1]
 	\]
+	" groups that aren't handled at the moment:
+	" - AuxWin
+	" - OddLine
+	" - HardLink
+	" - User1..User9
 
 	let output = ["highlight clear"]
 	let allerrors = []
