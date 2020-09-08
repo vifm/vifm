@@ -179,7 +179,7 @@
 	configuration on startup and :restart).
 
 	Significantly improved speed of handling typical globs (and therefore
-	mime-type matchers) and reduce amount of memory they take up.  Thanks to
+	mime-type matchers) and reduced amount of memory they take up.  Thanks to
 	yanzhang0219.
 
 	Implemented capturing output of background applications on Windows.  Thanks
