@@ -18,7 +18,9 @@ vim_syntax_dir = $(vim_dir)/syntax
 
 vimdoc_doc_dir = $(vimdoc_dir)/doc
 
-dist_vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
+dist_vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/colorconv.vim \
+															 ../data/vim/autoload/vifm/edit.vim \
+															 ../data/vim/autoload/vifm/globals.vim
 dist_sample_colors__DATA = ../data/colors/astrell-root.vifm \
 									 ../data/colors/astrell-user.vifm \
 									 ../data/colors/dmilith-root.vifm \

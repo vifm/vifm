@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.10.1  Last change: 2020 Jan 15
+*vifm-plugin.txt*    For Vifm version 0.10.1  Last change: 2020 Sep 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -21,6 +21,12 @@ Commands:
               :vert diffsplit.
                                                *vifm-:TabVifm*
   :TabVifm    select a file or files to open in tabs.
+                                               *vifm-:VifmCs*
+  :VifmCs     "converts" specified color schemes or the current one to be
+              used by Vifm.  Color scheme files are created in current
+              directory.  The command will work only when run in a terminal
+              with 256-color palette.  Don't expect great results, think of
+              it as a way of generating boilerplate.
 
 Each command accepts up to two arguments: left pane directory and right pane
 directory.  After arguments are checked, vifm process is spawned in a special

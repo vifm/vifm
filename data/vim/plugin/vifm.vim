@@ -50,6 +50,9 @@ command! -bar -nargs=* -count -complete=dir DiffVifm
 command! -bar -nargs=* -count -complete=dir TabVifm
 			\ :call s:StartVifm('<mods>', <count>, s:tab_drop_cmd, <f-args>)
 
+command! -bar -nargs=* -complete=color VifmCs
+			\ :call vifm#colorconv#convert(<f-args>)
+
 function! s:StartVifm(mods, count, editcmd, ...) abort
 	echoerr 'vifm executable wasn''t found'
 endfunction

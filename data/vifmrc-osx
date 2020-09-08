@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 6 September, 2020)
+" Sample configuration file for vifm on OSX (last updated: 7 September, 2020)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -343,7 +343,7 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 
 " Filter-out build and temporary files
 "
-" filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
+" filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
 
 " ------------------------------------------------------------------------------
 
