@@ -282,6 +282,7 @@ EXTRA_DIST = \
 						 win_helper.c \
 						 utils/fswatch_win.c \
 						 utils/gmux_win.c \
+						 utils/selector_win.c \
 						 utils/shmem_win.c \
 						 utils/utils_win.c \
 						 utils/utils_win.h \
