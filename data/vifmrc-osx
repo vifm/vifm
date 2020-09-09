@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 7 September, 2020)
+" Sample configuration file for vifm on OSX (last updated: 9 September, 2020)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -382,7 +382,7 @@ nnoremap cc cw<c-u>
 nnoremap A cw
 
 " Open editor to edit vifmrc and apply settings after returning to vifm
-nnoremap ,c :write | edit $MYVIFMRC | restart<cr>
+nnoremap ,c :write | edit $MYVIFMRC | restart full<cr>
 " Open MacVim to edit vifmrc
 nnoremap ,C :!mvim --remote-tab-silent $MYVIFMRC &<cr>
 
