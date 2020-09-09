@@ -9,6 +9,17 @@ if [ "$#" -lt "1" -o "$#" -gt "2" ]; then
 fi
 
 ver="$1"
+case "$ver" in
+    [0-9].[0-9][0-9].[0-9]-beta);;
+    [0-9].[0-9][0-9]-beta);;
+    [0-9].[0-9]-beta);;
+    [0-9].[0-9][0-9].[0-9]);;
+    [0-9].[0-9][0-9]);;
+    [0-9].[0-9]);;
+    *)
+        echo "ERROR: unrecognized version format: $ver"
+        exit 1
+esac
 
 target="all"
 
