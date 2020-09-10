@@ -3,12 +3,23 @@
 # Variables:
 #  * VIFM_DATE_OVERRIDE -- date to use instead of "now"
 
-if [ "$#" -lt "1" -o "$#" -gt "2" ]; then
+if [ "$#" -lt "1" ] || [ "$#" -gt "2" ]; then
     echo "Usage: $0 version [all|update|commit|archive]"
     exit 1
 fi
 
 ver="$1"
+case "$ver" in
+    [0-9].[0-9][0-9].[0-9]-beta);;
+    [0-9].[0-9][0-9]-beta);;
+    [0-9].[0-9]-beta);;
+    [0-9].[0-9][0-9].[0-9]);;
+    [0-9].[0-9][0-9]);;
+    [0-9].[0-9]);;
+    *)
+        echo "ERROR: unrecognized version format: $ver"
+        exit 1
+esac
 
 target="all"
 
@@ -26,7 +37,7 @@ function date() {
 
 # this check is for me, since I'm always use vifm.exe from the repository
 if [ "$OS" = Windows_NT ]; then
-    if [ "$target" = all -o "$target" = archive ]; then
+    if [ "$target" = all ] || [ "$target" = archive ]; then
         vifm_running="$(ps -W | grep vifm.exe)"
         if [ -n "$vifm_running" ]; then
             echo "ERROR: vifm is running"
@@ -35,7 +46,7 @@ if [ "$OS" = Windows_NT ]; then
     fi
 fi
 
-if [ "$target" = all -o "$target" = update ]; then
+if [ "$target" = all ] || [ "$target" = update ]; then
     echo "Updating version number..."
 
     # update version in ChangeLog
@@ -94,11 +105,10 @@ if [ "$target" = all -o "$target" = update ]; then
            -e "2{s/.*/$(date '+%B %d, %Y')/;s/./=/g}" NEWS
 fi
 
-if [ "$target" = all -o "$target" = commit ]; then
+if [ "$target" = all ] || [ "$target" = commit ]; then
     echo "Making version commit..."
 
-    git commit -av -m "Version v$ver"
-    if [ "$?" != "0" ]; then
+    if ! git commit -av -m "Version v$ver"; then
         echo 'Committing error.'
         exit 1
     fi
@@ -107,7 +117,7 @@ if [ "$target" = all -o "$target" = commit ]; then
         git tag --force --file=- --sign "v$ver"
 fi
 
-if [ "$target" = all -o "$target" = archive ]; then
+if [ "$target" = all ] || [ "$target" = archive ]; then
     echo "Building archive..."
 
     # make archive
@@ -154,7 +164,7 @@ if [ "$target" = all -o "$target" = archive ]; then
             unix2dos -c ISO "$dest"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
-        strip -S --strip-unneeded $dir/*.dll $dir/*.exe
+        strip -S --strip-unneeded "$dir"/*.dll "$dir"/*.exe
 
         archive_name="$dir.zip"
         rm -f "$archive_name"

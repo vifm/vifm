@@ -8,6 +8,9 @@
 #        with at least one argument (not analyzed) checks timestamps and skips
 #        updates if everything is up-to-date
 
+# Note: this script sometimes doesn't work for out-of-tree builds, not sure
+#       exactly why
+
 next_second()
 {
     echo Waiting for time change...
