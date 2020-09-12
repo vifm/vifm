@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11-beta  Last change: 2020 Sep 10
+*vifm-app.txt*    For Vifm version 0.11-beta  Last change: 2020 Sep 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3664,6 +3664,13 @@ default: "-c" or "/C" (for cmd.exe on MS-Windows)
 
 Command-line option used to pass a command to |vifm-'shell'|.  It's used in
 contexts where command comes from the user.
+
+Note that using this option to force interactive mode of the shell is most
+likely a BAD IDEA.  In general interactive host and interactive child shell
+can't share the same terminal session.  You can't even run such a shell in
+background.  Consider writing a wrapper for your shell that preloads aliases
+and commands without making the shell interactive and ending up using it in
+a way it was not meant to be used.
 
 Note that this option is ignored when |vifm-'shell'| is set to PowerShell due
 to the internal use of `-encodedCommand`.
