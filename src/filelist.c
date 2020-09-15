@@ -1583,16 +1583,12 @@ recalc_entry_size(const dir_entry_t *entry, uint64_t old_size)
 static uint64_t
 entry_calc_nitems(const dir_entry_t *entry)
 {
-	uint64_t ret;
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	uint64_t inode = DCACHE_UNKNOWN;
-#ifndef _WIN32
-	inode = entry->inode;
-#endif
+	uint64_t ret = count_dir_items(full_path);
 
-	ret = count_dir_items(full_path);
+	uint64_t inode = get_true_inode(entry);
 	dcache_set_at(full_path, inode, DCACHE_UNKNOWN, ret);
 
 	return ret;

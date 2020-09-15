@@ -271,6 +271,10 @@ void clone_attribs(const char path[], const char from[], const struct stat *st);
  * amount in bytes. */
 uint64_t get_free_space(const char at[]);
 
+/* Retrieves inode number that corresponds to the entry by resolving symbolic
+ * links if necessary.  Returns the inode number. */
+uint64_t get_true_inode(const struct dir_entry_t *entry);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

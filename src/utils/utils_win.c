@@ -1256,5 +1256,11 @@ win_shortcut_read(const char shortcut[], char buf[], int buf_len)
 	return 1;
 }
 
+uint64_t
+get_true_inode(const struct dir_entry_t *entry)
+{
+	return 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
