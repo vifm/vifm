@@ -8,6 +8,9 @@
 	Fixed an issue with undesired cache invalidation for symbolic link to
 	directories, which caused performance issue (regression in 0.11-beta).
 
+	Fixed `:sync! all` not synchronizing local filter of a tree with
+	`set cvoptions=localfilter`.  Thanks to filterfalse.
+
 0.10.1 to 0.11-beta (2020-09-10)
 
 	Added :VifmCs command to the plugin for "converting" Vim's color scheme

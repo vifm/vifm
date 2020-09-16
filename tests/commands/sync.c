@@ -354,5 +354,30 @@ TEST(sync_syncs_custom_trees)
 	columns_teardown();
 }
 
+TEST(sync_all_applies_filters_in_trees)
+{
+	opt_handlers_setup();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+	columns_set_line_print_func(&column_line_print);
+	other_view->columns = columns_create();
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "", NULL);
+
+	assert_success(exec_commands("set cvoptions=localfilter", curr_view,
+				CIT_COMMAND));
+	assert_success(exec_commands("tree", curr_view, CIT_COMMAND));
+	local_filter_apply(curr_view, "a");
+	assert_success(exec_commands("sync! all", curr_view, CIT_COMMAND));
+
+	assert_string_equal("a", other_view->local_filter.filter.raw);
+
+	columns_free(other_view->columns);
+	other_view->columns = NULL;
+	columns_teardown();
+	opt_handlers_teardown();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

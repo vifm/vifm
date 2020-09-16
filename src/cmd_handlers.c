@@ -4173,10 +4173,6 @@ sync_selectively(const cmd_info_t *cmd_info)
 		tree = 0;
 	}
 
-	if(filters)
-	{
-		sync_filters();
-	}
 	if(local_options)
 	{
 		sync_local_opts(location);
@@ -4186,6 +4182,10 @@ sync_selectively(const cmd_info_t *cmd_info)
 		filelist = filelist && flist_custom_active(curr_view);
 		sync_location(flist_get_dir(curr_view), filelist, cursor_pos, filters,
 				tree);
+	}
+	if(filters)
+	{
+		sync_filters();
 	}
 
 	return 0;
