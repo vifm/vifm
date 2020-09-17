@@ -124,7 +124,7 @@ TEST(star_and_dot)
 	assert_string_equal("hlibreoffice", prog_cmd);
 }
 
-TEST(double_comma)
+TEST(double_comma_in_command)
 {
 	const char *prog_cmd;
 
@@ -137,6 +137,16 @@ TEST(double_comma)
 
 	assert_true((prog_cmd = ft_get_program("file.version.zip")) != NULL);
 	assert_string_equal("prog1 -o opt1", prog_cmd);
+}
+
+TEST(double_comma_in_pattern)
+{
+	set_programs("a,,b,*.tar", "prog1", 0, 0);
+	assert_string_equal("prog1", ft_get_program("a,b"));
+	assert_string_equal("prog1", ft_get_program("file.version.tar"));
+
+	set_programs("{c,,d}", "prog2", 0, 0);
+	assert_string_equal("prog2", ft_get_program("c,d"));
 }
 
 TEST(zero_length_match)

@@ -2,6 +2,9 @@
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
 
+	Made it possible to escape commas in patterns (as usual, by doubling).
+	Thanks to filterfalse.
+
 	Fixed ga and gA on symlinks to directories on their own (regression in
 	0.11-beta) and as part of selection.  Thanks to filterfalse.
 

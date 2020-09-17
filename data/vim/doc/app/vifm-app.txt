@@ -2990,6 +2990,9 @@ character extension unless it's "d" letter.  And >
 associates `sxiv` picture viewer only for JPEG-files that contain single digit
 in their name.
 
+If you need to include literal comma, which is normally separates multiple
+globs, double it.
+
 --------------------------------------------------------------------------------
 *vifm-set-options*
 

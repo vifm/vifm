@@ -32,7 +32,7 @@ globs_to_regex(const char globs[])
 
 	char *globs_copy = strdup(globs);
 	char *glob = globs_copy, *state = NULL;
-	while((glob = split_and_get(glob, ',', &state)) != NULL)
+	while((glob = split_and_get_dc(glob, &state)) != NULL)
 	{
 		void *p;
 		char *regex;

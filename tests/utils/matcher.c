@@ -354,6 +354,23 @@ TEST(regexps_are_cloned)
 	matcher_free(clone);
 }
 
+TEST(comma_escaping)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("{a,,b,*.ext,c,,d}", 0, 1, "", &error));
+	assert_null(error);
+
+	check_glob(m);
+	assert_false(matcher_matches(m, "a"));
+	assert_false(matcher_matches(m, "b"));
+	assert_true(matcher_matches(m, "a,b"));
+	assert_true(matcher_matches(m, "c,d"));
+
+	matcher_free(m);
+}
+
 TEST(mime_type_pattern, IF(has_mime_type_detection))
 {
 	char *error;
