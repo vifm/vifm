@@ -264,27 +264,24 @@ is_fglobs(char expr[])
 		return 0;
 	}
 
-	int fglobs = 1;
+	expr = strdup(expr);
 
 	char *glob = expr, *state = NULL;
-	while((glob = split_and_get(glob, ',', &state)) != NULL)
+	while((glob = split_and_get_dc(glob, &state)) != NULL)
 	{
-		/* Need to walk to the end of the list. */
-		if(fglobs)
+		if(glob[strcspn(glob, "[?*")] == '\0')
 		{
-			if(glob[strcspn(glob, "[?*")] == '\0')
-			{
-				continue;
-			}
-			if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
-			{
-				continue;
-			}
-			fglobs = 0;
+			continue;
 		}
+		if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+		{
+			continue;
+		}
+		break;
 	}
 
-	return fglobs;
+	free(expr);
+	return (glob == NULL);
 }
 
 /* Parses regexp flags.  Returns zero on success or non-zero on error with
@@ -421,26 +418,27 @@ matcher_matches(const matcher_t *matcher, const char path[])
 static int
 fglobs_matches(const matcher_t *matcher, const char path[])
 {
-	int matched = 0;
-	char *glob = matcher->raw, *state = NULL;
-	while((glob = split_and_get(glob, ',', &state)) != NULL)
+	char *globs = strdup(matcher->raw);
+	char *glob = globs, *state = NULL;
+	while((glob = split_and_get_dc(glob, &state)) != NULL)
 	{
-		/* Need to walk to the end of the list. */
-		if(!matched)
+		if(glob[strcspn(glob, "[?*")] == '\0')
 		{
-			if(glob[strcspn(glob, "[?*")] == '\0')
+			if(strcasecmp(path, glob) == 0)
 			{
-				matched = (strcasecmp(path, glob) == 0);
-				continue;
+				break;
 			}
-			if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+		}
+		if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+		{
+			if(path[0] != '.' && ends_with_case(path + 1, glob + 1))
 			{
-				matched = (path[0] != '.' && ends_with_case(path + 1, glob + 1));
-				continue;
+				break;
 			}
 		}
 	}
-	return matched^matcher->negated;
+	free(globs);
+	return (glob != NULL)^matcher->negated;
 }
 
 int
@@ -487,24 +485,23 @@ static int
 fglobs_includes(const matcher_t *matcher, const matcher_t *like)
 {
 	char *like_globs_copy = strdup(like->raw);
-	char *mglobs_copy = strdup(matcher->raw);
 
 	int all_matched = 1;
 	char *like_glob = like_globs_copy, *like_state = NULL;
-	while((like_glob = split_and_get(like_glob, ',', &like_state)) != NULL)
+	while((like_glob = split_and_get_dc(like_glob, &like_state)) != NULL)
 	{
-		int matched = 0;
+		char *mglobs_copy = strdup(matcher->raw);
 		char *mglob = mglobs_copy, *mstate = NULL;
-		while((mglob = split_and_get(mglob, ',', &mstate)) != NULL)
+		while((mglob = split_and_get_dc(mglob, &mstate)) != NULL)
 		{
-			/* Need to walk to the end of the list. */
-			if(!matched && strcasecmp(like_glob, mglob) == 0)
+			if(strcasecmp(like_glob, mglob) == 0)
 			{
-				matched = 1;
+				break;
 			}
 		}
+		free(mglobs_copy);
 
-		if(!matched)
+		if(mglob == NULL)
 		{
 			all_matched = 0;
 			break;
@@ -512,7 +509,6 @@ fglobs_includes(const matcher_t *matcher, const matcher_t *like)
 	}
 
 	free(like_globs_copy);
-	free(mglobs_copy);
 	return all_matched;
 }
 

@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <unistd.h> /* symlink() */
+
 #include <stddef.h> /* NULL */
 #include <string.h> /* memset() strcpy() */
 #include <time.h> /* time() */
@@ -7,6 +9,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
@@ -74,7 +77,9 @@ TEST(outdated_data_is_detected)
 TEST(can_query_one_parameter_at_a_time)
 {
 	dcache_result_t data;
-	dir_entry_t entry = { .name = "read", .origin = TEST_DATA_PATH };
+	dir_entry_t entry = {
+		.name = "read", .origin = TEST_DATA_PATH, .type = FT_DIR
+	};
 
 	dcache_set_at(TEST_DATA_PATH "/read", 0, 10, 11);
 
@@ -89,11 +94,37 @@ TEST(can_query_one_parameter_at_a_time)
 
 #ifndef _WIN32
 
+TEST(symlink_inode_resolution, IF(not_windows))
+{
+	dir_entry_t link_entry = {
+		.name = "link", .origin = SANDBOX_PATH, .type = FT_LINK,
+	};
+
+	create_dir(SANDBOX_PATH "/dir");
+
+	struct stat s;
+	assert_success(os_stat(SANDBOX_PATH "/dir", &s));
+
+	assert_success(symlink("dir", SANDBOX_PATH "/link"));
+
+	dcache_set_at(SANDBOX_PATH "/dir", s.st_ino, 10, DCACHE_UNKNOWN);
+
+	dcache_result_t data;
+	dcache_get_of(&link_entry, &data, NULL);
+	assert_true(data.is_valid);
+	assert_ulong_equal(10, data.value);
+
+	remove_file(SANDBOX_PATH "/link");
+	remove_dir(SANDBOX_PATH "/dir");
+}
+
 TEST(inode_is_taken_into_account)
 {
 	dcache_result_t size, nitems;
 
-	dir_entry_t entry = { .name = "read", .origin = TEST_DATA_PATH, .inode = 1 };
+	dir_entry_t entry = {
+		.name = "read", .origin = TEST_DATA_PATH, .inode = 1, .type = FT_DIR
+	};
 
 	dcache_set_at(TEST_DATA_PATH "/read", 1, 10, 11);
 

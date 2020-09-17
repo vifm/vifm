@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11-beta  Last change: 2020 Sep 10
+*vifm-app.txt*    For Vifm version 0.11-beta  Last change: 2020 Sep 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1575,7 +1575,7 @@ The builtin commands are:
     name of current file is appended as if program entry ended with %c macro
     on *nix and %"c on Windows.  On Windows path to executables containing
     spaces can (and should be for correct work with such paths) be double
-    quoted.  See |vifm-globs| for pattern definition and |vifm-selection| for
+    quoted.  See |vifm-patterns| for pattern definition and |vifm-selection| for
     how selection is handled.  See also |vifm-fuse|.
     Example for zip archives and several actions: >
 
@@ -1599,7 +1599,7 @@ The builtin commands are:
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pattern-list [{ description }] def_program,program2,...
     same as :filetype, but this command is ignored if not running in X.  In
-    X :filextype is equal to :filetype.  See |vifm-globs| for pattern
+    X :filextype is equal to :filetype.  See |vifm-patterns| for pattern
     definition and |vifm-selection| for how selection is handled.  See also
     |vifm-fuse|.
 
@@ -1659,7 +1659,7 @@ The builtin commands are:
     When the command doesn't contain any of vifm macros, name of current file
     is appended as if command ended with |vifm-%c| macro.  Comma escaping and
     missing commands processing rules as for |vifm-:filetype| apply to this
-    command.  See |vifm-globs| for pattern definition.
+    command.  See |vifm-patterns| for pattern definition.
 
     Example for zip archives: >
 
@@ -2990,6 +2990,9 @@ character extension unless it's "d" letter.  And >
 associates `sxiv` picture viewer only for JPEG-files that contain single digit
 in their name.
 
+If you need to include literal comma, which is normally separates multiple
+globs, double it.
+
 --------------------------------------------------------------------------------
 *vifm-set-options*
 
@@ -3664,6 +3667,13 @@ default: "-c" or "/C" (for cmd.exe on MS-Windows)
 
 Command-line option used to pass a command to |vifm-'shell'|.  It's used in
 contexts where command comes from the user.
+
+Note that using this option to force interactive mode of the shell is most
+likely a BAD IDEA.  In general interactive host and interactive child shell
+can't share the same terminal session.  You can't even run such a shell in
+background.  Consider writing a wrapper for your shell that preloads aliases
+and commands without making the shell interactive and ending up using it in
+a way it was not meant to be used.
 
 Note that this option is ignored when |vifm-'shell'| is set to PowerShell due
 to the internal use of `-encodedCommand`.

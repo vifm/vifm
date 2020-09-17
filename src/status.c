@@ -573,10 +573,7 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	uint64_t inode = 0;
-#ifndef _WIN32
-	inode = entry->inode;
-#endif
+	uint64_t inode = get_true_inode(entry);
 	dcache_get(full_path, entry->mtime, inode, size, nitems);
 }
 

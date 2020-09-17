@@ -59,6 +59,7 @@
 #include "../compat/reallocarray.h"
 #include "../ui/tabs.h"
 #include "../ui/ui.h"
+#include "../filelist.h"
 #include "../running.h"
 #include "../status.h"
 #include "cancellation.h"
@@ -1158,6 +1159,25 @@ get_free_space(const char at[])
 #else
 	return (uint64_t)st.f_bsize*st.f_bavail;
 #endif
+}
+
+uint64_t
+get_true_inode(const struct dir_entry_t *entry)
+{
+	if(entry->type != FT_LINK)
+	{
+		return entry->inode;
+	}
+
+	char full_path[PATH_MAX + 1];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	struct stat s;
+	if(os_stat(full_path, &s) == 0)
+	{
+		return s.st_ino;
+	}
+	return entry->inode;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

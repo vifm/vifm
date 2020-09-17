@@ -1076,7 +1076,7 @@ fops_size_bg(view_t *view, int force)
 static void
 update_dir_entry_size(dir_entry_t *entry, int force)
 {
-	if(fentry_is_fake(entry) || entry->type != FT_DIR)
+	if(fentry_is_fake(entry) || !fentry_is_dir(entry))
 	{
 		return;
 	}

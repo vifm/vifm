@@ -1,14 +1,16 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* stat */
-#include <unistd.h> /* rmdir() unlink() */
+#include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include <string.h> /* strcpy() strdup() */
 #include <time.h> /* time_t */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
 #include "../../src/status.h"
@@ -76,6 +78,36 @@ TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
 	assert_int_equal(0, wait_for_size(SANDBOX_PATH "/dir"));
 
 	assert_success(rmdir(SANDBOX_PATH "/dir/subdir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(symlinks_to_dirs, IF(not_windows))
+{
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	char cwd[PATH_MAX + 1];
+	get_cwd(cwd, sizeof(cwd));
+	char dir[PATH_MAX + 1];
+	make_abs_path(dir, sizeof(dir), TEST_DATA_PATH, "various-sizes", cwd);
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(dir, SANDBOX_PATH "/link"));
+#endif
+
+	view_setup(&lwin);
+	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
+	populate_dir_list(&lwin, 0);
+	assert_int_equal(2, lwin.list_rows);
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	lwin.pending_marking = 1;
+
+	fops_size_bg(&lwin, 0);
+	assert_int_equal(0, wait_for_size(SANDBOX_PATH "/dir"));
+	assert_int_equal(73728, wait_for_size(SANDBOX_PATH "/link"));
+
+	view_teardown(&lwin);
+	assert_success(unlink(SANDBOX_PATH "/link"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 

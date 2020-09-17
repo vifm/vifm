@@ -247,11 +247,14 @@ TEST(inclusion_check_works)
 TEST(breaking_list_of_lists)
 {
 	int nmatchers;
-	char **const matchers = matchers_list("<mime>{*.,ext},/re,gex/", &nmatchers);
-	if(nmatchers == 2)
+	char **const matchers =
+		matchers_list("<mime>{*.,ext},/re,gex/,{a,,b,c,,d},{{x,,y}}", &nmatchers);
+	if(nmatchers == 4)
 	{
 		assert_string_equal("<mime>{*.,ext}", matchers[0]);
 		assert_string_equal("/re,gex/", matchers[1]);
+		assert_string_equal("{a,,b,c,,d}", matchers[2]);
+		assert_string_equal("{{x,,y}}", matchers[3]);
 	}
 	free_string_array(matchers, nmatchers);
 }
