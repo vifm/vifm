@@ -2125,7 +2125,9 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 		 * that wasn't filtered.  We can use one entry because if something was
 		 * filtered out, there is space for at least one extra entry. */
 		parent = i - entry->child_pos - (i - j);
-		if(remove_subtrees && parent == j - 1 && entries[parent].child_count == 0)
+		int show_empty_dir_leafs = (cfg.dot_dirs & DD_TREE_LEAFS_PARENT);
+		if(show_empty_dir_leafs && remove_subtrees && parent == j - 1 &&
+				entries[parent].child_count == 0)
 		{
 			char full_path[PATH_MAX + 1];
 			char *path;

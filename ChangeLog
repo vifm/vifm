@@ -18,6 +18,9 @@
 	section on patterns in the description of :filetype, :filextype and
 	:fileviewer commands.
 
+	Fixed zd adding ".." directory even with 'dotdirs' not containing
+	"treeleafsparent".
+
 0.10.1 to 0.11-beta (2020-09-10)
 
 	Added :VifmCs command to the plugin for "converting" Vim's color scheme
