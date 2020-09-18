@@ -5,6 +5,9 @@
 	Made it possible to escape commas in patterns (as usual, by doubling).
 	Thanks to filterfalse.
 
+	Don't display number of hard links in File Info dialog on Windows.  It's
+	always zero there.
+
 	Fixed ga and gA on symlinks to directories on their own (regression in
 	0.11-beta) and as part of selection.  Thanks to filterfalse.
 
