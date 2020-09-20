@@ -1899,7 +1899,7 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	int i;
 	tab_info_t tab_info;
 
-	const int max_width = cfg.columns;
+	const int max_width = (vifm_testing() ? cfg.columns : getmaxx(win));
 	int width_used = 0;
 	int avg_width, spare_width;
 

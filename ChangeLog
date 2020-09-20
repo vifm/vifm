@@ -26,6 +26,8 @@
 	Fixed zd adding ".." directory even with 'dotdirs' not containing
 	"treeleafsparent".
 
+	Fixed tab labels of pane tabs being messed up (regression in 0.11-beta).
+
 0.10.1 to 0.11-beta (2020-09-10)
 
 	Added :VifmCs command to the plugin for "converting" Vim's color scheme
