@@ -651,6 +651,8 @@ follow_link(view_t *view, int follow_dirs, int ultimate)
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
+	int resolve_one_level = !ultimate;
+
 	if(ultimate)
 	{
 		if(os_realpath(full_path, linkto) != linkto)
@@ -658,8 +660,15 @@ follow_link(view_t *view, int follow_dirs, int ultimate)
 			show_error_msg("Error", "Can't resolve the link.");
 			return;
 		}
+
+#ifdef _WIN32
+		/* This might be a Windows shortcut which aren't resolved by
+		 * os_realpath(). */
+		resolve_one_level = paths_are_equal(full_path, linkto);
+#endif
 	}
-	else
+
+	if(resolve_one_level)
 	{
 		/* We resolve origin to a real path because relative symbolic links are
 		 * relative to real location of the link.  Can't simply do realpath() on

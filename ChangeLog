@@ -5,6 +5,11 @@
 	Made it possible to escape commas in patterns (as usual, by doubling).
 	Thanks to filterfalse.
 
+	Don't display number of hard links in File Info dialog on Windows.  It's
+	always zero there.
+
+	Follow targets of .lnk-files on Windows on gF.
+
 	Fixed ga and gA on symlinks to directories on their own (regression in
 	0.11-beta) and as part of selection.  Thanks to filterfalse.
 
@@ -17,6 +22,11 @@
 	Fixed documentation in Vim format linking section about globs instead of
 	section on patterns in the description of :filetype, :filextype and
 	:fileviewer commands.
+
+	Fixed zd adding ".." directory even with 'dotdirs' not containing
+	"treeleafsparent".
+
+	Fixed tab labels of pane tabs being messed up (regression in 0.11-beta).
 
 0.10.1 to 0.11-beta (2020-09-10)
 

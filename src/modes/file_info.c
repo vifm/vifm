@@ -183,8 +183,10 @@ modfinfo_redraw(void)
 	curr_y += print_item("Attributes: ", perm_buf, curr_y);
 #endif
 
+#ifndef _WIN32
 	snprintf(buf, sizeof(buf), "%d", curr->nlinks);
 	curr_y += print_item("Hard Links: ", buf, curr_y);
+#endif
 
 	format_time(curr->mtime, buf, sizeof(buf));
 	curr_y += print_item("Modified: ", buf, curr_y);

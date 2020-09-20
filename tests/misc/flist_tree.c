@@ -276,6 +276,30 @@ TEST(excluding_nested_dir_in_tree_adds_dummy)
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
 }
 
+TEST(excluding_nested_dir_in_tree_can_skip_adding_dummy)
+{
+	cfg.dot_dirs &= ~DD_TREE_LEAFS_PARENT;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir/nested-dir2", 0700));
+	create_file(SANDBOX_PATH "/nested-dir/nested-dir2/a");
+
+	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
+	assert_int_equal(3, lwin.list_rows);
+
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 1;
+	flist_custom_exclude(&lwin, 1);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(1, lwin.list_rows);
+
+	assert_success(remove(SANDBOX_PATH "/nested-dir/nested-dir2/a"));
+	assert_success(rmdir(SANDBOX_PATH "/nested-dir/nested-dir2"));
+	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
+}
+
 TEST(excluding_single_leaf_file_adds_dummy_correctly)
 {
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", cwd));
