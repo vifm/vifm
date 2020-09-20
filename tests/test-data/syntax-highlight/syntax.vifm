@@ -624,9 +624,12 @@ windo normal :execute 'a'<cr>
 nnoremap bb :
           \ marks<cr>
 
+" "restart" and "write" should be highlighted as :command
+" "<cr>" should NOT be highlighted as angle bracket notation
+command! reload :write | restart<cr>
+
 " "restart" and write should be highlighted as :command
 " "<cr>" should be highlighted as angle bracket notation
-command! reload :write | restart<cr>
 nnoremap j : execute 'normal! j'
           \| execute ":!$PREVIEW_CMD %q"<cr>
 
