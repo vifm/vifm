@@ -71,6 +71,7 @@ typedef enum
 {
 	BUILTIN_ABBR, /* Abbreviated version of a builtin command (like `:com`). */
 	BUILTIN_CMD,  /* Builtin command. */
+	FOREIGN_CMD,  /* Externally registered builtin-like command. */
 	USER_CMD,     /* User-defined command. */
 }
 CMD_TYPE;
@@ -260,6 +261,10 @@ int vle_cmds_complete(const char cmd[], void *arg);
 /* Registers all commands in the array pointed to by cmds of length at least
  * count. */
 void vle_cmds_add(const cmd_add_t cmds[], int count);
+
+/* Registers a foreign builtin-like command.  Returns non-zero on error,
+ * otherwise zero is returned. */
+int vle_cmds_add_foreign(const cmd_add_t *cmd);
 
 /* Finds the first character of the last argument in cmd.  Returns pointer to
  * it. */

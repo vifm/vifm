@@ -161,6 +161,7 @@ void
 vle_cmds_clear(void)
 {
 	remove_commands(USER_CMD);
+	remove_commands(FOREIGN_CMD);
 }
 
 int
@@ -874,6 +875,22 @@ vle_cmds_add(const cmd_add_t cmds[], int count)
 	}
 }
 
+int
+vle_cmds_add_foreign(const cmd_add_t *cmd)
+{
+	if(cmd->min_args < 0)
+	{
+		return 1;
+	}
+
+	if(cmd->max_args != NOT_DEF && cmd->min_args > cmd->max_args)
+	{
+		return 1;
+	}
+
+	return (add_builtin_cmd(cmd->name, FOREIGN_CMD, cmd) != 0);
+}
+
 /* Returns non-zero on error */
 TSTATIC int
 add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf)
@@ -1014,13 +1031,15 @@ command_cmd(const cmd_info_t *cmd_info)
 	cur = &inner->head;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, cmd_name)) < 0)
 	{
-		if(has_emark && cur->next->type == BUILTIN_CMD && cur->next->emark &&
+		int builtin_like = (cur->next->type == BUILTIN_CMD)
+		                || (cur->next->type == FOREIGN_CMD);
+		if(has_emark && builtin_like && cur->next->emark &&
 				strncmp(cmd_name, cur->next->name, len - 1) == 0)
 		{
 			cmp = 0;
 			break;
 		}
-		if(has_qmark && cur->next->type == BUILTIN_CMD && cur->next->qmark &&
+		if(has_qmark && builtin_like && cur->next->qmark &&
 				strncmp(cmd_name, cur->next->name, len - 1) == 0)
 		{
 			cmp = 0;
@@ -1032,7 +1051,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	if(cmp == 0)
 	{
 		cur = cur->next;
-		if(cur->type == BUILTIN_CMD)
+		if(cur->type == BUILTIN_CMD || cur->type == FOREIGN_CMD)
 			return CMDS_ERR_NO_BUILTIN_REDEFINE;
 		if(!cmd_info->emark)
 			return CMDS_ERR_NEED_BANG;
