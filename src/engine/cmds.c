@@ -131,6 +131,11 @@ vle_cmds_init(int udf, cmds_conf_t *conf)
 void
 vle_cmds_reset(void)
 {
+	if(inner == NULL)
+	{
+		return;
+	}
+
 	cmd_t *cur = inner->head.next;
 
 	while(cur != NULL)
@@ -146,6 +151,7 @@ vle_cmds_reset(void)
 	inner->user_cmd_handler.handler = NULL;
 
 	free(inner);
+	inner = NULL;
 	cmds_conf->inner = NULL;
 }
 
