@@ -283,7 +283,7 @@ char * vle_cmds_at_arg(const char args[]);
 char * vle_cmds_next_arg(const char args[]);
 
 TSTATIC_DEFS(
-	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
+	int add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
 			int quotes, int noescaping, int comments, int *last_arg,
 			int (**positions)[2]);

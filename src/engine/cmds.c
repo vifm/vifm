@@ -67,7 +67,8 @@ static const char * parse_range_elem(const char cmd[], cmd_info_t *cmd_info,
 static int complete_cmd_args(cmd_t *cur, const char args[],
 		cmd_info_t *cmd_info, void *arg);
 static void complete_cmd_name(const char cmd_name[], int user_only);
-TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
+TSTATIC int add_builtin_cmd(const char name[], CMD_TYPE type,
+		const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static void init_command_flags(cmd_t *cmd, int flags);
@@ -842,7 +843,7 @@ vle_cmds_add(const cmd_add_t cmds[], int count)
 		assert(cmds[i].min_args >= 0);
 		assert(cmds[i].max_args == NOT_DEF ||
 				cmds[i].min_args <= cmds[i].max_args);
-		ret_code = add_builtin_cmd(cmds[i].name, 0, &cmds[i]);
+		ret_code = add_builtin_cmd(cmds[i].name, BUILTIN_CMD, &cmds[i]);
 		assert(ret_code == 0);
 		if(cmds[i].abbr != NULL)
 		{
@@ -856,7 +857,7 @@ vle_cmds_add(const cmd_add_t cmds[], int count)
 			while(full_len > short_len)
 			{
 				buf[--full_len] = '\0';
-				ret_code = add_builtin_cmd(buf, 1, &cmds[i]);
+				ret_code = add_builtin_cmd(buf, BUILTIN_ABBR, &cmds[i]);
 				assert(ret_code == 0);
 			}
 		}
@@ -866,7 +867,7 @@ vle_cmds_add(const cmd_add_t cmds[], int count)
 
 /* Returns non-zero on error */
 TSTATIC int
-add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
+add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf)
 {
 	int cmp;
 	cmd_t *new;
@@ -919,7 +920,7 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 	new->descr = conf->descr;
 	new->id = conf->id;
 	new->handler = conf->handler;
-	new->type = abbr ? BUILTIN_ABBR : BUILTIN_CMD;
+	new->type = type;
 	new->passed = 0;
 	new->cmd = NULL;
 	new->min_args = conf->min_args;
