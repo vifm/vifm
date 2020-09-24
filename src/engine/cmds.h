@@ -96,6 +96,8 @@ typedef struct cmd_info_t
 	/* For user defined commands. */
 	const char *user_cmd;    /* Name of user defined command. */
 	const char *user_action; /* Body of user defined command. */
+
+	void *user_data; /* User data associated with the command or NULL. */
 }
 cmd_info_t;
 
@@ -113,6 +115,7 @@ typedef struct cmd_t
 	CMD_TYPE type;     /* Type of command described by this structure. */
 	int passed;        /* Number of times this command was recursively called. */
 
+	void *user_data;     /* User data associated with the command or NULL. */
 	cmd_handler handler; /* Handler for builtin commands. */
 	char *cmd;           /* Command-line for user-defined commands. */
 
@@ -172,6 +175,7 @@ typedef struct
 	const char *name;       /* Full command name. */
 	const char *abbr;       /* Command prefix (can be NULL). */
 	const char *descr;      /* Brief description (stored as a pointer). */
+	void *user_data;        /* User data for the handler or NULL. */
 	int id;                 /* Command id.  Doesn't need to be unique.  Negative
 	                           value means absence of arg completion.  Use, for
 	                           example, -1 for all commands without completion. */

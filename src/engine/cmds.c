@@ -294,6 +294,7 @@ vle_cmds_run(const char cmd[])
 		}
 		else
 		{
+			cmd_info.user_data = cur->user_data;
 			execution_code = cur->handler(&cmd_info);
 		}
 
@@ -449,6 +450,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->argv = NULL;
 	cmd_info->user_cmd = NULL;
 	cmd_info->user_action = NULL;
+	cmd_info->user_data = NULL;
 	cmd_info->sep = ' ';
 	cmd_info->bg = 0;
 	cmd_info->usr1 = 0;
@@ -926,6 +928,7 @@ add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf)
 	new->name = strdup(name);
 	new->descr = conf->descr;
 	new->id = conf->id;
+	new->user_data = conf->user_data;
 	new->handler = conf->handler;
 	new->type = type;
 	new->passed = 0;
