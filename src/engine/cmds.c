@@ -70,6 +70,7 @@ static void complete_cmd_name(const char cmd_name[], int user_only);
 TSTATIC int add_builtin_cmd(const char name[], CMD_TYPE type,
 		const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
+static void remove_commands(CMD_TYPE type);
 static int command_cmd(const cmd_info_t *cmd_info);
 static void init_command_flags(cmd_t *cmd, int flags);
 static const char * get_user_cmd_name(const char cmd[], char buf[],
@@ -931,14 +932,23 @@ add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf)
 	return 0;
 }
 
+/* Implements :comclear builtin command provided by this unit. */
 static int
 comclear_cmd(const cmd_info_t *cmd_info)
+{
+	remove_commands(USER_CMD);
+	return 0;
+}
+
+/* Removes commands of the specified type. */
+static void
+remove_commands(CMD_TYPE type)
 {
 	cmd_t *cur = &inner->head;
 
 	while(cur->next != NULL)
 	{
-		if(cur->next->type == USER_CMD)
+		if(cur->next->type == type)
 		{
 			cmd_t *this = cur->next;
 			cur->next = this->next;
@@ -960,7 +970,6 @@ comclear_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 	inner->udf_count = 0;
-	return 0;
 }
 
 static int
