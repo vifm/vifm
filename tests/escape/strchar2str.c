@@ -114,7 +114,7 @@ TEST(backspace_is_eaten)
 	assert_int_equal(0, screen_width);
 }
 
-TEST(long_sequence_is_not_ignored)
+TEST(long_sequence_is_not_ignored_semicolons)
 {
 	size_t screen_width;
 	const char *str = strchar2str("\033[22;24;25;27;28;21;33;38;5;247;48;5;235m",
@@ -123,10 +123,28 @@ TEST(long_sequence_is_not_ignored)
 	assert_int_equal(0, screen_width);
 }
 
-TEST(line_erasure_sequence_is_eaten)
+TEST(long_sequence_is_not_ignored_commas)
+{
+	size_t screen_width;
+	const char *str = strchar2str("\033[22,24,25,27,28,21,33,38,5,247,48,5,235m",
+			0, &screen_width);
+	assert_string_equal("\033[22,24,25,27,28,21,33,38,5,247,48,5,235m", str);
+	assert_int_equal(0, screen_width);
+}
+
+TEST(line_erasure_sequence_is_eaten_semicolons)
 {
 	size_t screen_width;
 	const char *str = strchar2str("\033[K\033[22;24;25;27;28;38;5;247;48;5;235m",
+			0, &screen_width);
+	assert_string_equal("", str);
+	assert_int_equal(0, screen_width);
+}
+
+TEST(line_erasure_sequence_is_eaten_commas)
+{
+	size_t screen_width;
+	const char *str = strchar2str("\033[K\033[22,24,25,27,28,38,5,247,48,5,235m",
 			0, &screen_width);
 	assert_string_equal("", str);
 	assert_int_equal(0, screen_width);

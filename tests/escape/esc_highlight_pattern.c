@@ -160,5 +160,15 @@ TEST(empty_match_with_utf8_character)
 	free(actual);
 }
 
+TEST(inversion_is_recognized)
+{
+	const char *const input = "a";
+	const char *const expected = "\033[7,1m" "a" "\033[27,22m";
+	char *const actual = esc_highlight_pattern(input, &re1c);
+	assert_string_equal(expected, actual);
+	assert_int_equal(6, get_char_width_esc(actual));
+	free(actual);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
