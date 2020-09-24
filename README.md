@@ -2,9 +2,9 @@
 |------------|------------|------------|------------|------------|
 |[![][TT]][T]|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
 
-### **vifm** - vi[m] like file manager, _v0.11-beta_, _2001 – 2020_
+### **vifm** - vi[m] like file manager, _v0.11_, _2001 – 2020_
 
-_This file last updated on 10 September, 2020_
+_This file last updated on 24 September, 2020_
 
 ## Brief Description ##
 
