@@ -157,6 +157,12 @@ vle_cmds_reset(void)
 	cmds_conf->inner = NULL;
 }
 
+void
+vle_cmds_clear(void)
+{
+	remove_commands(USER_CMD);
+}
+
 int
 vle_cmds_run(const char cmd[])
 {

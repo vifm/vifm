@@ -229,6 +229,9 @@ void vle_cmds_init(int udf, cmds_conf_t *cmds_conf);
 /* Resets state of the unit. */
 void vle_cmds_reset(void);
 
+/* Clears (partially resets) state of the unit. */
+void vle_cmds_clear(void);
+
 /* Executes a command.  Returns one of CMDS_ERR_* codes or code returned by the
  * command handler. */
 int vle_cmds_run(const char cmd[]);
