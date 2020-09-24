@@ -429,7 +429,7 @@ get_char_width_esc(const char str[])
 		++p;
 	}
 
-	/* And sequences of numbers separated by ";". */
+	/* And sequences of numbers separated by ";" or ",". */
 	while(isdigit(*p))
 	{
 		do
@@ -438,7 +438,7 @@ get_char_width_esc(const char str[])
 		}
 		while(isdigit(*p));
 
-		if(*p == ';')
+		if(*p == ';' || *p == ',')
 		{
 			++p;
 		}

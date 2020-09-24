@@ -1,4 +1,4 @@
-0.11-beta to current
+0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
 
@@ -27,6 +27,8 @@
 	"treeleafsparent".
 
 	Fixed tab labels of pane tabs being messed up (regression in 0.11-beta).
+
+	Fixed highlighting of search matches in preview (regression in 0.11-beta).
 
 0.10.1 to 0.11-beta (2020-09-10)
 

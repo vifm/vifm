@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11-beta  Last change: 2020 Sep 17
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Sep 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 

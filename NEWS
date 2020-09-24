@@ -1,3 +1,238 @@
+September 24, 2020
+==================
+
+Vifm v0.11
+----------
+
+New version finally updates format of vifminfo file unblocking changes like
+persistent tabs, sessions and timestamp-based merging of histories.  In
+addition to that there were a number of improvements in user interface and
+multiple performance-related improvements.
+
+Thanks to everyone who tried out the beta.
+
+Main changes:
+ - added persistent tabs;
+ - added sessions;
+ - new format of vifminfo file (old version is imported on first run);
+ - smarter merging of histories between runs that avoids dropping of new
+   entries;
+ - version of default color scheme for 256-color terminals;
+ - make tab labels customizable;
+ - try to keep ratio of pane sizes constant on resizes, restarts and tab
+   switching;
+ - various performance improvements.
+
+More detailed list of changes.
+
+Normal and visual modes:
+ - added gF normal mode key which acts like gf, but goes all the way to the
+   ultimate target of the chain of symbolic links (thanks to Alexandre Viau);
+ - improve navigation on gf key.  Do fewer refreshes and disable filters to
+   make target visible.
+
+Core:
+ - more sensible merging of histories from multiple instances in vifminfo file
+   (avoids dropping of new entries);
+ - invalidate cached directory information (size or number of files) on inode
+   change (thanks to Jose Riha, a.k.a. jose1711);
+ - invalidate cached directory size when using it to compute size of some
+   parent directory;
+ - improve cursor positioning after file operations;
+ - made it possible to escape commas in patterns (as usual, by doubling)
+   (thanks to filterfalse).
+
+Command-line mode:
+ - added :tabo[nly] command that closes all tabs but the current one;
+ - added :session and :delsession commands to manage sessions (thanks to Marcos
+   Cruz);
+ - added optional "full" parameter for the :restart command, which makes it
+   discard essentially all context.  This is useful with persistent tabs
+   (thanks to Yusuf Aktepe);
+ - don't reset histories of views in inactive tabs on :restart;
+ - improve differentiation between association and list forms of :colorscheme
+   command on startup.  This is important if list contains name of color scheme
+   that doesn't exist.
+
+:set command and options:
+ - added "tabs" value to 'vifminfo' option.  It enables persistent tabs (thanks
+   to Cosmin Popescu, a.k.a. cosminadrianpopescu, filterfalse and Neil Griffin,
+   a.k.a. ngriffin7a);
+ - added "v" flag to the 'tuioptions' option.  It controls whether width of
+   middle border is adjusted to equalize view sizes (thanks to Matthias Braun,
+   a.k.a. mb720);
+ - added 'sessionoptions' option, which is an alternative to 'vifminfo' for
+   session files;
+ - added 'tablabel' option that specifies format of a single tab's label when
+   non-empty (thanks to aleksejrs);
+ - added 'tabprefix' and 'tabsuffix' options that allow customizing tabline
+   separators (thanks to CoreCube);
+ - added "treeleafsparent" value to 'dotdirs' option (thanks to filterfalse and
+   Melandel);
+ - do not require "dhistory" to be present in 'vifminfo' for "savedirs" to
+   work.
+
+Menus and dialogs:
+ - added rate and progress bar to progress dialog (patch by Alborz Jafari);
+ - added real (fully resolved) path to the File Info dialog (thanks to
+   Alexandre Viau);
+ - added number of hard links to the File Info dialog;
+ - abort menu, more or file information modes before processing remote commands
+   (thanks to kangshugang);
+ - deduplicate elements of the :file menu;
+ - make displaying of spaces in mappings more intelligent by using <space> at
+   the start or end of lhs or rhs.
+
+File preview:
+ - improve handling of long or unknown escape sequences in previews (thanks to
+   bratekarate);
+ - use global color scheme for preview on the other pane ignoring its
+   directory-specific color scheme;
+ - invalidate textual quickview cache if it contains fewer lines than window
+   height and is incomplete.
+
+TUI (Text User Interface):
+ - try harder to preserve position of the splitter.  Avoid its drift on
+   terminal resizes and preserve ratio of windows on startup and tab switches
+   (thanks to Shakil Akhtar);
+ - prevent internally selected files (e.g., via a range of a :command) from
+   appearing selected in user interface (thanks to filterfalse);
+ - reduce width of top line when side borders are hidden (`set tuioptions-=s`)
+   (thanks to Svyatoslav Mishyn, a.k.a. juef);
+ - escape some characters as ^X in view and tab titles, custom menu titles, on
+   statusline and in terminal title (thanks to filterfalse);
+ - use the same label for :grep and :find custom lists as the one used for
+   :grep and :find menus (thanks to filterfalse);
+ - use unexpanded command for title of custom file lists produced using %u or
+   %U macros and menus produced using %m or %M macros (thanks to filterfalse);
+ - use name of user-defined command in titles of custom views and menus (thanks
+   to filterfalse);
+ - preserve more information in the title on turning custom view into tree
+   using :tree (thanks to filterfalse);
+ - limit length of custom file list title to 80 character positions (thanks to
+   filterfalse).
+
+Integration:
+ - detect being run under Wayland (relevant for :filextype commands) (thanks to
+   mhdzli);
+ - make 'title' option work in all terminals which contain "tsl" and "fsl"
+   capabilities (thanks to m-kru);
+ - update terminal title when in menus (thanks to filterfalse).
+
+Color schemes:
+ - added HardLink highlight group for regular files with more than one hard
+   link (patch by Hans Bieshaar);
+ - added LineNr highlight group for highlighting line number column of views
+   (thanks to Anton Gepting);
+ - added OddLine highlight group for highlighting every second entry line of a
+   pane (thanks to iSeeU816).
+
+Scripting:
+ - added v:jobcount builtin variable that provides number of active jobs
+   (number of lines in :jobs menu) (thanks to iSeeU816);
+ - added v:session builtin variable that provides name of current session or is
+   set to an empty string.
+
+Configuration:
+ - added three MC-like shortcuts to sample vifmrc files (Alt-I, Alt-O and
+   Ctrl-U) (thanks to Hans Bieshaar);
+ - added global Default-256 color scheme to be used in terminals that support
+   256-color palette (automatically in sample vifmrc) (thanks to Shakil
+   Akhtar);
+ - create $VIFM/colors directory with default color scheme only on the first
+   run (thanks to ranousse);
+ - use mime-types in associations in sample vifmrc (thanks to Shakil Akhtar).
+
+Performance:
+ - significantly improved performance of adding files to registers that contain
+   thousands of files.  As a result contents of registers is sorted now (thanks
+   to Typo);
+ - significantly improved performance of adding files to trash that contains
+   thousands of files.  As a result contents of trash is sorted now (thanks to
+   Typo);
+ - significantly improved speed of sourcing files (includes processing
+   configuration on startup and :restart);
+ - significantly improved speed of handling typical globs (and therefore
+   mime-type matchers) and reduced amount of memory they take up (thanks to
+   yanzhang0219);
+ - improve performance of mime-type detection by caching the results;
+ - make comparing files by contents (`:compare bycontents`) somewhat faster
+   (thanks to maxigaz);
+ - don't force view reload after every :command that resets selection when
+   there was non-empty selection.  This might make metadata of files less
+   up-to-date, but should increase overall performance (thanks to Jose Riha,
+   a.k.a. jose1711);
+ - avoid reloading source file list after copy or move operation when possible
+   (thanks to Jose Riha, a.k.a. jose1711).
+
+Vim-plugin:
+ - added :VifmCs command to the plugin for "converting" Vim's color scheme into
+   a Vifm's one (patch by Roman Plášil, a.k.a. Quiark);
+ - multiple improvements of syntax highlighting.
+
+Documentation:
+ - added references to "Menus and dialogs" section of documentation from
+   :commands and keys which open menus and dialogs detailed there;
+ - explicitly documented that macros are expanded in user defined commands
+   (thanks to gcmt);
+ - made documentation of :command more comprehensible;
+ - document that user must disable netrw plugin on his own when enabling
+   g:vifm_replace_netrw.  Vifm's plugin can't do it, because it's loaded after
+   plugins shipped with Vim;
+ - documented how selection is handled on launching files (like on l or Enter
+   keys);
+ - improve documentation on "bycontents" of :compare (thanks to maxigaz);
+ - somewhat improved documentation on 'ignorecase' and 'smartcase' options
+   (thanks to filterfalse);
+ - fixed Vim version of the documentation lacking description of %p macro of
+   'findprg'.
+
+Only on Windows:
+ - added basic support for using PowerShell (pausing doesn't work) (thanks to
+   Fang, a.k.a. peromage);
+ - display targets of .lnk-files in file information dialog;
+ - implemented capturing output of background applications (thanks to Gene
+   Zharov);
+ - follow targets of .lnk-files (thanks to Alexandre Viau);
+ - fixed 'chaselinks' (symbolic links weren't resolved);
+ - fixed creating symbolic links with 'syscalls' being turned on;
+ - fixed creating symbolic links with spaces in source or target paths;
+ - fixed Alt key combinations being broken since v0.9;
+ - fixed running non-cmd shells being broken by adding 'shellcmdflag' in
+   0.10.1;
+ - fixed issues with non-tiny 'shellcmdflag' (patch by Bas Bossink, a.k.a.
+   basbossink);
+ - fixed detecting presence of :file[x]type commands on Windows when
+   backslashes are present in path (thanks to anonymous and n.e. at Vifm Q2A
+   site).
+
+Packaging:
+ - avoid interposing system's reallocarray(), when it's present (thanks to Ben
+   Boeckel, a.k.a. mathstuf);
+ - install only one version of sample config and media script, the one which
+   corresponds to operating system being used (thanks to Michael Vetter, a.k.a.
+   jubalh and Ondrej Novy, a.k.a. onovy);
+ - clean up tests directory on "make clean" in the top of the tree.
+
+Important fixes:
+ - fixed generation of :highlight command for OtherWin on writing
+   $VIFM/colors/Default.vifm.  The bug caused white background of inactive pane
+   (thanks to Stas Malavin);
+ - fixed `:move subdir &` renaming file in the process and doing weird stuff to
+   multiple files (thanks to 45jqlakjrf87ayte7hy34ter4nguijauzl4eitk);
+ - fixed graphics preview not being cleared on switching tabs or starting
+   external applications (including on :shell);
+ - fixed mapped keys being reinterpreted as builtin keys if RHS of the mapping
+   failed at some point (e.g., contained an unmapped key) (thanks to Seok Won
+   Lee, a.k.a. ijleesw);
+ - fixed dialogs not being visible when UI updates are silenced via <silent>
+   mappings;
+ - fixed panic on some redraw operations mixing with file operations during
+   terminal resizing (thanks to aca).
+
+See change log for the full list of changes and by whom they were suggested or
+implemented.
+
 September 10, 2020
 ==================
 
