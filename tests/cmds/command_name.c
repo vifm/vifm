@@ -77,13 +77,13 @@ TEST(builtin)
 	  .handler = &dummy_cmd, .min_args = 0, .max_args = 0,
 	};
 
-	assert_true(add_builtin_cmd("!", 0, &command) == 0);
+	assert_true(add_builtin_cmd("!", BUILTIN_CMD, &command) == 0);
 
-	assert_false(add_builtin_cmd("?", 0, &command) == 0);
+	assert_false(add_builtin_cmd("?", BUILTIN_CMD, &command) == 0);
 
-	assert_false(add_builtin_cmd("&", 0, &command) == 0);
+	assert_false(add_builtin_cmd("&", BUILTIN_CMD, &command) == 0);
 
-	assert_false(add_builtin_cmd("2", 0, &command) == 0);
+	assert_false(add_builtin_cmd("2", BUILTIN_CMD, &command) == 0);
 }
 
 TEST(user_add)
@@ -187,7 +187,7 @@ TEST(cant_register_usercmd_twice)
 	  .handler = &dummy_cmd, .min_args = 0, .max_args = 0,
 	};
 
-	assert_failure(add_builtin_cmd("<USERCMD>", 0, &command));
+	assert_failure(add_builtin_cmd("<USERCMD>", BUILTIN_CMD, &command));
 }
 
 TEST(cant_register_same_builtin_twice)
@@ -198,7 +198,7 @@ TEST(cant_register_same_builtin_twice)
 	  .handler = &dummy_cmd, .min_args = 0, .max_args = 0,
 	};
 
-	assert_failure(add_builtin_cmd("tr", 0, &command));
+	assert_failure(add_builtin_cmd("tr", BUILTIN_CMD, &command));
 }
 
 static int

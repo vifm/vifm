@@ -184,6 +184,13 @@ TEST(can_handle_extra_formats_of_command_builtin)
 	assert_int_equal(0, vle_cmds_run("command cmd"));
 }
 
+TEST(cmds_clear_removes_user_commands)
+{
+	assert_success(vle_cmds_run("command cmd value"));
+	vle_cmds_clear();
+	assert_success(vle_cmds_run("command cmd value"));
+}
+
 static int
 dummy_cmd(const cmd_info_t *cmd_info)
 {

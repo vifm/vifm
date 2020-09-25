@@ -50,7 +50,7 @@ instance_start_restart(void)
 	vle_keys_user_clear();
 
 	/* User defined commands. */
-	vle_cmds_run("comclear");
+	vle_cmds_clear();
 
 	/* Autocommands. */
 	vle_aucmd_remove(NULL, NULL);

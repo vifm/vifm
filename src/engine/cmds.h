@@ -71,6 +71,7 @@ typedef enum
 {
 	BUILTIN_ABBR, /* Abbreviated version of a builtin command (like `:com`). */
 	BUILTIN_CMD,  /* Builtin command. */
+	FOREIGN_CMD,  /* Externally registered builtin-like command. */
 	USER_CMD,     /* User-defined command. */
 }
 CMD_TYPE;
@@ -96,6 +97,8 @@ typedef struct cmd_info_t
 	/* For user defined commands. */
 	const char *user_cmd;    /* Name of user defined command. */
 	const char *user_action; /* Body of user defined command. */
+
+	void *user_data; /* User data associated with the command or NULL. */
 }
 cmd_info_t;
 
@@ -113,6 +116,7 @@ typedef struct cmd_t
 	CMD_TYPE type;     /* Type of command described by this structure. */
 	int passed;        /* Number of times this command was recursively called. */
 
+	void *user_data;     /* User data associated with the command or NULL. */
 	cmd_handler handler; /* Handler for builtin commands. */
 	char *cmd;           /* Command-line for user-defined commands. */
 
@@ -172,6 +176,7 @@ typedef struct
 	const char *name;       /* Full command name. */
 	const char *abbr;       /* Command prefix (can be NULL). */
 	const char *descr;      /* Brief description (stored as a pointer). */
+	void *user_data;        /* User data for the handler or NULL. */
 	int id;                 /* Command id.  Doesn't need to be unique.  Negative
 	                           value means absence of arg completion.  Use, for
 	                           example, -1 for all commands without completion. */
@@ -229,6 +234,9 @@ void vle_cmds_init(int udf, cmds_conf_t *cmds_conf);
 /* Resets state of the unit. */
 void vle_cmds_reset(void);
 
+/* Clears (partially resets) state of the unit. */
+void vle_cmds_clear(void);
+
 /* Executes a command.  Returns one of CMDS_ERR_* codes or code returned by the
  * command handler. */
 int vle_cmds_run(const char cmd[]);
@@ -253,6 +261,10 @@ int vle_cmds_complete(const char cmd[], void *arg);
 /* Registers all commands in the array pointed to by cmds of length at least
  * count. */
 void vle_cmds_add(const cmd_add_t cmds[], int count);
+
+/* Registers a foreign builtin-like command.  Returns non-zero on error,
+ * otherwise zero is returned. */
+int vle_cmds_add_foreign(const cmd_add_t *cmd);
 
 /* Finds the first character of the last argument in cmd.  Returns pointer to
  * it. */
@@ -283,7 +295,7 @@ char * vle_cmds_at_arg(const char args[]);
 char * vle_cmds_next_arg(const char args[]);
 
 TSTATIC_DEFS(
-	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
+	int add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
 			int quotes, int noescaping, int comments, int *last_arg,
 			int (**positions)[2]);

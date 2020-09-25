@@ -67,8 +67,10 @@ static const char * parse_range_elem(const char cmd[], cmd_info_t *cmd_info,
 static int complete_cmd_args(cmd_t *cur, const char args[],
 		cmd_info_t *cmd_info, void *arg);
 static void complete_cmd_name(const char cmd_name[], int user_only);
-TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
+TSTATIC int add_builtin_cmd(const char name[], CMD_TYPE type,
+		const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
+static void remove_commands(CMD_TYPE type);
 static int command_cmd(const cmd_info_t *cmd_info);
 static void init_command_flags(cmd_t *cmd, int flags);
 static const char * get_user_cmd_name(const char cmd[], char buf[],
@@ -131,6 +133,11 @@ vle_cmds_init(int udf, cmds_conf_t *conf)
 void
 vle_cmds_reset(void)
 {
+	if(inner == NULL)
+	{
+		return;
+	}
+
 	cmd_t *cur = inner->head.next;
 
 	while(cur != NULL)
@@ -146,7 +153,15 @@ vle_cmds_reset(void)
 	inner->user_cmd_handler.handler = NULL;
 
 	free(inner);
+	inner = NULL;
 	cmds_conf->inner = NULL;
+}
+
+void
+vle_cmds_clear(void)
+{
+	remove_commands(USER_CMD);
+	remove_commands(FOREIGN_CMD);
 }
 
 int
@@ -280,6 +295,7 @@ vle_cmds_run(const char cmd[])
 		}
 		else
 		{
+			cmd_info.user_data = cur->user_data;
 			execution_code = cur->handler(&cmd_info);
 		}
 
@@ -435,6 +451,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->argv = NULL;
 	cmd_info->user_cmd = NULL;
 	cmd_info->user_action = NULL;
+	cmd_info->user_data = NULL;
 	cmd_info->sep = ' ';
 	cmd_info->bg = 0;
 	cmd_info->usr1 = 0;
@@ -836,7 +853,7 @@ vle_cmds_add(const cmd_add_t cmds[], int count)
 		assert(cmds[i].min_args >= 0);
 		assert(cmds[i].max_args == NOT_DEF ||
 				cmds[i].min_args <= cmds[i].max_args);
-		ret_code = add_builtin_cmd(cmds[i].name, 0, &cmds[i]);
+		ret_code = add_builtin_cmd(cmds[i].name, BUILTIN_CMD, &cmds[i]);
 		assert(ret_code == 0);
 		if(cmds[i].abbr != NULL)
 		{
@@ -850,7 +867,7 @@ vle_cmds_add(const cmd_add_t cmds[], int count)
 			while(full_len > short_len)
 			{
 				buf[--full_len] = '\0';
-				ret_code = add_builtin_cmd(buf, 1, &cmds[i]);
+				ret_code = add_builtin_cmd(buf, BUILTIN_ABBR, &cmds[i]);
 				assert(ret_code == 0);
 			}
 		}
@@ -858,9 +875,25 @@ vle_cmds_add(const cmd_add_t cmds[], int count)
 	}
 }
 
+int
+vle_cmds_add_foreign(const cmd_add_t *cmd)
+{
+	if(cmd->min_args < 0)
+	{
+		return 1;
+	}
+
+	if(cmd->max_args != NOT_DEF && cmd->min_args > cmd->max_args)
+	{
+		return 1;
+	}
+
+	return (add_builtin_cmd(cmd->name, FOREIGN_CMD, cmd) != 0);
+}
+
 /* Returns non-zero on error */
 TSTATIC int
-add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
+add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf)
 {
 	int cmp;
 	cmd_t *new;
@@ -912,8 +945,9 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 	new->name = strdup(name);
 	new->descr = conf->descr;
 	new->id = conf->id;
+	new->user_data = conf->user_data;
 	new->handler = conf->handler;
-	new->type = abbr ? BUILTIN_ABBR : BUILTIN_CMD;
+	new->type = type;
 	new->passed = 0;
 	new->cmd = NULL;
 	new->min_args = conf->min_args;
@@ -924,14 +958,23 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 	return 0;
 }
 
+/* Implements :comclear builtin command provided by this unit. */
 static int
 comclear_cmd(const cmd_info_t *cmd_info)
+{
+	remove_commands(USER_CMD);
+	return 0;
+}
+
+/* Removes commands of the specified type. */
+static void
+remove_commands(CMD_TYPE type)
 {
 	cmd_t *cur = &inner->head;
 
 	while(cur->next != NULL)
 	{
-		if(cur->next->type == USER_CMD)
+		if(cur->next->type == type)
 		{
 			cmd_t *this = cur->next;
 			cur->next = this->next;
@@ -953,7 +996,6 @@ comclear_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 	inner->udf_count = 0;
-	return 0;
 }
 
 static int
@@ -989,13 +1031,15 @@ command_cmd(const cmd_info_t *cmd_info)
 	cur = &inner->head;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, cmd_name)) < 0)
 	{
-		if(has_emark && cur->next->type == BUILTIN_CMD && cur->next->emark &&
+		int builtin_like = (cur->next->type == BUILTIN_CMD)
+		                || (cur->next->type == FOREIGN_CMD);
+		if(has_emark && builtin_like && cur->next->emark &&
 				strncmp(cmd_name, cur->next->name, len - 1) == 0)
 		{
 			cmp = 0;
 			break;
 		}
-		if(has_qmark && cur->next->type == BUILTIN_CMD && cur->next->qmark &&
+		if(has_qmark && builtin_like && cur->next->qmark &&
 				strncmp(cmd_name, cur->next->name, len - 1) == 0)
 		{
 			cmp = 0;
@@ -1007,7 +1051,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	if(cmp == 0)
 	{
 		cur = cur->next;
-		if(cur->type == BUILTIN_CMD)
+		if(cur->type == BUILTIN_CMD || cur->type == FOREIGN_CMD)
 			return CMDS_ERR_NO_BUILTIN_REDEFINE;
 		if(!cmd_info->emark)
 			return CMDS_ERR_NEED_BANG;
