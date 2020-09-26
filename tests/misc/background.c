@@ -12,6 +12,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/background.h"
 #include "../../src/signals.h"
+#include "../../src/status.h"
 
 static void task(bg_op_t *bg_op, void *arg);
 
@@ -32,6 +33,7 @@ SETUP()
 #else
 	update_string(&cfg.shell, "cmd");
 	update_string(&cfg.shell_cmd_flag, "/C");
+	stats_update_shell_type(cfg.shell);
 #endif
 }
 
@@ -39,6 +41,7 @@ TEARDOWN()
 {
 	update_string(&cfg.shell, NULL);
 	update_string(&cfg.shell_cmd_flag, NULL);
+	stats_update_shell_type("/bin/sh");
 
 	curr_view = NULL;
 }
@@ -87,6 +90,7 @@ TEST(job_can_survive_on_its_own)
 		}
 	}
 
+	assert_int_equal(71, job->exit_code);
 	bg_job_decref(job);
 }
 

@@ -79,7 +79,6 @@ typedef struct bg_job_t
 	pthread_spinlock_t status_lock;
 	int running;   /* Whether this job is still running. */
 	int use_count; /* Count of uses of this job entry. */
-	/* TODO: use or remove this (set to correct value, but not used). */
 	int exit_code; /* Exit code of external command. */
 
 	/* For background operations and tasks. */

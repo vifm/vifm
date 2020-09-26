@@ -129,6 +129,9 @@ static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
+#ifdef _WIN32
+static int query_win_code(bg_job_t *job);
+#endif
 static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
@@ -285,16 +288,7 @@ job_check(bg_job_t *job)
 	while(new_errors != NULL);
 
 #ifdef _WIN32
-	DWORD retcode;
-	if(GetExitCodeProcess(job->hprocess, &retcode) != 0)
-	{
-		if(retcode != STILL_ACTIVE)
-		{
-			pthread_spin_lock(&job->status_lock);
-			job->running = 0;
-			pthread_spin_unlock(&job->status_lock);
-		}
-	}
+	(void)query_win_code(job);
 #endif
 }
 
@@ -1195,6 +1189,28 @@ bg_job_is_running(bg_job_t *job)
 	pthread_spin_unlock(&job->status_lock);
 	return running;
 }
+
+#ifdef _WIN32
+/* Retrieves exit code of a process associated with the job.  Returns zero on
+ * success (fields of the argument updated), otherwise non-zero is returned. */
+static int
+query_win_code(bg_job_t *job)
+{
+	DWORD retcode;
+	if(GetExitCodeProcess(job->hprocess, &retcode))
+	{
+		if(retcode != STILL_ACTIVE)
+		{
+			pthread_spin_lock(&job->status_lock);
+			job->exit_code = retcode;
+			job->running = 0;
+			pthread_spin_unlock(&job->status_lock);
+			return 0;
+		}
+	}
+	return 1;
+}
+#endif
 
 void
 bg_job_incref(bg_job_t *job)
