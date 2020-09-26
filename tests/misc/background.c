@@ -11,18 +11,35 @@
 #include "../../src/utils/str.h"
 #include "../../src/ui/ui.h"
 #include "../../src/background.h"
+#include "../../src/signals.h"
 
 static void task(bg_op_t *bg_op, void *arg);
+
+SETUP_ONCE()
+{
+	setup_signals();
+}
 
 SETUP()
 {
 	/* curr_view shouldn't be NULL, because of iteration over tabs before doing
 	 * exec(). */
 	curr_view = &lwin;
+
+#ifndef _WIN32
+	update_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
+#else
+	update_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
+#endif
 }
 
 TEARDOWN()
 {
+	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
+
 	curr_view = NULL;
 }
 
@@ -49,13 +66,33 @@ TEST(jobcount_variable_gets_updated)
 	assert_false(stats_redraw_planned());
 }
 
+TEST(job_can_survive_on_its_own)
+{
+	assert_success(bg_run_external("exit 71", 1, SHELL_BY_APP));
+
+	bg_job_t *job = bg_jobs;
+	assert_non_null(job);
+
+	bg_job_incref(job);
+
+	int counter = 0;
+	while(bg_job_is_running(job))
+	{
+		usleep(5000);
+		bg_check();
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			return;
+		}
+	}
+
+	bg_job_decref(job);
+}
+
 TEST(background_redirects_streams_properly, IF(not_windows))
 {
-	update_string(&cfg.shell, "/bin/sh");
-	update_string(&cfg.shell_cmd_flag, "-c");
 	assert_success(bg_and_wait_for_errors("echo a", &no_cancellation));
-	update_string(&cfg.shell, NULL);
-	update_string(&cfg.shell_cmd_flag, NULL);
 }
 
 static void

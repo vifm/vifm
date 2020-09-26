@@ -166,6 +166,14 @@ int bg_job_cancelled(bg_job_t *job);
  * zero is returned. */
 int bg_job_is_running(bg_job_t *job);
 
+/* Increases use counter of the job.  Doing this prevents object deletion while
+ * it's still in use. */
+void bg_job_incref(bg_job_t *job);
+
+/* Decreases use counter of the job.  Assume the object is freed after calling
+ * this functions (unless you've incremented the counter more than once). */
+void bg_job_decref(bg_job_t *job);
+
 /* Temporary locks bg_op_t structure to ensure that it's not modified by
  * anyone during reading/updating its fields.  The structure must be part of
  * bg_job_t. */

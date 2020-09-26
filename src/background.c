@@ -472,9 +472,7 @@ error_thread(void *p)
 					 * cut the job out of our list and decrement its use counter. */
 					selector_remove(selector, j->err_stream);
 					*job = j->err_next;
-					pthread_spin_lock(&j->status_lock);
-					--j->use_count;
-					pthread_spin_unlock(&j->status_lock);
+					bg_job_decref(j);
 					continue;
 				}
 
@@ -1196,6 +1194,22 @@ bg_job_is_running(bg_job_t *job)
 	running = job->running;
 	pthread_spin_unlock(&job->status_lock);
 	return running;
+}
+
+void
+bg_job_incref(bg_job_t *job)
+{
+	pthread_spin_lock(&job->status_lock);
+	++job->use_count;
+	pthread_spin_unlock(&job->status_lock);
+}
+
+void
+bg_job_decref(bg_job_t *job)
+{
+	pthread_spin_lock(&job->status_lock);
+	--job->use_count;
+	pthread_spin_unlock(&job->status_lock);
 }
 
 void
