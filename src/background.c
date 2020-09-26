@@ -123,8 +123,8 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 #ifndef _WIN32
 static void report_error_msg(const char title[], const char text[]);
 #endif
-static bg_job_t * launch_external(const char cmd[], int new_session,
-		ShellRequester by);
+static bg_job_t * launch_external(const char cmd[], int capture_output,
+		int new_session, ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 		uintptr_t err, uintptr_t data, BgJobType type);
@@ -326,6 +326,10 @@ job_free(bg_job_t *job)
 		CloseHandle(job->hprocess);
 	}
 #endif
+	if(job->output != NULL)
+	{
+		fclose(job->output);
+	}
 	free(job->bg_op.descr);
 	free(job->cmd);
 	free(job->new_errors);
@@ -792,7 +796,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 int
 bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
-	bg_job_t *job = launch_external(cmd, 0, by);
+	bg_job_t *job = launch_external(cmd, 0, 0, by);
 	if(job == NULL)
 	{
 		return 1;
@@ -807,7 +811,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 bg_job_t *
 bg_run_external_job(const char cmd[])
 {
-	bg_job_t *job = launch_external(cmd, 1, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, 1, 1, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -822,11 +826,13 @@ bg_run_external_job(const char cmd[])
 
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
-launch_external(const char cmd[], int new_session, ShellRequester by)
+launch_external(const char cmd[], int capture_output, int new_session,
+		ShellRequester by)
 {
 #ifndef _WIN32
 	pid_t pid;
 	int error_pipe[2];
+	int output_pipe[2];
 	char *command;
 
 	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
@@ -842,10 +848,27 @@ launch_external(const char cmd[], int new_session, ShellRequester by)
 		return NULL;
 	}
 
+	if(capture_output)
+	{
+		if(pipe(output_pipe) != 0)
+		{
+			show_error_msg("File pipe error", "Error creating pipe");
+			close(error_pipe[0]);
+			close(error_pipe[1]);
+			free(command);
+			return NULL;
+		}
+	}
+
 	if((pid = fork()) == -1)
 	{
 		close(error_pipe[0]);
 		close(error_pipe[1]);
+		if(capture_output)
+		{
+			close(output_pipe[0]);
+			close(output_pipe[1]);
+		}
 		free(command);
 		return NULL;
 	}
@@ -865,7 +888,18 @@ launch_external(const char cmd[], int new_session, ShellRequester by)
 		/* Close read end of pipe. */
 		close(error_pipe[0]);
 
-		/* Attach stdout, stdin to /dev/null. */
+		if(capture_output)
+		{
+			if(dup2(output_pipe[1], STDOUT_FILENO) == -1)
+			{
+				perror("dup2");
+				_Exit(EXIT_FAILURE);
+			}
+			/* Close read end of pipe. */
+			close(output_pipe[0]);
+		}
+
+		/* Attach stdin and optionally stdout to /dev/null. */
 		int nullfd = open("/dev/null", O_RDWR);
 		if(nullfd != -1)
 		{
@@ -874,7 +908,7 @@ launch_external(const char cmd[], int new_session, ShellRequester by)
 				perror("dup2 for stdin");
 				_Exit(EXIT_FAILURE);
 			}
-			if(dup2(nullfd, STDOUT_FILENO) == -1)
+			if(!capture_output && dup2(nullfd, STDOUT_FILENO) == -1)
 			{
 				perror("dup2 for stdout");
 				_Exit(EXIT_FAILURE);
@@ -907,12 +941,25 @@ launch_external(const char cmd[], int new_session, ShellRequester by)
 		_Exit(127);
 	}
 
-	/* Close write end of pipe. */
+	/* Close write ends of pipes. */
 	close(error_pipe[1]);
+	if(capture_output)
+	{
+		close(output_pipe[1]);
+	}
 
 	bg_job_t *job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
 			BJT_COMMAND);
 	free(command);
+
+	if(capture_output)
+	{
+		job->output = fdopen(output_pipe[0], "r");
+		if(job->output == NULL)
+		{
+			close(output_pipe[0]);
+		}
+	}
 
 	return job;
 #else
@@ -952,6 +999,18 @@ launch_external(const char cmd[], int new_session, ShellRequester by)
 		return NULL;
 	}
 
+	HANDLE hout = INVALID_HANDLE_VALUE;
+	if(capture_output)
+	{
+		if(!CreatePipe(&hout, &startup.hStdOutput, &sec_attr, 16*1024))
+		{
+			CloseHandle(herr);
+			CloseHandle(hnul);
+			free(command);
+			return NULL;
+		}
+	}
+
 	sh_cmd = win_make_sh_cmd(command, by);
 	free(command);
 
@@ -960,11 +1019,13 @@ launch_external(const char cmd[], int new_session, ShellRequester by)
 			&startup, &pinfo);
 	free(wide_cmd);
 	CloseHandle(hnul);
+	CloseHandle(startup.hStdOutput);
 	CloseHandle(startup.hStdError);
 
 	if(!started)
 	{
 		free(sh_cmd);
+		CloseHandle(hout);
 		return NULL;
 	}
 
@@ -974,6 +1035,25 @@ launch_external(const char cmd[], int new_session, ShellRequester by)
 			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND);
 	free(sh_cmd);
 
+	if(job == NULL)
+	{
+		CloseHandle(hout);
+	}
+	else if(capture_output)
+	{
+		int fd = _open_osfhandle((intptr_t)hout, _O_RDONLY);
+		if(fd == -1)
+		{
+			CloseHandle(hout);
+			return NULL;
+		}
+
+		job->output = fdopen(fd, "r");
+		if(job->output == NULL)
+		{
+			close(fd);
+		}
+	}
 
 	return job;
 #endif
@@ -1055,6 +1135,8 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	new->running = 1;
 	new->use_count = (type == BJT_COMMAND ? 1 : 0);
 	new->exit_code = -1;
+
+	new->output = NULL;
 
 #ifndef _WIN32
 	new->err_stream = (int)err;

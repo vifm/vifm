@@ -2,6 +2,8 @@
 
 #include <unistd.h> /* usleep() */
 
+#include <stdlib.h> /* free() */
+
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -9,6 +11,7 @@
 #include "../../src/engine/variables.h"
 #include "../../src/utils/cancellation.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/string_array.h"
 #include "../../src/ui/ui.h"
 #include "../../src/background.h"
 #include "../../src/signals.h"
@@ -116,6 +119,24 @@ TEST(create_a_job_explicitly)
 
 	assert_success(bg_job_wait(job));
 	assert_int_equal(5, job->exit_code);
+
+	bg_job_decref(job);
+}
+
+TEST(capture_output_of_external_command)
+{
+	bg_job_t *job = bg_run_external_job("echo there");
+	assert_non_null(job);
+	assert_non_null(job->output);
+
+	int nlines;
+	char **lines = read_stream_lines(job->output, &nlines, 0, NULL, NULL);
+	assert_int_equal(1, nlines);
+	assert_string_equal("there", lines[0]);
+	free_string_array(lines, nlines);
+
+	assert_success(bg_job_wait(job));
+	assert_int_equal(0, job->exit_code);
 
 	bg_job_decref(job);
 }

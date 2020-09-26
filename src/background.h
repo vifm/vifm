@@ -81,6 +81,8 @@ typedef struct bg_job_t
 	int use_count; /* Count of uses of this job entry. */
 	int exit_code; /* Exit code of external command. */
 
+	FILE *output; /* File stream of standard output or NULL. */
+
 	/* For background operations and tasks. */
 	pthread_spinlock_t bg_op_lock;
 	bg_op_t bg_op;
