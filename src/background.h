@@ -78,7 +78,7 @@ typedef struct bg_job_t
 	/* The lock is meant to guard state-related fields. */
 	pthread_spinlock_t status_lock;
 	int running;   /* Whether this job is still running. */
-	int in_use;    /* Whether this job description is in use by someone. */
+	int use_count; /* Count of uses of this job entry. */
 	/* TODO: use or remove this (set to correct value, but not used). */
 	int exit_code; /* Exit code of external command. */
 

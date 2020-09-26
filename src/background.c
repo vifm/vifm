@@ -80,7 +80,7 @@
  * that has associated external process has the following life cycle:
  *  1. Created by main thread and passed to error thread through new_err_jobs.
  *  2. Either gets marked by signal handler or its stream reaches EOF.
- *  3. Its in_use flag is reset.
+ *  3. Its use_count field is decremented.
  *  4. Main thread frees corresponding entry.
  */
 
@@ -206,7 +206,7 @@ bg_check(void)
 		job_check(p);
 
 		pthread_spin_lock(&p->status_lock);
-		int can_remove = (!p->running && !p->in_use);
+		int can_remove = (!p->running && p->use_count == 0);
 		active_jobs += (p->running != 0);
 		pthread_spin_unlock(&p->status_lock);
 
@@ -469,11 +469,11 @@ error_thread(void *p)
 				if(nread == 0)
 				{
 					/* Reached EOF, exclude corresponding file descriptor from the set,
-					 * cut the job out of our list and allow its deletion. */
+					 * cut the job out of our list and decrement its use counter. */
 					selector_remove(selector, j->err_stream);
 					*job = j->err_next;
 					pthread_spin_lock(&j->status_lock);
-					j->in_use = 0;
+					--j->use_count;
 					pthread_spin_unlock(&j->status_lock);
 					continue;
 				}
@@ -522,10 +522,10 @@ free_drained_jobs(bg_job_t **jobs)
 		if(j->drained)
 		{
 			pthread_spin_lock(&j->status_lock);
-			/* If finished, reset in_use mark and drop it from the list. */
+			/* If finished, decrement use_count and drop it from the list. */
 			if(!j->running)
 			{
-				j->in_use = 0;
+				--j->use_count;
 				*job = j->err_next;
 				pthread_spin_unlock(&j->status_lock);
 				continue;
@@ -1025,7 +1025,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	pthread_spin_init(&new->errors_lock, PTHREAD_PROCESS_PRIVATE);
 	pthread_spin_init(&new->status_lock, PTHREAD_PROCESS_PRIVATE);
 	new->running = 1;
-	new->in_use = (type == BJT_COMMAND);
+	new->use_count = (type == BJT_COMMAND ? 1 : 0);
 	new->exit_code = -1;
 
 #ifndef _WIN32
