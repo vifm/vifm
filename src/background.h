@@ -113,6 +113,11 @@ void bg_init(void);
  * otherwise non-zero is returned. */
 int bg_run_external(const char cmd[], int skip_errors, ShellRequester by);
 
+/* Creates background job running external command which does not interact with
+ * the user.  Upon creation the job has one extra use, which needs to be
+ * decremented for it to be freed.  Returns the job or NULL on error. */
+bg_job_t * bg_run_external_job(const char cmd[]);
+
 struct cancellation_t;
 
 /* Runs command in background and displays its errors to a user.  To determine

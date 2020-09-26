@@ -109,6 +109,17 @@ TEST(explicitly_wait_for_a_job)
 	bg_job_decref(job);
 }
 
+TEST(create_a_job_explicitly)
+{
+	bg_job_t *job = bg_run_external_job("exit 5");
+	assert_non_null(job);
+
+	assert_success(bg_job_wait(job));
+	assert_int_equal(5, job->exit_code);
+
+	bg_job_decref(job);
+}
+
 TEST(background_redirects_streams_properly, IF(not_windows))
 {
 	assert_success(bg_and_wait_for_errors("echo a", &no_cancellation));

@@ -123,6 +123,7 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 #ifndef _WIN32
 static void report_error_msg(const char title[], const char text[]);
 #endif
+static bg_job_t * launch_external(const char cmd[], ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 		uintptr_t err, uintptr_t data, BgJobType type);
@@ -790,7 +791,38 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 int
 bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
-	bg_job_t *job = NULL;
+	bg_job_t *job = launch_external(cmd, by);
+	if(job == NULL)
+	{
+		return 1;
+	}
+
+	/* It's safe to do this here because bg_check() is executed on the same
+	 * thread as this function. */
+	job->skip_errors = skip_errors;
+	return 0;
+}
+
+bg_job_t *
+bg_run_external_job(const char cmd[])
+{
+	bg_job_t *job = launch_external(cmd, SHELL_BY_APP);
+	if(job == NULL)
+	{
+		return NULL;
+	}
+
+	/* It's safe to do this here because bg_check() is executed on the same
+	 * thread as this function. */
+	bg_job_incref(job);
+	job->skip_errors = 1;
+	return job;
+}
+
+/* Starts a new external command job.  Returns the new job or NULL on error. */
+static bg_job_t *
+launch_external(const char cmd[], ShellRequester by)
+{
 #ifndef _WIN32
 	pid_t pid;
 	int error_pipe[2];
@@ -799,27 +831,28 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
 	if(command == NULL)
 	{
-		return -1;
+		return NULL;
 	}
 
 	if(pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
 		free(command);
-		return -1;
+		return NULL;
 	}
 
 	if((pid = fork()) == -1)
 	{
+		close(error_pipe[0]);
+		close(error_pipe[1]);
 		free(command);
-		return -1;
+		return NULL;
 	}
 
 	if(pid == 0)
 	{
 		extern char **environ;
 
-		int nullfd;
 		/* Redirect stderr to write end of pipe. */
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 		{
@@ -832,7 +865,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		close(error_pipe[0]);
 
 		/* Attach stdout, stdin to /dev/null. */
-		nullfd = open("/dev/null", O_RDWR);
+		int nullfd = open("/dev/null", O_RDWR);
 		if(nullfd != -1)
 		{
 			if(dup2(nullfd, STDIN_FILENO) == -1)
@@ -855,22 +888,16 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 				make_execv_array(cfg.shell, sh_flag, command), environ);
 		_Exit(127);
 	}
-	else
-	{
-		/* Close write end of pipe. */
-		close(error_pipe[1]);
 
-		job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
-				BJT_COMMAND);
-		if(job == NULL)
-		{
-			free(command);
-			return -1;
-		}
-	}
+	/* Close write end of pipe. */
+	close(error_pipe[1]);
+
+	bg_job_t *job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
+			BJT_COMMAND);
 	free(command);
+
+	return job;
 #else
-	BOOL ret;
 	STARTUPINFOW startup = { .dwFlags = STARTF_USESTDHANDLES };
 	PROCESS_INFORMATION pinfo;
 	char *command;
@@ -880,7 +907,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
 	if(command == NULL)
 	{
-		return -1;
+		return NULL;
 	}
 
 	SECURITY_ATTRIBUTES sec_attr = {
@@ -894,7 +921,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 	if(hnul == INVALID_HANDLE_VALUE)
 	{
 		free(command);
-		return -1;
+		return NULL;
 	}
 	startup.hStdInput = hnul;
 	startup.hStdOutput = hnul;
@@ -904,43 +931,34 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 	{
 		CloseHandle(hnul);
 		free(command);
-		return -1;
+		return NULL;
 	}
 
 	sh_cmd = win_make_sh_cmd(command, by);
 	free(command);
 
 	wide_cmd = to_wide(sh_cmd);
-	ret = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL, &startup,
-			&pinfo);
+	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL,
+			&startup, &pinfo);
 	free(wide_cmd);
 	CloseHandle(hnul);
 	CloseHandle(startup.hStdError);
 
-	if(ret != 0)
+	if(!started)
 	{
-		CloseHandle(pinfo.hThread);
-
-		job = add_background_job(pinfo.dwProcessId, sh_cmd, (uintptr_t)herr,
-				(uintptr_t)pinfo.hProcess, BJT_COMMAND);
-		if(job == NULL)
-		{
-			free(sh_cmd);
-			return -1;
-		}
+		free(sh_cmd);
+		return NULL;
 	}
+
+	CloseHandle(pinfo.hThread);
+
+	bg_job_t *job = add_background_job(pinfo.dwProcessId, sh_cmd,
+			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND);
 	free(sh_cmd);
-	if(ret == 0)
-	{
-		return 1;
-	}
-#endif
 
-	if(job != NULL)
-	{
-		job->skip_errors = skip_errors;
-	}
-	return 0;
+
+	return job;
+#endif
 }
 
 int
