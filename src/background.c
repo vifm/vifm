@@ -1190,6 +1190,45 @@ bg_job_is_running(bg_job_t *job)
 	return running;
 }
 
+int
+bg_job_wait(bg_job_t *job)
+{
+	assert(job->type == BJT_COMMAND &&
+			"Only external commands can be waited for.");
+
+	(void)set_sigchld(1);
+
+	int error = 0;
+	if(bg_job_is_running(job))
+	{
+#ifndef _WIN32
+		int status = get_proc_exit_status(job->pid);
+		if(status == -1)
+		{
+			error = 1;
+		}
+		else
+		{
+			int exit_code = (status != -1 && WIFEXITED(status)) ? WEXITSTATUS(status)
+			                                                    : -1;
+			bg_process_finished_cb(job->pid, exit_code);
+		}
+#else
+		if(WaitForSingleObject(job->hprocess, INFINITE) != WAIT_OBJECT_0)
+		{
+			error = 1;
+		}
+		else
+		{
+			error = query_win_code(job);
+		}
+#endif
+	}
+
+	(void)set_sigchld(0);
+	return error;
+}
+
 #ifdef _WIN32
 /* Retrieves exit code of a process associated with the job.  Returns zero on
  * success (fields of the argument updated), otherwise non-zero is returned. */

@@ -165,6 +165,10 @@ int bg_job_cancelled(bg_job_t *job);
  * zero is returned. */
 int bg_job_is_running(bg_job_t *job);
 
+/* Waits for external command to finish (don't pass any other kind of job).
+ * Returns zero on success, otherwise non-zero is returned. */
+int bg_job_wait(bg_job_t *job);
+
 /* Increases use counter of the job.  Doing this prevents object deletion while
  * it's still in use. */
 void bg_job_incref(bg_job_t *job);

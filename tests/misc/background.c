@@ -94,6 +94,21 @@ TEST(job_can_survive_on_its_own)
 	bg_job_decref(job);
 }
 
+TEST(explicitly_wait_for_a_job)
+{
+	assert_success(bg_run_external("exit 99", 1, SHELL_BY_APP));
+
+	bg_job_t *job = bg_jobs;
+	assert_non_null(job);
+
+	bg_job_incref(job);
+
+	assert_success(bg_job_wait(job));
+	assert_int_equal(99, job->exit_code);
+
+	bg_job_decref(job);
+}
+
 TEST(background_redirects_streams_properly, IF(not_windows))
 {
 	assert_success(bg_and_wait_for_errors("echo a", &no_cancellation));
