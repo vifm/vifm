@@ -30,7 +30,7 @@
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 #endif
 #include <signal.h> /* kill() */
-#include <unistd.h> /* execve() fork() */
+#include <unistd.h> /* execve() fork() setpgid() setsid() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -123,7 +123,8 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 #ifndef _WIN32
 static void report_error_msg(const char title[], const char text[]);
 #endif
-static bg_job_t * launch_external(const char cmd[], ShellRequester by);
+static bg_job_t * launch_external(const char cmd[], int new_session,
+		ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 		uintptr_t err, uintptr_t data, BgJobType type);
@@ -791,7 +792,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 int
 bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
-	bg_job_t *job = launch_external(cmd, by);
+	bg_job_t *job = launch_external(cmd, 0, by);
 	if(job == NULL)
 	{
 		return 1;
@@ -806,7 +807,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 bg_job_t *
 bg_run_external_job(const char cmd[])
 {
-	bg_job_t *job = launch_external(cmd, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, 1, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -821,7 +822,7 @@ bg_run_external_job(const char cmd[])
 
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
-launch_external(const char cmd[], ShellRequester by)
+launch_external(const char cmd[], int new_session, ShellRequester by)
 {
 #ifndef _WIN32
 	pid_t pid;
@@ -880,7 +881,24 @@ launch_external(const char cmd[], ShellRequester by)
 			}
 		}
 
-		setpgid(0, 0);
+		if(new_session)
+		{
+			/* setsid() creates process group as well and doesn't work if current
+			 * process is group leader, so don't do setpgid(). */
+			if(setsid() == (pid_t)-1)
+			{
+				perror("setsid");
+				_Exit(EXIT_FAILURE);
+			}
+		}
+		else
+		{
+			if(setpgid(0, 0) != 0)
+			{
+				perror("setpgid");
+				_Exit(EXIT_FAILURE);
+			}
+		}
 
 		prepare_for_exec();
 		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
