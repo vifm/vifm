@@ -78,9 +78,10 @@ typedef struct bg_job_t
 	/* The lock is meant to guard state-related fields. */
 	pthread_spinlock_t status_lock;
 	int running;   /* Whether this job is still running. */
-	int in_use;    /* Whether this job description is in use by someone. */
-	/* TODO: use or remove this (set to correct value, but not used). */
+	int use_count; /* Count of uses of this job entry. */
 	int exit_code; /* Exit code of external command. */
+
+	FILE *output; /* File stream of standard output or NULL. */
 
 	/* For background operations and tasks. */
 	pthread_spinlock_t bg_op_lock;
@@ -113,6 +114,12 @@ void bg_init(void);
 /* Creates background job running external command.  Returns zero on success,
  * otherwise non-zero is returned. */
 int bg_run_external(const char cmd[], int skip_errors, ShellRequester by);
+
+/* Creates background job running external command which does not interact with
+ * the user and is detached from controlling terminal.  Upon creation the job
+ * has one extra use, which needs to be decremented for it to be freed.  Returns
+ * the job or NULL on error. */
+bg_job_t * bg_run_external_job(const char cmd[]);
 
 struct cancellation_t;
 
@@ -165,6 +172,18 @@ int bg_job_cancelled(bg_job_t *job);
 /* Checks whether the job is still running.  Returns non-zero if so, otherwise
  * zero is returned. */
 int bg_job_is_running(bg_job_t *job);
+
+/* Waits for external command to finish (don't pass any other kind of job).
+ * Returns zero on success, otherwise non-zero is returned. */
+int bg_job_wait(bg_job_t *job);
+
+/* Increases use counter of the job.  Doing this prevents object deletion while
+ * it's still in use. */
+void bg_job_incref(bg_job_t *job);
+
+/* Decreases use counter of the job.  Assume the object is freed after calling
+ * this functions (unless you've incremented the counter more than once). */
+void bg_job_decref(bg_job_t *job);
 
 /* Temporary locks bg_op_t structure to ensure that it's not modified by
  * anyone during reading/updating its fields.  The structure must be part of
