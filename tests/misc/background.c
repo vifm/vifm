@@ -7,6 +7,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/pthread.h"
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/utils/cancellation.h"
@@ -18,6 +19,7 @@
 #include "../../src/status.h"
 
 static void task(bg_op_t *bg_op, void *arg);
+static void wait_until_locked(pthread_spinlock_t *lock);
 
 SETUP_ONCE()
 {
@@ -55,11 +57,16 @@ TEST(jobcount_variable_gets_updated)
 	setvar("v:jobcount", var);
 	var_free(var);
 
-	assert_success(bg_execute("", "", 0, 0, &task, NULL));
+	pthread_spinlock_t locks[2];
+	pthread_spin_init(&locks[0], PTHREAD_PROCESS_PRIVATE);
+	pthread_spin_init(&locks[1], PTHREAD_PROCESS_PRIVATE);
 
 	assert_int_equal(0, var_to_int(getvar("v:jobcount")));
 	assert_false(stats_redraw_planned());
 
+	assert_success(bg_execute("", "", 0, 0, &task, (void *)locks));
+
+	wait_until_locked(&locks[0]);
 	bg_check();
 
 	assert_int_equal(1, var_to_int(getvar("v:jobcount")));
@@ -70,6 +77,13 @@ TEST(jobcount_variable_gets_updated)
 
 	assert_int_equal(1, var_to_int(getvar("v:jobcount")));
 	assert_false(stats_redraw_planned());
+
+	pthread_spin_lock(&locks[1]);
+	pthread_spin_lock(&locks[0]);
+	pthread_spin_unlock(&locks[0]);
+	pthread_spin_unlock(&locks[1]);
+	pthread_spin_destroy(&locks[0]);
+	pthread_spin_destroy(&locks[1]);
 }
 
 TEST(job_can_survive_on_its_own)
@@ -149,7 +163,21 @@ TEST(background_redirects_streams_properly, IF(not_windows))
 static void
 task(bg_op_t *bg_op, void *arg)
 {
-	usleep(5000);
+	pthread_spinlock_t *locks = arg;
+	pthread_spin_lock(&locks[0]);
+	wait_until_locked(&locks[1]);
+	pthread_spin_unlock(&locks[0]);
+}
+
+static void
+wait_until_locked(pthread_spinlock_t *lock)
+{
+	while(pthread_spin_trylock(lock) == 0)
+	{
+		usleep(5000);
+		pthread_spin_unlock(lock);
+		usleep(5000);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
