@@ -2,8 +2,6 @@
 
 #include <unistd.h> /* usleep() */
 
-#include <stdlib.h> /* free() */
-
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -49,6 +47,39 @@ TEARDOWN()
 	stats_update_shell_type("/bin/sh");
 
 	curr_view = NULL;
+}
+
+/* This test is the first one to make it pass faster.  When it's first, there
+ * are no other jobs which can slow down receiving errors from the process. */
+TEST(capture_error_of_external_command)
+{
+	bg_job_t *job = bg_run_external_job("echo there 1>&2");
+	assert_non_null(job);
+	assert_non_null(job->output);
+
+	int nlines;
+	char **lines = read_stream_lines(job->output, &nlines, 0, NULL, NULL);
+	assert_int_equal(0, nlines);
+	free_string_array(lines, nlines);
+
+	while(1)
+	{
+		pthread_spin_lock(&job->errors_lock);
+		if(job->errors == NULL)
+		{
+			pthread_spin_unlock(&job->errors_lock);
+			usleep(5000);
+			continue;
+		}
+		assert_true(starts_with_lit(job->errors, "there"));
+		pthread_spin_unlock(&job->errors_lock);
+		break;
+	}
+
+	assert_success(bg_job_wait(job));
+	assert_int_equal(0, job->exit_code);
+
+	bg_job_decref(job);
 }
 
 TEST(jobcount_variable_gets_updated)
