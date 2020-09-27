@@ -417,6 +417,8 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 static void *
 error_thread(void *p)
 {
+	enum { ERROR_SELECT_TIMEOUT_MS = 250 };
+
 	bg_job_t *jobs = NULL;
 
 	selector_t *selector = selector_alloc();
@@ -432,7 +434,7 @@ error_thread(void *p)
 	{
 		update_error_jobs(&jobs);
 		make_ready_list(jobs, selector);
-		while(selector_wait(selector, 250))
+		while(selector_wait(selector, ERROR_SELECT_TIMEOUT_MS))
 		{
 			int need_update_list = (jobs == NULL);
 
