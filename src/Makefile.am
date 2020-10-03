@@ -135,6 +135,46 @@ vifm_SOURCES = \
 	io/private/ionotif.c io/private/ionotif.h \
 	io/private/traverser.c io/private/traverser.h \
 	\
+	lua/lua/lapi.c lua/lua/lapi.h \
+	lua/lua/lauxlib.c lua/lua/lauxlib.h \
+	lua/lua/lbaselib.c \
+	lua/lua/lcode.c lua/lua/lcode.h \
+	lua/lua/lcorolib.c \
+	lua/lua/lctype.c lua/lua/lctype.h \
+	lua/lua/ldblib.c \
+	lua/lua/ldebug.c lua/lua/ldebug.h \
+	lua/lua/ldo.c lua/lua/ldo.h \
+	lua/lua/ldump.c \
+	lua/lua/lfunc.c lua/lua/lfunc.h \
+	lua/lua/lgc.c lua/lua/lgc.h \
+	lua/lua/linit.c \
+	lua/lua/liolib.c \
+	lua/lua/ljumptab.h \
+	lua/lua/llex.c lua/lua/llex.h \
+	lua/lua/llimits.h \
+	lua/lua/lmathlib.c \
+	lua/lua/lmem.c lua/lua/lmem.h \
+	lua/lua/loadlib.c \
+	lua/lua/lobject.c lua/lua/lobject.h \
+	lua/lua/lopcodes.c lua/lua/lopcodes.h \
+	lua/lua/lopnames.h \
+	lua/lua/loslib.c \
+	lua/lua/lparser.c lua/lua/lparser.h \
+	lua/lua/lprefix.h \
+	lua/lua/lstate.c lua/lua/lstate.h \
+	lua/lua/lstring.c lua/lua/lstring.h \
+	lua/lua/lstrlib.c \
+	lua/lua/ltable.c lua/lua/ltable.h \
+	lua/lua/ltablib.c \
+	lua/lua/ltm.c lua/lua/ltm.h \
+	lua/lua/lua.h \
+	lua/lua/luaconf.h \
+	lua/lua/lualib.h \
+	lua/lua/lundump.c lua/lua/lundump.h \
+	lua/lua/lutf8lib.c \
+	lua/lua/lvm.c lua/lua/lvm.h \
+	lua/lua/lzio.c lua/lua/lzio.h \
+	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bmarks_menu.c menus/bmarks_menu.h \

@@ -103,6 +103,10 @@ there for instructions.
     |  |  |-- iop.c - implementation of i/o primitive
     |  |  `-- ior.c - implementation of recursive i/o operations
     |  |
+    |  |-- lua/ - Lua interface
+    |  |  |
+    |  |  `-- lua/ - Lua 5.4 sources
+    |  |
     |  |-- menus/ - implementation of all menus
     |  |  |
     |  |  |-- apropos_menu.c - handles :apropos menu

@@ -53,6 +53,14 @@ io := private/ioc.c private/ioe.c private/ioeta.c private/ionotif.c
 io += private/traverser.c ioe.c ioeta.c iop.c ior.c
 io := $(addprefix io/, $(io))
 
+lua := lapi.c lauxlib.c lbaselib.c lcode.c lcorolib.c lctype.c ldblib.c \
+       ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c llex.c lmathlib.c \
+       lmem.c loadlib.c lobject.c lopcodes.c loslib.c lparser.c lstate.c \
+       lstring.c lstrlib.c ltable.c ltablib.c ltm.c lundump.c lutf8lib.c lvm.c \
+       lzio.c
+lua := $(addprefix lua/, $(lua))
+lua := $(addprefix lua/, $(lua))
+
 menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c colorscheme_menu.c \
          commands_menu.c dirhistory_menu.c dirstack_menu.c filetypes_menu.c \
          find_menu.c grep_menu.c history_menu.c jobs_menu.c locate_menu.c \
@@ -79,8 +87,8 @@ utilities := cancellation.c dynarray.c env.c file_streams.c \
              trie.c utf8.c utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
-vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
-                $(ui) $(utilities) args.c background.c bmarks.c \
+vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(lua) $(menus) \
+                $(modes) $(ui) $(utilities) args.c background.c bmarks.c \
                 bracket_notation.c builtin_functions.c cmd_completion.c \
                 cmd_core.c cmd_handlers.c compare.c compile_info.c dir_stack.c \
                 event_loop.c filelist.c filename_modifiers.c fops_common.c \

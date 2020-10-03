@@ -42,6 +42,7 @@ make check
 
 uncov "$original_worktree" new-gcovi --capture-worktree \
                                      --prefix src \
+                                     --exclude src/lua/lua \
                                      --exclude src/utils/parson.c \
                                      --exclude src/utils/xxhash.c \
                                      "$coverage_worktree/src"
