@@ -41,7 +41,8 @@ dist_vim_plugin__DATA = ../data/vim/plugin/vifm.vim
 dist_vim_syntax__DATA = ../data/vim/syntax/vifm.vim
 dist_global_colors__DATA = ../data/colors/Default-256.vifm
 
-dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt
+dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt \
+												../data/vim/doc/app/vifm-lua.txt
 nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
 
 dist_pkgdata_DATA = ../data/vifmrc@DATA_SUFFIX@
@@ -390,7 +391,8 @@ update_compile_info:
 	fi
 
 $(abs_srcdir)/../data/vim/doc/app/tags: \
-                                  $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt
+                                  $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt \
+                                  $(abs_srcdir)/../data/vim/doc/app/vifm-lua.txt
 	$(AM_V_GEN)mkdir -p ../data/vim/doc/app/; \
 	if [ -n "$(PERL)" ]; then \
 		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/app"; \
