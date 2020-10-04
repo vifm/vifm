@@ -57,3 +57,19 @@
    fun:replace_dir_entries
    fun:clone_view
 }
+
+{
+   there-is-no-leak-of-lua-objects-1
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:realloc
+   fun:l_alloc
+}
+{
+   there-is-no-leak-of-lua-objects-2
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:realloc
+   fun:l_alloc
+}
