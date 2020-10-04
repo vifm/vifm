@@ -959,8 +959,7 @@ cmds_state;
  *  - <0 -- one of CMDS_* errors from cmds.h;
  *  - =0 -- nothing was outputted to the status bar, don't need to save its
  *          state;
- *  - <0 -- something was outputted to the status bar, need to save its
- *          state. */
+ *  - >0 -- something was printed to the status bar, need to save its state. */
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
