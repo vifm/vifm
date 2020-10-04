@@ -105,7 +105,8 @@ there for instructions.
     |  |
     |  |-- lua/ - Lua interface
     |  |  |
-    |  |  `-- lua/ - Lua 5.4 sources
+    |  |  |-- lua/ - Lua 5.4 sources
+    |  |  `-- vlua.c - main Lua interface unit
     |  |
     |  |-- menus/ - implementation of all menus
     |  |  |

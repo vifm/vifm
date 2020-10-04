@@ -159,18 +159,19 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	lua/lua/ltable.$(OBJEXT) lua/lua/ltablib.$(OBJEXT) \
 	lua/lua/ltm.$(OBJEXT) lua/lua/lundump.$(OBJEXT) \
 	lua/lua/lutf8lib.$(OBJEXT) lua/lua/lvm.$(OBJEXT) \
-	lua/lua/lzio.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
-	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
-	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
-	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
-	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
-	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
-	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
-	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
-	menus/media_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
-	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
-	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
+	lua/lua/lzio.$(OBJEXT) lua/vlua.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
+	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
+	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
+	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
+	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
+	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
+	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
+	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
+	menus/marks_menu.$(OBJEXT) menus/media_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
+	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
+	menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -758,6 +759,8 @@ vifm_SOURCES = \
 	lua/lua/lvm.c lua/lua/lvm.h \
 	lua/lua/lzio.c lua/lua/lzio.h \
 	\
+	lua/vlua.c lua/vlua.h \
+	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bmarks_menu.c menus/bmarks_menu.h \
@@ -1177,6 +1180,13 @@ lua/lua/lvm.$(OBJEXT): lua/lua/$(am__dirstamp) \
 	lua/lua/$(DEPDIR)/$(am__dirstamp)
 lua/lua/lzio.$(OBJEXT): lua/lua/$(am__dirstamp) \
 	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/$(am__dirstamp):
+	@$(MKDIR_P) lua
+	@: > lua/$(am__dirstamp)
+lua/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) lua/$(DEPDIR)
+	@: > lua/$(DEPDIR)/$(am__dirstamp)
+lua/vlua.$(OBJEXT): lua/$(am__dirstamp) lua/$(DEPDIR)/$(am__dirstamp)
 menus/$(am__dirstamp):
 	@$(MKDIR_P) menus
 	@: > menus/$(am__dirstamp)
@@ -1437,6 +1447,7 @@ mostlyclean-compile:
 	-rm -f int/*.$(OBJEXT)
 	-rm -f io/*.$(OBJEXT)
 	-rm -f io/private/*.$(OBJEXT)
+	-rm -f lua/*.$(OBJEXT)
 	-rm -f lua/lua/*.$(OBJEXT)
 	-rm -f menus/*.$(OBJEXT)
 	-rm -f modes/*.$(OBJEXT)
@@ -1527,6 +1538,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ionotif.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/traverser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vlua.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lapi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lauxlib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lbaselib.Po@am__quote@
@@ -2369,6 +2381,8 @@ distclean-generic:
 	-rm -f io/$(am__dirstamp)
 	-rm -f io/private/$(DEPDIR)/$(am__dirstamp)
 	-rm -f io/private/$(am__dirstamp)
+	-rm -f lua/$(DEPDIR)/$(am__dirstamp)
+	-rm -f lua/$(am__dirstamp)
 	-rm -f lua/lua/$(DEPDIR)/$(am__dirstamp)
 	-rm -f lua/lua/$(am__dirstamp)
 	-rm -f menus/$(DEPDIR)/$(am__dirstamp)
@@ -2390,7 +2404,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) lua/lua/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) lua/$(DEPDIR) lua/lua/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-local distclean-tags
@@ -2446,7 +2460,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) lua/lua/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) lua/$(DEPDIR) lua/lua/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

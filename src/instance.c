@@ -26,6 +26,7 @@
 #include "engine/options.h"
 #include "engine/variables.h"
 #include "int/path_env.h"
+#include "lua/vlua.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/str.h"
@@ -94,6 +95,9 @@ instance_start_restart(void)
 	update_path_env(1);
 
 	reset_views();
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = vlua_init();
 }
 
 void
@@ -115,6 +119,7 @@ instance_finish_restart(void)
 	cs_load_pairs();
 
 	cfg_load();
+	vlua_load_plugins(curr_stats.vlua);
 
 	vifm_reexec_startup_commands();
 

@@ -48,6 +48,7 @@
 #include "int/path_env.h"
 #include "int/term_title.h"
 #include "int/vim.h"
+#include "lua/vlua.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/cmdline.h"
 #include "modes/modes.h"
@@ -290,6 +291,8 @@ vifm_main(int argc, char *argv[])
 
 	curr_stats.load_stage = 1;
 
+	curr_stats.vlua = vlua_init();
+
 	if(!vifm_args.no_configs)
 	{
 		load_scheme();
@@ -311,6 +314,8 @@ vifm_main(int argc, char *argv[])
 		 * configuration file sourcing if there is no `set trashdir=...` command. */
 		(void)trash_set_specs(cfg.trash_dir);
 	}
+
+	vlua_load_plugins(curr_stats.vlua);
 
 	check_path_for_file(&lwin, vifm_args.lwin_path, vifm_args.lwin_handle);
 	check_path_for_file(&rwin, vifm_args.rwin_path, vifm_args.rwin_handle);
@@ -640,6 +645,7 @@ vifm_finish(const char message[])
 void _gnuc_noreturn
 vifm_exit(int exit_code)
 {
+	vlua_finish(curr_stats.vlua);
 	ipc_free(curr_stats.ipc);
 	exit(exit_code);
 }

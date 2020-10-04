@@ -77,8 +77,8 @@ suites += bmarks env escape fileops filetype filter misc undo utils
 apps := fuzz regs_shmem_app
 
 # obtain list of sources that are being tested
-vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/
-vifm_src += modes/ ui/ utils/
+vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ lua/ lua/lua/ menus/
+vifm_src += modes/ modes/dialogs/ ui/ utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
 vifm_src := $(filter-out %/tags.c %/xxhash.c, $(vifm_src))
 

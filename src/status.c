@@ -201,6 +201,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->history_size = 0;
 
 	stats->ipc = NULL;
+	stats->vlua = NULL;
 
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
