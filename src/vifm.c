@@ -86,6 +86,7 @@
 #include "marks.h"
 #include "ops.h"
 #include "opt_handlers.h"
+#include "plugins.h"
 #include "registers.h"
 #include "running.h"
 #include "signals.h"
@@ -292,6 +293,7 @@ vifm_main(int argc, char *argv[])
 	curr_stats.load_stage = 1;
 
 	curr_stats.vlua = vlua_init();
+	curr_stats.plugs = plugs_create(curr_stats.vlua);
 
 	if(!vifm_args.no_configs)
 	{
@@ -315,7 +317,7 @@ vifm_main(int argc, char *argv[])
 		(void)trash_set_specs(cfg.trash_dir);
 	}
 
-	vlua_load_plugins(curr_stats.vlua);
+	plugs_load(curr_stats.plugs, cfg.config_dir);
 
 	check_path_for_file(&lwin, vifm_args.lwin_path, vifm_args.lwin_handle);
 	check_path_for_file(&rwin, vifm_args.rwin_path, vifm_args.rwin_handle);
@@ -645,6 +647,7 @@ vifm_finish(const char message[])
 void _gnuc_noreturn
 vifm_exit(int exit_code)
 {
+	plugs_free(curr_stats.plugs);
 	vlua_finish(curr_stats.vlua);
 	ipc_free(curr_stats.ipc);
 	exit(exit_code);

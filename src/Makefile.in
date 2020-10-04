@@ -210,10 +210,11 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	flist_hist.$(OBJEXT) flist_pos.$(OBJEXT) flist_sel.$(OBJEXT) \
 	instance.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) \
 	marks.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
-	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) trash.$(OBJEXT) types.$(OBJEXT) undo.$(OBJEXT) \
-	version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
+	plugins.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
+	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
+	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
+	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
+	viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS) $(nodist_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
@@ -883,6 +884,7 @@ vifm_SOURCES = \
 	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
+	plugins.c plugins.h \
 	registers.c registers.h \
 	running.c running.h \
 	search.c search.h \
@@ -1490,6 +1492,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/running.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@

@@ -298,6 +298,7 @@ vifm_SOURCES = \
 	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
+	plugins.c plugins.h \
 	registers.c registers.h \
 	running.c running.h \
 	search.c search.h \

@@ -4,10 +4,12 @@
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/str.h"
+#include "../../src/plugins.h"
 
 #include <test-utils.h>
 
 static vlua_t *vlua;
+static plugs_t *plugs;
 
 SETUP()
 {
@@ -16,10 +18,12 @@ SETUP()
 	create_dir(SANDBOX_PATH "/plugins/plug");
 
 	vlua = vlua_init();
+	plugs = plugs_create(vlua);
 }
 
 TEARDOWN()
 {
+	plugs_free(plugs);
 	vlua_finish(vlua);
 
 	remove_dir(SANDBOX_PATH "/plugins/plug");
@@ -67,7 +71,7 @@ TEST(multiple_plugins_loaded)
 	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return {}");
 
 	ui_sb_msg("");
-	vlua_load_plugins(vlua);
+	plugs_load(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
 	assert_success(vlua_run_string(vlua, "print((plug and '1y' or '1n').."

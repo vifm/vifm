@@ -16,28 +16,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__LUA__VLUA_H__
-#define VIFM__LUA__VLUA_H__
-
-/* This unit implements Lua interface. */
+#ifndef VIFM__PLUGINS_H__
+#define VIFM__PLUGINS_H__
 
 /* Declaration of opaque state of the unit. */
-typedef struct vlua_t vlua_t;
+typedef struct plugs_t plugs_t;
+
+struct vlua_t;
 
 /* Creates new instance of the unit.  Returns the instance or NULL. */
-vlua_t * vlua_init(void);
-
-/* Loads a single plugin on request.  Returns zero on success. */
-int vlua_load_plugin(vlua_t *vlua, const char plugin[]);
+plugs_t * plugs_create(struct vlua_t *vlua);
 
 /* Frees resources of the unit. */
-void vlua_finish(vlua_t *vlua);
+void plugs_free(plugs_t *plugs);
 
-/* Executes a Lua string.  Returns non-zero on error, otherwise zero is
- * returned. */
-int vlua_run_string(vlua_t *vlua, const char str[]);
+/* Loads plugins. */
+void plugs_load(plugs_t *plugs, const char base_dir[]);
 
-#endif /* VIFM__LUA__VLUA_H__ */
+#endif /* VIFM__PLUGINS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

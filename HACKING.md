@@ -238,6 +238,7 @@ there for instructions.
     |  |-- marks.c - stores information about marked directories
     |  |-- ops.c - most of operations performed on file system
     |  |-- opt_handlers.c - initialization of options and option change handlers
+    |  |-- plugins.c - plugin management
     |  |-- registers.c - implementation of registers
     |  |-- running.c - code of handing file and commands running
     |  |-- search.c - code for / and ? commands of normal mode

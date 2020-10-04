@@ -18,9 +18,6 @@
 
 #include "vlua.h"
 
-#include <sys/types.h>
-#include <dirent.h>
-
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* calloc() */
@@ -28,7 +25,6 @@
 #include "../cfg/config.h"
 #include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
-#include "../compat/os.h"
 #include "../compat/pthread.h"
 #include "../engine/cmds.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -38,7 +34,6 @@
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../utils/test_helpers.h"
 #include "../background.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
@@ -66,7 +61,6 @@ struct vlua_t
 	DA_INSTANCE_FIELD(ptrs); /* Declarations to enable use of DA_* on ptrs. */
 };
 
-TSTATIC void vlua_open_basic_lib(vlua_t *vlua);
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
 static int vifm_errordialog(lua_State *lua);
@@ -89,9 +83,8 @@ static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
 static int jobstream_close(lua_State *lua);
-TSTATIC int vlua_load_plugin(vlua_t *vlua, const char plugin[]);
+int vlua_load_plugin(vlua_t *vlua, const char plugin[]);
 static int load_plugin(lua_State *lua);
-TSTATIC int vlua_run_file(vlua_t *vlua, const char path[]);
 static state_ptr_t * state_store_pointer(vlua_t *vlua, void *ptr);
 static void set_state(lua_State *lua, vlua_t *vlua);
 static vlua_t * get_state(lua_State *lua);
@@ -163,40 +156,6 @@ vlua_init(void)
 	load_api(vlua->lua);
 
 	return vlua;
-}
-
-void
-vlua_load_plugins(vlua_t *vlua)
-{
-	/* TODO: handle situation when symlinks make same plugin be loaded more than
-	 *       once (check presence of resolved path in list of plugins). */
-
-	char full_path[PATH_MAX + 32];
-	snprintf(full_path, sizeof(full_path), "%s/plugins", cfg.config_dir);
-
-	DIR *dir = os_opendir(full_path);
-	if(dir == NULL)
-	{
-		return;
-	}
-
-	struct dirent *entry;
-	while((entry = os_readdir(dir)) != NULL)
-	{
-		if(is_builtin_dir(entry->d_name))
-		{
-			continue;
-		}
-
-		char dir_path[PATH_MAX + NAME_MAX + 64];
-		snprintf(dir_path, sizeof(dir_path), "%s/%s", full_path, entry->d_name);
-		if(is_dirent_targets_dir(dir_path, entry))
-		{
-			vlua_load_plugin(vlua, entry->d_name);
-		}
-	}
-
-	os_closedir(dir);
 }
 
 void
@@ -580,8 +539,7 @@ jobstream_close(lua_State *lua)
 	return luaL_fileresult(lua, 0, NULL);
 }
 
-/* Loads a single plugin on request.  Returns zero on success. */
-TSTATIC int
+int
 vlua_load_plugin(vlua_t *vlua, const char plugin[])
 {
 	luaL_requiref(vlua->lua, plugin, &load_plugin, 1);
