@@ -192,8 +192,7 @@ vlua_load_plugins(vlua_t *vlua)
 		snprintf(dir_path, sizeof(dir_path), "%s/%s", full_path, entry->d_name);
 		if(is_dirent_targets_dir(dir_path, entry))
 		{
-			luaL_requiref(vlua->lua, entry->d_name, &load_plugin, 1);
-			lua_pop(vlua->lua, 1);
+			vlua_load_plugin(vlua, entry->d_name);
 		}
 	}
 
@@ -585,13 +584,10 @@ jobstream_close(lua_State *lua)
 TSTATIC int
 vlua_load_plugin(vlua_t *vlua, const char plugin[])
 {
-	lua_pushstring(vlua->lua, plugin);
-	if(load_plugin(vlua->lua))
-	{
-		lua_pop(vlua->lua, 1);
-		return 0;
-	}
-	return 1;
+	luaL_requiref(vlua->lua, plugin, &load_plugin, 1);
+	int failure = (lua_isnil(vlua->lua, -1));
+	lua_pop(vlua->lua, 1);
+	return failure;
 }
 
 /* Loads a single plugin as a module.  Returns value that corresponds to the
