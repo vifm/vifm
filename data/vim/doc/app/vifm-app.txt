@@ -2134,7 +2134,7 @@ order using the '.' operator.  Any whitespace is ignored.
     exchange top two items of the directory stack.
 
 :[line]pu[t][!] [reg] [ &]                     *vifm-:put* *vifm-:pu*
-    puts files from specified register (" by default) into current directory.
+    put files from specified register (" by default) into current directory.
     The [line] can be used to pick node in a tree-view.  "!" moves files
     from their original location instead of copying them.  During this
     operation no confirmation dialogs will be shown, all checks are performed
