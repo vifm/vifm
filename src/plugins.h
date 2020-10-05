@@ -22,6 +22,22 @@
 /* Declaration of opaque state of the unit. */
 typedef struct plugs_t plugs_t;
 
+/* Status of a plugin. */
+typedef enum
+{
+	PLS_SUCCESS, /* Loaded successfully. */
+	PLS_FAILURE  /* Failed to load. */
+}
+PluginLoadStatus;
+
+/* Information about a plugin. */
+typedef struct
+{
+	char *path;              /* Full path to the plugin. */
+	PluginLoadStatus status; /* Status. */
+}
+plug_t;
+
 struct vlua_t;
 
 /* Creates new instance of the unit.  Returns the instance or NULL. */
@@ -32,6 +48,10 @@ void plugs_free(plugs_t *plugs);
 
 /* Loads plugins. */
 void plugs_load(plugs_t *plugs, const char base_dir[]);
+
+/* Assigns *plug to information structure about a plugin specified by its index.
+ * Returns non-zero on success, otherwise zero is returned. */
+int plugs_get(const plugs_t *plugs, int idx, const plug_t **plug);
 
 #endif /* VIFM__PLUGINS_H__ */
 

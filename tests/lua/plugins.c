@@ -88,5 +88,28 @@ TEST(loading_missing_plugin_fails)
 	assert_failure(vlua_load_plugin(vlua, "plug"));
 }
 
+TEST(plugin_statuses_are_correct)
+{
+	create_dir(SANDBOX_PATH "/plugins/plug2");
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
+	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return");
+
+	plugs_load(plugs, cfg.config_dir);
+
+	const plug_t *plug;
+	PluginLoadStatus status;
+	assert_true(plugs_get(plugs, 0, &plug));
+	status = (ends_with(plug->path, "plug2") ? PLS_FAILURE : PLS_SUCCESS);
+	assert_int_equal(status, plug->status);
+	assert_true(plugs_get(plugs, 1, &plug));
+	status = (ends_with(plug->path, "plug2") ? PLS_FAILURE : PLS_SUCCESS);
+	assert_int_equal(status, plug->status);
+	assert_false(plugs_get(plugs, 2, &plug));
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
+	remove_dir(SANDBOX_PATH "/plugins/plug2");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

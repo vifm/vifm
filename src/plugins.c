@@ -23,6 +23,7 @@
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "lua/vlua.h"
+#include "utils/darray.h"
 #include "utils/fs.h"
 #include "utils/path.h"
 
@@ -30,6 +31,8 @@
 struct plugs_t
 {
 	struct vlua_t *vlua;      /* Reference to vlua unit. */
+	plug_t *plugs;            /* Known plugins. */
+	DA_INSTANCE_FIELD(plugs); /* Declarations to enable use of DA_* on plugs. */
 };
 
 plugs_t *
@@ -48,7 +51,17 @@ plugs_create(struct vlua_t *vlua)
 void
 plugs_free(plugs_t *plugs)
 {
-	free(plugs);
+	if(plugs != NULL)
+	{
+		size_t i;
+		for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
+		{
+			free(plugs->plugs[i].path);
+		}
+		DA_REMOVE_ALL(plugs->plugs);
+
+		free(plugs);
+	}
 }
 
 void
@@ -74,15 +87,46 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 			continue;
 		}
 
+		plug_t *plug = DA_EXTEND(plugs->plugs);
+		if(plug == NULL)
+		{
+			continue;
+		}
+
 		char dir_path[PATH_MAX + NAME_MAX + 4];
 		snprintf(dir_path, sizeof(dir_path), "%s/%s", full_path, entry->d_name);
-		if(is_dirent_targets_dir(dir_path, entry))
+
+		plug->path = strdup(dir_path);
+		if(plug->path == NULL)
 		{
-			vlua_load_plugin(plugs->vlua, entry->d_name);
+			continue;
+		}
+
+		plug->status = PLS_FAILURE;
+		DA_COMMIT(plugs->plugs);
+
+		if(is_dirent_targets_dir(plug->path, entry))
+		{
+			if(vlua_load_plugin(plugs->vlua, entry->d_name) == 0)
+			{
+				plug->status = PLS_SUCCESS;
+			}
 		}
 	}
 
 	os_closedir(dir);
+}
+
+int
+plugs_get(const plugs_t *plugs, int idx, const plug_t **plug)
+{
+	if(idx < 0 || idx >= (int)DA_SIZE(plugs->plugs))
+	{
+		return 0;
+	}
+
+	*plug = &plugs->plugs[idx];
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
