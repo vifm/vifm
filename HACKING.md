@@ -130,6 +130,7 @@ there for instructions.
     |  |  |-- marks_menu.c - handles :marks menu
     |  |  |-- media.c - handles :media menu
     |  |  |-- menus.c - handles all kinds of menus
+    |  |  |-- plugins_menu.c - handles :plugins menu
     |  |  |-- registers_menu.c - handles :registers menu
     |  |  |-- undolist_menu.c - handles :undolist menu
     |  |  |-- users_menu.c - handles menus created by %m or %M macros

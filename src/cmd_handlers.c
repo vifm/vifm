@@ -243,6 +243,7 @@ static int map_or_remap(const cmd_info_t *cmd_info, int no_remap);
 static int normal_cmd(const cmd_info_t *cmd_info);
 static int nunmap_cmd(const cmd_info_t *cmd_info);
 static int only_cmd(const cmd_info_t *cmd_info);
+static int plugins_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
 static int pushd_cmd(const cmd_info_t *cmd_info);
 static int put_cmd(const cmd_info_t *cmd_info);
@@ -678,6 +679,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "switch to single-view mode",
 	  .flags = HAS_COMMENT,
 	  .handler = &only_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "plugins",           .abbr = NULL,    .id = -1,
+	  .descr = "display plugins menu",
+	  .flags = HAS_COMMENT,
+	  .handler = &plugins_cmd,     .min_args = 0,   .max_args = 0, },
 	{ .name = "popd",              .abbr = NULL,    .id = -1,
 	  .descr = "pop top of directory stack",
 	  .flags = HAS_COMMENT,
@@ -3594,6 +3599,13 @@ only_cmd(const cmd_info_t *cmd_info)
 {
 	only();
 	return 0;
+}
+
+/* Displays plugins menu. */
+static int
+plugins_cmd(const cmd_info_t *cmd_info)
+{
+	return (show_plugins_menu(curr_view) != 0);
 }
 
 static int

@@ -198,6 +198,7 @@ vifm_SOURCES = \
 	menus/marks_menu.c menus/marks_menu.h \
 	menus/media_menu.c menus/media_menu.h \
 	menus/menus.c menus/menus.h \
+	menus/plugins_menu.c menus/plugins_menu.h \
 	menus/registers_menu.c menus/registers_menu.h \
 	menus/undolist_menu.c menus/undolist_menu.h \
 	menus/users_menu.c menus/users_menu.h \

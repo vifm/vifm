@@ -169,9 +169,9 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
 	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
 	menus/marks_menu.$(OBJEXT) menus/media_menu.$(OBJEXT) \
-	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
-	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
-	menus/vifm_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/plugins_menu.$(OBJEXT) \
+	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
+	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -784,6 +784,7 @@ vifm_SOURCES = \
 	menus/marks_menu.c menus/marks_menu.h \
 	menus/media_menu.c menus/media_menu.h \
 	menus/menus.c menus/menus.h \
+	menus/plugins_menu.c menus/plugins_menu.h \
 	menus/registers_menu.c menus/registers_menu.h \
 	menus/undolist_menu.c menus/undolist_menu.h \
 	menus/users_menu.c menus/users_menu.h \
@@ -1235,6 +1236,8 @@ menus/media_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/menus.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
+menus/plugins_menu.$(OBJEXT): menus/$(am__dirstamp) \
+	menus/$(DEPDIR)/$(am__dirstamp)
 menus/registers_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/undolist_menu.$(OBJEXT): menus/$(am__dirstamp) \
@@ -1593,6 +1596,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/marks_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/media_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/menus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/plugins_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/registers_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/trash_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/trashes_menu.Po@am__quote@

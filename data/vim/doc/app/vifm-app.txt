@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Sep 24
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2120,6 +2120,9 @@ order using the '.' operator.  Any whitespace is ignored.
 
 :on[ly]                                        *vifm-:only* *vifm-:on*
     switch to a one window view.
+
+:plugins                                       *vifm-:plugins*
+    open plugins menu.
 
 :popd                                          *vifm-:popd*
     remove pane directories from stack.

@@ -309,6 +309,7 @@ const char *tags[] = {
 	"vifm-:nunmap",
 	"vifm-:on",
 	"vifm-:only",
+	"vifm-:plugins",
 	"vifm-:popd",
 	"vifm-:pu",
 	"vifm-:pushd",
