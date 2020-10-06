@@ -83,8 +83,7 @@ static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
 static int jobstream_close(lua_State *lua);
-int vlua_load_plugin(vlua_t *vlua, const char plugin[]);
-static int load_plugin(lua_State *lua);
+static int load_plugin(lua_State *lua, const char name[]);
 static state_ptr_t * state_store_pointer(vlua_t *vlua, void *ptr);
 static void set_state(lua_State *lua, vlua_t *vlua);
 static vlua_t * get_state(lua_State *lua);
@@ -542,19 +541,20 @@ jobstream_close(lua_State *lua)
 int
 vlua_load_plugin(vlua_t *vlua, const char plugin[])
 {
-	luaL_requiref(vlua->lua, plugin, &load_plugin, 1);
-	int failure = (lua_isnil(vlua->lua, -1));
-	lua_pop(vlua->lua, 1);
-	return failure;
+	if(load_plugin(vlua->lua, plugin) == 0)
+	{
+		lua_setglobal(vlua->lua, plugin);
+		return 0;
+	}
+	return 1;
 }
 
-/* Loads a single plugin as a module.  Returns value that corresponds to the
- * module. */
+/* Loads a single plugin as a module.  Returns zero on success and places value
+ * that corresponds to the module onto the stack, otherwise non-zero is
+ * returned. */
 static int
-load_plugin(lua_State *lua)
+load_plugin(lua_State *lua, const char name[])
 {
-	const char *name = lua_tostring(lua, 1);
-
 	char full_path[PATH_MAX + 32];
 	snprintf(full_path, sizeof(full_path), "%s/plugins/%s/init.lua",
 			cfg.config_dir, name);
@@ -563,16 +563,19 @@ load_plugin(lua_State *lua)
 	{
 		ui_sb_errf("Failed to load '%s' plugin: %s", name, lua_tostring(lua, -1));
 		lua_pop(lua, 1);
-		return 0;
+		return 1;
 	}
-	if(!lua_istable(lua, -1))
+	if(lua_gettop(lua) == 0 || !lua_istable(lua, -1))
 	{
 		ui_sb_errf("Failed to load '%s' plugin: %s", name,
 				"it didn't return a table");
-		lua_pop(lua, 1);
-		return 0;
+		if(lua_gettop(lua) > 0)
+		{
+			lua_pop(lua, 1);
+		}
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 int
