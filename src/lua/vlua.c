@@ -184,6 +184,11 @@ load_api(lua_State *lua)
 	luaL_setfuncs(lua, job_methods, 0);
 	lua_pop(lua, 1);
 
+	luaL_newmetatable(lua, "VifmPluginEnv");
+	lua_pushglobaltable(lua);
+	lua_setfield(lua, -2, "__index");
+	lua_pop(lua, 1);
+
 	lua_pushcfunction(lua, &print);
 	lua_setglobal(lua, "print");
 
@@ -559,12 +564,29 @@ load_plugin(lua_State *lua, const char name[])
 	snprintf(full_path, sizeof(full_path), "%s/plugins/%s/init.lua",
 			cfg.config_dir, name);
 
-	if(luaL_dofile(lua, full_path))
+	if(luaL_loadfile(lua, full_path))
 	{
 		ui_sb_errf("Failed to load '%s' plugin: %s", name, lua_tostring(lua, -1));
 		lua_pop(lua, 1);
 		return 1;
 	}
+
+	lua_newtable(lua);
+	luaL_getmetatable(lua, "VifmPluginEnv");
+	lua_setmetatable(lua, -2);
+
+	if(lua_setupvalue(lua, -2, 1) == NULL)
+	{
+		lua_pop(lua, 1);
+	}
+
+	if(lua_pcall(lua, 0, 1, 0))
+	{
+		ui_sb_errf("Failed to start '%s' plugin: %s", name, lua_tostring(lua, -1));
+		lua_pop(lua, 1);
+		return 1;
+	}
+
 	if(lua_gettop(lua) == 0 || !lua_istable(lua, -1))
 	{
 		ui_sb_errf("Failed to load '%s' plugin: %s", name,
@@ -575,6 +597,7 @@ load_plugin(lua_State *lua, const char name[])
 		}
 		return 1;
 	}
+
 	return 0;
 }
 
