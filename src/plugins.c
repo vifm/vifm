@@ -31,7 +31,7 @@
 struct plugs_t
 {
 	struct vlua_t *vlua;      /* Reference to vlua unit. */
-	plug_t *plugs;            /* Known plugins. */
+	plug_t **plugs;           /* Known plugins. */
 	DA_INSTANCE_FIELD(plugs); /* Declarations to enable use of DA_* on plugs. */
 };
 
@@ -56,7 +56,8 @@ plugs_free(plugs_t *plugs)
 		size_t i;
 		for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
 		{
-			free(plugs->plugs[i].path);
+			free(plugs->plugs[i]->path);
+			free(plugs->plugs[i]);
 		}
 		DA_REMOVE_ALL(plugs->plugs);
 
@@ -87,11 +88,18 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 			continue;
 		}
 
-		plug_t *plug = DA_EXTEND(plugs->plugs);
+		plug_t **plug_ptr = DA_EXTEND(plugs->plugs);
+		if(plug_ptr == NULL)
+		{
+			continue;
+		}
+
+		plug_t *plug = calloc(1, sizeof(*plug));
 		if(plug == NULL)
 		{
 			continue;
 		}
+		*plug_ptr = plug;
 
 		char dir_path[PATH_MAX + NAME_MAX + 4];
 		snprintf(dir_path, sizeof(dir_path), "%s/%s", full_path, entry->d_name);
@@ -99,6 +107,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		plug->path = strdup(dir_path);
 		if(plug->path == NULL)
 		{
+			free(plug);
 			continue;
 		}
 
@@ -125,7 +134,7 @@ plugs_get(const plugs_t *plugs, int idx, const plug_t **plug)
 		return 0;
 	}
 
-	*plug = &plugs->plugs[idx];
+	*plug = plugs->plugs[idx];
 	return 1;
 }
 
