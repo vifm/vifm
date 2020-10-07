@@ -85,6 +85,7 @@ static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
 static int jobstream_close(lua_State *lua);
 static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
+static void setup_plugin_env(lua_State *lua, plug_t *plug);
 static state_ptr_t * state_store_pointer(vlua_t *vlua, void *ptr);
 static void set_state(lua_State *lua, vlua_t *vlua);
 static vlua_t * get_state(lua_State *lua);
@@ -211,9 +212,25 @@ load_api(lua_State *lua)
 static int
 print(lua_State *lua)
 {
+	/* TODO: handle arbitrary number of arguments. */
+
 	const char *msg = luaL_checkstring(lua, 1);
-	ui_sb_msg(msg);
-	curr_stats.save_msg = 1;
+
+	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
+	if(plug != NULL)
+	{
+		if(plug->log_len != 0)
+		{
+			(void)strappendch(&plug->log, &plug->log_len, '\n');
+		}
+		(void)strappend(&plug->log, &plug->log_len, msg);
+	}
+	else
+	{
+		ui_sb_msg(msg);
+		curr_stats.save_msg = 1;
+	}
+
 	return 0;
 }
 
@@ -362,9 +379,8 @@ lua_cmd_handler(const cmd_info_t *cmd_info)
 	from_pointer(lua, p->ptr);
 
 	lua_newtable(lua);
-	lua_pushliteral(lua, "args");
 	lua_pushstring(lua, cmd_info->args);
-	lua_settable(lua, -3);
+	lua_setfield(lua, -2, "args");
 
 	curr_stats.save_msg = 0;
 
@@ -572,15 +588,7 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 		return 1;
 	}
 
-	lua_newtable(lua);
-	luaL_getmetatable(lua, "VifmPluginEnv");
-	lua_setmetatable(lua, -2);
-
-	if(lua_setupvalue(lua, -2, 1) == NULL)
-	{
-		lua_pop(lua, 1);
-	}
-
+	setup_plugin_env(lua, plug);
 	if(lua_pcall(lua, 0, 1, 0))
 	{
 		ui_sb_errf("Failed to start '%s' plugin: %s", name, lua_tostring(lua, -1));
@@ -600,6 +608,23 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 	}
 
 	return 0;
+}
+
+/* Sets upvalue #1 to a plugin-specific version environment. */
+static void
+setup_plugin_env(lua_State *lua, plug_t *plug)
+{
+	lua_newtable(lua);
+	lua_pushlightuserdata(lua, plug);
+	lua_pushcclosure(lua, &print, 1);
+	lua_setfield(lua, -2, "print");
+	luaL_getmetatable(lua, "VifmPluginEnv");
+	lua_setmetatable(lua, -2);
+
+	if(lua_setupvalue(lua, -2, 1) == NULL)
+	{
+		lua_pop(lua, 1);
+	}
 }
 
 int

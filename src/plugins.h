@@ -19,6 +19,8 @@
 #ifndef VIFM__PLUGINS_H__
 #define VIFM__PLUGINS_H__
 
+#include <stddef.h> /* size_t */
+
 /* Declaration of opaque state of the unit. */
 typedef struct plugs_t plugs_t;
 
@@ -33,7 +35,11 @@ PluginLoadStatus;
 /* Information about a plugin. */
 typedef struct plug_t
 {
-	char *path;              /* Full path to the plugin. */
+	char *path; /* Full path to the plugin. */
+
+	char *log;      /* Log output of the plugin. */
+	size_t log_len; /* Length of the log field. */
+
 	PluginLoadStatus status; /* Status. */
 }
 plug_t;

@@ -57,6 +57,7 @@ plugs_free(plugs_t *plugs)
 		for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
 		{
 			free(plugs->plugs[i]->path);
+			free(plugs->plugs[i]->log);
 			free(plugs->plugs[i]);
 		}
 		DA_REMOVE_ALL(plugs->plugs);
