@@ -1,5 +1,7 @@
 0.11 to current
 
+	Added beginnings of Lua plugins.
+
 	Added :plugins command that opens plugins menu.
 
 0.11-beta to 0.11 (2020-09-24)
