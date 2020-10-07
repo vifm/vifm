@@ -5,6 +5,24 @@
 }
 
 {
+   wcsncmp-avx2-uninitialized-read
+   Memcheck:Value8
+   fun:__wcsncmp_avx2
+}
+
+{
+   wcsncmp-avx2-uninitialized-cond
+   Memcheck:Cond
+   fun:__wcsncmp_avx2
+}
+
+{
+   wcsncmp-avx2-wrong-read
+   Memcheck:Addr32
+   fun:__wcsncmp_avx2
+}
+
+{
    wcscmp-wrong-read
    Memcheck:Addr8
    fun:wcscmp
