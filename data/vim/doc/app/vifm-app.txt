@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 6
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2122,7 +2122,7 @@ order using the '.' operator.  Any whitespace is ignored.
     switch to a one window view.
 
 :plugins                                       *vifm-:plugins*
-    open plugins menu.
+    open plugins menu.  See |vifm-menus-and-dialogs| for controls.
 
 :popd                                          *vifm-:popd*
     remove pane directories from stack.
@@ -5055,6 +5055,11 @@ m - mount/unmount device (cursor should be positioned on lines under device
     information).
 [ - put cursor on the previous device.
 ] - put cursor on the next device.
+
+Plugins menu~
+
+e - display log messages of selected plugin if any were collected.  They are
+displayed in a new menu, but you can get back to plugins menu by pressing h.
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*

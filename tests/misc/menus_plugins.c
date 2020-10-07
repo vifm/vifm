@@ -39,9 +39,6 @@ SETUP()
 	create_dir(SANDBOX_PATH "/plugins/plug2");
 	make_file(SANDBOX_PATH "/plugins/plug1/init.lua", "return {}");
 	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return");
-
-	plugs_load(curr_stats.plugs, cfg.config_dir);
-	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 }
 
 TEARDOWN()
@@ -68,6 +65,9 @@ TEARDOWN()
 
 TEST(plugins_are_listed)
 {
+	plugs_load(curr_stats.plugs, cfg.config_dir);
+	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+
 	assert_int_equal(2, menu_get_current()->len);
 	const char *status0 = "[loaded] ";
 	const char *status1 = "[failed] ";
@@ -82,6 +82,9 @@ TEST(plugins_are_listed)
 
 TEST(gf_press)
 {
+	plugs_load(curr_stats.plugs, cfg.config_dir);
+	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+
 	char *saved_cwd = save_cwd();
 
 	if(ends_with(menu_get_current()->items[0], "2"))
@@ -99,6 +102,37 @@ TEST(gf_press)
 	char path[PATH_MAX + 1];
 	get_current_full_path(&lwin, sizeof(path), path);
 	assert_true(paths_are_same(path, SANDBOX_PATH "/plugins/plug1"));
+}
+
+TEST(e_press_without_errors)
+{
+	plugs_load(curr_stats.plugs, cfg.config_dir);
+	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+
+	(void)vle_keys_exec(WK_e);
+	assert_true(starts_with_lit(menu_get_current()->items[0], "["));
+}
+
+TEST(e_press_with_errors)
+{
+	make_file(SANDBOX_PATH "/plugins/plug1/init.lua", "print 'err1\\nerr2'\n"
+	                                                  "return {}");
+	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "print 'err1'\n"
+	                                                  "print 'err2'\n"
+	                                                  "return");
+
+	plugs_load(curr_stats.plugs, cfg.config_dir);
+	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+
+	(void)vle_keys_exec(WK_e);
+	assert_string_equal("err1", menu_get_current()->items[0]);
+	assert_string_equal("err2", menu_get_current()->items[1]);
+
+	/* Unknown press to check that it doesn't mess things up. */
+	(void)vle_keys_exec(WK_x);
+
+	(void)vle_keys_exec(WK_h);
+	assert_true(starts_with_lit(menu_get_current()->items[0], "["));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -78,7 +78,8 @@ affect or be visible other plugins.
 --------------------------------------------------------------------------------
 *vifm-lua-api*
 
-Builtin `print()` function prints messages on statusbar.
+Builtin `print()` function puts messages to plugin's log (see |vifm-:plugins|
+menu).  At the moment it handles only one argument.
 
 All API calls can raise errors on generic internal issues or when argument
 are missing or have wrong type, table keys are missing or have wrong type.

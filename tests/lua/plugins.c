@@ -55,11 +55,22 @@ TEST(bad_return_value)
 
 TEST(syntax_error)
 {
-	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "invalidlua");
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "-+");
 
 	ui_sb_msg("");
 	assert_failure(vlua_load_plugin(vlua, "plug", NULL));
 	assert_true(starts_with_lit(ui_sb_last(),"Failed to load 'plug' plugin: "));
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
+TEST(runtime_error)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "badcall()");
+
+	ui_sb_msg("");
+	assert_failure(vlua_load_plugin(vlua, "plug", NULL));
+	assert_true(starts_with_lit(ui_sb_last(),"Failed to start 'plug' plugin: "));
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }

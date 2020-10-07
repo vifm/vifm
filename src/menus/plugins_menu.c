@@ -31,6 +31,9 @@
 
 static KHandlerResponse plugs_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
+static void show_plugin_log(view_t *view, menu_data_t *m, plug_t *plug);
+static KHandlerResponse log_khandler(view_t *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 /* Plugins menu description. */
 static menu_data_t plugs_m;
@@ -68,6 +71,45 @@ plugs_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		const plug_t *plug = m->void_data[m->pos];
 		(void)menus_goto_file(m, view, plug->path, 0);
 		return KHR_CLOSE_MENU;
+	}
+	else if(wcscmp(keys, L"e") == 0)
+	{
+		show_plugin_log(view, m, m->void_data[m->pos]);
+		return KHR_REFRESH_WINDOW;
+	}
+	return KHR_UNHANDLED;
+}
+
+/* Shows log messages of the plugin if there is something.  Switches to a
+ * separate menu description. */
+static void
+show_plugin_log(view_t *view, menu_data_t *m, plug_t *plug)
+{
+	if(is_null_or_empty(plug->log))
+	{
+		show_error_msg("Plugin log", "No messages to show");
+	}
+	else
+	{
+		static menu_data_t m;
+
+		menus_init_data(&m, view, format_str("Plugin log (%s)", plug->path), NULL);
+		m.key_handler = &log_khandler;
+		m.items = break_into_lines(plug->log, plug->log_len, &m.len, 0);
+
+		modmenu_reenter(&m);
+	}
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+log_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"h") == 0)
+	{
+		modmenu_reenter(&plugs_m);
+		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;
 }
