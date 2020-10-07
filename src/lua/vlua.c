@@ -20,7 +20,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* calloc() */
+#include <stdlib.h> /* calloc() free() */
 
 #include "../cfg/config.h"
 #include "../compat/dtype.h"
@@ -212,9 +212,21 @@ load_api(lua_State *lua)
 static int
 print(lua_State *lua)
 {
-	/* TODO: handle arbitrary number of arguments. */
+	char *msg = NULL;
+	size_t msg_len = 0U;
 
-	const char *msg = luaL_checkstring(lua, 1);
+	int nargs = lua_gettop(lua);
+	int i;
+	for(i = 0; i < nargs; ++i)
+	{
+		const char *piece = luaL_tolstring(lua, i + 1, NULL);
+		if(i > 0)
+		{
+			(void)strappendch(&msg, &msg_len, '\t');
+		}
+		(void)strappend(&msg, &msg_len, piece);
+		lua_pop(lua, 1);
+	}
 
 	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
 	if(plug != NULL)
@@ -231,6 +243,7 @@ print(lua_State *lua)
 		curr_stats.save_msg = 1;
 	}
 
+	free(msg);
 	return 0;
 }
 

@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 7
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 8
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -79,7 +79,7 @@ affect or be visible other plugins.
 *vifm-lua-api*
 
 Builtin `print()` function puts messages to plugin's log (see |vifm-:plugins|
-menu).  At the moment it handles only one argument.
+menu).
 
 All API calls can raise errors on generic internal issues or when argument
 are missing or have wrong type, table keys are missing or have wrong type.

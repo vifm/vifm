@@ -33,8 +33,8 @@ TEARDOWN()
 TEST(print_outputs_to_statusbar)
 {
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print 'msg'"));
-	assert_string_equal("msg", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print('arg1', 'arg2')"));
+	assert_string_equal("arg1\targ2", ui_sb_last());
 }
 
 TEST(vifm_errordialog)
