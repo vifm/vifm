@@ -31,7 +31,7 @@ typedef enum
 PluginLoadStatus;
 
 /* Information about a plugin. */
-typedef struct
+typedef struct plug_t
 {
 	char *path;              /* Full path to the plugin. */
 	PluginLoadStatus status; /* Status. */

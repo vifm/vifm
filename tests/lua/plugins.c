@@ -35,7 +35,7 @@ TEST(good_plugin_loaded)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
 
 	ui_sb_msg("");
-	assert_success(vlua_load_plugin(vlua, "plug"));
+	assert_success(vlua_load_plugin(vlua, "plug", NULL));
 	assert_string_equal("", ui_sb_last());
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
@@ -46,7 +46,7 @@ TEST(bad_return_value)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return 123");
 
 	ui_sb_msg("");
-	assert_failure(vlua_load_plugin(vlua, "plug"));
+	assert_failure(vlua_load_plugin(vlua, "plug", NULL));
 	assert_string_equal("Failed to load 'plug' plugin: it didn't return a table",
 			ui_sb_last());
 
@@ -58,7 +58,7 @@ TEST(syntax_error)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "invalidlua");
 
 	ui_sb_msg("");
-	assert_failure(vlua_load_plugin(vlua, "plug"));
+	assert_failure(vlua_load_plugin(vlua, "plug", NULL));
 	assert_true(starts_with_lit(ui_sb_last(),"Failed to load 'plug' plugin: "));
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
@@ -85,7 +85,7 @@ TEST(multiple_plugins_loaded)
 
 TEST(loading_missing_plugin_fails)
 {
-	assert_failure(vlua_load_plugin(vlua, "plug"));
+	assert_failure(vlua_load_plugin(vlua, "plug", NULL));
 }
 
 TEST(plugin_statuses_are_correct)

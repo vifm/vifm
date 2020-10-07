@@ -116,7 +116,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 
 		if(is_dirent_targets_dir(plug->path, entry))
 		{
-			if(vlua_load_plugin(plugs->vlua, entry->d_name) == 0)
+			if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
 			{
 				plug->status = PLS_SUCCESS;
 			}

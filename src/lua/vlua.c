@@ -39,6 +39,7 @@
 #include "../filelist.h"
 #include "../filename_modifiers.h"
 #include "../macros.h"
+#include "../plugins.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
@@ -83,7 +84,7 @@ static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
 static int jobstream_close(lua_State *lua);
-static int load_plugin(lua_State *lua, const char name[]);
+static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
 static state_ptr_t * state_store_pointer(vlua_t *vlua, void *ptr);
 static void set_state(lua_State *lua, vlua_t *vlua);
 static vlua_t * get_state(lua_State *lua);
@@ -544,9 +545,9 @@ jobstream_close(lua_State *lua)
 }
 
 int
-vlua_load_plugin(vlua_t *vlua, const char plugin[])
+vlua_load_plugin(vlua_t *vlua, const char plugin[], plug_t *plug)
 {
-	if(load_plugin(vlua->lua, plugin) == 0)
+	if(load_plugin(vlua->lua, plugin, plug) == 0)
 	{
 		lua_setglobal(vlua->lua, plugin);
 		return 0;
@@ -558,7 +559,7 @@ vlua_load_plugin(vlua_t *vlua, const char plugin[])
  * that corresponds to the module onto the stack, otherwise non-zero is
  * returned. */
 static int
-load_plugin(lua_State *lua, const char name[])
+load_plugin(lua_State *lua, const char name[], plug_t *plug)
 {
 	char full_path[PATH_MAX + 32];
 	snprintf(full_path, sizeof(full_path), "%s/plugins/%s/init.lua",

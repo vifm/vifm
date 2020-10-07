@@ -24,11 +24,13 @@
 /* Declaration of opaque state of the unit. */
 typedef struct vlua_t vlua_t;
 
+struct plug_t;
+
 /* Creates new instance of the unit.  Returns the instance or NULL. */
 vlua_t * vlua_init(void);
 
 /* Loads a single plugin on request.  Returns zero on success. */
-int vlua_load_plugin(vlua_t *vlua, const char plugin[]);
+int vlua_load_plugin(vlua_t *vlua, const char plugin[], struct plug_t *plug);
 
 /* Frees resources of the unit. */
 void vlua_finish(vlua_t *vlua);
