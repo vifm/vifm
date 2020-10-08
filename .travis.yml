@@ -53,6 +53,7 @@ after_success:
  - if [ "$COVERITY_SCAN_BRANCH" != 1 -a "$CC" = gcc ]; then
      coveralls --encoding iso-8859-1 --build-root src/
                                      --exclude tests
+                                     --exclude src/lua/lua
                                      --exclude src/utils/parson.c
                                      --exclude src/utils/xxhash.c
                                      --gcov-options '\-p';

@@ -726,12 +726,12 @@ menus_def_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{
-		(void)menus_goto_file(m, curr_view, m->items[m->pos], 0);
+		(void)menus_goto_file(m, view, m->items[m->pos], 0);
 		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		(void)menus_goto_file(m, curr_view, m->items[m->pos], 1);
+		(void)menus_goto_file(m, view, m->items[m->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"c") == 0)

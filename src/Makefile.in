@@ -143,16 +143,33 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
 	io/private/ioc.$(OBJEXT) io/private/ioe.$(OBJEXT) \
 	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
-	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
-	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
-	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
-	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
-	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
-	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
-	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
-	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
-	menus/media_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
+	io/private/traverser.$(OBJEXT) lua/lua/lapi.$(OBJEXT) \
+	lua/lua/lauxlib.$(OBJEXT) lua/lua/lbaselib.$(OBJEXT) \
+	lua/lua/lcode.$(OBJEXT) lua/lua/lcorolib.$(OBJEXT) \
+	lua/lua/lctype.$(OBJEXT) lua/lua/ldblib.$(OBJEXT) \
+	lua/lua/ldebug.$(OBJEXT) lua/lua/ldo.$(OBJEXT) \
+	lua/lua/ldump.$(OBJEXT) lua/lua/lfunc.$(OBJEXT) \
+	lua/lua/lgc.$(OBJEXT) lua/lua/linit.$(OBJEXT) \
+	lua/lua/liolib.$(OBJEXT) lua/lua/llex.$(OBJEXT) \
+	lua/lua/lmathlib.$(OBJEXT) lua/lua/lmem.$(OBJEXT) \
+	lua/lua/loadlib.$(OBJEXT) lua/lua/lobject.$(OBJEXT) \
+	lua/lua/lopcodes.$(OBJEXT) lua/lua/loslib.$(OBJEXT) \
+	lua/lua/lparser.$(OBJEXT) lua/lua/lstate.$(OBJEXT) \
+	lua/lua/lstring.$(OBJEXT) lua/lua/lstrlib.$(OBJEXT) \
+	lua/lua/ltable.$(OBJEXT) lua/lua/ltablib.$(OBJEXT) \
+	lua/lua/ltm.$(OBJEXT) lua/lua/lundump.$(OBJEXT) \
+	lua/lua/lutf8lib.$(OBJEXT) lua/lua/lvm.$(OBJEXT) \
+	lua/lua/lzio.$(OBJEXT) lua/vlua.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
+	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
+	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
+	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
+	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
+	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
+	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
+	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
+	menus/marks_menu.$(OBJEXT) menus/media_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/plugins_menu.$(OBJEXT) \
 	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
 	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
@@ -193,10 +210,11 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	flist_hist.$(OBJEXT) flist_pos.$(OBJEXT) flist_sel.$(OBJEXT) \
 	instance.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) \
 	marks.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
-	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) trash.$(OBJEXT) types.$(OBJEXT) undo.$(OBJEXT) \
-	version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
+	plugins.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
+	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
+	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
+	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
+	viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS) $(nodist_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
@@ -621,7 +639,9 @@ dist_vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
 dist_vim_plugin__DATA = ../data/vim/plugin/vifm.vim
 dist_vim_syntax__DATA = ../data/vim/syntax/vifm.vim
 dist_global_colors__DATA = ../data/colors/Default-256.vifm
-dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt
+dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt \
+												../data/vim/doc/app/vifm-lua.txt
+
 nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
 dist_pkgdata_DATA = ../data/vifmrc@DATA_SUFFIX@
 dist_pkgdata_SCRIPTS = ../data/vifm-media@DATA_SUFFIX@
@@ -702,6 +722,48 @@ vifm_SOURCES = \
 	io/private/ionotif.c io/private/ionotif.h \
 	io/private/traverser.c io/private/traverser.h \
 	\
+	lua/lua/lapi.c lua/lua/lapi.h \
+	lua/lua/lauxlib.c lua/lua/lauxlib.h \
+	lua/lua/lbaselib.c \
+	lua/lua/lcode.c lua/lua/lcode.h \
+	lua/lua/lcorolib.c \
+	lua/lua/lctype.c lua/lua/lctype.h \
+	lua/lua/ldblib.c \
+	lua/lua/ldebug.c lua/lua/ldebug.h \
+	lua/lua/ldo.c lua/lua/ldo.h \
+	lua/lua/ldump.c \
+	lua/lua/lfunc.c lua/lua/lfunc.h \
+	lua/lua/lgc.c lua/lua/lgc.h \
+	lua/lua/linit.c \
+	lua/lua/liolib.c \
+	lua/lua/ljumptab.h \
+	lua/lua/llex.c lua/lua/llex.h \
+	lua/lua/llimits.h \
+	lua/lua/lmathlib.c \
+	lua/lua/lmem.c lua/lua/lmem.h \
+	lua/lua/loadlib.c \
+	lua/lua/lobject.c lua/lua/lobject.h \
+	lua/lua/lopcodes.c lua/lua/lopcodes.h \
+	lua/lua/lopnames.h \
+	lua/lua/loslib.c \
+	lua/lua/lparser.c lua/lua/lparser.h \
+	lua/lua/lprefix.h \
+	lua/lua/lstate.c lua/lua/lstate.h \
+	lua/lua/lstring.c lua/lua/lstring.h \
+	lua/lua/lstrlib.c \
+	lua/lua/ltable.c lua/lua/ltable.h \
+	lua/lua/ltablib.c \
+	lua/lua/ltm.c lua/lua/ltm.h \
+	lua/lua/lua.h \
+	lua/lua/luaconf.h \
+	lua/lua/lualib.h \
+	lua/lua/lundump.c lua/lua/lundump.h \
+	lua/lua/lutf8lib.c \
+	lua/lua/lvm.c lua/lua/lvm.h \
+	lua/lua/lzio.c lua/lua/lzio.h \
+	\
+	lua/vlua.c lua/vlua.h \
+	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bmarks_menu.c menus/bmarks_menu.h \
@@ -722,6 +784,7 @@ vifm_SOURCES = \
 	menus/marks_menu.c menus/marks_menu.h \
 	menus/media_menu.c menus/media_menu.h \
 	menus/menus.c menus/menus.h \
+	menus/plugins_menu.c menus/plugins_menu.h \
 	menus/registers_menu.c menus/registers_menu.h \
 	menus/undolist_menu.c menus/undolist_menu.h \
 	menus/users_menu.c menus/users_menu.h \
@@ -822,6 +885,7 @@ vifm_SOURCES = \
 	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
+	plugins.c plugins.h \
 	registers.c registers.h \
 	running.c running.h \
 	search.c search.h \
@@ -1051,6 +1115,83 @@ io/private/ionotif.$(OBJEXT): io/private/$(am__dirstamp) \
 	io/private/$(DEPDIR)/$(am__dirstamp)
 io/private/traverser.$(OBJEXT): io/private/$(am__dirstamp) \
 	io/private/$(DEPDIR)/$(am__dirstamp)
+lua/lua/$(am__dirstamp):
+	@$(MKDIR_P) lua/lua
+	@: > lua/lua/$(am__dirstamp)
+lua/lua/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) lua/lua/$(DEPDIR)
+	@: > lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lapi.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lauxlib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lbaselib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lcode.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lcorolib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lctype.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/ldblib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/ldebug.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/ldo.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/ldump.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lfunc.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lgc.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/linit.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/liolib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/llex.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lmathlib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lmem.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/loadlib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lobject.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lopcodes.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/loslib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lparser.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lstate.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lstring.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lstrlib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/ltable.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/ltablib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/ltm.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lundump.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lutf8lib.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lvm.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/lua/lzio.$(OBJEXT): lua/lua/$(am__dirstamp) \
+	lua/lua/$(DEPDIR)/$(am__dirstamp)
+lua/$(am__dirstamp):
+	@$(MKDIR_P) lua
+	@: > lua/$(am__dirstamp)
+lua/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) lua/$(DEPDIR)
+	@: > lua/$(DEPDIR)/$(am__dirstamp)
+lua/vlua.$(OBJEXT): lua/$(am__dirstamp) lua/$(DEPDIR)/$(am__dirstamp)
 menus/$(am__dirstamp):
 	@$(MKDIR_P) menus
 	@: > menus/$(am__dirstamp)
@@ -1094,6 +1235,8 @@ menus/marks_menu.$(OBJEXT): menus/$(am__dirstamp) \
 menus/media_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/menus.$(OBJEXT): menus/$(am__dirstamp) \
+	menus/$(DEPDIR)/$(am__dirstamp)
+menus/plugins_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/registers_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
@@ -1311,6 +1454,8 @@ mostlyclean-compile:
 	-rm -f int/*.$(OBJEXT)
 	-rm -f io/*.$(OBJEXT)
 	-rm -f io/private/*.$(OBJEXT)
+	-rm -f lua/*.$(OBJEXT)
+	-rm -f lua/lua/*.$(OBJEXT)
 	-rm -f menus/*.$(OBJEXT)
 	-rm -f modes/*.$(OBJEXT)
 	-rm -f modes/dialogs/*.$(OBJEXT)
@@ -1350,6 +1495,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/running.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
@@ -1400,6 +1546,39 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ionotif.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/traverser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vlua.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lapi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lauxlib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lbaselib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lcode.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lcorolib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lctype.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/ldblib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/ldebug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/ldo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/ldump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lfunc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lgc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/linit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/liolib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/llex.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lmathlib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lmem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/loadlib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lobject.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lopcodes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/loslib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lparser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lstate.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lstring.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lstrlib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/ltable.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/ltablib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/ltm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lundump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lutf8lib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lvm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lzio.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/apropos_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/bmarks_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/cabbrevs_menu.Po@am__quote@
@@ -1417,6 +1596,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/marks_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/media_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/menus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/plugins_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/registers_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/trash_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/trashes_menu.Po@am__quote@
@@ -2210,6 +2390,10 @@ distclean-generic:
 	-rm -f io/$(am__dirstamp)
 	-rm -f io/private/$(DEPDIR)/$(am__dirstamp)
 	-rm -f io/private/$(am__dirstamp)
+	-rm -f lua/$(DEPDIR)/$(am__dirstamp)
+	-rm -f lua/$(am__dirstamp)
+	-rm -f lua/lua/$(DEPDIR)/$(am__dirstamp)
+	-rm -f lua/lua/$(am__dirstamp)
 	-rm -f menus/$(DEPDIR)/$(am__dirstamp)
 	-rm -f menus/$(am__dirstamp)
 	-rm -f modes/$(DEPDIR)/$(am__dirstamp)
@@ -2229,7 +2413,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) lua/$(DEPDIR) lua/lua/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-local distclean-tags
@@ -2285,7 +2469,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) lua/$(DEPDIR) lua/lua/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -2405,7 +2589,8 @@ update_compile_info:
 	fi
 
 $(abs_srcdir)/../data/vim/doc/app/tags: \
-                                  $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt
+                                  $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt \
+                                  $(abs_srcdir)/../data/vim/doc/app/vifm-lua.txt
 	$(AM_V_GEN)mkdir -p ../data/vim/doc/app/; \
 	if [ -n "$(PERL)" ]; then \
 		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/app"; \

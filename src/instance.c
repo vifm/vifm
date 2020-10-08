@@ -26,6 +26,7 @@
 #include "engine/options.h"
 #include "engine/variables.h"
 #include "int/path_env.h"
+#include "lua/vlua.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/str.h"
@@ -34,6 +35,7 @@
 #include "filelist.h"
 #include "flist_hist.h"
 #include "opt_handlers.h"
+#include "plugins.h"
 #include "registers.h"
 #include "status.h"
 #include "undo.h"
@@ -94,6 +96,12 @@ instance_start_restart(void)
 	update_path_env(1);
 
 	reset_views();
+
+	plugs_free(curr_stats.plugs);
+	vlua_finish(curr_stats.vlua);
+
+	curr_stats.vlua = vlua_init();
+	curr_stats.plugs = plugs_create(curr_stats.vlua);
 }
 
 void
@@ -115,6 +123,7 @@ instance_finish_restart(void)
 	cs_load_pairs();
 
 	cfg_load();
+	plugs_load(curr_stats.plugs, cfg.config_dir);
 
 	vifm_reexec_startup_commands();
 

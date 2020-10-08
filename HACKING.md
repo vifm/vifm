@@ -103,6 +103,11 @@ there for instructions.
     |  |  |-- iop.c - implementation of i/o primitive
     |  |  `-- ior.c - implementation of recursive i/o operations
     |  |
+    |  |-- lua/ - Lua interface
+    |  |  |
+    |  |  |-- lua/ - Lua 5.4 sources
+    |  |  `-- vlua.c - main Lua interface unit
+    |  |
     |  |-- menus/ - implementation of all menus
     |  |  |
     |  |  |-- apropos_menu.c - handles :apropos menu
@@ -125,6 +130,7 @@ there for instructions.
     |  |  |-- marks_menu.c - handles :marks menu
     |  |  |-- media.c - handles :media menu
     |  |  |-- menus.c - handles all kinds of menus
+    |  |  |-- plugins_menu.c - handles :plugins menu
     |  |  |-- registers_menu.c - handles :registers menu
     |  |  |-- undolist_menu.c - handles :undolist menu
     |  |  |-- users_menu.c - handles menus created by %m or %M macros
@@ -233,6 +239,7 @@ there for instructions.
     |  |-- marks.c - stores information about marked directories
     |  |-- ops.c - most of operations performed on file system
     |  |-- opt_handlers.c - initialization of options and option change handlers
+    |  |-- plugins.c - plugin management
     |  |-- registers.c - implementation of registers
     |  |-- running.c - code of handing file and commands running
     |  |-- search.c - code for / and ? commands of normal mode

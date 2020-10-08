@@ -213,7 +213,9 @@ typedef struct
 	hist_t prompt_hist; /* History of prompt input. */
 	hist_t filter_hist; /* History of local filter patterns. */
 
-	struct ipc_t *ipc; /* Handle for IPC mechanism. */
+	struct ipc_t *ipc;     /* Handle for IPC mechanism. */
+	struct vlua_t *vlua;   /* Handle for Lua unit. */
+	struct plugs_t *plugs; /* Handle for plugins unit. */
 
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */

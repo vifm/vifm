@@ -608,10 +608,13 @@ report_error_msg(const char title[], const char text[])
 static void
 append_error_msg(bg_job_t *job, const char err_msg[])
 {
-	pthread_spin_lock(&job->errors_lock);
-	(void)strappend(&job->errors, &job->errors_len, err_msg);
-	(void)strappend(&job->new_errors, &job->new_errors_len, err_msg);
-	pthread_spin_unlock(&job->errors_lock);
+	if(err_msg[0] != '\0')
+	{
+		pthread_spin_lock(&job->errors_lock);
+		(void)strappend(&job->errors, &job->errors_len, err_msg);
+		(void)strappend(&job->new_errors, &job->new_errors_len, err_msg);
+		pthread_spin_unlock(&job->errors_lock);
+	}
 }
 
 #ifndef _WIN32

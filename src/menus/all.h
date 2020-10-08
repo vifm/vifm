@@ -36,6 +36,7 @@
 #include "map_menu.h"
 #include "marks_menu.h"
 #include "media_menu.h"
+#include "plugins_menu.h"
 #include "registers_menu.h"
 #include "trash_menu.h"
 #include "trashes_menu.h"

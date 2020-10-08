@@ -5,6 +5,24 @@
 }
 
 {
+   wcsncmp-avx2-uninitialized-read
+   Memcheck:Value8
+   fun:__wcsncmp_avx2
+}
+
+{
+   wcsncmp-avx2-uninitialized-cond
+   Memcheck:Cond
+   fun:__wcsncmp_avx2
+}
+
+{
+   wcsncmp-avx2-wrong-read
+   Memcheck:Addr32
+   fun:__wcsncmp_avx2
+}
+
+{
    wcscmp-wrong-read
    Memcheck:Addr8
    fun:wcscmp
@@ -56,4 +74,20 @@
    fun:dynarray_extend
    fun:replace_dir_entries
    fun:clone_view
+}
+
+{
+   there-is-no-leak-of-lua-objects-1
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:realloc
+   fun:l_alloc
+}
+{
+   there-is-no-leak-of-lua-objects-2
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:realloc
+   fun:l_alloc
 }
