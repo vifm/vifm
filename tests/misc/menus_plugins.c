@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/cmds.h"
@@ -15,8 +17,6 @@
 #include "../../src/filelist.h"
 #include "../../src/plugins.h"
 #include "../../src/status.h"
-
-#include <test-utils.h>
 
 SETUP()
 {
