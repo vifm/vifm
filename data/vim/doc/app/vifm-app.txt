@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 7
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 8
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5060,6 +5060,9 @@ Plugins menu~
 
 e - display log messages of selected plugin if any were collected.  They are
 displayed in a new menu, but you can get back to plugins menu by pressing h.
+
+gf - navigate previously active view to the location of selected plugin.
+Leaves menu mode.
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*
