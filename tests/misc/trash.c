@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <unistd.h> /* symlink() */
+
 #include <stdio.h> /* snprintf() */
 
 #include <test-utils.h>
@@ -65,6 +67,29 @@ TEST(trash_allows_multiple_files_with_same_original_path)
 	snprintf(path, sizeof(path), "%s/trashed_2", sandbox);
 	assert_success(trash_add_entry("/some/path/src", path));
 	assert_int_equal(2, trash_list_size);
+}
+
+TEST(trash_dir_can_be_a_symlink, IF(not_windows))
+{
+	create_dir("dir");
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("dir", "dir-link"));
+#endif
+
+	char trash[PATH_MAX + 1];
+	make_abs_path(trash, sizeof(trash), SANDBOX_PATH, "dir-link", saved_cwd);
+	assert_success(trash_set_specs(trash));
+
+	char path[PATH_MAX + 1];
+	snprintf(path, sizeof(path), "%s/trashed", trash);
+	assert_success(trash_add_entry("/some/path/src", path));
+	assert_int_equal(3, trash_list_size);
+	assert_true(trash_has_path(path));
+
+	remove_file("dir-link");
+	remove_dir("dir");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
