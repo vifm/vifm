@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 8
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -166,6 +166,8 @@ Registers a new :command.
 Possible fields of {cmd}:
  - "name" (string)
    Name of the comand.
+ - "descr" (string) (default: "")
+   Description of the comand.
  - "handler" (function)
    Handler which accepts {info}.
  - "minargs" (integer) (default: 0)

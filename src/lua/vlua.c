@@ -34,6 +34,7 @@
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../background.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
@@ -56,10 +57,12 @@ state_ptr_t;
 /* State of the unit. */
 struct vlua_t
 {
-	lua_State *lua;          /* Lua state. */
+	lua_State *lua; /* Lua state. */
 
 	state_ptr_t **ptrs;      /* Pointers. */
 	DA_INSTANCE_FIELD(ptrs); /* Declarations to enable use of DA_* on ptrs. */
+
+	strlist_t strings; /* Interned strings. */
 };
 
 static void load_api(lua_State *lua);
@@ -87,6 +90,7 @@ static int jobstream_close(lua_State *lua);
 static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
 static void setup_plugin_env(lua_State *lua, plug_t *plug);
 static state_ptr_t * state_store_pointer(vlua_t *vlua, void *ptr);
+static const char * state_store_string(vlua_t *vlua, const char str[]);
 static void set_state(lua_State *lua, vlua_t *vlua);
 static vlua_t * get_state(lua_State *lua);
 static void check_field(lua_State *lua, int table_idx, const char name[],
@@ -170,6 +174,8 @@ vlua_finish(vlua_t *vlua)
 			free(vlua->ptrs[i]);
 		}
 		DA_REMOVE_ALL(vlua->ptrs);
+
+		free_string_array(vlua->strings.items, vlua->strings.nitems);
 
 		lua_close(vlua->lua);
 		free(vlua);
@@ -315,10 +321,18 @@ vifm_startjob(lua_State *lua)
 static int
 vifm_addcommand(lua_State *lua)
 {
+	vlua_t *vlua = get_state(lua);
+
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
 	check_field(lua, 1, "name", LUA_TSTRING);
 	const char *name = lua_tostring(lua, -1);
+
+	const char *descr = "";
+	if(check_opt_field(lua, 1, "descr", LUA_TSTRING))
+	{
+		descr = state_store_string(vlua, lua_tostring(lua, -1));
+	}
 
 	check_field(lua, 1, "handler", LUA_TFUNCTION);
 	void *handler = to_pointer(lua);
@@ -327,7 +341,7 @@ vifm_addcommand(lua_State *lua)
 	  .name = name,
 	  .abbr = NULL,
 	  .id = -1,
-	  .descr = "",
+	  .descr = descr,
 	  .flags = 0,
 	  .handler = &lua_cmd_handler,
 	  .user_data = NULL,
@@ -352,7 +366,7 @@ vifm_addcommand(lua_State *lua)
 		cmd.max_args = cmd.min_args;
 	}
 
-	cmd.user_data = state_store_pointer(get_state(lua), handler);
+	cmd.user_data = state_store_pointer(vlua, handler);
 	if(cmd.user_data == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to store handler data");
@@ -675,6 +689,21 @@ state_store_pointer(vlua_t *vlua, void *ptr)
 	(*p)->ptr = ptr;
 	DA_COMMIT(vlua->ptrs);
 	return *p;
+}
+
+/* Stores a string within the state.  Returns pointer to the interned string or
+ * pointer to "" on error. */
+static const char *
+state_store_string(vlua_t *vlua, const char str[])
+{
+	int n = add_to_string_array(&vlua->strings.items, vlua->strings.nitems, str);
+	if(n == vlua->strings.nitems)
+	{
+		return "";
+	}
+
+	vlua->strings.nitems = n;
+	return vlua->strings.items[n - 1];
 }
 
 /* Stores pointer to vlua inside Lua state. */

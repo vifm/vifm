@@ -191,6 +191,7 @@ TEST(vifm_addcommand)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "vifm.addcommand {"
 	                                     "  name = 'cmd',"
+	                                     "  descr = 'descr',"
 	                                     "  handler = handler,"
 	                                     "  minargs = 1,"
 	                                     "}"));

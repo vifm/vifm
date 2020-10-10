@@ -39,6 +39,7 @@ end
 -- this does NOT overwrite pre-existing user command
 local added = vifm.addcommand {
     name = "Gclone",
+    descr = "clone a repository and enter it",
     handler = clone,
     minargs = 1,
 }
