@@ -126,6 +126,8 @@ static void report_error_msg(const char title[], const char text[]);
 static bg_job_t * launch_external(const char cmd[], int capture_output,
 		int new_session, ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
+static void place_on_job_bar(bg_job_t *job);
+static void get_off_job_bar(bg_job_t *job);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 		uintptr_t err, uintptr_t data, BgJobType type);
 static void * background_task_bootstrap(void *arg);
@@ -217,9 +219,9 @@ bg_check(void)
 
 		active_jobs += (running != 0);
 
-		if(!running && p->type == BJT_OPERATION)
+		if(!running && p->on_job_bar)
 		{
-			ui_stat_job_bar_remove(&p->bg_op);
+			get_off_job_bar(p);
 		}
 
 		/* Remove job if it is finished now. */
@@ -1095,7 +1097,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 
 	if(task_args->job->type == BJT_OPERATION)
 	{
-		ui_stat_job_bar_add(&task_args->job->bg_op);
+		place_on_job_bar(task_args->job);
 	}
 
 	ret = 0;
@@ -1112,6 +1114,26 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	}
 
 	return ret;
+}
+
+/* Makes the job appear on the job bar. */
+static void
+place_on_job_bar(bg_job_t *job)
+{
+	assert(job->with_bg_op && "This function requires bg_op data.");
+	assert(!job->on_job_bar  && "This function requires should be called once.");
+	ui_stat_job_bar_add(&job->bg_op);
+	job->on_job_bar = 1;
+}
+
+/* Removes the job from the job bar. */
+static void
+get_off_job_bar(bg_job_t *job)
+{
+	assert(job->with_bg_op && "This function requires bg_op data.");
+	assert(job->on_job_bar  && "This function requires should be called once.");
+	ui_stat_job_bar_remove(&job->bg_op);
+	job->on_job_bar = 0;
 }
 
 /* Creates structure that describes background job and registers it in the list
@@ -1162,6 +1184,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	}
 
 	new->with_bg_op = (type != BJT_COMMAND);
+	new->on_job_bar = 0;
 	if(new->with_bg_op)
 	{
 		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);

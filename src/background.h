@@ -84,6 +84,7 @@ typedef struct bg_job_t
 	FILE *output; /* File stream of standard output or NULL. */
 
 	int with_bg_op;                /* Whether bg_op* fields are active. */
+	int on_job_bar;                /* Whether this task was put on a job bar. */
 	pthread_spinlock_t bg_op_lock; /* Lock for accessing bg_op field. */
 	bg_op_t bg_op;                 /* Progress and cancellation information. */
 
