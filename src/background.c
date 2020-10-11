@@ -306,7 +306,7 @@ job_free(bg_job_t *job)
 
 	pthread_spin_destroy(&job->errors_lock);
 	pthread_spin_destroy(&job->status_lock);
-	if(job->type != BJT_COMMAND)
+	if(job->with_bg_op)
 	{
 		pthread_spin_destroy(&job->bg_op_lock);
 	}
@@ -1159,7 +1159,8 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 		pthread_cond_signal(&new_err_jobs_cond);
 	}
 
-	if(type != BJT_COMMAND)
+	new->with_bg_op = (type != BJT_COMMAND);
+	if(new->with_bg_op)
 	{
 		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
 	}
@@ -1394,6 +1395,7 @@ void
 bg_op_lock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
+	assert(job->with_bg_op && "This function requires bg_op data.");
 	pthread_spin_lock(&job->bg_op_lock);
 }
 
@@ -1401,6 +1403,7 @@ void
 bg_op_unlock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
+	assert(job->with_bg_op && "This function requires bg_op data.");
 	pthread_spin_unlock(&job->bg_op_lock);
 }
 

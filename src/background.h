@@ -83,9 +83,9 @@ typedef struct bg_job_t
 
 	FILE *output; /* File stream of standard output or NULL. */
 
-	/* For background operations and tasks. */
-	pthread_spinlock_t bg_op_lock;
-	bg_op_t bg_op;
+	int with_bg_op;                /* Whether bg_op* fields are active. */
+	pthread_spinlock_t bg_op_lock; /* Lock for accessing bg_op field. */
+	bg_op_t bg_op;                 /* Progress and cancellation information. */
 
 #ifndef _WIN32
 	int err_stream;    /* stderr stream of the job or -1. */
