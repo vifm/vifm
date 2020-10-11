@@ -8,6 +8,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/colored_line.h"
 #include "../../src/ui/tabs.h"
+#include "../../src/ui/statusline.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
@@ -153,6 +154,15 @@ TEST(tabline_formatting_smoke)
 	view_teardown(&rwin);
 	curr_view = NULL;
 	other_view = NULL;
+}
+
+TEST(ui_stat_job_bar_remove_can_be_called_with_unknown_pointer)
+{
+	int i;
+	for(i = 0; i < 10; ++i)
+	{
+		ui_stat_job_bar_remove(NULL);
+	}
 }
 
 static void
