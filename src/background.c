@@ -211,9 +211,16 @@ bg_check(void)
 		job_check(p);
 
 		pthread_spin_lock(&p->status_lock);
+		int running = p->running;
 		int can_remove = (!p->running && p->use_count == 0);
-		active_jobs += (p->running != 0);
 		pthread_spin_unlock(&p->status_lock);
+
+		active_jobs += (running != 0);
+
+		if(!running && p->type == BJT_OPERATION)
+		{
+			ui_stat_job_bar_remove(&p->bg_op);
+		}
 
 		/* Remove job if it is finished now. */
 		if(can_remove)
@@ -225,11 +232,6 @@ bg_check(void)
 				head = p->next;
 
 			p = p->next;
-
-			if(j->type == BJT_OPERATION)
-			{
-				ui_stat_job_bar_remove(&j->bg_op);
-			}
 
 			job_free(j);
 		}
