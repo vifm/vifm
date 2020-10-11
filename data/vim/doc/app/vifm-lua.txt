@@ -154,14 +154,18 @@ Parameters:~
 Return:~
   `true` on success.
 
-vifm.startjob({cmd})                           *vifm-l_vifm.startjob()*
+vifm.startjob({job})                           *vifm-l_vifm.startjob()*
 Launches an external command.  Returns without waiting for it to finish.
 
 Command is dispatched via a shell, but |vifm-'shellcmdflag'| is always
 ignored.
 
+Possible fields of {job}:
+ - "cmd" (string)
+   Comand to execute.
+
 Parameters:~
-  {cmd}  Command to be executed.
+  {job}  Table with information about a job.
 
 Return:~
   Returns an instance of |vifm-l_VifmJob|.
@@ -186,7 +190,7 @@ Fields of {info} (argument of a handler):
    All arguments passed to the command.
 
 Parameters:~
-  {cmd}  Information about a command.
+  {cmd}  Table with information about a command.
 
 Return:~
   `true` on success.

@@ -93,13 +93,15 @@ TEST(vifmjob_errors)
 	conf_setup();
 	ui_sb_msg("");
 
-	assert_success(vlua_run_string(vlua, "job = vifm.startjob('echo err 1>&2')\n"
+	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo err 1>&2' }\n"
+	                                     "job = vifm.startjob(info)\n"
 	                                     "job:wait()\n"
 	                                     "while #job:errors() == 0 do end\n"
 	                                     "print(job:errors())"));
 	assert_true(starts_with_lit(ui_sb_last(), "err"));
 
-	assert_success(vlua_run_string(vlua, "job = vifm.startjob('echo out')\n"
+	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo out' }\n"
+	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:errors())"));
 	assert_string_equal("", ui_sb_last());
 
@@ -111,7 +113,7 @@ TEST(vifm_startjob)
 	conf_setup();
 
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "job = vifm.startjob('echo')\n"
+	assert_success(vlua_run_string(vlua, "job = vifm.startjob({ cmd = 'echo' })\n"
 	                                     "print(job:exitcode())"));
 	assert_string_equal("0", ui_sb_last());
 
@@ -123,7 +125,8 @@ TEST(vifmjob_exitcode)
 	conf_setup();
 
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "job = vifm.startjob('exit 41')\n"
+	assert_success(vlua_run_string(vlua, "info = { cmd = 'exit 41' }\n"
+	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:exitcode())"));
 	assert_string_equal("41", ui_sb_last());
 
@@ -135,7 +138,8 @@ TEST(vifmjob_stdout)
 	conf_setup();
 
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "job = vifm.startjob('echo out')\n"
+	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo out' }\n"
+	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:stdout():read('a'))"));
 	assert_true(starts_with_lit(ui_sb_last(), "out"));
 

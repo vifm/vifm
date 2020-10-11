@@ -17,8 +17,9 @@ local function clone(info)
 
     vifm.sb.quick(string.format('Cloning %q to %q...', url, name))
 
-    local cmd = string.format('git clone %q %q', url, name)
-    local job = vifm.startjob(cmd)
+    local job = vifm.startjob {
+        cmd = string.format('git clone %q %q', url, name)
+    }
     for line in job:stdout():lines() do
         vifm.sb.quick(line)
     end

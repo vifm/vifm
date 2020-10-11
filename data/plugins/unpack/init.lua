@@ -17,8 +17,9 @@ Usage example:
 local M = {}
 
 local function get_common_prefix(archive)
-    local cmd = string.format('tar tf %q', archive)
-    local job = vifm.startjob(cmd)
+    local job = vifm.startjob {
+        cmd = string.format('tar tf %q', archive)
+    }
 
     local lines = job:stdout():lines()
     local prefix = lines()
@@ -102,8 +103,9 @@ local function unpack(info)
         end
     end
 
-    local cmd = string.format('tar -C %q -vxf %q', outdir, current)
-    local job = vifm.startjob(cmd)
+    local job = vifm.startjob {
+        cmd = string.format('tar -C %q -vxf %q', outdir, current)
+    }
 
     for line in job:stdout():lines() do
         vifm.sb.quick(line)

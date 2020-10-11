@@ -300,7 +300,11 @@ vifm_makepath(lua_State *lua)
 static int
 vifm_startjob(lua_State *lua)
 {
-	const char *cmd = luaL_checkstring(lua, 1);
+	luaL_checktype(lua, 1, LUA_TTABLE);
+
+	check_field(lua, 1, "cmd", LUA_TSTRING);
+	const char *cmd = lua_tostring(lua, -1);
+
 	bg_job_t *job = bg_run_external_job(cmd);
 	if(job == NULL)
 	{
