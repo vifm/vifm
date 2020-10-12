@@ -305,10 +305,27 @@ vifm_startjob(lua_State *lua)
 	check_field(lua, 1, "cmd", LUA_TSTRING);
 	const char *cmd = lua_tostring(lua, -1);
 
-	bg_job_t *job = bg_run_external_job(cmd, 0);
+	int visible = 0;
+	if(check_opt_field(lua, 1, "visible", LUA_TBOOLEAN))
+	{
+		visible = lua_toboolean(lua, -1);
+	}
+
+	const char *descr = NULL;
+	if(check_opt_field(lua, 1, "descr", LUA_TSTRING))
+	{
+		descr = lua_tostring(lua, -1);
+	}
+
+	bg_job_t *job = bg_run_external_job(cmd, visible);
 	if(job == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to start a job");
+	}
+
+	if(visible && descr != NULL)
+	{
+		bg_op_set_descr(&job->bg_op, descr);
 	}
 
 	bg_job_t **data = lua_newuserdata(lua, sizeof(bg_job_t *));

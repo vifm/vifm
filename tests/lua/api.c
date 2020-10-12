@@ -125,7 +125,11 @@ TEST(vifmjob_exitcode)
 	conf_setup();
 
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "info = { cmd = 'exit 41' }\n"
+	assert_success(vlua_run_string(vlua, "info = {\n"
+	                                     "  cmd = 'exit 41',\n"
+	                                     "  visible = true,\n"
+	                                     "  descr = 'exit 41'\n"
+	                                     "}\n"
 	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:exitcode())"));
 	assert_string_equal("41", ui_sb_last());

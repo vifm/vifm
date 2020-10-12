@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 11
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -163,6 +163,11 @@ ignored.
 Possible fields of {job}:
  - "cmd" (string)
    Comand to execute.
+ - "descr" (string) (default: "")
+   Description of the job to be displayed on the job bar (when "visible" key
+   is set to true).
+ - "visible" (boolean) (default: false)
+   Whether to show this job on a job bar.
 
 Parameters:~
   {job}  Table with information about a job.
