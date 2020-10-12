@@ -149,3 +149,5 @@ function! vifm#colorconv#convert(...) abort
 		execute "colorscheme" cs
 	endtry
 endfunction
+
+" vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
