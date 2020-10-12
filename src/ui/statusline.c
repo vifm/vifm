@@ -669,11 +669,10 @@ ui_stat_job_bar_remove(bg_op_t *bg_op)
 		{
 			memmove(&bar_jobs[i], &bar_jobs[i + 1],
 					sizeof(*bar_jobs)*(nbar_jobs - 1 - i));
+			--nbar_jobs;
 			break;
 		}
 	}
-
-	--nbar_jobs;
 
 	if(ui_stat_job_bar_height() != 0)
 	{

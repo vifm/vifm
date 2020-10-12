@@ -1,7 +1,7 @@
 " Vim script that converts Vim colorschemes to Vifm
 " Author:      Roman Plšl
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: September 7, 2020
+" Last Change: October 12, 2020
 
 function! s:ConvertGroup(gr, to, deffg, defbg)
 	let syn = synIDtrans(hlID(a:gr))
@@ -11,6 +11,10 @@ function! s:ConvertGroup(gr, to, deffg, defbg)
 	let reverse = (synIDattr(syn, "reverse") == "1")
 	let errors = []
 	let line = "highlight " . a:to
+
+	if fg[0] == '#' || bg[0] == '#'
+		throw VifmTrueColors
+	endif
 
 	" handle foreground
 	if empty(fg)
@@ -136,9 +140,14 @@ function! vifm#colorconv#convert(...) abort
 				let output += s:ConvertCurrentScheme()
 				call writefile(output, scheme . ".vifm")
 			catch /E185:/ " cannot find color scheme
+			catch /VifmTrueColors/ " cannot find color scheme
+				echoerr "Can't convert ".scheme." while 'termguicolors' is on"
+				return
 			endtry
 		endfor
 	finally
 		execute "colorscheme" cs
 	endtry
 endfunction
+
+" vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

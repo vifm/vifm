@@ -771,15 +771,19 @@ is_trash_directory_traverser(const char path[], const char trash_dir[],
 }
 
 /* Performs specified check on a path.  The check is constructed in such a way
- * that all path components except for the last one are expanded.  Returns
- * non-zero if path passes the check, otherwise zero is returned. */
+ * that all path components of the path parameter except for the last one are
+ * expanded.  Returns non-zero if path passes the check, otherwise zero is
+ * returned. */
 static int
 path_is(PathCheckType check, const char path[], const char other[])
 {
-	char path_real[PATH_MAX*2], other_real[PATH_MAX*2];
+	char path_real[PATH_MAX*2], other_real[PATH_MAX + 1];
 
 	make_real_path(path, path_real, sizeof(path_real));
-	make_real_path(other, other_real, sizeof(other_real));
+	if(os_realpath(other, other_real) != other_real)
+	{
+		copy_str(other_real, sizeof(other_real), other);
+	}
 
 	return (check == PREFIXED_WITH)
 	     ? path_starts_with(path_real, other_real)

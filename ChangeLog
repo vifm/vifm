@@ -4,6 +4,12 @@
 
 	Added :plugins command that opens plugins menu.
 
+	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
+	value.  Thanks to AtomToast.
+
+	Fixed pointing 'trashdir' to a symbolic link to a directory causing
+	issues.  Thanks to ChongChong He.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

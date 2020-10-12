@@ -83,9 +83,10 @@ typedef struct bg_job_t
 
 	FILE *output; /* File stream of standard output or NULL. */
 
-	/* For background operations and tasks. */
-	pthread_spinlock_t bg_op_lock;
-	bg_op_t bg_op;
+	int with_bg_op;                /* Whether bg_op* fields are active. */
+	int on_job_bar;                /* Whether this task was put on a job bar. */
+	pthread_spinlock_t bg_op_lock; /* Lock for accessing bg_op field. */
+	bg_op_t bg_op;                 /* Progress and cancellation information. */
 
 #ifndef _WIN32
 	int err_stream;    /* stderr stream of the job or -1. */
@@ -117,9 +118,10 @@ int bg_run_external(const char cmd[], int skip_errors, ShellRequester by);
 
 /* Creates background job running external command which does not interact with
  * the user and is detached from controlling terminal.  Upon creation the job
- * has one extra use, which needs to be decremented for it to be freed.  Returns
- * the job or NULL on error. */
-bg_job_t * bg_run_external_job(const char cmd[]);
+ * has one extra use, which needs to be decremented for it to be freed.
+ * Non-zero value of the visible parameter makes the job appear on the job bar.
+ * Returns the job or NULL on error. */
+bg_job_t * bg_run_external_job(const char cmd[], int visible);
 
 struct cancellation_t;
 

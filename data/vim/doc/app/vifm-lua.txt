@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 8
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -65,15 +65,21 @@ The following standard libraries are enabled:
 --------------------------------------------------------------------------------
 *vifm-plugins*
 
-Contents of the $VIFM/plugins/ directory is enumerated in search of plugins.
-Directories or symbolic links to directories are considered as candidates.
+After processing of |vifm-vifmrc| contents of the $VIFM/plugins/ directory is
+enumerated in search of plugins.  Directories or symbolic links to directories
+are considered as candidates.
+
+Implications of the (current) order of initialization:
+ * :commands defined in configuration have precedence over :commands defined by
+   plugins
+ * :commands from plugins can't be used during startup
 
 All plugins are required to contain `init.lua` file at their root.  This file
 gets processed and its return value is interpreted as plugin data.  The return
 value must be a table.
 
 Global variables created by one plugin are local to that plugin and won't
-affect or be visible other plugins.
+affect or be visible to other plugins.
 
 --------------------------------------------------------------------------------
 *vifm-lua-api*
@@ -148,14 +154,23 @@ Parameters:~
 Return:~
   `true` on success.
 
-vifm.startjob({cmd})                           *vifm-l_vifm.startjob()*
+vifm.startjob({job})                           *vifm-l_vifm.startjob()*
 Launches an external command.  Returns without waiting for it to finish.
 
 Command is dispatched via a shell, but |vifm-'shellcmdflag'| is always
 ignored.
 
+Possible fields of {job}:
+ - "cmd" (string)
+   Comand to execute.
+ - "descr" (string) (default: "")
+   Description of the job to be displayed on the job bar (when "visible" key
+   is set to true).
+ - "visible" (boolean) (default: false)
+   Whether to show this job on a job bar.
+
 Parameters:~
-  {cmd}  Command to be executed.
+  {job}  Table with information about a job.
 
 Return:~
   Returns an instance of |vifm-l_VifmJob|.
@@ -166,6 +181,8 @@ Registers a new :command.
 Possible fields of {cmd}:
  - "name" (string)
    Name of the comand.
+ - "descr" (string) (default: "")
+   Description of the comand.
  - "handler" (function)
    Handler which accepts {info}.
  - "minargs" (integer) (default: 0)
@@ -178,7 +195,7 @@ Fields of {info} (argument of a handler):
    All arguments passed to the command.
 
 Parameters:~
-  {cmd}  Information about a command.
+  {cmd}  Table with information about a command.
 
 Return:~
   `true` on success.

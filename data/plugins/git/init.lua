@@ -17,8 +17,9 @@ local function clone(info)
 
     vifm.sb.quick(string.format('Cloning %q to %q...', url, name))
 
-    local cmd = string.format('git clone %q %q', url, name)
-    local job = vifm.startjob(cmd)
+    local job = vifm.startjob {
+        cmd = string.format('git clone %q %q', url, name)
+    }
     for line in job:stdout():lines() do
         vifm.sb.quick(line)
     end
@@ -39,6 +40,7 @@ end
 -- this does NOT overwrite pre-existing user command
 local added = vifm.addcommand {
     name = "Gclone",
+    descr = "clone a repository and enter it",
     handler = clone,
     minargs = 1,
 }

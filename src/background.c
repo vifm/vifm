@@ -124,10 +124,12 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], int capture_output,
-		int new_session, ShellRequester by);
+		int new_session, int visible, ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
+static void place_on_job_bar(bg_job_t *job);
+static void get_off_job_bar(bg_job_t *job);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
-		uintptr_t err, uintptr_t data, BgJobType type);
+		uintptr_t err, uintptr_t data, BgJobType type, int with_bg_op);
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
@@ -211,9 +213,16 @@ bg_check(void)
 		job_check(p);
 
 		pthread_spin_lock(&p->status_lock);
+		int running = p->running;
 		int can_remove = (!p->running && p->use_count == 0);
-		active_jobs += (p->running != 0);
 		pthread_spin_unlock(&p->status_lock);
+
+		active_jobs += (running != 0);
+
+		if(!running && p->on_job_bar)
+		{
+			get_off_job_bar(p);
+		}
 
 		/* Remove job if it is finished now. */
 		if(can_remove)
@@ -225,11 +234,6 @@ bg_check(void)
 				head = p->next;
 
 			p = p->next;
-
-			if(j->type == BJT_OPERATION)
-			{
-				ui_stat_job_bar_remove(&j->bg_op);
-			}
 
 			job_free(j);
 		}
@@ -306,7 +310,7 @@ job_free(bg_job_t *job)
 
 	pthread_spin_destroy(&job->errors_lock);
 	pthread_spin_destroy(&job->status_lock);
-	if(job->type != BJT_COMMAND)
+	if(job->with_bg_op)
 	{
 		pthread_spin_destroy(&job->bg_op_lock);
 	}
@@ -801,7 +805,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 int
 bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
-	bg_job_t *job = launch_external(cmd, 0, 0, by);
+	bg_job_t *job = launch_external(cmd, 0, 0, 0, by);
 	if(job == NULL)
 	{
 		return 1;
@@ -814,9 +818,9 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 }
 
 bg_job_t *
-bg_run_external_job(const char cmd[])
+bg_run_external_job(const char cmd[], int visible)
 {
-	bg_job_t *job = launch_external(cmd, 1, 1, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, 1, 1, visible, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -826,13 +830,19 @@ bg_run_external_job(const char cmd[])
 	 * thread as this function. */
 	bg_job_incref(job);
 	job->skip_errors = 1;
+
+	if(visible)
+	{
+		place_on_job_bar(job);
+	}
+
 	return job;
 }
 
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
 launch_external(const char cmd[], int capture_output, int new_session,
-		ShellRequester by)
+		int visible, ShellRequester by)
 {
 #ifndef _WIN32
 	pid_t pid;
@@ -954,7 +964,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	}
 
 	bg_job_t *job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
-			BJT_COMMAND);
+			BJT_COMMAND, visible);
 	free(command);
 
 	if(capture_output)
@@ -1037,7 +1047,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	CloseHandle(pinfo.hThread);
 
 	bg_job_t *job = add_background_job(pinfo.dwProcessId, sh_cmd,
-			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND);
+			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, visible);
 	free(sh_cmd);
 
 	if(job == NULL)
@@ -1080,7 +1090,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	task_args->func = task_func;
 	task_args->args = args;
 	task_args->job = add_background_job(WRONG_PID, descr, (uintptr_t)NO_JOB_ID,
-			(uintptr_t)NO_JOB_ID, important ? BJT_OPERATION : BJT_TASK);
+			(uintptr_t)NO_JOB_ID, important ? BJT_OPERATION : BJT_TASK, 1);
 
 	if(task_args->job == NULL)
 	{
@@ -1093,7 +1103,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 
 	if(task_args->job->type == BJT_OPERATION)
 	{
-		ui_stat_job_bar_add(&task_args->job->bg_op);
+		place_on_job_bar(task_args->job);
 	}
 
 	ret = 0;
@@ -1112,11 +1122,31 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	return ret;
 }
 
+/* Makes the job appear on the job bar. */
+static void
+place_on_job_bar(bg_job_t *job)
+{
+	assert(job->with_bg_op && "This function requires bg_op data.");
+	assert(!job->on_job_bar  && "This function requires should be called once.");
+	ui_stat_job_bar_add(&job->bg_op);
+	job->on_job_bar = 1;
+}
+
+/* Removes the job from the job bar. */
+static void
+get_off_job_bar(bg_job_t *job)
+{
+	assert(job->with_bg_op && "This function requires bg_op data.");
+	assert(job->on_job_bar  && "This function requires should be called once.");
+	ui_stat_job_bar_remove(&job->bg_op);
+	job->on_job_bar = 0;
+}
+
 /* Creates structure that describes background job and registers it in the list
  * of jobs. */
 static bg_job_t *
 add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
-		BgJobType type)
+		BgJobType type, int with_bg_op)
 {
 	bg_job_t *new = malloc(sizeof(*new));
 	if(new == NULL)
@@ -1159,7 +1189,9 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 		pthread_cond_signal(&new_err_jobs_cond);
 	}
 
-	if(type != BJT_COMMAND)
+	new->with_bg_op = with_bg_op;
+	new->on_job_bar = 0;
+	if(new->with_bg_op)
 	{
 		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
 	}
@@ -1394,6 +1426,7 @@ void
 bg_op_lock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
+	assert(job->with_bg_op && "This function requires bg_op data.");
 	pthread_spin_lock(&job->bg_op_lock);
 }
 
@@ -1401,6 +1434,7 @@ void
 bg_op_unlock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
+	assert(job->with_bg_op && "This function requires bg_op data.");
 	pthread_spin_unlock(&job->bg_op_lock);
 }
 
