@@ -124,7 +124,7 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], int capture_output,
-		int new_session, ShellRequester by);
+		int new_session, int visible, ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
@@ -805,7 +805,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 int
 bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
-	bg_job_t *job = launch_external(cmd, 0, 0, by);
+	bg_job_t *job = launch_external(cmd, 0, 0, 0, by);
 	if(job == NULL)
 	{
 		return 1;
@@ -818,9 +818,9 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 }
 
 bg_job_t *
-bg_run_external_job(const char cmd[])
+bg_run_external_job(const char cmd[], int visible)
 {
-	bg_job_t *job = launch_external(cmd, 1, 1, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, 1, 1, visible, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -830,13 +830,19 @@ bg_run_external_job(const char cmd[])
 	 * thread as this function. */
 	bg_job_incref(job);
 	job->skip_errors = 1;
+
+	if(visible)
+	{
+		place_on_job_bar(job);
+	}
+
 	return job;
 }
 
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
 launch_external(const char cmd[], int capture_output, int new_session,
-		ShellRequester by)
+		int visible, ShellRequester by)
 {
 #ifndef _WIN32
 	pid_t pid;
@@ -958,7 +964,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	}
 
 	bg_job_t *job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
-			BJT_COMMAND, 0);
+			BJT_COMMAND, visible);
 	free(command);
 
 	if(capture_output)
@@ -1041,7 +1047,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	CloseHandle(pinfo.hThread);
 
 	bg_job_t *job = add_background_job(pinfo.dwProcessId, sh_cmd,
-			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, 0);
+			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, visible);
 	free(sh_cmd);
 
 	if(job == NULL)

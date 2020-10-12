@@ -305,7 +305,7 @@ vifm_startjob(lua_State *lua)
 	check_field(lua, 1, "cmd", LUA_TSTRING);
 	const char *cmd = lua_tostring(lua, -1);
 
-	bg_job_t *job = bg_run_external_job(cmd);
+	bg_job_t *job = bg_run_external_job(cmd, 0);
 	if(job == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to start a job");
