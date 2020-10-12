@@ -129,7 +129,7 @@ static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
-		uintptr_t err, uintptr_t data, BgJobType type);
+		uintptr_t err, uintptr_t data, BgJobType type, int with_bg_op);
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
@@ -958,7 +958,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	}
 
 	bg_job_t *job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
-			BJT_COMMAND);
+			BJT_COMMAND, 0);
 	free(command);
 
 	if(capture_output)
@@ -1041,7 +1041,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	CloseHandle(pinfo.hThread);
 
 	bg_job_t *job = add_background_job(pinfo.dwProcessId, sh_cmd,
-			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND);
+			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, 0);
 	free(sh_cmd);
 
 	if(job == NULL)
@@ -1084,7 +1084,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	task_args->func = task_func;
 	task_args->args = args;
 	task_args->job = add_background_job(WRONG_PID, descr, (uintptr_t)NO_JOB_ID,
-			(uintptr_t)NO_JOB_ID, important ? BJT_OPERATION : BJT_TASK);
+			(uintptr_t)NO_JOB_ID, important ? BJT_OPERATION : BJT_TASK, 1);
 
 	if(task_args->job == NULL)
 	{
@@ -1140,7 +1140,7 @@ get_off_job_bar(bg_job_t *job)
  * of jobs. */
 static bg_job_t *
 add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
-		BgJobType type)
+		BgJobType type, int with_bg_op)
 {
 	bg_job_t *new = malloc(sizeof(*new));
 	if(new == NULL)
@@ -1183,7 +1183,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 		pthread_cond_signal(&new_err_jobs_cond);
 	}
 
-	new->with_bg_op = (type != BJT_COMMAND);
+	new->with_bg_op = with_bg_op;
 	new->on_job_bar = 0;
 	if(new->with_bg_op)
 	{
