@@ -4,6 +4,10 @@
 
 	Added :plugins command that opens plugins menu.
 
+	Added %P macro to 'rulerformat' (and thus to 'statusline'), which expands
+	to All, Top, xx% or Bot to indicate position within the view.  Thanks to
+	iSeeU816.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

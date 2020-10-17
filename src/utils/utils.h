@@ -165,6 +165,11 @@ int def_count(int count);
 void safe_qsort(void *base, size_t nmemb, size_t size,
 		int (*compar)(const void *, const void *));
 
+/* Formats position within the viewport as one of the following: All, Top, xx%
+ * or Bot. */
+void format_position(char buf[], size_t buf_len, int top, int total,
+		int visible);
+
 /* Checks line for path in it.  Ignores empty lines and attempts to parse it as
  * location line (path followed by a colon and optional line and column
  * numbers).  Returns canonicalized path as a newly allocated string or NULL. */

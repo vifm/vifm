@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 8
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3602,6 +3602,8 @@ it's right aligned.  Following macros are supported:
     %L  - total number of files in view (including filtered out ones)
     %x  - number of files excluded by filters
     %0- - old name for %x macro
+    %P  - percentage through file list (All, Top, xx% or Bot), always 3 in
+          length
     %S  - number of displayed files
     %%  - literal percent sign
     %[  - designates beginning of an optional block

@@ -198,6 +198,11 @@ TEST(dash_macro_expanded)
 	ASSERT_EXPANDED("%-%");
 }
 
+TEST(P_macro_expanded)
+{
+	ASSERT_EXPANDED("%P");
+}
+
 TEST(S_macro_expanded)
 {
 	ASSERT_EXPANDED("%S");
@@ -210,7 +215,7 @@ TEST(percent_macro_expanded)
 
 TEST(wrong_macros_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{*";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLPS%[]z{*";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -225,7 +230,7 @@ TEST(wrong_macros_ignored)
 
 TEST(wrong_macros_with_width_field_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{*";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLPS%[]z{*";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
