@@ -10,6 +10,10 @@
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
+	Fixed lack of error message when overwriting of file fails with
+	'syscalls' turned off.  Thanks to anonymous on SourceForge discussion
+	forum.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
