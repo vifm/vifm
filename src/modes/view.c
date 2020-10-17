@@ -80,7 +80,7 @@ struct modview_info_t
 	int (*widths)[2]; /* (virtual line, screen width) pair per real line. */
 	int nlines;       /* Number of real lines. */
 	int nlinesv;      /* Number of virtual (possibly wrapped) lines. */
-	int line;         /* Current real line number. */
+	int line;         /* Current real line number (first visible line). */
 	int linev;        /* Current virtual line number. */
 
 	/* Dimensions, units of actions. */
@@ -439,8 +439,12 @@ modview_post(void)
 void
 modview_ruler_update(void)
 {
-	char buf[32];
-	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
+	char rel_pos[32];
+	format_position(rel_pos, sizeof(rel_pos), vi->line, vi->nlines,
+			vi->view->window_rows);
+
+	char buf[64];
+	snprintf(buf, sizeof(buf), "%d-%d %s", vi->line + 1, vi->nlines, rel_pos);
 
 	ui_ruler_set(buf);
 }

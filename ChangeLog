@@ -8,6 +8,9 @@
 	to All, Top, xx% or Bot to indicate position within the view.  Thanks to
 	iSeeU816.
 
+	Added percent-like (corresponds to new %P macro of 'rulerformat') to the
+	ruler of the view mode.  Thanks to iSeeU816.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
