@@ -21,6 +21,9 @@
 	'syscalls' turned off.  Thanks to anonymous on SourceForge discussion
 	forum.
 
+	Fixed an issue with packaging on one system (Linux in this case) and
+	building on the other (OS X).  Thanks to chenrui333.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
