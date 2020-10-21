@@ -51,6 +51,7 @@
 #include <stdlib.h> /* free() malloc() snprintf() */
 #include <string.h> /* strcmp() strcpy() strlen() */
 
+#include "compat/os.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -843,7 +844,7 @@ add_to_list(const char name[], const void *data, void *param)
 		struct stat statbuf;
 		snprintf(path, sizeof(path), "%s/%s", list_data->ipc_dir, name);
 		if(stat(path, &statbuf) != 0 || !S_ISFIFO(statbuf.st_mode) ||
-				!pipe_is_in_use(path))
+				!pipe_is_in_use(path) || os_access(path, R_OK) != 0)
 		{
 			return 0;
 		}
