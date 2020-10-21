@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 18
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -59,8 +59,10 @@ makes it much worse because these callbacks are created all the time.
 
 The following standard libraries are enabled:
  * basic
+ * table manipulation
  * string manipulation
  * input and output
+ * mathematical functions
 
 --------------------------------------------------------------------------------
 *vifm-plugins*

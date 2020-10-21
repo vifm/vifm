@@ -153,9 +153,13 @@ vlua_init(void)
 
 	luaL_requiref(vlua->lua, "base", &luaopen_base, 1);
 	lua_pop(vlua->lua, 1);
+	luaL_requiref(vlua->lua, LUA_TABLIBNAME, &luaopen_table, 1);
+	lua_pop(vlua->lua, 1);
 	luaL_requiref(vlua->lua, LUA_IOLIBNAME, &luaopen_io, 1);
 	lua_pop(vlua->lua, 1);
 	luaL_requiref(vlua->lua, LUA_STRLIBNAME, &luaopen_string, 1);
+	lua_pop(vlua->lua, 1);
+	luaL_requiref(vlua->lua, LUA_MATHLIBNAME, &luaopen_math, 1);
 	lua_pop(vlua->lua, 1);
 
 	load_api(vlua->lua);
