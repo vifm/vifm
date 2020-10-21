@@ -926,7 +926,11 @@ EXTRA_DIST = \
 						 lcov.css \
 						 lcovrc \
 						 ../data/graphics/vifm.ico \
-						 ../data/graphics/vifm.svg
+						 ../data/graphics/vifm.svg \
+						 ../data/vifmrc \
+						 ../data/vifmrc-osx \
+						 ../data/vifm-media \
+						 ../data/vifm-media-osx
 
 MANGEN = @MANGEN_PROG@
 COL = @COL_PROG@

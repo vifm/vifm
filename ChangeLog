@@ -4,11 +4,27 @@
 
 	Added :plugins command that opens plugins menu.
 
+	Added %P macro to 'rulerformat' (and thus to 'statusline'), which expands
+	to All, Top, xx% or Bot to indicate position within the view.  Thanks to
+	iSeeU816.
+
+	Added percent-like (corresponds to new %P macro of 'rulerformat') to the
+	ruler of the view mode.  Thanks to iSeeU816.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
+	Don't list inaccessible instances on --server-list.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
+
+	Fixed lack of error message when overwriting of file fails with
+	'syscalls' turned off.  Thanks to anonymous on SourceForge discussion
+	forum.
+
+	Fixed an issue with packaging on one system (Linux in this case) and
+	building on the other (OS X).  Thanks to chenrui333.
 
 0.11-beta to 0.11 (2020-09-24)
 

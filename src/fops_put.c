@@ -614,6 +614,8 @@ put_next(int force)
 				if(!safe_operation && perform_operation(OP_REMOVESL, put_confirm.ops,
 							NULL, dst_buf, NULL) != 0)
 				{
+					show_error_msgf("Can't replace a file",
+							"Failed to remove a file:\n%s", dst_buf);
 					return 0;
 				}
 				/* Schedule view update to reflect changes in UI. */

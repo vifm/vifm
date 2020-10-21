@@ -55,7 +55,7 @@ local function pack(info)
 
     local job = vifm.startjob {
         cmd = cmd,
-        descr = string.format("Archiving %s", outfile),
+        description = string.format("Archiving %s", outfile),
         visible = true
     }
 end
@@ -63,7 +63,7 @@ end
 -- this does NOT overwrite pre-existing user command
 local added = vifm.addcommand {
     name = "Pack",
-    descr = "archive selection or current file",
+    description = "archive selection or current file",
     handler = pack,
     minargs = 1,
 }

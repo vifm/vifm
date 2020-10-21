@@ -134,7 +134,7 @@ end
 -- this does NOT overwrite pre-existing user command
 local added = vifm.addcommand {
     name = "Unpack",
-    descr = "unpack an archive into a single directory",
+    description = "unpack an archive into a single directory",
     handler = unpack,
     maxargs = 1,
 }

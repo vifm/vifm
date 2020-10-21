@@ -43,7 +43,7 @@ typedef struct
 	cmd_t head;
 	cmd_add_t user_cmd_handler;
 	cmd_handler command_handler;
-	int udf_count;
+	int custom_cmd_count;        /* Number of non-builtin commands. */
 }
 inner_t;
 
@@ -888,7 +888,12 @@ vle_cmds_add_foreign(const cmd_add_t *cmd)
 		return 1;
 	}
 
-	return (add_builtin_cmd(cmd->name, FOREIGN_CMD, cmd) != 0);
+	int failure = (add_builtin_cmd(cmd->name, FOREIGN_CMD, cmd) != 0);
+	if(!failure)
+	{
+		++inner->custom_cmd_count;
+	}
+	return failure;
 }
 
 /* Returns non-zero on error */
@@ -995,7 +1000,7 @@ remove_commands(CMD_TYPE type)
 			cur = cur->next;
 		}
 	}
-	inner->udf_count = 0;
+	inner->custom_cmd_count = 0;
 }
 
 static int
@@ -1078,7 +1083,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	new->deleted = 0;
 	init_command_flags(new, inner->user_cmd_handler.flags);
 
-	++inner->udf_count;
+	++inner->custom_cmd_count;
 	return 0;
 }
 
@@ -1203,7 +1208,7 @@ delcommand_cmd(const cmd_info_t *cmd_info)
 	free(cmd->cmd);
 	free(cmd);
 
-	inner->udf_count--;
+	inner->custom_cmd_count--;
 	return 0;
 }
 
@@ -1437,7 +1442,8 @@ vle_cmds_list_udcs(void)
 	char **p;
 	cmd_t *cur;
 
-	char **const list = reallocarray(NULL, inner->udf_count*2 + 1, sizeof(*list));
+	char **const list = reallocarray(NULL, inner->custom_cmd_count*2 + 1,
+			sizeof(*list));
 	if(list == NULL)
 	{
 		return NULL;
@@ -1452,6 +1458,11 @@ vle_cmds_list_udcs(void)
 		{
 			*p++ = strdup(cur->name);
 			*p++ = strdup(cur->cmd);
+		}
+		else if(cur->type == FOREIGN_CMD)
+		{
+			*p++ = strdup(cur->name);
+			*p++ = strdup(cur->descr);
 		}
 		cur = cur->next;
 	}

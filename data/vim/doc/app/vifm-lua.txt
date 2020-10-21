@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 12
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -59,8 +59,10 @@ makes it much worse because these callbacks are created all the time.
 
 The following standard libraries are enabled:
  * basic
+ * table manipulation
  * string manipulation
  * input and output
+ * mathematical functions
 
 --------------------------------------------------------------------------------
 *vifm-plugins*
@@ -96,6 +98,7 @@ Some ideas~
 
 Use camelCase?
 Use tables more often?  Supposed to be more extensible.
+Make "description" a mandatory argument?
 
 Add VifmJob:succeeded() ?
 Add VifmJob:haserrors() ?
@@ -163,7 +166,7 @@ ignored.
 Possible fields of {job}:
  - "cmd" (string)
    Comand to execute.
- - "descr" (string) (default: "")
+ - "description" (string) (default: "")
    Description of the job to be displayed on the job bar (when "visible" key
    is set to true).
  - "visible" (boolean) (default: false)
@@ -181,7 +184,7 @@ Registers a new :command.
 Possible fields of {cmd}:
  - "name" (string)
    Name of the comand.
- - "descr" (string) (default: "")
+ - "description" (string) (default: "")
    Description of the comand.
  - "handler" (function)
    Handler which accepts {info}.

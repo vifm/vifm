@@ -753,5 +753,26 @@ safe_qsort(void *base, size_t nmemb, size_t size,
 	}
 }
 
+void
+format_position(char buf[], size_t buf_len, int top, int total, int visible)
+{
+	if(total <= visible)
+	{
+		copy_str(buf, buf_len, "All");
+	}
+	else if(top == 0)
+	{
+		copy_str(buf, buf_len, "Top");
+	}
+	else if(total - top <= visible)
+	{
+		copy_str(buf, buf_len, "Bot");
+	}
+	else
+	{
+		snprintf(buf, buf_len, "%2d%%", (top*100)/(total - visible));
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

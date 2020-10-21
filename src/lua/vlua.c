@@ -153,9 +153,13 @@ vlua_init(void)
 
 	luaL_requiref(vlua->lua, "base", &luaopen_base, 1);
 	lua_pop(vlua->lua, 1);
+	luaL_requiref(vlua->lua, LUA_TABLIBNAME, &luaopen_table, 1);
+	lua_pop(vlua->lua, 1);
 	luaL_requiref(vlua->lua, LUA_IOLIBNAME, &luaopen_io, 1);
 	lua_pop(vlua->lua, 1);
 	luaL_requiref(vlua->lua, LUA_STRLIBNAME, &luaopen_string, 1);
+	lua_pop(vlua->lua, 1);
+	luaL_requiref(vlua->lua, LUA_MATHLIBNAME, &luaopen_math, 1);
 	lua_pop(vlua->lua, 1);
 
 	load_api(vlua->lua);
@@ -312,7 +316,7 @@ vifm_startjob(lua_State *lua)
 	}
 
 	const char *descr = NULL;
-	if(check_opt_field(lua, 1, "descr", LUA_TSTRING))
+	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
 		descr = lua_tostring(lua, -1);
 	}
@@ -350,7 +354,7 @@ vifm_addcommand(lua_State *lua)
 	const char *name = lua_tostring(lua, -1);
 
 	const char *descr = "";
-	if(check_opt_field(lua, 1, "descr", LUA_TSTRING))
+	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
 		descr = state_store_string(vlua, lua_tostring(lua, -1));
 	}

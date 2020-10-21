@@ -4,6 +4,7 @@
 
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
+#include "../../src/utils/string_array.h"
 
 static int foreign_cmd(const cmd_info_t *cmd_info);
 
@@ -69,6 +70,25 @@ TEST(foreign_command_is_gone_after_cmds_clear)
 	assert_success(vle_cmds_add_foreign(&command));
 	vle_cmds_clear();
 	assert_success(vle_cmds_add_foreign(&command));
+}
+
+TEST(foreign_command_is_listed_with_udcs)
+{
+	cmd_add_t command = {
+	  .name = "foreign",       .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = HAS_RANGE,
+	  .handler = &foreign_cmd, .min_args = 0, .max_args = NOT_DEF,
+	};
+	assert_success(vle_cmds_add_foreign(&command));
+
+	char **list = vle_cmds_list_udcs();
+	int len = count_strings(list);
+
+	assert_int_equal(2, len);
+	assert_string_equal("foreign", list[0]);
+	assert_string_equal("descr", list[1]);
+
+	free_string_array(list, len);
 }
 
 static int

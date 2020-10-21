@@ -18,7 +18,7 @@ end
 -- this does NOT overwrite pre-existing user command
 local added = vifm.addcommand {
     name = "Hello",
-    descr = "greet you",
+    description = "greet you",
     handler = greet,
     minargs = 1,
 }

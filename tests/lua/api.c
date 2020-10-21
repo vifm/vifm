@@ -128,7 +128,7 @@ TEST(vifmjob_exitcode)
 	assert_success(vlua_run_string(vlua, "info = {\n"
 	                                     "  cmd = 'exit 41',\n"
 	                                     "  visible = true,\n"
-	                                     "  descr = 'exit 41'\n"
+	                                     "  description = 'exit 41'\n"
 	                                     "}\n"
 	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:exitcode())"));
@@ -199,7 +199,7 @@ TEST(vifm_addcommand)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "vifm.addcommand {"
 	                                     "  name = 'cmd',"
-	                                     "  descr = 'descr',"
+	                                     "  description = 'description',"
 	                                     "  handler = handler,"
 	                                     "  minargs = 1,"
 	                                     "}"));
