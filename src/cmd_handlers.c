@@ -5091,20 +5091,12 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int bg;
 	int save_msg = 0;
 
-	int lpending_marking = lwin.pending_marking;
-	int rpending_marking = rwin.pending_marking;
-
 	/* Expand macros in a bound command. */
 	expanded_com = ma_expand(cmd_info->user_action, cmd_info->args, &flags,
 			vle_cmds_identify(cmd_info->user_action) == COM_EXECUTE);
 
 	if(expanded_com[0] == ':')
 	{
-		/* ma_expand() could have reset the flags, restore them to restore range
-		 * selection. */
-		lwin.pending_marking = lpending_marking;
-		rwin.pending_marking = rpending_marking;
-
 		commands_scope_start();
 
 		int sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
