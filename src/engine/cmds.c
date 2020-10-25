@@ -80,6 +80,7 @@ static const char * get_user_cmd_name(const char cmd[], char buf[],
 static int is_valid_udc_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
+static int delete_user_command(const char name[]);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int noescaping, int comments, int *last_arg,
 		int (**positions)[2]);
@@ -1203,14 +1204,21 @@ insert_cmd(cmd_t *after)
 static int
 delcommand_cmd(const cmd_info_t *cmd_info)
 {
+	return delete_user_command(cmd_info->argv[0]);
+}
+
+/* Removes a user command if one exists.  Returns error code or zero on
+ * success. */
+static int
+delete_user_command(const char name[])
+{
 	int cmp;
 	cmd_t *cur;
 	cmd_t *cmd;
 
 	cmp = -1;
 	cur = &inner->head;
-	while(cur->next != NULL &&
-			(cmp = strcmp(cur->next->name, cmd_info->argv[0])) < 0)
+	while(cur->next != NULL && (cmp = strcmp(cur->next->name, name)) < 0)
 		cur = cur->next;
 
 	if(cur->next == NULL || cmp != 0)
