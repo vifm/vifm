@@ -72,15 +72,12 @@ TSTATIC int add_builtin_cmd(const char name[], CMD_TYPE type,
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static void remove_commands(CMD_TYPE type);
 static int command_cmd(const cmd_info_t *cmd_info);
-static int add_user_command(const char name[], const char body[],
-		int overwrite);
 static void init_command_flags(cmd_t *cmd, int flags);
 static const char * get_user_cmd_name(const char cmd[], char buf[],
 		size_t buf_len);
 static int is_valid_udc_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
-static int delete_user_command(const char name[]);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int noescaping, int comments, int *last_arg,
 		int (**positions)[2]);
@@ -1023,14 +1020,11 @@ command_cmd(const cmd_info_t *cmd_info)
 	const char *body = get_user_cmd_name(cmd_info->args, name, sizeof(name));
 	body = vle_cmds_at_arg(body);
 
-	return add_user_command(name, body, cmd_info->emark);
+	return vle_cmds_add_user(name, body, cmd_info->emark);
 }
 
-/* Adds a new or updates an existing user command.  Non-zero overwrite parameter
- * enables updating of existing command.  Returns error code or zero on
- * success. */
-static int
-add_user_command(const char name[], const char body[], int overwrite)
+int
+vle_cmds_add_user(const char name[], const char body[], int overwrite)
 {
 	if(body[0] == '\0')
 	{
@@ -1204,13 +1198,11 @@ insert_cmd(cmd_t *after)
 static int
 delcommand_cmd(const cmd_info_t *cmd_info)
 {
-	return delete_user_command(cmd_info->argv[0]);
+	return vle_cmds_del_user(cmd_info->argv[0]);
 }
 
-/* Removes a user command if one exists.  Returns error code or zero on
- * success. */
-static int
-delete_user_command(const char name[])
+int
+vle_cmds_del_user(const char name[])
 {
 	int cmp;
 	cmd_t *cur;

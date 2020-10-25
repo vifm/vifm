@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 25
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -194,7 +194,7 @@ Return:~
 *vifm-l_vifm.cmds*
 
 vifm.cmds.add({cmd})                           *vifm-l_vifm.cmds.add()*
-Registers a new :command.
+Registers a new :command of a kind that's equivalent to builtin commands.
 
 Possible fields of {cmd}:
  - "name" (string)
@@ -214,6 +214,32 @@ Fields of {info} (argument of a handler):
 
 Parameters:~
   {cmd}  Table with information about a command.
+
+Return:~
+  `true` on success.
+
+vifm.cmds.command({cmd})                       *vifm-l_vifm.cmds.command()*
+Registers a new :command that works exactly as those registered using
+|vifm-:command| builtin command.
+
+Possible fields of {cmd}:
+ - "name" (string)
+   Name of the comand.
+ - "action" (string)
+   Value of the command.  See |vifm-:command| for possible value.
+
+Parameters:~
+  {cmd}  Table with information about a command.
+
+Return:~
+  `true` on success.
+
+vifm.cmds.delcommand({name})                   *vifm-l_vifm.cmds.delcommand()*
+Removes :command added by `vifm.cmds.command()`, basically being an equivalent
+of |vifm-:delcommand| builtin command.
+
+Parameters:~
+  {name}  Name of the comand.
 
 Return:~
   `true` on success.

@@ -54,6 +54,12 @@ void columns_setup_column(int id);
 /* Unregisters all columns and resets print function. */
 void columns_teardown(void);
 
+/* Initializes engine/cmds unit. */
+void engine_cmds_setup(void);
+
+/* Uninitializes engine/cmds unit. */
+void engine_cmds_teardown(void);
+
 /* Initializes empty histories of specified size. */
 void histories_init(int size);
 

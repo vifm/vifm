@@ -73,6 +73,8 @@ static int vifm_exists(lua_State *lua);
 static int vifm_makepath(lua_State *lua);
 static int vifm_startjob(lua_State *lua);
 static int cmds_add(lua_State *lua);
+static int cmds_command(lua_State *lua);
+static int cmds_delcommand(lua_State *lua);
 static void * to_pointer(lua_State *lua);
 static void from_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
@@ -112,8 +114,10 @@ static const struct luaL_Reg vifm_methods[] = {
 
 /* Functions of `vifm.cmds` table. */
 static const struct luaL_Reg cmds_methods[] = {
-	{ "add", &cmds_add },
-	{ NULL,  NULL      }
+	{ "add",        &cmds_add        },
+	{ "command",    &cmds_command    },
+	{ "delcommand", &cmds_delcommand },
+	{ NULL,         NULL             }
 };
 
 /* Functions of `vifm.sb` table. */
@@ -408,6 +412,46 @@ cmds_add(lua_State *lua)
 	}
 
 	lua_pushboolean(lua, vle_cmds_add_foreign(&cmd) == 0);
+	return 1;
+}
+
+/* Member of `vifm.command` that registers a new user-defined :command or raises
+ * an error.  Returns boolean, which is true on success. */
+static int
+cmds_command(lua_State *lua)
+{
+	luaL_checktype(lua, 1, LUA_TTABLE);
+
+	check_field(lua, 1, "name", LUA_TSTRING);
+	const char *name = lua_tostring(lua, -1);
+
+	check_field(lua, 1, "action", LUA_TSTRING);
+	const char *action = skip_whitespace(lua_tostring(lua, -1));
+	if(action[0] == '\0')
+	{
+		return luaL_error(lua, "%s", "Action can't be empty");
+	}
+
+	int overwrite = 0;
+	if(check_opt_field(lua, 1, "overwrite", LUA_TBOOLEAN))
+	{
+		overwrite = lua_toboolean(lua, -1);
+	}
+
+	int success = (vle_cmds_add_user(name, action, overwrite) == 0);
+	lua_pushboolean(lua, success);
+	return 1;
+}
+
+/* Member of `vifm.command` that unregisters a user-defined :command.  Returns
+ * boolean, which is true on success. */
+static int
+cmds_delcommand(lua_State *lua)
+{
+	const char *name = luaL_checkstring(lua, 1);
+
+	int success = (vle_cmds_del_user(name) == 0);
+	lua_pushboolean(lua, success);
 	return 1;
 }
 
