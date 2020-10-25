@@ -26,6 +26,10 @@
 	Fixed an issue with packaging on one system (Linux in this case) and
 	building on the other (OS X).  Thanks to chenrui333.
 
+	Fixed information about implicit file selection (count or ranges) being
+	lost due to the use of expand() builtin function in 'statusline'.  Thanks
+	to DieSpinne.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

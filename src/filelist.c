@@ -3503,14 +3503,15 @@ flist_set_marking(view_t *view, int prefer_current)
 void
 mark_files_at(view_t *view, int count, const int indexes[])
 {
-	int i;
-
 	clear_marking(view);
 
+	int i;
 	for(i = 0; i < count; ++i)
 	{
 		view->dir_entry[indexes[i]].marked = 1;
 	}
+
+	view->pending_marking = 1;
 }
 
 /* Marks selected files of the view.  Returns number of marked files. */
