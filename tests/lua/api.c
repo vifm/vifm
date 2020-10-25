@@ -150,7 +150,7 @@ TEST(vifmjob_stdout)
 	conf_teardown();
 }
 
-TEST(vifm_addcommand)
+TEST(cmds_add)
 {
 	init_commands();
 
@@ -166,30 +166,30 @@ TEST(vifm_addcommand)
 	                                     "end"));
 	assert_string_equal("", ui_sb_last());
 
-	assert_failure(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd'"
 	                                     "}"));
 	assert_true(ends_with(ui_sb_last(), "`handler` key is mandatory"));
 
-	assert_failure(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  handler = handler"
 	                                     "}"));
 	assert_true(ends_with(ui_sb_last(), "`name` key is mandatory"));
 
-	assert_failure(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd',"
 	                                     "  handler = 10"
 	                                     "}"));
 	assert_true(ends_with(ui_sb_last(), "`handler` value must be a function"));
 
-	assert_failure(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd',"
 	                                     "  handler = handler,"
 	                                     "  minargs = 'min'"
 	                                     "}"));
 	assert_true(ends_with(ui_sb_last(), "`minargs` value must be a number"));
 
-	assert_failure(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd',"
 	                                     "  handler = handler,"
 	                                     "  maxargs = 'max'"
@@ -197,7 +197,7 @@ TEST(vifm_addcommand)
 	assert_true(ends_with(ui_sb_last(), "`maxargs` value must be a number"));
 
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd',"
 	                                     "  description = 'description',"
 	                                     "  handler = handler,"
@@ -211,7 +211,7 @@ TEST(vifm_addcommand)
 	assert_int_equal(1, curr_stats.save_msg);
 
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'bcmd',"
 	                                     "  handler = badhandler,"
 	                                     "  minargs = 0,"
@@ -223,7 +223,7 @@ TEST(vifm_addcommand)
 	assert_true(ends_with(ui_sb_last(), "to call a nil value (global 'adsf')"));
 
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.addcommand {"
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmdinf',"
 	                                     "  handler = handler,"
 	                                     "  minargs = 1,"

@@ -72,7 +72,7 @@ static int vifm_fnamemodify(lua_State *lua);
 static int vifm_exists(lua_State *lua);
 static int vifm_makepath(lua_State *lua);
 static int vifm_startjob(lua_State *lua);
-static int vifm_addcommand(lua_State *lua);
+static int cmds_add(lua_State *lua);
 static void * to_pointer(lua_State *lua);
 static void from_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
@@ -105,10 +105,15 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "exists",      &vifm_exists      },
 	{ "makepath",    &vifm_makepath    },
 	{ "startjob",    &vifm_startjob    },
-	{ "addcommand",  &vifm_addcommand  },
 	{ "expand",      &vifm_expand      },
 	{ "cd",          &vifm_change_dir  },
-	{ NULL,          NULL         }
+	{ NULL,          NULL              }
+};
+
+/* Functions of `vifm.cmds` table. */
+static const struct luaL_Reg cmds_methods[] = {
+	{ "add", &cmds_add },
+	{ NULL,  NULL      }
 };
 
 /* Functions of `vifm.sb` table. */
@@ -209,6 +214,10 @@ load_api(lua_State *lua)
 
 	lua_pushvalue(lua, -1);
 	lua_setglobal(lua, "vifm");
+
+	/* Setup vifm.cmds. */
+	luaL_newlib(lua, cmds_methods);
+	lua_setfield(lua, -2, "cmds");
 
 	/* Setup vifm.sb. */
 	luaL_newlib(lua, sb_methods);
@@ -345,7 +354,7 @@ vifm_startjob(lua_State *lua)
 /* Member of `vifm.cmds` that registers a new :command or raises an error.
  * Returns boolean, which is true on success. */
 static int
-vifm_addcommand(lua_State *lua)
+cmds_add(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
 

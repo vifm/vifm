@@ -38,7 +38,7 @@ local function clone(info)
 end
 
 -- this does NOT overwrite pre-existing user command
-local added = vifm.addcommand {
+local added = vifm.cmds.add {
     name = "Gclone",
     description = "clone a repository and enter it",
     handler = clone,

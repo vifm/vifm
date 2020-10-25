@@ -132,7 +132,7 @@ local function unpack(info)
 end
 
 -- this does NOT overwrite pre-existing user command
-local added = vifm.addcommand {
+local added = vifm.cmds.add {
     name = "Unpack",
     description = "unpack an archive into a single directory",
     handler = unpack,
