@@ -72,6 +72,8 @@ TSTATIC int add_builtin_cmd(const char name[], CMD_TYPE type,
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static void remove_commands(CMD_TYPE type);
 static int command_cmd(const cmd_info_t *cmd_info);
+static int add_user_command(const char name[], const char body[],
+		int overwrite);
 static void init_command_flags(cmd_t *cmd, int flags);
 static const char * get_user_cmd_name(const char cmd[], char buf[],
 		size_t buf_len);
@@ -1003,49 +1005,59 @@ remove_commands(CMD_TYPE type)
 	inner->custom_cmd_count = 0;
 }
 
+/* Implements :command builtin command mostly provided by this unit. */
 static int
 command_cmd(const cmd_info_t *cmd_info)
 {
-	int cmp;
-	char cmd_name[MAX_CMD_NAME_LEN];
-	const char *args;
-	cmd_t *new, *cur;
-	size_t len;
-	int has_emark, has_qmark;
-
 	if(cmd_info->argc < 2)
 	{
-		if(inner->command_handler != NULL)
-			return inner->command_handler(cmd_info);
-		else
+		if(inner->command_handler == NULL)
+		{
 			return CMDS_ERR_TOO_FEW_ARGS;
+		}
+		return inner->command_handler(cmd_info);
 	}
 
-	args = get_user_cmd_name(cmd_info->args, cmd_name, sizeof(cmd_name));
-	args = vle_cmds_at_arg(args);
-	if(args[0] == '\0')
+	char name[MAX_CMD_NAME_LEN];
+	const char *body = get_user_cmd_name(cmd_info->args, name, sizeof(name));
+	body = vle_cmds_at_arg(body);
+
+	return add_user_command(name, body, cmd_info->emark);
+}
+
+/* Adds a new or updates an existing user command.  Non-zero overwrite parameter
+ * enables updating of existing command.  Returns error code or zero on
+ * success. */
+static int
+add_user_command(const char name[], const char body[], int overwrite)
+{
+	if(body[0] == '\0')
+	{
 		return CMDS_ERR_TOO_FEW_ARGS;
-	else if(!is_valid_udc_name(cmd_name))
+	}
+	if(!is_valid_udc_name(name))
+	{
 		return CMDS_ERR_INCORRECT_NAME;
+	}
 
-	len = strlen(cmd_name);
-	has_emark = (len > 0 && cmd_name[len - 1] == '!');
-	has_qmark = (len > 0 && cmd_name[len - 1] == '?');
+	size_t len = strlen(name);
+	int has_emark = (len > 0 && name[len - 1] == '!');
+	int has_qmark = (len > 0 && name[len - 1] == '?');
 
-	cmp = -1;
-	cur = &inner->head;
-	while(cur->next != NULL && (cmp = strcmp(cur->next->name, cmd_name)) < 0)
+	int cmp = -1;
+	cmd_t *cur = &inner->head;
+	while(cur->next != NULL && (cmp = strcmp(cur->next->name, name)) < 0)
 	{
 		int builtin_like = (cur->next->type == BUILTIN_CMD)
 		                || (cur->next->type == FOREIGN_CMD);
 		if(has_emark && builtin_like && cur->next->emark &&
-				strncmp(cmd_name, cur->next->name, len - 1) == 0)
+				strncmp(name, cur->next->name, len - 1) == 0)
 		{
 			cmp = 0;
 			break;
 		}
 		if(has_qmark && builtin_like && cur->next->qmark &&
-				strncmp(cmd_name, cur->next->name, len - 1) == 0)
+				strncmp(name, cur->next->name, len - 1) == 0)
 		{
 			cmp = 0;
 			break;
@@ -1053,12 +1065,13 @@ command_cmd(const cmd_info_t *cmd_info)
 		cur = cur->next;
 	}
 
+	cmd_t *new;
 	if(cmp == 0)
 	{
 		cur = cur->next;
 		if(cur->type == BUILTIN_CMD || cur->type == FOREIGN_CMD)
 			return CMDS_ERR_NO_BUILTIN_REDEFINE;
-		if(!cmd_info->emark)
+		if(!overwrite)
 			return CMDS_ERR_NEED_BANG;
 		free(cur->name);
 		free(cur->cmd);
@@ -1072,12 +1085,12 @@ command_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 
-	new->name = strdup(cmd_name);
+	new->name = strdup(name);
 	new->descr = NULL;
 	new->id = USER_CMD_ID;
 	new->type = USER_CMD;
 	new->passed = 0;
-	new->cmd = strdup(args);
+	new->cmd = strdup(body);
 	new->min_args = inner->user_cmd_handler.min_args;
 	new->max_args = inner->user_cmd_handler.max_args;
 	new->deleted = 0;
@@ -1186,6 +1199,7 @@ insert_cmd(cmd_t *after)
 	return new;
 }
 
+/* Implements :command builtin command provided by this unit. */
 static int
 delcommand_cmd(const cmd_info_t *cmd_info)
 {
