@@ -137,6 +137,7 @@ static const struct luaL_Reg job_methods[] = {
 	{ NULL,       NULL              }
 };
 
+/* Address of this variable serves as a key in Lua table. */
 static char vlua_state_key;
 
 vlua_t *
@@ -341,8 +342,8 @@ vifm_startjob(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm` that registers a new :command or raises an error.  Returns
- * boolean, which is true on success. */
+/* Member of `vifm.cmds` that registers a new :command or raises an error.
+ * Returns boolean, which is true on success. */
 static int
 vifm_addcommand(lua_State *lua)
 {
@@ -474,7 +475,7 @@ vifm_change_dir(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm` that prints a normal message on the statusbar.  Doesn't
+/* Member of `vifm.sb` that prints a normal message on the statusbar.  Doesn't
  * return anything. */
 static int
 sb_info(lua_State *lua)
@@ -485,7 +486,7 @@ sb_info(lua_State *lua)
 	return 0;
 }
 
-/* Member of `vifm` that prints an error message on the statusbar.  Doesn't
+/* Member of `vifm.sb` that prints an error message on the statusbar.  Doesn't
  * return anything. */
 static int
 sb_error(lua_State *lua)
@@ -496,7 +497,7 @@ sb_error(lua_State *lua)
 	return 0;
 }
 
-/* Member of `vifm` that prints statusbar message that's not stored in
+/* Member of `vifm.sb` that prints statusbar message that's not stored in
  * history.  Doesn't return anything. */
 static int
 sb_quick(lua_State *lua)
