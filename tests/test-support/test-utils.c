@@ -18,6 +18,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
+#include "../../src/engine/cmds.h"
 #include "../../src/engine/options.h"
 #include "../../src/ui/color_manager.h"
 #include "../../src/ui/column_view.h"
@@ -41,6 +42,16 @@
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
 static void format_none(int id, const void *data, size_t buf_len, char buf[]);
+static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
+		void *extra_arg);
+static int swap_range(void);
+static int resolve_mark(char mark);
+static char * expand_macros(const char str[], int for_shell, int *usr1,
+		int *usr2);
+static char * cmds_expand_envvars(const char *str);
+static void post(int id);
+static void select_range(int id, const cmd_info_t *cmd_info);
+static int skip_at_beginning(int id, const char *args);
 static void init_list(view_t *view);
 static int init_pair_stub(short pair, short f, short b);
 static int pair_content_stub(short pair, short *f, short *b);
@@ -203,6 +214,7 @@ view_setup(view_t *view)
 	view->miller_view_g = 0;
 	view->window_rows = 0;
 	view->run_size = 1;
+	view->pending_marking = 0;
 
 	assert_success(filter_init(&view->local_filter.filter, 1));
 	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
@@ -245,6 +257,75 @@ columns_teardown(void)
 {
 	columns_clear_column_descs();
 	columns_set_line_print_func(NULL);
+}
+
+void
+engine_cmds_setup(void)
+{
+	static cmds_conf_t cmds_conf = {
+		.complete_args = &complete_args,
+		.swap_range = &swap_range,
+		.resolve_mark = &resolve_mark,
+		.expand_macros = &expand_macros,
+		.expand_envvars = &cmds_expand_envvars,
+		.post = &post,
+		.select_range = &select_range,
+		.skip_at_beginning = &skip_at_beginning,
+	};
+
+	vle_cmds_init(1, &cmds_conf);
+}
+
+static int
+complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
+{
+	return 0;
+}
+
+static int
+swap_range(void)
+{
+	return 1;
+}
+
+static int
+resolve_mark(char mark)
+{
+	return -1;
+}
+
+static char *
+expand_macros(const char str[], int for_shell, int *usr1, int *usr2)
+{
+	return strdup(str);
+}
+
+static char *
+cmds_expand_envvars(const char *str)
+{
+	return strdup(str);
+}
+
+static void
+post(int id)
+{
+}
+
+static void
+select_range(int id, const cmd_info_t *cmd_info)
+{
+}
+
+static int
+skip_at_beginning(int id, const char *args)
+{
+	return -1;
+}
+
+void
+engine_cmds_teardown(void)
+{
+	vle_cmds_reset();
 }
 
 void

@@ -16,7 +16,7 @@ local function greet(info)
 end
 
 -- this does NOT overwrite pre-existing user command
-local added = vifm.addcommand {
+local added = vifm.cmds.add {
     name = "Hello",
     description = "greet you",
     handler = greet,

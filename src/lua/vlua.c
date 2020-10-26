@@ -72,7 +72,9 @@ static int vifm_fnamemodify(lua_State *lua);
 static int vifm_exists(lua_State *lua);
 static int vifm_makepath(lua_State *lua);
 static int vifm_startjob(lua_State *lua);
-static int vifm_addcommand(lua_State *lua);
+static int cmds_add(lua_State *lua);
+static int cmds_command(lua_State *lua);
+static int cmds_delcommand(lua_State *lua);
 static void * to_pointer(lua_State *lua);
 static void from_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
@@ -105,10 +107,17 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "exists",      &vifm_exists      },
 	{ "makepath",    &vifm_makepath    },
 	{ "startjob",    &vifm_startjob    },
-	{ "addcommand",  &vifm_addcommand  },
 	{ "expand",      &vifm_expand      },
 	{ "cd",          &vifm_change_dir  },
-	{ NULL,          NULL         }
+	{ NULL,          NULL              }
+};
+
+/* Functions of `vifm.cmds` table. */
+static const struct luaL_Reg cmds_methods[] = {
+	{ "add",        &cmds_add        },
+	{ "command",    &cmds_command    },
+	{ "delcommand", &cmds_delcommand },
+	{ NULL,         NULL             }
 };
 
 /* Functions of `vifm.sb` table. */
@@ -137,6 +146,7 @@ static const struct luaL_Reg job_methods[] = {
 	{ NULL,       NULL              }
 };
 
+/* Address of this variable serves as a key in Lua table. */
 static char vlua_state_key;
 
 vlua_t *
@@ -208,6 +218,10 @@ load_api(lua_State *lua)
 
 	lua_pushvalue(lua, -1);
 	lua_setglobal(lua, "vifm");
+
+	/* Setup vifm.cmds. */
+	luaL_newlib(lua, cmds_methods);
+	lua_setfield(lua, -2, "cmds");
 
 	/* Setup vifm.sb. */
 	luaL_newlib(lua, sb_methods);
@@ -341,10 +355,10 @@ vifm_startjob(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm` that registers a new :command or raises an error.  Returns
- * boolean, which is true on success. */
+/* Member of `vifm.cmds` that registers a new :command or raises an error.
+ * Returns boolean, which is true on success. */
 static int
-vifm_addcommand(lua_State *lua)
+cmds_add(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
 
@@ -398,6 +412,54 @@ vifm_addcommand(lua_State *lua)
 	}
 
 	lua_pushboolean(lua, vle_cmds_add_foreign(&cmd) == 0);
+	return 1;
+}
+
+/* Member of `vifm.command` that registers a new user-defined :command or raises
+ * an error.  Returns boolean, which is true on success. */
+static int
+cmds_command(lua_State *lua)
+{
+	vlua_t *vlua = get_state(lua);
+
+	luaL_checktype(lua, 1, LUA_TTABLE);
+
+	check_field(lua, 1, "name", LUA_TSTRING);
+	const char *name = lua_tostring(lua, -1);
+
+	check_field(lua, 1, "action", LUA_TSTRING);
+	const char *action = skip_whitespace(lua_tostring(lua, -1));
+	if(action[0] == '\0')
+	{
+		return luaL_error(lua, "%s", "Action can't be empty");
+	}
+
+	const char *descr = NULL;
+	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
+	{
+		descr = state_store_string(vlua, lua_tostring(lua, -1));
+	}
+
+	int overwrite = 0;
+	if(check_opt_field(lua, 1, "overwrite", LUA_TBOOLEAN))
+	{
+		overwrite = lua_toboolean(lua, -1);
+	}
+
+	int success = (vle_cmds_add_user(name, action, descr, overwrite) == 0);
+	lua_pushboolean(lua, success);
+	return 1;
+}
+
+/* Member of `vifm.command` that unregisters a user-defined :command.  Returns
+ * boolean, which is true on success. */
+static int
+cmds_delcommand(lua_State *lua)
+{
+	const char *name = luaL_checkstring(lua, 1);
+
+	int success = (vle_cmds_del_user(name) == 0);
+	lua_pushboolean(lua, success);
 	return 1;
 }
 
@@ -474,7 +536,7 @@ vifm_change_dir(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm` that prints a normal message on the statusbar.  Doesn't
+/* Member of `vifm.sb` that prints a normal message on the statusbar.  Doesn't
  * return anything. */
 static int
 sb_info(lua_State *lua)
@@ -485,7 +547,7 @@ sb_info(lua_State *lua)
 	return 0;
 }
 
-/* Member of `vifm` that prints an error message on the statusbar.  Doesn't
+/* Member of `vifm.sb` that prints an error message on the statusbar.  Doesn't
  * return anything. */
 static int
 sb_error(lua_State *lua)
@@ -496,7 +558,7 @@ sb_error(lua_State *lua)
 	return 0;
 }
 
-/* Member of `vifm` that prints statusbar message that's not stored in
+/* Member of `vifm.sb` that prints statusbar message that's not stored in
  * history.  Doesn't return anything. */
 static int
 sb_quick(lua_State *lua)

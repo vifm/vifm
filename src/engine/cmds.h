@@ -266,6 +266,16 @@ void vle_cmds_add(const cmd_add_t cmds[], int count);
  * otherwise zero is returned. */
 int vle_cmds_add_foreign(const cmd_add_t *cmd);
 
+/* Adds a new or updates an existing user command.  Non-zero overwrite parameter
+ * enables updating of existing command.  Returns error code or zero on
+ * success. */
+int vle_cmds_add_user(const char name[], const char body[], const char descr[],
+		int overwrite);
+
+/* Removes a user command if one exists.  Returns error code or zero on
+ * success. */
+int vle_cmds_del_user(const char name[]);
+
 /* Finds the first character of the last argument in cmd.  Returns pointer to
  * it. */
 char * vle_cmds_last_arg(const char cmd[], int quotes, size_t *len);

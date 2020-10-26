@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 21
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -11,6 +11,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-lua-libs|     What Lua libraries are available.
 |vifm-lua-api|      Root-level API.
 |vifm-l_vifm|       `vifm` global table.
+|vifm-l_vifm.cmds|  `vifm.cmds` global table.
 |vifm-l_vifm.sb|    `vifm.sb` global table.
 |vifm-l_VifmJob|    `VifmJob` type.
 
@@ -78,7 +79,9 @@ Implications of the (current) order of initialization:
 
 All plugins are required to contain `init.lua` file at their root.  This file
 gets processed and its return value is interpreted as plugin data.  The return
-value must be a table.
+value must be a table.  The table is stored in a global that corresponds to
+the plugin's name.  At the moment the name of a plugin is the name of its
+directory.
 
 Global variables created by one plugin are local to that plugin and won't
 affect or be visible to other plugins.
@@ -178,14 +181,26 @@ Parameters:~
 Return:~
   Returns an instance of |vifm-l_VifmJob|.
 
-vifm.addcommand({cmd})                         *vifm-l_vifm.addcommand()*
-Registers a new :command.
+vifm.cd({path})                                *vifm-l_vifm.cd()*
+Changes location of current pane.
+
+Parameters:~
+  {path}  Path to visit.
+
+Return:~
+  `true` on success.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.cmds*
+
+vifm.cmds.add({cmd})                           *vifm-l_vifm.cmds.add()*
+Registers a new :command of a kind that's equivalent to builtin commands.
 
 Possible fields of {cmd}:
  - "name" (string)
-   Name of the comand.
+   Name of the command.
  - "description" (string) (default: "")
-   Description of the comand.
+   Description of the command.
  - "handler" (function)
    Handler which accepts {info}.
  - "minargs" (integer) (default: 0)
@@ -203,11 +218,30 @@ Parameters:~
 Return:~
   `true` on success.
 
-vifm.cd({path})                                *vifm-l_vifm.cd()*
-Changes location of current pane.
+vifm.cmds.command({cmd})                       *vifm-l_vifm.cmds.command()*
+Registers a new :command that works exactly as those registered using
+|vifm-:command| builtin command.
+
+Possible fields of {cmd}:
+ - "name" (string)
+   Name of the command.
+ - "description" (string) (default: action)
+   Description of the command.
+ - "action" (string)
+   Value of the command.  See |vifm-:command| for possible value.
 
 Parameters:~
-  {path}  Path to visit.
+  {cmd}  Table with information about a command.
+
+Return:~
+  `true` on success.
+
+vifm.cmds.delcommand({name})                   *vifm-l_vifm.cmds.delcommand()*
+Removes :command added by `vifm.cmds.command()`, basically being an equivalent
+of |vifm-:delcommand| builtin command.
+
+Parameters:~
+  {name}  Name of the command.
 
 Return:~
   `true` on success.

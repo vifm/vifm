@@ -498,6 +498,29 @@ TEST(singly_not_expanded_multiple_macros_multiple_files)
 	free(expanded);
 }
 
+TEST(marking_is_not_disturbed)
+{
+	int indexes[] = { 1, 3 };
+	mark_files_at(&lwin, 2, indexes);
+
+	assert_true(lwin.pending_marking);
+	assert_true(lwin.pending_marking);
+	assert_false(lwin.dir_entry[0].marked);
+	assert_true(lwin.dir_entry[1].marked);
+	assert_false(lwin.dir_entry[2].marked);
+	assert_true(lwin.dir_entry[3].marked);
+
+	char *expanded = ma_expand("%%", "", NULL, 0);
+	assert_string_equal("%", expanded);
+	free(expanded);
+
+	assert_true(lwin.pending_marking);
+	assert_false(lwin.dir_entry[0].marked);
+	assert_true(lwin.dir_entry[1].marked);
+	assert_false(lwin.dir_entry[2].marked);
+	assert_true(lwin.dir_entry[3].marked);
+}
+
 TEST(singly_no_crash_on_wrong_register_name)
 {
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,

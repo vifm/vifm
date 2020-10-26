@@ -84,7 +84,15 @@ char *
 ma_expand(const char command[], const char args[], MacroFlags *flags,
 		int for_shell)
 {
-	return expand_macros_i(command, args, flags, for_shell, &filter_all);
+	int lpending_marking = lwin.pending_marking;
+	int rpending_marking = rwin.pending_marking;
+
+	char *res = expand_macros_i(command, args, flags, for_shell, &filter_all);
+
+	lwin.pending_marking = lpending_marking;
+	rwin.pending_marking = rpending_marking;
+
+	return res;
 }
 
 /* macro_filter_func instantiation that allows all macros.  Returns the
@@ -98,7 +106,14 @@ filter_all(int *quoted, char c, char data, int ncurr, int nother)
 char *
 ma_expand_single(const char command[])
 {
+	int lpending_marking = lwin.pending_marking;
+	int rpending_marking = rwin.pending_marking;
+
 	char *const res = expand_macros_i(command, NULL, NULL, 0, &filter_single);
+
+	lwin.pending_marking = lpending_marking;
+	rwin.pending_marking = rpending_marking;
+
 	unescape(res, 0);
 	return res;
 }
