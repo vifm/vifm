@@ -252,7 +252,8 @@ TEST(cmds_command)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command({"
 	                                     "  name = 'name',"
-	                                     "  action = 'action'"
+	                                     "  action = 'action',"
+	                                     "  description = 'descr'"
 	                                     "})\n"
 	                                     "if not r then print 'fail' end"));
 	assert_string_equal("", ui_sb_last());

@@ -269,7 +269,8 @@ int vle_cmds_add_foreign(const cmd_add_t *cmd);
 /* Adds a new or updates an existing user command.  Non-zero overwrite parameter
  * enables updating of existing command.  Returns error code or zero on
  * success. */
-int vle_cmds_add_user(const char name[], const char body[], int overwrite);
+int vle_cmds_add_user(const char name[], const char body[], const char descr[],
+		int overwrite);
 
 /* Removes a user command if one exists.  Returns error code or zero on
  * success. */

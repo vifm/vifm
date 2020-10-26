@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 26
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -198,9 +198,9 @@ Registers a new :command of a kind that's equivalent to builtin commands.
 
 Possible fields of {cmd}:
  - "name" (string)
-   Name of the comand.
+   Name of the command.
  - "description" (string) (default: "")
-   Description of the comand.
+   Description of the command.
  - "handler" (function)
    Handler which accepts {info}.
  - "minargs" (integer) (default: 0)
@@ -224,7 +224,9 @@ Registers a new :command that works exactly as those registered using
 
 Possible fields of {cmd}:
  - "name" (string)
-   Name of the comand.
+   Name of the command.
+ - "description" (string) (default: action)
+   Description of the command.
  - "action" (string)
    Value of the command.  See |vifm-:command| for possible value.
 
@@ -239,7 +241,7 @@ Removes :command added by `vifm.cmds.command()`, basically being an equivalent
 of |vifm-:delcommand| builtin command.
 
 Parameters:~
-  {name}  Name of the comand.
+  {name}  Name of the command.
 
 Return:~
   `true` on success.

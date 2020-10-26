@@ -420,6 +420,8 @@ cmds_add(lua_State *lua)
 static int
 cmds_command(lua_State *lua)
 {
+	vlua_t *vlua = get_state(lua);
+
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
 	check_field(lua, 1, "name", LUA_TSTRING);
@@ -432,13 +434,19 @@ cmds_command(lua_State *lua)
 		return luaL_error(lua, "%s", "Action can't be empty");
 	}
 
+	const char *descr = NULL;
+	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
+	{
+		descr = state_store_string(vlua, lua_tostring(lua, -1));
+	}
+
 	int overwrite = 0;
 	if(check_opt_field(lua, 1, "overwrite", LUA_TBOOLEAN))
 	{
 		overwrite = lua_toboolean(lua, -1);
 	}
 
-	int success = (vle_cmds_add_user(name, action, overwrite) == 0);
+	int success = (vle_cmds_add_user(name, action, descr, overwrite) == 0);
 	lua_pushboolean(lua, success);
 	return 1;
 }

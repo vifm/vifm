@@ -833,7 +833,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 			;
 		else if(cur->name[0] == '\0')
 			;
-		else if(cur->type == USER_CMD)
+		else if(cur->type == USER_CMD && cur->descr == NULL)
 			vle_compl_add_match(cur->name, cur->cmd);
 		else
 			vle_compl_add_match(cur->name, cur->descr);
@@ -1020,11 +1020,12 @@ command_cmd(const cmd_info_t *cmd_info)
 	const char *body = get_user_cmd_name(cmd_info->args, name, sizeof(name));
 	body = vle_cmds_at_arg(body);
 
-	return vle_cmds_add_user(name, body, cmd_info->emark);
+	return vle_cmds_add_user(name, body, NULL, cmd_info->emark);
 }
 
 int
-vle_cmds_add_user(const char name[], const char body[], int overwrite)
+vle_cmds_add_user(const char name[], const char body[], const char descr[],
+		int overwrite)
 {
 	if(body[0] == '\0')
 	{
@@ -1081,7 +1082,7 @@ vle_cmds_add_user(const char name[], const char body[], int overwrite)
 	}
 
 	new->name = strdup(name);
-	new->descr = NULL;
+	new->descr = descr;
 	new->id = USER_CMD_ID;
 	new->type = USER_CMD;
 	new->passed = 0;
@@ -1471,7 +1472,7 @@ vle_cmds_list_udcs(void)
 		if(cur->type == USER_CMD)
 		{
 			*p++ = strdup(cur->name);
-			*p++ = strdup(cur->cmd);
+			*p++ = strdup(cur->descr == NULL ? cur->cmd : cur->descr);
 		}
 		else if(cur->type == FOREIGN_CMD)
 		{
