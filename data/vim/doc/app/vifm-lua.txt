@@ -5,15 +5,16 @@
 Note: this is very much work in progress.  Everything can change up to
 complete removal of this interface (that's an unlikely scenario though).
 
-|vifm-lua-status|   Status of plugins.
-|vifm-lua-plugins|  Sample plugins.
-|vifm-lua-design|   Generic ideas about the design.
-|vifm-lua-libs|     What Lua libraries are available.
-|vifm-lua-api|      Root-level API.
-|vifm-l_vifm|       `vifm` global table.
-|vifm-l_vifm.cmds|  `vifm.cmds` global table.
-|vifm-l_vifm.sb|    `vifm.sb` global table.
-|vifm-l_VifmJob|    `VifmJob` type.
+|vifm-lua-status|      Status of plugins.
+|vifm-lua-plugins|     Sample plugins.
+|vifm-lua-design|      Generic ideas about the design.
+|vifm-lua-libs|        What Lua libraries are available.
+|vifm-lua-api|         Root-level API.
+|vifm-l_vifm|          `vifm` global table.
+|vifm-l_vifm.cmds|     `vifm.cmds` global table.
+|vifm-l_vifm.plugins|  `vifm.plugins` global table.
+|vifm-l_vifm.sb|       `vifm.sb` global table.
+|vifm-l_VifmJob|       `VifmJob` type.
 
 --------------------------------------------------------------------------------
 *vifm-lua-status*
@@ -79,9 +80,9 @@ Implications of the (current) order of initialization:
 
 All plugins are required to contain `init.lua` file at their root.  This file
 gets processed and its return value is interpreted as plugin data.  The return
-value must be a table.  The table is stored in a global that corresponds to
-the plugin's name.  At the moment the name of a plugin is the name of its
-directory.
+value must be a table.  The table is stored in a `vifm.plugins.all` dictionary
+with a key that corresponds to the plugin's name.  At the moment the name of a
+plugin is the name of its directory.
 
 Global variables created by one plugin are local to that plugin and won't
 affect or be visible to other plugins.
@@ -110,6 +111,12 @@ Add VifmJob:haserrors() ?
 *vifm-l_vifm*
 
 Global `vifm` table is the entry-point to the API.
+
+vifm.cmds
+Table for managing command-line commands.  See |vifm-l_vifm.cmds|.
+
+vifm.plugins
+Table for managing plugins.  See |vifm-l_vifm.plugins|.
 
 vifm.sb
 Table for managing statusbar.  See |vifm-l_vifm.sb|.
@@ -245,6 +252,12 @@ Parameters:~
 
 Return:~
   `true` on success.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.plugins*
+
+plugins.all                                    *vifm-l_vifm.plugins.all*
+Table that contains all plugins indexed by their names.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.sb*

@@ -85,8 +85,9 @@ TEST(multiple_plugins_loaded)
 	plugs_load(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
-	assert_success(vlua_run_string(vlua, "print((plug and '1y' or '1n').."
-	                                     "      (plug2 and '2y' or '2n'))"));
+	assert_success(vlua_run_string(vlua,
+	      "print((vifm.plugins.all.plug and '1y' or '1n').."
+	      "      (vifm.plugins.all.plug2 and '2y' or '2n'))"));
 	assert_string_equal("1y2y", ui_sb_last());
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");

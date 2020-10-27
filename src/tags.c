@@ -659,6 +659,8 @@ const char *tags[] = {
 	"vifm-l_vifm.expand()",
 	"vifm-l_vifm.fnamemodify()",
 	"vifm-l_vifm.makepath()",
+	"vifm-l_vifm.plugins",
+	"vifm-l_vifm.plugins.all",
 	"vifm-l_vifm.sb",
 	"vifm-l_vifm.sb.error()",
 	"vifm-l_vifm.sb.info()",

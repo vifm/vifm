@@ -223,6 +223,12 @@ load_api(lua_State *lua)
 	luaL_newlib(lua, cmds_methods);
 	lua_setfield(lua, -2, "cmds");
 
+	/* Setup vifm.plugins. */
+	lua_newtable(lua);
+	lua_newtable(lua);
+	lua_setfield(lua, -2, "all");
+	lua_setfield(lua, -2, "plugins");
+
 	/* Setup vifm.sb. */
 	luaL_newlib(lua, sb_methods);
 	lua_setfield(lua, -2, "sb");
@@ -679,7 +685,12 @@ vlua_load_plugin(vlua_t *vlua, const char plugin[], plug_t *plug)
 {
 	if(load_plugin(vlua->lua, plugin, plug) == 0)
 	{
-		lua_setglobal(vlua->lua, plugin);
+		lua_getglobal(vlua->lua, "vifm");
+		lua_getfield(vlua->lua, -1, "plugins");
+		lua_getfield(vlua->lua, -1, "all");
+		lua_pushvalue(vlua->lua, -4);
+		lua_setfield(vlua->lua, -2, plugin);
+		lua_pop(vlua->lua, 4);
 		return 0;
 	}
 	return 1;
