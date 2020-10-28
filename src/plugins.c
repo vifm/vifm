@@ -177,5 +177,15 @@ plugs_get(const plugs_t *plugs, int idx, const plug_t **plug)
 	return 1;
 }
 
+void
+plug_log(plug_t *plug, const char msg[])
+{
+	if(plug->log_len != 0)
+	{
+		(void)strappendch(&plug->log, &plug->log_len, '\n');
+	}
+	(void)strappend(&plug->log, &plug->log_len, msg);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

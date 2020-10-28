@@ -61,6 +61,9 @@ void plugs_load(plugs_t *plugs, const char base_dir[]);
  * Returns non-zero on success, otherwise zero is returned. */
 int plugs_get(const plugs_t *plugs, int idx, const plug_t **plug);
 
+/* Adds message to the log of the plugin on a new line. */
+void plug_log(plug_t *plug, const char msg[]);
+
 #endif /* VIFM__PLUGINS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

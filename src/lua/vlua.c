@@ -261,11 +261,7 @@ print(lua_State *lua)
 	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
 	if(plug != NULL)
 	{
-		if(plug->log_len != 0)
-		{
-			(void)strappendch(&plug->log, &plug->log_len, '\n');
-		}
-		(void)strappend(&plug->log, &plug->log_len, msg);
+		plug_log(plug, msg);
 	}
 	else
 	{
