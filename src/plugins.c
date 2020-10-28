@@ -26,6 +26,7 @@
 #include "utils/darray.h"
 #include "utils/fs.h"
 #include "utils/path.h"
+#include "utils/str.h"
 
 /* State of the unit. */
 struct plugs_t
@@ -34,6 +35,8 @@ struct plugs_t
 	plug_t **plugs;           /* Known plugins. */
 	DA_INSTANCE_FIELD(plugs); /* Declarations to enable use of DA_* on plugs. */
 };
+
+static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
 
 plugs_t *
 plugs_create(struct vlua_t *vlua)
@@ -57,6 +60,7 @@ plugs_free(plugs_t *plugs)
 		for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
 		{
 			free(plugs->plugs[i]->path);
+			free(plugs->plugs[i]->real_path);
 			free(plugs->plugs[i]->log);
 			free(plugs->plugs[i]);
 		}
@@ -69,9 +73,6 @@ plugs_free(plugs_t *plugs)
 void
 plugs_load(plugs_t *plugs, const char base_dir[])
 {
-	/* TODO: handle situation when symlinks make same plugin be loaded more than
-	 *       once (check presence of resolved path in list of plugins). */
-
 	char full_path[PATH_MAX + 1];
 	snprintf(full_path, sizeof(full_path), "%s/plugins", base_dir);
 
@@ -84,7 +85,12 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 	struct dirent *entry;
 	while((entry = os_readdir(dir)) != NULL)
 	{
-		if(is_builtin_dir(entry->d_name))
+		char path[PATH_MAX + NAME_MAX + 4];
+		snprintf(path, sizeof(path), "%s/%s", full_path, entry->d_name);
+
+		/* XXX: is_dirent_targets_dir() does slowfs checks, do they harm here? */
+		if(is_builtin_dir(entry->d_name) ||
+				!is_dirent_targets_dir(path, entry))
 		{
 			continue;
 		}
@@ -102,29 +108,61 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		}
 		*plug_ptr = plug;
 
-		char dir_path[PATH_MAX + NAME_MAX + 4];
-		snprintf(dir_path, sizeof(dir_path), "%s/%s", full_path, entry->d_name);
-
-		plug->path = strdup(dir_path);
+		plug->path = strdup(path);
 		if(plug->path == NULL)
 		{
 			free(plug);
 			continue;
 		}
 
+		if(os_realpath(plug->path, path) == NULL)
+		{
+			plug->real_path = strdup(plug->path);
+		}
+		else
+		{
+			plug->real_path = strdup(path);
+		}
+		if(plug->real_path == NULL)
+		{
+			free(plug->path);
+			free(plug);
+			continue;
+		}
+
+		/* Do the check before committing this plugin. */
+		plug_t *duplicate = find_plug(plugs, plug->real_path);
+
 		plug->status = PLS_FAILURE;
 		DA_COMMIT(plugs->plugs);
 
-		if(is_dirent_targets_dir(plug->path, entry))
+		if(duplicate != NULL)
 		{
-			if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
-			{
-				plug->status = PLS_SUCCESS;
-			}
+			plug->status = PLS_SKIPPED;
+		}
+		else if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
+		{
+			plug->status = PLS_SUCCESS;
 		}
 	}
 
 	os_closedir(dir);
+}
+
+/* Looks up a plugin specified by real path among already loaded plugins.
+ * Returns pointer to it or NULL. */
+static plug_t *
+find_plug(plugs_t *plugs, const char real_path[])
+{
+	size_t i;
+	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
+	{
+		if(stroscmp(plugs->plugs[i]->real_path, real_path) == 0)
+		{
+			return plugs->plugs[i];
+		}
+	}
+	return NULL;
 }
 
 int

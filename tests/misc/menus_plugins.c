@@ -69,12 +69,12 @@ TEST(plugins_are_listed)
 	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, menu_get_current()->len);
-	const char *status0 = "[loaded] ";
-	const char *status1 = "[failed] ";
+	const char *status0 = "[ loaded] ";
+	const char *status1 = "[ failed] ";
 	if(ends_with(menu_get_current()->items[0], "2"))
 	{
-		status0 = "[failed] ";
-		status1 = "[loaded] ";
+		status0 = "[ failed] ";
+		status1 = "[ loaded] ";
 	}
 	assert_true(starts_with(menu_get_current()->items[0], status0));
 	assert_true(starts_with(menu_get_current()->items[1], status1));

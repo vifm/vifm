@@ -28,6 +28,7 @@ typedef struct plugs_t plugs_t;
 typedef enum
 {
 	PLS_SUCCESS, /* Loaded successfully. */
+	PLS_SKIPPED, /* Loading was skipped. */
 	PLS_FAILURE  /* Failed to load. */
 }
 PluginLoadStatus;
@@ -35,7 +36,8 @@ PluginLoadStatus;
 /* Information about a plugin. */
 typedef struct plug_t
 {
-	char *path; /* Full path to the plugin. */
+	char *path;      /* Full original path to the plugin. */
+	char *real_path; /* Full resolved path to the plugin. */
 
 	char *log;      /* Log output of the plugin. */
 	size_t log_len; /* Length of the log field. */

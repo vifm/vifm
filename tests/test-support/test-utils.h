@@ -75,6 +75,10 @@ void create_executable(const char path[]);
 /* Makes a file with specified contents. */
 void make_file(const char path[], const char contents[]);
 
+/* Makes a symbolic link.  Returns zero on success, otherwise non-zero is
+ * returned.  */
+int make_symlink(const char target[], const char linkpath[]);
+
 /* Removes empty directory at specified path. */
 void remove_dir(const char path[]);
 

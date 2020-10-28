@@ -13,6 +13,8 @@ static plugs_t *plugs;
 
 SETUP()
 {
+	conf_setup();
+
 	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
 	create_dir(SANDBOX_PATH "/plugins");
 	create_dir(SANDBOX_PATH "/plugins/plug");
@@ -23,6 +25,8 @@ SETUP()
 
 TEARDOWN()
 {
+	conf_teardown();
+
 	plugs_free(plugs);
 	vlua_finish(vlua);
 
@@ -121,6 +125,27 @@ TEST(plugin_statuses_are_correct)
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
 	remove_dir(SANDBOX_PATH "/plugins/plug2");
+}
+
+TEST(can_not_load_same_plugin_twice, IF(not_windows))
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
+	assert_success(make_symlink("plug", SANDBOX_PATH "/plugins/plug2"));
+
+	plugs_load(plugs, cfg.config_dir);
+
+	const plug_t *plug;
+	assert_true(plugs_get(plugs, 0, &plug));
+	PluginLoadStatus status1 = plug->status;
+	assert_true(plugs_get(plugs, 1, &plug));
+	PluginLoadStatus status2 = plug->status;
+	assert_false(plugs_get(plugs, 2, &plug));
+
+	assert_true((status1 == PLS_SUCCESS && status2 == PLS_SKIPPED) ||
+	            (status2 == PLS_SUCCESS && status1 == PLS_SKIPPED));
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+	remove_file(SANDBOX_PATH "/plugins/plug2");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
