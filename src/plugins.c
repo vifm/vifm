@@ -18,6 +18,7 @@
 
 #include "plugins.h"
 
+#include <stdarg.h> /* va_list va_start() va_end() vsnprintf() */
 #include <stdlib.h> /* calloc() free() */
 
 #include "compat/fs_limits.h"
@@ -25,6 +26,7 @@
 #include "lua/vlua.h"
 #include "utils/darray.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 
@@ -37,6 +39,8 @@ struct plugs_t
 };
 
 static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
+static void plug_logf(plug_t *plug, const char format[], ...)
+	_gnuc_printf(2, 3);
 
 plugs_t *
 plugs_create(struct vlua_t *vlua)
@@ -130,7 +134,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 			continue;
 		}
 
-		/* Do the check before committing this plugin. */
+		/* Perform the check before committing this plugin. */
 		plug_t *duplicate = find_plug(plugs, plug->real_path);
 
 		plug->status = PLS_FAILURE;
@@ -138,11 +142,18 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 
 		if(duplicate != NULL)
 		{
+			plug_logf(plug, "[vifm][error]: skipped as a duplicate of %s",
+					duplicate->path);
 			plug->status = PLS_SKIPPED;
 		}
 		else if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
 		{
+			plug_log(plug, "[vifm][info]: plugin was loaded successfully");
 			plug->status = PLS_SUCCESS;
+		}
+		else
+		{
+			plug_log(plug, "[vifm][error]: loading plugin has failed");
 		}
 	}
 
@@ -175,6 +186,20 @@ plugs_get(const plugs_t *plugs, int idx, const plug_t **plug)
 
 	*plug = plugs->plugs[idx];
 	return 1;
+}
+
+/* Adds formatted message to the log on a new line. */
+static void
+plug_logf(plug_t *plug, const char format[], ...)
+{
+	va_list ap;
+	va_start(ap, format);
+
+	char buf[1024];
+	vsnprintf(buf, sizeof(buf), format, ap);
+	plug_log(plug, buf);
+
+	va_end(ap);
 }
 
 void

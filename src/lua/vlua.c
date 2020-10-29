@@ -704,7 +704,9 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 
 	if(luaL_loadfile(lua, full_path))
 	{
-		ui_sb_errf("Failed to load '%s' plugin: %s", name, lua_tostring(lua, -1));
+		const char *error = lua_tostring(lua, -1);
+		plug_log(plug, error);
+		ui_sb_errf("Failed to load '%s' plugin: %s", name, error);
 		lua_pop(lua, 1);
 		return 1;
 	}
@@ -712,7 +714,9 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 	setup_plugin_env(lua, plug);
 	if(lua_pcall(lua, 0, 1, 0))
 	{
-		ui_sb_errf("Failed to start '%s' plugin: %s", name, lua_tostring(lua, -1));
+		const char *error = lua_tostring(lua, -1);
+		plug_log(plug, error);
+		ui_sb_errf("Failed to start '%s' plugin: %s", name, error);
 		lua_pop(lua, 1);
 		return 1;
 	}
