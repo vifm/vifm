@@ -20,6 +20,7 @@
 
 #include <stdarg.h> /* va_list va_start() va_end() vsnprintf() */
 #include <stdlib.h> /* calloc() free() */
+#include <string.h> /* strcmp() */
 
 #include "compat/fs_limits.h"
 #include "compat/os.h"
@@ -29,6 +30,8 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
+#include "utils/utils.h"
 
 /* State of the unit. */
 struct plugs_t
@@ -41,6 +44,8 @@ struct plugs_t
 static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
 static void plug_logf(plug_t *plug, const char format[], ...)
 	_gnuc_printf(2, 3);
+TSTATIC void plugs_sort(plugs_t *plugs);
+static int plug_cmp(const void *a, const void *b);
 
 plugs_t *
 plugs_create(struct vlua_t *vlua)
@@ -210,6 +215,24 @@ plug_log(plug_t *plug, const char msg[])
 		(void)strappendch(&plug->log, &plug->log_len, '\n');
 	}
 	(void)strappend(&plug->log, &plug->log_len, msg);
+}
+
+/* Sorts plugins by their path. */
+TSTATIC void
+plugs_sort(plugs_t *plugs)
+{
+	safe_qsort(plugs->plugs, DA_SIZE(plugs->plugs), sizeof(plugs->plugs),
+			&plug_cmp);
+}
+
+/* Compares two plugins by their paths.  Returns negative, zero or positive
+ * number meaning less than, equal or greater than correspondingly. */
+static int
+plug_cmp(const void *a, const void *b)
+{
+	const plug_t *plug_a = *(const plug_t **)a;
+	const plug_t *plug_b = *(const plug_t **)b;
+	return strcmp(plug_a->path, plug_b->path);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
