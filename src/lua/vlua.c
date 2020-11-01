@@ -134,7 +134,7 @@ typedef struct
 	luaL_Stream lua_stream; /* Standard Lua structure. */
 	bg_job_t *job;          /* Link to the owning job. */
 }
-JobStream;
+job_stream_t;
 
 /* Methods of VifmJob type. */
 static const struct luaL_Reg job_methods[] = {
@@ -627,7 +627,7 @@ vifmjob_stdout(lua_State *lua)
 	bg_job_t **job = luaL_checkudata(lua, 1, "VifmJob");
 
 	/* XXX: should we return the same Lua object on every call? */
-	JobStream *js = lua_newuserdata(lua, sizeof(JobStream));
+	job_stream_t *js = lua_newuserdata(lua, sizeof(*js));
 	js->lua_stream.closef = NULL;
 	luaL_setmetatable(lua, LUA_FILEHANDLE);
 
@@ -668,7 +668,7 @@ vifmjob_errors(lua_State *lua)
 static int
 jobstream_close(lua_State *lua)
 {
-	JobStream *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
+	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
 	bg_job_decref(js->job);
 
 	/* Don't fclose() file stream here, because it might be used by multiple Lua
