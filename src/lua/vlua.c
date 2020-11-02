@@ -65,6 +65,13 @@ struct vlua_t
 	strlist_t strings; /* Interned strings. */
 };
 
+/* User data of job object. */
+typedef struct
+{
+	bg_job_t *job; /* Link to the native job. */
+}
+vifm_job_t;
+
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
 static int vifm_errordialog(lua_State *lua);
@@ -348,12 +355,12 @@ vifm_startjob(lua_State *lua)
 		bg_op_set_descr(&job->bg_op, descr);
 	}
 
-	bg_job_t **data = lua_newuserdata(lua, sizeof(bg_job_t *));
+	vifm_job_t *data = lua_newuserdata(lua, sizeof(*data));
 
 	luaL_getmetatable(lua, "VifmJob");
 	lua_setmetatable(lua, -2);
 
-	*data = job;
+	data->job = job;
 	return 1;
 }
 
@@ -575,8 +582,8 @@ sb_quick(lua_State *lua)
 static int
 vifmjob_gc(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
-	bg_job_decref(job);
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+	bg_job_decref(vifm_job->job);
 	return 0;
 }
 
@@ -585,9 +592,9 @@ vifmjob_gc(lua_State *lua)
 static int
 vifmjob_wait(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
-	if(bg_job_wait(job) != 0)
+	if(bg_job_wait(vifm_job->job) != 0)
 	{
 		return luaL_error(lua, "%s", "Waiting for job has failed");
 	}
@@ -601,14 +608,14 @@ vifmjob_wait(lua_State *lua)
 static int
 vifmjob_exitcode(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
 	vifmjob_wait(lua);
 
-	pthread_spin_lock(&job->status_lock);
-	int running = job->running;
-	int exit_code = job->exit_code;
-	pthread_spin_unlock(&job->status_lock);
+	pthread_spin_lock(&vifm_job->job->status_lock);
+	int running = vifm_job->job->running;
+	int exit_code = vifm_job->job->exit_code;
+	pthread_spin_unlock(&vifm_job->job->status_lock);
 
 	if(running)
 	{
@@ -624,17 +631,17 @@ vifmjob_exitcode(lua_State *lua)
 static int
 vifmjob_stdout(lua_State *lua)
 {
-	bg_job_t **job = luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
 	/* XXX: should we return the same Lua object on every call? */
 	job_stream_t *js = lua_newuserdata(lua, sizeof(*js));
 	js->lua_stream.closef = NULL;
 	luaL_setmetatable(lua, LUA_FILEHANDLE);
 
-	js->lua_stream.f = (*job)->output;
+	js->lua_stream.f = vifm_job->job->output;
 	js->lua_stream.closef = &jobstream_close;
-	js->job = *job;
-	bg_job_incref(*job);
+	js->job = vifm_job->job;
+	bg_job_incref(vifm_job->job);
 
 	return 1;
 }
@@ -644,12 +651,12 @@ vifmjob_stdout(lua_State *lua)
 static int
 vifmjob_errors(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
 	char *errors = NULL;
-	pthread_spin_lock(&job->errors_lock);
-	update_string(&errors, job->errors);
-	pthread_spin_unlock(&job->errors_lock);
+	pthread_spin_lock(&vifm_job->job->errors_lock);
+	update_string(&errors, vifm_job->job->errors);
+	pthread_spin_unlock(&vifm_job->job->errors_lock);
 
 	if(errors == NULL)
 	{
