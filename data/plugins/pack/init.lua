@@ -58,6 +58,8 @@ local function pack(info)
         description = string.format("Archiving %s", outfile),
         visible = true
     }
+    -- close output stream to avoid blocking archives after pipe filling up
+    job:stdout():close()
 end
 
 -- this does NOT overwrite pre-existing user command

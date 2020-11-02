@@ -147,7 +147,11 @@ TEST(vifmjob_stdout)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo out' }\n"
 	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:stdout():read('a'))"));
+	                                     "if job:stdout() ~= job:stdout() then\n"
+	                                     "  print('Result should be the same')\n"
+	                                     "else\n"
+	                                     "  print(job:stdout():read('a'))\n"
+	                                     "end"));
 	assert_true(starts_with_lit(ui_sb_last(), "out"));
 
 	conf_teardown();

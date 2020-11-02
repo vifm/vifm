@@ -65,10 +65,20 @@ struct vlua_t
 	strlist_t strings; /* Interned strings. */
 };
 
+/* User data of file stream associated with job's output stream. */
+typedef struct
+{
+	luaL_Stream lua_stream; /* Standard Lua structure. */
+	bg_job_t *job;          /* Link to the owning job. */
+	void *obj;              /* Handle to Lua object of this user data. */
+}
+job_stream_t;
+
 /* User data of job object. */
 typedef struct
 {
-	bg_job_t *job; /* Link to the native job. */
+	bg_job_t *job;        /* Link to the native job. */
+	job_stream_t *output; /* Cached output stream or NULL. */
 }
 vifm_job_t;
 
@@ -84,6 +94,7 @@ static int cmds_command(lua_State *lua);
 static int cmds_delcommand(lua_State *lua);
 static void * to_pointer(lua_State *lua);
 static void from_pointer(lua_State *lua, void *ptr);
+static void drop_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int vifm_expand(lua_State *lua);
 static int vifm_change_dir(lua_State *lua);
@@ -134,14 +145,6 @@ static const struct luaL_Reg sb_methods[] = {
 	{ "quick",  &sb_quick },
 	{ NULL,     NULL      }
 };
-
-/* Wrapper around file stream associated with job's output stream. */
-typedef struct
-{
-	luaL_Stream lua_stream; /* Standard Lua structure. */
-	bg_job_t *job;          /* Link to the owning job. */
-}
-job_stream_t;
 
 /* Methods of VifmJob type. */
 static const struct luaL_Reg job_methods[] = {
@@ -361,6 +364,7 @@ vifm_startjob(lua_State *lua)
 	lua_setmetatable(lua, -2);
 
 	data->job = job;
+	data->output = NULL;
 	return 1;
 }
 
@@ -472,14 +476,14 @@ cmds_delcommand(lua_State *lua)
 	return 1;
 }
 
-/* Converts Lua value at the top of the stack into a C pointer.  Returns the
- * pointer. */
+/* Converts Lua value at the top of the stack into a C pointer without popping
+ * it.  Returns the pointer. */
 static void *
 to_pointer(lua_State *lua)
 {
 	void *ptr = (void *)lua_topointer(lua, -1);
 	lua_pushlightuserdata(lua, ptr);
-	lua_insert(lua, -2);
+	lua_pushvalue(lua, -2);
 	lua_settable(lua, LUA_REGISTRYINDEX);
 	return ptr;
 }
@@ -490,6 +494,15 @@ from_pointer(lua_State *lua, void *ptr)
 {
 	lua_pushlightuserdata(lua, ptr);
 	lua_gettable(lua, LUA_REGISTRYINDEX);
+}
+
+/* Removes pointer stored by to_pointer(). */
+static void
+drop_pointer(lua_State *lua, void *ptr)
+{
+	lua_pushlightuserdata(lua, ptr);
+	lua_pushnil(lua);
+	lua_settable(lua, LUA_REGISTRYINDEX);
 }
 
 /* Handler of all foreign :commands registered from Lua. */
@@ -633,15 +646,25 @@ vifmjob_stdout(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
-	/* XXX: should we return the same Lua object on every call? */
-	job_stream_t *js = lua_newuserdata(lua, sizeof(*js));
-	js->lua_stream.closef = NULL;
-	luaL_setmetatable(lua, LUA_FILEHANDLE);
+	/* We return the same Lua object on every call. */
+	if(vifm_job->output == NULL)
+	{
+		job_stream_t *js = lua_newuserdata(lua, sizeof(*js));
+		js->lua_stream.closef = NULL;
+		luaL_setmetatable(lua, LUA_FILEHANDLE);
 
-	js->lua_stream.f = vifm_job->job->output;
-	js->lua_stream.closef = &jobstream_close;
-	js->job = vifm_job->job;
-	bg_job_incref(vifm_job->job);
+		js->lua_stream.f = vifm_job->job->output;
+		js->lua_stream.closef = &jobstream_close;
+		js->job = vifm_job->job;
+		bg_job_incref(vifm_job->job);
+
+		js->obj = to_pointer(lua);
+		vifm_job->output = js;
+	}
+	else
+	{
+		from_pointer(lua, vifm_job->output->obj);
+	}
 
 	return 1;
 }
@@ -677,10 +700,12 @@ jobstream_close(lua_State *lua)
 {
 	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
 	bg_job_decref(js->job);
+	drop_pointer(lua, js->obj);
 
-	/* Don't fclose() file stream here, because it might be used by multiple Lua
-	 * objects.  Just report success. */
-	return luaL_fileresult(lua, 0, NULL);
+	int stat = (fclose(js->job->output) == 0);
+	js->job->output = NULL;
+
+	return luaL_fileresult(lua, stat, NULL);
 }
 
 int
