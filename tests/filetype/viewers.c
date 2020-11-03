@@ -7,6 +7,7 @@
 #include "../../src/filetype.h"
 #include "../../src/status.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/string_array.h"
 #include "test.h"
 
 static int
@@ -91,6 +92,22 @@ TEST(several_patterns)
 	assert_true(ft_get_viewer("file.version.tbz") != NULL);
 	assert_true(ft_get_viewer("file.version.tbz2") != NULL);
 	assert_true(ft_get_viewer("file.version.tar.bz2") != NULL);
+}
+
+TEST(multiple_viewers)
+{
+	set_viewers("*.tbz", "prog1 a");
+	set_viewers("*.tba", "prog2 a");
+	set_viewers("*.tbz", "prog2 b");
+	set_viewers("*.tbz", "prog1 b");
+
+	ft_init(&prog1_available);
+
+	strlist_t viewers = ft_get_viewers("a.tbz");
+	assert_int_equal(2, viewers.nitems);
+	assert_string_equal("prog1 a", viewers.items[0]);
+	assert_string_equal("prog1 b", viewers.items[1]);
+	free_string_array(viewers.items, viewers.nitems);
 }
 
 TEST(pattern_list, IF(has_mime_type_detection))
