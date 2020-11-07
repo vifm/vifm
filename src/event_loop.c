@@ -117,6 +117,12 @@ event_loop(const int *quit)
 		size_t counter;
 		int got_input;
 
+		/* Reset marking from previous commands.  They are temporary.  Don't really
+		 * like this, any better ideas?  How about post-hook for engine/keys
+		 * unit? */
+		lwin.pending_marking = 0;
+		rwin.pending_marking = 0;
+
 		modes_pre();
 
 		/* Waits for timeout then skips if no key press.  Short-circuit if we're not
