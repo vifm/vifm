@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 17
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -843,7 +843,6 @@ q, Q, ZZ                                       *vifm-q_q* *vifm-q_Q* *vifm-q_ZZ*
 [count]Alt-V                                   *vifm-q_ALT-V*
     scroll backward one window (or [count] lines).
 
-
 [count]z                                       *vifm-q_z*
     scroll forward one window (and set window to [count]).
 
@@ -872,6 +871,9 @@ F                                              *vifm-q_F*
     toggle automatic forwarding.  Roughly equivalent to periodic file reload
     and scrolling to the bottom.  The behaviour is similar to `tail -F` or F
     key in less.
+
+i                                              *vifm-q_i*
+    toggle raw mode (ignoring of defined viewers).
 
 
 [count]/pattern                                *vifm-q_/*

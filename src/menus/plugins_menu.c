@@ -18,6 +18,7 @@
 
 #include "plugins_menu.h"
 
+#include <assert.h> /* assert() */
 #include <string.h> /* strdup() */
 
 #include "../compat/reallocarray.h"
@@ -29,6 +30,7 @@
 #include "../plugins.h"
 #include "menus.h"
 
+static const char * status_to_str(PluginLoadStatus status);
 static KHandlerResponse plugs_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 static void show_plugin_log(view_t *view, menu_data_t *m, plug_t *plug);
@@ -49,8 +51,8 @@ show_plugins_menu(view_t *view)
 	const plug_t *plug;
 	for(i = 0; plugs_get(curr_stats.plugs, i, &plug); ++i)
 	{
-		const char *status = (plug->status == PLS_SUCCESS ? "loaded" : "failed");
-		char *item = format_str("[%6s] %s", status, plug->path);
+		const char *status = status_to_str(plug->status);
+		char *item = format_str("[%7s] %s", status, plug->path);
 		plugs_m.len = put_into_string_array(&plugs_m.items, plugs_m.len, item);
 
 		plugs_m.void_data = reallocarray(plugs_m.void_data, plugs_m.len,
@@ -59,6 +61,22 @@ show_plugins_menu(view_t *view)
 	}
 
 	return menus_enter(plugs_m.state, view);
+}
+
+/* Turns plugin status into a string.  Returns the string. */
+static const char *
+status_to_str(PluginLoadStatus status)
+{
+	switch(status)
+	{
+		case PLS_SUCCESS: return "loaded";
+		case PLS_SKIPPED: return "skipped";
+		case PLS_FAILURE: return "failed";
+
+	  default:
+			assert(0 && "Unhandled status value.");
+			return "";
+	}
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken

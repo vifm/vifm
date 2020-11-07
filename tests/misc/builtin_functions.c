@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/time.h> /* timeval utimes() */
-#include <unistd.h> /* rmdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() remove() */
@@ -376,6 +376,9 @@ TEST(has)
 
 TEST(extcached)
 {
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", NULL);
+	assert_success(chdir(lwin.curr_dir));
+
 	/* Testing with FMT_CHANGED is problematic, because change time is not
 	 * programmatically accessible for writing. */
 	set_extcached_monitor_type(FMT_MODIFIED);

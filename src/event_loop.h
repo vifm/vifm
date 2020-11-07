@@ -34,6 +34,7 @@ int is_input_buf_empty(void);
 TSTATIC_DEFS(
 	struct view_t;
 	int process_scheduled_updates_of_view(struct view_t *view);
+	void feed_keys(const wchar_t input[]);
 )
 
 #endif /* VIFM__EVENT_LOOP_H__ */

@@ -4,7 +4,7 @@
 
 #include <sys/stat.h> /* chmod() */
 #include <sys/time.h> /* timeval utimes() */
-#include <unistd.h> /* access() rmdir() usleep() */
+#include <unistd.h> /* access() rmdir() symlink() usleep() */
 
 #ifdef _WIN32
 #include <windows.h>
@@ -373,6 +373,17 @@ make_file(const char path[], const char contents[])
 		fputs(contents, fp);
 		fclose(fp);
 	}
+}
+
+int
+make_symlink(const char target[], const char linkpath[])
+{
+#ifndef _WIN32
+	return symlink(target, linkpath);
+#else
+	assert_fail("No creation of symbolic links on Windows.");
+	return 1;
+#endif
 }
 
 void

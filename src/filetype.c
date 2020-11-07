@@ -111,6 +111,37 @@ ft_get_viewer(const char file[])
 	return find_existing_cmd(&fileviewers, file);
 }
 
+strlist_t
+ft_get_viewers(const char file[])
+{
+	strlist_t viewers = {};
+
+	int i;
+	for(i = 0; i < fileviewers.count; ++i)
+	{
+		assoc_t *const assoc = &fileviewers.list[i];
+
+		if(!matchers_match(assoc->matchers, file))
+		{
+			continue;
+		}
+
+		int j;
+		for(j = 0; j < assoc->records.count; ++j)
+		{
+			const char *cmd = assoc->records.list[j].command;
+			if(!is_in_string_array(viewers.items, viewers.nitems, cmd) &&
+					ft_exists(cmd))
+			{
+				viewers.nitems = add_to_string_array(&viewers.items, viewers.nitems,
+						cmd);
+			}
+		}
+	}
+
+	return viewers;
+}
+
 /* Finds first existing command which pattern matches given file.  Returns the
  * command (it's lifetime is managed by this unit) or NULL on failure. */
 static const char *

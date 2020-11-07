@@ -65,6 +65,23 @@ struct vlua_t
 	strlist_t strings; /* Interned strings. */
 };
 
+/* User data of file stream associated with job's output stream. */
+typedef struct
+{
+	luaL_Stream lua_stream; /* Standard Lua structure. */
+	bg_job_t *job;          /* Link to the owning job. */
+	void *obj;              /* Handle to Lua object of this user data. */
+}
+job_stream_t;
+
+/* User data of job object. */
+typedef struct
+{
+	bg_job_t *job;        /* Link to the native job. */
+	job_stream_t *output; /* Cached output stream or NULL. */
+}
+vifm_job_t;
+
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
 static int vifm_errordialog(lua_State *lua);
@@ -77,6 +94,7 @@ static int cmds_command(lua_State *lua);
 static int cmds_delcommand(lua_State *lua);
 static void * to_pointer(lua_State *lua);
 static void from_pointer(lua_State *lua, void *ptr);
+static void drop_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int vifm_expand(lua_State *lua);
 static int vifm_change_dir(lua_State *lua);
@@ -127,14 +145,6 @@ static const struct luaL_Reg sb_methods[] = {
 	{ "quick",  &sb_quick },
 	{ NULL,     NULL      }
 };
-
-/* Wrapper around file stream associated with job's output stream. */
-typedef struct
-{
-	luaL_Stream lua_stream; /* Standard Lua structure. */
-	bg_job_t *job;          /* Link to the owning job. */
-}
-JobStream;
 
 /* Methods of VifmJob type. */
 static const struct luaL_Reg job_methods[] = {
@@ -223,6 +233,12 @@ load_api(lua_State *lua)
 	luaL_newlib(lua, cmds_methods);
 	lua_setfield(lua, -2, "cmds");
 
+	/* Setup vifm.plugins. */
+	lua_newtable(lua);
+	lua_newtable(lua);
+	lua_setfield(lua, -2, "all");
+	lua_setfield(lua, -2, "plugins");
+
 	/* Setup vifm.sb. */
 	luaL_newlib(lua, sb_methods);
 	lua_setfield(lua, -2, "sb");
@@ -255,11 +271,7 @@ print(lua_State *lua)
 	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
 	if(plug != NULL)
 	{
-		if(plug->log_len != 0)
-		{
-			(void)strappendch(&plug->log, &plug->log_len, '\n');
-		}
-		(void)strappend(&plug->log, &plug->log_len, msg);
+		plug_log(plug, msg);
 	}
 	else
 	{
@@ -346,12 +358,13 @@ vifm_startjob(lua_State *lua)
 		bg_op_set_descr(&job->bg_op, descr);
 	}
 
-	bg_job_t **data = lua_newuserdata(lua, sizeof(bg_job_t *));
+	vifm_job_t *data = lua_newuserdata(lua, sizeof(*data));
 
 	luaL_getmetatable(lua, "VifmJob");
 	lua_setmetatable(lua, -2);
 
-	*data = job;
+	data->job = job;
+	data->output = NULL;
 	return 1;
 }
 
@@ -463,14 +476,14 @@ cmds_delcommand(lua_State *lua)
 	return 1;
 }
 
-/* Converts Lua value at the top of the stack into a C pointer.  Returns the
- * pointer. */
+/* Converts Lua value at the top of the stack into a C pointer without popping
+ * it.  Returns the pointer. */
 static void *
 to_pointer(lua_State *lua)
 {
 	void *ptr = (void *)lua_topointer(lua, -1);
 	lua_pushlightuserdata(lua, ptr);
-	lua_insert(lua, -2);
+	lua_pushvalue(lua, -2);
 	lua_settable(lua, LUA_REGISTRYINDEX);
 	return ptr;
 }
@@ -481,6 +494,15 @@ from_pointer(lua_State *lua, void *ptr)
 {
 	lua_pushlightuserdata(lua, ptr);
 	lua_gettable(lua, LUA_REGISTRYINDEX);
+}
+
+/* Removes pointer stored by to_pointer(). */
+static void
+drop_pointer(lua_State *lua, void *ptr)
+{
+	lua_pushlightuserdata(lua, ptr);
+	lua_pushnil(lua);
+	lua_settable(lua, LUA_REGISTRYINDEX);
 }
 
 /* Handler of all foreign :commands registered from Lua. */
@@ -573,8 +595,8 @@ sb_quick(lua_State *lua)
 static int
 vifmjob_gc(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
-	bg_job_decref(job);
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+	bg_job_decref(vifm_job->job);
 	return 0;
 }
 
@@ -583,9 +605,9 @@ vifmjob_gc(lua_State *lua)
 static int
 vifmjob_wait(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
-	if(bg_job_wait(job) != 0)
+	if(bg_job_wait(vifm_job->job) != 0)
 	{
 		return luaL_error(lua, "%s", "Waiting for job has failed");
 	}
@@ -599,14 +621,14 @@ vifmjob_wait(lua_State *lua)
 static int
 vifmjob_exitcode(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
 	vifmjob_wait(lua);
 
-	pthread_spin_lock(&job->status_lock);
-	int running = job->running;
-	int exit_code = job->exit_code;
-	pthread_spin_unlock(&job->status_lock);
+	pthread_spin_lock(&vifm_job->job->status_lock);
+	int running = vifm_job->job->running;
+	int exit_code = vifm_job->job->exit_code;
+	pthread_spin_unlock(&vifm_job->job->status_lock);
 
 	if(running)
 	{
@@ -622,17 +644,27 @@ vifmjob_exitcode(lua_State *lua)
 static int
 vifmjob_stdout(lua_State *lua)
 {
-	bg_job_t **job = luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
-	/* XXX: should we return the same Lua object on every call? */
-	JobStream *js = lua_newuserdata(lua, sizeof(JobStream));
-	js->lua_stream.closef = NULL;
-	luaL_setmetatable(lua, LUA_FILEHANDLE);
+	/* We return the same Lua object on every call. */
+	if(vifm_job->output == NULL)
+	{
+		job_stream_t *js = lua_newuserdata(lua, sizeof(*js));
+		js->lua_stream.closef = NULL;
+		luaL_setmetatable(lua, LUA_FILEHANDLE);
 
-	js->lua_stream.f = (*job)->output;
-	js->lua_stream.closef = &jobstream_close;
-	js->job = *job;
-	bg_job_incref(*job);
+		js->lua_stream.f = vifm_job->job->output;
+		js->lua_stream.closef = &jobstream_close;
+		js->job = vifm_job->job;
+		bg_job_incref(vifm_job->job);
+
+		js->obj = to_pointer(lua);
+		vifm_job->output = js;
+	}
+	else
+	{
+		from_pointer(lua, vifm_job->output->obj);
+	}
 
 	return 1;
 }
@@ -642,12 +674,12 @@ vifmjob_stdout(lua_State *lua)
 static int
 vifmjob_errors(lua_State *lua)
 {
-	bg_job_t *job = *(bg_job_t **)luaL_checkudata(lua, 1, "VifmJob");
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
 	char *errors = NULL;
-	pthread_spin_lock(&job->errors_lock);
-	update_string(&errors, job->errors);
-	pthread_spin_unlock(&job->errors_lock);
+	pthread_spin_lock(&vifm_job->job->errors_lock);
+	update_string(&errors, vifm_job->job->errors);
+	pthread_spin_unlock(&vifm_job->job->errors_lock);
 
 	if(errors == NULL)
 	{
@@ -666,12 +698,14 @@ vifmjob_errors(lua_State *lua)
 static int
 jobstream_close(lua_State *lua)
 {
-	JobStream *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
+	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
 	bg_job_decref(js->job);
+	drop_pointer(lua, js->obj);
 
-	/* Don't fclose() file stream here, because it might be used by multiple Lua
-	 * objects.  Just report success. */
-	return luaL_fileresult(lua, 0, NULL);
+	int stat = (fclose(js->job->output) == 0);
+	js->job->output = NULL;
+
+	return luaL_fileresult(lua, stat, NULL);
 }
 
 int
@@ -679,7 +713,12 @@ vlua_load_plugin(vlua_t *vlua, const char plugin[], plug_t *plug)
 {
 	if(load_plugin(vlua->lua, plugin, plug) == 0)
 	{
-		lua_setglobal(vlua->lua, plugin);
+		lua_getglobal(vlua->lua, "vifm");
+		lua_getfield(vlua->lua, -1, "plugins");
+		lua_getfield(vlua->lua, -1, "all");
+		lua_pushvalue(vlua->lua, -4);
+		lua_setfield(vlua->lua, -2, plugin);
+		lua_pop(vlua->lua, 4);
 		return 0;
 	}
 	return 1;
@@ -697,7 +736,9 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 
 	if(luaL_loadfile(lua, full_path))
 	{
-		ui_sb_errf("Failed to load '%s' plugin: %s", name, lua_tostring(lua, -1));
+		const char *error = lua_tostring(lua, -1);
+		plug_log(plug, error);
+		ui_sb_errf("Failed to load '%s' plugin: %s", name, error);
 		lua_pop(lua, 1);
 		return 1;
 	}
@@ -705,7 +746,9 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 	setup_plugin_env(lua, plug);
 	if(lua_pcall(lua, 0, 1, 0))
 	{
-		ui_sb_errf("Failed to start '%s' plugin: %s", name, lua_tostring(lua, -1));
+		const char *error = lua_tostring(lua, -1);
+		plug_log(plug, error);
+		ui_sb_errf("Failed to start '%s' plugin: %s", name, error);
 		lua_pop(lua, 1);
 		return 1;
 	}

@@ -105,6 +105,7 @@ struct modview_info_t
 	int detached;    /* Whether view mode was detached. */
 	ViewerKind kind; /* Kind of preview. */
 	int wrap;        /* Whether lines are wrapped. */
+	int raw;         /* Forced raw preview. */
 };
 
 /* View information structure indexes and count. */
@@ -167,6 +168,7 @@ static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void check_and_set_from_default_win(key_info_t *key_info);
 static void set_from_default_win(key_info_t *key_info);
 static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
@@ -265,6 +267,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_f,             {{&cmd_f}, .descr = "scroll page down"}},
 	{WK_g,             {{&cmd_g}, .descr = "scroll to the beginning"}},
 	{WK_e,             {{&cmd_j}, .descr = "scroll one line down"}},
+	{WK_i,             {{&cmd_i}, .descr = "toggle ignoring viewers (raw mode)"}},
 	{WK_j,             {{&cmd_j}, .descr = "scroll one line down"}},
 	{WK_k,             {{&cmd_k}, .descr = "scroll one line up"}},
 	{WK_n,             {{&cmd_n}, .descr = "go to next search match"}},
@@ -423,8 +426,9 @@ modview_pre(void)
 {
 	if(curr_stats.save_msg == 0)
 	{
-		const char *const suffix = vi->auto_forward ? "(auto forwarding)" : "";
-		ui_sb_msgf("-- VIEW -- %s", suffix);
+		const char *raw_suffix = (vi->raw ? " (raw)" : "");
+		const char *fwd_suffix = (vi->auto_forward ? " (auto forwarding)" : "");
+		ui_sb_msgf("-- VIEW --%s%s", raw_suffix, fwd_suffix);
 		curr_stats.save_msg = 2;
 	}
 }
@@ -1079,7 +1083,7 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	FILE *fp;
 	const char *const viewer = qv_get_viewer(file_to_view);
 
-	if(vi->viewer == NULL && is_null_or_empty(viewer))
+	if(vi->raw || (vi->viewer == NULL && is_null_or_empty(viewer)))
 	{
 		if(is_dir(file_to_view))
 		{
@@ -1242,6 +1246,14 @@ cmd_g(key_info_t key_info, keys_info_t *keys_info)
 	vi->line = key_info.count - 1;
 	vi->linev = vi->widths[vi->line][0];
 	draw();
+}
+
+/* Toggles raw mode (ignoring of defined viewers). */
+static void
+cmd_i(key_info_t key_info, keys_info_t *keys_info)
+{
+	vi->raw = !vi->raw;
+	reload_view(vi, NOSILENT);
 }
 
 static void
@@ -1682,6 +1694,7 @@ reload_view(modview_info_t *vi, int silent)
 	/* These fields are used in get_view_data(). */
 	new_vi.view = vi->view;
 	new_vi.viewer = vi->viewer;
+	new_vi.raw = vi->raw;
 
 	if(load_view_data(&new_vi, "File exploring reload", vi->filename, silent)
 			== 0)

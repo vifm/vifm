@@ -80,12 +80,14 @@ TEST(vifm_exists)
 
 TEST(vifm_makepath)
 {
-	assert_success(vlua_run_string(vlua, "vifm.makepath('dir')"));
-	remove_dir("dir");
+	assert_success(vlua_run_string(vlua, "sandbox = '" SANDBOX_PATH "'"));
 
-	assert_success(vlua_run_string(vlua, "vifm.makepath('dir1/dir2')"));
-	remove_dir("dir1/dir2");
-	remove_dir("dir1");
+	assert_success(vlua_run_string(vlua, "vifm.makepath(sandbox..'/dir')"));
+	remove_dir(SANDBOX_PATH "/dir");
+
+	assert_success(vlua_run_string(vlua, "vifm.makepath(sandbox..'/dir1/dir2')"));
+	remove_dir(SANDBOX_PATH "/dir1/dir2");
+	remove_dir(SANDBOX_PATH "/dir1");
 }
 
 /* This test comes before other startjob tests to make it pass faster.  When
@@ -147,7 +149,11 @@ TEST(vifmjob_stdout)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo out' }\n"
 	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:stdout():read('a'))"));
+	                                     "if job:stdout() ~= job:stdout() then\n"
+	                                     "  print('Result should be the same')\n"
+	                                     "else\n"
+	                                     "  print(job:stdout():read('a'))\n"
+	                                     "end"));
 	assert_true(starts_with_lit(ui_sb_last(), "out"));
 
 	conf_teardown();

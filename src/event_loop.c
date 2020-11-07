@@ -27,7 +27,7 @@
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strncpy() */
-#include <wchar.h> /* wint_t wcslen() wcscmp() */
+#include <wchar.h> /* wint_t wcslen() wcscmp() wcsncat() wmemcpy() */
 
 #include "cfg/config.h"
 #include "compat/curses.h"
@@ -71,6 +71,7 @@ static void draw_suggestion_box(void);
 static WINDOW * prepare_suggestion_box(int *height);
 static void hide_suggestion_box(void);
 static int should_display_suggestion_box(void);
+TSTATIC void feed_keys(const wchar_t input[]);
 
 /* Current input buffer. */
 static const wchar_t *curr_input_buf;
@@ -79,6 +80,9 @@ static const size_t *curr_input_buf_pos;
 
 /* Whether suggestion box is active. */
 static int suggestions_are_visible;
+
+/* Source of fake input that has priority over real input. */
+static wchar_t input_queue[128];
 
 void
 event_loop(const int *quit)
@@ -112,6 +116,12 @@ event_loop(const int *quit)
 		wint_t c;
 		size_t counter;
 		int got_input;
+
+		/* Reset marking from previous commands.  They are temporary.  Don't really
+		 * like this, any better ideas?  How about post-hook for engine/keys
+		 * unit? */
+		lwin.pending_marking = 0;
+		rwin.pending_marking = 0;
 
 		modes_pre();
 
@@ -301,6 +311,11 @@ event_loop(const int *quit)
 static int
 ensure_term_is_ready(void)
 {
+	if(vifm_testing())
+	{
+		return 1;
+	}
+
 	ui_update_term_state();
 
 	update_terminal_settings();
@@ -357,9 +372,11 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 
 		for(i = 0; i < IPC_F && timeout > 0; ++i)
 		{
-			int result;
+			if(curr_stats.ipc != NULL)
+			{
+				ipc_check(curr_stats.ipc);
+			}
 
-			ipc_check(curr_stats.ipc);
 			wtimeout(win, delay_slice);
 			timeout -= delay_slice;
 
@@ -375,7 +392,14 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			 * them to make it active. */
 			update_hardware_cursor();
 
-			result = compat_wget_wch(win, c);
+			if(input_queue[0] != L'\0')
+			{
+				*c = input_queue[0];
+				wmemcpy(input_queue, input_queue + 1, wcslen(input_queue));
+				return OK;
+			}
+
+			int result = compat_wget_wch(win, c);
 			if(result != ERR)
 			{
 				if(result == KEY_CODE_YES)
@@ -678,6 +702,14 @@ should_display_suggestion_box(void)
 		return 1;
 	}
 	return 0;
+}
+
+/* Adds keys to fake input.  Drops some of them if there isn't enough space. */
+TSTATIC void
+feed_keys(const wchar_t input[])
+{
+	size_t room = ARRAY_LEN(input_queue) - wcslen(input_queue) - 1;
+	wcsncat(input_queue, input, room);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

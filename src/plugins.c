@@ -18,14 +18,20 @@
 
 #include "plugins.h"
 
+#include <stdarg.h> /* va_list va_start() va_end() vsnprintf() */
 #include <stdlib.h> /* calloc() free() */
+#include <string.h> /* strcmp() */
 
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "lua/vlua.h"
 #include "utils/darray.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/str.h"
+#include "utils/test_helpers.h"
+#include "utils/utils.h"
 
 /* State of the unit. */
 struct plugs_t
@@ -34,6 +40,12 @@ struct plugs_t
 	plug_t **plugs;           /* Known plugins. */
 	DA_INSTANCE_FIELD(plugs); /* Declarations to enable use of DA_* on plugs. */
 };
+
+static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
+static void plug_logf(plug_t *plug, const char format[], ...)
+	_gnuc_printf(2, 3);
+TSTATIC void plugs_sort(plugs_t *plugs);
+static int plug_cmp(const void *a, const void *b);
 
 plugs_t *
 plugs_create(struct vlua_t *vlua)
@@ -57,6 +69,7 @@ plugs_free(plugs_t *plugs)
 		for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
 		{
 			free(plugs->plugs[i]->path);
+			free(plugs->plugs[i]->real_path);
 			free(plugs->plugs[i]->log);
 			free(plugs->plugs[i]);
 		}
@@ -69,9 +82,6 @@ plugs_free(plugs_t *plugs)
 void
 plugs_load(plugs_t *plugs, const char base_dir[])
 {
-	/* TODO: handle situation when symlinks make same plugin be loaded more than
-	 *       once (check presence of resolved path in list of plugins). */
-
 	char full_path[PATH_MAX + 1];
 	snprintf(full_path, sizeof(full_path), "%s/plugins", base_dir);
 
@@ -84,7 +94,12 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 	struct dirent *entry;
 	while((entry = os_readdir(dir)) != NULL)
 	{
-		if(is_builtin_dir(entry->d_name))
+		char path[PATH_MAX + NAME_MAX + 4];
+		snprintf(path, sizeof(path), "%s/%s", full_path, entry->d_name);
+
+		/* XXX: is_dirent_targets_dir() does slowfs checks, do they harm here? */
+		if(is_builtin_dir(entry->d_name) ||
+				!is_dirent_targets_dir(path, entry))
 		{
 			continue;
 		}
@@ -102,29 +117,68 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		}
 		*plug_ptr = plug;
 
-		char dir_path[PATH_MAX + NAME_MAX + 4];
-		snprintf(dir_path, sizeof(dir_path), "%s/%s", full_path, entry->d_name);
-
-		plug->path = strdup(dir_path);
+		plug->path = strdup(path);
 		if(plug->path == NULL)
 		{
 			free(plug);
 			continue;
 		}
 
+		if(os_realpath(plug->path, path) == NULL)
+		{
+			plug->real_path = strdup(plug->path);
+		}
+		else
+		{
+			plug->real_path = strdup(path);
+		}
+		if(plug->real_path == NULL)
+		{
+			free(plug->path);
+			free(plug);
+			continue;
+		}
+
+		/* Perform the check before committing this plugin. */
+		plug_t *duplicate = find_plug(plugs, plug->real_path);
+
 		plug->status = PLS_FAILURE;
 		DA_COMMIT(plugs->plugs);
 
-		if(is_dirent_targets_dir(plug->path, entry))
+		if(duplicate != NULL)
 		{
-			if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
-			{
-				plug->status = PLS_SUCCESS;
-			}
+			plug_logf(plug, "[vifm][error]: skipped as a duplicate of %s",
+					duplicate->path);
+			plug->status = PLS_SKIPPED;
+		}
+		else if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
+		{
+			plug_log(plug, "[vifm][info]: plugin was loaded successfully");
+			plug->status = PLS_SUCCESS;
+		}
+		else
+		{
+			plug_log(plug, "[vifm][error]: loading plugin has failed");
 		}
 	}
 
 	os_closedir(dir);
+}
+
+/* Looks up a plugin specified by real path among already loaded plugins.
+ * Returns pointer to it or NULL. */
+static plug_t *
+find_plug(plugs_t *plugs, const char real_path[])
+{
+	size_t i;
+	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
+	{
+		if(stroscmp(plugs->plugs[i]->real_path, real_path) == 0)
+		{
+			return plugs->plugs[i];
+		}
+	}
+	return NULL;
 }
 
 int
@@ -137,6 +191,48 @@ plugs_get(const plugs_t *plugs, int idx, const plug_t **plug)
 
 	*plug = plugs->plugs[idx];
 	return 1;
+}
+
+/* Adds formatted message to the log on a new line. */
+static void
+plug_logf(plug_t *plug, const char format[], ...)
+{
+	va_list ap;
+	va_start(ap, format);
+
+	char buf[1024];
+	vsnprintf(buf, sizeof(buf), format, ap);
+	plug_log(plug, buf);
+
+	va_end(ap);
+}
+
+void
+plug_log(plug_t *plug, const char msg[])
+{
+	if(plug->log_len != 0)
+	{
+		(void)strappendch(&plug->log, &plug->log_len, '\n');
+	}
+	(void)strappend(&plug->log, &plug->log_len, msg);
+}
+
+/* Sorts plugins by their path. */
+TSTATIC void
+plugs_sort(plugs_t *plugs)
+{
+	safe_qsort(plugs->plugs, DA_SIZE(plugs->plugs), sizeof(plugs->plugs),
+			&plug_cmp);
+}
+
+/* Compares two plugins by their paths.  Returns negative, zero or positive
+ * number meaning less than, equal or greater than correspondingly. */
+static int
+plug_cmp(const void *a, const void *b)
+{
+	const plug_t *plug_a = *(const plug_t **)a;
+	const plug_t *plug_b = *(const plug_t **)b;
+	return strcmp(plug_a->path, plug_b->path);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

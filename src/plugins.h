@@ -21,6 +21,8 @@
 
 #include <stddef.h> /* size_t */
 
+#include "utils/test_helpers.h"
+
 /* Declaration of opaque state of the unit. */
 typedef struct plugs_t plugs_t;
 
@@ -28,6 +30,7 @@ typedef struct plugs_t plugs_t;
 typedef enum
 {
 	PLS_SUCCESS, /* Loaded successfully. */
+	PLS_SKIPPED, /* Loading was skipped. */
 	PLS_FAILURE  /* Failed to load. */
 }
 PluginLoadStatus;
@@ -35,7 +38,8 @@ PluginLoadStatus;
 /* Information about a plugin. */
 typedef struct plug_t
 {
-	char *path; /* Full path to the plugin. */
+	char *path;      /* Full original path to the plugin. */
+	char *real_path; /* Full resolved path to the plugin. */
 
 	char *log;      /* Log output of the plugin. */
 	size_t log_len; /* Length of the log field. */
@@ -58,6 +62,13 @@ void plugs_load(plugs_t *plugs, const char base_dir[]);
 /* Assigns *plug to information structure about a plugin specified by its index.
  * Returns non-zero on success, otherwise zero is returned. */
 int plugs_get(const plugs_t *plugs, int idx, const plug_t **plug);
+
+/* Adds message to the log of the plugin on a new line. */
+void plug_log(plug_t *plug, const char msg[]);
+
+TSTATIC_DEFS(
+	void plugs_sort(plugs_t *plugs);
+)
 
 #endif /* VIFM__PLUGINS_H__ */
 

@@ -65,19 +65,23 @@ TEARDOWN()
 
 TEST(plugins_are_listed)
 {
+	if(not_windows())
+	{
+		assert_success(make_symlink("plug1", SANDBOX_PATH "/plugins/plug3"));
+	}
+
 	plugs_load(curr_stats.plugs, cfg.config_dir);
+	plugs_sort(curr_stats.plugs);
 	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 
-	assert_int_equal(2, menu_get_current()->len);
-	const char *status0 = "[loaded] ";
-	const char *status1 = "[failed] ";
-	if(ends_with(menu_get_current()->items[0], "2"))
+	assert_int_equal(not_windows() ? 3 : 2, menu_get_current()->len);
+	assert_true(starts_with(menu_get_current()->items[0], "[ loaded] "));
+	assert_true(starts_with(menu_get_current()->items[1], "[ failed] "));
+	if(not_windows())
 	{
-		status0 = "[failed] ";
-		status1 = "[loaded] ";
+		assert_true(starts_with(menu_get_current()->items[2], "[skipped] "));
+		remove_file(SANDBOX_PATH "/plugins/plug3");
 	}
-	assert_true(starts_with(menu_get_current()->items[0], status0));
-	assert_true(starts_with(menu_get_current()->items[1], status1));
 }
 
 TEST(gf_press)

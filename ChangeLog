@@ -11,6 +11,9 @@
 	Added percent-like (corresponds to new %P macro of 'rulerformat') to the
 	ruler of the view mode.  Thanks to iSeeU816.
 
+	Added i view mode key that toggles raw mode (ignoring of defined viewers).
+	Thanks to j-xella.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
