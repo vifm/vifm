@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 November 9
+" Last Change: 2020 July 1
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -100,7 +100,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 	    \ '--choose-files', listf,
 	    \ '--on-choose',
 	    \ has('win32')
-	    \ ? 'echo %%VIFM_OPEN_TYPE%%>' . typef : 'echo $VIFM_OPEN_TYPE >' . typef,
+	    \ ? 'echo \"%%VIFM_OPEN_TYPE%%\">' . typef : 'echo $VIFM_OPEN_TYPE >' . typef,
 	    \ '+command EditVim   :let $VIFM_OPEN_TYPE=''edit''' . edit,
 	    \ '+command VsplitVim :let $VIFM_OPEN_TYPE=''vsplit''' . edit,
 	    \ '+command SplitVim  :let $VIFM_OPEN_TYPE=''split''' . edit,
