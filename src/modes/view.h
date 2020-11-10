@@ -19,6 +19,8 @@
 #ifndef VIFM__MODES__VIEW_H__
 #define VIFM__MODES__VIEW_H__
 
+#include "../utils/test_helpers.h"
+
 struct view_t;
 
 /* Holds state of a single view mode window. */
@@ -88,6 +90,11 @@ const char * modview_detached_get_viewer(void);
 
 /* Frees view info.  The parameter can be NULL. */
 void modview_info_free(modview_info_t *vi);
+
+TSTATIC_DEFS(
+	int modview_is_raw(modview_info_t *vi);
+	const char * modview_current_viewer(modview_info_t *vi);
+)
 
 #endif /* VIFM__MODES__VIEW_H__ */
 

@@ -53,6 +53,7 @@
 #include "../utils/regexp.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -97,11 +98,16 @@ struct modview_info_t
 	int last_search_backward; /* Value -1 means no search was performed. */
 	int search_repeat;        /* Saved count prefix of search commands. */
 
+	/* Viewers. */
+	strlist_t viewers;       /* List of viewers of current file. */
+	char *ext_viewer;        /* When non-NULL, specifies custom preview command
+	                            (no implicit %c). */
+	const char *curr_viewer; /* Current viewer (pointer to strings of two previous
+	                            fields). */
+
 	/* The rest of the state. */
 	view_t *view;    /* File view association with the view. */
 	char *filename;  /* Full path to the file being viewed. */
-	char *viewer;    /* When non-NULL, specifies custom preview command (no
-	                    implicit %c). */
 	int detached;    /* Whether view mode was detached. */
 	ViewerKind kind; /* Kind of preview. */
 	int wrap;        /* Whether lines are wrapped. */
@@ -154,6 +160,7 @@ static void cmd_tab(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_A(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_F(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
@@ -161,7 +168,10 @@ static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(modview_info_t *vi, const char action[],
 		const char file_to_view[], int silent);
 static int get_view_data(modview_info_t *vi, const char file_to_view[]);
+static void pick_current_viewer(modview_info_t *vi);
 static void replace_vi(modview_info_t *orig, modview_info_t *new);
+static void cmd_a(key_info_t key_info, keys_info_t *keys_info);
+static void switch_viewer(modview_info_t *vi, int offset);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
@@ -190,6 +200,8 @@ static int scroll_to_bottom(modview_info_t *vi);
 static void reload_view(modview_info_t *vi, int silent);
 static void cleanup(modview_info_t *vi);
 static modview_info_t * view_info_alloc(void);
+TSTATIC int modview_is_raw(modview_info_t *vi);
+TSTATIC const char * modview_current_viewer(modview_info_t *vi);
 
 /* Points to current (for quick view) or last used (for explore mode)
  * modview_info_t structure. */
@@ -255,6 +267,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_ALT WK_GT,     {{&cmd_G}, .descr = "scroll to the end"}},
 	{WK_ALT WK_SPACE,  {{&cmd_meta_space}, .descr = "scroll down one window"}},
 	{WK_PERCENT,       {{&cmd_percent},    .descr = "to [count]% position"}},
+	{WK_A,             {{&cmd_A}, .descr = "switch to previous viewer alternative"}},
 	{WK_F,             {{&cmd_F}, .descr = "toggle automatic forward scroll"}},
 	{WK_G,             {{&cmd_G}, .descr = "scroll to the end"}},
 	{WK_N,             {{&cmd_N}, .descr = "go to previous search match"}},
@@ -262,6 +275,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_R,             {{&cmd_R}, .descr = "reload view contents"}},
 	{WK_Z WK_Q,        {{&cmd_q}, .descr = "leave view mode"}},
 	{WK_Z WK_Z,        {{&cmd_q}, .descr = "leave view mode"}},
+	{WK_a,             {{&cmd_a}, .descr = "switch to next viewer alternative"}},
 	{WK_b,             {{&cmd_b}, .descr = "scroll page up"}},
 	{WK_d,             {{&cmd_d}, .descr = "scroll half-page down"}},
 	{WK_f,             {{&cmd_f}, .descr = "scroll page down"}},
@@ -330,10 +344,14 @@ modview_enter(view_t *view, int explore)
 	pick_vi(explore);
 
 	vi->view = view;
+	vi->viewers = ft_get_viewers(full_path);
 	vi->filename = strdup(full_path);
 
 	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{
+		free_string_array(vi->viewers.items, vi->viewers.nitems);
+		vi->viewers.items = NULL;
+		vi->viewers.nitems = 0;
 		update_string(&vi->filename, NULL);
 		return;
 	}
@@ -369,7 +387,7 @@ modview_detached_make(view_t *view, const char cmd[])
 	reset_view_info(vi);
 
 	vi->view = view;
-	vi->viewer = strdup(cmd);
+	vi->ext_viewer = strdup(cmd);
 	vi->filename = strdup(full_path);
 	vi->detached = 1;
 
@@ -553,13 +571,14 @@ static void
 free_view_info(modview_info_t *vi)
 {
 	free_string_array(vi->lines, vi->nlines);
+	free_string_array(vi->viewers.items, vi->viewers.nitems);
 	free(vi->widths);
 	if(vi->last_search_backward != -1)
 	{
 		regfree(&vi->re);
 	}
 	free(vi->filename);
-	free(vi->viewer);
+	free(vi->ext_viewer);
 }
 
 /* Updates line width and redraws the view. */
@@ -976,6 +995,13 @@ cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 	modcline_enter(CLS_VWBSEARCH, "", NULL);
 }
 
+/* Switches to the previous viewer. */
+static void
+cmd_A(key_info_t key_info, keys_info_t *keys_info)
+{
+	switch_viewer(vi, -1);
+}
+
 /* Toggles automatic forwarding of file. */
 static void
 cmd_F(key_info_t key_info, keys_info_t *keys_info)
@@ -1075,10 +1101,10 @@ load_view_data(modview_info_t *vi, const char action[],
 static int
 get_view_data(modview_info_t *vi, const char file_to_view[])
 {
-	FILE *fp;
-	const char *const viewer = qv_get_viewer(file_to_view);
+	pick_current_viewer(vi);
 
-	if(vi->raw || (vi->viewer == NULL && is_null_or_empty(viewer)))
+	FILE *fp;
+	if(vi->raw || vi->curr_viewer == NULL)
 	{
 		if(is_dir(file_to_view))
 		{
@@ -1101,8 +1127,7 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	}
 	else
 	{
-		const char *const v = (vi->viewer != NULL) ? vi->viewer : viewer;
-		const ViewerKind kind = ft_viewer_kind(v);
+		const ViewerKind kind = ft_viewer_kind(vi->curr_viewer);
 		view_t *const curr = curr_view;
 		curr_view = curr_stats.preview.on ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
@@ -1123,14 +1148,14 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 			 * of them need this). */
 			usleep(50000);
 		}
-		if(vi->viewer == NULL)
+		if(vi->curr_viewer != vi->ext_viewer)
 		{
-			fp = qv_execute_viewer(viewer);
+			fp = qv_execute_viewer(vi->curr_viewer);
 		}
 		else
 		{
 			/* Don't add implicit %c to a command with %q macro. */
-			char *const cmd = ma_expand(vi->viewer, NULL, NULL, 1);
+			char *const cmd = ma_expand(vi->ext_viewer, NULL, NULL, 1);
 			fp = read_cmd_output(cmd, 0);
 			free(cmd);
 		}
@@ -1166,6 +1191,25 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	return 0;
 }
 
+/* Makes sure that vi->curr_viewer field has a sensible value. */
+static void
+pick_current_viewer(modview_info_t *vi)
+{
+	if(vi->curr_viewer != NULL)
+	{
+		return;
+	}
+
+	if(vi->ext_viewer != NULL)
+	{
+		vi->curr_viewer = vi->ext_viewer;
+	}
+	else if(vi->viewers.nitems != 0)
+	{
+		vi->curr_viewer = vi->viewers.items[0];
+	}
+}
+
 /* Replaces modview_info_t structure with another one preserving as much as
  * possible. */
 static void
@@ -1174,8 +1218,14 @@ replace_vi(modview_info_t *orig, modview_info_t *new)
 	new->filename = orig->filename;
 	orig->filename = NULL;
 
-	new->viewer = orig->viewer;
-	orig->viewer = NULL;
+	new->viewers = orig->viewers;
+	orig->viewers.items = NULL;
+	orig->viewers.nitems = 0;
+
+	new->curr_viewer = orig->curr_viewer;
+
+	new->ext_viewer = orig->ext_viewer;
+	orig->ext_viewer = NULL;
 
 	if(orig->last_search_backward != -1)
 	{
@@ -1194,6 +1244,42 @@ replace_vi(modview_info_t *orig, modview_info_t *new)
 
 	free_view_info(orig);
 	*orig = *new;
+}
+
+/* Switches to the next viewer. */
+static void
+cmd_a(key_info_t key_info, keys_info_t *keys_info)
+{
+	switch_viewer(vi, 1);
+}
+
+/* Switches to the next or previous viewer. */
+static void
+switch_viewer(modview_info_t *vi, int offset)
+{
+	assert((offset == 1 || offset == -1) && "Invalid offset.");
+
+	if(vi->raw || vi->viewers.nitems <= 1)
+	{
+		return;
+	}
+
+	int i;
+	for(i = 0; i < vi->viewers.nitems; ++i)
+	{
+		if(vi->viewers.items[i] == vi->curr_viewer)
+		{
+			break;
+		}
+	}
+	if(i == vi->viewers.nitems)
+	{
+		return;
+	}
+
+	i = (i + vi->viewers.nitems + offset)%vi->viewers.nitems;
+	vi->curr_viewer = vi->viewers.items[i];
+	reload_view(vi, NOSILENT);
 }
 
 static void
@@ -1688,7 +1774,9 @@ reload_view(modview_info_t *vi, int silent)
 	init_view_info(&new_vi);
 	/* These fields are used in get_view_data(). */
 	new_vi.view = vi->view;
-	new_vi.viewer = vi->viewer;
+	new_vi.curr_viewer = vi->curr_viewer;
+	new_vi.ext_viewer = vi->ext_viewer;
+	new_vi.viewers = vi->viewers;
 	new_vi.raw = vi->raw;
 
 	if(load_view_data(&new_vi, "File exploring reload", vi->filename, silent)
@@ -1716,15 +1804,15 @@ modview_hide_graphics(void)
 static void
 cleanup(modview_info_t *vi)
 {
-	const char *cmd = qv_get_viewer(vi->filename);
-	cmd = (cmd != NULL ? ma_get_clear_cmd(cmd) : NULL);
+	const char *viewer = vi->curr_viewer;
+	const char *cmd = (viewer != NULL ? ma_get_clear_cmd(viewer) : NULL);
 	qv_cleanup(vi->view, cmd);
 }
 
 const char *
 modview_detached_get_viewer(void)
 {
-	return (vi == NULL ? NULL : vi->viewer);
+	return (vi == NULL ? NULL : vi->ext_viewer);
 }
 
 /* Allocates and initializes view mode information.  Returns pointer to it. */
@@ -1748,6 +1836,18 @@ modview_info_free(modview_info_t *info)
 			vi = NULL;
 		}
 	}
+}
+
+TSTATIC int
+modview_is_raw(modview_info_t *vi)
+{
+	return vi->raw;
+}
+
+TSTATIC const char *
+modview_current_viewer(modview_info_t *vi)
+{
+	return vi->curr_viewer;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
