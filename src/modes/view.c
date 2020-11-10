@@ -546,11 +546,6 @@ init_view_info(modview_info_t *vi)
 	vi->width = -1;
 	vi->last_search_backward = -1;
 	vi->search_repeat = NO_COUNT_GIVEN;
-	vi->nlines = 0;
-	vi->lines = NULL;
-	vi->widths = NULL;
-	vi->filename = NULL;
-	vi->viewer = NULL;
 }
 
 /* Frees all resources allocated by modview_info_t structure instance. */
