@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Oct 30
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Nov 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -872,6 +872,12 @@ F                                              *vifm-q_F*
     and scrolling to the bottom.  The behaviour is similar to `tail -F` or F
     key in less.
 
+a                                              *vifm-q_a*
+    switch to the next viewer.  Does nothing for preview constructed via `%q`
+    macro.
+A                                              *vifm-q_A*
+    switch to the previous viewer.  Does nothing for preview constructed
+    via `%q` macro.
 i                                              *vifm-q_i*
     toggle raw mode (ignoring of defined viewers).
 

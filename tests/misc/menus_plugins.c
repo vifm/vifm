@@ -74,12 +74,16 @@ TEST(plugins_are_listed)
 	plugs_sort(curr_stats.plugs);
 	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 
+	int first_loaded = starts_with(menu_get_current()->items[0], "[ loaded] ");
+
 	assert_int_equal(not_windows() ? 3 : 2, menu_get_current()->len);
-	assert_true(starts_with(menu_get_current()->items[0], "[ loaded] "));
+	assert_true(starts_with(menu_get_current()->items[0],
+				first_loaded ? "[ loaded] " : "[skipped] "));
 	assert_true(starts_with(menu_get_current()->items[1], "[ failed] "));
 	if(not_windows())
 	{
-		assert_true(starts_with(menu_get_current()->items[2], "[skipped] "));
+		assert_true(starts_with(menu_get_current()->items[2],
+				first_loaded ? "[skipped] " : "[ loaded] "));
 		remove_file(SANDBOX_PATH "/plugins/plug3");
 	}
 }
