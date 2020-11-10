@@ -1134,7 +1134,7 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 		}
 		else
 		{
-			/* Don't add implicit %c to a command with %e macro. */
+			/* Don't add implicit %c to a command with %q macro. */
 			char *const cmd = ma_expand(vi->viewer, NULL, NULL, 1);
 			fp = read_cmd_output(cmd, 0);
 			free(cmd);
