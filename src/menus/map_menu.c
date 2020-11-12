@@ -62,8 +62,9 @@ show_map_menu(view_t *view, const char mode_str[], int mode,
 
 	vle_keys_list(mode, &add_mapping_item, dialogs);
 
-	/* If we filtered out all meaningful lines, clear the menu. */
-	if(m.len == 1 && *m.items[0] == '\0')
+	/* If we filtered out all meaningful lines or there were none, clear the
+	 * menu. */
+	if(m.len == 3)
 	{
 		free(m.items[0]);
 		free(m.items);
@@ -80,8 +81,6 @@ add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 {
 	enum { MAP_WIDTH = 11 };
 
-	char *mb_lhs;
-
 	const int is_separator = (lhs[0] == L'\0');
 	if(!is_separator)
 	{
@@ -97,13 +96,13 @@ add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 		}
 	}
 
-	mb_lhs = wstr_to_spec(lhs);
+	char *mb_lhs = wstr_to_spec(lhs);
 
 	m.items = reallocarray(m.items, m.len + 1, sizeof(char *));
 
 	if(is_separator)
 	{
-		m.items[m.len++] = strdup("");
+		m.items[m.len++] = strdup(descr);
 	}
 	else if(rhs[0] == L'\0')
 	{
