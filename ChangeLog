@@ -24,6 +24,8 @@
 
 	Made contents of map menus easier to comprehend by adding captions.
 
+	Include shortcut prefix in title of map menus.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 

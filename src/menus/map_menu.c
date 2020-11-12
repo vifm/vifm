@@ -53,9 +53,16 @@ show_map_menu(view_t *view, const char mode_str[], int mode,
 	const int dialogs = mode == SORT_MODE || mode == ATTR_MODE
 	                 || mode == CHANGE_MODE || mode == FILE_INFO_MODE;
 
+	char *prefix_str = wstr_to_spec(start);
+	const char *fmt = (start[0] == L'\0')
+	                ? "Mappings for %s mode%s"
+	                : "Mappings for %s mode%s with prefix: %s";
+
 	menus_init_data(&m, view,
-			format_str("Mappings for %s mode%s", mode_str, dialogs ? "s" : ""),
+			format_str(fmt, mode_str, dialogs ? "s" : "", prefix_str),
 			strdup("No mappings found"));
+
+	free(prefix_str);
 
 	prefix = start;
 	prefix_len = wcslen(prefix);
