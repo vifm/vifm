@@ -27,9 +27,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# store repo root as variable
-REPO_ROOT="$(git rev-parse --show-toplevel)"
 OLD_CWD=$(readlink -f .)
+
+git archive HEAD | tar -C "$BUILD_DIR" -xf -
+cd "$BUILD_DIR"
 
 mkdir -p "$BUILD_DIR/AppDir/usr"
 
@@ -54,7 +55,7 @@ make DESTDIR="$BUILD_DIR/AppDir" install
 
 # Copy the AppData file to AppDir manually
 mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
-cp -r "$REPO_ROOT/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
+cp -r "$BUILD_DIR/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
 
 
 # Custom AppRun to avoid $ARGV0 issues when used with zsh
@@ -79,7 +80,7 @@ curl -o ./linuxdeploy -L \
 chmod +rx ./linuxdeploy
 
 OUTPUT="vifm-x86_64.AppImage" ./linuxdeploy --appdir ./AppDir --output appimage \
-    --desktop-file "$REPO_ROOT/data/vifm.desktop" --icon-file "$REPO_ROOT/data/graphics/vifm.png" \
+    --desktop-file "$BUILD_DIR/data/vifm.desktop" --icon-file "$BUILD_DIR/data/graphics/vifm.png" \
     --executable "$BUILD_DIR/AppDir/usr/bin/vifm" --library "$BUILD_DIR/AppDir/usr/lib/libncursesw.so.6"
 
 mv "vifm-x86_64.AppImage" "$OLD_CWD"
