@@ -15,7 +15,7 @@ Just like vi[m], vifm tries to adhere to the Unix philosophy. So instead of work
 	<screenshot type="default">
 		<image>
 			https://raw.githubusercontent.com/vifm/vifm/master/data/graphics/screenshot.png
-		</image>	
+		</image>
 	</screenshot>
 	<provides>
 		<id>vifm.desktop</id>

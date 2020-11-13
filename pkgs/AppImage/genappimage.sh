@@ -56,7 +56,8 @@ make -j4
 make install
 
 # Copy the AppData file to AppDir manually
-cp -r "$REPO_ROOT/data/metainfo" "$BUILD_DIR/AppDir/usr/share/" 
+mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
+cp -r "$REPO_ROOT/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
 
 
 # Custom AppRun to provide $ARGV0 issues when used with zsh

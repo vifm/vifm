@@ -31,7 +31,7 @@ there for instructions.
     |
     |-- build-aux/ - part of autotools' machinery
     |
-    |-- data/ - documentation, sample vifmrc, icons
+    |-- data/ - documentation, sample vifmrc, icons, etc.
     |  |
     |  |-- colors/ - sample color schemes
     |  |-- graphics/ - icons and screenshots
