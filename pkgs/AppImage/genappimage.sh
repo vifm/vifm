@@ -7,7 +7,7 @@ set -e
 # Reference: https://docs.appimage.org/packaging-guide/from-source/native-binaries.html#id2
 
 # building in temporary directory to keep system clean
-# use RAM disk if possible (as in: not building on CI system 
+# use RAM disk if possible (as in: not building on CI system
 # like Travis, and RAM disk is available)
 # DISABLED: It seems that linuxdeploy won't be executable on shared memory,
 # maybe /dev/shm is marked as non-executable?
@@ -20,12 +20,12 @@ fi
 BUILD_DIR=$(mktemp -d -p "$TEMP_BASE" appimage-build-XXXXXX)
 
 # make sure to clean up build dir, even if errors occur
-cleanup () {
+cleanup() {
     if [ -d "$BUILD_DIR" ]; then
         rm -rf "$BUILD_DIR"
     fi
 }
-# trap cleanup EXIT
+trap cleanup EXIT
 
 # store repo root as variable
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -48,10 +48,10 @@ popd
 export LD_LIBRARY_PATH="$BUILD_DIR/AppDir/usr/lib"
 autoreconf -f -i
 autoconf
-export CPPFLAGS="-I$BUILD_DIR/AppDir/usr/include -I$BUILD_DIR/AppDir/usr/include/ncursesw" 
+export CPPFLAGS="-I$BUILD_DIR/AppDir/usr/include -I$BUILD_DIR/AppDir/usr/include/ncursesw"
 export LDFLAGS="-L$BUILD_DIR/AppDir/usr/lib"
 ./configure \
-    --prefix="$BUILD_DIR/AppDir/usr" 
+    --prefix="$BUILD_DIR/AppDir/usr"
 make -j4
 make install
 
@@ -60,7 +60,7 @@ mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
 cp -r "$REPO_ROOT/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
 
 
-# Custom AppRun to provide $ARGV0 issues when used with zsh
+# Custom AppRun to avoid $ARGV0 issues when used with zsh
 # Reference: https://github.com/neovim/neovim/blob/master/scripts/genappimage.sh
 # Reference: https://github.com/neovim/neovim/issues/9341
 
@@ -69,7 +69,7 @@ cat << 'EOF' > AppDir/AppRun
 #!/bin/bash
 unset ARGV0
 export TERMINFO=$APPDIR/usr/share/terminfo
-exec "$(dirname "$(readlink  -f "${0}")")/usr/bin/vifm" ${@+"$@"}
+exec "$(dirname "$(readlink -f "${0}")")/usr/bin/vifm" ${@+"$@"}
 EOF
 chmod 755 AppDir/AppRun
 
