@@ -38,10 +38,10 @@ curl -OL https://invisible-island.net/datafiles/release/ncurses.tar.gz
 tar -xf ncurses.tar.gz
 NCURSES_DIR="$PWD/ncurses-6.2"
 pushd "$NCURSES_DIR"
-./configure --with-shared --enable-widec --prefix="$BUILD_DIR/AppDir/usr" \
+./configure --with-shared --enable-widec --sysconfdir=/etc --prefix=/usr \
     --without-normal --without-debug
 make -j4
-make install
+make DESTDIR="$BUILD_DIR/AppDir" install
 popd
 
 ## Configure vifm now to make sure it uses our libncursesw6
@@ -50,10 +50,9 @@ autoreconf -f -i
 autoconf
 export CPPFLAGS="-I$BUILD_DIR/AppDir/usr/include -I$BUILD_DIR/AppDir/usr/include/ncursesw"
 export LDFLAGS="-L$BUILD_DIR/AppDir/usr/lib"
-./configure \
-    --prefix="$BUILD_DIR/AppDir/usr"
+./configure --sysconfdir=/etc --prefix=/usr
 make -j4
-make install
+make DESTDIR="$BUILD_DIR/AppDir" install
 
 # Copy the AppData file to AppDir manually
 mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
