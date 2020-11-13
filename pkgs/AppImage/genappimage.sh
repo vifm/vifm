@@ -64,6 +64,7 @@ cd $BUILD_DIR
 cat << 'EOF' > AppDir/AppRun
 #!/bin/bash
 unset ARGV0
+export TERMINFO=$APPDIR/usr/share/terminfo
 exec "$(dirname "$(readlink  -f "${0}")")/usr/bin/vifm" ${@+"$@"}
 EOF
 chmod 755 AppDir/AppRun
