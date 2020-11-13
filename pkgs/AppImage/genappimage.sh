@@ -40,7 +40,8 @@ tar -xf ncurses.tar.gz
 NCURSES_DIR="$PWD/ncurses-6.2"
 pushd "$NCURSES_DIR"
 ./configure --with-shared --enable-widec --sysconfdir=/etc --prefix=/usr \
-    --without-normal --without-debug
+    --without-normal --without-debug --without-cxx --without-cxx-binding \
+    --without-ada --without-manpages --without-tests
 make -j4
 make DESTDIR="$BUILD_DIR/AppDir" install
 popd
