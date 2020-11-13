@@ -51,5 +51,5 @@ deploy:
   file: vifm.appimage
   on:
     tags: true
-    condition: '[ "$CC" = gcc ] && [ "$TRAVIS_OS_NAME" = linux ]'
+    condition: '("$CC" = gcc) && ("$TRAVIS_OS_NAME" = linux)'
   skip_cleanup: 'true'
