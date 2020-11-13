@@ -46,7 +46,14 @@ script:
        fi
      ) &&
      make -j4 &&
-     make check;
+     make check &&
+     (
+       if ["$CC" = gcc -a "TRAVIS_OS_NAME" = linux -a -n "$TRAVIS_TAG"]; then
+         ./pkgs/AppImage/genappimage.sh && 
+         curl -OL https://github.com/probonopd/uploadtool/raw/master/upload.sh && 
+         UPLOADTOOL_SUFFIX="$TRAVIS_TAG" bash upload.sh "vifm-$(arch).AppImage"
+       fi
+     );
    fi
 
 after_success:
