@@ -71,6 +71,6 @@ curl -o ./linuxdeploy -L \
 
 chmod +rx ./linuxdeploy
 
-OUTPUT="vifm-$(arch).AppImage" ./linuxdeploy --appdir ./AppDir --output appimage
+OUTPUT="vifm.appimage" ./linuxdeploy --appdir ./AppDir --output appimage
 
-mv "vifm-$(arch).AppImage" "$OLD_CWD"
+mv "vifm.appimage" "$OLD_CWD"
