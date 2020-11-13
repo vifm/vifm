@@ -60,7 +60,8 @@ cp -r "$REPO_ROOT/data/metainfo" "$BUILD_DIR/AppDir/usr/share/"
 # Reference: https://github.com/neovim/neovim/blob/master/scripts/genappimage.sh
 # Reference: https://github.com/neovim/neovim/issues/9341
 
-cat << 'EOF' > "$BUILD_DIR/AppDir/AppRun"
+cd $BUILD_DIR
+cat << 'EOF' > AppDir/AppRun
 #!/bin/bash
 unset ARGV0
 exec "$(dirname "$(readlink  -f "${0}")")/usr/bin/vifm" ${@+"$@"}
