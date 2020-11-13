@@ -46,8 +46,6 @@ popd
 
 ## Configure vifm now to make sure it uses our libncursesw6
 export LD_LIBRARY_PATH="$BUILD_DIR/AppDir/usr/lib"
-autoreconf -f -i
-autoconf
 export CPPFLAGS="-I$BUILD_DIR/AppDir/usr/include -I$BUILD_DIR/AppDir/usr/include/ncursesw"
 export LDFLAGS="-L$BUILD_DIR/AppDir/usr/lib"
 ./configure --sysconfdir=/etc --prefix=/usr
