@@ -51,7 +51,7 @@ script:
          if [ "$CC" = gcc ] && [ "$TRAVIS_OS_NAME" = linux ] && [ -n "$TRAVIS_TAG" ]; then
          ./pkgs/AppImage/genappimage.sh && 
          curl -OL https://github.com/probonopd/uploadtool/raw/master/upload.sh && 
-         UPLOADTOOL_SUFFIX="$TRAVIS_TAG" bash upload.sh "vifm-$(arch).AppImage"
+         UPLOADTOOL_SUFFIX="$TRAVIS_TAG" bash upload.sh "vifm-$(arch).AppImage";
        fi
      );
    fi
