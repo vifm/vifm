@@ -66,7 +66,7 @@ cat << 'EOF' > AppDir/AppRun
 unset ARGV0
 exec "$(dirname "$(readlink  -f "${0}")")/usr/bin/vifm" ${@+"$@"}
 EOF
-chmod 755 AppRun
+chmod 755 AppDir/AppRun
 
 
 # Downloading linuxdeploy
