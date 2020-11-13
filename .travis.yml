@@ -17,6 +17,9 @@ addons:
   apt:
     packages:
     - python-pip
+    - build-essential
+    - automake
+    - autoconf
   coverity_scan:
     project:
       name: vifm/vifm

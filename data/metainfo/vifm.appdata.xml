@@ -12,6 +12,11 @@ Just like vi[m], vifm tries to adhere to the Unix philosophy. So instead of work
 	</description>
 	<launchable type="desktop-id">vifm.desktop</launchable>
 	<url type="homepage">https://vifm.info/</url>
+	<screenshot type="default">
+		<image>
+			https://raw.githubusercontent.com/vifm/vifm/master/data/graphics/screenshot.png
+		</image>	
+	</screenshot>
 	<provides>
 		<id>vifm.desktop</id>
 	</provides>

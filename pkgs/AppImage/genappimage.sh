@@ -22,30 +22,34 @@ cleanup () {
         rm -rf "$BUILD_DIR"
     fi
 }
-trap cleanup EXIT
+# trap cleanup EXIT
 
 # store repo root as variable
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 OLD_CWD=$(readlink -f .)
 
-mkdir "$BUILD_DIR/AppDir"
+mkdir -p "$BUILD_DIR/AppDir/usr"
 
-# Install to the corresponding AppDir
-# It is assumed that this script runs after a successful make only
+# Obtain and compile libncursesw6 so that we get 256 color support
+curl -OL https://invisible-island.net/datafiles/release/ncurses.tar.gz
+tar -xf ncurses.tar.gz
+NCURSES_DIR="$PWD/ncurses-6.2"
+pushd "$NCURSES_DIR"
+./configure --with-shared --enable-widec --prefix="$BUILD_DIR/AppDir/usr" \
+    --without-normal --without-debug
+make -j4
+make install
+popd
 
-make DESTDIR="$BUILD_DIR/AppDir" install
-
-
-# Since the make script produce binaries to /usr/local to default, we need to 
-# make it /usr so linuxdeploy will recognize it.
-
-pushd "$BUILD_DIR"
-
-pushd AppDir
-
-mv usr/local .
-rm -r usr
-mv local usr
+## Configure vifm now to make sure it uses our libncursesw6
+autoreconf -f -i
+autoconf
+export CPPFLAGS="-I$BUILD_DIR/AppDir/usr/include -I$BUILD_DIR/AppDir/usr/include/ncursesw" 
+export LDFLAGS="-L$BUILD_DIR/AppDir/usr/lib"
+./configure \
+    --prefix="$BUILD_DIR/AppDir/usr" 
+make -j4
+make install
 
 # Copy the AppData file to AppDir manually
 cp -r "$REPO_ROOT/data/metainfo" "$BUILD_DIR/AppDir/usr/share/" 
@@ -55,14 +59,13 @@ cp -r "$REPO_ROOT/data/metainfo" "$BUILD_DIR/AppDir/usr/share/"
 # Reference: https://github.com/neovim/neovim/blob/master/scripts/genappimage.sh
 # Reference: https://github.com/neovim/neovim/issues/9341
 
-cat << 'EOF' > AppRun
+cat << 'EOF' > "$BUILD_DIR/AppDir/AppRun"
 #!/bin/bash
 unset ARGV0
 exec "$(dirname "$(readlink  -f "${0}")")/usr/bin/vifm" ${@+"$@"}
 EOF
 chmod 755 AppRun
 
-popd
 
 # Downloading linuxdeploy
 
@@ -71,6 +74,8 @@ curl -o ./linuxdeploy -L \
 
 chmod +rx ./linuxdeploy
 
-OUTPUT="vifm.appimage" ./linuxdeploy --appdir ./AppDir --output appimage
+OUTPUT="vifm.appimage" ./linuxdeploy --appdir ./AppDir --output appimage \
+    --desktop-file "$REPO_ROOT/data/vifm.desktop" --icon-file "$REPO_ROOT/data/graphics/vifm.png" \
+    --executable "$BUILD_DIR/AppDir/usr/bin/vifm" --library "$BUILD_DIR/AppDir/usr/lib/libncursesw.so.6"
 
 mv "vifm.appimage" "$OLD_CWD"
