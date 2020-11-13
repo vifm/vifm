@@ -1,5 +1,3 @@
-#! /bin/bash
-
 set -x
 set -e
 
@@ -8,7 +6,9 @@ set -e
 # building in temporary directory to keep system clean
 # use RAM disk if possible (as in: not building on CI system 
 # like Travis, and RAM disk is available)
-if [ "$CI" == "" ] && [ -d /dev/shm ]; then
+# DISABLED: It seems that linuxdeploy won't be executable on shared memory,
+# maybe /dev/shm is marked as non-executable?
+if [ "$CI" == "" ] && [ -d /dev/shm ] && false; then
     TEMP_BASE=/dev/shm
 else
     TEMP_BASE=/tmp
@@ -35,6 +35,7 @@ mkdir "$BUILD_DIR/AppDir"
 
 make DESTDIR="$BUILD_DIR/AppDir" install
 
+
 # Since the make script produce binaries to /usr/local to default, we need to 
 # make it /usr so linuxdeploy will recognize it.
 
@@ -46,12 +47,9 @@ mv usr/local .
 rm -r usr
 mv local usr
 
-# Downloading linuxdeploy
+# Copy the AppData file to AppDir manually
+cp -r "$REPO_ROOT/data/metainfo" "$BUILD_DIR/AppDir/usr/share/" 
 
-curl -o ./linuxdeploy -L \
-    https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-
-chmod +x ./linuxdeploy
 
 # Custom AppRun to provide $ARGV0 issues when used with zsh
 # Reference: https://github.com/neovim/neovim/blob/master/scripts/genappimage.sh
@@ -60,10 +58,19 @@ chmod +x ./linuxdeploy
 cat << 'EOF' > AppRun
 #!/bin/bash
 unset ARGV0
-exec "$(dirname "$(readlink  -f "${0}")")/usr/bin/nvim" ${@+"$@"}
+exec "$(dirname "$(readlink  -f "${0}")")/usr/bin/vifm" ${@+"$@"}
 EOF
 chmod 755 AppRun
 
 popd
 
-./linuxdeploy --appdir AppDir --output appimage
+# Downloading linuxdeploy
+
+curl -o ./linuxdeploy -L \
+    https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+
+chmod +rx ./linuxdeploy
+
+OUTPUT="vifm-$(arch).AppImage" ./linuxdeploy --appdir ./AppDir --output appimage
+
+mv "vifm-$(arch).AppImage" "$OLD_CWD"
