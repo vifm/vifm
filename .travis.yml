@@ -50,6 +50,6 @@ deploy:
     secure: OdkPjORbqrdIX8uy8RptWUa5AeTsU+ilnAhg6G8s+zf6zdQUcTU7aANK9l8BjtC63MNBWPt6dNvlyjEZzomWnaisn+ikS27HBt2gMecewybAKuehe6CuAJO9eP8UyIQUbac3N1VZMsz62tEUeNaBiKwUdt0ddRErXcP52BgIc3t1Kq3BbXsFbzNaDD2a+uXQ8hcMqY5abeml7Y8+OSOoYUo30tDDpVSBKNo/K6CK//DiQREEoSqgTJ46yS82b2yjHsB03ZxIRbAwCSBzVG2Zxb8c+5djQnpN4W35unqMvjD0w1TOuYNcQ5ptMldOhOzD23ypnt4t1QHgrtSHWcVri/8Q23RkWfwT/buFz1LXFaz+P2848rIgjvtdGqjDipk2hne0LT91/VhQ8rQTB2NZbkPXV0GJnOQIDE4EFh60n/wJTad+O4cCi4ODnjDNf24xcxPNGtrXWksTk42xEtXPRvrmfGtaeeDDE5zLNkjlcRIq2wcqTszQeSPsD8WH3b7rC2+G7KHWdMHj0SJktGi/+gtgAeoxdUEFU6kewojvf0V75pQKyoNVA6RMov3LHV1PYK8ium7CuIRgmDyaltbT7PCULXBgdbzEfJ12lsJ/gcaq7w+yuRpJC3jAdWoZlzMWrzWQWLMQrPTjd09IJmXE+k8wMxR3Hu+tzsQulIZvSfA=
   file: vifm.appimage
   on:
-    repo: michaellee8/vifm
-    condition: '[ "$CC" = gcc ] && [ "$TRAVIS_OS_NAME" = linux ] && [ -n "$TRAVIS_TAG" ]' 
+    tags: true
+    condition: '[ "$CC" = gcc ] && [ "$TRAVIS_OS_NAME" = linux ]'
   skip_cleanup: 'true'
