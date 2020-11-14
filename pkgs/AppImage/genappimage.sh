@@ -39,24 +39,25 @@ curl -OL https://invisible-island.net/datafiles/release/ncurses.tar.gz
 tar -xf ncurses.tar.gz
 NCURSES_DIR="$PWD/ncurses-6.2"
 pushd "$NCURSES_DIR"
-./configure --with-shared --enable-widec --sysconfdir=/etc --prefix=/usr \
+./configure --without-shared --enable-widec --prefix=/ \
     --without-normal --without-debug --without-cxx --without-cxx-binding \
     --without-ada --without-manpages --without-tests
 make -j4
-make DESTDIR="$BUILD_DIR/AppDir" install
+make DESTDIR="$PWD/build" install
 popd
 
-## Configure vifm now to make sure it uses our libncursesw6
-export LD_LIBRARY_PATH="$BUILD_DIR/AppDir/usr/lib"
-export CPPFLAGS="-I$BUILD_DIR/AppDir/usr/include -I$BUILD_DIR/AppDir/usr/include/ncursesw"
-export LDFLAGS="-L$BUILD_DIR/AppDir/usr/lib"
-./configure --sysconfdir=/etc --prefix=/usr
+# Configure vifm to use our libncursesw6
+./configure --sysconfdir=/etc --prefix=/usr --with-curses="$NCURSES_DIR/build" \
+    --without-gtk --without-X11
 make -j4
 make DESTDIR="$BUILD_DIR/AppDir" install
 
 # Copy the AppData file to AppDir manually
 mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
 cp -r "$BUILD_DIR/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
+
+# Copy terminfo database
+cp -r "$NCURSES_DIR/build/share/terminfo" "$BUILD_DIR/AppDir/usr/share"
 
 
 # Custom AppRun to avoid $ARGV0 issues when used with zsh
@@ -82,6 +83,6 @@ chmod +rx ./linuxdeploy
 
 OUTPUT="vifm-x86_64.AppImage" ./linuxdeploy --appdir ./AppDir --output appimage \
     --desktop-file "$BUILD_DIR/data/vifm.desktop" --icon-file "$BUILD_DIR/data/graphics/vifm.svg" \
-    --executable "$BUILD_DIR/AppDir/usr/bin/vifm" --library "$BUILD_DIR/AppDir/usr/lib/libncursesw.so.6"
+    --executable "$BUILD_DIR/AppDir/usr/bin/vifm"
 
 mv "vifm-x86_64.AppImage" "$OLD_CWD"
