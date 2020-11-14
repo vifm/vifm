@@ -81,7 +81,7 @@ curl -o ./linuxdeploy -L \
 chmod +rx ./linuxdeploy
 
 OUTPUT="vifm-x86_64.AppImage" ./linuxdeploy --appdir ./AppDir --output appimage \
-    --desktop-file "$BUILD_DIR/data/vifm.desktop" --icon-file "$BUILD_DIR/data/graphics/vifm.png" \
+    --desktop-file "$BUILD_DIR/data/vifm.desktop" --icon-file "$BUILD_DIR/data/graphics/vifm.svg" \
     --executable "$BUILD_DIR/AppDir/usr/bin/vifm" --library "$BUILD_DIR/AppDir/usr/lib/libncursesw.so.6"
 
 mv "vifm-x86_64.AppImage" "$OLD_CWD"
