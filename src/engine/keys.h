@@ -93,7 +93,8 @@ keys_info_t;
 typedef void (*vle_keys_handler)(key_info_t key_info, keys_info_t *keys_info);
 /* Type of function invoked by vle_keys_list() and vle_keys_suggest().  rhs is
  * provided for user-defined keys and is empty otherwise.  Description is empty
- * for user-defined keys or when not set. */
+ * for user-defined keys or when not set.  Extra messages have empty lhs and
+ * rhs, but can have non-empty description. */
 typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 /* User-provided suggestion callback for multikeys. */

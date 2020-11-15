@@ -1149,17 +1149,16 @@ vle_keys_list(int mode, vle_keys_list_cb cb, int user_only)
 	const key_chunk_t *user = &user_cmds_root[mode];
 	const key_chunk_t *builtin = &builtin_cmds_root[mode];
 
+	cb(L"", L"", "User mappings:");
+
 	/* Don't traverse empty tries. */
 	if(user->children_count != 0U)
 	{
 		traverse_children(user, L"", &list_chunk, cb);
-
-		/* Put separator only when it's needed. */
-		if(!user_only && builtin->children_count != 0U)
-		{
-			cb(L"", L"", "");
-		}
 	}
+
+	cb(L"", L"", "");
+	cb(L"", L"", "Builtin mappings:");
 
 	if(!user_only && builtin->children_count != 0U)
 	{
