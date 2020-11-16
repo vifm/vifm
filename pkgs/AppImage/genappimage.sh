@@ -35,7 +35,7 @@ cd "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/AppDir/usr"
 
 # Obtain and compile libncursesw6 so that we get 256 color support
-curl -OL https://invisible-island.net/datafiles/release/ncurses.tar.gz
+wget https://invisible-island.net/datafiles/release/ncurses.tar.gz
 tar -xf ncurses.tar.gz
 NCURSES_DIR="$PWD/ncurses-6.2"
 pushd "$NCURSES_DIR"
@@ -76,7 +76,7 @@ chmod 755 AppDir/AppRun
 
 # Downloading linuxdeploy
 
-curl -o ./linuxdeploy -L \
+wget --output-document=linuxdeploy \
     https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 
 chmod +rx ./linuxdeploy
