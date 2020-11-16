@@ -5,5 +5,8 @@
 # Reference: https://github.com/neovim/neovim/issues/9341
 unset ARGV0
 
+HERE=$(dirname "$(readlink -f "$0")")
+export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
+
 export TERMINFO=$APPDIR/usr/share/terminfo
 exec "$(dirname "$(readlink -f "${0}")")/usr/bin/vifm" ${@+"$@"}

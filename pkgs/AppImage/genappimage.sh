@@ -18,6 +18,7 @@ else
 fi
 
 BUILD_DIR=$(mktemp -d -p "$TEMP_BASE" appimage-build-XXXXXX)
+VERSION=$(git describe | sed 's/-g.*$//')
 
 # make sure to clean up build dir, even if errors occur
 cleanup() {
@@ -29,6 +30,7 @@ trap cleanup EXIT
 
 OLD_CWD=$(readlink -f .)
 
+cd "$(git rev-parse --show-toplevel)"
 git archive HEAD | tar -C "$BUILD_DIR" -xf -
 cd "$BUILD_DIR"
 
@@ -52,25 +54,31 @@ popd
 make -j4
 make DESTDIR="$BUILD_DIR/AppDir" install
 
-# Copy custom AppRun
-cp -r "$BUILD_DIR/pkgs/AppImage/AppRun" "$BUILD_DIR/AppDir/"
+# Setup root files
+cp "$BUILD_DIR/pkgs/AppImage/AppRun" "$BUILD_DIR/AppDir/"
+cp "$BUILD_DIR/data/graphics/vifm.svg" "$BUILD_DIR/AppDir/"
+ln -s usr/share/applications/vifm.desktop "$BUILD_DIR/AppDir/"
 
 # Copy the AppData file to AppDir manually
 mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
-cp -r "$BUILD_DIR/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
+cp "$BUILD_DIR/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
 
 # Copy terminfo database
 cp -r "$NCURSES_DIR/build/share/terminfo" "$BUILD_DIR/AppDir/usr/share"
 
-# Download linuxdeploy
+# Prepare the binary
+strip "$BUILD_DIR/AppDir/usr/bin/vifm"
+mkdir -p "$BUILD_DIR/AppDir/usr/lib"
+ldd "$BUILD_DIR/AppDir/usr/bin/vifm" | grep '=> /' | cut -d' ' -f3 |
+    grep -v -e '/libc\.' -e '/libm\.' -e '/libpthread\.' -e '/librt\.' \
+            -e '/libdl\.' -e '/libz\.' -e '/libresolv\.' |
+    xargs -I {} cp -f {} "$BUILD_DIR/AppDir/usr/lib"
 
-wget --output-document=linuxdeploy \
-    https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-
-chmod +rx ./linuxdeploy
-
-OUTPUT="vifm-x86_64.AppImage" ./linuxdeploy --appdir ./AppDir --output appimage \
-    --desktop-file "$BUILD_DIR/data/vifm.desktop" --icon-file "$BUILD_DIR/data/graphics/vifm.svg" \
-    --executable "$BUILD_DIR/AppDir/usr/bin/vifm"
-
-mv "vifm-x86_64.AppImage" "$OLD_CWD"
+# Make AppImage
+cd "$OLD_CWD"
+if gpg --list-secret-keys xaizek@posteo.net > /dev/null; then
+    appimagetool --sign "$BUILD_DIR/AppDir" "vifm-$VERSION-x86_64.AppImage" \
+                 --updateinformation 'gh-releases-zsync|vifm|vifm|latest|vifm-*x86_64.AppImage.zsync'
+else
+    appimagetool "$BUILD_DIR/AppDir" "vifm-$VERSION-x86_64.AppImage"
+fi
