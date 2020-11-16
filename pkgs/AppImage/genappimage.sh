@@ -52,6 +52,9 @@ popd
 make -j4
 make DESTDIR="$BUILD_DIR/AppDir" install
 
+# Copy custom AppRun
+cp -r "$BUILD_DIR/pkgs/AppImage/AppRun" "$BUILD_DIR/AppDir/"
+
 # Copy the AppData file to AppDir manually
 mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
 cp -r "$BUILD_DIR/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
@@ -59,22 +62,7 @@ cp -r "$BUILD_DIR/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
 # Copy terminfo database
 cp -r "$NCURSES_DIR/build/share/terminfo" "$BUILD_DIR/AppDir/usr/share"
 
-
-# Custom AppRun to avoid $ARGV0 issues when used with zsh
-# Reference: https://github.com/neovim/neovim/blob/master/scripts/genappimage.sh
-# Reference: https://github.com/neovim/neovim/issues/9341
-
-cd $BUILD_DIR
-cat << 'EOF' > AppDir/AppRun
-#!/bin/bash
-unset ARGV0
-export TERMINFO=$APPDIR/usr/share/terminfo
-exec "$(dirname "$(readlink -f "${0}")")/usr/bin/vifm" ${@+"$@"}
-EOF
-chmod 755 AppDir/AppRun
-
-
-# Downloading linuxdeploy
+# Download linuxdeploy
 
 wget --output-document=linuxdeploy \
     https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
