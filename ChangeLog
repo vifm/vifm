@@ -26,6 +26,8 @@
 
 	Include shortcut prefix in title of map menus.
 
+	Document how %i macro affects background jobs.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
