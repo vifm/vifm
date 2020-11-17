@@ -28,6 +28,8 @@
 
 	Document how %i macro affects background jobs.
 
+	Made it possible to build AppImage for Vifm.  Patch by michaellee8.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
