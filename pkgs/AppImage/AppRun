@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# This is to avoid $ARGV0 issues when used with zsh
+# Reference: https://github.com/neovim/neovim/blob/master/scripts/genappimage.sh
+# Reference: https://github.com/neovim/neovim/issues/9341
+unset ARGV0
+
+HERE=$(dirname "$(readlink -f "$0")")
+export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
+
+export VIFM_APPDIR_ROOT=$HERE
+
+export TERMINFO=$APPDIR/usr/share/terminfo
+exec "$(dirname "$(readlink -f "${0}")")/usr/bin/vifm" ${@+"$@"}

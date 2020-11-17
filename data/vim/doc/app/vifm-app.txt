@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Nov 10
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Nov 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2704,7 +2704,9 @@ The command macros may be used in user commands.
                                                                *vifm-%n*
   %n        forbid using of terminal multiplexer to run the command.
                                                                *vifm-%i*
-  %i        completely ignore command output.
+  %i        completely ignore command output.  For background jobs this
+            suppresses error dialogs, while still storing errors
+            internally for viewing via |vifm-:jobs| menu.
 
                                                                *vifm-%pc*
   %pc       marks the end of the main command and the beginning of the

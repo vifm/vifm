@@ -268,6 +268,10 @@ FILE * read_cmd_output(const char cmd[], int preserve_stdin);
  * pointer to a statically allocated buffer. */
 const char * get_installed_data_dir(void);
 
+/* Gets path to directory where global configuration files of Vifm are stored.
+ * Returns pointer to a statically allocated buffer. */
+const char * get_sys_conf_dir(void);
+
 /* Clones attributes from file specified by from to file at path.  st is a hint
  * to omit extra file system requests if possible, can be NULL on Windows. */
 void clone_attribs(const char path[], const char from[], const struct stat *st);
