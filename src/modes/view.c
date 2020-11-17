@@ -343,9 +343,10 @@ modview_enter(view_t *view, int explore)
 
 	pick_vi(explore);
 
+	vi->filename = is_dir(full_path) ? format_str("%s/", full_path)
+	                                 : strdup(full_path);
+	vi->viewers = ft_get_viewers(vi->filename);
 	vi->view = view;
-	vi->viewers = ft_get_viewers(full_path);
-	vi->filename = strdup(full_path);
 
 	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{
