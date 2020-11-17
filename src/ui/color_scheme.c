@@ -972,16 +972,12 @@ get_cs_path(const char name[], char buf[], size_t buf_size)
 static const char *
 get_global_colors_dir(void)
 {
-#ifndef _WIN32
-	return GLOBAL_COLORS_DIR;
-#else
 	static char dir_path[PATH_MAX + 1];
 	if(dir_path[0] == '\0')
 	{
-		snprintf(dir_path, sizeof(dir_path), "%s/colors", get_installed_data_dir());
+		snprintf(dir_path, sizeof(dir_path), "%s/colors", get_sys_conf_dir());
 	}
 	return dir_path;
-#endif
 }
 
 /* Checks whether colorscheme is in unusable state and resets it to normal

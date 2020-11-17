@@ -1047,6 +1047,12 @@ get_installed_data_dir(void)
 	return PACKAGE_DATA_DIR;
 }
 
+const char *
+get_sys_conf_dir(void)
+{
+	return PACKAGE_SYSCONF_DIR;
+}
+
 void
 clone_attribs(const char path[], const char from[], const struct stat *st)
 {

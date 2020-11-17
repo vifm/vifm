@@ -700,7 +700,9 @@ cfg_load(void)
 	if(!vifm_testing())
 	{
 		/* Try to load global configuration. */
-		(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
+		char rc_path[PATH_MAX + 1];
+		snprintf(rc_path, sizeof(rc_path), "%s/%s", get_sys_conf_dir(), VIFMRC);
+		(void)cfg_source_file(rc_path);
 	}
 
 	/* Try to load local configuration. */
