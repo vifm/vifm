@@ -1044,13 +1044,25 @@ read_cmd_output(const char cmd[], int preserve_stdin)
 const char *
 get_installed_data_dir(void)
 {
-	return PACKAGE_DATA_DIR;
+	static char data_dir[PATH_MAX + 1];
+	if(data_dir[0] == '\0')
+	{
+		const char *prefix = env_get_def("VIFM_APPDIR_ROOT", "");
+		snprintf(data_dir, sizeof(data_dir), "%s%s", prefix, PACKAGE_DATA_DIR);
+	}
+	return data_dir;
 }
 
 const char *
 get_sys_conf_dir(void)
 {
-	return PACKAGE_SYSCONF_DIR;
+	static char conf_dir[PATH_MAX + 1];
+	if(conf_dir[0] == '\0')
+	{
+		const char *prefix = env_get_def("VIFM_APPDIR_ROOT", "");
+		snprintf(conf_dir, sizeof(conf_dir), "%s%s", prefix, PACKAGE_SYSCONF_DIR);
+	}
+	return conf_dir;
 }
 
 void

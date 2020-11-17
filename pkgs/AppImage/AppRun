@@ -8,5 +8,7 @@ unset ARGV0
 HERE=$(dirname "$(readlink -f "$0")")
 export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
 
+export VIFM_APPDIR_ROOT=$HERE
+
 export TERMINFO=$APPDIR/usr/share/terminfo
 exec "$(dirname "$(readlink -f "${0}")")/usr/bin/vifm" ${@+"$@"}
