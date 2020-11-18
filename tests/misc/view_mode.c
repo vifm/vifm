@@ -80,6 +80,13 @@ TEST(switching_between_viewers)
 	assert_string_equal("echo 3", modview_current_viewer(lwin.vi));
 }
 
+TEST(directories_are_matched_separately)
+{
+	start_view_mode("*[^/]", "");
+
+	assert_string_equal(NULL, modview_current_viewer(lwin.vi));
+}
+
 static void
 start_view_mode(const char pattern[], const char tests_dir[])
 {
