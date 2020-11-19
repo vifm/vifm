@@ -101,6 +101,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 	    \ '--on-choose',
 	    \ has('win32')
 	    \ ? 'echo \"%%VIFM_OPEN_TYPE%%\">' . typef : 'echo $VIFM_OPEN_TYPE >' . typef,
+	    \ '+let $VIFM_OPEN_TYPE=''edit''',
 	    \ '+command EditVim   :let $VIFM_OPEN_TYPE=''edit''' . edit,
 	    \ '+command VsplitVim :let $VIFM_OPEN_TYPE=''vsplit''' . edit,
 	    \ '+command SplitVim  :let $VIFM_OPEN_TYPE=''split''' . edit,
@@ -262,8 +263,7 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 	call map(flist, 'fnameescape(v:val)')
 	let firstfile = flist[0]
 
-	if !empty(opentype) && !empty(opentype[0]) &&
-		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
+	if !empty(opentype) && !empty(opentype[0])
 		let editcmd = has('win32') ? opentype[0][1:-2] : opentype[0]
 	else
 		let editcmd = a:editcmd
