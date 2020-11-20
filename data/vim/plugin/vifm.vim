@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 November 20
+" Last Change: 2020 November 21
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -305,6 +305,11 @@ endfunction
 
 function! s:PreparePath(path) abort
 	let path = substitute(a:path, '\', '/', 'g')
+	if !isdirectory(path)
+		" For example, we were' in a terminal buffer whose name isn't a path
+		let path = ''
+	endif
+
 	if has('win32')
 		if len(path) != 0
 			let path = '"'.path.'"'
