@@ -353,6 +353,12 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 ViewerKind
 ft_viewer_kind(const char viewer[])
 {
+	if(is_null_or_empty(viewer))
+	{
+		/* No special viewer implies viewing in text form. */
+		return VK_TEXTUAL;
+	}
+
 	/* %pw and %ph can be useful for text output, but %px and %py are useful
 	 * for graphics only and basically must be used both at the same time. */
 	if(strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL)
