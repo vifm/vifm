@@ -545,7 +545,7 @@ traverse_mount_points(mptraverser client, void *arg)
 	if(filemon_from_file("/etc/mtab", FMT_MODIFIED, &mon) != 0 ||
 			!filemon_equal(&mon, &mtab_mon))
 	{
-		filemon_assign(&mtab_mon, &mon);
+		mtab_mon = mon;
 		free_mnt_entries(entries, nentries);
 		entries = read_mnt_entries(&nentries);
 	}

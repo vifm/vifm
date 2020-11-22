@@ -388,9 +388,7 @@ static strlist_t
 update_cache(quickview_cache_t *cache, const char path[], const char viewer[],
 		ViewerKind kind, const preview_area_t *parea, int max_lines)
 {
-	filemon_t filemon;
-	(void)filemon_from_file(path, FMT_MODIFIED, &filemon);
-	filemon_assign(&cache->filemon, &filemon);
+	(void)filemon_from_file(path, FMT_MODIFIED, &cache->filemon);
 
 	replace_string(&cache->path, path);
 	update_string(&cache->viewer, viewer);

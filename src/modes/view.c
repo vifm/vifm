@@ -1242,7 +1242,7 @@ replace_vi(modview_info_t *orig, modview_info_t *new)
 	new->linev = orig->linev;
 	new->view = orig->view;
 	new->auto_forward = orig->auto_forward;
-	filemon_assign(&new->file_mon, &orig->file_mon);
+	new->file_mon = orig->file_mon;
 
 	free_view_info(orig);
 	*orig = *new;
@@ -1739,7 +1739,7 @@ forward_if_changed(modview_info_t *vi)
 		return 0;
 	}
 
-	filemon_assign(&vi->file_mon, &mon);
+	vi->file_mon = mon;
 	reload_view(vi, SILENT);
 	return scroll_to_bottom(vi);
 }

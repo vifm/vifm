@@ -263,7 +263,7 @@ extcached_builtin(const call_info_t *call_info)
 		cached->caches = fsddata_create(0, 0);
 	}
 
-	filemon_assign(&cached->mon, &current_mon);
+	cached->mon = current_mon;
 	free(path);
 
 	var_t output = execute_cmd(call_info->argv[2], call_info->interactive, 0);
