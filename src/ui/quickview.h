@@ -23,7 +23,6 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE */
 
-#include "../utils/test_helpers.h"
 #include "colors.h"
 
 struct dir_entry_t;
@@ -88,11 +87,6 @@ void qv_get_path_to_explore(const struct dir_entry_t *entry, char buf[],
 
 /* Informs this unit that it's data was probably erased from the screen. */
 void qv_ui_updated(void);
-
-TSTATIC_DEFS(
-	struct strlist_t;
-	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);
-)
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */
 

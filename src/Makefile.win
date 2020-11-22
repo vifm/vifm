@@ -96,8 +96,8 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(lua) $(menus) \
                 filtering.c flist_hist.c flist_pos.c flist_sel.c instance.c \
                 ipc.c macros.c marks.c ops.c opt_handlers.c plugins.c \
                 registers.c running.c search.c signals.c sort.c status.c \
-                tags.c trash.c types.c undo.c version.c viewcolumns_parser.c \
-                vifmres.o vifm.c
+                tags.c trash.c types.c undo.c vcache.c version.c \
+                viewcolumns_parser.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

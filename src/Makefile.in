@@ -213,8 +213,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	plugins.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
 	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
 	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
-	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
-	viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
+	types.$(OBJEXT) undo.$(OBJEXT) vcache.$(OBJEXT) \
+	version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS) $(nodist_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
@@ -896,6 +896,7 @@ vifm_SOURCES = \
 	trash.c trash.h \
 	types.c types.h \
 	undo.c undo.h \
+	vcache.c vcache.h \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
 	vifm.c vifm.h
@@ -1510,6 +1511,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/types.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vcache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/viewcolumns_parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@

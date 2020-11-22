@@ -250,6 +250,7 @@ there for instructions.
     |  |-- trash.c - code that handles list of files in trash
     |  |-- types.c - internal file type detection and conversions
     |  |-- undo.c - stores and handles the undo list
+    |  |-- vcache.c - cache of viewers' output
     |  |-- version.c - git hash and other version information
     |  |-- viewcolumns_parser.c - contains code for parsing 'viewcolumns' option
     |  |-- vifm.c - contains main initialization/termination code
