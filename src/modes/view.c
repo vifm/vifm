@@ -24,6 +24,7 @@
 #include <unistd.h> /* usleep() */
 
 #include <assert.h> /* assert() */
+#include <limits.h> /* INT_MAX */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* memset() strdup() */
 #include <stdio.h>  /* fclose() snprintf() */
@@ -1110,7 +1111,7 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 		if(is_dir(file_to_view))
 		{
 			ui_cancellation_push_on();
-			fp = qv_view_dir(file_to_view);
+			fp = qv_view_dir(file_to_view, INT_MAX);
 			ui_cancellation_pop();
 		}
 		else

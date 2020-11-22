@@ -100,7 +100,6 @@ static void fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
 		const char viewer[], ViewerKind kind, const preview_area_t *parea,
 		int max_lines);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
-static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static int enter_dir(tree_print_state_t *s, const char path[], int last);
 static int visit_file(tree_print_state_t *s, const char path[], int last);
@@ -328,7 +327,7 @@ view_file(const char path[], const preview_area_t *parea,
 		max_lines = ui_qv_height(parea->view);
 
 		ui_cancellation_push_on();
-		fp = view_dir(path, max_lines);
+		fp = qv_view_dir(path, max_lines);
 		ui_cancellation_pop();
 
 		if(fp == NULL)
@@ -474,15 +473,7 @@ read_lines(FILE *fp, int max_lines, int *complete)
 }
 
 FILE *
-qv_view_dir(const char path[])
-{
-	return view_dir(path, INT_MAX);
-}
-
-/* Previews directory, actual preview is to be read from returned stream.
- * Returns the stream or NULL on error. */
-static FILE *
-view_dir(const char path[], int max_lines)
+qv_view_dir(const char path[], int max_lines)
 {
 	FILE *fp = os_tmpfile();
 

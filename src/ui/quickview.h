@@ -79,7 +79,7 @@ const char * qv_get_viewer(const char path[]);
 
 /* Previews directory, actual preview is to be read from returned stream.
  * Returns the stream or NULL on error. */
-FILE * qv_view_dir(const char path[]);
+FILE * qv_view_dir(const char path[], int max_lines);
 
 /* Decides on path that should be explored when cursor points to the given
  * entry. */
