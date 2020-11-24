@@ -44,6 +44,8 @@
 	lost due to the use of expand() builtin function in 'statusline'.  Thanks
 	to DieSpinne.
 
+	Fixed presence of %q macro causing second round of macro expansion.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

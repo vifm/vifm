@@ -203,6 +203,7 @@ static void cleanup(modview_info_t *vi);
 static modview_info_t * view_info_alloc(void);
 TSTATIC int modview_is_raw(modview_info_t *vi);
 TSTATIC const char * modview_current_viewer(modview_info_t *vi);
+TSTATIC strlist_t modview_lines(modview_info_t *vi);
 
 /* Points to current (for quick view) or last used (for explore mode)
  * modview_info_t structure. */
@@ -1156,10 +1157,8 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 		}
 		else
 		{
-			/* Don't add implicit %c to a command with %q macro. */
-			char *const cmd = ma_expand(vi->ext_viewer, NULL, NULL, 1);
-			fp = read_cmd_output(cmd, 0);
-			free(cmd);
+			/* Don't expand a command with %q macro. */
+			fp = read_cmd_output(vi->ext_viewer, 0);
 		}
 
 		curr_view = curr;
@@ -1850,6 +1849,13 @@ TSTATIC const char *
 modview_current_viewer(modview_info_t *vi)
 {
 	return vi->curr_viewer;
+}
+
+TSTATIC strlist_t
+modview_lines(modview_info_t *vi)
+{
+	strlist_t lines = { .items = vi->lines, .nitems = vi->nlines };
+	return lines;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
