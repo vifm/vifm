@@ -41,6 +41,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -94,9 +95,10 @@ static void view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache);
 static int is_cache_valid(const quickview_cache_t *cache, const char path[],
 		const char viewer[], const preview_area_t *parea);
-static strlist_t update_cache(quickview_cache_t *cache, const char path[],
+static void update_cache(quickview_cache_t *cache, const char path[],
 		const char viewer[], ViewerKind kind, const preview_area_t *parea,
 		int max_lines);
+static strlist_t get_lines(const quickview_cache_t *cache);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static int enter_dir(tree_print_state_t *s, const char path[], int last);
 static int visit_file(tree_print_state_t *s, const char path[], int last);
@@ -113,7 +115,7 @@ static void draw_lines(const strlist_t *lines, int wrapped,
 		const preview_area_t *parea, ViewerKind kind);
 static void write_message(const char msg[], const preview_area_t *parea);
 static void cleanup_for_text(const preview_area_t *parea);
-static char * expand_viewer_command(const char viewer[]);
+TSTATIC FILE * qv_execute_viewer(const char viewer[]);
 static void cleanup_area(const preview_area_t *parea, const char cmd[]);
 static void wipe_area(const preview_area_t *parea);
 
@@ -311,8 +313,8 @@ view_file(const char path[], const preview_area_t *parea,
 	{
 		/* Update area as we might draw preview at a different location. */
 		cache->pa = *parea;
-		strlist_t lines = vcache_lookup(cache->path, cache->viewer,
-				cache->max_lines);
+
+		strlist_t lines = get_lines(cache);
 		draw_lines(&lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 		return;
 	}
@@ -340,13 +342,8 @@ view_file(const char path[], const preview_area_t *parea,
 	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	view_t *const curr = curr_view;
-	curr_view = parea->source;
-	curr_stats.preview_hint = parea;
-	strlist_t lines = update_cache(cache, path, viewer, kind, parea, max_lines);
-	curr_stats.preview_hint = NULL;
-	curr_view = curr;
-
+	update_cache(cache, path, viewer, kind, parea, max_lines);
+	strlist_t lines = get_lines(cache);
 	draw_lines(&lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 }
 
@@ -383,8 +380,8 @@ is_cache_valid(const quickview_cache_t *cache, const char path[],
 	return 0;
 }
 
-/* Updates cache data.  Returns lines to be printed. */
-static strlist_t
+/* Updates cache data. */
+static void
 update_cache(quickview_cache_t *cache, const char path[], const char viewer[],
 		ViewerKind kind, const preview_area_t *parea, int max_lines)
 {
@@ -399,8 +396,26 @@ update_cache(quickview_cache_t *cache, const char path[], const char viewer[],
 	cache->kind = kind;
 	cache->max_lines = max_lines;
 	cache->graphics_lost = 0;
+}
 
-	return vcache_lookup(path, viewer, max_lines);
+/* Retrieves lines to be printed.  Returns the lines. */
+static strlist_t
+get_lines(const quickview_cache_t *cache)
+{
+	view_t *curr = curr_view;
+	curr_view = cache->pa.source;
+	curr_stats.preview_hint = &cache->pa;
+
+	char *expanded = (cache->viewer == NULL) ? NULL
+	                                         : qv_expand_viewer(cache->viewer);
+	strlist_t lines = vcache_lookup(cache->path, expanded, cache->kind,
+			cache->max_lines);
+	free(expanded);
+
+	curr_stats.preview_hint = NULL;
+	curr_view = curr;
+
+	return lines;
 }
 
 FILE *
@@ -712,13 +727,15 @@ qv_hide(void)
 	}
 }
 
-FILE *
+/* Expands and executes viewer command.  Returns file containing results of the
+ * viewer. */
+TSTATIC FILE *
 qv_execute_viewer(const char viewer[])
 {
 	FILE *fp;
 	char *expanded;
 
-	expanded = expand_viewer_command(viewer);
+	expanded = qv_expand_viewer(viewer);
 	fp = read_cmd_output(expanded, 0);
 	free(expanded);
 
@@ -727,8 +744,8 @@ qv_execute_viewer(const char viewer[])
 
 /* Returns a pointer to newly allocated memory, which should be released by the
  * caller. */
-static char *
-expand_viewer_command(const char viewer[])
+char *
+qv_expand_viewer(const char viewer[])
 {
 	char *result;
 	if(strchr(viewer, '%') == NULL)

@@ -30,6 +30,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
+#include "utils/utils.h"
 #include "filetype.h"
 
 /* Cached output of a specific previewer for a specific file. */
@@ -58,9 +59,9 @@ TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 static vcache_entry_t cache;
 
 strlist_t
-vcache_lookup(const char full_path[], const char viewer[], int max_lines)
+vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
+		int max_lines)
 {
-	ViewerKind kind = ft_viewer_kind(viewer);
 	if(kind == VK_GRAPHICAL)
 	{
 		/* Skip caching of data we can't really cache. */
@@ -151,7 +152,7 @@ get_data(const char full_path[], const char viewer[], int max_lines,
 	}
 	else
 	{
-		fp = qv_execute_viewer(viewer);
+		fp = read_cmd_output(viewer, 0);
 	}
 
 	strlist_t lines = {};

@@ -22,13 +22,15 @@
 /* This unit caches output of external viewers. */
 
 #include "utils/test_helpers.h"
+#include "filetype.h"
 
 struct strlist_t;
 
-/* Looks up cached output of a viewer or produces and caches it.  Returns list
- * of strings owned and managed by the unit, don't store or free it. */
+/* Looks up cached output of a viewer command (no macro expansion is performed)
+ * or produces and caches it.  Returns list of strings owned and managed by the
+ * unit, don't store or free it. */
 struct strlist_t vcache_lookup(const char full_path[], const char viewer[],
-		int max_lines);
+		ViewerKind kind, int max_lines);
 
 TSTATIC_DEFS(
 	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);

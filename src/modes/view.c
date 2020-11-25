@@ -1153,7 +1153,9 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 		}
 		if(vi->curr_viewer != vi->ext_viewer)
 		{
-			fp = qv_execute_viewer(vi->curr_viewer);
+			char *expanded = qv_expand_viewer(vi->curr_viewer);
+			fp = read_cmd_output(expanded, 0);
+			free(expanded);
 		}
 		else
 		{
