@@ -124,5 +124,21 @@ TEST(pattern_list, IF(has_mime_type_detection))
 			ft_get_viewer(TEST_DATA_PATH "/read/binary-data"));
 }
 
+TEST(viewer_kind)
+{
+	assert_int_equal(VK_TEXTUAL, ft_viewer_kind(NULL));
+	assert_int_equal(VK_TEXTUAL, ft_viewer_kind(""));
+
+	assert_int_equal(VK_TEXTUAL, ft_viewer_kind("cat"));
+	assert_int_equal(VK_TEXTUAL, ft_viewer_kind("cat %c"));
+
+	assert_int_equal(VK_TEXTUAL, ft_viewer_kind("echo %px"));
+	assert_int_equal(VK_TEXTUAL, ft_viewer_kind("echo %py"));
+
+	assert_int_equal(VK_GRAPHICAL, ft_viewer_kind("echo %px %py"));
+
+	assert_int_equal(VK_PASS_THROUGH, ft_viewer_kind("echo %pd"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
