@@ -1336,8 +1336,11 @@ cmd_g(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	vi->raw = !vi->raw;
-	reload_view(vi, NOSILENT);
+	if(vi->curr_viewer != vi->ext_viewer)
+	{
+		vi->raw = !vi->raw;
+		reload_view(vi, NOSILENT);
+	}
 }
 
 static void
