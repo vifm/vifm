@@ -50,9 +50,9 @@ static int is_cache_match(const vcache_entry_t *centry, const char path[],
 static int is_cache_valid(const vcache_entry_t *centry, const char path[],
 		const char viewer[], int max_lines);
 static void update_cache_entry(vcache_entry_t *centry, const char path[],
-		const char viewer[], int max_lines);
+		const char viewer[], int max_lines, const char **error);
 static strlist_t get_data(const char full_path[], const char viewer[],
-		int max_lines, int *complete);
+		int max_lines, int *complete, const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
 /* Cache of viewers' output. */
@@ -60,8 +60,10 @@ static vcache_entry_t cache;
 
 strlist_t
 vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
-		int max_lines)
+		int max_lines, const char **error)
 {
+	*error = NULL;
+
 	if(kind == VK_GRAPHICAL)
 	{
 		/* Skip caching of data we can't really cache. */
@@ -69,14 +71,14 @@ vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
 		free_string_array(non_cache.items, non_cache.nitems);
 
 		int complete;
-		non_cache = get_data(full_path, viewer, max_lines, &complete);
+		non_cache = get_data(full_path, viewer, max_lines, &complete, error);
 		return non_cache;
 	}
 
 	if(!is_cache_match(&cache, full_path, viewer) ||
 			!is_cache_valid(&cache, full_path, viewer, max_lines))
 	{
-		update_cache_entry(&cache, full_path, viewer, max_lines);
+		update_cache_entry(&cache, full_path, viewer, max_lines, error);
 	}
 
 	return cache.lines;
@@ -121,10 +123,11 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
 }
 
 /* Setups cache entry for a specific file and viewer replacing its previous
- * state in the process. */
+ * state in the process.  *error is set either to NULL or an error code on
+ * failure. */
 static void
 update_cache_entry(vcache_entry_t *centry, const char path[],
-		const char viewer[], int max_lines)
+		const char viewer[], int max_lines, const char **error)
 {
 	(void)filemon_from_file(path, FMT_MODIFIED, &centry->filemon);
 
@@ -132,37 +135,43 @@ update_cache_entry(vcache_entry_t *centry, const char path[],
 	update_string(&centry->viewer, viewer);
 
 	free_string_array(centry->lines.items, centry->lines.nitems);
-	centry->lines = get_data(path, viewer, max_lines, &centry->complete);
+	centry->lines = get_data(path, viewer, max_lines, &centry->complete, error);
 }
 
-/* Invokes viewer of a file to get its output.  Returns output and sets
+/* Invokes viewer of a file to get its output.  *error is set either to NULL or
+ * an error code on failure.  Returns output and sets
  * *complete. */
 static strlist_t
 get_data(const char full_path[], const char viewer[], int max_lines,
-		int *complete)
+		int *complete, const char **error)
 {
 	ui_cancellation_push_on();
 
 	FILE *fp;
 	if(is_null_or_empty(viewer))
 	{
+		int dir = is_dir(full_path);
+
 		/* Binary mode is important on Windows. */
-		fp = is_dir(full_path) ? qv_view_dir(full_path, max_lines)
-		                       : os_fopen(full_path, "rb");
+		fp = (dir ? qv_view_dir(full_path, max_lines) : os_fopen(full_path, "rb"));
+		if(fp == NULL)
+		{
+			*error = dir ? "Failed to list directory's contents"
+			             : "Failed to read file's contents";
+		}
 	}
 	else
 	{
 		fp = read_cmd_output(viewer, 0);
+		if(fp == NULL)
+		{
+			*error = "Failed to start a viewer";
+		}
 	}
 
 	strlist_t lines = {};
 
-	if(fp == NULL)
-	{
-		lines.nitems = add_to_string_array(&lines.items, lines.nitems,
-				"Vifm: previewing has failed");
-	}
-	else
+	if(fp != NULL)
 	{
 		lines = read_lines(fp, max_lines, complete);
 		fclose(fp);

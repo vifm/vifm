@@ -406,11 +406,18 @@ get_lines(const quickview_cache_t *cache)
 	curr_view = cache->pa.source;
 	curr_stats.preview_hint = &cache->pa;
 
+	const char *error;
+
 	char *expanded = (cache->viewer == NULL) ? NULL
 	                                         : qv_expand_viewer(cache->viewer);
 	strlist_t lines = vcache_lookup(cache->path, expanded, cache->kind,
-			cache->max_lines);
+			cache->max_lines, &error);
 	free(expanded);
+
+	if(error != NULL)
+	{
+		lines.nitems = add_to_string_array(&lines.items, lines.nitems, error);
+	}
 
 	curr_stats.preview_hint = NULL;
 	curr_view = curr;

@@ -27,10 +27,11 @@
 struct strlist_t;
 
 /* Looks up cached output of a viewer command (no macro expansion is performed)
- * or produces and caches it.  Returns list of strings owned and managed by the
- * unit, don't store or free it. */
+ * or produces and caches it.  *error is set either to NULL or an error code on
+ * failure.  Returns list of strings owned and managed by the unit, don't store
+ * or free it. */
 struct strlist_t vcache_lookup(const char full_path[], const char viewer[],
-		ViewerKind kind, int max_lines);
+		ViewerKind kind, int max_lines, const char **error);
 
 TSTATIC_DEFS(
 	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);
