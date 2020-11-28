@@ -27,7 +27,7 @@
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* memset() strdup() */
-#include <stdio.h>  /* fclose() snprintf() */
+#include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* free() */
 
 #include "../cfg/config.h"
@@ -39,7 +39,6 @@
 #include "../engine/mode.h"
 #include "../int/vim.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../ui/cancellation.h"
 #include "../ui/color_manager.h"
 #include "../ui/colors.h"
 #include "../ui/escape.h"
@@ -62,6 +61,7 @@
 #include "../running.h"
 #include "../status.h"
 #include "../types.h"
+#include "../vcache.h"
 #include "cmdline.h"
 #include "modes.h"
 #include "normal.h"
@@ -78,7 +78,7 @@ enum
 struct modview_info_t
 {
 	/* Data of the view. */
-	char **lines;     /* List of real lines. */
+	char **lines;     /* List of real lines (owned by vcache unit). */
 	int (*widths)[2]; /* (virtual line, screen width) pair per real line. */
 	int nlines;       /* Number of real lines. */
 	int nlinesv;      /* Number of virtual (possibly wrapped) lines. */
@@ -168,7 +168,8 @@ static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(modview_info_t *vi, const char action[],
 		const char file_to_view[], int silent);
-static int get_view_data(modview_info_t *vi, const char file_to_view[]);
+static const char * get_view_data(modview_info_t *vi,
+		const char file_to_view[]);
 static void pick_current_viewer(modview_info_t *vi);
 static void replace_vi(modview_info_t *orig, modview_info_t *new);
 static void cmd_a(key_info_t key_info, keys_info_t *keys_info);
@@ -573,7 +574,6 @@ init_view_info(modview_info_t *vi)
 static void
 free_view_info(modview_info_t *vi)
 {
-	free_string_array(vi->lines, vi->nlines);
 	free_string_array(vi->viewers.items, vi->viewers.nitems);
 	free(vi->widths);
 	if(vi->last_search_backward != -1)
@@ -658,7 +658,6 @@ draw(void)
 	{
 		cleanup(vi);
 
-		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
 
 		if(vi->kind == VK_PASS_THROUGH)
@@ -1056,142 +1055,100 @@ static int
 load_view_data(modview_info_t *vi, const char action[],
 		const char file_to_view[], int silent)
 {
-	const int error = get_view_data(vi, file_to_view);
+	const char *error = get_view_data(vi, file_to_view);
 
-	if(error != 0 && silent)
+	if(error != NULL && silent)
 	{
 		return 1;
 	}
 
-	switch(error)
+	if(error != NULL)
 	{
-		case 0:
-			break;
-
-		case 2:
-			show_error_msg(action, "Can't open file for reading");
-			return 1;
-		case 3:
-			show_error_msg(action, "Can't get data from viewer");
-			return 1;
-		case 4:
-			show_error_msg(action, "Nothing to explore");
-			return 1;
-
-		default:
-			assert(0 && "Unhandled error code.");
-			return 1;
+		show_error_msg(action, error);
+		return 1;
 	}
 
-	if(vi->nlines != 0)
+	if(vi->nlines == 0)
 	{
-		vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
-		if(vi->widths == NULL)
-		{
-			free_string_array(vi->lines, vi->nlines);
-			vi->lines = NULL;
-			vi->nlines = 0;
-			show_error_msg(action, "Not enough memory");
-			return 1;
-		}
+		show_error_msg(action, "Nothing to explore");
+		return 1;
+	}
+
+	vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
+	if(vi->widths == NULL)
+	{
+		vi->lines = NULL;
+		vi->nlines = 0;
+		show_error_msg(action, "Not enough memory");
+		return 1;
 	}
 
 	return 0;
 }
 
-/* Reads data to be displayed handling error cases.  Returns zero on success, 2
- * on file reading error, 3 on issues with viewer or 4 on empty input. */
-static int
+/* Reads data to be displayed handling error cases.  Returns error message on
+ * failure or NULL on success. */
+static const char *
 get_view_data(modview_info_t *vi, const char file_to_view[])
 {
 	pick_current_viewer(vi);
 
-	FILE *fp;
-	if(vi->raw || vi->curr_viewer == NULL)
+	const ViewerKind kind = ft_viewer_kind(vi->curr_viewer);
+	view_t *const curr = curr_view;
+	curr_view = curr_stats.preview.on ? curr_view
+						: (vi->view != NULL) ? vi->view : curr_view;
+
+	const preview_area_t parea = {
+		.source = vi->view,
+		.view = vi->view,
+		.x = ui_qv_left(vi->view),
+		.y = ui_qv_top(vi->view),
+		.w = ui_qv_width(vi->view),
+		.h = ui_qv_height(vi->view),
+	};
+	curr_stats.preview_hint = &parea;
+
+	if(kind != VK_TEXTUAL)
 	{
-		if(is_dir(file_to_view))
-		{
-			ui_cancellation_push_on();
-			fp = qv_view_dir(file_to_view, INT_MAX);
-			ui_cancellation_pop();
-		}
-		else
-		{
-			/* Binary mode is important on Windows. */
-			fp = os_fopen(file_to_view, "rb");
-		}
+		/* Wait a bit to let terminal emulator do actual refresh (at least some of
+		 * them need this). */
+		usleep(50000);
+	}
 
-		if(fp == NULL)
-		{
-			return 2;
-		}
+	const char *error;
+	const char *viewer = (vi->raw ? NULL : vi->curr_viewer);
 
-		vi->lines = read_file_lines(fp, &vi->nlines);
+	strlist_t lines;
+	if(vi->curr_viewer == vi->ext_viewer)
+	{
+		/* No macros in this viewer. */
+		lines = vcache_lookup(file_to_view, vi->ext_viewer, kind, INT_MAX, &error);
 	}
 	else
 	{
-		const ViewerKind kind = ft_viewer_kind(vi->curr_viewer);
-		view_t *const curr = curr_view;
-		curr_view = curr_stats.preview.on ? curr_view
-		          : (vi->view != NULL) ? vi->view : curr_view;
-
-		const preview_area_t parea = {
-			.source = vi->view,
-			.view = vi->view,
-			.x = ui_qv_left(vi->view),
-			.y = ui_qv_top(vi->view),
-			.w = ui_qv_width(vi->view),
-			.h = ui_qv_height(vi->view),
-		};
-		curr_stats.preview_hint = &parea;
-
-		if(kind != VK_TEXTUAL)
-		{
-			/* Wait a bit to let terminal emulator do actual refresh (at least some
-			 * of them need this). */
-			usleep(50000);
-		}
-		if(vi->curr_viewer != vi->ext_viewer)
-		{
-			char *expanded = qv_expand_viewer(vi->curr_viewer);
-			fp = read_cmd_output(expanded, 0);
-			free(expanded);
-		}
-		else
-		{
-			/* Don't expand a command with %q macro. */
-			fp = read_cmd_output(vi->ext_viewer, 0);
-		}
-
-		curr_view = curr;
-		curr_stats.preview_hint = NULL;
-
-		if(fp == NULL)
-		{
-			return 3;
-		}
-
-		vi->kind = kind;
-
-		ui_cancellation_push_on();
-		vi->lines = read_stream_lines(fp, &vi->nlines, 0, NULL, NULL);
-		ui_cancellation_pop();
+		char *expanded = (viewer == NULL ? NULL : qv_expand_viewer(viewer));
+		lines = vcache_lookup(file_to_view, expanded, kind, INT_MAX, &error);
+		free(expanded);
 	}
 
-	fclose(fp);
+	curr_view = curr;
+	curr_stats.preview_hint = NULL;
+
+	vi->lines = lines.items;
+	vi->nlines = lines.nitems;
+
+	vi->kind = kind;
 
 	if(vi->kind != VK_TEXTUAL && vi->nlines == 0)
 	{
 		/* Exploring absent output gives error, add an empty line to allow empty
 		 * output for graphical previewers. */
-		vi->nlines = add_to_string_array(&vi->lines, vi->nlines, "");
-	}
-	if(vi->lines == NULL || vi->nlines == 0)
-	{
-		return 4;
+		static char *lines[] = { "" };
+		vi->lines = lines;
+		vi->nlines = 1;
 	}
 
-	return 0;
+	return error;
 }
 
 /* Makes sure that vi->curr_viewer field has a sensible value. */

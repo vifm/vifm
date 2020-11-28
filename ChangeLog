@@ -30,6 +30,8 @@
 
 	Made it possible to build AppImage for Vifm.  Patch by michaellee8.
 
+	Started using quickview's cache in view mode.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
