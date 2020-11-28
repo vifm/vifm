@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* rmdir() symlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <stdio.h> /* remove() */
 
 #include <test-utils.h>
@@ -27,7 +28,7 @@ TEARDOWN()
 
 TEST(file_can_not_be_viewed)
 {
-	assert_null(qv_view_dir(TEST_DATA_PATH "/existing-files/a"));
+	assert_null(qv_view_dir(TEST_DATA_PATH "/existing-files/a", INT_MAX));
 }
 
 TEST(empty_dir_produces_single_line_and_dirs_have_trailing_slash)
@@ -38,7 +39,7 @@ TEST(empty_dir_produces_single_line_and_dirs_have_trailing_slash)
 
 	assert_success(os_mkdir("empty-dir", 0777));
 
-	fp = qv_view_dir("empty-dir");
+	fp = qv_view_dir("empty-dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);
 
 	assert_int_equal(3, nlines);
@@ -61,7 +62,7 @@ TEST(single_file_is_displayed_correctly_file_without_slash)
 	assert_success(os_mkdir("dir", 0777));
 	create_file("dir/file");
 
-	fp = qv_view_dir("dir");
+	fp = qv_view_dir("dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);
 
 	assert_int_equal(4, nlines);
@@ -86,7 +87,7 @@ TEST(single_subdir_is_displayed_correctly)
 	assert_success(os_mkdir("dir", 0777));
 	assert_success(os_mkdir("dir/nested", 0777));
 
-	fp = qv_view_dir("dir");
+	fp = qv_view_dir("dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);
 
 	assert_int_equal(4, nlines);
@@ -112,7 +113,7 @@ TEST(multiple_nested_dirs_treated_correctly)
 	assert_success(os_mkdir("dir/nested1", 0777));
 	assert_success(os_mkdir("dir/nested1/nested2", 0777));
 
-	fp = qv_view_dir("dir");
+	fp = qv_view_dir("dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);
 
 	assert_int_equal(5, nlines);
@@ -140,7 +141,7 @@ TEST(multiple_files_treated_correctly)
 	create_file("dir/file1");
 	create_file("dir/file2");
 
-	fp = qv_view_dir("dir");
+	fp = qv_view_dir("dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);
 
 	assert_int_equal(5, nlines);
@@ -170,7 +171,7 @@ TEST(multiple_non_empty_dirs_have_correct_prefixes_plus_sorting)
 	create_file("dir/sub1/file");
 	create_file("dir/sub2/file");
 
-	fp = qv_view_dir("dir");
+	fp = qv_view_dir("dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);
 
 	assert_int_equal(7, nlines);
@@ -208,7 +209,7 @@ TEST(symlinks_are_not_resolved_in_tree_preview, IF(not_windows))
 	assert_success(symlink(".", SANDBOX_PATH "/dir/link"));
 #endif
 
-	fp = qv_view_dir(SANDBOX_PATH "/dir");
+	fp = qv_view_dir(SANDBOX_PATH "/dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);
 
 	assert_int_equal(4, nlines);

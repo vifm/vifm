@@ -20,6 +20,7 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
+#include "../../src/vcache.h"
 
 SETUP()
 {

@@ -64,9 +64,7 @@ void qv_toggle(void);
 /* Quits preview pane or view modes. */
 void qv_hide(void);
 
-/* Expands and executes viewer command.  Returns file containing results of the
- * viewer. */
-FILE * qv_execute_viewer(const char viewer[]);
+char * qv_expand_viewer(const char viewer[]);
 
 /* Performs view clearing with the given command, which can be NULL in which
  * case only internal clearing is done. */
@@ -79,7 +77,7 @@ const char * qv_get_viewer(const char path[]);
 
 /* Previews directory, actual preview is to be read from returned stream.
  * Returns the stream or NULL on error. */
-FILE * qv_view_dir(const char path[]);
+FILE * qv_view_dir(const char path[], int max_lines);
 
 /* Decides on path that should be explored when cursor points to the given
  * entry. */
@@ -90,8 +88,7 @@ void qv_get_path_to_explore(const struct dir_entry_t *entry, char buf[],
 void qv_ui_updated(void);
 
 TSTATIC_DEFS(
-	struct strlist_t;
-	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);
+	FILE * qv_execute_viewer(const char viewer[]);
 )
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */

@@ -136,7 +136,8 @@ assoc_records_t ft_get_all_viewers(const char file[]);
  * comma separated viewers. */
 void ft_set_viewers(struct matchers_t *matchers, const char viewers[]);
 
-/* Guesses kind of viewer from the invocation command.  Returns the kind. */
+/* Guesses kind of viewer from the invocation command.  The parameter can be
+ * empty or NULL in which case textual kind is implied.  Returns the kind. */
 ViewerKind ft_viewer_kind(const char viewer[]);
 
 /* Records managing. */

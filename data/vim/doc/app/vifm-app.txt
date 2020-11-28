@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Nov 17
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Nov 28
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -879,7 +879,8 @@ A                                              *vifm-q_A*
     switch to the previous viewer.  Does nothing for preview constructed
     via `%q` macro.
 i                                              *vifm-q_i*
-    toggle raw mode (ignoring of defined viewers).
+    toggle raw mode (ignoring of defined viewers).  Does nothing for preview
+    constructed via `%q` macro.
 
 
 [count]/pattern                                *vifm-q_/*

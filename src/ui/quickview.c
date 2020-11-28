@@ -36,7 +36,6 @@
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
-#include "../utils/file_streams.h"
 #include "../utils/filemon.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
@@ -50,6 +49,7 @@
 #include "../macros.h"
 #include "../status.h"
 #include "../types.h"
+#include "../vcache.h"
 #include "cancellation.h"
 #include "color_manager.h"
 #include "color_scheme.h"
@@ -68,13 +68,12 @@ typedef struct
 	char *path;        /* Full path to the file. */
 	char *viewer;      /* Viewer of the file. */
 	filemon_t filemon; /* Timestamp for the file. */
-	strlist_t lines;   /* Top MAX_PREVIEW_LINES of preview contents. */
 	preview_area_t pa; /* Where preview is being drawn. */
 	int beg_x;         /* Original x coordinate of host window. */
 	int beg_y;         /* Original y coordinate of host window. */
 	ViewerKind kind;   /* Kind of preview. */
+	int max_lines;     /* Maximum number of lines requested last time. */
 	int graphics_lost; /* Whether graphics was invalidated on the screen. */
-	int complete;      /* Cache contains complete output of the viewer. */
 }
 quickview_cache_t;
 
@@ -96,11 +95,10 @@ static void view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache);
 static int is_cache_valid(const quickview_cache_t *cache, const char path[],
 		const char viewer[], const preview_area_t *parea);
-static void fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
+static void update_cache(quickview_cache_t *cache, const char path[],
 		const char viewer[], ViewerKind kind, const preview_area_t *parea,
 		int max_lines);
-TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
-static FILE * view_dir(const char path[], int max_lines);
+static strlist_t get_lines(const quickview_cache_t *cache);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static int enter_dir(tree_print_state_t *s, const char path[], int last);
 static int visit_file(tree_print_state_t *s, const char path[], int last);
@@ -117,7 +115,7 @@ static void draw_lines(const strlist_t *lines, int wrapped,
 		const preview_area_t *parea, ViewerKind kind);
 static void write_message(const char msg[], const preview_area_t *parea);
 static void cleanup_for_text(const preview_area_t *parea);
-static char * expand_viewer_command(const char viewer[]);
+TSTATIC FILE * qv_execute_viewer(const char viewer[]);
 static void cleanup_area(const preview_area_t *parea, const char cmd[]);
 static void wipe_area(const preview_area_t *parea);
 
@@ -315,83 +313,38 @@ view_file(const char path[], const preview_area_t *parea,
 	{
 		/* Update area as we might draw preview at a different location. */
 		cache->pa = *parea;
-		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
+
+		strlist_t lines = get_lines(cache);
+		draw_lines(&lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 		return;
 	}
 
-	ViewerKind kind = VK_TEXTUAL;
-	int max_lines = MAX_PREVIEW_LINES;
+	ViewerKind kind = ft_viewer_kind(viewer);
+	int max_lines = is_dir(path) ? ui_qv_height(parea->view)
+	                             : MAX_PREVIEW_LINES;
 
-	FILE *fp;
-	if(viewer == NULL && is_dir(path))
+	/* If graphics will be displayed, clear the window and wait a bit to let
+	 * terminal emulator do actual refresh (at least some of them need this). */
+	if(kind != VK_TEXTUAL)
 	{
-		max_lines = ui_qv_height(parea->view);
-
-		ui_cancellation_push_on();
-		fp = view_dir(path, max_lines);
-		ui_cancellation_pop();
-
-		if(fp == NULL)
-		{
-			write_message("Failed to view directory", parea);
-			return;
-		}
-	}
-	else if(is_null_or_empty(viewer))
-	{
-		fp = os_fopen(path, "rb");
-		if(fp == NULL)
-		{
-			write_message("Cannot open file", parea);
-			return;
-		}
+		cleanup_area(parea, curr_stats.preview.cleanup_cmd);
+		usleep(50000);
 	}
 	else
 	{
-		kind = ft_viewer_kind(viewer);
-
-		/* If graphics will be displayed, clear the window and wait a bit to let
-		 * terminal emulator do actual refresh (at least some of them need this). */
-		if(kind != VK_TEXTUAL)
-		{
-			cleanup_area(parea, curr_stats.preview.cleanup_cmd);
-			usleep(50000);
-		}
-
-		view_t *const curr = curr_view;
-		curr_view = parea->source;
-		curr_stats.preview_hint = parea;
-		fp = qv_execute_viewer(viewer);
-		curr_stats.preview_hint = NULL;
-		curr_view = curr;
-
-		if(fp == NULL)
-		{
-			write_message("Cannot read viewer output", parea);
-			return;
-		}
-	}
-
-	ui_cancellation_push_on();
-
-	/* We want to wipe the view if it was displaying graphics, but won't anymore.
-	 * Do this only if we didn't already cleared the window. */
-	if(kind == VK_TEXTUAL)
-	{
+		/* We want to wipe the view if it was displaying graphics, but won't
+		 * anymore.  Do this only if we didn't already cleared the window. */
 		cleanup_for_text(parea);
 	}
+
 	curr_stats.preview.kind = kind;
 
 	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	fill_cache(cache, fp, path, viewer, kind, parea, max_lines);
-
-	fclose(fp);
-
-	ui_cancellation_pop();
-
-	draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
+	update_cache(cache, path, viewer, kind, parea, max_lines);
+	strlist_t lines = get_lines(cache);
+	draw_lines(&lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 }
 
 /* Checks whether data in the cache is up to date with the file on disk.
@@ -400,6 +353,12 @@ static int
 is_cache_valid(const quickview_cache_t *cache, const char path[],
 		const char viewer[], const preview_area_t *parea)
 {
+	if(cache->kind == VK_TEXTUAL)
+	{
+		/* This level of cache deals only with graphics and ignores text. */
+		return 0;
+	}
+
 	int same_viewer = (cache->viewer == NULL && viewer == NULL)
 	               || (cache->viewer != NULL && viewer != NULL &&
 	                   strcmp(cache->viewer, viewer) == 0);
@@ -411,11 +370,6 @@ is_cache_valid(const quickview_cache_t *cache, const char path[],
 			paths_are_equal(cache->path, path) &&
 			filemon_equal(&cache->filemon, &filemon))
 	{
-		if(cache->kind == VK_TEXTUAL)
-		{
-			return (cache->complete || cache->lines.nitems >= parea->h);
-		}
-
 		return !cache->graphics_lost
 		    && cache->pa.h == parea->h
 		    && cache->pa.w == parea->w
@@ -426,63 +380,53 @@ is_cache_valid(const quickview_cache_t *cache, const char path[],
 	return 0;
 }
 
-/* Fills the cache data with file's contents. */
+/* Updates cache data. */
 static void
-fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
-		const char viewer[], ViewerKind kind, const preview_area_t *parea,
-		int max_lines)
+update_cache(quickview_cache_t *cache, const char path[], const char viewer[],
+		ViewerKind kind, const preview_area_t *parea, int max_lines)
 {
-	filemon_t filemon;
-	(void)filemon_from_file(path, FMT_MODIFIED, &filemon);
-	filemon_assign(&cache->filemon, &filemon);
+	(void)filemon_from_file(path, FMT_MODIFIED, &cache->filemon);
 
 	replace_string(&cache->path, path);
 	update_string(&cache->viewer, viewer);
-
-	free_string_array(cache->lines.items, cache->lines.nitems);
-	cache->lines = read_lines(fp, max_lines, &cache->complete);
 
 	cache->pa = *parea;
 	cache->beg_x = getbegx(parea->view->win);
 	cache->beg_y = getbegy(parea->view->win);
 	cache->kind = kind;
+	cache->max_lines = max_lines;
 	cache->graphics_lost = 0;
 }
 
-/* Reads at most max_lines from the stream ignoring BOM.  Returns the lines
- * read. */
-TSTATIC strlist_t
-read_lines(FILE *fp, int max_lines, int *complete)
+/* Retrieves lines to be printed.  Returns the lines. */
+static strlist_t
+get_lines(const quickview_cache_t *cache)
 {
-	strlist_t lines = {};
-	skip_bom(fp);
+	view_t *curr = curr_view;
+	curr_view = cache->pa.source;
+	curr_stats.preview_hint = &cache->pa;
 
-	char *next_line;
-	while(lines.nitems < max_lines && (next_line = read_line(fp, NULL)) != NULL)
+	const char *error;
+
+	char *expanded = (cache->viewer == NULL) ? NULL
+	                                         : qv_expand_viewer(cache->viewer);
+	strlist_t lines = vcache_lookup(cache->path, expanded, cache->kind,
+			cache->max_lines, &error);
+	free(expanded);
+
+	if(error != NULL)
 	{
-		const int old_len = lines.nitems;
-		lines.nitems = put_into_string_array(&lines.items, lines.nitems, next_line);
-		if(lines.nitems == old_len)
-		{
-			free(next_line);
-			break;
-		}
+		lines.nitems = add_to_string_array(&lines.items, lines.nitems, error);
 	}
 
-	*complete = (next_line == NULL);
+	curr_stats.preview_hint = NULL;
+	curr_view = curr;
+
 	return lines;
 }
 
 FILE *
-qv_view_dir(const char path[])
-{
-	return view_dir(path, INT_MAX);
-}
-
-/* Previews directory, actual preview is to be read from returned stream.
- * Returns the stream or NULL on error. */
-static FILE *
-view_dir(const char path[], int max_lines)
+qv_view_dir(const char path[], int max_lines)
 {
 	FILE *fp = os_tmpfile();
 
@@ -790,13 +734,15 @@ qv_hide(void)
 	}
 }
 
-FILE *
+/* Expands and executes viewer command.  Returns file containing results of the
+ * viewer. */
+TSTATIC FILE *
 qv_execute_viewer(const char viewer[])
 {
 	FILE *fp;
 	char *expanded;
 
-	expanded = expand_viewer_command(viewer);
+	expanded = qv_expand_viewer(viewer);
 	fp = read_cmd_output(expanded, 0);
 	free(expanded);
 
@@ -805,8 +751,8 @@ qv_execute_viewer(const char viewer[])
 
 /* Returns a pointer to newly allocated memory, which should be released by the
  * caller. */
-static char *
-expand_viewer_command(const char viewer[])
+char *
+qv_expand_viewer(const char viewer[])
 {
 	char *result;
 	if(strchr(viewer, '%') == NULL)

@@ -53,9 +53,7 @@ TEST(equal_after_assignment)
 	filemon_t mon1;
 	filemon_from_file(TEST_DATA_PATH "/existing-files/a", FMT_MODIFIED, &mon1);
 
-	filemon_t mon2;
-	filemon_assign(&mon2, &mon1);
-
+	filemon_t mon2 = mon1;
 	assert_true(filemon_equal(&mon1, &mon2));
 }
 

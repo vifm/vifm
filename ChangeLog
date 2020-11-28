@@ -30,6 +30,11 @@
 
 	Made it possible to build AppImage for Vifm.  Patch by michaellee8.
 
+	Started using quickview's cache in view mode.
+
+	Extended cache of viewer's output to contain multiple entries (initial
+	version of the cache was added to skip redrawing graphics).
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
@@ -43,6 +48,8 @@
 	Fixed information about implicit file selection (count or ranges) being
 	lost due to the use of expand() builtin function in 'statusline'.  Thanks
 	to DieSpinne.
+
+	Fixed presence of %q macro causing second round of macro expansion.
 
 0.11-beta to 0.11 (2020-09-24)
 

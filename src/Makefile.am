@@ -310,6 +310,7 @@ vifm_SOURCES = \
 	trash.c trash.h \
 	types.c types.h \
 	undo.c undo.h \
+	vcache.c vcache.h \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
 	vifm.c vifm.h

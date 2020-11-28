@@ -297,7 +297,7 @@ fswatch_changed(fswatch_t *w, int *error)
 	*error = 0;
 	changed = !filemon_equal(&w->filemon, &filemon);
 
-	filemon_assign(&w->filemon, &filemon);
+	w->filemon = filemon;
 
 	return changed;
 }

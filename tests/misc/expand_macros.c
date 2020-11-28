@@ -634,8 +634,8 @@ TEST(preview_macros_use_hint)
 
 	curr_stats.preview_hint = &parea;
 
-	char *expanded = ma_expand("draw %pw %ph", "", NULL, 0);
-	assert_string_equal("draw 3 4", expanded);
+	char *expanded = ma_expand("draw %pw %ph %px %py", "", NULL, 0);
+	assert_string_equal("draw 3 4 0 1", expanded);
 	free(expanded);
 
 	curr_stats.preview_hint = NULL;
