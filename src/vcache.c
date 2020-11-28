@@ -18,11 +18,12 @@
 
 #include "vcache.h"
 
-#include <string.h> /* strcmp() */
+#include <string.h> /* memmove() memset() strcmp() */
 
 #include "compat/os.h"
 #include "ui/cancellation.h"
 #include "ui/quickview.h"
+#include "utils/darray.h"
 #include "utils/file_streams.h"
 #include "utils/filemon.h"
 #include "utils/fs.h"
@@ -44,7 +45,11 @@ typedef struct
 }
 vcache_entry_t;
 
-TSTATIC void vcache_reset(void);
+static vcache_entry_t * find_cache_entry(const char full_path[],
+		const char viewer[], int max_lines);
+static vcache_entry_t * alloc_cache_entry(void);
+TSTATIC void vcache_reset(int max_size);
+static void free_cache_entry(vcache_entry_t *centry);
 static int is_cache_match(const vcache_entry_t *centry, const char path[],
 		const char viewer[]);
 static int is_cache_valid(const vcache_entry_t *centry, const char path[],
@@ -55,8 +60,12 @@ static strlist_t get_data(const char full_path[], const char viewer[],
 		int max_lines, int *complete, const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
-/* Cache of viewers' output. */
-static vcache_entry_t cache;
+/* Cache of viewers' output.  Most recent entry is the last one. */
+static vcache_entry_t *cache;
+/* Declarations to enable use of DA_* on cache. */
+static DA_INSTANCE(cache);
+/* Maximum number of allocated cache entries. */
+static size_t max_cache_entries = 100U;
 
 strlist_t
 vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
@@ -75,20 +84,96 @@ vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
 		return non_cache;
 	}
 
-	if(!is_cache_match(&cache, full_path, viewer) ||
-			!is_cache_valid(&cache, full_path, viewer, max_lines))
+	vcache_entry_t *centry = find_cache_entry(full_path, viewer, max_lines);
+	if(centry != NULL && is_cache_valid(centry, full_path, viewer, max_lines))
 	{
-		update_cache_entry(&cache, full_path, viewer, max_lines, error);
+		return centry->lines;
 	}
 
-	return cache.lines;
+	if(centry == NULL)
+	{
+		centry = alloc_cache_entry();
+		if(centry == NULL)
+		{
+			*error = "Failed to allocate cache entry";
+			strlist_t empty_list = {};
+			return empty_list;
+		}
+	}
+
+	update_cache_entry(centry, full_path, viewer, max_lines, error);
+	return centry->lines;
 }
 
-/* Invalidates all cache entries. */
-TSTATIC void
-vcache_reset(void)
+/* Looks up existing cache entry that matches specified set of parameters.
+ * Returns the entry or NULL. */
+static vcache_entry_t *
+find_cache_entry(const char full_path[], const char viewer[], int max_lines)
 {
-	update_string(&cache.path, NULL);
+	size_t i;
+	for(i = 0U; i < DA_SIZE(cache); ++i)
+	{
+		if(is_cache_match(&cache[i], full_path, viewer))
+		{
+			return &cache[i];
+		}
+	}
+	return NULL;
+}
+
+/* Allocates a zero-initialized cache entry.  When cache size limit is reached
+ * older cache entries are reused.  Returns the entry or NULL. */
+static vcache_entry_t *
+alloc_cache_entry(void)
+{
+	if(DA_SIZE(cache) < max_cache_entries)
+	{
+		vcache_entry_t *centry = DA_EXTEND(cache);
+		if(centry != NULL)
+		{
+			memset(centry, 0, sizeof(*centry));
+			DA_COMMIT(cache);
+			return centry;
+		}
+	}
+
+	if(DA_SIZE(cache) == 0U)
+	{
+		return NULL;
+	}
+
+	free_cache_entry(&cache[0]);
+	memmove(cache, cache + 1, sizeof(*cache)*(DA_SIZE(cache) - 1U));
+
+	vcache_entry_t *centry = &cache[DA_SIZE(cache) - 1U];
+	memset(centry, 0, sizeof(*centry));
+	return centry;
+}
+
+/* Invalidates all cache entries and changes size limit. */
+TSTATIC void
+vcache_reset(int max_size)
+{
+	size_t i;
+	for(i = 0U; i < DA_SIZE(cache); ++i)
+	{
+		free_cache_entry(&cache[i]);
+	}
+	DA_REMOVE_ALL(cache);
+
+	max_cache_entries = max_size;
+}
+
+/* Frees resources of a cache entry. */
+static void
+free_cache_entry(vcache_entry_t *centry)
+{
+	update_string(&centry->path, NULL);
+	update_string(&centry->viewer, NULL);
+
+	free_string_array(centry->lines.items, centry->lines.nitems);
+	centry->lines.items = NULL;
+	centry->lines.nitems = 0;
 }
 
 /* Checks whether cache entry matches specified file and viewer.  Returns

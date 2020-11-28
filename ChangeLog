@@ -32,6 +32,9 @@
 
 	Started using quickview's cache in view mode.
 
+	Extended cache of viewer's output to contain multiple entries (initial
+	version of the cache was added to skip redrawing graphics).
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
