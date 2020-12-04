@@ -51,6 +51,9 @@
 
 	Fixed presence of %q macro causing second round of macro expansion.
 
+	Fixed quickview not being redrawn after leaving File Info dialog or more
+	mode.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

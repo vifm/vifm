@@ -65,7 +65,6 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
 static view_t *view;
-static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
 	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "hide file info"}},
@@ -103,8 +102,6 @@ modfinfo_enter(view_t *v)
 	view = v;
 	ui_setup_for_menu_like();
 	modfinfo_redraw();
-
-	was_redraw = 0;
 }
 
 void
@@ -117,16 +114,7 @@ static void
 leave_file_info_mode(void)
 {
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
-
-	if(was_redraw)
-	{
-		update_screen(UT_FULL);
-	}
-	else
-	{
-		ui_view_title_update(curr_view);
-		update_all_windows();
-	}
+	stats_redraw_later();
 }
 
 void
@@ -217,8 +205,6 @@ modfinfo_redraw(void)
 	wprint(menu_win, " File Information ");
 	ui_refresh_win(menu_win);
 	checked_wmove(menu_win, 2, 2);
-
-	was_redraw = 1;
 }
 
 /* Prints item prefixed with a label truncating the item if it's too long.
