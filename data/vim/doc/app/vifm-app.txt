@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Nov 28
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Dec 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -907,7 +907,7 @@ i                                              *vifm-q_i*
 
 v                                              *vifm-q_v*
     invoke an editor to edit the current file being viewed.  The command for
-    editing is taken from the |vifm-'vicmd'|/|vifm-'vixcmd'| option value and
+    editing is taken from the |vifm-'vicmd'| or |vifm-'vixcmd'| option value and
     extended with middle line number prepended by a plus sign and name of the
     current file.
 
