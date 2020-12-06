@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 4, 2020" "vifm 0.11"
+.TH VIFM 1 "December 6, 2020" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4244,6 +4244,21 @@ default: 4
 scope: local
 .br
 Minimal number of characters for line number field.
+.TP
+.BI "'previewoptions'"
+type: string list
+.br
+default: "graphicsdelay:50000"
+.br
+
+Tweaks how previewing is done (in quick view, miller view's column and
+view mode).
+
+  item                default  meaning
+  graphicsdelay:num   0        delay before drawing graphics (microseconds)
+
+graphicsdelay is needed if terminal requires some timeout before it can
+draw graphics (otherwise it gets lost).
 .TP
 .BI "'previewprg'"
 type: string

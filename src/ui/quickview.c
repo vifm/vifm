@@ -328,7 +328,7 @@ view_file(const char path[], const preview_area_t *parea,
 	if(kind != VK_TEXTUAL)
 	{
 		cleanup_area(parea, curr_stats.preview.cleanup_cmd);
-		usleep(50000);
+		usleep(cfg.graphics_delay);
 	}
 	else
 	{

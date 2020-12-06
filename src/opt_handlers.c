@@ -92,6 +92,7 @@ static void init_lsoptions(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_milleroptions(optval_t *val);
 static void init_millerview(optval_t *val);
+static void init_previewoptions(optval_t *val);
 static void init_quickview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_sizefmt(optval_t *val);
@@ -147,6 +148,7 @@ static void mediaprg_handler(OPT_OP op, optval_t val);
 #endif
 static void mintimeoutlen_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(view_t *view);
+static void previewoptions_handler(OPT_OP op, optval_t val);
 static void quickview_handler(OPT_OP op, optval_t val);
 static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
@@ -326,6 +328,11 @@ ARRAY_GUARD(histcursor_vals, NUM_CHPOS);
 /* Possible keys of 'lsoptions' option. */
 static const char *lsoptions_enum[][2] = {
 	{ "transposed", "fill grid by column instead of by line" },
+};
+
+/* Possible values of 'previewoptions'. */
+static const char *previewoptions_vals[][2] = {
+	{ "graphicsdelay:", "delay before drawing graphics" },
 };
 
 /* Possible values of 'suggestoptions'. */
@@ -700,6 +707,11 @@ options[] = {
 	{ "mintimeoutlen", "", "delay between input polls",
 	  OPT_INT, 0, NULL, &mintimeoutlen_handler, NULL,
 	  { .ref.int_val = &cfg.min_timeout_len },
+	},
+	{ "previewoptions", "", "tweaks for how preview is done",
+	  OPT_STRLIST, ARRAY_LEN(previewoptions_vals), previewoptions_vals,
+		&previewoptions_handler, NULL,
+	  { .init = &init_previewoptions },
 	},
 	{ "quickview", "", "whether quick view is active",
 	  OPT_BOOL, 0, NULL, &quickview_handler, NULL,
@@ -1156,6 +1168,20 @@ static void
 init_millerview(optval_t *val)
 {
 	val->bool_val = curr_view->miller_view_g;
+}
+
+/* Initializes 'previewoptions' option from global state. */
+static void
+init_previewoptions(optval_t *val)
+{
+	static char buf[64];
+	buf[0] = '\0';
+
+	if(cfg.graphics_delay != 0)
+	{
+		snprintf(buf, sizeof(buf), "graphicsdelay:%d", cfg.graphics_delay);
+	}
+	val->str_val = buf;
 }
 
 /* Initializes 'quickview' option from global state. */
@@ -2237,6 +2263,54 @@ scroll_line_down(view_t *view)
 		draw_dir_list(view);
 	}
 	wresize(view->win, view->window_rows, view->window_cols);
+}
+
+/* Handles updates of the 'previewoptions' option. */
+static void
+previewoptions_handler(OPT_OP op, optval_t val)
+{
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	int graphics_delay = 0;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(starts_with_lit(part, "graphicsdelay:"))
+		{
+			const char *const num = after_first(part, ':');
+			if(!read_int(num, &graphics_delay))
+			{
+				vle_tb_append_linef(vle_err,
+						"Failed to parse \"graphicsdelay\" value: %s", num);
+				break;
+			}
+			if(graphics_delay < 0)
+			{
+				vle_tb_append_linef(vle_err,
+						"\"graphicsdelay\" can't be negative, got: %s", num);
+				break;
+			}
+		}
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err,
+					"Unknown key for 'previewoptions' option: %s", part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		cfg.graphics_delay = graphics_delay;
+	}
+
+	/* In case of error, restore previous value, otherwise reload it anyway to
+	 * remove any duplicates. */
+	init_previewoptions(&val);
+	vle_opts_assign("previewoptions", val, OPT_GLOBAL);
 }
 
 /* Handles switch that controls visibility of quick view. */

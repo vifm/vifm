@@ -17,6 +17,9 @@
 	Added a and A view mode keys that switch to next and previous viewer of
 	current file correspondingly.  Thanks to j-xella.
 
+	Added 'previewoptions' option to allow tweaking delay for graphics
+	preview.  Thanks to Joshua Jensch (a.k.a., patroclos).
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

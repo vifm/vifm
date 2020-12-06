@@ -1112,7 +1112,7 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	{
 		/* Wait a bit to let terminal emulator do actual refresh (at least some of
 		 * them need this). */
-		usleep(50000);
+		usleep(cfg.graphics_delay);
 	}
 
 	const char *error;

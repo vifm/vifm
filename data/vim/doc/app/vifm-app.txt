@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Dec 4
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Dec 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3558,6 +3558,22 @@ default: 4
 scope: local
 
 Minimal number of characters for line number field.
+
+                                               *vifm-'previewoptions'*
+previewoptions
+type: string list
+default: "graphicsdelay:50000"
+
+Tweaks how previewing is done (in quick view, miller view's column and
+view mode).
+
+    item                default  meaning ~
+    graphicsdelay:num   0        delay before drawing graphics (microseconds)
+
+graphicsdelay is needed if terminal requires some timeout before it can
+draw graphics (otherwise it gets lost).
+
+Default value is used when item is missing from the option.
 
                                                *vifm-'previewprg'*
 previewprg
