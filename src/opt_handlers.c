@@ -778,7 +778,7 @@ options[] = {
 	  OPT_STR, 0, NULL, &statusline_handler, NULL,
 	  { .ref.str_val = &cfg.status_line },
 	},
-	{ "suggestoptions", "", "when to display key suggestions",
+	{ "suggestoptions", "", "when and how to display key suggestions",
 	  OPT_STRLIST, ARRAY_LEN(suggestoptions_vals), suggestoptions_vals,
 		&suggestoptions_handler, NULL,
 	  { .ref.str_val = &empty },
