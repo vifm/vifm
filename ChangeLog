@@ -17,6 +17,9 @@
 	Added a and A view mode keys that switch to next and previous viewer of
 	current file correspondingly.  Thanks to j-xella.
 
+	Added 'previewoptions' option to allow tweaking graphics preview a bit.
+	Thanks to Joshua Jensch (a.k.a., patroclos) and flux242.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
@@ -50,6 +53,9 @@
 	to DieSpinne.
 
 	Fixed presence of %q macro causing second round of macro expansion.
+
+	Fixed quickview not being redrawn after leaving File Info dialog or more
+	mode.
 
 0.11-beta to 0.11 (2020-09-24)
 

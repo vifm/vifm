@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 3 September, 2020
+" This file last updated: 4 December, 2020
 
 highlight clear
 
@@ -88,5 +88,5 @@ highlight {*.sh,*.bash,*.zsh,*.bat,*.btm,*.cmd,*.com,*.dll,*.exe,*.run,*.msu,
 highlight {*.patch,*.diff,*.py,*.cpp,*.hpp,*.mk,*.c,*.h,*.cpp,*.hpp,*.cc,*.hs,
           \*.php,*.lua,*.vim,*.vifm,*.asm,*.s,*.java,*.cxx,*.c++,*.go,
           \*.pl,*.pm,*.t,*.cs,*.asp,*.dart,*.js,*.rb,*.scala,*.ts,*.coffee,
-          \*.ml,*.mli,*.rs,*.sql,*.qml,vifmrc,vimrc,.vimrc}
+          \*.ml,*.mli,*.rs,*.sql,*.qml,vifmrc,vimrc,.vimrc,*.flex,*.ypp}
         \ cterm=none ctermfg=193 ctermbg=default

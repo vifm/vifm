@@ -186,7 +186,7 @@ setup_signals(void)
 
 	/* Assumption: we work under shell with job control support.  If it's not the
 	 * case, this code enables handling of terminal related signals the shell
-	 * wanted us to have disabled (e.g. the app will catch Ctrl-C send to another
+	 * wanted us to have disabled (e.g., the app will catch Ctrl-C sent to another
 	 * process). */
 
 	sigaction(SIGCHLD, &handle_signal_action, NULL);

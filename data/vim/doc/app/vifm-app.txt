@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Nov 28
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Dec 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -907,7 +907,7 @@ i                                              *vifm-q_i*
 
 v                                              *vifm-q_v*
     invoke an editor to edit the current file being viewed.  The command for
-    editing is taken from the |vifm-'vicmd'|/|vifm-'vixcmd'| option value and
+    editing is taken from the |vifm-'vicmd'| or |vifm-'vixcmd'| option value and
     extended with middle line number prepended by a plus sign and name of the
     current file.
 
@@ -3558,6 +3558,27 @@ default: 4
 scope: local
 
 Minimal number of characters for line number field.
+
+                                               *vifm-'previewoptions'*
+previewoptions
+type: string list
+default: "graphicsdelay:50000"
+
+Tweaks how previewing is done (in quick view, miller view's column and
+view mode).
+
+    item               default  meaning ~
+    graphicsdelay:num  0        delay before drawing graphics (microseconds)
+    hardgraphicsclear  unset    redraw screen to get rid of graphics
+
+graphicsdelay is needed if terminal requires some timeout before it can
+draw graphics (otherwise it gets lost).
+
+hardgraphicsclear seems to be necessary to get rid of sixel graphics in some
+terminals, where it otherwise lingers.  This can cause flicker on the screen
+due to erasure followed by redrawing.
+
+Default value is used when item is missing from the option.
 
                                                *vifm-'previewprg'*
 previewprg

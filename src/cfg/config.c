@@ -192,6 +192,9 @@ cfg_init(void)
 
 	cfg.chase_links = 0;
 
+	cfg.graphics_delay = 50000;
+	cfg.hard_graphics_clear = 0;
+
 	cfg.timeout_len = 1000;
 	cfg.min_timeout_len = 150;
 

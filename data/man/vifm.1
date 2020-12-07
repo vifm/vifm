@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 28, 2020" "vifm 0.11"
+.TH VIFM 1 "December 7, 2020" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1027,7 +1027,7 @@ scroll to the beginning of the file (or N percent into file).
 .TP
 .BI v
 invoke an editor to edit the current file being viewed.  The command for editing
-is taken from the 'vicmd'/'vixcmd' option value and extended with middle line
+is taken from the 'vicmd' or 'vixcmd' option value and extended with middle line
 number prepended by a plus sign and name of the current file.
 .LP
 All "Ctrl-W x" keys work the same was as in Normal mode.  Active mode is
@@ -4244,6 +4244,26 @@ default: 4
 scope: local
 .br
 Minimal number of characters for line number field.
+.TP
+.BI "'previewoptions'"
+type: string list
+.br
+default: "graphicsdelay:50000"
+.br
+
+Tweaks how previewing is done (in quick view, miller view's column and
+view mode).
+
+  item               default  meaning
+  graphicsdelay:num  0        delay before drawing graphics (microseconds)
+  hardgraphicsclear  unset    redraw screen to get rid of graphics
+
+graphicsdelay is needed if terminal requires some timeout before it can
+draw graphics (otherwise it gets lost).
+
+hardgraphicsclear seems to be necessary to get rid of sixel graphics in some
+terminals, where it otherwise lingers.  This can cause flicker on the screen
+due to erasure followed by redrawing.
 .TP
 .BI "'previewprg'"
 type: string

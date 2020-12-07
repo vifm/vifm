@@ -30,7 +30,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* pclose() popen() snprintf() */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strchr() strcmp() strcspn() strcasecmp() strcpy()
                        strdup() strlen() strrchr() */

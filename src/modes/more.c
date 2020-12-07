@@ -60,9 +60,6 @@ static void goto_vline(int line);
 static void goto_vline_below(int by);
 static void goto_vline_above(int by);
 
-/* Whether UI was redrawn while this mode was active. */
-static int was_redraw;
-
 /* Text displayed by the mode. */
 static char *text;
 /* (first virtual line, screen width, offset in text) triples per real line. */
@@ -134,7 +131,6 @@ modmore_enter(const char txt[])
 	vle_mode_set(MORE_MODE, VMT_PRIMARY);
 
 	modmore_redraw();
-	was_redraw = 0;
 }
 
 void
@@ -186,15 +182,7 @@ leave_more_mode(void)
 	data = NULL;
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
-
-	if(was_redraw)
-	{
-		update_screen(UT_FULL);
-	}
-	else
-	{
-		update_all_windows();
-	}
+	stats_redraw_later();
 }
 
 void
@@ -213,8 +201,6 @@ modmore_redraw(void)
 
 	draw_all(get_text_beginning());
 	checked_wmove(menu_win, 0, 0);
-
-	was_redraw = 1;
 }
 
 /* Retrieves beginning of the text that should be displayed.  Returns the
@@ -261,8 +247,6 @@ draw_all(const char text[])
 
 	/* Apply all changes. */
 	doupdate();
-
-	was_redraw = 1;
 }
 
 /* Leaves the mode. */

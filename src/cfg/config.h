@@ -295,6 +295,11 @@ typedef struct config_t
 	 * link expanded). */
 	int chase_links;
 
+	/* Delay before redrawing graphics in microseconds. */
+	int graphics_delay;
+	/* Redraw screen to get rid of graphics. */
+	int hard_graphics_clear;
+
 	int timeout_len;     /* Maximum period on waiting for the input. */
 	int min_timeout_len; /* Minimum period on waiting for the input. */
 
