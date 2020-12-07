@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 6, 2020" "vifm 0.11"
+.TH VIFM 1 "December 7, 2020" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4254,11 +4254,16 @@ default: "graphicsdelay:50000"
 Tweaks how previewing is done (in quick view, miller view's column and
 view mode).
 
-  item                default  meaning
-  graphicsdelay:num   0        delay before drawing graphics (microseconds)
+  item               default  meaning
+  graphicsdelay:num  0        delay before drawing graphics (microseconds)
+  hardgraphicsclear  unset    redraw screen to get rid of graphics
 
 graphicsdelay is needed if terminal requires some timeout before it can
 draw graphics (otherwise it gets lost).
+
+hardgraphicsclear seems to be necessary to get rid of sixel graphics in some
+terminals, where it otherwise lingers.  This can cause flicker on the screen
+due to erasure followed by redrawing.
 .TP
 .BI "'previewprg'"
 type: string

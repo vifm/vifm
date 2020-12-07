@@ -332,7 +332,8 @@ static const char *lsoptions_enum[][2] = {
 
 /* Possible values of 'previewoptions'. */
 static const char *previewoptions_vals[][2] = {
-	{ "graphicsdelay:", "delay before drawing graphics" },
+	{ "graphicsdelay:",    "delay before drawing graphics" },
+	{ "hardgraphicsclear", "redraw screen to get rid of graphics" },
 };
 
 /* Possible values of 'suggestoptions'. */
@@ -1175,12 +1176,20 @@ static void
 init_previewoptions(optval_t *val)
 {
 	static char buf[64];
+
+	size_t len = 0U;
 	buf[0] = '\0';
 
+	if(cfg.hard_graphics_clear)
+	{
+		(void)sstrappend(buf, &len, sizeof(buf), "hardgraphicsclear");
+	}
 	if(cfg.graphics_delay != 0)
 	{
-		snprintf(buf, sizeof(buf), "graphicsdelay:%d", cfg.graphics_delay);
+		snprintf(buf + len, sizeof(buf) - len, "graphicsdelay:%d",
+				cfg.graphics_delay);
 	}
+
 	val->str_val = buf;
 }
 
@@ -2273,6 +2282,7 @@ previewoptions_handler(OPT_OP op, optval_t val)
 	char *part = new_val, *state = NULL;
 
 	int graphics_delay = 0;
+	int hard_graphics_clear = 0;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -2292,6 +2302,10 @@ previewoptions_handler(OPT_OP op, optval_t val)
 				break;
 			}
 		}
+		else if(strcmp(part, "hardgraphicsclear") == 0)
+		{
+			hard_graphics_clear = 1;
+		}
 		else
 		{
 			break_at(part, ':');
@@ -2305,6 +2319,7 @@ previewoptions_handler(OPT_OP op, optval_t val)
 	if(part == NULL)
 	{
 		cfg.graphics_delay = graphics_delay;
+		cfg.hard_graphics_clear = hard_graphics_clear;
 	}
 
 	/* In case of error, restore previous value, otherwise reload it anyway to

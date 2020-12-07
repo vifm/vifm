@@ -815,6 +815,12 @@ cleanup_area(const preview_area_t *parea, const char cmd[])
 static void
 wipe_area(const preview_area_t *parea)
 {
+	if(cfg.hard_graphics_clear)
+	{
+		wclear(parea->view->win);
+		return;
+	}
+
 	/* User doesn't need to see fake filling so draw it with the color of
 	 * background. */
 	col_attr_t col = { .fg = parea->def_col.fg, .bg = parea->def_col.bg };

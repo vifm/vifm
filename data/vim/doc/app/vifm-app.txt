@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Dec 6
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Dec 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3567,11 +3567,16 @@ default: "graphicsdelay:50000"
 Tweaks how previewing is done (in quick view, miller view's column and
 view mode).
 
-    item                default  meaning ~
-    graphicsdelay:num   0        delay before drawing graphics (microseconds)
+    item               default  meaning ~
+    graphicsdelay:num  0        delay before drawing graphics (microseconds)
+    hardgraphicsclear  unset    redraw screen to get rid of graphics
 
 graphicsdelay is needed if terminal requires some timeout before it can
 draw graphics (otherwise it gets lost).
+
+hardgraphicsclear seems to be necessary to get rid of sixel graphics in some
+terminals, where it otherwise lingers.  This can cause flicker on the screen
+due to erasure followed by redrawing.
 
 Default value is used when item is missing from the option.
 
