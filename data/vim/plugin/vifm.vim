@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 November 21
+" Last Change: 2020 December 10
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -84,6 +84,8 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 		return
 	endif
 
+	let embed = has('nvim') || exists('*term_start') && g:vifm_embed_term
+
 	let ldir = (a:0 > 0) ? a:1 : expand('%:p:h')
 	let ldir = s:PreparePath(ldir)
 	let rdir = (a:0 > 1) ? a:2 : ''
@@ -106,11 +108,11 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 	    \ '+command SplitVim  :let $VIFM_OPEN_TYPE=''split''' . edit,
 	    \ '+command DiffVim   :let $VIFM_OPEN_TYPE=''vert diffsplit''' . edit,
 	    \ '+command TabVim    :let $VIFM_OPEN_TYPE='''.s:tab_drop_cmd."'" . edit]
-	call map(pickargs, 'shellescape(v:val)')
+	call map(pickargs, embed ? 'shellescape(v:val)' : 'shellescape(v:val, 1)')
 	let pickargsstr = join(pickargs, ' ')
 
 	" Use embedded terminal if available.
-	if has('nvim') || exists('*term_start') && g:vifm_embed_term
+	if embed
 		let [cwdf, cwdjob] = s:StartCwdJob()
 
 		if cwdf != ''
