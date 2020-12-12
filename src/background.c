@@ -136,6 +136,7 @@ static void make_current_job_key(void);
 #ifdef _WIN32
 static int query_win_code(bg_job_t *job);
 #endif
+static void mark_job_finished(bg_job_t *job, int exit_code);
 static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
@@ -1220,10 +1221,7 @@ background_task_bootstrap(void *arg)
 	task_args->func(&task_args->job->bg_op, task_args->args);
 
 	/* Mark task as finished normally. */
-	pthread_spin_lock(&task_args->job->status_lock);
-	task_args->job->running = 0;
-	task_args->job->exit_code = 0;
-	pthread_spin_unlock(&task_args->job->status_lock);
+	mark_job_finished(task_args->job, 0);
 
 	free(task_args);
 
@@ -1366,7 +1364,7 @@ bg_job_wait(bg_job_t *job)
 		{
 			int exit_code = (status != -1 && WIFEXITED(status)) ? WEXITSTATUS(status)
 			                                                    : -1;
-			bg_process_finished_cb(job->pid, exit_code);
+			mark_job_finished(job, exit_code);
 		}
 #else
 		if(WaitForSingleObject(job->hprocess, INFINITE) != WAIT_OBJECT_0)
@@ -1395,16 +1393,23 @@ query_win_code(bg_job_t *job)
 	{
 		if(retcode != STILL_ACTIVE)
 		{
-			pthread_spin_lock(&job->status_lock);
-			job->exit_code = retcode;
-			job->running = 0;
-			pthread_spin_unlock(&job->status_lock);
+			mark_job_finished(job, retcode);
 			return 0;
 		}
 	}
 	return 1;
 }
 #endif
+
+/* Marks job as finished with the specified exit code. */
+static void
+mark_job_finished(bg_job_t *job, int exit_code)
+{
+	pthread_spin_lock(&job->status_lock);
+	job->running = 0;
+	job->exit_code = exit_code;
+	pthread_spin_unlock(&job->status_lock);
+}
 
 void
 bg_job_incref(bg_job_t *job)
