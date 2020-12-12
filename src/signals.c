@@ -42,9 +42,6 @@ static void _gnuc_noreturn shutdown_nicely(int sig, const char descr[]);
 
 #ifndef _WIN32
 
-#include <sys/types.h> /* pid_t */
-#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
-
 #include <stdlib.h> /* EXIT_FAILURE _Exit() */
 
 #include "utils/macros.h"
@@ -76,27 +73,6 @@ received_sigcont(void)
 }
 
 static void
-received_sigchld(void)
-{
-	int status;
-	pid_t pid;
-
-	/* This needs to be a loop in case of multiple blocked signals. */
-	while((pid = waitpid(-1, &status, WNOHANG)) > 0)
-	{
-		if(WIFEXITED(status))
-		{
-			bg_process_finished_cb(pid, WEXITSTATUS(status));
-		}
-		else if(WIFSIGNALED(status))
-		{
-			/* Child was terminated by a signal. */
-			bg_process_finished_cb(pid, -1);
-		}
-	}
-}
-
-static void
 handle_signal(int sig)
 {
 	/* Try to not change errno value in the main program. */
@@ -106,9 +82,6 @@ handle_signal(int sig)
 	{
 		case SIGINT:
 			ui_cancellation_request();
-			break;
-		case SIGCHLD:
-			received_sigchld();
 			break;
 		case SIGWINCH:
 			received_sigwinch();
@@ -189,7 +162,6 @@ setup_signals(void)
 	 * wanted us to have disabled (e.g., the app will catch Ctrl-C sent to another
 	 * process). */
 
-	sigaction(SIGCHLD, &handle_signal_action, NULL);
 	sigaction(SIGHUP, &handle_signal_action, NULL);
 	sigaction(SIGINT, &handle_signal_action, NULL);
 	sigaction(SIGQUIT, &handle_signal_action, NULL);

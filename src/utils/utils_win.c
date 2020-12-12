@@ -129,12 +129,6 @@ wait_for_data_from(pid_t pid, FILE *f, int fd,
 	/* Do nothing.  No need to wait for anything on this platform. */
 }
 
-int
-set_sigchld(int block)
-{
-	return 0;
-}
-
 void
 block_all_thread_signals(void)
 {

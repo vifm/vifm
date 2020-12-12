@@ -106,7 +106,7 @@ bg_job_t;
 /* Background task entry point function signature. */
 typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 
-/* List of background jobs.  Use bg_jobs_freeze() before accessing it. */
+/* List of background jobs. */
 extern bg_job_t *bg_jobs;
 
 /* Prepare background unit for the work. */
@@ -136,10 +136,6 @@ int bg_and_wait_for_errors(char cmd[],
  * non-*nix like systems) or (pid_t)-1 on error. */
 pid_t bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
 
-/* Callback-like function that marks background job specified by its process id,
- * which is finished with the exit_code. */
-void bg_process_finished_cb(pid_t pid, int exit_code);
-
 /* Checks status of background jobs (their streams and state).  Removes finished
  * ones from the list, displays any pending error messages, corrects job bar if
  * needed. */
@@ -154,14 +150,6 @@ int bg_execute(const char descr[], const char op_descr[], int total,
  * jobs or tasks (important_only is zero) running in background.  External
  * applications whose state is tracked are always ignored by this function. */
 int bg_has_active_jobs(int important_only);
-
-/* Performs preparations necessary for safe access of the bg_jobs list.  Effect
- * of calling this function must be reverted by calling bg_jobs_unfreeze().
- * Returns zero on success, otherwise non-zero is returned. */
-int bg_jobs_freeze(void);
-
-/* Undoes changes made by bg_jobs_freeze(). */
-void bg_jobs_unfreeze(void);
 
 /* Cancels the job.  Returns non-zero if job wasn't cancelled before, but is
  * after this call, otherwise zero is returned. */

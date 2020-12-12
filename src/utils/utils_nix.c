@@ -34,7 +34,7 @@
 #include <sys/stat.h> /* O_* S_* */
 #include <sys/statvfs.h> /* statvfs statvfs() */
 #include <sys/time.h> /* timeval futimens() utimes() */
-#include <sys/wait.h> /* waitpid */
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
 #include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() getgrgid_r() */
 #include <pthread.h> /* pthread_sigmask() */
@@ -45,8 +45,8 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* EINTR ENOTSUP errno */
-#include <signal.h> /* SIG* SIG_* sigset_t kill() sigaddset() sigemptyset()
-                       sigfillset() signal() sigprocmask() */
+#include <signal.h> /* SIG* SIG_* sigset_t kill() sigemptyset() sigfillset()
+                       signal() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE stderr fclose() fdopen() fprintf() snprintf() */
 #include <stdlib.h> /* atoi() free() */
@@ -126,23 +126,16 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 	new.sa_flags = SA_RESTART;
 	sigaction(SIGTSTP, &new, &old);
 
-	/* We need to block SIGCHLD signal.  One can't just set it to SIG_DFL, because
-	 * it will possibly cause missing of SIGCHLD from a background process
-	 * (job). */
-	(void)set_sigchld(1);
-
 	pid = fork();
 	if(pid == -1)
 	{
 		sigaction(SIGTSTP, &old, NULL);
-		(void)set_sigchld(0);
 		return -1;
 	}
 	if(pid == 0)
 	{
 		signal(SIGTSTP, SIG_DFL);
 		signal(SIGINT, SIG_DFL);
-		(void)set_sigchld(0);
 
 		prepare_for_exec();
 		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
@@ -154,7 +147,6 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 	result = get_proc_exit_status(pid);
 
 	sigaction(SIGTSTP, &old, NULL);
-	(void)set_sigchld(0);
 
 	return result;
 }
@@ -186,17 +178,6 @@ wait_for_data_from(pid_t pid, FILE *f, int fd,
 		select_result = select(fd + 1, &read_ready, NULL, NULL, &ts);
 	}
 	while(select_result == 0 || (select_result == -1 && errno == EINTR));
-}
-
-int
-set_sigchld(int block)
-{
-	const int action = block ? SIG_BLOCK : SIG_UNBLOCK;
-	sigset_t sigchld_mask;
-
-	return sigemptyset(&sigchld_mask) == -1
-	    || sigaddset(&sigchld_mask, SIGCHLD) == -1
-	    || sigprocmask(action, &sigchld_mask, NULL) == -1;
 }
 
 void
@@ -734,6 +715,12 @@ get_gid(const char group[], gid_t *gid)
 		*gid = g->gr_gid;
 	}
 	return 0;
+}
+
+int
+status_to_exit_code(int status)
+{
+	return (status != -1 && WIFEXITED(status) ? WEXITSTATUS(status) : -1);
 }
 
 int

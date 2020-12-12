@@ -617,12 +617,9 @@ run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 		return 1;
 	}
 
-	(void)set_sigchld(1);
-
 	pid = fork();
 	if(pid == (pid_t)-1)
 	{
-		(void)set_sigchld(0);
 		LOG_SERROR_MSG(errno, "Forking has failed.");
 		return -1;
 	}
@@ -630,8 +627,6 @@ run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 	if(pid == (pid_t)0)
 	{
 		extern char **environ;
-
-		(void)set_sigchld(0);
 
 		prepare_for_exec();
 		(void)execve(get_execv_path(cfg.shell),
@@ -655,8 +650,6 @@ run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 	{
 		*cancelled = 1;
 	}
-
-	(void)set_sigchld(0);
 
 	return status;
 #else
