@@ -1362,8 +1362,7 @@ bg_job_wait(bg_job_t *job)
 		}
 		else
 		{
-			int exit_code = (status != -1 && WIFEXITED(status)) ? WEXITSTATUS(status)
-			                                                    : -1;
+			int exit_code = (WIFEXITED(status) ? WEXITSTATUS(status) : -1);
 			mark_job_finished(job, exit_code);
 		}
 #else
