@@ -61,6 +61,23 @@ TEST(visible_panes_are_accounted_for_on_counting_visitors)
 	assert_int_equal(0, tabs_visitor_count("/b"));
 }
 
+TEST(new_global_tab_is_inserted_after_current)
+{
+	tabs_new(NULL, NULL);
+	tabs_goto(0);
+	tabs_new(NULL, NULL);
+	assert_int_equal(1, tabs_current(&lwin));
+}
+
+TEST(new_pane_tab_is_inserted_after_current)
+{
+	cfg.pane_tabs = 1;
+	tabs_new(NULL, NULL);
+	tabs_goto(0);
+	tabs_new(NULL, NULL);
+	assert_int_equal(1, tabs_current(&lwin));
+}
+
 TEST(invisible_panes_are_accounted_for_on_counting_visitors_with_global_tabs)
 {
 	strcpy(lwin.curr_dir, "/l");
