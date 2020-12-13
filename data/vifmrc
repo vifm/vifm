@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 9 September, 2020)
+" Sample configuration file for vifm (last updated: 13 December, 2020)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -38,11 +38,6 @@ set history=100
 " Automatically resolve symbolic links on l or Enter.
 
 set nofollowlinks
-
-" With this option turned on you can run partially entered commands with
-" unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
-
-" set fastrun
 
 " Natural sort of (version) numbers within text.
 
