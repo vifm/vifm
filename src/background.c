@@ -764,7 +764,14 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 int
 bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
-	bg_job_t *job = launch_external(cmd, 0, 0, 0, by);
+	char *command = (cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd));
+	if(command == NULL)
+	{
+		return 1;
+	}
+
+	bg_job_t *job = launch_external(command, 0, 0, 0, by);
+	free(command);
 	if(job == NULL)
 	{
 		return 1;
@@ -807,18 +814,9 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	pid_t pid;
 	int error_pipe[2];
 	int output_pipe[2];
-	char *command;
-
-	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
-	if(command == NULL)
-	{
-		return NULL;
-	}
-
 	if(pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		free(command);
 		return NULL;
 	}
 
@@ -829,7 +827,6 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			show_error_msg("File pipe error", "Error creating pipe");
 			close(error_pipe[0]);
 			close(error_pipe[1]);
-			free(command);
 			return NULL;
 		}
 	}
@@ -843,7 +840,6 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			close(output_pipe[0]);
 			close(output_pipe[1]);
 		}
-		free(command);
 		return NULL;
 	}
 
@@ -911,7 +907,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		prepare_for_exec();
 		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 		execve(get_execv_path(cfg.shell),
-				make_execv_array(cfg.shell, sh_flag, command), environ);
+				make_execv_array(cfg.shell, sh_flag, strdup(cmd)), environ);
 		_Exit(127);
 	}
 
@@ -922,9 +918,8 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		close(output_pipe[1]);
 	}
 
-	bg_job_t *job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
+	bg_job_t *job = add_background_job(pid, cmd, (uintptr_t)error_pipe[0], 0,
 			BJT_COMMAND, visible);
-	free(command);
 
 	if(capture_output)
 	{
@@ -939,15 +934,8 @@ launch_external(const char cmd[], int capture_output, int new_session,
 #else
 	STARTUPINFOW startup = { .dwFlags = STARTF_USESTDHANDLES };
 	PROCESS_INFORMATION pinfo;
-	char *command;
 	char *sh_cmd;
 	wchar_t *wide_cmd;
-
-	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
-	if(command == NULL)
-	{
-		return NULL;
-	}
 
 	SECURITY_ATTRIBUTES sec_attr = {
 		.nLength = sizeof(sec_attr),
@@ -959,7 +947,6 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			OPEN_EXISTING, 0, NULL);
 	if(hnul == INVALID_HANDLE_VALUE)
 	{
-		free(command);
 		return NULL;
 	}
 	startup.hStdInput = hnul;
@@ -969,7 +956,6 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	if(!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
 	{
 		CloseHandle(hnul);
-		free(command);
 		return NULL;
 	}
 
@@ -980,13 +966,11 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		{
 			CloseHandle(herr);
 			CloseHandle(hnul);
-			free(command);
 			return NULL;
 		}
 	}
 
-	sh_cmd = win_make_sh_cmd(command, by);
-	free(command);
+	sh_cmd = win_make_sh_cmd(cmd, by);
 
 	wide_cmd = to_wide(sh_cmd);
 	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL,
