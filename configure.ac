@@ -212,7 +212,6 @@ AC_CHECK_FUNC([sigaction], [], [AC_MSG_ERROR([sigaction() function not found.])]
 AC_CHECK_FUNC([sigaddset], [], [AC_MSG_ERROR([sigaddset() function not found.])])
 AC_CHECK_FUNC([sigemptyset], [], [AC_MSG_ERROR([sigemptyset() function not found.])])
 AC_CHECK_FUNC([signal], [], [AC_MSG_ERROR([signal() function not found.])])
-AC_CHECK_FUNC([sigprocmask], [], [AC_MSG_ERROR([sigprocmask() function not found.])])
 AC_CHECK_FUNC([snprintf], [], [AC_MSG_ERROR([snprintf() function not found.])])
 AC_CHECK_FUNC([sprintf], [], [AC_MSG_ERROR([sprintf() function not found.])])
 AC_CHECK_FUNC([strcasecmp], [], [AC_MSG_ERROR([strcasecmp() function not found.])])
