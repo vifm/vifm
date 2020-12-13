@@ -1023,7 +1023,7 @@ get_root_path(const char path[])
 }
 
 int
-win_cancel_process(DWORD pid, HANDLE hprocess)
+win_cancel_process(DWORD pid)
 {
 	return EnumWindows((WNDENUMPROC)&close_app_enum, (LPARAM)pid) == FALSE;
 }

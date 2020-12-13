@@ -78,7 +78,7 @@ FILE * win_tmpfile();
 
 /* Tries to cancel process gracefully.  Returns zero if cancellation was
  * requested, otherwise non-zero is returned. */
-int win_cancel_process(DWORD pid, HANDLE hprocess);
+int win_cancel_process(DWORD pid);
 
 /* Converts FILETIME to time_t.  Returns converted time. */
 time_t win_to_unix_time(FILETIME ft);

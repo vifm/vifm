@@ -1226,7 +1226,7 @@ bg_job_cancel(bg_job_t *job)
 				(unsigned long long)job->pid);
 	}
 #else
-	if(win_cancel_process(job->pid, job->hprocess) == 0)
+	if(win_cancel_process(job->pid) == 0)
 	{
 		job->cancelled = 1;
 	}
