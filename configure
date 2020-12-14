@@ -7236,13 +7236,6 @@ else
   as_fn_error $? "signal() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "sigprocmask" "ac_cv_func_sigprocmask"
-if test "x$ac_cv_func_sigprocmask" = xyes; then :
-
-else
-  as_fn_error $? "sigprocmask() function not found." "$LINENO" 5
-fi
-
 ac_fn_c_check_func "$LINENO" "snprintf" "ac_cv_func_snprintf"
 if test "x$ac_cv_func_snprintf" = xyes; then :
 

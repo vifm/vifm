@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Oct 27
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -179,6 +179,8 @@ Possible fields of {job}:
  - "description" (string) (default: "")
    Description of the job to be displayed on the job bar (when "visible" key
    is set to true).
+ - "mergestreams" (boolean) (default: false)
+   Whether to merge error streams of the command with output stream.
  - "visible" (boolean) (default: false)
    Whether to show this job on a job bar.
 
@@ -308,7 +310,8 @@ Raises an error:~
   If waiting has failed.
 
 VifmJob:stdout()                               *vifm-l_VifmJob:stdout()*
-Retrieves stream associated with standard output of a job.
+Retrieves stream associated with standard output of a job.  Includes error
+stream if `mergestreams` was set to `true`.
 
 Return:~
   Returns file stream from standard I/O library of Lua.
@@ -316,7 +319,7 @@ Return:~
 VifmJob:errors()                               *vifm-l_VifmJob:errors()*
 Retrieves data collected from error stream of the job.  It's accumulated
 automatically in background and contains all data collected so far, the call
-doesn't wait for arrival of data.
+doesn't wait for arrival of data.  Empty if `mergestreams` was set to `true`.
 
 Return:~
   Returns a string.

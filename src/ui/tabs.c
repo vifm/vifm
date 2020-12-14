@@ -134,7 +134,7 @@ tabs_new(const char name[], const char path[])
 	if(cfg.pane_tabs)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
-		int idx = DA_SIZE(ptabs->tabs);
+		int idx = ptabs->current + 1;
 		pane_tab_t *ptab = tabs_new_pane(ptabs, curr_view, name, path, idx, 0);
 		if(ptab == NULL)
 		{

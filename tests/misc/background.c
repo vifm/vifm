@@ -4,7 +4,6 @@
 
 #include <test-utils.h>
 
-#include "../../src/cfg/config.h"
 #include "../../src/compat/pthread.h"
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
@@ -30,21 +29,12 @@ SETUP()
 	 * exec(). */
 	curr_view = &lwin;
 
-#ifndef _WIN32
-	update_string(&cfg.shell, "/bin/sh");
-	update_string(&cfg.shell_cmd_flag, "-c");
-#else
-	update_string(&cfg.shell, "cmd");
-	update_string(&cfg.shell_cmd_flag, "/C");
-	stats_update_shell_type(cfg.shell);
-#endif
+	conf_setup();
 }
 
 TEARDOWN()
 {
-	update_string(&cfg.shell, NULL);
-	update_string(&cfg.shell_cmd_flag, NULL);
-	stats_update_shell_type("/bin/sh");
+	conf_teardown();
 
 	curr_view = NULL;
 }
@@ -53,7 +43,7 @@ TEARDOWN()
  * are no other jobs which can slow down receiving errors from the process. */
 TEST(capture_error_of_external_command)
 {
-	bg_job_t *job = bg_run_external_job("echo there 1>&2", 0);
+	bg_job_t *job = bg_run_external_job("echo there 1>&2", BJF_NONE);
 	assert_non_null(job);
 	assert_non_null(job->output);
 
@@ -159,7 +149,7 @@ TEST(explicitly_wait_for_a_job)
 
 TEST(create_a_job_explicitly)
 {
-	bg_job_t *job = bg_run_external_job("exit 5", 0);
+	bg_job_t *job = bg_run_external_job("exit 5", BJF_NONE);
 	assert_non_null(job);
 
 	assert_success(bg_job_wait(job));
@@ -170,7 +160,7 @@ TEST(create_a_job_explicitly)
 
 TEST(capture_output_of_external_command)
 {
-	bg_job_t *job = bg_run_external_job("echo there", 0);
+	bg_job_t *job = bg_run_external_job("echo there", BJF_NONE);
 	assert_non_null(job);
 	assert_non_null(job->output);
 

@@ -72,6 +72,10 @@ int get_uid(const char user[], uid_t *uid);
  * zero on success and non-zero otherwise. */
 int get_gid(const char group[], gid_t *gid);
 
+/* Converts status to exit code.  Input can be -1, meaning that status is
+ * unknown.  Returns the exit code or -1 for -1 status. */
+int status_to_exit_code(int status);
+
 int S_ISEXE(mode_t mode);
 
 #endif /* VIFM__UTILS__UTILS_NIX_H__ */

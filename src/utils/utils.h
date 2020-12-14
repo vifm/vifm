@@ -196,10 +196,6 @@ struct cancellation_t;
 void wait_for_data_from(pid_t pid, FILE *f, int fd,
 		const struct cancellation_t *cancellation);
 
-/* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
- * is returned. */
-int set_sigchld(int block);
-
 /* Blocks all signals of current thread that can be blocked. */
 void block_all_thread_signals(void);
 

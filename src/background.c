@@ -27,7 +27,7 @@
 #include <sys/stat.h> /* O_RDONLY */
 #include <sys/types.h> /* pid_t ssize_t */
 #ifndef _WIN32
-#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
+#include <sys/wait.h> /* waitpid() */
 #endif
 #include <signal.h> /* kill() */
 #include <unistd.h> /* execve() fork() setpgid() setsid() */
@@ -124,7 +124,7 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], int capture_output,
-		int new_session, int visible, ShellRequester by);
+		int new_session, BgJobFlags flags, ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
@@ -133,9 +133,8 @@ static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
-#ifdef _WIN32
-static int query_win_code(bg_job_t *job);
-#endif
+static int update_job_status(bg_job_t *job);
+static void mark_job_finished(bg_job_t *job, int exit_code);
 static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
@@ -154,33 +153,12 @@ void
 bg_init(void)
 {
 	pthread_t id;
-	const int err = pthread_create(&id, NULL, &error_thread, NULL);
+	int err = pthread_create(&id, NULL, &error_thread, NULL);
 	assert(err == 0);
 	(void)err;
 
 	/* Initialize state for the main thread. */
 	set_current_job(NULL);
-}
-
-void
-bg_process_finished_cb(pid_t pid, int exit_code)
-{
-	bg_job_t *job;
-
-	/* Mark any finished jobs. */
-	job = bg_jobs;
-	while(job != NULL)
-	{
-		if(job->pid == pid)
-		{
-			pthread_spin_lock(&job->status_lock);
-			job->running = 0;
-			job->exit_code = exit_code;
-			pthread_spin_unlock(&job->status_lock);
-			break;
-		}
-		job = job->next;
-	}
 }
 
 void
@@ -193,11 +171,6 @@ bg_check(void)
 	if(head == NULL)
 	{
 		set_jobcount_var(0);
-		return;
-	}
-
-	if(bg_jobs_freeze() != 0)
-	{
 		return;
 	}
 
@@ -247,8 +220,6 @@ bg_check(void)
 	assert(bg_jobs == NULL && "Job list shouldn't be used by anyone.");
 	bg_jobs = head;
 
-	bg_jobs_unfreeze();
-
 	set_jobcount_var(active_jobs);
 }
 
@@ -293,9 +264,7 @@ job_check(bg_job_t *job)
 	}
 	while(new_errors != NULL);
 
-#ifdef _WIN32
-	(void)query_win_code(job);
-#endif
+	(void)update_job_status(job);
 }
 
 /* Frees resources allocated by the job as well as the bg_job_t structure
@@ -355,17 +324,13 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 		return -1;
 	}
 
-	(void)set_sigchld(1);
-
 	if((pid = fork()) == -1)
 	{
-		(void)set_sigchld(0);
 		return -1;
 	}
 
 	if(pid == 0)
 	{
-		(void)set_sigchld(0);
 		run_from_fork(error_pipe, 1, 0, cmd, SHELL_BY_APP);
 	}
 	else
@@ -400,15 +365,9 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 		}
 		else
 		{
-			/* Don't use "const int" variables with WEXITSTATUS() as they cause
-			 * compilation errors in case __USE_BSD is defined.  Anonymous type with
-			 * "const int" is composed via compound literal expression. */
-			int status = get_proc_exit_status(pid);
-			result = (status != -1 && WIFEXITED(status)) ? WEXITSTATUS(status) : -1;
+			result = status_to_exit_code(get_proc_exit_status(pid));
 		}
 	}
-
-	(void)set_sigchld(0);
 
 	return result;
 #else
@@ -805,7 +764,14 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 int
 bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
-	bg_job_t *job = launch_external(cmd, 0, 0, 0, by);
+	char *command = (cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd));
+	if(command == NULL)
+	{
+		return 1;
+	}
+
+	bg_job_t *job = launch_external(command, 0, 0, BJF_NONE, by);
+	free(command);
 	if(job == NULL)
 	{
 		return 1;
@@ -818,9 +784,9 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 }
 
 bg_job_t *
-bg_run_external_job(const char cmd[], int visible)
+bg_run_external_job(const char cmd[], BgJobFlags flags)
 {
-	bg_job_t *job = launch_external(cmd, 1, 1, visible, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, 1, 1, flags, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -831,7 +797,7 @@ bg_run_external_job(const char cmd[], int visible)
 	bg_job_incref(job);
 	job->skip_errors = 1;
 
-	if(visible)
+	if(flags & BJF_JOB_BAR_VISIBLE)
 	{
 		place_on_job_bar(job);
 	}
@@ -842,24 +808,22 @@ bg_run_external_job(const char cmd[], int visible)
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
 launch_external(const char cmd[], int capture_output, int new_session,
-		int visible, ShellRequester by)
+		BgJobFlags flags, ShellRequester by)
 {
+	/* TODO: simplify this function (launch_external()) somehow, maybe split in
+	 *       two. */
+	int visible = (flags & BJF_JOB_BAR_VISIBLE);
+	int merge_streams = (capture_output && (flags & BJF_MERGE_STREAMS));
+
 #ifndef _WIN32
 	pid_t pid;
-	int error_pipe[2];
 	int output_pipe[2];
-	char *command;
 
-	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
-	if(command == NULL)
-	{
-		return NULL;
-	}
-
-	if(pipe(error_pipe) != 0)
+	/* For the sake of simplicity just use -1, calling close(-1) won't hurt. */
+	int error_pipe[2] = { -1, -1 };
+	if(!merge_streams && pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		free(command);
 		return NULL;
 	}
 
@@ -870,7 +834,6 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			show_error_msg("File pipe error", "Error creating pipe");
 			close(error_pipe[0]);
 			close(error_pipe[1]);
-			free(command);
 			return NULL;
 		}
 	}
@@ -884,7 +847,6 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			close(output_pipe[0]);
 			close(output_pipe[1]);
 		}
-		free(command);
 		return NULL;
 	}
 
@@ -892,8 +854,10 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	{
 		extern char **environ;
 
+		int stderr_pipe = (merge_streams ? output_pipe[1] : error_pipe[1]);
+
 		/* Redirect stderr to write end of pipe. */
-		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
+		if(dup2(stderr_pipe, STDERR_FILENO) == -1)
 		{
 			perror("dup2");
 			_Exit(EXIT_FAILURE);
@@ -952,7 +916,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		prepare_for_exec();
 		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 		execve(get_execv_path(cfg.shell),
-				make_execv_array(cfg.shell, sh_flag, command), environ);
+				make_execv_array(cfg.shell, sh_flag, strdup(cmd)), environ);
 		_Exit(127);
 	}
 
@@ -963,9 +927,8 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		close(output_pipe[1]);
 	}
 
-	bg_job_t *job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
+	bg_job_t *job = add_background_job(pid, cmd, (uintptr_t)error_pipe[0], 0,
 			BJT_COMMAND, visible);
-	free(command);
 
 	if(capture_output)
 	{
@@ -980,15 +943,8 @@ launch_external(const char cmd[], int capture_output, int new_session,
 #else
 	STARTUPINFOW startup = { .dwFlags = STARTF_USESTDHANDLES };
 	PROCESS_INFORMATION pinfo;
-	char *command;
 	char *sh_cmd;
 	wchar_t *wide_cmd;
-
-	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
-	if(command == NULL)
-	{
-		return NULL;
-	}
 
 	SECURITY_ATTRIBUTES sec_attr = {
 		.nLength = sizeof(sec_attr),
@@ -1000,17 +956,16 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			OPEN_EXISTING, 0, NULL);
 	if(hnul == INVALID_HANDLE_VALUE)
 	{
-		free(command);
 		return NULL;
 	}
 	startup.hStdInput = hnul;
 	startup.hStdOutput = hnul;
 
-	HANDLE herr;
-	if(!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
+	HANDLE herr = INVALID_HANDLE_VALUE;
+	if(!merge_streams &&
+			!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
 	{
 		CloseHandle(hnul);
-		free(command);
 		return NULL;
 	}
 
@@ -1021,13 +976,16 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		{
 			CloseHandle(herr);
 			CloseHandle(hnul);
-			free(command);
 			return NULL;
+		}
+
+		if(merge_streams)
+		{
+			startup.hStdError = startup.hStdOutput;
 		}
 	}
 
-	sh_cmd = win_make_sh_cmd(command, by);
-	free(command);
+	sh_cmd = win_make_sh_cmd(cmd, by);
 
 	wide_cmd = to_wide(sh_cmd);
 	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL,
@@ -1052,6 +1010,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 
 	if(job == NULL)
 	{
+		CloseHandle(herr);
 		CloseHandle(hout);
 	}
 	else if(capture_output)
@@ -1220,10 +1179,7 @@ background_task_bootstrap(void *arg)
 	task_args->func(&task_args->job->bg_op, task_args->args);
 
 	/* Mark task as finished normally. */
-	pthread_spin_lock(&task_args->job->status_lock);
-	task_args->job->running = 0;
-	task_args->job->exit_code = 0;
-	pthread_spin_unlock(&task_args->job->status_lock);
+	mark_job_finished(task_args->job, 0);
 
 	free(task_args);
 
@@ -1250,13 +1206,6 @@ make_current_job_key(void)
 int
 bg_has_active_jobs(int important_only)
 {
-	if(bg_jobs_freeze() != 0)
-	{
-		/* Failed to lock jobs list and using safe choice: pretend there are active
-		 * tasks. */
-		return 1;
-	}
-
 	bg_job_t *job;
 	int running = 0;
 	for(job = bg_jobs; job != NULL && !running; job = job->next)
@@ -1268,26 +1217,7 @@ bg_has_active_jobs(int important_only)
 		}
 	}
 
-	bg_jobs_unfreeze();
-
 	return running;
-}
-
-int
-bg_jobs_freeze(void)
-{
-	/* SIGCHLD needs to be blocked anytime the jobs list is accessed from anywhere
-	 * except the received_sigchld(). */
-	return set_sigchld(1);
-}
-
-void
-bg_jobs_unfreeze(void)
-{
-	/* Unblock SIGCHLD signal. */
-	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
-	 *        blocked. */
-	(void)set_sigchld(0);
 }
 
 int
@@ -1312,7 +1242,7 @@ bg_job_cancel(bg_job_t *job)
 				(unsigned long long)job->pid);
 	}
 #else
-	if(win_cancel_process(job->pid, job->hprocess) == 0)
+	if(win_cancel_process(job->pid) == 0)
 	{
 		job->cancelled = 1;
 	}
@@ -1338,11 +1268,10 @@ bg_job_cancelled(bg_job_t *job)
 int
 bg_job_is_running(bg_job_t *job)
 {
-	int running;
 	pthread_spin_lock(&job->status_lock);
-	running = job->running;
+	int running = job->running;
 	pthread_spin_unlock(&job->status_lock);
-	return running;
+	return (running && update_job_status(job));
 }
 
 int
@@ -1351,60 +1280,64 @@ bg_job_wait(bg_job_t *job)
 	assert(job->type == BJT_COMMAND &&
 			"Only external commands can be waited for.");
 
-	(void)set_sigchld(1);
-
-	int error = 0;
-	if(bg_job_is_running(job))
+	if(!bg_job_is_running(job))
 	{
-#ifndef _WIN32
-		int status = get_proc_exit_status(job->pid);
-		if(status == -1)
-		{
-			error = 1;
-		}
-		else
-		{
-			int exit_code = (status != -1 && WIFEXITED(status)) ? WEXITSTATUS(status)
-			                                                    : -1;
-			bg_process_finished_cb(job->pid, exit_code);
-		}
-#else
-		if(WaitForSingleObject(job->hprocess, INFINITE) != WAIT_OBJECT_0)
-		{
-			error = 1;
-		}
-		else
-		{
-			error = query_win_code(job);
-		}
-#endif
+		return 0;
 	}
 
-	(void)set_sigchld(0);
-	return error;
+#ifndef _WIN32
+	int status = get_proc_exit_status(job->pid);
+	if(status == -1)
+	{
+		return 1;
+	}
+	mark_job_finished(job, status_to_exit_code(status));
+	return 0;
+#else
+	if(WaitForSingleObject(job->hprocess, INFINITE) != WAIT_OBJECT_0)
+	{
+		return 1;
+	}
+	return update_job_status(job);
+#endif
 }
 
-#ifdef _WIN32
 /* Retrieves exit code of a process associated with the job.  Returns zero on
- * success (fields of the argument updated), otherwise non-zero is returned. */
+ * success (job has just finished), otherwise non-zero is returned. */
 static int
-query_win_code(bg_job_t *job)
+update_job_status(bg_job_t *job)
 {
+#ifndef _WIN32
+	int status;
+	if(job->pid != -1 && waitpid(job->pid, &status, WNOHANG) == job->pid)
+	{
+		mark_job_finished(job, status_to_exit_code(status));
+		return 0;
+	}
+	return 1;
+#else
 	DWORD retcode;
 	if(GetExitCodeProcess(job->hprocess, &retcode))
 	{
 		if(retcode != STILL_ACTIVE)
 		{
-			pthread_spin_lock(&job->status_lock);
-			job->exit_code = retcode;
-			job->running = 0;
-			pthread_spin_unlock(&job->status_lock);
+			mark_job_finished(job, retcode);
 			return 0;
 		}
 	}
 	return 1;
-}
 #endif
+}
+
+/* Marks job as finished with the specified exit code. */
+static void
+mark_job_finished(bg_job_t *job, int exit_code)
+{
+	pthread_spin_lock(&job->status_lock);
+	job->running = 0;
+	job->exit_code = exit_code;
+	pthread_spin_unlock(&job->status_lock);
+}
 
 void
 bg_job_incref(bg_job_t *job)

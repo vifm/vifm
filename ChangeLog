@@ -57,6 +57,9 @@
 	Fixed quickview not being redrawn after leaving File Info dialog or more
 	mode.
 
+	Fixed pane tabs being created after the last one instead of after current
+	tab.  Thanks to anonymous and n.e. at Vifm Q2A site.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

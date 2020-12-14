@@ -56,8 +56,6 @@ show_jobs_menu(view_t *view)
 
 	bg_check();
 
-	bg_jobs_freeze();
-
 	p = bg_jobs;
 
 	i = 0;
@@ -93,8 +91,6 @@ show_jobs_menu(view_t *view)
 
 		p = p->next;
 	}
-
-	bg_jobs_unfreeze();
 
 	jobs_m.len = i;
 
@@ -144,7 +140,6 @@ cancel_job(menu_data_t *m, bg_job_t *job)
 
 	/* We have to make sure the job pointer is still valid and the job is
 	 * running. */
-	bg_jobs_freeze();
 	for(p = bg_jobs; p != NULL; p = p->next)
 	{
 		if(p == job && bg_job_is_running(job))
@@ -158,7 +153,6 @@ cancel_job(menu_data_t *m, bg_job_t *job)
 			break;
 		}
 	}
-	bg_jobs_unfreeze();
 
 	return (p != NULL);
 }
@@ -174,7 +168,6 @@ show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job)
 
 	/* We have to make sure the job pointer is still valid and the job is
 	 * running. */
-	bg_jobs_freeze();
 	for(p = bg_jobs; p != NULL; p = p->next)
 	{
 		if(p == job)
@@ -185,7 +178,6 @@ show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job)
 			break;
 		}
 	}
-	bg_jobs_unfreeze();
 
 	if(p == NULL)
 	{
