@@ -45,6 +45,14 @@ typedef enum
 }
 BgJobType;
 
+/* Job flags passed to bg_run_external_job(). */
+typedef enum
+{
+	BJF_NONE            = 0,      /* No flags set. */
+	BJF_JOB_BAR_VISIBLE = 1 << 0, /* Makes the job appear on the job bar. */
+}
+BgJobFlags;
+
 /* Auxiliary structure to be updated by background tasks while they progress. */
 typedef struct bg_op_t
 {
@@ -118,10 +126,9 @@ int bg_run_external(const char cmd[], int skip_errors, ShellRequester by);
 
 /* Creates background job running external command which does not interact with
  * the user and is detached from controlling terminal.  Upon creation the job
- * has one extra use, which needs to be decremented for it to be freed.
- * Non-zero value of the visible parameter makes the job appear on the job bar.
- * Returns the job or NULL on error. */
-bg_job_t * bg_run_external_job(const char cmd[], int visible);
+ * has one extra use, which needs to be decremented for it to be freed.  Returns
+ * the job or NULL on error. */
+bg_job_t * bg_run_external_job(const char cmd[], BgJobFlags flags);
 
 struct cancellation_t;
 

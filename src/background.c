@@ -124,7 +124,7 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], int capture_output,
-		int new_session, int visible, ShellRequester by);
+		int new_session, BgJobFlags flags, ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
@@ -770,7 +770,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		return 1;
 	}
 
-	bg_job_t *job = launch_external(command, 0, 0, 0, by);
+	bg_job_t *job = launch_external(command, 0, 0, BJF_NONE, by);
 	free(command);
 	if(job == NULL)
 	{
@@ -784,9 +784,9 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 }
 
 bg_job_t *
-bg_run_external_job(const char cmd[], int visible)
+bg_run_external_job(const char cmd[], BgJobFlags flags)
 {
-	bg_job_t *job = launch_external(cmd, 1, 1, visible, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, 1, 1, flags, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -797,7 +797,7 @@ bg_run_external_job(const char cmd[], int visible)
 	bg_job_incref(job);
 	job->skip_errors = 1;
 
-	if(visible)
+	if(flags & BJF_JOB_BAR_VISIBLE)
 	{
 		place_on_job_bar(job);
 	}
@@ -808,8 +808,12 @@ bg_run_external_job(const char cmd[], int visible)
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
 launch_external(const char cmd[], int capture_output, int new_session,
-		int visible, ShellRequester by)
+		BgJobFlags flags, ShellRequester by)
 {
+	/* TODO: simplify this function (launch_external()) somehow, maybe split in
+	 *       two. */
+	int visible = (flags & BJF_JOB_BAR_VISIBLE);
+
 #ifndef _WIN32
 	pid_t pid;
 	int error_pipe[2];
