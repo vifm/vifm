@@ -50,6 +50,7 @@ typedef enum
 {
 	BJF_NONE            = 0,      /* No flags set. */
 	BJF_JOB_BAR_VISIBLE = 1 << 0, /* Makes the job appear on the job bar. */
+	BJF_MERGE_STREAMS   = 1 << 1, /* Merge error stream into output stream. */
 }
 BgJobFlags;
 

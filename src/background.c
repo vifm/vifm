@@ -813,12 +813,15 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	/* TODO: simplify this function (launch_external()) somehow, maybe split in
 	 *       two. */
 	int visible = (flags & BJF_JOB_BAR_VISIBLE);
+	int merge_streams = (capture_output && (flags & BJF_MERGE_STREAMS));
 
 #ifndef _WIN32
 	pid_t pid;
-	int error_pipe[2];
 	int output_pipe[2];
-	if(pipe(error_pipe) != 0)
+
+	/* For the sake of simplicity just use -1, calling close(-1) won't hurt. */
+	int error_pipe[2] = { -1, -1 };
+	if(!merge_streams && pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
 		return NULL;
@@ -851,8 +854,10 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	{
 		extern char **environ;
 
+		int stderr_pipe = (merge_streams ? output_pipe[1] : error_pipe[1]);
+
 		/* Redirect stderr to write end of pipe. */
-		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
+		if(dup2(stderr_pipe, STDERR_FILENO) == -1)
 		{
 			perror("dup2");
 			_Exit(EXIT_FAILURE);
@@ -956,8 +961,9 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	startup.hStdInput = hnul;
 	startup.hStdOutput = hnul;
 
-	HANDLE herr;
-	if(!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
+	HANDLE herr = INVALID_HANDLE_VALUE;
+	if(!merge_streams &&
+			!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
 	{
 		CloseHandle(hnul);
 		return NULL;
@@ -971,6 +977,11 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			CloseHandle(herr);
 			CloseHandle(hnul);
 			return NULL;
+		}
+
+		if(merge_streams)
+		{
+			startup.hStdError = startup.hStdOutput;
 		}
 	}
 

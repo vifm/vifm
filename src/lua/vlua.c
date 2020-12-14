@@ -340,6 +340,10 @@ vifm_startjob(lua_State *lua)
 	{
 		flags |= (lua_toboolean(lua, -1) ? BJF_JOB_BAR_VISIBLE : BJF_NONE);
 	}
+	if(check_opt_field(lua, 1, "mergestreams", LUA_TBOOLEAN))
+	{
+		flags |= (lua_toboolean(lua, -1) ? BJF_MERGE_STREAMS : BJF_NONE);
+	}
 
 	const char *descr = NULL;
 	if(check_opt_field(lua, 1, "description", LUA_TSTRING))

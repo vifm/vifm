@@ -159,6 +159,24 @@ TEST(vifmjob_stdout)
 	conf_teardown();
 }
 
+TEST(vifmjob_stderr)
+{
+	conf_setup();
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo err 1>&2' }\n"
+	                                     "job = vifm.startjob(info)\n"
+	                                     "print(job:stdout():read('a'))"));
+	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo err 1>&2',"
+	                                     "         mergestreams = true }\n"
+	                                     "job = vifm.startjob(info)\n"
+	                                     "print(job:stdout():read('a'))"));
+	assert_true(starts_with_lit(ui_sb_last(), "err"));
+
+	conf_teardown();
+}
+
 TEST(cmds_add)
 {
 	init_commands();
