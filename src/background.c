@@ -1010,6 +1010,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 
 	if(job == NULL)
 	{
+		CloseHandle(herr);
 		CloseHandle(hout);
 	}
 	else if(capture_output)
