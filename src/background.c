@@ -1015,6 +1015,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	{
 		CloseHandle(herr);
 		CloseHandle(hout);
+		CloseHandle(pinfo.hProcess);
 	}
 	else if(capture_output)
 	{
