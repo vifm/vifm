@@ -1122,12 +1122,14 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	if(vi->curr_viewer == vi->ext_viewer)
 	{
 		/* No macros in this viewer. */
-		lines = vcache_lookup(file_to_view, vi->ext_viewer, kind, INT_MAX, &error);
+		lines = vcache_lookup(file_to_view, vi->ext_viewer, kind, INT_MAX, VC_SYNC,
+				&error);
 	}
 	else
 	{
 		char *expanded = (viewer == NULL ? NULL : qv_expand_viewer(viewer));
-		lines = vcache_lookup(file_to_view, expanded, kind, INT_MAX, &error);
+		lines = vcache_lookup(file_to_view, expanded, kind, INT_MAX, VC_SYNC,
+				&error);
 		free(expanded);
 	}
 

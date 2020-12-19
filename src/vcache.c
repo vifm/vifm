@@ -69,7 +69,7 @@ static size_t max_cache_entries = 100U;
 
 strlist_t
 vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
-		int max_lines, const char **error)
+		int max_lines, int sync, const char **error)
 {
 	*error = NULL;
 

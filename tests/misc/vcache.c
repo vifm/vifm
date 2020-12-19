@@ -38,7 +38,7 @@ TEARDOWN()
 TEST(missing_file_is_handled)
 {
 	strlist_t lines = vcache_lookup(SANDBOX_PATH "/no-file", NULL, VK_TEXTUAL,
-			10, &error);
+			10, VC_SYNC, &error);
 	assert_string_equal("Failed to read file's contents", error);
 	assert_int_equal(0, lines.nitems);
 }
@@ -49,7 +49,7 @@ TEST(unreadable_directory_file_is_handled, IF(not_windows))
 	assert_success(chmod(SANDBOX_PATH "/dir", 0000));
 
 	strlist_t lines = vcache_lookup(SANDBOX_PATH "/dir", NULL, VK_TEXTUAL, 10,
-			&error);
+			VC_SYNC, &error);
 	assert_string_equal("Failed to list directory's contents", error);
 	assert_int_equal(0, lines.nitems);
 
@@ -59,7 +59,7 @@ TEST(unreadable_directory_file_is_handled, IF(not_windows))
 TEST(can_view_full_file)
 {
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", NULL,
-			VK_TEXTUAL, 10, &error);
+			VK_TEXTUAL, 10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, lines.nitems);
 	assert_string_equal("1st line", lines.items[0]);
@@ -69,7 +69,7 @@ TEST(can_view_full_file)
 TEST(can_view_partial_file)
 {
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", NULL,
-			VK_TEXTUAL, 1, &error);
+			VK_TEXTUAL, 1, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("1st line", lines.items[0]);
@@ -78,7 +78,7 @@ TEST(can_view_partial_file)
 TEST(can_view_directory)
 {
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/rename", NULL, VK_TEXTUAL,
-			10, &error);
+			10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(6, lines.nitems);
 	assert_string_equal("rename/", lines.items[0]);
@@ -92,7 +92,7 @@ TEST(can_view_directory)
 TEST(can_use_custom_viewer)
 {
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/", "echo text",
-			VK_TEXTUAL, 1, &error);
+			VK_TEXTUAL, 1, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("text", lines.items[0]);
@@ -104,7 +104,7 @@ TEST(single_file_data_is_cached)
 
 	/* Two lines are cached. */
 	lines1 = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, lines1.nitems);
 	assert_string_equal("first line", lines1.items[0]);
@@ -112,7 +112,7 @@ TEST(single_file_data_is_cached)
 
 	/* Previously cached data is returned. */
 	lines2 = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 1, &error);
+			VK_TEXTUAL, 1, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, lines2.nitems);
 	assert_true(lines1.items[0] == lines2.items[0]);
@@ -126,7 +126,7 @@ TEST(multiple_files_data_is_cached)
 
 	/* Two lines are cached. */
 	f1lines1 = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, f1lines1.nitems);
 	assert_string_equal("first line", f1lines1.items[0]);
@@ -134,7 +134,7 @@ TEST(multiple_files_data_is_cached)
 
 	/* Two lines are cached. */
 	f2lines1 = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, f2lines1.nitems);
 	assert_string_equal("first line", f2lines1.items[0]);
@@ -142,7 +142,7 @@ TEST(multiple_files_data_is_cached)
 
 	/* Previously cached data is returned. */
 	f1lines2 = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 1, &error);
+			VK_TEXTUAL, 1, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, f1lines2.nitems);
 	assert_true(f1lines1.items[0] == f1lines2.items[0]);
@@ -150,7 +150,7 @@ TEST(multiple_files_data_is_cached)
 
 	/* Previously cached data is returned. */
 	f2lines2 = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 1, &error);
+			VK_TEXTUAL, 1, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, f2lines2.nitems);
 	assert_true(f2lines1.items[0] == f2lines2.items[0]);
@@ -161,7 +161,7 @@ TEST(failure_to_allocate_cache_entry_is_handled)
 {
 	vcache_reset(0);
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal("Failed to allocate cache entry", error);
 	assert_int_equal(0, lines.nitems);
 }
@@ -170,7 +170,7 @@ TEST(cache_entries_are_reused)
 {
 	/* Two lines are cached. */
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, lines.nitems);
 	assert_string_equal("first line", lines.items[0]);
@@ -178,18 +178,18 @@ TEST(cache_entries_are_reused)
 
 	/* Push cached data out of the cache. */
 	lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", "echo a",
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", "echo b",
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", "echo c",
-			VK_TEXTUAL, 2, &error);
+			VK_TEXTUAL, 2, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 
 	/* Previously cached data is not returned. */
 	lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
-			VK_TEXTUAL, 1, &error);
+			VK_TEXTUAL, 1, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("first line", lines.items[0]);
@@ -198,13 +198,13 @@ TEST(cache_entries_are_reused)
 TEST(viewers_are_cached_independently)
 {
 	strlist_t lines1 = vcache_lookup(TEST_DATA_PATH "/read/two-lines", "echo aaa",
-			VK_TEXTUAL, 10, &error);
+			VK_TEXTUAL, 10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines1.nitems);
 	assert_string_equal("aaa", lines1.items[0]);
 
 	strlist_t lines2 = vcache_lookup(TEST_DATA_PATH "/read/two-lines", "echo bbb",
-			VK_TEXTUAL, 10, &error);
+			VK_TEXTUAL, 10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines2.nitems);
 	assert_string_equal("bbb", lines2.items[0]);
@@ -215,7 +215,7 @@ TEST(file_modification_is_detected)
 	make_file(SANDBOX_PATH "/file", "old line");
 
 	strlist_t lines = vcache_lookup(SANDBOX_PATH "/file", NULL, VK_TEXTUAL, 10,
-			&error);
+			VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("old line", lines.items[0]);
@@ -223,7 +223,8 @@ TEST(file_modification_is_detected)
 	make_file(SANDBOX_PATH "/file", "new line");
 	reset_timestamp(SANDBOX_PATH "/file");
 
-	lines = vcache_lookup(SANDBOX_PATH "/file", NULL, VK_TEXTUAL, 10, &error);
+	lines = vcache_lookup(SANDBOX_PATH "/file", NULL, VK_TEXTUAL, 10, VC_SYNC,
+			&error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("new line", lines.items[0]);
@@ -237,14 +238,14 @@ TEST(graphics_is_not_cached)
 	curr_stats.preview_hint = &parea;
 
 	strlist_t lines1 = vcache_lookup(TEST_DATA_PATH "/read/two-lines",
-			"echo this", VK_GRAPHICAL, 10, &error);
+			"echo this", VK_GRAPHICAL, 10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines1.nitems);
 	assert_string_equal("this", lines1.items[0]);
 	lines1.items = copy_string_array(lines1.items, lines1.nitems);
 
 	strlist_t lines2 = vcache_lookup(TEST_DATA_PATH "/read/two-lines",
-			"echo this", VK_GRAPHICAL, 10, &error);
+			"echo this", VK_GRAPHICAL, 10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines2.nitems);
 	assert_string_equal("this", lines1.items[0]);

@@ -24,6 +24,16 @@
 #include "utils/test_helpers.h"
 #include "filetype.h"
 
+/* Named boolean values of "sync" parameter of vcache_lookup() for better
+ * readability. */
+enum
+{
+	VC_ASYNC, /* Initiate viewing and return stub.  There will be a redraw after,
+	             when viewer provides more data.. */
+	VC_SYNC   /* Initiate viewing and wait until it's done producing requested
+	             number of lines. */
+};
+
 struct strlist_t;
 
 /* Looks up cached output of a viewer command (no macro expansion is performed)
@@ -31,7 +41,7 @@ struct strlist_t;
  * failure.  Returns list of strings owned and managed by the unit, don't store
  * or free it. */
 struct strlist_t vcache_lookup(const char full_path[], const char viewer[],
-		ViewerKind kind, int max_lines, const char **error);
+		ViewerKind kind, int max_lines, int sync, const char **error);
 
 TSTATIC_DEFS(
 	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);
