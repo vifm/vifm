@@ -298,6 +298,10 @@ job_free(bg_job_t *job)
 	{
 		CloseHandle(job->hprocess);
 	}
+	if(job->hjob != NO_JOB_ID)
+	{
+		CloseHandle(job->hjob);
+	}
 #endif
 	if(job->output != NULL)
 	{
@@ -988,8 +992,8 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	sh_cmd = win_make_sh_cmd(cmd, by);
 
 	wide_cmd = to_wide(sh_cmd);
-	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL,
-			&startup, &pinfo);
+	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, CREATE_SUSPENDED,
+			NULL, NULL, &startup, &pinfo);
 	free(wide_cmd);
 	CloseHandle(hnul);
 	CloseHandle(startup.hStdOutput);
@@ -1005,6 +1009,10 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		return NULL;
 	}
 
+	/* Put the process into its own job object and start its main thread. */
+	HANDLE hjob = CreateJobObject(NULL, NULL);
+	AssignProcessToJobObject(hjob, pinfo.hProcess);
+	ResumeThread(pinfo.hThread);
 	CloseHandle(pinfo.hThread);
 
 	bg_job_t *job = add_background_job(pinfo.dwProcessId, sh_cmd,
@@ -1016,8 +1024,13 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		CloseHandle(herr);
 		CloseHandle(hout);
 		CloseHandle(pinfo.hProcess);
+		CloseHandle(hjob);
+		return NULL;
 	}
-	else if(capture_output)
+
+	job->hjob = hjob;
+
+	if(capture_output)
 	{
 		int fd = _open_osfhandle((intptr_t)hout, _O_RDONLY);
 		if(fd == -1)
@@ -1141,6 +1154,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 #else
 	new->err_stream = (HANDLE)err;
 	new->hprocess = (HANDLE)data;
+	new->hjob = INVALID_HANDLE_VALUE;
 #endif
 
 	if(new->err_stream != NO_JOB_ID)

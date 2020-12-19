@@ -102,6 +102,7 @@ typedef struct bg_job_t
 #else
 	HANDLE err_stream; /* stderr stream of the job or invalid handle. */
 	HANDLE hprocess;   /* Handle to the process of the job or invalid handle. */
+	HANDLE hjob;       /* Handle to the process job object. */
 #endif
 
 	struct bg_job_t *next;     /* Link to the next element in bg_jobs list. */
