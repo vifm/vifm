@@ -993,7 +993,10 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	free(wide_cmd);
 	CloseHandle(hnul);
 	CloseHandle(startup.hStdOutput);
-	CloseHandle(startup.hStdError);
+	if(startup.hStdError != startup.hStdOutput)
+	{
+		CloseHandle(startup.hStdError);
+	}
 
 	if(!started)
 	{
