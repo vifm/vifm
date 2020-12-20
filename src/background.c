@@ -1144,7 +1144,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	pthread_spin_init(&new->errors_lock, PTHREAD_PROCESS_PRIVATE);
 	pthread_spin_init(&new->status_lock, PTHREAD_PROCESS_PRIVATE);
 	new->running = 1;
-	new->use_count = (type == BJT_COMMAND ? 1 : 0);
+	new->use_count = 0;
 	new->exit_code = -1;
 
 	new->output = NULL;
@@ -1159,6 +1159,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 
 	if(new->err_stream != NO_JOB_ID)
 	{
+		++new->use_count;
 		pthread_mutex_lock(&new_err_jobs_lock);
 		new->err_next = new_err_jobs;
 		new_err_jobs = new;
