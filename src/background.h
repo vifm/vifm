@@ -168,6 +168,9 @@ int bg_job_cancel(bg_job_t *job);
  * zero is returned. */
 int bg_job_cancelled(bg_job_t *job);
 
+/* Terminates the job in a forceful way leaving it no chance to respond. */
+void bg_job_terminate(bg_job_t *job);
+
 /* Checks whether the job is still running.  Returns non-zero if so, otherwise
  * zero is returned. */
 int bg_job_is_running(bg_job_t *job);

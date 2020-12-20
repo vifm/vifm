@@ -53,6 +53,7 @@
 #include "ipc.h"
 #include "registers.h"
 #include "status.h"
+#include "vcache.h"
 #include "vifm.h"
 
 static int ensure_term_is_ready(void);
@@ -375,6 +376,11 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			if(curr_stats.ipc != NULL)
 			{
 				ipc_check(curr_stats.ipc);
+			}
+
+			if(vcache_check())
+			{
+				stats_redraw_later();
 			}
 
 			wtimeout(win, delay_slice);

@@ -38,6 +38,10 @@
 	Extended cache of viewer's output to contain multiple entries (initial
 	version of the cache was added to skip redrawing graphics).
 
+	Implemented asynchronous previewing for textual and pass-through (think
+	sixel) viewers.  Thanks to StillSteal, laur89, Joshua
+	Jensch (a.k.a., patroclos) and p-kolacz.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
@@ -59,6 +63,9 @@
 
 	Fixed pane tabs being created after the last one instead of after current
 	tab.  Thanks to anonymous and n.e. at Vifm Q2A site.
+
+	Fixed hang on using previewer that takes over control over the
+	terminal (like 7z does to read password).  Thanks to PRESFIL.
 
 0.11-beta to 0.11 (2020-09-24)
 

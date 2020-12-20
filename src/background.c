@@ -29,7 +29,7 @@
 #ifndef _WIN32
 #include <sys/wait.h> /* waitpid() */
 #endif
-#include <signal.h> /* kill() */
+#include <signal.h> /* SIG* kill() */
 #include <unistd.h> /* execve() fork() setpgid() setsid() */
 
 #include <assert.h> /* assert() */
@@ -1281,6 +1281,30 @@ bg_job_cancelled(bg_job_t *job)
 		return bg_op_cancelled(&job->bg_op);
 	}
 	return job->cancelled;
+}
+
+void
+bg_job_terminate(bg_job_t *job)
+{
+	if(job->type != BJT_COMMAND || !bg_job_is_running(job))
+	{
+		return;
+	}
+
+#ifndef _WIN32
+	if(kill(job->pid, SIGKILL) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Failed to send SIGKILL to %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+#else
+	if(!TerminateJobObject(job->hjob, 0))
+	{
+		LOG_ERROR_MSG("Failed to terminate job of process %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+		LOG_WERROR(GetLastError());
+	}
+#endif
 }
 
 int

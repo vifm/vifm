@@ -36,6 +36,10 @@ enum
 
 struct strlist_t;
 
+/* Checks updates of asynchronous viewers.  Returns non-zero is screen needs to
+ * be updated, otherwise zero is returned. */
+int vcache_check(void);
+
 /* Looks up cached output of a viewer command (no macro expansion is performed)
  * or produces and caches it.  *error is set either to NULL or an error code on
  * failure.  Returns list of strings owned and managed by the unit, don't store

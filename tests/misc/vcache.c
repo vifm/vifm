@@ -1,6 +1,9 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
+#include <unistd.h> /* usleep() */
+
+#include <string.h> /* strlen() */
 
 #include <test-utils.h>
 
@@ -254,6 +257,81 @@ TEST(graphics_is_not_cached)
 
 	free_string_array(lines1.items, lines1.nitems);
 	curr_stats.preview_hint = NULL;
+}
+
+TEST(asynchronous_viewer)
+{
+	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", "echo aaa",
+			VK_TEXTUAL, 10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	int i;
+	for(i = 0; i < 1000 && lines.items[0][0] == '['; ++i)
+	{
+		usleep(10);
+		lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", "echo aaa",
+				VK_TEXTUAL, 10, VC_ASYNC, &error);
+	}
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("aaa", lines.items[0]);
+}
+
+TEST(asynchronous_data_can_have_torn_lines, IF(not_windows))
+{
+	const char *viewer = "echo -n aaa; echo -n bbb; echo ccc";
+	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", viewer,
+			VK_TEXTUAL, 10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	int i;
+	for(i = 0; i < 1000 && strlen(lines.items[0]) < 9; ++i)
+	{
+		usleep(10);
+		lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", viewer, VK_TEXTUAL,
+				10, VC_ASYNC, &error);
+	}
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("aaabbbccc", lines.items[0]);
+}
+
+TEST(asynchronous_jobs_can_be_cancelled)
+{
+	const char *viewer = "echo aaa; echo bbb; echo ccc; echo ddd; echo eee";
+	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", viewer,
+			VK_TEXTUAL, 0, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", viewer, VK_TEXTUAL, 0,
+			VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(0, lines.nitems);
+}
+
+TEST(vcache_check_reports_correct_status)
+{
+	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", "echo aaa",
+			VK_TEXTUAL, 10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	int i;
+	for(i = 0; i < 1000 && !vcache_check(); ++i)
+	{
+		usleep(10);
+	}
+	assert_true(i < 1000);
+	assert_false(vcache_check());
+	assert_false(vcache_check());
+	assert_false(vcache_check());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
