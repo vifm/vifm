@@ -106,6 +106,10 @@ void fview_set_lsview(struct view_t *view, int enabled);
 /* Checks whether view displays grid that's filled by column. */
 int fview_is_transposed(const struct view_t *view);
 
+/* Checks whether view currently displays the path within itself.  Returns
+ * non-zero if so and zero otherwise. */
+int fview_previews(struct view_t *view, const char path[]);
+
 /* Enables/disables cascading columns style of the view. */
 void fview_set_millerview(struct view_t *view, int enabled);
 

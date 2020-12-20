@@ -101,7 +101,7 @@ vcache_finish(void)
 }
 
 int
-vcache_check(void)
+vcache_check(vcache_is_previewed_cb is_previewed)
 {
 	int changed = 0;
 
@@ -112,7 +112,7 @@ vcache_check(void)
 	{
 		if(cache[i].job != NULL)
 		{
-			changed |= pull_async(&cache[i]);
+			changed |= (pull_async(&cache[i]) && is_previewed(cache[i].path));
 		}
 	}
 

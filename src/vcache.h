@@ -34,6 +34,10 @@ enum
 	             number of lines. */
 };
 
+/* Type of callback function to check if preview of specified path is visible.
+ * Should return non-zero if so and zero otherwise. */
+typedef int (*vcache_is_previewed_cb)(const char path[]);
+
 struct strlist_t;
 
 /* Kills all asynchronous viewers. */
@@ -41,7 +45,7 @@ void vcache_finish(void);
 
 /* Checks updates of asynchronous viewers.  Returns non-zero is screen needs to
  * be updated, otherwise zero is returned. */
-int vcache_check(void);
+int vcache_check(vcache_is_previewed_cb is_previewed);
 
 /* Looks up cached output of a viewer command (no macro expansion is performed)
  * or produces and caches it.  *error is set either to NULL or an error code on

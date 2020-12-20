@@ -489,5 +489,38 @@ TEST(filename_is_formatted_according_to_column_and_filetype)
 	assert_string_equal("a.b", name);
 }
 
+TEST(fview_previews_works)
+{
+	lwin.list_rows = 2;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("file");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("dir");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].type = FT_DIR;
+	strcpy(lwin.curr_dir, "/tests/fake");
+
+	lwin.list_pos = 0;
+	assert_false(fview_previews(&lwin, "/tests/fake/file"));
+	lwin.list_pos = 1;
+	assert_false(fview_previews(&lwin, "/tests/fake/dir"));
+	assert_false(fview_previews(&lwin, "/unrelated/path"));
+
+	lwin.miller_view = 1;
+	lwin.list_pos = 0;
+	assert_false(fview_previews(&lwin, "/tests/fake/file"));
+	lwin.list_pos = 1;
+	assert_false(fview_previews(&lwin, "/tests/fake/dir"));
+	assert_false(fview_previews(&lwin, "/unrelated/path"));
+
+	lwin.miller_preview_files = 1;
+	lwin.list_pos = 0;
+	assert_true(fview_previews(&lwin, "/tests/fake/file"));
+	lwin.list_pos = 1;
+	assert_false(fview_previews(&lwin, "/tests/fake/dir"));
+	assert_false(fview_previews(&lwin, "/unrelated/path"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
