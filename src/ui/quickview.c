@@ -69,6 +69,7 @@ typedef struct
 	char *viewer;      /* Viewer of the file. */
 	filemon_t filemon; /* Timestamp for the file. */
 	preview_area_t pa; /* Where preview is being drawn. */
+	strlist_t lines;   /* Lines of graphics (not pass through. */
 	int beg_x;         /* Original x coordinate of host window. */
 	int beg_y;         /* Original y coordinate of host window. */
 	ViewerKind kind;   /* Kind of preview. */
@@ -314,8 +315,7 @@ view_file(const char path[], const preview_area_t *parea,
 		/* Update area as we might draw preview at a different location. */
 		cache->pa = *parea;
 
-		strlist_t lines = get_lines(cache);
-		draw_lines(&lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
+		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 		return;
 	}
 
@@ -345,6 +345,13 @@ view_file(const char path[], const preview_area_t *parea,
 	update_cache(cache, path, viewer, kind, parea, max_lines);
 	strlist_t lines = get_lines(cache);
 	draw_lines(&lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
+
+	if(cache->kind != VK_TEXTUAL)
+	{
+		free_string_array(cache->lines.items, cache->lines.nitems);
+		cache->lines.items = copy_string_array(lines.items, lines.nitems);
+		cache->lines.nitems = lines.nitems;
+	}
 }
 
 /* Checks whether data in the cache is up to date with the file on disk.
