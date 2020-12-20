@@ -16,7 +16,7 @@ override CFLAGS += -pthread
 ifeq ($(RELEASE),1)
     override CFLAGS += -O2
 else
-    override CFLAGS += -g -O0
+    override CFLAGS += -gdwarf-3 -O0
 endif
 
 MANGEN := groff
