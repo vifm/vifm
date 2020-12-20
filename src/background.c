@@ -190,7 +190,7 @@ bg_check(void)
 		int can_remove = (!p->running && p->use_count == 0);
 		pthread_spin_unlock(&p->status_lock);
 
-		active_jobs += (running != 0);
+		active_jobs += (running != 0 && p->in_menu);
 
 		if(!running && p->on_job_bar)
 		{
@@ -806,6 +806,8 @@ bg_run_external_job(const char cmd[], BgJobFlags flags)
 		place_on_job_bar(job);
 	}
 
+	job->in_menu = (flags & BJF_MENU_VISIBLE);
+
 	return job;
 }
 
@@ -816,7 +818,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 {
 	/* TODO: simplify this function (launch_external()) somehow, maybe split in
 	 *       two. */
-	int visible = (flags & BJF_JOB_BAR_VISIBLE);
+	int jb_visible = (flags & BJF_JOB_BAR_VISIBLE);
 	int merge_streams = (capture_output && (flags & BJF_MERGE_STREAMS));
 
 #ifndef _WIN32
@@ -932,7 +934,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	}
 
 	bg_job_t *job = add_background_job(pid, cmd, (uintptr_t)error_pipe[0], 0,
-			BJT_COMMAND, visible);
+			BJT_COMMAND, jb_visible);
 
 	if(capture_output)
 	{
@@ -1016,7 +1018,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	CloseHandle(pinfo.hThread);
 
 	bg_job_t *job = add_background_job(pinfo.dwProcessId, sh_cmd,
-			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, visible);
+			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, jb_visible);
 	free(sh_cmd);
 
 	if(job == NULL)
@@ -1178,6 +1180,8 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	new->bg_op.progress = -1;
 	new->bg_op.descr = NULL;
 	new->bg_op.cancelled = 0;
+
+	new->in_menu = 1;
 
 	bg_jobs = new;
 	return new;

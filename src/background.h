@@ -50,7 +50,8 @@ typedef enum
 {
 	BJF_NONE            = 0,      /* No flags set. */
 	BJF_JOB_BAR_VISIBLE = 1 << 0, /* Makes the job appear on the job bar. */
-	BJF_MERGE_STREAMS   = 1 << 1, /* Merge error stream into output stream. */
+	BJF_MENU_VISIBLE    = 1 << 1, /* Makes the job appear in :jobs menu. */
+	BJF_MERGE_STREAMS   = 1 << 2, /* Merge error stream into output stream. */
 }
 BgJobFlags;
 
@@ -108,8 +109,10 @@ typedef struct bg_job_t
 	struct bg_job_t *next;     /* Link to the next element in bg_jobs list. */
 
 	/* Used by error thread for BJT_COMMAND jobs. */
-	int drained;               /* Whether error stream of no interest anymore. */
 	struct bg_job_t *err_next; /* Link to the next element in error read list. */
+	int drained;               /* Whether error stream of no interest anymore. */
+
+	int in_menu; /* Whether this task is visible in :jobs menu. */
 }
 bg_job_t;
 
