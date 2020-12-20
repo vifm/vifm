@@ -7,9 +7,12 @@
 
 #include <test-utils.h>
 
+#include "../../src/engine/var.h"
+#include "../../src/engine/variables.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/string_array.h"
+#include "../../src/background.h"
 #include "../../src/status.h"
 #include "../../src/vcache.h"
 
@@ -332,6 +335,33 @@ TEST(vcache_check_reports_correct_status)
 	assert_false(vcache_check());
 	assert_false(vcache_check());
 	assert_false(vcache_check());
+}
+
+TEST(kill_all_async_previews_on_exit, IF(not_windows))
+{
+	var_t var = var_from_int(0);
+	setvar("v:jobcount", var);
+	var_free(var);
+
+	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", "sleep 100",
+			VK_TEXTUAL, 10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	vcache_finish();
+
+	int counter = 0;
+	while(bg_jobs != NULL)
+	{
+		usleep(5000);
+		bg_check();
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			break;
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -37,6 +37,7 @@
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "vcache.h"
 
 static void _gnuc_noreturn shutdown_nicely(int sig, const char descr[]);
 
@@ -136,6 +137,7 @@ shutdown_nicely(int sig, const char descr[])
 	term_title_update(NULL);
 	fuse_unmount_all();
 	state_store();
+	vcache_finish();
 	fprintf(stdout, "Vifm killed by signal: %d (%s).\n", sig, descr);
 
 	/* Alternatively we could do this sequence:

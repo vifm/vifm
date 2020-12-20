@@ -36,6 +36,9 @@ enum
 
 struct strlist_t;
 
+/* Kills all asynchronous viewers. */
+void vcache_finish(void);
+
 /* Checks updates of asynchronous viewers.  Returns non-zero is screen needs to
  * be updated, otherwise zero is returned. */
 int vcache_check(void);

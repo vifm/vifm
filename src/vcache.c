@@ -84,6 +84,22 @@ static DA_INSTANCE(cache);
 /* Maximum number of allocated cache entries. */
 static size_t max_cache_entries = 100U;
 
+void
+vcache_finish(void)
+{
+	size_t i;
+	for(i = 0U; i < DA_SIZE(cache); ++i)
+	{
+		if(cache[i].job != NULL)
+		{
+			bg_job_cancel(cache[i].job);
+			bg_job_terminate(cache[i].job);
+			bg_job_decref(cache[i].job);
+			cache[i].job = NULL;
+		}
+	}
+}
+
 int
 vcache_check(void)
 {
