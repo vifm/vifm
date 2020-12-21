@@ -876,6 +876,7 @@ flist_custom_add_separator(view_t *view, int id)
 	{
 		init_dir_entry(view, dir_entry, "");
 		dir_entry->origin = strdup(flist_get_dir(view));
+		dir_entry->owns_origin = 1;
 		dir_entry->id = id;
 		++view->custom.entry_count;
 	}
@@ -1070,6 +1071,7 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 			init_dir_entry(view, dir_entry, "..");
 			dir_entry->type = FT_DIR;
 			dir_entry->origin = strdup(dir);
+			dir_entry->owns_origin = 1;
 			++view->custom.entry_count;
 		}
 	}
@@ -1364,14 +1366,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 
 		dst[j] = src[i];
 		dst[j].name = strdup(dst[j].name);
-		if(dst[j].origin == from->curr_dir)
-		{
-			dst[j].origin = to->curr_dir;
-		}
-		else
-		{
-			dst[j].origin = strdup(dst[j].origin);
-		}
+		dst[j].origin = (dst[j].owns_origin ? strdup(dst[j].origin) : to->curr_dir);
 
 		if(!as_tree)
 		{
@@ -2138,6 +2133,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 			init_parent_entry(view, &entries[j], path);
 			remove_last_path_component(path);
 			entries[j].origin = path;
+			entries[j].owns_origin = 1;
 			entries[j].child_pos = 1;
 
 			/* Since we now adding back one entry, correct increase parent counts and
@@ -2593,6 +2589,7 @@ init_dir_entry(view_t *view, dir_entry_t *entry, const char name[])
 	entry->search_match = 0;
 	entry->marked = 0;
 	entry->temporary = 0;
+	entry->owns_origin = 0;
 
 	entry->tag = -1;
 	entry->id = -1;
@@ -2619,6 +2616,7 @@ replace_dir_entries(view_t *view, dir_entry_t **entries, int *count,
 
 		entry->name = strdup(entry->name);
 		entry->origin = strdup(entry->origin);
+		entry->owns_origin = 1;
 
 		if(entry->name == NULL || entry->origin == NULL)
 		{
@@ -2653,7 +2651,7 @@ fentry_free(const view_t *view, dir_entry_t *entry)
 	free(entry->name);
 	entry->name = NULL;
 
-	if(entry->origin != &lwin.curr_dir[0] && entry->origin != &rwin.curr_dir[0])
+	if(entry->owns_origin)
 	{
 		free(entry->origin);
 		entry->origin = NULL;
@@ -2687,6 +2685,7 @@ entry_list_add(view_t *view, dir_entry_t **list, int *list_size,
 	init_dir_entry(view, dir_entry, get_last_path_component(path));
 
 	dir_entry->origin = strdup(path);
+	dir_entry->owns_origin = 1;
 	remove_last_path_component(dir_entry->origin);
 
 	if(fill_dir_entry_by_path(dir_entry, path) != 0)
@@ -2860,13 +2859,13 @@ flist_free_cache(view_t *view, cached_entries_t *cache)
 }
 
 void
-flist_update_origins(view_t *view, const char from[], char to[])
+flist_update_origins(view_t *view, char to[])
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		dir_entry_t *const entry = &view->dir_entry[i];
-		if(entry->origin == from)
+		if(!entry->owns_origin)
 		{
 			entry->origin = to;
 		}
@@ -3646,11 +3645,12 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 				char *const new_origin = format_str("%s/%s%s", entry->origin, to,
 						e->origin + root_len);
 				chosp(new_origin);
-				if(e->origin != view->curr_dir)
+				if(e->owns_origin)
 				{
 					free(e->origin);
 				}
 				e->origin = new_origin;
+				e->owns_origin = 1;
 			}
 		}
 
@@ -3906,6 +3906,7 @@ complete_tree(const char name[], int valid, const void *parent_data, void *data,
 				dir_entry->origin = strdup("/");
 			}
 			free(typed_path);
+			dir_entry->owns_origin = 1;
 		}
 		else
 		{
@@ -3915,6 +3916,7 @@ complete_tree(const char name[], int valid, const void *parent_data, void *data,
 			get_full_path_of(&(*entries)[*parent_idx], sizeof(parent_path),
 					parent_path);
 			dir_entry->origin = strdup(parent_path);
+			dir_entry->owns_origin = 1;
 		}
 
 		get_full_path_of(dir_entry, sizeof(full_path), full_path);
@@ -4131,6 +4133,7 @@ add_directory_leaf(view_t *view, const char path[], int parent_pos)
 
 	remove_last_path_component(full_path);
 	entry->origin = full_path;
+	entry->owns_origin = 1;
 
 	if(parent_pos >= 0)
 	{

@@ -279,7 +279,7 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 		(void)populate_dir_list(dst, path == NULL);
 		/* Redirect origins from tab's view to lwin or rwin, which is how they
 		 * should end up after loading a tab into lwin or rwin. */
-		flist_update_origins(dst, &dst->curr_dir[0], &side->curr_dir[0]);
+		flist_update_origins(dst, &side->curr_dir[0]);
 
 		/* Record new location. */
 		flist_hist_save(dst);
@@ -823,7 +823,6 @@ static void
 normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side)
 {
 	view_t tmp = *side;
-	view_t *const other = (side == &rwin ? &lwin : &rwin);
 	int i;
 	for(i = 0; i < (int)DA_SIZE(ptabs->tabs); ++i)
 	{
@@ -832,7 +831,7 @@ normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side)
 			view_t *const v = &ptabs->tabs[i].view;
 			ui_swap_view_data(v, &tmp);
 			*v = tmp;
-			flist_update_origins(v, &other->curr_dir[0], &side->curr_dir[0]);
+			flist_update_origins(v, &side->curr_dir[0]);
 		}
 	}
 }

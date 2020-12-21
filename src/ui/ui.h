@@ -199,9 +199,9 @@ typedef struct dir_entry_t dir_entry_t;
 struct dir_entry_t
 {
 	char *name;       /* File name. */
-	char *origin;     /* Location where this file comes from.  Points to
-	                     view::curr_dir for non-cv views, otherwise allocated on
-	                     a heap. */
+	char *origin;     /* Location where this file comes from.  Either points to
+	                     view_t::curr_dir for non-cv views or is allocated on
+	                     a heap depending on owns_origin field. */
 	uint64_t size;    /* File size in bytes. */
 #ifndef _WIN32
 	uid_t uid;        /* Owning user id. */
@@ -242,6 +242,7 @@ struct dir_entry_t
 	unsigned int marked : 1;       /* Whether file should be processed. */
 	unsigned int temporary : 1;    /* Whether this is temporary node. */
 	unsigned int dir_link : 1;     /* Whether this is symlink to a directory. */
+	unsigned int owns_origin : 1;  /* Whether this entry is custom one. */
 };
 
 /* List of entries bundled with its size. */

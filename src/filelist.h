@@ -302,8 +302,9 @@ int flist_update_cache(view_t *view, cached_entries_t *cache,
 		const char path[]);
 /* Frees the cache. */
 void flist_free_cache(view_t *view, cached_entries_t *cache);
-/* Updates pointers to main (default) origins in file list entries. */
-void flist_update_origins(view_t *view, const char from[], char to[]);
+/* Updates non-heap-allocated origin pointers of entries in file list
+ * entries. */
+void flist_update_origins(view_t *view, char to[]);
 
 TSTATIC_DEFS(
 	void check_file_uniqueness(view_t *view);

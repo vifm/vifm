@@ -1491,8 +1491,8 @@ switch_panes_content(void)
 {
 	ui_swap_view_data(&lwin, &rwin);
 
-	flist_update_origins(&lwin, &rwin.curr_dir[0], &lwin.curr_dir[0]);
-	flist_update_origins(&rwin, &lwin.curr_dir[0], &rwin.curr_dir[0]);
+	flist_update_origins(&lwin, &lwin.curr_dir[0]);
+	flist_update_origins(&rwin, &rwin.curr_dir[0]);
 
 	modview_panes_swapped();
 
