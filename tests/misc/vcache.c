@@ -286,7 +286,7 @@ TEST(asynchronous_viewer)
 
 TEST(asynchronous_data_can_have_torn_lines, IF(not_windows))
 {
-	const char *viewer = "echo -n aaa; echo -n bbb; echo ccc";
+	const char *viewer = "printf aaa; printf bbb; echo ccc";
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", viewer,
 			VK_TEXTUAL, 10, VC_ASYNC, &error);
 	assert_string_equal(NULL, error);
