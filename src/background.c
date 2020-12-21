@@ -29,7 +29,7 @@
 #ifndef _WIN32
 #include <sys/wait.h> /* waitpid() */
 #endif
-#include <signal.h> /* kill() */
+#include <signal.h> /* SIG* kill() */
 #include <unistd.h> /* execve() fork() setpgid() setsid() */
 
 #include <assert.h> /* assert() */
@@ -190,7 +190,7 @@ bg_check(void)
 		int can_remove = (!p->running && p->use_count == 0);
 		pthread_spin_unlock(&p->status_lock);
 
-		active_jobs += (running != 0);
+		active_jobs += (running != 0 && p->in_menu);
 
 		if(!running && p->on_job_bar)
 		{
@@ -297,6 +297,10 @@ job_free(bg_job_t *job)
 	if(job->hprocess != NO_JOB_ID)
 	{
 		CloseHandle(job->hprocess);
+	}
+	if(job->hjob != NO_JOB_ID)
+	{
+		CloseHandle(job->hjob);
 	}
 #endif
 	if(job->output != NULL)
@@ -802,6 +806,8 @@ bg_run_external_job(const char cmd[], BgJobFlags flags)
 		place_on_job_bar(job);
 	}
 
+	job->in_menu = (flags & BJF_MENU_VISIBLE);
+
 	return job;
 }
 
@@ -812,7 +818,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 {
 	/* TODO: simplify this function (launch_external()) somehow, maybe split in
 	 *       two. */
-	int visible = (flags & BJF_JOB_BAR_VISIBLE);
+	int jb_visible = (flags & BJF_JOB_BAR_VISIBLE);
 	int merge_streams = (capture_output && (flags & BJF_MERGE_STREAMS));
 
 #ifndef _WIN32
@@ -928,7 +934,7 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	}
 
 	bg_job_t *job = add_background_job(pid, cmd, (uintptr_t)error_pipe[0], 0,
-			BJT_COMMAND, visible);
+			BJT_COMMAND, jb_visible);
 
 	if(capture_output)
 	{
@@ -988,12 +994,15 @@ launch_external(const char cmd[], int capture_output, int new_session,
 	sh_cmd = win_make_sh_cmd(cmd, by);
 
 	wide_cmd = to_wide(sh_cmd);
-	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL,
-			&startup, &pinfo);
+	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, CREATE_SUSPENDED,
+			NULL, NULL, &startup, &pinfo);
 	free(wide_cmd);
 	CloseHandle(hnul);
 	CloseHandle(startup.hStdOutput);
-	CloseHandle(startup.hStdError);
+	if(startup.hStdError != startup.hStdOutput)
+	{
+		CloseHandle(startup.hStdError);
+	}
 
 	if(!started)
 	{
@@ -1002,18 +1011,28 @@ launch_external(const char cmd[], int capture_output, int new_session,
 		return NULL;
 	}
 
+	/* Put the process into its own job object and start its main thread. */
+	HANDLE hjob = CreateJobObject(NULL, NULL);
+	AssignProcessToJobObject(hjob, pinfo.hProcess);
+	ResumeThread(pinfo.hThread);
 	CloseHandle(pinfo.hThread);
 
 	bg_job_t *job = add_background_job(pinfo.dwProcessId, sh_cmd,
-			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, visible);
+			(uintptr_t)herr, (uintptr_t)pinfo.hProcess, BJT_COMMAND, jb_visible);
 	free(sh_cmd);
 
 	if(job == NULL)
 	{
 		CloseHandle(herr);
 		CloseHandle(hout);
+		CloseHandle(pinfo.hProcess);
+		CloseHandle(hjob);
+		return NULL;
 	}
-	else if(capture_output)
+
+	job->hjob = hjob;
+
+	if(capture_output)
 	{
 		int fd = _open_osfhandle((intptr_t)hout, _O_RDONLY);
 		if(fd == -1)
@@ -1127,7 +1146,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	pthread_spin_init(&new->errors_lock, PTHREAD_PROCESS_PRIVATE);
 	pthread_spin_init(&new->status_lock, PTHREAD_PROCESS_PRIVATE);
 	new->running = 1;
-	new->use_count = (type == BJT_COMMAND ? 1 : 0);
+	new->use_count = 0;
 	new->exit_code = -1;
 
 	new->output = NULL;
@@ -1137,10 +1156,12 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 #else
 	new->err_stream = (HANDLE)err;
 	new->hprocess = (HANDLE)data;
+	new->hjob = INVALID_HANDLE_VALUE;
 #endif
 
 	if(new->err_stream != NO_JOB_ID)
 	{
+		++new->use_count;
 		pthread_mutex_lock(&new_err_jobs_lock);
 		new->err_next = new_err_jobs;
 		new_err_jobs = new;
@@ -1159,6 +1180,8 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	new->bg_op.progress = -1;
 	new->bg_op.descr = NULL;
 	new->bg_op.cancelled = 0;
+
+	new->in_menu = 1;
 
 	bg_jobs = new;
 	return new;
@@ -1263,6 +1286,30 @@ bg_job_cancelled(bg_job_t *job)
 		return bg_op_cancelled(&job->bg_op);
 	}
 	return job->cancelled;
+}
+
+void
+bg_job_terminate(bg_job_t *job)
+{
+	if(job->type != BJT_COMMAND || !bg_job_is_running(job))
+	{
+		return;
+	}
+
+#ifndef _WIN32
+	if(kill(job->pid, SIGKILL) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Failed to send SIGKILL to %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+#else
+	if(!TerminateJobObject(job->hjob, 0))
+	{
+		LOG_ERROR_MSG("Failed to terminate job of process %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+		LOG_WERROR(GetLastError());
+	}
+#endif
 }
 
 int

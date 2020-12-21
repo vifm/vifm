@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.11  Last change: 2020 Sep 24
+*vifm-plugin.txt*    For Vifm version 0.11  Last change: 2020 Dec 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -79,8 +79,12 @@ Effectively always enabled in neovim.
                                                *g:vifm_embed_split*
 A boolean variable.  When evaluates to true and Vifm is embedded in a
 terminal, it will be run inside a new split.  This allows commands to support
-|<mods>| and a |<count>| for controlling the orientation and size of the
-split.  False by default.
+Vim's |<mod>| and a |<count>| for controlling the orientation and size of the
+split, making it possible to run a command inside of Vim such as:
+  - `:vertical Vifm`
+  - `:leftabove vertical 60Vifm`
+See `:help :command-modifiers` for Vim's command modifiers documentation.
+False by default.
 
                                                *g:vifm_embed_cwd*
                                                {not on MS-Windows}

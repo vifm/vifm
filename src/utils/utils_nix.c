@@ -178,6 +178,7 @@ wait_for_data_from(pid_t pid, FILE *f, int fd,
 		select_result = select(fd + 1, &read_ready, NULL, NULL, &ts);
 	}
 	while(select_result == 0 || (select_result == -1 && errno == EINTR));
+	process_cancel_request(pid, cancellation);
 }
 
 void

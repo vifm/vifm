@@ -24,14 +24,35 @@
 #include "utils/test_helpers.h"
 #include "filetype.h"
 
+/* Named boolean values of "sync" parameter of vcache_lookup() for better
+ * readability. */
+enum
+{
+	VC_ASYNC, /* Initiate viewing and return stub.  There will be a redraw after,
+	             when viewer provides more data.. */
+	VC_SYNC   /* Initiate viewing and wait until it's done producing requested
+	             number of lines. */
+};
+
+/* Type of callback function to check if preview of specified path is visible.
+ * Should return non-zero if so and zero otherwise. */
+typedef int (*vcache_is_previewed_cb)(const char path[]);
+
 struct strlist_t;
+
+/* Kills all asynchronous viewers. */
+void vcache_finish(void);
+
+/* Checks updates of asynchronous viewers.  Returns non-zero is screen needs to
+ * be updated, otherwise zero is returned. */
+int vcache_check(vcache_is_previewed_cb is_previewed);
 
 /* Looks up cached output of a viewer command (no macro expansion is performed)
  * or produces and caches it.  *error is set either to NULL or an error code on
  * failure.  Returns list of strings owned and managed by the unit, don't store
  * or free it. */
 struct strlist_t vcache_lookup(const char full_path[], const char viewer[],
-		ViewerKind kind, int max_lines, const char **error);
+		ViewerKind kind, int max_lines, int sync, const char **error);
 
 TSTATIC_DEFS(
 	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);

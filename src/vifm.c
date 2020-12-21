@@ -93,6 +93,7 @@
 #include "status.h"
 #include "trash.h"
 #include "undo.h"
+#include "vcache.h"
 
 static int vifm_main(int argc, char *argv[]);
 static int get_start_cwd(char buf[], size_t buf_len);
@@ -647,6 +648,7 @@ vifm_finish(const char message[])
 void _gnuc_noreturn
 vifm_exit(int exit_code)
 {
+	vcache_finish();
 	plugs_free(curr_stats.plugs);
 	vlua_finish(curr_stats.vlua);
 	ipc_free(curr_stats.ipc);

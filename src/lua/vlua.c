@@ -335,7 +335,7 @@ vifm_startjob(lua_State *lua)
 	check_field(lua, 1, "cmd", LUA_TSTRING);
 	const char *cmd = lua_tostring(lua, -1);
 
-	BgJobFlags flags = BJF_NONE;
+	BgJobFlags flags = BJF_MENU_VISIBLE;
 	if(check_opt_field(lua, 1, "visible", LUA_TBOOLEAN))
 	{
 		flags |= (lua_toboolean(lua, -1) ? BJF_JOB_BAR_VISIBLE : BJF_NONE);

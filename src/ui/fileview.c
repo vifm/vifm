@@ -1687,6 +1687,25 @@ fview_is_transposed(const view_t *view)
 	return (!ui_view_displays_columns(view) && view->ls_transposed);
 }
 
+int
+fview_previews(view_t *view, const char path[])
+{
+	if(!view->miller_view || !view->miller_preview_files)
+	{
+		return 0;
+	}
+
+	dir_entry_t *entry = get_current_entry(view);
+	if(fentry_is_dir(entry))
+	{
+		return 0;
+	}
+
+	char previewed[PATH_MAX + 1];
+	get_full_path_of(entry, sizeof(previewed), previewed);
+	return paths_are_equal(path, previewed);
+}
+
 void
 fview_set_millerview(view_t *view, int enabled)
 {

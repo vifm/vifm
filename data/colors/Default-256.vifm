@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 4 December, 2020
+" This file last updated: 19 December, 2020
 
 highlight clear
 
@@ -49,10 +49,6 @@ highlight User2 ctermbg=240 ctermfg=231 cterm=bold
 highlight User3 ctermbg=240 ctermfg=white
 highlight User4 ctermbg=white ctermfg=240
 
-" software documentation
-highlight {COPYRIGHT,COPYING*,BUGS,ChangeLog*,FAQ,INSTALL*,LICENCE,LICENSE,NEWS,
-          \README,README.*,AUTHORS,TODO,THANKS}
-        \ cterm=none ctermfg=187 ctermbg=default
 " build system files
 highlight {Makefile,Makefile.am,Makefile.in,Makefile.win,*.mak,*.mk,*.m4,*.ac,
           \configure,CMakeLists.txt,*.cmake,*.pro,*.pri,*.sln}
@@ -90,3 +86,7 @@ highlight {*.patch,*.diff,*.py,*.cpp,*.hpp,*.mk,*.c,*.h,*.cpp,*.hpp,*.cc,*.hs,
           \*.pl,*.pm,*.t,*.cs,*.asp,*.dart,*.js,*.rb,*.scala,*.ts,*.coffee,
           \*.ml,*.mli,*.rs,*.sql,*.qml,vifmrc,vimrc,.vimrc,*.flex,*.ypp}
         \ cterm=none ctermfg=193 ctermbg=default
+" software documentation
+highlight {COPYRIGHT,COPYING*,BUGS,ChangeLog*,FAQ,INSTALL*,LICENCE,LICENSE,NEWS,
+          \README,README.*,AUTHORS,TODO,THANKS}
+        \ cterm=none ctermfg=187 ctermbg=default

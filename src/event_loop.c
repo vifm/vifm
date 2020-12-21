@@ -31,6 +31,7 @@
 
 #include "cfg/config.h"
 #include "compat/curses.h"
+#include "compat/fs_limits.h"
 #include "engine/completion.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
@@ -44,6 +45,7 @@
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/test_helpers.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -53,10 +55,12 @@
 #include "ipc.h"
 #include "registers.h"
 #include "status.h"
+#include "vcache.h"
 #include "vifm.h"
 
 static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
+static int is_previewed(const char path[]);
 static void process_scheduled_updates(void);
 TSTATIC int process_scheduled_updates_of_view(view_t *view);
 static void update_hardware_cursor(void);
@@ -377,6 +381,11 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 				ipc_check(curr_stats.ipc);
 			}
 
+			if(vcache_check(&is_previewed))
+			{
+				stats_redraw_later();
+			}
+
 			wtimeout(win, delay_slice);
 			timeout -= delay_slice;
 
@@ -419,6 +428,21 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 	while(timeout > 0);
 
 	return ERR;
+}
+
+/* Checks if preview of specified path is visible.  Returns non-zero if so and
+ * zero otherwise. */
+static int
+is_previewed(const char path[])
+{
+	if(curr_stats.preview.on)
+	{
+		char previewed[PATH_MAX + 1];
+		get_current_full_path(curr_view, sizeof(previewed), previewed);
+		return paths_are_equal(path, previewed);
+	}
+
+	return (fview_previews(curr_view, path) || fview_previews(other_view, path));
 }
 
 /* Updates TUI or its elements if something is scheduled. */

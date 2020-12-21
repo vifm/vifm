@@ -197,6 +197,8 @@ ifdef DEBUG
     override LDFLAGS += -g
     ifdef unix_env
         override LDFLAGS += -rdynamic
+    else
+        override CFLAGS += -gdwarf-3
     endif
 
     ifeq ($(DEBUG),gdb)

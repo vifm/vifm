@@ -46,11 +46,13 @@
 #include "../ui/ui.h"
 #include "../cmd_completion.h"
 #include "../status.h"
+#include "cancellation.h"
 #include "env.h"
 #include "fs.h"
 #include "log.h"
 #include "macros.h"
 #include "path.h"
+#include "selector.h"
 #include "str.h"
 #include "test_helpers.h"
 #include "utf8.h"
@@ -62,6 +64,8 @@
 
 static const char PATHEXT_EXT_DEF[] = ".bat;.exe;.com";
 
+static void process_cancel_request(pid_t pid,
+		const cancellation_t *cancellation);
 TSTATIC int should_wait_for_program(const char cmd[]);
 static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static char * base64_encode(const char str[]);
@@ -124,9 +128,45 @@ recover_after_shellout(void)
 
 void
 wait_for_data_from(pid_t pid, FILE *f, int fd,
-		const struct cancellation_t *cancellation)
+		const cancellation_t *cancellation)
 {
-	/* Do nothing.  No need to wait for anything on this platform. */
+	enum { DELAY_MS = 250 };
+
+	selector_t *selector = selector_alloc();
+	if(selector == NULL)
+	{
+		return;
+	}
+
+	fd = (f != NULL ? fileno(f) : fd);
+	HANDLE h = (HANDLE)_get_osfhandle(fd);
+	selector_add(selector, h);
+
+	int has_data;
+	do
+	{
+		process_cancel_request(pid, cancellation);
+		has_data = selector_wait(selector, DELAY_MS);
+	}
+	while(!has_data);
+	process_cancel_request(pid, cancellation);
+
+	selector_free(selector);
+}
+
+/* Checks whether cancelling of current operation is requested and tries to
+ * cancel the process specified by its id. */
+static void
+process_cancel_request(pid_t pid, const cancellation_t *cancellation)
+{
+	if(cancellation_requested(cancellation))
+	{
+		if(win_cancel_process(pid) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Failed to cancel process with PID %" PRINTF_ULL,
+					(unsigned long long)pid);
+		}
+	}
 }
 
 void
