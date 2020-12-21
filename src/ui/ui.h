@@ -225,7 +225,7 @@ struct dir_entry_t
 	int hi_num;       /* File highlighting parameters cache.  Initially -1.
 	                     INT_MAX signifies absence of a match. */
 	int name_dec_num; /* File decoration parameters cache (initially -1).  The
-	                     value is shifted by one, 0 means type decoration. */
+	                     value is shifted by one, 0 means no type decoration. */
 
 	int child_count; /* Number of child entries (all, not just direct). */
 	int child_pos;   /* Position of this entry in among children of its parent.
