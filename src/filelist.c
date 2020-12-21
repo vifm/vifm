@@ -221,8 +221,7 @@ init_flist(view_t *view)
 	view->custom.title = NULL;
 
 	/* Load fake empty element to make dir_entry valid. */
-	view->dir_entry = dynarray_extend(NULL, sizeof(dir_entry_t));
-	memset(view->dir_entry, 0, sizeof(*view->dir_entry));
+	view->dir_entry = dynarray_cextend(NULL, sizeof(dir_entry_t));
 	view->dir_entry[0].name = strdup("");
 	view->dir_entry[0].type = FT_DIR;
 	view->dir_entry[0].hi_num = -1;
