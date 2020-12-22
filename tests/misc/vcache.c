@@ -334,6 +334,7 @@ TEST(vcache_check_reports_correct_status)
 		usleep(10);
 	}
 	assert_true(i < 1000);
+	vcache_finish();
 	assert_false(vcache_check(&is_previewed));
 	assert_false(vcache_check(&is_previewed));
 	assert_false(vcache_check(&is_previewed));
