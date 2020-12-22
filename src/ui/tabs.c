@@ -210,27 +210,18 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *side, const char name[],
 
 	DA_COMMIT(ptabs->tabs);
 
-	/* We're called from tabs_init() and just need to create internal structures
-	 * without cloning data (or it will leak). */
-	if(DA_SIZE(gtabs) == 0U)
+	/* When we're called from tabs_init(), we just need to create internal
+	 * structures without cloning data (or it will leak). */
+	if(DA_SIZE(gtabs) != 0U)
 	{
-		ptabs->tabs[0] = new_tab;
-		return &ptabs->tabs[0];
+		clone_view(&new_tab.view, side, path, clean);
+		update_string(&new_tab.name, name);
+
+		memmove(ptabs->tabs + at + 1, ptabs->tabs + at,
+				sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (at + 1)));
 	}
 
-	clone_view(&new_tab.view, side, path, clean);
-	update_string(&new_tab.name, name);
-
-	if(DA_SIZE(ptabs->tabs) == 1U)
-	{
-		ptabs->tabs[0] = new_tab;
-		return &ptabs->tabs[0];
-	}
-
-	memmove(ptabs->tabs + at + 1, ptabs->tabs + at,
-			sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (at + 1)));
 	ptabs->tabs[at] = new_tab;
-
 	return &ptabs->tabs[at];
 }
 
