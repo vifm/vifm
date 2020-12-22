@@ -395,34 +395,37 @@ tabs_goto_global(int idx)
 	ui_qv_cleanup_if_needed();
 	modview_hide_graphics();
 
+	global_tab_t *old_gtab = &gtabs[current_gtab];
+	global_tab_t *new_gtab = &gtabs[idx];
+
 	if(curr_stats.load_stage >= 3 && !curr_stats.restart_in_progress)
 	{
 		/* Mark the tab we started at as visited. */
-		gtabs[current_gtab].init_mark = init_counter;
+		old_gtab->init_mark = init_counter;
 	}
 
-	gtabs[current_gtab].left.tabs[gtabs[current_gtab].left.current].view = lwin;
-	gtabs[current_gtab].right.tabs[gtabs[current_gtab].right.current].view = rwin;
-	capture_global_state(&gtabs[current_gtab]);
-	assign_preview(&gtabs[current_gtab].preview, &curr_stats.preview);
+	old_gtab->left.tabs[old_gtab->left.current].view = lwin;
+	old_gtab->right.tabs[old_gtab->right.current].view = rwin;
+	capture_global_state(old_gtab);
+	assign_preview(&old_gtab->preview, &curr_stats.preview);
 
-	assign_view(&lwin, &gtabs[idx].left.tabs[gtabs[idx].left.current].view);
-	assign_view(&rwin, &gtabs[idx].right.tabs[gtabs[idx].right.current].view);
-	if(gtabs[idx].active_pane != (curr_view == &rwin))
+	assign_view(&lwin, &new_gtab->left.tabs[new_gtab->left.current].view);
+	assign_view(&rwin, &new_gtab->right.tabs[new_gtab->right.current].view);
+	if(new_gtab->active_pane != (curr_view == &rwin))
 	{
 		swap_view_roles();
 	}
-	curr_stats.number_of_windows = (gtabs[idx].only_mode ? 1 : 2);
-	curr_stats.split = gtabs[idx].split;
-	if(gtabs[idx].splitter_ratio == -1 || gtabs[idx].splitter_pos < 0)
+	curr_stats.number_of_windows = (new_gtab->only_mode ? 1 : 2);
+	curr_stats.split = new_gtab->split;
+	if(new_gtab->splitter_ratio == -1 || new_gtab->splitter_pos < 0)
 	{
-		stats_set_splitter_pos(gtabs[idx].splitter_pos);
+		stats_set_splitter_pos(new_gtab->splitter_pos);
 	}
 	else
 	{
-		stats_set_splitter_ratio(gtabs[idx].splitter_ratio);
+		stats_set_splitter_ratio(new_gtab->splitter_ratio);
 	}
-	assign_preview(&curr_stats.preview, &gtabs[idx].preview);
+	assign_preview(&curr_stats.preview, &new_gtab->preview);
 
 	current_gtab = idx;
 
@@ -432,14 +435,14 @@ tabs_goto_global(int idx)
 
 	load_view_options(curr_view);
 
-	if(gtabs[current_gtab].init_mark != init_counter &&
+	if(new_gtab->init_mark != init_counter &&
 			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
 	{
 		if(curr_stats.load_stage >= 3)
 		{
 			ui_resize_all();
 		}
-		if(gtabs[current_gtab].init_mark == 0)
+		if(new_gtab->init_mark == 0)
 		{
 			populate_dir_list(&lwin, 0);
 			populate_dir_list(&rwin, 0);
@@ -448,7 +451,7 @@ tabs_goto_global(int idx)
 		}
 		vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
 		vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
-		gtabs[current_gtab].init_mark = init_counter;
+		new_gtab->init_mark = init_counter;
 	}
 
 	(void)vifm_chdir(flist_get_dir(curr_view));
