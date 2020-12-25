@@ -19,7 +19,7 @@
 #include "tabs.h"
 
 #include <assert.h> /* assert() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* calloc() free() */
 #include <string.h> /* memmove() */
 
 #include "../cfg/config.h"
@@ -52,7 +52,9 @@ pane_tab_t;
 /* Collection of pane tabs. */
 typedef struct
 {
-	pane_tab_t *tabs;        /* List of tabs. */
+	pane_tab_t **tabs;       /* List of tabs.  Allocated individually on heap to
+	                            not copy them and for their fields to have fixed
+	                            memory addresses. */
 	DA_INSTANCE_FIELD(tabs); /* Declarations to enable use of DA_* on tabs. */
 	int current;             /* Index of the current tab. */
 }
@@ -201,9 +203,13 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *side, const char name[],
 	assert(at >= 0 && "Pane tab position is too small.");
 	assert(at <= (int)DA_SIZE(ptabs->tabs) && "Pane tab position is too big.");
 
-	pane_tab_t new_tab = {};
-
 	if(DA_EXTEND(ptabs->tabs) == NULL)
+	{
+		return NULL;
+	}
+
+	pane_tab_t *new_tab = calloc(1, sizeof(*new_tab));
+	if(new_tab == NULL)
 	{
 		return NULL;
 	}
@@ -214,15 +220,15 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *side, const char name[],
 	 * structures without cloning data (or it will leak). */
 	if(DA_SIZE(gtabs) != 0U)
 	{
-		clone_view(&new_tab.view, side, path, clean);
-		update_string(&new_tab.name, name);
+		clone_view(&new_tab->view, side, path, clean);
+		update_string(&new_tab->name, name);
 
 		memmove(ptabs->tabs + at + 1, ptabs->tabs + at,
 				sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (at + 1)));
 	}
 
 	ptabs->tabs[at] = new_tab;
-	return &ptabs->tabs[at];
+	return new_tab;
 }
 
 /* Clones one view into another.  Path specifies new location and can be NULL.
@@ -294,7 +300,7 @@ tabs_rename(view_t *side, const char name[])
 	if(cfg.pane_tabs)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(side);
-		update_string(&ptabs->tabs[ptabs->current].name, name);;
+		update_string(&ptabs->tabs[ptabs->current]->name, name);;
 	}
 	else
 	{
@@ -339,13 +345,13 @@ tabs_goto_pane(int idx)
 	if(curr_stats.load_stage >= 3 && !curr_stats.restart_in_progress)
 	{
 		/* Mark the tab we started at as visited. */
-		ptabs->tabs[ptabs->current].init_mark = init_counter;
+		ptabs->tabs[ptabs->current]->init_mark = init_counter;
 	}
 
-	ptabs->tabs[ptabs->current].view = *curr_view;
-	assign_preview(&ptabs->tabs[ptabs->current].preview, &curr_stats.preview);
-	assign_view(curr_view, &ptabs->tabs[idx].view);
-	assign_preview(&curr_stats.preview, &ptabs->tabs[idx].preview);
+	ptabs->tabs[ptabs->current]->view = *curr_view;
+	assign_preview(&ptabs->tabs[ptabs->current]->preview, &curr_stats.preview);
+	assign_view(curr_view, &ptabs->tabs[idx]->view);
+	assign_preview(&curr_stats.preview, &ptabs->tabs[idx]->preview);
 	ptabs->current = idx;
 
 	stats_set_quickview(curr_stats.preview.on);
@@ -353,17 +359,17 @@ tabs_goto_pane(int idx)
 
 	load_view_options(curr_view);
 
-	if(ptabs->tabs[ptabs->current].init_mark != init_counter &&
+	if(ptabs->tabs[ptabs->current]->init_mark != init_counter &&
 			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
 	{
-		if(ptabs->tabs[ptabs->current].init_mark == 0)
+		if(ptabs->tabs[ptabs->current]->init_mark == 0)
 		{
-			clone_viewport(curr_view, &ptabs->tabs[prev].view);
+			clone_viewport(curr_view, &ptabs->tabs[prev]->view);
 			populate_dir_list(curr_view, 0);
 			fview_dir_updated(curr_view);
 		}
 		vle_aucmd_execute("DirEnter", flist_get_dir(curr_view), curr_view);
-		ptabs->tabs[ptabs->current].init_mark = init_counter;
+		ptabs->tabs[ptabs->current]->init_mark = init_counter;
 	}
 
 	(void)vifm_chdir(flist_get_dir(curr_view));
@@ -395,13 +401,13 @@ tabs_goto_global(int idx)
 		old_gtab->init_mark = init_counter;
 	}
 
-	old_gtab->left.tabs[old_gtab->left.current].view = lwin;
-	old_gtab->right.tabs[old_gtab->right.current].view = rwin;
+	old_gtab->left.tabs[old_gtab->left.current]->view = lwin;
+	old_gtab->right.tabs[old_gtab->right.current]->view = rwin;
 	capture_global_state(old_gtab);
 	assign_preview(&old_gtab->preview, &curr_stats.preview);
 
-	assign_view(&lwin, &new_gtab->left.tabs[new_gtab->left.current].view);
-	assign_view(&rwin, &new_gtab->right.tabs[new_gtab->right.current].view);
+	assign_view(&lwin, &new_gtab->left.tabs[new_gtab->left.current]->view);
+	assign_view(&rwin, &new_gtab->right.tabs[new_gtab->right.current]->view);
 	if(new_gtab->active_pane != (curr_view == &rwin))
 	{
 		swap_view_roles();
@@ -498,17 +504,17 @@ tabs_close(void)
 	if(cfg.pane_tabs)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
-		pane_tab_t *const ptab = &ptabs->tabs[ptabs->current];
+		pane_tab_t **const ptab_ptr = &ptabs->tabs[ptabs->current];
 		const int n = (int)DA_SIZE(ptabs->tabs);
 		if(n != 1)
 		{
 			tabs_goto_pane(ptabs->current + (ptabs->current == n - 1 ? -1 : +1));
-			if(ptabs->current > ptab - ptabs->tabs)
+			if(ptabs->current > ptab_ptr - ptabs->tabs)
 			{
 				--ptabs->current;
 			}
-			free_pane_tab(ptab);
-			DA_REMOVE(ptabs->tabs, ptab);
+			free_pane_tab(*ptab_ptr);
+			DA_REMOVE(ptabs->tabs, ptab_ptr);
 		}
 	}
 	else
@@ -546,7 +552,7 @@ free_pane_tabs(pane_tabs_t *ptabs)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(ptabs->tabs); ++i)
 	{
-		free_pane_tab(&ptabs->tabs[i]);
+		free_pane_tab(ptabs->tabs[i]);
 	}
 	DA_REMOVE_ALL(ptabs->tabs);
 }
@@ -558,6 +564,7 @@ free_pane_tab(pane_tab_t *ptab)
 	flist_free_view(&ptab->view);
 	free_preview(&ptab->preview);
 	free(ptab->name);
+	free(ptab);
 }
 
 /* Frees resources owned by a preview state structure. */
@@ -630,11 +637,11 @@ get_pane_tab(view_t *side, int idx, tab_info_t *tab_info)
 	}
 	else
 	{
-		tab_info->view = &ptabs->tabs[idx].view;
-		tab_info->layout.preview = ptabs->tabs[idx].preview.on;
+		tab_info->view = &ptabs->tabs[idx]->view;
+		tab_info->layout.preview = ptabs->tabs[idx]->preview.on;
 	}
 
-	tab_info->name = ptabs->tabs[idx].name;
+	tab_info->name = ptabs->tabs[idx]->name;
 	tab_info->last = (idx == n - 1);
 	return 1;
 }
@@ -663,8 +670,8 @@ get_global_tab(view_t *side, int idx, tab_info_t *tab_info, int return_active)
 	}
 	tab_info->view = (return_active && !gtab->active_pane)
 	              || (!return_active && side == &lwin)
-	               ? &gtab->left.tabs[gtab->left.current].view
-	               : &gtab->right.tabs[gtab->right.current].view;
+	               ? &gtab->left.tabs[gtab->left.current]->view
+	               : &gtab->right.tabs[gtab->right.current]->view;
 	tab_info->layout.active_pane = gtab->active_pane;
 	tab_info->layout.only_mode = gtab->only_mode;
 	tab_info->layout.split = gtab->split;
@@ -699,10 +706,10 @@ tabs_only(view_t *side)
 		pane_tabs_t *const ptabs = get_pane_tabs(side);
 		while(DA_SIZE(ptabs->tabs) != 1U)
 		{
-			pane_tab_t *const ptab = &ptabs->tabs[ptabs->current == 0 ? 1 : 0];
+			pane_tab_t **const ptab_ptr = &ptabs->tabs[ptabs->current == 0 ? 1 : 0];
 			ptabs->current -= (ptabs->current == 0 ? 0 : 1);
-			free_pane_tab(ptab);
-			DA_REMOVE(ptabs->tabs, ptab);
+			free_pane_tab(*ptab_ptr);
+			DA_REMOVE(ptabs->tabs, ptab_ptr);
 		}
 	}
 	else
@@ -743,8 +750,8 @@ tabs_move(view_t *side, int where_to)
 
 	if(cfg.pane_tabs)
 	{
-		pane_tab_t *const ptabs = get_pane_tabs(side)->tabs;
-		const pane_tab_t ptab = ptabs[current];
+		pane_tab_t **const ptabs = get_pane_tabs(side)->tabs;
+		pane_tab_t *ptab = ptabs[current];
 		memmove(ptabs + to, ptabs + from, sizeof(*ptabs)*abs(future - current));
 		ptabs[future] = ptab;
 		get_pane_tabs(side)->current = future;
@@ -785,7 +792,7 @@ count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 	int i;
 	for(i = 0; i < (int)DA_SIZE(ptabs->tabs); ++i)
 	{
-		const pane_tab_t *const ptab = &ptabs->tabs[i];
+		const pane_tab_t *const ptab = ptabs->tabs[i];
 		const view_t *const v = (view != NULL && i == ptabs->current)
 		                      ? view
 		                      : &ptab->view;
@@ -822,7 +829,7 @@ normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side)
 	{
 		if(i != ptabs->current)
 		{
-			view_t *const v = &ptabs->tabs[i].view;
+			view_t *const v = &ptabs->tabs[i]->view;
 			ui_swap_view_data(v, &tmp);
 			*v = tmp;
 			flist_update_origins(v, &side->curr_dir[0]);
@@ -874,8 +881,8 @@ tabs_setup_gtab(const char name[], const tab_layout_t *layout, view_t **left,
 	global_tab_t *gtab = &gtabs[idx];
 	apply_layout(gtab, layout);
 
-	*left = &gtab->left.tabs[0].view;
-	*right = &gtab->right.tabs[0].view;
+	*left = &gtab->left.tabs[0]->view;
+	*right = &gtab->right.tabs[0]->view;
 	return 0;
 }
 
