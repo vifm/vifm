@@ -38,6 +38,17 @@
 #include "fileview.h"
 #include "ui.h"
 
+/**
+ * Tabs are stored in a two-level structure where global tabs own pane tabs.
+ *
+ * The rest of the code works almost exclusively with global `lwin` and `rwin`
+ * variables.  The exception is occasional looping through hidden views (the
+ * ones in inactive tabs).
+ *
+ * When a view changes its state (hidden <-> visible), origins of its entries
+ * are updated to reflect change in location of view_t::curr_dir field.
+ */
+
 /* Pane-specific tab (contains information about only one view). */
 typedef struct
 {
@@ -87,7 +98,8 @@ static void tabs_goto_pane(int idx);
 static void tabs_goto_global(int idx);
 static void capture_global_state(global_tab_t *gtab);
 static void assign_preview(preview_t *dst, const preview_t *src);
-static void assign_view(view_t *dst, const view_t *src);
+static void stash_view(view_t *dst, const view_t *src);
+static void restore_view(view_t *dst, const view_t *src);
 static void free_global_tab(global_tab_t *gtab);
 static void free_pane_tabs(pane_tabs_t *ptabs);
 static void free_pane_tab(pane_tab_t *ptab);
@@ -98,7 +110,7 @@ static int get_global_tab(view_t *side, int idx, tab_info_t *tab_info,
 		int return_active);
 static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		const view_t *view);
-static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side);
+static void normalize_pane_tabs(const pane_tabs_t *ptabs, const view_t *side);
 static void apply_layout(global_tab_t *gtab, const tab_layout_t *layout);
 
 /* Number of time this unit was (re-)initialized. */
@@ -274,9 +286,6 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 		}
 
 		(void)populate_dir_list(dst, path == NULL);
-		/* Redirect origins from tab's view to lwin or rwin, which is how they
-		 * should end up after loading a tab into lwin or rwin. */
-		flist_update_origins(dst, &side->curr_dir[0]);
 
 		/* Record new location. */
 		flist_hist_save(dst);
@@ -348,9 +357,9 @@ tabs_goto_pane(int idx)
 		ptabs->tabs[ptabs->current]->init_mark = init_counter;
 	}
 
-	ptabs->tabs[ptabs->current]->view = *curr_view;
+	stash_view(&ptabs->tabs[ptabs->current]->view, curr_view);
 	assign_preview(&ptabs->tabs[ptabs->current]->preview, &curr_stats.preview);
-	assign_view(curr_view, &ptabs->tabs[idx]->view);
+	restore_view(curr_view, &ptabs->tabs[idx]->view);
 	assign_preview(&curr_stats.preview, &ptabs->tabs[idx]->preview);
 	ptabs->current = idx;
 
@@ -401,13 +410,13 @@ tabs_goto_global(int idx)
 		old_gtab->init_mark = init_counter;
 	}
 
-	old_gtab->left.tabs[old_gtab->left.current]->view = lwin;
-	old_gtab->right.tabs[old_gtab->right.current]->view = rwin;
+	stash_view(&old_gtab->left.tabs[old_gtab->left.current]->view, &lwin);
+	stash_view(&old_gtab->right.tabs[old_gtab->right.current]->view, &rwin);
 	capture_global_state(old_gtab);
 	assign_preview(&old_gtab->preview, &curr_stats.preview);
 
-	assign_view(&lwin, &new_gtab->left.tabs[new_gtab->left.current]->view);
-	assign_view(&rwin, &new_gtab->right.tabs[new_gtab->right.current]->view);
+	restore_view(&lwin, &new_gtab->left.tabs[new_gtab->left.current]->view);
+	restore_view(&rwin, &new_gtab->right.tabs[new_gtab->right.current]->view);
 	if(new_gtab->active_pane != (curr_view == &rwin))
 	{
 		swap_view_roles();
@@ -476,9 +485,21 @@ assign_preview(preview_t *dst, const preview_t *src)
 	update_string(&dst->cleanup_cmd, src->cleanup_cmd);
 }
 
-/* Assigns a view preserving UI-related data. */
+/* Turns visible view into a hidden one. */
 static void
-assign_view(view_t *dst, const view_t *src)
+stash_view(view_t *dst, const view_t *src)
+{
+	*dst = *src;
+
+	dst->win = NULL;
+	dst->title = NULL;
+
+	flist_update_origins(dst);
+}
+
+/* Turns hidden view into a visible one. */
+static void
+restore_view(view_t *dst, const view_t *src)
 {
 	WINDOW *win = dst->win;
 	WINDOW *title = dst->title;
@@ -487,6 +508,8 @@ assign_view(view_t *dst, const view_t *src)
 
 	dst->win = win;
 	dst->title = title;
+
+	flist_update_origins(dst);
 }
 
 int
@@ -821,7 +844,7 @@ tabs_switch_panes(void)
 /* Fixes data fields of views after they got moved from one pane to another.
  * The side parameter indicates destination pane. */
 static void
-normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side)
+normalize_pane_tabs(const pane_tabs_t *ptabs, const view_t *side)
 {
 	view_t tmp = *side;
 	int i;
@@ -832,7 +855,6 @@ normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side)
 			view_t *const v = &ptabs->tabs[i]->view;
 			ui_swap_view_data(v, &tmp);
 			*v = tmp;
-			flist_update_origins(v, &side->curr_dir[0]);
 		}
 	}
 }

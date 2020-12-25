@@ -2859,7 +2859,7 @@ flist_free_cache(view_t *view, cached_entries_t *cache)
 }
 
 void
-flist_update_origins(view_t *view, char to[])
+flist_update_origins(view_t *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
@@ -2867,7 +2867,7 @@ flist_update_origins(view_t *view, char to[])
 		dir_entry_t *const entry = &view->dir_entry[i];
 		if(!entry->owns_origin)
 		{
-			entry->origin = to;
+			entry->origin = &view->curr_dir[0];
 		}
 	}
 }
