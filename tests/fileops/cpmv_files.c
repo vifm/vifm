@@ -7,6 +7,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/utils/dynarray.h"
@@ -17,8 +19,6 @@
 #include "../../src/fops_cpmv.h"
 #include "../../src/trash.h"
 
-#include "utils.h"
-
 static void check_directory_clash(int parent_to_child, CopyMoveLikeOp op);
 
 static char *saved_cwd;
@@ -26,14 +26,12 @@ static char *saved_cwd;
 SETUP()
 {
 	saved_cwd = save_cwd();
-
-	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
-	set_to_sandbox_path(rwin.curr_dir, sizeof(rwin.curr_dir));
-
 	assert_success(chdir(SANDBOX_PATH));
 
 	/* lwin */
 	view_setup(&lwin);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -43,6 +41,8 @@ SETUP()
 
 	/* rwin */
 	view_setup(&rwin);
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
 	rwin.filtered = 0;
 	rwin.list_pos = 0;
 
@@ -63,7 +63,7 @@ TEST(move_file)
 	char new_fname[] = "new_name";
 	char *list[] = { &new_fname[0] };
 
-	create_empty_file(lwin.dir_entry[0].name);
+	create_file(lwin.dir_entry[0].name);
 
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
@@ -198,10 +198,10 @@ TEST(cpmv_considers_tree_structure)
 	char *list[] = { &new_fname[0] };
 
 	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
-	create_empty_dir("dir");
+	create_dir("dir");
 
 	/* Move from tree root to nested dir. */
-	create_empty_file("file");
+	create_file("file");
 	flist_load_tree(&rwin, rwin.curr_dir);
 	rwin.list_pos = 1;
 	lwin.dir_entry[0].marked = 1;
@@ -211,7 +211,7 @@ TEST(cpmv_considers_tree_structure)
 	/* Move back. */
 	curr_view = &rwin;
 	other_view = &lwin;
-	create_empty_file("dir/file");
+	create_file("dir/file");
 	flist_load_tree(&lwin, flist_get_dir(&lwin));
 	flist_load_tree(&rwin, flist_get_dir(&rwin));
 	lwin.list_pos = 0;
@@ -228,6 +228,7 @@ TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
 
 	strcat(lwin.curr_dir, "/trash");
 	trash_set_specs(lwin.curr_dir);
+	assert_success(rmdir("trash"));
 	remove_last_path_component(lwin.curr_dir);
 
 	strcat(lwin.curr_dir, "/dir");
@@ -237,12 +238,12 @@ TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
 
 	for(bg = 0; bg < 2; ++bg)
 	{
-		create_empty_dir("trash");
-		create_empty_file("trash/000_a");
-		create_empty_dir("trash/nested");
-		create_empty_file("trash/nested/000_file");
-		create_empty_dir("dir");
-		create_empty_file("000_b");
+		create_dir("trash");
+		create_file("trash/000_a");
+		create_dir("trash/nested");
+		create_file("trash/nested/000_file");
+		create_dir("dir");
+		create_file("000_b");
 
 		flist_custom_start(&rwin, "test");
 		flist_custom_add(&rwin, "trash/000_a");
@@ -316,8 +317,8 @@ TEST(parent_overwrite_is_prevented_on_file_move)
 
 TEST(copying_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
 {
-	create_empty_file("can-read");
-	create_empty_file("can-not-read");
+	create_file("can-read");
+	create_file("can-not-read");
 	assert_success(chmod("can-not-read", 0000));
 	populate_dir_list(&lwin, 0);
 
@@ -337,9 +338,9 @@ TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 	int bg;
 	for(bg = 0; bg < 2; ++bg)
 	{
-		create_empty_dir("dir");
-		create_empty_file("file1");
-		create_empty_file("file2");
+		create_dir("dir");
+		create_file("file1");
+		create_file("file2");
 
 		populate_dir_list(&lwin, 0);
 		assert_int_equal(3, lwin.list_rows);
@@ -388,9 +389,9 @@ TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 static void
 check_directory_clash(int parent_to_child, CopyMoveLikeOp op)
 {
-	create_empty_dir("dir");
-	create_empty_dir("dir/dir");
-	create_empty_file("dir/dir/file");
+	create_dir("dir");
+	create_dir("dir/dir");
+	create_file("dir/dir/file");
 
 	strcat(parent_to_child ? rwin.curr_dir : lwin.curr_dir, "/dir");
 

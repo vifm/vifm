@@ -2,6 +2,8 @@
 
 #include <unistd.h> /* chdir() rmdir() unlink() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
@@ -10,8 +12,6 @@
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
 
-#include "utils.h"
-
 static char *saved_cwd;
 
 SETUP()
@@ -19,10 +19,10 @@ SETUP()
 	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
+	view_setup(&lwin);
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);
 
-	view_setup(&lwin);
 	update_string(&cfg.fuse_home, "");
 }
 
@@ -56,7 +56,7 @@ TEST(make_files_fails_if_file_exists)
 	char name[] = "a";
 	char *names[] = { name };
 
-	create_empty_file("a");
+	create_file("a");
 
 	assert_true(fops_mkfiles(&lwin, -1, names, 1));
 
@@ -90,7 +90,7 @@ TEST(make_files_considers_tree_structure)
 	char name[] = "new-file";
 	char *names[] = { name };
 
-	create_empty_dir("dir");
+	create_dir("dir");
 
 	flist_load_tree(&lwin, lwin.curr_dir);
 
@@ -116,7 +116,7 @@ TEST(check_by_absolute_path_is_performed_beforehand)
 	char *names[] = { name_a, name_b };
 
 	snprintf(name_b, sizeof(name_b), "%s/b", lwin.curr_dir);
-	create_empty_file(name_b);
+	create_file(name_b);
 
 	(void)fops_mkfiles(&lwin, -1, names, 2);
 

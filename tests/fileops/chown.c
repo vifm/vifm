@@ -7,6 +7,8 @@
 
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
@@ -16,8 +18,6 @@
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
-
-#include "utils.h"
 
 static int get_gids(gid_t *gid1, gid_t *gid2);
 static int has_more_than_one_group(void);
@@ -54,8 +54,8 @@ TEST(file_group_is_changed, IF(has_more_than_one_group))
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	assert_success(chdir(lwin.curr_dir));
 
-	create_empty_dir("dir");
-	create_empty_file("dir/chown-me");
+	create_dir("dir");
+	create_file("dir/chown-me");
 
 	flist_custom_start(&lwin, "test");
 	make_abs_path(path, sizeof(path), SANDBOX_PATH, "dir/chown-me", saved_cwd);

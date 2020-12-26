@@ -4,6 +4,8 @@
 
 #include <string.h> /* strcat() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -14,8 +16,6 @@
 #include "../../src/fops_misc.h"
 #include "../../src/registers.h"
 #include "../../src/trash.h"
-
-#include "utils.h"
 
 static char *saved_cwd;
 
@@ -46,8 +46,8 @@ TEST(marked_files_are_removed_permanently)
 		int bg;
 		for(bg = 0; bg < 2; ++bg)
 		{
-			create_empty_file("a");
-			create_empty_file("b");
+			create_file("a");
+			create_file("b");
 
 			populate_dir_list(&lwin, 0);
 			lwin.dir_entry[0].marked = 1;
@@ -73,7 +73,7 @@ TEST(files_in_trash_are_not_removed_to_trash)
 	cfg.use_trash = 1;
 	trash_set_specs(lwin.curr_dir);
 
-	create_empty_file("a");
+	create_file("a");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -90,7 +90,7 @@ TEST(trash_is_not_removed_to_trash)
 	cfg.use_trash = 1;
 	trash_set_specs("trash");
 
-	create_empty_dir("trash");
+	create_dir("trash");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -109,6 +109,7 @@ TEST(marked_files_are_removed_to_trash)
 
 	cfg.use_trash = 1;
 	trash_set_specs(trash_dir);
+	assert_success(rmdir("trash"));
 
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
@@ -116,10 +117,10 @@ TEST(marked_files_are_removed_to_trash)
 		int bg;
 		for(bg = 0; bg < 2; ++bg)
 		{
-			create_empty_dir("trash");
+			create_dir("trash");
 
-			create_empty_file("a");
-			create_empty_file("b");
+			create_file("a");
+			create_file("b");
 
 			populate_dir_list(&lwin, 0);
 			lwin.dir_entry[2].marked = 1;
@@ -163,12 +164,12 @@ TEST(nested_file_is_removed)
 			{
 				if(to_trash)
 				{
-					create_empty_dir("trash");
+					create_dir("trash");
 				}
-				create_empty_dir("dir");
+				create_dir("dir");
 
-				create_empty_file("dir/a");
-				create_empty_file("dir/b");
+				create_file("dir/a");
+				create_file("dir/b");
 
 				make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 						saved_cwd);
@@ -210,8 +211,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_cv)
 	trash_set_specs(lwin.curr_dir);
 	remove_last_path_component(lwin.curr_dir);
 
-	create_empty_dir("dir");
-	create_empty_file("dir/a");
+	create_file("dir/a");
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "dir");
@@ -234,8 +234,8 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 	cfg.use_trash = 1;
 	trash_set_specs("dir");
 
-	create_empty_dir("dir");
-	create_empty_file("dir/a");
+	create_dir("dir");
+	create_file("dir/a");
 
 	assert_success(flist_load_tree(&lwin, "."));
 	lwin.dir_entry[1].marked = 1;
@@ -252,7 +252,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 TEST(trash_is_not_checked_on_permanent_bg_remove)
 {
 	assert_success(trash_set_specs(lwin.curr_dir));
-	create_empty_dir("dir");
+	create_dir("dir");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -274,7 +274,7 @@ TEST(empty_directory_is_removed)
 		int bg;
 		for(bg = 0; bg < 2; ++bg)
 		{
-			create_empty_dir("dir");
+			create_dir("dir");
 
 			populate_dir_list(&lwin, 0);
 			lwin.dir_entry[0].marked = 1;

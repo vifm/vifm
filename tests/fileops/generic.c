@@ -7,6 +7,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
@@ -16,8 +18,6 @@
 #include "../../src/fops_put.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"
-
-#include "utils.h"
 
 static void perform_merge(int op);
 static int file_exists(const char file[]);
@@ -76,13 +76,13 @@ TEST(merge_directories)
 	{
 		ops_t *ops;
 
-		create_empty_dir("first");
-		create_empty_dir("first/nested");
-		create_empty_file("first/nested/first-file");
+		create_dir("first");
+		create_dir("first/nested");
+		create_file("first/nested/first-file");
 
-		create_empty_dir("second");
-		create_empty_dir("second/nested");
-		create_empty_file("second/nested/second-file");
+		create_dir("second");
+		create_dir("second/nested");
+		create_file("second/nested/second-file");
 
 		un_group_open("undo msg");
 
@@ -180,13 +180,13 @@ perform_merge(int op)
 
 	ops_t *ops;
 
-	create_empty_dir("first");
-	create_empty_dir("first/nested1");
-	create_empty_dir("first/nested1/nested2");
-	create_empty_file("first/nested1/nested2/file");
+	create_dir("first");
+	create_dir("first/nested1");
+	create_dir("first/nested1/nested2");
+	create_file("first/nested1/nested2/file");
 
-	create_empty_dir("second");
-	create_empty_dir("second/nested1");
+	create_dir("second");
+	create_dir("second/nested1");
 
 #ifndef _WIN32
 	/* Something about GNU Hurd and OS X differs, so skip this workaround there.

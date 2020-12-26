@@ -3,12 +3,12 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() symlink() unlink() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
-
-#include "utils.h"
 
 static char *saved_cwd;
 
@@ -31,7 +31,7 @@ TEARDOWN()
 
 TEST(files_are_cloned)
 {
-	create_empty_file("a");
+	create_file("a");
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
 
@@ -48,7 +48,7 @@ TEST(files_are_cloned_with_custom_name)
 {
 	char *names[] = { "b" };
 
-	create_empty_file("a");
+	create_file("a");
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
 
@@ -60,8 +60,8 @@ TEST(files_are_cloned_with_custom_name)
 
 TEST(files_are_cloned_according_to_tree_structure)
 {
-	create_empty_dir("dir");
-	create_empty_file("dir/a");
+	create_dir("dir");
+	create_file("dir/a");
 
 	/* Clone at the top level. */
 
@@ -119,7 +119,7 @@ TEST(cloning_does_not_work_in_custom_view)
 {
 	char *names[] = { "a-clone" };
 
-	create_empty_file("do-not-clone-me");
+	create_file("do-not-clone-me");
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "do-not-clone-me");
@@ -157,8 +157,8 @@ TEST(cloning_of_broken_symlink, IF(not_windows))
 
 TEST(cloning_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
 {
-	create_empty_file("can-read");
-	create_empty_file("can-not-read");
+	create_file("can-read");
+	create_file("can-not-read");
 	assert_success(chmod("can-not-read", 0000));
 	populate_dir_list(&lwin, 0);
 

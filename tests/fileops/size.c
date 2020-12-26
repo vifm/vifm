@@ -6,6 +6,8 @@
 #include <string.h> /* strcpy() strdup() */
 #include <time.h> /* time_t */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
@@ -14,8 +16,6 @@
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static void setup_single_entry(view_t *view, const char name[]);
 static uint64_t wait_for_size(const char path[]);
@@ -85,7 +85,7 @@ TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
 
 TEST(symlinks_to_dirs, IF(not_windows))
 {
-	create_empty_dir(SANDBOX_PATH "/dir");
+	create_dir(SANDBOX_PATH "/dir");
 
 	char cwd[PATH_MAX + 1];
 	get_cwd(cwd, sizeof(cwd));
@@ -96,7 +96,7 @@ TEST(symlinks_to_dirs, IF(not_windows))
 	assert_success(symlink(dir, SANDBOX_PATH "/link"));
 #endif
 
-	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
 	populate_dir_list(&lwin, 0);
 	assert_int_equal(2, lwin.list_rows);
 	lwin.dir_entry[0].marked = 1;
