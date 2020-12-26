@@ -26,6 +26,7 @@ SETUP()
 
 	view_setup(&lwin);
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
+	view_setup(&rwin);
 
 	cfg.use_trash = 0;
 }
@@ -33,6 +34,7 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 	restore_cwd(saved_cwd);
 }
 

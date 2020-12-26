@@ -149,6 +149,7 @@ TEST(cpmv_crash_on_wrong_list_access)
 	char *list[] = { "." };
 
 	view_teardown(&lwin);
+	view_setup(&lwin);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();

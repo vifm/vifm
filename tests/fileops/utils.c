@@ -5,9 +5,11 @@
 #include <unistd.h> /* access() usleep() */
 
 #include <stdio.h> /* FILE fclose() fopen() */
+#include <stdlib.h> /* malloc() */
 #include <string.h> /* snprintf() strcpy() */
 
 #include "../../src/compat/os.h"
+#include "../../src/compat/pthread.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -31,6 +33,9 @@ view_setup(view_t *view)
 
 	view->sort[0] = SK_NONE;
 	ui_view_sort_list_ensure_well_formed(view, view->sort);
+
+	view->timestamps_mutex = malloc(sizeof(*view->timestamps_mutex));
+	pthread_mutex_init(view->timestamps_mutex, NULL);
 }
 
 void

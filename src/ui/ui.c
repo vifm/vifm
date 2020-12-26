@@ -108,13 +108,8 @@ static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
-/* Mutexes for views, located out of view_t so that they are never moved nor
- * copied, which would yield undefined behaviour. */
-static pthread_mutex_t lwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t rwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-view_t lwin = { .timestamps_mutex = &lwin_timestamps_mutex };
-view_t rwin = { .timestamps_mutex = &rwin_timestamps_mutex };
+view_t lwin;
+view_t rwin;
 
 view_t *other_view;
 view_t *curr_view;

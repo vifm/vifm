@@ -23,6 +23,7 @@ static uint64_t wait_for_size(const char path[]);
 SETUP()
 {
 	stats_init(&cfg);
+	view_setup(&lwin);
 }
 
 TEARDOWN()
@@ -71,6 +72,7 @@ TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
 
 	assert_success(unlink(SANDBOX_PATH "/dir/subdir/file"));
 	view_teardown(&lwin);
+	view_setup(&lwin);
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	setup_single_entry(&lwin, "dir");
 
@@ -94,7 +96,6 @@ TEST(symlinks_to_dirs, IF(not_windows))
 	assert_success(symlink(dir, SANDBOX_PATH "/link"));
 #endif
 
-	view_setup(&lwin);
 	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
 	populate_dir_list(&lwin, 0);
 	assert_int_equal(2, lwin.list_rows);
@@ -106,7 +107,6 @@ TEST(symlinks_to_dirs, IF(not_windows))
 	assert_int_equal(0, wait_for_size(SANDBOX_PATH "/dir"));
 	assert_int_equal(73728, wait_for_size(SANDBOX_PATH "/link"));
 
-	view_teardown(&lwin);
 	assert_success(unlink(SANDBOX_PATH "/link"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }

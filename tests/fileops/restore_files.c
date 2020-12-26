@@ -21,6 +21,7 @@ SETUP()
 {
 	view_setup(&lwin);
 	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
+	view_setup(&rwin);
 
 	create_empty_file(SANDBOX_PATH "/file");
 	saved_cwd = save_cwd();
@@ -38,6 +39,7 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 	restore_cwd(saved_cwd);
 	assert_success(rmdir(trash_dir));
 }

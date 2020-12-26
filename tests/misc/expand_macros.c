@@ -27,6 +27,7 @@
 static void
 setup_lwin(void)
 {
+	view_setup(&lwin);
 	strcpy(lwin.curr_dir, "/lwin");
 
 	lwin.list_rows = 4;
@@ -50,6 +51,7 @@ setup_lwin(void)
 static void
 setup_rwin(void)
 {
+	view_setup(&rwin);
 	strcpy(rwin.curr_dir, "/rwin");
 
 	rwin.list_rows = 7;
@@ -94,15 +96,8 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	dynarray_free(lwin.dir_entry);
-
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	dynarray_free(rwin.dir_entry);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(literal_percent)

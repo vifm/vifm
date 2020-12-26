@@ -43,6 +43,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "compat/pthread.h"
 #include "engine/autocmds.h"
 #include "engine/mode.h"
 #include "int/fuse.h"
@@ -325,6 +326,10 @@ flist_free_view(view_t *view)
 	regfree(&view->primary_group);
 
 	marks_clear_view(view);
+
+	pthread_mutex_destroy(view->timestamps_mutex);
+	free(view->timestamps_mutex);
+	view->timestamps_mutex = NULL;
 }
 
 void

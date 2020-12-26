@@ -250,7 +250,6 @@ static void
 clone_view(view_t *dst, view_t *side, const char path[], int clean)
 {
 	strcpy(dst->curr_dir, path == NULL ? flist_get_dir(side) : path);
-	dst->timestamps_mutex = side->timestamps_mutex;
 
 	flist_init_view(dst);
 	/* This is for replace_dir_entries() below due to check in fentry_free(),

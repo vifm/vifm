@@ -14,11 +14,12 @@
 #include "../../src/modes/dialogs/attr_dialog.h"
 #include "../../src/filelist.h"
 
+#include "utils.h"
+
 #ifndef _WIN32
 
 static void set_file_perms(const int perms[13]);
 static void alloc_file_list(view_t *view, const char filename[]);
-static void free_file_list(view_t *view);
 static mode_t perms_to_mode(const int perms[13]);
 static mode_t get_perms(const char path[]);
 static int not_osx(void);
@@ -35,11 +36,13 @@ SETUP_ONCE()
 SETUP()
 {
 	mask = umask(0000);
+	view_setup(&lwin);
 }
 
 TEARDOWN()
 {
 	(void)umask(mask);
+	view_teardown(&lwin);
 }
 
 TEST(every_permission_can_be_reset)
@@ -55,6 +58,9 @@ TEST(every_permission_can_be_reset)
 		perms[i] ^= 1;
 		set_file_perms(perms);
 		perms[i] ^= 1;
+
+		view_teardown(&lwin);
+		view_setup(&lwin);
 	}
 }
 
@@ -80,7 +86,6 @@ set_file_perms(const int perms[13])
 	alloc_file_list(&lwin, "file");
 	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
-	free_file_list(&lwin);
 
 	assert_int_equal(perms_to_mode(perms), get_perms(SANDBOX_PATH "/file"));
 
@@ -113,7 +118,6 @@ TEST(reset_executable_bits_from_files_only, IF(not_osx))
 	alloc_file_list(&lwin, "dir");
 	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
-	free_file_list(&lwin);
 
 	assert_int_equal(perms_to_mode(perms), get_perms(SANDBOX_PATH "/dir/file"));
 	assert_int_equal(0777, get_perms(SANDBOX_PATH "/dir"));
@@ -148,7 +152,6 @@ TEST(set_executable_bit_via_X_flag)
 	alloc_file_list(&lwin, "dir");
 	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
-	free_file_list(&lwin);
 
 	assert_int_equal(0776, get_perms(SANDBOX_PATH "/dir/file"));
 	assert_int_equal(0776, get_perms(SANDBOX_PATH "/dir"));
@@ -166,20 +169,6 @@ alloc_file_list(view_t *view, const char filename[])
 			view->list_rows*sizeof(*view->dir_entry));
 	view->dir_entry[0].name = strdup(filename);
 	view->dir_entry[0].origin = &view->curr_dir[0];
-}
-
-static void
-free_file_list(view_t *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free(view->dir_entry[i].name);
-	}
-	dynarray_free(view->dir_entry);
-	view->list_rows = 0;
-	view->dir_entry = NULL;
 }
 
 static mode_t

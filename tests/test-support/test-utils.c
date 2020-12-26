@@ -13,11 +13,12 @@
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fread() remove() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
+#include "../../src/compat/pthread.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/options.h"
 #include "../../src/ui/color_manager.h"
@@ -232,6 +233,9 @@ view_setup(view_t *view)
 
 	view->local_filter.entry_count = 0;
 	view->local_filter.entries = NULL;
+
+	view->timestamps_mutex = malloc(sizeof(*view->timestamps_mutex));
+	pthread_mutex_init(view->timestamps_mutex, NULL);
 }
 
 void

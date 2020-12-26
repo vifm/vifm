@@ -30,10 +30,11 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* abs() */
+#include <stdlib.h> /* abs() malloc() */
 #include <string.h> /* memset() strcpy() strlen() */
 
 #include "../cfg/config.h"
+#include "../compat/pthread.h"
 #include "../utils/fs.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
@@ -218,6 +219,9 @@ fview_init(view_t *view)
 
 	view->preview_prg = strdup("");
 	view->preview_prg_g = strdup("");
+
+	view->timestamps_mutex = malloc(sizeof(*view->timestamps_mutex));
+	pthread_mutex_init(view->timestamps_mutex, NULL);
 }
 
 void
