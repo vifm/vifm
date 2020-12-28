@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 14
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 28
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -303,8 +303,9 @@ Retrieves exit code of the application.
 Waits for the job to finish.
 
 Return:~
-  Returns an integer number that represents exit code.  The value is `-1`
-  if the application didn't exit normally.
+  Returns an integer number that represents exit code.  The value is `-x` if
+  the application was killed by signal `x`.  `-127` or `-128` means that
+  tracking the application has failed in some way.
 
 Raises an error:~
   If waiting has failed.
