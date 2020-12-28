@@ -557,7 +557,7 @@ static int
 vifm_change_dir(lua_State *lua)
 {
 	const char *path = luaL_checkstring(lua, 1);
-	int success = (change_directory(curr_view, path) >= 0);
+	int success = (navigate_to(curr_view, path) == 0);
 	lua_pushboolean(lua, success);
 	return 1;
 }
