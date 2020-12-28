@@ -1332,6 +1332,13 @@ bg_job_wait(bg_job_t *job)
 		return 0;
 	}
 
+	/* Close output to avoid situation when the job is blocked on write. */
+	if(job->output != NULL)
+	{
+		fclose(job->output);
+		job->output = NULL;
+	}
+
 #ifndef _WIN32
 	int status = get_proc_exit_status(job->pid);
 	if(status == -1)

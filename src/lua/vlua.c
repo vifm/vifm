@@ -326,7 +326,7 @@ vifm_makepath(lua_State *lua)
 }
 
 /* Member of `vifm` that starts an external application as detached from a
- * terminal.  Returns object of VifmJob type or raises an error. */
+ * terminal.  Returns an object of VifmJob type or raises an error. */
 static int
 vifm_startjob(lua_State *lua)
 {
@@ -601,6 +601,15 @@ vifmjob_gc(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 	bg_job_decref(vifm_job->job);
+
+	if(vifm_job->output != NULL)
+	{
+		job_stream_t *js = vifm_job->output;
+		drop_pointer(lua, js->obj);
+		bg_job_decref(js->job);
+		js->job = NULL;
+	}
+
 	return 0;
 }
 
@@ -610,6 +619,16 @@ static int
 vifmjob_wait(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+
+	/* Close Lua output stream to avoid situation when the job is blocked on
+	 * write. */
+	if(vifm_job->output != NULL)
+	{
+		job_stream_t *js = vifm_job->output;
+		js->lua_stream.closef = NULL;
+		bg_job_decref(js->job);
+		drop_pointer(lua, js->obj);
+	}
 
 	if(bg_job_wait(vifm_job->job) != 0)
 	{
@@ -703,11 +722,14 @@ static int
 jobstream_close(lua_State *lua)
 {
 	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
-	bg_job_decref(js->job);
-	drop_pointer(lua, js->obj);
 
-	int stat = (fclose(js->job->output) == 0);
-	js->job->output = NULL;
+	int stat = 1;
+
+	if(js->job != NULL)
+	{
+		stat = (fclose(js->job->output) == 0);
+		js->job->output = NULL;
+	}
 
 	return luaL_fileresult(lua, stat, NULL);
 }

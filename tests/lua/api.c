@@ -119,6 +119,7 @@ TEST(vifm_startjob)
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "job = vifm.startjob({ cmd = 'echo' })\n"
+	                                     "job:stdout():lines()()\n"
 	                                     "print(job:exitcode())"));
 	assert_string_equal("0", ui_sb_last());
 
