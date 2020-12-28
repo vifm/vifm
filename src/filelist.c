@@ -455,14 +455,17 @@ leave_invalid_dir(view_t *view)
 	ensure_path_well_formed(path);
 }
 
-void
+int
 navigate_to(view_t *view, const char path[])
 {
-	if(change_directory(view, path) >= 0)
+	if(change_directory(view, path) < 0)
 	{
-		load_dir_list(view, 0);
-		fview_cursor_redraw(view);
+		return 1;
 	}
+
+	load_dir_list(view, 0);
+	fview_cursor_redraw(view);
+	return 0;
 }
 
 void

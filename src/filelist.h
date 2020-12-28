@@ -63,8 +63,9 @@ void change_sort_type(view_t *view, char type, char descending);
 
 /* Changes current directory of the view to the path if it's possible and in
  * case of success reloads filelist of the view and sets its cursor position
- * according to directory history of the view. */
-void navigate_to(view_t *view, const char path[]);
+ * according to directory history of the view.  Returns zero on success,
+ * otherwise non-zero is returned. */
+int navigate_to(view_t *view, const char path[]);
 /* Changes current directory of the view to location the view was before last
  * directory change. */
 void navigate_back(view_t *view);
