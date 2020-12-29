@@ -25,7 +25,7 @@ local function clone(info)
     end
 
     if job:exitcode() == 0 then
-        vifm.cd(name)
+        vifm.currview():cd(name)
     else
         local errors = job:errors()
         if #errors == 0 then

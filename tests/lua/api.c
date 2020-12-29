@@ -326,7 +326,7 @@ TEST(vifm_expand)
 	assert_string_equal("/tst", ui_sb_last());
 }
 
-TEST(vifm_change_dir)
+TEST(vifmview_cd)
 {
 	stub_colmgr();
 	conf_setup();
@@ -338,7 +338,7 @@ TEST(vifm_change_dir)
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
-				"print(vifm.cd(testdata) and 'y' or 'n')"));
+				"print(vifm.currview():cd(testdata) and 'y' or 'n')"));
 	assert_string_equal("y", ui_sb_last());
 
 	view_teardown(curr_view);
@@ -380,10 +380,57 @@ TEST(sb_quick_message_is_not_stored)
 
 TEST(vifm_currview)
 {
+	init_commands();
+
+	conf_setup();
+	cfg.pane_tabs = 0;
+	view_setup(curr_view);
+	view_setup(other_view);
+	opt_handlers_setup();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+
+	assert_success(vlua_run_string(vlua, "l = vifm.currview()"));
+	swap_view_roles();
+	assert_success(vlua_run_string(vlua, "r = vifm.currview()"));
+
+	/* Both non-nil and aren't equal. */
 	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.currview() and 'y' or 'n')"));
+	assert_success(vlua_run_string(vlua, "print(l and 'y' or 'n')"));
 	assert_string_equal("y", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(r and 'y' or 'n')"));
+	assert_string_equal("y", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(r ~= l and 'y' or 'n')"));
+	assert_string_equal("y", ui_sb_last());
+
+	/* Can access visible views. */
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "r:cd('/')"));
+	assert_string_equal("", ui_sb_last());
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "l:cd('/')"));
+	assert_string_equal("", ui_sb_last());
+
+	/* Can't access view that can't be found. */
+	++curr_view->id;
+	ui_sb_msg("");
+	assert_failure(vlua_run_string(vlua, "r:cd('bla')"));
+	assert_true(ends_with(ui_sb_last(),
+				"Invalid VifmView object (associated view is dead)"));
+
+	assert_success(exec_command("tabnew", curr_view, CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "l:cd('/')"));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(exec_command("tabonly", curr_view, CIT_COMMAND));
+
+	columns_teardown();
+	opt_handlers_teardown();
+	view_teardown(curr_view);
+	view_teardown(other_view);
+	conf_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

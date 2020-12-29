@@ -98,13 +98,14 @@ static void from_pointer(lua_State *lua, void *ptr);
 static void drop_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int vifm_expand(lua_State *lua);
-static int vifm_change_dir(lua_State *lua);
 static int vifm_currview(lua_State *lua);
 static int vifmjob_gc(lua_State *lua);
 static int vifmjob_wait(lua_State *lua);
 static int vifmjob_exitcode(lua_State *lua);
 static int vifmjob_stdout(lua_State *lua);
 static int vifmjob_errors(lua_State *lua);
+static int vifmview_cd(lua_State *lua);
+static view_t * check_view(lua_State *lua);
 static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
@@ -129,7 +130,6 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "startjob",    &vifm_startjob    },
 	{ "expand",      &vifm_expand      },
 	{ "currview",    &vifm_currview    },
-	{ "cd",          &vifm_change_dir  },
 	{ NULL,          NULL              }
 };
 
@@ -161,6 +161,7 @@ static const struct luaL_Reg job_methods[] = {
 
 /* Methods of VifmView type. */
 static const struct luaL_Reg view_methods[] = {
+	{ "cd", &vifmview_cd  },
 	{ NULL, NULL          }
 };
 
@@ -565,17 +566,6 @@ vifm_expand(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm` that changes directory of current view.  Returns boolean,
- * which is true if location change was successful. */
-static int
-vifm_change_dir(lua_State *lua)
-{
-	const char *path = luaL_checkstring(lua, 1);
-	int success = (navigate_to(curr_view, path) == 0);
-	lua_pushboolean(lua, success);
-	return 1;
-}
-
 /* Member of `vifm` that returns a reference to current view.  Returns an object
  * of VifmView type. */
 static int
@@ -759,6 +749,49 @@ jobstream_close(lua_State *lua)
 	}
 
 	return luaL_fileresult(lua, stat, NULL);
+}
+
+/* Method of `VifmView` that changes directory of current view.  Returns
+ * boolean, which is true if location change was successful. */
+static int
+vifmview_cd(lua_State *lua)
+{
+	view_t *view = check_view(lua);
+
+	const char *path = luaL_checkstring(lua, 2);
+	int success = (navigate_to(view, path) == 0);
+	lua_pushboolean(lua, success);
+	return 1;
+}
+
+/* Resolves `VifmView` user data in the first argument.  Returns the pointer or
+ * aborts (Lua does longjmp()) if the view doesn't exist anymore. */
+static view_t *
+check_view(lua_State *lua)
+{
+	unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
+
+	if(lwin.id == *id)
+	{
+		return &lwin;
+	}
+	if(rwin.id == *id)
+	{
+		return &rwin;
+	}
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		if(tab_info.view->id == *id)
+		{
+			return tab_info.view;
+		}
+	}
+
+	luaL_error(lua, "%s", "Invalid VifmView object (associated view is dead)");
+	return NULL;
 }
 
 int
