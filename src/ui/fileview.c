@@ -203,6 +203,9 @@ fview_setup(void)
 void
 fview_init(view_t *view)
 {
+	view->id = ui_next_view_id++;
+	assert(ui_next_view_id != 0 && "Made full circle for view ids.");
+
 	view->curr_line = 0;
 	view->top_line = 0;
 

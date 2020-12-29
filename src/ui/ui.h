@@ -338,6 +338,8 @@ struct view_t
 	/* Directory we're currently in. */
 	char curr_dir[PATH_MAX + 1];
 
+	unsigned int id; /* Unique during the session id of the view. */
+
 	/* Data related to custom filling. */
 	struct cv_data_t custom;
 
@@ -460,6 +462,9 @@ struct view_t
 
 	int displays_graphics; /* Whether window of the view contains graphics. */
 };
+
+/* Id number to use on creation of new view_t. */
+extern unsigned int ui_next_view_id;
 
 extern view_t lwin;
 extern view_t rwin;

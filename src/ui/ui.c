@@ -108,8 +108,10 @@ static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
-view_t lwin;
-view_t rwin;
+unsigned int ui_next_view_id = 3;
+
+view_t lwin = { .id = 1 };
+view_t rwin = { .id = 2 };
 
 view_t *other_view;
 view_t *curr_view;
