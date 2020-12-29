@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 28
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -15,6 +15,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
 |vifm-l_VifmJob|       `VifmJob` type.
+|vifm-l_VifmView|      `VifmView` type.
 
 --------------------------------------------------------------------------------
 *vifm-lua-status*
@@ -120,6 +121,12 @@ Table for managing plugins.  See |vifm-l_vifm.plugins|.
 
 vifm.sb
 Table for managing statusbar.  See |vifm-l_vifm.sb|.
+
+vifm.currview({path})                          *vifm-l_vifm.currview()*
+Retrives a reference to current view.
+
+Return:~
+  Returns an instance of |vifm-l_VifmView|.
 
 vifm.errordialog({title}, {msg})               *vifm-l_vifm.errordialog()*
 Displays error dialog.
@@ -324,6 +331,14 @@ doesn't wait for arrival of data.  Empty if `mergestreams` was set to `true`.
 
 Return:~
   Returns a string.
+
+--------------------------------------------------------------------------------
+*vifm-l_VifmView*
+
+Instances of this type are returned by |vifm-l_vifm.currview()|.
+
+The corresponding view exists independently of this type and once the view is
+gone (e.g., its tab is closed) accessing bound instance raises an error.
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:

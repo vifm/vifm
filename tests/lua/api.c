@@ -378,5 +378,13 @@ TEST(sb_quick_message_is_not_stored)
 	assert_int_equal(0, curr_stats.save_msg);
 }
 
+TEST(vifm_currview)
+{
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.currview() and 'y' or 'n')"));
+	assert_string_equal("y", ui_sb_last());
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
