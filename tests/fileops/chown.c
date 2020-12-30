@@ -7,6 +7,8 @@
 
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
@@ -16,8 +18,6 @@
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
-
-#include "utils.h"
 
 static int get_gids(gid_t *gid1, gid_t *gid2);
 static int has_more_than_one_group(void);
@@ -31,17 +31,18 @@ SETUP()
 	replace_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 	curr_view = &lwin;
+	view_setup(&lwin);
 }
 
 TEARDOWN()
 {
 	restore_cwd(saved_cwd);
+	view_teardown(&lwin);
 }
 
 TEST(file_group_is_changed, IF(has_more_than_one_group))
 {
 	char path[PATH_MAX + 1];
-	int i;
 	struct stat s;
 
 	gid_t gid1, gid2;
@@ -50,13 +51,11 @@ TEST(file_group_is_changed, IF(has_more_than_one_group))
 		return;
 	}
 
-	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
-
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	assert_success(chdir(lwin.curr_dir));
 
-	create_empty_dir("dir");
-	create_empty_file("dir/chown-me");
+	create_dir("dir");
+	create_file("dir/chown-me");
 
 	flist_custom_start(&lwin, "test");
 	make_abs_path(path, sizeof(path), SANDBOX_PATH, "dir/chown-me", saved_cwd);
@@ -72,14 +71,6 @@ TEST(file_group_is_changed, IF(has_more_than_one_group))
 	fops_chown(0, 1, 0, gid2);
 	assert_success(os_stat("dir/chown-me", &s));
 	assert_true(s.st_gid == gid2);
-
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		fentry_free(&lwin, &lwin.dir_entry[i]);
-	}
-	dynarray_free(lwin.dir_entry);
-
-	filter_dispose(&lwin.local_filter.filter);
 
 	assert_success(unlink("dir/chown-me"));
 	assert_success(rmdir("dir"));

@@ -108,13 +108,10 @@ static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
-/* Mutexes for views, located out of view_t so that they are never moved nor
- * copied, which would yield undefined behaviour. */
-static pthread_mutex_t lwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t rwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
+unsigned int ui_next_view_id = 3;
 
-view_t lwin = { .timestamps_mutex = &lwin_timestamps_mutex };
-view_t rwin = { .timestamps_mutex = &rwin_timestamps_mutex };
+view_t lwin = { .id = 1 };
+view_t rwin = { .id = 2 };
 
 view_t *other_view;
 view_t *curr_view;
@@ -1491,8 +1488,8 @@ switch_panes_content(void)
 {
 	ui_swap_view_data(&lwin, &rwin);
 
-	flist_update_origins(&lwin, &rwin.curr_dir[0], &lwin.curr_dir[0]);
-	flist_update_origins(&rwin, &lwin.curr_dir[0], &rwin.curr_dir[0]);
+	flist_update_origins(&lwin);
+	flist_update_origins(&rwin);
 
 	modview_panes_swapped();
 

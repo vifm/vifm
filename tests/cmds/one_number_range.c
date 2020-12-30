@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include <test-utils.h>
+
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -15,8 +17,16 @@ static int count_marked(view_t *view);
 
 extern cmds_conf_t cmds_conf;
 
+SETUP_ONCE()
+{
+	stub_colmgr();
+}
+
 SETUP()
 {
+	view_setup(&lwin);
+	view_setup(&rwin);
+
 	setup_lwin();
 	setup_rwin();
 
@@ -26,15 +36,8 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	dynarray_free(lwin.dir_entry);
-
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	dynarray_free(rwin.dir_entry);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 static void

@@ -199,9 +199,9 @@ typedef struct dir_entry_t dir_entry_t;
 struct dir_entry_t
 {
 	char *name;       /* File name. */
-	char *origin;     /* Location where this file comes from.  Points to
-	                     view::curr_dir for non-cv views, otherwise allocated on
-	                     a heap. */
+	char *origin;     /* Location where this file comes from.  Either points to
+	                     view_t::curr_dir for non-cv views or is allocated on
+	                     a heap depending on owns_origin field. */
 	uint64_t size;    /* File size in bytes. */
 #ifndef _WIN32
 	uid_t uid;        /* Owning user id. */
@@ -225,7 +225,7 @@ struct dir_entry_t
 	int hi_num;       /* File highlighting parameters cache.  Initially -1.
 	                     INT_MAX signifies absence of a match. */
 	int name_dec_num; /* File decoration parameters cache (initially -1).  The
-	                     value is shifted by one, 0 means type decoration. */
+	                     value is shifted by one, 0 means no type decoration. */
 
 	int child_count; /* Number of child entries (all, not just direct). */
 	int child_pos;   /* Position of this entry in among children of its parent.
@@ -242,6 +242,7 @@ struct dir_entry_t
 	unsigned int marked : 1;       /* Whether file should be processed. */
 	unsigned int temporary : 1;    /* Whether this is temporary node. */
 	unsigned int dir_link : 1;     /* Whether this is symlink to a directory. */
+	unsigned int owns_origin : 1;  /* Whether this entry is custom one. */
 };
 
 /* List of entries bundled with its size. */
@@ -336,6 +337,8 @@ struct view_t
 
 	/* Directory we're currently in. */
 	char curr_dir[PATH_MAX + 1];
+
+	unsigned int id; /* Unique during the session id of the view. */
 
 	/* Data related to custom filling. */
 	struct cv_data_t custom;
@@ -459,6 +462,9 @@ struct view_t
 
 	int displays_graphics; /* Whether window of the view contains graphics. */
 };
+
+/* Id number to use on creation of new view_t. */
+extern unsigned int ui_next_view_id;
 
 extern view_t lwin;
 extern view_t rwin;

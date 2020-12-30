@@ -4,6 +4,8 @@
 
 #include <string.h> /* strcat() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
@@ -12,18 +14,19 @@
 #include "../../src/fops_misc.h"
 #include "../../src/trash.h"
 
-#include "utils.h"
-
 char trash_dir[PATH_MAX + 1];
 static char *saved_cwd;
 
 SETUP()
 {
-	view_setup(&lwin);
-	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
-
-	create_empty_file(SANDBOX_PATH "/file");
 	saved_cwd = save_cwd();
+
+	view_setup(&lwin);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
+	view_setup(&rwin);
+
+	create_file(SANDBOX_PATH "/file");
 	populate_dir_list(&lwin, 0);
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -38,6 +41,7 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 	restore_cwd(saved_cwd);
 	assert_success(rmdir(trash_dir));
 }

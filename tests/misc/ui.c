@@ -75,7 +75,7 @@ TEST(make_tab_title_uses_format_after_custom_view)
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "existing-files/a");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
-	navigate_to(&lwin, TEST_DATA_PATH);
+	assert_success(navigate_to(&lwin, TEST_DATA_PATH));
 
 	update_string(&cfg.tab_label, "!%c!");
 	tab_info_t tab_info = { .view = &lwin, .name = NULL, };

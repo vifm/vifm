@@ -63,8 +63,9 @@ void change_sort_type(view_t *view, char type, char descending);
 
 /* Changes current directory of the view to the path if it's possible and in
  * case of success reloads filelist of the view and sets its cursor position
- * according to directory history of the view. */
-void navigate_to(view_t *view, const char path[]);
+ * according to directory history of the view.  Returns zero on success,
+ * otherwise non-zero is returned. */
+int navigate_to(view_t *view, const char path[]);
 /* Changes current directory of the view to location the view was before last
  * directory change. */
 void navigate_back(view_t *view);
@@ -302,8 +303,9 @@ int flist_update_cache(view_t *view, cached_entries_t *cache,
 		const char path[]);
 /* Frees the cache. */
 void flist_free_cache(view_t *view, cached_entries_t *cache);
-/* Updates pointers to main (default) origins in file list entries. */
-void flist_update_origins(view_t *view, const char from[], char to[]);
+/* Updates non-heap-allocated origin pointers of entries in file list
+ * entries. */
+void flist_update_origins(view_t *view);
 
 TSTATIC_DEFS(
 	void check_file_uniqueness(view_t *view);

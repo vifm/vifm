@@ -17,6 +17,7 @@ SETUP()
 	update_string(&cfg.shell_cmd_flag , "-c");
 
 	/* lwin */
+	view_setup(&lwin);
 	strcpy(lwin.curr_dir, "/lwin");
 
 	lwin.list_rows = 4;
@@ -36,6 +37,7 @@ SETUP()
 	lwin.dir_entry[2].marked = 1;
 
 	/* rwin */
+	view_setup(&rwin);
 	strcpy(rwin.curr_dir, "/rwin");
 
 	rwin.list_rows = 7;

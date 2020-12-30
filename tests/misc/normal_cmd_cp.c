@@ -17,6 +17,12 @@
 SETUP()
 {
 	curr_stats.save_msg = 0;
+	view_setup(&lwin);
+}
+
+TEARDOWN()
+{
+	view_teardown(&lwin);
 }
 
 TEST(incorrect_length_causes_error, IF(not_windows))
@@ -63,7 +69,6 @@ TEST(file_mode_is_changed, IF(not_windows))
 	assert_success(os_stat(SANDBOX_PATH "/empty", &st));
 	assert_true((st.st_mode & 0777) != 0000);
 
-	view_teardown(&lwin);
 	assert_success(remove(SANDBOX_PATH "/empty"));
 
 	undo_teardown();

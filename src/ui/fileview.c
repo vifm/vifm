@@ -30,10 +30,11 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* abs() */
+#include <stdlib.h> /* abs() malloc() */
 #include <string.h> /* memset() strcpy() strlen() */
 
 #include "../cfg/config.h"
+#include "../compat/pthread.h"
 #include "../utils/fs.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
@@ -202,6 +203,9 @@ fview_setup(void)
 void
 fview_init(view_t *view)
 {
+	view->id = ui_next_view_id++;
+	assert(ui_next_view_id != 0 && "Made full circle for view ids.");
+
 	view->curr_line = 0;
 	view->top_line = 0;
 
@@ -218,6 +222,9 @@ fview_init(view_t *view)
 
 	view->preview_prg = strdup("");
 	view->preview_prg_g = strdup("");
+
+	view->timestamps_mutex = malloc(sizeof(*view->timestamps_mutex));
+	pthread_mutex_init(view->timestamps_mutex, NULL);
 }
 
 void
@@ -240,10 +247,7 @@ fview_reset(view_t *view)
 	view->num_width_g = view->num_width = 4;
 	view->real_num_width = 0;
 
-	pthread_mutex_lock(view->timestamps_mutex);
-	view->need_redraw = 0;
-	view->need_reload = 0;
-	pthread_mutex_unlock(view->timestamps_mutex);
+	(void)ui_view_query_scheduled_event(view);
 }
 
 void

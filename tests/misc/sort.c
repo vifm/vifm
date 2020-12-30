@@ -27,6 +27,7 @@ SETUP()
 {
 	cfg.sort_numbers = 1;
 
+	view_setup(&lwin);
 	lwin.list_rows = 3;
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
@@ -37,6 +38,7 @@ SETUP()
 	lwin.dir_entry[2].name = strdup("A");
 	lwin.dir_entry[2].type = FT_REG;
 
+	view_setup(&rwin);
 	rwin.list_rows = 2;
 	rwin.dir_entry = dynarray_cextend(NULL,
 			rwin.list_rows*sizeof(*rwin.dir_entry));
@@ -293,6 +295,7 @@ TEST(ignore_case_name_sort_breaks_ties_deterministically)
 TEST(extensions_of_dot_files_are_sorted_correctly)
 {
 	view_teardown(&lwin);
+	view_setup(&lwin);
 
 	lwin.list_rows = 3;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -317,6 +320,7 @@ TEST(extensions_of_dot_files_are_sorted_correctly)
 TEST(sorting_uses_dcache_for_dirs)
 {
 	view_teardown(&lwin);
+	view_setup(&lwin);
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
@@ -360,6 +364,7 @@ TEST(sorting_uses_dcache_for_dirs)
 TEST(nitems_sorting_works)
 {
 	view_teardown(&lwin);
+	view_setup(&lwin);
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
@@ -389,6 +394,7 @@ TEST(nitems_sorting_works)
 TEST(groups_sorting_works)
 {
 	view_teardown(&lwin);
+	view_setup(&lwin);
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
@@ -462,6 +468,7 @@ TEST(groups_sorting_works)
 TEST(inode_sorting_works)
 {
 	view_teardown(&lwin);
+	view_setup(&lwin);
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);

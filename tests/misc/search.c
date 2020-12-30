@@ -19,6 +19,7 @@ SETUP()
 	saved_cwd = save_cwd();
 
 	view_setup(&lwin);
+	view_setup(&rwin);
 
 	assert_success(chdir(TEST_DATA_PATH "/read"));
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
@@ -32,6 +33,7 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	restore_cwd(saved_cwd);
 }
@@ -177,7 +179,6 @@ TEST(view_patterns_are_synchronized)
 {
 	int found;
 
-	view_setup(&rwin);
 	strcpy(rwin.curr_dir, lwin.curr_dir);
 	populate_dir_list(&rwin, 0);
 
@@ -193,8 +194,6 @@ TEST(view_patterns_are_synchronized)
 	assert_int_equal(2, rwin.matches);
 	/* Same patterns don't cause reset. */
 	assert_int_equal(2, lwin.matches);
-
-	view_teardown(&rwin);
 }
 
 TEST(find_npattern_returns_zero_if_msg_is_not_printed)

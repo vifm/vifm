@@ -1,13 +1,22 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/ui/ui.h"
 
 static view_t *const view = &lwin;
 
 SETUP()
 {
+	view_setup(&lwin);
+
 	(void)ui_view_query_scheduled_event(view);
 	assert_true(ui_view_query_scheduled_event(view) == UUE_NONE);
+}
+
+TEARDOWN()
+{
+	view_teardown(&lwin);
 }
 
 TEST(schedule_redraw_sets_redrawn)

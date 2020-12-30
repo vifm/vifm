@@ -5,6 +5,8 @@
 
 #include <string.h> /* memset() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
@@ -15,8 +17,6 @@
 #include "../../src/fops_common.h"
 #include "../../src/fops_rename.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static void broken_link_name(const char prompt[], const char filename[],
 		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
@@ -46,8 +46,8 @@ TEST(generally_renames_files)
 	char dir[] = "dir";
 	char *names[] = { file, dir };
 
-	create_empty_file(SANDBOX_PATH "/file");
-	create_empty_dir(SANDBOX_PATH "/dir");
+	create_file(SANDBOX_PATH "/file");
+	create_dir(SANDBOX_PATH "/dir");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -67,10 +67,10 @@ TEST(renames_files_recursively)
 	char file2[] = "dir1/file2";
 	char *names[] = { file2, file1 };
 
-	create_empty_dir(SANDBOX_PATH "/dir1");
-	create_empty_dir(SANDBOX_PATH "/dir2");
-	create_empty_file(SANDBOX_PATH "/dir1/file1");
-	create_empty_file(SANDBOX_PATH "/dir2/file2");
+	create_dir(SANDBOX_PATH "/dir1");
+	create_dir(SANDBOX_PATH "/dir2");
+	create_file(SANDBOX_PATH "/dir1/file1");
+	create_file(SANDBOX_PATH "/dir2/file2");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -98,8 +98,8 @@ TEST(renames_files_recursively_in_cv)
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "",
 			saved_cwd);
 
-	create_empty_dir(SANDBOX_PATH "/dir");
-	create_empty_file(SANDBOX_PATH "/dir/file1");
+	create_dir(SANDBOX_PATH "/dir");
+	create_file(SANDBOX_PATH "/dir/file1");
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, dir);
@@ -122,8 +122,8 @@ TEST(interdependent_rename)
 	char file3[] = "file3";
 	char *names[] = { file2, file3 };
 
-	create_empty_file(SANDBOX_PATH "/file1");
-	create_empty_file(SANDBOX_PATH "/file2");
+	create_file(SANDBOX_PATH "/file1");
+	create_file(SANDBOX_PATH "/file2");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -142,8 +142,8 @@ TEST(interdependent_rename)
 
 TEST(incdec)
 {
-	create_empty_file(SANDBOX_PATH "/file1");
-	create_empty_file(SANDBOX_PATH "/file2");
+	create_file(SANDBOX_PATH "/file1");
+	create_file(SANDBOX_PATH "/file2");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -176,7 +176,7 @@ TEST(rename_to_broken_symlink_name, IF(not_windows))
 	assert_success(symlink("no-such-file", SANDBOX_PATH "/broken-link"));
 #endif
 
-	create_empty_file(SANDBOX_PATH "/a-file");
+	create_file(SANDBOX_PATH "/a-file");
 
 	populate_dir_list(&lwin, 0);
 	lwin.list_pos = 0;
@@ -227,7 +227,7 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	memset(long_name, '1', sizeof(long_name) - 1U);
 	long_name[sizeof(long_name) - 1U] = '\0';
 
-	create_empty_file(long_name);
+	create_file(long_name);
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -251,8 +251,8 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 
 TEST(substitution_works)
 {
-	create_empty_file(SANDBOX_PATH "/001");
-	create_empty_file(SANDBOX_PATH "/002");
+	create_file(SANDBOX_PATH "/001");
+	create_file(SANDBOX_PATH "/002");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -268,7 +268,7 @@ TEST(substitution_works)
 
 TEST(substitution_ignores_case)
 {
-	create_empty_file(SANDBOX_PATH "/abc");
+	create_file(SANDBOX_PATH "/abc");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -282,7 +282,7 @@ TEST(substitution_ignores_case)
 
 TEST(substitution_respects_case)
 {
-	create_empty_file(SANDBOX_PATH "/Aba");
+	create_file(SANDBOX_PATH "/Aba");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -296,7 +296,7 @@ TEST(substitution_respects_case)
 
 TEST(global_substitution_with_broken_pattern)
 {
-	create_empty_file(SANDBOX_PATH "/001");
+	create_file(SANDBOX_PATH "/001");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -310,7 +310,7 @@ TEST(global_substitution_with_broken_pattern)
 
 TEST(global_substitution_of_caret_pattern)
 {
-	create_empty_file(SANDBOX_PATH "/001");
+	create_file(SANDBOX_PATH "/001");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;

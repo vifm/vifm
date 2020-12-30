@@ -6,17 +6,12 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/matcher.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/marks.h"
 #include "../../src/running.h"
-
-static void init_view(view_t *view);
-static void free_view(view_t *view);
 
 SETUP()
 {
@@ -29,8 +24,8 @@ SETUP()
 	cfg.slow_fs_list = strdup("");
 	cfg.chase_links = 1;
 
-	init_view(&lwin);
-	init_view(&rwin);
+	view_setup(&lwin);
+	view_setup(&rwin);
 
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "..",
@@ -44,51 +39,8 @@ TEARDOWN()
 
 	cfg.chase_links = 0;
 
-	free_view(&lwin);
-	free_view(&rwin);
-}
-
-static void
-init_view(view_t *view)
-{
-	char *error;
-
-	filter_init(&view->local_filter.filter, 1);
-	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
-	filter_init(&view->auto_filter, 1);
-
-	view->dir_entry = NULL;
-	view->list_rows = 0;
-
-	view->custom.entry_count = 0;
-	view->custom.entries = NULL;
-
-	view->window_rows = 2;
-	view->sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(view, view->sort);
-}
-
-static void
-free_view(view_t *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		fentry_free(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-
-	for(i = 0; i < view->custom.entry_count; ++i)
-	{
-		fentry_free(view, &view->custom.entries[i]);
-	}
-	dynarray_free(view->custom.entries);
-
-	filter_dispose(&view->local_filter.filter);
-	matcher_free(view->manual_filter);
-	view->manual_filter = NULL;
-	filter_dispose(&view->auto_filter);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(custom_view_is_preserved_on_goto_mark)

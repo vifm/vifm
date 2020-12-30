@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 14
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -15,6 +15,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
 |vifm-l_VifmJob|       `VifmJob` type.
+|vifm-l_VifmView|      `VifmView` type.
 
 --------------------------------------------------------------------------------
 *vifm-lua-status*
@@ -121,6 +122,12 @@ Table for managing plugins.  See |vifm-l_vifm.plugins|.
 vifm.sb
 Table for managing statusbar.  See |vifm-l_vifm.sb|.
 
+vifm.currview({path})                          *vifm-l_vifm.currview()*
+Retrives a reference to current view.
+
+Return:~
+  Returns an instance of |vifm-l_VifmView|.
+
 vifm.errordialog({title}, {msg})               *vifm-l_vifm.errordialog()*
 Displays error dialog.
 
@@ -189,15 +196,6 @@ Parameters:~
 
 Return:~
   Returns an instance of |vifm-l_VifmJob|.
-
-vifm.cd({path})                                *vifm-l_vifm.cd()*
-Changes location of current pane.
-
-Parameters:~
-  {path}  Path to visit.
-
-Return:~
-  `true` on success.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.cmds*
@@ -289,7 +287,7 @@ Parameters:~
 --------------------------------------------------------------------------------
 *vifm-l_VifmJob*
 
-Instances of this type are returned by `vifm.startjob()`.
+Instances of this type are returned by  |vifm-l_vifm.startjob()|.
 
 VifmJob:wait()                                 *vifm-l_VifmJob:wait()*
 Waits for the job to finish.
@@ -303,8 +301,9 @@ Retrieves exit code of the application.
 Waits for the job to finish.
 
 Return:~
-  Returns an integer number that represents exit code.  The value is `-1`
-  if the application didn't exit normally.
+  Returns an integer number that represents exit code.  The value is `-x` if
+  the application was killed by signal `x`.  `-127` or `-128` means that
+  tracking the application has failed in some way.
 
 Raises an error:~
   If waiting has failed.
@@ -323,6 +322,23 @@ doesn't wait for arrival of data.  Empty if `mergestreams` was set to `true`.
 
 Return:~
   Returns a string.
+
+--------------------------------------------------------------------------------
+*vifm-l_VifmView*
+
+Instances of this type are returned by |vifm-l_vifm.currview()|.
+
+The corresponding view exists independently of this type and once the view is
+gone (e.g., its tab is closed) accessing bound instance raises an error.
+
+VifmView:cd({path})                            *vifm-l_VifmView:cd()*
+Changes location of the view.  {path} isn't expanded in any way.
+
+Parameters:~
+  {path}  Path to visit.
+
+Return:~
+  `true` on success.
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:

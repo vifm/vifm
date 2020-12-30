@@ -733,7 +733,7 @@ enter_dir(view_t *view)
 {
 	dir_entry_t *const curr = get_current_entry(view);
 
-	if(is_parent_dir(curr->name) && curr->origin == view->curr_dir)
+	if(is_parent_dir(curr->name) && !curr->owns_origin)
 	{
 		rn_leave(view, 1);
 		return;

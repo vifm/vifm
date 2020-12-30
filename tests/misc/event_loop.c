@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/keys.h"
@@ -20,6 +22,9 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
+	view_setup(&lwin);
+	view_setup(&rwin);
+
 	init_modes();
 	init_commands();
 
@@ -28,6 +33,8 @@ SETUP()
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 	vle_cmds_reset();
 	vle_keys_reset();
 }

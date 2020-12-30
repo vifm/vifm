@@ -42,6 +42,9 @@
 	sixel) viewers.  Thanks to StillSteal, laur89, Joshua
 	Jensch (a.k.a., patroclos) and p-kolacz.
 
+	Run background programs detached from a terminal.  Thanks to Miguel Madrid
+	Mencía (a.k.a. mimame).
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
