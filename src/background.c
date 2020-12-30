@@ -30,7 +30,7 @@
 #include <sys/wait.h> /* waitpid() */
 #endif
 #include <signal.h> /* SIG* kill() */
-#include <unistd.h> /* execve() fork() setpgid() setsid() */
+#include <unistd.h> /* execve() fork() setsid() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -124,7 +124,7 @@ static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], int capture_output,
-		int new_session, BgJobFlags flags, ShellRequester by);
+		BgJobFlags flags, ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
@@ -774,7 +774,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		return 1;
 	}
 
-	bg_job_t *job = launch_external(command, 0, 0, BJF_NONE, by);
+	bg_job_t *job = launch_external(command, 0, BJF_NONE, by);
 	free(command);
 	if(job == NULL)
 	{
@@ -790,7 +790,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 bg_job_t *
 bg_run_external_job(const char cmd[], BgJobFlags flags)
 {
-	bg_job_t *job = launch_external(cmd, 1, 1, flags, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, 1, flags, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -813,8 +813,8 @@ bg_run_external_job(const char cmd[], BgJobFlags flags)
 
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
-launch_external(const char cmd[], int capture_output, int new_session,
-		BgJobFlags flags, ShellRequester by)
+launch_external(const char cmd[], int capture_output, BgJobFlags flags,
+		ShellRequester by)
 {
 	/* TODO: simplify this function (launch_external()) somehow, maybe split in
 	 *       two. */
@@ -900,23 +900,12 @@ launch_external(const char cmd[], int capture_output, int new_session,
 			}
 		}
 
-		if(new_session)
+		/* setsid() creates process group as well and doesn't work if current
+		 * process is a group leader, so don't do setpgid(). */
+		if(setsid() == (pid_t)-1)
 		{
-			/* setsid() creates process group as well and doesn't work if current
-			 * process is group leader, so don't do setpgid(). */
-			if(setsid() == (pid_t)-1)
-			{
-				perror("setsid");
-				_Exit(EXIT_FAILURE);
-			}
-		}
-		else
-		{
-			if(setpgid(0, 0) != 0)
-			{
-				perror("setpgid");
-				_Exit(EXIT_FAILURE);
-			}
+			perror("setsid");
+			_Exit(EXIT_FAILURE);
 		}
 
 		prepare_for_exec();
