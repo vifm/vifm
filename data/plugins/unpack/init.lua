@@ -55,6 +55,8 @@ local function get_common_prefix(archive)
 end
 
 local function unpack(info)
+    local view = vifm.currview()
+
     local current = vifm.expand('%c:p')
     if #current == 0 then
         vifm.sb.error('There is no current file')
@@ -115,7 +117,7 @@ local function unpack(info)
         if prefix ~= nil then
             outdir = outdir..'/'..prefix
         end
-        vifm.cd(outdir)
+        view:cd(outdir)
     else
         local errors = job:errors()
         if #errors == 0 then
@@ -126,7 +128,7 @@ local function unpack(info)
         end
 
         if prefix == nil then
-            vifm.cd(outdir)
+            view:cd(outdir)
         end
     end
 end
