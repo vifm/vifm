@@ -31,8 +31,8 @@ local function get_common_prefix(archive)
     local prefix_len = #prefix
     for line in lines do
         if line:sub(1, prefix_len) ~= prefix then
-            prefix = nil
-            break
+            job:wait()
+            return nil
         end
     end
 
