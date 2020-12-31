@@ -28,6 +28,11 @@ local function get_common_prefix(archive)
         return nil, 'Failed to list contents of '..archive..':\n'..job:errors()
     end
 
+    local top = prefix:match("(.-/)")
+    if top ~= nil then
+        prefix = top
+    end
+
     local prefix_len = #prefix
     for line in lines do
         if line:sub(1, prefix_len) ~= prefix then
