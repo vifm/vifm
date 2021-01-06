@@ -7,6 +7,7 @@ complete removal of this interface (that's an unlikely scenario though).
 
 |vifm-lua-status|      Status of plugins.
 |vifm-lua-plugins|     Sample plugins.
+|vifm-lua-lua|         Generic reasoning behind this API.
 |vifm-lua-design|      Generic ideas about the design.
 |vifm-lua-libs|        What Lua libraries are available.
 |vifm-lua-api|         Root-level API.
@@ -35,11 +36,26 @@ Since API is not stable at all, example plugins are stored in code repository
 of Vifm and are thus bound to corresponding revision of the application.
 
 --------------------------------------------------------------------------------
+*vifm-lua-why*
+
+Think of Lua API as a way to reach deeper into the internals of Vifm.  This
+isn't a replacement of existing functionality, but a richer way of interacting
+with the core behind it.
+
+Regular :commands are a form of user-interface by design, which has various
+implications that limit their abilities.  For example, you can't reliably check
+if a command succeeded and different commands treat same arguments differently
+for the purpose of ease of use, which however makes automation harder.  When
+things like that start to get in the way, it's a good idea to reimplement
+relevant functionality in Lua.
+
+--------------------------------------------------------------------------------
 *vifm-lua-design*
 
 The intent is for Lua to be a way of extending the core.  It's not meant
 neither as a replacement of :commands nor as a continuation of it.  Instead
-it's supposed to be a more low-level way of interacting with the core.
+it's supposed to be a more low-level way of interacting with the core and
+extension.
 
 One implication is that there is no way of calling Lua from :commands or vice
 versa.  This gets too ugly too quickly, hence they are separated except for

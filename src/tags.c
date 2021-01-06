@@ -678,6 +678,7 @@ const char *tags[] = {
 	"vifm-lua-libs",
 	"vifm-lua-plugins",
 	"vifm-lua-status",
+	"vifm-lua-why",
 	"vifm-lua.txt",
 	"vifm-m",
 	"vifm-m_/",
