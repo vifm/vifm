@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 29
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -172,7 +172,8 @@ Parameters:~
   {path}  Path to create.
 
 Return:~
-  `true` on success.
+  `true` on success.  Trying to create path that already exists is not
+  considered to be an error.
 
 vifm.startjob({job})                           *vifm-l_vifm.startjob()*
 Launches an external command.  Returns without waiting for it to finish.
