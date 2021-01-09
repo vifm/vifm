@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 6
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -13,6 +13,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
+|vifm-l_vifm.opts|     `vifm.opts` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
 |vifm-l_VifmJob|       `VifmJob` type.
@@ -124,6 +125,10 @@ Make "description" a mandatory argument?
 Add VifmJob:succeeded() ?
 Add VifmJob:haserrors() ?
 
+Map options to arrays when possible, like for set options ?
+Technically options are also part of user-interface and maybe shouldn't be
+exposed in this way.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm*
 
@@ -131,6 +136,9 @@ Global `vifm` table is the entry-point to the API.
 
 vifm.cmds
 Table for managing command-line commands.  See |vifm-l_vifm.cmds|.
+
+vifm.opts
+Table for managing options.  See |vifm-l_vifm.opts|.
 
 vifm.plugins
 Table for managing plugins.  See |vifm-l_vifm.plugins|.
@@ -271,7 +279,22 @@ Return:~
   `true` on success.
 
 --------------------------------------------------------------------------------
+*vifm-l_vifm.opts*
+
+This global `vifm.opts` table groups items related to options in general.
+
+opts.global                                    *vifm-l_vifm.opts.global*
+Table that provides access to global options.  The mapping between option
+types and Lua types is quite obvious:
+ - boolean option   -> boolean type
+ - integer option   -> number type
+ - any other option -> string type
+ - bad option       -> nil type
+
+--------------------------------------------------------------------------------
 *vifm-l_vifm.plugins*
+
+This global `vifm.plugins` table groups items related to plugins.
 
 plugins.all                                    *vifm-l_vifm.plugins.all*
 Table that contains all plugins indexed by their names.

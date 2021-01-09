@@ -27,6 +27,8 @@
 #include "../compat/fs_limits.h"
 #include "../compat/pthread.h"
 #include "../engine/cmds.h"
+#include "../engine/options.h"
+#include "../engine/text_buffer.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/tabs.h"
@@ -85,6 +87,8 @@ vifm_job_t;
 
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
+static int opts_global_index(lua_State *lua);
+static int opts_global_newindex(lua_State *lua);
 static int vifm_errordialog(lua_State *lua);
 static int vifm_fnamemodify(lua_State *lua);
 static int vifm_exists(lua_State *lua);
@@ -248,6 +252,20 @@ load_api(lua_State *lua)
 	luaL_newlib(lua, cmds_methods);
 	lua_setfield(lua, -2, "cmds");
 
+	/* Setup vifm.opts. */
+	lua_newtable(lua);
+	lua_pushvalue(lua, -1);
+	lua_setfield(lua, -3, "opts");
+	lua_newtable(lua);
+	lua_newtable(lua);
+	lua_pushcfunction(lua, &opts_global_index);
+	lua_setfield(lua, -2, "__index");
+	lua_pushcfunction(lua, &opts_global_newindex);
+	lua_setfield(lua, -2, "__newindex");
+	lua_setmetatable(lua, -2);
+	lua_setfield(lua, -2, "global");
+	lua_pop(lua, 1);
+
 	/* Setup vifm.plugins. */
 	lua_newtable(lua);
 	lua_newtable(lua);
@@ -295,6 +313,90 @@ print(lua_State *lua)
 	}
 
 	free(msg);
+	return 0;
+}
+
+/* Provides read access to global options by their name as
+ * `vifm.opts.global[name]`. */
+static int
+opts_global_index(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+
+	opt_t *opt = vle_opts_find(opt_name, OPT_ANY);
+	if(opt == NULL || opt->scope == OPT_LOCAL)
+	{
+		return 0;
+	}
+
+	int nresults = 0;
+	switch(opt->type)
+	{
+		case OPT_BOOL:
+			lua_pushboolean(lua, opt->val.bool_val);
+			nresults = 1;
+			break;
+		case OPT_INT:
+			lua_pushinteger(lua, opt->val.int_val);
+			nresults = 1;
+			break;
+		case OPT_STR:
+		case OPT_STRLIST:
+		case OPT_ENUM:
+		case OPT_SET:
+		case OPT_CHARSET:
+			lua_pushstring(lua, vle_opt_to_string(opt));
+			nresults = 1;
+			break;
+	}
+	return nresults;
+}
+
+/* Provides write access to global options by their name as
+ * `vifm.opts.global[name] = value`. */
+static int
+opts_global_newindex(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+
+	opt_t *opt = vle_opts_find(opt_name, OPT_ANY);
+	if(opt == NULL || opt->scope == OPT_LOCAL)
+	{
+		return 0;
+	}
+
+	vle_tb_clear(vle_err);
+
+	if(opt->type == OPT_BOOL)
+	{
+		luaL_checktype(lua, 3, LUA_TBOOLEAN);
+		if(lua_toboolean(lua, -1))
+		{
+			(void)vle_opt_on(opt);
+		}
+		else
+		{
+			(void)vle_opt_off(opt);
+		}
+	}
+	else if(opt->type == OPT_INT)
+	{
+		luaL_checktype(lua, 3, LUA_TNUMBER);
+		/* Let vle_opt_assign() handle floating point case. */
+		(void)vle_opt_assign(opt, lua_tostring(lua, 3));
+	}
+	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_ENUM || opt->type == OPT_SET || opt->type == OPT_CHARSET)
+	{
+		(void)vle_opt_assign(opt, luaL_checkstring(lua, 3));
+	}
+
+	if(vle_tb_get_data(vle_err)[0] != '\0')
+	{
+		vle_tb_append_linef(vle_err, "Failed to set value of option %s", opt_name);
+		return luaL_error(lua, "%s", vle_tb_get_data(vle_err));
+	}
+
 	return 0;
 }
 
