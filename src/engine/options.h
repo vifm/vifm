@@ -145,6 +145,12 @@ opt_t;
  * when no such option exists. */
 opt_t * vle_opts_find(const char option[], OPT_SCOPE scope);
 
+/* Turns boolean option on.  Returns non-zero in case of error. */
+int vle_opt_on(opt_t *opt);
+
+/* Turns boolean option off.  Returns non-zero in case of error. */
+int vle_opt_off(opt_t *opt);
+
 /* Assigns value to an option of all kinds except boolean.  Returns non-zero in
  * case of error. */
 int vle_opt_assign(opt_t *opt, const char value[]);

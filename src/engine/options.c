@@ -71,8 +71,6 @@ static void enum_options(OPT_SCOPE scope, opt_traverse traverser);
 static void enum_unique_options(opt_traverse traverser);
 static opt_t * get_option(const char option[], OPT_SCOPE scope);
 static opt_t * pick_option(opt_t *opts[2], OPT_SCOPE scope);
-static int set_on(opt_t *opt);
-static int set_off(opt_t *opt);
 static int set_inv(opt_t *opt);
 static int set_reset(opt_t *opt);
 static int uses_str_value(OPT_TYPE type);
@@ -425,7 +423,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 		if(o != NULL)
 		{
 			if(o->type == OPT_BOOL)
-				err = set_on(opt);
+				err = vle_opt_on(opt);
 			else
 			{
 				*print = 1;
@@ -434,7 +432,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 		}
 		else if(strncmp(optname, "no", 2) == 0)
 		{
-			err = set_off(opt);
+			err = vle_opt_off(opt);
 		}
 		else if(strncmp(optname, "inv", 3) == 0)
 		{
@@ -689,9 +687,8 @@ pick_option(opt_t *opts[2], OPT_SCOPE scope)
 	}
 }
 
-/* Turns boolean option on.  Returns non-zero in case of error. */
-static int
-set_on(opt_t *opt)
+int
+vle_opt_on(opt_t *opt)
 {
 	if(opt->type != OPT_BOOL)
 		return -1;
@@ -706,9 +703,8 @@ set_on(opt_t *opt)
 	return 0;
 }
 
-/* Turns boolean option off.  Returns non-zero in case of error. */
-static int
-set_off(opt_t *opt)
+int
+vle_opt_off(opt_t *opt)
 {
 	if(opt->type != OPT_BOOL)
 		return -1;
