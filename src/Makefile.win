@@ -10,9 +10,9 @@ src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
 # lookup for out-of-tree builds
 VPATH := $(src_dir)
 
-override CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
+override CFLAGS := -c -Wall -Werror -MMD -MP -DPDC_WIDE -D_XOPEN_SOURCE
 override CFLAGS += -include ../build-aux/config.h -D_FILE_OFFSET_BITS=64 -pipe
-override CFLAGS += -pthread
+override CFLAGS += -pthread $(CFLAGS)
 ifeq ($(RELEASE),1)
     override CFLAGS += -O2
 else
