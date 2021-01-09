@@ -136,7 +136,7 @@ do_nothing_handler(const char name[], optval_t val, OPT_SCOPE scope)
 void
 vle_opts_restore_default(const char name[], OPT_SCOPE scope)
 {
-	opt_t *opt = find_option(name, scope);
+	opt_t *opt = vle_opts_find(name, scope);
 	if(opt != NULL)
 	{
 		set_reset(opt);
@@ -215,7 +215,7 @@ vle_opts_add(const char name[], const char abbr[], const char descr[],
 
 		/* Inserting an option invalidates pointers to other options, so reload
 		 * it. */
-		full = find_option(full_name, scope);
+		full = vle_opts_find(full_name, scope);
 	}
 
 	if(uses_str_value(type))
@@ -260,7 +260,7 @@ add_option_inner(const char name[], const char descr[], OPT_TYPE type,
 	opt_t *p;
 
 	assert(scope != OPT_ANY && "OPT_ANY can't be an option type.");
-	assert(find_option(name, scope) == NULL && "Duplicated option.");
+	assert(vle_opts_find(name, scope) == NULL && "Duplicated option.");
 
 	p = reallocarray(options, option_count + 1, sizeof(*options));
 	if(p == NULL)
@@ -293,7 +293,7 @@ add_option_inner(const char name[], const char descr[], OPT_TYPE type,
 void
 vle_opts_assign(const char name[], optval_t val, OPT_SCOPE scope)
 {
-	opt_t *opt = find_option(name, scope);
+	opt_t *opt = vle_opts_find(name, scope);
 	assert(opt != NULL && "Wrong option name.");
 
 	if(uses_str_value(opt->type))
@@ -421,7 +421,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 	err = 0;
 	if(*suffix == '\0')
 	{
-		opt_t *o = find_option(optname, scope);
+		opt_t *o = vle_opts_find(optname, scope);
 		if(o != NULL)
 		{
 			if(o->type == OPT_BOOL)
@@ -461,11 +461,11 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 	}
 	else if(strncmp(suffix, "+=", 2) == 0)
 	{
-		err = set_add(opt, suffix + 2);
+		err = vle_opt_add(opt, suffix + 2);
 	}
 	else if(strncmp(suffix, "-=", 2) == 0)
 	{
-		err = set_remove(opt, suffix + 2);
+		err = vle_opt_remove(opt, suffix + 2);
 	}
 	else if(strncmp(suffix, "^=", 2) == 0)
 	{
@@ -473,7 +473,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 	}
 	else if(*suffix == '=' || *suffix == ':')
 	{
-		err = set_set(opt, suffix + 1);
+		err = vle_opt_assign(opt, suffix + 1);
 	}
 	else
 	{
@@ -594,20 +594,20 @@ get_option(const char option[], OPT_SCOPE scope)
 {
 	opt_t *opt;
 
-	opt = find_option(option, scope);
+	opt = vle_opts_find(option, scope);
 	if(opt != NULL)
 		return opt;
 
 	if(strncmp(option, "no", 2) == 0)
-		return find_option(option + 2, scope);
+		return vle_opts_find(option + 2, scope);
 	else if(strncmp(option, "inv", 3) == 0)
-		return find_option(option + 3, scope);
+		return vle_opts_find(option + 3, scope);
 	else
 		return NULL;
 }
 
 opt_t *
-find_option(const char option[], OPT_SCOPE scope)
+vle_opts_find(const char option[], OPT_SCOPE scope)
 {
 	int l = 0, u = option_count - 1;
 	while(l <= u)
@@ -637,7 +637,7 @@ find_option(const char option[], OPT_SCOPE scope)
 			opt = pick_option(opts, scope);
 			if(opt != NULL && opt->full != NULL)
 			{
-				return find_option(opt->full, scope);
+				return vle_opts_find(opt->full, scope);
 			}
 			return opt;
 		}
@@ -738,7 +738,7 @@ set_inv(opt_t *opt)
 }
 
 int
-set_set(opt_t *opt, const char value[])
+vle_opt_assign(opt_t *opt, const char value[])
 {
 	if(opt->type == OPT_BOOL)
 		return -1;
@@ -837,7 +837,7 @@ uses_str_value(OPT_TYPE type)
 }
 
 int
-set_add(opt_t *opt, const char value[])
+vle_opt_add(opt_t *opt, const char value[])
 {
 	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
 			opt->type != OPT_CHARSET && opt->type != OPT_STR)
@@ -900,7 +900,7 @@ set_add(opt_t *opt, const char value[])
 }
 
 int
-set_remove(opt_t *opt, const char value[])
+vle_opt_remove(opt_t *opt, const char value[])
 {
 	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
 			opt->type != OPT_CHARSET)
@@ -1243,7 +1243,7 @@ set_print(const opt_t *opt)
 	}
 	else
 	{
-		vle_tb_append_linef(vle_err, "  %s=%s", opt->name, get_value(opt));
+		vle_tb_append_linef(vle_err, "  %s=%s", opt->name, vle_opt_to_string(opt));
 	}
 	return 0;
 }
@@ -1251,18 +1251,18 @@ set_print(const opt_t *opt)
 const char *
 vle_opts_get(const char name[], OPT_SCOPE scope)
 {
-	opt_t *opt = find_option(name, scope);
+	opt_t *opt = vle_opts_find(name, scope);
 	assert(opt != NULL && "Wrong option name.");
 	if(opt == NULL)
 	{
 		return NULL;
 	}
 
-	return get_value(opt);
+	return vle_opt_to_string(opt);
 }
 
 const char *
-get_value(const opt_t *opt)
+vle_opt_to_string(const opt_t *opt)
 {
 	static char buf[1024];
 	if(opt->type == OPT_BOOL)
@@ -1393,7 +1393,7 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
-			vle_compl_put_match(escape_chars(get_value(opt), " |"), "");
+			vle_compl_put_match(escape_chars(vle_opt_to_string(opt), " |"), "");
 		}
 	}
 

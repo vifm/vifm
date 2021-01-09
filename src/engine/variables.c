@@ -408,7 +408,7 @@ is_valid_op(const char name[], VariableType vt, VariableOperation vo)
 		return (vo == VO_ASSIGN || vo == VO_APPEND);
 	}
 
-	opt = find_option(name, OPT_GLOBAL);
+	opt = vle_opts_find(name, OPT_GLOBAL);
 	if(opt == NULL)
 	{
 		/* Let this error be handled somewhere else. */
@@ -528,7 +528,7 @@ perform_opt_op(const char name[], VariableType vt, VariableOperation vo,
 	                ? OPT_LOCAL
 	                : OPT_GLOBAL;
 
-	opt_t *const opt = find_option(name, scope);
+	opt_t *const opt = vle_opts_find(name, scope);
 	if(opt == NULL)
 	{
 		if(vt == VT_ANY_OPTION)
@@ -544,20 +544,20 @@ perform_opt_op(const char name[], VariableType vt, VariableOperation vo,
 	switch(vo)
 	{
 		case VO_ASSIGN:
-			if(set_set(opt, value) != 0)
+			if(vle_opt_assign(opt, value) != 0)
 			{
 				return 1;
 			}
 			break;
 		case VO_ADD:
 		case VO_APPEND:
-			if(set_add(opt, value) != 0)
+			if(vle_opt_add(opt, value) != 0)
 			{
 				return 1;
 			}
 			break;
 		case VO_SUB:
-			if(set_remove(opt, value) != 0)
+			if(vle_opt_remove(opt, value) != 0)
 			{
 				return 1;
 			}
