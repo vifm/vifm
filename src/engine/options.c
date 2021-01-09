@@ -17,7 +17,6 @@
  */
 
 #include "options.h"
-#include "private/options.h"
 
 #include <assert.h> /* assert() */
 #include <ctype.h>

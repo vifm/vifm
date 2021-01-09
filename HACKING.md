@@ -67,7 +67,6 @@ there for instructions.
     |  |
     |  |-- engine/ - the core of vi[m]-like functionality
     |  |  |
-    |  |  |-- private/ - private headers of the engine
     |  |  |-- abbrevs.c - implementation of abbreviations
     |  |  |-- autocmds.c - implementation of autocommands
     |  |  |-- cmds.c - command line parsing core

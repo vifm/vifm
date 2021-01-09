@@ -51,7 +51,6 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/str.h"
-#include "private/options.h"
 #include "functions.h"
 #include "options.h"
 #include "text_buffer.h"

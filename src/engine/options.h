@@ -79,14 +79,16 @@ typedef void (*opt_uni_handler)(const char name[], optval_t val,
  * universal_handler can be NULL. */
 void vle_opts_init(int *opts_changed_flag, opt_uni_handler universal_handler);
 
+/* Removes all options. */
+void vle_opts_reset(void);
+
+/* High-level interface. */
+
 /* Resets an option to its default value. */
 void vle_opts_restore_default(const char name[], OPT_SCOPE scope);
 
 /* Resets all options to their default values. */
 void vle_opts_restore_defaults(void);
-
-/* Removes all options. */
-void vle_opts_reset(void);
 
 /* Adds an option.  The scope can't be OPT_ANY here. */
 void vle_opts_add(const char name[], const char abbr[], const char descr[],
@@ -110,6 +112,53 @@ void vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope);
 
 /* Completes names of real options (no pseudo options like "all"). */
 void vle_opts_complete_real(const char beginning[], OPT_SCOPE scope);
+
+/* Low-level interface. */
+
+/* List of valid first characters in the name of an environment variable. */
+extern const char OPT_NAME_FIRST_CHAR[];
+
+/* List of valid non-first characters in the name of an environment variable. */
+extern const char OPT_NAME_CHARS[];
+
+/* Internal structure holding information about an option.  Options with short
+ * form of name will get two such structures, the one for the short name will
+ * have the full member set to the name member of other structure. */
+typedef struct
+{
+	char *name;             /* Name of an option. */
+	const char *descr;      /* Option description. */
+	OPT_TYPE type;          /* Option type. */
+	OPT_SCOPE scope;        /* Scope: local or global. */
+	optval_t val;           /* Current value of an option. */
+	optval_t def;           /* Default value of an option. */
+	opt_handler handler;    /* A pointer to option handler. */
+	int val_count;          /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
+	const char *(*vals)[2]; /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
+
+	/* This is not a pointer because they change on inserting options. */
+	const char *full;       /* Points to full name of the option. */
+}
+opt_t;
+
+/* Returns a pointer to a structure describing option of given name or NULL
+ * when no such option exists. */
+opt_t * find_option(const char option[], OPT_SCOPE scope);
+
+/* Assigns value to an option of all kinds except boolean.  Returns non-zero in
+ * case of error. */
+int set_set(opt_t *opt, const char value[]);
+
+/* Adds value(s) to the option (+= operator).  Returns zero on success. */
+int set_add(opt_t *opt, const char value[]);
+
+/* Removes value(s) from the option (-= operator).  Returns non-zero on
+ * success. */
+int set_remove(opt_t *opt, const char value[]);
+
+/* Converts option value to string representation.  Returns pointer to a
+ * statically allocated buffer. */
+const char * get_value(const opt_t *opt);
 
 #endif /* VIFM__ENGINE__OPTIONS_H__ */
 

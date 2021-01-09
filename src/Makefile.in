@@ -696,7 +696,7 @@ vifm_SOURCES = \
 	engine/functions.c engine/functions.h \
 	engine/keys.c engine/keys.h \
 	engine/mode.c engine/mode.h \
-	engine/options.c engine/options.h engine/private/options.h \
+	engine/options.c engine/options.h \
 	engine/parsing.c engine/parsing.h \
 	engine/text_buffer.c engine/text_buffer.h \
 	engine/var.c engine/var.h \
