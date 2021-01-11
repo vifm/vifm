@@ -9,9 +9,17 @@
 
 static vlua_t *vlua;
 
+SETUP_ONCE()
+{
+	stub_colmgr();
+}
+
 SETUP()
 {
 	vlua = vlua_init();
+
+	view_setup(&lwin);
+	view_setup(&rwin);
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -22,6 +30,9 @@ SETUP()
 TEARDOWN()
 {
 	vlua_finish(vlua);
+
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	opt_handlers_teardown();
 }
@@ -108,6 +119,61 @@ TEST(charset_option)
 	assert_success(vlua_run_string(vlua, "vifm.opts.global.caseoptions = 'pG'"));
 	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.caseoptions)"));
 	assert_string_equal("pG", ui_sb_last());
+}
+
+TEST(view_option)
+{
+	assert_success(vlua_run_string(vlua, "v = vifm.currview()"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "v.viewopts.vicmd = 'vicmd'"));
+	assert_success(vlua_run_string(vlua, "print(v.viewopts.vicmd)"));
+	assert_string_equal("nil", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "v.locopts.vicmd = 'vicmd'"));
+	assert_success(vlua_run_string(vlua, "print(v.locopts.vicmd)"));
+	assert_string_equal("nil", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.vicmd)"));
+	assert_string_equal("", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "v.viewopts.bla = something"));
+	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "v.locopts.bla = something"));
+	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(v.viewopts.bla)"));
+	assert_string_equal("nil", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(v.locopts.bla)"));
+	assert_string_equal("nil", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "v.viewopts.dotfiles = false"));
+	assert_success(vlua_run_string(vlua,
+				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))"));
+	assert_string_equal("falsetrue", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "v.locopts.dotfiles = false"));
+	assert_success(vlua_run_string(vlua,
+				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))"));
+	assert_string_equal("falsefalse", ui_sb_last());
+
+	swap_view_roles();
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "v.locopts.dotfiles = true"));
+	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua,
+				"print(tostring(vifm.currview().viewopts.dotfiles).."
+				               "tostring(vifm.currview().locopts.dotfiles))"));
+	assert_string_equal("truetrue", ui_sb_last());
+	assert_success(vlua_run_string(vlua,
+				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))"));
+	assert_string_equal("falsetrue", ui_sb_last());
+
+	assert_true(curr_view == &rwin);
+	assert_failure(vlua_run_string(vlua, "v.locopts.dotfiles = 'asdf'"));
+	assert_true(ends_with(ui_sb_last(),
+				"bad argument #3 to '?' (boolean expected, got string)"));
+	assert_true(curr_view == &rwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

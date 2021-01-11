@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 10
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -126,6 +126,7 @@ Add VifmJob:succeeded() ?
 Add VifmJob:haserrors() ?
 
 Map options to arrays when possible, like for set options ?
+Forbid use of option abbreviations ?
 Technically options are also part of user-interface and maybe shouldn't be
 exposed in this way.
 
@@ -370,6 +371,15 @@ Instances of this type are returned by |vifm-l_vifm.currview()|.
 
 The corresponding view exists independently of this type and once the view is
 gone (e.g., its tab is closed) accessing bound instance raises an error.
+
+VifmView.locopts                               *vifm-l_VifmView.viewopts*
+Equivalent of |vifm-l_vifm.opts.global| for location-specific values of
+view-specific options.  These are "local" values of view-specific options,
+which are reset to "global" ones on file list change.
+
+VifmView.viewopts                              *vifm-l_VifmView.locopts*
+Equivalent of |vifm-l_vifm.opts.global| for view-specific options, see there
+for details.  These are "global" values of view-specific options.
 
 VifmView:cd({path})                            *vifm-l_VifmView:cd()*
 Changes location of the view.  {path} isn't expanded in any way.

@@ -21,6 +21,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* calloc() free() */
+#include <string.h> /* strcmp() */
 
 #include "../cfg/config.h"
 #include "../compat/dtype.h"
@@ -43,6 +44,7 @@
 #include "../filelist.h"
 #include "../filename_modifiers.h"
 #include "../macros.h"
+#include "../opt_handlers.h"
 #include "../plugins.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
@@ -103,7 +105,16 @@ static void drop_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int vifm_expand(lua_State *lua);
 static int vifm_currview(lua_State *lua);
+static int viewopts_index(lua_State *lua);
+static int viewopts_newindex(lua_State *lua);
+static opt_t * find_view_opt(const char name[]);
+static int locopts_index(lua_State *lua);
+static int locopts_newindex(lua_State *lua);
+static int do_opt(lua_State *lua, opt_t *opt, int set);
+static int restore_curr_view(lua_State *lua);
+static int get_opt_wrapper(lua_State *lua);
 static int get_opt(lua_State *lua, opt_t *opt);
+static int set_opt_wrapper(lua_State *lua);
 static int set_opt(lua_State *lua, opt_t *opt);
 static int vifmjob_gc(lua_State *lua);
 static int vifmjob_wait(lua_State *lua);
@@ -630,7 +641,141 @@ vifm_currview(lua_State *lua)
 
 	luaL_getmetatable(lua, "VifmView");
 	lua_setmetatable(lua, -2);
+
 	return 1;
+}
+
+/* Provides read access to view options by their name as
+ * `VifmView:viewopts[name]`.  These are "global" values of view options. */
+static int
+viewopts_index(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = find_view_opt(opt_name);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/0);
+}
+
+/* Provides write access to view options by their name as
+ * `VifmView:viewopts[name] = value`.  These are "global" values of view
+ * options. */
+static int
+viewopts_newindex(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = find_view_opt(opt_name);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/1);
+}
+
+/* Looks up view-specific option by its name.  Returns the option or NULL. */
+static opt_t *
+find_view_opt(const char name[])
+{
+	/* We query this to implicitly check that option is a local one... */
+	opt_t *opt = vle_opts_find(name, OPT_LOCAL);
+	if(opt == NULL)
+	{
+		return NULL;
+	}
+
+	return vle_opts_find(name, OPT_GLOBAL);
+}
+
+/* Provides read access to location-specific options by their name as
+ * `VifmView:viewopts[name]`.  These are "local" values of location-specific
+ * options. */
+static int
+locopts_index(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/0);
+}
+
+/* Provides write access to location-specific options by their name as
+ * `VifmView:viewopts[name] = value`.  These are "local" values of
+ * location-specific options. */
+static int
+locopts_newindex(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/1);
+}
+
+/* Reads or writes an option of a view.  Returns number of results. */
+static int
+do_opt(lua_State *lua, opt_t *opt, int set)
+{
+	const unsigned int *id = lua_touserdata(lua, 1);
+	view_t *view = find_view(lua, *id);
+
+	if(view == curr_view)
+	{
+		return (set ? set_opt(lua, opt) : get_opt(lua, opt));
+	}
+
+	/* XXX: have to go extra mile to restore `curr_view` on error. */
+
+	view_t *curr = curr_view;
+	curr_view = view;
+	load_view_options(curr_view);
+
+	lua_pushlightuserdata(lua, curr);
+	lua_pushcclosure(lua, &restore_curr_view, 1);
+	lua_pushcfunction(lua, set ? &set_opt_wrapper : &get_opt_wrapper);
+	lua_pushlightuserdata(lua, opt);
+	lua_pushvalue(lua, 2);
+	lua_pushvalue(lua, 3);
+
+	int nresults = (set ? 0 : 1);
+	if(lua_pcall(lua, 3, nresults, -5) != LUA_OK)
+	{
+		const char *error = lua_tostring(lua, -1);
+		return luaL_error(lua, "%s", error);
+	}
+
+	curr_view = curr;
+	load_view_options(curr_view);
+
+	return nresults;
+}
+
+/* Restores `curr_view` after an error. */
+static int
+restore_curr_view(lua_State *lua)
+{
+	view_t *curr = lua_touserdata(lua, lua_upvalueindex(1));
+	curr_view = curr;
+	load_view_options(curr_view);
+	return 1;
+}
+
+/* Lua-wrapper of get_opt(). */
+static int
+get_opt_wrapper(lua_State *lua)
+{
+	opt_t *opt = lua_touserdata(lua, 1);
+	return get_opt(lua, opt);
 }
 
 /* Reads option value as a Lua value.  Returns number of results. */
@@ -658,6 +803,14 @@ get_opt(lua_State *lua, opt_t *opt)
 			break;
 	}
 	return nresults;
+}
+
+/* Lua-wrapper of set_opt(). */
+static int
+set_opt_wrapper(lua_State *lua)
+{
+	opt_t *opt = lua_touserdata(lua, 1);
+	return set_opt(lua, opt);
 }
 
 /* Sets option value from a Lua value.  Returns number of results, which is
@@ -876,12 +1029,44 @@ jobstream_close(lua_State *lua)
 static int
 vifmview_index(lua_State *lua)
 {
-	if(lua_getmetatable(lua, 1) == 0)
+	const char *key = luaL_checkstring(lua, 2);
+
+	int viewopts;
+	if(strcmp(key, "viewopts") == 0)
 	{
-		return 0;
+		viewopts = 1;
 	}
-	lua_pushvalue(lua, 2);
-	lua_rawget(lua, -2);
+	else if(strcmp(key, "locopts") == 0)
+	{
+		viewopts = 0;
+	}
+	else
+	{
+		if(lua_getmetatable(lua, 1) == 0)
+		{
+			return 0;
+		}
+		lua_pushvalue(lua, 2);
+		lua_rawget(lua, -2);
+		return 1;
+	}
+
+	/* This complication is here because functions of `viewopts` and `locopts`
+	 * need to know on which view they are being called. */
+
+	const unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
+
+	unsigned int *id_copy = lua_newuserdata(lua, sizeof(*id_copy));
+	*id_copy = *id;
+
+	lua_newtable(lua);
+	lua_pushvalue(lua, -1);
+	lua_setmetatable(lua, -2);
+	lua_pushcfunction(lua, viewopts ? &viewopts_index : &locopts_index);
+	lua_setfield(lua, -2, "__index");
+	lua_pushcfunction(lua, viewopts ? &viewopts_newindex : &locopts_newindex);
+	lua_setfield(lua, -2, "__newindex");
+	lua_setmetatable(lua, -2);
 	return 1;
 }
 

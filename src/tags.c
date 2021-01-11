@@ -650,6 +650,8 @@ const char *tags[] = {
 	"vifm-l_VifmJob:stdout()",
 	"vifm-l_VifmJob:wait()",
 	"vifm-l_VifmView",
+	"vifm-l_VifmView.locopts",
+	"vifm-l_VifmView.viewopts",
 	"vifm-l_VifmView:cd()",
 	"vifm-l_vifm",
 	"vifm-l_vifm.cmds",
