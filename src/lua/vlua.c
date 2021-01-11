@@ -103,6 +103,8 @@ static void drop_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int vifm_expand(lua_State *lua);
 static int vifm_currview(lua_State *lua);
+static int get_opt(lua_State *lua, opt_t *opt);
+static int set_opt(lua_State *lua, opt_t *opt);
 static int vifmjob_gc(lua_State *lua);
 static int vifmjob_wait(lua_State *lua);
 static int vifmjob_exitcode(lua_State *lua);
@@ -329,27 +331,7 @@ opts_global_index(lua_State *lua)
 		return 0;
 	}
 
-	int nresults = 0;
-	switch(opt->type)
-	{
-		case OPT_BOOL:
-			lua_pushboolean(lua, opt->val.bool_val);
-			nresults = 1;
-			break;
-		case OPT_INT:
-			lua_pushinteger(lua, opt->val.int_val);
-			nresults = 1;
-			break;
-		case OPT_STR:
-		case OPT_STRLIST:
-		case OPT_ENUM:
-		case OPT_SET:
-		case OPT_CHARSET:
-			lua_pushstring(lua, vle_opt_to_string(opt));
-			nresults = 1;
-			break;
-	}
-	return nresults;
+	return get_opt(lua, opt);
 }
 
 /* Provides write access to global options by their name as
@@ -365,39 +347,7 @@ opts_global_newindex(lua_State *lua)
 		return 0;
 	}
 
-	vle_tb_clear(vle_err);
-
-	if(opt->type == OPT_BOOL)
-	{
-		luaL_checktype(lua, 3, LUA_TBOOLEAN);
-		if(lua_toboolean(lua, -1))
-		{
-			(void)vle_opt_on(opt);
-		}
-		else
-		{
-			(void)vle_opt_off(opt);
-		}
-	}
-	else if(opt->type == OPT_INT)
-	{
-		luaL_checktype(lua, 3, LUA_TNUMBER);
-		/* Let vle_opt_assign() handle floating point case. */
-		(void)vle_opt_assign(opt, lua_tostring(lua, 3));
-	}
-	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
-			opt->type == OPT_ENUM || opt->type == OPT_SET || opt->type == OPT_CHARSET)
-	{
-		(void)vle_opt_assign(opt, luaL_checkstring(lua, 3));
-	}
-
-	if(vle_tb_get_data(vle_err)[0] != '\0')
-	{
-		vle_tb_append_linef(vle_err, "Failed to set value of option %s", opt_name);
-		return luaL_error(lua, "%s", vle_tb_get_data(vle_err));
-	}
-
-	return 0;
+	return set_opt(lua, opt);
 }
 
 /* Member of `vifm` that displays an error dialog.  Doesn't return anything. */
@@ -679,6 +629,73 @@ vifm_currview(lua_State *lua)
 	luaL_getmetatable(lua, "VifmView");
 	lua_setmetatable(lua, -2);
 	return 1;
+}
+
+/* Reads option value as a Lua value.  Returns number of results. */
+static int
+get_opt(lua_State *lua, opt_t *opt)
+{
+	int nresults = 0;
+	switch(opt->type)
+	{
+		case OPT_BOOL:
+			lua_pushboolean(lua, opt->val.bool_val);
+			nresults = 1;
+			break;
+		case OPT_INT:
+			lua_pushinteger(lua, opt->val.int_val);
+			nresults = 1;
+			break;
+		case OPT_STR:
+		case OPT_STRLIST:
+		case OPT_ENUM:
+		case OPT_SET:
+		case OPT_CHARSET:
+			lua_pushstring(lua, vle_opt_to_string(opt));
+			nresults = 1;
+			break;
+	}
+	return nresults;
+}
+
+/* Sets option value from a Lua value.  Returns number of results, which is
+ * always zero. */
+static int
+set_opt(lua_State *lua, opt_t *opt)
+{
+	vle_tb_clear(vle_err);
+
+	if(opt->type == OPT_BOOL)
+	{
+		luaL_checktype(lua, 3, LUA_TBOOLEAN);
+		if(lua_toboolean(lua, -1))
+		{
+			(void)vle_opt_on(opt);
+		}
+		else
+		{
+			(void)vle_opt_off(opt);
+		}
+	}
+	else if(opt->type == OPT_INT)
+	{
+		luaL_checktype(lua, 3, LUA_TNUMBER);
+		/* Let vle_opt_assign() handle floating point case. */
+		(void)vle_opt_assign(opt, lua_tostring(lua, 3));
+	}
+	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_ENUM || opt->type == OPT_SET || opt->type == OPT_CHARSET)
+	{
+		(void)vle_opt_assign(opt, luaL_checkstring(lua, 3));
+	}
+
+	if(vle_tb_get_data(vle_err)[0] != '\0')
+	{
+		vle_tb_append_linef(vle_err, "Failed to set value of option %s", opt->name);
+		return luaL_error(lua, "%s", vle_tb_get_data(vle_err));
+	}
+
+	return 0;
 }
 
 /* Member of `vifm.sb` that prints a normal message on the statusbar.  Doesn't
