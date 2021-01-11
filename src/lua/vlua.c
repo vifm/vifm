@@ -113,6 +113,7 @@ static int vifmjob_errors(lua_State *lua);
 static int vifmview_index(lua_State *lua);
 static int vifmview_cd(lua_State *lua);
 static view_t * check_view(lua_State *lua);
+static view_t * find_view(lua_State *lua, unsigned int id);
 static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
@@ -903,12 +904,19 @@ static view_t *
 check_view(lua_State *lua)
 {
 	unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
+	return find_view(lua, *id);
+}
 
-	if(lwin.id == *id)
+/* Finds a view by its id.  Returns the pointer or aborts (Lua does longjmp())
+ * if the view doesn't exist anymore. */
+static view_t *
+find_view(lua_State *lua, unsigned int id)
+{
+	if(lwin.id == id)
 	{
 		return &lwin;
 	}
-	if(rwin.id == *id)
+	if(rwin.id == id)
 	{
 		return &rwin;
 	}
@@ -917,7 +925,7 @@ check_view(lua_State *lua)
 	tab_info_t tab_info;
 	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
-		if(tab_info.view->id == *id)
+		if(tab_info.view->id == id)
 		{
 			return tab_info.view;
 		}
