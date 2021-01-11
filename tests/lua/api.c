@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <stdio.h> /* puts() */
-
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/lua/vlua.h"

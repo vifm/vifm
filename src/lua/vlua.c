@@ -21,12 +21,15 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* calloc() free() */
+#include <string.h> /* strcmp() */
 
 #include "../cfg/config.h"
 #include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../compat/pthread.h"
 #include "../engine/cmds.h"
+#include "../engine/options.h"
+#include "../engine/text_buffer.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/tabs.h"
@@ -41,6 +44,7 @@
 #include "../filelist.h"
 #include "../filename_modifiers.h"
 #include "../macros.h"
+#include "../opt_handlers.h"
 #include "../plugins.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
@@ -85,6 +89,8 @@ vifm_job_t;
 
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
+static int opts_global_index(lua_State *lua);
+static int opts_global_newindex(lua_State *lua);
 static int vifm_errordialog(lua_State *lua);
 static int vifm_fnamemodify(lua_State *lua);
 static int vifm_exists(lua_State *lua);
@@ -99,13 +105,26 @@ static void drop_pointer(lua_State *lua, void *ptr);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int vifm_expand(lua_State *lua);
 static int vifm_currview(lua_State *lua);
+static int viewopts_index(lua_State *lua);
+static int viewopts_newindex(lua_State *lua);
+static opt_t * find_view_opt(const char name[]);
+static int locopts_index(lua_State *lua);
+static int locopts_newindex(lua_State *lua);
+static int do_opt(lua_State *lua, opt_t *opt, int set);
+static int restore_curr_view(lua_State *lua);
+static int get_opt_wrapper(lua_State *lua);
+static int get_opt(lua_State *lua, opt_t *opt);
+static int set_opt_wrapper(lua_State *lua);
+static int set_opt(lua_State *lua, opt_t *opt);
 static int vifmjob_gc(lua_State *lua);
 static int vifmjob_wait(lua_State *lua);
 static int vifmjob_exitcode(lua_State *lua);
 static int vifmjob_stdout(lua_State *lua);
 static int vifmjob_errors(lua_State *lua);
+static int vifmview_index(lua_State *lua);
 static int vifmview_cd(lua_State *lua);
 static view_t * check_view(lua_State *lua);
+static view_t * find_view(lua_State *lua, unsigned int id);
 static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
@@ -226,7 +245,7 @@ load_api(lua_State *lua)
 	lua_pop(lua, 1);
 
 	luaL_newmetatable(lua, "VifmView");
-	lua_pushvalue(lua, -1);
+	lua_pushcfunction(lua, &vifmview_index);
 	lua_setfield(lua, -2, "__index");
 	luaL_setfuncs(lua, view_methods, 0);
 	lua_pop(lua, 1);
@@ -247,6 +266,20 @@ load_api(lua_State *lua)
 	/* Setup vifm.cmds. */
 	luaL_newlib(lua, cmds_methods);
 	lua_setfield(lua, -2, "cmds");
+
+	/* Setup vifm.opts. */
+	lua_newtable(lua);
+	lua_pushvalue(lua, -1);
+	lua_setfield(lua, -3, "opts");
+	lua_newtable(lua);
+	lua_newtable(lua);
+	lua_pushcfunction(lua, &opts_global_index);
+	lua_setfield(lua, -2, "__index");
+	lua_pushcfunction(lua, &opts_global_newindex);
+	lua_setfield(lua, -2, "__newindex");
+	lua_setmetatable(lua, -2);
+	lua_setfield(lua, -2, "global");
+	lua_pop(lua, 1);
 
 	/* Setup vifm.plugins. */
 	lua_newtable(lua);
@@ -296,6 +329,38 @@ print(lua_State *lua)
 
 	free(msg);
 	return 0;
+}
+
+/* Provides read access to global options by their name as
+ * `vifm.opts.global[name]`. */
+static int
+opts_global_index(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+
+	opt_t *opt = vle_opts_find(opt_name, OPT_ANY);
+	if(opt == NULL || opt->scope == OPT_LOCAL)
+	{
+		return 0;
+	}
+
+	return get_opt(lua, opt);
+}
+
+/* Provides write access to global options by their name as
+ * `vifm.opts.global[name] = value`. */
+static int
+opts_global_newindex(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+
+	opt_t *opt = vle_opts_find(opt_name, OPT_ANY);
+	if(opt == NULL || opt->scope == OPT_LOCAL)
+	{
+		return 0;
+	}
+
+	return set_opt(lua, opt);
 }
 
 /* Member of `vifm` that displays an error dialog.  Doesn't return anything. */
@@ -576,7 +641,216 @@ vifm_currview(lua_State *lua)
 
 	luaL_getmetatable(lua, "VifmView");
 	lua_setmetatable(lua, -2);
+
 	return 1;
+}
+
+/* Provides read access to view options by their name as
+ * `VifmView:viewopts[name]`.  These are "global" values of view options. */
+static int
+viewopts_index(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = find_view_opt(opt_name);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/0);
+}
+
+/* Provides write access to view options by their name as
+ * `VifmView:viewopts[name] = value`.  These are "global" values of view
+ * options. */
+static int
+viewopts_newindex(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = find_view_opt(opt_name);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/1);
+}
+
+/* Looks up view-specific option by its name.  Returns the option or NULL. */
+static opt_t *
+find_view_opt(const char name[])
+{
+	/* We query this to implicitly check that option is a local one... */
+	opt_t *opt = vle_opts_find(name, OPT_LOCAL);
+	if(opt == NULL)
+	{
+		return NULL;
+	}
+
+	return vle_opts_find(name, OPT_GLOBAL);
+}
+
+/* Provides read access to location-specific options by their name as
+ * `VifmView:viewopts[name]`.  These are "local" values of location-specific
+ * options. */
+static int
+locopts_index(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/0);
+}
+
+/* Provides write access to location-specific options by their name as
+ * `VifmView:viewopts[name] = value`.  These are "local" values of
+ * location-specific options. */
+static int
+locopts_newindex(lua_State *lua)
+{
+	const char *opt_name = luaL_checkstring(lua, 2);
+	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
+	if(opt == NULL)
+	{
+		return 0;
+	}
+
+	return do_opt(lua, opt, /*set=*/1);
+}
+
+/* Reads or writes an option of a view.  Returns number of results. */
+static int
+do_opt(lua_State *lua, opt_t *opt, int set)
+{
+	const unsigned int *id = lua_touserdata(lua, 1);
+	view_t *view = find_view(lua, *id);
+
+	if(view == curr_view)
+	{
+		return (set ? set_opt(lua, opt) : get_opt(lua, opt));
+	}
+
+	/* XXX: have to go extra mile to restore `curr_view` on error. */
+
+	view_t *curr = curr_view;
+	curr_view = view;
+	load_view_options(curr_view);
+
+	lua_pushlightuserdata(lua, curr);
+	lua_pushcclosure(lua, &restore_curr_view, 1);
+	lua_pushcfunction(lua, set ? &set_opt_wrapper : &get_opt_wrapper);
+	lua_pushlightuserdata(lua, opt);
+	lua_pushvalue(lua, 2);
+	lua_pushvalue(lua, 3);
+
+	int nresults = (set ? 0 : 1);
+	if(lua_pcall(lua, 3, nresults, -5) != LUA_OK)
+	{
+		const char *error = lua_tostring(lua, -1);
+		return luaL_error(lua, "%s", error);
+	}
+
+	curr_view = curr;
+	load_view_options(curr_view);
+
+	return nresults;
+}
+
+/* Restores `curr_view` after an error. */
+static int
+restore_curr_view(lua_State *lua)
+{
+	view_t *curr = lua_touserdata(lua, lua_upvalueindex(1));
+	curr_view = curr;
+	load_view_options(curr_view);
+	return 1;
+}
+
+/* Lua-wrapper of get_opt(). */
+static int
+get_opt_wrapper(lua_State *lua)
+{
+	opt_t *opt = lua_touserdata(lua, 1);
+	return get_opt(lua, opt);
+}
+
+/* Reads option value as a Lua value.  Returns number of results. */
+static int
+get_opt(lua_State *lua, opt_t *opt)
+{
+	int nresults = 0;
+	switch(opt->type)
+	{
+		case OPT_BOOL:
+			lua_pushboolean(lua, opt->val.bool_val);
+			nresults = 1;
+			break;
+		case OPT_INT:
+			lua_pushinteger(lua, opt->val.int_val);
+			nresults = 1;
+			break;
+		case OPT_STR:
+		case OPT_STRLIST:
+		case OPT_ENUM:
+		case OPT_SET:
+		case OPT_CHARSET:
+			lua_pushstring(lua, vle_opt_to_string(opt));
+			nresults = 1;
+			break;
+	}
+	return nresults;
+}
+
+/* Lua-wrapper of set_opt(). */
+static int
+set_opt_wrapper(lua_State *lua)
+{
+	opt_t *opt = lua_touserdata(lua, 1);
+	return set_opt(lua, opt);
+}
+
+/* Sets option value from a Lua value.  Returns number of results, which is
+ * always zero. */
+static int
+set_opt(lua_State *lua, opt_t *opt)
+{
+	vle_tb_clear(vle_err);
+
+	if(opt->type == OPT_BOOL)
+	{
+		luaL_checktype(lua, 3, LUA_TBOOLEAN);
+		if(lua_toboolean(lua, -1))
+		{
+			(void)vle_opt_on(opt);
+		}
+		else
+		{
+			(void)vle_opt_off(opt);
+		}
+	}
+	else if(opt->type == OPT_INT)
+	{
+		luaL_checktype(lua, 3, LUA_TNUMBER);
+		/* Let vle_opt_assign() handle floating point case. */
+		(void)vle_opt_assign(opt, lua_tostring(lua, 3));
+	}
+	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_ENUM || opt->type == OPT_SET || opt->type == OPT_CHARSET)
+	{
+		(void)vle_opt_assign(opt, luaL_checkstring(lua, 3));
+	}
+
+	if(vle_tb_get_data(vle_err)[0] != '\0')
+	{
+		vle_tb_append_linef(vle_err, "Failed to set value of option %s", opt->name);
+		return luaL_error(lua, "%s", vle_tb_get_data(vle_err));
+	}
+
+	return 0;
 }
 
 /* Member of `vifm.sb` that prints a normal message on the statusbar.  Doesn't
@@ -751,6 +1025,51 @@ jobstream_close(lua_State *lua)
 	return luaL_fileresult(lua, stat, NULL);
 }
 
+/* Handles indexing of `VifmView` objects. */
+static int
+vifmview_index(lua_State *lua)
+{
+	const char *key = luaL_checkstring(lua, 2);
+
+	int viewopts;
+	if(strcmp(key, "viewopts") == 0)
+	{
+		viewopts = 1;
+	}
+	else if(strcmp(key, "locopts") == 0)
+	{
+		viewopts = 0;
+	}
+	else
+	{
+		if(lua_getmetatable(lua, 1) == 0)
+		{
+			return 0;
+		}
+		lua_pushvalue(lua, 2);
+		lua_rawget(lua, -2);
+		return 1;
+	}
+
+	/* This complication is here because functions of `viewopts` and `locopts`
+	 * need to know on which view they are being called. */
+
+	const unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
+
+	unsigned int *id_copy = lua_newuserdata(lua, sizeof(*id_copy));
+	*id_copy = *id;
+
+	lua_newtable(lua);
+	lua_pushvalue(lua, -1);
+	lua_setmetatable(lua, -2);
+	lua_pushcfunction(lua, viewopts ? &viewopts_index : &locopts_index);
+	lua_setfield(lua, -2, "__index");
+	lua_pushcfunction(lua, viewopts ? &viewopts_newindex : &locopts_newindex);
+	lua_setfield(lua, -2, "__newindex");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
 /* Method of `VifmView` that changes directory of current view.  Returns
  * boolean, which is true if location change was successful. */
 static int
@@ -770,12 +1089,19 @@ static view_t *
 check_view(lua_State *lua)
 {
 	unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
+	return find_view(lua, *id);
+}
 
-	if(lwin.id == *id)
+/* Finds a view by its id.  Returns the pointer or aborts (Lua does longjmp())
+ * if the view doesn't exist anymore. */
+static view_t *
+find_view(lua_State *lua, unsigned int id)
+{
+	if(lwin.id == id)
 	{
 		return &lwin;
 	}
-	if(rwin.id == *id)
+	if(rwin.id == id)
 	{
 		return &rwin;
 	}
@@ -784,7 +1110,7 @@ check_view(lua_State *lua)
 	tab_info_t tab_info;
 	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
-		if(tab_info.view->id == *id)
+		if(tab_info.view->id == id)
 		{
 			return tab_info.view;
 		}

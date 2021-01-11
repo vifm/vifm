@@ -2,9 +2,9 @@
 |------------|------------|------------|------------|------------|
 |[![][TT]][T]|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
 
-### **vifm** - vi[m] like file manager, _v0.11_, _2001 – 2020_
+### **vifm** - vi[m] like file manager, _v0.11_, _2001 – 2021_
 
-_This file last updated on 24 September, 2020_
+_This file last updated on 6 January, 2020_
 
 ## Brief Description ##
 
@@ -52,8 +52,9 @@ functionality should be enough for most of use cases.
 ## Getting Started ##
 
 A good idea for quick start might be skimming over [cheatsheet][cheatsheet] for
-the main mode (that is Normal mode) and reading some sections on basic usage on
-[the wiki][wiki-manual].
+the main mode (that is Normal mode), reading some sections on basic usage on
+[the wiki][wiki-manual] and looking at sample configuration file (run
+`:edit $MYVIFMC`).
 
 ## License ##
 

@@ -51,7 +51,6 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/str.h"
-#include "private/options.h"
 #include "functions.h"
 #include "options.h"
 #include "text_buffer.h"
@@ -1174,7 +1173,7 @@ eval_opt(const char **in)
 		return var_false();
 	}
 
-	option = find_option(name, scope);
+	option = vle_opts_find(name, scope);
 	if(option == NULL)
 	{
 		last_error = PE_INVALID_EXPRESSION;
@@ -1196,7 +1195,7 @@ eval_opt(const char **in)
 
 		case OPT_ENUM:
 		case OPT_SET:
-			return var_from_str(get_value(option));
+			return var_from_str(vle_opt_to_string(option));
 
 		default:
 			assert(0 && "Unexpected option type");

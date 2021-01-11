@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2020 Dec 29
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -7,11 +7,13 @@ complete removal of this interface (that's an unlikely scenario though).
 
 |vifm-lua-status|      Status of plugins.
 |vifm-lua-plugins|     Sample plugins.
+|vifm-lua-lua|         Generic reasoning behind this API.
 |vifm-lua-design|      Generic ideas about the design.
 |vifm-lua-libs|        What Lua libraries are available.
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
+|vifm-l_vifm.opts|     `vifm.opts` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
 |vifm-l_VifmJob|       `VifmJob` type.
@@ -35,11 +37,26 @@ Since API is not stable at all, example plugins are stored in code repository
 of Vifm and are thus bound to corresponding revision of the application.
 
 --------------------------------------------------------------------------------
+*vifm-lua-why*
+
+Think of Lua API as a way to reach deeper into the internals of Vifm.  This
+isn't a replacement of existing functionality, but a richer way of interacting
+with the core behind it.
+
+Regular :commands are a form of user-interface by design, which has various
+implications that limit their abilities.  For example, you can't reliably check
+if a command succeeded and different commands treat same arguments differently
+for the purpose of ease of use, which however makes automation harder.  When
+things like that start to get in the way, it's a good idea to reimplement
+relevant functionality in Lua.
+
+--------------------------------------------------------------------------------
 *vifm-lua-design*
 
 The intent is for Lua to be a way of extending the core.  It's not meant
 neither as a replacement of :commands nor as a continuation of it.  Instead
-it's supposed to be a more low-level way of interacting with the core.
+it's supposed to be a more low-level way of interacting with the core and
+extension.
 
 One implication is that there is no way of calling Lua from :commands or vice
 versa.  This gets too ugly too quickly, hence they are separated except for
@@ -108,6 +125,11 @@ Make "description" a mandatory argument?
 Add VifmJob:succeeded() ?
 Add VifmJob:haserrors() ?
 
+Map options to arrays when possible, like for set options ?
+Forbid use of option abbreviations ?
+Technically options are also part of user-interface and maybe shouldn't be
+exposed in this way.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm*
 
@@ -115,6 +137,9 @@ Global `vifm` table is the entry-point to the API.
 
 vifm.cmds
 Table for managing command-line commands.  See |vifm-l_vifm.cmds|.
+
+vifm.opts
+Table for managing options.  See |vifm-l_vifm.opts|.
 
 vifm.plugins
 Table for managing plugins.  See |vifm-l_vifm.plugins|.
@@ -172,7 +197,8 @@ Parameters:~
   {path}  Path to create.
 
 Return:~
-  `true` on success.
+  `true` on success.  Trying to create path that already exists is not
+  considered to be an error.
 
 vifm.startjob({job})                           *vifm-l_vifm.startjob()*
 Launches an external command.  Returns without waiting for it to finish.
@@ -254,7 +280,22 @@ Return:~
   `true` on success.
 
 --------------------------------------------------------------------------------
+*vifm-l_vifm.opts*
+
+This global `vifm.opts` table groups items related to options in general.
+
+opts.global                                    *vifm-l_vifm.opts.global*
+Table that provides access to global options.  The mapping between option
+types and Lua types is quite obvious:
+ - boolean option   -> boolean type
+ - integer option   -> number type
+ - any other option -> string type
+ - bad option       -> nil type
+
+--------------------------------------------------------------------------------
 *vifm-l_vifm.plugins*
+
+This global `vifm.plugins` table groups items related to plugins.
 
 plugins.all                                    *vifm-l_vifm.plugins.all*
 Table that contains all plugins indexed by their names.
@@ -330,6 +371,15 @@ Instances of this type are returned by |vifm-l_vifm.currview()|.
 
 The corresponding view exists independently of this type and once the view is
 gone (e.g., its tab is closed) accessing bound instance raises an error.
+
+VifmView.locopts                               *vifm-l_VifmView.viewopts*
+Equivalent of |vifm-l_vifm.opts.global| for location-specific values of
+view-specific options.  These are "local" values of view-specific options,
+which are reset to "global" ones on file list change.
+
+VifmView.viewopts                              *vifm-l_VifmView.locopts*
+Equivalent of |vifm-l_vifm.opts.global| for view-specific options, see there
+for details.  These are "global" values of view-specific options.
 
 VifmView:cd({path})                            *vifm-l_VifmView:cd()*
 Changes location of the view.  {path} isn't expanded in any way.
