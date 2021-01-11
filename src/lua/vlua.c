@@ -110,6 +110,7 @@ static int vifmjob_wait(lua_State *lua);
 static int vifmjob_exitcode(lua_State *lua);
 static int vifmjob_stdout(lua_State *lua);
 static int vifmjob_errors(lua_State *lua);
+static int vifmview_index(lua_State *lua);
 static int vifmview_cd(lua_State *lua);
 static view_t * check_view(lua_State *lua);
 static int sb_info(lua_State *lua);
@@ -232,7 +233,7 @@ load_api(lua_State *lua)
 	lua_pop(lua, 1);
 
 	luaL_newmetatable(lua, "VifmView");
-	lua_pushvalue(lua, -1);
+	lua_pushcfunction(lua, &vifmview_index);
 	lua_setfield(lua, -2, "__index");
 	luaL_setfuncs(lua, view_methods, 0);
 	lua_pop(lua, 1);
@@ -868,6 +869,19 @@ jobstream_close(lua_State *lua)
 	}
 
 	return luaL_fileresult(lua, stat, NULL);
+}
+
+/* Handles indexing of `VifmView` objects. */
+static int
+vifmview_index(lua_State *lua)
+{
+	if(lua_getmetatable(lua, 1) == 0)
+	{
+		return 0;
+	}
+	lua_pushvalue(lua, 2);
+	lua_rawget(lua, -2);
+	return 1;
 }
 
 /* Method of `VifmView` that changes directory of current view.  Returns
