@@ -176,6 +176,8 @@ vifm_SOURCES = \
 	lua/lua/lvm.c lua/lua/lvm.h \
 	lua/lua/lzio.c lua/lua/lzio.h \
 	\
+	lua/common.c lua/common.h \
+	lua/vifmjob.c lua/vifmjob.h \
 	lua/vlua.c lua/vlua.h \
 	\
 	menus/all.h \

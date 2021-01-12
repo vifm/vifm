@@ -159,7 +159,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	lua/lua/ltable.$(OBJEXT) lua/lua/ltablib.$(OBJEXT) \
 	lua/lua/ltm.$(OBJEXT) lua/lua/lundump.$(OBJEXT) \
 	lua/lua/lutf8lib.$(OBJEXT) lua/lua/lvm.$(OBJEXT) \
-	lua/lua/lzio.$(OBJEXT) lua/vlua.$(OBJEXT) \
+	lua/lua/lzio.$(OBJEXT) lua/common.$(OBJEXT) \
+	lua/vifmjob.$(OBJEXT) lua/vlua.$(OBJEXT) \
 	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
 	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
 	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
@@ -762,6 +763,8 @@ vifm_SOURCES = \
 	lua/lua/lvm.c lua/lua/lvm.h \
 	lua/lua/lzio.c lua/lua/lzio.h \
 	\
+	lua/common.c lua/common.h \
+	lua/vifmjob.c lua/vifmjob.h \
 	lua/vlua.c lua/vlua.h \
 	\
 	menus/all.h \
@@ -1196,6 +1199,10 @@ lua/$(am__dirstamp):
 lua/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) lua/$(DEPDIR)
 	@: > lua/$(DEPDIR)/$(am__dirstamp)
+lua/common.$(OBJEXT): lua/$(am__dirstamp) \
+	lua/$(DEPDIR)/$(am__dirstamp)
+lua/vifmjob.$(OBJEXT): lua/$(am__dirstamp) \
+	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vlua.$(OBJEXT): lua/$(am__dirstamp) lua/$(DEPDIR)/$(am__dirstamp)
 menus/$(am__dirstamp):
 	@$(MKDIR_P) menus
@@ -1552,6 +1559,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ionotif.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/traverser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifmjob.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vlua.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lapi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/lua/$(DEPDIR)/lauxlib.Po@am__quote@

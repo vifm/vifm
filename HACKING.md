@@ -104,7 +104,9 @@ there for instructions.
     |  |
     |  |-- lua/ - Lua interface
     |  |  |
-    |  |  |-- lua/ - Lua 5.4 sources
+    |  |  |-- lua/ - Lua 5.4.2 sources
+    |  |  |-- common.c - common code for Lua API implementation
+    |  |  |-- vifmjob.c - implementation of VifmJob
     |  |  `-- vlua.c - main Lua interface unit
     |  |
     |  |-- menus/ - implementation of all menus
