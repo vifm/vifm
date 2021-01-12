@@ -442,7 +442,7 @@ vifm_startjob(lua_State *lua)
 		bg_op_set_descr(&job->bg_op, descr);
 	}
 
-	vifm_job_t *data = lua_newuserdata(lua, sizeof(*data));
+	vifm_job_t *data = lua_newuserdatauv(lua, sizeof(*data), 0);
 
 	luaL_getmetatable(lua, "VifmJob");
 	lua_setmetatable(lua, -2);
@@ -636,7 +636,7 @@ vifm_expand(lua_State *lua)
 static int
 vifm_currview(lua_State *lua)
 {
-	unsigned int *data = lua_newuserdata(lua, sizeof(*data));
+	unsigned int *data = lua_newuserdatauv(lua, sizeof(*data), 0);
 	*data = curr_view->id;
 
 	luaL_getmetatable(lua, "VifmView");
@@ -963,7 +963,7 @@ vifmjob_stdout(lua_State *lua)
 	/* We return the same Lua object on every call. */
 	if(vifm_job->output == NULL)
 	{
-		job_stream_t *js = lua_newuserdata(lua, sizeof(*js));
+		job_stream_t *js = lua_newuserdatauv(lua, sizeof(*js), 0);
 		js->lua_stream.closef = NULL;
 		luaL_setmetatable(lua, LUA_FILEHANDLE);
 
@@ -1056,7 +1056,7 @@ vifmview_index(lua_State *lua)
 
 	const unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
 
-	unsigned int *id_copy = lua_newuserdata(lua, sizeof(*id_copy));
+	unsigned int *id_copy = lua_newuserdatauv(lua, sizeof(*id_copy), 0);
 	*id_copy = *id;
 
 	lua_newtable(lua);
