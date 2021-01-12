@@ -84,7 +84,15 @@ typedef LUAI_UACNUMBER l_uacNumber;
 typedef LUAI_UACINT l_uacInt;
 
 
-/* internal assertions for in-house debugging */
+/*
+** Internal assertions for in-house debugging
+*/
+#if defined LUAI_ASSERT
+#undef NDEBUG
+#include <assert.h>
+#define lua_assert(c)           assert(c)
+#endif
+
 #if defined(lua_assert)
 #define check_exp(c,e)		(lua_assert(c), (e))
 /* to avoid problems with conditions too long */
@@ -227,6 +235,17 @@ typedef l_uint32 Instruction;
 
 
 /*
+** Maximum depth for nested C calls, syntactical nested non-terminals,
+** and other features implemented through recursion in C. (Value must
+** fit in a 16-bit unsigned integer. It must also be compatible with
+** the size of the C stack.)
+*/
+#if !defined(LUAI_MAXCCALLS)
+#define LUAI_MAXCCALLS		200
+#endif
+
+
+/*
 ** macros that are executed whenever program enters the Lua core
 ** ('lua_lock') and leaves the core ('lua_unlock')
 */
@@ -307,7 +326,8 @@ typedef l_uint32 Instruction;
 
 /* exponentiation */
 #if !defined(luai_numpow)
-#define luai_numpow(L,a,b)      ((void)L, l_mathop(pow)(a,b))
+#define luai_numpow(L,a,b)  \
+  ((void)L, (b == 2) ? (a)*(a) : l_mathop(pow)(a,b))
 #endif
 
 /* the others are quite standard operations */
@@ -336,7 +356,7 @@ typedef l_uint32 Instruction;
 #else
 /* realloc stack keeping its size */
 #define condmovestack(L,pre,pos)  \
-  { int sz_ = (L)->stacksize; pre; luaD_reallocstack((L), sz_, 0); pos; }
+  { int sz_ = stacksize(L); pre; luaD_reallocstack((L), sz_, 0); pos; }
 #endif
 
 #if !defined(HARDMEMTESTS)
