@@ -1,5 +1,10 @@
 0.11 to current
 
+	Changed semantics of light* color groups to add bold attribute only for
+	terminals with less than 16 colors.  Aligns the behaviour with Vim.
+	Affects you only if you relied on that implicit bold attribute.  Thanks to
+	Jose Riha (a.k.a. jose1711).
+
 	Added beginnings of Lua plugins.
 
 	Added :plugins command that opens plugins menu.
