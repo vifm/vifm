@@ -42,6 +42,15 @@ void from_pointer(struct lua_State *lua, void *ptr);
 /* Removes pointer stored by to_pointer(). */
 void drop_pointer(struct lua_State *lua, void *ptr);
 
+struct opt_t;
+
+/* Reads option value as a Lua value.  Returns number of results. */
+int get_opt(struct lua_State *lua, struct opt_t *opt);
+
+/* Sets option value from a Lua value.  Returns number of results, which is
+ * always zero. */
+int set_opt(struct lua_State *lua, struct opt_t *opt);
+
 #endif /* VIFM__LUA__COMMON_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

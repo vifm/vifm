@@ -18,6 +18,8 @@
 
 #include "common.h"
 
+#include "../engine/options.h"
+#include "../engine/text_buffer.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
 
@@ -76,6 +78,70 @@ drop_pointer(lua_State *lua, void *ptr)
 	lua_pushlightuserdata(lua, ptr);
 	lua_pushnil(lua);
 	lua_settable(lua, LUA_REGISTRYINDEX);
+}
+
+int
+get_opt(lua_State *lua, opt_t *opt)
+{
+	int nresults = 0;
+	switch(opt->type)
+	{
+		case OPT_BOOL:
+			lua_pushboolean(lua, opt->val.bool_val);
+			nresults = 1;
+			break;
+		case OPT_INT:
+			lua_pushinteger(lua, opt->val.int_val);
+			nresults = 1;
+			break;
+		case OPT_STR:
+		case OPT_STRLIST:
+		case OPT_ENUM:
+		case OPT_SET:
+		case OPT_CHARSET:
+			lua_pushstring(lua, vle_opt_to_string(opt));
+			nresults = 1;
+			break;
+	}
+	return nresults;
+}
+
+int
+set_opt(lua_State *lua, opt_t *opt)
+{
+	vle_tb_clear(vle_err);
+
+	if(opt->type == OPT_BOOL)
+	{
+		luaL_checktype(lua, 3, LUA_TBOOLEAN);
+		if(lua_toboolean(lua, -1))
+		{
+			(void)vle_opt_on(opt);
+		}
+		else
+		{
+			(void)vle_opt_off(opt);
+		}
+	}
+	else if(opt->type == OPT_INT)
+	{
+		luaL_checktype(lua, 3, LUA_TNUMBER);
+		/* Let vle_opt_assign() handle floating point case. */
+		(void)vle_opt_assign(opt, lua_tostring(lua, 3));
+	}
+	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_ENUM || opt->type == OPT_SET || opt->type == OPT_CHARSET)
+	{
+		(void)vle_opt_assign(opt, luaL_checkstring(lua, 3));
+	}
+
+	if(vle_tb_get_data(vle_err)[0] != '\0')
+	{
+		vle_tb_append_linef(vle_err, "Failed to set value of option %s", opt->name);
+		return luaL_error(lua, "%s", vle_tb_get_data(vle_err));
+	}
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
