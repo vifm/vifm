@@ -19,73 +19,33 @@
 #include "vlua.h"
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* NULL */
-#include <stdlib.h> /* calloc() free() */
-#include <string.h> /* strcmp() */
+#include <stddef.h> /* NULL size_t */
+#include <stdlib.h> /* free() */
 
 #include "../cfg/config.h"
 #include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
-#include "../compat/pthread.h"
-#include "../engine/cmds.h"
 #include "../engine/options.h"
-#include "../engine/text_buffer.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
-#include "../ui/tabs.h"
 #include "../ui/ui.h"
-#include "../utils/darray.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../utils/string_array.h"
-#include "../background.h"
+#include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
 #include "../filename_modifiers.h"
 #include "../macros.h"
-#include "../opt_handlers.h"
 #include "../plugins.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
-#include "lua/lualib.h"
-
-/* Helper structure that bundles arbitrary pointer and state pointer . */
-typedef struct
-{
-	vlua_t *vlua;
-	void *ptr;
-}
-state_ptr_t;
-
-/* State of the unit. */
-struct vlua_t
-{
-	lua_State *lua; /* Lua state. */
-
-	state_ptr_t **ptrs;      /* Pointers. */
-	DA_INSTANCE_FIELD(ptrs); /* Declarations to enable use of DA_* on ptrs. */
-
-	strlist_t strings; /* Interned strings. */
-};
-
-/* User data of file stream associated with job's output stream. */
-typedef struct
-{
-	luaL_Stream lua_stream; /* Standard Lua structure. */
-	bg_job_t *job;          /* Link to the owning job. */
-	void *obj;              /* Handle to Lua object of this user data. */
-}
-job_stream_t;
-
-/* User data of job object. */
-typedef struct
-{
-	bg_job_t *job;        /* Link to the native job. */
-	job_stream_t *output; /* Cached output stream or NULL. */
-}
-vifm_job_t;
+#include "common.h"
+#include "vifm_cmds.h"
+#include "vifmjob.h"
+#include "vifmview.h"
+#include "vlua_state.h"
 
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
@@ -95,69 +55,23 @@ static int vifm_errordialog(lua_State *lua);
 static int vifm_fnamemodify(lua_State *lua);
 static int vifm_exists(lua_State *lua);
 static int vifm_makepath(lua_State *lua);
-static int vifm_startjob(lua_State *lua);
-static int cmds_add(lua_State *lua);
-static int cmds_command(lua_State *lua);
-static int cmds_delcommand(lua_State *lua);
-static void * to_pointer(lua_State *lua);
-static void from_pointer(lua_State *lua, void *ptr);
-static void drop_pointer(lua_State *lua, void *ptr);
-static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int vifm_expand(lua_State *lua);
-static int vifm_currview(lua_State *lua);
-static int viewopts_index(lua_State *lua);
-static int viewopts_newindex(lua_State *lua);
-static opt_t * find_view_opt(const char name[]);
-static int locopts_index(lua_State *lua);
-static int locopts_newindex(lua_State *lua);
-static int do_opt(lua_State *lua, opt_t *opt, int set);
-static int restore_curr_view(lua_State *lua);
-static int get_opt_wrapper(lua_State *lua);
-static int get_opt(lua_State *lua, opt_t *opt);
-static int set_opt_wrapper(lua_State *lua);
-static int set_opt(lua_State *lua, opt_t *opt);
-static int vifmjob_gc(lua_State *lua);
-static int vifmjob_wait(lua_State *lua);
-static int vifmjob_exitcode(lua_State *lua);
-static int vifmjob_stdout(lua_State *lua);
-static int vifmjob_errors(lua_State *lua);
-static int vifmview_index(lua_State *lua);
-static int vifmview_cd(lua_State *lua);
-static view_t * check_view(lua_State *lua);
-static view_t * find_view(lua_State *lua, unsigned int id);
 static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
-static int jobstream_close(lua_State *lua);
 static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
 static void setup_plugin_env(lua_State *lua, plug_t *plug);
-static state_ptr_t * state_store_pointer(vlua_t *vlua, void *ptr);
-static const char * state_store_string(vlua_t *vlua, const char str[]);
-static void set_state(lua_State *lua, vlua_t *vlua);
-static vlua_t * get_state(lua_State *lua);
-static void check_field(lua_State *lua, int table_idx, const char name[],
-		int lua_type);
-static int check_opt_field(lua_State *lua, int table_idx, const char name[],
-		int lua_type);
 
 /* Functions of `vifm` global table. */
 static const struct luaL_Reg vifm_methods[] = {
-	{ "errordialog", &vifm_errordialog },
-	{ "fnamemodify", &vifm_fnamemodify },
-	{ "exists",      &vifm_exists      },
-	{ "makepath",    &vifm_makepath    },
-	{ "startjob",    &vifm_startjob    },
-	{ "expand",      &vifm_expand      },
-	{ "currview",    &vifm_currview    },
-	{ NULL,          NULL              }
-};
-
-/* Functions of `vifm.cmds` table. */
-static const struct luaL_Reg cmds_methods[] = {
-	{ "add",        &cmds_add        },
-	{ "command",    &cmds_command    },
-	{ "delcommand", &cmds_delcommand },
-	{ NULL,         NULL             }
+	{ "errordialog", &vifm_errordialog  },
+	{ "fnamemodify", &vifm_fnamemodify  },
+	{ "exists",      &vifm_exists       },
+	{ "makepath",    &vifm_makepath     },
+	{ "startjob",    &vifmjob_new       },
+	{ "expand",      &vifm_expand       },
+	{ "currview",    &vifmview_currview },
+	{ NULL,          NULL               }
 };
 
 /* Functions of `vifm.sb` table. */
@@ -168,87 +82,29 @@ static const struct luaL_Reg sb_methods[] = {
 	{ NULL,     NULL      }
 };
 
-/* Methods of VifmJob type. */
-static const struct luaL_Reg job_methods[] = {
-	{ "__gc",     &vifmjob_gc       },
-	{ "wait",     &vifmjob_wait     },
-	{ "exitcode", &vifmjob_exitcode },
-	{ "stdout",   &vifmjob_stdout   },
-	{ "errors",   &vifmjob_errors   },
-	{ NULL,       NULL              }
-};
-
-/* Methods of VifmView type. */
-static const struct luaL_Reg view_methods[] = {
-	{ "cd", &vifmview_cd  },
-	{ NULL, NULL          }
-};
-
-/* Address of this variable serves as a key in Lua table. */
-static char vlua_state_key;
-
 vlua_t *
 vlua_init(void)
 {
-	vlua_t *vlua = calloc(1, sizeof(*vlua));
-	if(vlua == NULL)
+	vlua_t *vlua = vlua_state_alloc();
+	if(vlua != NULL)
 	{
-		return NULL;
+		load_api(vlua->lua);
 	}
-
-	vlua->lua = luaL_newstate();
-	set_state(vlua->lua, vlua);
-
-	luaL_requiref(vlua->lua, "base", &luaopen_base, 1);
-	lua_pop(vlua->lua, 1);
-	luaL_requiref(vlua->lua, LUA_TABLIBNAME, &luaopen_table, 1);
-	lua_pop(vlua->lua, 1);
-	luaL_requiref(vlua->lua, LUA_IOLIBNAME, &luaopen_io, 1);
-	lua_pop(vlua->lua, 1);
-	luaL_requiref(vlua->lua, LUA_STRLIBNAME, &luaopen_string, 1);
-	lua_pop(vlua->lua, 1);
-	luaL_requiref(vlua->lua, LUA_MATHLIBNAME, &luaopen_math, 1);
-	lua_pop(vlua->lua, 1);
-
-	load_api(vlua->lua);
-
 	return vlua;
 }
 
 void
 vlua_finish(vlua_t *vlua)
 {
-	if(vlua != NULL)
-	{
-		size_t i;
-		for(i = 0U; i < DA_SIZE(vlua->ptrs); ++i)
-		{
-			free(vlua->ptrs[i]);
-		}
-		DA_REMOVE_ALL(vlua->ptrs);
-
-		free_string_array(vlua->strings.items, vlua->strings.nitems);
-
-		lua_close(vlua->lua);
-		free(vlua);
-	}
+	vlua_state_free(vlua);
 }
 
 /* Fills Lua state with application-specific API. */
 static void
 load_api(lua_State *lua)
 {
-	luaL_newmetatable(lua, "VifmJob");
-	lua_pushvalue(lua, -1);
-	lua_setfield(lua, -2, "__index");
-	luaL_setfuncs(lua, job_methods, 0);
-	lua_pop(lua, 1);
-
-	luaL_newmetatable(lua, "VifmView");
-	lua_pushcfunction(lua, &vifmview_index);
-	lua_setfield(lua, -2, "__index");
-	luaL_setfuncs(lua, view_methods, 0);
-	lua_pop(lua, 1);
+	vifmjob_init(lua);
+	vifmview_init(lua);
 
 	luaL_newmetatable(lua, "VifmPluginEnv");
 	lua_pushglobaltable(lua);
@@ -264,7 +120,7 @@ load_api(lua_State *lua)
 	lua_setglobal(lua, "vifm");
 
 	/* Setup vifm.cmds. */
-	luaL_newlib(lua, cmds_methods);
+	vifm_cmds_init(lua);
 	lua_setfield(lua, -2, "cmds");
 
 	/* Setup vifm.opts. */
@@ -405,216 +261,6 @@ vifm_makepath(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm` that starts an external application as detached from a
- * terminal.  Returns an object of VifmJob type or raises an error. */
-static int
-vifm_startjob(lua_State *lua)
-{
-	luaL_checktype(lua, 1, LUA_TTABLE);
-
-	check_field(lua, 1, "cmd", LUA_TSTRING);
-	const char *cmd = lua_tostring(lua, -1);
-
-	BgJobFlags flags = BJF_MENU_VISIBLE;
-	if(check_opt_field(lua, 1, "visible", LUA_TBOOLEAN))
-	{
-		flags |= (lua_toboolean(lua, -1) ? BJF_JOB_BAR_VISIBLE : BJF_NONE);
-	}
-	if(check_opt_field(lua, 1, "mergestreams", LUA_TBOOLEAN))
-	{
-		flags |= (lua_toboolean(lua, -1) ? BJF_MERGE_STREAMS : BJF_NONE);
-	}
-
-	const char *descr = NULL;
-	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
-	{
-		descr = lua_tostring(lua, -1);
-	}
-
-	bg_job_t *job = bg_run_external_job(cmd, flags);
-	if(job == NULL)
-	{
-		return luaL_error(lua, "%s", "Failed to start a job");
-	}
-
-	if((flags & BJF_JOB_BAR_VISIBLE) && descr != NULL)
-	{
-		bg_op_set_descr(&job->bg_op, descr);
-	}
-
-	vifm_job_t *data = lua_newuserdata(lua, sizeof(*data));
-
-	luaL_getmetatable(lua, "VifmJob");
-	lua_setmetatable(lua, -2);
-
-	data->job = job;
-	data->output = NULL;
-	return 1;
-}
-
-/* Member of `vifm.cmds` that registers a new :command or raises an error.
- * Returns boolean, which is true on success. */
-static int
-cmds_add(lua_State *lua)
-{
-	vlua_t *vlua = get_state(lua);
-
-	luaL_checktype(lua, 1, LUA_TTABLE);
-
-	check_field(lua, 1, "name", LUA_TSTRING);
-	const char *name = lua_tostring(lua, -1);
-
-	const char *descr = "";
-	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
-	{
-		descr = state_store_string(vlua, lua_tostring(lua, -1));
-	}
-
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
-	void *handler = to_pointer(lua);
-
-	cmd_add_t cmd = {
-	  .name = name,
-	  .abbr = NULL,
-	  .id = -1,
-	  .descr = descr,
-	  .flags = 0,
-	  .handler = &lua_cmd_handler,
-	  .user_data = NULL,
-	  .min_args = 0,
-	  .max_args = 0,
-	};
-
-	if(check_opt_field(lua, 1, "minargs", LUA_TNUMBER))
-	{
-		cmd.min_args = lua_tointeger(lua, -1);
-	}
-	if(check_opt_field(lua, 1, "maxargs", LUA_TNUMBER))
-	{
-		cmd.max_args = lua_tointeger(lua, -1);
-		if(cmd.max_args < 0)
-		{
-			cmd.max_args = NOT_DEF;
-		}
-	}
-	else
-	{
-		cmd.max_args = cmd.min_args;
-	}
-
-	cmd.user_data = state_store_pointer(vlua, handler);
-	if(cmd.user_data == NULL)
-	{
-		return luaL_error(lua, "%s", "Failed to store handler data");
-	}
-
-	lua_pushboolean(lua, vle_cmds_add_foreign(&cmd) == 0);
-	return 1;
-}
-
-/* Member of `vifm.command` that registers a new user-defined :command or raises
- * an error.  Returns boolean, which is true on success. */
-static int
-cmds_command(lua_State *lua)
-{
-	vlua_t *vlua = get_state(lua);
-
-	luaL_checktype(lua, 1, LUA_TTABLE);
-
-	check_field(lua, 1, "name", LUA_TSTRING);
-	const char *name = lua_tostring(lua, -1);
-
-	check_field(lua, 1, "action", LUA_TSTRING);
-	const char *action = skip_whitespace(lua_tostring(lua, -1));
-	if(action[0] == '\0')
-	{
-		return luaL_error(lua, "%s", "Action can't be empty");
-	}
-
-	const char *descr = NULL;
-	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
-	{
-		descr = state_store_string(vlua, lua_tostring(lua, -1));
-	}
-
-	int overwrite = 0;
-	if(check_opt_field(lua, 1, "overwrite", LUA_TBOOLEAN))
-	{
-		overwrite = lua_toboolean(lua, -1);
-	}
-
-	int success = (vle_cmds_add_user(name, action, descr, overwrite) == 0);
-	lua_pushboolean(lua, success);
-	return 1;
-}
-
-/* Member of `vifm.command` that unregisters a user-defined :command.  Returns
- * boolean, which is true on success. */
-static int
-cmds_delcommand(lua_State *lua)
-{
-	const char *name = luaL_checkstring(lua, 1);
-
-	int success = (vle_cmds_del_user(name) == 0);
-	lua_pushboolean(lua, success);
-	return 1;
-}
-
-/* Converts Lua value at the top of the stack into a C pointer without popping
- * it.  Returns the pointer. */
-static void *
-to_pointer(lua_State *lua)
-{
-	void *ptr = (void *)lua_topointer(lua, -1);
-	lua_pushlightuserdata(lua, ptr);
-	lua_pushvalue(lua, -2);
-	lua_settable(lua, LUA_REGISTRYINDEX);
-	return ptr;
-}
-
-/* Converts C pointer to a Lua value and pushes it on top of the stack. */
-static void
-from_pointer(lua_State *lua, void *ptr)
-{
-	lua_pushlightuserdata(lua, ptr);
-	lua_gettable(lua, LUA_REGISTRYINDEX);
-}
-
-/* Removes pointer stored by to_pointer(). */
-static void
-drop_pointer(lua_State *lua, void *ptr)
-{
-	lua_pushlightuserdata(lua, ptr);
-	lua_pushnil(lua);
-	lua_settable(lua, LUA_REGISTRYINDEX);
-}
-
-/* Handler of all foreign :commands registered from Lua. */
-static int
-lua_cmd_handler(const cmd_info_t *cmd_info)
-{
-	state_ptr_t *p = cmd_info->user_data;
-	lua_State *lua = p->vlua->lua;
-
-	from_pointer(lua, p->ptr);
-
-	lua_newtable(lua);
-	lua_pushstring(lua, cmd_info->args);
-	lua_setfield(lua, -2, "args");
-
-	curr_stats.save_msg = 0;
-
-	if(lua_pcall(lua, 1, 0, 0) != LUA_OK)
-	{
-		const char *error = lua_tostring(lua, -1);
-		ui_sb_err(error);
-		lua_pop(lua, 1);
-		return CMDS_ERR_CUSTOM;
-	}
-
-	return curr_stats.save_msg;
-}
-
 /* Member of `vifm` that expands macros and environment variables.  Returns the
  * expanded string. */
 static int
@@ -629,228 +275,6 @@ vifm_expand(lua_State *lua)
 	free(full_expanded);
 
 	return 1;
-}
-
-/* Member of `vifm` that returns a reference to current view.  Returns an object
- * of VifmView type. */
-static int
-vifm_currview(lua_State *lua)
-{
-	unsigned int *data = lua_newuserdata(lua, sizeof(*data));
-	*data = curr_view->id;
-
-	luaL_getmetatable(lua, "VifmView");
-	lua_setmetatable(lua, -2);
-
-	return 1;
-}
-
-/* Provides read access to view options by their name as
- * `VifmView:viewopts[name]`.  These are "global" values of view options. */
-static int
-viewopts_index(lua_State *lua)
-{
-	const char *opt_name = luaL_checkstring(lua, 2);
-	opt_t *opt = find_view_opt(opt_name);
-	if(opt == NULL)
-	{
-		return 0;
-	}
-
-	return do_opt(lua, opt, /*set=*/0);
-}
-
-/* Provides write access to view options by their name as
- * `VifmView:viewopts[name] = value`.  These are "global" values of view
- * options. */
-static int
-viewopts_newindex(lua_State *lua)
-{
-	const char *opt_name = luaL_checkstring(lua, 2);
-	opt_t *opt = find_view_opt(opt_name);
-	if(opt == NULL)
-	{
-		return 0;
-	}
-
-	return do_opt(lua, opt, /*set=*/1);
-}
-
-/* Looks up view-specific option by its name.  Returns the option or NULL. */
-static opt_t *
-find_view_opt(const char name[])
-{
-	/* We query this to implicitly check that option is a local one... */
-	opt_t *opt = vle_opts_find(name, OPT_LOCAL);
-	if(opt == NULL)
-	{
-		return NULL;
-	}
-
-	return vle_opts_find(name, OPT_GLOBAL);
-}
-
-/* Provides read access to location-specific options by their name as
- * `VifmView:viewopts[name]`.  These are "local" values of location-specific
- * options. */
-static int
-locopts_index(lua_State *lua)
-{
-	const char *opt_name = luaL_checkstring(lua, 2);
-	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
-	if(opt == NULL)
-	{
-		return 0;
-	}
-
-	return do_opt(lua, opt, /*set=*/0);
-}
-
-/* Provides write access to location-specific options by their name as
- * `VifmView:viewopts[name] = value`.  These are "local" values of
- * location-specific options. */
-static int
-locopts_newindex(lua_State *lua)
-{
-	const char *opt_name = luaL_checkstring(lua, 2);
-	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
-	if(opt == NULL)
-	{
-		return 0;
-	}
-
-	return do_opt(lua, opt, /*set=*/1);
-}
-
-/* Reads or writes an option of a view.  Returns number of results. */
-static int
-do_opt(lua_State *lua, opt_t *opt, int set)
-{
-	const unsigned int *id = lua_touserdata(lua, 1);
-	view_t *view = find_view(lua, *id);
-
-	if(view == curr_view)
-	{
-		return (set ? set_opt(lua, opt) : get_opt(lua, opt));
-	}
-
-	/* XXX: have to go extra mile to restore `curr_view` on error. */
-
-	view_t *curr = curr_view;
-	curr_view = view;
-	load_view_options(curr_view);
-
-	lua_pushlightuserdata(lua, curr);
-	lua_pushcclosure(lua, &restore_curr_view, 1);
-	lua_pushcfunction(lua, set ? &set_opt_wrapper : &get_opt_wrapper);
-	lua_pushlightuserdata(lua, opt);
-	lua_pushvalue(lua, 2);
-	lua_pushvalue(lua, 3);
-
-	int nresults = (set ? 0 : 1);
-	if(lua_pcall(lua, 3, nresults, -5) != LUA_OK)
-	{
-		const char *error = lua_tostring(lua, -1);
-		return luaL_error(lua, "%s", error);
-	}
-
-	curr_view = curr;
-	load_view_options(curr_view);
-
-	return nresults;
-}
-
-/* Restores `curr_view` after an error. */
-static int
-restore_curr_view(lua_State *lua)
-{
-	view_t *curr = lua_touserdata(lua, lua_upvalueindex(1));
-	curr_view = curr;
-	load_view_options(curr_view);
-	return 1;
-}
-
-/* Lua-wrapper of get_opt(). */
-static int
-get_opt_wrapper(lua_State *lua)
-{
-	opt_t *opt = lua_touserdata(lua, 1);
-	return get_opt(lua, opt);
-}
-
-/* Reads option value as a Lua value.  Returns number of results. */
-static int
-get_opt(lua_State *lua, opt_t *opt)
-{
-	int nresults = 0;
-	switch(opt->type)
-	{
-		case OPT_BOOL:
-			lua_pushboolean(lua, opt->val.bool_val);
-			nresults = 1;
-			break;
-		case OPT_INT:
-			lua_pushinteger(lua, opt->val.int_val);
-			nresults = 1;
-			break;
-		case OPT_STR:
-		case OPT_STRLIST:
-		case OPT_ENUM:
-		case OPT_SET:
-		case OPT_CHARSET:
-			lua_pushstring(lua, vle_opt_to_string(opt));
-			nresults = 1;
-			break;
-	}
-	return nresults;
-}
-
-/* Lua-wrapper of set_opt(). */
-static int
-set_opt_wrapper(lua_State *lua)
-{
-	opt_t *opt = lua_touserdata(lua, 1);
-	return set_opt(lua, opt);
-}
-
-/* Sets option value from a Lua value.  Returns number of results, which is
- * always zero. */
-static int
-set_opt(lua_State *lua, opt_t *opt)
-{
-	vle_tb_clear(vle_err);
-
-	if(opt->type == OPT_BOOL)
-	{
-		luaL_checktype(lua, 3, LUA_TBOOLEAN);
-		if(lua_toboolean(lua, -1))
-		{
-			(void)vle_opt_on(opt);
-		}
-		else
-		{
-			(void)vle_opt_off(opt);
-		}
-	}
-	else if(opt->type == OPT_INT)
-	{
-		luaL_checktype(lua, 3, LUA_TNUMBER);
-		/* Let vle_opt_assign() handle floating point case. */
-		(void)vle_opt_assign(opt, lua_tostring(lua, 3));
-	}
-	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
-			opt->type == OPT_ENUM || opt->type == OPT_SET || opt->type == OPT_CHARSET)
-	{
-		(void)vle_opt_assign(opt, luaL_checkstring(lua, 3));
-	}
-
-	if(vle_tb_get_data(vle_err)[0] != '\0')
-	{
-		vle_tb_append_linef(vle_err, "Failed to set value of option %s", opt->name);
-		return luaL_error(lua, "%s", vle_tb_get_data(vle_err));
-	}
-
-	return 0;
 }
 
 /* Member of `vifm.sb` that prints a normal message on the statusbar.  Doesn't
@@ -883,241 +307,6 @@ sb_quick(lua_State *lua)
 	const char *msg = luaL_checkstring(lua, 1);
 	ui_sb_quick_msgf("%s", msg);
 	return 0;
-}
-
-/* Method of of VifmJob that frees associated resources.  Doesn't return
- * anything. */
-static int
-vifmjob_gc(lua_State *lua)
-{
-	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
-	bg_job_decref(vifm_job->job);
-
-	if(vifm_job->output != NULL)
-	{
-		job_stream_t *js = vifm_job->output;
-		drop_pointer(lua, js->obj);
-		bg_job_decref(js->job);
-		js->job = NULL;
-	}
-
-	return 0;
-}
-
-/* Method of of VifmJob that waits for the job to finish.  Raises an error if
- * waiting has failed.  Doesn't return anything. */
-static int
-vifmjob_wait(lua_State *lua)
-{
-	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
-
-	/* Close Lua output stream to avoid situation when the job is blocked on
-	 * write. */
-	if(vifm_job->output != NULL)
-	{
-		job_stream_t *js = vifm_job->output;
-		js->lua_stream.closef = NULL;
-		bg_job_decref(js->job);
-		drop_pointer(lua, js->obj);
-	}
-
-	if(bg_job_wait(vifm_job->job) != 0)
-	{
-		return luaL_error(lua, "%s", "Waiting for job has failed");
-	}
-
-	return 0;
-}
-
-/* Method of of VifmJob that retrieves exit code of the job.  Waits for the job
- * to finish if it hasn't already.  Raises an error if waiting has failed.
- * Returns an integer representing the exit code. */
-static int
-vifmjob_exitcode(lua_State *lua)
-{
-	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
-
-	vifmjob_wait(lua);
-
-	pthread_spin_lock(&vifm_job->job->status_lock);
-	int running = vifm_job->job->running;
-	int exit_code = vifm_job->job->exit_code;
-	pthread_spin_unlock(&vifm_job->job->status_lock);
-
-	if(running)
-	{
-		return luaL_error(lua, "%s", "Waited, but the job is still running");
-	}
-
-	lua_pushinteger(lua, exit_code);
-	return 1;
-}
-
-/* Method of VifmJob that retrieves stream associated with output stream of
- * the job.  Returns file stream object compatible with I/O library. */
-static int
-vifmjob_stdout(lua_State *lua)
-{
-	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
-
-	/* We return the same Lua object on every call. */
-	if(vifm_job->output == NULL)
-	{
-		job_stream_t *js = lua_newuserdata(lua, sizeof(*js));
-		js->lua_stream.closef = NULL;
-		luaL_setmetatable(lua, LUA_FILEHANDLE);
-
-		js->lua_stream.f = vifm_job->job->output;
-		js->lua_stream.closef = &jobstream_close;
-		js->job = vifm_job->job;
-		bg_job_incref(vifm_job->job);
-
-		js->obj = to_pointer(lua);
-		vifm_job->output = js;
-	}
-	else
-	{
-		from_pointer(lua, vifm_job->output->obj);
-	}
-
-	return 1;
-}
-
-/* Method of VifmJob that retrieves errors produces by the job.  Returns string
- * with the errors. */
-static int
-vifmjob_errors(lua_State *lua)
-{
-	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
-
-	char *errors = NULL;
-	pthread_spin_lock(&vifm_job->job->errors_lock);
-	update_string(&errors, vifm_job->job->errors);
-	pthread_spin_unlock(&vifm_job->job->errors_lock);
-
-	if(errors == NULL)
-	{
-		lua_pushstring(lua, "");
-	}
-	else
-	{
-		lua_pushstring(lua, errors);
-		free(errors);
-	}
-	return 1;
-}
-
-/* Custom destructor for luaL_Stream that decrements use counter of the job.
- * Returns status. */
-static int
-jobstream_close(lua_State *lua)
-{
-	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
-
-	int stat = 1;
-
-	if(js->job != NULL)
-	{
-		stat = (fclose(js->job->output) == 0);
-		js->job->output = NULL;
-	}
-
-	return luaL_fileresult(lua, stat, NULL);
-}
-
-/* Handles indexing of `VifmView` objects. */
-static int
-vifmview_index(lua_State *lua)
-{
-	const char *key = luaL_checkstring(lua, 2);
-
-	int viewopts;
-	if(strcmp(key, "viewopts") == 0)
-	{
-		viewopts = 1;
-	}
-	else if(strcmp(key, "locopts") == 0)
-	{
-		viewopts = 0;
-	}
-	else
-	{
-		if(lua_getmetatable(lua, 1) == 0)
-		{
-			return 0;
-		}
-		lua_pushvalue(lua, 2);
-		lua_rawget(lua, -2);
-		return 1;
-	}
-
-	/* This complication is here because functions of `viewopts` and `locopts`
-	 * need to know on which view they are being called. */
-
-	const unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
-
-	unsigned int *id_copy = lua_newuserdata(lua, sizeof(*id_copy));
-	*id_copy = *id;
-
-	lua_newtable(lua);
-	lua_pushvalue(lua, -1);
-	lua_setmetatable(lua, -2);
-	lua_pushcfunction(lua, viewopts ? &viewopts_index : &locopts_index);
-	lua_setfield(lua, -2, "__index");
-	lua_pushcfunction(lua, viewopts ? &viewopts_newindex : &locopts_newindex);
-	lua_setfield(lua, -2, "__newindex");
-	lua_setmetatable(lua, -2);
-	return 1;
-}
-
-/* Method of `VifmView` that changes directory of current view.  Returns
- * boolean, which is true if location change was successful. */
-static int
-vifmview_cd(lua_State *lua)
-{
-	view_t *view = check_view(lua);
-
-	const char *path = luaL_checkstring(lua, 2);
-	int success = (navigate_to(view, path) == 0);
-	lua_pushboolean(lua, success);
-	return 1;
-}
-
-/* Resolves `VifmView` user data in the first argument.  Returns the pointer or
- * aborts (Lua does longjmp()) if the view doesn't exist anymore. */
-static view_t *
-check_view(lua_State *lua)
-{
-	unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
-	return find_view(lua, *id);
-}
-
-/* Finds a view by its id.  Returns the pointer or aborts (Lua does longjmp())
- * if the view doesn't exist anymore. */
-static view_t *
-find_view(lua_State *lua, unsigned int id)
-{
-	if(lwin.id == id)
-	{
-		return &lwin;
-	}
-	if(rwin.id == id)
-	{
-		return &rwin;
-	}
-
-	int i;
-	tab_info_t tab_info;
-	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
-	{
-		if(tab_info.view->id == id)
-		{
-			return tab_info.view;
-		}
-	}
-
-	luaL_error(lua, "%s", "Invalid VifmView object (associated view is dead)");
-	return NULL;
 }
 
 int
@@ -1209,100 +398,6 @@ vlua_run_string(vlua_t *vlua, const char str[])
 
 	lua_settop(vlua->lua, old_top);
 	return errored;
-}
-
-/* Stores pointer within the state. */
-static state_ptr_t *
-state_store_pointer(vlua_t *vlua, void *ptr)
-{
-	state_ptr_t **p = DA_EXTEND(vlua->ptrs);
-	if(p == NULL)
-	{
-		return NULL;
-	}
-
-	*p = malloc(sizeof(**p));
-	if(*p == NULL)
-	{
-		return NULL;
-	}
-
-	(*p)->vlua = vlua;
-	(*p)->ptr = ptr;
-	DA_COMMIT(vlua->ptrs);
-	return *p;
-}
-
-/* Stores a string within the state.  Returns pointer to the interned string or
- * pointer to "" on error. */
-static const char *
-state_store_string(vlua_t *vlua, const char str[])
-{
-	int n = add_to_string_array(&vlua->strings.items, vlua->strings.nitems, str);
-	if(n == vlua->strings.nitems)
-	{
-		return "";
-	}
-
-	vlua->strings.nitems = n;
-	return vlua->strings.items[n - 1];
-}
-
-/* Stores pointer to vlua inside Lua state. */
-static void
-set_state(lua_State *lua, vlua_t *vlua)
-{
-	lua_pushlightuserdata(lua, &vlua_state_key);
-	lua_pushlightuserdata(lua, vlua);
-	lua_settable(lua, LUA_REGISTRYINDEX);
-}
-
-/* Retrieves pointer to vlua from Lua state. */
-static vlua_t *
-get_state(lua_State *lua)
-{
-	lua_pushlightuserdata(lua, &vlua_state_key);
-	lua_gettable(lua, LUA_REGISTRYINDEX);
-	vlua_t *vlua = lua_touserdata(lua, -1);
-	lua_pop(lua, 1);
-	return vlua;
-}
-
-/* Retrieves mandatory field of a table while checking its type and aborting
- * (Lua does longjmp()) if it's missing or doesn't match. */
-static void
-check_field(lua_State *lua, int table_idx, const char name[], int lua_type)
-{
-	int type = lua_getfield(lua, 1, name);
-	if(type == LUA_TNIL)
-	{
-		luaL_error(lua, "`%s` key is mandatory", name);
-	}
-	if(type != lua_type)
-	{
-		luaL_error(lua, "`%s` value must be a %s", name,
-				lua_typename(lua, lua_type));
-	}
-}
-
-/* Retrieves optional field of a table while checking its type and aborting (Lua
- * does longjmp()) if it doesn't match.  Returns non-zero if the field is
- * present and is of correct type. */
-static int
-check_opt_field(lua_State *lua, int table_idx, const char name[], int lua_type)
-{
-	int type = lua_getfield(lua, 1, name);
-	if(type == LUA_TNIL)
-	{
-		return 0;
-	}
-
-	if(type != lua_type)
-	{
-		return luaL_error(lua, "`%s` value must be a %s",name,
-				lua_typename(lua, lua_type));
-	}
-	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

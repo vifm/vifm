@@ -124,7 +124,8 @@ extern const char OPT_NAME_CHARS[];
 /* Internal structure holding information about an option.  Options with short
  * form of name will get two such structures, the one for the short name will
  * have the full member set to the name member of other structure. */
-typedef struct
+typedef struct opt_t opt_t;
+struct opt_t
 {
 	char *name;             /* Name of an option. */
 	const char *descr;      /* Option description. */
@@ -138,8 +139,7 @@ typedef struct
 
 	/* This is not a pointer because they change on inserting options. */
 	const char *full;       /* Points to full name of the option. */
-}
-opt_t;
+};
 
 /* Returns a pointer to a structure describing option of given name or NULL
  * when no such option exists. */

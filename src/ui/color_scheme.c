@@ -616,7 +616,8 @@ cs_write(void)
 	fprintf(fp, "\" Cyan = 6\n");
 	fprintf(fp, "\" White = 7\n\n");
 
-	fprintf(fp, "\" Light versions of colors are also available (set bold attribute):\n");
+	fprintf(fp, "\" Light versions of colors are also available (they set bold\n"
+	            "\" attribute in terminals with less than 16 colors):\n");
 	fprintf(fp, "\" LightBlack\n");
 	fprintf(fp, "\" LightRed\n");
 	fprintf(fp, "\" LightGreen\n");

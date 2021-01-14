@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2020 Dec 7
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jan 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1827,10 +1827,11 @@ Available colors:
  - white   and lightwhite
  - 0-255 - corresponding colors from 256-color palette
 
-Light versions of colors are regular colors with bold attribute set.  So order
-of arguments of :highlight command is important and it's better to put "cterm"
-in front of others to prevent it from overwriting attributes set by "ctermfg" or
-"ctermbg" arguments.
+Light versions of colors are regular colors with bold attribute set
+automatically in terminals that have less than 16 colors.  So order of arguments
+of :highlight command is important and it's better to put "cterm" in front of
+others to prevent it from overwriting attributes set by "ctermfg" or "ctermbg"
+arguments.
 
 For convenience of color scheme authors xterm-like names for 256 color palette
 is also supported.  The mapping is taken from

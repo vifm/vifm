@@ -10,9 +10,9 @@ src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
 # lookup for out-of-tree builds
 VPATH := $(src_dir)
 
-override CFLAGS := -c -Wall -Werror -MMD -MP -DPDC_WIDE -D_XOPEN_SOURCE
+override CFLAGS := -c -Wall -Werror -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
 override CFLAGS += -include ../build-aux/config.h -D_FILE_OFFSET_BITS=64 -pipe
-override CFLAGS += -pthread $(CFLAGS)
+override CFLAGS += -pthread -MMD -MP
 ifeq ($(RELEASE),1)
     override CFLAGS += -O2
 else
@@ -59,7 +59,8 @@ lua := lapi.c lauxlib.c lbaselib.c lcode.c lcorolib.c lctype.c ldblib.c \
        lstring.c lstrlib.c ltable.c ltablib.c ltm.c lundump.c lutf8lib.c lvm.c \
        lzio.c
 lua := $(addprefix lua/, $(lua))
-lua := $(addprefix lua/, $(lua) vlua.c)
+lua := $(addprefix lua/, $(lua) common.c vifm_cmds.c vifmjob.c vifmview.c \
+                                vlua.c vlua_state.c)
 
 menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c colorscheme_menu.c \
          commands_menu.c dirhistory_menu.c dirstack_menu.c filetypes_menu.c \

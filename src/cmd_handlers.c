@@ -2999,7 +2999,7 @@ parse_color_name_value(const char str[], int fg, int *attr)
 
 	light_col_pos = string_array_pos_case(LIGHT_COLOR_NAMES,
 			ARRAY_LEN(LIGHT_COLOR_NAMES), str);
-	if(light_col_pos >= 0)
+	if(light_col_pos >= 0 && COLORS < 16)
 	{
 		*attr |= (!fg && curr_stats.exec_env_type == EET_LINUX_NATIVE) ?
 				A_BLINK : A_BOLD;

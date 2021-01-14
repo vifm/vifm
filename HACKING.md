@@ -104,8 +104,13 @@ there for instructions.
     |  |
     |  |-- lua/ - Lua interface
     |  |  |
-    |  |  |-- lua/ - Lua 5.4 sources
-    |  |  `-- vlua.c - main Lua interface unit
+    |  |  |-- lua/ - Lua 5.4.2 sources
+    |  |  |-- common.c - common code for Lua API implementation
+    |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
+    |  |  |-- vifmjob.c - implementation of VifmJob
+    |  |  |-- vifmview.c - implementation of VifmView
+    |  |  |-- vlua.c - main Lua interface unit
+    |  |  `-- vlua_state.c - management of state of vlua.c unit
     |  |
     |  |-- menus/ - implementation of all menus
     |  |  |

@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 11
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -49,6 +49,13 @@ if a command succeeded and different commands treat same arguments differently
 for the purpose of ease of use, which however makes automation harder.  When
 things like that start to get in the way, it's a good idea to reimplement
 relevant functionality in Lua.
+
+On top of that user's preferences differ and contradict each other, this can
+lead to proliferation of options to account for very fine-grained details.
+It's better to let users implement their wild and highly specific ideas on their
+own rather than trying to squeeze all possible use case into the application.
+The useful functionality developed on the side can eventually make its way to
+the code base.
 
 --------------------------------------------------------------------------------
 *vifm-lua-design*

@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2020 xaizek.
+ * Copyright (C) 2021 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,30 +16,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__LUA__VLUA_H__
-#define VIFM__LUA__VLUA_H__
+#ifndef VIFM__LUA__VIFMVIEW_H__
+#define VIFM__LUA__VIFMVIEW_H__
 
-/* This unit implements Lua interface. */
+struct lua_State;
 
-/* Declaration of opaque state of the unit. */
-typedef struct vlua_t vlua_t;
+/* Initializes VifmView type unit. */
+void vifmview_init(struct lua_State *lua);
 
-struct plug_t;
+/* Retrieves a reference to current view.  Returns an object of VifmView
+ * type. */
+int vifmview_currview(struct lua_State *lua);
 
-/* Creates new instance of the unit.  Returns the instance or NULL. */
-vlua_t * vlua_init(void);
-
-/* Loads a single plugin on request.  Returns zero on success. */
-int vlua_load_plugin(vlua_t *vlua, const char plugin[], struct plug_t *plug);
-
-/* Frees resources of the unit.  The parameter can be NULL. */
-void vlua_finish(vlua_t *vlua);
-
-/* Executes a Lua string.  Returns non-zero on error, otherwise zero is
- * returned. */
-int vlua_run_string(vlua_t *vlua, const char str[]);
-
-#endif /* VIFM__LUA__VLUA_H__ */
+#endif /* VIFM__LUA__VIFMVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

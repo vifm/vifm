@@ -4,7 +4,7 @@
 
 ### **vifm** - vi[m] like file manager, _v0.11_, _2001 – 2021_
 
-_This file last updated on 6 January, 2020_
+_This file last updated on 6 January, 2021_
 
 ## Brief Description ##
 
