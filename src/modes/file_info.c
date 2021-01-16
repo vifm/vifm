@@ -207,27 +207,32 @@ modfinfo_redraw(void)
 	checked_wmove(menu_win, 2, 2);
 }
 
-/* Prints item prefixed with a label truncating the item if it's too long.
+/* Prints item prefixed with a label wrapping the item if it's too long.
  * Returns increment for curr_y. */
 static int
 print_item(const char label[], const char text[], int curr_y)
 {
-	const int max_width = getmaxx(menu_win) - strlen(label) - 2;
-	const size_t print_len = utf8_nstrsnlen(text, max_width);
-
 	mvwaddstr(menu_win, curr_y, 2, label);
-	if(text[print_len] == '\0')
+	int x = getcurx(menu_win);
+	int max_width = getmaxx(menu_win) - 2 - x;
+	int dy = 0;
+
+	do
 	{
-		wprint(menu_win, text);
-	}
-	else
-	{
-		char part[PATH_MAX + 1];
+		const size_t print_len = utf8_nstrsnlen(text, max_width);
+
+		char part[1000];
 		copy_str(part, MIN(sizeof(part), print_len + 1), text);
 		wprint(menu_win, part);
-	}
 
-	return 2;
+		text += print_len;
+		++dy;
+		++curr_y;
+		checked_wmove(menu_win, curr_y, x);
+	}
+	while(text[0] != '\0');
+
+	return dy + 1;
 }
 
 /* Returns increment for curr_y. */

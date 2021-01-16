@@ -78,6 +78,9 @@
 	Fixed inability to map escape sequences due to extended keys in terminfo
 	database.  Patch by M Kelly.
 
+	Fixed not being able to view really long file names in full in File Info
+	dialog.  Thanks to 702b.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
