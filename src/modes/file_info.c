@@ -402,21 +402,15 @@ static int
 show_mime_type(view_t *view, int curr_y)
 {
 	char full_path[PATH_MAX + 1];
-	const char *mimetype = NULL;
-
 	get_current_full_path(view, sizeof(full_path), full_path);
-	mimetype = get_mimetype(full_path, 0);
 
-	mvwaddstr(menu_win, curr_y, 2, "Mime Type: ");
-
+	const char *mimetype = get_mimetype(full_path, 0);
 	if(mimetype == NULL)
 	{
 		mimetype = "Unknown";
 	}
 
-	mvwaddstr(menu_win, curr_y, 13, mimetype);
-
-	return 2;
+	return print_item("Mime Type: ", mimetype, curr_y);
 }
 
 /* Formats single time field as a string.  Writes empty string on error. */
