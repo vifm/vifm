@@ -210,21 +210,21 @@ modfinfo_redraw(void)
 /* Prints item prefixed with a label truncating the item if it's too long.
  * Returns increment for curr_y. */
 static int
-print_item(const char label[], const char path[], int curr_y)
+print_item(const char label[], const char text[], int curr_y)
 {
 	const int max_width = getmaxx(menu_win) - strlen(label) - 2;
-	const size_t print_len = utf8_nstrsnlen(path, max_width);
+	const size_t print_len = utf8_nstrsnlen(text, max_width);
 
 	mvwaddstr(menu_win, curr_y, 2, label);
-	if(path[print_len] == '\0')
+	if(text[print_len] == '\0')
 	{
-		wprint(menu_win, path);
+		wprint(menu_win, text);
 	}
 	else
 	{
-		char path_buf[PATH_MAX + 1];
-		copy_str(path_buf, MIN(sizeof(path_buf), print_len + 1), path);
-		wprint(menu_win, path_buf);
+		char part[PATH_MAX + 1];
+		copy_str(part, MIN(sizeof(part), print_len + 1), text);
+		wprint(menu_win, part);
 	}
 
 	return 2;
