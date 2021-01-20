@@ -41,6 +41,7 @@ struct plugs_t
 	DA_INSTANCE_FIELD(plugs); /* Declarations to enable use of DA_* on plugs. */
 };
 
+static void plug_free(plug_t *plug);
 static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
 static void plug_logf(plug_t *plug, const char format[], ...)
 	_gnuc_printf(2, 3);
@@ -68,10 +69,7 @@ plugs_free(plugs_t *plugs)
 		size_t i;
 		for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
 		{
-			free(plugs->plugs[i]->path);
-			free(plugs->plugs[i]->real_path);
-			free(plugs->plugs[i]->log);
-			free(plugs->plugs[i]);
+			plug_free(plugs->plugs[i]);
 		}
 		DA_REMOVE_ALL(plugs->plugs);
 
@@ -120,7 +118,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		plug->path = strdup(path);
 		if(plug->path == NULL)
 		{
-			free(plug);
+			plug_free(plug);
 			continue;
 		}
 
@@ -134,8 +132,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		}
 		if(plug->real_path == NULL)
 		{
-			free(plug->path);
-			free(plug);
+			plug_free(plug);
 			continue;
 		}
 
@@ -163,6 +160,16 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 	}
 
 	os_closedir(dir);
+}
+
+/* Frees a plugin.  The argument can't be NULL. */
+static void
+plug_free(plug_t *plug)
+{
+	free(plug->path);
+	free(plug->real_path);
+	free(plug->log);
+	free(plug);
 }
 
 /* Looks up a plugin specified by real path among already loaded plugins.
