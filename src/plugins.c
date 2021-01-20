@@ -96,8 +96,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		snprintf(path, sizeof(path), "%s/%s", full_path, entry->d_name);
 
 		/* XXX: is_dirent_targets_dir() does slowfs checks, do they harm here? */
-		if(is_builtin_dir(entry->d_name) ||
-				!is_dirent_targets_dir(path, entry))
+		if(is_builtin_dir(entry->d_name) || !is_dirent_targets_dir(path, entry))
 		{
 			continue;
 		}
@@ -115,8 +114,9 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		}
 		*plug_ptr = plug;
 
+		plug->name = strdup(entry->d_name);
 		plug->path = strdup(path);
-		if(plug->path == NULL)
+		if(plug->name == NULL || plug->path == NULL)
 		{
 			plug_free(plug);
 			continue;
@@ -166,6 +166,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 static void
 plug_free(plug_t *plug)
 {
+	free(plug->name);
 	free(plug->path);
 	free(plug->real_path);
 	free(plug->log);

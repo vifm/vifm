@@ -52,7 +52,7 @@ show_plugins_menu(view_t *view)
 	for(i = 0; plugs_get(curr_stats.plugs, i, &plug); ++i)
 	{
 		const char *status = status_to_str(plug->status);
-		char *item = format_str("[%7s] %s", status, plug->path);
+		char *item = format_str("[%7s] %s", status, plug->name);
 		plugs_m.len = put_into_string_array(&plugs_m.items, plugs_m.len, item);
 
 		plugs_m.void_data = reallocarray(plugs_m.void_data, plugs_m.len,
@@ -72,11 +72,9 @@ status_to_str(PluginLoadStatus status)
 		case PLS_SUCCESS: return "loaded";
 		case PLS_SKIPPED: return "skipped";
 		case PLS_FAILURE: return "failed";
-
-	  default:
-			assert(0 && "Unhandled status value.");
-			return "";
 	}
+	assert(0 && "Unhandled status value.");
+	return "";
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
@@ -111,7 +109,7 @@ show_plugin_log(view_t *view, menu_data_t *m, plug_t *plug)
 	{
 		static menu_data_t m;
 
-		menus_init_data(&m, view, format_str("Plugin log (%s)", plug->path), NULL);
+		menus_init_data(&m, view, format_str("Plugin log (%s)", plug->name), NULL);
 		m.key_handler = &log_khandler;
 		m.items = break_into_lines(plug->log, plug->log_len, &m.len, 0);
 

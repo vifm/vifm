@@ -38,6 +38,7 @@ PluginLoadStatus;
 /* Information about a plugin. */
 typedef struct plug_t
 {
+	char *name;      /* Plugin name. */
 	char *path;      /* Full original path to the plugin. */
 	char *real_path; /* Full resolved path to the plugin. */
 
