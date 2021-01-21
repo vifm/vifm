@@ -24,6 +24,7 @@
 
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "engine/completion.h"
 #include "lua/vlua.h"
 #include "utils/darray.h"
 #include "utils/fs.h"
@@ -268,6 +269,23 @@ add_if_missing(strlist_t *strlist, const char item[])
 		strlist->nitems = add_to_string_array(&strlist->items, strlist->nitems,
 				item);
 	}
+}
+
+void
+plugs_complete(plugs_t *plugs, const char prefix[])
+{
+	size_t i;
+	const size_t prefix_len = strlen(prefix);
+	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
+	{
+		const char *name = plugs->plugs[i]->name;
+		if(strncmp(name, prefix, prefix_len) == 0)
+		{
+			vle_compl_add_match(name, "");
+		}
+	}
+	vle_compl_finish_group();
+	vle_compl_add_last_match(prefix);
 }
 
 void

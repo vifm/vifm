@@ -71,6 +71,7 @@
 #include "cmd_core.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "plugins.h"
 #include "tags.h"
 
 static int earg_num(int argc, const char cmdline[]);
@@ -84,6 +85,7 @@ static void complete_invert(const char str[]);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
+static void complete_plugin(const char str[], char *argv[], int arg_num);
 static void complete_highlight_groups(const char str[], int file_hi_only);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
@@ -177,6 +179,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		start += complete_chown(args);
 	else if(id == COM_FILE)
 		complete_filetype(args);
+	else if(id == COM_PLUGIN)
+	{
+		complete_plugin(args, argv, earg_num(argc, args));
+	}
 	else if(id == COM_HIGHLIGHT)
 	{
 		const int arg_num = earg_num(argc, args);
@@ -628,6 +634,25 @@ complete_progs(const char *str, assoc_records_t records)
 		{
 			vle_compl_put_match(escape_chars(cmd, "|"), assoc->description);
 		}
+	}
+}
+
+/* Completes plugin managing subcommands and their arguments. */
+static void
+complete_plugin(const char str[], char *argv[], int arg_num)
+{
+	if(arg_num == 0 || arg_num == 1)
+	{
+		static const char *subcommands[][2] = {
+			{ "blacklist", "avoid loading this plugin" },
+			{ "whitelist", "ignore all but this and other whitelisted plugins" },
+		};
+		complete_from_string_list(str, subcommands, ARRAY_LEN(subcommands), 0);
+	}
+	else if(strcmp(argv[0], "blacklist") == 0 ||
+			strcmp(argv[0], "whitelist") == 0)
+	{
+		plugs_complete(curr_stats.plugs, after_last(str, ' '));
 	}
 }
 

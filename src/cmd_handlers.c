@@ -681,7 +681,7 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "switch to single-view mode",
 	  .flags = HAS_COMMENT,
 	  .handler = &only_cmd,        .min_args = 0,   .max_args = 0, },
-	{ .name = "plugin",            .abbr = NULL,    .id = -1,
+	{ .name = "plugin",            .abbr = NULL,    .id = COM_PLUGIN,
 	  .descr = "manage plugins",
 	  .flags = HAS_COMMENT,
 	  .handler = &plugin_cmd,      .min_args = 2,   .max_args = 2, },
