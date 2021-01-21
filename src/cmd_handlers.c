@@ -105,6 +105,7 @@
 #include "marks.h"
 #include "ops.h"
 #include "opt_handlers.h"
+#include "plugins.h"
 #include "registers.h"
 #include "running.h"
 #include "trash.h"
@@ -243,6 +244,7 @@ static int map_or_remap(const cmd_info_t *cmd_info, int no_remap);
 static int normal_cmd(const cmd_info_t *cmd_info);
 static int nunmap_cmd(const cmd_info_t *cmd_info);
 static int only_cmd(const cmd_info_t *cmd_info);
+static int plugin_cmd(const cmd_info_t *cmd_info);
 static int plugins_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
 static int pushd_cmd(const cmd_info_t *cmd_info);
@@ -679,6 +681,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "switch to single-view mode",
 	  .flags = HAS_COMMENT,
 	  .handler = &only_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "plugin",            .abbr = NULL,    .id = -1,
+	  .descr = "manage plugins",
+	  .flags = HAS_COMMENT,
+	  .handler = &plugin_cmd,      .min_args = 2,   .max_args = 2, },
 	{ .name = "plugins",           .abbr = NULL,    .id = -1,
 	  .descr = "display plugins menu",
 	  .flags = HAS_COMMENT,
@@ -3599,6 +3605,25 @@ only_cmd(const cmd_info_t *cmd_info)
 {
 	only();
 	return 0;
+}
+
+/* Manages plugins. */
+static int
+plugin_cmd(const cmd_info_t *cmd_info)
+{
+	if(strcmp(cmd_info->argv[0], "blacklist") == 0)
+	{
+		plugs_blacklist(curr_stats.plugs, cmd_info->argv[1]);
+		return 0;
+	}
+	if(strcmp(cmd_info->argv[0], "whitelist") == 0)
+	{
+		plugs_whitelist(curr_stats.plugs, cmd_info->argv[1]);
+		return 0;
+	}
+
+	ui_sb_errf("Unknown subcommand: %s", cmd_info->argv[0]);
+	return CMDS_ERR_CUSTOM;
 }
 
 /* Displays plugins menu. */

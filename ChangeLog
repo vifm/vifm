@@ -25,6 +25,8 @@
 	Added 'previewoptions' option to allow tweaking graphics preview a bit.
 	Thanks to Joshua Jensch (a.k.a., patroclos) and flux242.
 
+	Added :plugin command that manages plugins.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

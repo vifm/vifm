@@ -64,11 +64,23 @@ void plugs_load(plugs_t *plugs, const char base_dir[]);
  * Returns non-zero on success, otherwise zero is returned. */
 int plugs_get(const plugs_t *plugs, int idx, const plug_t **plug);
 
+/* Blacklists the plugin. */
+void plugs_blacklist(plugs_t *plugs, const char name[]);
+
+/* Whitelists the plugin. */
+void plugs_whitelist(plugs_t *plugs, const char name[]);
+
+/* Performs completion of plugin names. */
+void plugs_complete(plugs_t *plugs, const char prefix[]);
+
 /* Adds message to the log of the plugin on a new line. */
 void plug_log(plug_t *plug, const char msg[]);
 
 TSTATIC_DEFS(
 	void plugs_sort(plugs_t *plugs);
+	struct strlist_t;
+	struct strlist_t plugs_get_blacklist(plugs_t *plugs);
+	struct strlist_t plugs_get_whitelist(plugs_t *plugs);
 )
 
 #endif /* VIFM__PLUGINS_H__ */
