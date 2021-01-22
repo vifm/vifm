@@ -226,7 +226,7 @@ setup_ncurses_interface(void)
 	 * (terminfo name kDN5), which is larger than KEY_MAX and has no
 	 * pre-defined curses key name.
 	 * NOTE: this MUST be called before initscr() */
-	use_extended_names(false);
+	use_extended_names(FALSE);
 #endif
 #endif /* ENABLE_EXTENDED_KEYS */
 
