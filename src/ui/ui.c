@@ -215,6 +215,21 @@ setup_ncurses_interface(void)
 {
 	int screen_x, screen_y;
 
+#ifdef ENABLE_EXTENDED_KEYS
+#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
+	/* Disable 'unsupported' extended keys so that esc-codes will be
+	 * received instead of unnamed extended keycode values (> KEY_MAX).
+	 * These keys can then be mapped with esc-codes in vifmrc.
+	 * An example could be <c-down>:
+	 *     qnoremap <esc>[1;5B j
+	 * as without this change <c-down> can return a keycode value of 531
+	 * (terminfo name kDN5), which is larger than KEY_MAX and has no
+	 * pre-defined curses key name.
+	 * NOTE: this MUST be called before initscr() */
+	use_extended_names(false);
+#endif
+#endif /* ENABLE_EXTENDED_KEYS */
+
 	initscr();
 	noecho();
 	nonl();
