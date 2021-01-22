@@ -144,3 +144,6 @@ Hans Bieshaar added HardLink highlight group.
 Alborz Jafari added rate and progress bar to progress dialog.
 
 pkgs/AppImage/* provided by michaellee8.
+
+M Kelly fixed inability to map escape sequences due to extended keys in
+terminfo database.

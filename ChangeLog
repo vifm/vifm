@@ -75,6 +75,9 @@
 	Fixed hang on using previewer that takes over control over the
 	terminal (like 7z does to read password).  Thanks to PRESFIL.
 
+	Fixed inability to map escape sequences due to extended keys in terminfo
+	database.  Patch by M Kelly.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
