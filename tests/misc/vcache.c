@@ -329,11 +329,11 @@ TEST(vcache_check_reports_correct_status)
 	assert_string_equal("[...]", lines.items[0]);
 
 	int i;
-	for(i = 0; i < 1000 && !vcache_check(&is_previewed); ++i)
+	for(i = 0; i < 10000 && !vcache_check(&is_previewed); ++i)
 	{
 		usleep(10);
 	}
-	assert_true(i < 1000);
+	assert_true(i < 10000);
 	vcache_finish();
 	assert_false(vcache_check(&is_previewed));
 	assert_false(vcache_check(&is_previewed));

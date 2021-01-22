@@ -25,6 +25,8 @@
 	Added 'previewoptions' option to allow tweaking graphics preview a bit.
 	Thanks to Joshua Jensch (a.k.a., patroclos) and flux242.
 
+	Added :plugin command that manages plugins.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
@@ -77,6 +79,9 @@
 
 	Fixed inability to map escape sequences due to extended keys in terminfo
 	database.  Patch by M Kelly.
+
+	Fixed not being able to view really long file names in full in File Info
+	dialog.  Thanks to 702b.
 
 0.11-beta to 0.11 (2020-09-24)
 

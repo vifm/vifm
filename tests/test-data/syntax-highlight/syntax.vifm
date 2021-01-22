@@ -476,6 +476,7 @@ hideui
 session
 delsession
 plugins
+plugin
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session

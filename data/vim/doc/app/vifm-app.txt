@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jan 12
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jan 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2130,6 +2130,13 @@ order using the '.' operator.  Any whitespace is ignored.
 
 :on[ly]                                        *vifm-:only* *vifm-:on*
     switch to a one window view.
+
+                                               *vifm-:plugin*
+:plugin blacklist {plugin}
+    adds {plugin} to the list of plugins to be ignored.
+:plugin whitelist {plugin}
+    adds {plugin} to the list of plugins to be loaded while ignoring all
+    other plugins.  This list should normally be empty.
 
 :plugins                                       *vifm-:plugins*
     open plugins menu.  See |vifm-menus-and-dialogs| for controls.

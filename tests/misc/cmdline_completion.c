@@ -20,6 +20,7 @@
 #include "../../src/engine/options.h"
 #include "../../src/engine/variables.h"
 #include "../../src/int/path_env.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
@@ -29,6 +30,7 @@
 #include "../../src/bmarks.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
+#include "../../src/plugins.h"
 
 #define ASSERT_COMPLETION(initial, expected) \
 	do \
@@ -768,6 +770,45 @@ TEST(delsession_is_completed)
 	remove_dir(SANDBOX_PATH "/sessions");
 
 	cfg.config_dir[0] = '\0';
+}
+
+TEST(plugin_is_completed)
+{
+	ASSERT_COMPLETION(L"plugin ", L"plugin blacklist");
+	ASSERT_NEXT_MATCH("whitelist");
+	ASSERT_NEXT_MATCH("");
+
+	ASSERT_COMPLETION(L"plugin w", L"plugin whitelist");
+	ASSERT_NEXT_MATCH("whitelist");
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	create_dir(SANDBOX_PATH "/plugins");
+	create_dir(SANDBOX_PATH "/plugins/plug1");
+	create_dir(SANDBOX_PATH "/plugins/plug2");
+	make_file(SANDBOX_PATH "/plugins/plug1/init.lua", "return {}");
+	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return");
+
+	curr_stats.vlua = vlua_init();
+	curr_stats.plugs = plugs_create(curr_stats.vlua);
+	plugs_load(curr_stats.plugs, cfg.config_dir);
+
+	ASSERT_COMPLETION(L"plugin whitelist ", L"plugin whitelist plug1");
+	ASSERT_NEXT_MATCH("plug2");
+	ASSERT_NEXT_MATCH("");
+
+	plugs_free(curr_stats.plugs);
+	vlua_finish(curr_stats.vlua);
+	curr_stats.plugs = NULL;
+	curr_stats.vlua = NULL;
+
+	remove_file(SANDBOX_PATH "/plugins/plug1/init.lua");
+	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
+	remove_dir(SANDBOX_PATH "/plugins/plug1");
+	remove_dir(SANDBOX_PATH "/plugins/plug2");
+	remove_dir(SANDBOX_PATH "/plugins");
 }
 
 static int

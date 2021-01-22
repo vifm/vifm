@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 14
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -9,6 +9,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-lua-plugins|     Sample plugins.
 |vifm-lua-lua|         Generic reasoning behind this API.
 |vifm-lua-design|      Generic ideas about the design.
+|vifm-lua-loading|     Which plugins get loaded.
 |vifm-lua-libs|        What Lua libraries are available.
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
@@ -80,6 +81,22 @@ some safe version of asynchronous execution might be made available if safe
 way of implementing it exists (need to sandbox callbacks somehow).  All
 callback-based mechanisms are susceptible to this issue, but asynchronous API
 makes it much worse because these callbacks are created all the time.
+
+--------------------------------------------------------------------------------
+*vifm-lua-loading*
+
+There are two lists of plugins that affect plugin loading: whitelist and
+blacklist.  Here's how they function:
+ 1. If whitelist isn't empty, only plugins in the list can be loaded.  Trying to
+    load any other plugin fails.  Contents of blacklist is ignored.
+ 2. If whitelist is empty and blacklist isn't, loading anything that's not in
+    the blacklist is allowed.
+
+The whitelist is meant to help testing plugins in isolation for debugging
+purposes.
+
+The blacklist can be used to temporarily disable broken or just unused plugins
+as well as for debugging.
 
 --------------------------------------------------------------------------------
 *vifm-lua-libs*

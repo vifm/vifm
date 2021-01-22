@@ -131,6 +131,51 @@ TEST(plugin_statuses_are_correct)
 	remove_dir(SANDBOX_PATH "/plugins/plug2");
 }
 
+TEST(plugins_can_be_blacklisted)
+{
+	create_dir(SANDBOX_PATH "/plugins/plug2");
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
+	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return {}");
+
+	plugs_blacklist(plugs, "plug2");
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua,
+	      "print((vifm.plugins.all.plug and '1y' or '1n').."
+	      "      (vifm.plugins.all.plug2 and '2y' or '2n'))"));
+	assert_string_equal("1y2n", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
+	remove_dir(SANDBOX_PATH "/plugins/plug2");
+}
+
+TEST(plugins_can_be_whitelisted)
+{
+	create_dir(SANDBOX_PATH "/plugins/plug2");
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
+	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return {}");
+
+	plugs_whitelist(plugs, "plug2");
+	plugs_blacklist(plugs, "plug2");
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua,
+	      "print((vifm.plugins.all.plug and '1y' or '1n').."
+	      "      (vifm.plugins.all.plug2 and '2y' or '2n'))"));
+	assert_string_equal("1n2y", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
+	remove_dir(SANDBOX_PATH "/plugins/plug2");
+}
+
 TEST(can_not_load_same_plugin_twice, IF(not_windows))
 {
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");

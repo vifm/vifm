@@ -24,28 +24,39 @@
 
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "engine/completion.h"
 #include "lua/vlua.h"
 #include "utils/darray.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 
 /* State of the unit. */
 struct plugs_t
 {
-	struct vlua_t *vlua;      /* Reference to vlua unit. */
+	struct vlua_t *vlua; /* Reference to vlua unit. */
+
+	strlist_t blacklist; /* List of plugins to skip. */
+	strlist_t whitelist; /* List of plugins to load. */
+
 	plug_t **plugs;           /* Known plugins. */
 	DA_INSTANCE_FIELD(plugs); /* Declarations to enable use of DA_* on plugs. */
 };
 
+static void plug_free(plug_t *plug);
 static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
+static int should_be_loaded(plugs_t *plugs, const char name[]);
 static void plug_logf(plug_t *plug, const char format[], ...)
 	_gnuc_printf(2, 3);
+static void add_if_missing(strlist_t *strlist, const char item[]);
 TSTATIC void plugs_sort(plugs_t *plugs);
 static int plug_cmp(const void *a, const void *b);
+TSTATIC strlist_t plugs_get_blacklist(plugs_t *plugs);
+TSTATIC strlist_t plugs_get_whitelist(plugs_t *plugs);
 
 plugs_t *
 plugs_create(struct vlua_t *vlua)
@@ -68,12 +79,12 @@ plugs_free(plugs_t *plugs)
 		size_t i;
 		for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
 		{
-			free(plugs->plugs[i]->path);
-			free(plugs->plugs[i]->real_path);
-			free(plugs->plugs[i]->log);
-			free(plugs->plugs[i]);
+			plug_free(plugs->plugs[i]);
 		}
 		DA_REMOVE_ALL(plugs->plugs);
+
+		free_string_array(plugs->blacklist.items, plugs->blacklist.nitems);
+		free_string_array(plugs->whitelist.items, plugs->whitelist.nitems);
 
 		free(plugs);
 	}
@@ -98,8 +109,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		snprintf(path, sizeof(path), "%s/%s", full_path, entry->d_name);
 
 		/* XXX: is_dirent_targets_dir() does slowfs checks, do they harm here? */
-		if(is_builtin_dir(entry->d_name) ||
-				!is_dirent_targets_dir(path, entry))
+		if(is_builtin_dir(entry->d_name) || !is_dirent_targets_dir(path, entry))
 		{
 			continue;
 		}
@@ -117,10 +127,11 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		}
 		*plug_ptr = plug;
 
+		plug->name = strdup(entry->d_name);
 		plug->path = strdup(path);
-		if(plug->path == NULL)
+		if(plug->name == NULL || plug->path == NULL)
 		{
-			free(plug);
+			plug_free(plug);
 			continue;
 		}
 
@@ -134,8 +145,7 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		}
 		if(plug->real_path == NULL)
 		{
-			free(plug->path);
-			free(plug);
+			plug_free(plug);
 			continue;
 		}
 
@@ -149,6 +159,11 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		{
 			plug_logf(plug, "[vifm][error]: skipped as a duplicate of %s",
 					duplicate->path);
+			plug->status = PLS_SKIPPED;
+		}
+		else if(!should_be_loaded(plugs, plug->name))
+		{
+			plug_log(plug, "[vifm][info]: skipped due to blacklist/whitelist");
 			plug->status = PLS_SKIPPED;
 		}
 		else if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
@@ -165,6 +180,17 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 	os_closedir(dir);
 }
 
+/* Frees a plugin.  The argument can't be NULL. */
+static void
+plug_free(plug_t *plug)
+{
+	free(plug->name);
+	free(plug->path);
+	free(plug->real_path);
+	free(plug->log);
+	free(plug);
+}
+
 /* Looks up a plugin specified by real path among already loaded plugins.
  * Returns pointer to it or NULL. */
 static plug_t *
@@ -179,6 +205,21 @@ find_plug(plugs_t *plugs, const char real_path[])
 		}
 	}
 	return NULL;
+}
+
+/* Checks with blacklist and whitelist to decide if plugin should be loaded.
+ * Returns non-zero if loading is allowed. */
+static int
+should_be_loaded(plugs_t *plugs, const char name[])
+{
+	if(plugs->whitelist.nitems != 0)
+	{
+		return (string_array_pos(plugs->whitelist.items, plugs->whitelist.nitems,
+					name) != -1);
+	}
+
+	return (string_array_pos(plugs->blacklist.items, plugs->blacklist.nitems,
+				name) == -1);
 }
 
 int
@@ -208,6 +249,46 @@ plug_logf(plug_t *plug, const char format[], ...)
 }
 
 void
+plugs_blacklist(plugs_t *plugs, const char name[])
+{
+	add_if_missing(&plugs->blacklist, name);
+}
+
+void
+plugs_whitelist(plugs_t *plugs, const char name[])
+{
+	add_if_missing(&plugs->whitelist, name);
+}
+
+/* Adds an item to the string list unless it's already there. */
+static void
+add_if_missing(strlist_t *strlist, const char item[])
+{
+	if(string_array_pos(strlist->items, strlist->nitems, item) == -1)
+	{
+		strlist->nitems = add_to_string_array(&strlist->items, strlist->nitems,
+				item);
+	}
+}
+
+void
+plugs_complete(plugs_t *plugs, const char prefix[])
+{
+	size_t i;
+	const size_t prefix_len = strlen(prefix);
+	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
+	{
+		const char *name = plugs->plugs[i]->name;
+		if(strncmp(name, prefix, prefix_len) == 0)
+		{
+			vle_compl_add_match(name, "");
+		}
+	}
+	vle_compl_finish_group();
+	vle_compl_add_last_match(prefix);
+}
+
+void
 plug_log(plug_t *plug, const char msg[])
 {
 	if(plug->log_len != 0)
@@ -233,6 +314,20 @@ plug_cmp(const void *a, const void *b)
 	const plug_t *plug_a = *(const plug_t **)a;
 	const plug_t *plug_b = *(const plug_t **)b;
 	return strcmp(plug_a->path, plug_b->path);
+}
+
+/* Retrieves blacklist.  Returns the list. */
+TSTATIC strlist_t
+plugs_get_blacklist(plugs_t *plugs)
+{
+	return plugs->blacklist;
+}
+
+/* Retrieves whitelist.  Returns the list. */
+TSTATIC strlist_t
+plugs_get_whitelist(plugs_t *plugs)
+{
+	return plugs->whitelist;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
