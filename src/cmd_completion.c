@@ -74,6 +74,24 @@
 #include "plugins.h"
 #include "tags.h"
 
+/* State information for making completion. */
+typedef struct
+{
+	/* External input. */
+	int id;                     /* Command id. */
+	const cmd_info_t *cmd_info; /* Command information. */
+	int arg_pos;                /* Start position of completed argument. */
+	void *extra_arg;            /* User data for the completion function. */
+
+	const char *arg;    /* The argument being completed (last argument). */
+	const char *start;  /* Completion position as pointer into cmd_info->args. */
+	const char *slash;  /* Last slash in `arg`. */
+	const char *dollar; /* Last dollar in `arg`. */
+}
+completion_data_t;
+
+static int non_path_completion(completion_data_t *data);
+static int path_completion(completion_data_t *data);
 static int earg_num(int argc, const char cmdline[]);
 static int cmd_ends_with_space(const char cmdline[]);
 static void complete_compare(const char str[]);
@@ -107,76 +125,98 @@ static int file_matches(const char fname[], const char prefix[],
 int
 complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
-	/* TODO: Refactor this function complete_args().  Might be worth defining a
-	 *       structure for all these variables and creating two functions: one for
-	 *       non-path completion and the other one for path completion (else
-	 *       branch). */
+	completion_data_t data = {
+		.id = id,
+		.cmd_info = cmd_info,
+		.arg_pos = arg_pos,
+		.extra_arg = extra_arg,
 
-	const CompletionPreProcessing cpp = (CompletionPreProcessing)extra_arg;
+		.arg = cmd_info->args + arg_pos,
+		.start = data.arg,
+		.slash = strrchr(data.arg, '/'),
+		.dollar = strrchr(data.arg, '$'),
+	};
 
-	const char *const args = cmd_info->args;
-	int argc = cmd_info->argc;
-	char **const argv = cmd_info->argv;
+	int result = non_path_completion(&data);
+	if(result >= 0)
+	{
+		return result;
+	}
 
-	const char *arg = after_last(args, ' ');
-	const char *start = arg;
-	const char *slash = strrchr(args + arg_pos, '/');
-	const char *dollar = strrchr(arg, '$');
-	const char *ampersand = strrchr(arg, '&');
+	return path_completion(&data);
+}
+
+/* Handles completion of non-path arguments.  Returns negative number if need to
+ * do path completion, otherwise offset in original string is returned. */
+static int
+non_path_completion(completion_data_t *data)
+{
+	const char *const args = data->cmd_info->args;
+	int argc = data->cmd_info->argc;
+	char **const argv = data->cmd_info->argv;
+
+	int emark = data->cmd_info->emark;
+	int qmark = data->cmd_info->qmark;
+
+	int id = data->id;
+	const char *arg = data->arg;
 
 	if(id == COM_SET || id == COM_SETLOCAL)
 	{
-		vle_opts_complete(args, &start, (id == COM_SET) ? OPT_GLOBAL : OPT_LOCAL);
+		vle_opts_complete(args, &data->start,
+				(id == COM_SET) ? OPT_GLOBAL : OPT_LOCAL);
 	}
 	else if(id == COM_CABBR)
 	{
 		vle_abbr_complete(args);
-		start = args;
+		data->start = args;
 	}
 	else if(command_accepts_expr(id))
 	{
-		if(ampersand > dollar)
+		const char *ampersand = strrchr(arg, '&');
+		if(ampersand > data->dollar)
 		{
 			OPT_SCOPE scope = OPT_GLOBAL;
-			start = ampersand + 1;
+			data->start = ampersand + 1;
 
-			if(starts_with_lit(start, "l:"))
+			if(starts_with_lit(data->start, "l:"))
 			{
 				scope = OPT_LOCAL;
-				start += 2;
+				data->start += 2;
 			}
-			else if(starts_with_lit(start, "g:"))
+			else if(starts_with_lit(data->start, "g:"))
 			{
-				start += 2;
+				data->start += 2;
 			}
 
-			vle_opts_complete_real(start, scope);
+			vle_opts_complete_real(data->start, scope);
 		}
-		else if(dollar == NULL && !starts_with_lit(arg, "v:"))
+		else if(data->dollar == NULL && !starts_with_lit(arg, "v:"))
 		{
-			function_complete_name(arg, &start);
+			function_complete_name(arg, &data->start);
 		}
 		else
 		{
-			complete_variables((dollar > arg) ? dollar : arg, &start);
+			complete_variables((data->dollar > arg) ? data->dollar : arg,
+					&data->start);
 		}
 	}
 	else if(id == COM_UNLET)
-		complete_variables(arg, &start);
+		complete_variables(arg, &data->start);
 	else if(id == COM_HELP)
 		complete_help(args);
 	else if(id == COM_HISTORY)
 	{
 		complete_history(args);
-		start = args;
+		data->start = args;
 	}
 	else if(id == COM_INVERT)
 	{
 		complete_invert(args);
-		start = args;
+		data->start = args;
 	}
 	else if(id == COM_CHOWN)
-		start += complete_chown(args);
+		data->start += complete_chown(args);
 	else if(id == COM_FILE)
 		complete_filetype(args);
 	else if(id == COM_PLUGIN)
@@ -199,25 +239,25 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		}
 		else
 		{
-			start += complete_highlight_arg(arg);
+			data->start += complete_highlight_arg(arg);
 		}
 	}
 	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE ||
 			id == COM_SOURCE || id == COM_EDIT || id == COM_GOTO_PATH ||
-			id == COM_TABNEW) && dollar != NULL && dollar > slash)
+			id == COM_TABNEW) && data->dollar != NULL && data->dollar > data->slash)
 	{
-		start = dollar + 1;
-		complete_envvar(start);
+		data->start = data->dollar + 1;
+		complete_envvar(data->start);
 	}
 	else if(id == COM_SELECT)
 	{
-		cmd_info_t exec_info = *cmd_info;
+		cmd_info_t exec_info = *data->cmd_info;
 		char *exec_argv[exec_info.argc];
 
 		/* Make sure that it's a filter-argument. */
-		if(args[0] != '!' || char_is_one_of("/{", cmd_info->args[1]))
+		if(args[0] != '!' || char_is_one_of("/{", args[1]))
 		{
-			return start - args;
+			return data->start - args;
 		}
 
 		/* Fake !-command completion by hiding "!" in front and calling this
@@ -232,12 +272,13 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		memcpy(exec_argv, argv, sizeof(exec_argv));
 		++exec_argv[0];
 
+		int arg_pos = data->arg_pos;
 		if(arg_pos != 0)
 		{
 			--arg_pos;
 		}
 
-		return complete_args(COM_EXECUTE, &exec_info, arg_pos, extra_arg) + 1;
+		return 1 + complete_args(COM_EXECUTE, &exec_info, arg_pos, data->extra_arg);
 	}
 	else if(id == COM_WINDO)
 		;
@@ -257,11 +298,11 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
 	}
-	else if(id == COM_BMARKS && (!cmd_info->emark || earg_num(argc, args) >= 2))
+	else if(id == COM_BMARKS && (!emark || earg_num(argc, args) >= 2))
 	{
 		bmarks_complete(argc, argv, arg);
 	}
-	else if(id == COM_DELBMARKS && !cmd_info->emark)
+	else if(id == COM_DELBMARKS && !emark)
 	{
 		bmarks_complete(argc, argv, arg);
 	}
@@ -269,7 +310,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		complete_compare(arg);
 	}
-	else if(id == COM_SYNC && cmd_info->emark)
+	else if(id == COM_SYNC && emark)
 	{
 		complete_selective_sync(arg);
 	}
@@ -279,7 +320,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	}
 	else if(id == COM_SESSION || id == COM_DELSESSION)
 	{
-		if(earg_num(argc, args) <= 1 && !cmd_info->emark && !cmd_info->qmark)
+		if(earg_num(argc, args) <= 1 && !emark && !qmark)
 		{
 			sessions_complete(arg);
 		}
@@ -293,113 +334,131 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	}
 	else
 	{
-		char *free_me = NULL;
-		size_t arg_num = argc;
-		start = (slash == NULL) ? (args + arg_pos) : (slash + 1U);
-
-		if(argc > 0 && !cmd_ends_with_space(args))
-		{
-			if(ends_with(args, "\""))
-			{
-				return start - args;
-			}
-			if(ends_with(args, "'"))
-			{
-				return start - args;
-			}
-			arg_num = argc - 1;
-			arg = argv[arg_num];
-		}
-
-		/* Pre-process input with requested method. */
-		if(cpp != CPP_NONE)
-		{
-			if(cpp != CPP_PERCENT_UNESCAPE)
-			{
-				arg = args + arg_pos + 1;
-				start = (slash == NULL) ? arg : (slash + 1);
-			}
-
-			free_me = strdup(arg);
-			arg = free_me;
-
-			switch(cpp)
-			{
-				case CPP_PERCENT_UNESCAPE: expand_percent_escaping(free_me); break;
-				case CPP_SQUOTES_UNESCAPE: expand_squotes_escaping(free_me); break;
-				case CPP_DQUOTES_UNESCAPE: expand_dquotes_escaping(free_me); break;
-
-				default:
-					assert(0 && "Unhandled preprocessing type.");
-					break;
-			};
-		}
-
-		if(id == COM_COLORSCHEME)
-		{
-			if(arg_num == 1)
-			{
-				start += filename_completion(arg, CT_DIRONLY, 0);
-			}
-		}
-		else if(id == COM_BMARKS || id == COM_DELBMARKS)
-		{
-			start += filename_completion(arg, CT_ALL, 0);
-		}
-		else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
-				id == COM_MKDIR || id == COM_TABNEW)
-		{
-			start += filename_completion(arg, CT_DIRONLY, 0);
-		}
-		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
-				id == COM_RLINK)
-		{
-			start += filename_completion_in_dir(other_view->curr_dir, arg, CT_ALL);
-		}
-		else if(id == COM_SPLIT || id == COM_VSPLIT)
-		{
-			start += filename_completion_in_dir(flist_get_dir(curr_view), arg,
-					CT_DIRONLY);
-		}
-		else if(id == COM_GREP)
-		{
-			if(earg_num(argc, args) > 1 && args[0] == '-')
-			{
-				start += filename_completion(arg, CT_DIRONLY, 1);
-			}
-		}
-		else if(id == COM_FIND)
-		{
-			if(earg_num(argc, args) <= 1)
-			{
-				start += filename_completion(arg, CT_DIRONLY, 1);
-			}
-		}
-		else if(id == COM_EXECUTE)
-		{
-			if(earg_num(argc, args) <= 1)
-			{
-				if(*arg == '.' || *arg == '~' || is_path_absolute(arg))
-					start += filename_completion(arg, CT_DIREXEC, 0);
-				else
-					complete_command_name(arg);
-			}
-			else
-				start += filename_completion(arg, CT_ALL, 0);
-		}
-		else if(id == COM_TOUCH || id == COM_RENAME)
-		{
-			start += filename_completion(arg, CT_ALL_WOS, 0);
-		}
-		else
-		{
-			start += filename_completion(arg, CT_ALL, 0);
-		}
-
-		free(free_me);
+		return -1;
 	}
 
-	return start - args;
+	return data->start - args;
+}
+
+/* Handles completion of path arguments.  Returns offset in original string. */
+static int
+path_completion(completion_data_t *data)
+{
+	const char *const args = data->cmd_info->args;
+	int argc = data->cmd_info->argc;
+	char **const argv = data->cmd_info->argv;
+
+	char *free_me = NULL;
+	size_t arg_num = argc;
+	data->start = (data->slash == NULL) ? (args + data->arg_pos)
+	                                    : (data->slash + 1U);
+
+	if(argc > 0 && !cmd_ends_with_space(args))
+	{
+		if(ends_with(args, "\""))
+		{
+			return data->start - args;
+		}
+		if(ends_with(args, "'"))
+		{
+			return data->start - args;
+		}
+		arg_num = argc - 1;
+		data->arg = argv[arg_num];
+	}
+
+	/* Pre-process input with requested method. */
+	const CompletionPreProcessing cpp = (CompletionPreProcessing)data->extra_arg;
+	if(cpp != CPP_NONE)
+	{
+		if(cpp != CPP_PERCENT_UNESCAPE)
+		{
+			data->arg = args + data->arg_pos + 1;
+			data->start = (data->slash == NULL) ? data->arg : (data->slash + 1);
+		}
+
+		free_me = strdup(data->arg);
+		data->arg = free_me;
+
+		switch(cpp)
+		{
+			case CPP_PERCENT_UNESCAPE: expand_percent_escaping(free_me); break;
+			case CPP_SQUOTES_UNESCAPE: expand_squotes_escaping(free_me); break;
+			case CPP_DQUOTES_UNESCAPE: expand_dquotes_escaping(free_me); break;
+
+			default:
+				assert(0 && "Unhandled preprocessing type.");
+				break;
+		};
+	}
+
+	int id = data->id;
+	const char *arg = data->arg;
+
+	if(id == COM_COLORSCHEME)
+	{
+		if(arg_num == 1)
+		{
+			data->start += filename_completion(arg, CT_DIRONLY, 0);
+		}
+	}
+	else if(id == COM_BMARKS || id == COM_DELBMARKS)
+	{
+		data->start += filename_completion(arg, CT_ALL, 0);
+	}
+	else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
+			id == COM_MKDIR || id == COM_TABNEW)
+	{
+		data->start += filename_completion(arg, CT_DIRONLY, 0);
+	}
+	else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
+			id == COM_RLINK)
+	{
+		data->start += filename_completion_in_dir(other_view->curr_dir, arg,
+				CT_ALL);
+	}
+	else if(id == COM_SPLIT || id == COM_VSPLIT)
+	{
+		data->start += filename_completion_in_dir(flist_get_dir(curr_view), arg,
+				CT_DIRONLY);
+	}
+	else if(id == COM_GREP)
+	{
+		if(earg_num(argc, args) > 1 && args[0] == '-')
+		{
+			data->start += filename_completion(arg, CT_DIRONLY, 1);
+		}
+	}
+	else if(id == COM_FIND)
+	{
+		if(earg_num(argc, args) <= 1)
+		{
+			data->start += filename_completion(arg, CT_DIRONLY, 1);
+		}
+	}
+	else if(id == COM_EXECUTE)
+	{
+		if(earg_num(argc, args) <= 1)
+		{
+			if(*arg == '.' || *arg == '~' || is_path_absolute(arg))
+				data->start += filename_completion(arg, CT_DIREXEC, 0);
+			else
+				complete_command_name(arg);
+		}
+		else
+			data->start += filename_completion(arg, CT_ALL, 0);
+	}
+	else if(id == COM_TOUCH || id == COM_RENAME)
+	{
+		data->start += filename_completion(arg, CT_ALL_WOS, 0);
+	}
+	else
+	{
+		data->start += filename_completion(arg, CT_ALL, 0);
+	}
+
+	free(free_me);
+	return data->start - args;
 }
 
 /* Calculates effective number of argument being completed.  Returns the
