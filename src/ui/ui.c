@@ -225,7 +225,8 @@ setup_ncurses_interface(void)
 	 * as without this change <c-down> can return a keycode value of 531
 	 * (terminfo name kDN5), which is larger than KEY_MAX and has no
 	 * pre-defined curses key name.
-	 * NOTE: this MUST be called before initscr() */
+	 * NOTE: this MUST be called before initscr()
+	 * NOTE: might cause trouble with mouse support */
 	use_extended_names(FALSE);
 #endif
 #endif /* ENABLE_EXTENDED_KEYS */
