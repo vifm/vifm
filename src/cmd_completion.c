@@ -105,6 +105,7 @@ static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
 static void complete_plugin(const char str[], char *argv[], int arg_num);
+static int complete_highlight(const char args[], const char arg[], int arg_num);
 static void complete_highlight_groups(const char str[], int file_hi_only);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
@@ -200,22 +201,7 @@ non_path_completion(completion_data_t *data)
 	}
 	else if(id == COM_HIGHLIGHT)
 	{
-		const int arg_num = earg_num(argc, args);
-		if(arg_num <= 1)
-		{
-			complete_highlight_groups(args, 0);
-		}
-		else if(starts_with_lit(args, "clear "))
-		{
-			if(arg_num == 2)
-			{
-				complete_highlight_groups(arg, 1);
-			}
-		}
-		else
-		{
-			data->start += complete_highlight_arg(arg);
-		}
+		data->start += complete_highlight(args, arg, earg_num(argc, args));
 	}
 	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE ||
 			id == COM_SOURCE || id == COM_EDIT || id == COM_GOTO_PATH ||
@@ -721,6 +707,28 @@ complete_plugin(const char str[], char *argv[], int arg_num)
 	{
 		plugs_complete(curr_stats.plugs, after_last(str, ' '));
 	}
+}
+
+/* Completes highlight command.  Returns completion start offset. */
+static int
+complete_highlight(const char args[], const char arg[], int arg_num)
+{
+	if(arg_num <= 1)
+	{
+		complete_highlight_groups(args, 0);
+		return 0;
+	}
+
+	if(starts_with_lit(args, "clear "))
+	{
+		if(arg_num == 2)
+		{
+			complete_highlight_groups(arg, 1);
+		}
+		return 0;
+	}
+
+	return complete_highlight_arg(arg);
 }
 
 /* Completes highlight groups and subcommand "clear" for :highlight command. */
