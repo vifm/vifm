@@ -94,6 +94,7 @@ static int non_path_completion(completion_data_t *data);
 static int path_completion(completion_data_t *data);
 static int earg_num(int argc, const char cmdline[]);
 static int cmd_ends_with_space(const char cmdline[]);
+static void complete_expr(const char str[], const char **start);
 static void complete_compare(const char str[]);
 static void complete_selective_sync(const char str[]);
 static void complete_wincmd(const char str[]);
@@ -173,33 +174,7 @@ non_path_completion(completion_data_t *data)
 	}
 	else if(command_accepts_expr(id))
 	{
-		const char *ampersand = strrchr(arg, '&');
-		if(ampersand > data->dollar)
-		{
-			OPT_SCOPE scope = OPT_GLOBAL;
-			data->start = ampersand + 1;
-
-			if(starts_with_lit(data->start, "l:"))
-			{
-				scope = OPT_LOCAL;
-				data->start += 2;
-			}
-			else if(starts_with_lit(data->start, "g:"))
-			{
-				data->start += 2;
-			}
-
-			vle_opts_complete_real(data->start, scope);
-		}
-		else if(data->dollar == NULL && !starts_with_lit(arg, "v:"))
-		{
-			function_complete_name(arg, &data->start);
-		}
-		else
-		{
-			complete_variables((data->dollar > arg) ? data->dollar : arg,
-					&data->start);
-		}
+		complete_expr(arg, &data->start);
 	}
 	else if(id == COM_UNLET)
 		complete_variables(arg, &data->start);
@@ -483,6 +458,39 @@ cmd_ends_with_space(const char cmdline[])
 		++cmdline;
 	}
 	return (cmdline[0] == ' ');
+}
+
+/* Completes expressions. */
+static void
+complete_expr(const char str[], const char **start)
+{
+	const char *ampersand = strrchr(str, '&');
+	const char *dollar = strrchr(str, '$');
+	if(ampersand > dollar)
+	{
+		OPT_SCOPE scope = OPT_GLOBAL;
+		*start = ampersand + 1;
+
+		if(starts_with_lit(*start, "l:"))
+		{
+			scope = OPT_LOCAL;
+			*start += 2;
+		}
+		else if(starts_with_lit(*start, "g:"))
+		{
+			*start += 2;
+		}
+
+		vle_opts_complete_real(*start, scope);
+	}
+	else if(dollar == NULL && !starts_with_lit(str, "v:"))
+	{
+		function_complete_name(str, start);
+	}
+	else
+	{
+		complete_variables((dollar > str) ? dollar : str, start);
+	}
 }
 
 /* Completes properties for directory comparison. */
