@@ -109,6 +109,7 @@ static int complete_highlight(const char args[], const char arg[], int arg_num);
 static void complete_highlight_groups(const char str[], int file_hi_only);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
+static int complete_select(completion_data_t *data);
 static void complete_winrun(const char str[]);
 static void complete_from_string_list(const char str[], const char *items[][2],
 		size_t item_count, int ignore_case);
@@ -212,34 +213,7 @@ non_path_completion(completion_data_t *data)
 	}
 	else if(id == COM_SELECT)
 	{
-		cmd_info_t exec_info = *data->cmd_info;
-		char *exec_argv[exec_info.argc];
-
-		/* Make sure that it's a filter-argument. */
-		if(args[0] != '!' || char_is_one_of("/{", args[1]))
-		{
-			return data->start - args;
-		}
-
-		/* Fake !-command completion by hiding "!" in front and calling this
-		 * function again. */
-		++exec_info.args;
-		if(exec_info.args[0] == '\0')
-		{
-			exec_info.argc = 0;
-		}
-
-		exec_info.argv = exec_argv;
-		memcpy(exec_argv, argv, sizeof(exec_argv));
-		++exec_argv[0];
-
-		int arg_pos = data->arg_pos;
-		if(arg_pos != 0)
-		{
-			--arg_pos;
-		}
-
-		return 1 + complete_args(COM_EXECUTE, &exec_info, arg_pos, data->extra_arg);
+		return complete_select(data);
 	}
 	else if(id == COM_WINDO)
 		;
@@ -881,6 +855,42 @@ complete_envvar(const char str[])
 
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
+}
+
+/* Completes select command.  Returns completion start offset. */
+static int
+complete_select(completion_data_t *data)
+{
+	const char *const args = data->cmd_info->args;
+
+	/* Make sure that it's a filter-argument. */
+	if(args[0] != '!' || char_is_one_of("/{", args[1]))
+	{
+		return data->start - args;
+	}
+
+	/* Fake !-command completion by hiding "!" in front and calling this
+		* function again. */
+	cmd_info_t exec_info = *data->cmd_info;
+	char *exec_argv[exec_info.argc];
+
+	++exec_info.args;
+	if(exec_info.args[0] == '\0')
+	{
+		exec_info.argc = 0;
+	}
+
+	exec_info.argv = exec_argv;
+	memcpy(exec_argv, data->cmd_info->argv, sizeof(exec_argv));
+	++exec_argv[0];
+
+	int arg_pos = data->arg_pos;
+	if(arg_pos != 0)
+	{
+		--arg_pos;
+	}
+
+	return 1 + complete_args(COM_EXECUTE, &exec_info, arg_pos, data->extra_arg);
 }
 
 /* Completes first :winrun argument. */
