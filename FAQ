@@ -3,7 +3,7 @@ Q: Vifm doesn't run executables, what's wrong with it?
 A: Nothing.  Just set 'runexec' option on.  It's off by default.
 
 --------------------------------------------------------------------------------
-Q: How can I use SSH with vifm?
+Q: How can I use SSH with Vifm?
 
 A: Follow this steps:
    1) Download and install sshfs
@@ -14,38 +14,38 @@ A: Follow this steps:
       A sample line might look like this:
       :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
 
-      %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
+      %PARAM and %DESTINATION_DIR are filled in by Vifm at runtime.
       %PARAM value is filled from the first line of file (whole line).
 
       You can also add %CLEAR if you want to clear screen before running FUSE
       program.
-   3) Create a file with ssh extension that contain connection parameters in the
+   3) Create a file with ssh extension that contains connection parameters in the
       first line.  A sample first line could be:
       root@127.0.0.1:/
 
 --------------------------------------------------------------------------------
 
-Q: How to browse FTP in vifm?
+Q: How to browse FTP in Vifm?
 
 A: Use CurlFTPFS FUSE filesystem on *nix, which you can find here:
      http://curlftpfs.sourceforge.net/
-   And on Windows you need to use FTPDrive, which will mount a FTP remote as
-   a drive for you. Get it here:
+   And on Windows you need to use FTPDrive, which will mount an FTP remote as
+   a drive for you.  Get it here:
      http://www.killprog.com/fdrve.html
 
 --------------------------------------------------------------------------------
 
-Q: How can I customize vifm?
+Q: How can I customize Vifm?
 
 A: There are several ways to do that:
 
   - using vifmrc file (it's in ~/.vifm/)
-    This file can contain any of vifm commands.  You probably would like too set
-    mappings and options here.  vifm will never change this file (it's something
-    similar too ~/.vimrc).
+    This file can contain any of Vifm commands.  You probably would like to set
+    mappings and options here.  Vifm will never change this file (it's similar
+    to ~/.vimrc).
 
   - changing color scheme (~/.vifm/colorschemes)
-    You can set change colors of different TUI elements of vifm here. Or add
+    You can set change colors of different TUI elements of Vifm here.  Or add
     completely new color schemes.
 
 --------------------------------------------------------------------------------
@@ -56,66 +56,64 @@ A: List of currently supported operations:
   - rename
   - move
   - copy
-  - delete (when using Trash)
-  - permissions change (chmod)
+  - non-permanent removal (i.e., deletion to trash)
+  - change of permissions (chmod)
   - owner change
   - group change
-  - chmod
-  - creating symbolic links with absolute paths
-  - creating symbolic links with relative paths
-  - creating of directories
+  - creation of symbolic links with absolute or relative paths
+  - creation of directories
 
 --------------------------------------------------------------------------------
 
-Q: How can one execute vifm commands after using :! ?
+Q: How to execute Vifm commands after using :! ?
 
 A: The only way to do this is using :execute command.  Example:
-  :execute ":!shell command" | vifm command
+  :execute ":!shell command" | some-other-command-here
 
 --------------------------------------------------------------------------------
 
 Q: Is there a way to copy/paste without sending to trash first?
 
 A: Yes, to do that, one should yank (copy) files as usual, but use "P" key (not
-"p") to put (paste) them into current directory.
+   "p") to put (paste) them into current directory.
 
 --------------------------------------------------------------------------------
 
-Q: vifm expands macros in a wrong way in user defined commands with vifm's
-   commands (like in `:command com :mkdir ~/tmp/%c:e | cd ~/tmp/%c:e`).  What to
-   do to fix it?
+Q: Vifm expands macros in a wrong way in user defined commands with Vifm's
+   commands (like in `:command com :mkdir ~/tmp/%c:e | cd ~/tmp/%c:e`).  How to
+   fix it?
 
 A: Just double percent sign (%%).  Why?  Because user commands containing
-   vifm's command-line commands are parsed twice.  First time to replace %a
+   Vifm's command-line commands are parsed twice.  First time to replace %a
    macro, and second time during command execution.  So doubled percent sign
    will be parsed with single % during first parse and a %x macro will be
    expanded during second parse.
 
 --------------------------------------------------------------------------------
 
-Q: vifm expands range in a wrong way in user defined commands (like in
-   `:command com :%yank`) and shows "Invalid command name" message.  What to
-   do to fix it?
+Q: Vifm expands range in a wrong way in user defined commands (like in
+   `:command com :%yank`) and shows "Invalid command name" message.  How to fix
+   it?
 
-A: See answer for the previous question.
+A: See answer to the previous question.
 
 --------------------------------------------------------------------------------
 
-Q: How can I help vifm?
+Q: How can I help Vifm?
 
 A: Just use it and report any problems, bugs or suggestions to its developers by
-   email or trackers.  You also can send you configuration and colorscheme files
-   to developers.  They can be collected and published at site of vifm.
-   Examples of configuration files can also show developers of vifm how users
-   typically uses vifm, so they can improve support of the most common use
-   cases.
+   email or in bug trackers.  You can also send your configuration and
+   colorscheme files to developers.  They can be collected and published on
+   Vifm's web-site.  Examples of configuration files can also show how Vifm is
+   typically used and suggest improvements of common use cases.
 
 --------------------------------------------------------------------------------
 
-Q: How to make shell aliases and functions work in vifm when running them like
+Q: How to make shell aliases and functions work in Vifm when running them like
    ":!foo"?
 
-A: Here is solution for bash, other shells should allow to do something similar.
+A: Here is a solution for bash, other shells should allow to do something
+   similar.
 
    1. Add the following lines to ~/.bashrc
 
@@ -124,8 +122,8 @@ A: Here is solution for bash, other shells should allow to do something similar.
 
    2. Add the following line to ~/.vifm/vifmrc
 
-       let $BASH_ENV='~/.bashrc'
+       let $BASH_ENV = '~/.bashrc'
 
    After following the steps above aliases and functions should work the same
-   way as if they were typed in interactive shell by user.  But they won't be
-   completed with <tab> completion.
+   way as if they were typed in interactive shell by user.  However, they won't
+   be completed by <tab> completion.
