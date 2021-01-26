@@ -39,14 +39,14 @@ Q: How can I customize Vifm?
 
 A: There are several ways to do that:
 
-  - using vifmrc file (it's in ~/.vifm/)
+  - using vifmrc file (run `:goto $MYVIFMRC` to find it)
     This file can contain any of Vifm commands.  You probably would like to set
     mappings and options here.  Vifm will never change this file (it's similar
     to ~/.vimrc).
 
-  - changing color scheme (~/.vifm/colorschemes)
-    You can set change colors of different TUI elements of Vifm here.  Or add
-    completely new color schemes.
+  - changing color scheme (run `:cd $VIFM/colors` to find color schemes)
+    You can change colors of different TUI elements in existing color schemes or
+    add a new one.
 
 --------------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ A: List of currently supported operations:
 Q: How to execute Vifm commands after using :! ?
 
 A: The only way to do this is using :execute command.  Example:
-  :execute ":!shell command" | some-other-command-here
+  :execute ':!shell command' | some-other-command-here
 
 --------------------------------------------------------------------------------
 
@@ -99,16 +99,6 @@ A: See answer to the previous question.
 
 --------------------------------------------------------------------------------
 
-Q: How can I help Vifm?
-
-A: Just use it and report any problems, bugs or suggestions to its developers by
-   email or in bug trackers.  You can also send your configuration and
-   colorscheme files to developers.  They can be collected and published on
-   Vifm's web-site.  Examples of configuration files can also show how Vifm is
-   typically used and suggest improvements of common use cases.
-
---------------------------------------------------------------------------------
-
 Q: How to make shell aliases and functions work in Vifm when running them like
    ":!foo"?
 
@@ -127,3 +117,13 @@ A: Here is a solution for bash, other shells should allow to do something
    After following the steps above aliases and functions should work the same
    way as if they were typed in interactive shell by user.  However, they won't
    be completed by <tab> completion.
+
+--------------------------------------------------------------------------------
+
+Q: How can I help Vifm?
+
+A: Just use it and report any problems, bugs or suggestions to its developers by
+   email or in bug trackers.  You can also send your configuration and
+   colorscheme files to developers.  They can be collected and published on
+   Vifm's web-site.  Examples of configuration files can also show how Vifm is
+   typically used and suggest improvements of common use cases.
