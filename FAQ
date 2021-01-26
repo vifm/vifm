@@ -1,3 +1,10 @@
+Q: Vifm fails to display some files, is it a bug?
+
+A: Most likely reason for missing files are name filters.  Use `:filter?`
+   command to see their state or try pressing zO shortcut to disable all
+   filters (undo that with zM).
+
+--------------------------------------------------------------------------------
 Q: Vifm doesn't run executables, what's wrong with it?
 
 A: Nothing.  Just set 'runexec' option on.  It's off by default.
