@@ -44,6 +44,7 @@ check_opt_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 	int type = lua_getfield(lua, 1, name);
 	if(type == LUA_TNIL)
 	{
+		lua_pop(lua, 1);
 		return 0;
 	}
 
