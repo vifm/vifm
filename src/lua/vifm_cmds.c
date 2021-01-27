@@ -64,7 +64,9 @@ cmds_add(lua_State *lua)
 		descr = state_store_string(vlua, lua_tostring(lua, -1));
 	}
 
+	lua_newtable(lua);
 	check_field(lua, 1, "handler", LUA_TFUNCTION);
+	lua_setfield(lua, -2, "handler");
 	void *handler = to_pointer(lua);
 
 	cmd_add_t cmd = {
@@ -162,6 +164,7 @@ lua_cmd_handler(const cmd_info_t *cmd_info)
 	lua_State *lua = p->vlua->lua;
 
 	from_pointer(lua, p->ptr);
+	lua_getfield(lua, -1, "handler");
 
 	lua_newtable(lua);
 	lua_pushstring(lua, cmd_info->args);
@@ -173,10 +176,11 @@ lua_cmd_handler(const cmd_info_t *cmd_info)
 	{
 		const char *error = lua_tostring(lua, -1);
 		ui_sb_err(error);
-		lua_pop(lua, 1);
+		lua_pop(lua, 2);
 		return CMDS_ERR_CUSTOM;
 	}
 
+	lua_pop(lua, 1);
 	return curr_stats.save_msg;
 }
 
