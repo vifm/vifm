@@ -517,6 +517,7 @@ vle_cmds_complete(const char cmd[], void *arg)
 		else
 		{
 			prefix_len += args - cmd;
+			cmd_info.user_data = cur->user_data;
 			prefix_len += complete_cmd_args(cur, args, &cmd_info, arg);
 		}
 	}
