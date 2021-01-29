@@ -17,7 +17,7 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	engine_cmds_setup();
+	engine_cmds_setup(/*real_completion=*/0);
 }
 
 TEARDOWN()

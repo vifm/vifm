@@ -55,7 +55,7 @@ void columns_setup_column(int id);
 void columns_teardown(void);
 
 /* Initializes engine/cmds unit. */
-void engine_cmds_setup(void);
+void engine_cmds_setup(int real_completion);
 
 /* Uninitializes engine/cmds unit. */
 void engine_cmds_teardown(void);
