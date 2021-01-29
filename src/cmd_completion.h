@@ -77,6 +77,10 @@ enum
 	COM_WINRUN,
 
 	COM_MENU_WRITE,
+
+	/* Single ID for all foreign commands, which are disambiguated by user
+	 * data. */
+	COM_FOREIGN,
 };
 
 /* Values of type argument for filename_completion() function. */

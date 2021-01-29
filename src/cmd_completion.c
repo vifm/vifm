@@ -52,6 +52,7 @@
 #include "engine/variables.h"
 #include "int/file_magic.h"
 #include "int/path_env.h"
+#include "lua/vlua.h"
 #ifdef _WIN32
 #include "menus/menus.h"
 #endif
@@ -128,6 +129,11 @@ static int file_matches(const char fname[], const char prefix[],
 int
 complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
+	if(id == COM_FOREIGN)
+	{
+		return vlua_complete_cmd(curr_stats.vlua, cmd_info, arg_pos);
+	}
+
 	completion_data_t data = {
 		.id = id,
 		.cmd_info = cmd_info,

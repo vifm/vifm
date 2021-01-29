@@ -39,6 +39,12 @@ void vlua_finish(vlua_t *vlua);
  * returned. */
 int vlua_run_string(vlua_t *vlua, const char str[]);
 
+struct cmd_info_t;
+
+/* Performs completion of a command.  Returns offset of completion matches. */
+int vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info,
+		int arg_pos);
+
 #endif /* VIFM__LUA__VLUA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

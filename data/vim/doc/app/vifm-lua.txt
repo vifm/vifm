@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 29
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -264,14 +264,31 @@ Possible fields of {cmd}:
    Description of the command.
  - "handler" (function)
    Handler which accepts {info}.
+ - "complete" (function)
+   Completion function which accepts {info} and returns {results}.
  - "minargs" (integer) (default: 0)
    Minimal number of arguments.
  - "maxargs" (integer) (default: minargs)
    Maximal number of arguments.  Negative number means "indefinite".
 
-Fields of {info} (argument of a handler):
+Fields of {info} argument for "handler":
  - "args" (string)
    All arguments passed to the command.
+
+Fields of {info} argument for "complete":
+ - "arg" (string)
+   Argument being completed.
+ - "args" (string)
+   Command-line up to cursor position (for cases when completion depends on
+   what comes before current argument).
+
+Fields of {results} return value of "complete":
+ - "offset" (integer) (default: 0)
+   Offset from beginning of the argument.  This is useful to avoid prepending
+   prefix that's common to all matches, thus completing only essential part.
+   For example, in case of "var=val" use offset=4 to complete part after "=".
+ - "matches" (table)
+   List of matches in values of the table (keys are ignored).
 
 Parameters:~
   {cmd}  Table with information about a command.

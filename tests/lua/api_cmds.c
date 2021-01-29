@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/completion.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
@@ -9,20 +11,26 @@
 
 #include <test-utils.h>
 
+static void check_next_completion(const char expected[]);
+
 static vlua_t *vlua;
 
 SETUP()
 {
 	vlua = vlua_init();
+	curr_stats.vlua = vlua;
+
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	engine_cmds_setup(/*real_completion=*/0);
+	engine_cmds_setup(/*real_completion=*/1);
 }
 
 TEARDOWN()
 {
 	vlua_finish(vlua);
+	curr_stats.vlua = NULL;
+
 	engine_cmds_teardown();
 }
 
@@ -163,6 +171,78 @@ TEST(cmds_delcommand)
 	assert_success(vlua_run_string(vlua, "r = vifm.cmds.delcommand('name')\n"
 	                                     "if not r then print 'fail' end"));
 	assert_string_equal("", ui_sb_last());
+}
+
+TEST(cmds_completion)
+{
+	assert_success(vlua_run_string(vlua, "function handler()\n"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "function bad()\n"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "function failing()\n"
+	                                     "  asdfadsf()\n"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "function completor()\n"
+	                                     "  return {\n"
+	                                     "    offset = 1, \n"
+	                                     "    matches = { 'aa', 'ab', 'bc' } \n"
+	                                     "  }\n"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
+	                                     "  name = 'nocompl',"
+	                                     "  handler = handler,"
+	                                     "}"));
+	assert_string_equal("", ui_sb_last());
+
+	assert_int_equal(7, vle_cmds_complete("nocompl a", NULL));
+	assert_int_equal(0, vle_compl_get_count());
+
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
+	                                     "  name = 'test',"
+	                                     "  handler = handler,"
+	                                     "  complete = completor"
+	                                     "}"));
+	assert_string_equal("", ui_sb_last());
+
+	vle_compl_reset();
+	assert_int_equal(6, vle_cmds_complete("test a", NULL));
+	check_next_completion("aa");
+	check_next_completion("ab");
+	check_next_completion("bc");
+	check_next_completion("a");
+
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
+	                                     "  name = 'testcmd',"
+	                                     "  handler = handler,"
+	                                     "  complete = bad"
+	                                     "}"));
+	assert_string_equal("", ui_sb_last());
+	vle_compl_reset();
+	assert_int_equal(8, vle_cmds_complete("testcmd p", NULL));
+	assert_int_equal(0, vle_compl_get_count());
+
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
+	                                     "  name = 'tcmd',"
+	                                     "  handler = handler,"
+	                                     "  complete = failing"
+	                                     "}"));
+	assert_string_equal("", ui_sb_last());
+	vle_compl_reset();
+	assert_int_equal(5, vle_cmds_complete("tcmd z", NULL));
+	assert_int_equal(0, vle_compl_get_count());
+}
+
+static void
+check_next_completion(const char expected[])
+{
+	char *buf = vle_compl_next();
+	assert_string_equal(expected, buf);
+	free(buf);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
