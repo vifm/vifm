@@ -34,6 +34,7 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/utils/utils.h"
 #include "../../src/background.h"
+#include "../../src/cmd_completion.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
@@ -43,7 +44,7 @@
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
 static void format_none(int id, const void *data, size_t buf_len, char buf[]);
-static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
+static int complete_stub(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
@@ -264,10 +265,9 @@ columns_teardown(void)
 }
 
 void
-engine_cmds_setup(void)
+engine_cmds_setup(int real_completion)
 {
 	static cmds_conf_t cmds_conf = {
-		.complete_args = &complete_args,
 		.swap_range = &swap_range,
 		.resolve_mark = &resolve_mark,
 		.expand_macros = &expand_macros,
@@ -277,11 +277,12 @@ engine_cmds_setup(void)
 		.skip_at_beginning = &skip_at_beginning,
 	};
 
+	cmds_conf.complete_args = (real_completion ? &complete_args : &complete_stub);
 	vle_cmds_init(1, &cmds_conf);
 }
 
 static int
-complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
+complete_stub(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
 	return 0;
 }

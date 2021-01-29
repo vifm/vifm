@@ -2542,7 +2542,10 @@ line_completion(line_stats_t *stat)
 		}
 
 		const int offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
-		line_mb[line_mb_cmd + offset - line_mb] = '\0';
+		if(offset >= 0 && offset < (int)strlen(line_mb_cmd))
+		{
+			line_mb[line_mb_cmd - line_mb + offset] = '\0';
+		}
 		prefix_len = wide_len(line_mb);
 		free(line_mb);
 

@@ -24,6 +24,12 @@ struct lua_State;
 /* Produces `vifm.cmds` table.  Puts the table on the top of the stack. */
 void vifm_cmds_init(struct lua_State *lua);
 
+struct cmd_info_t;
+
+/* Performs completion of a command.  Returns offset of completion matches. */
+int vifm_cmds_complete(struct lua_State *lua, const struct cmd_info_t *cmd_info,
+		int arg_pos);
+
 #endif /* VIFM__LUA__VIFM_CMDS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

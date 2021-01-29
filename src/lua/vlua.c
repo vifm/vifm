@@ -400,5 +400,11 @@ vlua_run_string(vlua_t *vlua, const char str[])
 	return errored;
 }
 
+int
+vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info, int arg_pos)
+{
+	return vifm_cmds_complete(vlua->lua, cmd_info, arg_pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

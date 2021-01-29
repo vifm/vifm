@@ -87,11 +87,24 @@ local function devicons(info)
     end
 end
 
+local function complete_devicons(info)
+    local prefix = info.arg
+    local prefix_len = prefix:len()
+    local matches = {}
+    for key, _ in pairs(categories) do
+        if key:sub(0, prefix_len) == prefix then
+            matches[#matches + 1] = key
+        end
+    end
+    return { matches = matches }
+end
+
 -- this does NOT overwrite pre-existing user command
 local added = vifm.cmds.add {
     name = "DevIcons",
     description = "use iconic font to simulate icons",
     handler = devicons,
+    complete = complete_devicons,
     maxargs = 1,
 }
 if not added then

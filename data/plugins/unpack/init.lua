@@ -11,33 +11,53 @@ Usage example:
 --]]
 
 -- TODO: a way to specify default path for unpacking
+-- TODO: fix processing archives with spaces in their name
 -- TODO: support .tgz and similar extensions in addition to current .tar.*
--- TODO: support .zip and .rar as well
+-- TODO: support .rar as well
 
 local M = {}
 
-local function get_common_prefix(archive)
-    local job = vifm.startjob {
+local function get_common_prefix(archive, format)
+    local cmd
+    if format == 'tar' then
         cmd = string.format('tar tf %q', archive)
-    }
-
-    local lines = job:stdout():lines()
-    local prefix = lines()
-    if prefix == nil then
-        job:wait()
-        return nil, 'Failed to list contents of '..archive..':\n'..job:errors()
+    elseif format == 'zip' then
+        cmd = string.format('zip --show-files %q', archive)
+    else
+        return nil, 'Unsupported format: '..format
     end
 
-    local top = prefix:match("(.-/)")
-    if top ~= nil then
-        prefix = top
-    end
+    local job = vifm.startjob { cmd = cmd }
 
-    local prefix_len = #prefix
-    for line in lines do
-        if line:sub(1, prefix_len) ~= prefix then
-            job:wait()
-            return nil
+    local prefix
+    local prefix_len
+    for line in job:stdout():lines() do
+        local skip = false
+
+        print('line:'..line)
+        if format == 'zip' then
+            if line:sub(1, 2) ~= '  ' then
+                skip = true
+            else
+                line = line:sub(3)
+            end
+        end
+        print('line:'..line)
+
+        if not skip then
+            if prefix == nil then
+                prefix = line
+                local top = prefix:match("(.-/)")
+                if top ~= nil then
+                    prefix = top
+                end
+                prefix_len = #prefix
+            end
+
+            if line:sub(1, prefix_len) ~= prefix then
+                job:wait()
+                return nil
+            end
         end
     end
 
@@ -52,8 +72,10 @@ local function get_common_prefix(archive)
         end
     end
 
-    if job:exitcode() ~= 0 then
-        return prefix, job:errors()
+    local exitcode = job:exitcode()
+    if exitcode ~= 0 then
+        print('Listing failed with exit code: '..exitcode)
+        return prefix, 'errors:'..job:errors()
     end
 
     return prefix
@@ -68,13 +90,16 @@ local function unpack(info)
         return
     end
 
-    local ext = vifm.fnamemodify(current, ':t:r:e')
-    if ext ~= 'tar' then
-        vifm.sb.error('Unsupported file format')
-        return
+    local ext = vifm.fnamemodify(current, ':t:e')
+    if ext ~= 'zip' then
+        ext = vifm.fnamemodify(current, ':t:r:e')
+        if ext ~= 'tar' then
+            vifm.sb.error('Unsupported file format')
+            return
+        end
     end
 
-    local prefix, err = get_common_prefix(current)
+    local prefix, err = get_common_prefix(current, ext)
     if err ~= nil then
         vifm.sb.error(err)
         return
@@ -110,9 +135,13 @@ local function unpack(info)
         end
     end
 
-    local job = vifm.startjob {
+    local cmd
+    if ext == 'tar' then
         cmd = string.format('tar -C %q -vxf %q', outdir, current)
-    }
+    elseif ext == 'zip' then
+        cmd = string.format('unzip -d %q %q', outdir, current)
+    end
+    local job = vifm.startjob { cmd = cmd }
 
     for line in job:stdout():lines() do
         vifm.sb.quick(line)
