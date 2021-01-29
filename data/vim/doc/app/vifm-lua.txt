@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 21
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -43,6 +43,10 @@ of Vifm and are thus bound to corresponding revision of the application.
 Think of Lua API as a way to reach deeper into the internals of Vifm.  This
 isn't a replacement of existing functionality, but a richer way of interacting
 with the core behind it.
+
+One of the primary motivations were deficiencies in integrations with external
+applications.  Communicating results of calling them back to Vifm was
+problematic, there was simply no good way of doing it reliably.
 
 Regular :commands are a form of user-interface by design, which has various
 implications that limit their abilities.  For example, you can't reliably check
