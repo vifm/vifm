@@ -211,41 +211,42 @@ ior_mv(io_args_t *args)
 		return 0;
 	}
 
-	switch(errno)
-	{
-		case EXDEV:
-#ifndef _WIN32
-		/* At least SSHFS fails to propagate EXDEV and reports EPERM.  So we try to
-		 * do the copy across mounts anyway, which might actually work despite the
-		 * error code. */
-		case EPERM:
-		case EACCES:
-#endif
-			return mv_by_copy(args, confirmed);
-		case EISDIR:
-		case ENOTEMPTY:
-		case EEXIST:
-#ifdef _WIN32
-		/* For MXE builds running in Wine. */
-		case EPERM:
-		case EACCES:
-#endif
-			if(crs == IO_CRS_REPLACE_ALL)
-			{
-				return mv_replacing_all(args);
-			}
-			else if(crs == IO_CRS_REPLACE_FILES ||
-					(!has_atomic_file_replace() && crs == IO_CRS_APPEND_TO_FILES))
-			{
-				return mv_replacing_files(args);
-			}
-			/* Break is intentionally omitted. */
+	int error = errno;
 
-		default:
-			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					"Rename operation failed");
-			return errno;
+	int cross_fs = (error == EXDEV);
+#ifndef _WIN32
+	/* At least SSHFS fails to propagate EXDEV and reports EPERM.  So we try to do
+	 * the copy across mounts anyway, which might actually work despite the error
+	 * code. */
+	cross_fs |= (error == EPERM || error == EACCES);
+#endif
+	if(cross_fs)
+	{
+		return mv_by_copy(args, confirmed);
 	}
+
+	int overwrite = (error == EISDIR || error == ENOTEMPTY || error == EEXIST);
+#ifdef _WIN32
+	/* For MXE builds running in Wine. */
+	overwrite |= (error == EPERM || error == EACCES);
+#endif
+	if(overwrite)
+	{
+		if(crs == IO_CRS_REPLACE_ALL)
+		{
+			return mv_replacing_all(args);
+		}
+
+		if(crs == IO_CRS_REPLACE_FILES ||
+				(!has_atomic_file_replace() && crs == IO_CRS_APPEND_TO_FILES))
+		{
+			return mv_replacing_files(args);
+		}
+	}
+
+	(void)ioe_errlst_append(&args->result.errors, src, error,
+			"Rename operation failed");
+	return error;
 }
 
 /* Performs a manual move: copy followed by deletion.  Returns zero on success
