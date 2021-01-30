@@ -46,6 +46,9 @@ static VisitResult rm_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_visitor(const char full_path[], VisitAction action,
 		void *param);
+static int mv_by_copy(io_args_t *args, int confirmed);
+static int mv_replacing_all(io_args_t *args);
+static int mv_replacing_files(io_args_t *args);
 static int is_file(const char path[]);
 static VisitResult mv_visitor(const char full_path[], VisitAction action,
 		void *param);
@@ -218,32 +221,7 @@ ior_mv(io_args_t *args)
 		case EPERM:
 		case EACCES:
 #endif
-			{
-				args->confirm = (confirmed ? NULL : confirm);
-				int result = ior_cp(args);
-				args->confirm = confirm;
-				/* When result is zero, there still might be errors if they were
-				 * ignored by the user.  Do not delete source in this case, some files
-				 * might be missing at the destination. */
-				if(result == 0 && args->result.errors.error_count == 0)
-				{
-					io_args_t rm_args = {
-						.arg1.path = src,
-
-						.cancellation = args->cancellation,
-						.estim = args->estim,
-
-						.result = args->result,
-					};
-
-					/* Disable progress reporting for this "secondary" operation. */
-					const int silent = ioeta_silent_on(rm_args.estim);
-					result = ior_rm(&rm_args);
-					args->result = rm_args.result;
-					ioeta_silent_set(rm_args.estim, silent);
-				}
-				return result;
-			}
+			return mv_by_copy(args, confirmed);
 		case EISDIR:
 		case ENOTEMPTY:
 		case EEXIST:
@@ -254,70 +232,12 @@ ior_mv(io_args_t *args)
 #endif
 			if(crs == IO_CRS_REPLACE_ALL)
 			{
-				int error;
-				io_args_t rm_args = {
-					.arg1.path = dst,
-
-					.cancellation = args->cancellation,
-					.estim = args->estim,
-
-					.result = args->result,
-				};
-
-				/* Ask user whether to overwrite destination file. */
-				if(confirm != NULL && !confirm(args, src, dst))
-				{
-					return 0;
-				}
-
-				error = ior_rm(&rm_args);
-				args->result = rm_args.result;
-				if(error != 0)
-				{
-					if(!io_cancelled(args))
-					{
-						(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
-								"Failed to remove");
-					}
-					return error;
-				}
-
-				if(os_rename(src, dst) != 0)
-				{
-					(void)ioe_errlst_append(&args->result.errors, src, errno,
-							"Rename operation failed");
-					return 1;
-				}
-				return 0;
+				return mv_replacing_all(args);
 			}
 			else if(crs == IO_CRS_REPLACE_FILES ||
 					(!has_atomic_file_replace() && crs == IO_CRS_APPEND_TO_FILES))
 			{
-				if(!has_atomic_file_replace() && is_file(dst))
-				{
-					io_args_t rm_args = {
-						.arg1.path = dst,
-
-						.cancellation = args->cancellation,
-						.estim = args->estim,
-
-						.result = args->result,
-					};
-
-					const int error = iop_rmfile(&rm_args);
-					args->result = rm_args.result;
-					if(error != 0)
-					{
-						if(!io_cancelled(args))
-						{
-							(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
-									"Failed to remove");
-						}
-						return error;
-					}
-				}
-
-				return traverse(src, &mv_visitor, args);
+				return mv_replacing_files(args);
 			}
 			/* Break is intentionally omitted. */
 
@@ -326,6 +246,122 @@ ior_mv(io_args_t *args)
 					"Rename operation failed");
 			return errno;
 	}
+}
+
+/* Performs a manual move: copy followed by deletion.  Returns zero on success
+ * and non-zero on error. */
+static int
+mv_by_copy(io_args_t *args, int confirmed)
+{
+	/* Do not ask for confirmation second time. */
+	const io_confirm confirm = args->confirm;
+	args->confirm = (confirmed ? NULL : confirm);
+
+	int result = ior_cp(args);
+
+	args->confirm = confirm;
+
+	/* When result is zero, there still might be errors if they were
+	 * ignored by the user.  Do not delete source in this case, some files
+	 * might be missing at the destination. */
+	if(result == 0 && args->result.errors.error_count == 0)
+	{
+		io_args_t rm_args = {
+			.arg1.path = args->arg1.src,
+
+			.cancellation = args->cancellation,
+			.estim = args->estim,
+
+			.result = args->result,
+		};
+
+		/* Disable progress reporting for this "secondary" operation. */
+		const int silent = ioeta_silent_on(rm_args.estim);
+		result = ior_rm(&rm_args);
+		args->result = rm_args.result;
+		ioeta_silent_set(rm_args.estim, silent);
+	}
+	return result;
+}
+
+/* Performs a move after deleting target first.  Returns zero on success and
+ * non-zero on error. */
+static int
+mv_replacing_all(io_args_t *args)
+{
+	const char *const src = args->arg1.src;
+	const char *const dst = args->arg2.dst;
+
+	int error;
+	io_args_t rm_args = {
+		.arg1.path = dst,
+
+		.cancellation = args->cancellation,
+		.estim = args->estim,
+
+		.result = args->result,
+	};
+
+	/* Ask user whether to overwrite destination file. */
+	if(args->confirm != NULL && !args->confirm(args, src, dst))
+	{
+		return 0;
+	}
+
+	error = ior_rm(&rm_args);
+	args->result = rm_args.result;
+	if(error != 0)
+	{
+		if(!io_cancelled(args))
+		{
+			(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
+					"Failed to remove");
+		}
+		return error;
+	}
+
+	if(os_rename(src, dst) != 0)
+	{
+		(void)ioe_errlst_append(&args->result.errors, src, errno,
+				"Rename operation failed");
+		return 1;
+	}
+	return 0;
+}
+
+/* Performs a merging move (for directories).  Returns zero on success and
+ * non-zero on error. */
+static int
+mv_replacing_files(io_args_t *args)
+{
+	const char *const src = args->arg1.src;
+	const char *const dst = args->arg2.dst;
+
+	if(!has_atomic_file_replace() && is_file(dst))
+	{
+		io_args_t rm_args = {
+			.arg1.path = dst,
+
+			.cancellation = args->cancellation,
+			.estim = args->estim,
+
+			.result = args->result,
+		};
+
+		const int error = iop_rmfile(&rm_args);
+		args->result = rm_args.result;
+		if(error != 0)
+		{
+			if(!io_cancelled(args))
+			{
+				(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
+						"Failed to remove");
+			}
+			return error;
+		}
+	}
+
+	return traverse(src, &mv_visitor, args);
 }
 
 /* Checks that path points to a file or symbolic link.  Returns non-zero if so,
