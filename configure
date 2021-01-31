@@ -7963,6 +7963,27 @@ _ACEOF
 fi
 
 
+if test "$ac_cv_member_struct_stat_st_mtim" = yes; then
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+                        #include <sys/stat.h>
+                        #include <unistd.h>
+                        int main() {
+                            struct stat st;
+                            struct timespec ts[2] = { st.st_atim, st.st_mtim };
+                            return 0;
+                        }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_CONSISTENT_TIMESPEC 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
 
 # Extract the first word of "file", so it can be a program name with args.
 set dummy file; ac_word=$2

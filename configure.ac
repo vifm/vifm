@@ -285,6 +285,21 @@ AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T
 
+dnl At least on AIX `st_atim` and `st_mtim` might not match `struct timespec`.
+if test "$ac_cv_member_struct_stat_st_mtim" = yes; then
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+                      [[#include <sys/types.h>
+                        #include <sys/stat.h>
+                        #include <unistd.h>
+                        int main() {
+                            struct stat st;
+                            struct timespec ts[2] = { st.st_atim, st.st_mtim };
+                            return 0;
+                        }
+                      ]])],
+                      [AC_DEFINE([HAVE_CONSISTENT_TIMESPEC], [1], [timespec is good.])])
+fi
+
 dnl ----------------------------------------------------------------------------
 dnl check for available tools/applications
 dnl ----------------------------------------------------------------------------
