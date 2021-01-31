@@ -52,13 +52,13 @@ Dialog;
 /* Kinds of dialog results. */
 typedef enum
 {
-	R_OK,     /* Agreed. */
-	R_CANCEL, /* Cancelled. */
-	R_YES,    /* Confirmed. */
-	R_NO,     /* Denied. */
-	R_CUSTOM, /* One of user-specified keys. */
+	DR_OK,     /* Agreed. */
+	DR_CANCEL, /* Cancelled. */
+	DR_YES,    /* Confirmed. */
+	DR_NO,     /* Denied. */
+	DR_CUSTOM, /* One of user-specified keys. */
 }
-Result;
+DialogResult;
 
 static int def_handler(wchar_t key);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -66,8 +66,8 @@ static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
-static void handle_response(Result r);
-static void leave(Result r);
+static void handle_response(DialogResult dr);
+static void leave(DialogResult dr);
 static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
@@ -97,7 +97,7 @@ static keys_add_info_t builtin_cmds[] = {
 /* Main loop quit flag. */
 static int quit;
 /* Dialog result. */
-static Result result;
+static DialogResult dialog_result;
 /* Bit mask of R_* kinds of results that are allowed. */
 static int accept_mask;
 /* Type of active dialog message. */
@@ -137,7 +137,7 @@ def_handler(wchar_t key)
 		if(response->key == (char)key)
 		{
 			custom_result = key;
-			leave(R_CUSTOM);
+			leave(DR_CUSTOM);
 			break;
 		}
 		++response;
@@ -149,7 +149,7 @@ def_handler(wchar_t key)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(R_CANCEL);
+	handle_response(DR_CANCEL);
 }
 
 /* Redraws the screen. */
@@ -163,52 +163,52 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(R_OK);
+	handle_response(DR_OK);
 }
 
 /* Denies the query. */
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(R_NO);
+	handle_response(DR_NO);
 }
 
 /* Confirms the query. */
 static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(R_YES);
+	handle_response(DR_YES);
 }
 
 /* Processes users choice.  Leaves the mode if the result is found among the
  * list of expected results. */
 static void
-handle_response(Result r)
+handle_response(DialogResult dr)
 {
 	/* Map result to corresponding input key to omit branching per handler. */
 	static const char r_to_c[] = {
-		[R_OK]     = '\r',
-		[R_CANCEL] = NC_C_c,
-		[R_YES]    = 'y',
-		[R_NO]     = 'n',
+		[DR_OK]     = '\r',
+		[DR_CANCEL] = NC_C_c,
+		[DR_YES]    = 'y',
+		[DR_NO]     = 'n',
 	};
 
-	(void)def_handler(r_to_c[r]);
+	(void)def_handler(r_to_c[dr]);
 	/* Default handler might have already requested quitting. */
 	if(!quit)
 	{
-		if(accept_mask & MASK(r))
+		if(accept_mask & MASK(dr))
 		{
-			leave(r);
+			leave(dr);
 		}
 	}
 }
 
 /* Leaves the mode with given result. */
 static void
-leave(Result r)
+leave(DialogResult dr)
 {
-	result = r;
+	dialog_result = dr;
 	quit = 1;
 }
 
@@ -300,21 +300,23 @@ prompt_error_msg_internal(const char title[], const char message[],
 
 	redraw_error_msg(title, message, prompt_skip, 0);
 
-	enter(MASK(R_OK) | (prompt_skip ? MASK(R_CANCEL) : 0));
+	enter(MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0));
 
 	if(curr_stats.load_stage < 2)
-		skip_until_started = (result == R_CANCEL);
+	{
+		skip_until_started = (dialog_result == DR_CANCEL);
+	}
 
 	modes_redraw();
 
-	return result == R_CANCEL;
+	return (dialog_result == DR_CANCEL);
 }
 
 int
 prompt_msg(const char title[], const char message[])
 {
 	prompt_msg_internal(title, message, NULL, 0);
-	return result == R_YES;
+	return (dialog_result == DR_YES);
 }
 
 char
@@ -336,7 +338,7 @@ prompt_msg_internal(const char title[], const char message[],
 
 	redraw_error_msg(title, message, 0, 0);
 
-	enter(variants == NULL ? MASK(R_YES, R_NO) : 0);
+	enter(variants == NULL ? MASK(DR_YES, DR_NO) : 0);
 
 	modes_redraw();
 }
@@ -691,7 +693,7 @@ confirm_deletion(char *files[], int nfiles, int use_trash)
 	prompt_msg_internal(title, msg, NULL, 1);
 	free(msg);
 
-	if(result != R_YES)
+	if(dialog_result != DR_YES)
 	{
 		return 0;
 	}
