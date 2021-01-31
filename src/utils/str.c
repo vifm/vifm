@@ -1118,7 +1118,7 @@ double_char(const char str[], char c)
 	return doubled;
 }
 
-#ifdef _WIN32
+#ifndef HAVE_STRCASESTR
 
 char *
 strcasestr(const char haystack[], const char needle[])

@@ -7257,6 +7257,13 @@ else
   as_fn_error $? "strcasecmp() function not found." "$LINENO" 5
 fi
 
+ac_fn_c_check_func "$LINENO" "strcasestr" "ac_cv_func_strcasestr"
+if test "x$ac_cv_func_strcasestr" = xyes; then :
+
+$as_echo "#define HAVE_STRCASESTR 1" >>confdefs.h
+
+fi
+
 ac_fn_c_check_func "$LINENO" "strcat" "ac_cv_func_strcat"
 if test "x$ac_cv_func_strcat" = xyes; then :
 

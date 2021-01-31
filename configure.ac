@@ -95,8 +95,7 @@ if test "$ac_cv_header_sys_user_h" = yes -a "$ac_cv_header_linux_binfmts_h" = ye
                         #endif
                         int main() { (void)MAX_ARG_STRLEN; return 0; }
                       ]])],
-                      [AC_DEFINE([HAVE_MAX_ARG_STRLEN], [1],
-                      [MAX_ARG_STRLEN is available.])])
+                      [AC_DEFINE([HAVE_MAX_ARG_STRLEN], [1], [MAX_ARG_STRLEN is available.])])
 fi
 
 dnl Check for various system types.
@@ -215,6 +214,7 @@ AC_CHECK_FUNC([signal], [], [AC_MSG_ERROR([signal() function not found.])])
 AC_CHECK_FUNC([snprintf], [], [AC_MSG_ERROR([snprintf() function not found.])])
 AC_CHECK_FUNC([sprintf], [], [AC_MSG_ERROR([sprintf() function not found.])])
 AC_CHECK_FUNC([strcasecmp], [], [AC_MSG_ERROR([strcasecmp() function not found.])])
+AC_CHECK_FUNC([strcasestr], [AC_DEFINE([HAVE_STRCASESTR], [1], [strcasestr() is available.])], [])
 AC_CHECK_FUNC([strcat], [], [AC_MSG_ERROR([strcat() function not found.])])
 AC_CHECK_FUNC([strchr], [], [AC_MSG_ERROR([strchr() function not found.])])
 AC_CHECK_FUNC([strcmp], [], [AC_MSG_ERROR([strcmp() function not found.])])
