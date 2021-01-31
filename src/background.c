@@ -121,6 +121,8 @@ static void free_drained_jobs(bg_job_t **jobs);
 static void import_error_jobs(bg_job_t **jobs);
 static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 #ifndef _WIN32
+static void rip_children(void);
+static void rip_child(pid_t pid, int status);
 static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], int capture_output,
@@ -164,11 +166,13 @@ bg_init(void)
 void
 bg_check(void)
 {
-	bg_job_t *head = bg_jobs;
+#ifndef _WIN32
+	rip_children();
+#endif
 
 	/* Quit if there is no jobs or list is unavailable (e.g. used by another
 	 * invocation of this function). */
-	if(head == NULL)
+	if(bg_jobs == NULL)
 	{
 		set_jobcount_var(0);
 		return;
@@ -176,7 +180,7 @@ bg_check(void)
 
 	int active_jobs = 0;
 
-	head = bg_jobs;
+	bg_job_t *head = bg_jobs;
 	bg_jobs = NULL;
 
 	bg_job_t *p = head;
@@ -552,6 +556,39 @@ make_ready_list(const bg_job_t *jobs, selector_t *selector)
 }
 
 #ifndef _WIN32
+
+/* Rips children updating status of jobs in the process. */
+static void
+rip_children(void)
+{
+	int status;
+	pid_t pid;
+
+	/* This needs to be a loop in case of multiple blocked signals. */
+	while((pid = waitpid(-1, &status, WNOHANG)) > 0)
+	{
+		if(WIFEXITED(status) || WIFSIGNALED(status))
+		{
+			rip_child(pid, status);
+		}
+	}
+}
+
+/* Looks up a child in job list and rips it if found. */
+static void
+rip_child(pid_t pid, int status)
+{
+	bg_job_t *job;
+	for(job = bg_jobs; job != NULL; job = job->next)
+	{
+		if(job->pid == pid)
+		{
+			mark_job_finished(job, status_to_exit_code(status));
+			break;
+		}
+	}
+}
+
 /* Either displays error message to the user for foreground operations or saves
  * it for displaying on the next invocation of bg_check(). */
 static void
@@ -569,6 +606,7 @@ report_error_msg(const char title[], const char text[])
 		append_error_msg(job, text);
 	}
 }
+
 #endif
 
 /* Appends message to error-related fields of the job. */

@@ -1082,7 +1082,8 @@ clone_attribs(const char path[], const char from[], const struct stat *st)
 static void
 clone_timestamps(const char path[], const char from[], const struct stat *st)
 {
-#if defined(HAVE_STRUCT_STAT_ST_MTIM) && defined(HAVE_FUTIMENS)
+#if defined(HAVE_STRUCT_STAT_ST_MTIM) && defined(HAVE_FUTIMENS) && \
+    defined(HAVE_CONSISTENT_TIMESPEC)
 	const int fd = open(path, O_WRONLY);
 	if(fd != -1)
 	{

@@ -301,10 +301,14 @@ size_t chars_in_str(const char s[], char c);
  * process.  Returns cloned value. */
 char * double_char(const char str[], char c);
 
-#ifdef _WIN32
+#ifndef HAVE_STRCASESTR
 
 /* Same as strstr(), but in case insensitive way. */
 char * strcasestr(const char haystack[], const char needle[]);
+
+#endif
+
+#ifdef _WIN32
 
 #ifndef strtok_r
 #define strtok_r(str, delim, saveptr) (*(saveptr) = strtok((str), (delim)))
