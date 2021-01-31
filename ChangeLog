@@ -83,6 +83,8 @@
 	Fixed not being able to view really long file names in full in File Info
 	dialog.  Thanks to 702b.
 
+	Fixed compilation on AIX.  Thanks to Jose Riha (a.k.a. jose1711).
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
