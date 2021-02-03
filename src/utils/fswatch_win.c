@@ -86,19 +86,16 @@ fswatch_free(fswatch_t *w)
 	}
 }
 
-int
-fswatch_changed(fswatch_t *w, int *error)
+FSWatchState
+fswatch_poll(fswatch_t *w)
 {
 	FILETIME ft;
-	int changed;
-
 	if(get_dir_mtime(w->wpath, &ft) != 0)
 	{
-		*error = 1;
-		return 1;
+		return FSWS_ERRORED;
 	}
 
-	changed = CompareFileTime(&w->dir_mtime, &ft) != 0;
+	int changed = CompareFileTime(&w->dir_mtime, &ft) != 0;
 	w->dir_mtime = ft;
 
 	if(WaitForSingleObject(w->dir_watcher, 0) == WAIT_OBJECT_0)
@@ -107,9 +104,7 @@ fswatch_changed(fswatch_t *w, int *error)
 		changed = 1;
 	}
 
-	*error = 0;
-
-	return changed;
+	return (changed ? FSWS_UPDATED : FSWS_UNCHANGED);
 }
 
 /* Gets last directory modification time.  Returns non-zero on error, otherwise

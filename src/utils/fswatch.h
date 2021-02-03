@@ -21,6 +21,15 @@
 
 /* Implementation of file system changes checks via polling. */
 
+/* Kinds of state reports. */
+typedef enum
+{
+	FSWS_UNCHANGED, /* No update or some change. */
+	FSWS_UPDATED,   /* A change of the state. */
+	FSWS_ERRORED,   /* An error occurred. */
+}
+FSWatchState;
+
 /* Opaque type of a watcher. */
 typedef struct fswatch_t fswatch_t;
 
@@ -32,9 +41,8 @@ fswatch_t * fswatch_create(const char path[]);
 void fswatch_free(fswatch_t *w);
 
 /* Checks whether any changes were made to the entity being watched since last
- * query.  Sets *error to indicate whether any issues occurred.  Returns
- * non-zero if so, otherwise zero is returned. */
-int fswatch_changed(fswatch_t *w, int *error);
+ * query.  Returns latest state. */
+FSWatchState fswatch_poll(fswatch_t *w);
 
 #endif /* VIFM__UTILS__FSWATCH_H__ */
 

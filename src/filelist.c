@@ -1693,9 +1693,8 @@ populate_dir_list_internal(view_t *view, int reload)
 	if(view->watch != NULL && view->watched_dir != NULL &&
 			stroscmp(view->watched_dir, view->curr_dir) == 0)
 	{
-		int failed;
 		/* Drain all events that happened before this point. */
-		(void)fswatch_changed(view->watch, &failed);
+		(void)fswatch_poll(view->watch);
 	}
 
 	if(is_unc_root(view->curr_dir))
@@ -2744,7 +2743,9 @@ check_if_filelist_has_changed(view_t *view)
 	}
 	else
 	{
-		changed = fswatch_changed(view->watch, &failed);
+		FSWatchState state = fswatch_poll(view->watch);
+		changed = (state != FSWS_UNCHANGED);
+		failed = (state == FSWS_ERRORED);
 	}
 
 	/* Check if we still have permission to visit this directory. */
@@ -2822,7 +2823,6 @@ int
 flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 {
 	int update = 0;
-	int error;
 
 	if(path == NULL)
 	{
@@ -2847,7 +2847,7 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 		update = 1;
 	}
 
-	if(update || fswatch_changed(cache->watch, &error) || error)
+	if(update || fswatch_poll(cache->watch) != FSWS_UNCHANGED)
 	{
 		free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
 		cache->entries = flist_list_in(view, path, 0, 1);

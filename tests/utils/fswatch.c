@@ -48,16 +48,12 @@ TEST(two_watches_for_the_same_directory)
 TEST(events_are_accumulated, IF(using_inotify))
 {
 	fswatch_t *watch;
-	int error;
-
 	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 	remove(SANDBOX_PATH "/testdir");
-	assert_true(fswatch_changed(watch, &error));
-	assert_false(error);
-	assert_false(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
+	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
 
 	fswatch_free(watch);
 }
@@ -65,12 +61,9 @@ TEST(events_are_accumulated, IF(using_inotify))
 TEST(started_as_not_changed)
 {
 	fswatch_t *watch;
-	int error;
-
 	assert_non_null(watch = fswatch_create(sandbox));
 
-	assert_false(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
 
 	fswatch_free(watch);
 }
@@ -78,17 +71,13 @@ TEST(started_as_not_changed)
 TEST(handles_several_events_in_a_row, IF(using_inotify))
 {
 	fswatch_t *watch;
-	int error;
-
 	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
-	assert_true(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
 
 	remove(SANDBOX_PATH "/testdir");
-	assert_true(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
 
 	fswatch_free(watch);
 }
@@ -96,27 +85,23 @@ TEST(handles_several_events_in_a_row, IF(using_inotify))
 TEST(to_many_events_causes_banning_of_same_events, IF(using_inotify))
 {
 	fswatch_t *watch;
-	int error;
-	int i;
-
 	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 
+	int i;
 	for(i = 0; i < 100; ++i)
 	{
 		os_chmod(SANDBOX_PATH "/testdir", 0777);
 		os_chmod(SANDBOX_PATH "/testdir", 0000);
-		(void)fswatch_changed(watch, &error);
+		(void)fswatch_poll(watch);
 	}
 
 	os_chmod(SANDBOX_PATH "/testdir", 0777);
-	assert_false(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
 
 	assert_success(remove(SANDBOX_PATH "/testdir"));
-	assert_true(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
 
 	fswatch_free(watch);
 }
@@ -124,31 +109,26 @@ TEST(to_many_events_causes_banning_of_same_events, IF(using_inotify))
 TEST(file_recreation_removes_ban, IF(using_inotify))
 {
 	fswatch_t *watch;
-	int error;
-	int i;
-
 	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 
+	int i;
 	for(i = 0; i < 100; ++i)
 	{
 		os_chmod(SANDBOX_PATH "/testdir", 0777);
 		os_chmod(SANDBOX_PATH "/testdir", 0000);
-		(void)fswatch_changed(watch, &error);
+		(void)fswatch_poll(watch);
 	}
 
 	assert_success(remove(SANDBOX_PATH "/testdir"));
-	assert_true(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
-	assert_true(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
 
 	os_chmod(SANDBOX_PATH "/testdir", 0777);
-	assert_true(fswatch_changed(watch, &error));
-	assert_false(error);
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
 
 	fswatch_free(watch);
 

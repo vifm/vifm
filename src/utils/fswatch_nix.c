@@ -115,8 +115,8 @@ fswatch_free(fswatch_t *w)
 	}
 }
 
-int
-fswatch_changed(fswatch_t *w, int *error)
+FSWatchState
+fswatch_poll(fswatch_t *w)
 {
 	enum { MAX_READS = 100 };
 	enum { BUF_LEN = (10 * (sizeof(struct inotify_event) + NAME_MAX + 1)) };
@@ -127,7 +127,6 @@ fswatch_changed(fswatch_t *w, int *error)
 	int nreads = 0;
 	const time_t now = time(NULL);
 
-	*error = 0;
 	do
 	{
 		char *p;
@@ -137,12 +136,10 @@ fswatch_changed(fswatch_t *w, int *error)
 		nread = read(w->fd, buf, BUF_LEN);
 		if(nread < 0)
 		{
-			if(errno == EAGAIN)
+			if(errno != EAGAIN)
 			{
-				break;
+				return FSWS_ERRORED;
 			}
-
-			*error = 1;
 			break;
 		}
 
@@ -165,7 +162,7 @@ fswatch_changed(fswatch_t *w, int *error)
 	}
 	while(nread != 0);
 
-	return changed;
+	return (changed ? FSWS_UPDATED : FSWS_UNCHANGED);
 }
 
 /* Updates information about a file event is about.  Returns non-zero if this is
@@ -282,24 +279,20 @@ fswatch_free(fswatch_t *w)
 	}
 }
 
-int
-fswatch_changed(fswatch_t *w, int *error)
+FSWatchState
+fswatch_poll(fswatch_t *w)
 {
-	int changed;
-
 	filemon_t filemon;
 	if(filemon_from_file(w->path, FMT_MODIFIED, &filemon) != 0)
 	{
-		*error = 1;
-		return 1;
+		return FSWS_ERRORED;
 	}
 
-	*error = 0;
-	changed = !filemon_equal(&w->filemon, &filemon);
+	int changed = !filemon_equal(&w->filemon, &filemon);
 
 	w->filemon = filemon;
 
-	return changed;
+	return (changed ? FSWS_UPDATED : FSWS_UNCHANGED);
 }
 
 #endif
