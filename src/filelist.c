@@ -147,6 +147,7 @@ static void add_parent_entry(view_t *view, dir_entry_t **entries, int *count);
 static void init_dir_entry(view_t *view, dir_entry_t *entry, const char name[]);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int tree_has_changed(const dir_entry_t *entries, size_t nchildren);
+static FSWatchState poll_watcher(fswatch_t *watch, const char path[]);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
 static entries_t list_sibling_dirs(view_t *view);
@@ -1694,7 +1695,7 @@ populate_dir_list_internal(view_t *view, int reload)
 			stroscmp(view->watched_dir, view->curr_dir) == 0)
 	{
 		/* Drain all events that happened before this point. */
-		(void)fswatch_poll(view->watch);
+		(void)poll_watcher(view->watch, view->curr_dir);
 	}
 
 	if(is_unc_root(view->curr_dir))
@@ -2743,7 +2744,7 @@ check_if_filelist_has_changed(view_t *view)
 	}
 	else
 	{
-		FSWatchState state = fswatch_poll(view->watch);
+		FSWatchState state = poll_watcher(view->watch, curr_dir);
 		changed = (state != FSWS_UNCHANGED);
 		failed = (state == FSWS_ERRORED);
 	}
@@ -2849,7 +2850,7 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 		update = 1;
 	}
 
-	if(fswatch_poll(cache->watch) != FSWS_UNCHANGED || update)
+	if(poll_watcher(cache->watch, path) != FSWS_UNCHANGED || update)
 	{
 		free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
 		cache->entries = flist_list_in(view, path, 0, 1);
@@ -2857,6 +2858,30 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 	}
 
 	return 0;
+}
+
+/* Polls file-system watcher and re-enters current working directory of the
+ * process if necessary.  Returns watcher's state. */
+static FSWatchState
+poll_watcher(fswatch_t *watch, const char path[])
+{
+	FSWatchState state = fswatch_poll(watch);
+
+	if(state == FSWS_ERRORED || state == FSWS_REPLACED)
+	{
+		char curr_path[PATH_MAX + 1];
+		if(get_cwd(curr_path, sizeof(curr_path)) == curr_path)
+		{
+			if(stroscmp(curr_path, path) == 0)
+			{
+				/* Re-enter current directory (vifm_chdir() can skip system call thus
+				 * not synchronizing location with updated file-system data). */
+				(void)os_chdir(path);
+			}
+		}
+	}
+
+	return state;
 }
 
 void
