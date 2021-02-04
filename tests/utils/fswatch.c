@@ -82,6 +82,29 @@ TEST(handles_several_events_in_a_row, IF(using_inotify))
 	fswatch_free(watch);
 }
 
+TEST(target_replacement_is_detected, IF(using_inotify))
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/testdir", 0700));
+
+	fswatch_t *watch;
+	assert_non_null(watch = fswatch_create(SANDBOX_PATH "/testdir"));
+
+	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
+
+	assert_success(remove(SANDBOX_PATH "/testdir"));
+	assert_success(os_mkdir(SANDBOX_PATH "/eatinode", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/testdir", 0700));
+
+	/* inotify detect file removal and sends IN_IGNORED. */
+	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
+	assert_int_equal(FSWS_REPLACED, fswatch_poll(watch));
+
+	fswatch_free(watch);
+
+	assert_success(remove(SANDBOX_PATH "/testdir"));
+	assert_success(remove(SANDBOX_PATH "/eatinode"));
+}
+
 TEST(to_many_events_causes_banning_of_same_events, IF(using_inotify))
 {
 	fswatch_t *watch;

@@ -23,15 +23,18 @@
 #ifdef HAVE_INOTIFY
 
 #include <sys/inotify.h> /* IN_* inotify_* */
+#include <sys/types.h> /* dev_t ino_t */
 #include <unistd.h> /* close() read() */
 
 #include <errno.h> /* EAGAIN errno */
 #include <stddef.h> /* NULL */
 #include <stdint.h> /* uint32_t */
 #include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 #include <time.h> /* time_t time() */
 
 #include "../compat/fs_limits.h"
+#include "../compat/os.h"
 #include "trie.h"
 
 /* TODO: consider implementation that could reuse already available descriptor
@@ -40,10 +43,17 @@
 /* Watcher data. */
 struct fswatch_t
 {
+	/* Path that's being watched. */
+	char *path;
 	/* File descriptor for inotify. */
 	int fd;
+	/* Watch descriptor. */
+	int wd;
 	/* Trie to keep track of per file frequency of notifications. */
 	trie_t *stats;
+	/* To monitor mount events, which aren't reported by inotify. */
+	dev_t dev;
+	ino_t inode;
 };
 
 /* Per file statistics information. */
@@ -57,19 +67,32 @@ typedef struct
 }
 notif_stat_t;
 
+static FSWatchState poll_for_replacement(fswatch_t *w);
 static int update_file_stats(fswatch_t *w, const struct inotify_event *e,
 		time_t now);
+
+/* Events we're interested in. */
+static const uint32_t EVENTS_MASK = IN_ATTRIB | IN_MODIFY | IN_CLOSE_WRITE
+                                  | IN_CREATE | IN_DELETE | IN_EXCL_UNLINK
+                                  | IN_MOVED_FROM | IN_MOVED_TO;
 
 fswatch_t *
 fswatch_create(const char path[])
 {
-	int wd;
+	struct stat st;
+	if(os_stat(path, &st) != 0)
+	{
+		return NULL;
+	}
 
 	fswatch_t *const w = malloc(sizeof(*w));
 	if(w == NULL)
 	{
 		return NULL;
 	}
+
+	w->dev = st.st_dev;
+	w->inode = st.st_ino;
 
 	/* Create tree to collect update frequency statistics. */
 	w->stats = trie_create();
@@ -90,14 +113,19 @@ fswatch_create(const char path[])
 	}
 
 	/* Add directory to watch. */
-	wd = inotify_add_watch(w->fd, path, IN_ATTRIB | IN_MODIFY | IN_CREATE |
-			IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_EXCL_UNLINK |
-			IN_CLOSE_WRITE);
-	if(wd == -1)
+	w->wd = inotify_add_watch(w->fd, path, EVENTS_MASK);
+	if(w->wd == -1)
 	{
 		close(w->fd);
 		trie_free_with_data(w->stats, &free);
 		free(w);
+		return NULL;
+	}
+
+	w->path = strdup(path);
+	if(w->path == NULL)
+	{
+		fswatch_free(w);
 		return NULL;
 	}
 
@@ -109,6 +137,7 @@ fswatch_free(fswatch_t *w)
 {
 	if(w != NULL)
 	{
+		free(w->path);
 		trie_free_with_data(w->stats, &free);
 		close(w->fd);
 		free(w);
@@ -162,7 +191,40 @@ fswatch_poll(fswatch_t *w)
 	}
 	while(nread != 0);
 
-	return (changed ? FSWS_UPDATED : FSWS_UNCHANGED);
+	return (changed ? FSWS_UPDATED : poll_for_replacement(w));
+}
+
+/* Detects replacement of path's target.  Returns watcher's state. */
+static FSWatchState
+poll_for_replacement(fswatch_t *w)
+{
+	struct stat st;
+	if(os_stat(w->path, &st) != 0)
+	{
+		return FSWS_ERRORED;
+	}
+
+	if(w->dev == st.st_dev && w->inode == st.st_ino)
+	{
+		return FSWS_UNCHANGED;
+	}
+
+	w->dev = st.st_dev;
+	w->inode = st.st_ino;
+
+	int wd = inotify_add_watch(w->fd, w->path, EVENTS_MASK);
+	if(wd == -1)
+	{
+		return FSWS_ERRORED;
+	}
+
+	/* We ignore error from this call because input should always be correct from
+	 * our side, yet watch descriptor might have been killed by the kernel.  So
+	 * checking for an error causes false positives. */
+	(void)inotify_rm_watch(w->fd, w->wd);
+
+	w->wd = wd;
+	return FSWS_REPLACED;
 }
 
 /* Updates information about a file event is about.  Returns non-zero if this is

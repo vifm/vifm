@@ -27,6 +27,7 @@ typedef enum
 	FSWS_UNCHANGED, /* No update or some change. */
 	FSWS_UPDATED,   /* A change of the state. */
 	FSWS_ERRORED,   /* An error occurred. */
+	FSWS_REPLACED   /* Path target has been replaced. */
 }
 FSWatchState;
 
