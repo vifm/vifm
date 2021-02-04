@@ -2849,7 +2849,7 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 		update = 1;
 	}
 
-	if(update || fswatch_poll(cache->watch) != FSWS_UNCHANGED)
+	if(fswatch_poll(cache->watch) != FSWS_UNCHANGED || update)
 	{
 		free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
 		cache->entries = flist_list_in(view, path, 0, 1);
