@@ -95,9 +95,32 @@ TEST(target_replacement_is_detected, IF(using_inotify))
 	assert_success(os_mkdir(SANDBOX_PATH "/eatinode", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/testdir", 0700));
 
-	/* inotify detect file removal and sends IN_IGNORED. */
-	assert_int_equal(FSWS_UPDATED, fswatch_poll(watch));
 	assert_int_equal(FSWS_REPLACED, fswatch_poll(watch));
+	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
+
+	fswatch_free(watch);
+
+	assert_success(remove(SANDBOX_PATH "/testdir"));
+	assert_success(remove(SANDBOX_PATH "/eatinode"));
+}
+
+TEST(target_mount_is_detected, IF(using_inotify))
+{
+	/* Mounting is simulated by renaming original directory, which gives similar
+	 * effect as mounting that path. */
+
+	assert_success(os_mkdir(SANDBOX_PATH "/testdir", 0700));
+
+	fswatch_t *watch;
+	assert_non_null(watch = fswatch_create(SANDBOX_PATH "/testdir"));
+
+	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
+
+	assert_success(rename(SANDBOX_PATH "/testdir", SANDBOX_PATH "/eatinode"));
+	assert_success(os_mkdir(SANDBOX_PATH "/testdir", 0700));
+
+	assert_int_equal(FSWS_REPLACED, fswatch_poll(watch));
+	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
 
 	fswatch_free(watch);
 

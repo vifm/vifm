@@ -176,7 +176,12 @@ fswatch_poll(fswatch_t *w)
 		for(p = buf; p < buf + nread; p += sizeof(struct inotify_event) + e->len)
 		{
 			e = (struct inotify_event *)p;
-			if(update_file_stats(w, e, now))
+			if((e->mask & IN_IGNORED) != 0 && e->wd == w->wd)
+			{
+				return poll_for_replacement(w);
+			}
+
+			if((e->mask & EVENTS_MASK) != 0 && update_file_stats(w, e, now))
 			{
 				changed = 1;
 			}
