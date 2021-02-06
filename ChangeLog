@@ -27,6 +27,8 @@
 
 	Added :plugin command that manages plugins.
 
+	Added network mount targets to :volumes menu.  Patch by Phil Runninger.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

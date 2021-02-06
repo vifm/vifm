@@ -52,12 +52,25 @@ show_volumes_menu(view_t *view)
 	{
 		if(drive_exists(c))
 		{
+			const char no_slash_drive[] = { c, ':', '\0' };
 			const char drive[] = { c, ':', '\\', '\0' };
+
+			char unc_path[PATH_MAX + 1];
+			DWORD unc_path_size = sizeof(unc_path);
+			if(WNetGetConnectionA(no_slash_drive, unc_path, &unc_path_size) !=
+					NO_ERROR)
+			{
+				unc_path[0] = '\0';
+			}
+
 			if(GetVolumeInformationA(drive, vol_name, sizeof(vol_name), NULL, NULL,
 					NULL, file_buf, sizeof(file_buf)))
 			{
+				const char *format = unc_path[0] == '\0' ? "%s  \"%s\""
+				                                         : "%s  \"%s\"  ->  %s";
+
 				char item_buf[PATH_MAX + 5];
-				snprintf(item_buf, sizeof(item_buf), "%s  %s ", drive, vol_name);
+				snprintf(item_buf, sizeof(item_buf), format, drive, vol_name, unc_path);
 				m.len = add_to_string_array(&m.items, m.len, item_buf);
 			}
 		}
