@@ -21,7 +21,9 @@
 
 #include <windows.h>
 
+#include <ctype.h> /* isalpha() */
 #include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
 #include "../compat/fs_limits.h"
@@ -34,6 +36,8 @@
 #include "../flist_pos.h"
 #include "menus.h"
 
+static const char * get_dos_path(const char no_slash_drive[], char buf[],
+		size_t buf_size);
 static int execute_volumes_cb(view_t *view, menu_data_t *m);
 
 int
@@ -52,18 +56,68 @@ show_volumes_menu(view_t *view)
 	{
 		if(drive_exists(c))
 		{
+			const char no_slash_drive[] = { c, ':', '\0' };
 			const char drive[] = { c, ':', '\\', '\0' };
+
+			char unc_path[PATH_MAX + 1];
+			DWORD unc_path_size = sizeof(unc_path);
+			if(WNetGetConnectionA(no_slash_drive, unc_path, &unc_path_size) !=
+					NO_ERROR)
+			{
+				unc_path[0] = '\0';
+			}
+
+			char dos_path_buf[PATH_MAX + 1];
+			const char *dos_path = get_dos_path(no_slash_drive, dos_path_buf,
+					sizeof(dos_path_buf));
+
 			if(GetVolumeInformationA(drive, vol_name, sizeof(vol_name), NULL, NULL,
 					NULL, file_buf, sizeof(file_buf)))
 			{
+				const char *target = (unc_path[0] != '\0' ? unc_path : dos_path);
+				const char *format = (target[0] == '\0') ? "%s    %-20s"
+				                                         : "%s    %-20s   ->  %s";
+
+				char *quoted_vol_name = (vol_name[0] == '\0')
+				                      ? strdup("")
+				                      : format_str("\"%s\"", vol_name);
+
 				char item_buf[PATH_MAX + 5];
-				snprintf(item_buf, sizeof(item_buf), "%s  %s ", drive, vol_name);
+				snprintf(item_buf, sizeof(item_buf), format, drive, quoted_vol_name,
+						target);
 				m.len = add_to_string_array(&m.items, m.len, item_buf);
+
+				free(quoted_vol_name);
 			}
 		}
 	}
 
 	return menus_enter(m.state, view);
+}
+
+/* Retrieves target of a drive created with `subst` command or equivalent.
+ * Returns pointer within the buffer.  The returned string is empty if there is
+ * no such target. */
+static const char *
+get_dos_path(const char no_slash_drive[], char buf[], size_t buf_size)
+{
+	if(QueryDosDeviceA(no_slash_drive, buf, buf_size) == 0)
+	{
+		buf[0] = '\0';
+	}
+
+	char *path = buf + (starts_with_lit(buf, "\\??\\") ? 4 : 0);
+	if(starts_with_lit(path, "UNC\\"))
+	{
+		path += 2;
+		*path = '\\';
+	}
+	else if(!isalpha(path[0]) || path[1] != ':')
+	{
+		path[0] = '\0';
+	}
+
+	return path;
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
