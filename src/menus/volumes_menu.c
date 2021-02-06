@@ -23,6 +23,7 @@
 
 #include <ctype.h> /* isalpha() */
 #include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
 #include "../compat/fs_limits.h"
@@ -74,12 +75,19 @@ show_volumes_menu(view_t *view)
 					NULL, file_buf, sizeof(file_buf)))
 			{
 				const char *target = (unc_path[0] != '\0' ? unc_path : dos_path);
-				const char *format = (target[0] == '\0') ? "%s  \"%s\""
-				                                         : "%s  \"%s\"  ->  %s";
+				const char *format = (target[0] == '\0') ? "%s    %-20s"
+				                                         : "%s    %-20s   ->  %s";
+
+				char *quoted_vol_name = (vol_name[0] == '\0')
+				                      ? strdup("")
+				                      : format_str("\"%s\"", vol_name);
 
 				char item_buf[PATH_MAX + 5];
-				snprintf(item_buf, sizeof(item_buf), format, drive, vol_name, target);
+				snprintf(item_buf, sizeof(item_buf), format, drive, quoted_vol_name,
+						target);
 				m.len = add_to_string_array(&m.items, m.len, item_buf);
+
+				free(quoted_vol_name);
 			}
 		}
 	}
