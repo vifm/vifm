@@ -41,6 +41,21 @@ TEARDOWN()
 	saved_cwd = NULL;
 }
 
+TEST(directory_tree_is_removed)
+{
+	assert_success(os_mkdir("dir", 0777));
+	assert_success(os_mkdir("dir/sub", 0777));
+	create_file("dir/sub/file");
+
+	trash_empty_all();
+
+	wait_for_bg();
+
+	assert_failure(unlink("dir/sub/file"));
+	assert_failure(rmdir("dir/sub"));
+	assert_failure(rmdir("dir"));
+}
+
 TEST(nonempty_ro_dir_is_removed, IF(not_windows))
 {
 	assert_success(os_mkdir("dir", 0777));

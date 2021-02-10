@@ -91,6 +91,8 @@
 	Fixed mounting and directory replacement not being detected as directory
 	change when inotify is used.  Thanks to Jakob Helmecke and PRESFIL.
 
+	Fixed :empty leaving empty directories on Windows.  Thanks to Grueslayer.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
