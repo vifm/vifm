@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jan 21
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Feb 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2590,10 +2590,10 @@ yet supported) and might be changed in future releases, or get an alias.
                                                *vifm-:noremap* *vifm-:no*
 :no[remap] lhs rhs
     map the key sequence lhs to rhs for normal and visual modes, but
-    disallow mapping of rhs.
+    don't expand user mappings in rhs.
 :no[remap]! lhs rhs
-    map the key sequence lhs to rhs for command line mode, but disallow
-    mapping of rhs.
+    map the key sequence lhs to rhs for command line mode, but don't expand
+    user mappings in rhs.
 
                                                *vifm-:cnoremap* *vifm-:cno*
                                                *vifm-:dnoremap* *vifm-:dn*
@@ -2602,23 +2602,23 @@ yet supported) and might be changed in future releases, or get an alias.
                                                *vifm-:qnoremap* *vifm-:qn*
                                                *vifm-:vnoremap* *vifm-:vn*
 :cno[remap] lhs rhs
-    map the key sequence lhs to rhs for command line mode, but disallow
-    mapping of rhs.
+    map the key sequence lhs to rhs for command line mode, but don't expand
+    user mappings in rhs.
 :dn[oremap] lhs rhs
-    map the key sequence lhs to rhs for dialog modes, but disallow
-    mapping of rhs.
+    map the key sequence lhs to rhs for dialog modes, but don't expand user
+    mappings in rhs.
 :mn[oremap] lhs rhs
-    map the key sequence lhs to rhs for menu mode, but disallow mapping
-    of rhs.
+    map the key sequence lhs to rhs for menu mode, but don't expand user
+    mappings in rhs.
 :nn[oremap] lhs rhs
-    map the key sequence lhs to rhs for normal mode, but disallow mapping
-    of rhs.
+    map the key sequence lhs to rhs for normal mode, but don't expand user
+    mappings in rhs.
 :qn[oremap] lhs rhs
-    map the key sequence lhs to rhs for view mode, but disallow mapping
-    of rhs.
+    map the key sequence lhs to rhs for view mode, but don't expand user
+    mappings in rhs.
 :vn[oremap] lhs rhs
-    map the key sequence lhs to rhs for visual mode, but disallow mapping
-    of rhs.
+    map the key sequence lhs to rhs for visual mode, but don't expand user
+    mappings in rhs.
 
                                                *vifm-:unmap* *vifm-:unm*
 :unm[ap] lhs

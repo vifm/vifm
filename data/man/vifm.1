@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 21, 2021" "vifm 0.11"
+.TH VIFM 1 "February 10, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3124,33 +3124,38 @@ list all maps in visual mode that start with the beginning.
 .BI "                                         :noremap"
 .TP
 .BI ":no[remap] lhs rhs"
-map the key sequence lhs to rhs for normal and visual modes, but disallow
-mapping of rhs.
+map the key sequence lhs to rhs for normal and visual modes, but don't expand
+user mappings in rhs.
 .TP
 .BI ":no[remap]! lhs rhs"
-map the key sequence lhs to rhs for command line mode, but disallow mapping of
-rhs.
+map the key sequence lhs to rhs for command line mode, but don't expand user
+mappings in rhs.
 .TP
 .BI "               :cnoremap :dnoremap :mnoremap :nnoremap :qnoremap :vnoremap"
 .TP
 .BI ":cno[remap] lhs rhs"
-map the key sequence lhs to rhs for command line mode, but disallow mapping of
-rhs.
+map the key sequence lhs to rhs for command line mode, but don't expand user
+mappings in rhs.
 .TP
 .BI ":dn[oremap] lhs rhs"
-map the key sequence lhs to rhs for dialog modes, but disallow mapping of rhs.
+map the key sequence lhs to rhs for dialog modes, but don't expand user mappings
+in rhs.
 .TP
 .BI ":mn[oremap] lhs rhs"
-map the key sequence lhs to rhs for menu mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for menu mode, but don't expand user mappings in
+rhs.
 .TP
 .BI ":nn[oremap] lhs rhs"
-map the key sequence lhs to rhs for normal mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for normal mode, but don't expand user mappings
+in rhs.
 .TP
 .BI ":qn[oremap] lhs rhs"
-map the key sequence lhs to rhs for view mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for view mode, but don't expand user mappings in
+rhs.
 .TP
 .BI ":vn[oremap] lhs rhs"
-map the key sequence lhs to rhs for visual mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for visual mode, but don't expand user mappings
+in rhs.
 .TP
 .BI "                                         :unmap"
 .TP
