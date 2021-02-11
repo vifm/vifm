@@ -326,7 +326,7 @@ empty_trash_in_bg(bg_op_t *bg_op, void *arg)
 	remove_dir_content(trash_info + 1);
 	if(trash_info[0] == '1')
 	{
-		(void)remove(trash_info + 1);
+		(void)os_rmdir(trash_info + 1);
 	}
 
 	free(trash_info);

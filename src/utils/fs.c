@@ -581,8 +581,12 @@ remove_dir_content(const char path[])
 				 * descending into. */
 				(void)os_chmod(full_path, 0777);
 				remove_dir_content(full_path);
+				(void)os_rmdir(full_path);
 			}
-			(void)remove(full_path);
+			else
+			{
+				(void)remove(full_path);
+			}
 			free(full_path);
 		}
 	}

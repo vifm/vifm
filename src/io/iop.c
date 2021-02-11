@@ -27,7 +27,7 @@
 #endif
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* mode_t */
-#include <unistd.h> /* rmdir() symlink() unlink() */
+#include <unistd.h> /* symlink() unlink() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* EEXIST ENOENT EISDIR errno */
@@ -245,7 +245,7 @@ iop_rmdir_internal(io_args_t *args)
 	ioeta_update(args->estim, path, path, 0, 0);
 
 #ifndef _WIN32
-	result = rmdir(path);
+	result = os_rmdir(path);
 	if(result != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, errno,

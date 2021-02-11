@@ -154,6 +154,15 @@ os_rename(const char oldpath[], const char newpath[])
 }
 
 int
+os_rmdir(const char path[])
+{
+	wchar_t *const utf16_path = utf8_to_utf16(path);
+	const int result = _wrmdir(utf16_path);
+	free(utf16_path);
+	return result;
+}
+
+int
 os_mkdir(const char pathname[], int mode)
 {
 	wchar_t *const utf16_pathname = utf8_to_utf16(pathname);

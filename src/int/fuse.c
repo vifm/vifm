@@ -26,7 +26,7 @@
 #ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
 #endif
-#include <unistd.h> /* execve() fork() rmdir() unlink() */
+#include <unistd.h> /* execve() fork() unlink() */
 
 #include <errno.h> /* errno ENOTDIR */
 #include <stddef.h> /* NULL size_t */
@@ -668,7 +668,7 @@ kill_mount_point(const char mount_point[])
 	strcpy(no_slash, mount_point);
 	chosp(no_slash);
 
-	if(rmdir(no_slash) != 0 && errno == ENOTDIR)
+	if(os_rmdir(no_slash) != 0 && errno == ENOTDIR)
 	{
 		/* FUSE mounter might replace directory with a symbolic link, account for
 		 * this possibility. */
