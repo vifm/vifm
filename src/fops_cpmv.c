@@ -279,6 +279,12 @@ fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int force)
 		return err > 0;
 	}
 
+	if(is_erroneous(view, args->path, force))
+	{
+		fops_free_bg_args(args);
+		return 0;
+	}
+
 	args->list = args->from_file ? list :
 	             args->nlines > 0 ? copy_string_array(list, nlines) : NULL;
 

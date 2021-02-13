@@ -330,6 +330,36 @@ TEST(copying_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
 	assert_success(unlink("can-not-read"));
 }
 
+TEST(bail_out_if_source_matches_destination)
+{
+	create_file("file");
+
+	populate_dir_list(&lwin, 0);
+	populate_dir_list(&rwin, 0);
+
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_COPY, /*force=*/0);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_COPY, /*force=*/1);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, /*force=*/0);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, /*force=*/1);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_REL, /*force=*/0);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_REL, /*force=*/1);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, /*force=*/0);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, /*force=*/1);
+
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, /*force=*/0);
+	wait_for_bg();
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, /*force=*/1);
+	wait_for_bg();
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, /*force=*/0);
+	wait_for_bg();
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, /*force=*/1);
+	wait_for_bg();
+
+	remove_file("file");
+}
+
 TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 {
 	char dir[] = "dir";
