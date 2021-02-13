@@ -42,6 +42,7 @@
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops,
 		int force);
+static int is_erroneous(view_t *view, const char dst_dir[], int force);
 static int cpmv_prepare(view_t *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char dst_path[], size_t dst_path_len, int *from_file);
@@ -83,12 +84,8 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		return err > 0;
 	}
 
-	const int same_dir = pane_in_dir(view, dst_dir);
-	if(same_dir && force)
+	if(is_erroneous(view, dst_dir, force))
 	{
-		show_error_msg("Operation Error",
-				"Forcing overwrite when destination and source is same directory will "
-				"lead to losing data");
 		return 0;
 	}
 
@@ -171,7 +168,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	}
 	un_group_close();
 
-	if(same_dir || flist_custom_active(view))
+	if(flist_custom_active(view) || pane_in_dir(view, dst_dir))
 	{
 		ui_view_schedule_reload(view);
 	}
@@ -317,6 +314,22 @@ fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int force)
 				"Failed to initiate background operation");
 	}
 
+	return 0;
+}
+
+/* Checks operation for adequacy.  Displays error message in case of issues.
+ * Returns non-zero if operation must be aborted, otherwise zero is returned. */
+static int
+is_erroneous(view_t *view, const char dst_dir[], int force)
+{
+	const int same_dir = pane_in_dir(view, dst_dir);
+	if(same_dir && force)
+	{
+		show_error_msg("Operation Aborted",
+				"Forcing overwrite when destination and source is the same directory "
+				"will lead to losing data.");
+		return 1;
+	}
 	return 0;
 }
 
