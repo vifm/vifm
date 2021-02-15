@@ -17,7 +17,8 @@
 #include "../../src/running.h"
 #include "../../src/status.h"
 
-static void start_view_mode(const char pattern[], const char tests_dir[]);
+static int start_view_mode(const char pattern[], const char viewers[],
+		const char tests_dir[]);
 
 SETUP_ONCE()
 {
@@ -50,9 +51,19 @@ TEARDOWN()
 	ft_reset(0);
 }
 
+TEST(initialization, IF(not_windows))
+{
+	assert_false(start_view_mode("*", "true", "read"));
+	assert_string_equal(NULL, modview_current_viewer(lwin.vi));
+
+	ft_reset(0);
+	assert_true(start_view_mode("*", "echo 1", "read"));
+	assert_string_equal("echo 1", modview_current_viewer(lwin.vi));
+}
+
 TEST(toggling_raw_mode)
 {
-	start_view_mode("*", "read");
+	assert_true(start_view_mode("*", "echo 1, echo 2, echo 3", "read"));
 
 	assert_false(modview_is_raw(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_i);
@@ -63,7 +74,7 @@ TEST(toggling_raw_mode)
 
 TEST(switching_between_viewers)
 {
-	start_view_mode("*", "read");
+	assert_true(start_view_mode("*", "echo 1, echo 2, echo 3", "read"));
 
 	assert_string_equal("echo 1", modview_current_viewer(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_a);
@@ -85,7 +96,7 @@ TEST(switching_between_viewers)
 
 TEST(directories_are_matched_separately)
 {
-	start_view_mode("*[^/]", "");
+	assert_true(start_view_mode("*[^/]", "echo 1, echo 2, echo 3", ""));
 
 	assert_string_equal(NULL, modview_current_viewer(lwin.vi));
 }
@@ -108,19 +119,21 @@ TEST(command_for_quickview_is_not_expanded_again)
 	opt_handlers_teardown();
 }
 
-static void
-start_view_mode(const char pattern[], const char tests_dir[])
+static int
+start_view_mode(const char pattern[], const char viewers[],
+		const char tests_dir[])
 {
 	char *error;
 	matchers_t *ms = matchers_alloc(pattern, 0, 1, "", &error);
 	assert_non_null(ms);
-	ft_set_viewers(ms, "echo 1, echo 2, echo 3");
+	ft_set_viewers(ms, viewers);
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, tests_dir,
 			NULL);
 	populate_dir_list(&lwin, 0);
 	(void)vle_keys_exec_timed_out(WK_e);
-	assert_true(vle_mode_is(VIEW_MODE));
+
+	return vle_mode_is(VIEW_MODE);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

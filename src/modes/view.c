@@ -345,7 +345,6 @@ modview_enter(view_t *view, int explore)
 	}
 
 	pick_vi(explore);
-	reset_view_info(vi);
 
 	vi->filename = is_dir(full_path) ? format_str("%s/", full_path)
 	                                 : strdup(full_path);
@@ -354,10 +353,7 @@ modview_enter(view_t *view, int explore)
 
 	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{
-		free_string_array(vi->viewers.items, vi->viewers.nitems);
-		vi->viewers.items = NULL;
-		vi->viewers.nitems = 0;
-		update_string(&vi->filename, NULL);
+		reset_view_info(vi);
 		return;
 	}
 
