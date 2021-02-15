@@ -345,6 +345,7 @@ modview_enter(view_t *view, int explore)
 	}
 
 	pick_vi(explore);
+	reset_view_info(vi);
 
 	vi->filename = is_dir(full_path) ? format_str("%s/", full_path)
 	                                 : strdup(full_path);
