@@ -54,6 +54,7 @@
 
 static void dummy_handler(OPT_OP op, optval_t val);
 static int dquotes_allowed_in_paths(void);
+static void prepare_for_line_completion(const wchar_t str[]);
 
 static line_stats_t stats;
 static char *saved_cwd;
@@ -117,11 +118,6 @@ TEARDOWN()
 	function_reset_all();
 }
 
-static void
-dummy_handler(OPT_OP op, optval_t val)
-{
-}
-
 TEST(vim_like_completion)
 {
 	vle_compl_reset();
@@ -168,18 +164,6 @@ TEST(only_user)
 	vle_compl_reset();
 	assert_int_equal(10, vle_cmds_complete("  command ", NULL));
 	ASSERT_NEXT_MATCH("bar");
-}
-
-static void
-prepare_for_line_completion(const wchar_t str[])
-{
-	free(stats.line);
-	stats.line = wcsdup(str);
-	stats.len = wcslen(stats.line);
-	stats.index = stats.len;
-	stats.complete_continue = 0;
-
-	vle_compl_reset();
 }
 
 TEST(test_set_completion)
@@ -811,6 +795,12 @@ TEST(plugin_is_completed)
 	remove_dir(SANDBOX_PATH "/plugins");
 }
 
+static void
+dummy_handler(OPT_OP op, optval_t val)
+{
+	ASSERT_NO_COMPLETION(L"nosuchcommand a");
+}
+
 static int
 dquotes_allowed_in_paths(void)
 {
@@ -820,6 +810,18 @@ dquotes_allowed_in_paths(void)
 		return 1;
 	}
 	return 0;
+}
+
+static void
+prepare_for_line_completion(const wchar_t str[])
+{
+	free(stats.line);
+	stats.line = wcsdup(str);
+	stats.len = wcslen(stats.line);
+	stats.index = stats.len;
+	stats.complete_continue = 0;
+
+	vle_compl_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

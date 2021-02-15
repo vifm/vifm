@@ -286,5 +286,11 @@ TEST(udf_completion)
 	free(buf);
 }
 
+TEST(completing_args_of_unknown_command)
+{
+	vle_compl_reset();
+	assert_int_equal(7, vle_cmds_complete("unknown ", NULL));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
