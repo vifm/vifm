@@ -40,7 +40,16 @@ TEST(cmds_add)
 
 	ui_sb_msg("");
 
-	assert_success(vlua_run_string(vlua, "function handler()\n"
+	assert_success(vlua_run_string(vlua, "function handler(info)\n"
+	                                     "  if info.args == nil then\n"
+	                                     "    print 'args is missing'\n"
+	                                     "  end\n"
+	                                     "  if info.argv == nil then\n"
+	                                     "    print 'argsv is missing'\n"
+	                                     "  end\n"
+	                                     "  if info.args ~= info.argv[1] then\n"
+	                                     "    print 'args or argv is wrong'\n"
+	                                     "  end\n"
 	                                     "  print 'msg'\n"
 	                                     "end"));
 	assert_string_equal("", ui_sb_last());
@@ -185,7 +194,22 @@ TEST(cmds_completion)
 	                                     "  asdfadsf()\n"
 	                                     "end"));
 	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "function completor()\n"
+	assert_success(vlua_run_string(vlua, "function completor(info)\n"
+	                                     "  if info.arg == nil then\n"
+	                                     "    print 'arg m isissing'\n"
+	                                     "  end\n"
+	                                     "  if info.args == nil then\n"
+	                                     "    print 'args is missing'\n"
+	                                     "  end\n"
+	                                     "  if info.argv == nil then\n"
+	                                     "    print 'argsv is missing'\n"
+	                                     "  end\n"
+	                                     "  if info.arg ~= info.args then\n"
+	                                     "    print 'arg or args is wrong'\n"
+	                                     "  end\n"
+	                                     "  if info.arg ~= info.argv[1] then\n"
+	                                     "    print 'arg or argv is wrong'\n"
+	                                     "  end\n"
 	                                     "  return {\n"
 	                                     "    offset = 1, \n"
 	                                     "    matches = { 'aa', 'ab', 'bc' } \n"

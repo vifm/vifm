@@ -35,6 +35,7 @@ static int cmds_add(lua_State *lua);
 static int cmds_command(lua_State *lua);
 static int cmds_delcommand(lua_State *lua);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
+static void push_str_array(lua_State *lua, char *array[], int len);
 static int apply_completion(lua_State *lua, const char str[]);
 
 /* Functions of `vifm.cmds` table. */
@@ -181,6 +182,8 @@ lua_cmd_handler(const cmd_info_t *cmd_info)
 	lua_newtable(lua);
 	lua_pushstring(lua, cmd_info->args);
 	lua_setfield(lua, -2, "args");
+	push_str_array(lua, cmd_info->argv, cmd_info->argc);
+	lua_setfield(lua, -2, "argv");
 
 	curr_stats.save_msg = 0;
 
@@ -210,6 +213,8 @@ vifm_cmds_complete(lua_State *lua, const cmd_info_t *cmd_info, int arg_pos)
 	lua_newtable(lua);
 	lua_pushstring(lua, cmd_info->args);
 	lua_setfield(lua, -2, "args");
+	push_str_array(lua, cmd_info->argv, cmd_info->argc);
+	lua_setfield(lua, -2, "argv");
 	lua_pushstring(lua, cmd_info->args + arg_pos);
 	lua_setfield(lua, -2, "arg");
 
@@ -225,6 +230,19 @@ vifm_cmds_complete(lua_State *lua, const cmd_info_t *cmd_info, int arg_pos)
 	}
 
 	return apply_completion(lua, cmd_info->args + arg_pos);
+}
+
+/* Creates an array of strings and leaves it on the top of the stack. */
+static void
+push_str_array(lua_State *lua, char *array[], int len)
+{
+	int i;
+	lua_newtable(lua);
+	for(i = 0; i < len; ++i)
+	{
+		lua_pushstring(lua, array[i]);
+		lua_seti(lua, -2, i + 1);
+	}
 }
 
 /* Does stack cleanup for the caller (-2).  Returns offset of completion
