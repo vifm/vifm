@@ -12,7 +12,7 @@ Usage example:
 local M = {}
 
 local function greet(info)
-    vifm.sb.error(string.format('Hello, %s!', info.args))
+    vifm.sb.error(string.format('Hello, %s, %s!', info.args, info.argv[1]))
 end
 
 -- this does NOT overwrite pre-existing user command

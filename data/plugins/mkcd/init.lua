@@ -10,7 +10,7 @@ Usage example:
 --]]
 
 local function mkcd(info)
-    local path = info.args
+    local path = info.argv[1]
 
     if vifm.exists(path) then
         vifm.errordialog("MkCd", "Path already exists: "..path)
