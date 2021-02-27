@@ -26,6 +26,9 @@ typedef struct col_attr_t
 	int fg;   /* Foreground color. */
 	int bg;   /* Background color. */
 	int attr; /* Attributes (bold, inverse, etc.). */
+
+	/* Combine attributes on mixing instead of replacing them. */
+	unsigned int combine_attrs : 1;
 }
 col_attr_t;
 

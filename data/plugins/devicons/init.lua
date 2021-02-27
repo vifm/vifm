@@ -69,18 +69,20 @@ local function toggle()
 end
 
 local function devicons(info)
-    if #info.args == 0 then
+    if #info.argv == 0 then
         toggle()
         return
     end
 
-    local enabled = categories[info.args]
+    category = info.argv[1]
+
+    local enabled = categories[category]
     if enabled == nil then
-        vifm.sb.error('Unknown category: '..info.args)
+        vifm.sb.error('Unknown category: '..category)
         return
     end
 
-    categories[info.args] = not enabled
+    categories[category] = not enabled
 
     if active then
         vifm.opts.global.classify = format()

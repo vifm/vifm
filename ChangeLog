@@ -30,6 +30,11 @@
 	Added network mount and `subst` targets to :volumes menu.  Patch by Phil
 	Runninger.
 
+	Added "combine" pseudo-attribute to "cterm" parameter of :highlight
+	command.  It changes behaviour from overwriting attributes of a parent
+	highlight group (within their hierarchy) to appending to it.  Thanks to
+	Andrew Savchenko.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

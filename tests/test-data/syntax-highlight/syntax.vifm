@@ -292,7 +292,9 @@ highlight {*.djvu, "not comment
           \*.xml} cterm=underline ctermfg=188 ctermbg=default
 
 " "italic" should be highlighted
+" "combine" should be highlighted
 highlight Win cterm=italic
+highlight Win cterm=combine
 
 " patterns here should NOT be highlighted
 highlight // cterm=bold ctermfg=yellow

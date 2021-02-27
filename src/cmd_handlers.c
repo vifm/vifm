@@ -209,7 +209,7 @@ static int parse_file_highlight(const cmd_info_t *cmd_info,
 static int try_parse_color_name_value(const char str[], int fg,
 		col_attr_t *color);
 static int parse_color_name_value(const char str[], int fg, int *attr);
-static int get_attrs(const char *text);
+static int get_attrs(const char text[], int *combine_attrs);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int histnext_cmd(const cmd_info_t *cmd_info);
 static int histprev_cmd(const cmd_info_t *cmd_info);
@@ -2935,12 +2935,15 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 		else if(strcmp(arg_name, "cterm") == 0)
 		{
 			int attrs;
-			if((attrs = get_attrs(equal + 1)) == -1)
+			int combine_attrs;
+			if((attrs = get_attrs(equal + 1, &combine_attrs)) == -1)
 			{
 				ui_sb_errf("Illegal argument: %s", equal + 1);
 				return 1;
 			}
+
 			color->attr = attrs;
+			color->combine_attrs = combine_attrs;
 			if(curr_stats.exec_env_type == EET_LINUX_NATIVE &&
 					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
 			{
@@ -3033,8 +3036,10 @@ parse_color_name_value(const char str[], int fg, int *attr)
 	return -2;
 }
 
+/* Parses comma-separated list of attributes.  Returns parsed result or -1 on
+ * error.  *combine_attrs is always assigned to. */
 static int
-get_attrs(const char *text)
+get_attrs(const char text[], int *combine_attrs)
 {
 #ifdef HAVE_A_ITALIC_DECL
 	const int italic_attr = A_ITALIC;
@@ -3042,6 +3047,8 @@ get_attrs(const char *text)
 	/* If A_ITALIC is missing (it's an extension), use A_REVERSE instead. */
 	const int italic_attr = A_REVERSE;
 #endif
+
+	*combine_attrs = 0;
 
 	int result = 0;
 	while(*text != '\0')
@@ -3064,6 +3071,8 @@ get_attrs(const char *text)
 			result |= italic_attr;
 		else if(strcasecmp(buf, "none") == 0)
 			result = 0;
+		else if(strcasecmp(buf, "combine") == 0)
+			*combine_attrs = 1;
 		else
 			return -1;
 

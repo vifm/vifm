@@ -105,9 +105,9 @@ local function unpack(info)
         return
     end
 
-    local outdir = info.args
-    if #outdir == 0 then
-        outdir = '.'
+    local outdir = '.'
+    if #info.argv ~= 0 then
+        outdir = info.argv[1]
     end
     if not vifm.exists(outdir) then
         vifm.sb.error("Output path doesn't exist")

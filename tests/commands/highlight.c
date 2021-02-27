@@ -53,14 +53,19 @@ TEST(various_attributes_are_parsed)
 #endif
 
 	curr_stats.cs->color[WIN_COLOR].attr = 0;
+
 	assert_success(exec_commands("hi Win cterm=bold,italic", &lwin, CIT_COMMAND));
 	assert_int_equal(A_BOLD | italic_attr, curr_stats.cs->color[WIN_COLOR].attr);
+
 	assert_success(exec_commands("hi Win cterm=underline,reverse", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(A_UNDERLINE | A_REVERSE,
 			curr_stats.cs->color[WIN_COLOR].attr);
-	assert_success(exec_commands("hi Win cterm=standout", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("hi Win cterm=standout,combine", &lwin,
+				CIT_COMMAND));
 	assert_int_equal(A_STANDOUT, curr_stats.cs->color[WIN_COLOR].attr);
+	assert_true(curr_stats.cs->color[WIN_COLOR].combine_attrs);
 }
 
 TEST(attributes_are_printed_back_correctly)

@@ -5,15 +5,25 @@ name from URL and enters cloned directory on success.
 
 Usage example:
 
+    Clone into directory called "vifm".
     :Gclone https://github.com/vifm/vifm.git
+
+    Clone into directory called "vifm-dev".
+    :Gclone https://github.com/vifm/vifm.git vifm-dev
 
 --]]
 
 local M = {}
 
 local function clone(info)
-    local url = info.args
-    local name = vifm.fnamemodify(url, ":t:s/\\.git$//", "")
+    local url = info.argv[1]
+
+    local name
+    if #info.argv > 1 then
+        name = info.argv[2]
+    else
+        name = vifm.fnamemodify(url, ":t:s/\\.git$//", "")
+    end
 
     vifm.sb.quick(string.format('Cloning %q to %q...', url, name))
 
@@ -43,6 +53,7 @@ local added = vifm.cmds.add {
     description = "clone a repository and enter it",
     handler = clone,
     minargs = 1,
+    maxargs = 2,
 }
 if not added then
     vifm.sb.error("Failed to register :Gclone")

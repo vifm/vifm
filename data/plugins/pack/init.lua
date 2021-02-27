@@ -13,6 +13,7 @@ Usage example:
 -- TODO: allow specifying custom name
 -- TODO: check presence of the applications
 -- TODO: need a way to report failures (callbacks are necessary after all?)
+-- TODO: displaying progress would be nice
 
 local M = {}
 
@@ -22,7 +23,7 @@ local function pack(info)
     local singlefile = (vifm.expand('%c') == files)
     local basename = singlefile and vifm.expand('%c') or vifm.expand('%d:t')
 
-    local ext = info.args
+    local ext = info.argv[1]
     local outfile = basename.."."..ext
 
     if vifm.exists(outfile) then

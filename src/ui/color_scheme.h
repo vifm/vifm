@@ -133,9 +133,13 @@ void cs_write(void);
  * buffer of length buf_len pointed to by str_buf. */
 void cs_color_to_str(int color, size_t buf_len, char str_buf[]);
 
-/* Mixes colors of *mixup into the base color.  Non-transparent properties of
- * *mixup are transferred onto *base. */
-void cs_mix_colors(col_attr_t *base, const col_attr_t *mixup);
+/* Mixes colors of *admixture into the *color.  Non-transparent properties of
+ * *admixture are transferred onto *color. */
+void cs_mix_colors(col_attr_t *color, const col_attr_t *admixture);
+
+/* Overlaps colors of *admixture into the *color.  Non-transparent properties of
+ * *admixture are transferred onto *color.  Attributes are never combined. */
+void cs_overlap_colors(col_attr_t *color, const col_attr_t *admixture);
 
 /* Registers pattern-highlight pair for active color scheme.  Reports memory
  * error to the user. */

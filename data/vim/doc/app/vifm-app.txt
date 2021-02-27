@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Feb 10
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Feb 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1780,6 +1780,8 @@ Available style values (some of them can be combined):
  - reverse or inverse
  - standout
  - italic (on unsupported systems becomes reverse)
+ - combine - add attributes of current group to attributes of the parent in
+             group hierarchy (see below) instead of replacing them
  - none
 
 Available group-name values:

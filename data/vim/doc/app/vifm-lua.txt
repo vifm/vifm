@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jan 30
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Feb 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -257,6 +257,9 @@ Return:~
 vifm.cmds.add({cmd})                           *vifm-l_vifm.cmds.add()*
 Registers a new :command of a kind that's equivalent to builtin commands.
 
+The word "parsing" below refers to processing of command-line arguments like
+removal of slashes used for escaping and skipping whitespace.
+
 Possible fields of {cmd}:
  - "name" (string)
    Name of the command.
@@ -274,6 +277,8 @@ Possible fields of {cmd}:
 Fields of {info} argument for "handler":
  - "args" (string)
    All arguments passed to the command.
+ - "argv" (array of strings)
+   Set of parsed arguments of the command.
 
 Fields of {info} argument for "complete":
  - "arg" (string)
@@ -281,6 +286,8 @@ Fields of {info} argument for "complete":
  - "args" (string)
    Command-line up to cursor position (for cases when completion depends on
    what comes before current argument).
+ - "argv" (array of strings)
+   Same as "args", but parsed into an array.
 
 Fields of {results} return value of "complete":
  - "offset" (integer) (default: 0)
