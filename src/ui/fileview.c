@@ -1297,17 +1297,27 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 
 	if(cdt->line_pos != -1)
 	{
+		const int is_current = (cdt->line_pos == cdt->current_pos);
+
 		/* File-specific highlight affects only primary field for non-current lines
 		 * and whole line for the current line. */
-		const int with_line_hi = (primary || cdt->line_pos == cdt->current_pos);
+		const int with_line_hi = (primary || is_current);
 		const int line_color = with_line_hi ? cdt->line_hi_group : -1;
 		mix_in_common_colors(&col, view, cdt->entry, line_color);
 
-		if(cdt->line_pos == cdt->current_pos)
+		if(is_current)
 		{
 			int color = (view == curr_view || !cdt->is_main) ? CURR_LINE_COLOR
 			                                                 : OTHER_LINE_COLOR;
-			cs_mix_colors(&col, &cs->color[color]);
+			/* Avoid combining attributes for non-primary column. */
+			if(is_current && !primary)
+			{
+				cs_overlap_colors(&col, &cs->color[color]);
+			}
+			else
+			{
+				cs_mix_colors(&col, &cs->color[color]);
+			}
 		}
 		else if(line_nr)
 		{

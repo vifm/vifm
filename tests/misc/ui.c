@@ -6,6 +6,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/color_scheme.h"
 #include "../../src/ui/colored_line.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/statusline.h"
@@ -32,6 +33,70 @@ TEARDOWN()
 {
 	conf_teardown();
 	view_teardown(&lwin);
+}
+
+TEST(color_overlapping)
+{
+	col_attr_t color = {
+		.fg = -1,
+		.bg = -1,
+		.attr = -1,
+		.combine_attrs = 0
+	};
+
+	col_attr_t admixture1 = {
+		.fg = 10,
+		.bg = 11,
+		.attr = A_BOLD,
+		.combine_attrs = 1
+	};
+	cs_overlap_colors(&color, &admixture1);
+	assert_int_equal(10, color.fg);
+	assert_int_equal(11, color.bg);
+	assert_int_equal(A_BOLD, color.attr);
+
+	col_attr_t admixture2 = {
+		.fg = 20,
+		.bg = 22,
+		.attr = A_REVERSE,
+		.combine_attrs = 1
+	};
+	cs_overlap_colors(&color, &admixture2);
+	assert_int_equal(20, color.fg);
+	assert_int_equal(22, color.bg);
+	assert_int_equal(A_REVERSE, color.attr);
+}
+
+TEST(color_mixing)
+{
+	col_attr_t color = {
+		.fg = -1,
+		.bg = -1,
+		.attr = -1,
+		.combine_attrs = 0
+	};
+
+	col_attr_t admixture1 = {
+		.fg = 10,
+		.bg = 11,
+		.attr = A_BOLD,
+		.combine_attrs = 1
+	};
+	cs_mix_colors(&color, &admixture1);
+	assert_int_equal(10, color.fg);
+	assert_int_equal(11, color.bg);
+	assert_int_equal(A_BOLD, color.attr);
+
+	col_attr_t admixture2 = {
+		.fg = 20,
+		.bg = 22,
+		.attr = A_REVERSE,
+		.combine_attrs = 1
+	};
+	cs_mix_colors(&color, &admixture2);
+	assert_int_equal(20, color.fg);
+	assert_int_equal(22, color.bg);
+	assert_int_equal(A_BOLD | A_REVERSE, color.attr);
 }
 
 TEST(make_tab_title_uses_name_if_present_and_no_format)

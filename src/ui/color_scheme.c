@@ -1084,21 +1084,34 @@ ensure_dir_map_exists(void)
 }
 
 void
-cs_mix_colors(col_attr_t *base, const col_attr_t *mixup)
+cs_mix_colors(col_attr_t *color, const col_attr_t *admixture)
 {
-	if(mixup->fg != -1)
+	int attr = color->attr;
+
+	cs_overlap_colors(color, admixture);
+
+	if(attr != -1 && admixture->combine_attrs)
 	{
-		base->fg = mixup->fg;
+		color->attr |= attr;
+	}
+}
+
+void
+cs_overlap_colors(col_attr_t *color, const col_attr_t *admixture)
+{
+	if(admixture->fg != -1)
+	{
+		color->fg = admixture->fg;
 	}
 
-	if(mixup->bg != -1)
+	if(admixture->bg != -1)
 	{
-		base->bg = mixup->bg;
+		color->bg = admixture->bg;
 	}
 
-	if(mixup->attr != -1)
+	if(admixture->attr != -1)
 	{
-		base->attr = mixup->attr;
+		color->attr = admixture->attr;
 	}
 }
 

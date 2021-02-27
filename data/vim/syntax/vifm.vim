@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: January 21, 2021
+" Last Change: February 27, 2021
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -90,7 +90,7 @@ syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ AuxWin OtherWin TabLine TabLineSel HardLink LineNr OddLine
 		\ User1 User2 User3 User4 User5 User6 User7 User8 User9
 syntax keyword vifmHiStyles contained
-		\ bold underline reverse inverse standout italic none
+		\ bold underline reverse inverse standout italic combine none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 		\ white default lightblack lightred lightgreen lightyellow lightblue
 		\ lightmagenta lightcyan lightwhite Grey0 NavyBlue DarkBlue Blue3 Blue3_2
