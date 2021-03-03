@@ -103,6 +103,9 @@
 
 	Fixed a memory leak possible on formatting tab titles and statusline.
 
+	Fixed possible crash after changing 'classify' and then switching to
+	inactive tab.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

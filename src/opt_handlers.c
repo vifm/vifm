@@ -1724,14 +1724,14 @@ classify_handler(OPT_OP op, optval_t val)
 		assert(sizeof(cfg.type_decs) == sizeof(type_decs) && "Arrays diverged");
 		memcpy(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs));
 
-		ui_view_reset_decor_cache(&lwin);
-		ui_view_reset_decor_cache(&rwin);
-
-		fview_decors_updated(curr_view);
-		fview_decors_updated(other_view);
-
-		ui_view_schedule_redraw(curr_view);
-		ui_view_schedule_redraw(other_view);
+		int i;
+		tab_info_t tab_info;
+		for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+		{
+			ui_view_reset_decor_cache(tab_info.view);
+			fview_decors_updated(tab_info.view);
+			ui_view_schedule_redraw(tab_info.view);
+		}
 	}
 	else
 	{

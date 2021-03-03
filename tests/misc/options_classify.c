@@ -1,16 +1,16 @@
 #include <stic.h>
 
-#include <string.h> /* memcmp() */
+#include <limits.h> /* INT_MIN */
+#include <string.h> /* memcmp() strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
-#include "../../src/compat/fs_limits.h"
 #include "../../src/engine/options.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
+#include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
@@ -193,31 +193,52 @@ TEST(classify_does_not_stop_on_empty_prefix)
 
 TEST(changing_classify_invalidates_decors_cache)
 {
-	static char cwd[PATH_MAX + 1];
-	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", cwd);
+	assert_success(stats_init(&cfg));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+	strcpy(rwin.curr_dir, lwin.curr_dir);
 	load_dir_list(&lwin, 1);
+	load_dir_list(&rwin, 1);
 
 	assert_success(exec_commands("set millerview milleroptions=lsize:1,rsize:1",
 				&lwin, CIT_COMMAND));
-	assert_success(exec_commands("set classify=::*.vifm::*|", &lwin,
+	assert_success(exec_commands("set classify=::*.vifm::*\\|,::read::<>", &lwin,
 				CIT_COMMAND));
 
+	cfg.columns = 10;
 	fview_setup();
 	lwin.window_cols = 100;
 	lwin.window_rows = 10;
 	lwin.columns = columns_create();
 
+	/* Fill dir_entry_t::name_dec_num by querying decorations. */
+	int i;
+	for(i = 0; i < lwin.list_rows; ++i)
+	{
+		const char *prefix, *suffix;
+		ui_get_decors(&lwin.dir_entry[i], &prefix, &suffix);
+	}
+
+	tabs_new(NULL, NULL);
+
 	(void)stats_update_fetch();
 	curr_stats.load_stage = 2;
-	redraw_view(curr_view);
+	redraw_view(&lwin);
 	assert_success(exec_commands("set classify=", &lwin, CIT_COMMAND));
-	redraw_view(curr_view);
 	curr_stats.load_stage = 0;
 
+	/* Check that dir_entry_t::name_dec_num of inactive tab are reset. */
+	tabs_goto(0);
+	for(i = 0; i < lwin.list_rows; ++i)
+	{
+		assert_int_equal(-1, lwin.dir_entry[i].name_dec_num);
+	}
+
+	tabs_only(&lwin);
 	columns_free(lwin.columns);
 	lwin.columns = NULL;
 	columns_teardown();
+	cfg.columns = INT_MIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
