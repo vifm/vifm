@@ -101,6 +101,8 @@
 	Fixed losing files as a result of executing ":copy! &" or ":move! &" when
 	both panes show the same directory.  Thanks to Hans Bieshaar.
 
+	Fixed a memory leak possible on formatting tab titles and statusline.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
