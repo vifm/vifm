@@ -126,6 +126,10 @@ void fview_dir_updated(struct view_t *view);
  * of files changes. */
 void fview_list_updated(struct view_t *view);
 
+/* Callback-like function which triggers some view-specific updates after
+ * decorations of files change. */
+void fview_decors_updated(struct view_t *view);
+
 /* Callback-like function which triggers some view-specific updates after cursor
  * position in the list changed. */
 void fview_position_updated(struct view_t *view);

@@ -1727,10 +1727,11 @@ classify_handler(OPT_OP op, optval_t val)
 		ui_view_reset_decor_cache(&lwin);
 		ui_view_reset_decor_cache(&rwin);
 
-		/* 'classify' option affects columns layout, hence views must be reloaded as
-		 * loading list of files performs calculation of filename properties. */
-		ui_view_schedule_reload(curr_view);
-		ui_view_schedule_reload(other_view);
+		fview_decors_updated(curr_view);
+		fview_decors_updated(other_view);
+
+		ui_view_schedule_redraw(curr_view);
+		ui_view_schedule_redraw(other_view);
 	}
 	else
 	{
