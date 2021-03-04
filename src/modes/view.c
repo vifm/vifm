@@ -1409,19 +1409,22 @@ search(int repeat_count, int backward)
 static void
 find_previous(int vline_offset)
 {
-	int i;
-	int offset = 0;
 	char buf[ui_qv_width(vi->view)*4];
-	int vl, l;
 
-	vl = vi->linev - vline_offset;
-	l = vi->line;
+	int vl = vi->linev - vline_offset;
+	int l = vi->line;
 
 	if(l > 0 && vl < vi->widths[l][0])
-		l--;
+	{
+		--l;
+	}
 
+	int i;
+	int offset = 0;
 	for(i = 0; l < vi->nlines && i <= vl - vi->widths[l][0]; ++i)
+	{
 		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
+	}
 
 	/* Don't stop until we go above first virtual line of the first line. */
 	while(l >= 0 && vl >= 0)
@@ -1434,14 +1437,14 @@ find_previous(int vline_offset)
 		}
 		if(l > 0 && vl - 1 < vi->widths[l][0])
 		{
-			l--;
+			--l;
 			offset = 0;
 			for(i = 0; i <= vl - 1 - vi->widths[l][0]; i++)
 				offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 		}
 		else
 			offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
-		vl--;
+		--vl;
 	}
 	draw();
 	if(vi->line != l || vi->nlines == 0)
@@ -1453,19 +1456,22 @@ find_previous(int vline_offset)
 static void
 find_next(void)
 {
-	int i;
-	int offset = 0;
 	char buf[ui_qv_width(vi->view)*4];
-	int vl, l;
 
-	vl = vi->linev + 1;
-	l = vi->line;
+	int vl = vi->linev + 1;
+	int l = vi->line;
 
 	if(l < vi->nlines - 1 && vl == vi->widths[l + 1][0])
-		l++;
+	{
+		++l;
+	}
 
+	int i;
+	int offset = 0;
 	for(i = 0; l < vi->nlines && i <= vl - vi->widths[l][0]; ++i)
+	{
 		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
+	}
 
 	while(l < vi->nlines)
 	{
@@ -1480,11 +1486,11 @@ find_next(void)
 		{
 			if(l == vi->nlines - 1)
 				break;
-			l++;
+			++l;
 			offset = 0;
 		}
 		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
-		vl++;
+		++vl;
 	}
 	draw();
 	if(vi->line != l || vi->nlines == 0)
