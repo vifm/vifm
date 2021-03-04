@@ -139,7 +139,7 @@ static void format_inode(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void format_id(int id, const void *data, size_t buf_len, char buf[]);
 static size_t calculate_column_width(view_t *view);
-static size_t calculate_columns_count(struct view_t *view);
+static size_t calculate_columns_count(view_t *view);
 static size_t get_max_filename_width(const view_t *view);
 static size_t get_filename_width(const view_t *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
@@ -1765,6 +1765,13 @@ fview_list_updated(view_t *view)
 	view->max_filename_width = 0;
 	/* Even if position will remain the same, we might need to redraw it. */
 	invalidate_cursor_pos_cache(view);
+}
+
+void
+fview_decors_updated(view_t *view)
+{
+	/* Invalidate maximum file name widths cache. */
+	view->max_filename_width = 0;
 }
 
 /* Evaluates number of columns in the view.  Returns the number. */

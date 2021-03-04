@@ -147,6 +147,7 @@ cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[])
 	size_t ell_width = utf8_strsw(ell);
 	if(max_width <= ell_width)
 	{
+		free(cline->line);
 		/* Insert as many characters of ellipsis as we can. */
 		const int prefix = (int)utf8_nstrsnlen(ell, max_width);
 		cline->line = format_str("%.*s", prefix, ell);
