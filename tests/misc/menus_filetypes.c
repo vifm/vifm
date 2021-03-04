@@ -92,7 +92,7 @@ TEST(c_key_is_handled)
 
 	assert_wstring_equal(L"!vifm", stats->line);
 
-	(void)vle_keys_exec(WK_ESC);
+	(void)vle_keys_exec_timed_out(WK_ESC);
 }
 
 TEST(unknown_key_is_ignored)

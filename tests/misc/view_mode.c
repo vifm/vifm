@@ -18,7 +18,7 @@
 #include "../../src/status.h"
 
 static int start_view_mode(const char pattern[], const char viewers[],
-		const char tests_dir[]);
+		const char base_dir[], const char sub_path[]);
 
 SETUP_ONCE()
 {
@@ -56,20 +56,21 @@ TEARDOWN()
 TEST(initialization, IF(not_windows))
 {
 	/* With empty output. */
-	assert_true(start_view_mode("*", "true", "read"));
+	assert_true(start_view_mode("*", "true", TEST_DATA_PATH, "read"));
 	assert_string_equal("true", modview_current_viewer(lwin.vi));
 
 	(void)vle_keys_exec_timed_out(WK_q);
 	ft_reset(0);
 
 	/* With non-empty output. */
-	assert_true(start_view_mode("*", "echo 1", "read"));
+	assert_true(start_view_mode("*", "echo 1", TEST_DATA_PATH, "read"));
 	assert_string_equal("echo 1", modview_current_viewer(lwin.vi));
 }
 
 TEST(toggling_raw_mode)
 {
-	assert_true(start_view_mode("*", "echo 1, echo 2, echo 3", "read"));
+	assert_true(start_view_mode("*", "echo 1, echo 2, echo 3", TEST_DATA_PATH,
+				"read"));
 
 	assert_false(modview_is_raw(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_i);
@@ -80,7 +81,8 @@ TEST(toggling_raw_mode)
 
 TEST(switching_between_viewers)
 {
-	assert_true(start_view_mode("*", "echo 1, echo 2, echo 3", "read"));
+	assert_true(start_view_mode("*", "echo 1, echo 2, echo 3", TEST_DATA_PATH,
+				"read"));
 
 	assert_string_equal("echo 1", modview_current_viewer(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_a);
@@ -102,7 +104,8 @@ TEST(switching_between_viewers)
 
 TEST(directories_are_matched_separately)
 {
-	assert_true(start_view_mode("*[^/]", "echo 1, echo 2, echo 3", ""));
+	assert_true(start_view_mode("*[^/]", "echo 1, echo 2, echo 3", TEST_DATA_PATH,
+				""));
 
 	assert_string_equal(NULL, modview_current_viewer(lwin.vi));
 }
@@ -127,16 +130,17 @@ TEST(command_for_quickview_is_not_expanded_again)
 	curr_stats.preview.on = 0;
 }
 
-TEST(scrolling)
+TEST(scrolling_in_view_mode)
 {
-	assert_true(start_view_mode("*", "echo 1;echo 2;echo 3;echo %%", "read"));
+	make_file(SANDBOX_PATH "/file", "1\n2\n3\nlast");
+	assert_true(start_view_mode("*", NULL, SANDBOX_PATH, ""));
 
 	strlist_t lines = modview_lines(lwin.vi);
 	assert_int_equal(4, lines.nitems);
 	assert_string_equal("1", lines.items[0]);
 	assert_string_equal("2", lines.items[1]);
 	assert_string_equal("3", lines.items[2]);
-	assert_string_equal("%", lines.items[3]);
+	assert_string_equal("last", lines.items[3]);
 
 	(void)vle_keys_exec_timed_out(WK_j);
 	assert_int_equal(1, modview_current_line(lwin.vi));
@@ -161,19 +165,50 @@ TEST(scrolling)
 	assert_int_equal(2, modview_current_line(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_u);
 	assert_int_equal(1, modview_current_line(lwin.vi));
+
+	remove_file(SANDBOX_PATH "/file");
+}
+
+TEST(searching_in_view_mode)
+{
+	curr_stats.save_msg = 0;
+
+	make_file(SANDBOX_PATH "/file", "1\n2\n3\nlast");
+	assert_true(start_view_mode("*", NULL, SANDBOX_PATH, ""));
+
+	(void)vle_keys_exec_timed_out(L"/[0-9]");
+	(void)vle_keys_exec_timed_out(WK_CR);
+	assert_int_equal(1, modview_current_line(lwin.vi));
+
+	(void)vle_keys_exec_timed_out(WK_n);
+	assert_int_equal(2, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(WK_n);
+	assert_int_equal(2, modview_current_line(lwin.vi));
+
+	(void)vle_keys_exec_timed_out(WK_N);
+	assert_int_equal(1, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(WK_N);
+	assert_int_equal(0, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(WK_N);
+	assert_int_equal(0, modview_current_line(lwin.vi));
+	assert_int_equal(1, curr_stats.save_msg);
+
+	remove_file(SANDBOX_PATH "/file");
 }
 
 static int
 start_view_mode(const char pattern[], const char viewers[],
-		const char tests_dir[])
+		const char base_dir[], const char sub_path[])
 {
-	char *error;
-	matchers_t *ms = matchers_alloc(pattern, 0, 1, "", &error);
-	assert_non_null(ms);
-	ft_set_viewers(ms, viewers);
+	if(viewers != NULL)
+	{
+		char *error;
+		matchers_t *ms = matchers_alloc(pattern, 0, 1, "", &error);
+		assert_non_null(ms);
+		ft_set_viewers(ms, viewers);
+	}
 
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, tests_dir,
-			NULL);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), base_dir, sub_path, NULL);
 	populate_dir_list(&lwin, 0);
 	(void)vle_keys_exec_timed_out(WK_e);
 
