@@ -115,6 +115,9 @@
 	Fixed some scrolling keys in view mode when there is only one visible
 	line.
 
+	Fixed backward search of view mode not reporting failure if there was a
+	match at the very first line.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

@@ -1398,17 +1398,23 @@ search(int repeat_count, int backward)
 	{
 		if(backward ? find_previous() : find_next())
 		{
-			display_error("Pattern not found");
 			break;
 		}
 	}
 }
 
 /* Scrolls to the previous search match.  Returns zero on success and non-zero
- * if pattern wasn't found. */
+ * if pattern wasn't found.  Prints a message on search failure. */
 static int
 find_previous(void)
 {
+	if(vi->linev == 0)
+	{
+		draw();
+		display_error("Nothing to search");
+		return 1;
+	}
+
 	char buf[ui_qv_width(vi->view)*4];
 
 	int vl = vi->linev - 1;
@@ -1449,15 +1455,16 @@ find_previous(void)
 
 	draw();
 
-	if(vi->line != l || vi->nlines == 0)
+	if(vi->linev != vl || vi->nlines == 0)
 	{
+		display_error("Pattern not found");
 		return 1;
 	}
 	return 0;
 }
 
 /* Scrolls to the next search match.  Returns zero on success and non-zero if
- * pattern wasn't found. */
+ * pattern wasn't found.  Prints a message on search failure. */
 static int
 find_next(void)
 {
@@ -1500,8 +1507,9 @@ find_next(void)
 
 	draw();
 
-	if(vi->line != l || vi->nlines == 0)
+	if(vi->linev != vl || vi->nlines == 0)
 	{
+		display_error("Pattern not found");
 		return 1;
 	}
 	return 0;

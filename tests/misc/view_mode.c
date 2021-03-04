@@ -179,16 +179,23 @@ TEST(searching_in_view_mode)
 	(void)vle_keys_exec_timed_out(L"/[0-9]");
 	(void)vle_keys_exec_timed_out(WK_CR);
 	assert_int_equal(1, modview_current_line(lwin.vi));
+	assert_int_equal(0, curr_stats.save_msg);
 
 	(void)vle_keys_exec_timed_out(WK_n);
 	assert_int_equal(2, modview_current_line(lwin.vi));
+	assert_int_equal(0, curr_stats.save_msg);
 	(void)vle_keys_exec_timed_out(WK_n);
 	assert_int_equal(2, modview_current_line(lwin.vi));
+	assert_int_equal(1, curr_stats.save_msg);
+
+	curr_stats.save_msg = 0;
 
 	(void)vle_keys_exec_timed_out(WK_N);
 	assert_int_equal(1, modview_current_line(lwin.vi));
+	assert_int_equal(0, curr_stats.save_msg);
 	(void)vle_keys_exec_timed_out(WK_N);
 	assert_int_equal(0, modview_current_line(lwin.vi));
+	assert_int_equal(0, curr_stats.save_msg);
 	(void)vle_keys_exec_timed_out(WK_N);
 	assert_int_equal(0, modview_current_line(lwin.vi));
 	assert_int_equal(1, curr_stats.save_msg);
