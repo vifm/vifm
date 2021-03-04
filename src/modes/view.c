@@ -1544,9 +1544,10 @@ update_with_half_win(key_info_t *key_info)
 {
 	if(key_info->count == NO_COUNT_GIVEN)
 	{
+		int height = ui_qv_height(vi->view);
 		key_info->count = (vi->half_win > 0)
 			? vi->half_win
-			: ui_qv_height(vi->view)/2;
+			: (height == 1 ? 1 : height/2);
 	}
 	else
 	{
@@ -1602,9 +1603,15 @@ update_with_win(key_info_t *key_info)
 static void
 set_from_default_win(key_info_t *key_info)
 {
-	key_info->count = (vi->win_size > 0)
-		? vi->win_size
-		: (ui_qv_height(vi->view) - 1);
+	if(vi->win_size > 0)
+	{
+		key_info->count = vi->win_size;
+	}
+	else
+	{
+		int height = ui_qv_height(vi->view);
+		key_info->count = (height == 1 ? 1 : height - 1);
+	}
 }
 
 int

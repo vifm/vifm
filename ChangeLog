@@ -112,6 +112,9 @@
 	Fixed attempts to complete nonsensical arguments to :set removing those
 	arguments.
 
+	Fixed some scrolling keys in view mode when there is only one visible
+	line.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

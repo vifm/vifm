@@ -151,6 +151,16 @@ TEST(scrolling)
 	assert_int_equal(3, modview_current_line(lwin.vi));
 	(void)vle_keys_exec_timed_out(L"2" WK_G);
 	assert_int_equal(1, modview_current_line(lwin.vi));
+
+	(void)vle_keys_exec_timed_out(WK_f);
+	assert_int_equal(2, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(WK_b);
+	assert_int_equal(1, modview_current_line(lwin.vi));
+
+	(void)vle_keys_exec_timed_out(WK_d);
+	assert_int_equal(2, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(WK_u);
+	assert_int_equal(1, modview_current_line(lwin.vi));
 }
 
 static int
