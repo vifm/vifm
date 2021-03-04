@@ -28,6 +28,8 @@ SETUP_ONCE()
 SETUP()
 {
 	view_setup(&lwin);
+	lwin.window_rows = 1;
+
 	curr_view = &lwin;
 	other_view = &rwin;
 
@@ -121,6 +123,34 @@ TEST(command_for_quickview_is_not_expanded_again)
 	assert_string_equal("%d%c", lines.items[0]);
 
 	opt_handlers_teardown();
+
+	curr_stats.preview.on = 0;
+}
+
+TEST(scrolling)
+{
+	assert_true(start_view_mode("*", "echo 1;echo 2;echo 3;echo %%", "read"));
+
+	strlist_t lines = modview_lines(lwin.vi);
+	assert_int_equal(4, lines.nitems);
+	assert_string_equal("1", lines.items[0]);
+	assert_string_equal("2", lines.items[1]);
+	assert_string_equal("3", lines.items[2]);
+	assert_string_equal("%", lines.items[3]);
+
+	(void)vle_keys_exec_timed_out(WK_j);
+	assert_int_equal(1, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(L"10" WK_j);
+	assert_int_equal(3, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(L"1" WK_k);
+	assert_int_equal(2, modview_current_line(lwin.vi));
+
+	(void)vle_keys_exec_timed_out(WK_g);
+	assert_int_equal(0, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(WK_G);
+	assert_int_equal(3, modview_current_line(lwin.vi));
+	(void)vle_keys_exec_timed_out(L"2" WK_G);
+	assert_int_equal(1, modview_current_line(lwin.vi));
 }
 
 static int

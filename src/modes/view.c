@@ -204,6 +204,7 @@ static void cleanup(modview_info_t *vi);
 static modview_info_t * view_info_alloc(void);
 TSTATIC int modview_is_raw(modview_info_t *vi);
 TSTATIC const char * modview_current_viewer(modview_info_t *vi);
+TSTATIC int modview_current_line(modview_info_t *vi);
 TSTATIC strlist_t modview_lines(modview_info_t *vi);
 
 /* Points to current (for quick view) or last used (for explore mode)
@@ -1826,6 +1827,12 @@ TSTATIC const char *
 modview_current_viewer(modview_info_t *vi)
 {
 	return vi->curr_viewer;
+}
+
+TSTATIC int
+modview_current_line(modview_info_t *vi)
+{
+	return vi->line;
 }
 
 TSTATIC strlist_t
