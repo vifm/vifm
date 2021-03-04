@@ -106,6 +106,9 @@
 	Fixed possible crash after changing 'classify' and then switching to
 	inactive tab.
 
+	Fixed attempts to complete nonsensical arguments to :set removing those
+	arguments.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

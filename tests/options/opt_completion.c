@@ -483,5 +483,35 @@ TEST(no_no_or_inv_completion_for_all_pseudo_option)
 	free(completed);
 }
 
+TEST(uncompleteable_args_are_ignored)
+{
+	const char *start;
+	char *completed;
+
+	vle_compl_reset();
+	vle_opts_complete("'bla", &start, OPT_GLOBAL);
+	assert_string_equal("'bla", start);
+
+	completed = vle_compl_next();
+	assert_string_equal("'bla", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("'bla", completed);
+	free(completed);
+
+	vle_compl_reset();
+	vle_opts_complete("\"bla", &start, OPT_GLOBAL);
+	assert_string_equal("\"bla", start);
+
+	completed = vle_compl_next();
+	assert_string_equal("\"bla", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("\"bla", completed);
+	free(completed);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

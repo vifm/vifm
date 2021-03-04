@@ -1321,13 +1321,16 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 		if(args == NULL || (*args == '\0' && is_null_or_empty(last_opt)))
 		{
 			/* Just exit on error or reaching a comment. */
-			if(last_opt != NULL)
+			if(is_null_or_empty(last_opt))
 			{
-				vle_compl_put_match(last_opt, "");
+				free(last_opt);
+				/* Need to place original input to avoid its disappearance (if we
+				 * complete with "", it will replace part of the string). */
+				vle_compl_add_match(*start, "");
 			}
 			else
 			{
-				vle_compl_add_match("", "");
+				vle_compl_put_match(last_opt, "");
 			}
 			return;
 		}
