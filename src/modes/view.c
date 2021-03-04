@@ -186,7 +186,7 @@ static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void goto_search_result(int repeat_count, int inverse_direction);
 static void search(int repeat_count, int backward);
-static void find_previous(int vline_offset);
+static void find_previous(void);
 static void find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
@@ -1398,7 +1398,7 @@ search(int repeat_count, int backward)
 	{
 		if(backward)
 		{
-			find_previous(1);
+			find_previous();
 		}
 		else
 		{
@@ -1408,11 +1408,11 @@ search(int repeat_count, int backward)
 }
 
 static void
-find_previous(int vline_offset)
+find_previous(void)
 {
 	char buf[ui_qv_width(vi->view)*4];
 
-	int vl = vi->linev - vline_offset;
+	int vl = vi->linev - 1;
 	int l = vi->line;
 
 	if(l > 0 && vl < vi->widths[l][0])
