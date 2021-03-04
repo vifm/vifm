@@ -467,7 +467,8 @@ modview_ruler_update(void)
 			vi->view->window_rows);
 
 	char buf[64];
-	snprintf(buf, sizeof(buf), "%d-%d %s", vi->line + 1, vi->nlines, rel_pos);
+	int curr_line = vi->line + (vi->nlines > 0 ? 1 : 0);
+	snprintf(buf, sizeof(buf), "%d-%d %s", curr_line, vi->nlines, rel_pos);
 
 	ui_ruler_set(buf);
 }
@@ -933,6 +934,11 @@ cmd_meta_space(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(vi->nlines == 0)
+	{
+		return;
+	}
+
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 0;
 	if(key_info.count > 100)
@@ -1067,17 +1073,18 @@ load_view_data(modview_info_t *vi, const char action[],
 
 	if(vi->nlines == 0)
 	{
-		show_error_msg(action, "Nothing to explore");
-		return 1;
+		vi->widths = NULL;
 	}
-
-	vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
-	if(vi->widths == NULL)
+	else
 	{
-		vi->lines = NULL;
-		vi->nlines = 0;
-		show_error_msg(action, "Not enough memory");
-		return 1;
+		vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
+		if(vi->widths == NULL)
+		{
+			vi->lines = NULL;
+			vi->nlines = 0;
+			show_error_msg(action, "Not enough memory");
+			return 1;
+		}
 	}
 
 	return 0;
@@ -1281,8 +1288,11 @@ cmd_g(key_info_t key_info, keys_info_t *keys_info)
 	key_info.count = MIN(vi->nlinesv - ui_qv_height(vi->view), key_info.count);
 	key_info.count = MAX(1, key_info.count);
 
-	if(vi->linev == vi->widths[key_info.count - 1][0])
+	if(vi->nlines == 0 || vi->linev == vi->widths[key_info.count - 1][0])
+	{
 		return;
+	}
+
 	vi->line = key_info.count - 1;
 	vi->linev = vi->widths[vi->line][0];
 	draw();
@@ -1410,7 +1420,7 @@ find_previous(int vline_offset)
 	if(l > 0 && vl < vi->widths[l][0])
 		l--;
 
-	for(i = 0; i <= vl - vi->widths[l][0]; i++)
+	for(i = 0; l < vi->nlines && i <= vl - vi->widths[l][0]; ++i)
 		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 
 	/* Don't stop until we go above first virtual line of the first line. */
@@ -1434,7 +1444,7 @@ find_previous(int vline_offset)
 		vl--;
 	}
 	draw();
-	if(vi->line != l)
+	if(vi->line != l || vi->nlines == 0)
 	{
 		display_error("Pattern not found");
 	}
@@ -1454,7 +1464,7 @@ find_next(void)
 	if(l < vi->nlines - 1 && vl == vi->widths[l + 1][0])
 		l++;
 
-	for(i = 0; i <= vl - vi->widths[l][0]; i++)
+	for(i = 0; l < vi->nlines && i <= vl - vi->widths[l][0]; ++i)
 		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 
 	while(l < vi->nlines)
@@ -1477,7 +1487,7 @@ find_next(void)
 		vl++;
 	}
 	draw();
-	if(vi->line != l)
+	if(vi->line != l || vi->nlines == 0)
 	{
 		display_error("Pattern not found");
 	}

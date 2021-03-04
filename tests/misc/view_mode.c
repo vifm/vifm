@@ -53,10 +53,14 @@ TEARDOWN()
 
 TEST(initialization, IF(not_windows))
 {
-	assert_false(start_view_mode("*", "true", "read"));
-	assert_string_equal(NULL, modview_current_viewer(lwin.vi));
+	/* With empty output. */
+	assert_true(start_view_mode("*", "true", "read"));
+	assert_string_equal("true", modview_current_viewer(lwin.vi));
 
+	(void)vle_keys_exec_timed_out(WK_q);
 	ft_reset(0);
+
+	/* With non-empty output. */
 	assert_true(start_view_mode("*", "echo 1", "read"));
 	assert_string_equal("echo 1", modview_current_viewer(lwin.vi));
 }

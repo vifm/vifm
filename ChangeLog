@@ -60,6 +60,9 @@
 	Run background programs detached from a terminal.  Thanks to Miguel Madrid
 	Mencía (a.k.a. mimame).
 
+	Allow exploring empty files or output of viewers.  Thanks to Andrew
+	Savchenko.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
