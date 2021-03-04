@@ -186,8 +186,8 @@ static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void goto_search_result(int repeat_count, int inverse_direction);
 static void search(int repeat_count, int backward);
-static void find_previous(void);
-static void find_next(void);
+static int find_previous(void);
+static int find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void update_with_half_win(key_info_t *key_info);
@@ -1394,20 +1394,19 @@ search(int repeat_count, int backward)
 		repeat_count = 1;
 	}
 
-	while(repeat_count-- > 0 && curr_stats.save_msg == 0)
+	while(repeat_count-- > 0)
 	{
-		if(backward)
+		if(backward ? find_previous() : find_next())
 		{
-			find_previous();
-		}
-		else
-		{
-			find_next();
+			display_error("Pattern not found");
+			break;
 		}
 	}
 }
 
-static void
+/* Scrolls to the previous search match.  Returns zero on success and non-zero
+ * if pattern wasn't found. */
+static int
 find_previous(void)
 {
 	char buf[ui_qv_width(vi->view)*4];
@@ -1447,14 +1446,19 @@ find_previous(void)
 			offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 		--vl;
 	}
+
 	draw();
+
 	if(vi->line != l || vi->nlines == 0)
 	{
-		display_error("Pattern not found");
+		return 1;
 	}
+	return 0;
 }
 
-static void
+/* Scrolls to the next search match.  Returns zero on success and non-zero if
+ * pattern wasn't found. */
+static int
 find_next(void)
 {
 	char buf[ui_qv_width(vi->view)*4];
@@ -1493,11 +1497,14 @@ find_next(void)
 		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 		++vl;
 	}
+
 	draw();
+
 	if(vi->line != l || vi->nlines == 0)
 	{
-		display_error("Pattern not found");
+		return 1;
 	}
+	return 0;
 }
 
 /* Extracts part of the line replacing all occurrences of horizontal tabulation
