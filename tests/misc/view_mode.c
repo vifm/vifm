@@ -203,6 +203,21 @@ TEST(searching_in_view_mode)
 	remove_file(SANDBOX_PATH "/file");
 }
 
+TEST(operations_with_empty_output)
+{
+	assert_true(start_view_mode("*", "true", TEST_DATA_PATH, "read"));
+
+	/* They just shouldn't crash. */
+	(void)vle_keys_exec_timed_out(WK_g);
+	(void)vle_keys_exec_timed_out(WK_PERCENT);
+	(void)vle_keys_exec_timed_out(L"?[0-9]");
+	(void)vle_keys_exec_timed_out(WK_CR);
+	(void)vle_keys_exec_timed_out(WK_n);
+	(void)vle_keys_exec_timed_out(WK_N);
+
+	modview_ruler_update();
+}
+
 static int
 start_view_mode(const char pattern[], const char viewers[],
 		const char base_dir[], const char sub_path[])
