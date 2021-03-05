@@ -1146,15 +1146,6 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 
 	vi->kind = kind;
 
-	if(vi->kind != VK_TEXTUAL && vi->nlines == 0)
-	{
-		/* Exploring absent output gives error, add an empty line to allow empty
-		 * output for graphical previewers. */
-		static char *lines[] = { "" };
-		vi->lines = lines;
-		vi->nlines = 1;
-	}
-
 	return error;
 }
 
