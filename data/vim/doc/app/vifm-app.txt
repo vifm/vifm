@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Feb 27
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5557,8 +5557,10 @@ Note that tree-view and compare view inhibit ls-like view.
 
 View columns are described by a comma-separated list of column descriptions,
 each of which has the following format >
-    [ '-' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type '}' '.'{0,3}
-where fw stands for full width and tw stands for text width.
+    [ '-' | '*' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type '}' '.'{0,3}
+where fw stands for full width, tw stands for text width, bar is logical or,
+square brackets denote optional parts and curly braces define range of
+repetitions for a symbol that precedes them.
 
 So it basically consists of four parts:
  1. Optional alignment specifier
@@ -5611,15 +5613,15 @@ Columns of different sizing types can be freely mixed in one view. Though
 sometimes some of columns can be seen partly or be completely invisible if
 there is not enough space to display them.
 
-Column name~
+Column contents~
 
-This is just a sort key surrounded with curly braces or {root}, e.g. >
+This is usually a sorting key surrounded with curly braces, e.g. >
     {name},{ext},{mtime}
 <
-{name} and {iname} keys are the same and present both for consistency with
+{name} and {iname} types are the same and present both for consistency with
 |vifm-'sort'| option.
 
-Following keys don't have corresponding sorting keys:
+Following types don't have corresponding sorting keys:
  - {root}     - display name without extension (as a complement for {ext})
  - {fileroot} - display name without extension for anything except for
                 directories and symbolic links to directories (as a
