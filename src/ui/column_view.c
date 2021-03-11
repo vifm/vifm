@@ -21,7 +21,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* malloc() free() */
-#include <string.h> /* memmove() memset() strcpy() strlen() */
+#include <string.h> /* memmove() memset() strcpy() strdup() strlen() */
 
 #include "../compat/reallocarray.h"
 #include "../utils/macros.h"
@@ -166,6 +166,12 @@ columns_free(columns_t *cols)
 void
 columns_clear(columns_t *cols)
 {
+	size_t i;
+	for(i = 0U; i < cols->count; ++i)
+	{
+		free(cols->list[i].info.literal);
+	}
+
 	free(cols->list);
 	cols->list = NULL;
 	cols->count = 0;
@@ -197,6 +203,12 @@ columns_add_column(columns_t *cols, column_info_t info)
 static int
 column_id_present(int column_id)
 {
+	if(column_id == FILL_COLUMN_ID)
+	{
+		/* This pseudo-column is always "present". */
+		return 1;
+	}
+
 	size_t i;
 	/* Validate column_id. */
 	for(i = 0; i < col_desc_count; i++)
@@ -237,6 +249,11 @@ static void
 init_new_column(column_t *col, column_info_t info)
 {
 	col->info = info;
+	if(info.literal != NULL)
+	{
+		col->info.literal = strdup(info.literal);
+	}
+
 	col->start = -1UL;
 	col->width = -1UL;
 	col->print_width = -1UL;
@@ -257,7 +274,8 @@ get_column_func(int column_id)
 			return col_desc->func;
 		}
 	}
-	assert(0 && "Unknown column id");
+
+	assert((column_id == FILL_COLUMN_ID) && "Unknown column id");
 	return NULL;
 }
 
@@ -283,7 +301,15 @@ columns_format_line(columns_t *cols, const void *data, size_t max_line_width)
 		AlignType align;
 		const column_t *const col = &cols->list[i];
 
-		col->func(col->info.column_id, data, sizeof(col_buffer), col_buffer);
+		if(col->info.literal == NULL)
+		{
+			col->func(col->info.column_id, data, sizeof(col_buffer), col_buffer);
+		}
+		else
+		{
+			copy_str(col_buffer, sizeof(col_buffer), col->info.literal);
+		}
+
 		strcpy(full_column, col_buffer);
 		align = decorate_output(col, col_buffer, sizeof(col_buffer),
 				max_line_width);

@@ -27,17 +27,21 @@
 #include "compat/reallocarray.h"
 #include "utils/macros.h"
 #include "utils/str.h"
+#include "utils/utf8.h"
 
 static column_info_t * parse_all(map_name_cb cn, const char str[], size_t *len,
 		void *arg);
+static void free_list(column_info_t *list, size_t list_len);
 static int parse(map_name_cb cn, const char str[], column_info_t *info,
 		void *arg);
 static void load_defaults(column_info_t *info);
 static const char * parse_align(const char str[], column_info_t *info);
-static const char * parse_width(const char str[], column_info_t *info);
+static const char * parse_width(const char str[], column_info_t *info,
+		int *present);
 static const char * parse_name(map_name_cb cn, const char str[],
 		column_info_t *info, void *arg);
-static const char * parse_cropping(const char str[], column_info_t *info);
+static const char * parse_cropping(const char str[], column_info_t *info,
+		int *present);
 static int extend_column_list(column_info_t **list, size_t *len);
 static void add_all(columns_t *columns, add_column_cb ac,
 		const column_info_t *list, size_t len);
@@ -51,7 +55,7 @@ parse_columns(columns_t *columns, add_column_cb ac, map_name_cb cn,
 	if((list = parse_all(cn, str, &list_len, arg)) != NULL)
 	{
 		add_all(columns, ac, list, list_len);
-		free(list);
+		free_list(list, list_len);
 		return 0;
 	}
 	return 1;
@@ -95,7 +99,7 @@ parse_all(map_name_cb cn, const char str[], size_t *len, void *arg)
 
 	if(token != NULL)
 	{
-		free(list);
+		free_list(list, list_len);
 		return NULL;
 	}
 	else
@@ -105,21 +109,55 @@ parse_all(map_name_cb cn, const char str[], size_t *len, void *arg)
 	}
 }
 
+/* Frees list of column info structures. */
+static void
+free_list(column_info_t *list, size_t list_len)
+{
+	if(list == NULL)
+	{
+		return;
+	}
+
+	size_t i;
+	for(i = 0U; i < list_len; ++i)
+	{
+		free(list[i].literal);
+	}
+	free(list);
+}
+
 /* Parses single column description.  Returns zero on successful parsing. */
 static int
 parse(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 {
 	load_defaults(info);
+
+	int width_present = 0, cropping_present = 0;
 	if((str = parse_align(str, info)) != NULL)
 	{
-		if((str = parse_width(str, info)) != NULL)
+		if((str = parse_width(str, info, &width_present)) != NULL)
 		{
 			if((str = parse_name(cn, str, info, arg)) != NULL)
 			{
-				str = parse_cropping(str, info);
+				str = parse_cropping(str, info, &cropping_present);
 			}
 		}
 	}
+
+	if(info->literal != NULL)
+	{
+		if(!width_present)
+		{
+			info->sizing = ST_ABSOLUTE;
+			info->text_width = utf8_strsw(info->literal);
+			info->full_width = info->text_width;
+		}
+		if(!cropping_present)
+		{
+			info->cropping = CT_TRUNCATE;
+		}
+	}
+
 	return str == NULL || *str != '\0';
 }
 
@@ -127,6 +165,7 @@ parse(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 static void
 load_defaults(column_info_t *info)
 {
+	info->literal = NULL;
 	info->column_id = FILL_COLUMN_ID;
 	info->full_width = -1;
 	info->text_width = -1;
@@ -153,11 +192,15 @@ parse_align(const char str[], column_info_t *info)
 	return str;
 }
 
-/* Parses width part of format string. Returns pointer to next char to parse or
- * NULL on error. */
+/* Parses width part of format string.  Always sets *present to indicate whether
+ * width field was present.  Returns pointer to next char to parse or NULL on
+ * error. */
 static const char *
-parse_width(const char str[], column_info_t *info)
+parse_width(const char str[], column_info_t *info, int *present)
 {
+	const char *orig = str;
+	*present = 0;
+
 	if(isdigit(*str))
 	{
 		char *end;
@@ -194,6 +237,7 @@ parse_width(const char str[], column_info_t *info)
 		return NULL;
 	}
 
+	*present = (str != orig);
 	return str;
 }
 
@@ -211,6 +255,13 @@ parse_name(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 			const size_t len = MIN(sizeof(name),
 					(size_t)(closing_brace - (str + 1) + 1));
 			(void)copy_str(name, len, str + 1);
+
+			if(name[0] == '#')
+			{
+				info->literal = strdup(name + 1);
+				return closing_brace + 1;
+			}
+
 			if((info->column_id = cn(name, arg)) >= 0)
 			{
 				return closing_brace + 1;
@@ -220,12 +271,15 @@ parse_name(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 	return NULL;
 }
 
-/* Parses cropping part of format string. Returns pointer to next char to parse
+/* Parses cropping part of format string.  Always sets *present to indicate
+ * whether cropping field was present.  RReturns pointer to next char to parse
  * or NULL on error. */
 static const char *
-parse_cropping(const char str[], column_info_t *info)
+parse_cropping(const char str[], column_info_t *info, int *present)
 {
 	int dot_count = strspn(str, ".");
+	*present = (dot_count > 0);
+
 	switch(dot_count)
 	{
 		case 1:

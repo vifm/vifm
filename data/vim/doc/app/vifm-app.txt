@@ -5557,7 +5557,7 @@ Note that tree-view and compare view inhibit ls-like view.
 
 View columns are described by a comma-separated list of column descriptions,
 each of which has the following format >
-    [ '-' | '*' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type '}' '.'{0,3}
+    [ '-' | '*' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type | literal '}' '.'{0,3}
 where fw stands for full width, tw stands for text width, bar is logical or,
 square brackets denote optional parts and curly braces define range of
 repetitions for a symbol that precedes them.
@@ -5631,7 +5631,15 @@ Empty curly braces ({}) are replaced with the default secondary column for
 primary sort key. So after the next command views will be displayed almost as
 if |vifm-'viewcolumns'| is empty, but adding ellipsis for long file names: >
     set viewcolumns=-{name}..,6{}.
-<
+
+The last kind of column value is a string literal.  The literal is used as a
+column value for every row.  The syntax is `{#literal}`, for example: >
+    3{#},{#|},{# | }
+This can be used to draw column separators.  Mind that for convenience
+literals have different defaults: truncation and automatically determined
+absolute size, which is what you usually want for them.  Example: >
+    set viewcolumns=*{name}..,{#|},6{}.
+
 Cropping specifier~
 
 It's from one to three dots after closing curly brace in column format.
