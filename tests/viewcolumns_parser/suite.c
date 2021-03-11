@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "../../src/ui/column_view.h"
 #include "../../src/viewcolumns_parser.h"
@@ -14,7 +15,14 @@ DEFINE_SUITE();
 static void
 add_column(columns_t *columns, column_info_t column_info)
 {
+	free(info.literal);
+
 	info = column_info;
+
+	if(info.literal != NULL)
+	{
+		info.literal = strdup(info.literal);
+	}
 }
 
 static int

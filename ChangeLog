@@ -35,6 +35,9 @@
 	highlight group (within their hierarchy) to appending to it.  Thanks to
 	Andrew Savchenko.
 
+	Added literal values to 'viewcolumns' option.  Thanks to Jose Riha (a.k.a.
+	jose1711), chelovechishko, DieSpinne and rwtallant13.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

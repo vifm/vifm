@@ -67,6 +67,7 @@ typedef void (*column_line_print_func)(const void *data, int column_id,
 /* Structure containing various column display properties. */
 typedef struct
 {
+	char *literal;     /* Fixed contents of the column. */
 	int column_id;     /* Unique id of existing column. */
 	size_t full_width; /* Full width of the column, units depend on size type. */
 	size_t text_width; /* Text width, ignored unless size type is ST_ABSOLUTE. */
