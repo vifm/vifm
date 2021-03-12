@@ -56,12 +56,12 @@ CropType;
 typedef struct columns_t columns_t;
 
 /* A column callback function, which should fill the buf with column text. */
-typedef void (*column_func)(int id, const void *data, size_t buf_len,
-		char buf[]);
+typedef void (*column_func)(void *data, int id, const void *format_data,
+		size_t buf_len, char buf[]);
 
 /* A callback function, for displaying column contents.  Alignment specifies
  * actual alignment of current column (AT_DYN won't appear here). */
-typedef void (*column_line_print_func)(const void *data, int column_id,
+typedef void (*column_line_print_func)(const void *format_data, int column_id,
 		const char buf[], size_t offset, AlignType align, const char full_column[]);
 
 /* Structure containing various column display properties. */
@@ -86,7 +86,7 @@ void columns_set_ellipsis(const char ell[]);
 
 /* Registers column func by its unique column_id.
  * Returns zero on success and non-zero otherwise. */
-int columns_add_column_desc(int column_id, column_func func);
+int columns_add_column_desc(int column_id, column_func func, void *data);
 
 /* Unregisters all column functions. */
 void columns_clear_column_descs(void);
@@ -105,7 +105,7 @@ void columns_add_column(columns_t *cols, column_info_t info);
 void columns_clear(columns_t *cols);
 
 /* Performs actual formatting of columns. */
-void columns_format_line(columns_t *cols, const void *data,
+void columns_format_line(columns_t *cols, const void *format_data,
 		size_t max_line_width);
 
 /* Checks if recalculation is needed.  Returns non-zero if so, otherwise zero is

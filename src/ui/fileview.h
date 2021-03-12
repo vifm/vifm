@@ -167,7 +167,8 @@ TSTATIC_DEFS(
 	}
 	column_data_t;
 
-	void format_name(int id, const void *data, size_t buf_len, char buf[]);
+	void format_name(void *data, int id, const void *format_data, size_t buf_len,
+			char buf[]);
 )
 
 #endif /* VIFM__UI__FILEVIEW_H__ */

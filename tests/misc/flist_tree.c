@@ -637,7 +637,7 @@ verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 	char name[NAME_MAX + 1];
 	cdt->entry = &cdt->view->dir_entry[idx];
 	cdt->line_pos = idx;
-	format_name(-1, cdt, sizeof(name), name);
+	format_name(NULL, -1, cdt, sizeof(name), name);
 	assert_string_equal(expected, name);
 }
 
