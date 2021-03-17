@@ -57,28 +57,6 @@
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"
 
-/* Packet set of parameters to pass as user data for processing columns. */
-typedef struct
-{
-	view_t *view;       /* View on which cell is being drawn. */
-	dir_entry_t *entry; /* Entry that is being displayed. */
-	int line_pos;       /* File position in the file list (the view).  Can be -1
-	                     * for filler (entry should still be supplied though). */
-	int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
-	int current_pos;    /* Position of entry selected with the cursor. */
-	int total_width;    /* Total width available for drawing. */
-	int number_width;   /* Whether to draw line numbers. */
-
-	size_t current_line;  /* Line of the cell within the view window. */
-	size_t column_offset; /* Offset in characters of the column. */
-
-	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
-	                     * A pointer to allow changing value in const struct.
-	                     * Should be zero first time, then auto reset. */
-	int is_main;        /* Whether this is main file list. */
-}
-column_data_t;
-
 static void draw_left_column(view_t *view);
 static void draw_right_column(view_t *view);
 static void print_column(view_t *view, entries_t entries, const char current[],

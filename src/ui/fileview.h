@@ -20,9 +20,35 @@
 #ifndef VIFM__UI__FILEVIEW_H__
 #define VIFM__UI__FILEVIEW_H__
 
+#include <stddef.h> /* size_t */
+
 #include "../utils/test_helpers.h"
 
+struct dir_entry_t;
 struct view_t;
+
+/* Packet set of parameters to pass as user data for processing columns. */
+typedef struct
+{
+	struct view_t *view;       /* View on which cell is being drawn. */
+	struct dir_entry_t *entry; /* Entry that is being displayed. */
+
+	int line_pos;      /* File position in the file list (the view).  Can be -1
+	                    * for filler (entry should still be supplied though). */
+	int line_hi_group; /* Line highlight (to avoid per-column calculation). */
+	int current_pos;   /* Position of entry selected with the cursor. */
+	int total_width;   /* Total width available for drawing. */
+	int number_width;  /* Whether to draw line numbers. */
+
+	size_t current_line;  /* Line of the cell within the view window. */
+	size_t column_offset; /* Offset in characters of the column. */
+
+	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
+	                     * A pointer to allow changing value in const struct.
+	                     * Should be zero first time, then auto reset. */
+	int is_main;        /* Whether this is main file list. */
+}
+column_data_t;
 
 /* Initialization/termination functions. */
 
@@ -138,35 +164,7 @@ void fview_position_updated(struct view_t *view);
  * sorting changed. */
 void fview_sorting_updated(struct view_t *view);
 
-#ifdef TEST
-#include <stddef.h> /* size_t */
-
-#include "ui.h"
-#endif
-
 TSTATIC_DEFS(
-	/* Packet set of parameters to pass as user data for processing columns. */
-	typedef struct
-	{
-		struct view_t *view; /* View on which cell is being drawn. */
-		dir_entry_t *entry;  /* Entry that is being displayed. */
-		int line_pos;        /* File position in the file list (the view). */
-		int line_hi_group;   /* Line highlight (to avoid per-column calculation). */
-		int current_pos;     /* Position of entry selected with the cursor. */
-		int total_width;     /* Total width available for drawing. */
-		int number_width;    /* Width of line number column (0 when disabled). */
-
-		size_t current_line;  /* Line of the cell within the view window. */
-		size_t column_offset; /* Offset in characters of the column. */
-
-		size_t *prefix_len; /* Data prefix length (should be drawn in neutral
-		                       color).  A pointer to allow changing value in const
-		                       struct.  Should be zero first time, then auto
-		                       reset. */
-		int is_main;        /* Whether this is main file list. */
-	}
-	column_data_t;
-
 	void format_name(void *data, int id, const void *format_data, size_t buf_len,
 			char buf[]);
 )
