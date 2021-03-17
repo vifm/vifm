@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Feb 20
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -106,11 +106,11 @@ as well as for debugging.
 *vifm-lua-libs*
 
 The following standard libraries are enabled:
- * basic
- * table manipulation
- * string manipulation
- * input and output
- * mathematical functions
+ * basic (core global functions)
+ * table manipulation (`tbl` table)
+ * string manipulation (`string` table)
+ * input and output (`io` table)
+ * mathematical functions (`math` table)
 
 --------------------------------------------------------------------------------
 *vifm-plugins*
