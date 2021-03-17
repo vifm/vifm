@@ -47,6 +47,7 @@
 #include "vifmview.h"
 #include "vlua_state.h"
 
+static void patch_env(lua_State *lua);
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
 static int opts_global_index(lua_State *lua);
@@ -88,6 +89,7 @@ vlua_init(void)
 	vlua_t *vlua = vlua_state_alloc();
 	if(vlua != NULL)
 	{
+		patch_env(vlua->lua);
 		load_api(vlua->lua);
 	}
 	return vlua;
@@ -97,6 +99,14 @@ void
 vlua_finish(vlua_t *vlua)
 {
 	vlua_state_free(vlua);
+}
+
+/* Adjusts standard libraries. */
+static void
+patch_env(lua_State *lua)
+{
+	lua_pushcfunction(lua, &print);
+	lua_setglobal(lua, "print");
 }
 
 /* Fills Lua state with application-specific API. */
@@ -110,9 +120,6 @@ load_api(lua_State *lua)
 	lua_pushglobaltable(lua);
 	lua_setfield(lua, -2, "__index");
 	lua_pop(lua, 1);
-
-	lua_pushcfunction(lua, &print);
-	lua_setglobal(lua, "print");
 
 	luaL_newlib(lua, vifm_methods);
 
