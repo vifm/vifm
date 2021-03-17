@@ -111,6 +111,8 @@ The following standard libraries are enabled:
  * string manipulation (`string` table)
  * input and output (`io` table)
  * mathematical functions (`math` table)
+ * time subset of OS facilities (`clock`, `date`, `difftime` and `time`
+   elements of `os` table)
 
 --------------------------------------------------------------------------------
 *vifm-plugins*

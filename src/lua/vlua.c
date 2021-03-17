@@ -107,6 +107,19 @@ patch_env(lua_State *lua)
 {
 	lua_pushcfunction(lua, &print);
 	lua_setglobal(lua, "print");
+
+	lua_getglobal(lua, "os");
+	lua_newtable(lua);
+	lua_getfield(lua, -2, "clock");
+	lua_setfield(lua, -2, "clock");
+	lua_getfield(lua, -2, "date");
+	lua_setfield(lua, -2, "date");
+	lua_getfield(lua, -2, "difftime");
+	lua_setfield(lua, -2, "difftime");
+	lua_getfield(lua, -2, "time");
+	lua_setfield(lua, -2, "time");
+	lua_setglobal(lua, "os");
+	lua_pop(lua, 1);
 }
 
 /* Fills Lua state with application-specific API. */
