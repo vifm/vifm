@@ -160,21 +160,21 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	lua/lua/ltm.$(OBJEXT) lua/lua/lundump.$(OBJEXT) \
 	lua/lua/lutf8lib.$(OBJEXT) lua/lua/lvm.$(OBJEXT) \
 	lua/lua/lzio.$(OBJEXT) lua/common.$(OBJEXT) \
-	lua/vifm_cmds.$(OBJEXT) lua/vifmjob.$(OBJEXT) \
-	lua/vifmview.$(OBJEXT) lua/vlua.$(OBJEXT) \
-	lua/vlua_state.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
-	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
-	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
-	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
-	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
-	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
-	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
-	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
-	menus/media_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
-	menus/plugins_menu.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
-	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
-	menus/vifm_menu.$(OBJEXT) \
+	lua/vifm_cmds.$(OBJEXT) lua/vifm_viewcolumns.$(OBJEXT) \
+	lua/vifmjob.$(OBJEXT) lua/vifmview.$(OBJEXT) \
+	lua/vlua.$(OBJEXT) lua/vlua_state.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
+	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
+	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
+	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
+	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
+	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
+	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
+	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
+	menus/marks_menu.$(OBJEXT) menus/media_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/plugins_menu.$(OBJEXT) \
+	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
+	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -767,6 +767,7 @@ vifm_SOURCES = \
 	\
 	lua/common.c lua/common.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
+	lua/vifm_viewcolumns.c lua/vifm_viewcolumns.h \
 	lua/vifmjob.c lua/vifmjob.h \
 	lua/vifmview.c lua/vifmview.h \
 	lua/vlua.c lua/vlua.h \
@@ -1208,6 +1209,8 @@ lua/common.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_cmds.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
+lua/vifm_viewcolumns.$(OBJEXT): lua/$(am__dirstamp) \
+	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifmjob.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifmview.$(OBJEXT): lua/$(am__dirstamp) \
@@ -1572,6 +1575,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/traverser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_cmds.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_viewcolumns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifmjob.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifmview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vlua.Po@am__quote@

@@ -19,7 +19,9 @@
 #ifndef VIFM__LUA__VLUA_H__
 #define VIFM__LUA__VLUA_H__
 
-/* This unit implements Lua interface. */
+/* This unit implements Lua interface.  It provides API for the rest of the
+ * application and thus this is the only header that needs to be included from
+ * the outside. */
 
 /* Declaration of opaque state of the unit. */
 typedef struct vlua_t vlua_t;
@@ -44,6 +46,9 @@ struct cmd_info_t;
 /* Performs completion of a command.  Returns offset of completion matches. */
 int vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info,
 		int arg_pos);
+
+/* Maps column name to column id.  Returns column id or -1 on error. */
+int vlua_map_viewcolumn(vlua_t *vlua, const char name[]);
 
 #endif /* VIFM__LUA__VLUA_H__ */
 

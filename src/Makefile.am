@@ -178,6 +178,7 @@ vifm_SOURCES = \
 	\
 	lua/common.c lua/common.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
+	lua/vifm_viewcolumns.c lua/vifm_viewcolumns.h \
 	lua/vifmjob.c lua/vifmjob.h \
 	lua/vifmview.c lua/vifmview.h \
 	lua/vlua.c lua/vlua.h \

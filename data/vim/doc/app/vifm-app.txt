@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 11
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3830,8 +3830,8 @@ key, etc.):
    [+-]nitems  - number of items in a directory (zero for files)
    [+-]groups  - groups extracted via regexps from |vifm-'sortgroups'|
    [+-]target  - symbolic link target (empty for other file types)
-   [+-]atime   - time accessed (e.g. read, executed)
-   [+-]ctime   - time changed (changes in metadata, e.g. mode)
+   [+-]atime   - time accessed (e.g., read, executed)
+   [+-]ctime   - time changed (changes in metadata, like mode)
    [+-]mtime   - time modified (when file contents is changed)
 
 Note: look for st_atime, st_ctime and st_mtime in "man 2 stat" for more

@@ -34,6 +34,7 @@
 #include "engine/options.h"
 #include "engine/text_buffer.h"
 #include "int/term_title.h"
+#include "lua/vlua.h"
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
@@ -3148,12 +3149,10 @@ add_column(columns_t *columns, column_info_t column_info)
 	}
 }
 
-/* Maps column name to column id.  Returns column id. */
+/* Maps column name to column id.  Returns column id or -1 on error. */
 static int
 map_name(const char name[], void *arg)
 {
-	int pos;
-
 	/* Handle secondary key (designated by {}). */
 	if(*name == '\0')
 	{
@@ -3162,9 +3161,14 @@ map_name(const char name[], void *arg)
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
 
-	pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
+	int pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
 			name);
-	return (pos >= 0) ? (pos + 1) : -1;
+	if(pos >= 0)
+	{
+		return (pos + 1);
+	}
+
+	return vlua_map_viewcolumn(curr_stats.vlua, name);
 }
 
 void

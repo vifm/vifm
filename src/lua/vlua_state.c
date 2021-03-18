@@ -127,5 +127,20 @@ get_state(lua_State *lua)
 	return vlua;
 }
 
+void
+vlua_state_make_table(vlua_t *vlua, void *key)
+{
+	lua_pushlightuserdata(vlua->lua, key);
+	lua_newtable(vlua->lua);
+	lua_settable(vlua->lua, LUA_REGISTRYINDEX);
+}
+
+void
+vlua_state_get_table(vlua_t *vlua, void *key)
+{
+	lua_pushlightuserdata(vlua->lua, key);
+	lua_gettable(vlua->lua, LUA_REGISTRYINDEX);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
