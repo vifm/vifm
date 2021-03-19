@@ -760,8 +760,14 @@ TEST(plugin_command)
 	curr_stats.plugs = plugs_create(curr_stats.vlua);
 
 	ui_sb_msg("");
+	assert_failure(exec_commands("plugin load all", &lwin, CIT_COMMAND));
+	assert_string_equal("Trailing characters", ui_sb_last());
 	assert_failure(exec_commands("plugin wrong arg", &lwin, CIT_COMMAND));
 	assert_string_equal("Unknown subcommand: wrong", ui_sb_last());
+	assert_failure(exec_commands("plugin args-count", &lwin, CIT_COMMAND));
+	assert_string_equal("Too few arguments", ui_sb_last());
+
+	assert_success(exec_commands("plugin load", &lwin, CIT_COMMAND));
 
 	strlist_t empty_list = {};
 	char *plug_items[] = { "plug" };

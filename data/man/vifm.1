@@ -2497,6 +2497,12 @@ switch to a one window view.
 .TP
 .BI "                                         :plugin"
 .TP
+.BI ":plugin load"
+loads all plugins.  To be used in configuration file to manually load
+plugins at an earlier point.  The plugins can be loaded only once,
+additional calls will do nothing.
+.TP
+.TP
 .BI ":plugin blacklist {plugin}"
 adds {plugin} to the list of plugins to be ignored.
 .TP

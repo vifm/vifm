@@ -684,7 +684,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "plugin",            .abbr = NULL,    .id = COM_PLUGIN,
 	  .descr = "manage plugins",
 	  .flags = HAS_COMMENT,
-	  .handler = &plugin_cmd,      .min_args = 2,   .max_args = 2, },
+	  .handler = &plugin_cmd,      .min_args = 1,   .max_args = 2, },
 	{ .name = "plugins",           .abbr = NULL,    .id = -1,
 	  .descr = "display plugins menu",
 	  .flags = HAS_COMMENT,
@@ -3620,6 +3620,22 @@ only_cmd(const cmd_info_t *cmd_info)
 static int
 plugin_cmd(const cmd_info_t *cmd_info)
 {
+	if(strcmp(cmd_info->argv[0], "load") == 0)
+	{
+		if(cmd_info->argc != 1)
+		{
+			return CMDS_ERR_TRAILING_CHARS;
+		}
+
+		plugs_load(curr_stats.plugs, cfg.config_dir);
+		return 0;
+	}
+
+	if(cmd_info->argc != 2)
+	{
+		return CMDS_ERR_TOO_FEW_ARGS;
+	}
+
 	if(strcmp(cmd_info->argv[0], "blacklist") == 0)
 	{
 		plugs_blacklist(curr_stats.plugs, cmd_info->argv[1]);

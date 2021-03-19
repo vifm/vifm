@@ -78,6 +78,7 @@ void plug_log(plug_t *plug, const char msg[]);
 
 TSTATIC_DEFS(
 	void plugs_sort(plugs_t *plugs);
+	int plugs_loaded(const plugs_t *plugs);
 	struct strlist_t;
 	struct strlist_t plugs_get_blacklist(plugs_t *plugs);
 	struct strlist_t plugs_get_whitelist(plugs_t *plugs);

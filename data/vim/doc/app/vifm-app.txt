@@ -2134,6 +2134,10 @@ order using the '.' operator.  Any whitespace is ignored.
     switch to a one window view.
 
                                                *vifm-:plugin*
+:plugin load
+    loads all plugins.  To be used in configuration file to manually load
+    plugins at an earlier point.  The plugins can be loaded only once,
+    additional calls will do nothing.
 :plugin blacklist {plugin}
     adds {plugin} to the list of plugins to be ignored.
 :plugin whitelist {plugin}

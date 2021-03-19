@@ -103,6 +103,31 @@ TEST(multiple_plugins_loaded)
 	remove_dir(SANDBOX_PATH "/plugins/plug2");
 }
 
+TEST(can_load_plugins_only_once)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
+	assert_false(plugs_loaded(plugs));
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+
+	assert_true(plugs_loaded(plugs));
+
+	const plug_t *plug;
+	assert_true(plugs_get(plugs, 0, &plug));
+	assert_false(plugs_get(plugs, 1, &plug));
+
+	plugs_load(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+	assert_true(plugs_loaded(plugs));
+
+	assert_true(plugs_get(plugs, 0, &plug));
+	assert_false(plugs_get(plugs, 1, &plug));
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
 TEST(loading_missing_plugin_fails)
 {
 	assert_failure(vlua_load_plugin(vlua, "plug", &plug_dummy));
