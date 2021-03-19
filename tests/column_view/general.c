@@ -8,7 +8,8 @@
 
 static void print_not_less_than_zero(const void *data, int column_id,
 		const char buf[], size_t offset, AlignType align);
-static void column12_func(int id, const void *data, size_t buf_len, char buf[]);
+static void column12_func(void *data, int id, const void *format_data,
+		size_t buf_len, char buf[]);
 
 static const size_t MAX_WIDTH = 80;
 
@@ -49,15 +50,16 @@ print_not_less_than_zero(const void *data, int column_id, const char buf[],
 }
 
 static void
-column12_func(int id, const void *data, size_t buf_len, char buf[])
+column12_func(void *data, int id, const void *format_data, size_t buf_len,
+		char buf[])
 {
 	buf[0] = '\0';
 }
 
 TEST(cant_add_columns_with_same_id)
 {
-	assert_false(columns_add_column_desc(COL1_ID, NULL) == 0);
-	assert_false(columns_add_column_desc(COL2_ID, NULL) == 0);
+	assert_false(columns_add_column_desc(COL1_ID, NULL, NULL) == 0);
+	assert_false(columns_add_column_desc(COL2_ID, NULL, NULL) == 0);
 }
 
 TEST(not_out_of_max_width)

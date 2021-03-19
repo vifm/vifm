@@ -107,6 +107,7 @@ there for instructions.
     |  |  |-- lua/ - Lua 5.4.2 sources
     |  |  |-- common.c - common code for Lua API implementation
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
+    |  |  |-- vifm_viewcolumns.c - implementation of `vifm.addcolumntype`
     |  |  |-- vifmjob.c - implementation of VifmJob
     |  |  |-- vifmview.c - implementation of VifmView
     |  |  |-- vlua.c - main Lua interface unit

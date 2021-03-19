@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Feb 20
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -106,11 +106,13 @@ as well as for debugging.
 *vifm-lua-libs*
 
 The following standard libraries are enabled:
- * basic
- * table manipulation
- * string manipulation
- * input and output
- * mathematical functions
+ * basic (core global functions)
+ * table manipulation (`tbl` table)
+ * string manipulation (`string` table)
+ * input and output (`io` table)
+ * mathematical functions (`math` table)
+ * time subset of OS facilities (`clock`, `date`, `difftime` and `time`
+   elements of `os` table)
 
 --------------------------------------------------------------------------------
 *vifm-plugins*
@@ -174,6 +176,36 @@ Table for managing plugins.  See |vifm-l_vifm.plugins|.
 
 vifm.sb
 Table for managing statusbar.  See |vifm-l_vifm.sb|.
+
+vifm.addcolumntype({column})                   *vifm-l_vifm.addcolumntype()*
+Registers a new view column type to be used in |vifm-'viewcolumns'| option.
+
+Possible fields of {column}:
+ - "name" (string)
+   Name of the command.  Must consist of Latin characters and not start with
+   the lower case one (those are reserved for builtin columns).
+ - "handler" (function)
+   Handler which accepts {info} and returns a value for the table's cell.
+
+Fields of {info} argument for "handler":
+ - "entry" (table)
+   Information about a file list entry.
+
+Fields of {info}.entry for "handler":
+ - "name" (string)
+   Name of the file.
+ - "origin" (string)
+   Location of the file.
+ - "size" (integer)
+   Size of the file in bytes.
+ - "atime" (integer)
+   File access time (e.g., read, executed).  In seconds since the Unix epoch.
+ - "ctime" (integer)
+   File change time (changes in metadata, like mode).  In seconds since the
+   Unix epoch.
+ - "mtime" (integer)
+   File modification time (when file contents is changed).  In seconds since
+   the Unix epoch.
 
 vifm.currview({path})                          *vifm-l_vifm.currview()*
 Retrives a reference to current view.

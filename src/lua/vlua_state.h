@@ -60,6 +60,14 @@ const char * state_store_string(vlua_t *vlua, const char str[]);
 /* Retrieves pointer to vlua from Lua state.  Returns the pointer. */
 vlua_t * get_state(struct lua_State *lua);
 
+/* Creates an empty table which can be accessed later by passing
+ * vlua_state_get_table() the same key. */
+void vlua_state_make_table(vlua_t *vlua, void *key);
+
+/* Retrieves table previously created by vlua_state_get_table() and puts it on
+ * the top of the stack. */
+void vlua_state_get_table(vlua_t *vlua, void *key);
+
 #endif /* VIFM__LUA__VLUA_STATE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

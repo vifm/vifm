@@ -655,6 +655,7 @@ const char *tags[] = {
 	"vifm-l_VifmView.viewopts",
 	"vifm-l_VifmView:cd()",
 	"vifm-l_vifm",
+	"vifm-l_vifm.addcolumntype()",
 	"vifm-l_vifm.cmds",
 	"vifm-l_vifm.cmds.add()",
 	"vifm-l_vifm.cmds.command()",

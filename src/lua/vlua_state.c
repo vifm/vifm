@@ -49,6 +49,7 @@ vlua_state_alloc(void)
 	luaL_requiref(vlua->lua, LUA_IOLIBNAME, &luaopen_io, 1);
 	luaL_requiref(vlua->lua, LUA_STRLIBNAME, &luaopen_string, 1);
 	luaL_requiref(vlua->lua, LUA_MATHLIBNAME, &luaopen_math, 1);
+	luaL_requiref(vlua->lua, LUA_OSLIBNAME, &luaopen_os, 1);
 	lua_pop(vlua->lua, 5);
 
 	return vlua;
@@ -124,6 +125,21 @@ get_state(lua_State *lua)
 	vlua_t *vlua = lua_touserdata(lua, -1);
 	lua_pop(lua, 1);
 	return vlua;
+}
+
+void
+vlua_state_make_table(vlua_t *vlua, void *key)
+{
+	lua_pushlightuserdata(vlua->lua, key);
+	lua_newtable(vlua->lua);
+	lua_settable(vlua->lua, LUA_REGISTRYINDEX);
+}
+
+void
+vlua_state_get_table(vlua_t *vlua, void *key)
+{
+	lua_pushlightuserdata(vlua->lua, key);
+	lua_gettable(vlua->lua, LUA_REGISTRYINDEX);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

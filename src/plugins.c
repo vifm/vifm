@@ -45,6 +45,8 @@ struct plugs_t
 
 	plug_t **plugs;           /* Known plugins. */
 	DA_INSTANCE_FIELD(plugs); /* Declarations to enable use of DA_* on plugs. */
+
+	int loaded; /* Whether plugins were loaded, shouldn't load them twice. */
 };
 
 static void plug_free(plug_t *plug);
@@ -55,6 +57,7 @@ static void plug_logf(plug_t *plug, const char format[], ...)
 static void add_if_missing(strlist_t *strlist, const char item[]);
 TSTATIC void plugs_sort(plugs_t *plugs);
 static int plug_cmp(const void *a, const void *b);
+TSTATIC int plugs_loaded(const plugs_t *plugs);
 TSTATIC strlist_t plugs_get_blacklist(plugs_t *plugs);
 TSTATIC strlist_t plugs_get_whitelist(plugs_t *plugs);
 
@@ -93,6 +96,11 @@ plugs_free(plugs_t *plugs)
 void
 plugs_load(plugs_t *plugs, const char base_dir[])
 {
+	if(plugs->loaded)
+	{
+		return;
+	}
+
 	char full_path[PATH_MAX + 1];
 	snprintf(full_path, sizeof(full_path), "%s/plugins", base_dir);
 
@@ -101,6 +109,8 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 	{
 		return;
 	}
+
+	plugs->loaded = 1;
 
 	struct dirent *entry;
 	while((entry = os_readdir(dir)) != NULL)
@@ -314,6 +324,12 @@ plug_cmp(const void *a, const void *b)
 	const plug_t *plug_a = *(const plug_t **)a;
 	const plug_t *plug_b = *(const plug_t **)b;
 	return strcmp(plug_a->path, plug_b->path);
+}
+
+TSTATIC int
+plugs_loaded(const plugs_t *plugs)
+{
+	return plugs->loaded;
 }
 
 /* Retrieves blacklist.  Returns the list. */

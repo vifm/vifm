@@ -43,10 +43,12 @@
 #include "lua/lua.h"
 #include "common.h"
 #include "vifm_cmds.h"
+#include "vifm_viewcolumns.h"
 #include "vifmjob.h"
 #include "vifmview.h"
 #include "vlua_state.h"
 
+static void patch_env(lua_State *lua);
 static void load_api(lua_State *lua);
 static int print(lua_State *lua);
 static int opts_global_index(lua_State *lua);
@@ -64,14 +66,15 @@ static void setup_plugin_env(lua_State *lua, plug_t *plug);
 
 /* Functions of `vifm` global table. */
 static const struct luaL_Reg vifm_methods[] = {
-	{ "errordialog", &vifm_errordialog  },
-	{ "fnamemodify", &vifm_fnamemodify  },
-	{ "exists",      &vifm_exists       },
-	{ "makepath",    &vifm_makepath     },
-	{ "startjob",    &vifmjob_new       },
-	{ "expand",      &vifm_expand       },
-	{ "currview",    &vifmview_currview },
-	{ NULL,          NULL               }
+	{ "errordialog",   &vifm_errordialog   },
+	{ "fnamemodify",   &vifm_fnamemodify   },
+	{ "exists",        &vifm_exists        },
+	{ "makepath",      &vifm_makepath      },
+	{ "startjob",      &vifmjob_new        },
+	{ "expand",        &vifm_expand        },
+	{ "currview",      &vifmview_currview  },
+	{ "addcolumntype", &vifm_addcolumntype },
+	{ NULL,            NULL                }
 };
 
 /* Functions of `vifm.sb` table. */
@@ -88,7 +91,9 @@ vlua_init(void)
 	vlua_t *vlua = vlua_state_alloc();
 	if(vlua != NULL)
 	{
+		patch_env(vlua->lua);
 		load_api(vlua->lua);
+		vifm_viewcolumns_init(vlua);
 	}
 	return vlua;
 }
@@ -97,6 +102,27 @@ void
 vlua_finish(vlua_t *vlua)
 {
 	vlua_state_free(vlua);
+}
+
+/* Adjusts standard libraries. */
+static void
+patch_env(lua_State *lua)
+{
+	lua_pushcfunction(lua, &print);
+	lua_setglobal(lua, "print");
+
+	lua_getglobal(lua, "os");
+	lua_newtable(lua);
+	lua_getfield(lua, -2, "clock");
+	lua_setfield(lua, -2, "clock");
+	lua_getfield(lua, -2, "date");
+	lua_setfield(lua, -2, "date");
+	lua_getfield(lua, -2, "difftime");
+	lua_setfield(lua, -2, "difftime");
+	lua_getfield(lua, -2, "time");
+	lua_setfield(lua, -2, "time");
+	lua_setglobal(lua, "os");
+	lua_pop(lua, 1);
 }
 
 /* Fills Lua state with application-specific API. */
@@ -110,9 +136,6 @@ load_api(lua_State *lua)
 	lua_pushglobaltable(lua);
 	lua_setfield(lua, -2, "__index");
 	lua_pop(lua, 1);
-
-	lua_pushcfunction(lua, &print);
-	lua_setglobal(lua, "print");
 
 	luaL_newlib(lua, vifm_methods);
 
@@ -404,6 +427,12 @@ int
 vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info, int arg_pos)
 {
 	return vifm_cmds_complete(vlua->lua, cmd_info, arg_pos);
+}
+
+int
+vlua_map_viewcolumn(vlua_t *vlua, const char name[])
+{
+	return vifm_viewcolumns_map(vlua, name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

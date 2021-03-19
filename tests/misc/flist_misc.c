@@ -462,30 +462,30 @@ TEST(filename_is_formatted_according_to_column_and_filetype)
 
 	cdt.entry = &dir_entry;
 
-	format_name(SK_BY_INAME, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_INAME, &cdt, sizeof(name), name);
 	assert_string_equal("a.b.c/", name);
 
-	format_name(SK_BY_NAME, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_NAME, &cdt, sizeof(name), name);
 	assert_string_equal("a.b.c/", name);
 
-	format_name(SK_BY_FILEROOT, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_FILEROOT, &cdt, sizeof(name), name);
 	assert_string_equal("a.b.c/", name);
 
-	format_name(SK_BY_ROOT, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_ROOT, &cdt, sizeof(name), name);
 	assert_string_equal("a.b/", name);
 
 	cdt.entry = &file_entry;
 
-	format_name(SK_BY_INAME, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_INAME, &cdt, sizeof(name), name);
 	assert_string_equal("a.b.c", name);
 
-	format_name(SK_BY_NAME, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_NAME, &cdt, sizeof(name), name);
 	assert_string_equal("a.b.c", name);
 
-	format_name(SK_BY_FILEROOT, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_FILEROOT, &cdt, sizeof(name), name);
 	assert_string_equal("a.b", name);
 
-	format_name(SK_BY_ROOT, &cdt, sizeof(name), name);
+	format_name(NULL, SK_BY_ROOT, &cdt, sizeof(name), name);
 	assert_string_equal("a.b", name);
 }
 
