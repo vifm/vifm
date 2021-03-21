@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 December 10
+" Last Change: 2021 March 21
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -125,8 +125,12 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 					\ 'cwdjob' : cwdjob, 'split': get(g:, 'vifm_embed_split', 0) }
 
 		if !has('nvim')
-			let env = { 'TERM' : has('gui_running') ? $TERM :
-			          \          &term =~ 256 ? 'xterm-256color' : &term }
+			if has('gui_running')
+				let term = (empty($TERM) ? 'xterm-256color' : $TERM)
+			else
+				let term = (&term =~ 256 ? 'xterm-256color' : &term)
+			endif
+			let env = { 'TERM' : term }
 			let options = { 'term_name' : 'vifm: '.a:editcmd, 'curwin' : 1,
 			              \ 'exit_cb': funcref('VifmExitCb', [data]), 'env' : env }
 		else
