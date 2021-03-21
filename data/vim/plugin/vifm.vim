@@ -1,8 +1,8 @@
-" Maintainer: Ken Steen <ksteen@users.sourceforge.net>
-" Last Change: 2001 November 29
-
 " Maintainer: xaizek <xaizek@posteo.net>
 " Last Change: 2021 March 21
+
+" Author: Ken Steen <ksteen@users.sourceforge.net>
+" Last Change: 2001 November 29
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
