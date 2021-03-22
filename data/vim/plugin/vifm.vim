@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2021 March 21
+" Last Change: 2021 March 22
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -78,6 +78,18 @@ if !has('nvim') && exists('*term_start')
 	endfunction
 endif
 
+function s:DetermineTermEnv() abort
+	if !has('gui_running')
+		return (&term =~ 256 ? 'xterm-256color' : &term)
+	endif
+
+	if empty($TERM) || $TERM == 'dumb'
+		return 'xterm-256color'
+	endif
+
+	return $TERM
+endfunction
+
 function! s:StartVifm(mods, count, editcmd, ...) abort
 	if a:0 > 2
 		echoerr 'Too many arguments'
@@ -125,12 +137,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 					\ 'cwdjob' : cwdjob, 'split': get(g:, 'vifm_embed_split', 0) }
 
 		if !has('nvim')
-			if has('gui_running')
-				let term = (empty($TERM) ? 'xterm-256color' : $TERM)
-			else
-				let term = (&term =~ 256 ? 'xterm-256color' : &term)
-			endif
-			let env = { 'TERM' : term }
+			let env = { 'TERM' : s:DetermineTermEnv() }
 			let options = { 'term_name' : 'vifm: '.a:editcmd, 'curwin' : 1,
 			              \ 'exit_cb': funcref('VifmExitCb', [data]), 'env' : env }
 		else
