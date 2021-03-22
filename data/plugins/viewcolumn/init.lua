@@ -56,11 +56,11 @@ local function mcSize(info)
     end
 end
 
-local currentYear<const> = os.date('*t').year
+local secsPerYear<const> = 365*24*60*60
 local function lsTime(info)
     local time = info.entry.mtime
-    local year = os.date('*t', time).year
-    if year == currentYear then
+    local ageYears = os.difftime(os.time(), time)//secsPerYear
+    if ageYears == 0 then
         return os.date('%b %d %H:%M', time)
     else
         return os.date('%b %d  %Y', time)
