@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 19
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -121,10 +121,14 @@ After processing of |vifm-vifmrc| contents of the $VIFM/plugins/ directory is
 enumerated in search of plugins.  Directories or symbolic links to directories
 are considered as candidates.
 
-Implications of the (current) order of initialization:
+Implications of the default order of initialization:
  * :commands defined in configuration have precedence over :commands defined by
    plugins
  * :commands from plugins can't be used during startup
+
+You can load plugins explicitly by calling `:plugin load` command inside
+|vifm-vifmrc|.  From then on things defined by plugins can be used in
+configuration.
 
 All plugins are required to contain `init.lua` file at their root.  This file
 gets processed and its return value is interpreted as plugin data.  The return
