@@ -143,7 +143,7 @@ lua_viewcolumn_handler(void *data, int id, const void *format_data,
 	lua_pushstring(lua, entry->name);
 	lua_setfield(lua, -2, "name");
 	lua_pushstring(lua, entry->origin);
-	lua_setfield(lua, -2, "origin");
+	lua_setfield(lua, -2, "location");
 	lua_pushinteger(lua, entry->size);
 	lua_setfield(lua, -2, "size");
 	lua_pushinteger(lua, entry->mtime);

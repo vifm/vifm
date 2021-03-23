@@ -198,7 +198,7 @@ Fields of {info} argument for "handler":
 Fields of {info}.entry for "handler":
  - "name" (string)
    Name of the file.
- - "origin" (string)
+ - "location" (string)
    Location of the file.
  - "size" (integer)
    Size of the file in bytes.
