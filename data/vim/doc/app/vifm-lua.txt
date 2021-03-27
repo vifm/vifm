@@ -196,9 +196,11 @@ Possible fields of {column}:
 
 Fields of {info} argument for "handler":
  - "entry" (table)
-   Information about a file list entry.
+   Information about a file list entry.  See below.
 
 Fields of {info}.entry for "handler":
+ - "classify" (table)
+   Table that describes name decorations.  See below.
  - "name" (string)
    Name of the file.
  - "location" (string)
@@ -213,6 +215,14 @@ Fields of {info}.entry for "handler":
  - "mtime" (integer)
    File modification time (when file contents is changed).  In seconds since
    the Unix epoch.
+ - "type" (string)
+   Type of the entry.  See |vifm-filetype()| for the list of values.
+
+Fields of {info}.entry.classify for "handler":
+ - "prefix" (string)
+   File name prefix.
+ - "suffix" (string)
+   File name suffix.
 
 vifm.currview({path})                          *vifm-l_vifm.currview()*
 Retrives a reference to current view.
