@@ -86,7 +86,7 @@ TEST(column_is_registered)
 {
 	assert_success(vlua_run_string(vlua, "function handler() end"));
 
-	assert_int_equal(-1, vlua_map_viewcolumn(vlua, "Test"));
+	assert_int_equal(-1, vlua_viewcolumn_map(vlua, "Test"));
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
@@ -94,7 +94,7 @@ TEST(column_is_registered)
 				                         " handler = handler })"));
 	assert_string_equal("true", ui_sb_last());
 
-	assert_true(vlua_map_viewcolumn(vlua, "Test") != -1);
+	assert_true(vlua_viewcolumn_map(vlua, "Test") != -1);
 }
 
 TEST(duplicate_name)

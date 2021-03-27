@@ -430,7 +430,7 @@ vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info, int arg_pos)
 }
 
 int
-vlua_map_viewcolumn(vlua_t *vlua, const char name[])
+vlua_viewcolumn_map(vlua_t *vlua, const char name[])
 {
 	return vifm_viewcolumns_map(vlua, name);
 }

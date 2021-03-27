@@ -48,7 +48,7 @@ int vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info,
 		int arg_pos);
 
 /* Maps column name to column id.  Returns column id or -1 on error. */
-int vlua_map_viewcolumn(vlua_t *vlua, const char name[]);
+int vlua_viewcolumn_map(vlua_t *vlua, const char name[]);
 
 #endif /* VIFM__LUA__VLUA_H__ */
 
