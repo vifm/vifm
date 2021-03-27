@@ -435,5 +435,11 @@ vlua_viewcolumn_map(vlua_t *vlua, const char name[])
 	return vifm_viewcolumns_map(vlua, name);
 }
 
+int
+vlua_viewcolumn_is_primary(vlua_t *vlua, int column_id)
+{
+	return vifm_viewcolumns_is_primary(vlua, column_id);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

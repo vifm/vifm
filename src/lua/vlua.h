@@ -50,6 +50,10 @@ int vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info,
 /* Maps column name to column id.  Returns column id or -1 on error. */
 int vlua_viewcolumn_map(vlua_t *vlua, const char name[]);
 
+/* Checks whether specified view column should be considered a primary one.
+ * Returns non-zero if so, otherwise zero is returned. */
+int vlua_viewcolumn_is_primary(vlua_t *vlua, int column_id);
+
 #endif /* VIFM__LUA__VLUA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

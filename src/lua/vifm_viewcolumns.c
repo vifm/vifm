@@ -30,10 +30,14 @@ static int check_viewcolumn_name(vlua_t *vlua, const char name[]);
 static void lua_viewcolumn_handler(void *data, int id, const void *format_data,
 		size_t buf_len, char buf[]);
 
-/* Address of this variable serves as a key in Lua table. */
+/* Minimal ID for columns added by this view. */
+enum { FIRST_LUA_COLUMN_ID = SK_TOTAL };
+
+/* Address of this variable serves as a key in Lua table.  The associated table
+ * is doubly keyed: by column name and by corresponding ID. */
 static char viewcolumns_key;
 /* Next id for a view column. */
-static int viewcolumn_next_id = SK_TOTAL;
+static int viewcolumn_next_id = FIRST_LUA_COLUMN_ID;
 
 void
 vifm_viewcolumns_init(vlua_t *vlua)
@@ -47,11 +51,39 @@ vifm_viewcolumns_map(vlua_t *vlua, const char name[])
 	/* Don't need lua_pcall() to handle errors, because no one should be able to
 	 * mess with internal tables. */
 	vlua_state_get_table(vlua, &viewcolumns_key);
-	int id = (lua_getfield(vlua->lua, -1, name) == LUA_TNUMBER)
-	        ? lua_tointeger(vlua->lua, -1)
-	        : -1;
-	lua_pop(vlua->lua, 2);
+	if(lua_getfield(vlua->lua, -1, name) != LUA_TTABLE)
+	{
+		lua_pop(vlua->lua, 2);
+		return -1;
+	}
+
+	lua_getfield(vlua->lua, -1, "id");
+	int id = lua_tointeger(vlua->lua, -1);
+	lua_pop(vlua->lua, 3);
 	return id;
+}
+
+int
+vifm_viewcolumns_is_primary(vlua_t *vlua, int column_id)
+{
+	if(column_id < FIRST_LUA_COLUMN_ID)
+	{
+		return 0;
+	}
+
+	/* Don't need lua_pcall() to handle errors, because no one should be able to
+	 * mess with internal tables. */
+	vlua_state_get_table(vlua, &viewcolumns_key);
+	if(lua_geti(vlua->lua, -1, column_id) != LUA_TTABLE)
+	{
+		lua_pop(vlua->lua, 2);
+		return -1;
+	}
+
+	lua_getfield(vlua->lua, -1, "isprimary");
+	int is_primary = lua_toboolean(vlua->lua, -1);
+	lua_pop(vlua->lua, 3);
+	return is_primary;
 }
 
 int
@@ -68,6 +100,12 @@ vifm_addcolumntype(lua_State *lua)
 	check_field(lua, 1, "handler", LUA_TFUNCTION);
 	void *handler = to_pointer(lua);
 
+	int is_primary = 0;
+	if(check_opt_field(lua, 1, "isprimary", LUA_TBOOLEAN))
+	{
+		is_primary = lua_toboolean(vlua->lua, -1);
+	}
+
 	void *data = state_store_pointer(vlua, handler);
 	if(data == NULL)
 	{
@@ -76,8 +114,14 @@ vifm_addcolumntype(lua_State *lua)
 
 	int column_id = viewcolumn_next_id++;
 	vlua_state_get_table(vlua, &viewcolumns_key);
+	lua_newtable(lua);
 	lua_pushinteger(lua, column_id);
-	lua_setfield(lua, -2, name);
+	lua_setfield(lua, -2, "id");
+	lua_pushboolean(lua, is_primary);
+	lua_setfield(lua, -2, "isprimary");
+	lua_pushvalue(lua, -1);
+	lua_setfield(lua, -3, name);
+	lua_seti(lua, -2, column_id);
 
 	int error = columns_add_column_desc(column_id, &lua_viewcolumn_handler, data);
 	if(error)
@@ -93,11 +137,7 @@ vifm_addcolumntype(lua_State *lua)
 static int
 check_viewcolumn_name(vlua_t *vlua, const char name[])
 {
-	vlua_state_get_table(vlua, &viewcolumns_key);
-	int present = (lua_getfield(vlua->lua, -1, name) == LUA_TNUMBER);
-	lua_pop(vlua->lua, 2);
-
-	if(present)
+	if(vifm_viewcolumns_map(vlua, name) != -1)
 	{
 		return luaL_error(vlua->lua,
 				"View column with such name already exists: %s", name);

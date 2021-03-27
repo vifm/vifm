@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 23
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -190,6 +190,9 @@ Possible fields of {column}:
    the lower case one (those are reserved for builtin columns).
  - "handler" (function)
    Handler which accepts {info} and returns a value for the table's cell.
+ - "isprimary" (boolean) (default: false)
+   Whether this column is highlighted with file color and search match
+   is highlighted as well.  Note that search match highlighting can be off.
 
 Fields of {info} argument for "handler":
  - "entry" (table)

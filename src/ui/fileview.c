@@ -35,6 +35,7 @@
 
 #include "../cfg/config.h"
 #include "../compat/pthread.h"
+#include "../lua/vlua.h"
 #include "../utils/fs.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
@@ -1095,7 +1096,8 @@ column_line_print(const void *format_data, int column_id, const char buf[],
 	const int primary = column_id == SK_BY_NAME
 	                 || column_id == SK_BY_INAME
 	                 || column_id == SK_BY_ROOT
-	                 || column_id == SK_BY_FILEROOT;
+	                 || column_id == SK_BY_FILEROOT
+	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, column_id);
 	const cchar_t line_attrs = prepare_col_color(view, primary, 0, cdt);
 
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
