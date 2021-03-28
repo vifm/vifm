@@ -85,9 +85,11 @@ static void compute_and_draw_cell(column_data_t *cdt, int cell,
 static void column_line_print(const void *format_data, int column_id,
 		const char buf[], size_t offset, AlignType align, const char full_column[]);
 static void draw_line_number(const column_data_t *cdt, int column);
-static void highlight_search(view_t *view, dir_entry_t *entry,
-		const char full_column[], char buf[], size_t buf_len, AlignType align,
-		int line, int col, const cchar_t *line_attrs);
+static void get_match_range(dir_entry_t *entry, const char full_column[],
+		int *match_from, int *match_to);
+static void highlight_search(view_t *view, const char full_column[], char buf[],
+		size_t buf_len, AlignType align, int line, int col,
+		const cchar_t *line_attrs, int match_from, int match_to);
 static cchar_t prepare_col_color(const view_t *view, int primary, int line_nr,
 		const column_data_t *cdt);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
@@ -1160,8 +1162,14 @@ column_line_print(const void *format_data, int column_id, const char buf[],
 
 	if(primary && view->matches != 0 && entry->search_match)
 	{
-		highlight_search(view, entry, full_column, print_buf, trim_pos, align,
-				cdt->current_line, final_offset, &line_attrs);
+		int match_from, match_to;
+		get_match_range(entry, full_column, &match_from, &match_to);
+
+		if(match_from != match_to)
+		{
+			highlight_search(view, full_column, print_buf, trim_pos, align,
+					cdt->current_line, final_offset, &line_attrs, match_from, match_to);
+		}
 	}
 }
 
@@ -1186,37 +1194,44 @@ draw_line_number(const column_data_t *cdt, int column)
 	wprinta(view->win, num_str, &cch, 0);
 }
 
-/* Highlights search match for the entry (assumed to be a search hit).  Modifies
- * the buf argument in process. */
+/* Adjusts search match offsets for the entry (assumed to be a search hit) to
+ * account for decorations and full path.  Sets *match_from and *match_to. */
 static void
-highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
-		char buf[], size_t buf_len, AlignType align, int line, int col,
-		const cchar_t *line_attrs)
+get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
+		int *match_to)
 {
-	size_t name_offset, lo, ro;
-	const char *fname;
-
-	const size_t width = utf8_strsw(buf);
-
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
 
-	fname = get_last_path_component(full_column) + strlen(prefix);
-	name_offset = fname - full_column;
+	const char *fname = get_last_path_component(full_column) + strlen(prefix);
+	size_t name_offset = fname - full_column;
 
-	lo = name_offset + entry->match_left;
-	ro = name_offset + entry->match_right;
+	*match_from = name_offset + entry->match_left;
+	*match_to = name_offset + entry->match_right;
 
 	if((size_t)entry->match_right > strlen(fname) - strlen(suffix))
 	{
 		/* Don't highlight anything past the end of file name except for single
 		 * trailing slash. */
-		ro -= entry->match_right - (strlen(fname) - strlen(suffix));
+		*match_to -= entry->match_right - (strlen(fname) - strlen(suffix));
 		if(suffix[0] == '/')
 		{
-			++ro;
+			++*match_to;
 		}
 	}
+}
+
+/* Highlights search match for the entry (assumed to be a search hit).  Modifies
+ * the buf argument in process. */
+static void
+highlight_search(view_t *view, const char full_column[], char buf[],
+		size_t buf_len, AlignType align, int line, int col,
+		const cchar_t *line_attrs, int match_from, int match_to)
+{
+	size_t lo = match_from;
+	size_t ro = match_to;
+
+	const size_t width = utf8_strsw(buf);
 
 	if(align == AT_LEFT && buf_len < ro)
 	{
