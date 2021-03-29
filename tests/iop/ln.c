@@ -4,11 +4,13 @@
 
 #include <stdio.h> /* remove() */
 
+#include <test-utils.h>
+
 #include "../../src/io/iop.h"
 
 #include "utils.h"
 
-static void create_file(const char path[]);
+static void new_file(const char path[]);
 
 static const char *const ORIG_FILE_NAME = "file";
 static const char *const ORIG_FILE_PATH = SANDBOX_PATH "/file";
@@ -17,7 +19,7 @@ static const char *const LINK_NAME = SANDBOX_PATH "/link";
 
 SETUP()
 {
-	create_file(ORIG_FILE_PATH);
+	new_file(ORIG_FILE_PATH);
 }
 
 TEARDOWN()
@@ -64,7 +66,7 @@ TEST(existent_file_is_not_overwritten_if_not_requested)
 
 TEST(existent_non_symlink_is_not_overwritten)
 {
-	create_file(LINK_NAME);
+	new_file(LINK_NAME);
 
 	{
 		io_args_t args = {
@@ -122,7 +124,7 @@ TEST(existent_symlink_is_changed, IF(not_windows))
 
 	assert_success(access(LINK_NAME, F_OK));
 
-	create_file(NEW_ORIG_FILE_NAME);
+	new_file(NEW_ORIG_FILE_NAME);
 
 	args.arg1.path = NEW_ORIG_FILE_NAME;
 	args.arg3.crs = IO_CRS_REPLACE_FILES;
@@ -137,7 +139,7 @@ TEST(existent_symlink_is_changed, IF(not_windows))
 }
 
 static void
-create_file(const char path[])
+new_file(const char path[])
 {
 	assert_failure(access(path, F_OK));
 

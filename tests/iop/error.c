@@ -3,6 +3,8 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* rmdir() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/os.h"
 #include "../../src/io/ioeta.h"
 #include "../../src/io/iop.h"

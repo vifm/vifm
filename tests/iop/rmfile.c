@@ -2,6 +2,8 @@
 
 #include <unistd.h> /* F_OK access() rmdir() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
