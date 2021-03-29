@@ -165,8 +165,9 @@ void fview_position_updated(struct view_t *view);
 void fview_sorting_updated(struct view_t *view);
 
 TSTATIC_DEFS(
-	void format_name(void *data, int id, const void *format_data, size_t buf_len,
-			char buf[]);
+	struct format_info_t;
+	void format_name(void *data, size_t buf_len, char buf[],
+		const struct format_info_t *info);
 )
 
 #endif /* VIFM__UI__FILEVIEW_H__ */

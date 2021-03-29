@@ -23,8 +23,8 @@
 
 #include "utils.h"
 
-static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[]);
+static void column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 
 static char cwd[PATH_MAX + 1];
 
@@ -291,8 +291,8 @@ TEST(filtering_does_not_hide_parent_refs)
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[])
+column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */
 }

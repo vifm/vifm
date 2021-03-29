@@ -17,8 +17,8 @@
 #include "../../src/event_loop.h"
 #include "../../src/ops.h"
 
-static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[]);
+static void column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 static int files_are_identical(const char a[], const char b[]);
 
 static char *saved_cwd;
@@ -123,8 +123,8 @@ TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[])
+column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */
 }

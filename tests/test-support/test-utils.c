@@ -43,8 +43,8 @@
 
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
-static void format_none(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+static void format_none(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 static int complete_stub(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 static int swap_range(void);
@@ -253,8 +253,7 @@ columns_setup_column(int id)
 }
 
 static void
-format_none(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_none(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	buf[0] = '\0';
 }

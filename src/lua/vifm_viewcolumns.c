@@ -44,8 +44,8 @@ typedef struct
 vifm_entry_t;
 
 static int check_viewcolumn_name(vlua_t *vlua, const char name[]);
-static void lua_viewcolumn_handler(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+static void lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 static void vifmentry_new(lua_State *lua, dir_entry_t *entry);
 static int vifmentry_gc(lua_State *lua);
 static int vifmentry_gettarget(lua_State *lua);
@@ -199,8 +199,8 @@ check_viewcolumn_name(vlua_t *vlua, const char name[])
 
 /* Handler of all user-defined view columns registered from Lua. */
 static void
-lua_viewcolumn_handler(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[])
+lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
+		const format_info_t *info)
 {
 	state_ptr_t *p = data;
 	lua_State *lua = p->vlua->lua;
@@ -209,7 +209,7 @@ lua_viewcolumn_handler(void *data, int id, const void *format_data,
 
 	lua_newtable(lua);
 
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	dir_entry_t *entry = cdt->entry;
 	vifmentry_new(lua, entry);
 	lua_setfield(lua, -2, "entry");

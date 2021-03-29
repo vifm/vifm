@@ -12,8 +12,8 @@
 
 #include <test-utils.h>
 
-static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[]);
+static void column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 
 enum { MAX_WIDTH = 30 };
 
@@ -142,7 +142,7 @@ TEST(columns_are_used)
 	dir_entry_t entry = { .name = "name", .origin = "origin" };
 	column_data_t cdt = { .view = &lwin, .entry = &entry };
 
-	columns_set_line_print_func(column_line_print);
+	columns_set_line_print_func(&column_line_print);
 	columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
 	assert_string_equal("     ERROR   NOVALUE      name", print_buffer);
 
@@ -175,7 +175,7 @@ TEST(symlinks, IF(not_windows))
 
 	process_set_args("viewcolumns=-20{Test}", 0, 1);
 
-	columns_set_line_print_func(column_line_print);
+	columns_set_line_print_func(&column_line_print);
 
 	dir_entry_t entry = { .name = "name", .origin = "origin", .type = FT_DIR };
 	column_data_t cdt = { .view = &lwin, .entry = &entry };
@@ -200,8 +200,8 @@ TEST(symlinks, IF(not_windows))
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[])
+column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
 {
 	strncpy(print_buffer + offset, buf, strlen(buf));
 }

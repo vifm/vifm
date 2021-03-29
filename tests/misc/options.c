@@ -20,8 +20,8 @@
 #include "../../src/opt_handlers.h"
 #include "../../src/registers.h"
 
-static void print_func(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[]);
+static void print_func(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 
 static int ncols;
 
@@ -68,10 +68,10 @@ TEARDOWN()
 }
 
 static void
-print_func(const void *data, int column_id, const char buf[], size_t offset,
-		AlignType align, const char full_column[])
+print_func(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
 {
-	ncols += (column_id != FILL_COLUMN_ID);
+	ncols += (info->id != FILL_COLUMN_ID);
 }
 
 TEST(lsview_block_columns_update_on_sort_change)

@@ -29,8 +29,8 @@
 
 static void verify_tree_node(column_data_t *cdt, int idx,
 		const char expected[]);
-static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[]);
+static void column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 static int remove_selected(view_t *view, const dir_entry_t *entry, void *arg);
 
 static char cwd[PATH_MAX + 1], test_data[PATH_MAX + 1];
@@ -637,13 +637,14 @@ verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 	char name[NAME_MAX + 1];
 	cdt->entry = &cdt->view->dir_entry[idx];
 	cdt->line_pos = idx;
-	format_name(NULL, -1, cdt, sizeof(name), name);
+	const format_info_t info = { .data = cdt, .id = -1 };
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal(expected, name);
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[])
+column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */
 }

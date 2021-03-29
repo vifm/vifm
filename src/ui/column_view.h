@@ -55,14 +55,22 @@ CropType;
 /* Opaque columns handle. */
 typedef struct columns_t columns_t;
 
+/* Structure containing column data passed to handlers. */
+typedef struct format_info_t format_info_t;
+struct format_info_t
+{
+	const void *data; /* User data passed to columns_format_line(). */
+	int id;           /* Id of the column. */
+};
+
 /* A column callback function, which should fill the buf with column text. */
-typedef void (*column_func)(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+typedef void (*column_func)(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 
 /* A callback function, for displaying column contents.  Alignment specifies
  * actual alignment of current column (AT_DYN won't appear here). */
-typedef void (*column_line_print_func)(const void *format_data, int column_id,
-		const char buf[], size_t offset, AlignType align, const char full_column[]);
+typedef void (*column_line_print_func)(const char buf[], size_t offset,
+		AlignType align, const char full_column[], const format_info_t *info);
 
 /* Structure containing various column display properties. */
 typedef struct
