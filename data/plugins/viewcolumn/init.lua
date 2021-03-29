@@ -1,6 +1,7 @@
 --[[
 
 Provides six user-defined view column types:
+ * NameLink -- Name column that shows target of symbolic links
  * LsSize   -- ls-like size column (at most 4 characters in width)
  * LsTime   -- ls-like (also MC-like) time where time is shown if year matches
                current, otherwise year is displayed instead of time
@@ -11,9 +12,24 @@ Provides six user-defined view column types:
 
 Usage example:
 
-    :set viewcolumns=-{name},8{MCSize}
+    :set viewcolumns=-{NameLink},8{MCSize}
 
 --]]
+
+local function nameLink(info)
+    local e = info.entry
+    local text = e.classify.prefix .. e.name .. e.classify.suffix
+    if e.type == 'link' then
+        text = text .. ' -> ' .. e.gettarget()
+    end
+
+    if not e.match then
+        return text
+    end
+
+    local offset = e.classify.prefix:len()
+    return text, {offset + e.matchstart, offset + e.matchend}
+end
 
 local function lsSize(info)
     local unit = 1
@@ -65,6 +81,15 @@ local function lsTime(info)
     else
         return os.date('%b %d  %Y', time)
     end
+end
+
+local added = vifm.addcolumntype {
+    name = 'NameLink',
+    handler = nameLink,
+    isprimary = true
+}
+if not added then
+    vifm.sb.error("Failed to add NameLink view column")
 end
 
 local added = vifm.addcolumntype {
