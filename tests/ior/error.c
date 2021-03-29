@@ -5,6 +5,8 @@
 
 #include <string.h> /* strstr() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/os.h"
 #include "../../src/io/ior.h"
 

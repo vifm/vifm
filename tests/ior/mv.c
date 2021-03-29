@@ -6,6 +6,8 @@
 #include <stdio.h> /* remove() rename() */
 #include <string.h> /* strcmp() */
 
+#include <test-utils.h>
+
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/env.h"
