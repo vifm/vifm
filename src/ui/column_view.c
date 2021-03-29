@@ -74,7 +74,7 @@ static size_t calculate_max_width(const column_t *col, size_t len,
 		size_t max_line_width);
 static size_t calculate_start_pos(const column_t *col, const char buf[],
 		AlignType align);
-static void fill_gap_pos(const void *format_data, size_t from, size_t to);
+static void fill_gap_pos(void *format_data, size_t from, size_t to);
 static size_t get_width_on_screen(const char str[]);
 static void recalculate_if_needed(columns_t *cols, size_t max_width);
 static void recalculate(columns_t *cols, size_t max_width);
@@ -288,8 +288,7 @@ get_column_func(int column_id)
 }
 
 void
-columns_format_line(columns_t *cols, const void *format_data,
-		size_t max_line_width)
+columns_format_line(columns_t *cols, void *format_data, size_t max_line_width)
 {
 	char prev_col_buf[1024 + 1];
 	size_t prev_col_start = 0UL;
@@ -309,11 +308,14 @@ columns_format_line(columns_t *cols, const void *format_data,
 		size_t cur_col_start;
 		AlignType align;
 		const column_t *const col = &cols->list[i];
+		const format_info_t info = {
+			.data = format_data,
+			.id = col->info.column_id
+		};
 
 		if(col->info.literal == NULL)
 		{
-			col->desc.func(col->desc.data, col->info.column_id, format_data,
-					sizeof(col_buffer), col_buffer);
+			col->desc.func(col->desc.data, sizeof(col_buffer), col_buffer, &info);
 		}
 		else
 		{
@@ -343,8 +345,7 @@ columns_format_line(columns_t *cols, const void *format_data,
 			fill_gap_pos(format_data, prev_col_end, cur_col_start);
 		}
 
-		print_func(format_data, col->info.column_id, col_buffer, cur_col_start,
-				align, full_column);
+		print_func(col_buffer, cur_col_start, align, full_column, &info);
 
 		prev_col_end = cur_col_start + get_width_on_screen(col_buffer);
 
@@ -428,14 +429,19 @@ calculate_start_pos(const column_t *col, const char buf[], AlignType align)
 /* Prints gap filler (GAP_FILL_CHAR) in place of gaps.  Does nothing if to less
  * or equal to from. */
 static void
-fill_gap_pos(const void *format_data, size_t from, size_t to)
+fill_gap_pos(void *format_data, size_t from, size_t to)
 {
 	if(to > from)
 	{
 		char gap[to - from + 1];
 		memset(gap, GAP_FILL_CHAR, to - from);
 		gap[to - from] = '\0';
-		print_func(format_data, FILL_COLUMN_ID, gap, from, AT_LEFT, gap);
+
+		const format_info_t info = {
+			.data = format_data,
+			.id = FILL_COLUMN_ID
+		};
+		print_func(gap, from, AT_LEFT, gap, &info);
 	}
 }
 

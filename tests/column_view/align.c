@@ -9,10 +9,10 @@
 
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align);
-static void column1_func(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void column2_func(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+static void column1_func(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void column2_func(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 
 static const size_t MAX_WIDTH = 80;
 
@@ -45,8 +45,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 }
 
 static void
-column1_func(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+column1_func(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	snprintf(buf, buf_len + 1, "%s",
 			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -54,15 +53,13 @@ column1_func(void *data, int id, const void *format_data, size_t buf_len,
 }
 
 static void
-column2_func(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+column2_func(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	snprintf(buf, buf_len + 1, "%s", "bxx");
 }
 
 static void
-column1_func2(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+column1_func2(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	snprintf(buf, buf_len + 1, "%s", "abcdefg");
 }

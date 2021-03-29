@@ -47,6 +47,10 @@ typedef struct
 	                     * A pointer to allow changing value in const struct.
 	                     * Should be zero first time, then auto reset. */
 	int is_main;        /* Whether this is main file list. */
+
+	int custom_match;   /* Whether the keys below have meaningful values. */
+	int match_from;     /* Start offset of the match. */
+	int match_to;       /* End offset of the match. */
 }
 column_data_t;
 
@@ -165,8 +169,9 @@ void fview_position_updated(struct view_t *view);
 void fview_sorting_updated(struct view_t *view);
 
 TSTATIC_DEFS(
-	void format_name(void *data, int id, const void *format_data, size_t buf_len,
-			char buf[]);
+	struct format_info_t;
+	void format_name(void *data, size_t buf_len, char buf[],
+		const struct format_info_t *info);
 )
 
 #endif /* VIFM__UI__FILEVIEW_H__ */

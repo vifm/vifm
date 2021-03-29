@@ -3168,7 +3168,7 @@ map_name(const char name[], void *arg)
 		return (pos + 1);
 	}
 
-	return vlua_map_viewcolumn(curr_stats.vlua, name);
+	return vlua_viewcolumn_map(curr_stats.vlua, name);
 }
 
 void

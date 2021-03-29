@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 19
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -121,10 +121,14 @@ After processing of |vifm-vifmrc| contents of the $VIFM/plugins/ directory is
 enumerated in search of plugins.  Directories or symbolic links to directories
 are considered as candidates.
 
-Implications of the (current) order of initialization:
+Implications of the default order of initialization:
  * :commands defined in configuration have precedence over :commands defined by
    plugins
  * :commands from plugins can't be used during startup
+
+You can load plugins explicitly by calling `:plugin load` command inside
+|vifm-vifmrc|.  From then on things defined by plugins can be used in
+configuration.
 
 All plugins are required to contain `init.lua` file at their root.  This file
 gets processed and its return value is interpreted as plugin data.  The return
@@ -185,16 +189,26 @@ Possible fields of {column}:
    Name of the command.  Must consist of Latin characters and not start with
    the lower case one (those are reserved for builtin columns).
  - "handler" (function)
-   Handler which accepts {info} and returns a value for the table's cell.
+   Handler which accepts {info} and returns one or two values.  See below.
+ - "isprimary" (boolean) (default: false)
+   Whether this column is highlighted with file color and search match
+   is highlighted as well.
+
+Return values of {column}.handler:
+ 1. Value for the table's cell as a string or convertible to it.
+ 2. Optional table with two integer values defining  highlighting range:
+    start and end offsets within the returned string.
 
 Fields of {info} argument for "handler":
  - "entry" (table)
-   Information about a file list entry.
+   Information about a file list entry.  See below.
 
 Fields of {info}.entry for "handler":
+ - "classify" (table)
+   Table that describes name decorations.  See below.
  - "name" (string)
    Name of the file.
- - "origin" (string)
+ - "location" (string)
    Location of the file.
  - "size" (integer)
    Size of the file in bytes.
@@ -206,6 +220,22 @@ Fields of {info}.entry for "handler":
  - "mtime" (integer)
    File modification time (when file contents is changed).  In seconds since
    the Unix epoch.
+ - "type" (string)
+   Type of the entry.  See |vifm-filetype()| for the list of values.
+ - "match" (boolean)
+   Whether this entry is a search match.
+ - "matchstart" (integer)
+   For a search match this is the start position of a substring found in name,
+   zero otherwise.
+ - "matchend" (integer)
+   For a search match this is the end position of a substring found in name,
+   zero otherwise.
+
+Fields of {info}.entry.classify for "handler":
+ - "prefix" (string)
+   File name prefix.
+ - "suffix" (string)
+   File name suffix.
 
 vifm.currview({path})                          *vifm-l_vifm.currview()*
 Retrives a reference to current view.

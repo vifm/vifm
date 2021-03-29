@@ -35,6 +35,7 @@
 
 #include "../cfg/config.h"
 #include "../compat/pthread.h"
+#include "../lua/vlua.h"
 #include "../utils/fs.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
@@ -71,8 +72,8 @@ static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
 static size_t calculate_print_width(const view_t *view, int i,
 		size_t max_width);
-static void draw_cell(columns_t *columns, const column_data_t *cdt,
-		size_t col_width, size_t print_width);
+static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
+		size_t print_width);
 static columns_t * get_view_columns(const view_t *view, int truncated);
 static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
@@ -81,12 +82,14 @@ static cchar_t prepare_inactive_color(view_t *view, dir_entry_t *entry,
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
 static void compute_and_draw_cell(column_data_t *cdt, int cell,
 		size_t col_width);
-static void column_line_print(const void *format_data, int column_id,
-		const char buf[], size_t offset, AlignType align, const char full_column[]);
+static void column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 static void draw_line_number(const column_data_t *cdt, int column);
-static void highlight_search(view_t *view, dir_entry_t *entry,
-		const char full_column[], char buf[], size_t buf_len, AlignType align,
-		int line, int col, const cchar_t *line_attrs);
+static void get_match_range(dir_entry_t *entry, const char full_column[],
+		int *match_from, int *match_to);
+static void highlight_search(view_t *view, const char full_column[], char buf[],
+		size_t buf_len, AlignType align, int line, int col,
+		const cchar_t *line_attrs, int match_from, int match_to);
 static cchar_t prepare_col_color(const view_t *view, int primary, int line_nr,
 		const column_data_t *cdt);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
@@ -95,42 +98,42 @@ static void mix_in_file_hi(const view_t *view, dir_entry_t *entry, int type_hi,
 		col_attr_t *col);
 static void mix_in_file_name_hi(const view_t *view, dir_entry_t *entry,
 		col_attr_t *col);
-TSTATIC void format_name(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_size(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_nitems(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_primary_group(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_type(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_target(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_ext(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_fileext(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_time(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_dir(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+TSTATIC void format_name(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_size(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_nitems(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_primary_group(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_type(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_target(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_ext(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_fileext(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_time(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_dir(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 #ifndef _WIN32
-static void format_group(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_mode(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_owner(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_perms(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_nlinks(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
-static void format_inode(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+static void format_group(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_mode(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_owner(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_perms(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_nlinks(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
+static void format_inode(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 #endif
-static void format_id(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+static void format_id(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 static size_t calculate_column_width(view_t *view);
 static size_t calculate_columns_count(view_t *view);
 static size_t get_max_filename_width(const view_t *view);
@@ -466,7 +469,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 	for(i = top; i < entries.nentries && i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
-		const column_data_t cdt = {
+		column_data_t cdt = {
 			.view = view,
 			.entry = &entries.entries[i],
 			.line_pos = i,
@@ -504,7 +507,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 	for(i = start_line; i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
-		const column_data_t cdt = {
+		column_data_t cdt = {
 			.view = view,
 			.entry = &non_entry,
 			.line_pos = -1,
@@ -515,8 +518,13 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.prefix_len = &prefix_len,
 		};
 
-		column_line_print(&cdt, FILL_COLUMN_ID, filler, cfg.extra_padding ? -1 : 0,
-				AT_LEFT, filler);
+		const format_info_t info = {
+			.data = &cdt,
+			.id = FILL_COLUMN_ID
+		};
+
+		column_line_print(filler, cfg.extra_padding ? -1 : 0, AT_LEFT, filler,
+				&info);
 	}
 }
 
@@ -661,24 +669,28 @@ calculate_print_width(const view_t *view, int i, size_t max_width)
 
 /* Draws a full cell of the file list.  print_width <= col_width. */
 static void
-draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
+draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 		size_t print_width)
 {
 	size_t width_left = cdt->is_main
 	                  ? ui_view_available_width(cdt->view) - (cdt->column_offset -
 	                    ui_view_left_reserved(cdt->view))
 	                  : col_width + 1U;
+	const format_info_t info = {
+		.data = cdt,
+		.id = FILL_COLUMN_ID
+	};
 
 	if(cfg.extra_padding)
 	{
-		column_line_print(cdt, FILL_COLUMN_ID, " ", -1, AT_LEFT, " ");
+		column_line_print(" ", -1, AT_LEFT, " ", &info);
 	}
 
 	columns_format_line(columns, cdt, MIN(col_width, width_left));
 
 	if(cfg.extra_padding && width_left >= col_width)
 	{
-		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width, AT_LEFT, " ");
+		column_line_print(" ", print_width, AT_LEFT, " ", &info);
 	}
 }
 
@@ -1077,25 +1089,26 @@ update_scroll_bind_offset(void)
 
 /* Print callback for column_view unit. */
 static void
-column_line_print(const void *format_data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[])
+column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
 {
 	char print_buf[strlen(buf) + 1];
 	size_t prefix_len, final_offset;
 	size_t width_left, trim_pos;
 	int reserved_width;
 
-	const column_data_t *const cdt = format_data;
+	const column_data_t *const cdt = info->data;
 	view_t *view = cdt->view;
 	dir_entry_t *entry = cdt->entry;
 
 	const int numbers_visible = (offset == 0 && cdt->number_width > 0);
 	const int padding = (cfg.extra_padding != 0);
 
-	const int primary = column_id == SK_BY_NAME
-	                 || column_id == SK_BY_INAME
-	                 || column_id == SK_BY_ROOT
-	                 || column_id == SK_BY_FILEROOT;
+	const int primary = info->id == SK_BY_NAME
+	                 || info->id == SK_BY_INAME
+	                 || info->id == SK_BY_ROOT
+	                 || info->id == SK_BY_FILEROOT
+	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, info->id);
 	const cchar_t line_attrs = prepare_col_color(view, primary, 0, cdt);
 
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
@@ -1147,7 +1160,7 @@ column_line_print(const void *format_data, int column_id, const char buf[],
 	{
 		strcpy(print_buf, buf);
 	}
-	reserved_width = cfg.extra_padding ? (column_id != FILL_COLUMN_ID) : 0;
+	reserved_width = cfg.extra_padding ? (info->id != FILL_COLUMN_ID) : 0;
 	width_left = padding + cdt->total_width - reserved_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
 	if(trim_pos < sizeof(print_buf))
@@ -1158,8 +1171,19 @@ column_line_print(const void *format_data, int column_id, const char buf[],
 
 	if(primary && view->matches != 0 && entry->search_match)
 	{
-		highlight_search(view, entry, full_column, print_buf, trim_pos, align,
-				cdt->current_line, final_offset, &line_attrs);
+		int match_from = cdt->match_from;
+		int match_to = cdt->match_to;
+
+		if(!cdt->custom_match)
+		{
+			get_match_range(entry, full_column, &match_from, &match_to);
+		}
+
+		if(match_from != match_to)
+		{
+			highlight_search(view, full_column, print_buf, trim_pos, align,
+					cdt->current_line, final_offset, &line_attrs, match_from, match_to);
+		}
 	}
 }
 
@@ -1184,37 +1208,44 @@ draw_line_number(const column_data_t *cdt, int column)
 	wprinta(view->win, num_str, &cch, 0);
 }
 
-/* Highlights search match for the entry (assumed to be a search hit).  Modifies
- * the buf argument in process. */
+/* Adjusts search match offsets for the entry (assumed to be a search hit) to
+ * account for decorations and full path.  Sets *match_from and *match_to. */
 static void
-highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
-		char buf[], size_t buf_len, AlignType align, int line, int col,
-		const cchar_t *line_attrs)
+get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
+		int *match_to)
 {
-	size_t name_offset, lo, ro;
-	const char *fname;
-
-	const size_t width = utf8_strsw(buf);
-
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
 
-	fname = get_last_path_component(full_column) + strlen(prefix);
-	name_offset = fname - full_column;
+	const char *fname = get_last_path_component(full_column) + strlen(prefix);
+	size_t name_offset = fname - full_column;
 
-	lo = name_offset + entry->match_left;
-	ro = name_offset + entry->match_right;
+	*match_from = name_offset + entry->match_left;
+	*match_to = name_offset + entry->match_right;
 
 	if((size_t)entry->match_right > strlen(fname) - strlen(suffix))
 	{
 		/* Don't highlight anything past the end of file name except for single
 		 * trailing slash. */
-		ro -= entry->match_right - (strlen(fname) - strlen(suffix));
+		*match_to -= entry->match_right - (strlen(fname) - strlen(suffix));
 		if(suffix[0] == '/')
 		{
-			++ro;
+			++*match_to;
 		}
 	}
+}
+
+/* Highlights search match for the entry (assumed to be a search hit).  Modifies
+ * the buf argument in process. */
+static void
+highlight_search(view_t *view, const char full_column[], char buf[],
+		size_t buf_len, AlignType align, int line, int col,
+		const cchar_t *line_attrs, int match_from, int match_to)
+{
+	size_t lo = match_from;
+	size_t ro = match_to;
+
+	const size_t width = utf8_strsw(buf);
 
 	if(align == AT_LEFT && buf_len < ro)
 	{
@@ -1389,17 +1420,17 @@ mix_in_file_name_hi(const view_t *view, dir_entry_t *entry, col_attr_t *col)
 
 /* File name format callback for column_view unit. */
 TSTATIC void
-format_name(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	size_t len, i;
 	dir_entry_t *child, *parent;
 
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	view_t *view = cdt->view;
 
 	NameFormat fmt = NF_FULL;
-	if(id == SK_BY_ROOT || (id == SK_BY_FILEROOT && !fentry_is_dir(cdt->entry)))
+	if(info->id == SK_BY_ROOT ||
+			(info->id == SK_BY_FILEROOT && !fentry_is_dir(cdt->entry)))
 	{
 		fmt = NF_ROOT;
 	}
@@ -1455,10 +1486,10 @@ format_name(void *data, int id, const void *format_data, size_t buf_len,
 /* Primary name group format (first value of 'sortgroups' option) callback for
  * column_view unit. */
 static void
-format_primary_group(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[])
+format_primary_group(void *data, size_t buf_len, char buf[],
+		const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	const view_t *view = cdt->view;
 	regmatch_t match = get_group_match(&view->primary_group, cdt->entry->name);
 
@@ -1468,11 +1499,10 @@ format_primary_group(void *data, int id, const void *format_data,
 
 /* File size format callback for column_view unit. */
 static void
-format_size(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_size(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	char str[64];
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	const view_t *view = cdt->view;
 	uint64_t size = DCACHE_UNKNOWN;
 
@@ -1501,10 +1531,9 @@ format_size(void *data, int id, const void *format_data, size_t buf_len,
 
 /* Item number format callback for column_view unit. */
 static void
-format_nitems(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_nitems(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	uint64_t nitems;
 
 	if(!fentry_is_dir(cdt->entry))
@@ -1525,19 +1554,17 @@ format_nitems(void *data, int id, const void *format_data, size_t buf_len,
 
 /* File type (dir/reg/exe/link/...) format callback for column_view unit. */
 static void
-format_type(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_type(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	snprintf(buf, buf_len, " %s", get_type_str(cdt->entry->type));
 }
 
 /* Symbolic link target format callback for column_view unit. */
 static void
-format_target(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_target(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	char full_path[PATH_MAX + 1];
 
 	buf[0] = '\0';
@@ -1553,24 +1580,23 @@ format_target(void *data, int id, const void *format_data, size_t buf_len,
 
 /* File or directory extension format callback for column_view unit. */
 static void
-format_ext(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_ext(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	const char *const ext = get_ext(cdt->entry->name);
 	copy_str(buf, buf_len + 1, ext);
 }
 
 /* File-only extension format callback for column_view unit. */
 static void
-format_fileext(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_fileext(void *data, size_t buf_len, char buf[],
+		const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 
 	if(!fentry_is_dir(cdt->entry))
 	{
-		format_ext(data, id, format_data, buf_len, buf);
+		format_ext(data, buf_len, buf, info);
 	}
 	else
 	{
@@ -1580,13 +1606,12 @@ format_fileext(void *data, int id, const void *format_data, size_t buf_len,
 
 /* File modification/access/change date format callback for column_view unit. */
 static void
-format_time(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_time(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	struct tm *tm_ptr;
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 
-	switch(id)
+	switch(info->id)
 	{
 		case SK_BY_TIME_MODIFIED:
 			tm_ptr = localtime(&cdt->entry->mtime);
@@ -1616,10 +1641,9 @@ format_time(void *data, int id, const void *format_data, size_t buf_len,
 
 /* Directory vs. file type format callback for column_view unit. */
 static void
-format_dir(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_dir(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	const char *type = fentry_is_dir(cdt->entry) ? "dir" : "file";
 	snprintf(buf, buf_len, " %s", type);
 }
@@ -1628,59 +1652,53 @@ format_dir(void *data, int id, const void *format_data, size_t buf_len,
 
 /* File group id/name format callback for column_view unit. */
 static void
-format_group(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_group(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 
 	buf[0] = ' ';
-	get_gid_string(cdt->entry, id == SK_BY_GROUP_ID, buf_len - 1, buf + 1);
+	get_gid_string(cdt->entry, info->id == SK_BY_GROUP_ID, buf_len - 1, buf + 1);
 }
 
 /* File owner id/name format callback for column_view unit. */
 static void
-format_owner(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_owner(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 
 	buf[0] = ' ';
-	get_uid_string(cdt->entry, id == SK_BY_OWNER_ID, buf_len - 1, buf + 1);
+	get_uid_string(cdt->entry, info->id == SK_BY_OWNER_ID, buf_len - 1, buf + 1);
 }
 
 /* File mode format callback for column_view unit. */
 static void
-format_mode(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_mode(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	snprintf(buf, buf_len, " %o", cdt->entry->mode);
 }
 
 /* File permissions mask format callback for column_view unit. */
 static void
-format_perms(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_perms(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	get_perm_string(buf, buf_len, cdt->entry->mode);
 }
 
 /* Hard link count format callback for column_view unit. */
 static void
-format_nlinks(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_nlinks(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	snprintf(buf, buf_len, "%lu", (unsigned long)cdt->entry->nlinks);
 }
 
 /* Inode number format callback for column_view unit. */
 static void
-format_inode(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_inode(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	snprintf(buf, buf_len, "%lu", (unsigned long)cdt->entry->inode);
 }
 
@@ -1688,10 +1706,9 @@ format_inode(void *data, int id, const void *format_data, size_t buf_len,
 
 /* File identifier on comparisons format callback for column_view unit. */
 static void
-format_id(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+format_id(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	const column_data_t *cdt = format_data;
+	const column_data_t *cdt = info->data;
 	snprintf(buf, buf_len, "#%d", cdt->entry->id);
 }
 
@@ -1956,10 +1973,14 @@ position_hardware_cursor(view_t *view)
 	char buf[view->window_cols + 1];
 
 	size_t prefix_len = 0U;
-	const column_data_t cdt = {
+	column_data_t cdt = {
 		.view = view,
 		.entry = get_current_entry(view),
 		.prefix_len = &prefix_len,
+	};
+	const format_info_t info = {
+		.data = &cdt,
+		.id = SK_BY_NAME
 	};
 
 	if(cdt.entry == NULL)
@@ -1972,7 +1993,7 @@ position_hardware_cursor(view_t *view)
 	current_line = view->curr_line/col_count;
 	column_offset = ui_view_left_reserved(view)
 	              + (view->curr_line%col_count)*col_width;
-	format_name(NULL, SK_BY_NAME, &cdt, sizeof(buf) - 1U, buf);
+	format_name(NULL, sizeof(buf) - 1U, buf, &info);
 
 	checked_wmove(view->win, current_line,
 			(cfg.extra_padding != 0) + column_offset + prefix_len);

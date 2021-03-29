@@ -8,8 +8,8 @@
 
 static void print_not_less_than_zero(const void *data, int column_id,
 		const char buf[], size_t offset, AlignType align);
-static void column12_func(void *data, int id, const void *format_data,
-		size_t buf_len, char buf[]);
+static void column12_func(void *data, size_t buf_len, char buf[],
+		const format_info_t *info);
 
 static const size_t MAX_WIDTH = 80;
 
@@ -50,8 +50,7 @@ print_not_less_than_zero(const void *data, int column_id, const char buf[],
 }
 
 static void
-column12_func(void *data, int id, const void *format_data, size_t buf_len,
-		char buf[])
+column12_func(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
 	buf[0] = '\0';
 }

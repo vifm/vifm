@@ -10,6 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/cancellation.h"
@@ -455,6 +456,7 @@ TEST(filename_is_formatted_according_to_column_and_filetype)
 	};
 
 	column_data_t cdt = { .view = &lwin };
+	format_info_t info = { .data = &cdt };
 	char name[16];
 
 	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
@@ -462,30 +464,38 @@ TEST(filename_is_formatted_according_to_column_and_filetype)
 
 	cdt.entry = &dir_entry;
 
-	format_name(NULL, SK_BY_INAME, &cdt, sizeof(name), name);
+	info.id = SK_BY_INAME;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b.c/", name);
 
-	format_name(NULL, SK_BY_NAME, &cdt, sizeof(name), name);
+	info.id = SK_BY_NAME;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b.c/", name);
 
-	format_name(NULL, SK_BY_FILEROOT, &cdt, sizeof(name), name);
+	info.id = SK_BY_FILEROOT;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b.c/", name);
 
-	format_name(NULL, SK_BY_ROOT, &cdt, sizeof(name), name);
+	info.id = SK_BY_ROOT;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b/", name);
 
 	cdt.entry = &file_entry;
 
-	format_name(NULL, SK_BY_INAME, &cdt, sizeof(name), name);
+	info.id = SK_BY_INAME;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b.c", name);
 
-	format_name(NULL, SK_BY_NAME, &cdt, sizeof(name), name);
+	info.id = SK_BY_NAME;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b.c", name);
 
-	format_name(NULL, SK_BY_FILEROOT, &cdt, sizeof(name), name);
+	info.id = SK_BY_FILEROOT;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b", name);
 
-	format_name(NULL, SK_BY_ROOT, &cdt, sizeof(name), name);
+	info.id = SK_BY_ROOT;
+	format_name(NULL, sizeof(name), name, &info);
 	assert_string_equal("a.b", name);
 }
 

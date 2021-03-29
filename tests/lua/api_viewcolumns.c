@@ -12,8 +12,8 @@
 
 #include <test-utils.h>
 
-static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[]);
+static void column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 
 enum { MAX_WIDTH = 30 };
 
@@ -86,7 +86,7 @@ TEST(column_is_registered)
 {
 	assert_success(vlua_run_string(vlua, "function handler() end"));
 
-	assert_int_equal(-1, vlua_map_viewcolumn(vlua, "Test"));
+	assert_int_equal(-1, vlua_viewcolumn_map(vlua, "Test"));
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
@@ -94,7 +94,7 @@ TEST(column_is_registered)
 				                         " handler = handler })"));
 	assert_string_equal("true", ui_sb_last());
 
-	assert_true(vlua_map_viewcolumn(vlua, "Test") != -1);
+	assert_true(vlua_viewcolumn_map(vlua, "Test") != -1);
 }
 
 TEST(duplicate_name)
@@ -142,7 +142,7 @@ TEST(columns_are_used)
 	dir_entry_t entry = { .name = "name", .origin = "origin" };
 	column_data_t cdt = { .view = &lwin, .entry = &entry };
 
-	columns_set_line_print_func(column_line_print);
+	columns_set_line_print_func(&column_line_print);
 	columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
 	assert_string_equal("     ERROR   NOVALUE      name", print_buffer);
 
@@ -152,9 +152,57 @@ TEST(columns_are_used)
 	curr_stats.vlua = NULL;
 }
 
+TEST(symlinks, IF(not_windows))
+{
+	assert_success(make_symlink("something", SANDBOX_PATH "/symlink"));
+
+	opt_handlers_setup();
+	lwin.columns = columns_create();
+	curr_stats.vlua = vlua;
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+	      "function handler(info)\n"
+	      "  return info.entry.type .. ' -> ' .. info.entry.gettarget(),"
+	      "         {1,2}\n"
+	      "end"));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addcolumntype{ name = 'Test',"
+				                         " handler = handler,"
+				                         " isprimary = true })"));
+	assert_string_equal("true", ui_sb_last());
+
+	process_set_args("viewcolumns=-20{Test}", 0, 1);
+
+	columns_set_line_print_func(&column_line_print);
+
+	dir_entry_t entry = { .name = "name", .origin = "origin", .type = FT_DIR };
+	column_data_t cdt = { .view = &lwin, .entry = &entry };
+	columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
+	assert_string_equal("ERROR                         ", print_buffer);
+
+	entry.type = FT_LINK;
+	columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
+	assert_string_equal("ERROR                         ", print_buffer);
+
+	entry.name = "symlink";
+	entry.origin = SANDBOX_PATH;
+	columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
+	assert_string_equal("link -> something             ", print_buffer);
+
+	opt_handlers_teardown();
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	curr_stats.vlua = NULL;
+
+	remove_file(SANDBOX_PATH "/symlink");
+}
+
 static void
-column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align, const char full_column[])
+column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
 {
 	strncpy(print_buffer + offset, buf, strlen(buf));
 }
