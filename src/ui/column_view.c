@@ -74,7 +74,7 @@ static size_t calculate_max_width(const column_t *col, size_t len,
 		size_t max_line_width);
 static size_t calculate_start_pos(const column_t *col, const char buf[],
 		AlignType align);
-static void fill_gap_pos(const void *format_data, size_t from, size_t to);
+static void fill_gap_pos(void *format_data, size_t from, size_t to);
 static size_t get_width_on_screen(const char str[]);
 static void recalculate_if_needed(columns_t *cols, size_t max_width);
 static void recalculate(columns_t *cols, size_t max_width);
@@ -288,8 +288,7 @@ get_column_func(int column_id)
 }
 
 void
-columns_format_line(columns_t *cols, const void *format_data,
-		size_t max_line_width)
+columns_format_line(columns_t *cols, void *format_data, size_t max_line_width)
 {
 	char prev_col_buf[1024 + 1];
 	size_t prev_col_start = 0UL;
@@ -430,7 +429,7 @@ calculate_start_pos(const column_t *col, const char buf[], AlignType align)
 /* Prints gap filler (GAP_FILL_CHAR) in place of gaps.  Does nothing if to less
  * or equal to from. */
 static void
-fill_gap_pos(const void *format_data, size_t from, size_t to)
+fill_gap_pos(void *format_data, size_t from, size_t to)
 {
 	if(to > from)
 	{

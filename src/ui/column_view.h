@@ -59,8 +59,8 @@ typedef struct columns_t columns_t;
 typedef struct format_info_t format_info_t;
 struct format_info_t
 {
-	const void *data; /* User data passed to columns_format_line(). */
-	int id;           /* Id of the column. */
+	void *data; /* User data passed to columns_format_line(). */
+	int id;     /* Id of the column. */
 };
 
 /* A column callback function, which should fill the buf with column text. */
@@ -113,7 +113,7 @@ void columns_add_column(columns_t *cols, column_info_t info);
 void columns_clear(columns_t *cols);
 
 /* Performs actual formatting of columns. */
-void columns_format_line(columns_t *cols, const void *format_data,
+void columns_format_line(columns_t *cols, void *format_data,
 		size_t max_line_width);
 
 /* Checks if recalculation is needed.  Returns non-zero if so, otherwise zero is

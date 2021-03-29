@@ -72,8 +72,8 @@ static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
 static size_t calculate_print_width(const view_t *view, int i,
 		size_t max_width);
-static void draw_cell(columns_t *columns, const column_data_t *cdt,
-		size_t col_width, size_t print_width);
+static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
+		size_t print_width);
 static columns_t * get_view_columns(const view_t *view, int truncated);
 static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
@@ -469,7 +469,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 	for(i = top; i < entries.nentries && i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
-		const column_data_t cdt = {
+		column_data_t cdt = {
 			.view = view,
 			.entry = &entries.entries[i],
 			.line_pos = i,
@@ -507,7 +507,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 	for(i = start_line; i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
-		const column_data_t cdt = {
+		column_data_t cdt = {
 			.view = view,
 			.entry = &non_entry,
 			.line_pos = -1,
@@ -669,7 +669,7 @@ calculate_print_width(const view_t *view, int i, size_t max_width)
 
 /* Draws a full cell of the file list.  print_width <= col_width. */
 static void
-draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
+draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 		size_t print_width)
 {
 	size_t width_left = cdt->is_main
@@ -1968,7 +1968,7 @@ position_hardware_cursor(view_t *view)
 	char buf[view->window_cols + 1];
 
 	size_t prefix_len = 0U;
-	const column_data_t cdt = {
+	column_data_t cdt = {
 		.view = view,
 		.entry = get_current_entry(view),
 		.prefix_len = &prefix_len,
