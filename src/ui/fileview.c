@@ -1171,8 +1171,13 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 
 	if(primary && view->matches != 0 && entry->search_match)
 	{
-		int match_from, match_to;
-		get_match_range(entry, full_column, &match_from, &match_to);
+		int match_from = cdt->match_from;
+		int match_to = cdt->match_to;
+
+		if(!cdt->custom_match)
+		{
+			get_match_range(entry, full_column, &match_from, &match_to);
+		}
 
 		if(match_from != match_to)
 		{

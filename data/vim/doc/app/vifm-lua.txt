@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 27
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -189,10 +189,15 @@ Possible fields of {column}:
    Name of the command.  Must consist of Latin characters and not start with
    the lower case one (those are reserved for builtin columns).
  - "handler" (function)
-   Handler which accepts {info} and returns a value for the table's cell.
+   Handler which accepts {info} and returns one or two values.  See below.
  - "isprimary" (boolean) (default: false)
    Whether this column is highlighted with file color and search match
-   is highlighted as well.  Note that search match highlighting can be off.
+   is highlighted as well.
+
+Return values of {column}.handler:
+ 1. Value for the table's cell as a string or convertible to it.
+ 2. Optional table with two integer values defining  highlighting range:
+    start and end offsets within the returned string.
 
 Fields of {info} argument for "handler":
  - "entry" (table)
@@ -217,6 +222,14 @@ Fields of {info}.entry for "handler":
    the Unix epoch.
  - "type" (string)
    Type of the entry.  See |vifm-filetype()| for the list of values.
+ - "match" (boolean)
+   Whether this entry is a search match.
+ - "matchstart" (integer)
+   For a search match this is the start position of a substring found in name,
+   zero otherwise.
+ - "matchend" (integer)
+   For a search match this is the end position of a substring found in name,
+   zero otherwise.
 
 Fields of {info}.entry.classify for "handler":
  - "prefix" (string)

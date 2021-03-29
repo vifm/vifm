@@ -47,6 +47,10 @@ typedef struct
 	                     * A pointer to allow changing value in const struct.
 	                     * Should be zero first time, then auto reset. */
 	int is_main;        /* Whether this is main file list. */
+
+	int custom_match;   /* Whether the keys below have meaningful values. */
+	int match_from;     /* Start offset of the match. */
+	int match_to;       /* End offset of the match. */
 }
 column_data_t;
 

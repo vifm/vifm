@@ -209,23 +209,46 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 
 	lua_newtable(lua);
 
-	const column_data_t *cdt = info->data;
+	column_data_t *cdt = info->data;
 	dir_entry_t *entry = cdt->entry;
 	vifmentry_new(lua, entry);
 	lua_setfield(lua, -2, "entry");
 
-	if(lua_pcall(lua, 1, 1, 0) != LUA_OK)
+	/* No match highlighting by default. */
+	cdt->custom_match = 1;
+	cdt->match_from = 0;
+	cdt->match_to = 0;
+
+	if(lua_pcall(lua, 1, 2, 0) != LUA_OK)
 	{
 		const char *error = lua_tostring(lua, -1);
 		ui_sb_err(error);
 		copy_str(buf, buf_len, "ERROR");
+		lua_pop(lua, 1);
+		return;
 	}
-	else
+
+	const char *text = lua_tostring(lua, -2);
+	copy_str(buf, buf_len, (text == NULL ? "NOVALUE" : text));
+
+	if(lua_istable(lua, -1))
 	{
-		const char *text = lua_tostring(lua, -1);
-		copy_str(buf, buf_len, (text == NULL ? "NOVALUE" : text));
+		int has_start, has_end;
+
+		lua_geti(lua, -1, 1);
+		int start = lua_tointegerx(lua, -1, &has_start) - 1;
+		lua_geti(lua, -2, 2);
+		int end = lua_tointegerx(lua, -1, &has_end) - 1;
+		lua_pop(lua, 2);
+
+		if(has_start && has_end && start >= 0 && end >= 0 && start <= end)
+		{
+			cdt->match_from = start;
+			cdt->match_to = end;
+		}
 	}
-	lua_pop(lua, 1);
+
+	lua_pop(lua, 2);
 }
 
 /* Creates a new VifmEntry (actually a table where user data is passed using
@@ -249,6 +272,14 @@ vifmentry_new(lua_State *lua, dir_entry_t *entry)
 	lua_setfield(lua, -2, "ctime");
 	lua_pushstring(lua, get_type_str(entry->type));
 	lua_setfield(lua, -2, "type");
+
+	int match = (entry->search_match != 0);
+	lua_pushboolean(lua, match);
+	lua_setfield(lua, -2, "match");
+	lua_pushinteger(lua, (match ? entry->match_left + 1 : 0));
+	lua_setfield(lua, -2, "matchstart");
+	lua_pushinteger(lua, (match ? entry->match_right + 1 : 0));
+	lua_setfield(lua, -2, "matchend");
 
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);

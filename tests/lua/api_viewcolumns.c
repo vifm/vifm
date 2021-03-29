@@ -163,7 +163,8 @@ TEST(symlinks, IF(not_windows))
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
 	      "function handler(info)\n"
-	      "  return info.entry.type .. ' -> ' .. info.entry.gettarget()\n"
+	      "  return info.entry.type .. ' -> ' .. info.entry.gettarget(),"
+	      "         {1,2}\n"
 	      "end"));
 	assert_string_equal("", ui_sb_last());
 
