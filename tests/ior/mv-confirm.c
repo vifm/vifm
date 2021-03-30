@@ -6,6 +6,8 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* F_OK access() */
 
+#include <test-utils.h>
+
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
@@ -69,7 +71,7 @@ TEST(confirm_is_called_for_file_overwrite)
 	delete_file(SANDBOX_PATH "/empty");
 }
 
-TEST(confirm_is_called_for_dir_overwrite, IF(not_windows))
+TEST(confirm_is_called_for_dir_overwrite, IF(regular_unix_user))
 {
 	create_empty_dir(SANDBOX_PATH "/src");
 	create_empty_file(SANDBOX_PATH "/src/file");

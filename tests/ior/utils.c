@@ -11,7 +11,6 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/utils.h"
 
 void
 create_non_empty_dir(const char dir[], const char file[])
@@ -109,12 +108,6 @@ int
 file_exists(const char file[])
 {
 	return access(file, F_OK) == 0;
-}
-
-int
-not_windows(void)
-{
-	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -315,7 +315,7 @@ TEST(parent_overwrite_is_prevented_on_file_move)
 	check_directory_clash(0, CMLO_MOVE);
 }
 
-TEST(copying_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
+TEST(copying_is_aborted_if_we_can_not_read_a_file, IF(regular_unix_user))
 {
 	create_file("can-read");
 	create_file("can-not-read");

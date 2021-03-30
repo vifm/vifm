@@ -48,6 +48,9 @@ ifeq ($(OS),Windows_NT)
     endif
 else
     ifeq ($(CROSS),)
+        ifeq ($(shell id -u),0)
+            $(warning warning: running tests as root disables chmod-based ones)
+        endif
         unix_env := true
     else
         win_env := true

@@ -185,13 +185,14 @@ TEST(can_delete_a_session)
 	create_dir(SANDBOX_PATH "/sessions/not-a-session.json");
 	create_file(SANDBOX_PATH "/sessions/session.json");
 
-#ifndef _WIN32
-	assert_success(chmod(SANDBOX_PATH "/sessions", 0555));
-	ui_sb_msg("");
-	assert_failure(exec_commands("delsession session", &lwin, CIT_COMMAND));
-	assert_string_equal("Failed to delete a session: session", ui_sb_last());
-	assert_success(chmod(SANDBOX_PATH "/sessions", 0777));
-#endif
+	if(regular_unix_user())
+	{
+		assert_success(chmod(SANDBOX_PATH "/sessions", 0555));
+		ui_sb_msg("");
+		assert_failure(exec_commands("delsession session", &lwin, CIT_COMMAND));
+		assert_string_equal("Failed to delete a session: session", ui_sb_last());
+		assert_success(chmod(SANDBOX_PATH "/sessions", 0777));
+	}
 
 	assert_success(exec_commands("delsession session", &lwin, CIT_COMMAND));
 

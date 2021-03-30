@@ -24,6 +24,7 @@ static void populate(view_t *view);
 static void mount(view_t *view, const char cmd[]);
 static int unmount(view_t *view);
 static int can_fuse(void);
+static int can_fuse_and_emulate_errors(void);
 
 SETUP()
 {
@@ -382,7 +383,7 @@ TEST(fuse_get_mount_file_works, IF(can_fuse))
 	assert_success(rmdir(SANDBOX_PATH "/mount.me"));
 }
 
-TEST(bad_fuse_home_is_handled, IF(can_fuse))
+TEST(bad_fuse_home_is_handled, IF(can_fuse_and_emulate_errors))
 {
 	os_mkdir(SANDBOX_PATH "/mount.me", 0777);
 	populate(&lwin);
@@ -443,6 +444,12 @@ can_fuse(void)
 #else
 	return 0;
 #endif
+}
+
+static int
+can_fuse_and_emulate_errors(void)
+{
+	return (can_fuse() && regular_unix_user());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

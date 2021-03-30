@@ -11,6 +11,8 @@
 #include <signal.h> /* SIGXFSZ SIG_IGN signal() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"

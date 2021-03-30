@@ -183,7 +183,7 @@ TEST(moving_equal_does_nothing)
 	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
 }
 
-TEST(file_id_is_not_updated_on_failed_move, IF(not_windows))
+TEST(file_id_is_not_updated_on_failed_move, IF(regular_unix_user))
 {
 	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);

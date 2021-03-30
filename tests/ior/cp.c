@@ -4,6 +4,8 @@
 #include <sys/types.h> /* stat */
 #include <unistd.h> /* F_OK access() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
