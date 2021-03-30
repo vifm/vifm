@@ -18,7 +18,7 @@ static IoErrCbResult handle_errors(struct io_args_t *args,
 static const io_cancellation_t no_cancellation;
 static int retry_count;
 
-TEST(file_copy_errors_are_detected_and_preserved, IF(not_windows))
+TEST(file_copy_errors_are_detected_and_preserved, IF(regular_unix_user))
 {
 	io_args_t args = {
 		.arg1.src = SANDBOX_PATH "/file",
@@ -77,7 +77,7 @@ TEST(dir_removal_error_is_reported_and_logged_once)
 	ioe_errlst_free(&args.result.errors);
 }
 
-TEST(ignore_does_not_mess_up_estimations, IF(not_windows))
+TEST(ignore_does_not_mess_up_estimations, IF(regular_unix_user))
 {
 	io_args_t args = {
 		.arg1.src = SANDBOX_PATH "/src",

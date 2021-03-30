@@ -51,7 +51,7 @@ TEST(missing_file_is_handled)
 	assert_int_equal(0, lines.nitems);
 }
 
-TEST(unreadable_directory_file_is_handled, IF(not_windows))
+TEST(unreadable_directory_file_is_handled, IF(regular_unix_user))
 {
 	create_dir(SANDBOX_PATH "/dir");
 	assert_success(chmod(SANDBOX_PATH "/dir", 0000));

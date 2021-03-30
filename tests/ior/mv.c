@@ -353,7 +353,7 @@ TEST(case_change_on_rename, IF(can_rename_changing_case))
 	delete_file(SANDBOX_PATH "/A-file");
 }
 
-TEST(error_on_move_preserves_source_file, IF(not_windows))
+TEST(error_on_move_preserves_source_file, IF(regular_unix_user))
 {
 	io_args_t args = {
 		.arg1.src = SANDBOX_PATH "/file",

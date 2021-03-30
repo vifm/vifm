@@ -115,6 +115,10 @@ void try_enable_utf8_locale(void);
  * returned. */
 int utf8_locale(void);
 
+/* Whether running as a regular user under Unix and can therefore force
+ * errors via chmod().  Returns non-zero if so, otherwise zero is returned. */
+int regular_unix_user(void);
+
 struct matcher_t;
 
 /* Changes *matcher to have the value of the expr.  The operation is assumed to

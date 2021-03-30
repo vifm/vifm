@@ -155,7 +155,7 @@ TEST(cloning_of_broken_symlink, IF(not_windows))
 	assert_success(unlink("broken-link"));
 }
 
-TEST(cloning_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
+TEST(cloning_is_aborted_if_we_can_not_read_a_file, IF(regular_unix_user))
 {
 	create_file("can-read");
 	create_file("can-not-read");

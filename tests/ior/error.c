@@ -46,7 +46,7 @@ TEST(file_removal_error_is_reported_and_logged_once, IF(not_windows))
 	rmdir(SANDBOX_PATH "/dir");
 }
 
-TEST(path_in_errors_has_no_double_slashes, IF(not_windows))
+TEST(path_in_errors_has_no_double_slashes, IF(regular_unix_user))
 {
 	io_args_t args = {
 		.arg1.src = SANDBOX_PATH "/dir",

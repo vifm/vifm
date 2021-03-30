@@ -121,6 +121,9 @@
 	Fixed backward search of view mode not reporting failure if there was a
 	match at the very first line.
 
+	Fixed running tests as root user.  Thanks to Michka Popoff (a.k.a.
+	iMichka).
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

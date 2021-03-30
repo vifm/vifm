@@ -332,7 +332,7 @@ TEST(compare_skips_dir_symlinks, IF(not_windows))
 	assert_success(remove(SANDBOX_PATH "/link"));
 }
 
-TEST(not_available_files_are_ignored, IF(not_windows))
+TEST(not_available_files_are_ignored, IF(regular_unix_user))
 {
 	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom");
 	assert_success(chmod(SANDBOX_PATH "/utf8-bom", 0000));

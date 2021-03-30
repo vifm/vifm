@@ -429,7 +429,7 @@ TEST(duplicated_entries_detected)
 	assert_true(lwin.has_dups);
 }
 
-TEST(cache_handles_noexec_dirs, IF(not_windows))
+TEST(cache_handles_noexec_dirs, IF(regular_unix_user))
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 	create_file(SANDBOX_PATH "/dir/file");

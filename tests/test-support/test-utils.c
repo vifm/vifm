@@ -4,7 +4,7 @@
 
 #include <sys/stat.h> /* chmod() */
 #include <sys/time.h> /* timeval utimes() */
-#include <unistd.h> /* access() rmdir() symlink() usleep() */
+#include <unistd.h> /* access() geteuid() rmdir() symlink() usleep() */
 
 #ifdef _WIN32
 #include <windows.h>
@@ -483,6 +483,16 @@ not_windows(void)
 	return 0;
 #else
 	return 1;
+#endif
+}
+
+int
+regular_unix_user(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return (geteuid() != 0);
 #endif
 }
 
