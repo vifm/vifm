@@ -124,6 +124,9 @@
 	Fixed running tests as root user.  Thanks to Michka Popoff (a.k.a.
 	iMichka).
 
+	Fixed graphical preview of files in the right column of miller view not
+	being properly cleared on directory change.  Thanks to CosmosAtlas.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

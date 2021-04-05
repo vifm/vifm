@@ -136,6 +136,7 @@ static void format_id(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 static size_t calculate_column_width(view_t *view);
 static size_t calculate_columns_count(view_t *view);
+static preview_area_t get_miller_preview_area(view_t *view);
 static size_t get_max_filename_width(const view_t *view);
 static size_t get_filename_width(const view_t *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
@@ -398,7 +399,8 @@ draw_right_column(view_t *view)
 			.w = ui_view_right_reserved(view) - 1,
 			.h = view->window_rows,
 		};
-		qv_draw_on(entry, &parea);
+		const char *clear_cmd = qv_draw_on(entry, &parea);
+		update_string(&view->file_preview_clear_cmd, clear_cmd);
 		return;
 	}
 
@@ -1783,6 +1785,42 @@ void
 fview_dir_updated(view_t *view)
 {
 	view->local_cs = cs_load_local(view == &lwin, view->curr_dir);
+
+	if(view->miller_view && view->miller_preview_files)
+	{
+		const int padding = (cfg.extra_padding ? 1 : 0);
+		const int rcol_width = ui_view_right_reserved(view) - padding - 1;
+		if(rcol_width > 0)
+		{
+			const preview_area_t parea = get_miller_preview_area(view);
+			qv_cleanup_area(&parea, view->file_preview_clear_cmd);
+		}
+	}
+}
+
+/* Computes area description for miller preview.  Returns the area. */
+static preview_area_t
+get_miller_preview_area(view_t *view)
+{
+	const col_scheme_t *const cs = ui_view_get_cs(view);
+	col_attr_t def_col = ui_get_win_color(view, cs);
+	cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
+
+	const int padding = (cfg.extra_padding ? 1 : 0);
+	const int offset = ui_view_left_reserved(view) + padding
+	                 + ui_view_available_width(view) + padding
+	                 + 1;
+
+	const preview_area_t parea = {
+		.source = view,
+		.view = view,
+		.def_col = def_col,
+		.x = offset,
+		.y = 0,
+		.w = ui_view_right_reserved(view) - 1,
+		.h = view->window_rows,
+	};
+	return parea;
 }
 
 void

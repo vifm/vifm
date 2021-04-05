@@ -55,8 +55,9 @@ int qv_can_show(void);
  * doesn't make sense (e.g. only one pane is visible). */
 void qv_draw(struct view_t *view);
 
-/* Draws file entry on an area. */
-void qv_draw_on(const struct dir_entry_t *entry, const preview_area_t *parea);
+/* Draws file entry on an area.  Returns preview clear command or NULL. */
+const char * qv_draw_on(const struct dir_entry_t *entry,
+		const preview_area_t *parea);
 
 /* Toggles state of the quick view. */
 void qv_toggle(void);
@@ -69,6 +70,9 @@ char * qv_expand_viewer(const char viewer[]);
 /* Performs view clearing with the given command, which can be NULL in which
  * case only internal clearing is done. */
 void qv_cleanup(struct view_t *view, const char cmd[]);
+
+/* Erases area using external command if cmd parameter isn't NULL. */
+void qv_cleanup_area(const preview_area_t *parea, const char cmd[]);
 
 /* Gets viewer command for a file considering its type (directory vs. file).
  * Returns NULL if no suitable viewer available, otherwise returns pointer to
