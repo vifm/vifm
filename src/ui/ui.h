@@ -355,6 +355,8 @@ struct view_t
 	/* Caches of file lists for miller mode. */
 	cached_entries_t left_column;
 	cached_entries_t right_column;
+	/* Clear command for last file preview or NULL. */
+	char *file_preview_clear_cmd;
 
 	fswatch_t *watch;  /* Monitor that checks for directory changes. */
 	char *watched_dir; /* Path for which the monitor was created. */

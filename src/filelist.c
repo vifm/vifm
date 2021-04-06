@@ -292,6 +292,8 @@ flist_free_view(view_t *view)
 
 	view->custom.type = CV_REGULAR;
 
+	update_string(&view->file_preview_clear_cmd, NULL);
+
 	fswatch_free(view->watch);
 	view->watch = NULL;
 	update_string(&view->watched_dir, NULL);

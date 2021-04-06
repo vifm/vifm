@@ -90,9 +90,9 @@ typedef struct
 }
 tree_print_state_t;
 
-static void view_entry(const dir_entry_t *entry, const preview_area_t *parea,
-		quickview_cache_t *cache);
-static void view_file(const char path[], const preview_area_t *parea,
+static const char * view_entry(const dir_entry_t *entry,
+		const preview_area_t *parea, quickview_cache_t *cache);
+static const char * view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache);
 static int is_cache_valid(const quickview_cache_t *cache, const char path[],
 		const char viewer[], const preview_area_t *parea);
@@ -117,7 +117,6 @@ static void draw_lines(const strlist_t *lines, int wrapped,
 static void write_message(const char msg[], const preview_area_t *parea);
 static void cleanup_for_text(const preview_area_t *parea);
 TSTATIC FILE * qv_execute_viewer(const char viewer[]);
-static void cleanup_area(const preview_area_t *parea, const char cmd[]);
 static void wipe_area(const preview_area_t *parea);
 
 /* Cached preview data for a single file entry. */
@@ -217,14 +216,14 @@ qv_draw(view_t *view)
 			.w = ui_qv_width(other_view),
 			.h = ui_qv_height(other_view),
 		};
-		view_entry(curr, &parea, &qv_cache);
+		(void)view_entry(curr, &parea, &qv_cache);
 	}
 
 	refresh_view_win(other_view);
 	ui_view_title_update(other_view);
 }
 
-void
+const char *
 qv_draw_on(const dir_entry_t *entry, const preview_area_t *parea)
 {
 	static quickview_cache_t lwin_cache, rwin_cache;
@@ -243,17 +242,20 @@ qv_draw_on(const dir_entry_t *entry, const preview_area_t *parea)
 
 	quickview_cache_t *cache = (parea->view == &lwin ? &lwin_cache : &rwin_cache);
 
-	view_entry(entry, parea, cache);
+	const char *clear_cmd = view_entry(entry, parea, cache);
 
 	parea->view->displays_graphics = (cache->kind != VK_TEXTUAL);
 
 	/* Unconditionally invalidate graphics cache, since we don't keep track of its
 	 * validity in any way. */
 	cache->graphics_lost = 1;
+
+	return clear_cmd;
 }
 
-/* Draws preview of the entry in the other view. */
-static void
+/* Draws preview of the entry in the other view.  Returns preview clear command
+ * or NULL. */
+static const char *
 view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 		quickview_cache_t *cache)
 {
@@ -297,18 +299,21 @@ view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 			/* break is omitted intentionally. */
 		case FT_UNK:
 		default:
-			view_file(path, parea, cache);
-			break;
+			return view_file(path, parea, cache);
 	}
+
+	return NULL;
 }
 
 /* Displays contents of file or output of its viewer in the other pane
- * starting from the second line and second column. */
-static void
+ * starting from the second line and second column.  Returns preview clear
+ * command or NULL. */
+static const char *
 view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache)
 {
 	const char *viewer = qv_get_viewer(path);
+	const char *clear_cmd = (viewer != NULL ? ma_get_clear_cmd(viewer) : NULL);
 
 	if(is_cache_valid(cache, path, viewer, parea))
 	{
@@ -316,7 +321,7 @@ view_file(const char path[], const preview_area_t *parea,
 		cache->pa = *parea;
 
 		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
-		return;
+		return clear_cmd;
 	}
 
 	ViewerKind kind = ft_viewer_kind(viewer);
@@ -327,7 +332,7 @@ view_file(const char path[], const preview_area_t *parea,
 	 * terminal emulator do actual refresh (at least some of them need this). */
 	if(kind != VK_TEXTUAL)
 	{
-		cleanup_area(parea, curr_stats.preview.cleanup_cmd);
+		qv_cleanup_area(parea, curr_stats.preview.cleanup_cmd);
 		usleep(cfg.graphics_delay);
 	}
 	else
@@ -339,7 +344,6 @@ view_file(const char path[], const preview_area_t *parea,
 
 	curr_stats.preview.kind = kind;
 
-	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
 	update_cache(cache, path, viewer, kind, parea, max_lines);
@@ -352,6 +356,8 @@ view_file(const char path[], const preview_area_t *parea,
 		cache->lines.items = copy_string_array(lines.items, lines.nitems);
 		cache->lines.nitems = lines.nitems;
 	}
+
+	return clear_cmd;
 }
 
 /* Checks whether data in the cache is up to date with the file on disk.
@@ -718,7 +724,7 @@ cleanup_for_text(const preview_area_t *parea)
 	if(curr_stats.preview.cleanup_cmd != NULL ||
 			curr_stats.preview.kind != VK_TEXTUAL)
 	{
-		cleanup_area(parea, curr_stats.preview.cleanup_cmd);
+		qv_cleanup_area(parea, curr_stats.preview.cleanup_cmd);
 	}
 	update_string(&curr_stats.preview.cleanup_cmd, NULL);
 	curr_stats.preview.kind = VK_TEXTUAL;
@@ -787,12 +793,11 @@ qv_cleanup(view_t *view, const char cmd[])
 		.w = view->window_cols,
 		.h = view->window_rows,
 	};
-	cleanup_area(&parea, cmd);
+	qv_cleanup_area(&parea, cmd);
 }
 
-/* Erases area using external command if available. */
-static void
-cleanup_area(const preview_area_t *parea, const char cmd[])
+void
+qv_cleanup_area(const preview_area_t *parea, const char cmd[])
 {
 	if(cmd == NULL)
 	{
