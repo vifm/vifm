@@ -127,6 +127,9 @@
 	Fixed graphical preview of files in the right column of miller view not
 	being properly cleared on directory change.  Thanks to CosmosAtlas.
 
+	Fixed vifm-convert-dircolors dropping copies of entries that differ only by
+	case.  Thanks to flux242.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

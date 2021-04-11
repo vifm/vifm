@@ -147,12 +147,12 @@ sub import_from_file
         chomp $line;
 
         if ($line =~ /^\.(\S+)\s+(\S+)/) {
-            my $pat = lc '\.'.$1;
+            my $pat = '\.'.$1;
             my $attrs = $2;
 
             &add_to_attrmap(\%patcol, $pat, $attrs);
         } elsif ($line =~ /^\*(\S+)\s+(\S+)/) {
-            my $pat = lc $1;
+            my $pat = $1;
             my $attrs = $2;
 
             &add_to_attrmap(\%patcol, $pat, $attrs);
@@ -191,10 +191,10 @@ sub import_from_env
             my $group = $SHORT_GROUPS{$name};
             $typecol{$group} = $attrs;
         } elsif ($name =~ /^\*\.(\S+)/) {
-            my $pat = lc '\.'.$1;
+            my $pat = '\.'.$1;
             &add_to_attrmap(\%patcol, $pat, $attrs);
         } elsif ($name =~ /^\*(\S+)/) {
-            my $pat = lc $1;
+            my $pat = $1;
             &add_to_attrmap(\%patcol, $pat, $attrs);
         }
     }
