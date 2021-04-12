@@ -166,6 +166,24 @@ TEST(cmds_command)
 	assert_string_equal("", ui_sb_last());
 }
 
+TEST(cmds_names_with_numbers)
+{
+	assert_success(vlua_run_string(vlua, "r = vifm.cmds.add {"
+	                                     "  name = 'my1',"
+	                                     "  handler = function() end"
+	                                     "}\n"
+	                                     "if not r then print 'fail' end"));
+	assert_string_equal("", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command {"
+	                                     "  name = 'my2',"
+	                                     "  action = 'bla'"
+	                                     "}\n"
+	                                     "if not r then print 'fail' end"));
+	assert_string_equal("", ui_sb_last());
+}
+
 TEST(cmds_delcommand)
 {
 	ui_sb_msg("");

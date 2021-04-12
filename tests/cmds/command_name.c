@@ -4,6 +4,7 @@
 
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
+#include "../../src/utils/str.h"
 
 #include "suite.h"
 
@@ -12,12 +13,12 @@ static int delete_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
 static int substitute_cmd(const cmd_info_t *cmd_info);
 static int usercmd_cmd(const cmd_info_t *cmd_info);
-
-extern cmds_conf_t cmds_conf;
+static int usercmd_copy_args_cmd(const cmd_info_t *cmd_info);
 
 static cmd_info_t cmdi;
 static int shell_called;
 static int substitute_called;
+static char *last_args;
 
 static const cmd_add_t commands[] = {
 	{ .name = "",             .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -69,6 +70,11 @@ SETUP()
 	vle_cmds_add(commands, ARRAY_LEN(commands));
 }
 
+TEARDOWN()
+{
+	user_cmd_handler = NULL;
+}
+
 TEST(builtin)
 {
 	cmd_add_t command = {
@@ -84,10 +90,19 @@ TEST(builtin)
 	assert_false(add_builtin_cmd("&", BUILTIN_CMD, &command) == 0);
 
 	assert_false(add_builtin_cmd("2", BUILTIN_CMD, &command) == 0);
+
+	assert_false(add_builtin_cmd("bad#", BUILTIN_CMD, &command) == 0);
 }
 
 TEST(user_add)
 {
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME,
+			vle_cmds_run("command thiscommandnameistoolongaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa a"));
+
 	assert_int_equal(0, vle_cmds_run("command comix a"));
 
 	assert_int_equal(0, vle_cmds_run("command udf a"));
@@ -201,10 +216,103 @@ TEST(cant_register_same_builtin_twice)
 	assert_failure(add_builtin_cmd("tr", BUILTIN_CMD, &command));
 }
 
+TEST(names_with_numbers)
+{
+	user_cmd_handler = &usercmd_copy_args_cmd;
+
+	/* Bad. */
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME,
+			vle_cmds_run("command sh123 test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME,
+			vle_cmds_run("command shell123 test"));
+
+	vle_cmds_clear();
+
+	/* Good. */
+	assert_int_equal(0, vle_cmds_run("command mp test"));
+	assert_int_equal(0, vle_cmds_run("command mp! test"));
+	assert_int_equal(0, vle_cmds_run("mp4"));
+	assert_string_equal("4", last_args);
+	assert_int_equal(0, vle_cmds_run("mp!5"));
+	assert_string_equal("5", last_args);
+
+	vle_cmds_clear();
+
+	/* Good. */
+	assert_int_equal(0, vle_cmds_run("command mp2 test"));
+	assert_int_equal(0, vle_cmds_run("mp29"));
+	assert_string_equal("9", last_args);
+
+	vle_cmds_clear();
+
+	/* Bad. */
+	assert_int_equal(0, vle_cmds_run("command mp test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, vle_cmds_run("command mp4 test"));
+
+	vle_cmds_clear();
+
+	/* Bad (same as the previous one, but reversed order). */
+	assert_int_equal(0, vle_cmds_run("command mp4 test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, vle_cmds_run("command mp test"));
+
+	vle_cmds_clear();
+
+	/* Good. */
+	assert_int_equal(0, vle_cmds_run("command mp2 test"));
+	assert_int_equal(0, vle_cmds_run("command mp4 test"));
+	assert_int_equal(0, vle_cmds_run("command mp4! test"));
+	assert_int_equal(0, vle_cmds_run("command mp4? test"));
+
+	vle_cmds_clear();
+
+	/* Bad. */
+	assert_int_equal(0, vle_cmds_run("command mp2 test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, vle_cmds_run("command mp22 test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, vle_cmds_run("command mp222 test"));
+
+	vle_cmds_clear();
+
+	/* Bad (same as the previous one, but in a different order). */
+	assert_int_equal(0, vle_cmds_run("command mp22 test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, vle_cmds_run("command mp2 test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, vle_cmds_run("command mp222 test"));
+
+	vle_cmds_clear();
+
+	/* Bad. */
+	assert_int_equal(0, vle_cmds_run("command mp44t test"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME,
+			vle_cmds_run("command mp44t3 test"));
+
+	vle_cmds_clear();
+
+	/* Good. */
+	assert_int_equal(0, vle_cmds_run("command mp44t2 test"));
+	assert_int_equal(0, vle_cmds_run("command mp44t3 test"));
+}
+
+TEST(foreign_with_a_number)
+{
+	cmd_add_t command = {
+	  .name = "foreign1",    .abbr = NULL,  .id = -1,      .descr = "foreign",
+	  .flags = HAS_RANGE,
+	  .handler = &dummy_cmd, .min_args = 0, .max_args = NOT_DEF,
+	};
+
+	assert_success(vle_cmds_add_foreign(&command));
+}
+
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
 	return vle_cmds_run(cmd_info->user_action);
+}
+
+static int
+usercmd_copy_args_cmd(const cmd_info_t *cmd_info)
+{
+	update_string(&last_args, cmd_info->args);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

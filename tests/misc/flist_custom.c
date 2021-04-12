@@ -5,7 +5,7 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memset() */
+#include <string.h> /* memcpy() memset() */
 
 #include <test-utils.h>
 
@@ -762,7 +762,7 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	const column_data_t *const cdt = info->data;
-	strncpy((cdt->line_hi_group == 1 ? buf1 : buf2) + offset, buf, strlen(buf));
+	memcpy((cdt->line_hi_group == 1 ? buf1 : buf2) + offset, buf, strlen(buf));
 }
 
 static void
