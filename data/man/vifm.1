@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 19, 2021" "vifm 0.11"
+.TH VIFM 1 "April 12, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1641,9 +1641,25 @@ set or redefine a user command.
 Use :com[mand]! to overwrite a previously set command of the same name.
 Builtin commands can't be redefined.
 .br
-Unlike in vim, user commands do not have to start with a capital letter.
-However, command name cannot contain numbers or special symbols except for
-single trailing '?' or '!'.
+User commands must start with an upper or lower case letter.
+Command name can't contain special symbols except for a single trailing
+\(aq?' or '!'.  Numbers are allowed provided that they don't cause parsing
+ambiguity (no command name prefix that precedes a digit can match an
+existing command unless it has a digit in the same place), for example:
+.EX
+  " good
+  :command mp3 command
+  " good
+  :command mp4 command
+  :command mp3! command
+  :command mp4? command
+  " bad
+  :command mp command
+  :command mp44 command
+  " good
+  :command mp4c command
+.EE
+
 .br
 User commands are run in a shell by default (see below for syntax of other
 options).  To run a command in the background you must mark it as a background

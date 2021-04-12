@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 19
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Apr 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1422,12 +1422,25 @@ The builtin commands are:
     previously set command of the same name.  Builtin commands can't be
     redefined.
 
-    Unlike in vim, user commands do not have to start with a capital letter.
-    However, command name cannot contain numbers or special symbols except
-    for single trailing '?' or '!'.
-
-    User commands are run in a shell by default (see below for other syntax of
-    other options).  To run a command in the background you must mark it as a
+    User commands must start with an upper or lower case letter.  Command
+    name can't contain special symbols except for a single trailing
+    '?' or '!'.  Numbers are allowed provided that they don't cause parsing
+    ambiguity (no command name prefix that precedes a digit can match an
+    existing command unless it has a digit in the same place), for example: >
+      " good
+      :command mp3 command
+      " good
+      :command mp4 command
+      :command mp3! command
+      :command mp4? command
+      " bad
+      :command mp command
+      :command mp44 command
+      " good
+      :command mp4c command
+<
+    User commands are run in a shell by default (see below for syntax of other
+    options).  To run a command in the background you must mark it as a
     background command by adding " &" after the command's action
     (e.g., `:com rm rm %f &`).
 

@@ -19,7 +19,7 @@
 #include "cmds.h"
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* isalpha() isdigit() isspace() */
+#include <ctype.h> /* isalnum() isalpha() isdigit() isspace() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h> /* calloc() malloc() free() realloc() */
@@ -69,6 +69,7 @@ static int complete_cmd_args(cmd_t *cur, const char args[],
 static void complete_cmd_name(const char cmd_name[], int user_only);
 TSTATIC int add_builtin_cmd(const char name[], CMD_TYPE type,
 		const cmd_add_t *conf);
+static int is_builtin_like_name_ok(const char name[]);
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static void remove_commands(CMD_TYPE type);
 static int command_cmd(const cmd_info_t *cmd_info);
@@ -706,9 +707,6 @@ parse_range_elem(const char cmd[], cmd_info_t *cmd_info, char last_sep)
 static const char *
 get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 {
-	const char *t;
-	size_t len;
-
 	assert(buf_len != 0 && "The buffer is expected to be of size > 0.");
 
 	if(cmd[0] == '!')
@@ -718,11 +716,26 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 		return cmd;
 	}
 
-	t = cmd;
-	while(isalpha(*t))
-		t++;
+	const char *t = cmd;
+	if(isalpha(*t))
+		++t;
+	while(isalnum(*t))
+	{
+		if(isdigit(*t))
+		{
+			size_t len = MIN((size_t)(t - cmd), buf_len - 1);
+			copy_str(buf, len + 1, cmd);
 
-	len = MIN((size_t)(t - cmd), buf_len - 1);
+			const cmd_t *const c = find_cmd(buf);
+			if(c != NULL && c->name[len] != *t)
+			{
+				break;
+			}
+		}
+		++t;
+	}
+
+	size_t len = MIN((size_t)(t - cmd), buf_len - 1);
 	strncpy(buf, cmd, len);
 	buf[len] = '\0';
 	if(*t == '?' || *t == '!')
@@ -889,6 +902,11 @@ vle_cmds_add_foreign(const cmd_add_t *cmd)
 		return 1;
 	}
 
+	if(!is_valid_udc_name(cmd->name))
+	{
+		return CMDS_ERR_INCORRECT_NAME;
+	}
+
 	int failure = (add_builtin_cmd(cmd->name, FOREIGN_CMD, cmd) != 0);
 	if(!failure)
 	{
@@ -913,16 +931,9 @@ add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf)
 		return 0;
 	}
 
-	if(strcmp(name, "!") != 0)
+	if(!is_builtin_like_name_ok(name))
 	{
-		unsigned int i;
-		for(i = 0U; name[i] != '\0'; ++i)
-		{
-			if(!isalpha(name[i]))
-			{
-				return -1;
-			}
-		}
+		return -1;
 	}
 
 	cmp = -1;
@@ -962,6 +973,33 @@ add_builtin_cmd(const char name[], CMD_TYPE type, const cmd_add_t *conf)
 	init_command_flags(new, conf->flags);
 
 	return 0;
+}
+
+/* Checks validity of a name for a builtin-like command.  Returns non-zero if
+ * it's valid and zero otherwise. */
+static int
+is_builtin_like_name_ok(const char name[])
+{
+	if(name[0] == '\0' || strcmp(name, "!") == 0)
+	{
+		return 1;
+	}
+
+	if(!isalpha(name[0]))
+	{
+		return 0;
+	}
+
+	int i;
+	for(i = 1; name[i] != '\0'; ++i)
+	{
+		if(!isalnum(name[i]))
+		{
+			return 0;
+		}
+	}
+
+	return 1;
 }
 
 /* Implements :comclear builtin command provided by this unit. */
@@ -1151,21 +1189,47 @@ is_valid_udc_name(const char name[])
 		return 0;
 	if(strcmp(name, "?") == 0)
 		return 0;
+	if(!isalpha(name[0]))
+		return 0;
+	if(strlen(name) >= MAX_CMD_NAME_LEN)
+		return 0;
 
-	char cmd_name[MAX_CMD_NAME_LEN + 1];
-	copy_str(cmd_name, sizeof(cmd_name), name);
+	char cmd_name[MAX_CMD_NAME_LEN];
+	char *p = cmd_name;
 
 	while(name[0] != '\0')
 	{
-		if(!isalpha(name[0]))
+		*p++ = *name;
+
+		if(!isalnum(name[0]))
 		{
 			if(name[1] != '\0')
 				return 0;
 			else if(name[0] != '!' && name[0] != '?')
 				return 0;
 		}
-		name++;
+		else if(isdigit(name[1]))
+		{
+			*p = '\0';
+
+			const cmd_t *const c = find_cmd(cmd_name);
+			if(c != NULL)
+			{
+				if(c->type == BUILTIN_CMD || c->type == BUILTIN_ABBR)
+				{
+					return 0;
+				}
+				if(c->name[p - cmd_name] == '\0' || isalpha(c->name[p - cmd_name]))
+				{
+					return 0;
+				}
+			}
+		}
+
+		++name;
 	}
+
+	*p = '\0';
 
 	/* Builtins with custom separator have higher priority.  Disallow registering
 	 * user-defined commands which will never be called. */
@@ -1174,8 +1238,13 @@ is_valid_udc_name(const char name[])
 		cmd_name[strlen(cmd_name) - 1] = '\0';
 	}
 	const cmd_t *const c = find_cmd(cmd_name);
-	if(c != NULL && c->cust_sep && strcmp(c->name, cmd_name) == 0)
-		return 0;
+	if(c != NULL)
+	{
+		if(c->cust_sep && strcmp(c->name, cmd_name) == 0)
+			return 0;
+		if(isdigit(c->name[strlen(cmd_name)]))
+			return 0;
+	}
 
 	return 1;
 }

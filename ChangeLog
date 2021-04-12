@@ -66,6 +66,9 @@
 	Allow exploring empty files or output of viewers.  Thanks to Andrew
 	Savchenko.
 
+	Allow user-defined commands to include numbers in their names.  Thanks to
+	anonymous at Vifm Q2A site.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 

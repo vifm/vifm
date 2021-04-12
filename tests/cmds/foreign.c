@@ -8,6 +8,17 @@
 
 static int foreign_cmd(const cmd_info_t *cmd_info);
 
+TEST(cannot_add_foreign_command_with_bad_name)
+{
+	cmd_add_t command = {
+	  .name = "some##",        .abbr = NULL,  .id = -1,      .descr = "foreign",
+	  .flags = HAS_RANGE,
+	  .handler = &foreign_cmd,
+	};
+
+	assert_failure(vle_cmds_add_foreign(&command));
+}
+
 TEST(cannot_add_foreign_command_with_bad_args)
 {
 	cmd_add_t command = {
