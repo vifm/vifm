@@ -61,6 +61,8 @@ static const char * get_cmd_name(const char cmd[], char buf[], size_t buf_len);
 static void init_cmd_info(cmd_info_t *cmd_info);
 static const char * skip_prefix_commands(const char cmd[]);
 static cmd_t * find_cmd(const char name[]);
+static cmd_t * find_cmd_advance(cmd_t *cmd, const char name[]);
+static int find_cmd_match(cmd_t *cmd, const char name[]);
 static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
 static const char * parse_range_elem(const char cmd[], cmd_info_t *cmd_info,
 		char last_sep);
@@ -570,23 +572,33 @@ skip_prefix_commands(const char cmd[])
 	return cmd;
 }
 
+/* Looks up a command by its name. */
 static cmd_t *
 find_cmd(const char name[])
 {
-	cmd_t *cmd;
+	cmd_t *const cmd = find_cmd_advance(inner->head.next, name);
+	return (find_cmd_match(cmd, name) ? cmd : NULL);
+}
 
-	cmd = inner->head.next;
+/* Advances to the first command whose name is not less than the parameter.
+ * Returns advanced values (could be unchanged or NULL). */
+static cmd_t *
+find_cmd_advance(cmd_t *cmd, const char name[])
+{
 	while(cmd != NULL && strcmp(cmd->name, name) < 0)
 	{
 		cmd = cmd->next;
 	}
-
-	if(cmd != NULL && strncmp(name, cmd->name, strlen(name)) != 0)
-	{
-		cmd = NULL;
-	}
-
 	return cmd;
+}
+
+/* Checks that command search was a success.  Returns non-zero if so, otherwise
+ * zero is returned. */
+static int
+find_cmd_match(cmd_t *cmd, const char name[])
+{
+	return (cmd != NULL)
+	    && (strncmp(name, cmd->name, strlen(name)) == 0);
 }
 
 /* Parses whole command range (e.g. "<val>;+<val>,,-<val>").  Returns advanced
@@ -716,6 +728,8 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 		return cmd;
 	}
 
+	cmd_t *c = inner->head.next;
+
 	const char *t = cmd;
 	if(isalpha(*t))
 		++t;
@@ -726,8 +740,8 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 			size_t len = MIN((size_t)(t - cmd), buf_len - 1);
 			copy_str(buf, len + 1, cmd);
 
-			const cmd_t *const c = find_cmd(buf);
-			if(c != NULL && c->name[len] != *t)
+			c = find_cmd_advance(c, buf);
+			if(find_cmd_match(c, buf) && c->name[len] != *t)
 			{
 				break;
 			}
@@ -1197,6 +1211,8 @@ is_valid_udc_name(const char name[])
 	char cmd_name[MAX_CMD_NAME_LEN];
 	char *p = cmd_name;
 
+	cmd_t *cmd = inner->head.next;
+
 	while(name[0] != '\0')
 	{
 		*p++ = *name;
@@ -1211,15 +1227,17 @@ is_valid_udc_name(const char name[])
 		else if(isdigit(name[1]))
 		{
 			*p = '\0';
+			cmd = find_cmd_advance(cmd, cmd_name);
 
-			const cmd_t *const c = find_cmd(cmd_name);
-			if(c != NULL)
+			if(find_cmd_match(cmd, cmd_name))
 			{
-				if(c->type == BUILTIN_CMD || c->type == BUILTIN_ABBR)
+				if(cmd->type == BUILTIN_CMD || cmd->type == BUILTIN_ABBR)
 				{
 					return 0;
 				}
-				if(c->name[p - cmd_name] == '\0' || isalpha(c->name[p - cmd_name]))
+
+				const int name_len = p - cmd_name;
+				if(cmd->name[name_len] == '\0' || isalpha(cmd->name[name_len]))
 				{
 					return 0;
 				}
@@ -1237,12 +1255,13 @@ is_valid_udc_name(const char name[])
 	{
 		cmd_name[strlen(cmd_name) - 1] = '\0';
 	}
-	const cmd_t *const c = find_cmd(cmd_name);
-	if(c != NULL)
+
+	cmd = find_cmd_advance(cmd, cmd_name);
+	if(find_cmd_match(cmd, cmd_name))
 	{
-		if(c->cust_sep && strcmp(c->name, cmd_name) == 0)
+		if(cmd->cust_sep && strcmp(cmd->name, cmd_name) == 0)
 			return 0;
-		if(isdigit(c->name[strlen(cmd_name)]))
+		if(isdigit(cmd->name[strlen(cmd_name)]))
 			return 0;
 	}
 
