@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <string.h> /* strncpy() */
+#include <string.h> /* memcpy() */
 
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/column_view.h"
@@ -204,7 +204,7 @@ static void
 column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
-	strncpy(print_buffer + offset, buf, strlen(buf));
+	memcpy(print_buffer + offset, buf, strlen(buf));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

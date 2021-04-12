@@ -2,7 +2,7 @@
 
 #include <locale.h> /* setlocale() */
 #include <stddef.h> /* NULL size_t */
-#include <string.h>
+#include <string.h> /* memcpy() */
 
 #include "../../src/utils/utf8.h"
 #include "../../src/utils/utils.h"
@@ -52,8 +52,7 @@ static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align)
 {
-	strncpy(print_buffer +
-			utf8_nstrsnlen(print_buffer, offset), buf, strlen(buf));
+	memcpy(print_buffer + utf8_nstrsnlen(print_buffer, offset), buf, strlen(buf));
 }
 
 static void

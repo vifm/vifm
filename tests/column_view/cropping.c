@@ -2,7 +2,7 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <string.h>
+#include <string.h> /* memcpy() */
 
 #include "../../src/ui/column_view.h"
 #include "../../src/utils/macros.h"
@@ -39,7 +39,7 @@ static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align)
 {
-	strncpy(print_buffer + offset, buf, strlen(buf));
+	memcpy(print_buffer + offset, buf, strlen(buf));
 }
 
 static void
