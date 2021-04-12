@@ -171,7 +171,7 @@ int
 vle_cmds_run(const char cmd[])
 {
 	cmd_info_t cmd_info;
-	char cmd_name[MAX_CMD_NAME_LEN];
+	char cmd_name[MAX_CMD_NAME_LEN + 1];
 	cmd_t *cur;
 	const char *args;
 	int execution_code;
@@ -505,7 +505,7 @@ vle_cmds_complete(const char cmd[], void *arg)
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	if(cmd_name_pos != NULL)
 	{
-		char cmd_name[MAX_CMD_NAME_LEN];
+		char cmd_name[MAX_CMD_NAME_LEN + 1];
 		const char *args;
 		cmd_t *cur;
 
@@ -541,7 +541,7 @@ skip_prefix_commands(const char cmd[])
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	if(cmd_name_pos != NULL)
 	{
-		char cmd_name[MAX_CMD_NAME_LEN];
+		char cmd_name[MAX_CMD_NAME_LEN + 1];
 		const char *args;
 		cmd_t *cur;
 
@@ -1069,7 +1069,7 @@ command_cmd(const cmd_info_t *cmd_info)
 		return inner->command_handler(cmd_info);
 	}
 
-	char name[MAX_CMD_NAME_LEN];
+	char name[MAX_CMD_NAME_LEN + 1];
 	const char *body = get_user_cmd_name(cmd_info->args, name, sizeof(name));
 	body = vle_cmds_at_arg(body);
 
