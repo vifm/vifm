@@ -240,46 +240,23 @@ redraw_attr_dialog(void)
 	else
 		wresize(change_win, 20, 30);
 
-	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
-	mvwaddch(change_win, 3, col, get_perm_mark(0));
-
-	mvwaddstr(change_win, 4, 6, "  [ ] Write");
-	mvwaddch(change_win, 4, col, get_perm_mark(1));
-
-	mvwaddstr(change_win, 5, 6, "  [ ] Execute");
-	mvwaddch(change_win, 5, col, get_perm_mark(2));
-
-	mvwaddstr(change_win, 6, 6, "  [ ] SetUID");
-	mvwaddch(change_win, 6, col, get_perm_mark(3));
-
-	mvwaddstr(change_win, 8, 2, "Group [ ] Read");
-	mvwaddch(change_win, 8, col, get_perm_mark(4));
-
-	mvwaddstr(change_win, 9, 6, "  [ ] Write");
-	mvwaddch(change_win, 9, col, get_perm_mark(5));
-
-	mvwaddstr(change_win, 10, 6, "  [ ] Execute");
-	mvwaddch(change_win, 10, col, get_perm_mark(6));
-
-	mvwaddstr(change_win, 11, 6, "  [ ] SetGID");
-	mvwaddch(change_win, 11, col, get_perm_mark(7));
-
-	mvwaddstr(change_win, 13, 2, "Other [ ] Read");
-	mvwaddch(change_win, 13, col, get_perm_mark(8));
-
-	mvwaddstr(change_win, 14, 6, "  [ ] Write");
-	mvwaddch(change_win, 14, col, get_perm_mark(9));
-
-	mvwaddstr(change_win, 15, 6, "  [ ] Execute");
-	mvwaddch(change_win, 15, col, get_perm_mark(10));
-
-	mvwaddstr(change_win, 16, 6, "  [ ] Sticky");
-	mvwaddch(change_win, 16, col, get_perm_mark(11));
+	mvwprintw(change_win,  3, 2, "Owner [%c] Read", get_perm_mark(0));
+	mvwprintw(change_win,  4, 2, "      [%c] Write", get_perm_mark(1));
+	mvwprintw(change_win,  5, 2, "      [%c] Execute", get_perm_mark(2));
+	mvwprintw(change_win,  6, 2, "      [%c] SetUID", get_perm_mark(3));
+	mvwprintw(change_win,  8, 2, "Group [%c] Read", get_perm_mark(4));
+	mvwprintw(change_win,  9, 2, "      [%c] Write", get_perm_mark(5));
+	mvwprintw(change_win, 10, 2, "      [%c] Execute", get_perm_mark(6));
+	mvwprintw(change_win, 11, 2, "      [%c] SetGID", get_perm_mark(7));
+	mvwprintw(change_win, 13, 2, "Other [%c] Read", get_perm_mark(8));
+	mvwprintw(change_win, 14, 2, "      [%c] Write", get_perm_mark(9));
+	mvwprintw(change_win, 15, 2, "      [%c] Execute",  get_perm_mark(10));
+	mvwprintw(change_win, 16, 2, "      [%c] Sticky", get_perm_mark(11));
 
 	if(file_is_dir)
 	{
-		mvwaddstr(change_win, 18, 6, "  [ ] Set Recursively");
-		mvwaddch(change_win, 18, col, get_perm_mark(12));
+		mvwprintw(change_win, 18, 2, "      [%c] Set Recursively",
+				get_perm_mark(12));
 	}
 
 	getmaxyx(stdscr, y, x);
