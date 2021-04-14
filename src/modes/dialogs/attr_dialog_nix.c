@@ -53,6 +53,7 @@
 #include "../wk.h"
 #include "msg_dialog.h"
 
+static char get_perm_mark(int line);
 static char * get_title(int max_width);
 static int is_one_file_selected(int first_file_index);
 static int get_first_file_index(void);
@@ -67,6 +68,12 @@ static void file_chmod(char *path, const char *mode, const char *inv_mode,
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_space(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_r(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_x(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
+static void toggle_bit_class(int i);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
@@ -101,6 +108,11 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_l,      {{&cmd_return}, .descr = "update permissions"}},
 	{WK_q,      {{&cmd_ctrl_c}, .descr = "close the dialog"}},
 	{WK_t,      {{&cmd_space},  .descr = "toggle current item"}},
+	{WK_r,      {{&cmd_r},      .descr = "toggle read bits"}},
+	{WK_w,      {{&cmd_w},      .descr = "toggle write bits"}},
+	{WK_x,      {{&cmd_x},      .descr = "toggle execute bits"}},
+	{WK_s,      {{&cmd_s},      .descr = "toggle special bits"}},
+	{WK_e,      {{&cmd_e},      .descr = "toggle recursion"}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{K(KEY_HOME)},  {{&cmd_gg},     .descr = "go to the first item"}},
 	{{K(KEY_END)},   {{&cmd_G},      .descr = "go to the last item"}},
@@ -169,6 +181,10 @@ enter_attr_mode(view_t *active_view)
 	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 
+	/* Values:
+	 *  - = 0 -- the bit is unset,
+	 *  - > 0 -- the bit is set,
+	 *  - < 0 -- value is different for different files. */
 	perms[0] = !(diff & S_IRUSR) ? (int)(fmode & S_IRUSR) : -1;
 	perms[1] = !(diff & S_IWUSR) ? (int)(fmode & S_IWUSR) : -1;
 	perms[2] = !(diff & S_IXUSR) ? (int)(fmode & S_IXUSR) : -1;
@@ -186,6 +202,8 @@ enter_attr_mode(view_t *active_view)
 	adv_perms[2] = 0;
 	memcpy(origin_perms, perms, sizeof(perms));
 
+	/* These are Y positions from the top of the dialog, thus the topmost entry
+	 * (namely Owner - Read) is at position 3. */
 	top = 3;
 	bottom = file_is_dir ? 18 : 16;
 	curr = 3;
@@ -205,7 +223,7 @@ enter_attr_mode(view_t *active_view)
 		return;
 	}
 
-	col = 9;
+	col = 10;
 	changed = 0;
 	redraw_attr_dialog();
 }
@@ -218,63 +236,31 @@ redraw_attr_dialog(void)
 
 	werase(change_win);
 	if(file_is_dir)
-		wresize(change_win, 22, 30);
+		wresize(change_win, 22, 31);
 	else
-		wresize(change_win, 20, 30);
+		wresize(change_win, 20, 31);
 
-	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
-	if(perms[0])
-		mvwaddch(change_win, 3, 9, (perms[0] < 0) ? 'X' : '*');
-	mvwaddstr(change_win, 4, 6, "  [ ] Write");
-
-	if(perms[1])
-		mvwaddch(change_win, 4, 9, (perms[1] < 0) ? 'X' : '*');
-	mvwaddstr(change_win, 5, 6, "  [ ] Execute");
-
-	if(perms[2])
-		mvwaddch(change_win, 5, 9, (perms[2] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 6, 6, "  [ ] SetUID");
-	if(perms[3])
-		mvwaddch(change_win, 6, 9, (perms[3] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 8, 2, "Group [ ] Read");
-	if(perms[4])
-		mvwaddch(change_win, 8, 9, (perms[4] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 9, 6, "  [ ] Write");
-	if(perms[5])
-		mvwaddch(change_win, 9, 9, (perms[5] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 10, 6, "  [ ] Execute");
-	if(perms[6])
-		mvwaddch(change_win, 10, 9, (perms[6] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 11, 6, "  [ ] SetGID");
-	if(perms[7])
-		mvwaddch(change_win, 11, 9, (perms[7] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 13, 2, "Other [ ] Read");
-	if(perms[8])
-		mvwaddch(change_win, 13, 9, (perms[8] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 14, 6, "  [ ] Write");
-	if(perms[9])
-		mvwaddch(change_win, 14, 9, (perms[9] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 15, 6, "  [ ] Execute");
-	if(perms[10])
-		mvwaddch(change_win, 15, 9, (perms[10] < 0) ? 'X' : '*');
-
-	mvwaddstr(change_win, 16, 6, "  [ ] Sticky");
-	if(perms[11])
-		mvwaddch(change_win, 16, 9, (perms[11] < 0) ? 'X' : '*');
+	mvwprintw(change_win,  3, 3, "Owner [%c] Read", get_perm_mark(0));
+	mvwprintw(change_win,  4, 3, "      [%c] Write", get_perm_mark(1));
+	mvwprintw(change_win,  5, 3, "      [%c] Execute", get_perm_mark(2));
+	mvwprintw(change_win,  6, 3, "      [%c] SetUID", get_perm_mark(3));
+	mvwprintw(change_win,  8, 3, "Group [%c] Read", get_perm_mark(4));
+	mvwprintw(change_win,  9, 3, "      [%c] Write", get_perm_mark(5));
+	mvwprintw(change_win, 10, 3, "      [%c] Execute", get_perm_mark(6));
+	mvwprintw(change_win, 11, 3, "      [%c] SetGID", get_perm_mark(7));
+	mvwprintw(change_win, 13, 3, "Other [%c] Read", get_perm_mark(8));
+	mvwprintw(change_win, 14, 3, "      [%c] Write", get_perm_mark(9));
+	mvwprintw(change_win, 15, 3, "      [%c] Execute",  get_perm_mark(10));
+	mvwprintw(change_win, 16, 3, "      [%c] Sticky", get_perm_mark(11));
 
 	if(file_is_dir)
-		mvwaddstr(change_win, 18, 6, "  [ ] Set Recursively");
+	{
+		mvwprintw(change_win, 18, 3, "      [%c] Set Recursively",
+				get_perm_mark(12));
+	}
 
 	getmaxyx(stdscr, y, x);
-	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);
+	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 31)/2);
 	box(change_win, 0, 0);
 
 	title = get_title(getmaxx(change_win) - 2);
@@ -284,6 +270,28 @@ redraw_attr_dialog(void)
 	checked_wmove(change_win, curr, col);
 	curs_set(1);
 	ui_refresh_win(change_win);
+}
+
+/* Determines visual mark for a permission in its current state.  Returns the
+ * mark. */
+static char
+get_perm_mark(int i)
+{
+	/* Execute bit. */
+	if(i == 2 || i == 6 || i == 10)
+	{
+		if(perms[i] && adv_perms[i/4])
+		{
+			return 'd';
+		}
+	}
+
+	if(perms[i] < 0)
+	{
+		return 'X';
+	}
+
+	return (perms[i] ? '*' : ' ');
 }
 
 /* Composes title for the dialog.  Returns pointer to a newly allocated
@@ -529,41 +537,107 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 	ui_refresh_win(change_win);
 }
 
+/* Toggles all read bits. */
+static void
+cmd_r(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(0);
+}
+
+/* Toggles all write bits. */
+static void
+cmd_w(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(1);
+}
+
+/* Toggles all execute bits. */
+static void
+cmd_x(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(2);
+}
+
+/* Toggles all special bits. */
+static void
+cmd_s(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(3);
+}
+
+/* Toggles recursive bit. */
+static void
+cmd_e(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(file_is_dir)
+	{
+		changed = 1;
+		perms[12] = !perms[12];
+		redraw_attr_dialog();
+	}
+}
+
+/* Given i = {0,1,2,3} sets/unsets each of the three {r,w,x,s} bits. */
+static void
+toggle_bit_class(int i)
+{
+	changed = 1;
+
+	if(perms[i] && perms[i + 4] && perms[i + 8])
+	{
+		/* Execute bit. */
+		if(i == 2 || i == 6 || i == 10)
+		{
+			if(!adv_perms[0] && !adv_perms[1] && !adv_perms[2])
+			{
+				adv_perms[0] = adv_perms[1] = adv_perms[2] = 1;
+			}
+			else
+			{
+				adv_perms[0] = adv_perms[1] = adv_perms[2] = 0;
+				perms[i] = perms[i + 4] = perms[i + 8] = 0;
+			}
+		}
+		else
+		{
+			perms[i] = perms[i + 4] = perms[i + 8] = 0;
+		}
+	}
+	else
+	{
+		perms[i] = perms[i + 4] = perms[i + 8] = 1;
+	}
+
+	redraw_attr_dialog();
+}
+
 static void
 cmd_space(key_info_t key_info, keys_info_t *keys_info)
 {
-	char c;
 	changed = 1;
 
 	if(perms[permnum] < 0)
 	{
-		c = ' ';
 		perms[permnum] = 0;
 	}
+	/* Execute bit. */
 	else if(curr == 5 || curr == 10 || curr == 15)
 	{
 		int i = curr/5 - 1;
 		if(!perms[permnum])
 		{
-			c = '*';
 			perms[permnum] = 1;
 		}
 		else
 		{
-			if(!adv_perms[i])
-			{
-				c = 'd';
-			}
-			else
+			if(adv_perms[i])
 			{
 				if(origin_perms[permnum] < 0)
 				{
-					c = 'X';
 					perms[permnum] = -1;
 				}
 				else
 				{
-					c = ' ';
 					perms[permnum] = 0;
 				}
 			}
@@ -574,29 +648,23 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(perms[permnum] > 0)
 		{
-			c = 'X';
 			perms[permnum] = -1;
 		}
 		else if(perms[permnum] == 0)
 		{
-			c = '*';
 			perms[permnum] = 1;
 		}
 		else
 		{
-			c = ' ';
 			perms[permnum] = 0;
 		}
 	}
 	else
 	{
-		c = perms[permnum] ? ' ' : '*';
 		perms[permnum] = !perms[permnum];
 	}
-	mvwaddch(change_win, curr, col, c);
 
-	checked_wmove(change_win, curr, col);
-	ui_refresh_win(change_win);
+	redraw_attr_dialog();
 }
 
 static void
