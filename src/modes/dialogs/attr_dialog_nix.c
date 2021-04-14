@@ -608,7 +608,23 @@ toggle_bit_class(int i)
 
 	if(perms[i] && perms[i + 4] && perms[i + 8])
 	{
-		perms[i] = perms[i + 4] = perms[i + 8] = 0;
+		/* Execute bit. */
+		if(i == 2 || i == 6 || i == 10)
+		{
+			if(!adv_perms[0] && !adv_perms[1] && !adv_perms[2])
+			{
+				adv_perms[0] = adv_perms[1] = adv_perms[2] = 1;
+			}
+			else
+			{
+				adv_perms[0] = adv_perms[1] = adv_perms[2] = 0;
+				perms[i] = perms[i + 4] = perms[i + 8] = 0;
+			}
+		}
+		else
+		{
+			perms[i] = perms[i + 4] = perms[i + 8] = 0;
+		}
 	}
 	else
 	{
