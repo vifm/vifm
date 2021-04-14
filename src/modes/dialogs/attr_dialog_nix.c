@@ -72,6 +72,7 @@ static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
+static void toggle_bit_class(int i);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
@@ -179,11 +180,10 @@ enter_attr_mode(view_t *active_view)
 	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 
-	/* 
-	 *  0: The bit is unset
-	 * >0: The bit is set
-	 * <0: In the selection, one file has the bit set and another has it unset
-	 */
+	/* Values:
+	 *  - = 0 -- the bit is unset,
+	 *  - > 0 -- the bit is set,
+	 *  - < 0 -- value is different for different files. */
 	perms[0] = !(diff & S_IRUSR) ? (int)(fmode & S_IRUSR) : -1;
 	perms[1] = !(diff & S_IWUSR) ? (int)(fmode & S_IWUSR) : -1;
 	perms[2] = !(diff & S_IXUSR) ? (int)(fmode & S_IXUSR) : -1;
@@ -202,7 +202,7 @@ enter_attr_mode(view_t *active_view)
 	memcpy(origin_perms, perms, sizeof(perms));
 
 	/* These are Y positions from the top of the dialog, thus the topmost entry
-	(namely Owner - Read) is at position 3 */
+	 * (namely Owner - Read) is at position 3. */
 	top = 3;
 	bottom = file_is_dir ? 18 : 16;
 	curr = 3;
@@ -520,32 +520,6 @@ file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
 	}
 }
 
-/* Given i = {0,1,2,3} sets/unsets each of the three {r,w,x,s} bits */
-static void
-toggle_bit_class(int i)
-{
-	char c;
-	changed = 1;
-
-	if (perms[i] && perms[i+4] && perms[i+8])
-	{
-		c = ' ';
-		perms[i] = perms[i+4] = perms[i+8] = 0;
-	}
-	else
-	{
-		c = '*';
-		perms[i] = perms[i+4] = perms[i+8] = 1;
-	}
-	for (int j = i + 3; j <= i + 13; j += 5)
-	{
-		mvwaddch(change_win, j, col, c);
-		checked_wmove(change_win, j, col);
-	}
-	ui_refresh_win(change_win);
-	wmove(change_win, curr, col);
-}
-
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -572,34 +546,39 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 	ui_refresh_win(change_win);
 }
 
+/* Toggles all read bits. */
 static void
 cmd_r(key_info_t key_info, keys_info_t *keys_info)
 {
 	toggle_bit_class(0);
 }
 
+/* Toggles all write bits. */
 static void
 cmd_w(key_info_t key_info, keys_info_t *keys_info)
 {
 	toggle_bit_class(1);
 }
 
+/* Toggles all execute bits. */
 static void
 cmd_x(key_info_t key_info, keys_info_t *keys_info)
 {
 	toggle_bit_class(2);
 }
 
+/* Toggles all special bits. */
 static void
 cmd_s(key_info_t key_info, keys_info_t *keys_info)
 {
 	toggle_bit_class(3);
 }
 
+/* Toggles recursive bit. */
 static void
 cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if (file_is_dir)
+	if(file_is_dir)
 	{
 		changed = 1;
 		mvwaddch(change_win, bottom, col, perms[12] ? ' ' : '*');
@@ -608,6 +587,34 @@ cmd_e(key_info_t key_info, keys_info_t *keys_info)
 		wmove(change_win, curr, col);
 		perms[12] = !perms[12];
 	}
+}
+
+/* Given i = {0,1,2,3} sets/unsets each of the three {r,w,x,s} bits. */
+static void
+toggle_bit_class(int i)
+{
+	changed = 1;
+
+	char c;
+	if(perms[i] && perms[i + 4] && perms[i + 8])
+	{
+		c = ' ';
+		perms[i] = perms[i + 4] = perms[i + 8] = 0;
+	}
+	else
+	{
+		c = '*';
+		perms[i] = perms[i + 4] = perms[i + 8] = 1;
+	}
+
+	int j;
+	for(j = i + 3; j <= i + 13; j += 5)
+	{
+		mvwaddch(change_win, j, col, c);
+		checked_wmove(change_win, j, col);
+	}
+	ui_refresh_win(change_win);
+	wmove(change_win, curr, col);
 }
 
 static void
@@ -621,7 +628,7 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 		c = ' ';
 		perms[permnum] = 0;
 	}
-	/* Execute bit */
+	/* Execute bit. */
 	else if(curr == 5 || curr == 10 || curr == 15)
 	{
 		int i = curr/5 - 1;
