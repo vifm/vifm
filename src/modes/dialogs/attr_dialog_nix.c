@@ -595,11 +595,8 @@ cmd_e(key_info_t key_info, keys_info_t *keys_info)
 	if(file_is_dir)
 	{
 		changed = 1;
-		mvwaddch(change_win, bottom, col, perms[12] ? ' ' : '*');
-		checked_wmove(change_win, bottom, col);
-		ui_refresh_win(change_win);
-		wmove(change_win, curr, col);
 		perms[12] = !perms[12];
+		redraw_attr_dialog();
 	}
 }
 
@@ -609,37 +606,25 @@ toggle_bit_class(int i)
 {
 	changed = 1;
 
-	char c;
 	if(perms[i] && perms[i + 4] && perms[i + 8])
 	{
-		c = ' ';
 		perms[i] = perms[i + 4] = perms[i + 8] = 0;
 	}
 	else
 	{
-		c = '*';
 		perms[i] = perms[i + 4] = perms[i + 8] = 1;
 	}
 
-	int j;
-	for(j = i + 3; j <= i + 13; j += 5)
-	{
-		mvwaddch(change_win, j, col, c);
-		checked_wmove(change_win, j, col);
-	}
-	ui_refresh_win(change_win);
-	wmove(change_win, curr, col);
+	redraw_attr_dialog();
 }
 
 static void
 cmd_space(key_info_t key_info, keys_info_t *keys_info)
 {
-	char c;
 	changed = 1;
 
 	if(perms[permnum] < 0)
 	{
-		c = ' ';
 		perms[permnum] = 0;
 	}
 	/* Execute bit. */
@@ -648,25 +633,18 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 		int i = curr/5 - 1;
 		if(!perms[permnum])
 		{
-			c = '*';
 			perms[permnum] = 1;
 		}
 		else
 		{
-			if(!adv_perms[i])
-			{
-				c = 'd';
-			}
-			else
+			if(adv_perms[i])
 			{
 				if(origin_perms[permnum] < 0)
 				{
-					c = 'X';
 					perms[permnum] = -1;
 				}
 				else
 				{
-					c = ' ';
 					perms[permnum] = 0;
 				}
 			}
@@ -677,29 +655,23 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(perms[permnum] > 0)
 		{
-			c = 'X';
 			perms[permnum] = -1;
 		}
 		else if(perms[permnum] == 0)
 		{
-			c = '*';
 			perms[permnum] = 1;
 		}
 		else
 		{
-			c = ' ';
 			perms[permnum] = 0;
 		}
 	}
 	else
 	{
-		c = perms[permnum] ? ' ' : '*';
 		perms[permnum] = !perms[permnum];
 	}
-	mvwaddch(change_win, curr, col, c);
 
-	checked_wmove(change_win, curr, col);
-	ui_refresh_win(change_win);
+	redraw_attr_dialog();
 }
 
 static void
