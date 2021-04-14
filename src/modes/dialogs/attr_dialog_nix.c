@@ -223,7 +223,7 @@ enter_attr_mode(view_t *active_view)
 		return;
 	}
 
-	col = 9;
+	col = 10;
 	changed = 0;
 	redraw_attr_dialog();
 }
@@ -236,31 +236,31 @@ redraw_attr_dialog(void)
 
 	werase(change_win);
 	if(file_is_dir)
-		wresize(change_win, 22, 30);
+		wresize(change_win, 22, 31);
 	else
-		wresize(change_win, 20, 30);
+		wresize(change_win, 20, 31);
 
-	mvwprintw(change_win,  3, 2, "Owner [%c] Read", get_perm_mark(0));
-	mvwprintw(change_win,  4, 2, "      [%c] Write", get_perm_mark(1));
-	mvwprintw(change_win,  5, 2, "      [%c] Execute", get_perm_mark(2));
-	mvwprintw(change_win,  6, 2, "      [%c] SetUID", get_perm_mark(3));
-	mvwprintw(change_win,  8, 2, "Group [%c] Read", get_perm_mark(4));
-	mvwprintw(change_win,  9, 2, "      [%c] Write", get_perm_mark(5));
-	mvwprintw(change_win, 10, 2, "      [%c] Execute", get_perm_mark(6));
-	mvwprintw(change_win, 11, 2, "      [%c] SetGID", get_perm_mark(7));
-	mvwprintw(change_win, 13, 2, "Other [%c] Read", get_perm_mark(8));
-	mvwprintw(change_win, 14, 2, "      [%c] Write", get_perm_mark(9));
-	mvwprintw(change_win, 15, 2, "      [%c] Execute",  get_perm_mark(10));
-	mvwprintw(change_win, 16, 2, "      [%c] Sticky", get_perm_mark(11));
+	mvwprintw(change_win,  3, 3, "Owner [%c] Read", get_perm_mark(0));
+	mvwprintw(change_win,  4, 3, "      [%c] Write", get_perm_mark(1));
+	mvwprintw(change_win,  5, 3, "      [%c] Execute", get_perm_mark(2));
+	mvwprintw(change_win,  6, 3, "      [%c] SetUID", get_perm_mark(3));
+	mvwprintw(change_win,  8, 3, "Group [%c] Read", get_perm_mark(4));
+	mvwprintw(change_win,  9, 3, "      [%c] Write", get_perm_mark(5));
+	mvwprintw(change_win, 10, 3, "      [%c] Execute", get_perm_mark(6));
+	mvwprintw(change_win, 11, 3, "      [%c] SetGID", get_perm_mark(7));
+	mvwprintw(change_win, 13, 3, "Other [%c] Read", get_perm_mark(8));
+	mvwprintw(change_win, 14, 3, "      [%c] Write", get_perm_mark(9));
+	mvwprintw(change_win, 15, 3, "      [%c] Execute",  get_perm_mark(10));
+	mvwprintw(change_win, 16, 3, "      [%c] Sticky", get_perm_mark(11));
 
 	if(file_is_dir)
 	{
-		mvwprintw(change_win, 18, 2, "      [%c] Set Recursively",
+		mvwprintw(change_win, 18, 3, "      [%c] Set Recursively",
 				get_perm_mark(12));
 	}
 
 	getmaxyx(stdscr, y, x);
-	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);
+	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 31)/2);
 	box(change_win, 0, 0);
 
 	title = get_title(getmaxx(change_win) - 2);
