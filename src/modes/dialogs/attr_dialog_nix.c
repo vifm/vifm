@@ -67,6 +67,11 @@ static void file_chmod(char *path, const char *mode, const char *inv_mode,
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_space(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_r(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_x(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_recurse(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
@@ -101,6 +106,11 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_l,      {{&cmd_return}, .descr = "update permissions"}},
 	{WK_q,      {{&cmd_ctrl_c}, .descr = "close the dialog"}},
 	{WK_t,      {{&cmd_space},  .descr = "toggle current item"}},
+	{WK_r,      {{&cmd_r},      .descr = "toggle read bits"}},
+	{WK_w,      {{&cmd_w},      .descr = "toggle write bits"}},
+	{WK_x,      {{&cmd_x},      .descr = "toggle execute bits"}},
+	{WK_s,      {{&cmd_s},      .descr = "toggle special bits"}},
+	{WK_e,      {{&cmd_recurse},.descr = "toggle recursion"}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{K(KEY_HOME)},  {{&cmd_gg},     .descr = "go to the first item"}},
 	{{K(KEY_END)},   {{&cmd_G},      .descr = "go to the last item"}},
@@ -169,6 +179,11 @@ enter_attr_mode(view_t *active_view)
 	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 
+	/* 
+	 *  0: The bit is unset
+	 * >0: The bit is set
+	 * <0: In the selection, one file has the bit set and another has it unset
+	 */
 	perms[0] = !(diff & S_IRUSR) ? (int)(fmode & S_IRUSR) : -1;
 	perms[1] = !(diff & S_IWUSR) ? (int)(fmode & S_IWUSR) : -1;
 	perms[2] = !(diff & S_IXUSR) ? (int)(fmode & S_IXUSR) : -1;
@@ -186,6 +201,8 @@ enter_attr_mode(view_t *active_view)
 	adv_perms[2] = 0;
 	memcpy(origin_perms, perms, sizeof(perms));
 
+	/* These are Y positions from the top of the dialog, thus the topmost entry
+	(namely Owner - Read) is at position 3 */
 	top = 3;
 	bottom = file_is_dir ? 18 : 16;
 	curr = 3;
@@ -503,6 +520,32 @@ file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
 	}
 }
 
+/* Given i = {0,1,2,3} sets/unsets each of the three {r,w,x,s} bits */
+static void
+toggle_bit_class(int i)
+{
+	char c;
+	changed = 1;
+
+	if (perms[i] && perms[i+4] && perms[i+8])
+	{
+		c = ' ';
+		perms[i] = perms[i+4] = perms[i+8] = 0;
+	}
+	else
+	{
+		c = '*';
+		perms[i] = perms[i+4] = perms[i+8] = 1;
+	}
+	for (int j = i + 3; j <= i + 13; j += 5)
+	{
+		mvwaddch(change_win, j, col, c);
+		checked_wmove(change_win, j, col);
+	}
+	ui_refresh_win(change_win);
+	wmove(change_win, curr, col);
+}
+
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -530,6 +573,44 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
+cmd_r(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(0);
+}
+
+static void
+cmd_w(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(1);
+}
+
+static void
+cmd_x(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(2);
+}
+
+static void
+cmd_s(key_info_t key_info, keys_info_t *keys_info)
+{
+	toggle_bit_class(3);
+}
+
+static void
+cmd_recurse(key_info_t key_info, keys_info_t *keys_info)
+{
+	if (file_is_dir)
+	{
+		changed = 1;
+		mvwaddch(change_win, bottom, col, perms[12] ? ' ' : '*');
+		checked_wmove(change_win, bottom, col);
+		ui_refresh_win(change_win);
+		wmove(change_win, curr, col);
+		perms[12] = !perms[12];
+	}
+}
+
+static void
 cmd_space(key_info_t key_info, keys_info_t *keys_info)
 {
 	char c;
@@ -540,6 +621,7 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 		c = ' ';
 		perms[permnum] = 0;
 	}
+	/* Execute bit */
 	else if(curr == 5 || curr == 10 || curr == 15)
 	{
 		int i = curr/5 - 1;
