@@ -5075,6 +5075,11 @@ Attributes (permissions or properties) dialog~
 
 h, Space - check/uncheck.
 q - close dialog
+r - (*nix only) (un)set all read bits
+w - (*nix only) (un)set all write bits
+x - (*nix only) (un)set all execute bits
+s - (*nix only) (un)set all special (SetUID, SetGID, Sticky) bits
+e - (*nix only) (un)set recursion (for directories only)
 
 Item states:
 * - checked flag.
