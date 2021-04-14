@@ -133,6 +133,9 @@
 	Fixed vifm-convert-dircolors dropping copies of entries that differ only by
 	case.  Thanks to flux242.
 
+	Fixed permission dialog on *nix systems not showing all information
+	correctly after a redraw.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

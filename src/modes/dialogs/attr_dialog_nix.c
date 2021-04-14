@@ -53,6 +53,7 @@
 #include "../wk.h"
 #include "msg_dialog.h"
 
+static char get_perm_mark(int line);
 static char * get_title(int max_width);
 static int is_one_file_selected(int first_file_index);
 static int get_first_file_index(void);
@@ -240,55 +241,46 @@ redraw_attr_dialog(void)
 		wresize(change_win, 20, 30);
 
 	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
-	if(perms[0])
-		mvwaddch(change_win, 3, 9, (perms[0] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 3, 9, get_perm_mark(0));
+
 	mvwaddstr(change_win, 4, 6, "  [ ] Write");
+	mvwaddch(change_win, 4, 9, get_perm_mark(1));
 
-	if(perms[1])
-		mvwaddch(change_win, 4, 9, (perms[1] < 0) ? 'X' : '*');
 	mvwaddstr(change_win, 5, 6, "  [ ] Execute");
-
-	if(perms[2])
-		mvwaddch(change_win, 5, 9, (perms[2] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 5, 9, get_perm_mark(2));
 
 	mvwaddstr(change_win, 6, 6, "  [ ] SetUID");
-	if(perms[3])
-		mvwaddch(change_win, 6, 9, (perms[3] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 6, 9, get_perm_mark(3));
 
 	mvwaddstr(change_win, 8, 2, "Group [ ] Read");
-	if(perms[4])
-		mvwaddch(change_win, 8, 9, (perms[4] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 8, 9, get_perm_mark(4));
 
 	mvwaddstr(change_win, 9, 6, "  [ ] Write");
-	if(perms[5])
-		mvwaddch(change_win, 9, 9, (perms[5] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 9, 9, get_perm_mark(5));
 
 	mvwaddstr(change_win, 10, 6, "  [ ] Execute");
-	if(perms[6])
-		mvwaddch(change_win, 10, 9, (perms[6] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 10, 9, get_perm_mark(6));
 
 	mvwaddstr(change_win, 11, 6, "  [ ] SetGID");
-	if(perms[7])
-		mvwaddch(change_win, 11, 9, (perms[7] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 11, 9, get_perm_mark(7));
 
 	mvwaddstr(change_win, 13, 2, "Other [ ] Read");
-	if(perms[8])
-		mvwaddch(change_win, 13, 9, (perms[8] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 13, 9, get_perm_mark(8));
 
 	mvwaddstr(change_win, 14, 6, "  [ ] Write");
-	if(perms[9])
-		mvwaddch(change_win, 14, 9, (perms[9] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 14, 9, get_perm_mark(9));
 
 	mvwaddstr(change_win, 15, 6, "  [ ] Execute");
-	if(perms[10])
-		mvwaddch(change_win, 15, 9, (perms[10] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 15, 9, get_perm_mark(10));
 
 	mvwaddstr(change_win, 16, 6, "  [ ] Sticky");
-	if(perms[11])
-		mvwaddch(change_win, 16, 9, (perms[11] < 0) ? 'X' : '*');
+	mvwaddch(change_win, 16, 9, get_perm_mark(11));
 
 	if(file_is_dir)
+	{
 		mvwaddstr(change_win, 18, 6, "  [ ] Set Recursively");
+		mvwaddch(change_win, 18, 9, get_perm_mark(12));
+	}
 
 	getmaxyx(stdscr, y, x);
 	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);
@@ -301,6 +293,28 @@ redraw_attr_dialog(void)
 	checked_wmove(change_win, curr, col);
 	curs_set(1);
 	ui_refresh_win(change_win);
+}
+
+/* Determines visual mark for a permission in its current state.  Returns the
+ * mark. */
+static char
+get_perm_mark(int i)
+{
+	/* Execute bit. */
+	if(i == 2 || i == 6 || i == 10)
+	{
+		if(perms[i] && adv_perms[i/4])
+		{
+			return 'd';
+		}
+	}
+
+	if(perms[i] < 0)
+	{
+		return 'X';
+	}
+
+	return (perms[i] ? '*' : ' ');
 }
 
 /* Composes title for the dialog.  Returns pointer to a newly allocated
