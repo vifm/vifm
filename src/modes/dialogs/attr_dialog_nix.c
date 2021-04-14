@@ -71,7 +71,7 @@ static void cmd_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_recurse(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
@@ -110,7 +110,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_w,      {{&cmd_w},      .descr = "toggle write bits"}},
 	{WK_x,      {{&cmd_x},      .descr = "toggle execute bits"}},
 	{WK_s,      {{&cmd_s},      .descr = "toggle special bits"}},
-	{WK_e,      {{&cmd_recurse},.descr = "toggle recursion"}},
+	{WK_e,      {{&cmd_e},      .descr = "toggle recursion"}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{K(KEY_HOME)},  {{&cmd_gg},     .descr = "go to the first item"}},
 	{{K(KEY_END)},   {{&cmd_G},      .descr = "go to the last item"}},
@@ -597,7 +597,7 @@ cmd_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_recurse(key_info_t key_info, keys_info_t *keys_info)
+cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	if (file_is_dir)
 	{
