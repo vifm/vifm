@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.11  Last change: 2020 Dec 18
+*vifm-plugin.txt*    For Vifm version 0.11  Last change: 2021 Apr 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -60,7 +60,7 @@ to your ~/.vimrc file.
 
 Configuration variables~
 
-                                               *g:vifm*
+                                               *g:vifm_exec*
 A string variable.  Equals "vifm" by default and specifies path to vifm's
 executable.
 
