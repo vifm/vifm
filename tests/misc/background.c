@@ -8,6 +8,7 @@
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/utils/cancellation.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/ui/ui.h"
@@ -17,6 +18,7 @@
 
 static void task(bg_op_t *bg_op, void *arg);
 static void wait_until_locked(pthread_spinlock_t *lock);
+static int have_cat(void);
 
 SETUP_ONCE()
 {
@@ -176,6 +178,33 @@ TEST(capture_output_of_external_command)
 	bg_job_decref(job);
 }
 
+TEST(supply_input_to_external_command, IF(have_cat))
+{
+	bg_job_t *job = bg_run_external_job("cat", BJF_SUPPLY_INPUT);
+	assert_non_null(job);
+	assert_non_null(job->input);
+	assert_non_null(job->output);
+
+	fputs("1\n", job->input);
+	fputs("2 2\n", job->input);
+	fputs(" 3  3   3  ", job->input);
+	fclose(job->input);
+	job->input = NULL;
+
+	int nlines;
+	char **lines = read_stream_lines(job->output, &nlines, 0, NULL, NULL);
+	assert_int_equal(3, nlines);
+	assert_string_equal("1", lines[0]);
+	assert_string_equal("2 2", lines[1]);
+	assert_string_equal(" 3  3   3  ", lines[2]);
+	free_string_array(lines, nlines);
+
+	assert_success(bg_job_wait(job));
+	assert_int_equal(0, job->exit_code);
+
+	bg_job_decref(job);
+}
+
 TEST(background_redirects_streams_properly, IF(not_windows))
 {
 	assert_success(bg_and_wait_for_errors("echo a", &no_cancellation));
@@ -199,6 +228,12 @@ wait_until_locked(pthread_spinlock_t *lock)
 		pthread_spin_unlock(lock);
 		usleep(5000);
 	}
+}
+
+static int
+have_cat(void)
+{
+	return (find_cmd_in_path("cat", 0, NULL) == 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

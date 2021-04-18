@@ -51,8 +51,9 @@ typedef enum
 	BJF_NONE            = 0,      /* No flags set. */
 	BJF_JOB_BAR_VISIBLE = 1 << 0, /* Makes the job appear on the job bar. */
 	BJF_MENU_VISIBLE    = 1 << 1, /* Makes the job appear in :jobs menu. */
-	BJF_CAPTURE_OUT     = 1 << 2, /* Capture output stream(s). */
-	BJF_MERGE_STREAMS   = 1 << 3, /* Merge error stream into output stream. */
+	BJF_SUPPLY_INPUT    = 1 << 2, /* Open a pipe for standard input stream. */
+	BJF_CAPTURE_OUT     = 1 << 3, /* Capture output stream(s). */
+	BJF_MERGE_STREAMS   = 1 << 4, /* Merge error stream into output stream. */
 }
 BgJobFlags;
 
@@ -92,6 +93,7 @@ typedef struct bg_job_t
 	int use_count; /* Count of uses of this job entry. */
 	int exit_code; /* Exit code of external command. */
 
+	FILE *input;  /* File stream of standard input or NULL. */
 	FILE *output; /* File stream of standard output or NULL. */
 
 	int with_bg_op;                /* Whether bg_op* fields are active. */
