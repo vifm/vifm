@@ -32,9 +32,6 @@ endif
 
 LDFLAGS := -pthread
 
-DIRS := ./ compat/ cfg/ engine/ int/ io/ io/private/ menus/ modes/
-DIRS += modes/dialogs/ ui/ utils/
-
 cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
@@ -60,7 +57,7 @@ lua := lapi.c lauxlib.c lbaselib.c lcode.c lcorolib.c lctype.c ldblib.c \
        lzio.c
 lua := $(addprefix lua/, $(lua))
 lua := $(addprefix lua/, $(lua) common.c vifm_cmds.c vifm_viewcolumns.c \
-	                            vifmjob.c vifmview.c vlua.c vlua_state.c)
+                                vifmjob.c vifmview.c vlua.c vlua_state.c)
 
 menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c colorscheme_menu.c \
          commands_menu.c dirhistory_menu.c dirstack_menu.c filetypes_menu.c \
@@ -102,6 +99,8 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(lua) $(menus) \
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
+
+DIRS := $(sort $(dir $(vifm_OBJECTS)))
 
 # determine list of output directories that don't exist at the moment
 out_dirs := $(sort $(dir $(vifm_OBJECTS)))
