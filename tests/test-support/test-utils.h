@@ -141,6 +141,9 @@ void init_view_list(struct view_t *view);
 /* Waits termination of all background tasks. */
 void wait_for_bg(void);
 
+/* Waits termination of all background jobs including external applications. */
+void wait_for_all_bg(void);
+
 /* Verifies that file at specified path consists of specified list of lines. */
 void file_is(const char path[], const char *lines[], int nlines);
 

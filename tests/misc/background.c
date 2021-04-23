@@ -1,6 +1,8 @@
 #include <stic.h>
 
-#include <unistd.h> /* usleep() */
+#include <unistd.h> /* chdir() usleep() */
+
+#include <stdio.h> /* FILE fclose() fputs() */
 
 #include <test-utils.h>
 
@@ -74,8 +76,29 @@ TEST(capture_error_of_external_command)
 	bg_job_decref(job);
 }
 
+TEST(provide_input_to_external_command_no_job, IF(have_cat))
+{
+	assert_success(chdir(SANDBOX_PATH));
+
+	FILE *input;
+	assert_success(bg_run_external("cat > file", 1, SHELL_BY_USER, &input));
+	assert_non_null(input);
+
+	fputs("input", input);
+	fclose(input);
+
+	wait_for_all_bg();
+
+	const char *lines[] = { "input" };
+	file_is("file", lines, ARRAY_LEN(lines));
+
+	remove_file("file");
+}
+
 TEST(jobcount_variable_gets_updated)
 {
+	(void)stats_update_fetch();
+
 	var_t var = var_from_int(0);
 	setvar("v:jobcount", var);
 	var_free(var);
@@ -111,7 +134,7 @@ TEST(jobcount_variable_gets_updated)
 
 TEST(job_can_survive_on_its_own)
 {
-	assert_success(bg_run_external("exit 71", 1, SHELL_BY_APP));
+	assert_success(bg_run_external("exit 71", 1, SHELL_BY_APP, NULL));
 
 	bg_job_t *job = bg_jobs;
 	assert_non_null(job);
@@ -136,7 +159,7 @@ TEST(job_can_survive_on_its_own)
 
 TEST(explicitly_wait_for_a_job)
 {
-	assert_success(bg_run_external("exit 99", 1, SHELL_BY_APP));
+	assert_success(bg_run_external("exit 99", 1, SHELL_BY_APP, NULL));
 
 	bg_job_t *job = bg_jobs;
 	assert_non_null(job);

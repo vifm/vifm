@@ -129,8 +129,11 @@ extern bg_job_t *bg_jobs;
 void bg_init(void);
 
 /* Creates background job running external command.  Returns zero on success,
- * otherwise non-zero is returned. */
-int bg_run_external(const char cmd[], int skip_errors, ShellRequester by);
+ * otherwise non-zero is returned.  If *input is not NULL, it's set to input
+ * pipe of the background process.  The caller becomes responsible for the
+ * stream. */
+int bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
+		FILE **input);
 
 /* Creates background job running external command which does not interact with
  * the user and is detached from controlling terminal.  Upon creation the job

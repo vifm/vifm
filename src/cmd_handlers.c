@@ -1023,7 +1023,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->bg)
 	{
-		bg_run_external(com, 0, SHELL_BY_USER);
+		bg_run_external(com, 0, SHELL_BY_USER, NULL);
 	}
 	else
 	{
@@ -2623,7 +2623,7 @@ help_cmd(const cmd_info_t *cmd_info)
 
 	if(bg)
 	{
-		bg_run_external(cmd, 0, SHELL_BY_APP);
+		bg_run_external(cmd, 0, SHELL_BY_APP, NULL);
 	}
 	else
 	{
@@ -5200,7 +5200,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 		if(*com_beginning != '\0' && bg)
 		{
-			bg_run_external(com_beginning, 0, SHELL_BY_USER);
+			bg_run_external(com_beginning, 0, SHELL_BY_USER, NULL);
 		}
 		else if(strlen(com_beginning) > 0)
 		{
@@ -5223,7 +5223,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(bg)
 	{
-		bg_run_external(expanded_com, 0, SHELL_BY_USER);
+		bg_run_external(expanded_com, 0, SHELL_BY_USER, NULL);
 	}
 	else
 	{

@@ -221,7 +221,7 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 {
 	if(bg)
 	{
-		return bg_run_external(cmd, 0, SHELL_BY_APP);
+		return bg_run_external(cmd, 0, SHELL_BY_APP, NULL);
 	}
 
 	return rn_shell(cmd, PAUSE_ON_ERROR, use_term_multiplexer, SHELL_BY_APP);
