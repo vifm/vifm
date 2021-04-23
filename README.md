@@ -69,7 +69,6 @@ GNU General Public License, version 2 or later.
 [devicons-1]: https://github.com/cirala/vifm_devicons
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 [vifmimg]: https://github.com/cirala/vifmimg
-[vifmimg-pr]: https://github.com/cirala/vifmimg/pull/17
 [ueberzug]: https://github.com/seebye/ueberzug
 [bugs-gh]: https://github.com/vifm/vifm/issues
 [bugs-sf]: https://sourceforge.net/p/vifm/_list/tickets
