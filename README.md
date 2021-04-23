@@ -43,7 +43,7 @@ functionality should be enough for most of use cases.
 | Plugin                    | [Repository][vim-plugin]                                                                           |
 | Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]                               |
 | Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                                               |
-| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images), also see [PR][vifmimg-pr] |
+| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)                            |
 
 ## Screenshot ##
 
