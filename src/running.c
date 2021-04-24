@@ -1175,7 +1175,8 @@ int
 rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		int *save_msg)
 {
-	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
+	if(bg && !ONE_OF(flags, MF_NONE, MF_NO_TERM_MUX, MF_IGNORE,
+				MF_PIPE_FILE_LIST, MF_PIPE_FILE_LIST_Z))
 	{
 		ui_sb_errf("\"%s\" macro can't be combined with \" &\"",
 				ma_flags_to_str(flags));

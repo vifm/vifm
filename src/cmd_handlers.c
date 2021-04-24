@@ -114,6 +114,7 @@
 
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
+static void start_bg_command(const char cmd[], MacroFlags flags);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int autocmd_cmd(const cmd_info_t *cmd_info);
@@ -1023,7 +1024,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->bg)
 	{
-		bg_run_external(com, 0, SHELL_BY_USER, NULL);
+		start_bg_command(com, flags);
 	}
 	else
 	{
@@ -1054,6 +1055,31 @@ emark_cmd(const cmd_info_t *cmd_info)
 	un_group_close();
 
 	return save_msg;
+}
+
+/* Starts background command optionally handling input redirection. */
+static void
+start_bg_command(const char cmd[], MacroFlags flags)
+{
+	const int supply_input = (flags == MF_PIPE_FILE_LIST)
+	                      || (flags == MF_PIPE_FILE_LIST_Z);
+	FILE *input = NULL;
+
+	bg_run_external(cmd, 0, SHELL_BY_USER, supply_input ? &input : NULL);
+
+	if(input == NULL)
+	{
+		return;
+	}
+
+	const char separator = (flags == MF_PIPE_FILE_LIST ? '\n' : '\0');
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(curr_view, &entry))
+	{
+		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
+		fprintf(input, "%s%s%s%c", entry->origin, sep, entry->name, separator);
+	}
+	fclose(input);
 }
 
 /* Creates symbolic links with absolute paths to files. */
