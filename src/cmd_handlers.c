@@ -5249,7 +5249,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(bg)
 	{
-		bg_run_external(expanded_com, 0, SHELL_BY_USER, NULL);
+		start_bg_command(expanded_com, flags);
 	}
 	else
 	{

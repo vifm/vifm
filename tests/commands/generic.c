@@ -254,6 +254,31 @@ TEST(user_command_is_executed_in_separated_scope)
 	assert_failure(exec_commands("cmd", &lwin, CIT_COMMAND));
 }
 
+TEST(usercmd_can_provide_input_to_bg_process, IF(have_cat))
+{
+	assert_success(chdir(SANDBOX_PATH));
+
+	setup_grid(&lwin, 20, 2, /*init=*/1);
+	replace_string(&lwin.dir_entry[0].name, "a");
+	replace_string(&lwin.dir_entry[1].name, "b");
+
+	assert_int_equal(0, exec_commands("command list cat > file %Pl &", &lwin,
+				CIT_COMMAND));
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	lwin.pending_marking = 1;
+
+	assert_int_equal(0, exec_commands("list", &lwin, CIT_COMMAND));
+
+	wait_for_all_bg();
+
+	const char *lines[] = { "/path/a", "/path/b" };
+	file_is("file", lines, ARRAY_LEN(lines));
+
+	remove_file("file");
+}
+
 TEST(cv_is_built_by_emark)
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
