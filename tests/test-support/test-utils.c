@@ -498,6 +498,12 @@ regular_unix_user(void)
 #endif
 }
 
+int
+have_cat(void)
+{
+	return (find_cmd_in_path("cat", 0, NULL) == 0);
+}
+
 void
 try_enable_utf8_locale(void)
 {

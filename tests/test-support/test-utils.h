@@ -119,6 +119,10 @@ int utf8_locale(void);
  * errors via chmod().  Returns non-zero if so, otherwise zero is returned. */
 int regular_unix_user(void);
 
+/* Whether cat program is available somewhere in the $PATH.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int have_cat(void);
+
 struct matcher_t;
 
 /* Changes *matcher to have the value of the expr.  The operation is assumed to
@@ -127,10 +131,10 @@ int replace_matcher(struct matcher_t **matcher, const char expr[]);
 
 struct view_t;
 
-/* Setups a grid of specified dimentions for the view. */
+/* Setups a grid of specified dimensions for the view. */
 void setup_grid(struct view_t *view, int column_count, int list_rows, int init);
 
-/* Setups transposed grid of specified dimentions for the view. */
+/* Setups transposed grid of specified dimensions for the view. */
 void setup_transposed_grid(struct view_t *view, int column_count, int list_rows,
 		int init);
 

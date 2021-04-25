@@ -10,7 +10,6 @@
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/utils/cancellation.h"
-#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/ui/ui.h"
@@ -20,7 +19,6 @@
 
 static void task(bg_op_t *bg_op, void *arg);
 static void wait_until_locked(pthread_spinlock_t *lock);
-static int have_cat(void);
 
 SETUP_ONCE()
 {
@@ -251,12 +249,6 @@ wait_until_locked(pthread_spinlock_t *lock)
 		pthread_spin_unlock(lock);
 		usleep(5000);
 	}
-}
-
-static int
-have_cat(void)
-{
-	return (find_cmd_in_path("cat", 0, NULL) == 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

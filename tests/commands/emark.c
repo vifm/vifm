@@ -12,13 +12,11 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
-#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
 static int builtin_cmd(const cmd_info_t *cmd_info);
-static int have_cat(void);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -126,12 +124,6 @@ TEST(provide_input_to_bg_process, IF(have_cat))
 	remove_file("file");
 
 	view_teardown(&lwin);
-}
-
-static int
-have_cat(void)
-{
-	return (find_cmd_in_path("cat", 0, NULL) == 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
