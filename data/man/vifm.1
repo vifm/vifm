@@ -3298,20 +3298,23 @@ Same as %u, but implies less list updates inside vifm, which is absence of
 sorting at the moment.
 .TP
 .BI %Iu
-same as %u, but gives up terminal before running external command.
+Same as %u, but gives up terminal before running external command.
 .TP
 .BI %IU
-same as %U, but gives up terminal before running external command.
+Same as %U, but gives up terminal before running external command.
 .TP
 .BI %S
 Show command output in the status bar.
 .TP
 .BI %q
-redirect command output to quick view, which is activated if disabled.
+Redirect command output to quick view, which is activated if disabled.
 .TP
 .BI %s
-Execute command in split window of active terminal multiplexer (ignored if not
-running inside one).
+Execute command in horizontally split window of active terminal multiplexer
+(ignored if not running inside one).
+.TP
+.BI %v
+Same as %s, but splits vertically.
 .TP
 .BI %n
 Forbid using of terminal multiplexer to run the command.

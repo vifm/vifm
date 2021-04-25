@@ -279,6 +279,11 @@ TEST(good_flag_macros)
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_VERYCUSTOMVIEW_OUTPUT, flags);
 	free(expanded);
+
+	expanded = ma_expand("%v echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_SPLIT_VERT, flags);
+	free(expanded);
 }
 
 TEST(bad_flag_macros)

@@ -123,7 +123,8 @@ static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 static void output_to_statusbar(const char cmd[]);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
-static void run_in_split(const view_t *view, const char cmd[]);
+static void run_in_split(const view_t *view, const char cmd[],
+		const int vert_split);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
 
@@ -1224,9 +1225,11 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		*save_msg = show_user_menu(curr_view, cmd, title, navigate) != 0;
 		cleanup_shellout_env();
 	}
-	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
+	else if((flags == MF_SPLIT || flags == MF_SPLIT_VERT) &&
+			curr_stats.term_multiplexer != TM_NONE)
 	{
-		run_in_split(curr_view, cmd);
+		const int vert_split = flags == MF_SPLIT_VERT;
+		run_in_split(curr_view, cmd, vert_split);
 	}
 	else if(ONE_OF(flags, MF_CUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_OUTPUT,
 				MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT))
@@ -1324,7 +1327,7 @@ output_to_nowhere(const char cmd[])
 /* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
  * is NULL. */
 static void
-run_in_split(const view_t *view, const char cmd[])
+run_in_split(const view_t *view, const char cmd[], const int vert_split)
 {
 	char *const escaped_cmd = (cmd == NULL)
 	                        ? strdup(cfg.shell)
@@ -1335,7 +1338,8 @@ run_in_split(const view_t *view, const char cmd[])
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
 		char cmd[1024];
-		snprintf(cmd, sizeof(cmd), "tmux split-window %s", escaped_cmd);
+		snprintf(cmd, sizeof(cmd), "tmux split-window %s %s",
+			vert_split ? "-h" : "", escaped_cmd);
 		(void)vifm_system(cmd, SHELL_BY_APP);
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
@@ -1345,8 +1349,16 @@ run_in_split(const view_t *view, const char cmd[])
 		/* "eval" executes each argument as a separate argument, but escaping rules
 		 * are not exactly like in shell, so last command is run separately. */
 		char *const escaped_dir = shell_like_escape(flist_get_dir(view), 0);
-		snprintf(cmd, sizeof(cmd), "screen -X eval chdir\\ %s 'focus bottom' "
-				"split 'focus bottom'", escaped_dir);
+		if(vert_split)
+		{
+			snprintf(cmd, sizeof(cmd), "screen -X eval chdir\\ %s 'focus right' "
+					"split\\ -v 'focus right'", escaped_dir);
+		}
+		else
+		{
+			snprintf(cmd, sizeof(cmd), "screen -X eval chdir\\ %s 'focus bottom' "
+					"split 'focus bottom'", escaped_dir);
+		}
 		free(escaped_dir);
 		(void)vifm_system(cmd, SHELL_BY_APP);
 

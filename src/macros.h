@@ -42,7 +42,8 @@ typedef enum
 	MF_CUSTOMVIEW_IOUTPUT,     /* Applying current sorting. */
 	MF_VERYCUSTOMVIEW_IOUTPUT, /* Not changing ordering. */
 
-	MF_SPLIT,       /* Run command in a new screen region. */
+	MF_SPLIT,       /* Run command in a new horizontally split screen region. */
+	MF_SPLIT_VERT,  /* Run command in a new vertically split screen region. */
 	MF_IGNORE,      /* Completely ignore command output. */
 	MF_NO_TERM_MUX, /* Forbid using terminal multiplexer, even if active. */
 }

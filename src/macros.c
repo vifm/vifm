@@ -275,8 +275,11 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 			case 'q': /* Show command output in the preview */
 				set_flags(flags, MF_PREVIEW_OUTPUT);
 				break;
-			case 's': /* Split in new screen region and execute command there. */
+			case 's': /* Horizontally split in new screen region and execute command there. */
 				set_flags(flags, MF_SPLIT);
+				break;
+			case 'v': /* Vertically split in new screen region and execute command there. */
+				set_flags(flags, MF_SPLIT_VERT);
 				break;
 			case 'u': /* Parse output as list of files and compose custom view. */
 				set_flags(flags, MF_CUSTOMVIEW_OUTPUT);
@@ -817,6 +820,7 @@ ma_flags_to_str(MacroFlags flags)
 		case MF_VERYCUSTOMVIEW_IOUTPUT: return "%IU";
 
 		case MF_SPLIT: return "%s";
+		case MF_SPLIT_VERT: return "%v";
 		case MF_IGNORE: return "%i";
 		case MF_NO_TERM_MUX: return "%n";
 	}
