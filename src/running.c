@@ -123,8 +123,7 @@ static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 static void output_to_statusbar(const char cmd[]);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
-static void run_in_split(const view_t *view, const char cmd[],
-		const int vert_split);
+static void run_in_split(const view_t *view, const char cmd[], int vert_split);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
 
@@ -1228,7 +1227,7 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 	else if((flags == MF_SPLIT || flags == MF_SPLIT_VERT) &&
 			curr_stats.term_multiplexer != TM_NONE)
 	{
-		const int vert_split = flags == MF_SPLIT_VERT;
+		const int vert_split = (flags == MF_SPLIT_VERT);
 		run_in_split(curr_view, cmd, vert_split);
 	}
 	else if(ONE_OF(flags, MF_CUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_OUTPUT,
@@ -1327,7 +1326,7 @@ output_to_nowhere(const char cmd[])
 /* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
  * is NULL. */
 static void
-run_in_split(const view_t *view, const char cmd[], const int vert_split)
+run_in_split(const view_t *view, const char cmd[], int vert_split)
 {
 	char *const escaped_cmd = (cmd == NULL)
 	                        ? strdup(cfg.shell)

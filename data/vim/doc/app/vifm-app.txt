@@ -2727,7 +2727,7 @@ The command macros may be used in user commands.
   %q        redirect command output to quick view, which is activated if
             disabled.
                                                                *vifm-%s*
-  %s        execute command in horizontally split window of active terminal
+  %s        execute command in horizontal split window of active terminal
             multiplexer (ignored if not running inside one).
                                                                *vifm-%v*
   %v        same as %s, but splits vertically.
