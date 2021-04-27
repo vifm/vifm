@@ -6,4 +6,4 @@ old_stty_cfg="$(stty -g)"
 stty raw -echo
 head -c 1
 stty "$old_stty_cfg"
-screen -X eval 'focus bottom' remove
+screen -X remove

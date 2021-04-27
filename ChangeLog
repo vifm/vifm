@@ -39,7 +39,10 @@
 	jose1711), chelovechishko, DieSpinne and rwtallant13.
 
 	Added flag toggling shortcuts to permissions dialog on *nix.  Patch by
-	qsmodoe.
+	qsmodo.
+
+	Added %v macro for vertical splitting in terminal multiplexers.  Patch by
+	qsmodo.
 
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
