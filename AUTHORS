@@ -151,4 +151,5 @@ terminfo database.
 Phil Runninger helped to provide target information for drives in :volumes
 menu.
 
-qsmodo added flag toggling shortcuts to permissions dialog on *nix.
+qsmodo added flag toggling shortcuts to permissions dialog on *nix and %v
+macro.
