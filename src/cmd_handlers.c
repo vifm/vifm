@@ -1023,7 +1023,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->bg)
 	{
-		rn_start_bg_command(com, flags);
+		rn_start_bg_command(curr_view, com, flags);
 	}
 	else
 	{
@@ -5223,7 +5223,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(bg)
 	{
-		rn_start_bg_command(expanded_com, flags);
+		rn_start_bg_command(curr_view, expanded_com, flags);
 	}
 	else
 	{

@@ -101,7 +101,8 @@ static void run_selection(view_t *view, int dont_execute);
 static void run_with_defaults(view_t *view);
 static void run_selection_separately(view_t *view, int dont_execute);
 static int is_multi_run_compat(view_t *view, const char prog_cmd[]);
-static void run_explicit_prog(const char prog_spec[], int pause, int force_bg);
+static void run_explicit_prog(view_t *view, const char prog_spec[], int pause,
+		int force_bg);
 static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
 		int force_bg);
 static void view_current_file(const view_t *view);
@@ -548,7 +549,7 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 	}
 	else if(strchr(prog_spec, '%') != NULL)
 	{
-		run_explicit_prog(prog_spec, pause, force_bg);
+		run_explicit_prog(view, prog_spec, pause, force_bg);
 	}
 	else
 	{
@@ -559,7 +560,7 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 /* Executes current file of the current view by program specification that
  * includes at least one macro. */
 static void
-run_explicit_prog(const char prog_spec[], int pause, int force_bg)
+run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 {
 	int bg;
 	MacroFlags flags;
@@ -1377,7 +1378,7 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 }
 
 void
-rn_start_bg_command(const char cmd[], MacroFlags flags)
+rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 {
 	const int supply_input = (flags == MF_PIPE_FILE_LIST)
 	                      || (flags == MF_PIPE_FILE_LIST_Z);
@@ -1393,7 +1394,7 @@ rn_start_bg_command(const char cmd[], MacroFlags flags)
 
 	const char separator = (flags == MF_PIPE_FILE_LIST ? '\n' : '\0');
 	dir_entry_t *entry = NULL;
-	while(iter_marked_entries(curr_view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
 		fprintf(input, "%s%s%s%c", entry->origin, sep, entry->name, separator);
@@ -1402,8 +1403,8 @@ rn_start_bg_command(const char cmd[], MacroFlags flags)
 }
 
 int
-rn_for_flist(struct view_t *view, const char cmd[], const char title[],
-		int very, int interactive)
+rn_for_flist(view_t *view, const char cmd[], const char title[], int very,
+		int interactive)
 {
 	enum { MAX_TITLE_WIDTH = 80 };
 
