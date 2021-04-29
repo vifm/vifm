@@ -945,7 +945,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		/* Close read end of pipe. */
-		close(error_pipe[0]);
+		if(error_pipe[0] != -1)
+		{
+			close(error_pipe[0]);
+		}
 
 		if(supply_input)
 		{
@@ -1001,7 +1004,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	}
 
 	/* Close unused ends of pipes. */
-	close(error_pipe[1]);
+	if(error_pipe[1] != -1)
+	{
+		close(error_pipe[1]);
+	}
 	if(supply_input)
 	{
 		close(input_pipe[0]);
