@@ -284,12 +284,29 @@ TEST(good_flag_macros)
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_SPLIT_VERT, flags);
 	free(expanded);
+
+	expanded = ma_expand("%Pl echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_PIPE_FILE_LIST, flags);
+	free(expanded);
+
+	expanded = ma_expand("%Pz echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_PIPE_FILE_LIST_Z, flags);
+	free(expanded);
 }
 
 TEST(bad_flag_macros)
 {
 	MacroFlags flags;
-	char *expanded = ma_expand("%IX echo log", "", &flags, 0);
+	char *expanded;
+
+	expanded = ma_expand("%IX echo log", "", &flags, 0);
+	assert_string_equal("X echo log", expanded);
+	assert_int_equal(MF_NONE, flags);
+	free(expanded);
+
+	expanded = ma_expand("%PX echo log", "", &flags, 0);
 	assert_string_equal("X echo log", expanded);
 	assert_int_equal(MF_NONE, flags);
 	free(expanded);
@@ -684,6 +701,9 @@ TEST(flags_to_str)
 	assert_string_equal("%s", ma_flags_to_str(MF_SPLIT));
 	assert_string_equal("%i", ma_flags_to_str(MF_IGNORE));
 	assert_string_equal("%n", ma_flags_to_str(MF_NO_TERM_MUX));
+
+	assert_string_equal("%Pl", ma_flags_to_str(MF_PIPE_FILE_LIST));
+	assert_string_equal("%Pz", ma_flags_to_str(MF_PIPE_FILE_LIST_Z));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

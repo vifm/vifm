@@ -125,8 +125,8 @@ static void rip_children(void);
 static void rip_child(pid_t pid, int status);
 static void report_error_msg(const char title[], const char text[]);
 #endif
-static bg_job_t * launch_external(const char cmd[], int capture_output,
-		BgJobFlags flags, ShellRequester by);
+static bg_job_t * launch_external(const char cmd[], BgJobFlags flags,
+		ShellRequester by);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
@@ -307,6 +307,10 @@ job_free(bg_job_t *job)
 		CloseHandle(job->hjob);
 	}
 #endif
+	if(job->input != NULL)
+	{
+		fclose(job->input);
+	}
 	if(job->output != NULL)
 	{
 		fclose(job->output);
@@ -804,7 +808,8 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 #endif
 
 int
-bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
+bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
+		FILE **input)
 {
 	char *command = (cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd));
 	if(command == NULL)
@@ -812,11 +817,22 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		return 1;
 	}
 
-	bg_job_t *job = launch_external(command, 0, BJF_NONE, by);
+	const BgJobFlags flags = (input == NULL ? BJF_NONE : BJF_SUPPLY_INPUT);
+	bg_job_t *job = launch_external(command, flags, by);
 	free(command);
 	if(job == NULL)
 	{
+		if(input != NULL)
+		{
+			*input = NULL;
+		}
 		return 1;
+	}
+
+	if(input != NULL)
+	{
+		*input = job->input;
+		job->input = NULL;
 	}
 
 	/* It's safe to do this here because bg_check() is executed on the same
@@ -828,7 +844,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 bg_job_t *
 bg_run_external_job(const char cmd[], BgJobFlags flags)
 {
-	bg_job_t *job = launch_external(cmd, 1, flags, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, flags | BJF_CAPTURE_OUT, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -851,31 +867,46 @@ bg_run_external_job(const char cmd[], BgJobFlags flags)
 
 /* Starts a new external command job.  Returns the new job or NULL on error. */
 static bg_job_t *
-launch_external(const char cmd[], int capture_output, BgJobFlags flags,
-		ShellRequester by)
+launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 {
 	/* TODO: simplify this function (launch_external()) somehow, maybe split in
 	 *       two. */
-	int jb_visible = (flags & BJF_JOB_BAR_VISIBLE);
-	int merge_streams = (capture_output && (flags & BJF_MERGE_STREAMS));
+	const int jb_visible = (flags & BJF_JOB_BAR_VISIBLE);
+	const int supply_input = (flags & BJF_SUPPLY_INPUT);
+	const int capture_output = (flags & BJF_CAPTURE_OUT);
+	const int merge_streams = (capture_output && (flags & BJF_MERGE_STREAMS));
 
 #ifndef _WIN32
 	pid_t pid;
+	int input_pipe[2];
 	int output_pipe[2];
 
 	/* For the sake of simplicity just use -1, calling close(-1) won't hurt. */
 	int error_pipe[2] = { -1, -1 };
 	if(!merge_streams && pipe(error_pipe) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating error pipe");
 		return NULL;
+	}
+
+	if(supply_input)
+	{
+		if(pipe(input_pipe) != 0)
+		{
+			show_error_msg("File pipe error", "Error creating input pipe");
+			close(error_pipe[0]);
+			close(error_pipe[1]);
+			return NULL;
+		}
 	}
 
 	if(capture_output)
 	{
 		if(pipe(output_pipe) != 0)
 		{
-			show_error_msg("File pipe error", "Error creating pipe");
+			show_error_msg("File pipe error", "Error creating output pipe");
+			close(input_pipe[0]);
+			close(input_pipe[1]);
 			close(error_pipe[0]);
 			close(error_pipe[1]);
 			return NULL;
@@ -886,6 +917,11 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 	{
 		close(error_pipe[0]);
 		close(error_pipe[1]);
+		if(supply_input)
+		{
+			close(input_pipe[0]);
+			close(input_pipe[1]);
+		}
 		if(capture_output)
 		{
 			close(output_pipe[0]);
@@ -909,7 +945,21 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		/* Close read end of pipe. */
-		close(error_pipe[0]);
+		if(error_pipe[0] != -1)
+		{
+			close(error_pipe[0]);
+		}
+
+		if(supply_input)
+		{
+			if(dup2(input_pipe[0], STDIN_FILENO) == -1)
+			{
+				perror("dup2");
+				_Exit(EXIT_FAILURE);
+			}
+			/* Close write end of pipe. */
+			close(input_pipe[1]);
+		}
 
 		if(capture_output)
 		{
@@ -926,7 +976,7 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 		int nullfd = open("/dev/null", O_RDWR);
 		if(nullfd != -1)
 		{
-			if(dup2(nullfd, STDIN_FILENO) == -1)
+			if(!supply_input && dup2(nullfd, STDIN_FILENO) == -1)
 			{
 				perror("dup2 for stdin");
 				_Exit(EXIT_FAILURE);
@@ -953,8 +1003,15 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 		_Exit(127);
 	}
 
-	/* Close write ends of pipes. */
-	close(error_pipe[1]);
+	/* Close unused ends of pipes. */
+	if(error_pipe[1] != -1)
+	{
+		close(error_pipe[1]);
+	}
+	if(supply_input)
+	{
+		close(input_pipe[0]);
+	}
 	if(capture_output)
 	{
 		close(output_pipe[1]);
@@ -962,6 +1019,15 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 
 	bg_job_t *job = add_background_job(pid, cmd, (uintptr_t)error_pipe[0], 0,
 			BJT_COMMAND, jb_visible);
+
+	if(supply_input)
+	{
+		job->input = fdopen(input_pipe[1], "w");
+		if(job->input == NULL)
+		{
+			close(input_pipe[1]);
+		}
+	}
 
 	if(capture_output)
 	{
@@ -1002,12 +1068,21 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 		return NULL;
 	}
 
+	HANDLE hin = INVALID_HANDLE_VALUE;
+	if(supply_input && !CreatePipe(&startup.hStdInput, &hin, &sec_attr, 16*1024))
+	{
+		CloseHandle(herr);
+		CloseHandle(hnul);
+		return NULL;
+	}
+
 	HANDLE hout = INVALID_HANDLE_VALUE;
 	if(capture_output)
 	{
 		if(!CreatePipe(&hout, &startup.hStdOutput, &sec_attr, 16*1024))
 		{
 			CloseHandle(herr);
+			CloseHandle(hin);
 			CloseHandle(hnul);
 			return NULL;
 		}
@@ -1025,6 +1100,10 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 			NULL, NULL, &startup, &pinfo);
 	free(wide_cmd);
 	CloseHandle(hnul);
+	if(startup.hStdInput != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(startup.hStdInput);
+	}
 	CloseHandle(startup.hStdOutput);
 	if(startup.hStdError != startup.hStdOutput)
 	{
@@ -1051,6 +1130,7 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 	if(job == NULL)
 	{
 		CloseHandle(herr);
+		CloseHandle(hin);
 		CloseHandle(hout);
 		CloseHandle(pinfo.hProcess);
 		CloseHandle(hjob);
@@ -1059,9 +1139,25 @@ launch_external(const char cmd[], int capture_output, BgJobFlags flags,
 
 	job->hjob = hjob;
 
+	if(supply_input)
+	{
+		const int fd = _open_osfhandle((intptr_t)hin, _O_WRONLY);
+		if(fd == -1)
+		{
+			CloseHandle(hin);
+			return NULL;
+		}
+
+		job->input = fdopen(fd, "w");
+		if(job->input == NULL)
+		{
+			close(fd);
+		}
+	}
+
 	if(capture_output)
 	{
-		int fd = _open_osfhandle((intptr_t)hout, _O_RDONLY);
+		const int fd = _open_osfhandle((intptr_t)hout, _O_RDONLY);
 		if(fd == -1)
 		{
 			CloseHandle(hout);
@@ -1176,6 +1272,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	new->use_count = 0;
 	new->exit_code = -1;
 
+	new->input = NULL;
 	new->output = NULL;
 
 #ifndef _WIN32
@@ -1357,6 +1454,13 @@ bg_job_wait(bg_job_t *job)
 	if(!bg_job_is_running(job))
 	{
 		return 0;
+	}
+
+	/* Close input to avoid situation when the job is blocked on read. */
+	if(job->input != NULL)
+	{
+		fclose(job->input);
+		job->input = NULL;
 	}
 
 	/* Close output to avoid situation when the job is blocked on write. */

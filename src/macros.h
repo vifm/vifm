@@ -46,6 +46,9 @@ typedef enum
 	MF_SPLIT_VERT,  /* Run command in a new vertically split screen region. */
 	MF_IGNORE,      /* Completely ignore command output. */
 	MF_NO_TERM_MUX, /* Forbid using terminal multiplexer, even if active. */
+
+	MF_PIPE_FILE_LIST,   /* Provide new-line-separated file list on stdin. */
+	MF_PIPE_FILE_LIST_Z, /* Provide NUL-separated file list on stdin. */
 }
 MacroFlags;
 

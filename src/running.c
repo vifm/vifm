@@ -101,7 +101,8 @@ static void run_selection(view_t *view, int dont_execute);
 static void run_with_defaults(view_t *view);
 static void run_selection_separately(view_t *view, int dont_execute);
 static int is_multi_run_compat(view_t *view, const char prog_cmd[]);
-static void run_explicit_prog(const char prog_spec[], int pause, int force_bg);
+static void run_explicit_prog(view_t *view, const char prog_spec[], int pause,
+		int force_bg);
 static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
 		int force_bg);
 static void view_current_file(const view_t *view);
@@ -548,7 +549,7 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 	}
 	else if(strchr(prog_spec, '%') != NULL)
 	{
-		run_explicit_prog(prog_spec, pause, force_bg);
+		run_explicit_prog(view, prog_spec, pause, force_bg);
 	}
 	else
 	{
@@ -559,7 +560,7 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 /* Executes current file of the current view by program specification that
  * includes at least one macro. */
 static void
-run_explicit_prog(const char prog_spec[], int pause, int force_bg)
+run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 {
 	int bg;
 	MacroFlags flags;
@@ -580,7 +581,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	else if(bg)
 	{
 		assert(flags != MF_IGNORE && "This case is for rn_ext()");
-		(void)bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER);
+		rn_start_bg_command(view, cmd, flags);
 	}
 	else
 	{
@@ -620,7 +621,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 
 	if(bg)
 	{
-		(void)bg_run_external(cmd, 0, SHELL_BY_USER);
+		(void)bg_run_external(cmd, 0, SHELL_BY_USER, NULL);
 	}
 	else
 	{
@@ -1175,7 +1176,8 @@ int
 rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		int *save_msg)
 {
-	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
+	if(bg && !ONE_OF(flags, MF_NONE, MF_NO_TERM_MUX, MF_IGNORE,
+				MF_PIPE_FILE_LIST, MF_PIPE_FILE_LIST_Z))
 	{
 		ui_sb_errf("\"%s\" macro can't be combined with \" &\"",
 				ma_flags_to_str(flags));
@@ -1202,7 +1204,7 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 			int error;
 
 			setup_shellout_env();
-			error = (bg_run_external(cmd, 1, SHELL_BY_USER) != 0);
+			error = (bg_run_external(cmd, 1, SHELL_BY_USER, NULL) != 0);
 			cleanup_shellout_env();
 
 			if(error)
@@ -1375,9 +1377,34 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 	free(escaped_cmd);
 }
 
+void
+rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
+{
+	const int supply_input = (flags == MF_PIPE_FILE_LIST)
+	                      || (flags == MF_PIPE_FILE_LIST_Z);
+	FILE *input = NULL;
+
+	bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER,
+			supply_input ? &input : NULL);
+
+	if(input == NULL)
+	{
+		return;
+	}
+
+	const char separator = (flags == MF_PIPE_FILE_LIST ? '\n' : '\0');
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
+		fprintf(input, "%s%s%s%c", entry->origin, sep, entry->name, separator);
+	}
+	fclose(input);
+}
+
 int
-rn_for_flist(struct view_t *view, const char cmd[], const char title[],
-		int very, int interactive)
+rn_for_flist(view_t *view, const char cmd[], const char title[], int very,
+		int interactive)
 {
 	enum { MAX_TITLE_WIDTH = 80 };
 

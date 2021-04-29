@@ -21,6 +21,8 @@
 #include "../../src/compat/pthread.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/options.h"
+#include "../../src/engine/var.h"
+#include "../../src/engine/variables.h"
 #include "../../src/ui/color_manager.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
@@ -496,6 +498,12 @@ regular_unix_user(void)
 #endif
 }
 
+int
+have_cat(void)
+{
+	return (find_cmd_in_path("cat", 0, NULL) == 0);
+}
+
 void
 try_enable_utf8_locale(void)
 {
@@ -595,6 +603,29 @@ wait_for_bg(void)
 			assert_fail("Waiting for too long.");
 			break;
 		}
+	}
+}
+
+void
+wait_for_all_bg(void)
+{
+	int counter = 0;
+
+	var_t var = var_from_int(-1);
+	setvar("v:jobcount", var);
+	var_free(var);
+
+	bg_check();
+	while(bg_jobs != NULL)
+	{
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			break;
+		}
+
+		usleep(5000);
+		bg_check();
 	}
 }
 

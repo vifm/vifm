@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Apr 14
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Apr 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2738,6 +2738,11 @@ The command macros may be used in user commands.
             suppresses error dialogs, while still storing errors
             internally for viewing via |vifm-:jobs| menu.
 
+                                                               *vifm-%Pl*
+  %Pl       pipe list of files to standard input of a background process.
+                                                               *vifm-%Pz*
+  %Pz       same as %Pz, but separates paths by null ('\0') character.
+
                                                                *vifm-%pc*
   %pc       marks the end of the main command and the beginning of the
             clear command for graphical preview, which is invoked on
@@ -2762,8 +2767,9 @@ The command macros may be used in user commands.
 
 Use %% if you need to put a percent sign in your command.
 
-Note that %m, %M, %s, %S, %i, %u and %U macros are mutually exclusive.  Only
-the last one of them on the command will take effect.
+Note that %i, %Iu, %IU, %m, %M, %n, %q, %Pl, %Pz, %s, %S, %u and %U macros
+are mutually exclusive.  Only the last one of them on the command will take
+effect.
 
                                                      *vifm-filename-modifiers*
 You can use file name modifiers after %c, %C, %f, %F, %b, %d and %D macros.

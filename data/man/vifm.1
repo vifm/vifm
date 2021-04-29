@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 14, 2021" "vifm 0.11"
+.TH VIFM 1 "April 24, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3323,6 +3323,12 @@ Forbid using of terminal multiplexer to run the command.
 Completely ignore command output.  For background jobs this suppresses error
 dialogs, while still storing errors internally for viewing via :jobs menu.
 .TP
+.BI %Pl
+Pipe list of files to standard input of a background process.
+.TP
+.BI %Pz
+Same as %Pz, but separates paths by null ('\\0') character.
+.TP
 .BI %pc
 Marks the end of the main command and the beginning of the clear command for
 graphical preview, which is invoked on closing preview of a file.
@@ -3350,8 +3356,9 @@ height of preview area.
 .LP
 Use %% if you need to put a percent sign in your command.
 
-Note that %m, %M, %s, %S, %i, %u and %U macros are mutually exclusive.  Only
-the last one of them on the command will take effect.
+Note that %i, %Iu, %IU, %m, %M, %n, %q, %Pl, %Pz, %s, %S, %u and %U macros
+are mutually exclusive.  Only the last one of them on the command will take
+effect.
 
 You can use file name modifiers after %c, %C, %f, %F, %b, %d and %D macros.
 Supported modifiers are:

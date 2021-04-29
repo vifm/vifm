@@ -1,6 +1,8 @@
 #include <stic.h>
 
-#include <unistd.h> /* usleep() */
+#include <unistd.h> /* chdir() usleep() */
+
+#include <stdio.h> /* FILE fclose() fputs() */
 
 #include <test-utils.h>
 
@@ -72,8 +74,29 @@ TEST(capture_error_of_external_command)
 	bg_job_decref(job);
 }
 
+TEST(provide_input_to_external_command_no_job, IF(have_cat))
+{
+	assert_success(chdir(SANDBOX_PATH));
+
+	FILE *input;
+	assert_success(bg_run_external("cat > file", 1, SHELL_BY_USER, &input));
+	assert_non_null(input);
+
+	fputs("input", input);
+	fclose(input);
+
+	wait_for_all_bg();
+
+	const char *lines[] = { "input" };
+	file_is("file", lines, ARRAY_LEN(lines));
+
+	remove_file("file");
+}
+
 TEST(jobcount_variable_gets_updated)
 {
+	(void)stats_update_fetch();
+
 	var_t var = var_from_int(0);
 	setvar("v:jobcount", var);
 	var_free(var);
@@ -109,7 +132,7 @@ TEST(jobcount_variable_gets_updated)
 
 TEST(job_can_survive_on_its_own)
 {
-	assert_success(bg_run_external("exit 71", 1, SHELL_BY_APP));
+	assert_success(bg_run_external("exit 71", 1, SHELL_BY_APP, NULL));
 
 	bg_job_t *job = bg_jobs;
 	assert_non_null(job);
@@ -134,7 +157,7 @@ TEST(job_can_survive_on_its_own)
 
 TEST(explicitly_wait_for_a_job)
 {
-	assert_success(bg_run_external("exit 99", 1, SHELL_BY_APP));
+	assert_success(bg_run_external("exit 99", 1, SHELL_BY_APP, NULL));
 
 	bg_job_t *job = bg_jobs;
 	assert_non_null(job);
@@ -168,6 +191,33 @@ TEST(capture_output_of_external_command)
 	char **lines = read_stream_lines(job->output, &nlines, 0, NULL, NULL);
 	assert_int_equal(1, nlines);
 	assert_string_equal("there", lines[0]);
+	free_string_array(lines, nlines);
+
+	assert_success(bg_job_wait(job));
+	assert_int_equal(0, job->exit_code);
+
+	bg_job_decref(job);
+}
+
+TEST(supply_input_to_external_command, IF(have_cat))
+{
+	bg_job_t *job = bg_run_external_job("cat", BJF_SUPPLY_INPUT);
+	assert_non_null(job);
+	assert_non_null(job->input);
+	assert_non_null(job->output);
+
+	fputs("1\n", job->input);
+	fputs("2 2\n", job->input);
+	fputs(" 3  3   3  ", job->input);
+	fclose(job->input);
+	job->input = NULL;
+
+	int nlines;
+	char **lines = read_stream_lines(job->output, &nlines, 0, NULL, NULL);
+	assert_int_equal(3, nlines);
+	assert_string_equal("1", lines[0]);
+	assert_string_equal("2 2", lines[1]);
+	assert_string_equal(" 3  3   3  ", lines[2]);
 	free_string_array(lines, nlines);
 
 	assert_success(bg_job_wait(job));
