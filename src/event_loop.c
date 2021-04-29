@@ -27,7 +27,7 @@
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strncpy() */
-#include <wchar.h> /* wint_t wcslen() wcscmp() wcsncat() wmemcpy() */
+#include <wchar.h> /* wint_t wcslen() wcscmp() wcsncat() wmemmove() */
 
 #include "cfg/config.h"
 #include "compat/curses.h"
@@ -404,7 +404,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			if(input_queue[0] != L'\0')
 			{
 				*c = input_queue[0];
-				wmemcpy(input_queue, input_queue + 1, wcslen(input_queue));
+				wmemmove(input_queue, input_queue + 1, wcslen(input_queue));
 				return OK;
 			}
 
