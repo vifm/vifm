@@ -581,7 +581,7 @@ run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	else if(bg)
 	{
 		assert(flags != MF_IGNORE && "This case is for rn_ext()");
-		(void)bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER, NULL);
+		rn_start_bg_command(view, cmd, flags);
 	}
 	else
 	{

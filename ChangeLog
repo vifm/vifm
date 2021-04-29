@@ -44,8 +44,8 @@
 	Added %v macro for vertical splitting in terminal multiplexers.  Patch by
 	qsmodo.
 
-	Added %Pz and %Pl macros for :! and user-defined commands that allow
-	redirecting list of files to background processes.  Thanks to PRESFIL.
+	Added %Pl and %Pz macros for redirecting list of files to background
+	processes.  Thanks to PRESFIL.
 
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
