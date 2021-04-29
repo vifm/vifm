@@ -77,6 +77,9 @@ int rn_open_with_match(struct view_t *view, const char beginning[],
 int rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		int *save_msg);
 
+/* Starts background command optionally handling input redirection. */
+void rn_start_bg_command(const char cmd[], MacroFlags flags);
+
 /* Runs the cmd and parses its output as list of paths to compose custom view.
  * Very custom view implies unsorted list.  Returns zero on success, otherwise
  * non-zero is returned. */

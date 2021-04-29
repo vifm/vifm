@@ -1376,6 +1376,31 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 	free(escaped_cmd);
 }
 
+void
+rn_start_bg_command(const char cmd[], MacroFlags flags)
+{
+	const int supply_input = (flags == MF_PIPE_FILE_LIST)
+	                      || (flags == MF_PIPE_FILE_LIST_Z);
+	FILE *input = NULL;
+
+	bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER,
+			supply_input ? &input : NULL);
+
+	if(input == NULL)
+	{
+		return;
+	}
+
+	const char separator = (flags == MF_PIPE_FILE_LIST ? '\n' : '\0');
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(curr_view, &entry))
+	{
+		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
+		fprintf(input, "%s%s%s%c", entry->origin, sep, entry->name, separator);
+	}
+	fclose(input);
+}
+
 int
 rn_for_flist(struct view_t *view, const char cmd[], const char title[],
 		int very, int interactive)
