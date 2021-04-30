@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Apr 24
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Apr 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2767,7 +2767,7 @@ The command macros may be used in user commands.
 
 Use %% if you need to put a percent sign in your command.
 
-Note that %i, %Iu, %IU, %m, %M, %n, %q, %Pl, %Pz, %s, %S, %u and %U macros
+Note that %i, %Iu, %IU, %m, %M, %n, %q, %Pl, %Pz, %s, %S, %u, %U and %v macros
 are mutually exclusive.  Only the last one of them on the command will take
 effect.
 
