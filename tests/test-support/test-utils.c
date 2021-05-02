@@ -640,7 +640,8 @@ file_is(const char path[], const char *lines[], int nlines)
 	}
 
 	int actual_nlines;
-	char **actual_lines = read_file_lines(fp, &actual_nlines);
+	char **actual_lines = read_stream_lines(fp, &actual_nlines,
+			/*null_sep_heuristic=*/0, NULL, NULL);
 	fclose(fp);
 
 	assert_int_equal(nlines, actual_nlines);
