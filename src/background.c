@@ -1114,6 +1114,7 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	{
 		free(sh_cmd);
 		CloseHandle(hout);
+		CloseHandle(hin);
 		return NULL;
 	}
 
