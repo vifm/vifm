@@ -1045,13 +1045,7 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	char *sh_cmd;
 	wchar_t *wide_cmd;
 
-	SECURITY_ATTRIBUTES sec_attr = {
-		.nLength = sizeof(sec_attr),
-		.lpSecurityDescriptor = NULL,
-		.bInheritHandle = 1,
-	};
-
-	HANDLE hnul = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE, 0, &sec_attr,
+	HANDLE hnul = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE, 0, NULL,
 			OPEN_EXISTING, 0, NULL);
 	if(hnul == INVALID_HANDLE_VALUE)
 	{
@@ -1061,15 +1055,14 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	startup.hStdOutput = hnul;
 
 	HANDLE herr = INVALID_HANDLE_VALUE;
-	if(!merge_streams &&
-			!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
+	if(!merge_streams && !CreatePipe(&herr, &startup.hStdError, NULL, 16*1024))
 	{
 		CloseHandle(hnul);
 		return NULL;
 	}
 
 	HANDLE hin = INVALID_HANDLE_VALUE;
-	if(supply_input && !CreatePipe(&startup.hStdInput, &hin, &sec_attr, 16*1024))
+	if(supply_input && !CreatePipe(&startup.hStdInput, &hin, NULL, 16*1024))
 	{
 		CloseHandle(herr);
 		CloseHandle(hnul);
@@ -1079,7 +1072,7 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	HANDLE hout = INVALID_HANDLE_VALUE;
 	if(capture_output)
 	{
-		if(!CreatePipe(&hout, &startup.hStdOutput, &sec_attr, 16*1024))
+		if(!CreatePipe(&hout, &startup.hStdOutput, NULL, 16*1024))
 		{
 			CloseHandle(herr);
 			CloseHandle(hin);
@@ -1092,6 +1085,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 			startup.hStdError = startup.hStdOutput;
 		}
 	}
+
+	SetHandleInformation(startup.hStdInput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup.hStdOutput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup.hStdError, HANDLE_FLAG_INHERIT, 1);
 
 	sh_cmd = win_make_sh_cmd(cmd, by);
 
