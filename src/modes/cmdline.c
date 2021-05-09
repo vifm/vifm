@@ -93,30 +93,41 @@ PromptState;
 /* Holds state of the command-line editing mode. */
 typedef struct
 {
-	wchar_t *line;                /* the line reading */
-	wchar_t *initial_line;        /* initial state of the line */
-	int index;                    /* index of the current character in cmdline */
-	int curs_pos;                 /* position of the cursor in status bar*/
-	int len;                      /* length of the string */
-	int cmd_pos;                  /* position in the history */
-	wchar_t prompt[NAME_MAX + 1]; /* prompt */
-	int prompt_wid;               /* width of prompt */
-	int complete_continue;        /* if non-zero, continue previous completion */
-	int dot_pos;                  /* history pos for dot completion, or < 0 */
-	size_t dot_index;             /* dot completion line index */
-	size_t dot_len;               /* dot completion previous completion len */
-	HIST history_search;          /* HIST_* */
-	int hist_search_len;          /* length of history search pattern */
-	wchar_t *line_buf;            /* content of line before using history */
-	int reverse_completion;
-	complete_cmd_func complete;
-	int search_mode;
-	int old_top;              /* for search_mode */
-	int old_pos;              /* for search_mode */
-	int line_edited;          /* Cache for whether input line changed flag. */
-	int enter_mapping_state;  /* The mapping state at entering the mode. */
-	int expanding_abbrev;     /* Abbreviation expansion is in progress. */
-	PromptState state;        /* Prompt state with regard to current input. */
+	/* Line editing state. */
+	wchar_t *line;                /* The line reading. */
+	wchar_t *initial_line;        /* Initial state of the line. */
+	int index;                    /* Index of the current character in cmdline. */
+	int curs_pos;                 /* Position of the cursor in status bar. */
+	int len;                      /* Length of the string. */
+	int cmd_pos;                  /* Position in the history. */
+	wchar_t prompt[NAME_MAX + 1]; /* Prompt message. */
+	int prompt_wid;               /* Width of the prompt. */
+
+	/* Dot completion. */
+	int dot_pos;      /* History position or < 0 if it's not active. */
+	size_t dot_index; /* Line index. */
+	size_t dot_len;   /* Previous completion length. */
+
+	/* Command completion. */
+	int complete_continue;      /* If non-zero, continue previous completion. */
+	int reverse_completion;     /* Completion in the opposite direction. */
+	complete_cmd_func complete; /* Completion function. */
+
+	/* History completion. */
+	HIST history_search; /* One of the HIST_* constants. */
+	int hist_search_len; /* Length of history search pattern. */
+	wchar_t *line_buf;   /* Content of line before using history. */
+
+	/* For search prompt. */
+	int search_mode; /* If it's a search prompt. */
+	int old_top;     /* Saved top for interactive searching. */
+	int old_pos;     /* Saved position for interactive searching. */
+
+	/* Other state. */
+	int line_edited;         /* Cache for whether input line changed flag. */
+	int enter_mapping_state; /* The mapping state at entering the mode. */
+	int expanding_abbrev;    /* Abbreviation expansion is in progress. */
+	PromptState state;       /* Prompt state with regard to current input. */
 }
 line_stats_t;
 
