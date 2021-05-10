@@ -2669,17 +2669,7 @@ stop_regular_completion(void)
 	vle_compl_reset();
 	if(cfg.wild_menu && input_stat.complete != NULL)
 	{
-		if(sub_mode == CLS_MENU_COMMAND)
-		{
-			modmenu_full_redraw();
-		}
-		else
-		{
-			update_screen(UT_REDRAW);
-		}
-		update_cmdline_size();
-		update_cmdline_text(&input_stat);
-		curs_set(1);
+		modcline_redraw();
 	}
 }
 
