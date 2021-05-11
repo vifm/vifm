@@ -137,6 +137,8 @@ static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static void create_windows(void);
 static void update_geometry(void);
+static int update_start(UpdateType update_kind);
+static void update_finish(void);
 static void adjust_splitter(int screen_w, int screen_h);
 static int get_working_area_height(void);
 static void clear_border(WINDOW *border);
@@ -674,17 +676,29 @@ cv_tree(CVType type)
 void
 update_screen(UpdateType update_kind)
 {
-	if(curr_stats.load_stage < 2)
-		return;
+	if(update_start(update_kind))
+	{
+		update_all_windows();
+		update_finish();
+	}
+}
 
-	if(update_kind == UT_NONE)
-		return;
+/* Most of the update logic.  Everything that's done before updating windows.
+ * Returns non-zero if update was carried out until the end, otherwise zero is
+ * returned. */
+static int
+update_start(UpdateType update_kind)
+{
+	if(curr_stats.load_stage < 2 || update_kind == UT_NONE)
+	{
+		return 0;
+	}
 
 	ui_resize_all();
 
 	if(curr_stats.restart_in_progress)
 	{
-		return;
+		return 0;
 	}
 
 	update_attributes();
@@ -701,7 +715,7 @@ update_screen(UpdateType update_kind)
 
 	if(curr_stats.term_state != TS_NORMAL)
 	{
-		return;
+		return 0;
 	}
 
 	qv_ui_updated();
@@ -749,8 +763,13 @@ update_screen(UpdateType update_kind)
 		modview_redraw();
 	}
 
-	update_all_windows();
+	return 1;
+}
 
+/* Post-windows-update part of an update. */
+static void
+update_finish(void)
+{
 	if(!curr_view->explore_mode)
 	{
 		fview_cursor_redraw(curr_view);
