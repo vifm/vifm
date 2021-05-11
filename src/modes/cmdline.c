@@ -1222,6 +1222,8 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	}
 
 	wresize(stat_win, height, getmaxx(stdscr));
+	ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
+			cfg.cs.pair[STATUS_LINE_COLOR]);
 	werase(stat_win);
 	ui_stat_reposition(getmaxy(status_bar), 1);
 

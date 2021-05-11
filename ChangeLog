@@ -145,6 +145,8 @@
 	Fixed permission dialog on *nix systems not showing all information
 	correctly after a redraw.
 
+	Fixed incorrect colors on redrawing wild menu popup on terminal resize.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
