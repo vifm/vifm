@@ -681,7 +681,7 @@ modcline_redraw(void)
 	}
 	else
 	{
-		update_screen(UT_REDRAW);
+		ui_redraw_as_background();
 		if(prev_mode == SORT_MODE)
 		{
 			redraw_sort_dialog();
@@ -700,6 +700,11 @@ modcline_redraw(void)
 	if(input_stat.complete_continue && cfg.wild_menu)
 	{
 		draw_wild_menu(-1);
+	}
+
+	if(prev_mode != MENU_MODE)
+	{
+		update_all_windows();
 	}
 }
 

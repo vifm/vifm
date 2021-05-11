@@ -683,6 +683,15 @@ update_screen(UpdateType update_kind)
 	}
 }
 
+void
+ui_redraw_as_background(void)
+{
+	if(update_start(UT_REDRAW))
+	{
+		update_finish();
+	}
+}
+
 /* Most of the update logic.  Everything that's done before updating windows.
  * Returns non-zero if update was carried out until the end, otherwise zero is
  * returned. */
