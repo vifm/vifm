@@ -611,12 +611,12 @@ horizontal_layout(int screen_x, int screen_y)
 static int
 get_working_area_height(void)
 {
-	return getmaxy(stdscr)                  /* Total available height. */
-	     - 1                                /* Top line. */
-	     - (cfg.display_statusline ? 1 : 0) /* Status line. */
-	     - ui_stat_job_bar_height()         /* Job bar. */
-	     - 1                                /* Status bar line. */
-	     - get_tabline_height();            /* Tab line. */
+	return getmaxy(stdscr)          /* Total available height. */
+	     - 1                        /* Top line. */
+	     - ui_stat_height()         /* Status line. */
+	     - ui_stat_job_bar_height() /* Job bar. */
+	     - 1                        /* Status bar line. */
+	     - get_tabline_height();    /* Tab line. */
 }
 
 /* Updates internal data structures to reflect actual terminal geometry. */
@@ -842,7 +842,7 @@ ui_resize_all(void)
 	correct_size(&lwin);
 	correct_size(&rwin);
 
-	wresize(stat_win, 1, screen_w);
+	wresize(stat_win, ui_stat_height(), screen_w);
 	(void)ui_stat_reposition(1, 0);
 
 	wresize(job_bar, 1, screen_w);

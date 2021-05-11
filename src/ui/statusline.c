@@ -99,7 +99,7 @@ ui_stat_update(view_t *view, int lazy_redraw)
 
 	const int width = getmaxx(stdscr);
 
-	wresize(stat_win, 1, width);
+	wresize(stat_win, ui_stat_height(), width);
 	ui_set_bg(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
 			cfg.cs.pair[STATUS_LINE_COLOR]);
 	werase(stat_win);
@@ -616,6 +616,12 @@ ui_stat_reposition(int statusbar_height, int force_stat_win)
 		return 1;
 	}
 	return 0;
+}
+
+int
+ui_stat_height(void)
+{
+	return (cfg.display_statusline ? 1 : 0);
 }
 
 void
