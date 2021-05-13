@@ -3214,6 +3214,7 @@ static void
 statusline_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.status_line, val.str_val);
+	stats_redraw_later();
 }
 
 /* Sets when to display key suggestions. */

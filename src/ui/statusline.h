@@ -39,6 +39,9 @@ void ui_stat_update(struct view_t *view, int lazy_redraw);
  * zero otherwise. */
 int ui_stat_reposition(int statusbar_height, int force_stat_win);
 
+/* Retrieves height of status line message.  Returns the height. */
+int ui_stat_height(void);
+
 /* Updates content of status line on the screen (also updates job bar). */
 void ui_stat_refresh(void);
 
@@ -74,6 +77,8 @@ void ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
 #endif
 TSTATIC_DEFS(
 	cline_t expand_status_line_macros(struct view_t *view, const char format[]);
+	char * find_view_macro(const char **format, const char macros[], char macro,
+		int opt);
 )
 
 #endif /* VIFM__UI__STATUSLINE_H__ */

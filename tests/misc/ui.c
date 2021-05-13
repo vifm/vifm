@@ -230,6 +230,43 @@ TEST(ui_stat_job_bar_remove_can_be_called_with_unknown_pointer)
 	}
 }
 
+TEST(find_view_macro_works)
+{
+	const char *format = "%[%]%=%1*%{ignored %N}%[%-1t%N%N*%t%]%3*%{";
+	const char *macros = "[]{t-";
+
+	assert_string_equal("%N%N*%t%]%3*%{",
+			find_view_macro(&format, macros, 'N', 0));
+	assert_string_equal("%N*%t%]%3*%{", format);
+
+	assert_string_equal("%N*%t%]%3*%{", find_view_macro(&format, macros, 'N', 0));
+	assert_string_equal("*%t%]%3*%{", format);
+
+	assert_string_equal(NULL, find_view_macro(&format, macros, 'N', 0));
+	assert_string_equal("", format);
+
+	assert_string_equal(NULL, find_view_macro(&format, macros, 'N', 0));
+	assert_string_equal("", format);
+}
+
+TEST(ui_stat_height_works)
+{
+	cfg.display_statusline = 0;
+
+	update_string(&cfg.status_line, "");
+	assert_int_equal(0, ui_stat_height());
+
+	cfg.display_statusline = 1;
+
+	assert_int_equal(1, ui_stat_height());
+
+	update_string(&cfg.status_line, "some %N stuff");
+	assert_int_equal(2, ui_stat_height());
+
+	update_string(&cfg.status_line, NULL);
+	cfg.display_statusline = 0;
+}
+
 static void
 check_tab_title(const tab_info_t *tab_info, const char text[])
 {

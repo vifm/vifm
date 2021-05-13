@@ -137,6 +137,8 @@ static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static void create_windows(void);
 static void update_geometry(void);
+static int update_start(UpdateType update_kind);
+static void update_finish(void);
 static void adjust_splitter(int screen_w, int screen_h);
 static int get_working_area_height(void);
 static void clear_border(WINDOW *border);
@@ -173,6 +175,9 @@ static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
 static int is_in_miller_view(const view_t *view);
 static int is_forced_list_mode(const view_t *view);
+
+/* List of macros that are expanded in the ruler. */
+static const char RULER_MACROS[] = "-xlLPS%[]";
 
 void
 ui_ruler_update(view_t *view, int lazy_redraw)
@@ -609,12 +614,12 @@ horizontal_layout(int screen_x, int screen_y)
 static int
 get_working_area_height(void)
 {
-	return getmaxy(stdscr)                  /* Total available height. */
-	     - 1                                /* Top line. */
-	     - (cfg.display_statusline ? 1 : 0) /* Status line. */
-	     - ui_stat_job_bar_height()         /* Job bar. */
-	     - 1                                /* Status bar line. */
-	     - get_tabline_height();            /* Tab line. */
+	return getmaxy(stdscr)          /* Total available height. */
+	     - 1                        /* Top line. */
+	     - ui_stat_height()         /* Status line. */
+	     - ui_stat_job_bar_height() /* Job bar. */
+	     - 1                        /* Status bar line. */
+	     - get_tabline_height();    /* Tab line. */
 }
 
 /* Updates internal data structures to reflect actual terminal geometry. */
@@ -674,17 +679,38 @@ cv_tree(CVType type)
 void
 update_screen(UpdateType update_kind)
 {
-	if(curr_stats.load_stage < 2)
-		return;
+	if(update_start(update_kind))
+	{
+		update_all_windows();
+		update_finish();
+	}
+}
 
-	if(update_kind == UT_NONE)
-		return;
+void
+ui_redraw_as_background(void)
+{
+	if(update_start(UT_REDRAW))
+	{
+		update_finish();
+	}
+}
+
+/* Most of the update logic.  Everything that's done before updating windows.
+ * Returns non-zero if update was carried out until the end, otherwise zero is
+ * returned. */
+static int
+update_start(UpdateType update_kind)
+{
+	if(curr_stats.load_stage < 2 || update_kind == UT_NONE)
+	{
+		return 0;
+	}
 
 	ui_resize_all();
 
 	if(curr_stats.restart_in_progress)
 	{
-		return;
+		return 0;
 	}
 
 	update_attributes();
@@ -701,7 +727,7 @@ update_screen(UpdateType update_kind)
 
 	if(curr_stats.term_state != TS_NORMAL)
 	{
-		return;
+		return 0;
 	}
 
 	qv_ui_updated();
@@ -749,8 +775,13 @@ update_screen(UpdateType update_kind)
 		modview_redraw();
 	}
 
-	update_all_windows();
+	return 1;
+}
 
+/* Post-windows-update part of an update. */
+static void
+update_finish(void)
+{
 	if(!curr_view->explore_mode)
 	{
 		fview_cursor_redraw(curr_view);
@@ -814,7 +845,7 @@ ui_resize_all(void)
 	correct_size(&lwin);
 	correct_size(&rwin);
 
-	wresize(stat_win, 1, screen_w);
+	wresize(stat_win, ui_stat_height(), screen_w);
 	(void)ui_stat_reposition(1, 0);
 
 	wresize(job_bar, 1, screen_w);
@@ -1429,7 +1460,7 @@ get_ruler_width(view_t *view)
 static char *
 expand_ruler_macros(view_t *view, const char format[])
 {
-	return expand_view_macros(view, format, "-xlLPS%[]");
+	return expand_view_macros(view, format, RULER_MACROS);
 }
 
 void

@@ -10,6 +10,7 @@
 #include "../../src/compat/curses.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
@@ -62,6 +63,8 @@ SETUP()
 	rwin.dir_entry[0].name = strdup("otherroot.otherext");
 	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 	strcpy(rwin.curr_dir, "other/dir/othertail");
+
+	opt_handlers_setup();
 }
 
 TEARDOWN()
@@ -72,6 +75,51 @@ TEARDOWN()
 	(void)vle_keys_exec_timed_out(WK_C_c);
 
 	vle_keys_reset();
+
+	opt_handlers_teardown();
+}
+
+TEST(backspace_exit)
+{
+	assert_true(vle_mode_is(CMDLINE_MODE));
+	assert_wstring_equal(L"", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	assert_true(vle_mode_is(NORMAL_MODE));
+	assert_wstring_equal(NULL, stats->line);
+}
+
+TEST(backspace_eol)
+{
+	(void)vle_keys_exec_timed_out(L"abc");
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	assert_wstring_equal(L"ab", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	assert_wstring_equal(L"a", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	assert_wstring_equal(L"", stats->line);
+}
+
+TEST(backspace_not_eol)
+{
+	(void)vle_keys_exec_timed_out(L"abc");
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_b);
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	assert_wstring_equal(L"ac", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	assert_wstring_equal(L"c", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	assert_wstring_equal(L"c", stats->line);
 }
 
 TEST(value_of_manual_filter_is_pasted)

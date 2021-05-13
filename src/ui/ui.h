@@ -529,6 +529,10 @@ void ui_resize_all(void);
  * argument). */
 void update_screen(UpdateType update_kind);
 
+/* Like `update_screen(UT_REDRAW)`, but postpones final screen update to be done
+ * by the caller after drawing something else on the screen. */
+void ui_redraw_as_background(void);
+
 /* Swaps curr_view and other_view pointers (active and inactive panes).  Also
  * updates things (including UI) that are bound to views. */
 void change_window(void);

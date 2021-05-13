@@ -176,6 +176,9 @@ typedef struct
 	/* Set while executing :restart command to prevent excess screen updates. */
 	int restart_in_progress;
 
+	/* Status line is enabled, but is being reused for wild menu completion. */
+	int reusing_statusline;
+
 	ExecEnvType exec_env_type; /* Specifies execution environment type. */
 
 	/* Shows which of supported terminal multiplexers is currently in use, if
