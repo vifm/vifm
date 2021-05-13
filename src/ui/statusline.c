@@ -66,6 +66,9 @@ static int is_job_bar_visible(void);
 static const char * format_job_bar(void);
 static char ** take_job_descr_snapshot(void);
 
+/* List of macros that are expanded in the status line. */
+static const char STATUS_LINE_MACROS[] = "tTfaAugsEdD-xlLPSz%[]{*";
+
 /* Number of background jobs. */
 static size_t nbar_jobs;
 /* Array of jobs. */
@@ -212,7 +215,7 @@ expand_status_line_macros(view_t *view, const char format[])
 		return cline_make();
 	}
 
-	return parse_view_macros(view, &format, "tTfaAugsEdD-xlLPSz%[]{*", 0);
+	return parse_view_macros(view, &format, STATUS_LINE_MACROS, 0);
 }
 
 /* Expands possibly limited set of view macros.  Returns newly allocated string,

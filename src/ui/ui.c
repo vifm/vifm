@@ -176,6 +176,9 @@ static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
 static int is_in_miller_view(const view_t *view);
 static int is_forced_list_mode(const view_t *view);
 
+/* List of macros that are expanded in the ruler. */
+static const char RULER_MACROS[] = "-xlLPS%[]";
+
 void
 ui_ruler_update(view_t *view, int lazy_redraw)
 {
@@ -1457,7 +1460,7 @@ get_ruler_width(view_t *view)
 static char *
 expand_ruler_macros(view_t *view, const char format[])
 {
-	return expand_view_macros(view, format, "-xlLPS%[]");
+	return expand_view_macros(view, format, RULER_MACROS);
 }
 
 void
