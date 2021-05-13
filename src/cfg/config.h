@@ -282,7 +282,7 @@ typedef struct config_t
 	 * sizes. */
 	int flexible_splitter;
 
-	/* Whether statusline is visible. */
+	/* Whether displaying status line is enabled. */
 	int display_statusline;
 
 	/* Per line pattern for borders. */

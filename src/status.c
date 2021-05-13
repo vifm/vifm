@@ -173,6 +173,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->restart_in_progress = 0;
 
+	stats->reusing_statusline = 0;
+
 	stats->exec_env_type = EET_EMULATOR;
 
 	stats->term_multiplexer = TM_NONE;

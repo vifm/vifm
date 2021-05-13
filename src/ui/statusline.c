@@ -81,7 +81,8 @@ static pthread_spinlock_t job_bar_changed_lock;
 void
 ui_stat_update(view_t *view, int lazy_redraw)
 {
-	if(!cfg.display_statusline || view != curr_view)
+	if(!cfg.display_statusline || curr_stats.reusing_statusline ||
+			view != curr_view)
 	{
 		return;
 	}
@@ -596,11 +597,14 @@ check_expanded_str(const char buf[], int skip, int *nexpansions)
 }
 
 int
-ui_stat_reposition(int statusbar_height, int force_stat_win)
+ui_stat_reposition(int statusbar_height, int stat_height)
 {
-	const int stat_line_height = (force_stat_win || cfg.display_statusline)
-	                           ? getmaxy(stat_win)
-	                           : 0;
+	int stat_line_height = stat_height;
+	if(stat_line_height == 0 && cfg.display_statusline)
+	{
+		stat_line_height = getmaxy(stat_win);
+	}
+
 	const int job_bar_height = ui_stat_job_bar_height();
 	const int y = getmaxy(stdscr)
 	            - statusbar_height
@@ -613,7 +617,8 @@ ui_stat_reposition(int statusbar_height, int force_stat_win)
 		wresize(job_bar, job_bar_height, getmaxx(job_bar));
 	}
 
-	if(force_stat_win || cfg.display_statusline)
+	if(stat_height > 0 ||
+			(cfg.display_statusline && !curr_stats.reusing_statusline))
 	{
 		mvwin(stat_win, y + job_bar_height, 0);
 		return 1;
@@ -624,7 +629,18 @@ ui_stat_reposition(int statusbar_height, int force_stat_win)
 int
 ui_stat_height(void)
 {
-	return (cfg.display_statusline ? 1 : 0);
+	if(!cfg.display_statusline)
+	{
+		return 0;
+	}
+
+	int height = 1;
+
+	if(curr_stats.reusing_statusline)
+	{
+		return MIN(getmaxy(stat_win), height);
+	}
+	return height;
 }
 
 void

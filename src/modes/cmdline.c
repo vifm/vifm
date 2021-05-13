@@ -1089,6 +1089,16 @@ do_completion(void)
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
+
+	/* Indicate that status line is being reused for wild menu and there is a
+	 * potential usage conflict due to size differences. */
+	if(cfg.display_statusline && !curr_stats.reusing_statusline &&
+			cfg.wild_menu && vle_compl_get_count() > 2 && getmaxy(stat_win) > 1)
+	{
+		curr_stats.reusing_statusline = 1;
+		wresize(stat_win, compute_wild_menu_height(), getmaxx(stdscr));
+		modcline_redraw();
+	}
 }
 
 /*
@@ -1150,8 +1160,10 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 
+	wresize(stat_win, compute_wild_menu_height(), getmaxx(stdscr));
 	checked_wmove(stat_win, 0, 0);
 	werase(stat_win);
+	ui_stat_reposition(getmaxy(status_bar), 1);
 
 	if(*pos < *last_pos)
 	{
@@ -1220,11 +1232,11 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 		*last_pos = MAX(0, *last_pos - height);
 	}
 
+	ui_stat_reposition(getmaxy(status_bar), height);
 	wresize(stat_win, height, getmaxx(stdscr));
 	ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
 			cfg.cs.pair[STATUS_LINE_COLOR]);
 	werase(stat_win);
-	ui_stat_reposition(getmaxy(status_bar), 1);
 
 	max_title_width = 0U;
 	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
@@ -2504,8 +2516,10 @@ update_cmdline_size(void)
 
 	if(prev_mode != MENU_MODE)
 	{
-		if(ui_stat_reposition(required_height,
-					cfg.wild_menu && cfg.wild_popup && input_stat.complete_continue))
+		int stat_height = cfg.wild_menu
+		               && cfg.wild_popup
+		               && input_stat.complete_continue;
+		if(ui_stat_reposition(required_height, stat_height ? getmaxy(stat_win) : 0))
 		{
 			ui_stat_refresh();
 		}
@@ -2684,6 +2698,11 @@ stop_regular_completion(void)
 	if(!input_stat.complete_continue)
 	{
 		return;
+	}
+
+	if(curr_stats.reusing_statusline)
+	{
+		curr_stats.reusing_statusline = 0;
 	}
 
 	input_stat.complete_continue = 0;
