@@ -169,6 +169,7 @@ static void do_completion(void);
 static void draw_wild_menu(int op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
 static int draw_wild_popup(int *last_pos, int *pos, int *len);
+static int compute_wild_menu_height(void);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static int is_input_line_empty(void);
@@ -1210,9 +1211,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 {
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
-	const int max_height = getmaxy(stdscr) - getmaxy(status_bar)
-	                     - ui_stat_job_bar_height() - 1;
-	const int height = MIN(count, MIN(10, max_height));
+	const int height = compute_wild_menu_height();
 	size_t max_title_width;
 	int i, j;
 
@@ -1259,6 +1258,21 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	}
 
 	return i;
+}
+
+/* Computes height needed for wild menu (bar or popup).  Returns the height. */
+static int
+compute_wild_menu_height(void)
+{
+	if(!cfg.wild_popup)
+	{
+		return 1;
+	}
+
+	const int count = vle_compl_get_count() - 1;
+	const int max_height = getmaxy(stdscr) - getmaxy(status_bar)
+	                     - ui_stat_job_bar_height() - 1;
+	return MIN(count, MIN(10, max_height));
 }
 
 static void
