@@ -47,6 +47,10 @@
 	Added %Pl and %Pz macros for redirecting list of files to background
 	processes.  Thanks to PRESFIL.
 
+	Added %N macro to 'statusline' option, which adds a line break and
+	increases height of the status line.  Thanks to Jose Riha (a.k.a.
+	jose1711), qsmodo and jcarreja.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

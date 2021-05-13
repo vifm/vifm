@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 30, 2021" "vifm 0.11"
+.TH VIFM 1 "May 13, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4686,6 +4686,9 @@ Determines the content of the status line (the line right above command-line).
 Empty string means use same format like in previous versions.  Following macros
 are supported:
 .RS
+.IP \- 2
+%N \- line break (increases height of the status line accordingly), ignores
+%[ %] blocks
 .IP \- 2
 %t \- file name (considering value of the 'classify' option)
 .IP \- 2

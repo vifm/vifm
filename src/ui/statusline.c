@@ -52,6 +52,7 @@
 #include "colored_line.h"
 #include "ui.h"
 
+static void split_and_print_status_line(view_t *view, int width);
 static void update_stat_window_old(view_t *view, int lazy_redraw);
 static void refresh_window(WINDOW *win, int lazily);
 TSTATIC cline_t expand_status_line_macros(view_t *view, const char format[]);
@@ -60,6 +61,8 @@ static cline_t parse_view_macros(view_t *view, const char **format,
 static int expand_num(char buf[], size_t buf_len, int val);
 static const char * get_tip(void);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
+TSTATIC char * find_view_macro(const char **format, const char macros[],
+		char macro, int opt);
 static pthread_spinlock_t * get_job_bar_changed_lock(void);
 static void init_job_bar_changed_lock(void);
 static int is_job_bar_visible(void);
@@ -109,14 +112,38 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	werase(stat_win);
 	checked_wmove(stat_win, 0, 0);
 
-	cline_t result = expand_status_line_macros(view, cfg.status_line);
-	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
-	result.line = break_in_two(result.line, width, "%=");
-	result.attrs = break_in_two(result.attrs, width, "=");
-	cline_print(&result, stat_win, &cfg.cs.color[STATUS_LINE_COLOR]);
-	cline_dispose(&result);
-
+	split_and_print_status_line(view, width);
 	refresh_window(stat_win, lazy_redraw);
+}
+
+/* Splits status line format by %N macros and prints each on a separate line
+ * respecting %=. */
+static void
+split_and_print_status_line(view_t *view, int width)
+{
+	char *copy = strdup(cfg.status_line);
+
+	const char *status_line = copy;
+	int line = 0;
+	while(*status_line != '\0')
+	{
+		const char *current = status_line;
+		char *next = find_view_macro(&status_line, STATUS_LINE_MACROS, 'N', 0);
+		if(next != NULL)
+		{
+			*next = '\0';
+		}
+
+		cline_t result = expand_status_line_macros(view, current);
+		assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
+		result.line = break_in_two(result.line, width, "%=");
+		result.attrs = break_in_two(result.attrs, width, "=");
+		checked_wmove(stat_win, line++, 0);
+		cline_print(&result, stat_win, &cfg.cs.color[STATUS_LINE_COLOR]);
+		cline_dispose(&result);
+	}
+
+	free(copy);
 }
 
 /* Formats status line in the "old way" (before introduction of 'statusline'
@@ -236,6 +263,8 @@ static cline_t
 parse_view_macros(view_t *view, const char **format, const char macros[],
 		int opt)
 {
+	/* Mind that find_view_macro() needs to be in sync with this function. */
+
 	const dir_entry_t *const curr = get_current_entry(view);
 	cline_t result = cline_make();
 	char c;
@@ -634,13 +663,108 @@ ui_stat_height(void)
 		return 0;
 	}
 
-	int height = 1;
+	const char *status_line = cfg.status_line;
+
+	int height = 0;
+	do
+	{
+		++height;
+	}
+	while(find_view_macro(&status_line, STATUS_LINE_MACROS, 'N', 0) != NULL);
 
 	if(curr_stats.reusing_statusline)
 	{
 		return MIN(getmaxy(stat_win), height);
 	}
 	return height;
+}
+
+/* strstr() for format line.  Basically parse_view_macros() in dry mode.
+ * Returns position of a particular macro or NULL.  *format is updated to keep
+ * the state between successive calls. */
+TSTATIC char *
+find_view_macro(const char **format, const char macros[], char macro, int opt)
+{
+	/* Mind that parse_view_macros() needs to be in sync with this function. */
+
+	char c;
+	while((c = **format) != '\0')
+	{
+		const char *const next = ++*format;
+
+		if(c != '%' ||
+				(!char_is_one_of(macros, *next) && !isdigit(*next) &&
+				 *next != '=' && *next != 'N'))
+		{
+			continue;
+		}
+
+		if(*next == macro)
+		{
+			++*format;
+			return (char *)next - 1;
+		}
+
+		if(*next == '=' || *next == 'N')
+		{
+			++*format;
+			continue;
+		}
+
+		if(*next == '-')
+		{
+			++*format;
+		}
+
+		while(isdigit(**format))
+		{
+			++*format;
+		}
+		c = *(*format)++;
+
+		int ok = 1;
+
+		if(c == '[')
+		{
+			char *ptr = find_view_macro(format, macros, macro, 1);
+			if(ptr != NULL)
+			{
+				return ptr;
+			}
+		}
+		else if(c == ']')
+		{
+			if(opt)
+			{
+				return NULL;
+			}
+
+			/* Unmatched %]. */
+			ok = 0;
+		}
+		else if(c == '{')
+		{
+			const char *e = strchr(*format, '}');
+			if(e == NULL)
+			{
+				ok = 0;
+				break;
+			}
+
+			*format = e + 1;
+		}
+		else if(!char_is_one_of(macros, c))
+		{
+			ok = 0;
+		}
+
+		if(!ok)
+		{
+			*format = next;
+		}
+	}
+
+	return NULL;
 }
 
 void

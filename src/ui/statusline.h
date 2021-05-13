@@ -77,6 +77,8 @@ void ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
 #endif
 TSTATIC_DEFS(
 	cline_t expand_status_line_macros(struct view_t *view, const char format[]);
+	char * find_view_macro(const char **format, const char macros[], char macro,
+		int opt);
 )
 
 #endif /* VIFM__UI__STATUSLINE_H__ */
