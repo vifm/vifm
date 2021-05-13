@@ -2732,7 +2732,7 @@ The command macros may be used in user commands.
                                                                *vifm-%v*
   %v        same as %s, but splits vertically.
                                                                *vifm-%n*
-  %n        forbid using of terminal multiplexer to run the command.
+  %n        forbid use of terminal multiplexer to run the command.
                                                                *vifm-%i*
   %i        completely ignore command output.  For background jobs this
             suppresses error dialogs, while still storing errors
