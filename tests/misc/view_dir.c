@@ -11,6 +11,7 @@
 #include "../../src/ui/quickview.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
+#include "../../src/cfg/config.h"
 
 static char *saved_cwd;
 
@@ -223,6 +224,36 @@ TEST(symlinks_are_not_resolved_in_tree_preview, IF(not_windows))
 
 	assert_success(unlink(SANDBOX_PATH "/dir/link"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(top_tree_stats)
+{
+	int nlines;
+	FILE *fp;
+	char **lines;
+
+	cfg.top_tree_stats = 1;
+
+	assert_success(os_mkdir("dir", 0777));
+	assert_success(os_mkdir("dir/nested1", 0777));
+	assert_success(os_mkdir("dir/nested1/nested2", 0777));
+
+	fp = qv_view_dir("dir", INT_MAX);
+	lines = read_file_lines(fp, &nlines);
+
+	assert_int_equal(5, nlines);
+	assert_string_equal("2 directories, 0 files", lines[0]);
+	for (int i = 0; lines[1][i]; i++) assert_true(lines[1][i] == ' ');
+	assert_string_equal("dir/", lines[2]);
+	assert_string_equal("`-- nested1/", lines[3]);
+	assert_string_equal("    `-- nested2/", lines[4]);
+
+	free_string_array(lines, nlines);
+	fclose(fp);
+
+	assert_success(rmdir("dir/nested1/nested2"));
+	assert_success(rmdir("dir/nested1"));
+	assert_success(rmdir("dir"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

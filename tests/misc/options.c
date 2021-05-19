@@ -732,11 +732,13 @@ TEST(previewoptions)
 				CIT_COMMAND));
 	assert_int_equal(12345, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
+	assert_false(cfg.top_tree_stats);
 
 	assert_failure(exec_commands("set previewoptions=graphicsdelay:inf", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(12345, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
+	assert_false(cfg.top_tree_stats);
 	assert_string_equal("Failed to parse \"graphicsdelay\" value: inf",
 			vle_tb_get_data(vle_err));
 
@@ -744,6 +746,7 @@ TEST(previewoptions)
 				CIT_COMMAND));
 	assert_int_equal(12345, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
+	assert_false(cfg.top_tree_stats);
 	assert_string_equal("\"graphicsdelay\" can't be negative, got: -12345",
 			vle_tb_get_data(vle_err));
 
@@ -751,6 +754,7 @@ TEST(previewoptions)
 				&lwin, CIT_COMMAND));
 	assert_int_equal(12345, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
+	assert_false(cfg.top_tree_stats);
 	assert_string_equal("Unknown key for 'previewoptions' option: wtf",
 			vle_tb_get_data(vle_err));
 
@@ -758,10 +762,18 @@ TEST(previewoptions)
 				CIT_COMMAND));
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_true(cfg.hard_graphics_clear);
+	assert_false(cfg.top_tree_stats);
+
+	assert_success(exec_commands("set previewoptions=toptreestats", &lwin,
+				CIT_COMMAND));
+	assert_true(cfg.top_tree_stats);
+	assert_int_equal(0, cfg.graphics_delay);
+	assert_false(cfg.hard_graphics_clear);
 
 	assert_success(exec_commands("set previewoptions=", &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
+	assert_false(cfg.top_tree_stats);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

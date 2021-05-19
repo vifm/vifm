@@ -25,6 +25,7 @@
 #include <string.h> /* memmove() memset() strcmp() */
 #include <time.h> /* time_t time() */
 
+#include "cfg/config.h"
 #include "compat/os.h"
 #include "ui/cancellation.h"
 #include "ui/quickview.h"
@@ -55,6 +56,7 @@ typedef struct
 	int max_lines;     /* Number of lines requested. */
 	int complete;      /* Whether cache contains complete output of the viewer. */
 	int truncated;     /* Whether last line is truncated. */
+	int top_tree_stats;/* Value of toptreestats for this entry. */
 }
 vcache_entry_t;
 
@@ -336,6 +338,11 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
 		return 0;
 	}
 
+	if(is_dir(path) && (centry->top_tree_stats != cfg.top_tree_stats))
+	{
+		return 0;
+	}
+
 	return (centry->complete || centry->lines.nitems >= max_lines);
 }
 
@@ -523,8 +530,16 @@ get_data(vcache_entry_t *centry, const char **error)
 		int dir = is_dir(centry->path);
 
 		/* Binary mode is important on Windows. */
-		fp = dir ? qv_view_dir(centry->path, centry->max_lines)
-		         : os_fopen(centry->path, "rb");
+		if(dir)
+		{
+			centry->top_tree_stats = cfg.top_tree_stats;
+			fp = qv_view_dir(centry->path, centry->max_lines);
+		}
+		else
+		{
+			fp = os_fopen(centry->path, "rb");
+		}
+
 		if(fp == NULL)
 		{
 			*error = dir ? "Failed to list directory's contents"

@@ -335,6 +335,7 @@ static const char *lsoptions_enum[][2] = {
 static const char *previewoptions_vals[][2] = {
 	{ "graphicsdelay:",    "delay before drawing graphics" },
 	{ "hardgraphicsclear", "redraw screen to get rid of graphics" },
+	{ "toptreestats",      "show file counts on top of the tree" },
 };
 
 /* Possible values of 'suggestoptions'. */
@@ -1176,18 +1177,22 @@ init_millerview(optval_t *val)
 static void
 init_previewoptions(optval_t *val)
 {
-	static char buf[64];
+	static char buf[128];
 
 	size_t len = 0U;
 	buf[0] = '\0';
 
 	if(cfg.hard_graphics_clear)
 	{
-		(void)sstrappend(buf, &len, sizeof(buf), "hardgraphicsclear");
+		(void)sstrappend(buf, &len, sizeof(buf), "hardgraphicsclear,");
+	}
+	if(cfg.top_tree_stats)
+	{
+		(void)sstrappend(buf, &len, sizeof(buf), "toptreestats,");
 	}
 	if(cfg.graphics_delay != 0)
 	{
-		snprintf(buf + len, sizeof(buf) - len, "graphicsdelay:%d",
+		snprintf(buf + len, sizeof(buf) - len, "graphicsdelay:%d,",
 				cfg.graphics_delay);
 	}
 
@@ -2285,6 +2290,7 @@ previewoptions_handler(OPT_OP op, optval_t val)
 
 	int graphics_delay = 0;
 	int hard_graphics_clear = 0;
+	int top_tree_stats = 0;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -2308,6 +2314,10 @@ previewoptions_handler(OPT_OP op, optval_t val)
 		{
 			hard_graphics_clear = 1;
 		}
+		else if(strcmp(part, "toptreestats") == 0)
+		{
+			top_tree_stats = 1;
+		}
 		else
 		{
 			break_at(part, ':');
@@ -2322,6 +2332,10 @@ previewoptions_handler(OPT_OP op, optval_t val)
 	{
 		cfg.graphics_delay = graphics_delay;
 		cfg.hard_graphics_clear = hard_graphics_clear;
+		if(top_tree_stats != cfg.top_tree_stats) {
+			text_option_changed();
+		}
+		cfg.top_tree_stats = top_tree_stats;
 	}
 
 	/* In case of error, restore previous value, otherwise reload it anyway to

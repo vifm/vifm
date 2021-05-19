@@ -59,6 +59,8 @@
 #include "statusbar.h"
 #include "ui.h"
 
+#define NSPACES 64
+
 /* Maximum number of lines used for preview. */
 enum { MAX_PREVIEW_LINES = 256 };
 
@@ -443,24 +445,31 @@ qv_view_dir(const char path[], int max_lines)
 {
 	FILE *fp = os_tmpfile();
 
+	/* Artificially inflate max_lines so that tree traversal does not stop. */
+	if(cfg.top_tree_stats)
+	{
+		max_lines = INT_MAX;
+	}
+	/* Increase by one to cause cached data to be recognized as incomplete
+	 * when max_lines isn't enough. */
+	else if(max_lines != INT_MAX)
+	{
+		max_lines++;
+	}
+
 	if(fp != NULL)
 	{
 		tree_print_state_t s = {
 			.fp = fp,
-			 /* Increase by one to cause cached data to be recognized as incomplete
-			  * when max_lines isn't enough. */
-			.max = (max_lines == INT_MAX ? max_lines : max_lines + 1),
+			.max = max_lines,
 		};
 
-		if(print_dir_tree(&s, path, 0) == 0 && s.n != 0)
-		{
-			/* Print summary only if we visited the whole subtree. */
-			fprintf(fp, "%s\n%d director%s, %d file%s",
-					ui_cancellation_requested() ? "(cancelled)\n" : "",
-					s.ndirs, (s.ndirs == 1) ? "y" : "ies",
-					s.nfiles, (s.nfiles == 1) ? "" : "s");
-		}
-		else if(ui_cancellation_requested())
+		/* Spare blank line on the top of the view to put the 
+		 * (files, directories) count in case "toptreestats" option is set. */
+		fprintf(fp, "%*s\n", NSPACES, "");
+
+		if(!(print_dir_tree(&s, path, 0) == 0 && s.n != 0) &&
+				ui_cancellation_requested())
 		{
 			fputs("(cancelled)", fp);
 		}
@@ -472,7 +481,25 @@ qv_view_dir(const char path[], int max_lines)
 		}
 		else
 		{
-			fseek(fp, 0, SEEK_SET);
+			if (cfg.top_tree_stats)
+			{
+				/* Print count on the top, spare line */
+				fseek(fp, 0, SEEK_SET);
+				fprintf(fp, "%s%d director%s, %d file%s\n",
+						ui_cancellation_requested() ? "(cancelled)\n" : "",
+						s.ndirs, (s.ndirs == 1) ? "y" : "ies",
+						s.nfiles, (s.nfiles == 1) ? "" : "s");
+				fseek(fp, 0, SEEK_SET);
+			}
+			else
+			{
+				/* Print count at the bottom and "hide" the spare line away. */
+				fprintf(fp, "\n%s%d director%s, %d file%s\n",
+						ui_cancellation_requested() ? "(cancelled)\n" : "",
+						s.ndirs, (s.ndirs == 1) ? "y" : "ies",
+						s.nfiles, (s.nfiles == 1) ? "" : "s");
+				fseek(fp, NSPACES+1, SEEK_SET);
+			}
 		}
 	}
 	return fp;
@@ -524,8 +551,8 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 				reached_limit = 1;
 			}
 		}
-		/* If is_dir_empty() returns non-zero than we know that it's directory and
-		 * no additional checks are needed. */
+		/* If is_dir_empty() returns non-zero then we know that it's directory
+		 * and no additional checks are needed. */
 		else if(!is_dir_empty(full_path))
 		{
 			if(last_entry)
