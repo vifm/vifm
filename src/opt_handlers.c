@@ -2332,7 +2332,8 @@ previewoptions_handler(OPT_OP op, optval_t val)
 	{
 		cfg.graphics_delay = graphics_delay;
 		cfg.hard_graphics_clear = hard_graphics_clear;
-		if(top_tree_stats != cfg.top_tree_stats) {
+		if(top_tree_stats != cfg.top_tree_stats)
+		{
 			text_option_changed();
 		}
 		cfg.top_tree_stats = top_tree_stats;

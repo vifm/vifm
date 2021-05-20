@@ -299,7 +299,7 @@ typedef struct config_t
 	int graphics_delay;
 	/* Redraw screen to get rid of graphics. */
 	int hard_graphics_clear;
-	/* Show file counts on top of the tree */
+	/* Show file counts on top of the tree. */
 	int top_tree_stats;
 
 	int timeout_len;     /* Maximum period on waiting for the input. */

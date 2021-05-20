@@ -45,7 +45,7 @@
 enum { MAX_KILL_DELAY_S = 2 };
 
 /* Cached output of a specific previewer for a specific file. */
-typedef struct
+typedef struct vcache_entry_t
 {
 	char *path;        /* Full path to the file. */
 	char *viewer;      /* Viewer of the file. */
@@ -54,9 +54,13 @@ typedef struct
 	strlist_t lines;   /* Top lines of preview contents. */
 	time_t kill_timer; /* Since when we're waiting for the job to die or zero. */
 	int max_lines;     /* Number of lines requested. */
-	int complete;      /* Whether cache contains complete output of the viewer. */
-	int truncated;     /* Whether last line is truncated. */
-	int top_tree_stats;/* Value of toptreestats for this entry. */
+
+	/* Whether cache contains complete output of the viewer. */
+	int complete;
+	/* Whether last line is truncated. */
+	int truncated;
+	/* Value of toptreestats for this entry. */
+	int top_tree_stats;
 }
 vcache_entry_t;
 
@@ -338,7 +342,7 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
 		return 0;
 	}
 
-	if(is_dir(path) && (centry->top_tree_stats != cfg.top_tree_stats))
+	if(centry->top_tree_stats != cfg.top_tree_stats && is_dir(path))
 	{
 		return 0;
 	}
@@ -529,7 +533,6 @@ get_data(vcache_entry_t *centry, const char **error)
 	{
 		int dir = is_dir(centry->path);
 
-		/* Binary mode is important on Windows. */
 		if(dir)
 		{
 			centry->top_tree_stats = cfg.top_tree_stats;
@@ -537,6 +540,7 @@ get_data(vcache_entry_t *centry, const char **error)
 		}
 		else
 		{
+			/* Binary mode is important on Windows. */
 			fp = os_fopen(centry->path, "rb");
 		}
 

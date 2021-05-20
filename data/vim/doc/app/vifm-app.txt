@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 13
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3605,7 +3605,7 @@ view mode).
     item               default  meaning ~
     graphicsdelay:num  0        delay before drawing graphics (microseconds)
     hardgraphicsclear  unset    redraw screen to get rid of graphics
-    toptreestats       unset    show file counts before the tree in quick view
+    toptreestats       unset    show file counts before the tree
 
 graphicsdelay is needed if terminal requires some timeout before it can
 draw graphics (otherwise it gets lost).

@@ -7,11 +7,11 @@
 
 #include <test-utils.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
-#include "../../src/cfg/config.h"
 
 static char *saved_cwd;
 
