@@ -164,7 +164,7 @@ int entry_is_link(const char path[], const struct dirent *dentry);
 /* Uses dentry or full path to check file type.  Returns non-zero for
  * directories, otherwise zero is returned.  Symbolic links are _not_
  * dereferenced. */
-int entry_is_dir(const char full_path[], const struct dirent* dentry);
+int entry_is_dir(const char full_path[], const struct dirent *dentry);
 
 /* Uses dentry or path to check file type.  Assumes that file is located in
  * current working directory.  Returns non-zero for directories, otherwise zero

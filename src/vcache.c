@@ -25,6 +25,7 @@
 #include <string.h> /* memmove() memset() strcmp() */
 #include <time.h> /* time_t time() */
 
+#include "cfg/config.h"
 #include "compat/os.h"
 #include "ui/cancellation.h"
 #include "ui/quickview.h"
@@ -44,7 +45,7 @@
 enum { MAX_KILL_DELAY_S = 2 };
 
 /* Cached output of a specific previewer for a specific file. */
-typedef struct
+typedef struct vcache_entry_t
 {
 	char *path;        /* Full path to the file. */
 	char *viewer;      /* Viewer of the file. */
@@ -53,8 +54,13 @@ typedef struct
 	strlist_t lines;   /* Top lines of preview contents. */
 	time_t kill_timer; /* Since when we're waiting for the job to die or zero. */
 	int max_lines;     /* Number of lines requested. */
-	int complete;      /* Whether cache contains complete output of the viewer. */
-	int truncated;     /* Whether last line is truncated. */
+
+	/* Whether cache contains complete output of the viewer. */
+	int complete;
+	/* Whether last line is truncated. */
+	int truncated;
+	/* Value of toptreestats for this entry. */
+	int top_tree_stats;
 }
 vcache_entry_t;
 
@@ -336,6 +342,11 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
 		return 0;
 	}
 
+	if(centry->top_tree_stats != cfg.top_tree_stats && is_dir(path))
+	{
+		return 0;
+	}
+
 	return (centry->complete || centry->lines.nitems >= max_lines);
 }
 
@@ -522,9 +533,17 @@ get_data(vcache_entry_t *centry, const char **error)
 	{
 		int dir = is_dir(centry->path);
 
-		/* Binary mode is important on Windows. */
-		fp = dir ? qv_view_dir(centry->path, centry->max_lines)
-		         : os_fopen(centry->path, "rb");
+		if(dir)
+		{
+			centry->top_tree_stats = cfg.top_tree_stats;
+			fp = qv_view_dir(centry->path, centry->max_lines);
+		}
+		else
+		{
+			/* Binary mode is important on Windows. */
+			fp = os_fopen(centry->path, "rb");
+		}
+
 		if(fp == NULL)
 		{
 			*error = dir ? "Failed to list directory's contents"
