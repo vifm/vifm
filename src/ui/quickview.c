@@ -458,6 +458,7 @@ qv_view_dir(const char path[], int max_lines)
 		 * when max_lines isn't enough. */
 		.max = (max_lines == INT_MAX ? max_lines : max_lines + 1),
 		.full_stats = cfg.top_tree_stats,
+		.n = (cfg.top_tree_stats ? 2 : 0),
 	};
 
 	/* Spare blank line on the top of the view to put the (files, directories)
@@ -519,6 +520,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 	if(enter_dir(s, path, last) != 0)
 	{
 		free_string_array(lst, len);
+		collect_subtree_stats(s, path);
 		return 1;
 	}
 
@@ -581,6 +583,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 			}
 			else if(is_dir(full_path))
 			{
+				++s->ndirs;
 				collect_subtree_stats(s, full_path);
 			}
 			else
@@ -597,12 +600,11 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 	return reached_limit;
 }
 
-/* Collects stats only in a much faster way than traversal for printing. */
+/* Collects stats for items of a directory in a much faster way than traversal
+ * for printing. */
 static void
 collect_subtree_stats(tree_print_state_t *s, const char path[])
 {
-	++s->ndirs;
-
 	DIR *dir = os_opendir(path);
 	if(dir == NULL)
 	{
@@ -620,6 +622,7 @@ collect_subtree_stats(tree_print_state_t *s, const char path[])
 		char *const full_path = format_str("%s/%s", path, d->d_name);
 		if(entry_is_dir(full_path, d))
 		{
+			++s->ndirs;
 			collect_subtree_stats(s, full_path);
 		}
 		else if(is_dirent_targets_dir(full_path, d))

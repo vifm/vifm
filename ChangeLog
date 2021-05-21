@@ -25,6 +25,9 @@
 	Added 'previewoptions' option to allow tweaking graphics preview a bit.
 	Thanks to Joshua Jensch (a.k.a., patroclos) and flux242.
 
+	Added "toptreestats" value to 'previewoptions' option, which makes stats
+	appear before the tree.  Patch by qsmodo.
+
 	Added :plugin command that manages plugins.
 
 	Added network mount and `subst` targets to :volumes menu.  Patch by Phil

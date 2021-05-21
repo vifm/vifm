@@ -8,6 +8,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/utils/fs.h"
@@ -228,6 +229,7 @@ TEST(symlinks_are_not_resolved_in_tree_preview, IF(not_windows))
 
 TEST(top_tree_stats)
 {
+	int i;
 	int nlines;
 	FILE *fp;
 	char **lines;
@@ -243,7 +245,10 @@ TEST(top_tree_stats)
 
 	assert_int_equal(5, nlines);
 	assert_string_equal("2 directories, 0 files", lines[0]);
-	for (int i = 0; lines[1][i]; i++) assert_true(lines[1][i] == ' ');
+	for(i = 0; lines[1][i] != '\0'; ++i)
+	{
+		assert_true(lines[1][i] == ' ');
+	}
 	assert_string_equal("dir/", lines[2]);
 	assert_string_equal("`-- nested1/", lines[3]);
 	assert_string_equal("    `-- nested2/", lines[4]);
@@ -254,6 +259,39 @@ TEST(top_tree_stats)
 	assert_success(rmdir("dir/nested1/nested2"));
 	assert_success(rmdir("dir/nested1"));
 	assert_success(rmdir("dir"));
+
+	cfg.top_tree_stats = 0;
+}
+
+TEST(top_tree_stats_in_small_window)
+{
+	int i;
+	int nlines;
+	FILE *fp;
+	char **lines;
+	char dir_path[PATH_MAX + 1];
+
+	cfg.top_tree_stats = 1;
+
+	make_abs_path(dir_path, sizeof(dir_path), TEST_DATA_PATH, "tree", saved_cwd);
+	fp = qv_view_dir(dir_path, 5);
+	lines = read_file_lines(fp, &nlines);
+
+	assert_int_equal(6, nlines);
+	assert_string_equal("5 directories, 7 files", lines[0]);
+	for(i = 0; lines[1][i] != '\0'; ++i)
+	{
+		assert_true(lines[1][i] == ' ');
+	}
+	assert_string_equal("tree/", lines[2]);
+	assert_string_equal("|-- .hidden", lines[3]);
+	assert_string_equal("|-- dir1/", lines[4]);
+	assert_string_equal("|   |-- dir2/", lines[5]);
+
+	free_string_array(lines, nlines);
+	fclose(fp);
+
+	cfg.top_tree_stats = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
