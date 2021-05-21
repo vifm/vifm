@@ -86,6 +86,7 @@ typedef struct
 	int ndirs;         /* Number of seen directories. */
 	int nfiles;        /* Number of seen files. */
 	int max;           /* Maximum line number. */
+	int full_stats;    /* Collect statistics for the whole tree. */
 	char prefix[4096]; /* Prefix character for each tree level. */
 }
 tree_print_state_t;
@@ -102,6 +103,7 @@ static void update_cache(quickview_cache_t *cache, const char path[],
 static strlist_t get_lines(const quickview_cache_t *cache);
 static void print_tree_stats(tree_print_state_t *s);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
+static void collect_subtree_stats(tree_print_state_t *s, const char path[]);
 static int enter_dir(tree_print_state_t *s, const char path[], int last);
 static int visit_file(tree_print_state_t *s, const char path[], int last);
 static int visit_link(tree_print_state_t *s, const char path[], int last,
@@ -450,21 +452,12 @@ qv_view_dir(const char path[], int max_lines)
 		return NULL;
 	}
 
-	/* Artificially inflate max_lines so that tree traversal does not stop. */
-	if(cfg.top_tree_stats)
-	{
-		max_lines = INT_MAX;
-	}
-	/* Increase by one to cause cached data to be recognized as incomplete
-	 * when max_lines isn't enough. */
-	else if(max_lines != INT_MAX)
-	{
-		++max_lines;
-	}
-
 	tree_print_state_t s = {
 		.fp = fp,
-		.max = max_lines,
+		/* Increase by one to cause cached data to be recognized as incomplete
+		 * when max_lines isn't enough. */
+		.max = (max_lines == INT_MAX ? max_lines : max_lines + 1),
+		.full_stats = cfg.top_tree_stats,
 	};
 
 	/* Spare blank line on the top of the view to put the (files, directories)
@@ -516,15 +509,10 @@ print_tree_stats(tree_print_state_t *s)
 static int
 print_dir_tree(tree_print_state_t *s, const char path[], int last)
 {
-	int i;
-	int reached_limit;
-
 	int len;
 	char **lst = list_sorted_files(path, &len);
-
 	if(len < 0)
 	{
-		free_string_array(lst, len);
 		return 1;
 	}
 
@@ -534,10 +522,10 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 		return 1;
 	}
 
-	reached_limit = 0;
+	int i;
+	int reached_limit = 0;
 	for(i = 0; i < len && !reached_limit && !ui_cancellation_requested(); ++i)
 	{
-		char link_target[PATH_MAX + 1];
 		const int last_entry = (i == len - 1);
 		char *const full_path = format_str("%s/%s", path, lst[i]);
 
@@ -550,6 +538,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 			++s->nfiles;
 		}
 
+		char link_target[PATH_MAX + 1];
 		if(get_link_target(full_path, link_target, sizeof(link_target)) == 0)
 		{
 			if(visit_link(s, full_path, last_entry, link_target) != 0)
@@ -570,18 +559,80 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 				reached_limit = 1;
 			}
 		}
-		else if(visit_file(s, full_path, last_entry) != 0)
+		else
 		{
-			reached_limit = 1;
+			if(visit_file(s, full_path, last_entry) != 0)
+			{
+				reached_limit = 1;
+			}
 		}
 
 		free(full_path);
 	}
-	free_string_array(lst, len);
 
+	if(reached_limit && s->full_stats)
+	{
+		for(; i < len && !ui_cancellation_requested(); ++i)
+		{
+			char *const full_path = format_str("%s/%s", path, lst[i]);
+			if(is_symlink(full_path))
+			{
+				++s->nfiles;
+			}
+			else if(is_dir(full_path))
+			{
+				collect_subtree_stats(s, full_path);
+			}
+			else
+			{
+				++s->nfiles;
+			}
+			free(full_path);
+		}
+	}
+
+	free_string_array(lst, len);
 	leave_dir(s);
 
 	return reached_limit;
+}
+
+/* Collects stats only in a much faster way than traversal for printing. */
+static void
+collect_subtree_stats(tree_print_state_t *s, const char path[])
+{
+	++s->ndirs;
+
+	DIR *dir = os_opendir(path);
+	if(dir == NULL)
+	{
+		return;
+	}
+
+	struct dirent *d;
+	while((d = os_readdir(dir)) != NULL)
+	{
+		if(is_builtin_dir(d->d_name))
+		{
+			continue;
+		}
+
+		char *const full_path = format_str("%s/%s", path, d->d_name);
+		if(entry_is_dir(full_path, d))
+		{
+			collect_subtree_stats(s, full_path);
+		}
+		else if(is_dirent_targets_dir(full_path, d))
+		{
+			++s->ndirs;
+		}
+		else
+		{
+			++s->nfiles;
+		}
+		free(full_path);
+	}
+	os_closedir(dir);
 }
 
 /* Handles entering directory on directory tree traversal.  Returns non-zero to
@@ -599,7 +650,7 @@ enter_dir(tree_print_state_t *s, const char path[], int last)
 	indent_prefix(s);
 	set_prefix_char(s, '|');
 
-	return ++s->n >= s->max;
+	return (++s->n >= s->max);
 }
 
 /* Handles visiting file on directory tree traversal.  Returns non-zero to
@@ -610,7 +661,7 @@ visit_file(tree_print_state_t *s, const char path[], int last)
 	set_prefix_char(s, last ? '`' : '|');
 	print_tree_entry(s, path, 1);
 
-	return ++s->n >= s->max;
+	return (++s->n >= s->max);
 }
 
 /* Handles visiting symbolic link on directory tree traversal.  Returns non-zero
@@ -625,7 +676,7 @@ visit_link(tree_print_state_t *s, const char path[], int last,
 	fputs(target, s->fp);
 	fputc('\n', s->fp);
 
-	return ++s->n >= s->max;
+	return (++s->n >= s->max);
 }
 
 /* Handles leaving directory on directory tree traversal. */
