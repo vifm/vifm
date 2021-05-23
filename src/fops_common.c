@@ -846,26 +846,11 @@ fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
 					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
 		}
 
-		if(!load_always)
+		if(!load_always && string_array_equal(orig, count, list, *nlines))
 		{
-			size_t i = count - 1U;
-			if((size_t)*nlines == count)
-			{
-				for(i = 0U; i < count; ++i)
-				{
-					if(strcmp(list[i], orig[i]) != 0)
-					{
-						break;
-					}
-				}
-			}
-
-			if(i == count)
-			{
-				free_string_array(list, *nlines);
-				list = NULL;
-				*nlines = 0;
-			}
+			free_string_array(list, *nlines);
+			list = NULL;
+			*nlines = 0;
 		}
 	}
 
