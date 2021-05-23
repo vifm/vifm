@@ -32,9 +32,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
-#include <string.h> /* memset() strcat() strcmp() strcasecmp() strdup()
-                       strncmp() strncasecmp() strncat() strchr() strcpy()
-                       strlen() strrchr() */
+#include <string.h> /* memset() strcat() strcmp() strdup() strncmp() strncat()
+                       strchr() strcpy() strlen() strrchr() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
