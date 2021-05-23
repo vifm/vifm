@@ -117,6 +117,15 @@ typedef struct
 }
 progress_data_t;
 
+/* Information about external editing. */
+typedef struct
+{
+	char *location;  /* Path of the operation. */
+	strlist_t files; /* List of files. */
+	strlist_t lines; /* Editing result. */
+}
+ext_edit_t;
+
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
 static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
@@ -130,7 +139,14 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
+static strlist_t ext_edit_prepare(ext_edit_t *ext_edit, char *files[],
+		int files_len);
+static int ext_edit_is_reedit(const ext_edit_t *ext_edit, char *files[],
+		int files_len);
+static strlist_t ext_edit_reedit(ext_edit_t *ext_edit);
 static strlist_t prepare_edit_list(char *list[], int count);
+static void ext_edit_done(ext_edit_t *ext_edit, char *files[],
+		int files_len, char *edited[], int *edited_len);
 static void cleanup_edit_list(char *list[], int *count);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
@@ -816,12 +832,14 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 char **
 fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 {
+	static ext_edit_t ext_edit;
+
 	*edited_len = 0;
 
 	char rename_file[PATH_MAX + 1];
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
-	strlist_t prepared = prepare_edit_list(orig, orig_len);
+	strlist_t prepared = ext_edit_prepare(&ext_edit, orig, orig_len);
 
 	/* Allow temporary file to be only readable and writable by current user. */
 	mode_t saved_umask = umask(~0600);
@@ -856,7 +874,7 @@ fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 		return NULL;
 	}
 
-	cleanup_edit_list(result, &result_len);
+	ext_edit_done(&ext_edit, orig, orig_len, result, &result_len);
 
 	if(!load_always && string_array_equal(orig, orig_len, result, result_len))
 	{
@@ -865,6 +883,47 @@ fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 	}
 
 	*edited_len = result_len;
+	return result;
+}
+
+/* Produces list of files to present the user with, which might be result of
+ * previous editing.  Returns the list. */
+static strlist_t
+ext_edit_prepare(ext_edit_t *ext_edit, char *files[], int files_len)
+{
+	if(ext_edit_is_reedit(ext_edit, files, files_len))
+	{
+		return ext_edit_reedit(ext_edit);
+	}
+
+	return prepare_edit_list(files, files_len);
+}
+
+/* Checks whether this is an instance of re-editing.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+ext_edit_is_reedit(const ext_edit_t *ext_edit, char *files[], int files_len)
+{
+	char cwd[PATH_MAX + 1];
+	if(get_cwd(cwd, sizeof(cwd)) != cwd)
+	{
+		cwd[0] = '\0';
+	}
+
+	return ext_edit->location != NULL
+	    && stroscmp(ext_edit->location, cwd) == 0
+	    && string_array_equal(files, files_len, ext_edit->files.items,
+	                          ext_edit->files.nitems);
+}
+
+/* Produces buffer contents for re-editing.  Returns the contents. */
+static strlist_t
+ext_edit_reedit(ext_edit_t *ext_edit)
+{
+	strlist_t result;
+	result.items = copy_string_array(ext_edit->lines.items,
+			ext_edit->lines.nitems);
+	result.nitems = ext_edit->lines.nitems;
 	return result;
 }
 
@@ -891,6 +950,30 @@ prepare_edit_list(char *list[], int count)
 	}
 
 	return prepared;
+}
+
+/* Performs caching and post-editing processing of user edited file. */
+static void
+ext_edit_done(ext_edit_t *ext_edit, char *files[], int files_len,
+		char *edited[], int *edited_len)
+{
+	update_string(&ext_edit->location, NULL);
+
+	char cwd[PATH_MAX + 1];
+	if(get_cwd(cwd, sizeof(cwd)) == cwd)
+	{
+		replace_string(&ext_edit->location, cwd);
+	}
+
+	free_string_array(ext_edit->files.items, ext_edit->files.nitems);
+	free_string_array(ext_edit->lines.items, ext_edit->lines.nitems);
+
+	ext_edit->files.items = copy_string_array(files, files_len);
+	ext_edit->files.nitems = files_len;
+	ext_edit->lines.items = copy_string_array(edited, *edited_len);
+	ext_edit->lines.nitems = *edited_len;
+
+	cleanup_edit_list(edited, edited_len);
 }
 
 /* Cleans up edited list preparing it for processing. */

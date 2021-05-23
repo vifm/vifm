@@ -164,6 +164,15 @@ TEST(leading_chars_and_comments, IF(not_windows))
 	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
 }
 
+TEST(re_editing, IF(not_windows))
+{
+	char *orig[] = { "first" };
+	const char *edited = "second";
+	char *final[] = { "second" };
+	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), NULL, final, ARRAY_LEN(final));
+}
+
 static void
 check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
 		int expected_len)
@@ -171,20 +180,22 @@ check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
-	make_file("edited", edited);
-
 	update_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 
 	create_executable("script");
-	make_file("script", "#!/bin/sh\n"
-	                    "mv edited $2\n");
+	if(edited != NULL)
+	{
+		make_file("edited", edited);
+		make_file("script", "#!/bin/sh\n"
+		                    "mv edited $2\n");
+	}
 
 	curr_stats.exec_env_type = EET_EMULATOR;
 	update_string(&cfg.vi_command, "./script");
 
 	int actual_len;
-	char **actual = fops_edit_list(orig_len, orig, &actual_len, 0);
+	char **actual = fops_edit_list(orig_len, orig, &actual_len, edited == NULL);
 	assert_int_equal(expected_len, actual_len);
 
 	int i;
