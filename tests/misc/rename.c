@@ -147,8 +147,21 @@ TEST(file_name_list_can_be_reread)
 TEST(file_name_list_can_be_changed, IF(not_windows))
 {
 	char *orig[] = { "aaa" };
+	const char *edited = "bbb";
 	char *final[] = { "bbb" };
-	check_editing(orig, ARRAY_LEN(orig), "bbb", final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
+}
+
+TEST(leading_chars_and_comments, IF(not_windows))
+{
+	char *orig[] = { "#aa", "\\escapeme" };
+	const char *edited = "\\\\aa\n"
+	                     "#commenthere\n"
+	                     "\\#escapeme\n"
+	                     "# and some\n"
+	                     "# more here\n";
+	char *final[] = { "\\aa", "#escapeme" };
+	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
 }
 
 static void

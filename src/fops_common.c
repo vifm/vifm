@@ -37,7 +37,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
-#include <string.h> /* memcmp() memset() strcat() strcmp() strdup() strlen() */
+#include <string.h> /* memmove() memset() strcat() strcmp() strdup() strlen() */
 #include <time.h> /* clock_gettime() */
 
 #include "cfg/config.h"
@@ -120,7 +120,8 @@ progress_data_t;
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
 static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
-static void update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim);
+static void update_progress_bar(progress_data_t *pdata,
+		const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
@@ -129,6 +130,8 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
+static strlist_t prepare_edit_list(char *list[], int count);
+static void cleanup_edit_list(char *list[], int *count);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
 
@@ -818,11 +821,15 @@ fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 	char rename_file[PATH_MAX + 1];
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
+	strlist_t prepared = prepare_edit_list(orig, orig_len);
+
 	/* Allow temporary file to be only readable and writable by current user. */
 	mode_t saved_umask = umask(~0600);
-	const int write_error = (write_file_of_lines(rename_file, orig,
-				orig_len) != 0);
+	const int write_error = (write_file_of_lines(rename_file, prepared.items,
+				prepared.nitems) != 0);
 	(void)umask(saved_umask);
+
+	free_string_array(prepared.items, prepared.nitems);
 
 	if(write_error)
 	{
@@ -849,6 +856,8 @@ fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 		return NULL;
 	}
 
+	cleanup_edit_list(result, &result_len);
+
 	if(!load_always && string_array_equal(orig, orig_len, result, result_len))
 	{
 		free_string_array(result, result_len);
@@ -857,6 +866,54 @@ fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 
 	*edited_len = result_len;
 	return result;
+}
+
+/* Prepares file list for editing by the user.  Returns a modified list to be
+ * processed. */
+static strlist_t
+prepare_edit_list(char *list[], int count)
+{
+	strlist_t prepared = {};
+
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		if(list[i][0] == '#' || list[i][0] == '\\')
+		{
+			prepared.nitems = put_into_string_array(&prepared.items, prepared.nitems,
+					format_str("\\%s", list[i]));
+		}
+		else
+		{
+			prepared.nitems = add_to_string_array(&prepared.items, prepared.nitems,
+					list[i]);
+		}
+	}
+
+	return prepared;
+}
+
+/* Cleans up edited list preparing it for processing. */
+static void
+cleanup_edit_list(char *list[], int *count)
+{
+	int i, j = 0;
+	for(i = 0; i < *count; ++i)
+	{
+		if(list[i][0] == '#')
+		{
+			free(list[i]);
+			continue;
+		}
+
+		if(list[i][0] == '\\')
+		{
+			memmove(list[i], list[i] + 1, strlen(list[i] + 1) + 1);
+		}
+		list[j++] = list[i];
+	}
+
+	*count = j;
 }
 
 void
