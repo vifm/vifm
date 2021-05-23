@@ -813,49 +813,49 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 char **
 fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
 {
-	char rename_file[PATH_MAX + 1];
-	char **list = NULL;
-	mode_t saved_umask;
-
 	*nlines = 0;
 
+	char rename_file[PATH_MAX + 1];
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
 	/* Allow temporary file to be only readable and writable by current user. */
-	saved_umask = umask(~0600);
-	if(write_file_of_lines(rename_file, orig, count) != 0)
+	mode_t saved_umask = umask(~0600);
+	const int write_error = (write_file_of_lines(rename_file, orig, count) != 0);
+	(void)umask(saved_umask);
+
+	if(write_error)
 	{
-		(void)umask(saved_umask);
 		show_error_msgf("Error Getting List Of Renames",
 				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
 		return NULL;
 	}
-	(void)umask(saved_umask);
 
 	if(vim_view_file(rename_file, -1, -1, 0) != 0)
 	{
+		unlink(rename_file);
 		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
 				rename_file);
-	}
-	else
-	{
-		list = read_file_of_lines(rename_file, nlines);
-		if(list == NULL)
-		{
-			show_error_msgf("Error Getting List Of Renames",
-					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
-		}
-
-		if(!load_always && string_array_equal(orig, count, list, *nlines))
-		{
-			free_string_array(list, *nlines);
-			list = NULL;
-			*nlines = 0;
-		}
+		return NULL;
 	}
 
+	int result_len;
+	char **result = read_file_of_lines(rename_file, &result_len);
 	unlink(rename_file);
-	return list;
+	if(result == NULL)
+	{
+		show_error_msgf("Error Getting List Of Renames",
+				"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
+		return NULL;
+	}
+
+	if(!load_always && string_array_equal(orig, count, result, result_len))
+	{
+		free_string_array(result, result_len);
+		return NULL;
+	}
+
+	*nlines = result_len;
+	return result;
 }
 
 void
