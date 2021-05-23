@@ -1,6 +1,5 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* size_t */
@@ -17,6 +16,9 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/fops_common.h"
 #include "../../src/fops_rename.h"
+
+static void check_editing(char *orig[], int orig_len, const char edited[],
+		char *expected[], int expected_len);
 
 SETUP_ONCE()
 {
@@ -144,40 +146,46 @@ TEST(file_name_list_can_be_reread)
 
 TEST(file_name_list_can_be_changed, IF(not_windows))
 {
-	char *list[] = { "aaa" };
-	int nlines;
-	char **new_list;
-	FILE *fp;
+	char *orig[] = { "aaa" };
+	char *final[] = { "bbb" };
+	check_editing(orig, ARRAY_LEN(orig), "bbb", final, ARRAY_LEN(final));
+}
 
+static void
+check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
+		int expected_len)
+{
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
+
+	make_file("edited", edited);
 
 	update_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 
-	fp = fopen("script", "w");
-	fputs("#!/bin/sh\n", fp);
-	fputs("sed 'y/a/b/' < $2 > $2_out\n", fp);
-	fputs("mv $2_out $2\n", fp);
-	fclose(fp);
-	assert_success(chmod("script", 0777));
+	create_executable("script");
+	make_file("script", "#!/bin/sh\n"
+	                    "mv edited $2\n");
 
 	curr_stats.exec_env_type = EET_EMULATOR;
 	update_string(&cfg.vi_command, "./script");
 
-	new_list = fops_edit_list(ARRAY_LEN(list), list, &nlines, 0);
-	assert_int_equal(1, nlines);
-	if(nlines >= 1)
+	int actual_len;
+	char **actual = fops_edit_list(orig_len, orig, &actual_len, 0);
+	assert_int_equal(expected_len, actual_len);
+
+	int i;
+	for(i = 0; i < MIN(expected_len, actual_len); ++i)
 	{
-		assert_string_equal("bbb", new_list[0]);
+		assert_string_equal(expected[i], actual[i]);
 	}
-	free_string_array(new_list, nlines);
+
+	free_string_array(actual, actual_len);
 
 	update_string(&cfg.vi_command, NULL);
-
 	update_string(&cfg.shell, NULL);
 
-	assert_success(unlink("script"));
+	remove_file("script");
 
 	restore_cwd(saved_cwd);
 }
