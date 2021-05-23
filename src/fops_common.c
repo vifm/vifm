@@ -811,16 +811,17 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 }
 
 char **
-fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
+fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 {
-	*nlines = 0;
+	*edited_len = 0;
 
 	char rename_file[PATH_MAX + 1];
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
 	/* Allow temporary file to be only readable and writable by current user. */
 	mode_t saved_umask = umask(~0600);
-	const int write_error = (write_file_of_lines(rename_file, orig, count) != 0);
+	const int write_error = (write_file_of_lines(rename_file, orig,
+				orig_len) != 0);
 	(void)umask(saved_umask);
 
 	if(write_error)
@@ -848,13 +849,13 @@ fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
 		return NULL;
 	}
 
-	if(!load_always && string_array_equal(orig, count, result, result_len))
+	if(!load_always && string_array_equal(orig, orig_len, result, result_len))
 	{
 		free_string_array(result, result_len);
 		return NULL;
 	}
 
-	*nlines = result_len;
+	*edited_len = result_len;
 	return result;
 }
 
