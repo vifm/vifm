@@ -1,6 +1,6 @@
 " Filetype plugin for vifm rename buffer
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: October 05, 2014
+" Last Change: May 24, 2021
 
 if exists("b:did_ftplugin")
 	finish
@@ -8,8 +8,38 @@ endif
 
 let b:did_ftplugin = 1
 
-" Copy list of original file names
-let s:files = getline(1, '$')
+" Finds zero-based line number where file names begin
+function s:FindSplitPos()
+	let l:alllines = getline(1, '$')
+
+	for i in range(0, len(l:alllines) - 1)
+		if l:alllines[i][0:1] != '# '
+			break
+		endif
+	endfor
+
+	for j in range(i, len(l:alllines) - 1)
+		if l:alllines[j][0] == '#'
+			return 0
+		endif
+	endfor
+
+	if len(l:alllines) != i + (i - 2)
+		return 0
+	endif
+
+	return i
+endfunction
+
+" Make list of original file names
+let s:splitpos = s:FindSplitPos()
+if s:splitpos
+	let s:files = map(getline(2, s:splitpos - 1), 'v:val[2:]')
+	" Remove comments
+	silent! execute '1delete' s:splitpos
+else
+	let s:files = getline(1, '$')
+endif
 
 " Closes window/tab/Vim when buffer is left alone in there
 function! s:QuitIfOnlyWindow()

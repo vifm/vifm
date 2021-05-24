@@ -922,7 +922,38 @@ ext_edit_is_reedit(const ext_edit_t *ext_edit, char *files[], int files_len)
 static strlist_t
 ext_edit_reedit(ext_edit_t *ext_edit)
 {
-	return copy_strlist(ext_edit->lines);
+	const strlist_t lines = ext_edit->lines;
+	const strlist_t files = ext_edit->files;
+
+	int i;
+	for(i = 0; i < lines.nitems; ++i)
+	{
+		if(lines.items[0][0] == '#')
+		{
+			/* We've already added comments. */
+			return copy_strlist(lines);
+		}
+	}
+
+	strlist_t result = {};
+
+	result.nitems = add_to_string_array(&result.items, result.nitems,
+			"# Original names:");
+	for(i = 0; i < files.nitems; ++i)
+	{
+		result.nitems = put_into_string_array(&result.items, result.nitems,
+				format_str("# %s", files.items[i]));
+	}
+
+	result.nitems = add_to_string_array(&result.items, result.nitems,
+			"# Last names:");
+	for(i = 0; i < lines.nitems; ++i)
+	{
+		result.nitems = add_to_string_array(&result.items, result.nitems,
+				lines.items[i]);
+	}
+
+	return result;
 }
 
 /* Prepares file list for editing by the user.  Returns a modified list to be

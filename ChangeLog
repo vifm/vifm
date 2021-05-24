@@ -54,6 +54,11 @@
 	increases height of the status line.  Thanks to Jose Riha (a.k.a.
 	jose1711), qsmodo and jcarreja.
 
+	Added caching of rejected external list of files for rename operation.
+	Format now allows for comments for displaying last error and original file
+	names.  Thanks to Jose Riha (a.k.a. jose1711) and Diogo Lemos (a.k.a.
+	dmlemos).
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
