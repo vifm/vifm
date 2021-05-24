@@ -147,6 +147,8 @@ static strlist_t ext_edit_reedit(ext_edit_t *ext_edit);
 static strlist_t prepare_edit_list(char *list[], int count);
 static void ext_edit_done(ext_edit_t *ext_edit, char *files[],
 		int files_len, char *edited[], int *edited_len);
+static void ext_edit_discard(ext_edit_t *ext_edit);
+static strlist_t copy_strlist(const strlist_t source);
 static void cleanup_edit_list(char *list[], int *count);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
@@ -920,11 +922,7 @@ ext_edit_is_reedit(const ext_edit_t *ext_edit, char *files[], int files_len)
 static strlist_t
 ext_edit_reedit(ext_edit_t *ext_edit)
 {
-	strlist_t result;
-	result.items = copy_string_array(ext_edit->lines.items,
-			ext_edit->lines.nitems);
-	result.nitems = ext_edit->lines.nitems;
-	return result;
+	return copy_strlist(ext_edit->lines);
 }
 
 /* Prepares file list for editing by the user.  Returns a modified list to be
@@ -974,6 +972,36 @@ ext_edit_done(ext_edit_t *ext_edit, char *files[], int files_len,
 	ext_edit->lines.nitems = *edited_len;
 
 	cleanup_edit_list(edited, edited_len);
+
+	/* Discard the cache on editing cancellation. */
+	if(*edited_len == 0)
+	{
+		ext_edit_discard(ext_edit);
+	}
+}
+
+/* Clears the cache of external editing. */
+static void
+ext_edit_discard(ext_edit_t *ext_edit)
+{
+	strlist_t empty = {};
+
+	update_string(&ext_edit->location, NULL);
+	free_string_array(ext_edit->files.items, ext_edit->files.nitems);
+	free_string_array(ext_edit->lines.items, ext_edit->lines.nitems);
+	ext_edit->files = empty;
+	ext_edit->lines = empty;
+}
+
+/* Copies list of strings.  Returns the copy. */
+static strlist_t
+copy_strlist(const strlist_t source)
+{
+	strlist_t copy = {
+		.items = copy_string_array(source.items, source.nitems),
+		.nitems = source.nitems
+	};
+	return copy;
 }
 
 /* Cleans up edited list preparing it for processing. */

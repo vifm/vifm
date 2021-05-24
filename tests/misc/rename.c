@@ -173,6 +173,18 @@ TEST(re_editing, IF(not_windows))
 	check_editing(orig, ARRAY_LEN(orig), NULL, final, ARRAY_LEN(final));
 }
 
+TEST(re_editing_cancellation, IF(not_windows))
+{
+	char *orig[] = { "first" };
+	const char *edited = "second";
+	const char *cancel = "#only comments";
+	char *modified[] = { "second" };
+	char *none[] = { };
+	check_editing(orig, ARRAY_LEN(orig), edited, modified, ARRAY_LEN(modified));
+	check_editing(orig, ARRAY_LEN(orig), cancel, none, ARRAY_LEN(none));
+	check_editing(orig, ARRAY_LEN(orig), NULL, orig, ARRAY_LEN(orig));
+}
+
 static void
 check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
 		int expected_len)
