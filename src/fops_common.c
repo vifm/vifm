@@ -880,6 +880,7 @@ fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 
 	if(!load_always && string_array_equal(orig, orig_len, result, result_len))
 	{
+		ext_edit_discard(&ext_edit);
 		free_string_array(result, result_len);
 		return NULL;
 	}

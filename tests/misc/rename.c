@@ -3,7 +3,7 @@
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* size_t */
-#include <string.h> /* memset() */
+#include <string.h> /* memset() strdup() strlen() */
 
 #include <test-utils.h>
 
@@ -17,8 +17,8 @@
 #include "../../src/fops_common.h"
 #include "../../src/fops_rename.h"
 
-static void check_editing(char *orig[], int orig_len, const char edited[],
-		char *expected[], int expected_len);
+static void check_editing(char *orig[], int orig_len, const char template[],
+		const char edited[], char *expected[], int expected_len);
 
 SETUP_ONCE()
 {
@@ -149,7 +149,7 @@ TEST(file_name_list_can_be_changed, IF(not_windows))
 	char *orig[] = { "aaa" };
 	const char *edited = "bbb";
 	char *final[] = { "bbb" };
-	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), NULL, edited, final, ARRAY_LEN(final));
 }
 
 TEST(leading_chars_and_comments, IF(not_windows))
@@ -161,7 +161,7 @@ TEST(leading_chars_and_comments, IF(not_windows))
 	                     "# and some\n"
 	                     "# more here\n";
 	char *final[] = { "\\aa", "#escapeme" };
-	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), NULL, edited, final, ARRAY_LEN(final));
 }
 
 TEST(re_editing, IF(not_windows))
@@ -169,8 +169,8 @@ TEST(re_editing, IF(not_windows))
 	char *orig[] = { "first" };
 	const char *edited = "second";
 	char *final[] = { "second" };
-	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
-	check_editing(orig, ARRAY_LEN(orig), NULL, final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), NULL, edited, final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), NULL, NULL, final, ARRAY_LEN(final));
 }
 
 TEST(re_editing_cancellation, IF(not_windows))
@@ -180,9 +180,19 @@ TEST(re_editing_cancellation, IF(not_windows))
 	const char *cancel = "#only comments";
 	char *modified[] = { "second" };
 	char *none[] = { };
-	check_editing(orig, ARRAY_LEN(orig), edited, modified, ARRAY_LEN(modified));
-	check_editing(orig, ARRAY_LEN(orig), cancel, none, ARRAY_LEN(none));
-	check_editing(orig, ARRAY_LEN(orig), NULL, orig, ARRAY_LEN(orig));
+	check_editing(orig, ARRAY_LEN(orig), NULL, edited, modified,
+			ARRAY_LEN(modified));
+	check_editing(orig, ARRAY_LEN(orig), NULL, cancel, none, ARRAY_LEN(none));
+	check_editing(orig, ARRAY_LEN(orig), NULL, NULL, orig, ARRAY_LEN(orig));
+}
+
+TEST(re_editing_unchanged_skips_caching, IF(not_windows))
+{
+	char *orig[] = { "a", "b" };
+	const char *same = "a\nb";
+	char *none[] = { };
+	check_editing(orig, ARRAY_LEN(orig), same, same, none, ARRAY_LEN(none));
+	check_editing(orig, ARRAY_LEN(orig), same, same, none, ARRAY_LEN(none));
 }
 
 TEST(unchanged_list, IF(not_windows))
@@ -190,12 +200,12 @@ TEST(unchanged_list, IF(not_windows))
 	char *orig[] = { "aaa" };
 	const char *edited = "aaa";
 	char *final[] = { };
-	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), NULL, edited, final, ARRAY_LEN(final));
 }
 
 static void
-check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
-		int expected_len)
+check_editing(char *orig[], int orig_len, const char template[],
+		const char edited[], char *expected[], int expected_len)
 {
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
@@ -208,6 +218,7 @@ check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
 	{
 		make_file("edited", edited);
 		make_file("script", "#!/bin/sh\n"
+		                    "mv $2 template\n"
 		                    "mv edited $2\n");
 	}
 
@@ -228,6 +239,21 @@ check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
 
 	update_string(&cfg.vi_command, NULL);
 	update_string(&cfg.shell, NULL);
+
+	if(template != NULL)
+	{
+		char *template_copy = strdup(template);
+		int nlines;
+		char **lines = break_into_lines(template_copy, strlen(template_copy),
+				&nlines, 0);
+		file_is("template", (const char **)lines, nlines);
+		free_string_array(lines, nlines);
+		free(template_copy);
+	}
+	if(edited != NULL)
+	{
+		remove_file("template");
+	}
 
 	remove_file("script");
 
