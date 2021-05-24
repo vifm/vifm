@@ -185,6 +185,14 @@ TEST(re_editing_cancellation, IF(not_windows))
 	check_editing(orig, ARRAY_LEN(orig), NULL, orig, ARRAY_LEN(orig));
 }
 
+TEST(unchanged_list, IF(not_windows))
+{
+	char *orig[] = { "aaa" };
+	const char *edited = "aaa";
+	char *final[] = { };
+	check_editing(orig, ARRAY_LEN(orig), edited, final, ARRAY_LEN(final));
+}
+
 static void
 check_editing(char *orig[], int orig_len, const char edited[], char *expected[],
 		int expected_len)
