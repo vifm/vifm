@@ -350,10 +350,6 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 {
 	view_t *const other = (view == curr_view) ? other_view : curr_view;
 
-	char **marked;
-	size_t nmarked;
-	int error = 0;
-
 	if(op == CMLO_MOVE)
 	{
 		if(!fops_view_can_be_changed(view))
@@ -384,7 +380,23 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		return -1;
 	}
 
-	marked = fops_grab_marked_files(view, &nmarked);
+	size_t nmarked;
+	char **marked = fops_grab_marked_files(view, &nmarked);
+
+	/* Custom views can contain several files with the same name. */
+	if(flist_custom_active(view))
+	{
+		size_t i;
+		for(i = 0U; i < nmarked; ++i)
+		{
+			if(is_in_string_array(marked, i, marked[i]))
+			{
+				ui_sb_errf("Source name \"%s\" duplicates", marked[i]);
+				free_string_array(marked, nmarked);
+				return 1;
+			}
+		}
+	}
 
 	*from_file = *nlines < 0;
 	if(*from_file)
@@ -397,6 +409,8 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		}
 	}
 
+	int error = 0;
+
 	if(*nlines > 0 &&
 			(!fops_is_name_list_ok(nmarked, *nlines, *list, NULL) ||
 			!is_copy_list_ok(dst_path, *nlines, *list, force)))
@@ -406,21 +420,6 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	if(*nlines == 0 && !is_copy_list_ok(dst_path, nmarked, marked, force))
 	{
 		error = 1;
-	}
-
-	/* Custom views can contain several files with the same name. */
-	if(flist_custom_active(view))
-	{
-		size_t i;
-		for(i = 0U; i < nmarked && !error; ++i)
-		{
-			if(is_in_string_array(marked, i, marked[i]))
-			{
-				ui_sb_errf("Source name \"%s\" duplicates", marked[i]);
-				curr_stats.save_msg = 1;
-				error = 1;
-			}
-		}
 	}
 
 	if(check_for_clashes(view, op, dst_path, *list, marked, *nlines) != 0)
