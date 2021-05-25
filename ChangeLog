@@ -162,6 +162,9 @@
 	Fixed order of checks on :copy?/:move?/:alink?/:rlink?.  Now custom view
 	is checked for duplicates before prompting for list of files.
 
+	Fixed refusing to :copy/move/alink/rlink identically-named files from
+	custom views even if list of new names is supplied.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

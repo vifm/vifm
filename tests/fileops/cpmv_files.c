@@ -144,6 +144,43 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	assert_false(path_exists("a", NODEREF));
 }
 
+TEST(operation_with_rename_of_identically_named_files_is_allowed)
+{
+	assert_false(flist_custom_active(&rwin));
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	strcpy(rwin.curr_dir, saved_cwd);
+	flist_custom_start(&rwin, "test");
+	flist_custom_add(&rwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&rwin, TEST_DATA_PATH "/rename/a");
+	assert_true(flist_custom_finish(&rwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(2, rwin.list_rows);
+
+	curr_view = &rwin;
+	other_view = &lwin;
+
+	rwin.dir_entry[0].marked = 1;
+	rwin.dir_entry[1].marked = 1;
+	rwin.pending_marking = 1;
+
+	check_marking(curr_view, 0, NULL);
+
+	char *list[] = { "a", "b" };
+	char a_path[PATH_MAX + 1], b_path[PATH_MAX + 1];
+	make_abs_path(a_path, sizeof(a_path), SANDBOX_PATH, "a", saved_cwd);
+	make_abs_path(b_path, sizeof(b_path), SANDBOX_PATH, "b", saved_cwd);
+
+	/* Not testing moving for simplicity. */
+	(void)fops_cpmv(&rwin, list, ARRAY_LEN(list), CMLO_COPY, 0);
+	remove_file(a_path);
+	remove_file(b_path);
+	(void)fops_cpmv(&rwin, list, ARRAY_LEN(list), CMLO_COPY, 1);
+	remove_file(a_path);
+	remove_file(b_path);
+}
+
 TEST(cpmv_crash_on_wrong_list_access)
 {
 	char *list[] = { "." };

@@ -384,7 +384,7 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	char **marked = fops_grab_marked_files(view, &nmarked);
 
 	/* Custom views can contain several files with the same name. */
-	if(flist_custom_active(view))
+	if(*nlines == 0 && flist_custom_active(view))
 	{
 		size_t i;
 		for(i = 0U; i < nmarked; ++i)
