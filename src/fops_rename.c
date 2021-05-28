@@ -226,14 +226,21 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	}
 
 	/* If nlines is 0 here, do nothing. */
-	if(nlines != 0 && fops_is_name_list_ok(nfiles, nlines, list, files) &&
-			fops_is_rename_list_ok(files, is_dup, nfiles, list))
+	char *error_str = NULL;
+	if(nlines != 0 &&
+			fops_is_name_list_ok(nfiles, nlines, list, files, &error_str) &&
+			fops_is_rename_list_ok(files, is_dup, nfiles, list, &error_str))
 	{
 		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 		if(renamed >= 0)
 		{
 			ui_sb_msgf("%d file%s renamed", renamed, (renamed == 1) ? "" : "s");
 		}
+	}
+	else if(error_str != NULL)
+	{
+		ui_sb_err(error_str);
+		free(error_str);
 	}
 
 	if(free_list)

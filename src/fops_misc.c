@@ -63,7 +63,6 @@ static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
 static void change_link_cb(const char new_target[]);
 static int complete_filename(const char str[], void *arg);
-static int is_clone_list_ok(int count, char *list[]);
 TSTATIC const char * gen_clone_name(const char dir[], const char normal_name[]);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
@@ -654,10 +653,17 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 	free_string_array(marked, nmarked);
 
+	char *error_str = NULL;
 	if(nlines > 0 &&
-			(!fops_is_name_list_ok(nmarked, nlines, list, NULL) ||
-			(!force && !is_clone_list_ok(nlines, list))))
+			(!fops_is_name_list_ok(nmarked, nlines, list, NULL, &error_str) ||
+			!fops_is_copy_list_ok(dst_path, nlines, list, force, &error_str)))
 	{
+		if(error_str != NULL)
+		{
+			ui_sb_err(error_str);
+			free(error_str);
+		}
+
 		redraw_view(view);
 		if(from_file)
 		{
@@ -740,22 +746,6 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
-	return 1;
-}
-
-/* Checks consistency of user-supplied list of names for clones. */
-static int
-is_clone_list_ok(int count, char *list[])
-{
-	int i;
-	for(i = 0; i < count; ++i)
-	{
-		if(path_exists(list[i], NODEREF))
-		{
-			ui_sb_errf("File \"%s\" already exists", list[i]);
-			return 0;
-		}
-	}
 	return 1;
 }
 

@@ -530,21 +530,21 @@ format_pretty_path(const char base_dir[], const char path[], char pretty[],
 }
 
 int
-fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
+fops_is_name_list_ok(int count, int nlines, char *list[], char *files[],
+		char **error)
 {
 	int i;
 
 	if(nlines < count)
 	{
-		ui_sb_errf("Not enough file names (%d/%d)", nlines, count);
-		curr_stats.save_msg = 1;
+		put_string(error, format_str("Not enough file names (%d/%d)", nlines,
+					count));
 		return 0;
 	}
 
 	if(nlines > count)
 	{
-		ui_sb_errf("Too many file names (%d/%d)", nlines, count);
-		curr_stats.save_msg = 1;
+		put_string(error, format_str("Too many file names (%d/%d)", nlines, count));
 		return 0;
 	}
 
@@ -563,10 +563,14 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 						strnoscmp(files[i], list[i], list_s - list[i]) != 0)
 				{
 					if(file_s == NULL)
-						ui_sb_errf("Name \"%s\" contains slash", list[i]);
+					{
+						put_string(error, format_str("Name \"%s\" contains slash",
+									list[i]));
+					}
 					else
-						ui_sb_errf("Won't move \"%s\" file", files[i]);
-					curr_stats.save_msg = 1;
+					{
+						put_string(error, format_str("Won't move \"%s\" file", files[i]));
+					}
 					return 0;
 				}
 			}
@@ -574,8 +578,7 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 
 		if(list[i][0] != '\0' && is_in_string_array(list, i, list[i]))
 		{
-			ui_sb_errf("Name \"%s\" duplicates", list[i]);
-			curr_stats.save_msg = 1;
+			put_string(error, format_str("Name \"%s\" duplicates", list[i]));
 			return 0;
 		}
 	}
@@ -584,15 +587,36 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 }
 
 int
-fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
+fops_is_copy_list_ok(const char dst[], int count, char *list[], int force,
+		char **error)
+{
+	if(force)
+	{
+		return 1;
+	}
+
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		if(path_exists_at(dst, list[i], NODEREF))
+		{
+			put_string(error, format_str("File \"%s\" already exists", list[i]));
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int
+fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[],
+		char **error)
 {
 	int i;
 	const char *const work_dir = flist_get_dir(curr_view);
 	for(i = 0; i < len; ++i)
 	{
-		char *error = NULL;
 		const int check_result =
-			fops_check_file_rename(work_dir, files[i], list[i], &error);
+			fops_check_file_rename(work_dir, files[i], list[i], error);
 		if(check_result < 0)
 		{
 			continue;
@@ -610,15 +634,9 @@ fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 
 		if(j >= len && check_result == 0)
 		{
-			if(error != NULL)
-			{
-				ui_sb_err(error);
-				free(error);
-			}
 			break;
 		}
-
-		free(error);
+		update_string(error, NULL);
 	}
 	return i >= len;
 }

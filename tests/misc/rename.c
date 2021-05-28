@@ -3,6 +3,7 @@
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* size_t */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memset() strdup() strlen() */
 
 #include <test-utils.h>
@@ -29,39 +30,61 @@ TEST(names_less_than_files)
 {
 	char *src[] = { "a", "b" };
 	char *dst[] = { "a" };
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	char *error = NULL;
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+				&error));
+	assert_string_equal("Not enough file names (1/2)", error);
+	free(error);
 }
 
 TEST(names_greater_that_files_fail)
 {
 	char *src[] = { "a" };
 	char *dst[] = { "a", "b" };
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	char *error = NULL;
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+				&error));
+	assert_string_equal("Too many file names (2/1)", error);
+	free(error);
 }
 
 TEST(move_fail)
 {
 	char *src[] = { "a", "b" };
 	char *dst[] = { "../a", "b" };
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	char *error = NULL;
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+				&error));
+	assert_string_equal("Won't move \"../a\" file", error);
 
 #ifdef _WIN32
 	dst[0] = "..\\a";
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+				&error));
+	assert_string_equal("Won't move \"..\\a\" file", error);
 #endif
+
+	free(error);
 }
 
 TEST(rename_inside_subdir_ok)
 {
 	char *src[] = { "../a", "b" };
 	char *dst[] = { "../a_a", "b" };
-	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	char *error = NULL;
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+				&error));
+	assert_string_equal(NULL, error);
 
 #ifdef _WIN32
 	src[0] = "..\\a";
 	dst[0] = "..\\a_a";
-	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+			&error));
+	assert_string_equal(NULL, error);
 #endif
+
+	free(error);
 }
 
 TEST(incdec_leaves_zeros)
@@ -110,8 +133,13 @@ TEST(rename_list_checks)
 	char *files[] = { "", "aa", "bbb" };
 	ARRAY_GUARD(files, ARRAY_LEN(list));
 	char dup[ARRAY_LEN(files)] = {};
+	char *error = NULL;
 
-	assert_true(fops_is_rename_list_ok(files, dup, ARRAY_LEN(list), list));
+	assert_true(fops_is_rename_list_ok(files, dup, ARRAY_LEN(list), list,
+				&error));
+	assert_string_equal(NULL, error);
+	free(error);
+
 	for(i = 0; i < ARRAY_LEN(list); ++i)
 	{
 		assert_false(dup[i]);

@@ -85,13 +85,23 @@ void fops_init(line_prompt_func line_func, options_prompt_func options_func);
  * Returns non-zero if so, otherwise zero is returned. */
 int fops_view_can_be_changed(const struct view_t *view);
 
-/* Checks if name list is consistent.  Returns non-zero is so, otherwise zero is
- * returned. */
-int fops_is_name_list_ok(int count, int nlines, char *list[], char *files[]);
+/* Checks if name list is consistent.  Reallocates *error to provide error
+ * message.  Returns non-zero is so, otherwise zero is returned. */
+int fops_is_name_list_ok(int count, int nlines, char *list[], char *files[],
+		char **error);
+
+/* Checks whether list of files doesn't mention any existing files.  Reallocates
+ * *error to provide error message.  Returns non-zero if everything is fine,
+ * otherwise zero is returned. */
+int fops_is_copy_list_ok(const char dst[], int count, char *list[], int force,
+		char **error);
 
 /* Checks rename correctness and forms an array of duplication marks.
- * Directory names in files array should be without trailing slash. */
-int fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[]);
+ * Reallocates *error to provide error message.  Directory names in files array
+ * should be without trailing slash.  Returns non-zero if everything is fine,
+ * otherwise zero is returned. */
+int fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[],
+		char **error);
 
 /* Checks single file rename for correctness.  Reallocates *error to provide
  * error message.  Returns value > 0 if rename is correct, < 0 if rename isn't
