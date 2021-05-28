@@ -83,14 +83,24 @@ TEST(incdec_leaves_zeros)
 
 TEST(single_file_rename)
 {
+	char *error = NULL;
+
 	assert_success(chdir(TEST_DATA_PATH "/rename"));
-	assert_true(fops_check_file_rename(".", "a", "a", ST_NONE) < 0);
-	assert_true(fops_check_file_rename(".", "a", "", ST_NONE) < 0);
-	assert_true(fops_check_file_rename(".", "a", "b", ST_NONE) > 0);
-	assert_true(fops_check_file_rename(".", "a", "aa", ST_NONE) == 0);
+	assert_true(fops_check_file_rename(".", "a", "a", &error) < 0);
+	assert_string_equal(NULL, error);
+	assert_true(fops_check_file_rename(".", "a", "", &error) < 0);
+	assert_string_equal(NULL, error);
+	assert_true(fops_check_file_rename(".", "a", "b", &error) > 0);
+	assert_string_equal(NULL, error);
+	assert_true(fops_check_file_rename(".", "a", "aa", &error) == 0);
+	assert_string_equal("File \"aa\" already exists", error);
 #ifdef _WIN32
-	assert_true(fops_check_file_rename(".", "a", "A", ST_NONE) > 0);
+	update_string(&error, NULL);
+	assert_true(fops_check_file_rename(".", "a", "A", &error) > 0);
+	assert_string_equal(NULL, error);
 #endif
+
+	free(error);
 }
 
 TEST(rename_list_checks)

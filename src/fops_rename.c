@@ -128,8 +128,14 @@ rename_file_cb(const char new_name[])
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext);
 
-	if(fops_check_file_rename(forigin, fname, new, ST_DIALOG) <= 0)
+	char *error = NULL;
+	if(fops_check_file_rename(forigin, fname, new, &error) <= 0)
 	{
+		if(error != NULL)
+		{
+			show_error_msg("Rename error", error);
+			free(error);
+		}
 		return;
 	}
 
@@ -440,19 +446,22 @@ fops_incdec(view_t *view, int k)
 
 		snprintf(new_path, sizeof(new_path), "%s/%s", entry->origin, new_fname);
 
-		/* Skip fops_check_file_rename() for final name that matches one of original
-		 * names. */
+		/* Skip fops_check_file_rename() for final name that matches one of the
+		 * original names. */
 		if(is_in_string_array_os(names, names_len, new_path))
 		{
 			continue;
 		}
 
+		char *error = NULL;
 		if(fops_check_file_rename(entry->origin, entry->name, new_fname,
-					ST_STATUS_BAR) != 0)
+					&error) != 0)
 		{
 			continue;
 		}
 
+		ui_sb_err(error);
+		free(error);
 		err = -1;
 		break;
 	}

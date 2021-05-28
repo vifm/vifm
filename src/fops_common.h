@@ -35,15 +35,6 @@ typedef enum
 }
 DirRole;
 
-/* Type of reaction on an error. */
-typedef enum
-{
-	ST_NONE,       /* Ignore message. */
-	ST_STATUS_BAR, /* Show message in the status bar. */
-	ST_DIALOG,     /* Shows error dialog. */
-}
-SignalType;
-
 /* Pack of arguments supplied to procedures implementing file operations in
  * background. */
 typedef struct
@@ -102,11 +93,11 @@ int fops_is_name_list_ok(int count, int nlines, char *list[], char *files[]);
  * Directory names in files array should be without trailing slash. */
 int fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[]);
 
-/* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
- * when rename operation should be aborted.  silent parameter controls whether
- * error dialog or status bar message should be shown, 0 means dialog. */
+/* Checks single file rename for correctness.  Reallocates *error to provide
+ * error message.  Returns value > 0 if rename is correct, < 0 if rename isn't
+ * needed and 0 when rename operation should be aborted. */
 int fops_check_file_rename(const char dir[], const char old[], const char new[],
-		SignalType signal_type);
+		char **error);
 
 /* Makes list of marked filenames.  *nmarked is always set (0 for empty list).
  * Returns pointer to the list, NULL for empty list. */

@@ -590,15 +590,15 @@ fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 	const char *const work_dir = flist_get_dir(curr_view);
 	for(i = 0; i < len; ++i)
 	{
-		int j;
-
+		char *error = NULL;
 		const int check_result =
-			fops_check_file_rename(work_dir, files[i], list[i], ST_NONE);
+			fops_check_file_rename(work_dir, files[i], list[i], &error);
 		if(check_result < 0)
 		{
 			continue;
 		}
 
+		int j;
 		for(j = 0; j < len; ++j)
 		{
 			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
@@ -607,20 +607,25 @@ fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 				break;
 			}
 		}
+
 		if(j >= len && check_result == 0)
 		{
-			/* Invoke fops_check_file_rename() again, but this time to produce error
-			 * message. */
-			(void)fops_check_file_rename(work_dir, files[i], list[i], ST_STATUS_BAR);
+			if(error != NULL)
+			{
+				ui_sb_err(error);
+				free(error);
+			}
 			break;
 		}
+
+		free(error);
 	}
 	return i >= len;
 }
 
 int
 fops_check_file_rename(const char dir[], const char old[], const char new[],
-		SignalType signal_type)
+		char **error)
 {
 	if(!is_file_name_changed(old, new))
 	{
@@ -630,21 +635,7 @@ fops_check_file_rename(const char dir[], const char old[], const char new[],
 	if(path_exists_at(dir, new, NODEREF) && stroscmp(old, new) != 0 &&
 			!is_case_change(old, new))
 	{
-		switch(signal_type)
-		{
-			case ST_STATUS_BAR:
-				ui_sb_errf("File \"%s\" already exists", new);
-				curr_stats.save_msg = 1;
-				break;
-			case ST_DIALOG:
-				show_error_msg("File exists",
-						"That file already exists. Will not overwrite.");
-				break;
-
-			default:
-				assert(signal_type == ST_NONE && "Unhandled signaling type");
-				break;
-		}
+		put_string(error, format_str("File \"%s\" already exists", new));
 		return 0;
 	}
 
