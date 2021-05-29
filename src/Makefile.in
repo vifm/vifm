@@ -137,44 +137,45 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	engine/mode.$(OBJEXT) engine/options.$(OBJEXT) \
 	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
 	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
-	int/desktop.$(OBJEXT) int/file_magic.$(OBJEXT) \
-	int/fuse.$(OBJEXT) int/path_env.$(OBJEXT) \
-	int/term_title.$(OBJEXT) int/vim.$(OBJEXT) io/ioe.$(OBJEXT) \
-	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
-	io/private/ioc.$(OBJEXT) io/private/ioe.$(OBJEXT) \
-	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
-	io/private/traverser.$(OBJEXT) lua/lua/lapi.$(OBJEXT) \
-	lua/lua/lauxlib.$(OBJEXT) lua/lua/lbaselib.$(OBJEXT) \
-	lua/lua/lcode.$(OBJEXT) lua/lua/lcorolib.$(OBJEXT) \
-	lua/lua/lctype.$(OBJEXT) lua/lua/ldblib.$(OBJEXT) \
-	lua/lua/ldebug.$(OBJEXT) lua/lua/ldo.$(OBJEXT) \
-	lua/lua/ldump.$(OBJEXT) lua/lua/lfunc.$(OBJEXT) \
-	lua/lua/lgc.$(OBJEXT) lua/lua/linit.$(OBJEXT) \
-	lua/lua/liolib.$(OBJEXT) lua/lua/llex.$(OBJEXT) \
-	lua/lua/lmathlib.$(OBJEXT) lua/lua/lmem.$(OBJEXT) \
-	lua/lua/loadlib.$(OBJEXT) lua/lua/lobject.$(OBJEXT) \
-	lua/lua/lopcodes.$(OBJEXT) lua/lua/loslib.$(OBJEXT) \
-	lua/lua/lparser.$(OBJEXT) lua/lua/lstate.$(OBJEXT) \
-	lua/lua/lstring.$(OBJEXT) lua/lua/lstrlib.$(OBJEXT) \
-	lua/lua/ltable.$(OBJEXT) lua/lua/ltablib.$(OBJEXT) \
-	lua/lua/ltm.$(OBJEXT) lua/lua/lundump.$(OBJEXT) \
-	lua/lua/lutf8lib.$(OBJEXT) lua/lua/lvm.$(OBJEXT) \
-	lua/lua/lzio.$(OBJEXT) lua/common.$(OBJEXT) \
-	lua/vifm_cmds.$(OBJEXT) lua/vifm_viewcolumns.$(OBJEXT) \
-	lua/vifmjob.$(OBJEXT) lua/vifmview.$(OBJEXT) \
-	lua/vlua.$(OBJEXT) lua/vlua_state.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
-	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
-	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
-	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
-	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
-	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
-	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
-	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
-	menus/marks_menu.$(OBJEXT) menus/media_menu.$(OBJEXT) \
-	menus/menus.$(OBJEXT) menus/plugins_menu.$(OBJEXT) \
-	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
-	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
+	int/desktop.$(OBJEXT) int/ext_edit.$(OBJEXT) \
+	int/file_magic.$(OBJEXT) int/fuse.$(OBJEXT) \
+	int/path_env.$(OBJEXT) int/term_title.$(OBJEXT) \
+	int/vim.$(OBJEXT) io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) \
+	io/iop.$(OBJEXT) io/ior.$(OBJEXT) io/private/ioc.$(OBJEXT) \
+	io/private/ioe.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
+	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
+	lua/lua/lapi.$(OBJEXT) lua/lua/lauxlib.$(OBJEXT) \
+	lua/lua/lbaselib.$(OBJEXT) lua/lua/lcode.$(OBJEXT) \
+	lua/lua/lcorolib.$(OBJEXT) lua/lua/lctype.$(OBJEXT) \
+	lua/lua/ldblib.$(OBJEXT) lua/lua/ldebug.$(OBJEXT) \
+	lua/lua/ldo.$(OBJEXT) lua/lua/ldump.$(OBJEXT) \
+	lua/lua/lfunc.$(OBJEXT) lua/lua/lgc.$(OBJEXT) \
+	lua/lua/linit.$(OBJEXT) lua/lua/liolib.$(OBJEXT) \
+	lua/lua/llex.$(OBJEXT) lua/lua/lmathlib.$(OBJEXT) \
+	lua/lua/lmem.$(OBJEXT) lua/lua/loadlib.$(OBJEXT) \
+	lua/lua/lobject.$(OBJEXT) lua/lua/lopcodes.$(OBJEXT) \
+	lua/lua/loslib.$(OBJEXT) lua/lua/lparser.$(OBJEXT) \
+	lua/lua/lstate.$(OBJEXT) lua/lua/lstring.$(OBJEXT) \
+	lua/lua/lstrlib.$(OBJEXT) lua/lua/ltable.$(OBJEXT) \
+	lua/lua/ltablib.$(OBJEXT) lua/lua/ltm.$(OBJEXT) \
+	lua/lua/lundump.$(OBJEXT) lua/lua/lutf8lib.$(OBJEXT) \
+	lua/lua/lvm.$(OBJEXT) lua/lua/lzio.$(OBJEXT) \
+	lua/common.$(OBJEXT) lua/vifm_cmds.$(OBJEXT) \
+	lua/vifm_viewcolumns.$(OBJEXT) lua/vifmjob.$(OBJEXT) \
+	lua/vifmview.$(OBJEXT) lua/vlua.$(OBJEXT) \
+	lua/vlua_state.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
+	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
+	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
+	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
+	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
+	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
+	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
+	menus/media_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
+	menus/plugins_menu.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
+	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
+	menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -706,6 +707,7 @@ vifm_SOURCES = \
 	engine/variables.c engine/variables.h \
 	\
 	int/desktop.c int/desktop.h \
+	int/ext_edit.c int/ext_edit.h \
 	int/file_magic.c int/file_magic.h \
 	int/fuse.c int/fuse.h \
 	int/path_env.c int/path_env.h \
@@ -1094,6 +1096,8 @@ int/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) int/$(DEPDIR)
 	@: > int/$(DEPDIR)/$(am__dirstamp)
 int/desktop.$(OBJEXT): int/$(am__dirstamp) \
+	int/$(DEPDIR)/$(am__dirstamp)
+int/ext_edit.$(OBJEXT): int/$(am__dirstamp) \
 	int/$(DEPDIR)/$(am__dirstamp)
 int/file_magic.$(OBJEXT): int/$(am__dirstamp) \
 	int/$(DEPDIR)/$(am__dirstamp)
@@ -1559,6 +1563,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/var.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/variables.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/desktop.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/ext_edit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/file_magic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/fuse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/path_env.Po@am__quote@

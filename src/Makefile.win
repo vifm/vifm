@@ -43,7 +43,7 @@ engine := abbrevs.c autocmds.c cmds.c functions.c completion.c keys.c mode.c \
           options.c parsing.c text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
-int := file_magic.c fuse.c path_env.c term_title.c vim.c
+int := ext_edit.c file_magic.c fuse.c path_env.c term_title.c vim.c
 int := $(addprefix int/, $(int))
 
 io := private/ioc.c private/ioe.c private/ioeta.c private/ionotif.c

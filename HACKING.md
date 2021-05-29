@@ -82,6 +82,7 @@ there for instructions.
     |  |-- int/ - integration with environment/external tools
     |  |  |
     |  |  |-- desktop.c - code that parses *.desktop files on *nix systems
+    |  |  |-- ext_edit.c - managing of state related to external renaming
     |  |  |-- file_magic.c - determines programs associated with file using its
     |  |  |                  mime-type
     |  |  |-- fuse.c - provides support of FUSE filesystems
