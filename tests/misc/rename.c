@@ -22,9 +22,16 @@
 static void check_editing(char *orig[], int orig_len, const char template[],
 		const char edited[], char *expected[], int expected_len);
 
+static ext_edit_t ext_edit;
+
 SETUP_ONCE()
 {
 	curr_view = &lwin;
+}
+
+TEARDOWN()
+{
+	ext_edit_discard(&ext_edit);
 }
 
 TEST(names_less_than_files)
@@ -238,6 +245,25 @@ TEST(re_editing_unchanged_skips_caching, IF(not_windows))
 	check_editing(orig, ARRAY_LEN(orig), same, same, none, ARRAY_LEN(none));
 }
 
+TEST(last_rename_error_is_displayed, IF(not_windows))
+{
+	char *orig[] = { "a", "b" };
+	const char *template = "# Last error:\n"
+	                       "#  test error\n"
+	                       "# Original names:\n"
+	                       "#  a\n"
+	                       "#  b\n"
+	                       "# Edited names:\n"
+	                       "a\n"
+	                       "a\n";
+	const char *edited = "a\na";
+	char *modified[] = { "a", "a" };
+	check_editing(orig, ARRAY_LEN(orig), NULL, edited, modified,
+			ARRAY_LEN(modified));
+	update_string(&ext_edit.last_error, "test error");
+	check_editing(orig, ARRAY_LEN(orig), template, edited, modified, ARRAY_LEN(modified));
+}
+
 TEST(unchanged_list, IF(not_windows))
 {
 	char *orig[] = { "aaa" };
@@ -250,8 +276,6 @@ static void
 check_editing(char *orig[], int orig_len, const char template[],
 		const char edited[], char *expected[], int expected_len)
 {
-	static ext_edit_t ext_edit;
-
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 

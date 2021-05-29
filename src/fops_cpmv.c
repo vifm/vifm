@@ -440,7 +440,15 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		if(error_str != NULL)
 		{
 			ui_sb_err(error_str);
-			free(error_str);
+
+			if(*from_file)
+			{
+				put_string(&ext_edit.last_error, error_str);
+			}
+			else
+			{
+				free(error_str);
+			}
 		}
 
 		redraw_view(view);
@@ -450,6 +458,8 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		}
 		return 1;
 	}
+
+	ext_edit_discard(&ext_edit);
 
 	snprintf(undo_msg, undo_msg_len, "%s from %s to ", cmlo_to_str(op),
 			replace_home_part(flist_get_dir(view)));

@@ -30,7 +30,6 @@ static int ext_edit_is_reedit(const ext_edit_t *ext_edit, char *files[],
 		int files_len);
 static strlist_t ext_edit_reedit(ext_edit_t *ext_edit);
 static strlist_t prepare_edit_list(char *list[], int count);
-static strlist_t copy_strlist(const strlist_t source);
 static void cleanup_edit_list(char *list[], int *count);
 
 strlist_t
@@ -68,32 +67,35 @@ ext_edit_reedit(ext_edit_t *ext_edit)
 	const strlist_t lines = ext_edit->lines;
 	const strlist_t files = ext_edit->files;
 
-	int i;
-	for(i = 0; i < lines.nitems; ++i)
-	{
-		if(lines.items[0][0] == '#')
-		{
-			/* We've already added comments. */
-			return copy_strlist(lines);
-		}
-	}
-
 	strlist_t result = {};
+
+	if(ext_edit->last_error != NULL)
+	{
+		result.nitems = add_to_string_array(&result.items, result.nitems,
+				"# Last error:");
+		result.nitems = put_into_string_array(&result.items, result.nitems,
+				format_str("#  %s", ext_edit->last_error));
+		update_string(&ext_edit->last_error, NULL);
+	}
 
 	result.nitems = add_to_string_array(&result.items, result.nitems,
 			"# Original names:");
+	int i;
 	for(i = 0; i < files.nitems; ++i)
 	{
 		result.nitems = put_into_string_array(&result.items, result.nitems,
-				format_str("# %s", files.items[i]));
+				format_str("#  %s", files.items[i]));
 	}
 
 	result.nitems = add_to_string_array(&result.items, result.nitems,
-			"# Last names:");
+			"# Edited names:");
 	for(i = 0; i < lines.nitems; ++i)
 	{
-		result.nitems = add_to_string_array(&result.items, result.nitems,
-				lines.items[i]);
+		if(lines.items[i][0] != '#')
+		{
+			result.nitems = add_to_string_array(&result.items, result.nitems,
+					lines.items[i]);
+		}
 	}
 
 	return result;
@@ -159,21 +161,11 @@ ext_edit_discard(ext_edit_t *ext_edit)
 	strlist_t empty = {};
 
 	update_string(&ext_edit->location, NULL);
+	update_string(&ext_edit->last_error, NULL);
 	free_string_array(ext_edit->files.items, ext_edit->files.nitems);
 	free_string_array(ext_edit->lines.items, ext_edit->lines.nitems);
 	ext_edit->files = empty;
 	ext_edit->lines = empty;
-}
-
-/* Copies list of strings.  Returns the copy. */
-static strlist_t
-copy_strlist(const strlist_t source)
-{
-	strlist_t copy = {
-		.items = copy_string_array(source.items, source.nitems),
-		.nitems = source.nitems
-	};
-	return copy;
 }
 
 /* Cleans up edited list preparing it for processing. */

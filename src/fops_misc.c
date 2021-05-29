@@ -664,7 +664,15 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		if(error_str != NULL)
 		{
 			ui_sb_err(error_str);
-			free(error_str);
+
+			if(from_file)
+			{
+				put_string(&ext_edit.last_error, error_str);
+			}
+			else
+			{
+				free(error_str);
+			}
 		}
 
 		redraw_view(view);
@@ -675,6 +683,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		return 1;
 	}
 
+	ext_edit_discard(&ext_edit);
 	flist_sel_stash(view);
 
 	if(with_dir)

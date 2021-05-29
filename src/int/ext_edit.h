@@ -27,9 +27,10 @@
 typedef struct ext_edit_t ext_edit_t;
 struct ext_edit_t
 {
-	char *location;  /* Path of the operation. */
-	strlist_t files; /* List of files. */
-	strlist_t lines; /* Editing result. */
+	char *location;   /* Path of the operation. */
+	char *last_error; /* Last error message about related operation or NULL. */
+	strlist_t files;  /* List of files. */
+	strlist_t lines;  /* Editing result. */
 };
 
 /* Produces list of files to present the user with, which might be result of

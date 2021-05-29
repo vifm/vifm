@@ -175,7 +175,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	int nfiles;
 	dir_entry_t *entry;
 	char *is_dup;
-	int free_list = 0;
+	int from_file = 0;
 
 	/* Allow list of names in tests. */
 	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
@@ -224,7 +224,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		}
 		else
 		{
-			free_list = 1;
+			from_file = 1;
 		}
 	}
 
@@ -234,6 +234,8 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 			fops_is_name_list_ok(nfiles, nlines, list, files, &error_str) &&
 			fops_is_rename_list_ok(files, is_dup, nfiles, list, &error_str))
 	{
+		ext_edit_discard(&ext_edit);
+
 		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 		if(renamed >= 0)
 		{
@@ -243,10 +245,18 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	else if(error_str != NULL)
 	{
 		ui_sb_err(error_str);
-		free(error_str);
+
+		if(from_file)
+		{
+			put_string(&ext_edit.last_error, error_str);
+		}
+		else
+		{
+			free(error_str);
+		}
 	}
 
-	if(free_list)
+	if(from_file)
 	{
 		free_string_array(list, nlines);
 	}
