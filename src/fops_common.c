@@ -36,14 +36,15 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
-#include <string.h> /* memcmp() memset() strcat() strcmp() strdup() strlen() */
+#include <stdlib.h> /* free() malloc() */
+#include <string.h> /* memset() strcat() strcmp() strdup() strlen() */
 #include <time.h> /* clock_gettime() */
 
 #include "cfg/config.h"
 #include "compat/dtype.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "int/ext_edit.h"
 #include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
@@ -120,7 +121,8 @@ progress_data_t;
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
 static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
-static void update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim);
+static void update_progress_bar(progress_data_t *pdata,
+		const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
 static void io_progress_fg_sb(const io_progress_t *state, int progress);
 static void io_progress_bg(const io_progress_t *state, int progress);
@@ -509,21 +511,21 @@ format_pretty_path(const char base_dir[], const char path[], char pretty[],
 }
 
 int
-fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
+fops_is_name_list_ok(int count, int nlines, char *list[], char *files[],
+		char **error)
 {
 	int i;
 
 	if(nlines < count)
 	{
-		ui_sb_errf("Not enough file names (%d/%d)", nlines, count);
-		curr_stats.save_msg = 1;
+		put_string(error, format_str("Not enough file names (%d/%d)", nlines,
+					count));
 		return 0;
 	}
 
 	if(nlines > count)
 	{
-		ui_sb_errf("Too many file names (%d/%d)", nlines, count);
-		curr_stats.save_msg = 1;
+		put_string(error, format_str("Too many file names (%d/%d)", nlines, count));
 		return 0;
 	}
 
@@ -542,10 +544,14 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 						strnoscmp(files[i], list[i], list_s - list[i]) != 0)
 				{
 					if(file_s == NULL)
-						ui_sb_errf("Name \"%s\" contains slash", list[i]);
+					{
+						put_string(error, format_str("Name \"%s\" contains slash",
+									list[i]));
+					}
 					else
-						ui_sb_errf("Won't move \"%s\" file", files[i]);
-					curr_stats.save_msg = 1;
+					{
+						put_string(error, format_str("Won't move \"%s\" file", files[i]));
+					}
 					return 0;
 				}
 			}
@@ -553,8 +559,7 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 
 		if(list[i][0] != '\0' && is_in_string_array(list, i, list[i]))
 		{
-			ui_sb_errf("Name \"%s\" duplicates", list[i]);
-			curr_stats.save_msg = 1;
+			put_string(error, format_str("Name \"%s\" duplicates", list[i]));
 			return 0;
 		}
 	}
@@ -563,21 +568,42 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 }
 
 int
-fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
+fops_is_copy_list_ok(const char dst[], int count, char *list[], int force,
+		char **error)
+{
+	if(force)
+	{
+		return 1;
+	}
+
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		if(path_exists_at(dst, list[i], NODEREF))
+		{
+			put_string(error, format_str("File \"%s\" already exists", list[i]));
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int
+fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[],
+		char **error)
 {
 	int i;
 	const char *const work_dir = flist_get_dir(curr_view);
 	for(i = 0; i < len; ++i)
 	{
-		int j;
-
 		const int check_result =
-			fops_check_file_rename(work_dir, files[i], list[i], ST_NONE);
+			fops_check_file_rename(work_dir, files[i], list[i], error);
 		if(check_result < 0)
 		{
 			continue;
 		}
 
+		int j;
 		for(j = 0; j < len; ++j)
 		{
 			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
@@ -586,20 +612,19 @@ fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 				break;
 			}
 		}
+
 		if(j >= len && check_result == 0)
 		{
-			/* Invoke fops_check_file_rename() again, but this time to produce error
-			 * message. */
-			(void)fops_check_file_rename(work_dir, files[i], list[i], ST_STATUS_BAR);
 			break;
 		}
+		update_string(error, NULL);
 	}
 	return i >= len;
 }
 
 int
 fops_check_file_rename(const char dir[], const char old[], const char new[],
-		SignalType signal_type)
+		char **error)
 {
 	if(!is_file_name_changed(old, new))
 	{
@@ -609,21 +634,7 @@ fops_check_file_rename(const char dir[], const char old[], const char new[],
 	if(path_exists_at(dir, new, NODEREF) && stroscmp(old, new) != 0 &&
 			!is_case_change(old, new))
 	{
-		switch(signal_type)
-		{
-			case ST_STATUS_BAR:
-				ui_sb_errf("File \"%s\" already exists", new);
-				curr_stats.save_msg = 1;
-				break;
-			case ST_DIALOG:
-				show_error_msg("File exists",
-						"That file already exists. Will not overwrite.");
-				break;
-
-			default:
-				assert(signal_type == ST_NONE && "Unhandled signaling type");
-				break;
-		}
+		put_string(error, format_str("File \"%s\" already exists", new));
 		return 0;
 	}
 
@@ -811,66 +822,60 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 }
 
 char **
-fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
+fops_edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[],
+		int *edited_len, int load_always)
 {
+	*edited_len = 0;
+
 	char rename_file[PATH_MAX + 1];
-	char **list = NULL;
-	mode_t saved_umask;
-
-	*nlines = 0;
-
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
+	strlist_t prepared = ext_edit_prepare(ext_edit, orig, orig_len);
+
 	/* Allow temporary file to be only readable and writable by current user. */
-	saved_umask = umask(~0600);
-	if(write_file_of_lines(rename_file, orig, count) != 0)
+	mode_t saved_umask = umask(~0600);
+	const int write_error = (write_file_of_lines(rename_file, prepared.items,
+				prepared.nitems) != 0);
+	(void)umask(saved_umask);
+
+	free_string_array(prepared.items, prepared.nitems);
+
+	if(write_error)
 	{
-		(void)umask(saved_umask);
 		show_error_msgf("Error Getting List Of Renames",
 				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
 		return NULL;
 	}
-	(void)umask(saved_umask);
 
 	if(vim_view_file(rename_file, -1, -1, 0) != 0)
 	{
+		unlink(rename_file);
 		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
 				rename_file);
-	}
-	else
-	{
-		list = read_file_of_lines(rename_file, nlines);
-		if(list == NULL)
-		{
-			show_error_msgf("Error Getting List Of Renames",
-					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
-		}
-
-		if(!load_always)
-		{
-			size_t i = count - 1U;
-			if((size_t)*nlines == count)
-			{
-				for(i = 0U; i < count; ++i)
-				{
-					if(strcmp(list[i], orig[i]) != 0)
-					{
-						break;
-					}
-				}
-			}
-
-			if(i == count)
-			{
-				free_string_array(list, *nlines);
-				list = NULL;
-				*nlines = 0;
-			}
-		}
+		return NULL;
 	}
 
+	int result_len;
+	char **result = read_file_of_lines(rename_file, &result_len);
 	unlink(rename_file);
-	return list;
+	if(result == NULL)
+	{
+		show_error_msgf("Error Getting List Of Renames",
+				"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
+		return NULL;
+	}
+
+	ext_edit_done(ext_edit, orig, orig_len, result, &result_len);
+
+	if(!load_always && string_array_equal(orig, orig_len, result, result_len))
+	{
+		ext_edit_discard(ext_edit);
+		free_string_array(result, result_len);
+		return NULL;
+	}
+
+	*edited_len = result_len;
+	return result;
 }
 
 void

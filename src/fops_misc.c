@@ -26,6 +26,7 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "int/ext_edit.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
@@ -63,7 +64,6 @@ static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
 static void change_link_cb(const char new_target[]);
 static int complete_filename(const char str[], void *arg);
-static int is_clone_list_ok(int count, char *list[]);
 TSTATIC const char * gen_clone_name(const char dir[], const char normal_name[]);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
@@ -595,6 +595,8 @@ complete_filename(const char str[], void *arg)
 int
 fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 {
+	static ext_edit_t ext_edit;
+
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	char dst_path[PATH_MAX + 1];
@@ -644,7 +646,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	from_file = nlines < 0;
 	if(from_file)
 	{
-		list = fops_edit_list(nmarked, marked, &nlines, 0);
+		list = fops_edit_list(&ext_edit, nmarked, marked, &nlines, 0);
 		if(list == NULL)
 		{
 			free_string_array(marked, nmarked);
@@ -654,10 +656,25 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 	free_string_array(marked, nmarked);
 
+	char *error_str = NULL;
 	if(nlines > 0 &&
-			(!fops_is_name_list_ok(nmarked, nlines, list, NULL) ||
-			(!force && !is_clone_list_ok(nlines, list))))
+			(!fops_is_name_list_ok(nmarked, nlines, list, NULL, &error_str) ||
+			!fops_is_copy_list_ok(dst_path, nlines, list, force, &error_str)))
 	{
+		if(error_str != NULL)
+		{
+			ui_sb_err(error_str);
+
+			if(from_file)
+			{
+				put_string(&ext_edit.last_error, error_str);
+			}
+			else
+			{
+				free(error_str);
+			}
+		}
+
 		redraw_view(view);
 		if(from_file)
 		{
@@ -666,6 +683,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		return 1;
 	}
 
+	ext_edit_discard(&ext_edit);
 	flist_sel_stash(view);
 
 	if(with_dir)
@@ -740,22 +758,6 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
-	return 1;
-}
-
-/* Checks consistency of user-supplied list of names for clones. */
-static int
-is_clone_list_ok(int count, char *list[])
-{
-	int i;
-	for(i = 0; i < count; ++i)
-	{
-		if(path_exists(list[i], NODEREF))
-		{
-			ui_sb_errf("File \"%s\" already exists", list[i]);
-			return 0;
-		}
-	}
 	return 1;
 }
 

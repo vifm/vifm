@@ -24,6 +24,7 @@
 #include <string.h> /* strcmp() strdup() strlen() */
 
 #include "compat/os.h"
+#include "int/ext_edit.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
@@ -128,8 +129,14 @@ rename_file_cb(const char new_name[])
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext);
 
-	if(fops_check_file_rename(forigin, fname, new, ST_DIALOG) <= 0)
+	char *error = NULL;
+	if(fops_check_file_rename(forigin, fname, new, &error) <= 0)
 	{
+		if(error != NULL)
+		{
+			show_error_msg("Rename error", error);
+			free(error);
+		}
 		return;
 	}
 
@@ -162,11 +169,13 @@ complete_filename_only(const char str[], void *arg)
 int
 fops_rename(view_t *view, char *list[], int nlines, int recursive)
 {
+	static ext_edit_t ext_edit;
+
 	char **files;
 	int nfiles;
 	dir_entry_t *entry;
 	char *is_dup;
-	int free_list = 0;
+	int from_file = 0;
 
 	/* Allow list of names in tests. */
 	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
@@ -209,28 +218,45 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	if(nlines == 0)
 	{
 		if(nfiles == 0 ||
-				(list = fops_edit_list(nfiles, files, &nlines, 0)) == NULL)
+				(list = fops_edit_list(&ext_edit, nfiles, files, &nlines, 0)) == NULL)
 		{
 			ui_sb_msg("0 files renamed");
 		}
 		else
 		{
-			free_list = 1;
+			from_file = 1;
 		}
 	}
 
 	/* If nlines is 0 here, do nothing. */
-	if(nlines != 0 && fops_is_name_list_ok(nfiles, nlines, list, files) &&
-			fops_is_rename_list_ok(files, is_dup, nfiles, list))
+	char *error_str = NULL;
+	if(nlines != 0 &&
+			fops_is_name_list_ok(nfiles, nlines, list, files, &error_str) &&
+			fops_is_rename_list_ok(files, is_dup, nfiles, list, &error_str))
 	{
+		ext_edit_discard(&ext_edit);
+
 		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 		if(renamed >= 0)
 		{
 			ui_sb_msgf("%d file%s renamed", renamed, (renamed == 1) ? "" : "s");
 		}
 	}
+	else if(error_str != NULL)
+	{
+		ui_sb_err(error_str);
 
-	if(free_list)
+		if(from_file)
+		{
+			put_string(&ext_edit.last_error, error_str);
+		}
+		else
+		{
+			free(error_str);
+		}
+	}
+
+	if(from_file)
 	{
 		free_string_array(list, nlines);
 	}
@@ -440,19 +466,22 @@ fops_incdec(view_t *view, int k)
 
 		snprintf(new_path, sizeof(new_path), "%s/%s", entry->origin, new_fname);
 
-		/* Skip fops_check_file_rename() for final name that matches one of original
-		 * names. */
+		/* Skip fops_check_file_rename() for final name that matches one of the
+		 * original names. */
 		if(is_in_string_array_os(names, names_len, new_path))
 		{
 			continue;
 		}
 
+		char *error = NULL;
 		if(fops_check_file_rename(entry->origin, entry->name, new_fname,
-					ST_STATUS_BAR) != 0)
+					&error) != 0)
 		{
 			continue;
 		}
 
+		ui_sb_err(error);
+		free(error);
 		err = -1;
 		break;
 	}

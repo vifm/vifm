@@ -68,6 +68,11 @@ int string_array_pos(char *array[], size_t len, const char item[]);
 /* Returns position of the item in the array, -1 if no match found. */
 int string_array_pos_case(char *array[], size_t len, const char item[]);
 
+/* Checks if two string lists are equal.  Returns non-zero if so, otherwise zero
+ * is returned. */
+int string_array_equal(char *first[], size_t first_len, char *second[],
+		size_t second_len);
+
 /* Frees memory of all array items and from the array itself.  Does nothing for
  * NULL arrays. */
 void free_string_array(char *array[], size_t len);

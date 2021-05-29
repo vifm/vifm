@@ -148,6 +148,27 @@ string_array_pos_case(char *array[], size_t len, const char item[])
 	return (i < len) ? (int)i : -1;
 }
 
+int
+string_array_equal(char *first[], size_t first_len, char *second[],
+		size_t second_len)
+{
+	if(first_len != second_len)
+	{
+		return 0;
+	}
+
+	size_t i;
+	for(i = 0U; i < first_len; ++i)
+	{
+		if(strcmp(first[i], second[i]) != 0)
+		{
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
 void
 free_string_array(char *array[], size_t len)
 {
@@ -162,7 +183,7 @@ void
 free_strings(char *array[], size_t len)
 {
 	size_t i;
-	for(i = 0; i < len; i++)
+	for(i = 0; i < len; ++i)
 	{
 		free(array[i]);
 	}

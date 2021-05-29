@@ -19,6 +19,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/filelist.h"
+#include "../../src/status.h"
 
 static line_stats_t *stats;
 
@@ -120,6 +121,57 @@ TEST(backspace_not_eol)
 
 	(void)vle_keys_exec_timed_out(WK_C_h);
 	assert_wstring_equal(L"c", stats->line);
+}
+
+TEST(kill)
+{
+	(void)vle_keys_exec_timed_out(L"abc");
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_k);
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_h);
+	(void)vle_keys_exec_timed_out(WK_C_k);
+	assert_wstring_equal(L"ab", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_a);
+	(void)vle_keys_exec_timed_out(WK_C_k);
+	assert_wstring_equal(L"", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_k);
+	assert_wstring_equal(L"", stats->line);
+}
+
+TEST(history)
+{
+	cfg.history_len = 4;
+	assert_success(stats_init(&cfg));
+
+	(void)vle_keys_exec_timed_out(L"first");
+	assert_wstring_equal(L"first", stats->line);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+
+	(void)vle_keys_exec_timed_out(L":second");
+	assert_wstring_equal(L"second", stats->line);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+
+	(void)vle_keys_exec_timed_out(L":third" WK_C_p);
+	assert_wstring_equal(L"second", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_p);
+	assert_wstring_equal(L"first", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_p);
+	assert_wstring_equal(L"first", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_wstring_equal(L"second", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_wstring_equal(L"third", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_wstring_equal(L"third", stats->line);
+
+	cfg.history_len = 0;
+	assert_success(stats_reset(&cfg));
 }
 
 TEST(value_of_manual_filter_is_pasted)

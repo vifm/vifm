@@ -117,6 +117,7 @@ vifm_SOURCES = \
 	engine/variables.c engine/variables.h \
 	\
 	int/desktop.c int/desktop.h \
+	int/ext_edit.c int/ext_edit.h \
 	int/file_magic.c int/file_magic.h \
 	int/fuse.c int/fuse.h \
 	int/path_env.c int/path_env.h \
