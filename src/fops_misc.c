@@ -26,6 +26,7 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "int/ext_edit.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
@@ -594,6 +595,8 @@ complete_filename(const char str[], void *arg)
 int
 fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 {
+	static ext_edit_t ext_edit;
+
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	char dst_path[PATH_MAX + 1];
@@ -643,7 +646,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	from_file = nlines < 0;
 	if(from_file)
 	{
-		list = fops_edit_list(nmarked, marked, &nlines, 0);
+		list = fops_edit_list(&ext_edit, nmarked, marked, &nlines, 0);
 		if(list == NULL)
 		{
 			free_string_array(marked, nmarked);

@@ -822,16 +822,15 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 }
 
 char **
-fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
+fops_edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[],
+		int *edited_len, int load_always)
 {
-	static ext_edit_t ext_edit;
-
 	*edited_len = 0;
 
 	char rename_file[PATH_MAX + 1];
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
-	strlist_t prepared = ext_edit_prepare(&ext_edit, orig, orig_len);
+	strlist_t prepared = ext_edit_prepare(ext_edit, orig, orig_len);
 
 	/* Allow temporary file to be only readable and writable by current user. */
 	mode_t saved_umask = umask(~0600);
@@ -866,11 +865,11 @@ fops_edit_list(size_t orig_len, char *orig[], int *edited_len, int load_always)
 		return NULL;
 	}
 
-	ext_edit_done(&ext_edit, orig, orig_len, result, &result_len);
+	ext_edit_done(ext_edit, orig, orig_len, result, &result_len);
 
 	if(!load_always && string_array_equal(orig, orig_len, result, result_len))
 	{
-		ext_edit_discard(&ext_edit);
+		ext_edit_discard(ext_edit);
 		free_string_array(result, result_len);
 		return NULL;
 	}

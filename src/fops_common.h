@@ -144,11 +144,13 @@ int fops_can_read_marked_files(struct view_t *view);
 int fops_check_dir_path(const struct view_t *view, const char path[],
 		char buf[], size_t buf_len);
 
+struct ext_edit_t;
+
 /* Prompts user with a file containing lines from orig array of length orig_len
  * and returns modified list of strings of length *edited_len or NULL on error
  * or unchanged list unless load_always is non-zero. */
-char ** fops_edit_list(size_t orig_len, char *orig[], int *edited_len,
-		int load_always);
+char ** fops_edit_list(struct ext_edit_t *ext_edit, size_t orig_len,
+		char *orig[], int *edited_len, int load_always);
 
 /* Finishes initialization of ops for background processes. */
 void fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op);

@@ -24,6 +24,7 @@
 #include <string.h> /* strcmp() strdup() strlen() */
 
 #include "compat/os.h"
+#include "int/ext_edit.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
@@ -168,6 +169,8 @@ complete_filename_only(const char str[], void *arg)
 int
 fops_rename(view_t *view, char *list[], int nlines, int recursive)
 {
+	static ext_edit_t ext_edit;
+
 	char **files;
 	int nfiles;
 	dir_entry_t *entry;
@@ -215,7 +218,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	if(nlines == 0)
 	{
 		if(nfiles == 0 ||
-				(list = fops_edit_list(nfiles, files, &nlines, 0)) == NULL)
+				(list = fops_edit_list(&ext_edit, nfiles, files, &nlines, 0)) == NULL)
 		{
 			ui_sb_msg("0 files renamed");
 		}

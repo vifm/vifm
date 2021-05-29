@@ -23,6 +23,7 @@
 #include <string.h> /* strcmp() strdup() */
 
 #include "compat/reallocarray.h"
+#include "int/ext_edit.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
@@ -347,6 +348,8 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
 		size_t dst_path_len, int *from_file)
 {
+	static ext_edit_t ext_edit;
+
 	view_t *const other = (view == curr_view) ? other_view : curr_view;
 
 	if(op == CMLO_MOVE)
@@ -400,7 +403,7 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	*from_file = *nlines < 0;
 	if(*from_file)
 	{
-		*list = fops_edit_list(nmarked, marked, nlines, 1);
+		*list = fops_edit_list(&ext_edit, nmarked, marked, nlines, 1);
 		if(*list == NULL)
 		{
 			free_string_array(marked, nmarked);

@@ -10,6 +10,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/int/ext_edit.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
@@ -167,7 +168,9 @@ TEST(file_name_list_can_be_reread)
 
 	curr_stats.exec_env_type = EET_EMULATOR;
 
-	new_list = fops_edit_list(ARRAY_LEN(list), list, &nlines, 1);
+	ext_edit_t ext_edit = {};
+
+	new_list = fops_edit_list(&ext_edit, ARRAY_LEN(list), list, &nlines, 1);
 	assert_int_equal(2, nlines);
 	if(nlines >= 2)
 	{
@@ -175,6 +178,8 @@ TEST(file_name_list_can_be_reread)
 		assert_string_equal(list[1], new_list[1]);
 	}
 	free_string_array(new_list, nlines);
+
+	ext_edit_discard(&ext_edit);
 
 	update_string(&cfg.vi_command, NULL);
 
@@ -245,6 +250,8 @@ static void
 check_editing(char *orig[], int orig_len, const char template[],
 		const char edited[], char *expected[], int expected_len)
 {
+	static ext_edit_t ext_edit;
+
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
@@ -264,7 +271,8 @@ check_editing(char *orig[], int orig_len, const char template[],
 	update_string(&cfg.vi_command, "./script");
 
 	int actual_len;
-	char **actual = fops_edit_list(orig_len, orig, &actual_len, edited == NULL);
+	char **actual = fops_edit_list(&ext_edit, orig_len, orig, &actual_len,
+			edited == NULL);
 	assert_int_equal(expected_len, actual_len);
 
 	int i;
