@@ -165,6 +165,8 @@
 	Fixed refusing to :copy/move/alink/rlink identically-named files from
 	custom views even if list of new names is supplied.
 
+	Fixed cw key of visual mode not being documented.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 21
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Mar 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -811,6 +811,9 @@ gu, u                                          *vifm-v_gu* *vifm-v_u*
 
 gU, U                                          *vifm-v_gU* *vifm-v_U*
     make names of selected files uppercase.
+
+cw                                             *vifm-v_cw*
+    same as running |vifm-:rename| command without arguments.
 
 --------------------------------------------------------------------------------
 *vifm-view*
