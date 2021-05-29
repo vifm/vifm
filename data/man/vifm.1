@@ -605,7 +605,8 @@ explore file in the current pane.
 handle file (even if it's an executable and 'runexec' option is set).
 .TP
 .BI cw
-change word is used to rename a file or files.
+change word is used to rename a file or files.  If multiple files are selected,
+behaves as :rename command run without arguments.
 .TP
 .BI cW
 change WORD is used to change only name of file (without extension).
@@ -2596,7 +2597,8 @@ switch to regular view leaving custom view.
 .BI "                                         :rename"
 .TP
 .BI :[range]rename[!]
-rename files using vi to edit names. ! means go recursively through directories.
+rename files by editing their names in an editor.  "!" renames files
+recursively in subdirectories.  See "External Renaming" section.
 .TP
 .BI ":[range]rename name1 name2..."
 rename each of selected files to a corresponding name.
@@ -6889,6 +6891,37 @@ Name of the current one is available via v:servername.
 .BI "v:servername"
 server name of the running vifm instance.  Empty if client-server feature is
 disabled.
+.\" ---------------------------------------------------------------------------
+.SH External Renaming
+.\" ---------------------------------------------------------------------------
+When an editor is run to edit list of file names, contents of the temporary file
+has the following format:
+.RS 2
+.IP 1. 3
+Order of lines correspond to the order of files in a view.
+.IP 2. 3
+Lines that start with a "#" are comments and are ignored.
+.IP 3. 3
+Single backslash at the beginning of a line is ignored, so that a file
+starting with a backslash will appear like "\\#name".
+.RE
+
+If an operation was rejected due to issues with file names, next time you'll see
+the following in this order:
+.RS 2
+.IP 1. 3
+Last error (in comments).
+.IP 2. 3
+Original file names (in comments).
+.IP 3. 3
+Failed list of new names.
+.RE
+
+Mind that Vim plugin will extract list of original names and show them in a
+vertical split.
+
+You can cancel renaming by removing all non-comments from the buffer.  This
+also erases information about previous edits.
 .\" ---------------------------------------------------------------------------
 .SH Plugin
 .\" ---------------------------------------------------------------------------

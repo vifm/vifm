@@ -610,6 +610,7 @@ const char *tags[] = {
 	"vifm-expr6",
 	"vifm-expr7",
 	"vifm-expression-syntax",
+	"vifm-ext-rename",
 	"vifm-extcached()",
 	"vifm-f",
 	"vifm-filename-modifiers",
