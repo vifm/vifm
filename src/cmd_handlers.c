@@ -1566,7 +1566,12 @@ chmod_cmd(const cmd_info_t *cmd_info)
 
 	flist_set_marking(curr_view, 0);
 	files_chmod(curr_view, cmd_info->args, cmd_info->emark);
+
+	/* Reload metadata because attribute change might not be detected. */
+	ui_view_schedule_reload(curr_view);
+	ui_view_schedule_reload(other_view);
 #endif
+
 	return 0;
 }
 

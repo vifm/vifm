@@ -170,6 +170,9 @@
 	Fixed copying of executable files not working on FreeBSD.  Thanks to
 	makijato.
 
+	Fixed :chmod lacking a reload, which is needed because attribute change
+	might not be detected.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
