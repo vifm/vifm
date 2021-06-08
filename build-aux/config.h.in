@@ -12,9 +12,6 @@
 /* executing commands remotely */
 #undef ENABLE_REMOTE_CMDS
 
-/* Can check for dirs faster. */
-#undef HAVE_ACCESS_HACK
-
 /* alloca.h header is available. */
 #undef HAVE_ALLOCA_H
 

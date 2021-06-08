@@ -300,33 +300,6 @@ if test "$ac_cv_member_struct_stat_st_mtim" = yes; then
                       [AC_DEFINE([HAVE_CONSISTENT_TIMESPEC], [1], [timespec is good.])])
 fi
 
-dnl Check whether access("path/.", F_OK) can be used to check for directory fast
-AC_RUN_IFELSE([AC_LANG_SOURCE(
-              [[#include <unistd.h>
-                #include <stdio.h>
-                #include <sys/stat.h>
-                #include <sys/types.h>
-                int main() {
-                    int ok = 1;
-
-                    mkdir("dir", 0777);
-                    ok = (access("dir/.", F_OK) == 0);
-                    rmdir("dir");
-                    if(!ok) return 1;
-
-                    fclose(fopen("file", "w"));
-                    ok = (access("file/.", F_OK) != 0)
-                      && (chmod("file", 0777) == 0)
-                      && (access("file/.", F_OK) != 0);
-                    unlink("file");
-
-                    return !ok;
-                }
-              ]])],
-              [AC_DEFINE([HAVE_ACCESS_HACK], [1], [Can check for dirs faster.])],
-              [],
-              [])
-
 dnl ----------------------------------------------------------------------------
 dnl check for available tools/applications
 dnl ----------------------------------------------------------------------------
