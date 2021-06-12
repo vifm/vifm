@@ -123,7 +123,7 @@ TEST(backspace_not_eol)
 	assert_wstring_equal(L"c", stats->line);
 }
 
-TEST(kill)
+TEST(right_kill)
 {
 	(void)vle_keys_exec_timed_out(L"abc");
 	assert_wstring_equal(L"abc", stats->line);
@@ -140,6 +140,30 @@ TEST(kill)
 	assert_wstring_equal(L"", stats->line);
 
 	(void)vle_keys_exec_timed_out(WK_C_k);
+	assert_wstring_equal(L"", stats->line);
+}
+
+TEST(left_kill)
+{
+	(void)vle_keys_exec_timed_out(L"abc");
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_b);
+	(void)vle_keys_exec_timed_out(WK_C_b);
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_u);
+	assert_wstring_equal(L"bc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_f);
+	(void)vle_keys_exec_timed_out(WK_C_u);
+	assert_wstring_equal(L"c", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_f);
+	(void)vle_keys_exec_timed_out(WK_C_u);
+	assert_wstring_equal(L"", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_u);
 	assert_wstring_equal(L"", stats->line);
 }
 
