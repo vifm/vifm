@@ -51,6 +51,7 @@ RenameAction;
 
 static void rename_file_cb(const char new_name[]);
 static int complete_filename_only(const char str[], void *arg);
+static char ** list_files_to_rename(view_t *view, int recursive, int *len);
 static int verify_list(char *files[], char is_dup[], int nfiles, char *names[],
 		int nnames, char **error);
 static char ** add_files_to_list(const char base[], const char path[],
@@ -184,24 +185,8 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		return 0;
 	}
 
-	int nfiles = 0;
-	char **files = NULL;
-	dir_entry_t *entry = NULL;
-	while(iter_marked_entries(view, &entry))
-	{
-		char path[PATH_MAX + 1];
-		get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
-
-		if(recursive)
-		{
-			files = add_files_to_list(flist_get_dir(view), path, files, &nfiles);
-		}
-		else
-		{
-			nfiles = add_to_string_array(&files, nfiles, path);
-		}
-	}
-
+	int nfiles;
+	char **files = list_files_to_rename(view, recursive, &nfiles);
 	/* No files to process. */
 	if(nfiles == 0)
 	{
@@ -260,6 +245,33 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	free(is_dup);
 
 	return 1;
+}
+
+/* Makes list of files to be renamed.  Always sets *len.  Returns list of files,
+ * which might be empty (NULL). */
+static char **
+list_files_to_rename(view_t *view, int recursive, int *len)
+{
+	*len = 0;
+
+	char **files = NULL;
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		char path[PATH_MAX + 1];
+		get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
+
+		if(recursive)
+		{
+			files = add_files_to_list(flist_get_dir(view), path, files, len);
+		}
+		else
+		{
+			*len = add_to_string_array(&files, *len, path);
+		}
+	}
+
+	return files;
 }
 
 /* Checks that renaming can be performed.  Returns non-zero if so, otherwise
