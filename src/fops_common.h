@@ -73,6 +73,12 @@ typedef void (*line_prompt_func)(const char prompt[], const char filename[],
 typedef char (*options_prompt_func)(const char title[], const char message[],
 		const struct response_variant *variants);
 
+/* Function invoked to check whether edited list is OK.  Should return non-zero
+ * if so and zero otherwise.  Should reallocate *error on error.  *data is the
+ * one passed to fops_query_list(). */
+typedef int (*fops_query_verify_func)(char *files[], int nfiles, char *names[],
+		int nnames, char **error, void *data);
+
 /* Filename editing function. */
 extern line_prompt_func fops_line_prompt;
 /* Function to choose from one of options. */
@@ -143,6 +149,13 @@ int fops_can_read_marked_files(struct view_t *view);
  * used, otherwise zero is returned. */
 int fops_check_dir_path(const struct view_t *view, const char path[],
 		char buf[], size_t buf_len);
+
+/* Prompts user with a file containing lines from orig array of length orig_len
+ * and returns modified list of strings of length *edited_len or NULL on error
+ * or unchanged list unless load_always is non-zero.  Can ask user to re-edit
+ * file list. */
+char ** fops_query_list(size_t orig_len, char *orig[], int *edited_len,
+		int load_always, fops_query_verify_func verify, void *verify_data);
 
 struct ext_edit_t;
 

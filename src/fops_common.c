@@ -822,6 +822,48 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 }
 
 char **
+fops_query_list(size_t orig_len, char *orig[], int *edited_len, int load_always,
+		fops_query_verify_func verify, void *verify_data)
+{
+	ext_edit_t ext_edit = {};
+	char **list = NULL;
+	int nlines = 0;
+	char *error_str = NULL;
+
+	while(1)
+	{
+		list = fops_edit_list(&ext_edit, orig_len, orig, &nlines, 0);
+		if(nlines == 0)
+		{
+			/* Cancelled. */
+			break;
+		}
+
+		if(!verify(orig, orig_len, list, nlines, &error_str, verify_data))
+		{
+			free_string_array(list, nlines);
+			list = NULL;
+			nlines = 0;
+
+			/* Stray space prevents removal of the line. */
+			if(prompt_msgf("Naming error", "%s\n \nRe-edit names?", error_str))
+			{
+				update_string(&ext_edit.last_error, error_str);
+				continue;
+			}
+		}
+
+		break;
+	}
+
+	free(error_str);
+	ext_edit_discard(&ext_edit);
+
+	*edited_len = nlines;
+	return list;
+}
+
+char **
 fops_edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[],
 		int *edited_len, int load_always)
 {
