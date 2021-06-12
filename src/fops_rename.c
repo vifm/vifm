@@ -51,6 +51,8 @@ RenameAction;
 
 static void rename_file_cb(const char new_name[]);
 static int complete_filename_only(const char str[], void *arg);
+static int verify_list(char *files[], char is_dup[], int nfiles, char *names[],
+		int nnames, char **error);
 static char ** add_files_to_list(const char base[], const char path[],
 		char *files[], int *len);
 static int perform_renaming(view_t *view, char *files[], char is_dup[], int len,
@@ -171,12 +173,6 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 {
 	static ext_edit_t ext_edit;
 
-	char **files;
-	int nfiles;
-	dir_entry_t *entry;
-	char *is_dup;
-	int from_file = 0;
-
 	/* Allow list of names in tests. */
 	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
 	{
@@ -188,9 +184,9 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		return 0;
 	}
 
-	nfiles = 0;
-	files = NULL;
-	entry = NULL;
+	int nfiles = 0;
+	char **files = NULL;
+	dir_entry_t *entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
 		char path[PATH_MAX + 1];
@@ -206,7 +202,14 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		}
 	}
 
-	is_dup = calloc(nfiles, 1);
+	/* No files to process. */
+	if(nfiles == 0)
+	{
+		ui_sb_msg("0 files renamed");
+		return 1;
+	}
+
+	char *is_dup = calloc(nfiles, 1);
 	if(is_dup == NULL)
 	{
 		free_string_array(files, nfiles);
@@ -214,45 +217,38 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		return 0;
 	}
 
-	/* If we weren't given list of new file names, obtain it from the user. */
+	/* If we weren't given list of new file names, try to obtain it from the
+	 * user. */
+	const int from_file = (nlines == 0);
+	if(from_file)
+	{
+		list = fops_edit_list(&ext_edit, nfiles, files, &nlines, 0);
+	}
+
 	if(nlines == 0)
 	{
-		if(nfiles == 0 ||
-				(list = fops_edit_list(&ext_edit, nfiles, files, &nlines, 0)) == NULL)
-		{
-			ui_sb_msg("0 files renamed");
-		}
-		else
-		{
-			from_file = 1;
-		}
+		ui_sb_msg("0 files renamed");
 	}
-
-	/* If nlines is 0 here, do nothing. */
-	char *error_str = NULL;
-	if(nlines != 0 &&
-			fops_is_name_list_ok(nfiles, nlines, list, files, &error_str) &&
-			fops_is_rename_list_ok(files, is_dup, nfiles, list, &error_str))
+	else
 	{
-		ext_edit_discard(&ext_edit);
-
-		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
-		if(renamed >= 0)
+		char *error_str = NULL;
+		if(verify_list(files, is_dup, nfiles, list, nlines, &error_str))
 		{
-			ui_sb_msgf("%d file%s renamed", renamed, (renamed == 1) ? "" : "s");
+			ext_edit_discard(&ext_edit);
+
+			const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
+			if(renamed >= 0)
+			{
+				ui_sb_msgf("%d file%s renamed", renamed, (renamed == 1) ? "" : "s");
+			}
+
+			flist_sel_stash(view);
+			redraw_view(view);
 		}
-	}
-	else if(error_str != NULL)
-	{
-		ui_sb_err(error_str);
-
-		if(from_file)
+		else if(error_str != NULL)
 		{
+			ui_sb_err(error_str);
 			put_string(&ext_edit.last_error, error_str);
-		}
-		else
-		{
-			free(error_str);
 		}
 	}
 
@@ -263,10 +259,17 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	free_string_array(files, nfiles);
 	free(is_dup);
 
-	flist_sel_stash(view);
-	redraw_view(view);
-	curr_stats.save_msg = 1;
 	return 1;
+}
+
+/* Checks that renaming can be performed.  Returns non-zero if so, otherwise
+ * zero is returned along with setting *error. */
+static int
+verify_list(char *files[], char is_dup[], int nfiles, char *names[], int nnames,
+		char **error)
+{
+	return fops_is_name_list_ok(nfiles, nnames, names, files, error)
+	    && fops_is_rename_list_ok(files, is_dup, nfiles, names, error);
 }
 
 /* Appends files inside of the specified path to the list of the length *len.
