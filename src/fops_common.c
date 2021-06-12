@@ -64,6 +64,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
@@ -131,6 +132,8 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
+TSTATIC char ** edit_list(struct ext_edit_t *ext_edit, size_t orig_len,
+		char *orig[], int *edited_len, int load_always);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
 
@@ -832,7 +835,7 @@ fops_query_list(size_t orig_len, char *orig[], int *edited_len, int load_always,
 
 	while(1)
 	{
-		list = fops_edit_list(&ext_edit, orig_len, orig, &nlines, 0);
+		list = edit_list(&ext_edit, orig_len, orig, &nlines, 0);
 		if(nlines == 0)
 		{
 			/* Cancelled. */
@@ -863,9 +866,12 @@ fops_query_list(size_t orig_len, char *orig[], int *edited_len, int load_always,
 	return list;
 }
 
-char **
-fops_edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[],
-		int *edited_len, int load_always)
+/* Prompts user with a file containing lines from orig array of length orig_len
+ * and returns modified list of strings of length *edited_len or NULL on error
+ * or unchanged list unless load_always is non-zero. */
+TSTATIC char **
+edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[], int *edited_len,
+		int load_always)
 {
 	*edited_len = 0;
 

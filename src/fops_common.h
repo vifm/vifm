@@ -21,6 +21,7 @@
 #define VIFM__FOPS_COMMON_H__
 
 #include "compat/fs_limits.h"
+#include "utils/test_helpers.h"
 #include "background.h"
 #include "ops.h"
 
@@ -157,14 +158,6 @@ int fops_check_dir_path(const struct view_t *view, const char path[],
 char ** fops_query_list(size_t orig_len, char *orig[], int *edited_len,
 		int load_always, fops_query_verify_func verify, void *verify_data);
 
-struct ext_edit_t;
-
-/* Prompts user with a file containing lines from orig array of length orig_len
- * and returns modified list of strings of length *edited_len or NULL on error
- * or unchanged list unless load_always is non-zero. */
-char ** fops_edit_list(struct ext_edit_t *ext_edit, size_t orig_len,
-		char *orig[], int *edited_len, int load_always);
-
 /* Finishes initialization of ops for background processes. */
 void fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op);
 
@@ -218,6 +211,12 @@ const char * fops_get_dst_dir(const struct view_t *view, int at);
  * dialogs.  Returns non-zero if directory can be changed, otherwise zero is
  * returned. */
 int fops_is_dir_writable(DirRole dir_role, const char path[]);
+
+TSTATIC_DEFS(
+	struct ext_edit_t;
+	char ** edit_list(struct ext_edit_t *ext_edit, size_t orig_len, char *orig[],
+		int *edited_len, int load_always);
+)
 
 #endif /* VIFM__FOPS_COMMON_H__ */
 
