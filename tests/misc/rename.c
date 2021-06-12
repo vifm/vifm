@@ -177,7 +177,7 @@ TEST(file_name_list_can_be_reread)
 
 	ext_edit_t ext_edit = {};
 
-	new_list = fops_edit_list(&ext_edit, ARRAY_LEN(list), list, &nlines, 1);
+	new_list = edit_list(&ext_edit, ARRAY_LEN(list), list, &nlines, 1);
 	assert_int_equal(2, nlines);
 	if(nlines >= 2)
 	{
@@ -295,7 +295,7 @@ check_editing(char *orig[], int orig_len, const char template[],
 	update_string(&cfg.vi_command, "./script");
 
 	int actual_len;
-	char **actual = fops_edit_list(&ext_edit, orig_len, orig, &actual_len,
+	char **actual = edit_list(&ext_edit, orig_len, orig, &actual_len,
 			edited == NULL);
 	assert_int_equal(expected_len, actual_len);
 

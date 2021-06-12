@@ -320,6 +320,20 @@ prompt_msg(const char title[], const char message[])
 	return (dialog_result == DR_YES);
 }
 
+int
+prompt_msgf(const char title[], const char format[], ...)
+{
+	va_list pa;
+	va_start(pa, format);
+
+	char msg[2048];
+	vsnprintf(msg, sizeof(msg), format, pa);
+
+	va_end(pa);
+
+	return prompt_msg(title, msg);
+}
+
 char
 prompt_msg_custom(const char title[], const char message[],
 		const response_variant variants[])

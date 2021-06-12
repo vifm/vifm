@@ -26,7 +26,6 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
-#include "int/ext_edit.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
@@ -56,6 +55,14 @@ typedef struct
 }
 dir_size_args_t;
 
+/* Arguments pack for fops_query_list() verification function. */
+typedef struct
+{
+	const char *dst_path; /* Destination directory. */
+	int force;            /* Whether operation should be forced. */
+}
+verify_args_t;
+
 static int delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash,
 		int nested);
 static const char * get_top_dir(const view_t *view);
@@ -64,6 +71,8 @@ static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
 static void change_link_cb(const char new_target[]);
 static int complete_filename(const char str[], void *arg);
+static int verify_list(char *files[], int nfiles, char *names[], int nnames,
+		char **error, void *data);
 TSTATIC const char * gen_clone_name(const char dir[], const char normal_name[]);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
@@ -595,19 +604,8 @@ complete_filename(const char str[], void *arg)
 int
 fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 {
-	static ext_edit_t ext_edit;
-
-	int i;
-	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	char dst_path[PATH_MAX + 1];
-	char **marked;
-	size_t nmarked;
-	int custom_fnames;
-	int nmarked_files;
 	int with_dir = 0;
-	int from_file;
-	dir_entry_t *entry;
-	ops_t *ops;
 	const char *const curr_dir = flist_get_dir(view);
 
 	if(!fops_can_read_marked_files(view))
@@ -641,16 +639,21 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		return 0;
 	}
 
-	marked = fops_grab_marked_files(view, &nmarked);
+	size_t nmarked;
+	char **marked = fops_grab_marked_files(view, &nmarked);
 
-	from_file = nlines < 0;
+	verify_args_t verify_args = { .dst_path = dst_path, .force = force };
+
+	const int from_file = (nlines < 0);
 	if(from_file)
 	{
-		list = fops_edit_list(&ext_edit, nmarked, marked, &nlines, 0);
+		list = fops_query_list(nmarked, marked, &nlines, 0, &verify_list,
+				&verify_args);
 		if(list == NULL)
 		{
 			free_string_array(marked, nmarked);
-			return 0;
+			ui_sb_msg("0 files cloned");
+			return 1;
 		}
 	}
 
@@ -658,21 +661,12 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 	char *error_str = NULL;
 	if(nlines > 0 &&
-			(!fops_is_name_list_ok(nmarked, nlines, list, NULL, &error_str) ||
-			!fops_is_copy_list_ok(dst_path, nlines, list, force, &error_str)))
+			!verify_list(NULL, nmarked, list, nlines, &error_str, &verify_args))
 	{
 		if(error_str != NULL)
 		{
 			ui_sb_err(error_str);
-
-			if(from_file)
-			{
-				put_string(&ext_edit.last_error, error_str);
-			}
-			else
-			{
-				free(error_str);
-			}
+			free(error_str);
 		}
 
 		redraw_view(view);
@@ -683,9 +677,9 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		return 1;
 	}
 
-	ext_edit_discard(&ext_edit);
 	flist_sel_stash(view);
 
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	if(with_dir)
 	{
 		snprintf(undo_msg, sizeof(undo_msg), "clone in %s to %s: ", curr_dir,
@@ -697,20 +691,18 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	}
 	fops_append_marked_files(view, undo_msg, list);
 
-	ops = fops_get_ops(OP_COPY, "Cloning", curr_dir,
+	ops_t *ops = fops_get_ops(OP_COPY, "Cloning", curr_dir,
 			with_dir ? list[0] : curr_dir);
 
-	nmarked_files = fops_enqueue_marked_files(ops, view, dst_path, 0);
+	int nmarked_files = fops_enqueue_marked_files(ops, view, dst_path, 0);
 
-	custom_fnames = (nlines > 0);
+	const int custom_fnames = (nlines > 0);
 
 	un_group_open(undo_msg);
-	entry = NULL;
-	i = 0;
+	dir_entry_t *entry = NULL;
+	int i = 0;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		int err;
-		int j;
 		const char *const name = entry->name;
 		const char *const clone_dst = with_dir ? dst_path : entry->origin;
 		const char *clone_name;
@@ -727,7 +719,8 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 		fops_progress_msg("Cloning files", i, nmarked_files);
 
-		err = 0;
+		int j;
+		int err = 0;
 		for(j = 0; j < copies; ++j)
 		{
 			if(path_exists_at(clone_dst, clone_name, NODEREF))
@@ -759,6 +752,18 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 	fops_free_ops(ops);
 	return 1;
+}
+
+/* Checks that cloning can be performed.  Returns non-zero if so, otherwise zero
+ * is returned along with setting *error. */
+static int
+verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
+		void *data)
+{
+	verify_args_t *args = data;
+	return fops_is_name_list_ok(nfiles, nnames, names, NULL, error)
+	    && fops_is_copy_list_ok(args->dst_path, nnames, names, args->force,
+	                            error);
 }
 
 /* Generates name of clone for a file.  Returns pointer to statically allocated

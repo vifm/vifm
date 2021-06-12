@@ -64,6 +64,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
@@ -131,6 +132,8 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
+TSTATIC char ** edit_list(struct ext_edit_t *ext_edit, size_t orig_len,
+		char *orig[], int *edited_len, int load_always);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
 
@@ -822,8 +825,53 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 }
 
 char **
-fops_edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[],
-		int *edited_len, int load_always)
+fops_query_list(size_t orig_len, char *orig[], int *edited_len, int load_always,
+		fops_query_verify_func verify, void *verify_data)
+{
+	ext_edit_t ext_edit = {};
+	char **list = NULL;
+	int nlines = 0;
+	char *error_str = NULL;
+
+	while(1)
+	{
+		list = edit_list(&ext_edit, orig_len, orig, &nlines, 0);
+		if(nlines == 0)
+		{
+			/* Cancelled. */
+			break;
+		}
+
+		if(!verify(orig, orig_len, list, nlines, &error_str, verify_data))
+		{
+			free_string_array(list, nlines);
+			list = NULL;
+			nlines = 0;
+
+			/* Stray space prevents removal of the line. */
+			if(prompt_msgf("Naming error", "%s\n \nRe-edit names?", error_str))
+			{
+				update_string(&ext_edit.last_error, error_str);
+				continue;
+			}
+		}
+
+		break;
+	}
+
+	free(error_str);
+	ext_edit_discard(&ext_edit);
+
+	*edited_len = nlines;
+	return list;
+}
+
+/* Prompts user with a file containing lines from orig array of length orig_len
+ * and returns modified list of strings of length *edited_len or NULL on error
+ * or unchanged list unless load_always is non-zero. */
+TSTATIC char **
+edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[], int *edited_len,
+		int load_always)
 {
 	*edited_len = 0;
 

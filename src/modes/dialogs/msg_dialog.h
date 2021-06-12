@@ -58,6 +58,11 @@ int prompt_error_msgf(const char title[], const char format[], ...)
  * non-zero when user answers yes, otherwise zero is returned. */
 int prompt_msg(const char title[], const char message[]);
 
+/* Same as prompt_msgf(...), but with format.  Returns non-zero when user
+ * answers yes, otherwise zero is returned. */
+int prompt_msgf(const char title[], const char format[], ...)
+	_gnuc_printf(2, 3);
+
 /* Same as prompt_msg() but with custom list of options.  The responses array
  * should be terminated with a record filled with zeroes.  Returns one of keys
  * defined in the array.  The array has to contain at least one element.  Use
