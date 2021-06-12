@@ -597,17 +597,8 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 {
 	static ext_edit_t ext_edit;
 
-	int i;
-	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	char dst_path[PATH_MAX + 1];
-	char **marked;
-	size_t nmarked;
-	int custom_fnames;
-	int nmarked_files;
 	int with_dir = 0;
-	int from_file;
-	dir_entry_t *entry;
-	ops_t *ops;
 	const char *const curr_dir = flist_get_dir(view);
 
 	if(!fops_can_read_marked_files(view))
@@ -641,16 +632,18 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		return 0;
 	}
 
-	marked = fops_grab_marked_files(view, &nmarked);
+	size_t nmarked;
+	char **marked = fops_grab_marked_files(view, &nmarked);
 
-	from_file = nlines < 0;
+	const int from_file = (nlines < 0);
 	if(from_file)
 	{
 		list = fops_edit_list(&ext_edit, nmarked, marked, &nlines, 0);
 		if(list == NULL)
 		{
 			free_string_array(marked, nmarked);
-			return 0;
+			ui_sb_msg("0 files cloned");
+			return 1;
 		}
 	}
 
@@ -686,6 +679,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	ext_edit_discard(&ext_edit);
 	flist_sel_stash(view);
 
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	if(with_dir)
 	{
 		snprintf(undo_msg, sizeof(undo_msg), "clone in %s to %s: ", curr_dir,
@@ -697,20 +691,18 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	}
 	fops_append_marked_files(view, undo_msg, list);
 
-	ops = fops_get_ops(OP_COPY, "Cloning", curr_dir,
+	ops_t *ops = fops_get_ops(OP_COPY, "Cloning", curr_dir,
 			with_dir ? list[0] : curr_dir);
 
-	nmarked_files = fops_enqueue_marked_files(ops, view, dst_path, 0);
+	int nmarked_files = fops_enqueue_marked_files(ops, view, dst_path, 0);
 
-	custom_fnames = (nlines > 0);
+	const int custom_fnames = (nlines > 0);
 
 	un_group_open(undo_msg);
-	entry = NULL;
-	i = 0;
+	dir_entry_t *entry = NULL;
+	int i = 0;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		int err;
-		int j;
 		const char *const name = entry->name;
 		const char *const clone_dst = with_dir ? dst_path : entry->origin;
 		const char *clone_name;
@@ -727,7 +719,8 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 		fops_progress_msg("Cloning files", i, nmarked_files);
 
-		err = 0;
+		int j;
+		int err = 0;
 		for(j = 0; j < copies; ++j)
 		{
 			if(path_exists_at(clone_dst, clone_name, NODEREF))
