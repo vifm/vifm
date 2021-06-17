@@ -4997,6 +4997,14 @@ are visible.
 u \- use Unicode characters in the TUI (Unicode ellipsis instead of "...").
 .br
 v \- vary width of middle border to equalize view sizes.
+
+Each pane title contains the path of the listed directory. If too large, the
+path is truncated at the left for the active pane and on the right for the other
+pane. This can be modified with:
+
+l \- truncation is always on the left.
+.br
+r \- truncation is always on the right.
 .TP
 .BI "'undolevels' 'ul'"
 type: integer

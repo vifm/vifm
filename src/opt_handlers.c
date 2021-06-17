@@ -390,11 +390,13 @@ static const char *tabscope_vals[][2] = {
 
 /* Possible flags of 'tuioptions' and their count. */
 static const char *tuioptions_vals[][2] = {
-	{ "psuv", "all tuioptions values" },
-	{ "p",    "use padding in views and preview" },
-	{ "s",    "display side borders" },
-	{ "u",    "use Unicode characters in the TUI" },
-	{ "v",    "vary width of middle border to equalize view sizes" },
+	{ "lprsuv", "all tuioptions values" },
+	{ "l",      "always show pane title ellipsis on the left" },
+	{ "p",      "use padding in views and preview" },
+	{ "r",      "always show pane title ellipsis on the right" },
+	{ "s",      "display side borders" },
+	{ "u",      "use Unicode characters in the TUI" },
+	{ "v",      "vary width of middle border to equalize view sizes" },
 };
 
 /* Possible values of 'dirsize' option. */
@@ -1272,8 +1274,10 @@ static void
 init_tuioptions(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s%s%s%s",
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s%s",
+			cfg.ellipsis_position < 0 ? "l" : "",
 			cfg.extra_padding ? "p" : "",
+			cfg.ellipsis_position > 0 ? "r" : "",
 			cfg.side_borders_visible ? "s" : "",
 			cfg.use_unicode_characters ? "u" : "",
 			cfg.flexible_splitter ? "v" : "");
@@ -3508,6 +3512,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	cfg.side_borders_visible = 0;
 	cfg.use_unicode_characters = 0;
 	cfg.flexible_splitter = 0;
+	cfg.ellipsis_position = 0;
 
 	/* And set the ones present in the value. */
 	p = val.str_val;
@@ -3515,8 +3520,14 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	{
 		switch(*p)
 		{
+			case 'l':
+				cfg.ellipsis_position = -1;
+				break;
 			case 'p':
 				cfg.extra_padding = 1;
+				break;
+			case 'r':
+				cfg.ellipsis_position = 1;
 				break;
 			case 's':
 				cfg.side_borders_visible = 1;
