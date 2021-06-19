@@ -266,10 +266,9 @@ typedef struct config_t
 	/* Comma-separated list of places to look for relative path to directories. */
 	char *cd_path;
 
-	/* < 0  ellipsis always show on the left of the pane title.
-	 * = 0  ellipsis show on the left if current pane, on the right if other pane.
-	 * > 0  ellipsis always show on the right of the pane title. */
-
+	/* < 0 - always show ellipsis on the left of the pane title,
+	 * = 0 - show ellipsis on the left for current pane, on the right for other,
+	 * > 0 - always show ellipsis on the right of the pane title. */
 	int ellipsis_position;
 
 	/* Whether there should be reserved single character width space before and
