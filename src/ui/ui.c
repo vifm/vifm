@@ -2290,9 +2290,18 @@ print_view_title(const view_t *view, int active_view, char title[])
 
 	werase(view->title);
 
-	ellipsis = active_view
-	         ? left_ellipsis(title, title_width, curr_stats.ellipsis)
-	         : right_ellipsis(title, title_width, curr_stats.ellipsis);
+	if (cfg.ellipsis_position != 0)
+	{
+		ellipsis = cfg.ellipsis_position < 0
+		         ? left_ellipsis(title, title_width, curr_stats.ellipsis)
+		         : right_ellipsis(title, title_width, curr_stats.ellipsis);
+	}
+	else
+	{
+		ellipsis = active_view
+		         ? left_ellipsis(title, title_width, curr_stats.ellipsis)
+		         : right_ellipsis(title, title_width, curr_stats.ellipsis);
+	}
 
 	wprint(view->title, ellipsis);
 	free(ellipsis);

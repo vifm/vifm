@@ -263,8 +263,13 @@ typedef struct config_t
 	/* Comma-separated list of file system types which are slow to respond. */
 	char *slow_fs_list;
 
-	/* Coma separated list of places to look for relative path to directories. */
+	/* Comma-separated list of places to look for relative path to directories. */
 	char *cd_path;
+
+	/* < 0 - always show ellipsis on the left of the pane title,
+	 * = 0 - show ellipsis on the left for current pane, on the right for other,
+	 * > 0 - always show ellipsis on the right of the pane title. */
+	int ellipsis_position;
 
 	/* Whether there should be reserved single character width space before and
 	 * after file list column inside a view and first and last columns and lines

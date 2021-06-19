@@ -58,6 +58,9 @@
 	supports comments for displaying last error and original file names.
 	Thanks to Jose Riha (a.k.a. jose1711) and Diogo Lemos (a.k.a. dmlemos).
 
+	Added "l" and "r" flags to the 'tuioptions' option.  It controls
+	truncation of view titles.  Patch by qsmodo.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

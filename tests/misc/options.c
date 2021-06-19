@@ -559,28 +559,36 @@ TEST(previewprg_updates_state_of_view)
 TEST(tuioptions)
 {
 	assert_success(vle_opts_set("tuioptions=", OPT_GLOBAL));
+	assert_int_equal(0, cfg.ellipsis_position);
 	assert_false(cfg.extra_padding);
 	assert_false(cfg.side_borders_visible);
 	assert_false(cfg.use_unicode_characters);
 	assert_false(cfg.flexible_splitter);
 
-	assert_success(vle_opts_set("tuioptions=pu", OPT_GLOBAL));
+	assert_success(vle_opts_set("tuioptions=pul", OPT_GLOBAL));
+	assert_int_equal(-1, cfg.ellipsis_position);
 	assert_true(cfg.extra_padding);
 	assert_false(cfg.side_borders_visible);
 	assert_true(cfg.use_unicode_characters);
 	assert_false(cfg.flexible_splitter);
 
-	assert_success(vle_opts_set("tuioptions+=s", OPT_GLOBAL));
+	assert_success(vle_opts_set("tuioptions+=sr", OPT_GLOBAL));
+	assert_int_equal(1, cfg.ellipsis_position);
 	assert_true(cfg.extra_padding);
 	assert_true(cfg.side_borders_visible);
 	assert_true(cfg.use_unicode_characters);
 	assert_false(cfg.flexible_splitter);
+	/* "l" shouldn't be in the value along with "r". */
+	assert_string_equal("prsu", vle_opts_get("tuioptions", OPT_GLOBAL));
 
-	assert_success(vle_opts_set("tuioptions+=v", OPT_GLOBAL));
+	assert_success(vle_opts_set("tuioptions+=vl", OPT_GLOBAL));
+	assert_int_equal(-1, cfg.ellipsis_position);
 	assert_true(cfg.extra_padding);
 	assert_true(cfg.side_borders_visible);
 	assert_true(cfg.use_unicode_characters);
 	assert_true(cfg.flexible_splitter);
+	/* "r" shouldn't be in the value along with "l". */
+	assert_string_equal("lpsuv", vle_opts_get("tuioptions", OPT_GLOBAL));
 }
 
 TEST(setting_tabscope_works)

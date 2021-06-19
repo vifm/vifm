@@ -180,6 +180,7 @@ cfg_init(void)
 	cfg.cd_path = strdup(env_get_def("CDPATH", DEFAULT_CD_PATH));
 	replace_char(cfg.cd_path, ':', ',');
 
+	cfg.ellipsis_position = 0;
 	cfg.extra_padding = 1;
 	cfg.side_borders_visible = 1;
 	cfg.use_unicode_characters = 0;
