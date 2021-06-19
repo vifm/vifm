@@ -3546,6 +3546,10 @@ tuioptions_handler(OPT_OP op, optval_t val)
 		++p;
 	}
 
+	/* Make sure "r" and "l" flags don't appear at the same time. */
+	init_tuioptions(&val);
+	vle_opts_assign("tuioptions", val, OPT_GLOBAL);
+
 	curr_stats.ellipsis = (cfg.use_unicode_characters ? "…" : "...");
 	columns_set_ellipsis(curr_stats.ellipsis);
 
