@@ -1387,19 +1387,12 @@ rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 	bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER,
 			supply_input ? &input : NULL);
 
-	if(input == NULL)
+	if(input != NULL)
 	{
-		return;
+		const int null_sep = (flags == MF_PIPE_FILE_LIST_Z);
+		write_marked_paths(input, view, null_sep);
+		fclose(input);
 	}
-
-	const char separator = (flags == MF_PIPE_FILE_LIST ? '\n' : '\0');
-	dir_entry_t *entry = NULL;
-	while(iter_marked_entries(view, &entry))
-	{
-		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
-		fprintf(input, "%s%s%s%c", entry->origin, sep, entry->name, separator);
-	}
-	fclose(input);
 }
 
 int

@@ -45,8 +45,9 @@ typedef enum
 }
 ShellRequester;
 
-/* Forward declaration. */
+/* Forward declarations. */
 struct dir_entry_t;
+struct view_t;
 
 /* Callback for process_cmd_output() function. */
 typedef void (*cmd_output_handler)(const char line[], void *arg);
@@ -169,6 +170,10 @@ void safe_qsort(void *base, size_t nmemb, size_t size,
  * or Bot. */
 void format_position(char buf[], size_t buf_len, int top, int total,
 		int visible);
+
+/* Writes list of marked files to the file.  Files are separated by new line or
+ * null characters. */
+void write_marked_paths(FILE *file, struct view_t *view, int null_sep);
 
 /* Checks line for path in it.  Ignores empty lines and attempts to parse it as
  * location line (path followed by a colon and optional line and column

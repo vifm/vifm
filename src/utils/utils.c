@@ -49,6 +49,7 @@
 #include "../ui/cancellation.h"
 #include "../ui/ui.h"
 #include "../background.h"
+#include "../filelist.h"
 #include "../registers.h"
 #include "../status.h"
 #include "env.h"
@@ -771,6 +772,18 @@ format_position(char buf[], size_t buf_len, int top, int total, int visible)
 	else
 	{
 		snprintf(buf, buf_len, "%2d%%", (top*100)/(total - visible));
+	}
+}
+
+void
+write_marked_paths(FILE *file, view_t *view, int null_sep)
+{
+	const char separator = (null_sep ? '\0' : '\n');
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
+		fprintf(file, "%s%s%s%c", entry->origin, sep, entry->name, separator);
 	}
 }
 
