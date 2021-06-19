@@ -889,7 +889,7 @@ get_sys_conf_dir(void)
 }
 
 FILE *
-win_tmpfile()
+win_tmpfile(void)
 {
 	char dir[PATH_MAX + 1];
 	char file[PATH_MAX + 1];
