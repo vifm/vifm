@@ -109,6 +109,10 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 	{
 		int returned_exit_code;
 		ret = win_exec_cmd(sh_cmd, &returned_exit_code);
+		if (!returned_exit_code)
+		{
+			ret = -1;
+		}
 	}
 
 	free(sh_cmd);
