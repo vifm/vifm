@@ -1028,23 +1028,25 @@ emark_cmd(const cmd_info_t *cmd_info)
 	else
 	{
 		const int use_term_mux = flags != MF_NO_TERM_MUX;
+		const ShellPause pause = (cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
 
 		flist_sel_stash(curr_view);
+
+		const char *cmd_to_run = com;
+		char *expanded_cmd = NULL;
+
 		if(cfg.fast_run)
 		{
-			char *const buf = fast_run_complete(com);
-			if(buf != NULL)
+			char *const expanded_cmd = fast_run_complete(com);
+			if(expanded_cmd != NULL)
 			{
-				(void)rn_shell(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-						use_term_mux, SHELL_BY_USER);
-				free(buf);
+				cmd_to_run = expanded_cmd;
 			}
 		}
-		else
-		{
-			(void)rn_shell(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					use_term_mux, SHELL_BY_USER);
-		}
+
+		(void)rn_shell(cmd_to_run, pause, use_term_mux, SHELL_BY_USER);
+
+		free(expanded_cmd);
 	}
 
 	snprintf(buf, sizeof(buf), "in %s: !%s",
@@ -5236,7 +5238,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		rn_shell(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
+		(void)rn_shell(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
 				SHELL_BY_USER);
 	}
 
