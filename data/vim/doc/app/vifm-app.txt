@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jun 19
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jun 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2744,7 +2744,8 @@ The command macros may be used in user commands.
             internally for viewing via |vifm-:jobs| menu.
 
                                                                *vifm-%Pl*
-  %Pl       pipe list of files to standard input of a background process.
+  %Pl       pipe list of files to standard input of a background or
+            foreground process.
                                                                *vifm-%Pz*
   %Pz       same as %Pz, but separates paths by null ('\0') character.
 

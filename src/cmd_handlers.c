@@ -1044,7 +1044,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 			}
 		}
 
-		(void)rn_shell(cmd_to_run, pause, use_term_mux, SHELL_BY_USER);
+		if(flags == MF_PIPE_FILE_LIST || flags == MF_PIPE_FILE_LIST_Z)
+		{
+			(void)rn_pipe(cmd_to_run, curr_view, flags, pause);
+		}
+		else
+		{
+			(void)rn_shell(cmd_to_run, pause, use_term_mux, SHELL_BY_USER);
+		}
 
 		free(expanded_cmd);
 	}
