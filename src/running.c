@@ -587,6 +587,10 @@ run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 		assert(flags != MF_IGNORE && "This case is for rn_ext()");
 		rn_start_bg_command(view, cmd, flags);
 	}
+	else if(flags == MF_PIPE_FILE_LIST || flags == MF_PIPE_FILE_LIST_Z)
+	{
+		rn_pipe(cmd, view, flags, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
+	}
 	else
 	{
 		(void)rn_shell(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
@@ -831,6 +835,25 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	int exit_code = run_shell_finish(command, cmd, pause, status);
 
 	free(cmd);
+	return exit_code;
+}
+
+int
+rn_pipe(const char command[], struct view_t *view, MacroFlags flags,
+		ShellPause pause)
+{
+	FILE *input_tmp = os_tmpfile();
+
+	const int null_sep = (flags == MF_PIPE_FILE_LIST_Z);
+	write_marked_paths(input_tmp, view, null_sep);
+
+	char *cmd = run_shell_prepare(command, pause, 0, SHELL_BY_USER);
+	int status = vifm_system_input(cmd, input_tmp, SHELL_BY_USER);
+	int exit_code = run_shell_finish(command, cmd, pause, status);
+
+	free(cmd);
+	fclose(input_tmp);
+
 	return exit_code;
 }
 

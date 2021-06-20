@@ -98,6 +98,20 @@ vifm_system(char command[], ShellRequester by)
 }
 
 int
+vifm_system_input(char command[], FILE *input, ShellRequester by)
+{
+#ifdef _WIN32
+	/* The check is primarily for tests, otherwise screen is reset. */
+	if(curr_stats.load_stage != 0)
+	{
+		system("cls");
+	}
+#endif
+	LOG_INFO_MSG("Shell command with custom input: %s", command);
+	return run_with_input(command, input, by);
+}
+
+int
 process_cmd_output(const char descr[], const char cmd[], int user_sh,
 		int interactive, cmd_output_handler handler, void *arg)
 {

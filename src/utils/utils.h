@@ -58,6 +58,10 @@ typedef void (*cmd_output_handler)(const char line[], void *arg);
  * the command.  Returns error code, which is zero on success. */
 int vifm_system(char command[], ShellRequester by);
 
+/* Same as vifm_system(), but provides the command with custom input.  Don't
+ * pass pipe for input, it can cause deadlock. */
+int vifm_system_input(char command[], FILE *input, ShellRequester by);
+
 /* Pauses shell.  Assumes that curses interface is off. */
 void pause_shell(void);
 

@@ -120,6 +120,50 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 	return ret;
 }
 
+int
+run_with_input(char command[], FILE *input, ShellRequester by)
+{
+	rewind(input);
+
+	PROCESS_INFORMATION pinfo;
+
+	STARTUPINFOW startup = {
+		.dwFlags = STARTF_USESTDHANDLES,
+		.hStdInput = (HANDLE)_get_osfhandle(_fileno(input)),
+		.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE),
+		.hStdError = GetStdHandle(STD_ERROR_HANDLE),
+	};
+	SetHandleInformation(startup.hStdInput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup.hStdOutput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup.hStdError, HANDLE_FLAG_INHERIT, 1);
+
+	char *sh_cmd = win_make_sh_cmd(command, by);
+	wchar_t *wide_cmd = to_wide(sh_cmd);
+	free(sh_cmd);
+
+	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0,
+			NULL, NULL, &startup, &pinfo);
+	free(wide_cmd);
+
+	if(!started)
+	{
+		return -1;
+	}
+
+	CloseHandle(pinfo.hThread);
+
+	int is_exit_code;
+	DWORD code = handle_process(NULL, pinfo.hProcess, &is_exit_code);
+	if(!is_exit_code && code != NO_ERROR)
+	{
+		LOG_WERROR(code);
+		code = -1;
+	}
+
+	CloseHandle(pinfo.hProcess);
+	return code;
+}
+
 void
 recover_after_shellout(void)
 {
@@ -343,14 +387,14 @@ base64_encode(const char str[])
 	return out;
 }
 
-/* Handles process execution.  Returns system error code when sets
- * *got_exit_code to 0 and exit code of the process otherwise. */
+/* Handles process execution.  The cmd can be NULL.  Returns system error code
+ * when sets *got_exit_code to 0 and exit code of the process otherwise. */
 static DWORD
 handle_process(const char cmd[], HANDLE proc, int *got_exit_code)
 {
 	DWORD exit_code;
 
-	if(!should_wait_for_program(cmd))
+	if(cmd != NULL && !should_wait_for_program(cmd))
 	{
 		return 0;
 	}
