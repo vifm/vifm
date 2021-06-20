@@ -5230,6 +5230,10 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		rn_start_bg_command(curr_view, expanded_com, flags);
 	}
+	else if(flags == MF_PIPE_FILE_LIST || flags == MF_PIPE_FILE_LIST_Z)
+	{
+		(void)rn_pipe(expanded_com, curr_view, flags, PAUSE_ON_ERROR);
+	}
 	else
 	{
 		rn_shell(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,

@@ -48,7 +48,8 @@
 	qsmodo.
 
 	Added %Pl and %Pz macros for redirecting list of files to background
-	processes or foreground :file[x]type handlers.  Thanks to PRESFIL.
+	processes or foreground :file[x]type handlers and user-defined commands.
+	Thanks to PRESFIL.
 
 	Added %N macro to 'statusline' option, which adds a line break and
 	increases height of the status line.  Thanks to Jose Riha (a.k.a.
