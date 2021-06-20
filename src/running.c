@@ -125,7 +125,8 @@ static char * gen_normal_cmd(const char cmd[], int pause);
 static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 		const char start[], int background);
-static void output_to_statusbar(const char cmd[]);
+static void output_to_statusbar(const char cmd[], view_t *view,
+		MacroFlags flags);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
 static void run_in_split(const view_t *view, const char cmd[], int vert_split);
@@ -1232,7 +1233,7 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 
 	if(ma_flags_present(flags, MF_STATUSBAR_OUTPUT))
 	{
-		output_to_statusbar(cmd);
+		output_to_statusbar(cmd, view, flags);
 		*save_msg = 1;
 		return -1;
 	}
@@ -1299,17 +1300,36 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 
 /* Executes the cmd and displays its output on the status bar. */
 static void
-output_to_statusbar(const char cmd[])
+output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 {
 	FILE *file, *err;
 	char buf[2048];
 	char *lines;
 	size_t len;
-	int error;
+	FILE *input_tmp = NULL;
+
+	if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+	{
+		input_tmp = os_tmpfile();
+
+		const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+		write_marked_paths(input_tmp, view, null_sep);
+	}
 
 	setup_shellout_env();
-	error = (bg_run_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	int error = 0;
+	if(bg_run_and_capture((char *)cmd, 1, input_tmp, &file, &err) == (pid_t)-1)
+	{
+		error = 1;
+	}
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
+
 	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
@@ -1359,7 +1379,7 @@ output_to_nowhere(const char cmd[])
 	int error;
 
 	setup_shellout_env();
-	error = (bg_run_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	error = (bg_run_and_capture((char *)cmd, 1, NULL, &file, &err) == (pid_t)-1);
 	cleanup_shellout_env();
 	if(error)
 	{

@@ -628,7 +628,7 @@ append_error_msg(bg_job_t *job, const char err_msg[])
 
 #ifndef _WIN32
 pid_t
-bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
+bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 {
 	pid_t pid;
 	int out_pipe[2];
@@ -646,6 +646,11 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 		close(out_pipe[0]);
 		close(out_pipe[1]);
 		return (pid_t)-1;
+	}
+
+	if(in != NULL)
+	{
+		fflush(in);
 	}
 
 	if((pid = fork()) == -1)
@@ -673,6 +678,18 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 			_Exit(EXIT_FAILURE);
 		}
 
+		if(in != NULL)
+		{
+			rewind(in);
+
+			if(dup2(fileno(in), STDIN_FILENO) == -1)
+			{
+				_Exit(EXIT_FAILURE);
+			}
+
+			fclose(in);
+		}
+
 		sh = user_sh ? get_execv_path(cfg.shell) : "/bin/sh";
 		sh_flag = user_sh ? cfg.shell_cmd_flag : "-c";
 		prepare_for_exec();
@@ -689,10 +706,12 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 }
 #else
 /* Runs command in a background and redirects its stdout and stderr streams to
- * file streams which are set.  Returns (pid_t)0 or (pid_t)-1 on error. */
+ * file streams which are set.  Input is redirected only if in parameter isn't
+ * NULL.  Don't pass pipe for input, it can cause deadlock.  Returns (pid_t)0 or
+ * (pid_t)-1 on error. */
 static pid_t
-background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
-		int out_pipe[2], int err_pipe[2])
+background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
+		FILE **err, int out_pipe[2], int err_pipe[2])
 {
 	const wchar_t *args[4];
 	char *cwd;
@@ -701,6 +720,15 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	wchar_t *wide_sh = NULL;
 	wchar_t *wide_sh_flag;
 	const int use_cmd = (!user_sh || curr_stats.shell_type == ST_CMD);
+
+	if(in != NULL)
+	{
+		fflush(in);
+		rewind(in);
+
+		if(_dup2(_fileno(in), _fileno(stdin)) != 0)
+			return (pid_t)-1;
+	}
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
 		return (pid_t)-1;
@@ -765,8 +793,9 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 }
 
 pid_t
-bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
+bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 {
+	int in_fd;
 	int out_fd, out_pipe[2];
 	int err_fd, err_pipe[2];
 	pid_t pid;
@@ -785,15 +814,17 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 		return (pid_t)-1;
 	}
 
+	in_fd = dup(_fileno(stdin));
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	pid = background_and_capture_internal(cmd, user_sh, out, err, out_pipe,
+	pid = background_and_capture_internal(cmd, user_sh, in, out, err, out_pipe,
 			err_pipe);
 
 	_close(out_pipe[1]);
 	_close(err_pipe[1]);
 
+	_dup2(in_fd, _fileno(stdin));
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
 
