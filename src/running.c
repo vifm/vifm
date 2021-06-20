@@ -575,7 +575,7 @@ run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	bg = !pause && (bg || force_bg);
 
 	int save_msg = 0;
-	if(rn_ext(cmd, prog_spec, flags, bg, &save_msg) != 0)
+	if(rn_ext(view, cmd, prog_spec, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
@@ -1215,8 +1215,8 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 }
 
 int
-rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
-		int *save_msg)
+rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
+		int bg, int *save_msg)
 {
 	if(bg && (ma_flags_missing(flags, MF_NONE) &&
 	          ma_flags_missing(flags, MF_NO_TERM_MUX) &&
@@ -1269,7 +1269,7 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 	{
 		const int navigate = ma_flags_present(flags, MF_MENU_NAV_OUTPUT);
 		setup_shellout_env();
-		*save_msg = show_user_menu(curr_view, cmd, title, navigate) != 0;
+		*save_msg = show_user_menu(view, cmd, title, navigate) != 0;
 		cleanup_shellout_env();
 	}
 	else if((ma_flags_present(flags, MF_SPLIT) ||
@@ -1277,7 +1277,7 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 	        curr_stats.term_multiplexer != TM_NONE)
 	{
 		const int vert_split = ma_flags_present(flags, MF_SPLIT_VERT);
-		run_in_split(curr_view, cmd, vert_split);
+		run_in_split(view, cmd, vert_split);
 	}
 	else if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) ||
 	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT) ||
@@ -1288,7 +1288,7 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		              || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
 		const int interactive = ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT)
 		                     || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
-		rn_for_flist(curr_view, cmd, title, very, interactive);
+		rn_for_flist(view, cmd, title, very, interactive);
 	}
 	else
 	{

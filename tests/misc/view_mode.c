@@ -118,7 +118,7 @@ TEST(command_for_quickview_is_not_expanded_again)
 	update_string(&curr_view->dir_entry[0].name, "fake");
 
 	int save_msg;
-	assert_true(rn_ext("echo %d%c", "title", MF_PREVIEW_OUTPUT, 0,
+	assert_true(rn_ext(curr_view, "echo %d%c", "title", MF_PREVIEW_OUTPUT, 0,
 		&save_msg) < 0);
 
 	strlist_t lines = modview_lines(curr_stats.preview.explore);
