@@ -110,6 +110,10 @@ static void follow_link(view_t *view, int follow_dirs, int ultimate);
 static void enter_dir(struct view_t *view);
 static int cd_to_parent_dir(view_t *view);
 static void extract_last_path_component(const char path[], char buf[]);
+static char * run_shell_prepare(const char command[], ShellPause pause,
+		int use_term_multiplexer, ShellRequester by);
+static int run_shell_finish(const char cmd[], const char final_cmd[],
+		ShellPause pause, int status);
 static void setup_shellout_env(void);
 static void cleanup_shellout_env(void);
 static char * gen_shell_cmd(const char cmd[], int pause,
@@ -822,15 +826,24 @@ int
 rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by)
 {
-	char *cmd;
-	int result;
-	int ec;
+	char *cmd = run_shell_prepare(command, pause, use_term_multiplexer, by);
+	int status = vifm_system(cmd, by);
+	int exit_code = run_shell_finish(command, cmd, pause, status);
 
+	free(cmd);
+	return exit_code;
+}
+
+/* Prepares to run a command.  Returns actual command to execute, which should
+ * be freed by the caller. */
+static char *
+run_shell_prepare(const char command[], ShellPause pause,
+		int use_term_multiplexer, ShellRequester by)
+{
 	/* Shutdown UI at this point, where $PATH isn't cleared. */
 	ui_shutdown();
 
-	int shellout = (command == NULL);
-	if(shellout)
+	if(command == NULL)
 	{
 		command = env_get_def("SHELL", cfg.shell);
 
@@ -838,31 +851,32 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		load_clean_path_env();
 	}
 
-	if(pause == PAUSE_ALWAYS && command != NULL && ends_with(command, "&"))
+	setup_shellout_env();
+
+	return gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer,
+			&by);
+}
+
+/* Handles command running result.  Returns exit code. */
+static int
+run_shell_finish(const char cmd[], const char final_cmd[], ShellPause pause,
+		int status)
+{
+	cleanup_shellout_env();
+
+	int exit_code = WEXITSTATUS(status);
+
+	if(pause == PAUSE_ALWAYS && final_cmd != NULL && ends_with(final_cmd, "&"))
 	{
 		pause = PAUSE_ON_ERROR;
 	}
 
-	setup_shellout_env();
-
-	cmd = gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer,
-			&by);
-
-	ec = vifm_system(cmd, by);
-	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
-	 * subprocess exited. */
-	result = WEXITSTATUS(ec);
-
-	cleanup_shellout_env();
-
-	if(result != 0 && pause == PAUSE_ON_ERROR)
+	if(exit_code != 0 && pause == PAUSE_ON_ERROR)
 	{
-		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", cmd,
-				result, result, ec);
+		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x",
+				final_cmd, exit_code, exit_code, status);
 		pause_shell();
 	}
-
-	free(cmd);
 
 	/* Force updates of views that don't have associated watchers. */
 	if(flist_custom_active(&lwin) && lwin.custom.type != CV_TREE)
@@ -887,12 +901,12 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		curs_set(0);
 	}
 
-	if(shellout)
+	if(cmd == NULL)
 	{
 		load_real_path_env();
 	}
 
-	return result;
+	return exit_code;
 }
 
 /* Configures environment variables before shellout.  Should be used in pair
