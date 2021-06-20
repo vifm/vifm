@@ -1027,7 +1027,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		const int use_term_mux = flags != MF_NO_TERM_MUX;
+		const int use_term_mux = ma_flags_missing(flags, MF_NO_TERM_MUX);
 		const ShellPause pause = (cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
 
 		flist_sel_stash(curr_view);
@@ -1044,7 +1044,8 @@ emark_cmd(const cmd_info_t *cmd_info)
 			}
 		}
 
-		if(flags == MF_PIPE_FILE_LIST || flags == MF_PIPE_FILE_LIST_Z)
+		if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+				ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
 		{
 			(void)rn_pipe(cmd_to_run, curr_view, flags, pause);
 		}
@@ -5184,6 +5185,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int handled = rn_ext(expanded_com, title, flags, bg, &save_msg);
 	free(title);
 
+	const int use_term_multiplexer = ma_flags_missing(flags, MF_NO_TERM_MUX);
+
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -5219,7 +5222,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		else if(strlen(com_beginning) > 0)
 		{
 			rn_shell(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					flags != MF_NO_TERM_MUX, SHELL_BY_USER);
+					use_term_multiplexer, SHELL_BY_USER);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -5239,13 +5242,14 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		rn_start_bg_command(curr_view, expanded_com, flags);
 	}
-	else if(flags == MF_PIPE_FILE_LIST || flags == MF_PIPE_FILE_LIST_Z)
+	else if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
 	{
 		(void)rn_pipe(expanded_com, curr_view, flags, PAUSE_ON_ERROR);
 	}
 	else
 	{
-		(void)rn_shell(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
+		(void)rn_shell(expanded_com, PAUSE_ON_ERROR, use_term_multiplexer,
 				SHELL_BY_USER);
 	}
 

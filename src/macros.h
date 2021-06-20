@@ -29,6 +29,9 @@ typedef enum
 {
 	MF_NONE, /* No special macro specified. */
 
+	/* First set of mutually exclusive flags. */
+	MF_FIRST_SET_ = 0x01,
+
 	MF_MENU_OUTPUT,      /* Redirect output to the menu. */
 	MF_MENU_NAV_OUTPUT,  /* Redirect output to the navigation menu. */
 	MF_STATUSBAR_OUTPUT, /* Redirect output to the status bar. */
@@ -47,8 +50,11 @@ typedef enum
 	MF_IGNORE,      /* Completely ignore command output. */
 	MF_NO_TERM_MUX, /* Forbid using terminal multiplexer, even if active. */
 
-	MF_PIPE_FILE_LIST,   /* Provide new-line-separated file list on stdin. */
-	MF_PIPE_FILE_LIST_Z, /* Provide NUL-separated file list on stdin. */
+	/* Second set of mutually exclusive flags. */
+	MF_SECOND_SET_ = 0x10,
+
+	MF_PIPE_FILE_LIST   = 0x20, /* Provide \n-separated file list on stdin. */
+	MF_PIPE_FILE_LIST_Z = 0x30, /* Provide \0-separated file list on stdin. */
 }
 MacroFlags;
 
@@ -77,8 +83,8 @@ typedef struct
 custom_macro_t;
 
 /* args and flags parameters can equal NULL.  The string returned needs to be
- * freed in the calling function.  After executing flags is one of MF_*
- * values. */
+ * freed in the calling function.  After executing flags is a combination of
+ * MF_* values. */
 char * ma_expand(const char command[], const char args[], MacroFlags *flags,
 		int for_shell);
 
@@ -100,6 +106,14 @@ char * ma_expand_custom(const char pattern[], size_t nmacros,
  * groups.  Returns colored line. */
 struct cline_t ma_expand_colored_custom(const char pattern[], size_t nmacros,
 		custom_macro_t macros[], int with_opt);
+
+/* Checks whether flag is set.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int ma_flags_present(MacroFlags flags, MacroFlags flag);
+
+/* Checks whether flag is not set.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int ma_flags_missing(MacroFlags flags, MacroFlags flag);
 
 /* Maps flag to corresponding string representation of the macro using %-syntax.
  * Returns the string representation. */

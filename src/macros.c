@@ -396,9 +396,22 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 static void
 set_flags(MacroFlags *flags, MacroFlags value)
 {
-	if(flags != NULL)
+	if(flags == NULL)
 	{
-		*flags = value;
+		return;
+	}
+
+	if(value == MF_NONE)
+	{
+		*flags = MF_NONE;
+	}
+	else if(value < MF_SECOND_SET_)
+	{
+		*flags = (*flags & ~0x0f) | value;
+	}
+	else
+	{
+		*flags = (*flags & 0x0f) | value;
 	}
 }
 
@@ -816,11 +829,36 @@ add_missing_macros(char expanded[], size_t len, size_t nmacros,
 	return expanded;
 }
 
+int
+ma_flags_present(MacroFlags flags, MacroFlags flag)
+{
+	if(flag == MF_NONE)
+	{
+		return (flags == MF_NONE);
+	}
+	else if(flag < MF_SECOND_SET_)
+	{
+		return ((flags & 0x0f) == flag);
+	}
+	else
+	{
+		return ((flags & ~0x0f) == flag);
+	}
+}
+
+int
+ma_flags_missing(MacroFlags flags, MacroFlags flag)
+{
+	return !ma_flags_present(flags, flag);
+}
+
 const char *
 ma_flags_to_str(MacroFlags flags)
 {
 	switch(flags)
 	{
+		case MF_FIRST_SET_:
+		case MF_SECOND_SET_:
 		case MF_NONE: return "";
 
 		case MF_MENU_OUTPUT: return "%m";

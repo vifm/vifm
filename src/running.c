@@ -566,15 +566,15 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 static void
 run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 {
-	int bg;
 	MacroFlags flags;
-	int save_msg;
 	char *const cmd = ma_expand(prog_spec, NULL, &flags, 1);
 
-	bg = cut_suffix(cmd, " &");
+	const ShellPause pause_shell = (pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
+
+	int bg = cut_suffix(cmd, " &");
 	bg = !pause && (bg || force_bg);
 
-	save_msg = 0;
+	int save_msg = 0;
 	if(rn_ext(cmd, prog_spec, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
@@ -584,17 +584,18 @@ run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	}
 	else if(bg)
 	{
-		assert(flags != MF_IGNORE && "This case is for rn_ext()");
+		assert(ma_flags_missing(flags, MF_IGNORE) && "This case is for rn_ext()");
 		rn_start_bg_command(view, cmd, flags);
 	}
-	else if(flags == MF_PIPE_FILE_LIST || flags == MF_PIPE_FILE_LIST_Z)
+	else if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
 	{
-		rn_pipe(cmd, view, flags, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
+		rn_pipe(cmd, view, flags, pause_shell);
 	}
 	else
 	{
-		(void)rn_shell(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-				flags != MF_NO_TERM_MUX, SHELL_BY_USER);
+		const int use_term_multiplexer = ma_flags_missing(flags, MF_NO_TERM_MUX);
+		(void)rn_shell(cmd, pause_shell, use_term_multiplexer, SHELL_BY_USER);
 	}
 
 	free(cmd);
@@ -842,9 +843,13 @@ int
 rn_pipe(const char command[], struct view_t *view, MacroFlags flags,
 		ShellPause pause)
 {
+	assert((ma_flags_present(flags, MF_PIPE_FILE_LIST)
+			|| ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+			&& "rn_pipe() must be called only when piping is requested");
+
 	FILE *input_tmp = os_tmpfile();
 
-	const int null_sep = (flags == MF_PIPE_FILE_LIST_Z);
+	const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
 	write_marked_paths(input_tmp, view, null_sep);
 
 	char *cmd = run_shell_prepare(command, pause, 0, SHELL_BY_USER);
@@ -1213,8 +1218,11 @@ int
 rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		int *save_msg)
 {
-	if(bg && !ONE_OF(flags, MF_NONE, MF_NO_TERM_MUX, MF_IGNORE,
-				MF_PIPE_FILE_LIST, MF_PIPE_FILE_LIST_Z))
+	if(bg && (ma_flags_missing(flags, MF_NONE) &&
+	          ma_flags_missing(flags, MF_NO_TERM_MUX) &&
+	          ma_flags_missing(flags, MF_IGNORE) &&
+	          ma_flags_missing(flags, MF_PIPE_FILE_LIST) &&
+	          ma_flags_missing(flags, MF_PIPE_FILE_LIST_Z)))
 	{
 		ui_sb_errf("\"%s\" macro can't be combined with \" &\"",
 				ma_flags_to_str(flags));
@@ -1222,18 +1230,18 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		return -1;
 	}
 
-	if(flags == MF_STATUSBAR_OUTPUT)
+	if(ma_flags_present(flags, MF_STATUSBAR_OUTPUT))
 	{
 		output_to_statusbar(cmd);
 		*save_msg = 1;
 		return -1;
 	}
-	else if(flags == MF_PREVIEW_OUTPUT)
+	else if(ma_flags_present(flags, MF_PREVIEW_OUTPUT))
 	{
 		*save_msg = output_to_preview(cmd);
 		return -1;
 	}
-	else if(flags == MF_IGNORE)
+	else if(ma_flags_present(flags, MF_IGNORE))
 	{
 		*save_msg = 0;
 		if(bg)
@@ -1256,26 +1264,30 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		}
 		return -1;
 	}
-	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
+	else if(ma_flags_present(flags, MF_MENU_OUTPUT) ||
+			ma_flags_present(flags, MF_MENU_NAV_OUTPUT))
 	{
-		const int navigate = flags == MF_MENU_NAV_OUTPUT;
+		const int navigate = ma_flags_present(flags, MF_MENU_NAV_OUTPUT);
 		setup_shellout_env();
 		*save_msg = show_user_menu(curr_view, cmd, title, navigate) != 0;
 		cleanup_shellout_env();
 	}
-	else if((flags == MF_SPLIT || flags == MF_SPLIT_VERT) &&
-			curr_stats.term_multiplexer != TM_NONE)
+	else if((ma_flags_present(flags, MF_SPLIT) ||
+	         ma_flags_present(flags, MF_SPLIT_VERT)) &&
+	        curr_stats.term_multiplexer != TM_NONE)
 	{
-		const int vert_split = (flags == MF_SPLIT_VERT);
+		const int vert_split = ma_flags_present(flags, MF_SPLIT_VERT);
 		run_in_split(curr_view, cmd, vert_split);
 	}
-	else if(ONE_OF(flags, MF_CUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_OUTPUT,
-				MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT))
+	else if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) ||
+	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT) ||
+	        ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT) ||
+	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT))
 	{
-		const int very =
-			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		const int interactive =
-			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
+		const int very = ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT)
+		              || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
+		const int interactive = ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT)
+		                     || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
 		rn_for_flist(curr_view, cmd, title, very, interactive);
 	}
 	else
@@ -1417,16 +1429,16 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 void
 rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 {
-	const int supply_input = (flags == MF_PIPE_FILE_LIST)
-	                      || (flags == MF_PIPE_FILE_LIST_Z);
+	const int supply_input = ma_flags_present(flags, MF_PIPE_FILE_LIST)
+	                      || ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
 	FILE *input = NULL;
 
-	bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER,
+	bg_run_external(cmd, ma_flags_present(flags, MF_IGNORE), SHELL_BY_USER,
 			supply_input ? &input : NULL);
 
 	if(input != NULL)
 	{
-		const int null_sep = (flags == MF_PIPE_FILE_LIST_Z);
+		const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
 		write_marked_paths(input, view, null_sep);
 		fclose(input);
 	}
