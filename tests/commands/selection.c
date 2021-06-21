@@ -401,6 +401,23 @@ TEST(select_and_unselect_can_take_location_list_as_input)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(input_redirection, IF(have_cat))
+{
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select *", &lwin, CIT_COMMAND));
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("unselect !cat %Pl", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
 TEST(pipe_in_pattern_does_not_separate_commands)
 {
 	assert_success(exec_commands("select /first|second/", &lwin, CIT_COMMAND));

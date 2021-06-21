@@ -261,9 +261,10 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	int nfiles;
 	int i;
 
-	char *const expanded_cmd = ma_expand(cmd, NULL, NULL, 1);
+	MacroFlags flags;
+	char *const expanded_cmd = ma_expand(cmd, NULL, &flags, 1);
 
-	if(rn_for_lines(expanded_cmd, &files, &nfiles) != 0)
+	if(rn_for_lines(view, expanded_cmd, &files, &nfiles, flags) != 0)
 	{
 		free(expanded_cmd);
 		ui_sb_err("Failed to start/read output of external command");

@@ -93,7 +93,8 @@ int rn_for_flist(struct view_t *view, const char cmd[], const char title[],
 
 /* Executes external command capturing its output as list of lines.  Sets *lines
  * and *nlines.  Returns zero on success, otherwise non-zero is returned. */
-int rn_for_lines(const char cmd[], char ***lines, int *nlines);
+int rn_for_lines(struct view_t *view, const char cmd[], char ***lines,
+		int *nlines, MacroFlags flags);
 
 #endif /* VIFM__RUNNING_H__ */
 

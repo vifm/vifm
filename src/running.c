@@ -1525,15 +1525,22 @@ path_handler(const char line[], void *arg)
 }
 
 int
-rn_for_lines(const char cmd[], char ***lines, int *nlines)
+rn_for_lines(view_t *view, const char cmd[], char ***lines, int *nlines,
+		MacroFlags flags)
 {
 	int error;
 	strlist_t list = {};
+	FILE *input_tmp = make_in_file(view, flags);
 
 	setup_shellout_env();
-	error = (process_cmd_output("Loading list", cmd, NULL, 1, 0, &line_handler,
-				&list) != 0);
+	error = (process_cmd_output("Loading list", cmd, input_tmp, 1, 0,
+				&line_handler, &list) != 0);
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
 
 	if(error)
 	{
