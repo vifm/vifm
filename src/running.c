@@ -128,7 +128,7 @@ static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 static void output_to_statusbar(const char cmd[], view_t *view,
 		MacroFlags flags);
 static int output_to_preview(const char cmd[]);
-static void output_to_nowhere(const char cmd[]);
+static void output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags);
 static FILE * make_in_file(view_t *view, MacroFlags flags);
 static void run_in_split(const view_t *view, const char cmd[], int vert_split);
 static void path_handler(const char line[], void *arg);
@@ -1258,7 +1258,7 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 		}
 		else
 		{
-			output_to_nowhere(cmd);
+			output_to_nowhere(cmd, view, flags);
 		}
 		return -1;
 	}
@@ -1361,14 +1361,24 @@ output_to_preview(const char cmd[])
 
 /* Executes the cmd ignoring its output. */
 static void
-output_to_nowhere(const char cmd[])
+output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags)
 {
 	FILE *file, *err;
-	int error;
+	FILE *input_tmp = make_in_file(view, flags);
 
 	setup_shellout_env();
-	error = (bg_run_and_capture((char *)cmd, 1, NULL, &file, &err) == (pid_t)-1);
+	int error = 0;
+	if(bg_run_and_capture((char *)cmd, 1, input_tmp, &file, &err) == (pid_t)-1)
+	{
+		error = 1;
+	}
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
+
 	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
