@@ -850,7 +850,7 @@ menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 		return 0;
 	}
 
-	if(process_cmd_output("Loading menu", cmd, user_sh, 0, &output_handler,
+	if(process_cmd_output("Loading menu", cmd, NULL, user_sh, 0, &output_handler,
 				m) != 0)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);

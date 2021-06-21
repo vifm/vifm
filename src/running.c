@@ -1501,8 +1501,8 @@ rn_for_flist(view_t *view, const char cmd[], const char title[], int very,
 	}
 
 	setup_shellout_env();
-	int error = (process_cmd_output("Loading custom view", cmd, 1, interactive,
-				&path_handler, view) != 0);
+	int error = (process_cmd_output("Loading custom view", cmd, NULL, 1,
+				interactive, &path_handler, view) != 0);
 	cleanup_shellout_env();
 
 	if(error)
@@ -1531,7 +1531,7 @@ rn_for_lines(const char cmd[], char ***lines, int *nlines)
 	strlist_t list = {};
 
 	setup_shellout_env();
-	error = (process_cmd_output("Loading list", cmd, 1, 0, &line_handler,
+	error = (process_cmd_output("Loading list", cmd, NULL, 1, 0, &line_handler,
 				&list) != 0);
 	cleanup_shellout_env();
 

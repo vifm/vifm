@@ -197,7 +197,8 @@ reload_list(menu_data_t *m)
 	}
 
 	char *cmd = format_str("%s list", cfg.media_prg);
-	if(process_cmd_output("Listing media", cmd, 0, 0, &output_handler, &m) != 0)
+	if(process_cmd_output("Listing media", cmd, NULL, 0, 0, &output_handler,
+				&m) != 0)
 	{
 		free(cmd);
 		show_error_msgf("Listing media devices", "Unable to run: %s", cmd);

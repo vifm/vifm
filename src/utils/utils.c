@@ -112,8 +112,8 @@ vifm_system_input(char command[], FILE *input, ShellRequester by)
 }
 
 int
-process_cmd_output(const char descr[], const char cmd[], int user_sh,
-		int interactive, cmd_output_handler handler, void *arg)
+process_cmd_output(const char descr[], const char cmd[], FILE *input,
+		int user_sh, int interactive, cmd_output_handler handler, void *arg)
 {
 	FILE *file, *err;
 	pid_t pid;
@@ -123,7 +123,7 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 
 	LOG_INFO_MSG("Capturing output of the command: %s", cmd);
 
-	pid = bg_run_and_capture((char *)cmd, user_sh, NULL, &file, &err);
+	pid = bg_run_and_capture((char *)cmd, user_sh, input, &file, &err);
 	if(pid == (pid_t)-1)
 	{
 		return 1;
