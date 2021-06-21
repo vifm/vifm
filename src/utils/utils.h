@@ -27,6 +27,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
+#include "../macros.h"
 #include "../status.h"
 
 /* Type of operating environment in which the application is running. */
@@ -176,6 +177,10 @@ void safe_qsort(void *base, size_t nmemb, size_t size,
  * or Bot. */
 void format_position(char buf[], size_t buf_len, int top, int total,
 		int visible);
+
+/* Makes input file for a command if requested.  Returns the file or NULL if
+ * it's not necessary. */
+FILE * make_in_file(struct view_t *view, MacroFlags flags);
 
 /* Writes list of marked files to the file.  Files are separated by new line or
  * null characters. */

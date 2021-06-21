@@ -789,6 +789,21 @@ format_position(char buf[], size_t buf_len, int top, int total, int visible)
 	}
 }
 
+FILE *
+make_in_file(view_t *view, MacroFlags flags)
+{
+	if(ma_flags_missing(flags, MF_PIPE_FILE_LIST) &&
+			ma_flags_missing(flags, MF_PIPE_FILE_LIST_Z))
+	{
+		return NULL;
+	}
+
+	FILE *input_tmp = os_tmpfile();
+	const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+	write_marked_paths(input_tmp, view, null_sep);
+	return input_tmp;
+}
+
 void
 write_marked_paths(FILE *file, view_t *view, int null_sep)
 {

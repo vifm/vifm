@@ -129,7 +129,6 @@ static void output_to_statusbar(const char cmd[], view_t *view,
 		MacroFlags flags);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags);
-static FILE * make_in_file(view_t *view, MacroFlags flags);
 static void run_in_split(const view_t *view, const char cmd[], int vert_split);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
@@ -1390,23 +1389,6 @@ output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags)
 	 *        device might work). */
 	fclose(file);
 	fclose(err);
-}
-
-/* Makes input file for a command if requested.  Returns the file or NULL if
- * it's not necessary. */
-static FILE *
-make_in_file(view_t *view, MacroFlags flags)
-{
-	if(ma_flags_missing(flags, MF_PIPE_FILE_LIST) &&
-			ma_flags_missing(flags, MF_PIPE_FILE_LIST_Z))
-	{
-		return NULL;
-	}
-
-	FILE *input_tmp = os_tmpfile();
-	const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
-	write_marked_paths(input_tmp, view, null_sep);
-	return input_tmp;
 }
 
 /* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
