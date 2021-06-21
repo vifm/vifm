@@ -129,6 +129,7 @@ static void output_to_statusbar(const char cmd[], view_t *view,
 		MacroFlags flags);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
+static FILE * make_in_file(view_t *view, MacroFlags flags);
 static void run_in_split(const view_t *view, const char cmd[], int vert_split);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
@@ -841,19 +842,15 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 }
 
 int
-rn_pipe(const char command[], struct view_t *view, MacroFlags flags,
-		ShellPause pause)
+rn_pipe(const char command[], view_t *view, MacroFlags flags, ShellPause pause)
 {
 	assert((ma_flags_present(flags, MF_PIPE_FILE_LIST)
 			|| ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
 			&& "rn_pipe() must be called only when piping is requested");
 
-	FILE *input_tmp = os_tmpfile();
-
-	const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
-	write_marked_paths(input_tmp, view, null_sep);
-
+	FILE *input_tmp = make_in_file(view, flags);
 	char *cmd = run_shell_prepare(command, pause, 0, SHELL_BY_USER);
+
 	int status = vifm_system_input(cmd, input_tmp, SHELL_BY_USER);
 	int exit_code = run_shell_finish(command, cmd, pause, status);
 
@@ -1306,16 +1303,7 @@ output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 	char buf[2048];
 	char *lines;
 	size_t len;
-	FILE *input_tmp = NULL;
-
-	if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
-			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
-	{
-		input_tmp = os_tmpfile();
-
-		const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
-		write_marked_paths(input_tmp, view, null_sep);
-	}
+	FILE *input_tmp = make_in_file(view, flags);
 
 	setup_shellout_env();
 	int error = 0;
@@ -1392,6 +1380,23 @@ output_to_nowhere(const char cmd[])
 	 *        device might work). */
 	fclose(file);
 	fclose(err);
+}
+
+/* Makes input file for a command if requested.  Returns the file or NULL if
+ * it's not necessary. */
+static FILE *
+make_in_file(view_t *view, MacroFlags flags)
+{
+	if(ma_flags_missing(flags, MF_PIPE_FILE_LIST) &&
+			ma_flags_missing(flags, MF_PIPE_FILE_LIST_Z))
+	{
+		return NULL;
+	}
+
+	FILE *input_tmp = os_tmpfile();
+	const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+	write_marked_paths(input_tmp, view, null_sep);
+	return input_tmp;
 }
 
 /* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
