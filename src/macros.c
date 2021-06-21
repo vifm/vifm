@@ -61,7 +61,6 @@ static char filter_single(int *quoted, char c, char data,
 		int ncurr, int nother);
 static char * expand_macros_i(const char command[], const char args[],
 		MacroFlags *flags, int for_shell, macro_filter_func filter);
-static void set_flags(MacroFlags *flags, MacroFlags value);
 TSTATIC char * append_selected_files(view_t *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
 static char * append_entry(view_t *view, char expanded[], PathType type,
@@ -168,7 +167,7 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 	size_t x;
 	int len = 0;
 
-	set_flags(flags, MF_NONE);
+	ma_flags_set(flags, MF_NONE);
 
 	cmd_len = strlen(command);
 
@@ -261,45 +260,45 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 				len = strlen(expanded);
 				break;
 			case 'n': /* Forbid using of terminal multiplexer, even if active. */
-				set_flags(flags, MF_NO_TERM_MUX);
+				ma_flags_set(flags, MF_NO_TERM_MUX);
 				break;
 			case 'm': /* Use menu. */
-				set_flags(flags, MF_MENU_OUTPUT);
+				ma_flags_set(flags, MF_MENU_OUTPUT);
 				break;
 			case 'M': /* Use menu like with :locate and :find. */
-				set_flags(flags, MF_MENU_NAV_OUTPUT);
+				ma_flags_set(flags, MF_MENU_NAV_OUTPUT);
 				break;
 			case 'S': /* Show command output in the status bar */
-				set_flags(flags, MF_STATUSBAR_OUTPUT);
+				ma_flags_set(flags, MF_STATUSBAR_OUTPUT);
 				break;
 			case 'q': /* Show command output in the preview */
-				set_flags(flags, MF_PREVIEW_OUTPUT);
+				ma_flags_set(flags, MF_PREVIEW_OUTPUT);
 				break;
 			case 's': /* Execute command in a new horizontal split. */
-				set_flags(flags, MF_SPLIT);
+				ma_flags_set(flags, MF_SPLIT);
 				break;
 			case 'v': /* Execute command in a new vertical split. */
-				set_flags(flags, MF_SPLIT_VERT);
+				ma_flags_set(flags, MF_SPLIT_VERT);
 				break;
 			case 'u': /* Parse output as list of files and compose custom view. */
-				set_flags(flags, MF_CUSTOMVIEW_OUTPUT);
+				ma_flags_set(flags, MF_CUSTOMVIEW_OUTPUT);
 				break;
 			case 'U': /* Parse output as list of files and compose unsorted view. */
-				set_flags(flags, MF_VERYCUSTOMVIEW_OUTPUT);
+				ma_flags_set(flags, MF_VERYCUSTOMVIEW_OUTPUT);
 				break;
 			case 'i': /* Ignore output. */
-				set_flags(flags, MF_IGNORE);
+				ma_flags_set(flags, MF_IGNORE);
 				break;
 			case 'I': /* Interactive custom views. */
 				switch(command[x + 1])
 				{
 					case 'u':
 						++x;
-						set_flags(flags, MF_CUSTOMVIEW_IOUTPUT);
+						ma_flags_set(flags, MF_CUSTOMVIEW_IOUTPUT);
 						break;
 					case 'U':
 						++x;
-						set_flags(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
+						ma_flags_set(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
 						break;
 				}
 				break;
@@ -337,11 +336,11 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 				{
 					case 'l':
 						++x;
-						set_flags(flags, MF_PIPE_FILE_LIST);
+						ma_flags_set(flags, MF_PIPE_FILE_LIST);
 						break;
 					case 'z':
 						++x;
-						set_flags(flags, MF_PIPE_FILE_LIST_Z);
+						ma_flags_set(flags, MF_PIPE_FILE_LIST_Z);
 						break;
 				}
 				break;
@@ -392,26 +391,25 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 	return expanded;
 }
 
-/* Sets *flags to the value, if flags isn't NULL. */
-static void
-set_flags(MacroFlags *flags, MacroFlags value)
+void
+ma_flags_set(MacroFlags *flags, MacroFlags flag)
 {
 	if(flags == NULL)
 	{
 		return;
 	}
 
-	if(value == MF_NONE)
+	if(flag == MF_NONE)
 	{
 		*flags = MF_NONE;
 	}
-	else if(value < MF_SECOND_SET_)
+	else if(flag < MF_SECOND_SET_)
 	{
-		*flags = (*flags & ~0x0f) | value;
+		*flags = (*flags & ~0x0f) | flag;
 	}
 	else
 	{
-		*flags = (*flags & 0x0f) | value;
+		*flags = (*flags & 0x0f) | flag;
 	}
 }
 

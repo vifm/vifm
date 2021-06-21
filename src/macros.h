@@ -107,6 +107,9 @@ char * ma_expand_custom(const char pattern[], size_t nmacros,
 struct cline_t ma_expand_colored_custom(const char pattern[], size_t nmacros,
 		custom_macro_t macros[], int with_opt);
 
+/* Sets a flag in *flags, if it isn't NULL. */
+void ma_flags_set(MacroFlags *flags, MacroFlags flag);
+
 /* Checks whether flag is set.  Returns non-zero if so, otherwise zero is
  * returned. */
 int ma_flags_present(MacroFlags flags, MacroFlags flag);
