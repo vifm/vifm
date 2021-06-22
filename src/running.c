@@ -127,7 +127,7 @@ static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 		const char start[], int background);
 static void output_to_statusbar(const char cmd[], view_t *view,
 		MacroFlags flags);
-static int output_to_preview(const char cmd[]);
+static int output_to_preview(view_t *view, const char cmd[], MacroFlags flags);
 static void output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags);
 static void run_in_split(const view_t *view, const char cmd[], int vert_split);
 static void path_handler(const char line[], void *arg);
@@ -1235,7 +1235,8 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 	}
 	else if(ma_flags_present(flags, MF_PREVIEW_OUTPUT))
 	{
-		*save_msg = output_to_preview(cmd);
+		view_t *other = (view == curr_view ? other_view : curr_view);
+		*save_msg = output_to_preview(other, cmd, flags);
 		return -1;
 	}
 	else if(ma_flags_present(flags, MF_IGNORE))
@@ -1343,13 +1344,14 @@ output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 /* Runs the command and captures its output into detached preview.  Returns new
  * value for the save_msg flag. */
 static int
-output_to_preview(const char cmd[])
+output_to_preview(view_t *view, const char cmd[], MacroFlags flags)
 {
 	if(qv_ensure_is_shown() != 0)
 	{
 		return 1;
 	}
-	modview_detached_make(other_view, cmd);
+
+	modview_detached_make(view, cmd, flags);
 	return 0;
 }
 

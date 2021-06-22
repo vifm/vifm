@@ -426,7 +426,7 @@ get_lines(const quickview_cache_t *cache)
 
 	char *expanded = (cache->viewer == NULL) ? NULL
 	                                         : qv_expand_viewer(cache->viewer);
-	strlist_t lines = vcache_lookup(cache->path, expanded, cache->kind,
+	strlist_t lines = vcache_lookup(cache->path, expanded, MF_NONE, cache->kind,
 			cache->max_lines, VC_ASYNC, &error);
 	free(expanded);
 

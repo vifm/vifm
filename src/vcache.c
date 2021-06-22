@@ -29,6 +29,7 @@
 #include "compat/os.h"
 #include "ui/cancellation.h"
 #include "ui/quickview.h"
+#include "ui/ui.h"
 #include "utils/darray.h"
 #include "utils/file_streams.h"
 #include "utils/filemon.h"
@@ -75,12 +76,13 @@ static int is_cache_match(const vcache_entry_t *centry, const char path[],
 static int is_cache_valid(const vcache_entry_t *centry, const char path[],
 		const char viewer[], int max_lines);
 static void update_cache_entry(vcache_entry_t *centry, const char path[],
-		const char viewer[], int max_lines, const char **error);
+		const char viewer[], MacroFlags flags, int max_lines, const char **error);
 static int pull_async(vcache_entry_t *centry);
 static int read_async_output(vcache_entry_t *centry);
 static int is_ready_for_read(FILE *stream);
 static int need_more_async_output(vcache_entry_t *centry);
-static strlist_t get_data(vcache_entry_t *centry, const char **error);
+static strlist_t get_data(vcache_entry_t *centry, MacroFlags flags,
+		const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
 /* Cache of viewers' output.  Most recent entry is the last one. */
@@ -126,8 +128,8 @@ vcache_check(vcache_is_previewed_cb is_previewed)
 }
 
 strlist_t
-vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
-		int max_lines, int sync, const char **error)
+vcache_lookup(const char full_path[], const char viewer[], MacroFlags flags,
+		ViewerKind kind, int max_lines, int sync, const char **error)
 {
 	*error = NULL;
 
@@ -141,7 +143,7 @@ vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
 		replace_string(&non_cache.path, full_path);
 		update_string(&non_cache.viewer, viewer);
 
-		strlist_t lines = get_data(&non_cache, error);
+		strlist_t lines = get_data(&non_cache, MF_NONE, error);
 		free_string_array(lines.items, lines.nitems);
 
 		wait_async_finish(&non_cache);
@@ -165,7 +167,7 @@ vcache_lookup(const char full_path[], const char viewer[], ViewerKind kind,
 		}
 	}
 
-	update_cache_entry(centry, full_path, viewer, max_lines, error);
+	update_cache_entry(centry, full_path, viewer, flags, max_lines, error);
 
 	if(sync)
 	{
@@ -355,7 +357,7 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
  * failure. */
 static void
 update_cache_entry(vcache_entry_t *centry, const char path[],
-		const char viewer[], int max_lines, const char **error)
+		const char viewer[], MacroFlags flags, int max_lines, const char **error)
 {
 	(void)filemon_from_file(path, FMT_MODIFIED, &centry->filemon);
 	centry->max_lines = max_lines;
@@ -366,7 +368,7 @@ update_cache_entry(vcache_entry_t *centry, const char path[],
 	if(centry->job == NULL)
 	{
 		free_string_array(centry->lines.items, centry->lines.nitems);
-		centry->lines = get_data(centry, error);
+		centry->lines = get_data(centry, flags, error);
 	}
 	else
 	{
@@ -524,7 +526,7 @@ need_more_async_output(vcache_entry_t *centry)
 /* Invokes viewer of a file to get its output.  *error is set either to NULL or
  * an error code on failure.  Returns output and sets *complete. */
 static strlist_t
-get_data(vcache_entry_t *centry, const char **error)
+get_data(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {
 	ui_cancellation_push_on();
 
@@ -552,12 +554,29 @@ get_data(vcache_entry_t *centry, const char **error)
 	}
 	else
 	{
-		centry->job = bg_run_external_job(centry->viewer, BJF_MERGE_STREAMS);
+		BgJobFlags bg_flags = BJF_MERGE_STREAMS;
+		if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+				ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+		{
+			bg_flags |= BJF_SUPPLY_INPUT;
+		}
+
+		centry->job = bg_run_external_job(centry->viewer, bg_flags);
 		if(centry->job != NULL)
 		{
 			ui_cancellation_pop();
 			centry->complete = 0;
 			centry->truncated = 0;
+
+			if(centry->job->input != NULL)
+			{
+				FILE *input = centry->job->input;
+				centry->job->input = NULL;
+
+				const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+				write_marked_paths(input, curr_view, null_sep);
+				fclose(input);
+			}
 
 #ifndef _WIN32
 			/* Enable non-blocking read from output pipe.  On Windows we read the

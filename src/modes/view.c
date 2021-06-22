@@ -107,12 +107,13 @@ struct modview_info_t
 	                            fields). */
 
 	/* The rest of the state. */
-	view_t *view;    /* File view association with the view. */
-	char *filename;  /* Full path to the file being viewed. */
-	int detached;    /* Whether view mode was detached. */
-	ViewerKind kind; /* Kind of preview. */
-	int wrap;        /* Whether lines are wrapped. */
-	int raw;         /* Forced raw preview. */
+	view_t *view;     /* File view association with the view. */
+	char *filename;   /* Full path to the file being viewed. */
+	int detached;     /* Whether view mode was detached. */
+	ViewerKind kind;  /* Kind of preview. */
+	MacroFlags flags; /* Macro flags for ext_viewer. */
+	int wrap;         /* Whether lines are wrapped. */
+	int raw;          /* Forced raw preview. */
 };
 
 /* View information structure indexes and count. */
@@ -375,7 +376,7 @@ modview_enter(view_t *view, int explore)
 }
 
 void
-modview_detached_make(view_t *view, const char cmd[])
+modview_detached_make(view_t *view, const char cmd[], MacroFlags flags)
 {
 	char full_path[PATH_MAX + 1];
 
@@ -390,6 +391,7 @@ modview_detached_make(view_t *view, const char cmd[])
 
 	vi->view = view;
 	vi->ext_viewer = strdup(cmd);
+	vi->flags = flags;
 	vi->filename = strdup(full_path);
 	vi->detached = 1;
 
@@ -1127,14 +1129,14 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	if(vi->curr_viewer == vi->ext_viewer)
 	{
 		/* No macros in this viewer. */
-		lines = vcache_lookup(file_to_view, vi->ext_viewer, kind, INT_MAX, VC_SYNC,
-				&error);
+		lines = vcache_lookup(file_to_view, vi->ext_viewer, vi->flags, kind,
+				INT_MAX, VC_SYNC, &error);
 	}
 	else
 	{
 		char *expanded = (viewer == NULL ? NULL : qv_expand_viewer(viewer));
-		lines = vcache_lookup(file_to_view, expanded, kind, INT_MAX, VC_SYNC,
-				&error);
+		lines = vcache_lookup(file_to_view, expanded, MF_NONE, kind, INT_MAX,
+				VC_SYNC, &error);
 		free(expanded);
 	}
 
