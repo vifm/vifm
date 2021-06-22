@@ -504,6 +504,46 @@ TEST(current_directory_can_be_added_via_dot)
 	}
 }
 
+TEST(built_with_custom_input, IF(have_cat))
+{
+	assert_success(chdir(SANDBOX_PATH));
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
+
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
+#else
+	replace_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
+#endif
+	stats_update_shell_type(cfg.shell);
+
+	setup_grid(&lwin, 20, 2, /*init=*/1);
+	replace_string(&lwin.dir_entry[0].name, "a");
+	replace_string(&lwin.dir_entry[1].name, "b");
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	lwin.pending_marking = 1;
+
+	create_file("a");
+	create_file("b");
+
+	assert_success(rn_for_flist(&lwin, "cat", "title",
+				MF_CUSTOMVIEW_OUTPUT | MF_PIPE_FILE_LIST));
+
+	stats_update_shell_type("/bin/sh");
+	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
+
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("b", lwin.dir_entry[1].name);
+
+	remove_file("a");
+	remove_file("b");
+}
+
 TEST(can_set_very_cv_twice_in_a_row)
 {
 	fview_setup();

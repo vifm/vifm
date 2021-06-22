@@ -1482,10 +1482,17 @@ rn_for_flist(view_t *view, const char cmd[], const char title[],
 		ui_shutdown();
 	}
 
+	FILE *input_tmp = make_in_file(view, flags);
+
 	setup_shellout_env();
-	int error = (process_cmd_output("Loading custom view", cmd, NULL, 1,
+	int error = (process_cmd_output("Loading custom view", cmd, input_tmp, 1,
 				interactive, &path_handler, view) != 0);
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
 
 	if(error)
 	{
