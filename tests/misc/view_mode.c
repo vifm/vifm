@@ -118,12 +118,34 @@ TEST(command_for_quickview_is_not_expanded_again)
 	update_string(&curr_view->dir_entry[0].name, "fake");
 
 	int save_msg;
-	assert_true(rn_ext("echo %d%c", "title", MF_PREVIEW_OUTPUT, 0,
+	assert_true(rn_ext(curr_view, "echo %d%c", "title", MF_PREVIEW_OUTPUT, 0,
 		&save_msg) < 0);
 
 	strlist_t lines = modview_lines(curr_stats.preview.explore);
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("%d%c", lines.items[0]);
+
+	opt_handlers_teardown();
+
+	curr_stats.preview.on = 0;
+}
+
+TEST(quickview_command_with_input_redirection, IF(have_cat))
+{
+	curr_stats.number_of_windows = 2;
+	opt_handlers_setup();
+	setup_grid(curr_view, 1, 1, 1);
+	update_string(&curr_view->dir_entry[0].name, "fake");
+	curr_view->dir_entry[0].marked = 1;
+	curr_view->pending_marking = 1;
+
+	int save_msg;
+	assert_true(rn_ext(curr_view, "cat", "title",
+				MF_PREVIEW_OUTPUT | MF_PIPE_FILE_LIST, 0, &save_msg) < 0);
+
+	strlist_t lines = modview_lines(curr_stats.preview.explore);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("/path/fake", lines.items[0]);
 
 	opt_handlers_teardown();
 

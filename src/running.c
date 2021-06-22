@@ -110,6 +110,10 @@ static void follow_link(view_t *view, int follow_dirs, int ultimate);
 static void enter_dir(struct view_t *view);
 static int cd_to_parent_dir(view_t *view);
 static void extract_last_path_component(const char path[], char buf[]);
+static char * run_shell_prepare(const char command[], ShellPause pause,
+		int use_term_multiplexer, ShellRequester by);
+static int run_shell_finish(const char cmd[], const char final_cmd[],
+		ShellPause pause, int status);
 static void setup_shellout_env(void);
 static void cleanup_shellout_env(void);
 static char * gen_shell_cmd(const char cmd[], int pause,
@@ -121,9 +125,10 @@ static char * gen_normal_cmd(const char cmd[], int pause);
 static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 		const char start[], int background);
-static void output_to_statusbar(const char cmd[]);
-static int output_to_preview(const char cmd[]);
-static void output_to_nowhere(const char cmd[]);
+static void output_to_statusbar(const char cmd[], view_t *view,
+		MacroFlags flags);
+static int output_to_preview(view_t *view, const char cmd[], MacroFlags flags);
+static void output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags);
 static void run_in_split(const view_t *view, const char cmd[], int vert_split);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
@@ -562,16 +567,16 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 static void
 run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 {
-	int bg;
 	MacroFlags flags;
-	int save_msg;
 	char *const cmd = ma_expand(prog_spec, NULL, &flags, 1);
 
-	bg = cut_suffix(cmd, " &");
+	const ShellPause pause_shell = (pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
+
+	int bg = cut_suffix(cmd, " &");
 	bg = !pause && (bg || force_bg);
 
-	save_msg = 0;
-	if(rn_ext(cmd, prog_spec, flags, bg, &save_msg) != 0)
+	int save_msg = 0;
+	if(rn_ext(view, cmd, prog_spec, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
@@ -580,13 +585,18 @@ run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	}
 	else if(bg)
 	{
-		assert(flags != MF_IGNORE && "This case is for rn_ext()");
+		assert(ma_flags_missing(flags, MF_IGNORE) && "This case is for rn_ext()");
 		rn_start_bg_command(view, cmd, flags);
+	}
+	else if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+	{
+		rn_pipe(cmd, view, flags, pause_shell);
 	}
 	else
 	{
-		(void)rn_shell(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-				flags != MF_NO_TERM_MUX, SHELL_BY_USER);
+		const int use_term_multiplexer = ma_flags_missing(flags, MF_NO_TERM_MUX);
+		(void)rn_shell(cmd, pause_shell, use_term_multiplexer, SHELL_BY_USER);
 	}
 
 	free(cmd);
@@ -822,15 +832,43 @@ int
 rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by)
 {
-	char *cmd;
-	int result;
-	int ec;
+	char *cmd = run_shell_prepare(command, pause, use_term_multiplexer, by);
+	int status = vifm_system(cmd, by);
+	int exit_code = run_shell_finish(command, cmd, pause, status);
 
+	free(cmd);
+	return exit_code;
+}
+
+int
+rn_pipe(const char command[], view_t *view, MacroFlags flags, ShellPause pause)
+{
+	assert((ma_flags_present(flags, MF_PIPE_FILE_LIST)
+			|| ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+			&& "rn_pipe() must be called only when piping is requested");
+
+	FILE *input_tmp = make_in_file(view, flags);
+	char *cmd = run_shell_prepare(command, pause, 0, SHELL_BY_USER);
+
+	int status = vifm_system_input(cmd, input_tmp, SHELL_BY_USER);
+	int exit_code = run_shell_finish(command, cmd, pause, status);
+
+	free(cmd);
+	fclose(input_tmp);
+
+	return exit_code;
+}
+
+/* Prepares to run a command.  Returns actual command to execute, which should
+ * be freed by the caller. */
+static char *
+run_shell_prepare(const char command[], ShellPause pause,
+		int use_term_multiplexer, ShellRequester by)
+{
 	/* Shutdown UI at this point, where $PATH isn't cleared. */
 	ui_shutdown();
 
-	int shellout = (command == NULL);
-	if(shellout)
+	if(command == NULL)
 	{
 		command = env_get_def("SHELL", cfg.shell);
 
@@ -838,31 +876,32 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		load_clean_path_env();
 	}
 
-	if(pause == PAUSE_ALWAYS && command != NULL && ends_with(command, "&"))
+	setup_shellout_env();
+
+	return gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer,
+			&by);
+}
+
+/* Handles command running result.  Returns exit code. */
+static int
+run_shell_finish(const char cmd[], const char final_cmd[], ShellPause pause,
+		int status)
+{
+	cleanup_shellout_env();
+
+	int exit_code = WEXITSTATUS(status);
+
+	if(pause == PAUSE_ALWAYS && final_cmd != NULL && ends_with(final_cmd, "&"))
 	{
 		pause = PAUSE_ON_ERROR;
 	}
 
-	setup_shellout_env();
-
-	cmd = gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer,
-			&by);
-
-	ec = vifm_system(cmd, by);
-	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
-	 * subprocess exited. */
-	result = WEXITSTATUS(ec);
-
-	cleanup_shellout_env();
-
-	if(result != 0 && pause == PAUSE_ON_ERROR)
+	if(exit_code != 0 && pause == PAUSE_ON_ERROR)
 	{
-		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", cmd,
-				result, result, ec);
+		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x",
+				final_cmd, exit_code, exit_code, status);
 		pause_shell();
 	}
-
-	free(cmd);
 
 	/* Force updates of views that don't have associated watchers. */
 	if(flist_custom_active(&lwin) && lwin.custom.type != CV_TREE)
@@ -887,12 +926,12 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		curs_set(0);
 	}
 
-	if(shellout)
+	if(cmd == NULL)
 	{
 		load_real_path_env();
 	}
 
-	return result;
+	return exit_code;
 }
 
 /* Configures environment variables before shellout.  Should be used in pair
@@ -1173,11 +1212,14 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 }
 
 int
-rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
-		int *save_msg)
+rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
+		int bg, int *save_msg)
 {
-	if(bg && !ONE_OF(flags, MF_NONE, MF_NO_TERM_MUX, MF_IGNORE,
-				MF_PIPE_FILE_LIST, MF_PIPE_FILE_LIST_Z))
+	if(bg && (ma_flags_missing(flags, MF_NONE) &&
+	          ma_flags_missing(flags, MF_NO_TERM_MUX) &&
+	          ma_flags_missing(flags, MF_IGNORE) &&
+	          ma_flags_missing(flags, MF_PIPE_FILE_LIST) &&
+	          ma_flags_missing(flags, MF_PIPE_FILE_LIST_Z)))
 	{
 		ui_sb_errf("\"%s\" macro can't be combined with \" &\"",
 				ma_flags_to_str(flags));
@@ -1185,18 +1227,19 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		return -1;
 	}
 
-	if(flags == MF_STATUSBAR_OUTPUT)
+	if(ma_flags_present(flags, MF_STATUSBAR_OUTPUT))
 	{
-		output_to_statusbar(cmd);
+		output_to_statusbar(cmd, view, flags);
 		*save_msg = 1;
 		return -1;
 	}
-	else if(flags == MF_PREVIEW_OUTPUT)
+	else if(ma_flags_present(flags, MF_PREVIEW_OUTPUT))
 	{
-		*save_msg = output_to_preview(cmd);
+		view_t *other = (view == curr_view ? other_view : curr_view);
+		*save_msg = output_to_preview(other, cmd, flags);
 		return -1;
 	}
-	else if(flags == MF_IGNORE)
+	else if(ma_flags_present(flags, MF_IGNORE))
 	{
 		*save_msg = 0;
 		if(bg)
@@ -1215,31 +1258,30 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		}
 		else
 		{
-			output_to_nowhere(cmd);
+			output_to_nowhere(cmd, view, flags);
 		}
 		return -1;
 	}
-	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
+	else if(ma_flags_present(flags, MF_MENU_OUTPUT) ||
+			ma_flags_present(flags, MF_MENU_NAV_OUTPUT))
 	{
-		const int navigate = flags == MF_MENU_NAV_OUTPUT;
 		setup_shellout_env();
-		*save_msg = show_user_menu(curr_view, cmd, title, navigate) != 0;
+		*save_msg = show_user_menu(view, cmd, title, flags) != 0;
 		cleanup_shellout_env();
 	}
-	else if((flags == MF_SPLIT || flags == MF_SPLIT_VERT) &&
-			curr_stats.term_multiplexer != TM_NONE)
+	else if((ma_flags_present(flags, MF_SPLIT) ||
+	         ma_flags_present(flags, MF_SPLIT_VERT)) &&
+	        curr_stats.term_multiplexer != TM_NONE)
 	{
-		const int vert_split = (flags == MF_SPLIT_VERT);
-		run_in_split(curr_view, cmd, vert_split);
+		const int vert_split = ma_flags_present(flags, MF_SPLIT_VERT);
+		run_in_split(view, cmd, vert_split);
 	}
-	else if(ONE_OF(flags, MF_CUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_OUTPUT,
-				MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT))
+	else if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) ||
+	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT) ||
+	        ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT) ||
+	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT))
 	{
-		const int very =
-			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		const int interactive =
-			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		rn_for_flist(curr_view, cmd, title, very, interactive);
+		rn_for_flist(view, cmd, title, flags);
 	}
 	else
 	{
@@ -1250,17 +1292,27 @@ rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 
 /* Executes the cmd and displays its output on the status bar. */
 static void
-output_to_statusbar(const char cmd[])
+output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 {
 	FILE *file, *err;
 	char buf[2048];
 	char *lines;
 	size_t len;
-	int error;
+	FILE *input_tmp = make_in_file(view, flags);
 
 	setup_shellout_env();
-	error = (bg_run_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	int error = 0;
+	if(bg_run_and_capture((char *)cmd, 1, input_tmp, &file, &err) == (pid_t)-1)
+	{
+		error = 1;
+	}
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
+
 	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
@@ -1292,26 +1344,37 @@ output_to_statusbar(const char cmd[])
 /* Runs the command and captures its output into detached preview.  Returns new
  * value for the save_msg flag. */
 static int
-output_to_preview(const char cmd[])
+output_to_preview(view_t *view, const char cmd[], MacroFlags flags)
 {
 	if(qv_ensure_is_shown() != 0)
 	{
 		return 1;
 	}
-	modview_detached_make(other_view, cmd);
+
+	modview_detached_make(view, cmd, flags);
 	return 0;
 }
 
 /* Executes the cmd ignoring its output. */
 static void
-output_to_nowhere(const char cmd[])
+output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags)
 {
 	FILE *file, *err;
-	int error;
+	FILE *input_tmp = make_in_file(view, flags);
 
 	setup_shellout_env();
-	error = (bg_run_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	int error = 0;
+	if(bg_run_and_capture((char *)cmd, 1, input_tmp, &file, &err) == (pid_t)-1)
+	{
+		error = 1;
+	}
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
+
 	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
@@ -1380,33 +1443,31 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 void
 rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 {
-	const int supply_input = (flags == MF_PIPE_FILE_LIST)
-	                      || (flags == MF_PIPE_FILE_LIST_Z);
+	const int supply_input = ma_flags_present(flags, MF_PIPE_FILE_LIST)
+	                      || ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
 	FILE *input = NULL;
 
-	bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER,
+	bg_run_external(cmd, ma_flags_present(flags, MF_IGNORE), SHELL_BY_USER,
 			supply_input ? &input : NULL);
 
-	if(input == NULL)
+	if(input != NULL)
 	{
-		return;
+		const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+		write_marked_paths(input, view, null_sep);
+		fclose(input);
 	}
-
-	const char separator = (flags == MF_PIPE_FILE_LIST ? '\n' : '\0');
-	dir_entry_t *entry = NULL;
-	while(iter_marked_entries(view, &entry))
-	{
-		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
-		fprintf(input, "%s%s%s%c", entry->origin, sep, entry->name, separator);
-	}
-	fclose(input);
 }
 
 int
-rn_for_flist(view_t *view, const char cmd[], const char title[], int very,
-		int interactive)
+rn_for_flist(view_t *view, const char cmd[], const char title[],
+		MacroFlags flags)
 {
 	enum { MAX_TITLE_WIDTH = 80 };
+
+	const int very = ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT)
+	              || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
+	const int interactive = ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT)
+	                     || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
 
 	/* It makes sense to do escaping before adding ellipses to get a predictable
 	 * result. */
@@ -1423,10 +1484,17 @@ rn_for_flist(view_t *view, const char cmd[], const char title[], int very,
 		ui_shutdown();
 	}
 
+	FILE *input_tmp = make_in_file(view, flags);
+
 	setup_shellout_env();
-	int error = (process_cmd_output("Loading custom view", cmd, 1, interactive,
-				&path_handler, view) != 0);
+	int error = (process_cmd_output("Loading custom view", cmd, input_tmp, 1,
+				interactive, &path_handler, view) != 0);
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
 
 	if(error)
 	{
@@ -1448,15 +1516,22 @@ path_handler(const char line[], void *arg)
 }
 
 int
-rn_for_lines(const char cmd[], char ***lines, int *nlines)
+rn_for_lines(view_t *view, const char cmd[], char ***lines, int *nlines,
+		MacroFlags flags)
 {
 	int error;
 	strlist_t list = {};
+	FILE *input_tmp = make_in_file(view, flags);
 
 	setup_shellout_env();
-	error = (process_cmd_output("Loading list", cmd, 1, 0, &line_handler,
-				&list) != 0);
+	error = (process_cmd_output("Loading list", cmd, input_tmp, 1, 0,
+				&line_handler, &list) != 0);
 	cleanup_shellout_env();
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
+	}
 
 	if(error)
 	{

@@ -22,6 +22,8 @@
 
 #include <stddef.h> /* wchar_t */
 
+#include "../macros.h"
+
 struct view_t;
 
 /* Result of handling key sequence by menu-specific shortcut handler. */
@@ -115,7 +117,7 @@ int menus_to_custom_view(menu_state_t *m, struct view_t *view, int very);
 /* Either makes a menu or custom view out of command output.  Returns non-zero
  * if status bar message should be saved. */
 int menus_capture(struct view_t *view, const char cmd[], int user_sh,
-		menu_data_t *m, int custom_view, int very_custom_view);
+		menu_data_t *m, MacroFlags flags);
 
 /* Menu drawing. */
 

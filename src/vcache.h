@@ -23,6 +23,7 @@
 
 #include "utils/test_helpers.h"
 #include "filetype.h"
+#include "macros.h"
 
 /* Named boolean values of "sync" parameter of vcache_lookup() for better
  * readability. */
@@ -52,7 +53,8 @@ int vcache_check(vcache_is_previewed_cb is_previewed);
  * failure.  Returns list of strings owned and managed by the unit, don't store
  * or free it. */
 struct strlist_t vcache_lookup(const char full_path[], const char viewer[],
-		ViewerKind kind, int max_lines, int sync, const char **error);
+		MacroFlags flags, ViewerKind kind, int max_lines, int sync,
+		const char **error);
 
 TSTATIC_DEFS(
 	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);

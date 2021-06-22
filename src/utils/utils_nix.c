@@ -113,6 +113,12 @@ pause_shell(void)
 int
 run_in_shell_no_cls(char command[], ShellRequester by)
 {
+	return run_with_input(command, /*input=*/NULL, by);
+}
+
+int
+run_with_input(char command[], FILE *input, ShellRequester by)
+{
 	int pid;
 	int result;
 	extern char **environ;
@@ -126,6 +132,11 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 	new.sa_flags = SA_RESTART;
 	sigaction(SIGTSTP, &new, &old);
 
+	if(input != NULL)
+	{
+		fflush(input);
+	}
+
 	pid = fork();
 	if(pid == -1)
 	{
@@ -138,6 +149,19 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 		signal(SIGINT, SIG_DFL);
 
 		prepare_for_exec();
+
+		if(input != NULL)
+		{
+			rewind(input);
+
+			if(dup2(fileno(input), STDIN_FILENO) == -1)
+			{
+				_Exit(127);
+			}
+
+			fclose(input);
+		}
+
 		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 		execve(get_execv_path(cfg.shell),
 				make_execv_array(cfg.shell, sh_flag, command), environ);

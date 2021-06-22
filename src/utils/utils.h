@@ -27,6 +27,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
+#include "../macros.h"
 #include "../status.h"
 
 /* Type of operating environment in which the application is running. */
@@ -45,8 +46,9 @@ typedef enum
 }
 ShellRequester;
 
-/* Forward declaration. */
+/* Forward declarations. */
 struct dir_entry_t;
+struct view_t;
 
 /* Callback for process_cmd_output() function. */
 typedef void (*cmd_output_handler)(const char line[], void *arg);
@@ -57,6 +59,10 @@ typedef void (*cmd_output_handler)(const char line[], void *arg);
  * the command.  Returns error code, which is zero on success. */
 int vifm_system(char command[], ShellRequester by);
 
+/* Same as vifm_system(), but provides the command with custom input.  Don't
+ * pass pipe for input, it can cause deadlock. */
+int vifm_system_input(char command[], FILE *input, ShellRequester by);
+
 /* Pauses shell.  Assumes that curses interface is off. */
 void pause_shell(void);
 
@@ -64,13 +70,15 @@ void pause_shell(void);
 void recover_after_shellout(void);
 
 /* Invokes handler for each line read from stdout of the command specified via
- * cmd.  Error stream is displayed separately.  Implements heuristic according
- * to which if command output includes null character, it's taken as a separator
- * instead of regular newline characters.  Supports cancellation.  Ignores exit
- * code of the command and succeeds even if it doesn't exist.  Returns zero on
- * success, otherwise non-zero is returned. */
-int process_cmd_output(const char descr[], const char cmd[], int user_sh,
-		int interactive, cmd_output_handler handler, void *arg);
+ * cmd.  Input is redirected only if in parameter isn't NULL.  Don't pass pipe
+ * for input, it can cause deadlock.  Error stream is displayed separately.
+ * Implements heuristic according to which if command output includes null
+ * character, it's taken as a separator instead of regular newline characters.
+ * Supports cancellation.  Ignores exit code of the command and succeeds even if
+ * it doesn't exist.  Returns zero on success, otherwise non-zero is
+ * returned. */
+int process_cmd_output(const char descr[], const char cmd[], FILE *input,
+		int user_sh, int interactive, cmd_output_handler handler, void *arg);
 
 /* Other functions. */
 
@@ -169,6 +177,14 @@ void safe_qsort(void *base, size_t nmemb, size_t size,
  * or Bot. */
 void format_position(char buf[], size_t buf_len, int top, int total,
 		int visible);
+
+/* Makes input file for a command if requested.  Returns the file or NULL if
+ * it's not necessary. */
+FILE * make_in_file(struct view_t *view, MacroFlags flags);
+
+/* Writes list of marked files to the file.  Files are separated by new line or
+ * null characters. */
+void write_marked_paths(FILE *file, struct view_t *view, int null_sep);
 
 /* Checks line for path in it.  Ignores empty lines and attempts to parse it as
  * location line (path followed by a colon and optional line and column

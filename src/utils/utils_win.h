@@ -74,7 +74,7 @@ const char * escape_for_cd(const char str[]);
  * handler opened for read and write that is automatically removed on
  * application close.  Don't use tmpfile(), they utterly failed to implement
  * it. */
-FILE * win_tmpfile();
+FILE * win_tmpfile(void);
 
 /* Tries to cancel process gracefully.  Returns zero if cancellation was
  * requested, otherwise non-zero is returned. */

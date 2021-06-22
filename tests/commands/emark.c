@@ -101,6 +101,29 @@ TEST(single_emark_without_args_fails)
 	assert_int_equal(0, called);
 }
 
+TEST(provide_input_to_fg_process, IF(have_cat))
+{
+	assert_success(chdir(SANDBOX_PATH));
+
+	view_setup(&lwin);
+	setup_grid(&lwin, 20, 2, /*init=*/1);
+	replace_string(&lwin.dir_entry[0].name, "a");
+	replace_string(&lwin.dir_entry[1].name, "b");
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	lwin.pending_marking = 1;
+
+	assert_int_equal(0, exec_commands("!cat > file %Pl", &lwin, CIT_COMMAND));
+
+	const char *lines[] = { "/path/a", "/path/b" };
+	file_is("file", lines, ARRAY_LEN(lines));
+
+	remove_file("file");
+
+	view_teardown(&lwin);
+}
+
 TEST(provide_input_to_bg_process, IF(have_cat))
 {
 	assert_success(chdir(SANDBOX_PATH));

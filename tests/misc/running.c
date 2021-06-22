@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() rmdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() symlink() usleep() */
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() snprintf() */
@@ -12,6 +12,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
@@ -450,6 +451,128 @@ TEST(handler_can_be_matched_by_a_prefix, IF(not_windows))
 	assert_failure(remove(SANDBOX_PATH "/vi-list"));
 
 	stop_use_script();
+}
+
+TEST(provide_input_on_statusbar_redirection, IF(have_cat))
+{
+	view_setup(&rwin);
+
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "", cwd);
+	create_file(SANDBOX_PATH "/a");
+	create_file(SANDBOX_PATH "/b");
+
+	setup_grid(&rwin, 20, 2, /*init=*/1);
+	replace_string(&rwin.dir_entry[0].name, "a");
+	replace_string(&rwin.dir_entry[1].name, "b");
+
+	rwin.dir_entry[0].marked = 1;
+	rwin.dir_entry[1].marked = 1;
+	rwin.pending_marking = 1;
+
+	rn_open_with(&rwin, "cat %Pl%S", /*dont_execute=*/0, /*force_bg=*/0);
+
+	char a[PATH_MAX + 1];
+	char b[PATH_MAX + 1];
+	get_full_path_of(&rwin.dir_entry[0], sizeof(a), a);
+	get_full_path_of(&rwin.dir_entry[1], sizeof(b), b);
+
+	char buf[PATH_MAX*2 + 16];
+	snprintf(buf, sizeof(buf), "%s\n%s", a, b);
+
+	assert_string_equal(buf, ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/a");
+	remove_file(SANDBOX_PATH "/b");
+
+	view_teardown(&rwin);
+}
+
+TEST(provide_input_on_nowhere_redirection, IF(have_cat))
+{
+	view_setup(&rwin);
+
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "", cwd);
+	create_file(SANDBOX_PATH "/a");
+	create_file(SANDBOX_PATH "/b");
+
+	setup_grid(&rwin, 20, 2, /*init=*/1);
+	replace_string(&rwin.dir_entry[0].name, "a");
+	replace_string(&rwin.dir_entry[1].name, "b");
+
+	rwin.dir_entry[0].marked = 1;
+	rwin.dir_entry[1].marked = 1;
+	rwin.pending_marking = 1;
+
+	char *saved_dir = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
+
+	rn_open_with(&rwin, "cat > file && touch confirmwrite %Pl%i",
+			/*dont_execute=*/0, /*force_bg=*/0);
+
+	restore_cwd(saved_dir);
+
+	char a[PATH_MAX + 1];
+	char b[PATH_MAX + 1];
+	make_abs_path(a, sizeof(a), SANDBOX_PATH, "a", cwd);
+	make_abs_path(b, sizeof(b), SANDBOX_PATH, "b", cwd);
+
+	int i;
+	for(i = 0; i < 100; ++i)
+	{
+		usleep(5000);
+		if(path_exists(SANDBOX_PATH "/confirmwrite", DEREF))
+		{
+			break;
+		}
+	}
+
+	const char *lines[] = { a, b };
+	file_is(SANDBOX_PATH "/file", lines, ARRAY_LEN(lines));
+
+	remove_file(SANDBOX_PATH "/confirmwrite");
+	remove_file(SANDBOX_PATH "/file");
+	remove_file(SANDBOX_PATH "/a");
+	remove_file(SANDBOX_PATH "/b");
+
+	view_teardown(&rwin);
+}
+
+TEST(provide_input_to_fg_process, IF(have_cat))
+{
+	view_setup(&rwin);
+
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "", cwd);
+	create_file(SANDBOX_PATH "/a");
+	create_file(SANDBOX_PATH "/b");
+
+	setup_grid(&rwin, 20, 2, /*init=*/1);
+	replace_string(&rwin.dir_entry[0].name, "a");
+	replace_string(&rwin.dir_entry[1].name, "b");
+
+	rwin.dir_entry[0].marked = 1;
+	rwin.dir_entry[1].marked = 1;
+	rwin.pending_marking = 1;
+
+	char *saved_dir = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
+
+	rn_open_with(&rwin, "cat > file %Pl", /*dont_execute=*/0, /*force_bg=*/0);
+
+	restore_cwd(saved_dir);
+
+	char a[PATH_MAX + 1];
+	char b[PATH_MAX + 1];
+	make_abs_path(a, sizeof(a), SANDBOX_PATH, "a", cwd);
+	make_abs_path(b, sizeof(b), SANDBOX_PATH, "b", cwd);
+
+	const char *lines[] = { a, b };
+	file_is(SANDBOX_PATH "/file", lines, ARRAY_LEN(lines));
+
+	remove_file(SANDBOX_PATH "/file");
+	remove_file(SANDBOX_PATH "/a");
+	remove_file(SANDBOX_PATH "/b");
+
+	view_teardown(&rwin);
 }
 
 TEST(provide_input_to_bg_process, IF(have_cat))

@@ -312,6 +312,22 @@ TEST(bad_flag_macros)
 	free(expanded);
 }
 
+TEST(flags_from_different_sets)
+{
+	MacroFlags flags;
+	char *expanded;
+
+	expanded = ma_expand("echo%Pl%S", "", &flags, 0);
+	assert_string_equal("echo", expanded);
+	assert_int_equal(MF_PIPE_FILE_LIST | MF_STATUSBAR_OUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("echo%q%Pz", "", &flags, 0);
+	assert_string_equal("echo", expanded);
+	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_PREVIEW_OUTPUT, flags);
+	free(expanded);
+}
+
 TEST(r_well_formed)
 {
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));

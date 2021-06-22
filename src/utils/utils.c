@@ -49,6 +49,7 @@
 #include "../ui/cancellation.h"
 #include "../ui/ui.h"
 #include "../background.h"
+#include "../filelist.h"
 #include "../registers.h"
 #include "../status.h"
 #include "env.h"
@@ -97,8 +98,22 @@ vifm_system(char command[], ShellRequester by)
 }
 
 int
-process_cmd_output(const char descr[], const char cmd[], int user_sh,
-		int interactive, cmd_output_handler handler, void *arg)
+vifm_system_input(char command[], FILE *input, ShellRequester by)
+{
+#ifdef _WIN32
+	/* The check is primarily for tests, otherwise screen is reset. */
+	if(curr_stats.load_stage != 0)
+	{
+		system("cls");
+	}
+#endif
+	LOG_INFO_MSG("Shell command with custom input: %s", command);
+	return run_with_input(command, input, by);
+}
+
+int
+process_cmd_output(const char descr[], const char cmd[], FILE *input,
+		int user_sh, int interactive, cmd_output_handler handler, void *arg)
 {
 	FILE *file, *err;
 	pid_t pid;
@@ -108,7 +123,7 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 
 	LOG_INFO_MSG("Capturing output of the command: %s", cmd);
 
-	pid = bg_run_and_capture((char *)cmd, user_sh, &file, &err);
+	pid = bg_run_and_capture((char *)cmd, user_sh, input, &file, &err);
 	if(pid == (pid_t)-1)
 	{
 		return 1;
@@ -771,6 +786,33 @@ format_position(char buf[], size_t buf_len, int top, int total, int visible)
 	else
 	{
 		snprintf(buf, buf_len, "%2d%%", (top*100)/(total - visible));
+	}
+}
+
+FILE *
+make_in_file(view_t *view, MacroFlags flags)
+{
+	if(ma_flags_missing(flags, MF_PIPE_FILE_LIST) &&
+			ma_flags_missing(flags, MF_PIPE_FILE_LIST_Z))
+	{
+		return NULL;
+	}
+
+	FILE *input_tmp = os_tmpfile();
+	const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+	write_marked_paths(input_tmp, view, null_sep);
+	return input_tmp;
+}
+
+void
+write_marked_paths(FILE *file, view_t *view, int null_sep)
+{
+	const char separator = (null_sep ? '\0' : '\n');
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
+		fprintf(file, "%s%s%s%c", entry->origin, sep, entry->name, separator);
 	}
 }
 

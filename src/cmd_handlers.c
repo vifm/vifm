@@ -1010,7 +1010,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 
 	MacroFlags flags = (MacroFlags)cmd_info->usr1;
 	char *title = format_str("!%s", cmd_info->raw_args);
-	int handled = rn_ext(com, title, flags, cmd_info->bg, &save_msg);
+	int handled = rn_ext(curr_view, com, title, flags, cmd_info->bg, &save_msg);
 	free(title);
 
 	if(handled > 0)
@@ -1027,24 +1027,34 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		const int use_term_mux = flags != MF_NO_TERM_MUX;
+		const int use_term_mux = ma_flags_missing(flags, MF_NO_TERM_MUX);
+		const ShellPause pause = (cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
 
 		flist_sel_stash(curr_view);
+
+		const char *cmd_to_run = com;
+		char *expanded_cmd = NULL;
+
 		if(cfg.fast_run)
 		{
-			char *const buf = fast_run_complete(com);
-			if(buf != NULL)
+			char *const expanded_cmd = fast_run_complete(com);
+			if(expanded_cmd != NULL)
 			{
-				(void)rn_shell(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-						use_term_mux, SHELL_BY_USER);
-				free(buf);
+				cmd_to_run = expanded_cmd;
 			}
+		}
+
+		if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+				ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+		{
+			(void)rn_pipe(cmd_to_run, curr_view, flags, pause);
 		}
 		else
 		{
-			(void)rn_shell(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					use_term_mux, SHELL_BY_USER);
+			(void)rn_shell(cmd_to_run, pause, use_term_mux, SHELL_BY_USER);
 		}
+
+		free(expanded_cmd);
 	}
 
 	snprintf(buf, sizeof(buf), "in %s: !%s",
@@ -5172,8 +5182,10 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	char *title = format_str(":%s%s%s", cmd_info->user_cmd,
 			(cmd_info->raw_args[0] == '\0' ? "" : " "), cmd_info->raw_args);
-	int handled = rn_ext(expanded_com, title, flags, bg, &save_msg);
+	int handled = rn_ext(curr_view, expanded_com, title, flags, bg, &save_msg);
 	free(title);
+
+	const int use_term_multiplexer = ma_flags_missing(flags, MF_NO_TERM_MUX);
 
 	if(handled > 0)
 	{
@@ -5210,7 +5222,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		else if(strlen(com_beginning) > 0)
 		{
 			rn_shell(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					flags != MF_NO_TERM_MUX, SHELL_BY_USER);
+					use_term_multiplexer, SHELL_BY_USER);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -5230,9 +5242,14 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		rn_start_bg_command(curr_view, expanded_com, flags);
 	}
+	else if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+	{
+		(void)rn_pipe(expanded_com, curr_view, flags, PAUSE_ON_ERROR);
+	}
 	else
 	{
-		rn_shell(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
+		(void)rn_shell(expanded_com, PAUSE_ON_ERROR, use_term_multiplexer,
 				SHELL_BY_USER);
 	}
 

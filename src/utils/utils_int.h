@@ -25,6 +25,10 @@
  * Returns error code, which is zero on success. */
 int run_in_shell_no_cls(char command[], ShellRequester by);
 
+/* Same as run_in_shell_no_cls(), but provides the command with custom input.
+ * Don't pass pipe for input, it can cause deadlock. */
+int run_with_input(char command[], FILE *input, ShellRequester by);
+
 #endif /* VIFM__UTILS__UTILS_INT_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

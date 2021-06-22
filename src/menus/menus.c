@@ -841,20 +841,28 @@ menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view)
 
 int
 menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
-		int custom_view, int very_custom_view)
+		MacroFlags flags)
 {
-	if(custom_view || very_custom_view)
+	if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) ||
+			ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT))
 	{
-		rn_for_flist(view, cmd, m->title, very_custom_view, 0);
+		rn_for_flist(view, cmd, m->title, flags);
 		menus_reset_data(m);
 		return 0;
 	}
 
-	if(process_cmd_output("Loading menu", cmd, user_sh, 0, &output_handler,
-				m) != 0)
+	FILE *input_tmp = make_in_file(view, flags);
+
+	if(process_cmd_output("Loading menu", cmd, input_tmp, user_sh, 0,
+				&output_handler, m) != 0)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return 0;
+	}
+
+	if(input_tmp != NULL)
+	{
+		fclose(input_tmp);
 	}
 
 	if(ui_cancellation_requested())

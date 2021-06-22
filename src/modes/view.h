@@ -20,6 +20,7 @@
 #define VIFM__MODES__VIEW_H__
 
 #include "../utils/test_helpers.h"
+#include "../macros.h"
 
 struct view_t;
 
@@ -78,7 +79,8 @@ void modview_hide_graphics(void);
 /* Creates detached view in the view using output of passed command as a
  * source, but doesn't enter the view mode.  The command is assumed to not have
  * any unexpanded macros. */
-void modview_detached_make(struct view_t *view, const char cmd[]);
+void modview_detached_make(struct view_t *view, const char cmd[],
+		MacroFlags flags);
 
 /* Tries to draw an detached view mode and updates internal state if needed.
  * Returns non-zero on success, otherwise zero is returned. */

@@ -65,6 +65,10 @@ void rn_leave(struct view_t *view, int levels);
 int rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by);
 
+/* Same as rn_shell(), but provides the command with custom input. */
+int rn_pipe(const char command[], struct view_t *view, MacroFlags flags,
+		ShellPause pause);
+
 /* Looks for a unique program match for a given prefix and uses it.  Returns
  * zero on success and non-zero otherwise.  */
 int rn_open_with_match(struct view_t *view, const char beginning[],
@@ -74,22 +78,23 @@ int rn_open_with_match(struct view_t *view, const char beginning[],
  *  - > 0 -- handled, good to go;
  *  - = 0 -- not handled at all;
  *  - < 0 -- handled, exit. */
-int rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
-		int *save_msg);
+int rn_ext(struct view_t *view, const char cmd[], const char title[],
+		MacroFlags flags, int bg, int *save_msg);
 
 /* Starts background command optionally handling input redirection. */
 void rn_start_bg_command(struct view_t *view, const char cmd[],
 		MacroFlags flags);
 
-/* Runs the cmd and parses its output as list of paths to compose custom view.
- * Very custom view implies unsorted list.  Returns zero on success, otherwise
- * non-zero is returned. */
+/* Runs the cmd and parses its output as list of paths to compose custom view
+ * or very custom view.  Returns zero on success, otherwise non-zero is
+ * returned. */
 int rn_for_flist(struct view_t *view, const char cmd[], const char title[],
-		int very, int interactive);
+		MacroFlags flags);
 
 /* Executes external command capturing its output as list of lines.  Sets *lines
  * and *nlines.  Returns zero on success, otherwise non-zero is returned. */
-int rn_for_lines(const char cmd[], char ***lines, int *nlines);
+int rn_for_lines(struct view_t *view, const char cmd[], char ***lines,
+		int *nlines, MacroFlags flags);
 
 #endif /* VIFM__RUNNING_H__ */
 
