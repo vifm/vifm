@@ -1280,11 +1280,7 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 	        ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT) ||
 	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT))
 	{
-		const int very = ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT)
-		              || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
-		const int interactive = ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT)
-		                     || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
-		rn_for_flist(view, cmd, title, very, interactive);
+		rn_for_flist(view, cmd, title, flags);
 	}
 	else
 	{
@@ -1461,10 +1457,15 @@ rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 }
 
 int
-rn_for_flist(view_t *view, const char cmd[], const char title[], int very,
-		int interactive)
+rn_for_flist(view_t *view, const char cmd[], const char title[],
+		MacroFlags flags)
 {
 	enum { MAX_TITLE_WIDTH = 80 };
+
+	const int very = ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT)
+	              || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
+	const int interactive = ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT)
+	                     || ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
 
 	/* It makes sense to do escaping before adding ellipses to get a predictable
 	 * result. */

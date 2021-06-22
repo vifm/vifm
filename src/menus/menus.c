@@ -843,10 +843,10 @@ int
 menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 		MacroFlags flags)
 {
-	int very_custom_view = ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT);
-	if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) || very_custom_view)
+	if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) ||
+			ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT))
 	{
-		rn_for_flist(view, cmd, m->title, very_custom_view, 0);
+		rn_for_flist(view, cmd, m->title, flags);
 		menus_reset_data(m);
 		return 0;
 	}
