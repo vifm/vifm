@@ -1264,9 +1264,8 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 	else if(ma_flags_present(flags, MF_MENU_OUTPUT) ||
 			ma_flags_present(flags, MF_MENU_NAV_OUTPUT))
 	{
-		const int navigate = ma_flags_present(flags, MF_MENU_NAV_OUTPUT);
 		setup_shellout_env();
-		*save_msg = show_user_menu(view, cmd, title, navigate) != 0;
+		*save_msg = show_user_menu(view, cmd, title, flags) != 0;
 		cleanup_shellout_env();
 	}
 	else if((ma_flags_present(flags, MF_SPLIT) ||

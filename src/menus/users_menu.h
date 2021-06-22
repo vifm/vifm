@@ -20,11 +20,14 @@
 #ifndef VIFM__MENUS__USERS_MENU_H__
 #define VIFM__MENUS__USERS_MENU_H__
 
+#include "../macros.h"
+
 struct view_t;
 
-/* Returns non-zero if status bar message should be saved. */
+/* Creates menu out of output of the command.  Returns non-zero if status bar
+ * message should be saved. */
 int show_user_menu(struct view_t *view, const char command[],
-		const char title[], int navigate);
+		const char title[], MacroFlags flags);
 
 #endif /* VIFM__MENUS__USERS_MENU_H__ */
 

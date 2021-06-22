@@ -841,9 +841,10 @@ menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view)
 
 int
 menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
-		int custom_view, int very_custom_view)
+		MacroFlags flags)
 {
-	if(custom_view || very_custom_view)
+	int very_custom_view = ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT);
+	if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) || very_custom_view)
 	{
 		rn_for_flist(view, cmd, m->title, very_custom_view, 0);
 		menus_reset_data(m);

@@ -32,17 +32,19 @@ static KHandlerResponse users_khandler(view_t *view, menu_data_t *m,
 
 int
 show_user_menu(view_t *view, const char command[], const char title[],
-		int navigate)
+		MacroFlags flags)
 {
 	static menu_data_t m;
 	menus_init_data(&m, view, strdup(title), strdup("No results found"));
+
+	const int navigate = ma_flags_present(flags, MF_MENU_NAV_OUTPUT);
 
 	m.extra_data = navigate;
 	m.stashable = navigate;
 	m.execute_handler = &execute_users_cb;
 	m.key_handler = &users_khandler;
 
-	return menus_capture(view, command, 1, &m, 0, 0);
+	return menus_capture(view, command, 1, &m, flags);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

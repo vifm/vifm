@@ -61,9 +61,18 @@ show_locate_menu(view_t *view, const char args[])
 
 	cmd = ma_expand_custom(cfg.locate_prg, ARRAY_LEN(macros), macros, MA_NOOPT);
 
+	MacroFlags flags = MF_NONE;
+	if(macros[M_u].explicit_use)
+	{
+		ma_flags_set(&flags, MF_CUSTOMVIEW_OUTPUT);
+	}
+	if(macros[M_U].explicit_use)
+	{
+		ma_flags_set(&flags, MF_VERYCUSTOMVIEW_OUTPUT);
+	}
+
 	ui_sb_msg("locate...");
-	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,
-			macros[M_U].explicit_use);
+	save_msg = menus_capture(view, cmd, /*user_sh=*/0, &m, flags);
 	free(cmd);
 
 	return save_msg;
