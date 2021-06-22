@@ -47,8 +47,8 @@
 	Added %v macro for vertical splitting in terminal multiplexers.  Patch by
 	qsmodo.
 
-	Added %Pl and %Pz macros for redirecting list of files to background and
-	foreground processes.  Thanks to PRESFIL.
+	Added %Pl and %Pz macros for redirecting list of files to standard input
+	of commands.  Thanks to PRESFIL.
 
 	Added %N macro to 'statusline' option, which adds a line break and
 	increases height of the status line.  Thanks to Jose Riha (a.k.a.
