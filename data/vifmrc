@@ -377,7 +377,7 @@ filextype */
 " For OS X:
 " filetype * open
 " For Windows:
-" filetype * start, explorer
+" filetype * start, explorer %"f &
 
 " ------------------------------------------------------------------------------
 
