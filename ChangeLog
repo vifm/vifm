@@ -175,6 +175,9 @@
 	Fixed :chmod lacking a reload, which is needed because attribute change
 	might not be detected.
 
+	Fixed :goto not working with backslashes on Windows.  Thanks to
+	Grueslayer.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

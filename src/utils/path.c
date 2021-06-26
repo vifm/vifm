@@ -623,19 +623,24 @@ void
 to_canonic_path(const char path[], const char base[], char buf[],
 		size_t buf_len)
 {
-	if(!is_path_absolute(path))
+	char *normalized = strdup(path);
+	system_to_internal_slashes(normalized);
+
+	if(!is_path_absolute(normalized))
 	{
 		char full_path[PATH_MAX + 1];
 		/* Assert is not level above to keep "." in curr_dir in tests, but this
 		 * should be possible to change. */
 		assert(is_path_absolute(base) && "Base path has to be absolute.");
-		snprintf(full_path, sizeof(full_path), "%s/%s", base, path);
+		snprintf(full_path, sizeof(full_path), "%s/%s", base, normalized);
 		canonicalize_path(full_path, buf, buf_len);
 	}
 	else
 	{
-		canonicalize_path(path, buf, buf_len);
+		canonicalize_path(normalized, buf, buf_len);
 	}
+
+	free(normalized);
 
 	if(!is_root_dir(buf))
 	{

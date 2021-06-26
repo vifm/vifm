@@ -657,11 +657,10 @@ TEST(normal_command_does_not_reset_selection)
 
 TEST(goto_command)
 {
-	char cmd[PATH_MAX*2];
-
 	assert_failure(exec_commands("goto /", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("goto /no-such-path", &lwin, CIT_COMMAND));
 
+	char cmd[PATH_MAX*2];
 	snprintf(cmd, sizeof(cmd), "goto %s/compare", test_data);
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
@@ -670,6 +669,15 @@ TEST(goto_command)
 	assert_success(exec_commands("goto tree", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
 	assert_string_equal("tree", get_current_file_name(&lwin));
+}
+
+TEST(goto_normalizes_slashes, IF(windows))
+{
+	char cmd[PATH_MAX*2];
+	snprintf(cmd, sizeof(cmd), "goto %s\\\\compare", test_data);
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, test_data));
+	assert_string_equal("compare", get_current_file_name(&lwin));
 }
 
 TEST(echo_reports_all_errors)
