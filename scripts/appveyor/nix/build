@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -xe
+
+if [ "$COLLECT_COVERAGE" = yes ]; then
+    CONFIGURE_EXTRA="$CONFIGURE_EXTRA --enable-coverage"
+fi
+
+scripts/fix-timestamps fast
+./configure --config-cache --disable-dependency-tracking $CONFIGURE_EXTRA
+make

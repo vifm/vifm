@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = Ubuntu ]; then
+    sudo apt install libncursesw5-dev ccache
+    ccache -M 100Mi
+fi
+
+if [ "$COLLECT_COVERAGE" = yes ]; then
+    pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
+fi
