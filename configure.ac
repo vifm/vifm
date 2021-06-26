@@ -794,7 +794,7 @@ if test "$werror" = "yes"; then
 fi
 
 if test "$coverage" = "yes"; then
-    CFLAGS="$CFLAGS --coverage"
+    CFLAGS="$CFLAGS -O0 --coverage"
     LDFLAGS="$LDFLAGS --coverage"
 fi
 
