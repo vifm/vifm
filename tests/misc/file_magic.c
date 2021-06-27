@@ -26,7 +26,7 @@ TEST(escaping_for_determining_mime_type, IF(has_mime_type_detection))
 
 TEST(mimetype_cache_can_be_invalidated, IF(has_mime_type_detection))
 {
-	copy_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/file");
+	copy_file(TEST_DATA_PATH "/read/very-long-line", SANDBOX_PATH "/file");
 	assert_string_equal("text/plain", get_mimetype(SANDBOX_PATH "/file", 0));
 
 	copy_file(TEST_DATA_PATH "/read/binary-data", SANDBOX_PATH "/file");
@@ -95,11 +95,18 @@ static int
 has_mime_type_detection(void)
 {
 	const char *text = get_mimetype(TEST_DATA_PATH "/read/two-lines", 0);
-	const char *binary = get_mimetype(TEST_DATA_PATH "/read/binary-data", 0);
-	return (text != NULL)
-	    && (binary != NULL)
-	    && (strcmp(text, "text/plain") == 0)
-	    && (strcmp(binary, "text/plain") != 0);
+	if(text == NULL || strcmp(text, "text/plain") != 0)
+	{
+		return 0;
+	}
+
+	const char *binary = get_mimetype(TEST_DATA_PATH "/read/binary_data", 0);
+	if(binary == NULL || strcmp(binary, "text/plain") == 0)
+	{
+		return 0;
+	}
+
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
