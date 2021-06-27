@@ -295,7 +295,7 @@ filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst}
        \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
 fileviewer *.tgz,*.tar.gz tar -tzf %c
 fileviewer *.tar.bz2,*.tbz2 tar -tjf %c
-fileviewer *.tar.txz,*.txz xz --list %c
+fileviewer *.tar.xz,*.txz xz --list %c
 fileviewer *.tar.zst,*.tzst tar -t --zstd -f %c
 fileviewer {*.tar},<application/x-tar> tar -tf %c
 
