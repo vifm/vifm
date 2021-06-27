@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 13 December, 2020)
+" Sample configuration file for vifm on OSX (last updated: 27 June, 2021)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -262,9 +262,11 @@ fileviewer {*.zip,*.jar,*.war,*.ear},
           \ zip -sf %c
 
 " Extract tar archives
-filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz},<application/x-tar>
+filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
+        \<application/x-tar>
        \ tar -xf %f
-fileviewer {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz},<application/x-tar>
+fileviewer {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
+          \<application/x-tar>
          \ tar -tf %f
 
 " Extract .bz2 archives
