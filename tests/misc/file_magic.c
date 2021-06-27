@@ -10,11 +10,13 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/int/file_magic.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 
 static void check_empty_file(const char fname[]);
 static int has_mime_type_detection_and_symlinks(void);
+static int has_mime_type_detection_and_can_test_cache(void);
 static int has_mime_type_detection(void);
 
 TEST(escaping_for_determining_mime_type, IF(has_mime_type_detection))
@@ -24,7 +26,8 @@ TEST(escaping_for_determining_mime_type, IF(has_mime_type_detection))
 	check_empty_file(SANDBOX_PATH "/start`end");
 }
 
-TEST(mimetype_cache_can_be_invalidated, IF(has_mime_type_detection))
+TEST(mimetype_cache_can_be_invalidated,
+		IF(has_mime_type_detection_and_can_test_cache))
 {
 	copy_file(TEST_DATA_PATH "/read/very-long-line", SANDBOX_PATH "/file");
 	assert_string_equal("text/plain", get_mimetype(SANDBOX_PATH "/file", 0));
@@ -89,6 +92,13 @@ static int
 has_mime_type_detection_and_symlinks(void)
 {
 	return not_windows() && has_mime_type_detection();
+}
+
+static int
+has_mime_type_detection_and_can_test_cache(void)
+{
+	/* There is something wrong with cache test specifically on AppVeyor. */
+	return (env_get("APPVEYOR") == NULL && has_mime_type_detection());
 }
 
 static int
