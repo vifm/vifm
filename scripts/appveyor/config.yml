@@ -1,0 +1,55 @@
+version: "{build}"
+clone_depth: 1
+
+environment:
+    matrix:
+        - BUILDENV: nix
+          CC: ccache clang
+          APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+        - BUILDENV: nix
+          CC: ccache gcc
+          COLLECT_COVERAGE: yes
+          APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+        - BUILDENV: nix
+          CC: clang
+          APPVEYOR_BUILD_WORKER_IMAGE: macOS
+          CONFIGURE_EXTRA: --with-sanitize=basic
+        - BUILDENV: nix
+          CC: gcc
+          APPVEYOR_BUILD_WORKER_IMAGE: macOS
+        - PATH: c:/msys64/mingw32/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 1
+          BUILDENV: win
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+        - PATH: c:/msys64/mingw64/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 1
+          BUILDENV: win
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+        - PATH: c:/msys64/mingw32/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 0
+          BUILDENV: win
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+        - PATH: c:/msys64/mingw64/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 0
+          BUILDENV: win
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    COVERALLS_REPO_TOKEN:
+          secure: 65aY7ZKc9RBSh/ZqO/qPrGyFHWzDjttviyIj7gVy0E4mfXYoeUItxGCrTnqATKT3
+
+cache:
+    - $HOME/.ccache
+    - config.cache
+    - src/mingw-libgnurx-2.5.1
+    - src/PDCurses-3.8
+
+before_build:
+    - cmd: bash scripts/appveyor/%BUILDENV%/build-deps
+    - sh: scripts/appveyor/$BUILDENV/build-deps
+
+build_script:
+    - cmd: bash scripts/appveyor/%BUILDENV%/build
+    - sh: scripts/appveyor/$BUILDENV/build
+
+test_script:
+    - cmd: bash scripts/appveyor/%BUILDENV%/test
+    - sh: scripts/appveyor/$BUILDENV/test

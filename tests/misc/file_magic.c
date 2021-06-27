@@ -94,7 +94,12 @@ has_mime_type_detection_and_symlinks(void)
 static int
 has_mime_type_detection(void)
 {
-	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL;
+	const char *text = get_mimetype(TEST_DATA_PATH "/read/two-lines", 0);
+	const char *binary = get_mimetype(TEST_DATA_PATH "/read/binary-data", 0);
+	return (text != NULL)
+	    && (binary != NULL)
+	    && (strcmp(text, "text/plain") == 0)
+	    && (strcmp(binary, "text/plain") != 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

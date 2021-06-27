@@ -1,6 +1,6 @@
-| travis-ci  |  appveyor  | fragile-ci | coveralls  |   uncov    |
-|------------|------------|------------|------------|------------|
-|[![][TT]][T]|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
+|  appveyor  | fragile-ci | coveralls  |   uncov    |
+|------------|------------|------------|------------|
+|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
 
 ### **vifm** - vi[m] like file manager, _v0.11_, _2001 – 2021_
 
@@ -77,8 +77,6 @@ GNU General Public License, version 2 or later.
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
 
-[TT]: https://travis-ci.org/vifm/vifm.svg?branch=master
-[T]: https://travis-ci.org/vifm/vifm
 [AA]: https://ci.appveyor.com/api/projects/status/ywfhdev1l3so1f5e/branch/master?svg=true
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
 [CC]: https://coveralls.io/repos/github/vifm/vifm/badge.svg?branch=master

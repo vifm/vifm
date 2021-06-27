@@ -613,7 +613,7 @@ read_lines(FILE *fp, int max_lines, int *complete)
 	strlist_t lines = {};
 	skip_bom(fp);
 
-	char *next_line;
+	char *next_line = NULL;
 	while(lines.nitems < max_lines && (next_line = read_line(fp, NULL)) != NULL)
 	{
 		const int old_len = lines.nitems;
