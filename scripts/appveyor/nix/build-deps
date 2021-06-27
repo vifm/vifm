@@ -7,6 +7,8 @@ if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = Ubuntu ]; then
     ccache -M 100Mi
 fi
 
+# installing ccache on macOS is useless, because brew kills all ccache's gains
+
 if [ "$COLLECT_COVERAGE" = yes ] && [ -n "$COVERALLS_REPO_TOKEN" ]; then
     pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
 fi
