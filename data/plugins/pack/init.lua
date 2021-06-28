@@ -57,10 +57,9 @@ local function pack(info)
     local job = vifm.startjob {
         cmd = cmd,
         description = string.format("Archiving %s", outfile),
-        visible = true
+        visible = true,
+        iomode = '' -- ignore output to not block
     }
-    -- close output stream to avoid blocking archives after pipe filling up
-    job:stdout():close()
 end
 
 -- this does NOT overwrite pre-existing user command

@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Mar 29
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jun 28
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -302,6 +302,10 @@ Possible fields of {job}:
  - "description" (string) (default: "")
    Description of the job to be displayed on the job bar (when "visible" key
    is set to true).
+ - "iomode" (string) (default: "r")
+   Specififes mode of interaction with the job:
+    - "r" - reading output of the process
+    - ""  - no I/O interaction
  - "mergestreams" (boolean) (default: false)
    Whether to merge error streams of the command with output stream.
  - "visible" (boolean) (default: false)
@@ -312,6 +316,9 @@ Parameters:~
 
 Return:~
   Returns an instance of |vifm-l_VifmJob|.
+
+Raises an error:~
+  If "iomode" has incorrect value.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.cmds*
@@ -442,7 +449,7 @@ Parameters:~
 --------------------------------------------------------------------------------
 *vifm-l_VifmJob*
 
-Instances of this type are returned by  |vifm-l_vifm.startjob()|.
+Instances of this type are returned by |vifm-l_vifm.startjob()|.
 
 VifmJob:wait()                                 *vifm-l_VifmJob:wait()*
 Waits for the job to finish.
@@ -469,6 +476,10 @@ stream if `mergestreams` was set to `true`.
 
 Return:~
   Returns file stream from standard I/O library of Lua.
+
+Raises an error:~
+  If the job wasn't started with "r" I/O mode (see |vifm-l_vifm.startjob()|).
+  If output was already closed.
 
 VifmJob:errors()                               *vifm-l_VifmJob:errors()*
 Retrieves data collected from error stream of the job.  It's accumulated

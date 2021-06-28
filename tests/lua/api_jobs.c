@@ -18,9 +18,18 @@ TEARDOWN()
 	vlua_finish(vlua);
 }
 
-/* This test comes before other startjob tests to make it pass faster.  When
- * it's first, there are no other jobs which can slow down receiving errors from
- * the process. */
+TEST(vifmjob_bad_arg)
+{
+	ui_sb_msg("");
+	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
+	                                     "         iomode = 'u' }\n"
+	                                     "job = vifm.startjob(info)"));
+	assert_true(ends_with(ui_sb_last(), "Unknown 'iomode' value: u"));
+}
+
+/* This test comes before other good startjob tests to make it pass faster.
+ * When it's first, there are no other jobs which can slow down receiving errors
+ * from the process. */
 TEST(vifmjob_errors)
 {
 	conf_setup();
@@ -102,6 +111,20 @@ TEST(vifmjob_stderr)
 	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:stdout():read('a'))"));
 	assert_true(starts_with_lit(ui_sb_last(), "err"));
+
+	conf_teardown();
+}
+
+TEST(vifmjob_no_out)
+{
+	conf_setup();
+
+	ui_sb_msg("");
+	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
+	                                     "         iomode = '' }\n"
+	                                     "job = vifm.startjob(info)\n"
+	                                     "print(job:stdout():read('a'))"));
+	assert_true(ends_with(ui_sb_last(), "The job has no output stream"));
 
 	conf_teardown();
 }

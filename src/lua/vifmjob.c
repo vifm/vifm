@@ -20,6 +20,7 @@
 
 #include <stdio.h> /* fclose() */
 #include <stdlib.h> /* free() */
+#include <string.h> /* strcmp() */
 
 #include "../compat/pthread.h"
 #include "../utils/str.h"
@@ -80,7 +81,13 @@ vifmjob_new(lua_State *lua)
 	check_field(lua, 1, "cmd", LUA_TSTRING);
 	const char *cmd = lua_tostring(lua, -1);
 
-	BgJobFlags flags = BJF_MENU_VISIBLE | BJF_CAPTURE_OUT;
+	const char *iomode = NULL;
+	if(check_opt_field(lua, 1, "iomode", LUA_TSTRING))
+	{
+		iomode = lua_tostring(lua, -1);
+	}
+
+	BgJobFlags flags = BJF_MENU_VISIBLE;
 	if(check_opt_field(lua, 1, "visible", LUA_TBOOLEAN))
 	{
 		flags |= (lua_toboolean(lua, -1) ? BJF_JOB_BAR_VISIBLE : BJF_NONE);
@@ -88,6 +95,14 @@ vifmjob_new(lua_State *lua)
 	if(check_opt_field(lua, 1, "mergestreams", LUA_TBOOLEAN))
 	{
 		flags |= (lua_toboolean(lua, -1) ? BJF_MERGE_STREAMS : BJF_NONE);
+	}
+	if(iomode == NULL || strcmp(iomode, "r") == 0)
+	{
+		flags |= BJF_CAPTURE_OUT;
+	}
+	else if(strcmp(iomode, "") != 0)
+	{
+		return luaL_error(lua, "Unknown 'iomode' value: %s", iomode);
 	}
 
 	const char *descr = NULL;
@@ -191,6 +206,11 @@ static int
 vifmjob_stdout(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+
+	if(vifm_job->job->output == NULL)
+	{
+		return luaL_error(lua, "%s", "The job has no output stream");
+	}
 
 	/* We return the same Lua object on every call. */
 	if(vifm_job->output == NULL)
