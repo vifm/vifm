@@ -42,6 +42,7 @@ job_stream_t;
 typedef struct
 {
 	bg_job_t *job;        /* Link to the native job. */
+	job_stream_t *input;  /* Cached input stream or NULL. */
 	job_stream_t *output; /* Cached output stream or NULL. */
 }
 vifm_job_t;
@@ -49,6 +50,7 @@ vifm_job_t;
 static int vifmjob_gc(lua_State *lua);
 static int vifmjob_wait(lua_State *lua);
 static int vifmjob_exitcode(lua_State *lua);
+static int vifmjob_stdin(lua_State *lua);
 static int vifmjob_stdout(lua_State *lua);
 static int vifmjob_errors(lua_State *lua);
 static void job_stream_gc(lua_State *lua, job_stream_t *js);
@@ -62,6 +64,7 @@ static const luaL_Reg vifmjob_methods[] = {
 	{ "__gc",     &vifmjob_gc       },
 	{ "wait",     &vifmjob_wait     },
 	{ "exitcode", &vifmjob_exitcode },
+	{ "stdin",    &vifmjob_stdin    },
 	{ "stdout",   &vifmjob_stdout   },
 	{ "errors",   &vifmjob_errors   },
 	{ NULL,       NULL              }
@@ -104,6 +107,10 @@ vifmjob_new(lua_State *lua)
 	{
 		flags |= BJF_CAPTURE_OUT;
 	}
+	else if(strcmp(iomode, "w") == 0)
+	{
+		flags |= BJF_SUPPLY_INPUT;
+	}
 	else if(strcmp(iomode, "") != 0)
 	{
 		return luaL_error(lua, "Unknown 'iomode' value: %s", iomode);
@@ -132,6 +139,7 @@ vifmjob_new(lua_State *lua)
 	lua_setmetatable(lua, -2);
 
 	data->job = job;
+	data->input = NULL;
 	data->output = NULL;
 	return 1;
 }
@@ -144,6 +152,10 @@ vifmjob_gc(lua_State *lua)
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 	bg_job_decref(vifm_job->job);
 
+	if(vifm_job->input != NULL)
+	{
+		job_stream_gc(lua, vifm_job->input);
+	}
 	if(vifm_job->output != NULL)
 	{
 		job_stream_gc(lua, vifm_job->output);
@@ -158,6 +170,13 @@ static int
 vifmjob_wait(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+
+	/* Close Lua input stream to avoid situation when the job is blocked on
+	 * read. */
+	if(vifm_job->input != NULL)
+	{
+		job_stream_close(lua, vifm_job->input);
+	}
 
 	/* Close Lua output stream to avoid situation when the job is blocked on
 	 * write. */
@@ -198,8 +217,34 @@ vifmjob_exitcode(lua_State *lua)
 	return 1;
 }
 
-/* Method of VifmJob that retrieves stream associated with output stream of
- * the job.  Returns file stream object compatible with I/O library. */
+/* Method of VifmJob that retrieves stream associated with input stream of the
+ * job.  Returns file stream object compatible with I/O library. */
+static int
+vifmjob_stdin(lua_State *lua)
+{
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+
+	if(vifm_job->job->input == NULL)
+	{
+		return luaL_error(lua, "%s", "The job has no input stream");
+	}
+
+	/* We return the same Lua object on every call. */
+	if(vifm_job->input == NULL)
+	{
+		vifm_job->input = job_stream_open(lua, vifm_job->job,
+				vifm_job->job->input);
+	}
+	else
+	{
+		from_pointer(lua, vifm_job->input->obj);
+	}
+
+	return 1;
+}
+
+/* Method of VifmJob that retrieves stream associated with output stream of the
+ * job.  Returns file stream object compatible with I/O library. */
 static int
 vifmjob_stdout(lua_State *lua)
 {

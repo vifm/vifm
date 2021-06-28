@@ -304,7 +304,8 @@ Possible fields of {job}:
    is set to true).
  - "iomode" (string) (default: "r")
    Specififes mode of interaction with the job:
-    - "r" - reading output of the process
+    - "r" - reading output of the process (see |vifm-l_VifmJob:stdout()|)
+    - "w" - providing input to the process (see |vifm-l_VifmJob:stdin()|)
     - ""  - no I/O interaction
  - "mergestreams" (boolean) (default: false)
    Whether to merge error streams of the command with output stream.
@@ -470,6 +471,16 @@ Return:~
 Raises an error:~
   If waiting has failed.
 
+VifmJob:stdin()                                *vifm-l_VifmJob:stdin()*
+Retrieves stream associated with standard input of a job.
+
+Return:~
+  Returns file stream from standard I/O library of Lua.
+
+Raises an error:~
+  If the job wasn't started with "w" I/O mode (see |vifm-l_vifm.startjob()|).
+  If input stream object is already closed.
+
 VifmJob:stdout()                               *vifm-l_VifmJob:stdout()*
 Retrieves stream associated with standard output of a job.  Includes error
 stream if `mergestreams` was set to `true`.
@@ -479,7 +490,7 @@ Return:~
 
 Raises an error:~
   If the job wasn't started with "r" I/O mode (see |vifm-l_vifm.startjob()|).
-  If output was already closed.
+  If output stream object is already closed.
 
 VifmJob:errors()                               *vifm-l_VifmJob:errors()*
 Retrieves data collected from error stream of the job.  It's accumulated

@@ -80,6 +80,30 @@ TEST(vifmjob_exitcode)
 	conf_teardown();
 }
 
+TEST(vifmjob_stdin, IF(have_cat))
+{
+	conf_setup();
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+	      "info = { cmd = 'cat > " SANDBOX_PATH "/file', iomode = 'w' }\n"
+	      "job = vifm.startjob(info)\n"
+	      "if job:stdin() ~= job:stdin() then\n"
+	      "  print('Result should be the same')\n"
+	      "else\n"
+	      "  print(job:stdin():write('text') == job:stdin())\n"
+	      "end\n"
+	      "job:stdin():close()\n"
+	      "job:wait()"));
+	assert_string_equal("true", ui_sb_last());
+
+	conf_teardown();
+
+	const char *lines[] = { "text" };
+	file_is(SANDBOX_PATH "/file", lines, 1);
+	remove_file(SANDBOX_PATH "/file");
+}
+
 TEST(vifmjob_stdout)
 {
 	conf_setup();
@@ -123,8 +147,22 @@ TEST(vifmjob_no_out)
 	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
 	                                     "         iomode = '' }\n"
 	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:stdout():read('a'))"));
+	                                     "print(job:stdout() and 'FAIL')"));
 	assert_true(ends_with(ui_sb_last(), "The job has no output stream"));
+
+	conf_teardown();
+}
+
+TEST(vifmjob_no_in)
+{
+	conf_setup();
+
+	ui_sb_msg("");
+	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
+	                                     "         iomode = '' }\n"
+	                                     "job = vifm.startjob(info)\n"
+	                                     "print(job:stdin() and 'FAIL')"));
+	assert_true(ends_with(ui_sb_last(), "The job has no input stream"));
 
 	conf_teardown();
 }
