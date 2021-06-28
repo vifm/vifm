@@ -554,7 +554,7 @@ get_data(vcache_entry_t *centry, MacroFlags flags, const char **error)
 	}
 	else
 	{
-		BgJobFlags bg_flags = BJF_MERGE_STREAMS;
+		BgJobFlags bg_flags = BJF_CAPTURE_OUT | BJF_MERGE_STREAMS;
 		if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
 				ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
 		{
