@@ -50,8 +50,12 @@ static int vifmjob_gc(lua_State *lua);
 static int vifmjob_wait(lua_State *lua);
 static int vifmjob_exitcode(lua_State *lua);
 static int vifmjob_stdout(lua_State *lua);
-static int jobstream_close(lua_State *lua);
 static int vifmjob_errors(lua_State *lua);
+static void job_stream_gc(lua_State *lua, job_stream_t *js);
+static job_stream_t * job_stream_open(lua_State *lua, bg_job_t *job,
+		FILE *stream);
+static void job_stream_close(lua_State *lua, job_stream_t *js);
+static int jobstream_closef(lua_State *lua);
 
 /* Methods of VifmJob type. */
 static const luaL_Reg vifmjob_methods[] = {
@@ -142,10 +146,7 @@ vifmjob_gc(lua_State *lua)
 
 	if(vifm_job->output != NULL)
 	{
-		job_stream_t *js = vifm_job->output;
-		drop_pointer(lua, js->obj);
-		bg_job_decref(js->job);
-		js->job = NULL;
+		job_stream_gc(lua, vifm_job->output);
 	}
 
 	return 0;
@@ -162,10 +163,7 @@ vifmjob_wait(lua_State *lua)
 	 * write. */
 	if(vifm_job->output != NULL)
 	{
-		job_stream_t *js = vifm_job->output;
-		js->lua_stream.closef = NULL;
-		bg_job_decref(js->job);
-		drop_pointer(lua, js->obj);
+		job_stream_close(lua, vifm_job->output);
 	}
 
 	if(bg_job_wait(vifm_job->job) != 0)
@@ -215,17 +213,8 @@ vifmjob_stdout(lua_State *lua)
 	/* We return the same Lua object on every call. */
 	if(vifm_job->output == NULL)
 	{
-		job_stream_t *js = lua_newuserdatauv(lua, sizeof(*js), 0);
-		js->lua_stream.closef = NULL;
-		luaL_setmetatable(lua, LUA_FILEHANDLE);
-
-		js->lua_stream.f = vifm_job->job->output;
-		js->lua_stream.closef = &jobstream_close;
-		js->job = vifm_job->job;
-		bg_job_incref(vifm_job->job);
-
-		js->obj = to_pointer(lua);
-		vifm_job->output = js;
+		vifm_job->output = job_stream_open(lua, vifm_job->job,
+				vifm_job->job->output);
 	}
 	else
 	{
@@ -233,24 +222,6 @@ vifmjob_stdout(lua_State *lua)
 	}
 
 	return 1;
-}
-
-/* Custom destructor for luaL_Stream that decrements use counter of the job.
- * Returns status. */
-static int
-jobstream_close(lua_State *lua)
-{
-	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
-
-	int stat = 1;
-
-	if(js->job != NULL)
-	{
-		stat = (fclose(js->job->output) == 0);
-		js->job->output = NULL;
-	}
-
-	return luaL_fileresult(lua, stat, NULL);
 }
 
 /* Method of VifmJob that retrieves errors produces by the job.  Returns string
@@ -275,6 +246,68 @@ vifmjob_errors(lua_State *lua)
 		free(errors);
 	}
 	return 1;
+}
+
+/* Frees job stream when its parent is garbage collected. */
+static void
+job_stream_gc(lua_State *lua, job_stream_t *js)
+{
+	drop_pointer(lua, js->obj);
+	bg_job_decref(js->job);
+	js->job = NULL;
+}
+
+/* Creates a job stream.  Returns a pointer to new user data. */
+static job_stream_t *
+job_stream_open(lua_State *lua, bg_job_t *job, FILE *stream)
+{
+	job_stream_t *js = lua_newuserdatauv(lua, sizeof(*js), 0);
+	js->lua_stream.closef = NULL;
+	luaL_setmetatable(lua, LUA_FILEHANDLE);
+
+	js->lua_stream.f = stream;
+	js->lua_stream.closef = &jobstream_closef;
+	js->job = job;
+	bg_job_incref(job);
+
+	js->obj = to_pointer(lua);
+
+	return js;
+}
+
+/* Closes job stream when its parent is closed. */
+static void
+job_stream_close(lua_State *lua, job_stream_t *js)
+{
+	js->lua_stream.closef = NULL;
+	bg_job_decref(js->job);
+	drop_pointer(lua, js->obj);
+}
+
+/* Custom destructor for luaL_Stream that decrements use counter of the job.
+ * Returns status. */
+static int
+jobstream_closef(lua_State *lua)
+{
+	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
+
+	int stat = 1;
+
+	if(js->job != NULL)
+	{
+		if(js->lua_stream.f == js->job->input)
+		{
+			stat = (fclose(js->job->input) == 0);
+			js->job->input = NULL;
+		}
+		else if(js->lua_stream.f == js->job->output)
+		{
+			stat = (fclose(js->job->output) == 0);
+			js->job->output = NULL;
+		}
+	}
+
+	return luaL_fileresult(lua, stat, NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
