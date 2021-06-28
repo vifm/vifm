@@ -83,6 +83,7 @@ static int is_ready_for_read(FILE *stream);
 static int need_more_async_output(vcache_entry_t *centry);
 static strlist_t get_data(vcache_entry_t *centry, MacroFlags flags,
 		const char **error);
+static strlist_t view_builtin(vcache_entry_t *centry, const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
 /* Cache of viewers' output.  Most recent entry is the last one. */
@@ -524,33 +525,17 @@ need_more_async_output(vcache_entry_t *centry)
 }
 
 /* Invokes viewer of a file to get its output.  *error is set either to NULL or
- * an error code on failure.  Returns output and sets *complete. */
+ * an error code on failure.  Returns output. */
 static strlist_t
 get_data(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {
+	strlist_t lines = {};
+
 	ui_cancellation_push_on();
 
-	FILE *fp = NULL;
 	if(is_null_or_empty(centry->viewer))
 	{
-		int dir = is_dir(centry->path);
-
-		if(dir)
-		{
-			centry->top_tree_stats = cfg.top_tree_stats;
-			fp = qv_view_dir(centry->path, centry->max_lines);
-		}
-		else
-		{
-			/* Binary mode is important on Windows. */
-			fp = os_fopen(centry->path, "rb");
-		}
-
-		if(fp == NULL)
-		{
-			*error = dir ? "Failed to list directory's contents"
-			             : "Failed to read file's contents";
-		}
+		lines = view_builtin(centry, error);
 	}
 	else
 	{
@@ -586,22 +571,47 @@ get_data(vcache_entry_t *centry, MacroFlags flags, const char **error)
 			fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 #endif
 
-			strlist_t lines = {};
 			return lines;
 		}
 
 		*error = "Failed to start a viewer";
 	}
 
+	ui_cancellation_pop();
+	return lines;
+}
+
+/* Generates view via builtin means.  *error is set either to NULL or an error
+ * code on failure.  Returns output. */
+static strlist_t
+view_builtin(vcache_entry_t *centry, const char **error)
+{
 	strlist_t lines = {};
 
-	if(fp != NULL)
+	int dir = is_dir(centry->path);
+
+	FILE *fp = NULL;
+	if(dir)
 	{
-		lines = read_lines(fp, centry->max_lines, &centry->complete);
-		fclose(fp);
+		centry->top_tree_stats = cfg.top_tree_stats;
+		fp = qv_view_dir(centry->path, centry->max_lines);
+	}
+	else
+	{
+		/* Binary mode is important on Windows. */
+		fp = os_fopen(centry->path, "rb");
 	}
 
-	ui_cancellation_pop();
+	if(fp == NULL)
+	{
+		*error = dir ? "Failed to list directory's contents"
+		             : "Failed to read file's contents";
+		return lines;
+	}
+
+	lines = read_lines(fp, centry->max_lines, &centry->complete);
+	fclose(fp);
+
 	return lines;
 }
 
