@@ -81,7 +81,10 @@ static int pull_async(vcache_entry_t *centry);
 static int read_async_output(vcache_entry_t *centry);
 static int is_ready_for_read(FILE *stream);
 static int need_more_async_output(vcache_entry_t *centry);
-static strlist_t get_data(vcache_entry_t *centry, MacroFlags flags,
+static strlist_t view_entry(vcache_entry_t *centry, MacroFlags flags,
+		const char **error);
+static strlist_t view_builtin(vcache_entry_t *centry, const char **error);
+static strlist_t view_external(vcache_entry_t *centry, MacroFlags flags,
 		const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
@@ -143,7 +146,7 @@ vcache_lookup(const char full_path[], const char viewer[], MacroFlags flags,
 		replace_string(&non_cache.path, full_path);
 		update_string(&non_cache.viewer, viewer);
 
-		strlist_t lines = get_data(&non_cache, MF_NONE, error);
+		strlist_t lines = view_entry(&non_cache, MF_NONE, error);
 		free_string_array(lines.items, lines.nitems);
 
 		wait_async_finish(&non_cache);
@@ -368,7 +371,7 @@ update_cache_entry(vcache_entry_t *centry, const char path[],
 	if(centry->job == NULL)
 	{
 		free_string_array(centry->lines.items, centry->lines.nitems);
-		centry->lines = get_data(centry, flags, error);
+		centry->lines = view_entry(centry, flags, error);
 	}
 	else
 	{
@@ -523,85 +526,98 @@ need_more_async_output(vcache_entry_t *centry)
 	return (effective_lines < centry->max_lines);
 }
 
-/* Invokes viewer of a file to get its output.  *error is set either to NULL or
- * an error code on failure.  Returns output and sets *complete. */
+/* Processes cache entry to get preview of a file.  *error is set either to NULL
+ * or an error code on failure.  Returns output. */
 static strlist_t
-get_data(vcache_entry_t *centry, MacroFlags flags, const char **error)
+view_entry(vcache_entry_t *centry, MacroFlags flags, const char **error)
+{
+	if(is_null_or_empty(centry->viewer))
+	{
+		return view_builtin(centry, error);
+	}
+
+	return view_external(centry, flags, error);
+}
+
+/* Generates view via builtin means.  *error is set either to NULL or an error
+ * code on failure.  Returns output. */
+static strlist_t
+view_builtin(vcache_entry_t *centry, const char **error)
 {
 	ui_cancellation_push_on();
 
+	int dir = is_dir(centry->path);
+
 	FILE *fp = NULL;
-	if(is_null_or_empty(centry->viewer))
+	if(dir)
 	{
-		int dir = is_dir(centry->path);
-
-		if(dir)
-		{
-			centry->top_tree_stats = cfg.top_tree_stats;
-			fp = qv_view_dir(centry->path, centry->max_lines);
-		}
-		else
-		{
-			/* Binary mode is important on Windows. */
-			fp = os_fopen(centry->path, "rb");
-		}
-
-		if(fp == NULL)
-		{
-			*error = dir ? "Failed to list directory's contents"
-			             : "Failed to read file's contents";
-		}
+		centry->top_tree_stats = cfg.top_tree_stats;
+		fp = qv_view_dir(centry->path, centry->max_lines);
 	}
 	else
 	{
-		BgJobFlags bg_flags = BJF_MERGE_STREAMS;
-		if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
-				ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
-		{
-			bg_flags |= BJF_SUPPLY_INPUT;
-		}
-
-		centry->job = bg_run_external_job(centry->viewer, bg_flags);
-		if(centry->job != NULL)
-		{
-			ui_cancellation_pop();
-			centry->complete = 0;
-			centry->truncated = 0;
-
-			if(centry->job->input != NULL)
-			{
-				FILE *input = centry->job->input;
-				centry->job->input = NULL;
-
-				const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
-				write_marked_paths(input, curr_view, null_sep);
-				fclose(input);
-			}
-
-#ifndef _WIN32
-			/* Enable non-blocking read from output pipe.  On Windows we read the
-			 * exact amount of data present in the stream. */
-			int fd = fileno(centry->job->output);
-			int flags = fcntl(fd, F_GETFL, 0);
-			fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-#endif
-
-			strlist_t lines = {};
-			return lines;
-		}
-
-		*error = "Failed to start a viewer";
+		/* Binary mode is important on Windows. */
+		fp = os_fopen(centry->path, "rb");
 	}
 
 	strlist_t lines = {};
-
 	if(fp != NULL)
 	{
 		lines = read_lines(fp, centry->max_lines, &centry->complete);
 		fclose(fp);
 	}
+	else
+	{
+		*error = dir ? "Failed to list directory's contents"
+		             : "Failed to read file's contents";
+	}
 
 	ui_cancellation_pop();
+	return lines;
+}
+
+/* Invokes viewer of a file to get its output.  *error is set either to NULL or
+ * an error code on failure.  Returns output. */
+static strlist_t
+view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
+{
+	strlist_t lines = {};
+
+	BgJobFlags bg_flags = BJF_CAPTURE_OUT | BJF_MERGE_STREAMS;
+	if(ma_flags_present(flags, MF_PIPE_FILE_LIST) ||
+			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
+	{
+		bg_flags |= BJF_SUPPLY_INPUT;
+	}
+
+	centry->job = bg_run_external_job(centry->viewer, bg_flags);
+	if(centry->job == NULL)
+	{
+		*error = "Failed to start a viewer";
+		return lines;
+	}
+
+	centry->complete = 0;
+	centry->truncated = 0;
+
+	if(centry->job->input != NULL)
+	{
+		FILE *input = centry->job->input;
+		centry->job->input = NULL;
+
+		const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+		write_marked_paths(input, curr_view, null_sep);
+		fclose(input);
+	}
+
+#ifndef _WIN32
+	/* Enable non-blocking read from output pipe.  On Windows we read the
+		* exact amount of data present in the stream. */
+	int fd = fileno(centry->job->output);
+	int file_flags = fcntl(fd, F_GETFL, 0);
+	fcntl(fd, F_SETFL, file_flags | O_NONBLOCK);
+#endif
+
 	return lines;
 }
 

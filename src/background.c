@@ -875,7 +875,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 bg_job_t *
 bg_run_external_job(const char cmd[], BgJobFlags flags)
 {
-	bg_job_t *job = launch_external(cmd, flags | BJF_CAPTURE_OUT, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, flags, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;

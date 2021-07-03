@@ -13,6 +13,7 @@
 # autotools generated files
 /autom4te.cache/
 /build-aux/config.h
+/build-aux/config.h.in~
 /build-aux/stamp-h1
 /src/Makefile
 /src/runtests.log
