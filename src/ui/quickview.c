@@ -41,7 +41,6 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -119,7 +118,6 @@ static void draw_lines(const strlist_t *lines, int wrapped,
 		const preview_area_t *parea, ViewerKind kind);
 static void write_message(const char msg[], const preview_area_t *parea);
 static void cleanup_for_text(const preview_area_t *parea);
-TSTATIC FILE * qv_execute_viewer(const char viewer[]);
 static void wipe_area(const preview_area_t *parea);
 
 /* Cached preview data for a single file entry. */
@@ -834,21 +832,6 @@ qv_hide(void)
 	}
 }
 
-/* Expands and executes viewer command.  Returns file containing results of the
- * viewer. */
-TSTATIC FILE *
-qv_execute_viewer(const char viewer[])
-{
-	FILE *fp;
-	char *expanded;
-
-	expanded = qv_expand_viewer(viewer);
-	fp = read_cmd_output(expanded, 0);
-	free(expanded);
-
-	return fp;
-}
-
 /* Returns a pointer to newly allocated memory, which should be released by the
  * caller. */
 char *
@@ -897,14 +880,16 @@ qv_cleanup_area(const preview_area_t *parea, const char cmd[])
 
 	curr_stats.preview.clearing = 1;
 	curr_stats.preview_hint = parea;
-	FILE *fp = qv_execute_viewer(cmd);
+
+	char *expanded = qv_expand_viewer(cmd);
+	FILE *fp = read_cmd_output(expanded, /*preserve_stdin=*/0);
+	while(fgetc(fp) != EOF);
+	fclose(fp);
+	free(expanded);
 	curr_stats.preview_hint = NULL;
 	curr_stats.preview.clearing = 0;
 
 	curr_view = curr;
-
-	while(fgetc(fp) != EOF);
-	fclose(fp);
 
 	wipe_area(parea);
 }

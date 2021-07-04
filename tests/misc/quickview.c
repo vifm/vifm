@@ -106,30 +106,10 @@ TEST(preview_is_closed_on_request)
 
 TEST(macros_are_expanded_for_viewer)
 {
-	FILE *fp;
-	size_t text_len;
-	char *text;
-
-#ifndef _WIN32
-	update_string(&cfg.shell, "sh");
-	update_string(&cfg.shell_cmd_flag, "-c");
-#else
-	update_string(&cfg.shell, "cmd");
-	update_string(&cfg.shell_cmd_flag, "/C");
-#endif
-
 	strcpy(curr_view->curr_dir, "echo");
-	fp = qv_execute_viewer("%d 1");
-	assert_non_null(fp);
-
-	text = read_nonseekable_stream(fp, &text_len, NULL, NULL);
-
-	assert_string_equal("1\n", text);
-
-	free(text);
-	fclose(fp);
-	update_string(&cfg.shell, NULL);
-	update_string(&cfg.shell_cmd_flag, NULL);
+	char *expanded = qv_expand_viewer("%d 1");
+	assert_string_equal("echo 1", expanded);
+	free(expanded);
 }
 
 TEST(when_preview_can_be_shown)
