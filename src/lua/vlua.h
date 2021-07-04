@@ -54,6 +54,10 @@ int vlua_viewcolumn_map(vlua_t *vlua, const char name[]);
  * Returns non-zero if so, otherwise zero is returned. */
 int vlua_viewcolumn_is_primary(vlua_t *vlua, int column_id);
 
+/* Checks command for a Lua handler.  Returns non-zero if it's present and zero
+ * otherwise. */
+int vlua_handler_cmd(vlua_t *vlua, const char cmd[]);
+
 /* Parses command for a handler name and checks for its presence.  Returns
  * non-zero if handler exists otherwise zero is returned. */
 int vlua_handler_present(vlua_t *vlua, const char cmd[]);

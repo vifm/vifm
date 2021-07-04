@@ -4,6 +4,8 @@
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
+#include "../../src/cmd_completion.h"
+#include "../../src/status.h"
 
 #include <test-utils.h>
 
@@ -63,6 +65,10 @@ TEST(registered)
 	assert_string_equal("true", ui_sb_last());
 
 	assert_true(vlua_handler_present(vlua, "#vifmtest#handle"));
+
+	curr_stats.vlua = vlua;
+	assert_true(external_command_exists("#vifmtest#handle"));
+	curr_stats.vlua = NULL;
 }
 
 TEST(duplicate_rejected)

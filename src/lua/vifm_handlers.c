@@ -41,6 +41,12 @@ static const char *WHITESPACE = " \t";
  * is doubly keyed: by column name and by corresponding ID. */
 static char handlers_key;
 
+int
+vifm_handlers_check(vlua_t *vlua, const char cmd[])
+{
+	return (cmd[0] == '#');
+}
+
 void
 vifm_handlers_init(vlua_t *vlua)
 {

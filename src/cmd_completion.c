@@ -1325,12 +1325,17 @@ file_matches(const char fname[], const char prefix[], size_t prefix_len)
 int
 external_command_exists(const char cmd[])
 {
-	char path[PATH_MAX + 1];
+	if(vlua_handler_cmd(curr_stats.vlua, cmd))
+	{
+		return vlua_handler_present(curr_stats.vlua, cmd);
+	}
 
+	char path[PATH_MAX + 1];
 	if(get_cmd_path(cmd, sizeof(path), path) == 0)
 	{
 		return executable_exists(path);
 	}
+
 	return 0;
 }
 

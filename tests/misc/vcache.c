@@ -9,6 +9,7 @@
 
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/string_array.h"
@@ -72,6 +73,26 @@ TEST(can_view_full_file)
 	assert_int_equal(2, lines.nitems);
 	assert_string_equal("1st line", lines.items[0]);
 	assert_string_equal("2nd line", lines.items[1]);
+}
+
+TEST(can_view_via_plugin)
+{
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function vcache(info) return {'line1', 'line2'} end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'vcache', handler = vcache }"));
+
+	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines",
+			"#vifmtest#vcache", MF_NONE, VK_TEXTUAL, 10, VC_SYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(2, lines.nitems);
+	assert_string_equal("line1", lines.items[0]);
+	assert_string_equal("line2", lines.items[1]);
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
 }
 
 TEST(can_view_partial_file)

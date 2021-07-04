@@ -466,6 +466,12 @@ vlua_viewcolumn_is_primary(vlua_t *vlua, int column_id)
 }
 
 int
+vlua_handler_cmd(vlua_t *vlua, const char cmd[])
+{
+	return vifm_handlers_check(vlua, cmd);
+}
+
+int
 vlua_handler_present(vlua_t *vlua, const char cmd[])
 {
 	return vifm_handlers_present(vlua, cmd);
