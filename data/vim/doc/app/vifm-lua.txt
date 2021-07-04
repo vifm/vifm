@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jun 28
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jul 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -194,16 +194,16 @@ Possible fields of {column}:
    Whether this column is highlighted with file color and search match
    is highlighted as well.
 
+Fields of {info} argument for {column}.handler:
+ - "entry" (table)
+   Information about a file list entry.  See below.
+
 Return values of {column}.handler:
  1. Value for the table's cell as a string or convertible to it.
  2. Optional table with two integer values defining  highlighting range:
     start and end offsets within the returned string.
 
-Fields of {info} argument for "handler":
- - "entry" (table)
-   Information about a file list entry.  See below.
-
-Fields of {info}.entry for "handler":
+Fields of {info}.entry for {column}.handler:
  - "classify" (table)
    Table that describes name decorations.  See below.
  - "name" (string)
@@ -236,6 +236,12 @@ Fields of {info}.entry.classify for "handler":
    File name prefix.
  - "suffix" (string)
    File name suffix.
+
+Return:~
+  `true` if column was added.
+
+Raises an error:~
+  If {column}.name has incorrect value.
 
 vifm.currview({path})                          *vifm-l_vifm.currview()*
 Retrives a reference to current view.
