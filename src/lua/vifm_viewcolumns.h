@@ -32,8 +32,8 @@ int vifm_viewcolumns_map(struct vlua_t *vlua, const char name[]);
  * otherwise zero is returned. */
 int vifm_viewcolumns_is_primary(struct vlua_t *vlua, int column_id);
 
-/* Member of `vifm` that expands adds a user-defined view column.  Returns a
- * boolean, which is true on success. */
+/* Member of `vifm` that adds a user-defined view column.  Returns a boolean,
+ * which is true on success. */
 int vifm_addcolumntype(struct lua_State *lua);
 
 #endif /* VIFM__LUA__VIFM_VIEWCOLUMNS_H__ */

@@ -391,7 +391,7 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 	return 0;
 }
 
-/* Sets upvalue #1 to a plugin-specific version environment. */
+/* Sets upvalue #1 to a plugin-specific version of environment. */
 static void
 setup_plugin_env(lua_State *lua, plug_t *plug)
 {

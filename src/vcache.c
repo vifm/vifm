@@ -526,8 +526,8 @@ need_more_async_output(vcache_entry_t *centry)
 	return (effective_lines < centry->max_lines);
 }
 
-/* Processes cache entry to get preview of a file.  *error is set either to NULL
- * or an error code on failure.  Returns output. */
+/* Processes cache entry to get preview of a file.  *error is set to an error
+ * message on failure.  Returns output. */
 static strlist_t
 view_entry(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {
@@ -539,8 +539,8 @@ view_entry(vcache_entry_t *centry, MacroFlags flags, const char **error)
 	return view_external(centry, flags, error);
 }
 
-/* Generates view via builtin means.  *error is set either to NULL or an error
- * code on failure.  Returns output. */
+/* Generates view via builtin means.  *error is set to an error message on
+ * failure.  Returns output. */
 static strlist_t
 view_builtin(vcache_entry_t *centry, const char **error)
 {
@@ -576,8 +576,8 @@ view_builtin(vcache_entry_t *centry, const char **error)
 	return lines;
 }
 
-/* Invokes viewer of a file to get its output.  *error is set either to NULL or
- * an error code on failure.  Returns output. */
+/* Invokes viewer of a file to get its output.  *error is set to an error
+ * message on failure.  Returns output. */
 static strlist_t
 view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {
