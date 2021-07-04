@@ -9,8 +9,10 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/file_streams.h"
@@ -216,6 +218,27 @@ TEST(no_switch_into_view_mode_of_hidden_pane)
 	vle_keys_reset();
 	view_teardown(&lwin);
 	view_teardown(&rwin);
+}
+
+TEST(can_clean_via_plugin)
+{
+	curr_stats.vlua = vlua_init();
+	view_setup(&lwin);
+	init_view_list(&lwin);
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function clear(info) ginfo = info; return {} end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'clear', handler = clear }"));
+
+	qv_cleanup(&lwin, "#vifmtest#clear %%");
+
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.command)"));
+	assert_string_equal("#vifmtest#clear %", ui_sb_last());
+
+	view_teardown(&lwin);
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

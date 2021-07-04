@@ -33,6 +33,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../engine/mode.h"
+#include "../lua/vlua.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
@@ -882,10 +883,23 @@ qv_cleanup_area(const preview_area_t *parea, const char cmd[])
 	curr_stats.preview_hint = parea;
 
 	char *expanded = qv_expand_viewer(cmd);
-	FILE *fp = read_cmd_output(expanded, /*preserve_stdin=*/0);
-	while(fgetc(fp) != EOF);
-	fclose(fp);
+	if(vlua_handler_cmd(curr_stats.vlua, expanded))
+	{
+		char path[PATH_MAX + 1];
+		dir_entry_t *entry = get_current_entry(parea->source);
+		qv_get_path_to_explore(entry, path, sizeof(path));
+
+		strlist_t lines = vlua_view_file(curr_stats.vlua, expanded, path);
+		free_string_array(lines.items, lines.nitems);
+	}
+	else
+	{
+		FILE *fp = read_cmd_output(expanded, /*preserve_stdin=*/0);
+		while(fgetc(fp) != EOF);
+		fclose(fp);
+	}
 	free(expanded);
+
 	curr_stats.preview_hint = NULL;
 	curr_stats.preview.clearing = 0;
 
