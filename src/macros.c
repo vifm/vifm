@@ -667,7 +667,7 @@ ma_get_clear_cmd(const char cmd[])
 		return NULL;
 	}
 
-	clear_cmd = break_point + 3;
+	clear_cmd = skip_whitespace(break_point + 3);
 	return is_null_or_empty(clear_cmd) ? NULL : clear_cmd;
 }
 
