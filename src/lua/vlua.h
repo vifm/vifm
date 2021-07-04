@@ -26,7 +26,9 @@
 /* Declaration of opaque state of the unit. */
 typedef struct vlua_t vlua_t;
 
+struct cmd_info_t;
 struct plug_t;
+struct strlist_t;
 
 /* Creates new instance of the unit.  Returns the instance or NULL. */
 vlua_t * vlua_init(void);
@@ -41,8 +43,6 @@ void vlua_finish(vlua_t *vlua);
  * returned. */
 int vlua_run_string(vlua_t *vlua, const char str[]);
 
-struct cmd_info_t;
-
 /* Performs completion of a command.  Returns offset of completion matches. */
 int vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info,
 		int arg_pos);
@@ -53,6 +53,15 @@ int vlua_viewcolumn_map(vlua_t *vlua, const char name[]);
 /* Checks whether specified view column should be considered a primary one.
  * Returns non-zero if so, otherwise zero is returned. */
 int vlua_viewcolumn_is_primary(vlua_t *vlua, int column_id);
+
+/* Parses command for a handler name and checks for its presence.  Returns
+ * non-zero if handler exists otherwise zero is returned. */
+int vlua_handler_present(vlua_t *vlua, const char cmd[]);
+
+/* Invokes a viewer handler.  Returns list of strings for preview, which should
+ * be freed by the caller. */
+struct strlist_t vlua_view_file(vlua_t *vlua, const char viewer[],
+		const char path[]);
 
 #endif /* VIFM__LUA__VLUA_H__ */
 

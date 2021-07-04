@@ -32,6 +32,7 @@
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
@@ -43,6 +44,7 @@
 #include "lua/lua.h"
 #include "common.h"
 #include "vifm_cmds.h"
+#include "vifm_handlers.h"
 #include "vifm_viewcolumns.h"
 #include "vifmjob.h"
 #include "vifmview.h"
@@ -74,6 +76,7 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "expand",        &vifm_expand        },
 	{ "currview",      &vifmview_currview  },
 	{ "addcolumntype", &vifm_addcolumntype },
+	{ "addhandler",    &vifm_addhandler    },
 	{ NULL,            NULL                }
 };
 
@@ -93,7 +96,9 @@ vlua_init(void)
 	{
 		patch_env(vlua->lua);
 		load_api(vlua->lua);
+
 		vifm_viewcolumns_init(vlua);
+		vifm_handlers_init(vlua);
 	}
 	return vlua;
 }
@@ -395,12 +400,31 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 static void
 setup_plugin_env(lua_State *lua, plug_t *plug)
 {
+	/* Global environment table. */
 	lua_newtable(lua);
+	luaL_getmetatable(lua, "VifmPluginEnv");
+	lua_setmetatable(lua, -2);
+
+	/* Plugin-specific `vifm` table. */
+	lua_newtable(lua);
+	/* Meta-table for it. */
+	lua_newtable(lua);
+	lua_getglobal(lua, "vifm");
+	lua_setfield(lua, -2, "__index");
+	lua_setmetatable(lua, -2);
+
+	/* Plugin-specific `vifm.addhandler()`. */
+	lua_pushlightuserdata(lua, plug);
+	lua_pushcclosure(lua, &vifm_addhandler, 1);
+	lua_setfield(lua, -2, "addhandler");
+
+	/* Assign `vifm` as a plugin-specific global. */
+	lua_setfield(lua, -2, "vifm");
+
+	/* Plugin-specific `print()`. */
 	lua_pushlightuserdata(lua, plug);
 	lua_pushcclosure(lua, &print, 1);
 	lua_setfield(lua, -2, "print");
-	luaL_getmetatable(lua, "VifmPluginEnv");
-	lua_setmetatable(lua, -2);
 
 	if(lua_setupvalue(lua, -2, 1) == NULL)
 	{
@@ -439,6 +463,18 @@ int
 vlua_viewcolumn_is_primary(vlua_t *vlua, int column_id)
 {
 	return vifm_viewcolumns_is_primary(vlua, column_id);
+}
+
+int
+vlua_handler_present(vlua_t *vlua, const char cmd[])
+{
+	return vifm_handlers_present(vlua, cmd);
+}
+
+strlist_t
+vlua_view_file(vlua_t *vlua, const char viewer[], const char path[])
+{
+	return vifm_handlers_view(vlua, viewer, path);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
