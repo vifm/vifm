@@ -589,7 +589,8 @@ view_builtin(vcache_entry_t *centry, const char **error)
 static strlist_t
 view_plugin(vcache_entry_t *centry, const char **error)
 {
-	return vlua_view_file(curr_stats.vlua, centry->viewer, centry->path);
+	return vlua_view_file(curr_stats.vlua, centry->viewer, centry->path,
+			curr_stats.preview_hint);
 }
 
 /* Invokes viewer of a file to get its output.  *error is set to an error

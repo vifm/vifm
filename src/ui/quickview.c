@@ -889,7 +889,7 @@ qv_cleanup_area(const preview_area_t *parea, const char cmd[])
 		dir_entry_t *entry = get_current_entry(parea->source);
 		qv_get_path_to_explore(entry, path, sizeof(path));
 
-		strlist_t lines = vlua_view_file(curr_stats.vlua, expanded, path);
+		strlist_t lines = vlua_view_file(curr_stats.vlua, expanded, path, parea);
 		free_string_array(lines.items, lines.nitems);
 	}
 	else

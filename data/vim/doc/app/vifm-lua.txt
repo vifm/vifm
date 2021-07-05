@@ -280,6 +280,14 @@ Fields of {info} argument for {handler}.handler:
    Command with which the viewer was invoked.
  - "path" (string)
    Path to the file which is being viewed.
+ - "x" (integer)
+   X coordinate of the preview area in characters.
+ - "y" (integer)
+   Y coordinate of the preview area in characters.
+ - "width" (integer)
+   Width of the preview area in characters.
+ - "height" (integer)
+   Height of the preview area in characters.
 
 Return value of {handler}.handler: array of strings.
 

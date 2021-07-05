@@ -28,6 +28,7 @@ typedef struct vlua_t vlua_t;
 
 struct cmd_info_t;
 struct plug_t;
+struct preview_area_t;
 struct strlist_t;
 
 /* Creates new instance of the unit.  Returns the instance or NULL. */
@@ -65,7 +66,7 @@ int vlua_handler_present(vlua_t *vlua, const char cmd[]);
 /* Invokes a viewer handler.  Returns list of strings for preview, which should
  * be freed by the caller. */
 struct strlist_t vlua_view_file(vlua_t *vlua, const char viewer[],
-		const char path[]);
+		const char path[], const struct preview_area_t *parea);
 
 #endif /* VIFM__LUA__VLUA_H__ */
 

@@ -21,7 +21,11 @@
 #include <assert.h> /* assert() */
 #include <string.h> /* strcspn() */
 
+#include <curses.h>
+
+#include "../ui/quickview.h"
 #include "../ui/statusbar.h"
+#include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../plugins.h"
@@ -70,7 +74,8 @@ vifm_handlers_present(vlua_t *vlua, const char cmd[])
 }
 
 strlist_t
-vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[])
+vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
+		const preview_area_t *parea)
 {
 	strlist_t result = {};
 
@@ -96,6 +101,19 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[])
 	lua_setfield(vlua->lua, -2, "command");
 	lua_pushstring(vlua->lua, path);
 	lua_setfield(vlua->lua, -2, "path");
+
+	/* This is probably always non-NULL, but check won't hurt. */
+	if(parea != NULL)
+	{
+		lua_pushinteger(vlua->lua, getbegx(parea->view->win) + parea->x);
+		lua_setfield(vlua->lua, -2, "x");
+		lua_pushinteger(vlua->lua, getbegy(parea->view->win) + parea->y);
+		lua_setfield(vlua->lua, -2, "y");
+		lua_pushinteger(vlua->lua, parea->w);
+		lua_setfield(vlua->lua, -2, "width");
+		lua_pushinteger(vlua->lua, parea->h);
+		lua_setfield(vlua->lua, -2, "height");
+	}
 
 	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
 	{

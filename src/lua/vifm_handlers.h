@@ -20,6 +20,7 @@
 #define VIFM__LUA__VIFM_HANDLERS_H__
 
 struct lua_State;
+struct preview_area_t;
 struct strlist_t;
 struct vlua_t;
 
@@ -37,7 +38,7 @@ int vifm_handlers_present(struct vlua_t *vlua, const char cmd[]);
 /* Invokes a viewer handler.  Returns list of strings for preview, which should
  * be freed by the caller. */
 struct strlist_t vifm_handlers_view(struct vlua_t *vlua, const char viewer[],
-		const char path[]);
+		const char path[], const struct preview_area_t *parea);
 
 /* Member of `vifm` that adds a Lua handler invokable from the app.  Returns a
  * boolean, which is true on success. */

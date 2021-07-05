@@ -2,6 +2,8 @@
 
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
+#include "../../src/ui/quickview.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/cmd_completion.h"
@@ -10,6 +12,15 @@
 #include <test-utils.h>
 
 static vlua_t *vlua;
+
+static const preview_area_t parea = {
+	.source = &lwin,
+	.view = &lwin,
+	.x = 1,
+	.y = 2,
+	.w = 3,
+	.h = 4,
+};
 
 SETUP()
 {
@@ -99,7 +110,7 @@ TEST(invoked)
 				                      " handler = handler })"));
 	assert_string_equal("true", ui_sb_last());
 
-	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path");
+	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(2, lines.nitems);
 	assert_string_equal("#vifmtest#handle", lines.items[0]);
 	assert_string_equal("path", lines.items[1]);
@@ -108,7 +119,8 @@ TEST(invoked)
 
 TEST(bad_invocation)
 {
-	strlist_t lines = vlua_view_file(vlua, "#vifmtest#nosuchhandle", "path");
+	strlist_t lines =
+		vlua_view_file(vlua, "#vifmtest#nosuchhandle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
 	free_string_array(lines.items, lines.nitems);
 }
@@ -123,7 +135,7 @@ TEST(error_invocation)
 				                      " handler = handle })"));
 	assert_string_equal("true", ui_sb_last());
 
-	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path");
+	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
 	free_string_array(lines.items, lines.nitems);
 }
@@ -138,7 +150,7 @@ TEST(wrong_return)
 				                      " handler = handle })"));
 	assert_string_equal("true", ui_sb_last());
 
-	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path");
+	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
 	free_string_array(lines.items, lines.nitems);
 }

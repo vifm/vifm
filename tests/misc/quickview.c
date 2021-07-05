@@ -225,6 +225,8 @@ TEST(can_clean_via_plugin)
 	curr_stats.vlua = vlua_init();
 	view_setup(&lwin);
 	init_view_list(&lwin);
+	lwin.window_cols = 10;
+	lwin.window_rows = 20;
 
 	assert_success(vlua_run_string(curr_stats.vlua,
 				"function clear(info) ginfo = info; return {} end"));
@@ -235,6 +237,14 @@ TEST(can_clean_via_plugin)
 
 	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.command)"));
 	assert_string_equal("#vifmtest#clear %", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.x)"));
+	assert_string_equal("-1", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.y)"));
+	assert_string_equal("-1", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.width)"));
+	assert_string_equal("10", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.height)"));
+	assert_string_equal("20", ui_sb_last());
 
 	view_teardown(&lwin);
 	vlua_finish(curr_stats.vlua);

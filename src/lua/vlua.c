@@ -478,9 +478,10 @@ vlua_handler_present(vlua_t *vlua, const char cmd[])
 }
 
 strlist_t
-vlua_view_file(vlua_t *vlua, const char viewer[], const char path[])
+vlua_view_file(vlua_t *vlua, const char viewer[], const char path[],
+		const struct preview_area_t *parea)
 {
-	return vifm_handlers_view(vlua, viewer, path);
+	return vifm_handlers_view(vlua, viewer, path, parea);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
