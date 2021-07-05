@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jul 4
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jul 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -154,6 +154,11 @@ a full name.  This is done to avoid conflicts between plugins.
 A handler can be used in place of an external viewer in |vifm-:fileviewer|
 command like this: >
   fileviewer {*.vim} #pluginname#view --strip-comments %c
+
+The scope of handlers is limited to extensions that accept and return all
+relevant information on each invocation.  Things like keys or commands can't
+be handled this way because they need to communicate metadata about how to
+call them.
 
 --------------------------------------------------------------------------------
 *vifm-lua-api*
