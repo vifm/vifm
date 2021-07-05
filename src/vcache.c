@@ -27,6 +27,7 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "lua/vlua.h"
 #include "ui/cancellation.h"
 #include "ui/quickview.h"
 #include "ui/ui.h"
@@ -41,6 +42,7 @@
 #include "utils/test_helpers.h"
 #include "background.h"
 #include "filetype.h"
+#include "status.h"
 
 /* Maximum number of seconds to wait for process to cancel. */
 enum { MAX_KILL_DELAY_S = 2 };
@@ -84,6 +86,7 @@ static int need_more_async_output(vcache_entry_t *centry);
 static strlist_t view_entry(vcache_entry_t *centry, MacroFlags flags,
 		const char **error);
 static strlist_t view_builtin(vcache_entry_t *centry, const char **error);
+static strlist_t view_plugin(vcache_entry_t *centry, const char **error);
 static strlist_t view_external(vcache_entry_t *centry, MacroFlags flags,
 		const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
@@ -526,8 +529,8 @@ need_more_async_output(vcache_entry_t *centry)
 	return (effective_lines < centry->max_lines);
 }
 
-/* Processes cache entry to get preview of a file.  *error is set either to NULL
- * or an error code on failure.  Returns output. */
+/* Processes cache entry to get preview of a file.  *error is set to an error
+ * message on failure.  Returns output. */
 static strlist_t
 view_entry(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {
@@ -536,11 +539,16 @@ view_entry(vcache_entry_t *centry, MacroFlags flags, const char **error)
 		return view_builtin(centry, error);
 	}
 
+	if(vlua_handler_cmd(curr_stats.vlua, centry->viewer))
+	{
+		return view_plugin(centry, error);
+	}
+
 	return view_external(centry, flags, error);
 }
 
-/* Generates view via builtin means.  *error is set either to NULL or an error
- * code on failure.  Returns output. */
+/* Generates view via builtin means.  *error is set to an error message on
+ * failure.  Returns output. */
 static strlist_t
 view_builtin(vcache_entry_t *centry, const char **error)
 {
@@ -576,8 +584,17 @@ view_builtin(vcache_entry_t *centry, const char **error)
 	return lines;
 }
 
-/* Invokes viewer of a file to get its output.  *error is set either to NULL or
- * an error code on failure.  Returns output. */
+/* Calls a plugin to view a file.  *error is set to an error message on failure.
+ * Returns output. */
+static strlist_t
+view_plugin(vcache_entry_t *centry, const char **error)
+{
+	return vlua_view_file(curr_stats.vlua, centry->viewer, centry->path,
+			curr_stats.preview_hint);
+}
+
+/* Invokes viewer of a file to get its output.  *error is set to an error
+ * message on failure.  Returns output. */
 static strlist_t
 view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {

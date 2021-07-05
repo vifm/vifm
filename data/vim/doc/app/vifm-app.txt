@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jun 22
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1686,7 +1686,8 @@ The builtin commands are:
     When the command doesn't contain any of vifm macros, name of current file
     is appended as if command ended with |vifm-%c| macro.  Comma escaping and
     missing commands processing rules as for |vifm-:filetype| apply to this
-    command.  See |vifm-patterns| for pattern definition.
+    command.  See |vifm-patterns| for pattern definition.  Supports
+    |vifm-lua-handlers|.
 
     Example for zip archives: >
 

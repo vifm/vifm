@@ -201,6 +201,22 @@ TEST(plugins_can_be_whitelisted)
 	remove_dir(SANDBOX_PATH "/plugins/plug2");
 }
 
+TEST(plugins_can_add_handler)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"local function handler() end\n"
+			"vifm.addhandler({ name='handler', handler=handler })\n"
+			"return {}");
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+
+	assert_true(vlua_handler_present(vlua, "#plug#handler"));
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
 TEST(can_not_load_same_plugin_twice, IF(not_windows))
 {
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");

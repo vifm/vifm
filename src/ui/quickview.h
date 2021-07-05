@@ -23,14 +23,14 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE */
 
-#include "../utils/test_helpers.h"
 #include "colors.h"
 
 struct dir_entry_t;
 struct view_t;
 
 /* Description of area used for preview. */
-typedef struct
+typedef struct preview_area_t preview_area_t;
+struct preview_area_t
 {
 	struct view_t *source; /* View which does the preview. */
 	struct view_t *view;   /* View which displays the preview. */
@@ -39,8 +39,7 @@ typedef struct
 	int y;                 /* Relative y coordinate of the top-left corner. */
 	int w;                 /* Width of the area. */
 	int h;                 /* Height of the area. */
-}
-preview_area_t;
+};
 
 /* Enables quick view (just enables, no drawing) if possible.  Returns zero on
  * success, otherwise non-zero is returned and error message is printed on the
@@ -90,10 +89,6 @@ void qv_get_path_to_explore(const struct dir_entry_t *entry, char buf[],
 
 /* Informs this unit that it's data was probably erased from the screen. */
 void qv_ui_updated(void);
-
-TSTATIC_DEFS(
-	FILE * qv_execute_viewer(const char viewer[]);
-)
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */
 

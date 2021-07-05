@@ -137,6 +137,9 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 		}
 		*plug_ptr = plug;
 
+		/* TODO: reserve "vifm" name of the plugin and reject it here? */
+		/* TODO: reject plugins with "#" in their name. */
+
 		plug->name = strdup(entry->d_name);
 		plug->path = strdup(path);
 		if(plug->name == NULL || plug->path == NULL)
