@@ -933,7 +933,11 @@ wipe_area(const preview_area_t *parea)
 	{
 		mvwaddstr(parea->view->win, line, parea->x, filler);
 	}
-	redrawwin(parea->view->win);
+	/* The check is for tests, which work otherwise. */
+	if(parea->view->win != NULL)
+	{
+		redrawwin(parea->view->win);
+	}
 	ui_refresh_win(parea->view->win);
 
 	ui_set_attr(parea->view->win, &parea->def_col, -1);
