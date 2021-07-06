@@ -84,8 +84,9 @@ TEST(can_view_via_plugin)
 	assert_success(vlua_run_string(curr_stats.vlua,
 				"vifm.addhandler{ name = 'vcache', handler = vcache }"));
 
+	/* Also test that output of graphical viewers is preserved in full. */
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines",
-			"#vifmtest#vcache", MF_NONE, VK_TEXTUAL, 10, VC_SYNC, &error);
+			"#vifmtest#vcache", MF_NONE, VK_GRAPHICAL, 10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, lines.nitems);
 	assert_string_equal("line1", lines.items[0]);

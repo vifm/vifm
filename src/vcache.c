@@ -149,10 +149,9 @@ vcache_lookup(const char full_path[], const char viewer[], MacroFlags flags,
 		replace_string(&non_cache.path, full_path);
 		update_string(&non_cache.viewer, viewer);
 
-		strlist_t lines = view_entry(&non_cache, MF_NONE, error);
-		free_string_array(lines.items, lines.nitems);
-
+		non_cache.lines = view_entry(&non_cache, MF_NONE, error);
 		wait_async_finish(&non_cache);
+
 		return non_cache.lines;
 	}
 
