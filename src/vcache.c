@@ -59,11 +59,11 @@ typedef struct vcache_entry_t
 	int max_lines;     /* Number of lines requested. */
 
 	/* Whether cache contains complete output of the viewer. */
-	int complete;
+	unsigned int complete : 1;
 	/* Whether last line is truncated. */
-	int truncated;
+	unsigned int truncated : 1;
 	/* Value of toptreestats for this entry. */
-	int top_tree_stats;
+	unsigned int top_tree_stats : 1;
 }
 vcache_entry_t;
 
@@ -584,7 +584,9 @@ view_builtin(vcache_entry_t *centry, const char **error)
 	strlist_t lines = {};
 	if(fp != NULL)
 	{
-		lines = read_lines(fp, centry->max_lines, &centry->complete);
+		int complete;
+		lines = read_lines(fp, centry->max_lines, &complete);
+		centry->complete = complete;
 		fclose(fp);
 	}
 	else
