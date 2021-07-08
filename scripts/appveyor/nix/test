@@ -6,10 +6,12 @@ make check
 
 if [ "$COLLECT_COVERAGE" = yes ] && [ -n "$COVERALLS_REPO_TOKEN" ]; then
      PATH="$HOME/.local/bin:$PATH"
-     coveralls --encoding iso-8859-1 --build-root src/ \
-                                     --exclude tests \
-                                     --exclude src/lua/lua \
-                                     --exclude src/utils/parson.c \
-                                     --exclude src/utils/xxhash.c \
-                                     --gcov-options '\-p'
+     coveralls --encoding iso-8859-1 \
+               --build-root src/ \
+               --exclude tests \
+               --exclude src/lua/lua \
+               --exclude src/utils/parson.c \
+               --exclude src/utils/xxhash.c \
+               --gcov-options '\-p' \
+               --coveralls-yaml scripts/appveyor/coveralls.yml
 fi
