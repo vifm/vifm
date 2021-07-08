@@ -91,7 +91,7 @@ static strlist_t view_external(vcache_entry_t *centry, MacroFlags flags,
 		const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
-/* Cache of viewers' output.  Most recent entry is the last one. */
+/* Cache of viewers' output.  Ordered from least to most recently used. */
 static vcache_entry_t **cache;
 /* Declarations to enable use of DA_* on cache. */
 static DA_INSTANCE(cache);
@@ -252,7 +252,14 @@ find_cache_entry(const char full_path[], const char viewer[], int max_lines)
 	{
 		if(is_cache_match(cache[i], full_path, viewer))
 		{
-			return cache[i];
+			vcache_entry_t *centry = cache[i];
+
+			/* Make the most recently used entry the last one. */
+			memmove(cache + i, cache + i + 1,
+					sizeof(*cache)*(DA_SIZE(cache) - 1U - i));
+			cache[DA_SIZE(cache) - 1U] = centry;
+
+			return centry;
 		}
 	}
 	return NULL;
