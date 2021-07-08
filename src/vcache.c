@@ -92,7 +92,7 @@ static strlist_t view_external(vcache_entry_t *centry, MacroFlags flags,
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
 /* Cache of viewers' output.  Most recent entry is the last one. */
-static vcache_entry_t *cache;
+static vcache_entry_t **cache;
 /* Declarations to enable use of DA_* on cache. */
 static DA_INSTANCE(cache);
 /* Maximum number of allocated cache entries. */
@@ -104,12 +104,12 @@ vcache_finish(void)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		if(cache[i].job != NULL)
+		if(cache[i]->job != NULL)
 		{
-			bg_job_cancel(cache[i].job);
-			bg_job_terminate(cache[i].job);
-			bg_job_decref(cache[i].job);
-			cache[i].job = NULL;
+			bg_job_cancel(cache[i]->job);
+			bg_job_terminate(cache[i]->job);
+			bg_job_decref(cache[i]->job);
+			cache[i]->job = NULL;
 		}
 	}
 }
@@ -124,9 +124,9 @@ vcache_check(vcache_is_previewed_cb is_previewed)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		if(cache[i].job != NULL)
+		if(cache[i]->job != NULL)
 		{
-			changed |= (pull_async(&cache[i]) && is_previewed(cache[i].path));
+			changed |= (pull_async(cache[i]) && is_previewed(cache[i]->path));
 		}
 	}
 
@@ -250,9 +250,9 @@ find_cache_entry(const char full_path[], const char viewer[], int max_lines)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		if(is_cache_match(&cache[i], full_path, viewer))
+		if(is_cache_match(cache[i], full_path, viewer))
 		{
-			return &cache[i];
+			return cache[i];
 		}
 	}
 	return NULL;
@@ -265,12 +265,15 @@ alloc_cache_entry(void)
 {
 	if(DA_SIZE(cache) < max_cache_entries)
 	{
-		vcache_entry_t *centry = DA_EXTEND(cache);
+		vcache_entry_t **centry = DA_EXTEND(cache);
 		if(centry != NULL)
 		{
-			memset(centry, 0, sizeof(*centry));
-			DA_COMMIT(cache);
-			return centry;
+			*centry = calloc(1, sizeof(**centry));
+			if(*centry != NULL)
+			{
+				DA_COMMIT(cache);
+				return *centry;
+			}
 		}
 	}
 
@@ -279,11 +282,13 @@ alloc_cache_entry(void)
 		return NULL;
 	}
 
-	free_cache_entry(&cache[0]);
+	vcache_entry_t *centry = cache[0];
 	memmove(cache, cache + 1, sizeof(*cache)*(DA_SIZE(cache) - 1U));
 
-	vcache_entry_t *centry = &cache[DA_SIZE(cache) - 1U];
+	free_cache_entry(centry);
 	memset(centry, 0, sizeof(*centry));
+	cache[DA_SIZE(cache) - 1U] = centry;
+
 	return centry;
 }
 
@@ -294,7 +299,8 @@ vcache_reset(int max_size)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		free_cache_entry(&cache[i]);
+		free_cache_entry(cache[i]);
+		free(cache[i]);
 	}
 	DA_REMOVE_ALL(cache);
 
@@ -528,8 +534,9 @@ need_more_async_output(vcache_entry_t *centry)
 	return (effective_lines < centry->max_lines);
 }
 
-/* Processes cache entry to get preview of a file.  *error is set to an error
- * message on failure.  Returns output. */
+/* Processes cache entry to get preview of a file.  Might spawn job for the
+ * viewer and return. *error is set to an error message on failure.  Returns
+ * output. */
 static strlist_t
 view_entry(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {
