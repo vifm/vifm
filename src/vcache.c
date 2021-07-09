@@ -80,6 +80,7 @@ static int is_cache_valid(const vcache_entry_t *centry, const char path[],
 		const char viewer[], int max_lines);
 static void update_cache_entry(vcache_entry_t *centry, const char path[],
 		const char viewer[], MacroFlags flags, int max_lines, const char **error);
+static void update_sizes(vcache_entry_t *centry);
 static int pull_async(vcache_entry_t *centry);
 static int read_async_output(vcache_entry_t *centry);
 static int is_ready_for_read(FILE *stream);
@@ -96,6 +97,8 @@ TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 static vcache_entry_t **cache;
 /* Declarations to enable use of DA_* on cache. */
 static DA_INSTANCE(cache);
+/* Amount of memory taken up by the cache (lower bound). */
+static size_t cache_size;
 /* Maximum number of allocated cache entries. */
 static size_t max_cache_entries = 100U;
 
@@ -389,19 +392,30 @@ update_cache_entry(vcache_entry_t *centry, const char path[],
 		free_string_array(centry->lines.items, centry->lines.nitems);
 		centry->lines = view_entry(centry, flags, error);
 
-		/* This isn't zero to make even empty preview result take up space. */
-		centry->size = sizeof(*centry);
-
-		int i;
-		for(i = 0; i < centry->lines.nitems; ++i)
-		{
-			centry->size += strlen(centry->lines.items[i]);
-		}
+		update_sizes(centry);
 	}
 	else
 	{
 		(void)pull_async(centry);
 	}
+}
+
+/* Computes size occupied by the entry updating total cache size too. */
+static void
+update_sizes(vcache_entry_t *centry)
+{
+	cache_size -= centry->size;
+
+	/* This isn't zero to make even empty preview result take up space. */
+	centry->size = sizeof(*centry);
+
+	int i;
+	for(i = 0; i < centry->lines.nitems; ++i)
+	{
+		centry->size += strlen(centry->lines.items[i]);
+	}
+
+	cache_size += centry->size;
 }
 
 /* Updates single entry backed by an asynchronous job.  Returns non-zero if
@@ -486,6 +500,7 @@ read_async_output(vcache_entry_t *centry)
 
 	clearerr(centry->job->output);
 	centry->size += len;
+	cache_size += len;
 
 	int new_truncated = (len > 0)
 	                 && (piece[len - 1] != '\r' && piece[len - 1] != '\n');
