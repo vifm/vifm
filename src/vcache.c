@@ -56,6 +56,7 @@ typedef struct vcache_entry_t
 	filemon_t filemon; /* Timestamp for the file. */
 	strlist_t lines;   /* Top lines of preview contents. */
 	time_t kill_timer; /* Since when we're waiting for the job to die or zero. */
+	size_t size;       /* Size taken up by this entry (lower bound). */
 	int max_lines;     /* Number of lines requested. */
 
 	/* Whether cache contains complete output of the viewer. */
@@ -387,6 +388,15 @@ update_cache_entry(vcache_entry_t *centry, const char path[],
 	{
 		free_string_array(centry->lines.items, centry->lines.nitems);
 		centry->lines = view_entry(centry, flags, error);
+
+		/* This isn't zero to make even empty preview result take up space. */
+		centry->size = sizeof(*centry);
+
+		int i;
+		for(i = 0; i < centry->lines.nitems; ++i)
+		{
+			centry->size += strlen(centry->lines.items[i]);
+		}
 	}
 	else
 	{
@@ -475,6 +485,7 @@ read_async_output(vcache_entry_t *centry)
 	}
 
 	clearerr(centry->job->output);
+	centry->size += len;
 
 	int new_truncated = (len > 0)
 	                 && (piece[len - 1] != '\r' && piece[len - 1] != '\n');
