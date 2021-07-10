@@ -23,14 +23,16 @@
 #include <string.h> /* strdup() */
 
 #include "utils/str.h"
+#include "utils/utils.h"
+#include "vcache.h"
 
 /* This variable is automatically updated during build. */
 extern const char GIT_INFO[];
 
 int
-fill_version_info(char **list)
+fill_version_info(char **list, int include_stats)
 {
-	const int LEN = 13;
+	const int LEN = 15;
 	int x = 0;
 
 	if(list == NULL)
@@ -100,6 +102,15 @@ fill_version_info(char **list)
 #else
 	list[x++] = strdup("Without remote command execution");
 #endif
+
+	if(include_stats)
+	{
+		char size[64];
+		(void)friendly_size_notation(vcache_size(), sizeof(size), size);
+
+		list[x++] = strdup("");
+		list[x++] = format_str("Preview cache size: %s", size);
+	}
 
 	assert(x <= LEN);
 

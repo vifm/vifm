@@ -35,9 +35,9 @@ show_vifm_menu(view_t *view)
 	/* Version information menu always contains at least one item. */
 	menus_init_data(&m, view, strdup("Vifm Information"), NULL);
 
-	len = fill_version_info(NULL);
+	len = fill_version_info(NULL, /*include_stats=*/1);
 	m.items = reallocarray(NULL, len, sizeof(char *));
-	m.len = fill_version_info(m.items);
+	m.len = fill_version_info(m.items, /*include_stats=*/1);
 
 	return menus_enter(m.state, view);
 }

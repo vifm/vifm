@@ -121,6 +121,12 @@ vcache_finish(void)
 	}
 }
 
+size_t
+vcache_size(void)
+{
+	return cache_size;
+}
+
 TSTATIC size_t
 vcache_entry_size(void)
 {
