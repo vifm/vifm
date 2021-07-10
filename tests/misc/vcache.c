@@ -36,7 +36,7 @@ TEARDOWN_ONCE()
 SETUP()
 {
 	conf_setup();
-	vcache_reset(3);
+	vcache_reset(1024);
 }
 
 TEARDOWN()
@@ -198,6 +198,8 @@ TEST(failure_to_allocate_cache_entry_is_handled)
 
 TEST(cache_entries_are_reused)
 {
+	vcache_reset((vcache_entry_size() + 20)*2);
+
 	/* Two lines are cached. */
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
 			MF_NONE, VK_TEXTUAL, 2, VC_SYNC, &error);

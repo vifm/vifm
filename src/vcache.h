@@ -59,6 +59,7 @@ struct strlist_t vcache_lookup(const char full_path[], const char viewer[],
 TSTATIC_DEFS(
 	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 	void vcache_reset(int max_size);
+	size_t vcache_entry_size(void);
 )
 
 #endif /* VIFM__VCACHE_H__ */

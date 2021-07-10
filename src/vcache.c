@@ -68,11 +68,14 @@ typedef struct vcache_entry_t
 }
 vcache_entry_t;
 
+TSTATIC size_t vcache_entry_size(void);
 static void wait_async_finish(vcache_entry_t *centry);
 static vcache_entry_t * find_cache_entry(const char full_path[],
 		const char viewer[], int max_lines);
 static vcache_entry_t * alloc_cache_entry(void);
-TSTATIC void vcache_reset(int max_size);
+static void compact_cache(void);
+static vcache_entry_t * new_cache_entry(void);
+TSTATIC void vcache_reset(size_t max_size);
 static void free_cache_entry(vcache_entry_t *centry);
 static int is_cache_match(const vcache_entry_t *centry, const char path[],
 		const char viewer[]);
@@ -99,8 +102,8 @@ static vcache_entry_t **cache;
 static DA_INSTANCE(cache);
 /* Amount of memory taken up by the cache (lower bound). */
 static size_t cache_size;
-/* Maximum number of allocated cache entries. */
-static size_t max_cache_entries = 100U;
+/* Maximum size of the cache. */
+static size_t max_cache_size = 3U*1024*1024;
 
 void
 vcache_finish(void)
@@ -116,6 +119,12 @@ vcache_finish(void)
 			cache[i]->job = NULL;
 		}
 	}
+}
+
+TSTATIC size_t
+vcache_entry_size(void)
+{
+	return sizeof(vcache_entry_t);
 }
 
 int
@@ -274,38 +283,67 @@ find_cache_entry(const char full_path[], const char viewer[], int max_lines)
 static vcache_entry_t *
 alloc_cache_entry(void)
 {
-	if(DA_SIZE(cache) < max_cache_entries)
-	{
-		vcache_entry_t **centry = DA_EXTEND(cache);
-		if(centry != NULL)
-		{
-			*centry = calloc(1, sizeof(**centry));
-			if(*centry != NULL)
-			{
-				DA_COMMIT(cache);
-				return *centry;
-			}
-		}
-	}
-
-	if(DA_SIZE(cache) == 0U)
+	if(max_cache_size == 0U)
 	{
 		return NULL;
 	}
 
-	vcache_entry_t *centry = cache[0];
-	memmove(cache, cache + 1, sizeof(*cache)*(DA_SIZE(cache) - 1U));
+	compact_cache();
+	return new_cache_entry();
+}
 
-	free_cache_entry(centry);
-	memset(centry, 0, sizeof(*centry));
-	cache[DA_SIZE(cache) - 1U] = centry;
+/* Shrinks cache if its size is larger than the limit. */
+static void
+compact_cache(void)
+{
+	if(cache == NULL)
+	{
+		return;
+	}
 
-	return centry;
+	size_t i;
+	size_t j = 0U;
+	for(i = 0U; i < DA_SIZE(cache) && cache_size >= max_cache_size; ++i)
+	{
+		vcache_entry_t *centry = cache[i];
+		if(centry->job != NULL)
+		{
+			cache[j++] = centry;
+			continue;
+		}
+
+		cache_size -= centry->size;
+		free_cache_entry(centry);
+		free(centry);
+	}
+
+	memmove(cache + j, cache + i, sizeof(*cache)*(DA_SIZE(cache) - i));
+	DA_REMOVE_AFTER(cache, cache + j + DA_SIZE(cache) - i);
+}
+
+/* Allocates a new cache entry unconditionally.  Returns the entry. */
+static vcache_entry_t *
+new_cache_entry(void)
+{
+	vcache_entry_t **centry = DA_EXTEND(cache);
+	if(centry == NULL)
+	{
+		return NULL;
+	}
+
+	*centry = calloc(1, sizeof(**centry));
+	if(*centry == NULL)
+	{
+		return NULL;
+	}
+
+	DA_COMMIT(cache);
+	return *centry;
 }
 
 /* Invalidates all cache entries and changes size limit. */
 TSTATIC void
-vcache_reset(int max_size)
+vcache_reset(size_t max_size)
 {
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
@@ -315,7 +353,8 @@ vcache_reset(int max_size)
 	}
 	DA_REMOVE_ALL(cache);
 
-	max_cache_entries = max_size;
+	max_cache_size = max_size;
+	cache_size = 0;
 }
 
 /* Frees resources of a cache entry. */
