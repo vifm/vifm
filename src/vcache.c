@@ -44,6 +44,9 @@
 #include "filetype.h"
 #include "status.h"
 
+/* Maximum number of seconds to wait for data. */
+enum { MAX_RUN_TIME_S = 60 };
+
 /* Maximum number of seconds to wait for process to cancel. */
 enum { MAX_KILL_DELAY_S = 2 };
 
@@ -55,6 +58,7 @@ typedef struct vcache_entry_t
 	bg_job_t *job;     /* If not NULL, source of file contents. */
 	filemon_t filemon; /* Timestamp for the file. */
 	strlist_t lines;   /* Top lines of preview contents. */
+	time_t started_at; /* Since when we're waiting for the data. */
 	time_t kill_timer; /* Since when we're waiting for the job to die or zero. */
 	size_t size;       /* Size taken up by this entry (lower bound). */
 	int max_lines;     /* Number of lines requested. */
@@ -480,6 +484,11 @@ pull_async(vcache_entry_t *centry)
 			bg_job_terminate(centry->job);
 		}
 	}
+	else if(time(NULL) - centry->started_at > MAX_RUN_TIME_S)
+	{
+		/* This job is running for too long. */
+		cancel_job(centry);
+	}
 	else
 	{
 		if(!need_more_async_output(centry))
@@ -496,7 +505,9 @@ pull_async(vcache_entry_t *centry)
 
 	if(!bg_job_is_running(centry->job))
 	{
-		centry->complete = (read_async_output(centry) <= 0);
+		centry->complete = (read_async_output(centry) <= 0)
+		                && (centry->kill_timer == 0 ||
+		                    !bg_job_was_killed(centry->job));
 		bg_job_decref(centry->job);
 		centry->job = NULL;
 		changed = 1;
@@ -710,6 +721,8 @@ view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 		return lines;
 	}
 
+	centry->kill_timer = 0;
+	centry->started_at = time(NULL);
 	centry->complete = 0;
 	centry->truncated = 0;
 
