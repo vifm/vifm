@@ -86,6 +86,7 @@ static void update_cache_entry(vcache_entry_t *centry, const char path[],
 static void update_sizes(vcache_entry_t *centry);
 static int pull_async(vcache_entry_t *centry);
 static int read_async_output(vcache_entry_t *centry);
+static void cancel_job(vcache_entry_t *centry);
 static int is_ready_for_read(FILE *stream);
 static int need_more_async_output(vcache_entry_t *centry);
 static strlist_t view_entry(vcache_entry_t *centry, MacroFlags flags,
@@ -315,6 +316,8 @@ compact_cache(void)
 		if(centry->job != NULL)
 		{
 			cache[j++] = centry;
+			/* Give it a chance to finish gracefully. */
+			cancel_job(centry);
 			continue;
 		}
 
@@ -481,8 +484,7 @@ pull_async(vcache_entry_t *centry)
 	{
 		if(!need_more_async_output(centry))
 		{
-			centry->kill_timer = time(NULL);
-			bg_job_cancel(centry->job);
+			cancel_job(centry);
 			return 0;
 		}
 
@@ -501,6 +503,14 @@ pull_async(vcache_entry_t *centry)
 	}
 
 	return changed;
+}
+
+/* Cancels the job giving it some time to finish before forceful termination. */
+static void
+cancel_job(vcache_entry_t *centry)
+{
+	centry->kill_timer = time(NULL);
+	bg_job_cancel(centry->job);
 }
 
 /* Populates entry with more data from an asynchronous job if it's available.
