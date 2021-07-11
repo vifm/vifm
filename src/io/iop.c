@@ -54,6 +54,9 @@
 /* Amount of data to transfer at once. */
 #define BLOCK_SIZE 32*1024
 
+/* Amount of data after which data flush should be performed. */
+#define FLUSH_SIZE 256*1024*1024
+
 /* Type of io function used by retry_wrapper(). */
 typedef int (*iop_func)(io_args_t *args);
 
@@ -288,7 +291,6 @@ iop_cp_internal(io_args_t *args)
 	const io_confirm confirm = args->confirm;
 	struct stat st;
 
-	char block[BLOCK_SIZE];
 	FILE *in, *out;
 	int error;
 	int cloned;
@@ -541,8 +543,12 @@ iop_cp_internal(io_args_t *args)
 
 	if(!error && !cloned)
 	{
+		char block[BLOCK_SIZE];
 		/* Suppress possible false-positive compiler warning. */
 		size_t nread = (size_t)-1;
+#ifndef _WIN32
+		size_t ncopied = 0U;
+#endif
 		while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 		{
 			if(io_cancelled(args))
@@ -560,6 +566,17 @@ iop_cp_internal(io_args_t *args)
 			}
 
 			ioeta_update(args->estim, NULL, NULL, 0, nread);
+
+#ifndef _WIN32
+			/* Force flushing data to disk to not pollute RAM with this data too
+			 * much. */
+			ncopied += nread;
+			if(ncopied >= FLUSH_SIZE)
+			{
+				(void)fdatasync(fileno(out));
+				ncopied -= FLUSH_SIZE;
+			}
+#endif
 		}
 
 		if(nread == 0U && !feof(in) && ferror(in))

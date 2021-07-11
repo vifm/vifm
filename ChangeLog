@@ -61,6 +61,9 @@
 	Added "l" and "r" flags to the 'tuioptions' option.  It controls
 	truncation of view titles.  Patch by qsmodo.
 
+	Added periodic forced flushing of data on copying data when 'syscalls' is
+	set.  Thanks to Matthias Braun (a.k.a. mb720).
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
