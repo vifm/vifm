@@ -44,6 +44,9 @@
 #include "filetype.h"
 #include "status.h"
 
+/* Maximum number of seconds to wait for data. */
+enum { MAX_RUN_TIME_S = 60 };
+
 /* Maximum number of seconds to wait for process to cancel. */
 enum { MAX_KILL_DELAY_S = 2 };
 
@@ -55,23 +58,28 @@ typedef struct vcache_entry_t
 	bg_job_t *job;     /* If not NULL, source of file contents. */
 	filemon_t filemon; /* Timestamp for the file. */
 	strlist_t lines;   /* Top lines of preview contents. */
+	time_t started_at; /* Since when we're waiting for the data. */
 	time_t kill_timer; /* Since when we're waiting for the job to die or zero. */
+	size_t size;       /* Size taken up by this entry (lower bound). */
 	int max_lines;     /* Number of lines requested. */
 
 	/* Whether cache contains complete output of the viewer. */
-	int complete;
+	unsigned int complete : 1;
 	/* Whether last line is truncated. */
-	int truncated;
+	unsigned int truncated : 1;
 	/* Value of toptreestats for this entry. */
-	int top_tree_stats;
+	unsigned int top_tree_stats : 1;
 }
 vcache_entry_t;
 
+TSTATIC size_t vcache_entry_size(void);
 static void wait_async_finish(vcache_entry_t *centry);
 static vcache_entry_t * find_cache_entry(const char full_path[],
 		const char viewer[], int max_lines);
 static vcache_entry_t * alloc_cache_entry(void);
-TSTATIC void vcache_reset(int max_size);
+static void compact_cache(void);
+static vcache_entry_t * new_cache_entry(void);
+TSTATIC void vcache_reset(size_t max_size);
 static void free_cache_entry(vcache_entry_t *centry);
 static int is_cache_match(const vcache_entry_t *centry, const char path[],
 		const char viewer[]);
@@ -79,8 +87,10 @@ static int is_cache_valid(const vcache_entry_t *centry, const char path[],
 		const char viewer[], int max_lines);
 static void update_cache_entry(vcache_entry_t *centry, const char path[],
 		const char viewer[], MacroFlags flags, int max_lines, const char **error);
+static void update_sizes(vcache_entry_t *centry);
 static int pull_async(vcache_entry_t *centry);
 static int read_async_output(vcache_entry_t *centry);
+static void cancel_job(vcache_entry_t *centry);
 static int is_ready_for_read(FILE *stream);
 static int need_more_async_output(vcache_entry_t *centry);
 static strlist_t view_entry(vcache_entry_t *centry, MacroFlags flags,
@@ -91,12 +101,14 @@ static strlist_t view_external(vcache_entry_t *centry, MacroFlags flags,
 		const char **error);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 
-/* Cache of viewers' output.  Most recent entry is the last one. */
-static vcache_entry_t *cache;
+/* Cache of viewers' output.  Ordered from least to most recently used. */
+static vcache_entry_t **cache;
 /* Declarations to enable use of DA_* on cache. */
 static DA_INSTANCE(cache);
-/* Maximum number of allocated cache entries. */
-static size_t max_cache_entries = 100U;
+/* Amount of memory taken up by the cache (lower bound). */
+static size_t cache_size;
+/* Maximum size of the cache. */
+static size_t max_cache_size = 3U*1024*1024;
 
 void
 vcache_finish(void)
@@ -104,14 +116,26 @@ vcache_finish(void)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		if(cache[i].job != NULL)
+		if(cache[i]->job != NULL)
 		{
-			bg_job_cancel(cache[i].job);
-			bg_job_terminate(cache[i].job);
-			bg_job_decref(cache[i].job);
-			cache[i].job = NULL;
+			bg_job_cancel(cache[i]->job);
+			bg_job_terminate(cache[i]->job);
+			bg_job_decref(cache[i]->job);
+			cache[i]->job = NULL;
 		}
 	}
+}
+
+size_t
+vcache_size(void)
+{
+	return cache_size;
+}
+
+TSTATIC size_t
+vcache_entry_size(void)
+{
+	return sizeof(vcache_entry_t);
 }
 
 int
@@ -124,9 +148,9 @@ vcache_check(vcache_is_previewed_cb is_previewed)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		if(cache[i].job != NULL)
+		if(cache[i]->job != NULL)
 		{
-			changed |= (pull_async(&cache[i]) && is_previewed(cache[i].path));
+			changed |= (pull_async(cache[i]) && is_previewed(cache[i]->path));
 		}
 	}
 
@@ -149,10 +173,9 @@ vcache_lookup(const char full_path[], const char viewer[], MacroFlags flags,
 		replace_string(&non_cache.path, full_path);
 		update_string(&non_cache.viewer, viewer);
 
-		strlist_t lines = view_entry(&non_cache, MF_NONE, error);
-		free_string_array(lines.items, lines.nitems);
-
+		non_cache.lines = view_entry(&non_cache, MF_NONE, error);
 		wait_async_finish(&non_cache);
+
 		return non_cache.lines;
 	}
 
@@ -251,9 +274,16 @@ find_cache_entry(const char full_path[], const char viewer[], int max_lines)
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		if(is_cache_match(&cache[i], full_path, viewer))
+		if(is_cache_match(cache[i], full_path, viewer))
 		{
-			return &cache[i];
+			vcache_entry_t *centry = cache[i];
+
+			/* Make the most recently used entry the last one. */
+			memmove(cache + i, cache + i + 1,
+					sizeof(*cache)*(DA_SIZE(cache) - 1U - i));
+			cache[DA_SIZE(cache) - 1U] = centry;
+
+			return centry;
 		}
 	}
 	return NULL;
@@ -264,42 +294,80 @@ find_cache_entry(const char full_path[], const char viewer[], int max_lines)
 static vcache_entry_t *
 alloc_cache_entry(void)
 {
-	if(DA_SIZE(cache) < max_cache_entries)
-	{
-		vcache_entry_t *centry = DA_EXTEND(cache);
-		if(centry != NULL)
-		{
-			memset(centry, 0, sizeof(*centry));
-			DA_COMMIT(cache);
-			return centry;
-		}
-	}
-
-	if(DA_SIZE(cache) == 0U)
+	if(max_cache_size == 0U)
 	{
 		return NULL;
 	}
 
-	free_cache_entry(&cache[0]);
-	memmove(cache, cache + 1, sizeof(*cache)*(DA_SIZE(cache) - 1U));
+	compact_cache();
+	return new_cache_entry();
+}
 
-	vcache_entry_t *centry = &cache[DA_SIZE(cache) - 1U];
-	memset(centry, 0, sizeof(*centry));
-	return centry;
+/* Shrinks cache if its size is larger than the limit. */
+static void
+compact_cache(void)
+{
+	if(cache == NULL)
+	{
+		return;
+	}
+
+	size_t i;
+	size_t j = 0U;
+	for(i = 0U; i < DA_SIZE(cache) && cache_size >= max_cache_size; ++i)
+	{
+		vcache_entry_t *centry = cache[i];
+		if(centry->job != NULL)
+		{
+			cache[j++] = centry;
+			/* Give it a chance to finish gracefully. */
+			cancel_job(centry);
+			continue;
+		}
+
+		cache_size -= centry->size;
+		free_cache_entry(centry);
+		free(centry);
+	}
+
+	memmove(cache + j, cache + i, sizeof(*cache)*(DA_SIZE(cache) - i));
+	DA_REMOVE_AFTER(cache, cache + j + DA_SIZE(cache) - i);
+}
+
+/* Allocates a new cache entry unconditionally.  Returns the entry. */
+static vcache_entry_t *
+new_cache_entry(void)
+{
+	vcache_entry_t **centry = DA_EXTEND(cache);
+	if(centry == NULL)
+	{
+		return NULL;
+	}
+
+	*centry = calloc(1, sizeof(**centry));
+	if(*centry == NULL)
+	{
+		return NULL;
+	}
+
+	DA_COMMIT(cache);
+	return *centry;
 }
 
 /* Invalidates all cache entries and changes size limit. */
 TSTATIC void
-vcache_reset(int max_size)
+vcache_reset(size_t max_size)
 {
 	size_t i;
 	for(i = 0U; i < DA_SIZE(cache); ++i)
 	{
-		free_cache_entry(&cache[i]);
+		free_cache_entry(cache[i]);
+		free(cache[i]);
 	}
 	DA_REMOVE_ALL(cache);
 
-	max_cache_entries = max_size;
+	max_cache_size = max_size;
+	cache_size = 0;
 }
 
 /* Frees resources of a cache entry. */
@@ -375,11 +443,31 @@ update_cache_entry(vcache_entry_t *centry, const char path[],
 	{
 		free_string_array(centry->lines.items, centry->lines.nitems);
 		centry->lines = view_entry(centry, flags, error);
+
+		update_sizes(centry);
 	}
 	else
 	{
 		(void)pull_async(centry);
 	}
+}
+
+/* Computes size occupied by the entry updating total cache size too. */
+static void
+update_sizes(vcache_entry_t *centry)
+{
+	cache_size -= centry->size;
+
+	/* This isn't zero to make even empty preview result take up space. */
+	centry->size = sizeof(*centry);
+
+	int i;
+	for(i = 0; i < centry->lines.nitems; ++i)
+	{
+		centry->size += strlen(centry->lines.items[i]);
+	}
+
+	cache_size += centry->size;
 }
 
 /* Updates single entry backed by an asynchronous job.  Returns non-zero if
@@ -396,12 +484,16 @@ pull_async(vcache_entry_t *centry)
 			bg_job_terminate(centry->job);
 		}
 	}
+	else if(time(NULL) - centry->started_at > MAX_RUN_TIME_S)
+	{
+		/* This job is running for too long. */
+		cancel_job(centry);
+	}
 	else
 	{
 		if(!need_more_async_output(centry))
 		{
-			centry->kill_timer = time(NULL);
-			bg_job_cancel(centry->job);
+			cancel_job(centry);
 			return 0;
 		}
 
@@ -413,13 +505,23 @@ pull_async(vcache_entry_t *centry)
 
 	if(!bg_job_is_running(centry->job))
 	{
-		centry->complete = (read_async_output(centry) <= 0);
+		centry->complete = (read_async_output(centry) <= 0)
+		                && (centry->kill_timer == 0 ||
+		                    !bg_job_was_killed(centry->job));
 		bg_job_decref(centry->job);
 		centry->job = NULL;
 		changed = 1;
 	}
 
 	return changed;
+}
+
+/* Cancels the job giving it some time to finish before forceful termination. */
+static void
+cancel_job(vcache_entry_t *centry)
+{
+	centry->kill_timer = time(NULL);
+	bg_job_cancel(centry->job);
 }
 
 /* Populates entry with more data from an asynchronous job if it's available.
@@ -463,6 +565,8 @@ read_async_output(vcache_entry_t *centry)
 	}
 
 	clearerr(centry->job->output);
+	centry->size += len;
+	cache_size += len;
 
 	int new_truncated = (len > 0)
 	                 && (piece[len - 1] != '\r' && piece[len - 1] != '\n');
@@ -529,8 +633,9 @@ need_more_async_output(vcache_entry_t *centry)
 	return (effective_lines < centry->max_lines);
 }
 
-/* Processes cache entry to get preview of a file.  *error is set to an error
- * message on failure.  Returns output. */
+/* Processes cache entry to get preview of a file.  Might spawn job for the
+ * viewer and return. *error is set to an error message on failure.  Returns
+ * output. */
 static strlist_t
 view_entry(vcache_entry_t *centry, MacroFlags flags, const char **error)
 {
@@ -571,7 +676,9 @@ view_builtin(vcache_entry_t *centry, const char **error)
 	strlist_t lines = {};
 	if(fp != NULL)
 	{
-		lines = read_lines(fp, centry->max_lines, &centry->complete);
+		int complete;
+		lines = read_lines(fp, centry->max_lines, &complete);
+		centry->complete = complete;
 		fclose(fp);
 	}
 	else
@@ -614,6 +721,8 @@ view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 		return lines;
 	}
 
+	centry->kill_timer = 0;
+	centry->started_at = time(NULL);
 	centry->complete = 0;
 	centry->truncated = 0;
 

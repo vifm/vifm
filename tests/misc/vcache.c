@@ -36,7 +36,7 @@ TEARDOWN_ONCE()
 SETUP()
 {
 	conf_setup();
-	vcache_reset(3);
+	vcache_reset(1024);
 }
 
 TEARDOWN()
@@ -84,8 +84,9 @@ TEST(can_view_via_plugin)
 	assert_success(vlua_run_string(curr_stats.vlua,
 				"vifm.addhandler{ name = 'vcache', handler = vcache }"));
 
+	/* Also test that output of graphical viewers is preserved in full. */
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines",
-			"#vifmtest#vcache", MF_NONE, VK_TEXTUAL, 10, VC_SYNC, &error);
+			"#vifmtest#vcache", MF_NONE, VK_GRAPHICAL, 10, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(2, lines.nitems);
 	assert_string_equal("line1", lines.items[0]);
@@ -197,6 +198,8 @@ TEST(failure_to_allocate_cache_entry_is_handled)
 
 TEST(cache_entries_are_reused)
 {
+	vcache_reset((vcache_entry_size() + 20)*2);
+
 	/* Two lines are cached. */
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/dos-line-endings", NULL,
 			MF_NONE, VK_TEXTUAL, 2, VC_SYNC, &error);

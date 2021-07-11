@@ -1475,6 +1475,16 @@ bg_job_is_running(bg_job_t *job)
 }
 
 int
+bg_job_was_killed(bg_job_t *job)
+{
+	pthread_spin_lock(&job->status_lock);
+	int running = job->running;
+	int exit_code = job->exit_code;
+	pthread_spin_unlock(&job->status_lock);
+	return (!running && exit_code >= 0);
+}
+
+int
 bg_job_wait(bg_job_t *job)
 {
 	assert(job->type == BJT_COMMAND &&

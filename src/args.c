@@ -434,8 +434,9 @@ show_version_msg(void)
 	int i, len;
 	char **list;
 
-	list = reallocarray(NULL, fill_version_info(NULL), sizeof(char *));
-	len = fill_version_info(list);
+	list = reallocarray(NULL, fill_version_info(NULL, /*include_stats=*/0),
+			sizeof(char *));
+	len = fill_version_info(list, /*include_stats=*/0);
 
 	for(i = 0; i < len; ++i)
 	{

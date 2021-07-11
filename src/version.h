@@ -21,7 +21,7 @@
 
 /* When list is NULL returns maximum number of lines, otherwise returns number
  * of filled lines */
-int fill_version_info(char **list);
+int fill_version_info(char **list, int include_stats);
 
 #endif /* VIFM__VERSION_H__ */
 
