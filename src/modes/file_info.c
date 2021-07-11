@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 
 #include <assert.h> /* assert() */
+#include <ctype.h> /* isdigit() */
 #include <inttypes.h> /* PRId64 */
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
@@ -191,10 +192,26 @@ modfinfo_redraw(void)
 
 #ifndef _WIN32
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
-	curr_y += print_item("Owner: ", id_buf, curr_y);
+	if(isdigit(id_buf[0]))
+	{
+		copy_str(buf, sizeof(buf), id_buf);
+	}
+	else
+	{
+		snprintf(buf, sizeof(buf), "%s (%lu)", id_buf, (unsigned long)curr->uid);
+	}
+	curr_y += print_item("Owner: ", buf, curr_y);
 
 	get_gid_string(curr, 0, sizeof(id_buf), id_buf);
-	curr_y += print_item("Group: ", id_buf, curr_y);
+	if(isdigit(id_buf[0]))
+	{
+		copy_str(buf, sizeof(buf), id_buf);
+	}
+	else
+	{
+		snprintf(buf, sizeof(buf), "%s (%lu)", id_buf, (unsigned long)curr->gid);
+	}
+	curr_y += print_item("Group: ", buf, curr_y);
 #endif
 
 	/* Fake use after last assignment. */

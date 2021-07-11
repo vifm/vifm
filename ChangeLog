@@ -97,6 +97,9 @@
 
 	Make :compare obey file name filters.  Patch by qsmodo.
 
+	Always display UID/GID in numeric form in File Info dialog (in parenthesis
+	if the id was resolved to a string).
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
