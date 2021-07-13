@@ -42,6 +42,7 @@
 #include "utils/trie.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "filtering.h"
 #include "fops_cpmv.h"
 #include "fops_misc.h"
 #include "running.h"
@@ -76,8 +77,8 @@ static entries_t make_diff_list(trie_t *trie, view_t *view, int *next_id,
 static void list_view_entries(const view_t *view, strlist_t *list);
 static int append_valid_nodes(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
-static void list_files_recursively(const char path[], int skip_dot_files,
-		strlist_t *list);
+static void list_files_recursively(const view_t *view, const char path[],
+		int skip_dot_files, strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
 static char * get_contents_fingerprint(const char path[],
@@ -507,7 +508,7 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 	}
 	else
 	{
-		list_files_recursively(flist_get_dir(view), view->hide_dot, &files);
+		list_files_recursively(view, flist_get_dir(view), view->hide_dot, &files);
 	}
 
 	show_progress("Querying...", 0);
@@ -617,7 +618,8 @@ append_valid_nodes(const char name[], int valid, const void *parent_data,
 
 /* Collects files under specified file system tree. */
 static void
-list_files_recursively(const char path[], int skip_dot_files, strlist_t *list)
+list_files_recursively(const view_t *view, const char path[],
+		int skip_dot_files, strlist_t *list)
 {
 	int i;
 
@@ -632,19 +634,20 @@ list_files_recursively(const char path[], int skip_dot_files, strlist_t *list)
 	/* Visit all subdirectories ignoring symbolic links to directories. */
 	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
-		char *full_path;
-		if(skip_dot_files && lst[i][0] == '.')
+		char *full_path = join_paths(path, lst[i]);
+		int isdir = is_dir(full_path);
+		if((skip_dot_files && lst[i][0] == '.') ||
+				!filters_file_is_visible(view, path, full_path, isdir, 1))
 		{
 			update_string(&lst[i], NULL);
 			continue;
 		}
 
-		full_path = join_paths(path, lst[i]);
-		if(is_dir(full_path))
+		if(isdir)
 		{
 			if(!is_symlink(full_path))
 			{
-				list_files_recursively(full_path, skip_dot_files, list);
+				list_files_recursively(view, full_path, skip_dot_files, list);
 			}
 			free(full_path);
 			update_string(&lst[i], NULL);

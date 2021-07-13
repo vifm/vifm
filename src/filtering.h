@@ -51,7 +51,7 @@ void filters_dir_updated(struct view_t *view);
 /* Checks whether file/directory passes filename filters of the view.  Returns
  * non-zero if given name passes filters and should be visible, otherwise zero
  * is returned, in which case the file should be hidden. */
-int filters_file_is_visible(struct view_t *view, const char dir[],
+int filters_file_is_visible(const struct view_t *view, const char dir[],
 		const char name[], int is_dir, int apply_local_filter);
 
 /* Dot filter related functions. */
