@@ -1,14 +1,16 @@
 #include <stic.h>
 
+#include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* memset() strcpy() strdup() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/curses.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/engine/abbrevs.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
@@ -358,6 +360,27 @@ TEST(last_argument_is_inserted)
 	assert_wstring_equal(L" d4", stats->line);
 
 	cfg_resize_histories(0);
+}
+
+TEST(abbrevs_are_expanded)
+{
+	int i;
+	for(i = 0; i < 255; ++i)
+	{
+		cfg.word_chars[i] = !isspace(i);
+	}
+
+	assert_success(vle_abbr_add(L"lhs", L"rhs"));
+
+	(void)vle_keys_exec_timed_out(L"lhs");
+	assert_wstring_equal(L"lhs", stats->line);
+
+	(void)vle_keys_exec_timed_out(L" ");
+	assert_wstring_equal(L"rhs ", stats->line);
+
+	vle_abbr_reset();
+
+	memset(cfg.word_chars, 0, sizeof(cfg.word_chars));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
