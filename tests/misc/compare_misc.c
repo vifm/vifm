@@ -476,6 +476,35 @@ TEST(compare_considers_dot_filter)
 	assert_int_equal(5, rwin.list_rows);
 }
 
+TEST(compare_considers_name_filters)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"/compare/a", saved_cwd);
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH,
+			"/compare/b", saved_cwd);
+
+	load_dir_list(&lwin, 1);
+	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
+	name_filters_add_active(&lwin);
+	assert_int_equal(2, lwin.list_rows);
+
+	exec_command("different-content", &rwin, CIT_FILTER_PATTERN);
+	load_dir_list(&rwin, 1);
+	assert_int_equal(1, rwin.list_rows);
+
+	compare_two_panes(CT_CONTENTS, LT_ALL, /*group_paths=*/0, /*skip_empty=*/0);
+
+	check_compare_invariants(3);
+
+	assert_string_equal("same-name-different-content", lwin.dir_entry[0].name);
+	assert_string_equal("same-name-same-content", lwin.dir_entry[1].name);
+	assert_string_equal("", lwin.dir_entry[2].name);
+
+	assert_string_equal("", rwin.dir_entry[0].name);
+	assert_string_equal("", rwin.dir_entry[1].name);
+	assert_string_equal("same-name-different-content", rwin.dir_entry[2].name);
+}
+
 TEST(empty_files_are_skipped_if_requested)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
