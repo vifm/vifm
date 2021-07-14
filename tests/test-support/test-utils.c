@@ -592,6 +592,25 @@ init_list(view_t *view)
 }
 
 void
+check_compare_invariants(int expected_len)
+{
+	assert_true(flist_custom_active(&lwin));
+	assert_true(flist_custom_active(&rwin));
+
+	assert_true(cv_compare(lwin.custom.type));
+	assert_true(cv_compare(rwin.custom.type));
+
+	assert_int_equal(expected_len, lwin.list_rows);
+	assert_int_equal(expected_len, rwin.list_rows);
+
+	int i;
+	for(i = 0; i < expected_len; ++i)
+	{
+		assert_int_equal(lwin.dir_entry[i].id, rwin.dir_entry[i].id);
+	}
+}
+
+void
 wait_for_bg(void)
 {
 	int counter = 0;

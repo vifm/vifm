@@ -23,8 +23,6 @@
 #include "../../src/flist_pos.h"
 #include "../../src/running.h"
 
-static void basic_panes_check(int expected_len);
-
 static char *saved_cwd;
 
 SETUP()
@@ -98,7 +96,7 @@ TEST(two_panes_all_group_ids)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 	compare_two_panes(CT_NAME, LT_ALL, 0, 0);
 
-	basic_panes_check(4);
+	check_compare_invariants(4);
 
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(2, lwin.dir_entry[1].id);
@@ -123,7 +121,7 @@ TEST(two_panes_all_group_paths)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 	compare_two_panes(CT_NAME, LT_ALL, 1, 0);
 
-	basic_panes_check(4);
+	check_compare_invariants(4);
 
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(2, lwin.dir_entry[1].id);
@@ -148,7 +146,7 @@ TEST(two_panes_dups_one_is_empty)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 
-	basic_panes_check(4);
+	check_compare_invariants(4);
 
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(1, lwin.dir_entry[1].id);
@@ -171,7 +169,7 @@ TEST(two_panes_dups)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 	compare_two_panes(CT_CONTENTS, LT_DUPS, 1, 0);
 
-	basic_panes_check(3);
+	check_compare_invariants(3);
 
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(1, lwin.dir_entry[1].id);
@@ -357,7 +355,7 @@ TEST(relatively_complex_match)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 
-	basic_panes_check(8);
+	check_compare_invariants(8);
 
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(2, lwin.dir_entry[1].id);
@@ -419,35 +417,35 @@ TEST(exclude_works_with_entries_or_their_groups)
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
-	basic_panes_check(5);
+	check_compare_invariants(5);
 
 	/* Does nothing on separator. */
 	lwin.selected_files = 1;
 	lwin.dir_entry[4].selected = 1;
 	flist_custom_exclude(&lwin, 1);
 	lwin.dir_entry[4].selected = 0;
-	basic_panes_check(5);
+	check_compare_invariants(5);
 	assert_int_equal(1, lwin.selected_files);
 
 	/* Exclude single file from a group. */
 	lwin.selected_files = 1;
 	lwin.dir_entry[0].selected = 1;
 	flist_custom_exclude(&lwin, 1);
-	basic_panes_check(4);
+	check_compare_invariants(4);
 	assert_int_equal(0, lwin.selected_files);
 
 	/* Exclude the whole group. */
 	lwin.selected_files = 1;
 	lwin.dir_entry[2].selected = 1;
 	flist_custom_exclude(&lwin, 0);
-	basic_panes_check(2);
+	check_compare_invariants(2);
 	assert_int_equal(0, lwin.selected_files);
 
 	/* Exclusion of all files leaves the mode. */
 	lwin.selected_files = 1;
 	lwin.dir_entry[0].selected = 1;
 	flist_custom_exclude(&lwin, 0);
-	basic_panes_check(1);
+	check_compare_invariants(1);
 	assert_int_equal(0, lwin.selected_files);
 	rwin.selected_files = 1;
 	rwin.dir_entry[0].selected = 1;
@@ -492,16 +490,16 @@ TEST(removed_files_disappear_in_both_views_on_reload)
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
-	basic_panes_check(5);
+	check_compare_invariants(5);
 
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-1"));
 	load_dir_list(&lwin, 1);
-	basic_panes_check(4);
+	check_compare_invariants(4);
 	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
 
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-2"));
 	load_dir_list(&lwin, 1);
-	basic_panes_check(4);
+	check_compare_invariants(4);
 	assert_string_equal("", lwin.dir_entry[0].name);
 
 	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
@@ -521,11 +519,11 @@ TEST(comparison_views_are_closed_when_no_files_are_left)
 	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
 	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
-	basic_panes_check(1);
+	check_compare_invariants(1);
 
 	assert_success(remove(SANDBOX_PATH "/a/same-content-different-name-1"));
 	load_dir_list(&lwin, 1);
-	basic_panes_check(1);
+	check_compare_invariants(1);
 	assert_string_equal("", lwin.dir_entry[0].name);
 
 	assert_success(remove(SANDBOX_PATH "/b/same-content-different-name-1"));
@@ -637,7 +635,7 @@ TEST(filtering_updates_two_bound_views)
 
 	/* Check that single file is excluded. */
 
-	basic_panes_check(5);
+	check_compare_invariants(5);
 	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
 	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
 
@@ -646,7 +644,7 @@ TEST(filtering_updates_two_bound_views)
 	name_filters_add_active(&rwin);
 	assert_int_equal(0, rwin.selected_files);
 
-	basic_panes_check(4);
+	check_compare_invariants(4);
 	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
 	assert_string_equal("same-content-different-name-2", rwin.dir_entry[0].name);
 
@@ -658,7 +656,7 @@ TEST(filtering_updates_two_bound_views)
 	rwin.selected_files = 3;
 	name_filters_add_active(&rwin);
 	assert_int_equal(0, rwin.selected_files);
-	basic_panes_check(3);
+	check_compare_invariants(3);
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.dir_entry[1].selected = 1;
@@ -681,7 +679,7 @@ TEST(two_pane_dups_renumbering)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
 	compare_two_panes(CT_CONTENTS, LT_DUPS, 1, 0);
 
-	basic_panes_check(2);
+	check_compare_invariants(2);
 
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(1, lwin.dir_entry[1].id);
@@ -700,13 +698,13 @@ TEST(removing_all_files_of_same_id_and_fake_entry_on_the_other_side)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 
-	basic_panes_check(7);
+	check_compare_invariants(7);
 
 	assert_success(remove(SANDBOX_PATH "/dos-eof-1"));
 	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
 	load_dir_list(&lwin, 1);
 
-	basic_panes_check(6);
+	check_compare_invariants(6);
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(2, lwin.dir_entry[1].id);
 	assert_int_equal(3, lwin.dir_entry[2].id);
@@ -728,12 +726,12 @@ TEST(compare_considers_dot_filter)
 	assert_int_equal(5, rwin.list_rows);
 }
 
-TEST(empty_failes_are_skipped_if_requested)
+TEST(empty_files_are_skipped_if_requested)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 1);
-	basic_panes_check(4);
+	check_compare_invariants(4);
 }
 
 TEST(custom_views_are_compared)
@@ -757,7 +755,7 @@ TEST(custom_views_are_compared)
 
 	compare_two_panes(CT_NAME, LT_ALL, 1, 0);
 
-	basic_panes_check(4);
+	check_compare_invariants(4);
 
 	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
 	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
@@ -786,7 +784,7 @@ TEST(directories_are_not_added_from_custom_views)
 
 	compare_two_panes(CT_NAME, LT_ALL, 1, 0);
 
-	basic_panes_check(1);
+	check_compare_invariants(1);
 
 	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
 	assert_string_equal("", rwin.dir_entry[0].name);
@@ -800,20 +798,6 @@ TEST(the_same_directories_are_not_compared)
 	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 	assert_false(flist_custom_active(&lwin));
 	assert_false(flist_custom_active(&rwin));
-}
-
-static void
-basic_panes_check(int expected_len)
-{
-	int i;
-
-	assert_int_equal(expected_len, lwin.list_rows);
-	assert_int_equal(expected_len, rwin.list_rows);
-
-	for(i = 0; i < expected_len; ++i)
-	{
-		assert_int_equal(lwin.dir_entry[i].id, rwin.dir_entry[i].id);
-	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
