@@ -637,8 +637,9 @@ list_files_recursively(const view_t *view, const char path[],
 		char *full_path = join_paths(path, lst[i]);
 		int isdir = is_dir(full_path);
 		if((skip_dot_files && lst[i][0] == '.') ||
-				!filters_file_is_visible(view, path, full_path, isdir, 1))
+				!filters_file_is_visible(view, path, lst[i], isdir, 1))
 		{
+			free(full_path);
 			update_string(&lst[i], NULL);
 			continue;
 		}
