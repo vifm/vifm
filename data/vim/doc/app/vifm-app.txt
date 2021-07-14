@@ -5341,7 +5341,8 @@ pane).
 
 Files are gathered in this way:
  - recursively starting at current location of the view;
- - dot files are excluded if view hides them at the moment of comparison;
+ - dot files are excluded if view hides them at the moment of comparison, file
+   name filters are obeyed as well so you end up comparing what you see;
  - directories are not taken into account;
  - symbolic links to directories are ignored.
 

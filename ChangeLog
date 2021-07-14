@@ -92,6 +92,8 @@
 	Allow user-defined commands to include numbers in their names.  Thanks to
 	anonymous at Vifm Q2A site.
 
+	Make :compare obey file name filters.  Patch by qsmodo.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
