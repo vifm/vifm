@@ -227,7 +227,7 @@ escape_name_for_filter(const char string[])
 }
 
 int
-filter_matches(filter_t *filter, const char pattern[])
+filter_matches(const filter_t *filter, const char pattern[])
 {
 	if(filter->is_regex_valid)
 	{

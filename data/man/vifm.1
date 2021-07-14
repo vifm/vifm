@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 4, 2021" "vifm 0.11"
+.TH VIFM 1 "July 14, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1700,9 +1700,9 @@ equals
 .TP
 .BI ":compare [byname | bysize | bycontents | listall | listunique | listdups |\
  ofboth | ofone | groupids | grouppaths | skipempty]..."
-compare files in one or two views according the arguments.  The default
+compare files in one or two views according to the arguments.  The default
 is "bycontents listall ofboth grouppaths".  See "Compare views" section below
-for details.  Tree structure is incompatible with alternative representations,
+for details.  Diff structure is incompatible with alternative representations,
 so values of 'lsview' and 'millerview' options are ignored.
 .TP
 .BI "                                         :copen"
@@ -6297,7 +6297,8 @@ pane).
 
 Files are gathered in this way:
  \- recursively starting at current location of the view;
- \- dot files are excluded if view hides them at the moment of comparison;
+ \- dot files are excluded if view hides them at the moment of comparison, file
+name filters are obeyed as well so you end up comparing what you see;
  \- directories are not taken into account;
  \- symbolic links to directories are ignored.
 .\" ---------------------------------------------------------------------------

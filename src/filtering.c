@@ -297,7 +297,7 @@ filters_invert(view_t *view)
 }
 
 int
-filters_file_is_visible(view_t *view, const char dir[], const char name[],
+filters_file_is_visible(const view_t *view, const char dir[], const char name[],
 		int is_dir, int apply_local_filter)
 {
 	/* FIXME: some very long file names won't be matched against some regexps. */

@@ -75,7 +75,7 @@ int filter_append(filter_t *filter, const char value[]);
 /* Checks whether pattern matches the filter.  Returns positive number on match,
  * zero on no match and negative number on empty or invalid regular expression
  * (wrong state of the filter). */
-int filter_matches(filter_t *filter, const char pattern[]);
+int filter_matches(const filter_t *filter, const char pattern[]);
 
 #endif /* VIFM__UTILS__FILTER_H__ */
 

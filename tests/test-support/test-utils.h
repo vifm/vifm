@@ -142,6 +142,9 @@ void setup_transposed_grid(struct view_t *view, int column_count, int list_rows,
  * entry. */
 void init_view_list(struct view_t *view);
 
+/* Checks state of two-pane compare for sanity. */
+void check_compare_invariants(int expected_len);
+
 /* Waits termination of all background tasks. */
 void wait_for_bg(void);
 
