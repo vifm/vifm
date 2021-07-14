@@ -635,16 +635,22 @@ list_files_recursively(const view_t *view, const char path[],
 	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
 		char *full_path = join_paths(path, lst[i]);
-		int isdir = is_dir(full_path);
-		if((skip_dot_files && lst[i][0] == '.') ||
-				!filters_file_is_visible(view, path, lst[i], isdir, 1))
+		if(skip_dot_files && lst[i][0] == '.')
 		{
 			free(full_path);
 			update_string(&lst[i], NULL);
 			continue;
 		}
 
-		if(isdir)
+		const int dir = is_dir(full_path);
+		if(!filters_file_is_visible(view, path, lst[i], dir, 1))
+		{
+			free(full_path);
+			update_string(&lst[i], NULL);
+			continue;
+		}
+
+		if(dir)
 		{
 			if(!is_symlink(full_path))
 			{
