@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 4
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1471,9 +1471,9 @@ The builtin commands are:
                                                *vifm-:compare*
 :compare [byname | bysize | bycontents | listall | listunique | listdups |
           ofboth | ofone | groupids | grouppaths | skipempty]...
-    compare files in one or two views according the arguments.  The default
+    compare files in one or two views according to the arguments.  The default
     is "bycontents listall ofboth grouppaths".  See |vifm-compare-views| for
-    details.  Tree structure is incompatible with alternative representations,
+    details.  Diff structure is incompatible with alternative representations,
     so values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
 
 :cope[n]                                       *vifm-:copen* *vifm-:cope*
