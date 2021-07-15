@@ -6720,6 +6720,13 @@ else
   as_fn_error $? "exit() function not found." "$LINENO" 5
 fi
 
+ac_fn_c_check_func "$LINENO" "fdatasync" "ac_cv_func_fdatasync"
+if test "x$ac_cv_func_fdatasync" = xyes; then :
+
+else
+  as_fn_error $? "fdatasync() function not found." "$LINENO" 5
+fi
+
 ac_fn_c_check_func "$LINENO" "fclose" "ac_cv_func_fclose"
 if test "x$ac_cv_func_fclose" = xyes; then :
 

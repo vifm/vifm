@@ -135,6 +135,7 @@ fi
 AC_CHECK_FUNC([execve], [], [AC_MSG_ERROR([execve() function not found.])])
 AC_CHECK_FUNC([execvp], [], [AC_MSG_ERROR([execvp() function not found.])])
 AC_CHECK_FUNC([exit], [], [AC_MSG_ERROR([exit() function not found.])])
+AC_CHECK_FUNC([fdatasync], [], [AC_MSG_ERROR([fdatasync() function not found.])])
 AC_CHECK_FUNC([fclose], [], [AC_MSG_ERROR([fclose() function not found.])])
 AC_CHECK_FUNC([fdopen], [], [AC_MSG_ERROR([fdopen() function not found.])])
 AC_CHECK_FUNC([feof], [], [AC_MSG_ERROR([feof() function not found.])])

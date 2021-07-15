@@ -1,9 +1,9 @@
 #include <stic.h>
 
+#include <ctype.h> /* isspace() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcsdup() wcslen() */
-#include <wctype.h> /* iswspace() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/abbrevs.h"
@@ -18,7 +18,7 @@ SETUP()
 	int i;
 	for(i = 0; i < 255; ++i)
 	{
-		cfg.word_chars[i] = !iswspace(i);
+		cfg.word_chars[i] = !isspace(i);
 	}
 
 	assert_int_equal(0, vle_abbr_add_no_remap(L"x", L"y"));
@@ -98,3 +98,6 @@ prepare_line(const wchar_t str[])
 	stats.len = wcslen(str);
 	stats.index = stats.len;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

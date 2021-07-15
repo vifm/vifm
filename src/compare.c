@@ -634,14 +634,13 @@ list_files_recursively(const view_t *view, const char path[],
 	/* Visit all subdirectories ignoring symbolic links to directories. */
 	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
-		char *full_path = join_paths(path, lst[i]);
 		if(skip_dot_files && lst[i][0] == '.')
 		{
-			free(full_path);
 			update_string(&lst[i], NULL);
 			continue;
 		}
 
+		char *full_path = join_paths(path, lst[i]);
 		const int dir = is_dir(full_path);
 		if(!filters_file_is_visible(view, path, lst[i], dir, 1))
 		{
