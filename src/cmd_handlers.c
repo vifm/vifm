@@ -274,6 +274,7 @@ static int siblprev_cmd(const cmd_info_t *cmd_info);
 static int sort_cmd(const cmd_info_t *cmd_info);
 static int source_cmd(const cmd_info_t *cmd_info);
 static int split_cmd(const cmd_info_t *cmd_info);
+static int stop_cmd(const cmd_info_t *cmd_info);
 static int substitute_cmd(const cmd_info_t *cmd_info);
 static int sync_cmd(const cmd_info_t *cmd_info);
 static int sync_selectively(const cmd_info_t *cmd_info);
@@ -804,6 +805,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "horizontal split layout",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &split_cmd,       .min_args = 0,   .max_args = 1, },
+	{ .name = "stop",              .abbr = "st",    .id = -1,
+	  .descr = "suspend the process (same as pressing Ctrl-Z)",
+	  .flags = HAS_COMMENT,
+	  .handler = &stop_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "substitute",        .abbr = "s",     .id = COM_SUBSTITUTE,
 	  .descr = "perform substitutions in file names",
 	  .flags = HAS_RANGE | HAS_REGEXP_ARGS | HAS_COMMENT | HAS_CUST_SEP
@@ -4130,6 +4135,14 @@ static int
 split_cmd(const cmd_info_t *cmd_info)
 {
 	return do_split(cmd_info, HSPLIT);
+}
+
+/* Stops the process by send itself SIGSTOP. */
+static int
+stop_cmd(const cmd_info_t *cmd_info)
+{
+	instance_stop();
+	return 0;
 }
 
 /* :s[ubstitute]/[pat]/[subs]/[flags].  Replaces matches of regular expression

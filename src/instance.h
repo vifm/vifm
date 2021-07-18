@@ -19,6 +19,9 @@
 #ifndef VIFM__INSTANCE_H__
 #define VIFM__INSTANCE_H__
 
+/* Stops the process by send itself SIGSTOP. */
+void instance_stop(void);
+
 /* Resets internal state to default/empty value. */
 void instance_start_restart(void);
 

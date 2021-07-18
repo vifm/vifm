@@ -361,6 +361,8 @@ const char *tags[] = {
 	"vifm-:source",
 	"vifm-:sp",
 	"vifm-:split",
+	"vifm-:st",
+	"vifm-:stop",
 	"vifm-:substitute",
 	"vifm-:sync",
 	"vifm-:tabc",

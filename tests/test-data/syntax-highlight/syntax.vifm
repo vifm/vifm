@@ -479,6 +479,9 @@ session
 delsession
 plugins
 plugin
+st
+sto
+stop
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session

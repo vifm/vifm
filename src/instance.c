@@ -30,6 +30,7 @@
 #include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/str.h"
+#include "utils/utils.h"
 #include "bmarks.h"
 #include "dir_stack.h"
 #include "filelist.h"
@@ -40,6 +41,13 @@
 #include "status.h"
 #include "undo.h"
 #include "vifm.h"
+
+void
+instance_stop(void)
+{
+	ui_shutdown();
+	stop_process();
+}
 
 void
 instance_start_restart(void)
