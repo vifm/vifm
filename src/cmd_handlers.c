@@ -1037,7 +1037,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 
 		if(cfg.fast_run)
 		{
-			char *const expanded_cmd = fast_run_complete(com);
+			expanded_cmd = fast_run_complete(com);
 			if(expanded_cmd != NULL)
 			{
 				cmd_to_run = expanded_cmd;
