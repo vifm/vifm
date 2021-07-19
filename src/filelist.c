@@ -171,8 +171,9 @@ static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 		int extra);
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
-static int file_is_visible(view_t *view, const char name[], int is_dir,
-		const void *data, int apply_local_filter);
+static int entry_is_visible(view_t *view, const char name[], const void *data);
+static int tree_candidate_is_visible(view_t *view, const char name[],
+		int is_dir, int apply_local_filter);
 static int add_directory_leaf(view_t *view, const char path[], int parent_pos);
 static int init_parent_entry(view_t *view, dir_entry_t *entry,
 		const char path[]);
@@ -2270,7 +2271,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		return 0;
 	}
 
-	if(!file_is_visible(view, name, 0, data, 1))
+	if(!entry_is_visible(view, name, data))
 	{
 		++view->filtered;
 		return 0;
@@ -4023,12 +4024,12 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		}
 
 		dir = is_dir(full_path);
-		if(!file_is_visible(view, lst[i], dir, NULL, 1))
+		if(!tree_candidate_is_visible(view, lst[i], dir, 1))
 		{
 			/* Traverse directory (but not symlink to it) even if we're skipping it,
 			 * because we might need files that are inside of it. */
 			if(dir && !is_symlink(full_path) &&
-					file_is_visible(view, lst[i], dir, NULL, 0))
+					tree_candidate_is_visible(view, lst[i], dir, 0))
 			{
 				nfiltered += add_files_recursively(view, full_path, excluded_paths,
 						parent_pos, 1);
@@ -4094,24 +4095,33 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 	return nfiltered;
 }
 
-/* Checks whether file is visible according to dot and filename filters.  is_dir
- * is used when data is NULL, otherwise data_is_dir_entry() called (this is an
- * optimization).  Returns non-zero if so, otherwise zero is returned. */
+/* Checks whether file is visible according to all filters.  Returns non-zero if
+ * so, otherwise zero is returned. */
 static int
-file_is_visible(view_t *view, const char name[], int is_dir, const void *data,
-		int apply_local_filter)
+entry_is_visible(view_t *view, const char name[], const void *data)
 {
 	if(view->hide_dot && name[0] == '.')
 	{
 		return 0;
 	}
 
-	if(data != NULL)
-	{
-		char full_path[PATH_MAX + 1];
-		snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view), name);
+	char full_path[PATH_MAX + 1];
+	snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view), name);
 
-		is_dir = data_is_dir_entry(data, full_path);
+	const int is_dir = data_is_dir_entry(data, full_path);
+	return filters_file_is_visible(view, flist_get_dir(view), name, is_dir,
+			/*apply_local_filter=*/1);
+}
+
+/* Checks whether a candidate for adding to a tree is visible according to
+ * filters.  Returns non-zero if so, otherwise zero is returned. */
+static int
+tree_candidate_is_visible(view_t *view, const char name[], int is_dir,
+		int apply_local_filter)
+{
+	if(view->hide_dot && name[0] == '.')
+	{
+		return 0;
 	}
 
 	return filters_file_is_visible(view, flist_get_dir(view), name, is_dir,
