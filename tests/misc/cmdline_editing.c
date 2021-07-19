@@ -23,6 +23,8 @@
 #include "../../src/filelist.h"
 #include "../../src/status.h"
 
+static int have_ext_keys(void);
+
 static line_stats_t *stats;
 
 SETUP_ONCE()
@@ -195,6 +197,44 @@ TEST(history)
 	assert_wstring_equal(L"third", stats->line);
 	(void)vle_keys_exec_timed_out(WK_C_n);
 	assert_wstring_equal(L"third", stats->line);
+
+	cfg.history_len = 0;
+	assert_success(stats_reset(&cfg));
+}
+
+TEST(prefix_history, IF(have_ext_keys))
+{
+	const wchar_t up[] = {K(KEY_UP), 0};
+	const wchar_t down[] = {K(KEY_DOWN), 0};
+
+	cfg.history_len = 4;
+	assert_success(stats_init(&cfg));
+
+	(void)vle_keys_exec_timed_out(L"first");
+	assert_wstring_equal(L"first", stats->line);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+
+	(void)vle_keys_exec_timed_out(L":second");
+	assert_wstring_equal(L"second", stats->line);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+
+	(void)vle_keys_exec_timed_out(L":finish");
+	assert_wstring_equal(L"finish", stats->line);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+
+	(void)vle_keys_exec_timed_out(L":fi");
+	assert_wstring_equal(L"fi", stats->line);
+	(void)vle_keys_exec_timed_out(up);
+	assert_wstring_equal(L"finish", stats->line);
+	(void)vle_keys_exec_timed_out(up);
+	assert_wstring_equal(L"first", stats->line);
+
+	(void)vle_keys_exec_timed_out(down);
+	assert_wstring_equal(L"finish", stats->line);
+	(void)vle_keys_exec_timed_out(down);
+	assert_wstring_equal(L"fi", stats->line);
+	(void)vle_keys_exec_timed_out(down);
+	assert_wstring_equal(L"fi", stats->line);
 
 	cfg.history_len = 0;
 	assert_success(stats_reset(&cfg));
@@ -381,6 +421,16 @@ TEST(abbrevs_are_expanded)
 	vle_abbr_reset();
 
 	memset(cfg.word_chars, 0, sizeof(cfg.word_chars));
+}
+
+static int
+have_ext_keys(void)
+{
+#ifdef ENABLE_EXTENDED_KEYS
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
