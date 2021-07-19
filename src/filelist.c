@@ -1332,6 +1332,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 	to->custom.type = (ui_view_unsorted(from) || from_tree)
 	                ? (as_tree ? CV_CUSTOM_TREE : CV_VERY)
 	                : CV_REGULAR;
+	const int dst_is_tree = cv_tree(to->custom.type);
 
 	if(custom_list_is_incomplete(from))
 	{
@@ -1349,8 +1350,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(!cv_tree(to->custom.type) && src[i].child_pos != 0 &&
-				is_parent_dir(src[i].name))
+		if(!dst_is_tree && src[i].child_pos != 0 && is_parent_dir(src[i].name))
 		{
 			continue;
 		}
@@ -1359,7 +1359,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 		dst[j].name = strdup(dst[j].name);
 		dst[j].origin = (dst[j].owns_origin ? strdup(dst[j].origin) : to->curr_dir);
 
-		if(!as_tree)
+		if(!dst_is_tree)
 		{
 			/* As destination pane won't be a tree, erase tree-specific data, because
 			 * some tree-specific code is driven directly by these fields. */
