@@ -52,6 +52,7 @@
 #include "background.h"
 #include "bracket_notation.h"
 #include "filelist.h"
+#include "instance.h"
 #include "ipc.h"
 #include "registers.h"
 #include "status.h"
@@ -197,8 +198,7 @@ event_loop(const int *quit)
 
 			if(c == WC_C_z)
 			{
-				ui_shutdown();
-				stop_process();
+				instance_stop();
 				continue;
 			}
 

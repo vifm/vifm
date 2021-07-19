@@ -64,6 +64,9 @@
 	Added periodic forced flushing of data on copying data when 'syscalls' is
 	set.  Thanks to Matthias Braun (a.k.a. mb720).
 
+	Added :st[op] command what behaves like Ctrl-Z.  It's to be used in
+	mappings.  Thanks to GummyGun.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
@@ -185,6 +188,9 @@
 
 	Fixed :goto not working with backslashes on Windows.  Thanks to
 	Grueslayer.
+
+	Fixed full path patterns ({{globs}} and //regexp//) not working in tree
+	views.
 
 0.11-beta to 0.11 (2020-09-24)
 

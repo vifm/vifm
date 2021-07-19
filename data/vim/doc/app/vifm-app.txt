@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 14
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2377,6 +2377,12 @@ yet supported) and might be changed in future releases, or get an alias.
     split window horizontally to show both file directories.  Also changes
     other pane to the path (absolute or relative to current directory of
     active pane).
+
+                                               *vifm-:stop* *vifm-:st*
+:st[op]
+    suspend vifm (same as pressing Ctrl-Z).  Does nothing if this instance
+    isn't running in a shell.  The command exists to allow mapping to the
+    action of Ctrl-Z.
 
                                                *vifm-:substitute* *vifm-:s*
 :[range]s[ubstitute]/pattern/string/[flags]

@@ -171,8 +171,9 @@ static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 		int extra);
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
-static int file_is_visible(view_t *view, const char name[], int is_dir,
-		const void *data, int apply_local_filter);
+static int entry_is_visible(view_t *view, const char name[], const void *data);
+static int tree_candidate_is_visible(view_t *view, const char path[],
+		const char name[], int is_dir, int apply_local_filter);
 static int add_directory_leaf(view_t *view, const char path[], int parent_pos);
 static int init_parent_entry(view_t *view, dir_entry_t *entry,
 		const char path[]);
@@ -238,23 +239,8 @@ flist_free_view(view_t *view)
 	/* For the application, we don't need to zero out fields after freeing them,
 	 * but doing so allows reusing this function in tests. */
 
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		fentry_free(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-	view->dir_entry = NULL;
-	view->list_rows = 0;
-
-	for(i = 0; i < view->custom.entry_count; ++i)
-	{
-		fentry_free(view, &view->custom.entries[i]);
-	}
-	dynarray_free(view->custom.entries);
-	view->custom.entries = NULL;
-	view->custom.entry_count = 0;
+	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 
 	update_string(&view->custom.next_title, NULL);
 	update_string(&view->custom.orig_dir, NULL);
@@ -264,13 +250,8 @@ flist_free_view(view_t *view)
 	view->custom.excluded_paths = NULL;
 	view->custom.paths_cache = NULL;
 
-	for(i = 0; i < view->local_filter.entry_count; ++i)
-	{
-		fentry_free(view, &view->local_filter.entries[i]);
-	}
-	dynarray_free(view->local_filter.entries);
-	view->local_filter.entries = NULL;
-	view->local_filter.entry_count = 0;
+	free_dir_entries(view, &view->local_filter.entries,
+			&view->local_filter.entry_count);
 
 	/* Two pointer fields below don't contain valid data that needs to be freed,
 	 * zeroing them for tests and to at least mention them to signal that they
@@ -1352,6 +1333,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 	to->custom.type = (ui_view_unsorted(from) || from_tree)
 	                ? (as_tree ? CV_CUSTOM_TREE : CV_VERY)
 	                : CV_REGULAR;
+	const int dst_is_tree = cv_tree(to->custom.type);
 
 	if(custom_list_is_incomplete(from))
 	{
@@ -1369,8 +1351,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(!cv_tree(to->custom.type) && src[i].child_pos != 0 &&
-				is_parent_dir(src[i].name))
+		if(!dst_is_tree && src[i].child_pos != 0 && is_parent_dir(src[i].name))
 		{
 			continue;
 		}
@@ -1379,7 +1360,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 		dst[j].name = strdup(dst[j].name);
 		dst[j].origin = (dst[j].owns_origin ? strdup(dst[j].origin) : to->curr_dir);
 
-		if(!as_tree)
+		if(!dst_is_tree)
 		{
 			/* As destination pane won't be a tree, erase tree-specific data, because
 			 * some tree-specific code is driven directly by these fields. */
@@ -2290,7 +2271,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		return 0;
 	}
 
-	if(!file_is_visible(view, name, 0, data, 1))
+	if(!entry_is_visible(view, name, data))
 	{
 		++view->filtered;
 		return 0;
@@ -4043,12 +4024,12 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		}
 
 		dir = is_dir(full_path);
-		if(!file_is_visible(view, lst[i], dir, NULL, 1))
+		if(!tree_candidate_is_visible(view, path, lst[i], dir, 1))
 		{
 			/* Traverse directory (but not symlink to it) even if we're skipping it,
 			 * because we might need files that are inside of it. */
 			if(dir && !is_symlink(full_path) &&
-					file_is_visible(view, lst[i], dir, NULL, 0))
+					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
 				nfiltered += add_files_recursively(view, full_path, excluded_paths,
 						parent_pos, 1);
@@ -4114,28 +4095,36 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 	return nfiltered;
 }
 
-/* Checks whether file is visible according to dot and filename filters.  is_dir
- * is used when data is NULL, otherwise data_is_dir_entry() called (this is an
- * optimization).  Returns non-zero if so, otherwise zero is returned. */
+/* Checks whether file is visible according to all filters.  Returns non-zero if
+ * so, otherwise zero is returned. */
 static int
-file_is_visible(view_t *view, const char name[], int is_dir, const void *data,
-		int apply_local_filter)
+entry_is_visible(view_t *view, const char name[], const void *data)
 {
 	if(view->hide_dot && name[0] == '.')
 	{
 		return 0;
 	}
 
-	if(data != NULL)
-	{
-		char full_path[PATH_MAX + 1];
-		snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view), name);
+	char full_path[PATH_MAX + 1];
+	snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view), name);
 
-		is_dir = data_is_dir_entry(data, full_path);
+	const int is_dir = data_is_dir_entry(data, full_path);
+	return filters_file_is_visible(view, flist_get_dir(view), name, is_dir,
+			/*apply_local_filter=*/1);
+}
+
+/* Checks whether a candidate for adding to a tree is visible according to
+ * filters.  Returns non-zero if so, otherwise zero is returned. */
+static int
+tree_candidate_is_visible(view_t *view, const char path[], const char name[],
+		int is_dir, int apply_local_filter)
+{
+	if(view->hide_dot && name[0] == '.')
+	{
+		return 0;
 	}
 
-	return filters_file_is_visible(view, flist_get_dir(view), name, is_dir,
-			apply_local_filter);
+	return filters_file_is_visible(view, path, name, is_dir, apply_local_filter);
 }
 
 /* Adds ".." directory leaf of an empty directory to the tree which is being

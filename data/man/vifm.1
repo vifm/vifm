@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 14, 2021" "vifm 0.11"
+.TH VIFM 1 "July 19, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2809,6 +2809,13 @@ toggle horizontal window splitting.
 .BI ":sp[lit] path"
 splits the window horizontally to show both file directories.  Also changes
 other pane to path (absolute or relative to current directory of active pane).
+.TP
+.BI "                                         :stop"
+.TP
+.BI :st[op]
+suspend vifm (same as pressing Ctrl-Z).  Does nothing if this instance isn't
+running in a shell.  The command exists to allow mapping to the action of
+Ctrl-Z.
 .TP
 .BI "                                         :substitute"
 .TP
