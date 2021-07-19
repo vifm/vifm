@@ -631,6 +631,15 @@ TEST(dummies_of_leaf_directories_can_be_disabled)
 	remove_dir(SANDBOX_PATH "/a");
 }
 
+TEST(full_path_matchers_work_in_trees)
+{
+	assert_success(replace_matcher(&lwin.manual_filter,
+				"{{*/dir[135]/file[145]}}"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", cwd));
+	assert_int_equal(9, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
 static void
 verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 {

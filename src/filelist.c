@@ -172,8 +172,8 @@ static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
 static int entry_is_visible(view_t *view, const char name[], const void *data);
-static int tree_candidate_is_visible(view_t *view, const char name[],
-		int is_dir, int apply_local_filter);
+static int tree_candidate_is_visible(view_t *view, const char path[],
+		const char name[], int is_dir, int apply_local_filter);
 static int add_directory_leaf(view_t *view, const char path[], int parent_pos);
 static int init_parent_entry(view_t *view, dir_entry_t *entry,
 		const char path[]);
@@ -4024,12 +4024,12 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		}
 
 		dir = is_dir(full_path);
-		if(!tree_candidate_is_visible(view, lst[i], dir, 1))
+		if(!tree_candidate_is_visible(view, path, lst[i], dir, 1))
 		{
 			/* Traverse directory (but not symlink to it) even if we're skipping it,
 			 * because we might need files that are inside of it. */
 			if(dir && !is_symlink(full_path) &&
-					tree_candidate_is_visible(view, lst[i], dir, 0))
+					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
 				nfiltered += add_files_recursively(view, full_path, excluded_paths,
 						parent_pos, 1);
@@ -4116,16 +4116,15 @@ entry_is_visible(view_t *view, const char name[], const void *data)
 /* Checks whether a candidate for adding to a tree is visible according to
  * filters.  Returns non-zero if so, otherwise zero is returned. */
 static int
-tree_candidate_is_visible(view_t *view, const char name[], int is_dir,
-		int apply_local_filter)
+tree_candidate_is_visible(view_t *view, const char path[], const char name[],
+		int is_dir, int apply_local_filter)
 {
 	if(view->hide_dot && name[0] == '.')
 	{
 		return 0;
 	}
 
-	return filters_file_is_visible(view, flist_get_dir(view), name, is_dir,
-			apply_local_filter);
+	return filters_file_is_visible(view, path, name, is_dir, apply_local_filter);
 }
 
 /* Adds ".." directory leaf of an empty directory to the tree which is being
