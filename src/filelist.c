@@ -238,23 +238,8 @@ flist_free_view(view_t *view)
 	/* For the application, we don't need to zero out fields after freeing them,
 	 * but doing so allows reusing this function in tests. */
 
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		fentry_free(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-	view->dir_entry = NULL;
-	view->list_rows = 0;
-
-	for(i = 0; i < view->custom.entry_count; ++i)
-	{
-		fentry_free(view, &view->custom.entries[i]);
-	}
-	dynarray_free(view->custom.entries);
-	view->custom.entries = NULL;
-	view->custom.entry_count = 0;
+	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 
 	update_string(&view->custom.next_title, NULL);
 	update_string(&view->custom.orig_dir, NULL);
@@ -264,13 +249,8 @@ flist_free_view(view_t *view)
 	view->custom.excluded_paths = NULL;
 	view->custom.paths_cache = NULL;
 
-	for(i = 0; i < view->local_filter.entry_count; ++i)
-	{
-		fentry_free(view, &view->local_filter.entries[i]);
-	}
-	dynarray_free(view->local_filter.entries);
-	view->local_filter.entries = NULL;
-	view->local_filter.entry_count = 0;
+	free_dir_entries(view, &view->local_filter.entries,
+			&view->local_filter.entry_count);
 
 	/* Two pointer fields below don't contain valid data that needs to be freed,
 	 * zeroing them for tests and to at least mention them to signal that they
