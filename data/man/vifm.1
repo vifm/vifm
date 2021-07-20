@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 19, 2021" "vifm 0.11"
+.TH VIFM 1 "July 20, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -507,6 +507,23 @@ filter out files that don't match regular expression.  Whether view is updated
 as regular expression is changed depends on the value of the 'incsearch' option.
 This kind of filter is automatically reset when directory is changed.
 .\" ---------------------------------------------------------------------------
+.SH Tree-related Keys
+.\" ---------------------------------------------------------------------------
+While some of the keys make sense outside of tree-view, they are most useful
+in trees.
+.TP
+.BI [z
+go to first sibling of current entry.
+.TP
+.BI ]z
+go to last sibling of current entry.
+.TP
+.BI zj
+go to next directory sibling of current entry or do nothing.
+.TP
+.BI zk
+go to previous directory sibling of current entry or do nothing.
+.\" ---------------------------------------------------------------------------
 .SH Other Normal Mode Keys
 .\" ---------------------------------------------------------------------------
 .TP
@@ -754,18 +771,6 @@ go to previous selected entry or do nothing.
 .TP
 .BI ]s
 go to next selected entry or do nothing.
-.TP
-.BI [z
-go to first sibling of current entry.
-.TP
-.BI ]z
-go to last sibling of current entry.
-.TP
-.BI zj
-go to next directory sibling of current entry or do nothing.
-.TP
-.BI zk
-go to previous directory sibling of current entry or do nothing.
 .\" ---------------------------------------------------------------------------
 .SH Using Count
 .\" ---------------------------------------------------------------------------

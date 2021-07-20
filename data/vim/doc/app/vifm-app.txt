@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 19
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -414,6 +414,21 @@ zd                                             *vifm-zd*
     |vifm-'incsearch'| option.  This kind of filter is automatically reset
     when directory is changed.
 
+Tree-related Keys~
+
+While some of the keys make sense outside of tree-view, they are most useful
+in trees.
+
+[z  go to first sibling of current entry.      *vifm-[z*
+]z  go to last sibling of current entry.       *vifm-]z*
+
+
+zj                                             *vifm-zj*
+    go to next directory sibling of current entry or do nothing.
+
+zk                                             *vifm-zk*
+    go to previous directory sibling of current entry or do nothing.
+
 Other Normal Mode Keys~
 
 [count]:                                       *vifm-:*
@@ -660,17 +675,6 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 ]s                                             *vifm-]s*
     go to next selected entry or do nothing.
-
-
-[z  go to first sibling of current entry.      *vifm-[z*
-]z  go to last sibling of current entry.       *vifm-]z*
-
-
-zj                                             *vifm-zj*
-    go to next directory sibling of current entry or do nothing.
-
-zk                                             *vifm-zk*
-    go to previous directory sibling of current entry or do nothing.
 
 Using Count~
                                                *vifm-count* *vifm-[count]*
