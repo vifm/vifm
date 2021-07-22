@@ -2035,7 +2035,6 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 	j = 0;
 	for(i = 0; i < *count; ++i)
 	{
-		int k, pos, parent;
 		dir_entry_t *const entry = &entries[i];
 		const int nremoved = remove_subtrees ? (entry->child_count + 1) : 1;
 
@@ -2058,7 +2057,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 		/* Reassign children of node about to be deleted to its parent.  Child count
 		 * doesn't need an update here because these nodes are already counted. */
-		pos = i + 1;
+		int pos = i + 1;
 		while(pos < i + 1 + entry->child_count)
 		{
 			if(entry->child_pos == 0)
@@ -2074,6 +2073,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 		fix_tree_links(entries, entry, i, j, 0, -nremoved);
 
+		int k;
 		for(k = 0; k < nremoved; ++k)
 		{
 			fentry_free(view, &entry[k]);
@@ -2091,16 +2091,15 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
 		 * filtered out, there is space for at least one extra entry. */
-		parent = i - entry->child_pos - (i - j);
-		int show_empty_dir_leafs = (cfg.dot_dirs & DD_TREE_LEAFS_PARENT);
+		const int parent = j - entry->child_pos;
+		const int show_empty_dir_leafs = (cfg.dot_dirs & DD_TREE_LEAFS_PARENT);
 		if(show_empty_dir_leafs && remove_subtrees && parent == j - 1 &&
 				entries[parent].child_count == 0)
 		{
 			char full_path[PATH_MAX + 1];
-			char *path;
-
 			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
-			path = format_str("%s/..", full_path);
+
+			char *path = format_str("%s/..", full_path);
 			init_parent_entry(view, &entries[j], path);
 			remove_last_path_component(path);
 			entries[j].origin = path;
