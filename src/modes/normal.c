@@ -2021,21 +2021,21 @@ cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 	name_filters_add_active(curr_view);
 }
 
-/* Hide dot files. */
+/* Hides dot files. */
 static void
 cmd_zm(key_info_t key_info, keys_info_t *keys_info)
 {
 	dot_filter_set(curr_view, 0);
 }
 
-/* Show all the dot files. */
+/* Shows all the dot files. */
 static void
 cmd_zo(key_info_t key_info, keys_info_t *keys_info)
 {
 	dot_filter_set(curr_view, 1);
 }
 
-/* Reset local filter. */
+/* Resets local filter. */
 static void
 cmd_zr(key_info_t key_info, keys_info_t *keys_info)
 {

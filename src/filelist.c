@@ -2055,7 +2055,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 		}
 
 		/* Reassign children of node about to be deleted to its parent.  Child count
-		 * don't need an update here because these nodes are already counted. */
+		 * doesn't need an update here because these nodes are already counted. */
 		pos = i + 1;
 		while(pos < i + 1 + entry->child_count)
 		{
@@ -2127,7 +2127,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 			entries[j].owns_origin = 1;
 			entries[j].child_pos = 1;
 
-			/* Since we now adding back one entry, correct increase parent counts and
+			/* Since we are now adding back one entry, increase parent counts and
 			 * child positions back by one. */
 			while(1)
 			{
