@@ -1368,6 +1368,7 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 			 * some tree-specific code is driven directly by these fields. */
 			dst[j].child_count = 0;
 			dst[j].child_pos = 0;
+			dst[j].folded = 0;
 		}
 
 		++j;
@@ -2460,6 +2461,7 @@ merge_entries(dir_entry_t *new, const dir_entry_t *prev)
 
 	new->selected = prev->selected;
 	new->was_selected = prev->was_selected;
+	new->folded = prev->folded;
 
 	/* No need to check for name here, because only entries with exactly the same
 	 * names are merged. */
@@ -2579,6 +2581,7 @@ init_dir_entry(view_t *view, dir_entry_t *entry, const char name[])
 	entry->marked = 0;
 	entry->temporary = 0;
 	entry->owns_origin = 0;
+	entry->folded = 0;
 
 	entry->tag = -1;
 	entry->id = -1;
