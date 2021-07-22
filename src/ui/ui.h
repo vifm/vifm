@@ -285,6 +285,9 @@ struct cv_data_t
 	 * by tree-view. */
 	struct trie_t *excluded_paths;
 
+	/* List of paths to directories that are folded.  Used by tree-view. */
+	struct trie_t *folded_paths;
+
 	/* Names of files in custom view while it's being composed.  Used for
 	 * duplicate elimination during construction of custom list. */
 	struct trie_t *paths_cache;

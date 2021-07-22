@@ -249,8 +249,10 @@ flist_free_view(view_t *view)
 	update_string(&view->custom.orig_dir, NULL);
 	update_string(&view->custom.title, NULL);
 	trie_free(view->custom.excluded_paths);
+	trie_free(view->custom.folded_paths);
 	trie_free(view->custom.paths_cache);
 	view->custom.excluded_paths = NULL;
+	view->custom.folded_paths = NULL;
 	view->custom.paths_cache = NULL;
 
 	free_dir_entries(view, &view->local_filter.entries,
@@ -3745,7 +3747,7 @@ flist_clone_tree(view_t *to, const view_t *from)
 	else
 	{
 		if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths,
-					NULL) != 0)
+					from->custom.folded_paths) != 0)
 		{
 			return 1;
 		}
@@ -3753,6 +3755,10 @@ flist_clone_tree(view_t *to, const view_t *from)
 
 	trie_free(to->custom.excluded_paths);
 	to->custom.excluded_paths = trie_clone(from->custom.excluded_paths);
+
+	trie_free(to->custom.folded_paths);
+	to->custom.folded_paths = trie_clone(from->custom.folded_paths);
+
 	return 0;
 }
 
@@ -3762,8 +3768,8 @@ static int
 flist_load_tree_internal(view_t *view, const char path[], int reload)
 {
 	trie_t *excluded_paths = reload ? view->custom.excluded_paths : NULL;
-
-	if(make_tree(view, path, reload, excluded_paths, NULL) != 0)
+	trie_t *folded_paths = reload ? view->custom.folded_paths : NULL;
+	if(make_tree(view, path, reload, excluded_paths, folded_paths) != 0)
 	{
 		return 1;
 	}
@@ -3772,7 +3778,11 @@ flist_load_tree_internal(view_t *view, const char path[], int reload)
 	{
 		trie_free(view->custom.excluded_paths);
 		view->custom.excluded_paths = trie_create();
+
+		trie_free(view->custom.folded_paths);
+		view->custom.folded_paths = trie_create();
 	}
+
 	return 0;
 }
 
