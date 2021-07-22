@@ -126,6 +126,8 @@ static int custom_list_is_incomplete(const view_t *view);
 static int is_dead_or_filtered(view_t *view, const dir_entry_t *entry,
 		void *arg);
 static void update_entries_data(view_t *view);
+static void fix_tree_links(dir_entry_t *entries, dir_entry_t *entry,
+		int old_idx, int new_idx, int displacement, int correction);
 static int is_dir_big(const char path[]);
 static void free_view_entries(view_t *view);
 static int update_dir_list(view_t *view, int reload);
@@ -2070,27 +2072,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 			pos += entries[pos].child_count + 1;
 		}
 
-		if(entry->child_pos != 0)
-		{
-			/* Visit all parent nodes to update number of their children and also
-			 * all sibling nodes which require their parent links updated. */
-			int pos = i + (entry->child_count + 1);
-			int parent = j - entry->child_pos;
-			while(1)
-			{
-				while(pos <= parent + (i - j) + entries[parent].child_count)
-				{
-					entries[pos].child_pos -= nremoved;
-					pos += entries[pos].child_count + 1;
-				}
-				entries[parent].child_count -= nremoved;
-				if(entries[parent].child_pos == 0)
-				{
-					break;
-				}
-				parent -= entries[parent].child_pos;
-			}
-		}
+		fix_tree_links(entries, entry, i, j, 0, -nremoved);
 
 		for(k = 0; k < nremoved; ++k)
 		{
@@ -2117,8 +2099,6 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 			char full_path[PATH_MAX + 1];
 			char *path;
 
-			int pos = i + (entry->child_count + 1);
-
 			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
 			path = format_str("%s/..", full_path);
 			init_parent_entry(view, &entries[j], path);
@@ -2129,20 +2109,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 			/* Since we are now adding back one entry, increase parent counts and
 			 * child positions back by one. */
-			while(1)
-			{
-				while(pos <= parent + (i - j + nremoved) + entries[parent].child_count)
-				{
-					++entries[pos].child_pos;
-					pos += entries[pos].child_count + 1;
-				}
-				++entries[parent].child_count;
-				if(entries[parent].child_pos == 0)
-				{
-					break;
-				}
-				parent -= entries[parent].child_pos;
-			}
+			fix_tree_links(entries, entry, i, j, nremoved, 1);
 
 			++j;
 		}
@@ -2158,6 +2125,38 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 	}
 
 	return i - j;
+}
+
+/* Visits all parent nodes to update number of their children and also all
+ * following sibling nodes which require their parent links updated.  Can be
+ * used while moving entries upward. */
+static void
+fix_tree_links(dir_entry_t *entries, dir_entry_t *entry, int old_idx,
+		int new_idx, int displacement, int correction)
+{
+	if(entry->child_pos == 0 || correction == 0)
+	{
+		return;
+	}
+
+	displacement += old_idx - new_idx;
+
+	int pos = old_idx + (entry->child_count + 1);
+	int parent = new_idx - entry->child_pos;
+	while(1)
+	{
+		while(pos <= parent + displacement + entries[parent].child_count)
+		{
+			entries[pos].child_pos += correction;
+			pos += entries[pos].child_count + 1;
+		}
+		entries[parent].child_count += correction;
+		if(entries[parent].child_pos == 0)
+		{
+			break;
+		}
+		parent -= entries[parent].child_pos;
+	}
 }
 
 /* Checks for subjectively relative size of a directory specified by the path
