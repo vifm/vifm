@@ -164,7 +164,7 @@ static int set_position_by_path(view_t *view, const char path[]);
 static int flist_load_tree_internal(view_t *view, const char path[],
 		int reload);
 static int make_tree(view_t *view, const char path[], int reload,
-		trie_t *excluded_paths);
+		trie_t *excluded_paths, trie_t *folded_paths);
 static void tree_from_cv(view_t *view);
 static int complete_tree(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
@@ -172,7 +172,8 @@ static void reset_entry_list(view_t *view, dir_entry_t **entries, int *count);
 static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 		int extra);
 static int add_files_recursively(view_t *view, const char path[],
-		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
+		trie_t *excluded_paths, trie_t *folded_paths, int parent_pos,
+		int no_direct_parent);
 static int entry_is_visible(view_t *view, const char name[], const void *data);
 static int tree_candidate_is_visible(view_t *view, const char path[],
 		const char name[], int is_dir, int apply_local_filter);
@@ -3743,7 +3744,8 @@ flist_clone_tree(view_t *to, const view_t *from)
 	}
 	else
 	{
-		if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths) != 0)
+		if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths,
+					NULL) != 0)
 		{
 			return 1;
 		}
@@ -3761,7 +3763,7 @@ flist_load_tree_internal(view_t *view, const char path[], int reload)
 {
 	trie_t *excluded_paths = reload ? view->custom.excluded_paths : NULL;
 
-	if(make_tree(view, path, reload, excluded_paths) != 0)
+	if(make_tree(view, path, reload, excluded_paths, NULL) != 0)
 	{
 		return 1;
 	}
@@ -3777,7 +3779,8 @@ flist_load_tree_internal(view_t *view, const char path[], int reload)
 /* (Re)loads tree at path into the view using specified list of excluded files.
  * Returns zero on success, otherwise non-zero is returned. */
 static int
-make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
+make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths,
+		trie_t *folded_paths)
 {
 	char canonic_path[PATH_MAX + 1];
 	int nfiltered;
@@ -3798,7 +3801,8 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 	}
 	else
 	{
-		nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
+		nfiltered = add_files_recursively(view, path, excluded_paths, folded_paths,
+				-1, 0);
 		type = CV_TREE;
 	}
 	ui_cancellation_pop();
@@ -3998,7 +4002,7 @@ drop_tops(view_t *view, dir_entry_t *entries, int *nentries, int extra)
  * serious error. */
 static int
 add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
-		int parent_pos, int no_direct_parent)
+		trie_t *folded_paths, int parent_pos, int no_direct_parent)
 {
 	int i;
 	const int prev_count = view->custom.entry_count;
@@ -4033,7 +4037,7 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
 				nfiltered += add_files_recursively(view, full_path, excluded_paths,
-						parent_pos, 1);
+						folded_paths, parent_pos, 1);
 			}
 
 			free(full_path);
@@ -4056,11 +4060,14 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 
 		/* Not using dir variable here, because it is set for symlinks to
 		 * directories as well. */
-		if(entry->type == FT_DIR)
+		entry->folded = entry->type == FT_DIR
+		             && trie_get(folded_paths, full_path, &dummy) == 0
+		             && dummy != NULL;
+		if(entry->type == FT_DIR && !entry->folded)
 		{
 			const int idx = view->custom.entry_count - 1;
 			const int filtered = add_files_recursively(view, full_path,
-					excluded_paths, idx, 0);
+					excluded_paths, folded_paths, idx, 0);
 			/* Keep going in case of error and load partial list. */
 			if(filtered >= 0)
 			{
