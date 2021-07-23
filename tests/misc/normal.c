@@ -17,6 +17,8 @@
 #include "../../src/filelist.h"
 #include "../../src/status.h"
 
+#include "utils.h"
+
 static char cwd[PATH_MAX + 1];
 
 SETUP_ONCE()
@@ -90,6 +92,20 @@ TEST(center_splitter)
 
 	assert_int_equal(-1, curr_stats.splitter_pos);
 	assert_true(curr_stats.splitter_ratio == 0.5);
+}
+
+TEST(folding)
+{
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", cwd));
+	assert_int_equal(12, lwin.list_rows);
+
+	(void)vle_keys_exec_timed_out(WK_z WK_x);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(5, lwin.list_rows);
+
+	(void)vle_keys_exec_timed_out(WK_z WK_x);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(12, lwin.list_rows);
 }
 
 TEST(gf, IF(not_windows))

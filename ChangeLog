@@ -67,6 +67,10 @@
 	Added :st[op] command what behaves like Ctrl-Z.  It's to be used in
 	mappings.  Thanks to GummyGun.
 
+	Added zx normal mode key to fold/unfold directories in tree views.  The
+	implementation is not optimal at this moment though.  Thanks to RR0925 and
+	Alexandre Viau.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
