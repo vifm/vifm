@@ -231,14 +231,22 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 
 	assert_success(flist_load_tree(curr_view, TEST_DATA_PATH "/tree"));
 
+	/* Exclusion. */
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
 	flist_custom_exclude(curr_view, 1);
 	assert_int_equal(0, curr_view->selected_files);
 
+	/* Folding. */
+	curr_view->list_pos = 0;
+	flist_toggle_fold(curr_view);
+
+	/* Local filter (ignored here because we change directory of the other view,
+	 * is this a bug?). */
 	local_filter_apply(other_view, "d");
+
 	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
-	assert_int_equal(4, other_view->list_rows);
+	assert_int_equal(2, other_view->list_rows);
 	assert_string_equal("", other_view->local_filter.filter.raw);
 
 	assert_true(flist_custom_active(other_view));
@@ -246,7 +254,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 	load_saving_pos(other_view);
 	curr_stats.load_stage = 0;
 
-	assert_int_equal(4, other_view->list_rows);
+	assert_int_equal(2, other_view->list_rows);
 	assert_string_equal("", other_view->local_filter.filter.raw);
 
 	columns_free(other_view->columns);
