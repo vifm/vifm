@@ -243,6 +243,7 @@ struct dir_entry_t
 	unsigned int temporary : 1;    /* Whether this is temporary node. */
 	unsigned int dir_link : 1;     /* Whether this is symlink to a directory. */
 	unsigned int owns_origin : 1;  /* Whether this entry is custom one. */
+	unsigned int folded : 1;       /* Whether this entry is folded. */
 };
 
 /* List of entries bundled with its size. */
@@ -283,6 +284,9 @@ struct cv_data_t
 	/* List of paths that should be ignored (including all nested paths).  Used
 	 * by tree-view. */
 	struct trie_t *excluded_paths;
+
+	/* List of paths to directories that are folded.  Used by tree-view. */
+	struct trie_t *folded_paths;
 
 	/* Names of files in custom view while it's being composed.  Used for
 	 * duplicate elimination during construction of custom list. */

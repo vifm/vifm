@@ -198,6 +198,7 @@ TEST(history)
 	(void)vle_keys_exec_timed_out(WK_C_n);
 	assert_wstring_equal(L"third", stats->line);
 
+	hists_resize(0);
 	cfg.history_len = 0;
 	assert_success(stats_reset(&cfg));
 }
@@ -236,6 +237,7 @@ TEST(prefix_history, IF(have_ext_keys))
 	(void)vle_keys_exec_timed_out(down);
 	assert_wstring_equal(L"fi", stats->line);
 
+	hists_resize(0);
 	cfg.history_len = 0;
 	assert_success(stats_reset(&cfg));
 }
