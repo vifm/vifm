@@ -196,6 +196,9 @@
 	Fixed full path patterns ({{globs}} and //regexp//) not working in tree
 	views.
 
+	Fixed number of filtered files not being updated in tree views on pressing
+	zf key.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

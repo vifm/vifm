@@ -196,7 +196,8 @@ name_filters_add_active(view_t *view)
 		(void)zap_entries(view, view->local_filter.entries,
 				&view->local_filter.entry_count, &is_newly_filtered, &filter, 1, 1);
 	}
-	else
+
+	if(!flist_custom_active(view) || view->custom.type == CV_TREE)
 	{
 		view->filtered += filtered;
 	}
