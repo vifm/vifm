@@ -1457,21 +1457,29 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 	parent = child - child->child_pos;
 	while(parent != child)
 	{
+		const int folded = child->folded;
+
 		const char *prefix;
 		/* To avoid prepending, strings are reversed here and whole tree prefix is
 		 * reversed below to compensate for it. */
 		if(parent->child_count == child->child_pos + child->child_count)
 		{
-			prefix = (child == cdt->entry ? " --`" : "    ");
+			prefix = (child == cdt->entry ? (folded ? " ++`" : " --`") : "    ");
 		}
 		else
 		{
-			prefix = (child == cdt->entry ? " --|" : "   |");
+			prefix = (child == cdt->entry ? (folded ? " ++|" : " --|") : "   |");
 		}
 		(void)sstrappend(buf, &len, buf_len + 1U, prefix);
 
 		child = parent;
 		parent -= parent->child_pos;
+	}
+
+	if(cdt->entry->child_pos == 0 && cdt->entry->folded)
+	{
+		/* Mark root node as folded. */
+		(void)sstrappend(buf, &len, buf_len + 1U, " ++");
 	}
 
 	for(i = 0U; i < len/2U; ++i)
