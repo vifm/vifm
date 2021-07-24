@@ -112,6 +112,7 @@ static void mark_group(view_t *view, view_t *other, int idx);
 static int got_excluded(view_t *view, const dir_entry_t *entry, void *arg);
 static int exclude_temporary_entries(view_t *view);
 static int is_temporary(view_t *view, const dir_entry_t *entry, void *arg);
+static void flist_custom_drop_save(view_t *view);
 static uint64_t recalc_entry_size(const dir_entry_t *entry, uint64_t old_size);
 static uint64_t entry_calc_nitems(const dir_entry_t *entry);
 static void load_dir_list_internal(view_t *view, int reload, int draw_only);
@@ -163,7 +164,6 @@ static int iter_entries(view_t *view, dir_entry_t **entry,
 		entry_predicate pred);
 static int mark_selected(view_t *view);
 static int set_position_by_path(view_t *view, const char path[]);
-static void before_dropping_entries(view_t *view);
 static int flist_load_tree_internal(view_t *view, const char path[],
 		int reload);
 static int make_tree(view_t *view, const char path[], int reload,
@@ -258,8 +258,8 @@ flist_free_view(view_t *view)
 	view->custom.folded_paths = NULL;
 	view->custom.paths_cache = NULL;
 
-	free_dir_entries(view, &view->local_filter.entries,
-			&view->local_filter.entry_count);
+	free_dir_entries(view, &view->custom.full.entries,
+			&view->custom.full.nentries);
 
 	/* Two pointer fields below don't contain valid data that needs to be freed,
 	 * zeroing them for tests and to at least mention them to signal that they
@@ -512,9 +512,8 @@ navigate_to_file_in_custom_view(view_t *view, const char dir[],
 
 	if(custom_list_is_incomplete(view))
 	{
-		const dir_entry_t *entry;
-		entry = entry_from_path(view, view->local_filter.entries,
-				view->local_filter.entry_count, full_path);
+		const dir_entry_t *entry = entry_from_path(view, view->custom.full.entries,
+				view->custom.full.nentries, full_path);
 		if(entry == NULL)
 		{
 			/* No such entry in the view at all. */
@@ -1120,9 +1119,7 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 		enable_view_sorting(view);
 	}
 
-	/* Erase unfiltered list of a previous custom view. */
-	free_dir_entries(view, &view->local_filter.entries,
-			&view->local_filter.entry_count);
+	flist_custom_drop_save(view);
 
 	if(!reload)
 	{
@@ -1148,8 +1145,7 @@ on_location_change(view_t *view, int force)
 {
 	view->has_dups = 0;
 
-	free_dir_entries(view, &view->local_filter.entries,
-			&view->local_filter.entry_count);
+	flist_custom_drop_save(view);
 
 	if(force || (cfg.cvoptions & CVO_LOCALFILTER))
 	{
@@ -1212,10 +1208,10 @@ flist_custom_exclude(view_t *view, int selection_only)
 		}
 	}
 
-	/* Update copy of list of entries made by local filter (it might be empty,
-	 * which is OK). */
-	(void)zap_entries(view, view->local_filter.entries,
-			&view->local_filter.entry_count, &got_excluded, excluded, 1, 1);
+	/* Update copy of full list of entries (it might be empty, which is OK),
+	 * because exclusion is not reversible. */
+	(void)zap_entries(view, view->custom.full.entries,
+			&view->custom.full.nentries, &got_excluded, excluded, 1, 1);
 	trie_free(excluded);
 
 	(void)exclude_temporary_entries(view);
@@ -1349,8 +1345,8 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 
 	if(custom_list_is_incomplete(from))
 	{
-		src = from->local_filter.entries;
-		nentries = from->local_filter.entry_count;
+		src = from->custom.full.entries;
+		nentries = from->custom.full.nentries;
 	}
 	else
 	{
@@ -1444,6 +1440,30 @@ flist_custom_uncompress_tree(view_t *view)
 	{
 		add_parent_dir(view);
 	}
+}
+
+void
+flist_custom_save(view_t *view)
+{
+	if(!flist_custom_active(view) || view->custom.type == CV_TREE)
+	{
+		flist_custom_drop_save(view);
+		return;
+	}
+
+	if(view->custom.full.nentries == 0)
+	{
+		replace_dir_entries(view, &view->custom.full.entries,
+				&view->custom.full.nentries, view->dir_entry, view->list_rows);
+	}
+}
+
+/* Erases list previously saved by flist_custom_save(). */
+static void
+flist_custom_drop_save(view_t *view)
+{
+	free_dir_entries(view, &view->custom.full.entries,
+			&view->custom.full.nentries);
 }
 
 const char *
@@ -1826,7 +1846,7 @@ populate_custom_view(view_t *view, int reload)
 			start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
 
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
-					view->local_filter.entries, view->local_filter.entry_count);
+					view->custom.full.entries, view->custom.full.nentries);
 			/* Selection of the original list shouldn't be restored. */
 			flist_sel_drop(view);
 
@@ -1835,12 +1855,8 @@ populate_custom_view(view_t *view, int reload)
 			 * care of cursor position. */
 			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
 		}
-		else if(view->local_filter.entry_count == 0)
-		{
-			/* Save unfiltered (by local filter) list for further use. */
-			replace_dir_entries(view, &view->local_filter.entries,
-					&view->local_filter.entry_count, view->dir_entry, view->list_rows);
-		}
+
+		flist_custom_save(view);
 
 		re_apply_folds(view, view->custom.folded_paths);
 
@@ -2019,19 +2035,19 @@ update_dir_watcher(view_t *view)
 static int
 custom_list_is_incomplete(const view_t *view)
 {
-	if(view->local_filter.entry_count == 0)
+	if(view->custom.full.nentries == 0)
 	{
 		return 0;
 	}
 
 	if(view->list_rows == 1 && is_parent_dir(view->dir_entry[0].name) &&
-			!(view->local_filter.entry_count == 1 &&
-				is_parent_dir(view->local_filter.entries[0].name)))
+			!(view->custom.full.nentries == 1 &&
+				is_parent_dir(view->custom.full.entries[0].name)))
 	{
 		return 1;
 	}
 
-	return view->list_rows != view->local_filter.entry_count;
+	return (view->list_rows != view->custom.full.nentries);
 }
 
 /* zap_entries() filter to filter-out inexistent files or files which names
@@ -2983,7 +2999,7 @@ remove_child_entries(view_t *view, dir_entry_t *entry)
 	const int pos = (entry - view->dir_entry);
 	const int child_count = entry->child_count;
 
-	before_dropping_entries(view);
+	flist_custom_save(view);
 
 	int i;
 	for(i = 0; i < child_count; ++i)
@@ -3866,19 +3882,6 @@ flist_clone_tree(view_t *to, const view_t *from)
 	to->custom.folded_paths = trie_clone(from->custom.folded_paths);
 
 	return 0;
-}
-
-/* This function must be called before entries are dropped from a view. */
-static void
-before_dropping_entries(view_t *view)
-{
-	if(flist_custom_active(view) && view->local_filter.entry_count == 0)
-	{
-		/* Save unfiltered list for further restoration on view reloading.
-		 * XXX: move this out of local_filter? */
-		replace_dir_entries(view, &view->local_filter.entries,
-				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
-	}
 }
 
 /* Implements tree view (re)loading.  Returns zero on success, otherwise

@@ -148,6 +148,10 @@ void flist_custom_clone(view_t *to, const view_t *from, int as_tree);
 /* Adds missing parent directories to the tree.  Such entries are marked as
  * "temporary", which can be used to remove them later. */
 void flist_custom_uncompress_tree(view_t *view);
+/* Save custom list for further use so it can be reloaded later in full.  Should
+ * be invoked before removing entries.  Does nothing for FS-backed views or if
+ * list was already saved. */
+void flist_custom_save(view_t *view);
 
 /* Other functions. */
 
