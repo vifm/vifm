@@ -460,7 +460,7 @@ load_unfiltered_list(view_t *view)
 			current_file_pos = view->list_rows - 1;
 		}
 	}
-	else
+	else if(view->local_filter.entry_count == 0)
 	{
 		/* Save unfiltered (by local filter) list for further use. */
 		replace_dir_entries(view, &view->local_filter.entries,

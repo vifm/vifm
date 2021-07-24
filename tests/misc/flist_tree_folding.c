@@ -11,6 +11,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
+#include "../../src/filtering.h"
 #include "../../src/sort.h"
 
 #include "utils.h"
@@ -201,6 +202,55 @@ TEST(folding_five_tree_out_of_cv)
 
 	toggle_fold_and_update(&lwin);
 	assert_int_equal(6, lwin.list_rows);
+}
+
+TEST(folds_of_custom_tree_are_not_lost_on_filtering)
+{
+	char path[PATH_MAX + 1];
+	flist_custom_start(&lwin, "test");
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3", cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file1",
+			cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file2",
+			cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4", cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4/file3",
+			cwd);
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(load_tree(&lwin, TEST_DATA_PATH, cwd));
+	assert_int_equal(6, lwin.list_rows);
+
+	/* fold */
+	lwin.list_pos = 1;
+	assert_string_equal("dir3", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	lwin.list_pos = 2;
+	assert_string_equal("dir4", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(3, lwin.list_rows);
+
+	/* filter */
+	assert_int_equal(0, local_filter_set(&lwin, "[34]"));
+	local_filter_accept(&lwin);
+	assert_int_equal(2, lwin.list_rows);
+
+	/* unfold */
+	lwin.list_pos = 0;
+	assert_string_equal("dir3", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+
+	/* remove filter */
+	local_filter_remove(&lwin);
+	curr_stats.load_stage = 2;
+	assert_true(process_scheduled_updates_of_view(&lwin));
+	curr_stats.load_stage = 0;
+	assert_int_equal(5, lwin.list_rows);
 }
 
 /* This test mixes different trees and does reloading to verify resource uses

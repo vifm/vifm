@@ -1120,6 +1120,10 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 		enable_view_sorting(view);
 	}
 
+	/* Erase unfiltered list of a previous custom view. */
+	free_dir_entries(view, &view->local_filter.entries,
+			&view->local_filter.entry_count);
+
 	if(!reload)
 	{
 		on_location_change(view, 0);
