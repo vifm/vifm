@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* rmdir() */
 
+#include <limits.h> /* INT_MAX */
 #include <string.h> /* strcat() */
 
 #include <test-utils.h>
@@ -91,7 +92,7 @@ TEST(works_with_custom_view)
 
 TEST(works_with_tree_view)
 {
-	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
+	assert_success(flist_load_tree(&lwin, lwin.curr_dir, INT_MAX));
 
 	lwin.dir_entry[1].marked = 1;
 	(void)fops_restore(&lwin);

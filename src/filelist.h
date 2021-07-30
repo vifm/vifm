@@ -294,9 +294,10 @@ int fentry_is_valid(const dir_entry_t *entry);
 /* Checks whether entry corresponds to a directory (including symbolic links to
  * directories).  Returns non-zero if so, otherwise zero is returned. */
 int fentry_is_dir(const dir_entry_t *entry);
-/* Loads directory tree specified by its path into the view.  Considers various
+/* Loads directory tree specified by its path into the view.  The depth
+ * parameter can be used to limit nesting level (>= 0).  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */
-int flist_load_tree(view_t *view, const char path[]);
+int flist_load_tree(view_t *view, const char path[], int depth);
 /* Makes to contain tree with the same root as from including copying list of
  * excluded files.  Returns zero on success, otherwise non-zero is returned. */
 int flist_clone_tree(view_t *to, const view_t *from);

@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <limits.h> /* INT_MAX */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
@@ -436,7 +437,7 @@ TEST(custom_tree_can_restore_files_after_local_filter_interactive)
 	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	assert_success(flist_load_tree(&lwin, test_data));
+	assert_success(flist_load_tree(&lwin, test_data, INT_MAX));
 	assert_int_equal(5, lwin.list_rows);
 
 	assert_int_equal(0, local_filter_set(&lwin, "t"));
@@ -466,7 +467,7 @@ TEST(custom_tree_can_restore_files_after_local_filter_non_interactive)
 	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	assert_success(flist_load_tree(&lwin, test_data));
+	assert_success(flist_load_tree(&lwin, test_data, INT_MAX));
 	assert_int_equal(5, lwin.list_rows);
 
 	local_filter_apply(&lwin, "t");
@@ -494,7 +495,7 @@ TEST(sorting_tree_preserves_parent_dot_dir)
 	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	assert_success(flist_load_tree(&lwin, test_data));
+	assert_success(flist_load_tree(&lwin, test_data, INT_MAX));
 	assert_int_equal(4, lwin.list_rows);
 
 	local_filter_apply(&lwin, "/");

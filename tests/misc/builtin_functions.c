@@ -3,6 +3,7 @@
 #include <sys/time.h> /* timeval utimes() */
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() remove() */
 #include <string.h> /* strdup() */
@@ -219,7 +220,7 @@ TEST(getpanetype_for_very_custom_view)
 
 TEST(getpanetype_for_tree_view)
 {
-	flist_load_tree(&lwin, TEST_DATA_PATH);
+	flist_load_tree(&lwin, TEST_DATA_PATH, INT_MAX);
 
 	curr_view = &lwin;
 	ASSERT_OK("getpanetype()", "tree");

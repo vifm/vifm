@@ -28,6 +28,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h>
+#include <limits.h> /* INT_MAX */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -4638,7 +4639,7 @@ tree_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		(void)flist_load_tree(curr_view, flist_get_dir(curr_view));
+		(void)flist_load_tree(curr_view, flist_get_dir(curr_view), INT_MAX);
 	}
 	return 0;
 }

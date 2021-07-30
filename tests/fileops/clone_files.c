@@ -3,6 +3,8 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() symlink() unlink() */
 
+#include <limits.h> /* INT_MAX */
+
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -65,7 +67,7 @@ TEST(files_are_cloned_according_to_tree_structure)
 
 	/* Clone at the top level. */
 
-	flist_load_tree(&lwin, ".");
+	flist_load_tree(&lwin, ".", INT_MAX);
 	lwin.list_pos = 0;
 
 	lwin.dir_entry[0].marked = 1;
@@ -76,7 +78,7 @@ TEST(files_are_cloned_according_to_tree_structure)
 
 	/* Clone at nested level. */
 
-	flist_load_tree(&lwin, ".");
+	flist_load_tree(&lwin, ".", INT_MAX);
 	lwin.list_pos = 0;
 
 	lwin.dir_entry[0].marked = 0;
@@ -86,7 +88,7 @@ TEST(files_are_cloned_according_to_tree_structure)
 
 	/* Clone at both levels. */
 
-	flist_load_tree(&lwin, ".");
+	flist_load_tree(&lwin, ".", INT_MAX);
 	lwin.list_pos = 0;
 
 	lwin.dir_entry[0].marked = 1;
@@ -98,7 +100,7 @@ TEST(files_are_cloned_according_to_tree_structure)
 
 	/* Cloning same file twice. */
 
-	flist_load_tree(&lwin, ".");
+	flist_load_tree(&lwin, ".", INT_MAX);
 	lwin.list_pos = 0;
 	lwin.dir_entry[1].marked = 1;
 	assert_string_equal("a", lwin.dir_entry[1].name);
@@ -145,7 +147,7 @@ TEST(cloning_of_broken_symlink, IF(not_windows))
 	assert_success(symlink("no-such-file", "broken-link"));
 #endif
 
-	flist_load_tree(&lwin, ".");
+	flist_load_tree(&lwin, ".", INT_MAX);
 
 	/* Without specifying new name. */
 	lwin.dir_entry[0].marked = 1;

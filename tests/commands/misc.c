@@ -3,6 +3,7 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* F_OK access() chdir() rmdir() symlink() unlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */
 #include <string.h> /* strcpy() strdup() */
 
@@ -368,7 +369,7 @@ TEST(putting_files_works)
 	regs_init();
 
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
-	assert_success(flist_load_tree(&lwin, sandbox));
+	assert_success(flist_load_tree(&lwin, sandbox, INT_MAX));
 
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/binary-data", cwd);
 	assert_success(regs_append(DEFAULT_REG_NAME, path));
