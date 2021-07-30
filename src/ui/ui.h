@@ -269,6 +269,9 @@ struct cv_data_t
 	dir_entry_t *entries; /* File entries. */
 	int entry_count;      /* Number of file entries. */
 
+	/* Full custom list saved on reducing it by folding or filtering. */
+	entries_t full;
+
 	/* Title of the custom view being constructed.  Discarded if finishing
 	 * fails. */
 	char *next_title;
@@ -296,10 +299,6 @@ struct cv_data_t
 /* Various parameters related to local filter. */
 struct local_filter_t
 {
-	/* Original list of custom entries saved because otherwise we lose it. */
-	dir_entry_t *entries; /* File entries. */
-	int entry_count;      /* Number of file entries. */
-
 	/* Local filename filter. */
 	filter_t filter;
 	/* Whether interactive filtering in progress. */

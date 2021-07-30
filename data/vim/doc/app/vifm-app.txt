@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 23
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2483,7 +2483,7 @@ yet supported) and might be changed in future releases, or get an alias.
     |vifm-menus-and-dialogs| for controls.
 
                                                *vifm-:tree*
-:tree
+:tree [depth=N]
     turn pane into tree view with current directory as its root.  The tree
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
@@ -2497,6 +2497,9 @@ yet supported) and might be changed in future releases, or get an alias.
 
     Tree structure is incompatible with alternative representations, so
     values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
+
+    The "depth" argument specifies nesting level on which loading of
+    subdirectories won't happen (they will be folded).  Values start at 1.
 :tree!
     toggle current view in and out of tree mode.
 

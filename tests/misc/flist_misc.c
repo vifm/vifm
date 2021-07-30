@@ -2,6 +2,7 @@
 
 #include <sys/stat.h> /* chmod() */
 
+#include <limits.h> /* INT_MAX */
 #include <string.h> /* memset() strcpy() */
 #include <time.h> /* time() */
 
@@ -144,7 +145,7 @@ TEST(find_first_and_last_siblings)
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "tree",
 			cwd);
-	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
+	assert_success(flist_load_tree(&lwin, lwin.curr_dir, INT_MAX));
 	assert_int_equal(12, lwin.list_rows);
 
 	assert_int_equal(0, fpos_first_sibling(&lwin));
@@ -164,7 +165,7 @@ TEST(find_next_and_prev_dir_sibling)
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "tree",
 			cwd);
-	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
+	assert_success(flist_load_tree(&lwin, lwin.curr_dir, INT_MAX));
 	assert_int_equal(12, lwin.list_rows);
 
 	assert_int_equal(0, fpos_prev_dir_sibling(&lwin));

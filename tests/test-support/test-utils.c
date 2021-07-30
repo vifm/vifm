@@ -235,8 +235,8 @@ view_setup(view_t *view)
 	view->custom.entry_count = 0;
 	view->custom.entries = NULL;
 
-	view->local_filter.entry_count = 0;
-	view->local_filter.entries = NULL;
+	view->custom.full.nentries = 0;
+	view->custom.full.entries = NULL;
 
 	view->timestamps_mutex = malloc(sizeof(*view->timestamps_mutex));
 	pthread_mutex_init(view->timestamps_mutex, NULL);

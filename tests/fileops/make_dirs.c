@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* chdir() rmdir() */
 
+#include <limits.h> /* INT_MAX */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() */
 
@@ -144,7 +145,7 @@ TEST(make_dirs_considers_tree_structure)
 
 	create_dir("dir");
 
-	flist_load_tree(&lwin, lwin.curr_dir);
+	flist_load_tree(&lwin, lwin.curr_dir, INT_MAX);
 
 	/* Set at to -1. */
 	lwin.list_pos = 0;

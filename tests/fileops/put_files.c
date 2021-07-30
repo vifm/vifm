@@ -3,6 +3,7 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* stat() rmdir() symlink() unlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <string.h> /* strcpy() */
 
 #include <test-utils.h>
@@ -227,7 +228,7 @@ TEST(put_files_copies_files_according_to_tree_structure)
 	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
 	create_dir(SANDBOX_PATH "/dir");
 
-	flist_load_tree(&lwin, lwin.curr_dir);
+	flist_load_tree(&lwin, lwin.curr_dir, INT_MAX);
 
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
 			saved_cwd);

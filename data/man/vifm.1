@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 23, 2021" "vifm 0.11"
+.TH VIFM 1 "July 30, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2972,6 +2972,9 @@ command that changes directory will also do, in particular, `:cd ..`.
 
 Tree structure is incompatible with alternative representations, so values
 of 'lsview' and 'millerview' options are ignored.
+
+The "depth" argument specifies nesting level on which loading of
+subdirectories won't happen (they will be folded).  Values start at 1.
 .TP
 .BI :tree!
 toggle current view in and out of tree mode.

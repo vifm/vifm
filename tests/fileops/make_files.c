@@ -2,6 +2,8 @@
 
 #include <unistd.h> /* chdir() rmdir() unlink() */
 
+#include <limits.h> /* INT_MAX */
+
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -92,7 +94,7 @@ TEST(make_files_considers_tree_structure)
 
 	create_dir("dir");
 
-	flist_load_tree(&lwin, lwin.curr_dir);
+	flist_load_tree(&lwin, lwin.curr_dir, INT_MAX);
 
 	/* Set at to -1. */
 	lwin.list_pos = 0;

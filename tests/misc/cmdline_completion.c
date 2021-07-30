@@ -795,6 +795,14 @@ TEST(plugin_is_completed)
 	remove_dir(SANDBOX_PATH "/plugins");
 }
 
+TEST(tree_is_completed)
+{
+	prepare_for_line_completion(L"tree ");
+
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"tree depth=", stats.line);
+}
+
 static void
 dummy_handler(OPT_OP op, optval_t val)
 {

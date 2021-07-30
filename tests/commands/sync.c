@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
@@ -110,7 +111,7 @@ TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 
 	assert_non_null(get_cwd(curr_view->curr_dir, sizeof(curr_view->curr_dir)));
-	assert_success(flist_load_tree(curr_view, SANDBOX_PATH));
+	assert_success(flist_load_tree(curr_view, SANDBOX_PATH, INT_MAX));
 	assert_int_equal(2, curr_view->list_rows);
 
 	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
@@ -139,7 +140,7 @@ TEST(sync_syncs_trees)
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "..", cwd);
 
-	assert_success(flist_load_tree(curr_view, TEST_DATA_PATH "/tree"));
+	assert_success(flist_load_tree(curr_view, TEST_DATA_PATH "/tree", INT_MAX));
 
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
@@ -229,7 +230,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "..", cwd);
 
-	assert_success(flist_load_tree(curr_view, TEST_DATA_PATH "/tree"));
+	assert_success(flist_load_tree(curr_view, TEST_DATA_PATH "/tree", INT_MAX));
 
 	/* Exclusion. */
 	curr_view->dir_entry[0].selected = 1;
@@ -331,7 +332,7 @@ TEST(sync_syncs_custom_trees)
 	flist_custom_add(curr_view, path);
 	assert_true(flist_custom_finish(curr_view, CV_REGULAR, 0) == 0);
 
-	assert_success(flist_load_tree(curr_view, test_data));
+	assert_success(flist_load_tree(curr_view, test_data, INT_MAX));
 
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;

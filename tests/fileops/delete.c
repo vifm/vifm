@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* rmdir() unlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <string.h> /* strcat() */
 
 #include <test-utils.h>
@@ -173,7 +174,7 @@ TEST(nested_file_is_removed)
 
 				make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 						saved_cwd);
-				assert_success(flist_load_tree(&lwin, lwin.curr_dir));
+				assert_success(flist_load_tree(&lwin, lwin.curr_dir, INT_MAX));
 				lwin.dir_entry[2].marked = 1;
 
 				if(!bg)
@@ -237,7 +238,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 	create_dir("dir");
 	create_file("dir/a");
 
-	assert_success(flist_load_tree(&lwin, "."));
+	assert_success(flist_load_tree(&lwin, ".", INT_MAX));
 	lwin.dir_entry[1].marked = 1;
 	lwin.list_pos = 1;
 

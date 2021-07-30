@@ -3,6 +3,7 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* F_OK access() chdir() rmdir() symlink() unlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */
 #include <string.h> /* strcpy() strdup() */
 
@@ -368,7 +369,7 @@ TEST(putting_files_works)
 	regs_init();
 
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
-	assert_success(flist_load_tree(&lwin, sandbox));
+	assert_success(flist_load_tree(&lwin, sandbox, INT_MAX));
 
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/binary-data", cwd);
 	assert_success(regs_append(DEFAULT_REG_NAME, path));
@@ -724,6 +725,14 @@ TEST(tree_command)
 {
 	strcpy(lwin.curr_dir, sandbox);
 
+	/* Invalid input. */
+	assert_failure(exec_commands("tree nesting=0", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+	assert_string_equal("Invalid argument: nesting=0", ui_sb_last());
+	assert_failure(exec_commands("tree depth=0", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+	assert_string_equal("Invalid depth: 0", ui_sb_last());
+
 	/* :tree enters tree mode. */
 	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
@@ -742,6 +751,24 @@ TEST(tree_command)
 	assert_success(exec_commands("tree!", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 	assert_true(cv_tree(lwin.custom.type));
+
+	/* Limited nesting. */
+
+	char sub_path[PATH_MAX + 1];
+	snprintf(sub_path, sizeof(sub_path), "%s/sub", sandbox);
+	create_dir(sub_path);
+
+	char sub_sub_path[PATH_MAX + 1];
+	snprintf(sub_sub_path, sizeof(sub_sub_path), "%s/sub/sub", sandbox);
+	create_dir(sub_sub_path);
+
+	assert_success(exec_commands("tree depth=1", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+	assert_true(cv_tree(lwin.custom.type));
+	assert_int_equal(1, lwin.list_rows);
+
+	remove_dir(sub_sub_path);
+	remove_dir(sub_path);
 }
 
 TEST(regular_command)

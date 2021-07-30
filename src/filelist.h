@@ -148,6 +148,10 @@ void flist_custom_clone(view_t *to, const view_t *from, int as_tree);
 /* Adds missing parent directories to the tree.  Such entries are marked as
  * "temporary", which can be used to remove them later. */
 void flist_custom_uncompress_tree(view_t *view);
+/* Save custom list for further use so it can be reloaded later in full.  Should
+ * be invoked before removing entries.  Does nothing for FS-backed views or if
+ * list was already saved. */
+void flist_custom_save(view_t *view);
 
 /* Other functions. */
 
@@ -290,9 +294,10 @@ int fentry_is_valid(const dir_entry_t *entry);
 /* Checks whether entry corresponds to a directory (including symbolic links to
  * directories).  Returns non-zero if so, otherwise zero is returned. */
 int fentry_is_dir(const dir_entry_t *entry);
-/* Loads directory tree specified by its path into the view.  Considers various
+/* Loads directory tree specified by its path into the view.  The depth
+ * parameter can be used to limit nesting level (>= 0).  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */
-int flist_load_tree(view_t *view, const char path[]);
+int flist_load_tree(view_t *view, const char path[], int depth);
 /* Makes to contain tree with the same root as from including copying list of
  * excluded files.  Returns zero on success, otherwise non-zero is returned. */
 int flist_clone_tree(view_t *to, const view_t *from);

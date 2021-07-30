@@ -3,6 +3,7 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() unlink() */
 
+#include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
@@ -239,7 +240,7 @@ TEST(cpmv_considers_tree_structure)
 
 	/* Move from tree root to nested dir. */
 	create_file("file");
-	flist_load_tree(&rwin, rwin.curr_dir);
+	flist_load_tree(&rwin, rwin.curr_dir, INT_MAX);
 	rwin.list_pos = 1;
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_cpmv(&lwin, list, 1, CMLO_MOVE, 0);
@@ -249,8 +250,8 @@ TEST(cpmv_considers_tree_structure)
 	curr_view = &rwin;
 	other_view = &lwin;
 	create_file("dir/file");
-	flist_load_tree(&lwin, flist_get_dir(&lwin));
-	flist_load_tree(&rwin, flist_get_dir(&rwin));
+	flist_load_tree(&lwin, flist_get_dir(&lwin), INT_MAX);
+	flist_load_tree(&rwin, flist_get_dir(&rwin), INT_MAX);
 	lwin.list_pos = 0;
 	rwin.dir_entry[1].marked = 1;
 	(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, 0);

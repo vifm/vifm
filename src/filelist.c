@@ -32,7 +32,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
-#include <limits.h> /* INT_MIN */
+#include <limits.h> /* INT_MAX INT_MIN */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* intptr_t uint64_t */
 #include <stdio.h> /* snprintf() */
@@ -112,6 +112,7 @@ static void mark_group(view_t *view, view_t *other, int idx);
 static int got_excluded(view_t *view, const dir_entry_t *entry, void *arg);
 static int exclude_temporary_entries(view_t *view);
 static int is_temporary(view_t *view, const dir_entry_t *entry, void *arg);
+static void flist_custom_drop_save(view_t *view);
 static uint64_t recalc_entry_size(const dir_entry_t *entry, uint64_t old_size);
 static uint64_t entry_calc_nitems(const dir_entry_t *entry);
 static void load_dir_list_internal(view_t *view, int reload, int draw_only);
@@ -163,11 +164,10 @@ static int iter_entries(view_t *view, dir_entry_t **entry,
 		entry_predicate pred);
 static int mark_selected(view_t *view);
 static int set_position_by_path(view_t *view, const char path[]);
-static void before_dropping_entries(view_t *view);
-static int flist_load_tree_internal(view_t *view, const char path[],
-		int reload);
+static int flist_load_tree_internal(view_t *view, const char path[], int reload,
+		int depth);
 static int make_tree(view_t *view, const char path[], int reload,
-		trie_t *excluded_paths, trie_t *folded_paths);
+		trie_t *excluded_paths, trie_t *folded_paths, int depth);
 static void tree_from_cv(view_t *view);
 static int complete_tree(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
@@ -176,13 +176,17 @@ static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 		int extra);
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, trie_t *folded_paths, int parent_pos,
-		int no_direct_parent);
+		int no_direct_parent, int depth);
 static int entry_is_visible(view_t *view, const char name[], const void *data);
 static int tree_candidate_is_visible(view_t *view, const char path[],
 		const char name[], int is_dir, int apply_local_filter);
 static int add_directory_leaf(view_t *view, const char path[], int parent_pos);
 static int init_parent_entry(view_t *view, dir_entry_t *entry,
 		const char path[]);
+
+/* Address of this variable is used to signify closed state of a fold (NULL
+ * means that it's open). */
+static char folded_marker;
 
 void
 init_filelists(void)
@@ -258,8 +262,8 @@ flist_free_view(view_t *view)
 	view->custom.folded_paths = NULL;
 	view->custom.paths_cache = NULL;
 
-	free_dir_entries(view, &view->local_filter.entries,
-			&view->local_filter.entry_count);
+	free_dir_entries(view, &view->custom.full.entries,
+			&view->custom.full.nentries);
 
 	/* Two pointer fields below don't contain valid data that needs to be freed,
 	 * zeroing them for tests and to at least mention them to signal that they
@@ -512,9 +516,8 @@ navigate_to_file_in_custom_view(view_t *view, const char dir[],
 
 	if(custom_list_is_incomplete(view))
 	{
-		const dir_entry_t *entry;
-		entry = entry_from_path(view, view->local_filter.entries,
-				view->local_filter.entry_count, full_path);
+		const dir_entry_t *entry = entry_from_path(view, view->custom.full.entries,
+				view->custom.full.nentries, full_path);
 		if(entry == NULL)
 		{
 			/* No such entry in the view at all. */
@@ -1120,6 +1123,8 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 		enable_view_sorting(view);
 	}
 
+	flist_custom_drop_save(view);
+
 	if(!reload)
 	{
 		on_location_change(view, 0);
@@ -1144,8 +1149,7 @@ on_location_change(view_t *view, int force)
 {
 	view->has_dups = 0;
 
-	free_dir_entries(view, &view->local_filter.entries,
-			&view->local_filter.entry_count);
+	flist_custom_drop_save(view);
 
 	if(force || (cfg.cvoptions & CVO_LOCALFILTER))
 	{
@@ -1208,10 +1212,10 @@ flist_custom_exclude(view_t *view, int selection_only)
 		}
 	}
 
-	/* Update copy of list of entries made by local filter (it might be empty,
-	 * which is OK). */
-	(void)zap_entries(view, view->local_filter.entries,
-			&view->local_filter.entry_count, &got_excluded, excluded, 1, 1);
+	/* Update copy of full list of entries (it might be empty, which is OK),
+	 * because exclusion is not reversible. */
+	(void)zap_entries(view, view->custom.full.entries,
+			&view->custom.full.nentries, &got_excluded, excluded, 1, 1);
 	trie_free(excluded);
 
 	(void)exclude_temporary_entries(view);
@@ -1345,8 +1349,8 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 
 	if(custom_list_is_incomplete(from))
 	{
-		src = from->local_filter.entries;
-		nentries = from->local_filter.entry_count;
+		src = from->custom.full.entries;
+		nentries = from->custom.full.nentries;
 	}
 	else
 	{
@@ -1440,6 +1444,30 @@ flist_custom_uncompress_tree(view_t *view)
 	{
 		add_parent_dir(view);
 	}
+}
+
+void
+flist_custom_save(view_t *view)
+{
+	if(!flist_custom_active(view) || view->custom.type == CV_TREE)
+	{
+		flist_custom_drop_save(view);
+		return;
+	}
+
+	if(view->custom.full.nentries == 0)
+	{
+		replace_dir_entries(view, &view->custom.full.entries,
+				&view->custom.full.nentries, view->dir_entry, view->list_rows);
+	}
+}
+
+/* Erases list previously saved by flist_custom_save(). */
+static void
+flist_custom_drop_save(view_t *view)
+{
+	free_dir_entries(view, &view->custom.full.entries,
+			&view->custom.full.nentries);
 }
 
 const char *
@@ -1784,7 +1812,7 @@ populate_custom_view(view_t *view, int reload)
 		int prev_list_rows, result;
 
 		start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
-		result = flist_load_tree_internal(view, flist_get_dir(view), 1);
+		result = flist_load_tree_internal(view, flist_get_dir(view), 1, INT_MAX);
 
 		if(view->dir_entry == NULL)
 		{
@@ -1822,7 +1850,7 @@ populate_custom_view(view_t *view, int reload)
 			start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
 
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
-					view->local_filter.entries, view->local_filter.entry_count);
+					view->custom.full.entries, view->custom.full.nentries);
 			/* Selection of the original list shouldn't be restored. */
 			flist_sel_drop(view);
 
@@ -1831,12 +1859,8 @@ populate_custom_view(view_t *view, int reload)
 			 * care of cursor position. */
 			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
 		}
-		else if(view->local_filter.entry_count == 0)
-		{
-			/* Save unfiltered (by local filter) list for further use. */
-			replace_dir_entries(view, &view->local_filter.entries,
-					&view->local_filter.entry_count, view->dir_entry, view->list_rows);
-		}
+
+		flist_custom_save(view);
 
 		re_apply_folds(view, view->custom.folded_paths);
 
@@ -2015,19 +2039,19 @@ update_dir_watcher(view_t *view)
 static int
 custom_list_is_incomplete(const view_t *view)
 {
-	if(view->local_filter.entry_count == 0)
+	if(view->custom.full.nentries == 0)
 	{
 		return 0;
 	}
 
 	if(view->list_rows == 1 && is_parent_dir(view->dir_entry[0].name) &&
-			!(view->local_filter.entry_count == 1 &&
-				is_parent_dir(view->local_filter.entries[0].name)))
+			!(view->custom.full.nentries == 1 &&
+				is_parent_dir(view->custom.full.entries[0].name)))
 	{
 		return 1;
 	}
 
-	return view->list_rows != view->local_filter.entry_count;
+	return (view->list_rows != view->custom.full.nentries);
 }
 
 /* zap_entries() filter to filter-out inexistent files or files which names
@@ -2940,8 +2964,6 @@ flist_update_origins(view_t *view)
 void
 flist_toggle_fold(view_t *view)
 {
-	static char folded_marker;
-
 	if(!cv_tree(view->custom.type))
 	{
 		return;
@@ -2979,7 +3001,7 @@ remove_child_entries(view_t *view, dir_entry_t *entry)
 	const int pos = (entry - view->dir_entry);
 	const int child_count = entry->child_count;
 
-	before_dropping_entries(view);
+	flist_custom_save(view);
 
 	int i;
 	for(i = 0; i < child_count; ++i)
@@ -3802,12 +3824,12 @@ fentry_is_dir(const dir_entry_t *entry)
 }
 
 int
-flist_load_tree(view_t *view, const char path[])
+flist_load_tree(view_t *view, const char path[], int depth)
 {
 	char full_path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(full_path), full_path);
 
-	if(flist_load_tree_internal(view, path, 0) != 0)
+	if(flist_load_tree_internal(view, path, 0, depth) != 0)
 	{
 		return 1;
 	}
@@ -3849,7 +3871,7 @@ flist_clone_tree(view_t *to, const view_t *from)
 	else
 	{
 		if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths,
-					from->custom.folded_paths) != 0)
+					from->custom.folded_paths, INT_MAX) != 0)
 		{
 			return 1;
 		}
@@ -3864,28 +3886,20 @@ flist_clone_tree(view_t *to, const view_t *from)
 	return 0;
 }
 
-/* This function must be called before entries are dropped from a view. */
-static void
-before_dropping_entries(view_t *view)
-{
-	if(flist_custom_active(view) && view->local_filter.entry_count == 0)
-	{
-		/* Save unfiltered list for further restoration on view reloading.
-		 * XXX: move this out of local_filter? */
-		replace_dir_entries(view, &view->local_filter.entries,
-				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
-	}
-}
-
-/* Implements tree view (re)loading.  Returns zero on success, otherwise
+/* Implements tree view (re)loading.  The depth parameter can be used to limit
+ * nesting level (>= 0).  Returns zero on success, otherwise
  * non-zero is returned. */
 static int
-flist_load_tree_internal(view_t *view, const char path[], int reload)
+flist_load_tree_internal(view_t *view, const char path[], int reload, int depth)
 {
 	trie_t *excluded_paths = reload ? view->custom.excluded_paths : NULL;
-	trie_t *folded_paths = reload ? view->custom.folded_paths : NULL;
-	if(make_tree(view, path, reload, excluded_paths, folded_paths) != 0)
+	trie_t *folded_paths = reload ? view->custom.folded_paths : trie_create();
+	if(make_tree(view, path, reload, excluded_paths, folded_paths, depth) != 0)
 	{
+		if(!reload)
+		{
+			trie_free(folded_paths);
+		}
 		return 1;
 	}
 
@@ -3895,17 +3909,18 @@ flist_load_tree_internal(view_t *view, const char path[], int reload)
 		view->custom.excluded_paths = trie_create();
 
 		trie_free(view->custom.folded_paths);
-		view->custom.folded_paths = trie_create();
+		view->custom.folded_paths = folded_paths;
 	}
 
 	return 0;
 }
 
 /* (Re)loads tree at path into the view using specified list of excluded files.
- * Returns zero on success, otherwise non-zero is returned. */
+ * The depth parameter can be used to limit nesting level (>= 0).  Returns zero
+ * on success, otherwise non-zero is returned. */
 static int
 make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths,
-		trie_t *folded_paths)
+		trie_t *folded_paths, int depth)
 {
 	char canonic_path[PATH_MAX + 1];
 	int nfiltered;
@@ -3927,7 +3942,7 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths,
 	else
 	{
 		nfiltered = add_files_recursively(view, path, excluded_paths, folded_paths,
-				-1, 0);
+				-1, 0, depth);
 		type = CV_TREE;
 	}
 	ui_cancellation_pop();
@@ -4122,12 +4137,13 @@ drop_tops(view_t *view, dir_entry_t *entries, int *nentries, int extra)
 }
 
 /* Adds custom view entries corresponding to file system tree.  parent_pos is
- * expected to be negative for the outermost invocation.  Returns number of
- * filtered out files on success or partial success and negative value on
- * serious error. */
+ * expected to be negative for the outermost invocation.  The depth parameter
+ * is used to limit nesting level, when it's negative, parent node is just
+ * marked as folded.  Returns number of filtered out files on success or partial
+ * success and negative value on serious error. */
 static int
 add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
-		trie_t *folded_paths, int parent_pos, int no_direct_parent)
+		trie_t *folded_paths, int parent_pos, int no_direct_parent, int depth)
 {
 	int i;
 	const int prev_count = view->custom.entry_count;
@@ -4158,11 +4174,11 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		{
 			/* Traverse directory (but not symlink to it) even if we're skipping it,
 			 * because we might need files that are inside of it. */
-			if(dir && !is_symlink(full_path) &&
+			if(dir && depth > 0 && !is_symlink(full_path) &&
 					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
 				nfiltered += add_files_recursively(view, full_path, excluded_paths,
-						folded_paths, parent_pos, 1);
+						folded_paths, parent_pos, 1, depth - 1);
 			}
 
 			free(full_path);
@@ -4190,17 +4206,27 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		             && dummy != NULL;
 		if(entry->type == FT_DIR && !entry->folded)
 		{
-			const int idx = view->custom.entry_count - 1;
-			const int filtered = add_files_recursively(view, full_path,
-					excluded_paths, folded_paths, idx, 0);
-			/* Keep going in case of error and load partial list. */
-			if(filtered >= 0)
+			if(depth == 0)
 			{
-				/* If one of recursive calls returned error, keep going and build
-				 * partial tree. */
-				view->custom.entries[idx].child_count = (view->custom.entry_count - 1)
-				                                      - idx;
-				nfiltered += filtered;
+				if(trie_set(folded_paths, full_path, &folded_marker) >= 0)
+				{
+					entry->folded = 1;
+				}
+			}
+			else
+			{
+				const int idx = view->custom.entry_count - 1;
+				const int filtered = add_files_recursively(view, full_path,
+						excluded_paths, folded_paths, idx, 0, depth - 1);
+				/* Keep going in case of error and load partial list. */
+				if(filtered >= 0)
+				{
+					/* If one of recursive calls returned error, keep going and build
+					* partial tree. */
+					view->custom.entries[idx].child_count = (view->custom.entry_count - 1)
+					                                      - idx;
+					nfiltered += filtered;
+				}
 			}
 		}
 
