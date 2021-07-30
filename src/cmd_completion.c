@@ -99,6 +99,7 @@ static void complete_expr(const char str[], const char **start);
 static void complete_compare(const char str[]);
 static void complete_selective_sync(const char str[]);
 static void complete_wincmd(const char str[]);
+static void complete_tree(const char *str);
 static void complete_help(const char *str);
 static void complete_history(const char str[]);
 static void complete_invert(const char str[]);
@@ -183,6 +184,10 @@ non_path_completion(completion_data_t *data)
 	else if(command_accepts_expr(id))
 	{
 		complete_expr(arg, &data->start);
+	}
+	else if(id == COM_TREE)
+	{
+		complete_tree(arg);
 	}
 	else if(id == COM_UNLET)
 		complete_variables(arg, &data->start);
@@ -537,6 +542,17 @@ complete_wincmd(const char str[])
 		{ "|", "set current view size to count" },
 		{ "_", "set current view size to count" },
 		{ "=", "make size of two views equal" },
+	};
+
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
+}
+
+/* Completes arguments of :tree. */
+static void
+complete_tree(const char str[])
+{
+	static const char *lines[][2] = {
+		{ "depth=", "maximum node nesting level before folding" },
 	};
 
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);

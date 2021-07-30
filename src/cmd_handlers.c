@@ -861,7 +861,7 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display trash directories",
 	  .flags = HAS_COMMENT | HAS_QMARK_NO_ARGS,
 	  .handler = &trashes_cmd,     .min_args = 0,   .max_args = 0, },
-	{ .name = "tree",              .abbr = NULL,    .id = -1,
+	{ .name = "tree",              .abbr = NULL,    .id = COM_TREE,
 	  .descr = "display filesystem as a tree",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &tree_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
