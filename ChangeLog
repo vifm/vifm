@@ -71,6 +71,8 @@
 	implementation is not optimal at this moment though.  Thanks to
 	filterfalse, Ben Lu (a.k.a. ayroblu), RR0925 and Alexandre Viau.
 
+	Added "depth=N" parameter to the :tree command.  Thanks to filterfalse.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

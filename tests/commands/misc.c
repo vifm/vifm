@@ -725,6 +725,14 @@ TEST(tree_command)
 {
 	strcpy(lwin.curr_dir, sandbox);
 
+	/* Invalid input. */
+	assert_failure(exec_commands("tree nesting=0", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+	assert_string_equal("Invalid argument: nesting=0", ui_sb_last());
+	assert_failure(exec_commands("tree depth=0", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+	assert_string_equal("Invalid depth: 0", ui_sb_last());
+
 	/* :tree enters tree mode. */
 	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
@@ -743,6 +751,24 @@ TEST(tree_command)
 	assert_success(exec_commands("tree!", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 	assert_true(cv_tree(lwin.custom.type));
+
+	/* Limited nesting. */
+
+	char sub_path[PATH_MAX + 1];
+	snprintf(sub_path, sizeof(sub_path), "%s/sub", sandbox);
+	create_dir(sub_path);
+
+	char sub_sub_path[PATH_MAX + 1];
+	snprintf(sub_sub_path, sizeof(sub_sub_path), "%s/sub/sub", sandbox);
+	create_dir(sub_sub_path);
+
+	assert_success(exec_commands("tree depth=1", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+	assert_true(cv_tree(lwin.custom.type));
+	assert_int_equal(1, lwin.list_rows);
+
+	remove_dir(sub_sub_path);
+	remove_dir(sub_path);
 }
 
 TEST(regular_command)

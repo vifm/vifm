@@ -298,6 +298,7 @@ static int get_at(const view_t *view, const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int trashes_cmd(const cmd_info_t *cmd_info);
 static int tree_cmd(const cmd_info_t *cmd_info);
+static int parse_tree_properties(const cmd_info_t *cmd_info, int *depth);
 static int undolist_cmd(const cmd_info_t *cmd_info);
 static int unlet_cmd(const cmd_info_t *cmd_info);
 static int unmap_cmd(const cmd_info_t *cmd_info);
@@ -863,7 +864,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "tree",              .abbr = NULL,    .id = -1,
 	  .descr = "display filesystem as a tree",
 	  .flags = HAS_EMARK | HAS_COMMENT,
-	  .handler = &tree_cmd,        .min_args = 0,   .max_args = 0, },
+	  .handler = &tree_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "undolist",          .abbr = "undol", .id = -1,
 	  .descr = "display list of operations",
 	  .flags = HAS_EMARK | HAS_COMMENT,
@@ -4636,11 +4637,50 @@ tree_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->emark && in_tree)
 	{
 		rn_leave(curr_view, 1);
+		return 0;
 	}
-	else
+
+	int depth;
+	if(parse_tree_properties(cmd_info, &depth) != 0)
 	{
-		(void)flist_load_tree(curr_view, flist_get_dir(curr_view), INT_MAX);
+			return CMDS_ERR_CUSTOM;
 	}
+
+	(void)flist_load_tree(curr_view, flist_get_dir(curr_view), depth);
+	return 0;
+}
+
+/* Parses properties of atree.  Default values are set by the function.  Returns
+ * zero on success, otherwise non-zero is returned and error message is
+ * displayed on the status bar. */
+static int
+parse_tree_properties(const cmd_info_t *cmd_info, int *depth)
+{
+	*depth = INT_MAX;
+
+	int i;
+	for(i = 0; i < cmd_info->argc; ++i)
+	{
+		const char *arg = cmd_info->argv[i];
+		if(skip_prefix(&arg, "depth="))
+		{
+			char *endptr;
+			const long value = strtol(arg, &endptr, 10);
+			if(*endptr != '\0' || value < 1)
+			{
+				ui_sb_errf("Invalid depth: %s", arg);
+				return 1;
+			}
+
+			*depth = value - 1;
+		}
+		else
+		{
+			ui_sb_errf("Invalid argument: %s", arg);
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
