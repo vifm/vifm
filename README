@@ -1,21 +1,21 @@
-Vifm - vi[m] like file manager
+Vifm - Vim like file manager
 2001 - 2021
 
 Version: 0.11
 
-This file last updated: 24 September, 2020
+This file last updated: 1 August, 2021
 
 Brief Description
 
-    Vifm is a vi[m] like file manager with curses interface extended with some
-    useful ideas from mutt.  If you use vi[m], vifm gives you complete keyboard
+    Vifm is a Vim-like file manager with curses interface extended with some
+    useful ideas from mutt.  If you use Vim, Vifm gives you complete keyboard
     control over your files without having to learn a new set of commands.  It
-    goes not just about vi[m] like keybindings, but also about modes, options,
-    registers, commands and other things you might already like in vi[m].
+    goes not just about Vim-like keybindings, but also about modes, options,
+    registers, commands and other things you might already like in Vim.
 
-    Just like vi[m], vifm tries to adhere to the Unix philosophy.  So instead of
+    Just like Vim, Vifm tries to adhere to the Unix philosophy.  So instead of
     working solutions which are set in stone user is provided with a set of
-    means for customization of vifm to one's likings.  Though builtin
+    means for customization of Vifm to one's likings.  Though builtin
     functionality should be enough for most of use cases.
 
 Contacts

@@ -1,22 +1,22 @@
-|  appveyor  | fragile-ci | coveralls  |   uncov    |
-|------------|------------|------------|------------|
-|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
+# Vifm – Vim-like file manager
 
-### **vifm** - vi[m] like file manager, _v0.11_, _2001 – 2021_
+![Vifm logo](data/graphics/vifm-96px.png)
 
-_This file last updated on 6 January, 2021_
+[![][AA]][A]  [![][FF]][F]  [![][CC]][C]  [![][UU]][U]
+
+_Latest release is 0.11.  This file last updated on 1 August, 2021._
 
 ## Brief Description ##
 
-**Vifm** is a curses based vi[m] like file manager extended with some useful
-ideas from mutt.  If you use vi[m], vifm gives you complete keyboard control
+**Vifm** is a curses based Vim-like file manager extended with some useful
+ideas from mutt.  If you use Vim, Vifm gives you complete keyboard control
 over your files without having to learn a new set of commands.  It goes not
-just about vi[m] like keybindings, but also about modes, options, registers,
-commands and other things you might already like in vi[m].
+just about Vim-like keybindings, but also about modes, options, registers,
+commands and other things you might already like in Vim.
 
-Just like vi[m], vifm tries to adhere to the Unix philosophy.  So instead of
+Just like Vim, Vifm tries to adhere to the Unix philosophy.  So instead of
 working solutions which are set in stone user is provided with a set of
-means for customization of vifm to one's likings.  Though builtin
+means for customization of Vifm to one's likings.  Though builtin
 functionality should be enough for most of use cases.
 
 ## Resources and Contacts ##
@@ -29,7 +29,7 @@ functionality should be enough for most of use cases.
 
 ### Communication ###
 
-| Reason                                           | Source                                                          |
+| Reason                                           | Channel                                                         |
 | :-------:                                        | :------:                                                        |
 | Bugs & Feature Requests                          | [GitHub][bugs-gh], [SourceForge][bugs-sf] or via [email][email] |
 | Preferred place for asking usage questions       | Posting on the [Q&A][q2a] site                                  |
@@ -40,7 +40,7 @@ functionality should be enough for most of use cases.
 | Usage                     | Where to find                                                                                      |
 | :---:                     | :---:                                                                                              |
 | Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                                                       |
-| Plugin                    | [Repository][vim-plugin]                                                                           |
+| Vim Plugin                | [Repository][vim-plugin]                                                                           |
 | Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]                               |
 | Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                                               |
 | vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)                            |
