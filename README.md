@@ -29,7 +29,7 @@ functionality should be enough for most of use cases.
 
 ### Communication ###
 
-| Reason                                           | Source                                                          |
+| Reason                                           | Channel                                                         |
 | :-------:                                        | :------:                                                        |
 | Bugs & Feature Requests                          | [GitHub][bugs-gh], [SourceForge][bugs-sf] or via [email][email] |
 | Preferred place for asking usage questions       | Posting on the [Q&A][q2a] site                                  |
@@ -40,7 +40,7 @@ functionality should be enough for most of use cases.
 | Usage                     | Where to find                                                                                      |
 | :---:                     | :---:                                                                                              |
 | Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                                                       |
-| Plugin                    | [Repository][vim-plugin]                                                                           |
+| Vim Plugin                | [Repository][vim-plugin]                                                                           |
 | Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]                               |
 | Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                                               |
 | vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)                            |
