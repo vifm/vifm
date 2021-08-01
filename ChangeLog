@@ -203,6 +203,9 @@
 	Fixed number of filtered files not being updated in tree views on pressing
 	zf key.
 
+	Fixed "Building tree..." message not restoring contents of statusbar in
+	command-line mode.  Thanks to filterfalse.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
