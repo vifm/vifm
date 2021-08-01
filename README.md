@@ -2,21 +2,21 @@
 |------------|------------|------------|------------|
 |[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
 
-### **vifm** - vi[m] like file manager, _v0.11_, _2001 – 2021_
+### Vifm – Vim-like file manager, _v0.11_, _2001 – 2021_
 
-_This file last updated on 6 January, 2021_
+_This file last updated on 1 August, 2021_
 
 ## Brief Description ##
 
-**Vifm** is a curses based vi[m] like file manager extended with some useful
-ideas from mutt.  If you use vi[m], vifm gives you complete keyboard control
+**Vifm** is a curses based Vim-like file manager extended with some useful
+ideas from mutt.  If you use Vim, Vifm gives you complete keyboard control
 over your files without having to learn a new set of commands.  It goes not
-just about vi[m] like keybindings, but also about modes, options, registers,
-commands and other things you might already like in vi[m].
+just about Vim-like keybindings, but also about modes, options, registers,
+commands and other things you might already like in Vim.
 
-Just like vi[m], vifm tries to adhere to the Unix philosophy.  So instead of
+Just like Vim, Vifm tries to adhere to the Unix philosophy.  So instead of
 working solutions which are set in stone user is provided with a set of
-means for customization of vifm to one's likings.  Though builtin
+means for customization of Vifm to one's likings.  Though builtin
 functionality should be enough for most of use cases.
 
 ## Resources and Contacts ##
