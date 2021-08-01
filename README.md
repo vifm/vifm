@@ -1,10 +1,10 @@
-|  appveyor  | fragile-ci | coveralls  |   uncov    |
-|------------|------------|------------|------------|
-|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
+# Vifm – Vim-like file manager
 
-### Vifm – Vim-like file manager, _v0.11_, _2001 – 2021_
+![Vifm logo](data/graphics/vifm-96px.png)
 
-_This file last updated on 1 August, 2021_
+[![][AA]][A]  [![][FF]][F]  [![][CC]][C]  [![][UU]][U]
+
+_Latest release is 0.11.  This file last updated on 1 August, 2021._
 
 ## Brief Description ##
 
