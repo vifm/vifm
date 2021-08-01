@@ -4177,8 +4177,11 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 			if(dir && depth > 0 && !is_symlink(full_path) &&
 					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
-				nfiltered += add_files_recursively(view, full_path, excluded_paths,
-						folded_paths, parent_pos, 1, depth - 1);
+				if(trie_get(folded_paths, full_path, &dummy) != 0 || dummy == NULL)
+				{
+					nfiltered += add_files_recursively(view, full_path, excluded_paths,
+							folded_paths, parent_pos, 1, depth - 1);
+				}
 			}
 
 			free(full_path);
