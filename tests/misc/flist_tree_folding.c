@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <stdarg.h> /* va_list va_start() va_arg() va_end() */
+
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -18,6 +20,7 @@
 
 static void column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info);
+static int build_custom_view(view_t *view, ...);
 static void toggle_fold_and_update(view_t *view);
 
 static char cwd[PATH_MAX + 1];
@@ -60,13 +63,10 @@ TEST(no_folding_in_non_cv)
 
 TEST(no_folding_for_non_dirs)
 {
-	char path[PATH_MAX + 1];
-	flist_custom_start(&lwin, "test");
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/file4", cwd);
-	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_true(build_custom_view(&lwin,
+				"tree/dir1/dir2",
+				"tree/dir1/file4",
+				(const char *)NULL) == 0);
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
 	assert_int_equal(3, lwin.list_rows);
@@ -107,14 +107,10 @@ TEST(folding_of_directories)
 
 TEST(folding_two_tree_out_of_cv)
 {
-	char path[PATH_MAX + 1];
-	flist_custom_start(&lwin, "test");
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4/file3",
-			cwd);
-	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_true(build_custom_view(&lwin,
+				"tree/dir1/dir2/dir4",
+				"tree/dir1/dir2/dir4/file3",
+				(const char *)NULL) == 0);
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
 	assert_int_equal(2, lwin.list_rows);
@@ -133,17 +129,11 @@ TEST(folding_two_tree_out_of_cv)
 
 TEST(unfolding_accounts_for_sorting)
 {
-	char path[PATH_MAX + 1];
-	flist_custom_start(&lwin, "test");
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file1",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file2",
-			cwd);
-	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_true(build_custom_view(&lwin,
+				"tree/dir1/dir2/dir3",
+				"tree/dir1/dir2/dir3/file1",
+				"tree/dir1/dir2/dir3/file2",
+				(const char *)NULL) == 0);
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
 	assert_int_equal(3, lwin.list_rows);
@@ -169,22 +159,13 @@ TEST(unfolding_accounts_for_sorting)
 
 TEST(folding_five_tree_out_of_cv)
 {
-	char path[PATH_MAX + 1];
-	flist_custom_start(&lwin, "test");
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file1",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file2",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4/file3",
-			cwd);
-	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_true(build_custom_view(&lwin,
+				"tree/dir1/dir2/dir3",
+				"tree/dir1/dir2/dir3/file1",
+				"tree/dir1/dir2/dir3/file2",
+				"tree/dir1/dir2/dir4",
+				"tree/dir1/dir2/dir4/file3",
+				(const char *)NULL) == 0);
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH, cwd));
 	assert_int_equal(6, lwin.list_rows);
@@ -206,22 +187,13 @@ TEST(folding_five_tree_out_of_cv)
 
 TEST(folds_of_custom_tree_are_not_lost_on_filtering)
 {
-	char path[PATH_MAX + 1];
-	flist_custom_start(&lwin, "test");
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file1",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file2",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4/file3",
-			cwd);
-	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_true(build_custom_view(&lwin,
+				"tree/dir1/dir2/dir3",
+				"tree/dir1/dir2/dir3/file1",
+				"tree/dir1/dir2/dir3/file2",
+				"tree/dir1/dir2/dir4",
+				"tree/dir1/dir2/dir4/file3",
+				(const char *)NULL) == 0);
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH, cwd));
 	assert_int_equal(6, lwin.list_rows);
@@ -257,37 +229,20 @@ TEST(folds_of_custom_tree_are_not_lost_on_filtering)
  * and tree reloading. */
 TEST(folding_grind)
 {
-	char path[PATH_MAX + 1];
-	flist_custom_start(&lwin, "test");
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/file4", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file1",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir3/file2",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir1/dir2/dir4/file3",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir5", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir5/.nested_hidden",
-			cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/dir5/file5", cwd);
-	flist_custom_add(&lwin, path);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "tree/.hidden", cwd);
-	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_true(build_custom_view(&lwin,
+				"tree/dir1",
+				"tree/dir1/file4",
+				"tree/dir1/dir2",
+				"tree/dir1/dir2/dir3",
+				"tree/dir1/dir2/dir3/file1",
+				"tree/dir1/dir2/dir3/file2",
+				"tree/dir1/dir2/dir4",
+				"tree/dir1/dir2/dir4/file3",
+				"tree/dir5",
+				"tree/dir5/.nested_hidden",
+				"tree/dir5/file5",
+				"tree/.hidden",
+				(const char *)NULL) == 0);
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", cwd));
 	assert_int_equal(CV_CUSTOM_TREE, lwin.custom.type);
@@ -346,6 +301,27 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */
+}
+
+static int
+build_custom_view(view_t *view, ...)
+{
+	va_list ap;
+	va_start(ap, view);
+
+	flist_custom_start(view, "test");
+
+	const char *rel_path;
+	while((rel_path = va_arg(ap, const char *)) != NULL)
+	{
+		char path[PATH_MAX + 1];
+		make_abs_path(path, sizeof(path), TEST_DATA_PATH, rel_path, cwd);
+		flist_custom_add(view, path);
+	}
+
+	va_end(ap);
+
+	return flist_custom_finish(view, CV_REGULAR, 0);
 }
 
 static void
