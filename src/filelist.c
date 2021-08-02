@@ -3803,6 +3803,17 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 	}
 
 	free(old_name);
+
+	/* Cloning of a folded directory should produce a folded clone. */
+	if(entry->folded)
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(trie_set(view->custom.folded_paths, full_path, &folded_marker) < 0)
+		{
+			entry->folded = 0;
+		}
+	}
 }
 
 int
