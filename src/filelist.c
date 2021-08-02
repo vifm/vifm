@@ -1459,6 +1459,14 @@ flist_custom_save(view_t *view)
 	{
 		replace_dir_entries(view, &view->custom.full.entries,
 				&view->custom.full.nentries, view->dir_entry, view->list_rows);
+
+		/* Some flags shouldn't be copied to the full list. */
+		int i;
+		for(i = 0; i < view->list_rows; ++i)
+		{
+			view->custom.full.entries[i].selected = 0;
+			view->custom.full.entries[i].folded = 0;
+		}
 	}
 }
 
@@ -1851,8 +1859,6 @@ populate_custom_view(view_t *view, int reload)
 
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
 					view->custom.full.entries, view->custom.full.nentries);
-			/* Selection of the original list shouldn't be restored. */
-			flist_sel_drop(view);
 
 			/* We're merging instead of simply replacing entries to account for
 			 * selection and possibly other attributes of entries.  Merging also takes
@@ -2982,11 +2988,10 @@ flist_toggle_fold(view_t *view)
 	(void)trie_get(view->custom.folded_paths, full_path, &folded);
 	assert(curr->folded == (folded != NULL) && "Metadata is not in sync.");
 
-	curr->folded = !curr->folded;
-
-	folded = (curr->folded ? &folded_marker : NULL);
+	folded = (curr->folded ? NULL : &folded_marker);
 	if(trie_set(view->custom.folded_paths, full_path, folded) >= 0)
 	{
+		curr->folded = !curr->folded;
 		/* We reload even on folding to update number of filtered entries
 		 * properly. */
 		ui_view_schedule_reload(view);
@@ -3803,6 +3808,17 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 	}
 
 	free(old_name);
+
+	/* Cloning of a folded directory should produce a folded clone. */
+	if(entry->folded)
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(trie_set(view->custom.folded_paths, full_path, &folded_marker) < 0)
+		{
+			entry->folded = 0;
+		}
+	}
 }
 
 int
@@ -4177,8 +4193,11 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 			if(dir && depth > 0 && !is_symlink(full_path) &&
 					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
-				nfiltered += add_files_recursively(view, full_path, excluded_paths,
-						folded_paths, parent_pos, 1, depth - 1);
+				if(trie_get(folded_paths, full_path, &dummy) != 0 || dummy == NULL)
+				{
+					nfiltered += add_files_recursively(view, full_path, excluded_paths,
+							folded_paths, parent_pos, 1, depth - 1);
+				}
 			}
 
 			free(full_path);

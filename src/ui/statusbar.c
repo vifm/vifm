@@ -26,6 +26,7 @@
 #include <string.h> /* strcat() strchr() strcmp() strcpy() strdup() strncpy() */
 
 #include "../cfg/config.h"
+#include "../engine/mode.h"
 #include "../modes/modes.h"
 #include "../modes/more.h"
 #include "../utils/macros.h"
@@ -106,6 +107,12 @@ ui_sb_quick_msg_clear(void)
 	else
 	{
 		ui_sb_quick_msgf("%s", "");
+	}
+
+	if(vle_mode_is(CMDLINE_MODE))
+	{
+		/* Restore previous contents of the statusbar. */
+		stats_redraw_later();
 	}
 }
 

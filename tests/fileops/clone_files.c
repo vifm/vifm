@@ -140,6 +140,38 @@ TEST(cloning_does_not_work_in_custom_view)
 	assert_success(unlink("do-not-clone-me"));
 }
 
+TEST(cloning_folded_dir)
+{
+	create_dir("dir");
+	create_file("dir/a");
+
+	flist_load_tree(&lwin, ".", INT_MAX);
+	assert_int_equal(2, lwin.list_rows);
+	lwin.list_pos = 0;
+
+	flist_toggle_fold(&lwin);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(1, lwin.list_rows);
+
+	lwin.dir_entry[0].marked = 1;
+	(void)fops_clone(&lwin, NULL, 0, 0, 1);
+
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	flist_toggle_fold(&lwin);
+	lwin.list_pos = 0;
+	flist_toggle_fold(&lwin);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(4, lwin.list_rows);
+
+	assert_success(unlink("dir(1)/a"));
+	assert_success(unlink("dir/a"));
+	assert_success(rmdir("dir"));
+	assert_success(rmdir("dir(1)"));
+}
+
 TEST(cloning_of_broken_symlink, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
