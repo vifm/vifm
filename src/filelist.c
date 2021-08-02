@@ -1459,6 +1459,14 @@ flist_custom_save(view_t *view)
 	{
 		replace_dir_entries(view, &view->custom.full.entries,
 				&view->custom.full.nentries, view->dir_entry, view->list_rows);
+
+		/* Some flags shouldn't be copied to the full list. */
+		int i;
+		for(i = 0; i < view->list_rows; ++i)
+		{
+			view->custom.full.entries[i].selected = 0;
+			view->custom.full.entries[i].folded = 0;
+		}
 	}
 }
 
@@ -1851,8 +1859,6 @@ populate_custom_view(view_t *view, int reload)
 
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
 					view->custom.full.entries, view->custom.full.nentries);
-			/* Selection of the original list shouldn't be restored. */
-			flist_sel_drop(view);
 
 			/* We're merging instead of simply replacing entries to account for
 			 * selection and possibly other attributes of entries.  Merging also takes

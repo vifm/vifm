@@ -264,6 +264,49 @@ TEST(local_filter_respects_custom_tree_folds)
 	assert_string_equal("..", lwin.dir_entry[0].name);
 }
 
+TEST(folding_parent_does_not_mess_up_children)
+{
+	assert_true(build_custom_view(&lwin,
+				"tree/dir1",
+				"tree/dir1/file4",
+				"tree/dir5",
+				"tree/dir5/file5",
+				(const char *)NULL) == 0);
+
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", cwd));
+	assert_int_equal(5, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(4, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(5, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("tree", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(1, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("tree", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(5, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(4, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(5, lwin.list_rows);
+}
+
 /* This test mixes different trees and does reloading to verify resource uses
  * and tree reloading. */
 TEST(folding_grind)
