@@ -2988,11 +2988,10 @@ flist_toggle_fold(view_t *view)
 	(void)trie_get(view->custom.folded_paths, full_path, &folded);
 	assert(curr->folded == (folded != NULL) && "Metadata is not in sync.");
 
-	curr->folded = !curr->folded;
-
-	folded = (curr->folded ? &folded_marker : NULL);
+	folded = (curr->folded ? NULL : &folded_marker);
 	if(trie_set(view->custom.folded_paths, full_path, folded) >= 0)
 	{
+		curr->folded = !curr->folded;
 		/* We reload even on folding to update number of filtered entries
 		 * properly. */
 		ui_view_schedule_reload(view);
