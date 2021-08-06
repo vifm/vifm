@@ -96,8 +96,7 @@ void
 cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 {
 	cchar_t def_attr;
-	setcchar(&def_attr, L" ", def_col->attr,
-			colmgr_get_pair(def_col->fg, def_col->bg), NULL);
+	setcchar(&def_attr, L" ", def_col->attr, cs_load_color(def_col), NULL);
 
 	const char *line = cline->line;
 	const char *attrs = cline->attrs;
@@ -114,7 +113,7 @@ cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 			const int color = (USER1_COLOR + (*attrs - '1'));
 			col_attr_t col = *def_col;
 			cs_mix_colors(&col, &cfg.cs.color[color]);
-			setcchar(&attr, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+			setcchar(&attr, L" ", col.attr, cs_load_color(&col), NULL);
 		}
 
 		const size_t len = utf8_chrw(line);

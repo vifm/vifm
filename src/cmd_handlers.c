@@ -2830,7 +2830,7 @@ highlight_group(const cmd_info_t *cmd_info)
 	}
 
 	*color = tmp_color;
-	curr_stats.cs->pair[group_id] = colmgr_get_pair(color->fg, color->bg);
+	curr_stats.cs->pair[group_id] = cs_load_color(color);
 
 	/* Other highlight commands might have finished successfully, so update TUI.
 	 * Request full update instead of redraw to force recalculation of mixed

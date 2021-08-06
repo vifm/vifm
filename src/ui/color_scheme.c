@@ -1000,7 +1000,7 @@ load_color_pairs(col_scheme_t *cs)
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
-		cs->pair[i] = colmgr_get_pair(cs->color[i].fg, cs->color[i].bg);
+		cs->pair[i] = cs_load_color(&cs->color[i]);
 	}
 }
 
@@ -1207,6 +1207,12 @@ int
 cs_is_color_set(const col_attr_t *color)
 {
 	return color->fg != -1 || color->bg != -1 || color->attr != -1;
+}
+
+int
+cs_load_color(const col_attr_t *color)
+{
+	return colmgr_get_pair(color->fg, color->bg);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

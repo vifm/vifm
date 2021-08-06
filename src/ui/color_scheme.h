@@ -159,6 +159,10 @@ int cs_del_file_hi(const char matchers_expr[]);
  * non-zero if so, otherwise zero is returned. */
 int cs_is_color_set(const col_attr_t *color);
 
+/* Loads a color into a color pair.  Returns the pair (falls back to pair 0 in
+ * case of failure). */
+int cs_load_color(const col_attr_t *color);
+
 #endif /* VIFM__UI__COLOR_SCHEME_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

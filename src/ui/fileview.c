@@ -909,7 +909,7 @@ prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 	cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 
 	cchar_t cch;
-	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+	setcchar(&cch, L" ", col.attr, cs_load_color(&col), NULL);
 	return cch;
 }
 
@@ -1353,7 +1353,7 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 	}
 
 	cchar_t cch;
-	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+	setcchar(&cch, L" ", col.attr, cs_load_color(&col), NULL);
 	return cch;
 }
 

@@ -2595,7 +2595,7 @@ ui_set_bg(WINDOW *win, const col_attr_t *col, int pair)
 
 	if(pair < 0)
 	{
-		pair = colmgr_get_pair(col->fg, col->bg);
+		pair = cs_load_color(col);
 	}
 
 	cchar_t bg;
@@ -2614,12 +2614,12 @@ ui_set_attr(WINDOW *win, const col_attr_t *col, int pair)
 
 	if(pair < 0)
 	{
-		pair = colmgr_get_pair(col->fg, col->bg);
+		pair = cs_load_color(col);
 	}
 
 	/* Compiler complains about unused result of comma operator, because
 	 * wattr_set() is a macro and it uses comma to evaluate multiple expresions.
-	 * So cast result to void.*/
+	 * So cast result to void. */
 	(void)wattr_set(win, col->attr, pair, NULL);
 }
 

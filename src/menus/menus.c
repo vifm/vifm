@@ -466,7 +466,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	{
 		cs_mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
 	}
-	int color_pair = colmgr_get_pair(col.fg, col.bg);
+	int color_pair = cs_load_color(&col);
 
 	/* Calculate offset of m->hor_pos's character in item text. */
 	off = 0;
