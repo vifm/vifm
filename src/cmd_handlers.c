@@ -62,7 +62,6 @@
 #include "menus/menus.h"
 #include "modes/modes.h"
 #include "modes/wk.h"
-#include "ui/color_manager.h"
 #include "ui/color_scheme.h"
 #include "ui/colors.h"
 #include "ui/fileview.h"

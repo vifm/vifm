@@ -25,7 +25,6 @@
 #include "../cfg/config.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
-#include "color_manager.h"
 #include "color_scheme.h"
 #include "ui.h"
 

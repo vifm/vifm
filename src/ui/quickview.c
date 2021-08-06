@@ -51,7 +51,6 @@
 #include "../types.h"
 #include "../vcache.h"
 #include "cancellation.h"
-#include "color_manager.h"
 #include "color_scheme.h"
 #include "colors.h"
 #include "escape.h"

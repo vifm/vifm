@@ -47,7 +47,6 @@
 #include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
-#include "color_manager.h"
 #include "color_scheme.h"
 #include "colored_line.h"
 #include "ui.h"

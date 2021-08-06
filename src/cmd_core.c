@@ -50,7 +50,6 @@
 #include "modes/normal.h"
 #include "modes/view.h"
 #include "modes/visual.h"
-#include "ui/color_manager.h"
 #include "ui/color_scheme.h"
 #include "ui/colors.h"
 #include "ui/fileview.h"

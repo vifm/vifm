@@ -40,7 +40,6 @@
 #include "../modes/menu.h"
 #include "../modes/modes.h"
 #include "../ui/cancellation.h"
-#include "../ui/color_manager.h"
 #include "../ui/color_scheme.h"
 #include "../ui/colors.h"
 #include "../ui/statusbar.h"

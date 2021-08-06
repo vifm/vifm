@@ -49,7 +49,6 @@
 #include "../flist_pos.h"
 #include "../opt_handlers.h"
 #include "../sort.h"
-#include "color_manager.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "quickview.h"
