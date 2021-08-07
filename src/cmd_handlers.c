@@ -206,7 +206,7 @@ static const char * get_file_hi_str(const matchers_t *matchers,
 static const char * get_hi_str(const char title[], const col_attr_t *col);
 static int parse_file_highlight(const cmd_info_t *cmd_info,
 		col_attr_t *color);
-static int try_parse_color_name_value(const char str[], int fg,
+static int try_parse_cterm_color(const char str[], int is_fg,
 		col_attr_t *color);
 static int parse_color_name_value(const char str[], int fg, int *attr);
 static int get_attrs(const char text[], int *combine_attrs);
@@ -2941,14 +2941,14 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 
 		if(strcmp(arg_name, "ctermbg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 0, color) != 0)
+			if(try_parse_cterm_color(equal + 1, 0, color) != 0)
 			{
 				return 1;
 			}
 		}
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 1, color) != 0)
+			if(try_parse_cterm_color(equal + 1, 1, color) != 0)
 			{
 				return 1;
 			}
@@ -2981,13 +2981,13 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 	return 0;
 }
 
-/* Tries to parse color name value into a number.  Returns non-zero if status
- * bar message should be preserved, otherwise zero is returned. */
+/* Tries to parse color number or color name.  Returns non-zero if status bar
+ * message should be preserved, otherwise zero is returned. */
 static int
-try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
+try_parse_cterm_color(const char str[], int is_fg, col_attr_t *color)
 {
 	col_scheme_t *const cs = curr_stats.cs;
-	const int col_num = parse_color_name_value(str, fg, &color->attr);
+	const int col_num = parse_color_name_value(str, is_fg, &color->attr);
 
 	if(col_num < -1)
 	{
@@ -3000,7 +3000,7 @@ try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
 		return 1;
 	}
 
-	if(fg)
+	if(is_fg)
 	{
 		color->fg = col_num;
 	}
