@@ -20,6 +20,7 @@
 #ifndef VIFM__UI__COLOR_SCHEME_H__
 #define VIFM__UI__COLOR_SCHEME_H__
 
+#include <curses.h> /* cchar_t */
 #include <regex.h> /* regex_t */
 
 #include <stddef.h> /* size_t */
@@ -166,6 +167,10 @@ int cs_load_color(const col_attr_t *color);
 /* Retrieves correct attributes of the color (its cterm or gui version).
  * Returns the attribute. */
 int cs_color_get_attr(const col_attr_t *color);
+
+/* Produces a cchar for a specified color.  Allocates pair if passed in pair
+ * number is negative.  Returns the cchar. */
+cchar_t cs_color_to_cchar(const col_attr_t *color, int pair);
 
 #endif /* VIFM__UI__COLOR_SCHEME_H__ */
 

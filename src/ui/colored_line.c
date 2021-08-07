@@ -94,8 +94,7 @@ cline_splice_attrs(cline_t *cline, cline_t *admixture)
 void
 cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 {
-	cchar_t def_attr;
-	setcchar(&def_attr, L" ", def_col->attr, cs_load_color(def_col), NULL);
+	const cchar_t def_attr = cs_color_to_cchar(def_col, -1);
 
 	const char *line = cline->line;
 	const char *attrs = cline->attrs;
@@ -112,7 +111,7 @@ cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 			const int color = (USER1_COLOR + (*attrs - '1'));
 			col_attr_t col = *def_col;
 			cs_mix_colors(&col, &cfg.cs.color[color]);
-			setcchar(&attr, L" ", col.attr, cs_load_color(&col), NULL);
+			attr = cs_color_to_cchar(&col, -1);
 		}
 
 		const size_t len = utf8_chrw(line);

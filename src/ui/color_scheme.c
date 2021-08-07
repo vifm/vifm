@@ -1221,5 +1221,18 @@ cs_color_get_attr(const col_attr_t *color)
 	return color->attr;
 }
 
+cchar_t
+cs_color_to_cchar(const col_attr_t *color, int pair)
+{
+	if(pair < 0)
+	{
+		pair = cs_load_color(color);
+	}
+
+	cchar_t cch;
+	setcchar(&cch, L" ", cs_color_get_attr(color), pair, NULL);
+	return cch;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

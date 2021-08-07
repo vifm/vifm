@@ -2588,19 +2588,11 @@ ui_pause(void)
 void
 ui_set_bg(WINDOW *win, const col_attr_t *col, int pair)
 {
-	if(curr_stats.load_stage < 1)
+	if(curr_stats.load_stage >= 1)
 	{
-		return;
+		const cchar_t bg = cs_color_to_cchar(col, pair);
+		wbkgrndset(win, &bg);
 	}
-
-	if(pair < 0)
-	{
-		pair = cs_load_color(col);
-	}
-
-	cchar_t bg;
-	setcchar(&bg, L" ", col->attr, pair, NULL);
-	wbkgrndset(win, &bg);
 }
 
 void
