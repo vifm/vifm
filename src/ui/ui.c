@@ -2620,7 +2620,7 @@ ui_set_attr(WINDOW *win, const col_attr_t *col, int pair)
 	/* Compiler complains about unused result of comma operator, because
 	 * wattr_set() is a macro and it uses comma to evaluate multiple expresions.
 	 * So cast result to void. */
-	(void)wattr_set(win, col->attr, pair, NULL);
+	(void)wattr_set(win, cs_color_get_attr(col), pair, NULL);
 }
 
 void

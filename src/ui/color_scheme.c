@@ -1215,5 +1215,11 @@ cs_load_color(const col_attr_t *color)
 	return colmgr_get_pair(color->fg, color->bg);
 }
 
+int
+cs_color_get_attr(const col_attr_t *color)
+{
+	return color->attr;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

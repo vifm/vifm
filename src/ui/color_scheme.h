@@ -163,6 +163,10 @@ int cs_is_color_set(const col_attr_t *color);
  * case of failure). */
 int cs_load_color(const col_attr_t *color);
 
+/* Retrieves correct attributes of the color (its cterm or gui version).
+ * Returns the attribute. */
+int cs_color_get_attr(const col_attr_t *color);
+
 #endif /* VIFM__UI__COLOR_SCHEME_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
