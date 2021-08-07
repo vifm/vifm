@@ -399,22 +399,22 @@ draw_cmdline_text(line_stats_t *stat)
 		return;
 	}
 
-	int pair = -1;
+	int group = -1;
 	col_attr_t prompt_col = {};
 
 	werase(status_bar);
 
 	switch(input_stat.state)
 	{
-		case PS_NORMAL:        pair = CMD_LINE_COLOR; break;
-		case PS_WRONG_PATTERN: pair = ERROR_MSG_COLOR; break;
-		case PS_NO_MATCH:      pair = CMD_LINE_COLOR;
+		case PS_NORMAL:        group = CMD_LINE_COLOR; break;
+		case PS_WRONG_PATTERN: group = ERROR_MSG_COLOR; break;
+		case PS_NO_MATCH:      group = CMD_LINE_COLOR;
 		                       prompt_col.attr = A_REVERSE;
 		                       break;
 	}
-	prompt_col.attr ^= cfg.cs.color[pair].attr;
+	prompt_col.attr ^= cfg.cs.color[group].attr;
 
-	ui_set_attr(status_bar, &prompt_col, cfg.cs.pair[pair]);
+	ui_set_attr(status_bar, &prompt_col, cfg.cs.pair[group]);
 	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
 
 	ui_set_attr(status_bar, &cfg.cs.color[CMD_LINE_COLOR],
