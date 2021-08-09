@@ -133,8 +133,10 @@ static WINDOW *lborder;
 static WINDOW *mborder;
 static WINDOW *rborder;
 
-static int pair_in_use(short int pair);
-static void move_pair(short int from, short int to);
+static int init_pair_wrapper(int pair, int fg, int bg);
+static int pair_content_wrapper(int pair, int *fg, int *bg);
+static int pair_in_use(int pair);
+static void move_pair(int from, int to);
 static void create_windows(void);
 static void update_geometry(void);
 static int update_start(UpdateType update_kind);
@@ -245,8 +247,8 @@ setup_ncurses_interface(void)
 	const colmgr_conf_t colmgr_conf = {
 		.max_color_pairs = COLOR_PAIRS,
 		.max_colors = COLORS,
-		.init_pair = &init_pair,
-		.pair_content = &pair_content,
+		.init_pair = &init_pair_wrapper,
+		.pair_content = &pair_content_wrapper,
 		.pair_in_use = &pair_in_use,
 		.move_pair = &move_pair,
 	};
@@ -293,10 +295,31 @@ setup_ncurses_interface(void)
 	return 1;
 }
 
+/* Calls init_pair() from libcurses. */
+static int
+init_pair_wrapper(int pair, int fg, int bg)
+{
+	return init_pair(pair, fg, bg);
+}
+
+/* Calls pair_content() from libcurses. */
+static int
+pair_content_wrapper(int pair, int *fg, int *bg)
+{
+	short fg_short, bg_short;
+
+	const int result = pair_content(pair, &fg_short, &bg_short);
+
+	*fg = fg_short;
+	*bg = bg_short;
+
+	return result;
+}
+
 /* Checks whether pair is being used at the moment.  Returns non-zero if so and
  * zero otherwise. */
 static int
-pair_in_use(short int pair)
+pair_in_use(int pair)
 {
 	int i;
 
@@ -314,7 +337,7 @@ pair_in_use(short int pair)
 
 /* Substitutes old pair number with the new one. */
 static void
-move_pair(short int from, short int to)
+move_pair(int from, int to)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; ++i)

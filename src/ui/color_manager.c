@@ -45,7 +45,7 @@ static colmgr_conf_t conf;
 static int initialized;
 
 /* Default foreground and background colors. */
-static short def_fg, def_bg;
+static int def_fg, def_bg;
 
 void
 colmgr_init(const colmgr_conf_t *conf_init)
@@ -135,7 +135,7 @@ find_pair(int fg, int bg)
 static int
 color_pair_matches(int pair, int fg, int bg)
 {
-	short pair_fg, pair_bg;
+	int pair_fg, pair_bg;
 	conf.pair_content(pair, &pair_fg, &pair_bg);
 	return (pair_fg == fg && pair_bg == bg);
 }

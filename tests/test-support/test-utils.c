@@ -58,10 +58,10 @@ static void post(int id);
 static void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static void init_list(view_t *view);
-static int init_pair_stub(short pair, short f, short b);
-static int pair_content_stub(short pair, short *f, short *b);
-static int pair_in_use_stub(short int pair);
-static void move_pair_stub(short int from, short int to);
+static int init_pair_stub(int pair, int f, int b);
+static int pair_content_stub(int pair, int *f, int *b);
+static int pair_in_use_stub(int pair);
+static void move_pair_stub(int from, int to);
 
 void
 fix_environ(void)
@@ -712,13 +712,13 @@ stub_colmgr(void)
 }
 
 static int
-init_pair_stub(short pair, short f, short b)
+init_pair_stub(int pair, int f, int b)
 {
 	return 0;
 }
 
 static int
-pair_content_stub(short pair, short *f, short *b)
+pair_content_stub(int pair, int *f, int *b)
 {
 	*f = 0;
 	*b = 0;
@@ -726,13 +726,13 @@ pair_content_stub(short pair, short *f, short *b)
 }
 
 static int
-pair_in_use_stub(short int pair)
+pair_in_use_stub(int pair)
 {
 	return 0;
 }
 
 static void
-move_pair_stub(short int from, short int to)
+move_pair_stub(int from, int to)
 {
 }
 
