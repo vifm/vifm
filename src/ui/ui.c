@@ -290,6 +290,8 @@ setup_ncurses_interface(void)
 	}
 #endif
 
+	curr_stats.direct_color = (COLORS == 0x1000000);
+
 	ui_resize_all();
 
 	return 1;

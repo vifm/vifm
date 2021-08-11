@@ -154,6 +154,8 @@ load_def_values(status_t *stats, config_t *config)
 	update_string(&stats->preview.cleanup_cmd, NULL);
 	stats->preview.clearing = 0;
 
+	stats->direct_color = 0;
+
 	stats->msg_head = 0;
 	stats->msg_tail = 0;
 	stats->save_msg_in_list = 1;
