@@ -209,6 +209,7 @@ static int parse_file_highlight(const cmd_info_t *cmd_info,
 static int try_parse_cterm_color(const char str[], int is_fg,
 		col_attr_t *color);
 static int parse_color_name_value(const char str[], int fg, int *attr);
+static int is_default_color(const char str[]);
 static int get_attrs(const char text[], int *combine_attrs);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int histnext_cmd(const cmd_info_t *cmd_info);
@@ -3021,8 +3022,7 @@ parse_color_name_value(const char str[], int fg, int *attr)
 	int light_col_pos;
 	int col_num;
 
-	if(strcmp(str, "-1") == 0 || strcasecmp(str, "default") == 0 ||
-			strcasecmp(str, "none") == 0)
+	if(is_default_color(str))
 	{
 		return -1;
 	}
@@ -3055,6 +3055,16 @@ parse_color_name_value(const char str[], int fg, int *attr)
 
 	/* Fail if all possible parsing ways failed. */
 	return -2;
+}
+
+/* Checks whether a string signifies a default color.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_default_color(const char str[])
+{
+	return (strcmp(str, "-1") == 0)
+	    || (strcasecmp(str, "default") == 0)
+	    || (strcasecmp(str, "none") == 0);
 }
 
 /* Parses comma-separated list of attributes.  Returns parsed result or -1 on
