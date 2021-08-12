@@ -1335,7 +1335,10 @@ wprinta(WINDOW *win, const char str[], const cchar_t *line_attrs,
 	wchar_t wch[getcchar(line_attrs, NULL, &attrs, &color_pair, NULL)];
 	getcchar(line_attrs, wch, &attrs, &color_pair, NULL);
 
-	col_attr_t col = { .attr = attrs ^ attrs_xors };
+	col_attr_t col = {
+		.attr = attrs ^ attrs_xors,
+		.gui_attr = attrs ^ attrs_xors
+	};
 	ui_set_attr(win, &col, color_pair);
 	wprint(win, str);
 	wnoutrefresh(win);

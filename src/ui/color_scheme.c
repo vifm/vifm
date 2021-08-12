@@ -400,6 +400,50 @@ char *XTERM256_COLOR_NAMES[256] = {
 	[255] = "Grey93",
 };
 
+/* Maps 256 colors into corresponding #RRGGBB values.  The array is offset by
+ * one to allow handling of default color (-1). */
+static const int XTERM256_PALETTE[] = {
+	-1,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0x808080, 0xff0000, 0x00ff00, 0xffff00, 0x0000ff, 0xff00ff, 0x00ffff,
+	0xffffff, 0x000000, 0x00005f, 0x000087, 0x0000af, 0x0000d7, 0x0000ff,
+	0x005f00, 0x005f5f, 0x005f87, 0x005faf, 0x005fd7, 0x005fff, 0x008700,
+	0x00875f, 0x008787, 0x0087af, 0x0087d7, 0x0087ff, 0x00af00, 0x00af5f,
+	0x00af87, 0x00afaf, 0x00afd7, 0x00afff, 0x00d700, 0x00d75f, 0x00d787,
+	0x00d7af, 0x00d7d7, 0x00d7ff, 0x00ff00, 0x00ff5f, 0x00ff87, 0x00ffaf,
+	0x00ffd7, 0x00ffff, 0x5f0000, 0x5f005f, 0x5f0087, 0x5f00af, 0x5f00d7,
+	0x5f00ff, 0x5f5f00, 0x5f5f5f, 0x5f5f87, 0x5f5faf, 0x5f5fd7, 0x5f5fff,
+	0x5f8700, 0x5f875f, 0x5f8787, 0x5f87af, 0x5f87d7, 0x5f87ff, 0x5faf00,
+	0x5faf5f, 0x5faf87, 0x5fafaf, 0x5fafd7, 0x5fafff, 0x5fd700, 0x5fd75f,
+	0x5fd787, 0x5fd7af, 0x5fd7d7, 0x5fd7ff, 0x5fff00, 0x5fff5f, 0x5fff87,
+	0x5fffaf, 0x5fffd7, 0x5fffff, 0x870000, 0x87005f, 0x870087, 0x8700af,
+	0x8700d7, 0x8700ff, 0x875f00, 0x875f5f, 0x875f87, 0x875faf, 0x875fd7,
+	0x875fff, 0x878700, 0x87875f, 0x878787, 0x8787af, 0x8787d7, 0x8787ff,
+	0x87af00, 0x87af5f, 0x87af87, 0x87afaf, 0x87afd7, 0x87afff, 0x87d700,
+	0x87d75f, 0x87d787, 0x87d7af, 0x87d7d7, 0x87d7ff, 0x87ff00, 0x87ff5f,
+	0x87ff87, 0x87ffaf, 0x87ffd7, 0x87ffff, 0xaf0000, 0xaf005f, 0xaf0087,
+	0xaf00af, 0xaf00d7, 0xaf00ff, 0xaf5f00, 0xaf5f5f, 0xaf5f87, 0xaf5faf,
+	0xaf5fd7, 0xaf5fff, 0xaf8700, 0xaf875f, 0xaf8787, 0xaf87af, 0xaf87d7,
+	0xaf87ff, 0xafaf00, 0xafaf5f, 0xafaf87, 0xafafaf, 0xafafd7, 0xafafff,
+	0xafd700, 0xafd75f, 0xafd787, 0xafd7af, 0xafd7d7, 0xafd7ff, 0xafff00,
+	0xafff5f, 0xafff87, 0xafffaf, 0xafffd7, 0xafffff, 0xd70000, 0xd7005f,
+	0xd70087, 0xd700af, 0xd700d7, 0xd700ff, 0xd75f00, 0xd75f5f, 0xd75f87,
+	0xd75faf, 0xd75fd7, 0xd75fff, 0xd78700, 0xd7875f, 0xd78787, 0xd787af,
+	0xd787d7, 0xd787ff, 0xdfaf00, 0xdfaf5f, 0xdfaf87, 0xdfafaf, 0xdfafdf,
+	0xdfafff, 0xdfdf00, 0xdfdf5f, 0xdfdf87, 0xdfdfaf, 0xdfdfdf, 0xdfdfff,
+	0xdfff00, 0xdfff5f, 0xdfff87, 0xdfffaf, 0xdfffdf, 0xdfffff, 0xff0000,
+	0xff005f, 0xff0087, 0xff00af, 0xff00df, 0xff00ff, 0xff5f00, 0xff5f5f,
+	0xff5f87, 0xff5faf, 0xff5fdf, 0xff5fff, 0xff8700, 0xff875f, 0xff8787,
+	0xff87af, 0xff87df, 0xff87ff, 0xffaf00, 0xffaf5f, 0xffaf87, 0xffafaf,
+	0xffafdf, 0xffafff, 0xffdf00, 0xffdf5f, 0xffdf87, 0xffdfaf, 0xffdfdf,
+	0xffdfff, 0xffff00, 0xffff5f, 0xffff87, 0xffffaf, 0xffffdf, 0xffffff,
+	0x080808, 0x121212, 0x1c1c1c, 0x262626, 0x303030, 0x3a3a3a, 0x444444,
+	0x4e4e4e, 0x585858, 0x626262, 0x6c6c6c, 0x767676, 0x808080, 0x8a8a8a,
+	0x949494, 0x9e9e9e, 0xa8a8a8, 0xb2b2b2, 0xbcbcbc, 0xc6c6c6, 0xd0d0d0,
+	0xdadada, 0xe4e4e4, 0xeeeeee,
+};
+ARRAY_GUARD(XTERM256_PALETTE, 1 + 256);
+
 /* Default color scheme definition. */
 static const col_attr_t default_cs[] = {
 	                      /* fg             bg           attr */
@@ -455,6 +499,10 @@ static const char * get_global_colors_dir(void);
 static void check_cs(col_scheme_t *cs);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dir_map_exists(void);
+static void overlap_cterm_colors(col_attr_t *color,
+		const col_attr_t *admixture);
+static void overlap_gui_colors(col_attr_t *color, const col_attr_t *admixture);
+static col_attr_t convert_to_gui(const col_attr_t *color);
 
 /* Mapping of color schemes associations onto file system tree. */
 static fsddata_t *dir_map;
@@ -1086,7 +1134,13 @@ ensure_dir_map_exists(void)
 void
 cs_mix_colors(col_attr_t *color, const col_attr_t *admixture)
 {
-	int attr = color->attr;
+	if(curr_stats.direct_color)
+	{
+		*color = convert_to_gui(color);
+	}
+
+	const int attr = color->attr;
+	const int gui_attr = color->gui_attr;
 
 	cs_overlap_colors(color, admixture);
 
@@ -1094,10 +1148,33 @@ cs_mix_colors(col_attr_t *color, const col_attr_t *admixture)
 	{
 		color->attr |= attr;
 	}
+
+	if(gui_attr != -1 && admixture->combine_gui_attrs)
+	{
+		color->gui_attr |= gui_attr;
+	}
 }
 
 void
 cs_overlap_colors(col_attr_t *color, const col_attr_t *admixture)
+{
+	if(curr_stats.direct_color)
+	{
+		*color = convert_to_gui(color);
+		const col_attr_t gui_admixture = convert_to_gui(admixture);
+		overlap_gui_colors(color, &gui_admixture);
+	}
+	else
+	{
+		overlap_cterm_colors(color, admixture);
+	}
+}
+
+/* Overlaps cterm colors of *admixture into the *color.  Non-transparent
+ * properties of *admixture are transferred onto *color.  Attributes are never
+ * combined. */
+static void
+overlap_cterm_colors(col_attr_t *color, const col_attr_t *admixture)
 {
 	if(admixture->fg != -1)
 	{
@@ -1112,6 +1189,28 @@ cs_overlap_colors(col_attr_t *color, const col_attr_t *admixture)
 	if(admixture->attr != -1)
 	{
 		color->attr = admixture->attr;
+	}
+}
+
+/* Overlaps gui colors of *admixture into the *color.  Non-transparent
+ * properties of *admixture are transferred onto *color.  Attributes are never
+ * combined. */
+static void
+overlap_gui_colors(col_attr_t *color, const col_attr_t *admixture)
+{
+	if(admixture->gui_fg != -1)
+	{
+		color->gui_fg = admixture->gui_fg;
+	}
+
+	if(admixture->gui_bg != -1)
+	{
+		color->gui_bg = admixture->gui_bg;
+	}
+
+	if(admixture->gui_attr != -1)
+	{
+		color->gui_attr = admixture->gui_attr;
 	}
 }
 
@@ -1206,19 +1305,62 @@ cs_del_file_hi(const char matchers_expr[])
 int
 cs_is_color_set(const col_attr_t *color)
 {
-	return color->fg != -1 || color->bg != -1 || color->attr != -1;
+	return color->fg != -1 || color->bg != -1 || color->attr != -1
+	    || color->gui_set;
 }
 
 int
 cs_load_color(const col_attr_t *color)
 {
+	if(curr_stats.direct_color)
+	{
+		if(color->gui_set)
+		{
+			return colmgr_get_pair(color->gui_fg, color->gui_bg);
+		}
+
+		const col_attr_t gui = convert_to_gui(color);
+		return colmgr_get_pair(gui.gui_fg, gui.gui_bg);
+	}
+
 	return colmgr_get_pair(color->fg, color->bg);
+}
+
+/* Converts cterm colors to a corresponding gui direct colors if necessary.
+ * Returns direct colors with cterm part erased. */
+static col_attr_t
+convert_to_gui(const col_attr_t *color)
+{
+	if(!curr_stats.direct_color || color->gui_set)
+	{
+		return *color;
+	}
+
+	col_attr_t gui = {
+		.gui_fg = -1,
+		.gui_bg = -1,
+		.gui_attr = color->attr,
+		.combine_gui_attrs = color->combine_attrs,
+		.gui_set = 1,
+	};
+
+	if(color->fg >= -1 && 1 + color->fg < (int)ARRAY_LEN(XTERM256_PALETTE))
+	{
+		gui.gui_fg = XTERM256_PALETTE[1 + color->fg];
+	}
+	if(color->bg >= -1 && 1 + color->bg < (int)ARRAY_LEN(XTERM256_PALETTE))
+	{
+		gui.gui_bg = XTERM256_PALETTE[1 + color->bg];
+	}
+
+	return gui;
 }
 
 int
 cs_color_get_attr(const col_attr_t *color)
 {
-	return color->attr;
+	return (curr_stats.direct_color && color->gui_set) ? color->gui_attr
+	                                                   : color->attr;
 }
 
 cchar_t

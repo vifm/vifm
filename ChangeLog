@@ -73,6 +73,9 @@
 
 	Added "depth=N" parameter to the :tree command.  Thanks to filterfalse.
 
+	Added support for direct/"true"/24-bit colors for ncurses 6.0 or later.
+	Thanks to Anton Kochkov (a.k.a. XVilka) and IvanBarsukov.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
@@ -93,7 +96,7 @@
 
 	Implemented asynchronous previewing for textual and pass-through (think
 	sixel) viewers.  Thanks to StillSteal, laur89, Joshua
-	Jensch (a.k.a., patroclos) and p-kolacz.
+	Jensch (a.k.a. patroclos) and p-kolacz.
 
 	Run background programs detached from a terminal.  Thanks to Miguel Madrid
 	Mencía (a.k.a. mimame).

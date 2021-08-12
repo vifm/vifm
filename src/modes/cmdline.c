@@ -410,9 +410,11 @@ draw_cmdline_text(line_stats_t *stat)
 		case PS_WRONG_PATTERN: group = ERROR_MSG_COLOR; break;
 		case PS_NO_MATCH:      group = CMD_LINE_COLOR;
 		                       prompt_col.attr = A_REVERSE;
+		                       prompt_col.gui_attr = A_REVERSE;
 		                       break;
 	}
 	prompt_col.attr ^= cfg.cs.color[group].attr;
+	prompt_col.gui_attr ^= cfg.cs.color[group].gui_attr;
 
 	ui_set_attr(status_bar, &prompt_col, cfg.cs.pair[group]);
 	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
