@@ -301,13 +301,20 @@ setup_ncurses_interface(void)
 static int
 init_pair_wrapper(int pair, int fg, int bg)
 {
+#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20180127
+	return init_extended_pair(pair, fg, bg);
+#else
 	return init_pair(pair, fg, bg);
+#endif
 }
 
 /* Calls pair_content() from libcurses. */
 static int
 pair_content_wrapper(int pair, int *fg, int *bg)
 {
+#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20180127
+	return extended_pair_content(pair, fg, bg);
+#else
 	short fg_short, bg_short;
 
 	const int result = pair_content(pair, &fg_short, &bg_short);
@@ -316,6 +323,7 @@ pair_content_wrapper(int pair, int *fg, int *bg)
 	*bg = bg_short;
 
 	return result;
+#endif
 }
 
 /* Checks whether pair is being used at the moment.  Returns non-zero if so and
