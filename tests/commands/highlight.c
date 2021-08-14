@@ -36,6 +36,47 @@ TEARDOWN()
 	curr_stats.cs = NULL;
 }
 
+/* Colors. */
+
+TEST(wrong_gui_color_causes_error)
+{
+	ui_sb_msg("");
+	assert_failure(exec_commands("hi Win guifg=#1234", &lwin, CIT_COMMAND));
+	assert_string_equal("Unrecognized color value format: #1234", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("hi Win guibg=#1234", &lwin, CIT_COMMAND));
+	assert_string_equal("Unrecognized color value format: #1234", ui_sb_last());
+}
+
+TEST(gui_colors_are_parsed)
+{
+	assert_success(exec_commands("hi Win guifg=#1234fe guibg=red gui=reverse",
+				&lwin, CIT_COMMAND));
+	assert_true(curr_stats.cs->color[WIN_COLOR].gui_set);
+	assert_int_equal(0x1234fe, curr_stats.cs->color[WIN_COLOR].gui_fg);
+	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].gui_bg);
+	assert_int_equal(A_REVERSE, curr_stats.cs->color[WIN_COLOR].gui_attr);
+
+	assert_success(exec_commands("hi Win guifg=default", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.cs->color[WIN_COLOR].gui_set);
+	assert_int_equal(-1, curr_stats.cs->color[WIN_COLOR].gui_fg);
+	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].gui_bg);
+	assert_int_equal(A_REVERSE, curr_stats.cs->color[WIN_COLOR].gui_attr);
+}
+
+TEST(gui_colors_are_printed)
+{
+	ui_sb_msg("");
+	assert_success(exec_commands("hi Win guifg=#1234fe guibg=red", &lwin,
+				CIT_COMMAND));
+	assert_failure(exec_commands("hi Win", &lwin, CIT_COMMAND));
+	assert_string_equal(
+			"Win        cterm=none ctermfg=white   ctermbg=black  \n"
+			"           gui=none guifg=#1234fe guibg=red    ",
+			ui_sb_last());
+}
+
 /* Attributes. */
 
 TEST(wrong_attribute_causes_error)

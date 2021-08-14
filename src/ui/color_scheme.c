@@ -696,8 +696,8 @@ cs_write(void)
 	for(i = 0U; i < ARRAY_LEN(default_cs); ++i)
 	{
 		char fg_buf[16], bg_buf[16];
-		cs_color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf);
-		cs_color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf);
+		cs_color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf, /*is_gui=*/0);
+		cs_color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf, /*is_gui=*/0);
 
 		if(default_cs[i].attr == -1)
 		{
@@ -715,15 +715,21 @@ cs_write(void)
 }
 
 void
-cs_color_to_str(int color, size_t buf_len, char str_buf[])
+cs_color_to_str(int color, size_t buf_len, char str_buf[], int is_gui)
 {
+	int color_limit = (is_gui ? 8 : ARRAY_LEN(XTERM256_COLOR_NAMES));
+
 	if(color == -1)
 	{
 		copy_str(str_buf, buf_len, "default");
 	}
-	else if(color >= 0 && color < (int)ARRAY_LEN(XTERM256_COLOR_NAMES))
+	else if(color >= 0 && color < color_limit)
 	{
 		copy_str(str_buf, buf_len, XTERM256_COLOR_NAMES[color]);
+	}
+	else if(is_gui)
+	{
+		snprintf(str_buf, buf_len, "#%06x", color);
 	}
 	else
 	{
@@ -1374,6 +1380,19 @@ cs_color_to_cchar(const col_attr_t *color, int pair)
 	cchar_t cch;
 	setcchar(&cch, L" ", cs_color_get_attr(color), pair, NULL);
 	return cch;
+}
+
+void
+cs_color_enable_gui(col_attr_t *color)
+{
+	if(!color->gui_set)
+	{
+		color->gui_set = 1;
+		color->gui_fg = -1;
+		color->gui_bg = -1;
+		color->gui_attr = 0;
+		color->combine_gui_attrs = 0;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

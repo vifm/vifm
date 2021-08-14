@@ -130,9 +130,9 @@ void cs_assoc_dir(const char name[], const char dir[]);
  * containing "Default" color scheme. */
 void cs_write(void);
 
-/* Converts color specified by an integer to a string and writes result in a
+/* Converts color specified by an integer to a string and writes result to a
  * buffer of length buf_len pointed to by str_buf. */
-void cs_color_to_str(int color, size_t buf_len, char str_buf[]);
+void cs_color_to_str(int color, size_t buf_len, char str_buf[], int is_gui);
 
 /* Mixes colors of *admixture into the *color.  Non-transparent properties of
  * *admixture are transferred onto *color. */
@@ -171,6 +171,10 @@ int cs_color_get_attr(const col_attr_t *color);
 /* Produces a cchar for a specified color.  Allocates pair if passed in pair
  * number is negative.  Returns the cchar. */
 cchar_t cs_color_to_cchar(const col_attr_t *color, int pair);
+
+/* Enables gui part of the color unless it's already enabled.  During enabling
+ * gui part is initialized. */
+void cs_color_enable_gui(col_attr_t *color);
 
 #endif /* VIFM__UI__COLOR_SCHEME_H__ */
 

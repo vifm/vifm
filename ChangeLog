@@ -76,6 +76,8 @@
 	Added support for direct/"true"/24-bit colors for ncurses 6.0 or later.
 	Thanks to Anton Kochkov (a.k.a. XVilka) and IvanBarsukov.
 
+	Added "gui", "guifg" and "guibg" parameters to :highlight command.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
