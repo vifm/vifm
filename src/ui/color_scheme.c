@@ -24,6 +24,7 @@
 
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MAX */
+#include <math.h> /* abs() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
@@ -503,6 +504,7 @@ static void overlap_cterm_colors(col_attr_t *color,
 		const col_attr_t *admixture);
 static void overlap_gui_colors(col_attr_t *color, const col_attr_t *admixture);
 static col_attr_t convert_to_gui(const col_attr_t *color);
+static int color_diff(int a, int b);
 
 /* Mapping of color schemes associations onto file system tree. */
 static fsddata_t *dir_map;
@@ -1393,6 +1395,35 @@ cs_color_enable_gui(col_attr_t *color)
 		color->gui_attr = 0;
 		color->combine_gui_attrs = 0;
 	}
+}
+
+int
+cs_downscale_color(int direct_color)
+{
+	int i;
+	int closest = 0;
+	int diff = color_diff(XTERM256_PALETTE[1], direct_color);
+	int color_limit = MIN(COLORS, 256);
+	for(i = 1; i < color_limit; ++i)
+	{
+		int d = color_diff(XTERM256_PALETTE[1 + i], direct_color);
+		if(d < diff)
+		{
+			diff = d;
+			closest = i;
+		}
+	}
+	return closest;
+}
+
+/* Computes distance between two RGB colors.  Returns the distance. */
+static int
+color_diff(int a, int b)
+{
+	int rd = abs((a >> 16) - (b >> 16));
+	int gd = abs(((a >> 8)&0xff) - ((b >> 8)&0xff));
+	int bd = abs((a&0xff) - (b&0xff));
+	return rd + gd + bd;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -176,6 +176,10 @@ cchar_t cs_color_to_cchar(const col_attr_t *color, int pair);
  * gui part is initialized. */
 void cs_color_enable_gui(col_attr_t *color);
 
+/* Turns a direct RGB color into an index of a 256-color palette.  Returns the
+ * index. */
+int cs_downscale_color(int direct_color);
+
 #endif /* VIFM__UI__COLOR_SCHEME_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

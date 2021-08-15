@@ -484,6 +484,16 @@ apply_state(WINDOW *win, esc_state *state)
 	};
 	cs_mix_colors(&state_col, &direct_col);
 
+	/* Try to approximate 24-bit colors to a palette. */
+	if(!state_col.gui_set && state->is_fg_direct)
+	{
+		state_col.fg = cs_downscale_color(direct_col.gui_fg);
+	}
+	if(!state_col.gui_set && state->is_bg_direct)
+	{
+		state_col.bg = cs_downscale_color(direct_col.gui_bg);
+	}
+
 	/* Mix state color (mix of cterm and direct) to defaults to produce final
 	 * color. */
 	col_attr_t final_col = state->defaults;
