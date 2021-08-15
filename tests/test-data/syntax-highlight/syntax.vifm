@@ -296,6 +296,10 @@ highlight {*.djvu, "not comment
 highlight Win cterm=italic
 highlight Win cterm=combine
 
+" "guifg", "guibg" and "gui" should be highlighted
+" "#14fd14" should be highlighted
+highlight Win guifg=yellow guibg=#14fd14 gui=combine
+
 " patterns here should NOT be highlighted
 highlight // cterm=bold ctermfg=yellow
 highlight //// cterm=bold ctermfg=yellow

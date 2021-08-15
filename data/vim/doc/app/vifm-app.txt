@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Jul 30
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Aug 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1793,10 +1793,11 @@ The builtin commands are:
     display information on given highlight group or file name pattern of color
     scheme used in the active view.
 :hi[ghlight] ( group-name | {pat1,pat2,...} | /regexp/[iI] )
-             cterm=style | ctermfg=color | ctermbg=color
-    set style (cterm), foreground (ctermfg) or/and background (ctermbg)
-    parameters of highlight group or file name pattern for color scheme
-    used in the active view.
+             cterm=style | ctermfg=color | ctermbg=color |
+             gui=style | guifg=color | guibg=color
+    set style (cterm, gui), foreground (ctermfg, guifg) and/or
+    background (ctermbg, guibg) parameters of highlight group or file name
+    pattern for color scheme used in the active view.
 
 All style values as well as color names are case insensitive.
 
@@ -1854,6 +1855,10 @@ Available colors:
  - cyan    and lightcyan
  - white   and lightwhite
  - 0-255 - corresponding colors from 256-color palette
+           (for ctermfg and ctermbg)
+ - #rrggbb - direct ("gui", "true", 24-bit) color in hex-notation, each of
+             the three compontents are in the range 0x00 to 0xff
+             (for guifg and guibg)
 
 Light versions of colors are regular colors with bold attribute set
 automatically in terminals that have less than 16 colors.  So order of arguments
@@ -1969,6 +1974,13 @@ also be set via X resources), e.g. xterm-256color.  One can find list of
 available terminal names by listing /usr/lib/terminfo/.  Number of colors
 supported by terminal with current settings can be checked via "tput colors"
 command.
+
+In order to use 24-bit colors one needs a terminal that supports them,
+corresponding terminfo record (probably ends in "-direct" like in
+"xterm-direct") and $TERM pointing to it.  When vifm detects direct color
+support "cterm*" values are ignored for groups which have at least one of
+"gui*" values set, otherwise they are used after translating via a builtin
+palette.
 
 Here is the hierarchy of highlight groups, which you need to know for using
 transparency:

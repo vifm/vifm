@@ -777,6 +777,9 @@ complete_highlight_arg(const char *str)
 			{ "cterm",   "text attributes" },
 			{ "ctermfg", "foreground color" },
 			{ "ctermbg", "background color" },
+			{ "gui",     "text attributes for direct colors" },
+			{ "guifg",   "foreground direct color" },
+			{ "guibg",   "background direct color" },
 		};
 
 		size_t i;
@@ -791,7 +794,8 @@ complete_highlight_arg(const char *str)
 	}
 	else
 	{
-		if(strncmp(str, "cterm", equal - str - 1) == 0)
+		if(strncmp(str, "cterm", equal - str - 1) == 0 ||
+				strncmp(str, "gui", equal - str - 1) == 0)
 		{
 			static const char *const STYLES[][2] = {
 				{ "bold",      "bold text, lighter color" },
@@ -823,8 +827,6 @@ complete_highlight_arg(const char *str)
 		}
 		else
 		{
-			size_t i;
-
 			if(strncasecmp(equal, "default", len) == 0)
 			{
 				vle_compl_add_match("default", "default or transparent color");
@@ -834,14 +836,25 @@ complete_highlight_arg(const char *str)
 				vle_compl_add_match("none", "no specific attributes");
 			}
 
-			for(i = 0U; i < ARRAY_LEN(XTERM256_COLOR_NAMES); ++i)
+			int is_gui = 0;
+			if(strncmp(str, "guifg", equal - str - 1) == 0 ||
+					strncmp(str, "guibg", equal - str - 1) == 0)
+			{
+				is_gui = 1;
+			}
+
+			size_t i;
+			size_t color_limit = (is_gui ? 8 : ARRAY_LEN(XTERM256_COLOR_NAMES));
+
+			for(i = 0U; i < color_limit; ++i)
 			{
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
 				{
 					vle_compl_add_match(XTERM256_COLOR_NAMES[i], "");
 				}
 			}
-			for(i = 0U; i < ARRAY_LEN(LIGHT_COLOR_NAMES); ++i)
+
+			for(i = 0U; !is_gui && i < ARRAY_LEN(LIGHT_COLOR_NAMES); ++i)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
 				{

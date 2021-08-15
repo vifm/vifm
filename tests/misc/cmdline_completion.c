@@ -579,16 +579,6 @@ TEST(autocmd_name_completion_is_case_insensitive)
 	ASSERT_COMPLETION(L"autocmd dir", L"autocmd DirEnter");
 }
 
-TEST(highlight_is_completed)
-{
-	ASSERT_COMPLETION(L"hi ", L"hi AuxWin");
-	ASSERT_COMPLETION(L"hi wi", L"hi WildMenu");
-	ASSERT_COMPLETION(L"hi WildMenu cter", L"hi WildMenu cterm");
-
-	assert_success(exec_commands("hi {*.jpg} cterm=none", &lwin, CIT_COMMAND));
-	ASSERT_COMPLETION(L"hi clear ", L"hi clear {*.jpg}");
-}
-
 TEST(case_override_of_paths)
 {
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
@@ -801,6 +791,28 @@ TEST(tree_is_completed)
 
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"tree depth=", stats.line);
+}
+
+TEST(highlight_is_completed)
+{
+	ASSERT_COMPLETION(L"hi ", L"hi AuxWin");
+	ASSERT_COMPLETION(L"hi wi", L"hi WildMenu");
+	ASSERT_COMPLETION(L"hi WildMenu cter", L"hi WildMenu cterm");
+
+	ASSERT_COMPLETION(L"hi WildMenu ctermfg=def", L"hi WildMenu ctermfg=default");
+	ASSERT_COMPLETION(L"hi WildMenu ctermfg=no", L"hi WildMenu ctermfg=none");
+	ASSERT_COMPLETION(L"hi WildMenu ctermfg=r", L"hi WildMenu ctermfg=Red1");
+	ASSERT_COMPLETION(L"hi WildMenu ctermfg=lightb",
+			L"hi WildMenu ctermfg=lightblack");
+	ASSERT_COMPLETION(L"hi WildMenu cterm=re", L"hi WildMenu cterm=reverse");
+	ASSERT_COMPLETION(L"hi WildMenu cterm=bold,re",
+			L"hi WildMenu cterm=bold,reverse");
+
+	ASSERT_COMPLETION(L"hi WildMenu guibg=r", L"hi WildMenu guibg=red");
+	ASSERT_COMPLETION(L"hi WildMenu guibg=l", L"hi WildMenu guibg=l");
+
+	assert_success(exec_commands("hi {*.jpg} cterm=none", &lwin, CIT_COMMAND));
+	ASSERT_COMPLETION(L"hi clear ", L"hi clear {*.jpg}");
 }
 
 static void

@@ -39,7 +39,6 @@
 #include "../engine/mode.h"
 #include "../int/vim.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../ui/color_manager.h"
 #include "../ui/colors.h"
 #include "../ui/escape.h"
 #include "../ui/fileview.h"

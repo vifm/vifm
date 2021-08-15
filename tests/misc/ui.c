@@ -35,7 +35,7 @@ TEARDOWN()
 	view_teardown(&lwin);
 }
 
-TEST(color_overlapping)
+TEST(cterm_color_overlapping)
 {
 	col_attr_t color = {
 		.fg = -1,
@@ -67,7 +67,7 @@ TEST(color_overlapping)
 	assert_int_equal(A_REVERSE, color.attr);
 }
 
-TEST(color_mixing)
+TEST(cterm_color_mixing)
 {
 	col_attr_t color = {
 		.fg = -1,
@@ -97,6 +97,112 @@ TEST(color_mixing)
 	assert_int_equal(20, color.fg);
 	assert_int_equal(22, color.bg);
 	assert_int_equal(A_BOLD | A_REVERSE, color.attr);
+}
+
+TEST(gui_color_overlapping)
+{
+	curr_stats.direct_color = 1;
+
+	col_attr_t color = {
+		.fg = -1,
+		.bg = -1,
+		.attr = -1,
+		.combine_attrs = 0
+	};
+
+	col_attr_t admixture1 = {
+		.gui_set = 1,
+		.gui_fg = 0xabcdef,
+		.gui_bg = 0x123456,
+		.gui_attr = A_BOLD,
+		.combine_gui_attrs = 1
+	};
+	cs_overlap_colors(&color, &admixture1);
+	assert_true(color.gui_set);
+	assert_int_equal(0xabcdef, color.gui_fg);
+	assert_int_equal(0x123456, color.gui_bg);
+	assert_int_equal(A_BOLD, color.gui_attr);
+
+	col_attr_t admixture2 = {
+		.gui_set = 1,
+		.gui_fg = 0xfedcba,
+		.gui_bg = 0x654321,
+		.gui_attr = A_REVERSE,
+		.combine_gui_attrs = 1
+	};
+	cs_overlap_colors(&color, &admixture2);
+	assert_true(color.gui_set);
+	assert_int_equal(0xfedcba, color.gui_fg);
+	assert_int_equal(0x654321, color.gui_bg);
+	assert_int_equal(A_REVERSE, color.gui_attr);
+
+	curr_stats.direct_color = 0;
+}
+
+TEST(gui_color_mixing)
+{
+	curr_stats.direct_color = 1;
+
+	col_attr_t color = {
+		.fg = -1,
+		.bg = -1,
+		.attr = -1,
+		.combine_attrs = 0
+	};
+
+	col_attr_t admixture1 = {
+		.gui_set = 1,
+		.gui_fg = 0xabcdef,
+		.gui_bg = 0x123456,
+		.gui_attr = A_BOLD,
+		.combine_gui_attrs = 1
+	};
+	cs_mix_colors(&color, &admixture1);
+	assert_true(color.gui_set);
+	assert_int_equal(0xabcdef, color.gui_fg);
+	assert_int_equal(0x123456, color.gui_bg);
+	assert_int_equal(A_BOLD, color.gui_attr);
+
+	col_attr_t admixture2 = {
+		.gui_set = 1,
+		.gui_fg = 0xfedcba,
+		.gui_bg = 0x654321,
+		.gui_attr = A_REVERSE,
+		.combine_gui_attrs = 1
+	};
+	cs_mix_colors(&color, &admixture2);
+	assert_true(color.gui_set);
+	assert_int_equal(0xfedcba, color.gui_fg);
+	assert_int_equal(0x654321, color.gui_bg);
+	assert_int_equal(A_BOLD | A_REVERSE, color.gui_attr);
+
+	curr_stats.direct_color = 0;
+}
+
+TEST(cterm_to_gui_color)
+{
+	curr_stats.direct_color = 1;
+
+	col_attr_t color = {
+		.fg = 8,
+		.bg = 9,
+		.attr = -1,
+		.combine_attrs = 0
+	};
+
+	/* Mixing is done just to trigger the conversion. */
+	col_attr_t admixture = {
+		.fg = -1,
+		.bg = -1,
+		.attr = -1,
+		.combine_attrs = 0
+	};
+	cs_mix_colors(&color, &admixture);
+
+	assert_true(color.gui_set);
+	assert_int_equal(0x808080, color.gui_fg);
+	assert_int_equal(0xff0000, color.gui_bg);
+	assert_int_equal(-1, color.gui_attr);
 }
 
 TEST(make_tab_title_uses_name_if_present_and_no_format)

@@ -49,7 +49,6 @@
 #include "../flist_pos.h"
 #include "../opt_handlers.h"
 #include "../sort.h"
-#include "color_manager.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "quickview.h"
@@ -908,9 +907,7 @@ prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 	mix_in_common_colors(&col, view, entry, line_color);
 	cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 
-	cchar_t cch;
-	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
-	return cch;
+	return cs_color_to_cchar(&col, -1);
 }
 
 /* Redraws single directory list entry.  is_current defines whether element
@@ -1352,9 +1349,7 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 		}
 	}
 
-	cchar_t cch;
-	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
-	return cch;
+	return cs_color_to_cchar(&col, -1);
 }
 
 /* Mixes in colors of current entry, mismatch and selection. */

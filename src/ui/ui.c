@@ -133,8 +133,10 @@ static WINDOW *lborder;
 static WINDOW *mborder;
 static WINDOW *rborder;
 
-static int pair_in_use(short int pair);
-static void move_pair(short int from, short int to);
+static int init_pair_wrapper(int pair, int fg, int bg);
+static int pair_content_wrapper(int pair, int *fg, int *bg);
+static int pair_in_use(int pair);
+static void move_pair(int from, int to);
 static void create_windows(void);
 static void update_geometry(void);
 static int update_start(UpdateType update_kind);
@@ -220,22 +222,6 @@ setup_ncurses_interface(void)
 {
 	int screen_x, screen_y;
 
-#ifdef ENABLE_EXTENDED_KEYS
-#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
-	/* Disable 'unsupported' extended keys so that esc-codes will be
-	 * received instead of unnamed extended keycode values (> KEY_MAX).
-	 * These keys can then be mapped with esc-codes in vifmrc.
-	 * An example could be <c-down>:
-	 *     qnoremap <esc>[1;5B j
-	 * as without this change <c-down> can return a keycode value of 531
-	 * (terminfo name kDN5), which is larger than KEY_MAX and has no
-	 * pre-defined curses key name.
-	 * NOTE: this MUST be called before initscr()
-	 * NOTE: might cause trouble with mouse support */
-	use_extended_names(FALSE);
-#endif
-#endif /* ENABLE_EXTENDED_KEYS */
-
 	initscr();
 	noecho();
 	nonl();
@@ -261,8 +247,8 @@ setup_ncurses_interface(void)
 	const colmgr_conf_t colmgr_conf = {
 		.max_color_pairs = COLOR_PAIRS,
 		.max_colors = COLORS,
-		.init_pair = &init_pair,
-		.pair_content = &pair_content,
+		.init_pair = &init_pair_wrapper,
+		.pair_content = &pair_content_wrapper,
 		.pair_in_use = &pair_in_use,
 		.move_pair = &move_pair,
 	};
@@ -288,15 +274,62 @@ setup_ncurses_interface(void)
 #endif
 #endif
 
+#if defined(NCURSES_VERSION) && defined(ENABLE_EXTENDED_KEYS)
+	/* Disable 'unsupported' extended keys so that esc-codes will be
+	 * received instead of unnamed extended keycode values (> KEY_MAX).
+	 * These keys can then be mapped with esc-codes in vifmrc.
+	 * An example could be <c-down>:
+	 *     qnoremap <esc>[1;5B j
+	 * as without this change <c-down> can return a keycode value of 531
+	 * (terminfo name kDN5), which is larger than KEY_MAX and has no
+	 * pre-defined curses key name. */
+	int i;
+	for(i = KEY_MAX; i < 2000; ++i)
+	{
+		keyok(i, FALSE);
+	}
+#endif
+
+	curr_stats.direct_color = (COLORS == 0x1000000);
+
 	ui_resize_all();
 
 	return 1;
 }
 
+/* Calls init_pair() from libcurses. */
+static int
+init_pair_wrapper(int pair, int fg, int bg)
+{
+#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20180127
+	return init_extended_pair(pair, fg, bg);
+#else
+	return init_pair(pair, fg, bg);
+#endif
+}
+
+/* Calls pair_content() from libcurses. */
+static int
+pair_content_wrapper(int pair, int *fg, int *bg)
+{
+#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20180127
+	return extended_pair_content(pair, fg, bg);
+#else
+	short fg_short, bg_short;
+
+	const int result = pair_content(pair, &fg_short, &bg_short);
+
+	*fg = fg_short;
+	*bg = bg_short;
+
+	return result;
+#endif
+}
+
 /* Checks whether pair is being used at the moment.  Returns non-zero if so and
  * zero otherwise. */
 static int
-pair_in_use(short int pair)
+pair_in_use(int pair)
 {
 	int i;
 
@@ -314,7 +347,7 @@ pair_in_use(short int pair)
 
 /* Substitutes old pair number with the new one. */
 static void
-move_pair(short int from, short int to)
+move_pair(int from, int to)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; ++i)
@@ -1302,7 +1335,10 @@ wprinta(WINDOW *win, const char str[], const cchar_t *line_attrs,
 	wchar_t wch[getcchar(line_attrs, NULL, &attrs, &color_pair, NULL)];
 	getcchar(line_attrs, wch, &attrs, &color_pair, NULL);
 
-	col_attr_t col = { .attr = attrs ^ attrs_xors };
+	col_attr_t col = {
+		.attr = attrs ^ attrs_xors,
+		.gui_attr = attrs ^ attrs_xors
+	};
 	ui_set_attr(win, &col, color_pair);
 	wprint(win, str);
 	wnoutrefresh(win);
@@ -2588,19 +2624,11 @@ ui_pause(void)
 void
 ui_set_bg(WINDOW *win, const col_attr_t *col, int pair)
 {
-	if(curr_stats.load_stage < 1)
+	if(curr_stats.load_stage >= 1)
 	{
-		return;
+		const cchar_t bg = cs_color_to_cchar(col, pair);
+		wbkgrndset(win, &bg);
 	}
-
-	if(pair < 0)
-	{
-		pair = colmgr_get_pair(col->fg, col->bg);
-	}
-
-	cchar_t bg;
-	setcchar(&bg, L" ", col->attr, pair, NULL);
-	wbkgrndset(win, &bg);
 }
 
 void
@@ -2614,13 +2642,13 @@ ui_set_attr(WINDOW *win, const col_attr_t *col, int pair)
 
 	if(pair < 0)
 	{
-		pair = colmgr_get_pair(col->fg, col->bg);
+		pair = cs_load_color(col);
 	}
 
 	/* Compiler complains about unused result of comma operator, because
 	 * wattr_set() is a macro and it uses comma to evaluate multiple expresions.
-	 * So cast result to void.*/
-	(void)wattr_set(win, col->attr, pair, NULL);
+	 * So cast result to void. */
+	(void)wattr_set(win, cs_color_get_attr(col), pair, NULL);
 }
 
 void

@@ -3,8 +3,9 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
-#include "../../src/ui/color_manager.h"
 #include "../../src/ui/ui.h"
 #include "../../src/undo.h"
 
@@ -12,24 +13,12 @@ static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static void init_undo_list_for_tests(un_perform_func exec_func,
 		const int *max_levels);
 static int op_avail(OPS op);
-static int init_pair_stub(short pair, short f, short b);
-static int pair_content_stub(short pair, short *f, short *b);
-static int pair_in_use_stub(short int pair);
-static void move_pair_stub(short int from, short int to);
 
 DEFINE_SUITE();
 
 SETUP_ONCE()
 {
-	const colmgr_conf_t colmgr_conf = {
-		.max_color_pairs = 256,
-		.max_colors = 16,
-		.init_pair = &init_pair_stub,
-		.pair_content = &pair_content_stub,
-		.pair_in_use = &pair_in_use_stub,
-		.move_pair = &move_pair_stub,
-	};
-	colmgr_init(&colmgr_conf);
+	stub_colmgr();
 
 	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.base = 1024;
@@ -87,31 +76,6 @@ static int
 op_avail(OPS op)
 {
 	return op == OP_MOVE;
-}
-
-static int
-init_pair_stub(short pair, short f, short b)
-{
-	return 0;
-}
-
-static int
-pair_content_stub(short pair, short *f, short *b)
-{
-	*f = 0;
-	*b = 0;
-	return 0;
-}
-
-static int
-pair_in_use_stub(short int pair)
-{
-	return 0;
-}
-
-static void
-move_pair_stub(short int from, short int to)
-{
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

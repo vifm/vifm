@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 30, 2021" "vifm 0.11"
+.TH VIFM 1 "August 14, 2021" "vifm 0.11"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2102,10 +2102,11 @@ remove specified rule.
 display information on given highlight group or file name pattern of color
 scheme used in the active view.
 .TP
-.BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/[iI] ) cterm=style | ctermfg=color | ctermbg=color"
-set style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
-of highlight group or file name pattern for color scheme used in the active
-view.
+.BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/[iI] ) cterm=style \
+| ctermfg=color | ctermbg=color | gui=style | guifg=color | guibg=color"
+set style (cterm, gui), foreground (ctermfg, guifg) and/or background (ctermbg,
+guibg) parameters of highlight group or file name pattern for color scheme used
+in the active view.
 .LP
 All style values as well as color names are case insensitive.
 .LP
@@ -2115,8 +2116,8 @@ Available style values (some of them can be combined):
  \- reverse or inverse
  \- standout
  \- italic (on unsupported systems becomes reverse)
- \- combine \- add attributes of current group to attributes of the parent in
-             group hierarchy (see below) instead of replacing them
+ \- combine \- add attributes of current group to attributes of the parent in \
+group hierarchy (see below) instead of replacing them
  \- none
 
 Available group-name values:
@@ -2161,7 +2162,10 @@ Available colors:
  \- magenta and lightmagenta
  \- cyan    and lightcyan
  \- white   and lightwhite
- \- 0-255 \- corresponding colors from 256-color palette
+ \- 0-255 \- corresponding colors from 256-color palette (for ctermfg and \
+ctermbg)
+ \- #rrggbb \- direct ("gui", "true", 24-bit) color in hex-notation, each of \
+the three compontents are in the range 0x00 to 0xff (for guifg and guibg)
 
 Light versions of colors are regular colors with bold attribute set
 automatically in terminals that have less than 16 colors.  So order of arguments
@@ -2172,6 +2176,7 @@ arguments.
 For convenience of color scheme authors xterm-like names for 256 color palette
 is also supported.  The mapping is taken from
 http://vim.wikia.com/wiki/Xterm256_color_names_for_console_Vim
+.br
 Duplicated entries were altered by adding an underscore followed by numerical
 suffix.
 
@@ -2277,6 +2282,13 @@ also be set via X resources), e.g. xterm-256color.  One can find list of
 available terminal names by listing /usr/lib/terminfo/.  Number of colors
 supported by terminal with current settings can be checked via "tput colors"
 command.
+
+In order to use 24-bit colors one needs a terminal that supports them,
+corresponding terminfo record (probably ends in "\-direct" like in
+"xterm-direct") and $TERM pointing to it.  When vifm detects direct color
+support "cterm*" values are ignored for groups which have at least one of
+"gui*" values set, otherwise they are used after translating via a builtin
+palette.
 
 Here is the hierarchy of highlight groups, which you need to know for using
 transparency:

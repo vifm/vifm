@@ -23,12 +23,21 @@
 /* Color information structure. */
 typedef struct col_attr_t
 {
-	int fg;   /* Foreground color. */
-	int bg;   /* Background color. */
+	/* Avoid using these outside of color_scheme.c unit. */
+
+	short fg; /* Foreground color. */
+	short bg; /* Background color. */
 	int attr; /* Attributes (bold, inverse, etc.). */
+
+	int gui_attr;    /* Attributes (bold, inverse, etc.). */
+	int gui_fg : 25; /* Foreground color. */
+	int gui_bg : 25; /* Background color. */
 
 	/* Combine attributes on mixing instead of replacing them. */
 	unsigned int combine_attrs : 1;
+	unsigned int combine_gui_attrs : 1;
+	/* Whether gui part is non-empty. */
+	unsigned int gui_set : 1;
 }
 col_attr_t;
 

@@ -135,6 +135,8 @@ typedef struct
 
 	preview_t preview; /* State of preview (quickview). */
 
+	/* Type of the terminal. */
+	char *term_name;
 	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;
 
@@ -155,6 +157,8 @@ typedef struct
 	col_scheme_t *cs;
 	/* Name of the color scheme loaded from vifminfo. */
 	char color_scheme[NAME_MAX + 1];
+	/* Whether terminal uses direct colors. */
+	int direct_color;
 
 	int msg_head, msg_tail;
 	char *msgs[51];

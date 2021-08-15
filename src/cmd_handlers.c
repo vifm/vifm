@@ -34,7 +34,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strchr() strcmp() strcspn() strcasecmp() strcpy()
-                       strdup() strlen() strrchr() */
+                       strdup() strlen() strrchr() strspn() */
 #include <wctype.h> /* iswspace() */
 #include <wchar.h> /* wcslen() wcsncmp() */
 
@@ -62,7 +62,6 @@
 #include "menus/menus.h"
 #include "modes/modes.h"
 #include "modes/wk.h"
-#include "ui/color_manager.h"
 #include "ui/color_scheme.h"
 #include "ui/colors.h"
 #include "ui/fileview.h"
@@ -83,6 +82,7 @@
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/trie.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bmarks.h"
@@ -207,9 +207,11 @@ static const char * get_file_hi_str(const matchers_t *matchers,
 static const char * get_hi_str(const char title[], const col_attr_t *col);
 static int parse_file_highlight(const cmd_info_t *cmd_info,
 		col_attr_t *color);
-static int try_parse_color_name_value(const char str[], int fg,
+static int try_parse_cterm_color(const char str[], int is_fg,
 		col_attr_t *color);
+static int try_parse_gui_color(const char str[], int *color);
 static int parse_color_name_value(const char str[], int fg, int *attr);
+static int is_default_color(const char str[]);
 static int get_attrs(const char text[], int *combine_attrs);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int histnext_cmd(const cmd_info_t *cmd_info);
@@ -2729,6 +2731,7 @@ static int
 highlight_file(const cmd_info_t *cmd_info)
 {
 	char pattern[strlen(cmd_info->args) + 1];
+	/* XXX: start with an existing value, if present? */
 	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
 	int result;
 	matchers_t *matchers;
@@ -2830,7 +2833,7 @@ highlight_group(const cmd_info_t *cmd_info)
 	}
 
 	*color = tmp_color;
-	curr_stats.cs->pair[group_id] = colmgr_get_pair(color->fg, color->bg);
+	curr_stats.cs->pair[group_id] = cs_load_color(color);
 
 	/* Other highlight commands might have finished successfully, so update TUI.
 	 * Request full update instead of redraw to force recalculation of mixed
@@ -2902,16 +2905,29 @@ static const char *
 get_hi_str(const char title[], const col_attr_t *col)
 {
 	static char buf[256];
+	static char gui_buf[2*sizeof(buf)];
 
 	char fg_buf[16], bg_buf[16];
 
-	cs_color_to_str(col->fg, sizeof(fg_buf), fg_buf);
-	cs_color_to_str(col->bg, sizeof(bg_buf), bg_buf);
+	cs_color_to_str(col->fg, sizeof(fg_buf), fg_buf, /*is_gui=*/0);
+	cs_color_to_str(col->bg, sizeof(bg_buf), bg_buf, /*is_gui=*/0);
 
-	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s", title,
-			cs_attrs_to_str(col->attr), fg_buf, bg_buf);
+	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
+			title, cs_attrs_to_str(col->attr), fg_buf, bg_buf);
 
-	return buf;
+	if(!col->gui_set)
+	{
+		return buf;
+	}
+
+	cs_color_to_str(col->gui_fg, sizeof(fg_buf), fg_buf, /*is_gui=*/1);
+	cs_color_to_str(col->gui_bg, sizeof(bg_buf), bg_buf, /*is_gui=*/1);
+
+	snprintf(gui_buf, sizeof(gui_buf), "%s\n%*s gui=%s guifg=%-7s guibg=%-7s",
+			buf, (int)MAX(utf8_strsw(title), 10U), "", cs_attrs_to_str(col->gui_attr),
+			fg_buf, bg_buf);
+
+	return gui_buf;
 }
 
 /* Parses arguments of :highlight command.  Returns non-zero in case of error
@@ -2942,19 +2958,41 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 
 		if(strcmp(arg_name, "ctermbg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 0, color) != 0)
+			if(try_parse_cterm_color(equal + 1, 0, color) != 0)
 			{
 				return 1;
 			}
 		}
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 1, color) != 0)
+			if(try_parse_cterm_color(equal + 1, 1, color) != 0)
 			{
 				return 1;
 			}
 		}
-		else if(strcmp(arg_name, "cterm") == 0)
+		else if(strcmp(arg_name, "guibg") == 0)
+		{
+			int value;
+			if(try_parse_gui_color(equal + 1, &value) != 0)
+			{
+				return 1;
+			}
+
+			cs_color_enable_gui(color);
+			color->gui_bg = value;
+		}
+		else if(strcmp(arg_name, "guifg") == 0)
+		{
+			int value;
+			if(try_parse_gui_color(equal + 1, &value) != 0)
+			{
+				return 1;
+			}
+
+			cs_color_enable_gui(color);
+			color->gui_fg = value;
+		}
+		else if(strcmp(arg_name, "cterm") == 0 || strcmp(arg_name, "gui") == 0)
 		{
 			int attrs;
 			int combine_attrs;
@@ -2964,12 +3002,22 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 				return 1;
 			}
 
-			color->attr = attrs;
-			color->combine_attrs = combine_attrs;
-			if(curr_stats.exec_env_type == EET_LINUX_NATIVE &&
-					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
+			if(strcmp(arg_name, "cterm") == 0)
 			{
-				color->attr |= A_BLINK;
+				color->attr = attrs;
+				color->combine_attrs = combine_attrs;
+
+				if(curr_stats.exec_env_type == EET_LINUX_NATIVE &&
+						(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
+				{
+					color->attr |= A_BLINK;
+				}
+			}
+			else
+			{
+				cs_color_enable_gui(color);
+				color->gui_attr = attrs;
+				color->combine_gui_attrs = combine_attrs;
 			}
 		}
 		else
@@ -2982,13 +3030,13 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 	return 0;
 }
 
-/* Tries to parse color name value into a number.  Returns non-zero if status
- * bar message should be preserved, otherwise zero is returned. */
+/* Tries to parse color number or color name.  Returns non-zero if status bar
+ * message should be preserved, otherwise zero is returned. */
 static int
-try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
+try_parse_cterm_color(const char str[], int is_fg, col_attr_t *color)
 {
 	col_scheme_t *const cs = curr_stats.cs;
-	const int col_num = parse_color_name_value(str, fg, &color->attr);
+	const int col_num = parse_color_name_value(str, is_fg, &color->attr);
 
 	if(col_num < -1)
 	{
@@ -3001,7 +3049,7 @@ try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
 		return 1;
 	}
 
-	if(fg)
+	if(is_fg)
 	{
 		color->fg = col_num;
 	}
@@ -3010,6 +3058,43 @@ try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
 		color->bg = col_num;
 	}
 
+	return 0;
+}
+
+/* Tries to parse a direct color.  Returns non-zero if status bar message should
+ * be preserved, otherwise zero is returned. */
+static int
+try_parse_gui_color(const char str[], int *color)
+{
+	const char *hex_digits = "0123456789abcdefABCDEF";
+
+	if(is_default_color(str))
+	{
+		*color = -1;
+		return 0;
+	}
+
+	*color = string_array_pos_case(XTERM256_COLOR_NAMES,
+			ARRAY_LEN(XTERM256_COLOR_NAMES), str);
+	if(*color >= 0 && *color < 8)
+	{
+		return 0;
+	}
+
+	if(str[0] != '#' || strlen(str) != 7 || strspn(str + 1, hex_digits) != 6)
+	{
+		ui_sb_errf("Unrecognized color value format: %s", str);
+		if(curr_stats.cs->state == CSS_LOADING)
+		{
+			curr_stats.cs->state = CSS_BROKEN;
+		}
+		return 1;
+	}
+
+	unsigned int value;
+	(void)sscanf(str, "#%x", &value);
+
+	*color = value;
 	return 0;
 }
 
@@ -3022,8 +3107,7 @@ parse_color_name_value(const char str[], int fg, int *attr)
 	int light_col_pos;
 	int col_num;
 
-	if(strcmp(str, "-1") == 0 || strcasecmp(str, "default") == 0 ||
-			strcasecmp(str, "none") == 0)
+	if(is_default_color(str))
 	{
 		return -1;
 	}
@@ -3056,6 +3140,16 @@ parse_color_name_value(const char str[], int fg, int *attr)
 
 	/* Fail if all possible parsing ways failed. */
 	return -2;
+}
+
+/* Checks whether a string signifies a default color.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_default_color(const char str[])
+{
+	return (strcmp(str, "-1") == 0)
+	    || (strcasecmp(str, "default") == 0)
+	    || (strcasecmp(str, "none") == 0);
 }
 
 /* Parses comma-separated list of attributes.  Returns parsed result or -1 on

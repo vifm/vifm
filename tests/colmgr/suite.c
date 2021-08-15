@@ -5,10 +5,10 @@
 
 #include "test.h"
 
-static int init_pair(short pair, short f, short b);
-static int pair_content(short pair, short *f, short *b);
-static int pair_in_use(short int pair);
-static void move_pair(short int from, short int to);
+static int init_pair(int pair, int f, int b);
+static int pair_content(int pair, int *f, int *b);
+static int pair_in_use(int pair);
+static void move_pair(int from, int to);
 
 static int colors[TOTAL_COLOR_PAIRS][2];
 
@@ -34,7 +34,7 @@ SETUP_ONCE()
 }
 
 static int
-init_pair(short pair, short f, short b)
+init_pair(int pair, int f, int b)
 {
 	colors[pair][0] = f;
 	colors[pair][1] = b;
@@ -42,7 +42,7 @@ init_pair(short pair, short f, short b)
 }
 
 static int
-pair_content(short pair, short *f, short *b)
+pair_content(int pair, int *f, int *b)
 {
 	*f = colors[pair][0];
 	*b = colors[pair][1];
@@ -50,13 +50,13 @@ pair_content(short pair, short *f, short *b)
 }
 
 static int
-pair_in_use(short int pair)
+pair_in_use(int pair)
 {
 	return colors[pair][0] == INUSE_SEED;
 }
 
 static void
-move_pair(short int from, short int to)
+move_pair(int from, int to)
 {
 	colors[to][0] = colors[from][0];
 	colors[to][1] = colors[from][1];
