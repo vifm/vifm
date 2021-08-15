@@ -135,6 +135,8 @@ typedef struct
 
 	preview_t preview; /* State of preview (quickview). */
 
+	/* Type of the terminal. */
+	char *term_name;
 	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;
 

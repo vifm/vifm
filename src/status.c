@@ -115,6 +115,8 @@ stats_init(config_t *config)
 	curr_stats.exec_env_type = get_exec_env_type();
 	stats_update_shell_type(config->shell);
 
+	update_string(&curr_stats.term_name, env_get("TERM"));
+
 	(void)hist_init(&curr_stats.cmd_hist, config->history_len);
 	(void)hist_init(&curr_stats.search_hist, config->history_len);
 	(void)hist_init(&curr_stats.prompt_hist, config->history_len);
@@ -142,6 +144,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->use_input_bar = 1;
 	stats->drop_new_dir_hist = 0;
 	stats->load_stage = 0;
+	update_string(&stats->term_name, NULL);
 	stats->term_state = TS_NORMAL;
 	stats->ch_pos = 1;
 	stats->confirmed = 0;
