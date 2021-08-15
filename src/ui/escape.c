@@ -48,6 +48,8 @@ static char * add_highlighted_sym(const char sym[], size_t sym_width,
 		char out[]);
 TSTATIC size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
+static void apply_state(WINDOW *win, esc_state *state);
+static int fix_direct_color(int color);
 TSTATIC void esc_state_update(esc_state *state, const char str[]);
 static void esc_state_process_attr(esc_state *state, int n);
 static void esc_state_set_attr(esc_state *state, int n);
@@ -346,8 +348,7 @@ esc_print_line(const char line[], WINDOW *win, int column, int row,
 	checked_wmove(win, row, column);
 
 	/* Attributes are set at the beginning of each line and after state change. */
-	col_attr_t col = { .fg = state->fg, .bg = state->bg, .attr = state->attrs };
-	ui_set_attr(win, &col, -1);
+	apply_state(win, state);
 
 	while(pos <= (size_t)max_width && *curr != '\0')
 	{
@@ -454,13 +455,57 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 	if(str[0] == '\033')
 	{
 		esc_state_update(state, str);
-		col_attr_t col = { .fg = state->fg, .bg = state->bg, .attr = state->attrs };
-		ui_set_attr(win, &col, -1);
+		apply_state(win, state);
 	}
 	else
 	{
 		wprint(win, str);
 	}
+}
+
+/* Applies current state to the window setting its attribute. */
+static void
+apply_state(WINDOW *win, esc_state *state)
+{
+	/* Mix direct part on top of cterm.  If direct colors aren't used, cterm color
+	 * prevails.  Attrs are zero by default and combined. */
+	const col_attr_t direct_col = {
+		.gui_fg = fix_direct_color(state->is_fg_direct ? state->fg : -1),
+		.gui_bg = fix_direct_color(state->is_bg_direct ? state->bg : -1),
+		.gui_attr = state->attrs,
+		.combine_gui_attrs = 1,
+		.gui_set = 1,
+	};
+	col_attr_t state_col = {
+		.fg = (state->is_fg_direct ? -1 : state->fg),
+		.bg = (state->is_bg_direct ? -1 : state->bg),
+		.attr = state->attrs,
+		.combine_attrs = 1,
+	};
+	cs_mix_colors(&state_col, &direct_col);
+
+	/* Mix state color (mix of cterm and direct) to defaults to produce final
+	 * color. */
+	col_attr_t final_col = state->defaults;
+	cs_mix_colors(&final_col, &state_col);
+
+	ui_set_attr(win, &final_col, -1);
+}
+
+/* Corrects color to work around 0x000001 - 0x000007 not being dark blue colors.
+ * Returns corrected color. */
+static int
+fix_direct_color(int color)
+{
+	if(color >= 1 && color <= 3)
+	{
+		return 0;
+	}
+	if(color >= 4 && color <= 7)
+	{
+		return 8;
+	}
+	return color;
 }
 
 /* Handles escape sequence.  Applies whole escape sequence specified by the str
@@ -509,24 +554,72 @@ esc_state_process_attr(esc_state *state, int n)
 					break;
 			}
 			break;
+
 		case ESM_GOT_FG_PREFIX:
-			state->mode = (n == 5) ? ESM_WAIT_FG_COLOR : ESM_SHORT;
+			if(n == 5)
+			{
+				state->mode = ESM_WAIT_FG_COLOR;
+			}
+			else
+			{
+				state->mode = (n == 2 ? ESM_WAIT_FG_R_COMP : ESM_SHORT);
+			}
 			break;
-		case ESM_GOT_BG_PREFIX:
-			state->mode = (n == 5) ? ESM_WAIT_BG_COLOR : ESM_SHORT;
-			break;
+
 		case ESM_WAIT_FG_COLOR:
 			if(n < state->max_colors)
 			{
+				state->is_fg_direct = 0;
 				state->fg = n;
 			}
 			state->mode = ESM_SHORT;
 			break;
+
+		case ESM_WAIT_FG_R_COMP:
+			state->fg = n;
+			state->mode = ESM_WAIT_FG_G_COMP;
+			break;
+		case ESM_WAIT_FG_G_COMP:
+			state->fg = state->fg*256 + n;
+			state->mode = ESM_WAIT_FG_B_COMP;
+			break;
+		case ESM_WAIT_FG_B_COMP:
+			state->is_fg_direct = 1;
+			state->fg = state->fg*256 + n;
+			state->mode = ESM_SHORT;
+			break;
+
+		case ESM_GOT_BG_PREFIX:
+			if(n == 5)
+			{
+				state->mode = ESM_WAIT_BG_COLOR;
+			}
+			else
+			{
+				state->mode = (n == 2 ? ESM_WAIT_BG_R_COMP : ESM_SHORT);
+			}
+			break;
+
 		case ESM_WAIT_BG_COLOR:
 			if(n < state->max_colors)
 			{
+				state->is_bg_direct = 0;
 				state->bg = n;
 			}
+			state->mode = ESM_SHORT;
+			break;
+
+		case ESM_WAIT_BG_R_COMP:
+			state->bg = n;
+			state->mode = ESM_WAIT_BG_G_COMP;
+			break;
+		case ESM_WAIT_BG_G_COMP:
+			state->bg = state->bg*256 + n;
+			state->mode = ESM_WAIT_BG_B_COMP;
+			break;
+		case ESM_WAIT_BG_B_COMP:
+			state->is_bg_direct = 1;
+			state->bg = state->bg*256 + n;
 			state->mode = ESM_SHORT;
 			break;
 	}
@@ -547,9 +640,11 @@ esc_state_set_attr(esc_state *state, int n)
 	switch(n)
 	{
 		case 0:
-			state->attrs = state->defaults.attr;
-			state->fg = state->defaults.fg;
-			state->bg = state->defaults.bg;
+			state->attrs = 0;
+			state->fg = -1;
+			state->bg = -1;
+			state->is_fg_direct = 0;
+			state->is_bg_direct = 0;
 			break;
 		case 1:
 			state->attrs |= A_BOLD;
@@ -585,15 +680,19 @@ esc_state_set_attr(esc_state *state, int n)
 			state->attrs &= ~A_REVERSE;
 			break;
 		case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37:
+			state->is_fg_direct = 0;
 			state->fg = n - 30;
 			break;
 		case 39:
+			state->is_fg_direct = 0;
 			state->fg = -1;
 			break;
 		case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
+			state->is_bg_direct = 0;
 			state->bg = n - 40;
 			break;
 		case 49:
+			state->is_bg_direct = 0;
 			state->bg = -1;
 			break;
 	}
@@ -603,9 +702,11 @@ void
 esc_state_init(esc_state *state, const col_attr_t *defaults, int max_colors)
 {
 	state->mode = ESM_SHORT;
-	state->attrs = defaults->attr;
-	state->fg = defaults->fg;
-	state->bg = defaults->bg;
+	state->attrs = 0;
+	state->fg = -1;
+	state->bg = -1;
+	state->is_fg_direct = 0;
+	state->is_bg_direct = 0;
 	state->defaults = *defaults;
 	state->max_colors = max_colors;
 }

@@ -31,22 +31,30 @@
 /* Possible modes of processing escape codes. */
 typedef enum
 {
-	ESM_SHORT,         /* "Normal" state for standard escape codes. */
-	ESM_GOT_FG_PREFIX, /* After first number of xterm256 foreground sequence. */
-	ESM_GOT_BG_PREFIX, /* After first number of xterm256 background sequence. */
-	ESM_WAIT_FG_COLOR, /* After second number of xterm256 foreground sequence. */
-	ESM_WAIT_BG_COLOR, /* After second number of xterm256 background sequence. */
+	ESM_SHORT,          /* "Normal" state for standard escape codes. */
+	ESM_GOT_FG_PREFIX,  /* After `^[38;`. */
+	ESM_GOT_BG_PREFIX,  /* After `^[48;`. */
+	ESM_WAIT_FG_COLOR,  /* After `^[38;5;`. */
+	ESM_WAIT_BG_COLOR,  /* After `^[48;5;`. */
+	ESM_WAIT_FG_R_COMP, /* After `^[38;2;`. */
+	ESM_WAIT_FG_G_COMP, /* After `^[38;2;R;`. */
+	ESM_WAIT_FG_B_COMP, /* After `^[38;2;G;`. */
+	ESM_WAIT_BG_R_COMP, /* After `^[48;2;`. */
+	ESM_WAIT_BG_G_COMP, /* After `^[48;2;R;`. */
+	ESM_WAIT_BG_B_COMP, /* After `^[48;2;G;`. */
 }
 EscStateMode;
 
 /* Holds state of escape sequence parsing. */
-typedef struct
+typedef struct esc_state
 {
 	EscStateMode mode;   /* Current mode of processing escape codes. */
 
 	int attrs;           /* Current set of attributes. */
-	int fg;              /* Current foreground color. */
-	int bg;              /* Current background color. */
+	int fg : 25;         /* Current foreground color. */
+	int is_fg_direct: 2; /* Whether fg contains RGB data. */
+	int bg : 25;         /* Current background color. */
+	int is_bg_direct: 2; /* Whether bg contains RGB data. */
 
 	col_attr_t defaults; /* Default values of other fields. */
 	int max_colors;      /* Limit on number of colors. */

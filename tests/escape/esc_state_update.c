@@ -26,6 +26,20 @@ TEST(color_palette_256_is_supported)
 	assert_int_equal(213, state.bg);
 }
 
+TEST(direct_colors_are_supported)
+{
+	col_attr_t def_color = { .fg = 1, .bg = 2, .attr = 0 };
+	esc_state_init(&state, &def_color, 256);
+
+	esc_state_update(&state, "\033[38;2;1;2;3m");
+	assert_true(state.is_fg_direct);
+	assert_int_equal(0x010203, state.fg);
+
+	esc_state_update(&state, "\033[48;2;9;8;7m");
+	assert_true(state.is_bg_direct);
+	assert_int_equal(0x090807, state.bg);
+}
+
 TEST(resetting_things_work)
 {
 	state.attrs = A_DIM;
@@ -33,8 +47,8 @@ TEST(resetting_things_work)
 	state.bg = 132;
 
 	esc_state_update(&state, "\033[m");
-	assert_int_equal(1, state.fg);
-	assert_int_equal(2, state.bg);
+	assert_int_equal(-1, state.fg);
+	assert_int_equal(-1, state.bg);
 	assert_int_equal(0, state.attrs);
 
 	state.attrs = A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM;
