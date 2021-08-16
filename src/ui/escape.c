@@ -470,6 +470,9 @@ apply_state(WINDOW *win, esc_state *state)
 	/* Mix direct part on top of cterm.  If direct colors aren't used, cterm color
 	 * prevails.  Attrs are zero by default and combined. */
 	const col_attr_t direct_col = {
+		.fg = -1,
+		.bg = -1,
+		.attr = -1,
 		.gui_fg = fix_direct_color(state->is_fg_direct ? state->fg : -1),
 		.gui_bg = fix_direct_color(state->is_bg_direct ? state->bg : -1),
 		.gui_attr = state->attrs,
