@@ -35,7 +35,7 @@ extern const char GIT_INFO[];
 int
 fill_version_info(char **list, int include_stats)
 {
-	const int LEN = 21;
+	const int LEN = 22;
 	int x = 0;
 
 	if(list == NULL)
@@ -117,11 +117,17 @@ fill_version_info(char **list, int include_stats)
 #endif
 		list[x++] = format_str("Max colors: %d", COLORS);
 		list[x++] = format_str("Max color pairs: %d", COLOR_PAIRS);
+#ifdef HAVE_EXTENDED_COLORS
+		list[x++] = strdup("Extended colors: present");
+#else
+		list[x++] = strdup("Extended colors: missing");
+#endif
 #ifndef _WIN32
 		list[x++] = format_str("RGB: %d", tigetflag("RGB"));
 #endif
 		list[x++] = format_str("Direct color: %s",
 				curr_stats.direct_color ? "yes" : "no");
+
 		list[x++] = strdup("");
 		list[x++] = format_str("Preview cache size: %s", size);
 	}

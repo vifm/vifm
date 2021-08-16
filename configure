@@ -9217,6 +9217,30 @@ fi
 
 
 
+use_extended_colors=yes
+
+ac_fn_c_check_func "$LINENO" "extended_pair_content" "ac_cv_func_extended_pair_content"
+if test "x$ac_cv_func_extended_pair_content" = xyes; then :
+
+else
+  use_extended_colors=no
+fi
+
+ac_fn_c_check_func "$LINENO" "pair_content" "ac_cv_func_pair_content"
+if test "x$ac_cv_func_pair_content" = xyes; then :
+
+else
+  use_extended_colors=no
+fi
+
+
+if test "$use_extended_colors" = "yes"; then
+
+$as_echo "#define HAVE_EXTENDED_COLORS 1" >>confdefs.h
+
+fi
+
+
 ac_fn_c_check_header_mongrel "$LINENO" "sys/inotify.h" "ac_cv_header_sys_inotify_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_inotify_h" = xyes; then :
   use_inotify=yes

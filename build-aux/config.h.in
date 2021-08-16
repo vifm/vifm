@@ -29,6 +29,9 @@
    if you don't. */
 #undef HAVE_DECL__PC_CASE_SENSITIVE
 
+/* extended curses colors are present */
+#undef HAVE_EXTENDED_COLORS
+
 /* Define if file program present */
 #undef HAVE_FILE_PROG
 
