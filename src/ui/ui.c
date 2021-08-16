@@ -290,7 +290,9 @@ setup_ncurses_interface(void)
 	}
 #endif
 
+#ifdef HAVE_EXTENDED_COLORS
 	curr_stats.direct_color = (COLORS == 0x1000000);
+#endif
 
 	ui_resize_all();
 
@@ -301,7 +303,7 @@ setup_ncurses_interface(void)
 static int
 init_pair_wrapper(int pair, int fg, int bg)
 {
-#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20180127
+#ifdef HAVE_EXTENDED_COLORS
 	return init_extended_pair(pair, fg, bg);
 #else
 	return init_pair(pair, fg, bg);
@@ -312,7 +314,7 @@ init_pair_wrapper(int pair, int fg, int bg)
 static int
 pair_content_wrapper(int pair, int *fg, int *bg)
 {
-#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20180127
+#ifdef HAVE_EXTENDED_COLORS
 	return extended_pair_content(pair, fg, bg);
 #else
 	short fg_short, bg_short;

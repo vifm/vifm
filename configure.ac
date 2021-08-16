@@ -531,6 +531,19 @@ AC_CHECK_FUNC([wtimeout], [], [AC_MSG_ERROR([wtimeout() function not found.])])
 AC_CHECK_FUNC([wtouchln], [], [AC_MSG_ERROR([wtouchln() function not found.])])
 
 dnl ----------------------------------------------------------------------------
+dnl check for extended colors/pairs
+dnl ----------------------------------------------------------------------------
+
+use_extended_colors=yes
+
+AC_CHECK_FUNC([extended_pair_content], [], [use_extended_colors=no], [[#include <curses.h>]])
+AC_CHECK_FUNC([pair_content], [], [use_extended_colors=no], [[#include <curses.h>]])
+
+if test "$use_extended_colors" = "yes"; then
+    AC_DEFINE([HAVE_EXTENDED_COLORS], [1], [extended curses colors are present])
+fi
+
+dnl ----------------------------------------------------------------------------
 dnl check for inotify
 dnl ----------------------------------------------------------------------------
 
