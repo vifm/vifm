@@ -78,6 +78,8 @@
 
 	Added "gui", "guifg" and "guibg" parameters to :highlight command.
 
+	Added some additional information about instance to the :version/:vifm menu.
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 
