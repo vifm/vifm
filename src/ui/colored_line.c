@@ -28,6 +28,8 @@
 #include "color_scheme.h"
 #include "ui.h"
 
+static size_t effective_chrw(const char line[]);
+
 cline_t
 cline_make(void)
 {
@@ -114,7 +116,7 @@ cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 			attr = cs_color_to_cchar(&col, -1);
 		}
 
-		const size_t len = utf8_chrw(line);
+		const size_t len = effective_chrw(line);
 		char char_buf[len + 1];
 		copy_str(char_buf, sizeof(char_buf), line);
 		wprinta(win, char_buf, &attr, 0);
@@ -122,6 +124,22 @@ cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 		line += len;
 		attrs += utf8_chrsw(char_buf);
 	}
+}
+
+/* Computes size of the leading UTF-8 character in bytes including all
+ * zero-width characters that follow it (like for umlauts).  Returns byte
+ * count. */
+static size_t
+effective_chrw(const char line[])
+{
+	size_t effective = utf8_chrw(line);
+
+	while(line[effective] != '\0' && utf8_chrsw(line + effective) == 0)
+	{
+		effective += utf8_chrw(line + effective);
+	}
+
+	return effective;
 }
 
 void
