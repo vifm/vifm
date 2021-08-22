@@ -32,5 +32,15 @@ TEST(escape_unreadable_escapes_control_codes)
 	free(escaped);
 }
 
+TEST(escape_unreadable_handles_composite_characters)
+{
+	const char *unescaped = "prefix\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f"
+		"\x4f\xcc\x88\x41\xccsuffix";
+
+	char *const escaped = escape_unreadable(unescaped);
+	assert_string_equal(unescaped, escaped);
+	free(escaped);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

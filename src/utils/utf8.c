@@ -68,6 +68,7 @@ size_t
 utf8_strsnlen(const char str[], size_t max_screen_width)
 {
 	size_t width = 0;
+
 	while(*str != '\0' && max_screen_width != 0)
 	{
 		size_t char_width = utf8_chrw(str);
@@ -80,6 +81,15 @@ utf8_strsnlen(const char str[], size_t max_screen_width)
 		width += char_width;
 		str += char_width;
 	}
+
+	/* Include composite characters. */
+	while(*str != '\0' && utf8_chrsw(str) == 0)
+	{
+		const size_t char_width = utf8_chrw(str);
+		width += char_width;
+		str += char_width;
+	}
+
 	return width;
 }
 
@@ -88,7 +98,7 @@ utf8_nstrlen(const char str[])
 {
 	size_t length_left = strlen(str);
 	size_t length = 0;
-	while(length_left != '\0')
+	while(length_left != 0)
 	{
 		const size_t char_width = utf8_chrw(str);
 		if(char_width > length_left)
@@ -108,7 +118,9 @@ utf8_nstrsnlen(const char str[], size_t max_screen_width)
 {
 	size_t length_left = strlen(str);
 	size_t length = 0;
-	while(length_left != 0 && max_screen_width > 0)
+
+	/* The loop includes composite characters. */
+	while(length_left != 0)
 	{
 		size_t char_screen_width;
 		const size_t char_width = utf8_chrw(str);
@@ -128,6 +140,7 @@ utf8_nstrsnlen(const char str[], size_t max_screen_width)
 		str += char_width;
 		length_left -= char_width;
 	}
+
 	return length;
 }
 

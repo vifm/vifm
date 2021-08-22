@@ -60,6 +60,7 @@
 #include "path.h"
 #include "str.h"
 #include "string_array.h"
+#include "utf8.h"
 
 static void show_progress_cb(const void *descr);
 static const char ** get_size_suffixes(void);
@@ -538,21 +539,27 @@ escape_for_dquotes(const char string[], size_t offset)
 char *
 escape_unreadable(const char str[])
 {
-	char *escaped = malloc(strlen(str)*2 + 1);
+	int str_len = strlen(str);
+	char *escaped = malloc(str_len*2 + 1);
 
 	char *out = escaped;
-	while(*str != '\0')
+	while(str_len > 0)
 	{
-		if(iscntrl((unsigned char)*str))
+		const size_t char_len = utf8_chrw(str);
+
+		if(char_len == 1 && iscntrl((unsigned char)*str))
 		{
 			*out++ = '^';
 			*out++ = *str ^ 64;
 		}
 		else
 		{
-			*out++ = *str;
+			memcpy(out, str, char_len);
+			out += char_len;
 		}
-		++str;
+
+		str += char_len;
+		str_len -= char_len;
 	}
 	*out = '\0';
 
