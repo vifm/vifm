@@ -52,6 +52,8 @@
 #define os_tmpfile tmpfile
 #define os_getcwd getcwd
 
+int os_fdatasync(int fd);
+
 #else
 
 #include <fcntl.h> /* *_OK */
