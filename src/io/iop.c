@@ -573,7 +573,7 @@ iop_cp_internal(io_args_t *args)
 			ncopied += nread;
 			if(ncopied >= FLUSH_SIZE)
 			{
-				(void)fdatasync(fileno(out));
+				(void)os_fdatasync(fileno(out));
 				ncopied -= FLUSH_SIZE;
 			}
 #endif

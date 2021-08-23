@@ -345,6 +345,22 @@ os_getcwd(char buf[], size_t size)
 	return buf;
 }
 
+#else
+
+#include <fcntl.h> /* F_FULLFSYNC */
+#include <unistd.h> /* fcntl() fdatasync() */
+
+int
+os_fdatasync(int fd)
+{
+#ifdef F_FULLFSYNC
+	/* OS X system might not have fdatasync(). */
+	return fcntl(fd, F_FULLFSYNC);
+#else
+	return fdatasync(fd);
+#endif
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Aug 14
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Aug 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3987,7 +3987,8 @@ are supported:
          visual mode, since it cannot be selected
     %d - file modification date (uses |vifm-'timefmt'| option)
     %D - path of the other pane for single-pane layout
-    %a - amount of free space available at current partition
+    %a - amount of free space available on current FS
+    %c - size of current FS
     %z - short tips/tricks/hints that chosen randomly after one minute period
     `%{<expr>}` - evaluate arbitrary vifm expression `<expr>`, e.g. `&sort`
     %* - resets or applies one of User1..User9 highlight groups; reset happens
