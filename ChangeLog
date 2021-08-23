@@ -80,6 +80,9 @@
 
 	Added some additional information about instance to the :version/:vifm menu.
 
+	Added %c 'statusline' macro that displays size of current file-system.
+	Thanks to Jose Riha (a.k.a. jose1711).
+
 	Made :VifmCs of the plugin fail when 'termguicolors' produces a 24-bit color
 	value.  Thanks to AtomToast.
 

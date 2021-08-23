@@ -124,6 +124,13 @@ TEST(a_macro_expanded)
 	ASSERT_EXPANDED("%a");
 }
 
+TEST(c_macro_expanded)
+{
+	ASSERT_EXPANDED("%c");
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	ASSERT_EXPANDED("%c");
+}
+
 TEST(A_macro_expanded)
 {
 	ASSERT_EXPANDED("%A");
@@ -215,7 +222,7 @@ TEST(percent_macro_expanded)
 
 TEST(wrong_macros_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLPS%[]z{*";
+	static const char STATUS_CHARS[] = "tTfacAugsEdD-xlLPS%[]z{*";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -230,7 +237,7 @@ TEST(wrong_macros_ignored)
 
 TEST(wrong_macros_with_width_field_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLPS%[]z{*";
+	static const char STATUS_CHARS[] = "tTfacAugsEdD-xlLPS%[]z{*";
 	int i;
 
 	for(i = 1; i <= 255; ++i)

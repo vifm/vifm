@@ -69,7 +69,7 @@ static const char * format_job_bar(void);
 static char ** take_job_descr_snapshot(void);
 
 /* List of macros that are expanded in the status line. */
-static const char STATUS_LINE_MACROS[] = "tTfaAugsEdD-xlLPSz%[]{*";
+static const char STATUS_LINE_MACROS[] = "tTfacAugsEdD-xlLPSz%[]{*";
 
 /* Number of background jobs. */
 static size_t nbar_jobs;
@@ -322,6 +322,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 
 		/* Query drive information at most once. */
 		uint64_t free_space;
+		uint64_t total_space;
 		int have_drive_info = 0;
 
 		skip = 0;
@@ -334,10 +335,18 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 
 			case 'a':
 				have_drive_info = have_drive_info ||
-					(get_drive_info(curr_view->curr_dir, &free_space) == 0);
+					(get_drive_info(curr_view->curr_dir, &total_space, &free_space) == 0);
 				if(have_drive_info)
 				{
 					friendly_size_notation(free_space, sizeof(buf), buf);
+				}
+				break;
+			case 'c':
+				have_drive_info = have_drive_info ||
+					(get_drive_info(curr_view->curr_dir, &total_space, &free_space) == 0);
+				if(have_drive_info)
+				{
+					friendly_size_notation(total_space, sizeof(buf), buf);
 				}
 				break;
 			case 't':

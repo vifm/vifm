@@ -1190,7 +1190,7 @@ clone_xattrs(const char path[], const char from[])
 }
 
 int
-get_drive_info(const char at[], uint64_t *free_bytes)
+get_drive_info(const char at[], uint64_t *total_bytes, uint64_t *free_bytes)
 {
 	struct statvfs st;
 	if(statvfs(at, &st) != 0)
@@ -1200,10 +1200,13 @@ get_drive_info(const char at[], uint64_t *free_bytes)
 
 #ifdef __APPLE__
 	/* Apple is so fucking different... */
-	*free_bytes = (uint64_t)st.f_frsize*st.f_bavail;
+	const uint64_t block_size = st.f_frsize;
 #else
-	*free_bytes = (uint64_t)st.f_bsize*st.f_bavail;
+	const uint64_t block_size = st.f_bsize;
 #endif
+
+	*total_bytes = st.f_blocks*block_size;
+	*free_bytes = st.f_bavail*block_size;
 	return 0;
 }
 

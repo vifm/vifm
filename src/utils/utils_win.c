@@ -1073,7 +1073,7 @@ get_set_owner_privilege(void)
 }
 
 int
-get_drive_info(const char at[], uint64_t *free_bytes)
+get_drive_info(const char at[], uint64_t *total_bytes, uint64_t *free_bytes)
 {
 	char *const root_path = get_root_path(at);
 	DWORD sectors_in_cluster, bytes_in_sector, free_cluster_count;
@@ -1086,6 +1086,8 @@ get_drive_info(const char at[], uint64_t *free_bytes)
 	}
 	free(root_path);
 
+	*total_bytes =
+		(uint64_t)bytes_in_sector*sectors_in_cluster*total_number_of_clusters;
 	*free_bytes = (uint64_t)bytes_in_sector*sectors_in_cluster*free_cluster_count;
 	return 0;
 }
