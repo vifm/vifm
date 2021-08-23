@@ -320,6 +320,10 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 		}
 		c = *(*format)++;
 
+		/* Query drive information at most once. */
+		uint64_t free_space;
+		int have_drive_info = 0;
+
 		skip = 0;
 		ok = 1;
 		buf[0] = '\0';
@@ -329,8 +333,12 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 			char *escaped;
 
 			case 'a':
-				friendly_size_notation(get_free_space(curr_view->curr_dir), sizeof(buf),
-						buf);
+				have_drive_info = have_drive_info ||
+					(get_drive_info(curr_view->curr_dir, &free_space) == 0);
+				if(have_drive_info)
+				{
+					friendly_size_notation(free_space, sizeof(buf), buf);
+				}
 				break;
 			case 't':
 			case 'f':

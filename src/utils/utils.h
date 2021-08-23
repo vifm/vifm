@@ -288,9 +288,9 @@ const char * get_sys_conf_dir(void);
  * to omit extra file system requests if possible, can be NULL on Windows. */
 void clone_attribs(const char path[], const char from[], const struct stat *st);
 
-/* Retrives amount of free space at location specified by the path.  Returns the
- * amount in bytes. */
-uint64_t get_free_space(const char at[]);
+/* Retrieves drive information for location specified by the path.  Returns zero
+ * on success and non-zero otherwise. */
+int get_drive_info(const char at[], uint64_t *free_bytes);
 
 /* Retrieves inode number that corresponds to the entry by resolving symbolic
  * links if necessary.  Returns the inode number. */

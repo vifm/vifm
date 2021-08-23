@@ -1072,21 +1072,22 @@ get_set_owner_privilege(void)
 	return granted;
 }
 
-uint64_t
-get_free_space(const char at[])
+int
+get_drive_info(const char at[], uint64_t *free_bytes)
 {
 	char *const root_path = get_root_path(at);
-	DWORD sectors_per_cluster, bytes_per_sector, number_of_free_clusters;
+	DWORD sectors_in_cluster, bytes_in_sector, free_cluster_count;
 	DWORD total_number_of_clusters;
-	if(!GetDiskFreeSpaceA(root_path, &sectors_per_cluster,
-				&bytes_per_sector, &number_of_free_clusters, &total_number_of_clusters))
+	if(!GetDiskFreeSpaceA(root_path, &sectors_in_cluster, &bytes_in_sector,
+				&free_cluster_count, &total_number_of_clusters))
 	{
 		free(root_path);
-		return 0;
+		return -1;
 	}
 	free(root_path);
 
-	return (uint64_t)bytes_per_sector*sectors_per_cluster*number_of_free_clusters;
+	*free_bytes = (uint64_t)bytes_in_sector*sectors_in_cluster*free_cluster_count;
+	return 0;
 }
 
 /* Extracts root part of the path (drive name or UNC share name).  Returns newly
