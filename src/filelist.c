@@ -1449,7 +1449,7 @@ flist_custom_uncompress_tree(view_t *view)
 void
 flist_custom_save(view_t *view)
 {
-	if(!flist_custom_active(view) || view->custom.type == CV_TREE)
+	if(flist_is_fs_backed(view))
 	{
 		flist_custom_drop_save(view);
 		return;
@@ -2834,8 +2834,7 @@ check_if_filelist_has_changed(view_t *view)
 	}
 	else if(flist_custom_active(view) && cv_tree(view->custom.type))
 	{
-		/* Custom trees don't track file-system changes. */
-		if(view->custom.type == CV_TREE &&
+		if(flist_is_fs_backed(view) &&
 				tree_has_changed(view->dir_entry, view->list_rows))
 		{
 			ui_view_schedule_reload(view);

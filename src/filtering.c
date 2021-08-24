@@ -198,7 +198,7 @@ name_filters_add_active(view_t *view)
 				&view->custom.full.nentries, &is_newly_filtered, &filter, 1, 1);
 	}
 
-	if(!flist_custom_active(view) || view->custom.type == CV_TREE)
+	if(flist_is_fs_backed(view))
 	{
 		view->filtered += filtered;
 	}
@@ -482,7 +482,7 @@ list_is_incomplete(view_t *view)
 		return 1;
 	}
 
-	if(flist_custom_active(view) && view->custom.type != CV_TREE)
+	if(!flist_is_fs_backed(view))
 	{
 		return 0;
 	}
