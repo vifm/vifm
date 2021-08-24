@@ -313,6 +313,9 @@ void flist_free_cache(view_t *view, cached_entries_t *cache);
 void flist_update_origins(view_t *view);
 /* Toggles fold of the current entry if applicable. */
 void flist_toggle_fold(view_t *view);
+/* Checks whether file list synchronizes with FS.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int flist_is_fs_backed(const view_t *view);
 
 TSTATIC_DEFS(
 	void check_file_uniqueness(view_t *view);

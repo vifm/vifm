@@ -4385,5 +4385,12 @@ init_parent_entry(view_t *view, dir_entry_t *entry, const char path[])
 	return 0;
 }
 
+int
+flist_is_fs_backed(const view_t *view)
+{
+	/* Custom trees don't track file-system changes. */
+	return (!flist_custom_active(view) || view->custom.type == CV_TREE);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
