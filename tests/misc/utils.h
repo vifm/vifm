@@ -6,6 +6,9 @@ struct view_t;
 
 int load_tree(struct view_t *view, const char path[], const char cwd[]);
 
+int load_limited_tree(struct view_t *view, const char path[], const char cwd[],
+		int depth);
+
 void load_view(struct view_t *view);
 
 void validate_tree(const struct view_t *view);

@@ -378,6 +378,42 @@ TEST(folding_grind)
 	assert_int_equal(7, lwin.list_rows);
 }
 
+TEST(lazy_unfolding)
+{
+	assert_success(load_limited_tree(&lwin, TEST_DATA_PATH "/tree", cwd, 0));
+	assert_int_equal(3, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(5, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	assert_string_equal("dir2", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(7, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	assert_string_equal("dir2", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(5, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	assert_string_equal("dir2", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(7, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(3, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(7, lwin.list_rows);
+}
+
 static void
 column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info)
