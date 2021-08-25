@@ -414,6 +414,24 @@ TEST(lazy_unfolding)
 	assert_int_equal(7, lwin.list_rows);
 }
 
+TEST(lazy_unfolding_and_filtering)
+{
+	(void)filter_set(&lwin.local_filter.filter, "^[^1]+$");
+
+	assert_success(load_limited_tree(&lwin, TEST_DATA_PATH "/tree", cwd, 0));
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("dir5", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(4, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("dir5", lwin.dir_entry[lwin.list_pos].name);
+	toggle_fold_and_update(&lwin);
+	assert_int_equal(2, lwin.list_rows);
+}
+
 static void
 column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info)

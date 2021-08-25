@@ -4213,17 +4213,30 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		dir = is_dir(full_path);
 		if(!tree_candidate_is_visible(view, path, lst[i], dir, 1))
 		{
+			const int real_dir = (dir && !is_symlink(full_path));
+
+			FoldState state;
+			if(real_dir)
+			{
+				state = get_fold_state(folded_paths, full_path);
+			}
+
+			if(real_dir &&
+					(depth == 0 ||
+					 (state == FOLD_UNDEFINED && parent_fold == FOLD_AUTO_OPENED)))
+			{
+				if(set_fold_state(folded_paths, full_path, FOLD_AUTO_CLOSED))
+				{
+					state = FOLD_AUTO_CLOSED;
+				}
+			}
+
 			/* Traverse directory (but not symlink to it) even if we're skipping it,
 			 * because we might need files that are inside of it. */
-			if(dir && depth > 0 && !is_symlink(full_path) &&
+			if(real_dir && depth > 0 &&
 					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
-				FoldState state = get_fold_state(folded_paths, full_path);
-				if(state == FOLD_UNDEFINED && parent_fold == FOLD_AUTO_OPENED)
-				{
-						(void)set_fold_state(folded_paths, full_path, FOLD_AUTO_CLOSED);
-				}
-				else if(state != FOLD_AUTO_CLOSED && state != FOLD_USER_CLOSED)
+				if(state != FOLD_AUTO_CLOSED && state != FOLD_USER_CLOSED)
 				{
 					nfiltered += add_files_recursively(view, full_path, excluded_paths,
 							folded_paths, parent_pos, 1, depth - 1);
