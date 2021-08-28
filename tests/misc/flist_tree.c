@@ -32,8 +32,6 @@ static void verify_tree_node(column_data_t *cdt, int idx,
 static void column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static int remove_selected(view_t *view, const dir_entry_t *entry, void *arg);
-static int load_limited_tree(view_t *view, const char path[], const char cwd[],
-		int depth);
 
 static char cwd[PATH_MAX + 1], test_data[PATH_MAX + 1];
 
@@ -679,14 +677,6 @@ static int
 remove_selected(view_t *view, const dir_entry_t *entry, void *arg)
 {
 	return !entry->selected;
-}
-
-static int
-load_limited_tree(view_t *view, const char path[], const char cwd[], int depth)
-{
-	char abs_path[PATH_MAX + 1];
-	make_abs_path(abs_path, sizeof(abs_path), path, "", cwd);
-	return flist_load_tree(view, abs_path, depth);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

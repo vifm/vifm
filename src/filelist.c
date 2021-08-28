@@ -87,6 +87,18 @@
 #include "status.h"
 #include "types.h"
 
+/* State of a fold. */
+typedef enum
+{
+	FOLD_UNDEFINED,   /* Indication of undefined state. */
+	FOLD_USER_OPENED, /* User manually opened the fold. */
+	FOLD_USER_CLOSED, /* User manually closed the fold. */
+	FOLD_AUTO_OPENED, /* An auto-closed fold that was opened the first time. */
+	FOLD_AUTO_CLOSED, /* Closed on reaching depth limit on building or after
+	                     opening such a fold ("lazy unfolding"). */
+}
+FoldState;
+
 static void init_flist(view_t *view);
 static void reset_view(view_t *view);
 static void init_view_history(view_t *view);
@@ -177,16 +189,15 @@ static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, trie_t *folded_paths, int parent_pos,
 		int no_direct_parent, int depth);
+static FoldState get_fold_state(trie_t *folded_paths, const char full_path[]);
+static int set_fold_state(trie_t *folded_paths, const char full_path[],
+		FoldState state);
 static int entry_is_visible(view_t *view, const char name[], const void *data);
 static int tree_candidate_is_visible(view_t *view, const char path[],
 		const char name[], int is_dir, int apply_local_filter);
 static int add_directory_leaf(view_t *view, const char path[], int parent_pos);
 static int init_parent_entry(view_t *view, dir_entry_t *entry,
 		const char path[]);
-
-/* Address of this variable is used to signify closed state of a fold (NULL
- * means that it's open). */
-static char folded_marker;
 
 void
 init_filelists(void)
@@ -1449,7 +1460,7 @@ flist_custom_uncompress_tree(view_t *view)
 void
 flist_custom_save(view_t *view)
 {
-	if(!flist_custom_active(view) || view->custom.type == CV_TREE)
+	if(flist_is_fs_backed(view))
 	{
 		flist_custom_drop_save(view);
 		return;
@@ -1908,8 +1919,8 @@ re_apply_folds(view_t *view, trie_t *folded_paths)
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		void *dummy;
-		if(trie_get(folded_paths, full_path, &dummy) == 0 && dummy != NULL)
+		FoldState state = get_fold_state(folded_paths, full_path);
+		if(state == FOLD_USER_CLOSED || state == FOLD_AUTO_CLOSED)
 		{
 			/* Previously folded entry that has just become visible. */
 			remove_child_entries(view, entry);
@@ -2834,8 +2845,7 @@ check_if_filelist_has_changed(view_t *view)
 	}
 	else if(flist_custom_active(view) && cv_tree(view->custom.type))
 	{
-		/* Custom trees don't track file-system changes. */
-		if(view->custom.type == CV_TREE &&
+		if(flist_is_fs_backed(view) &&
 				tree_has_changed(view->dir_entry, view->list_rows))
 		{
 			ui_view_schedule_reload(view);
@@ -2984,12 +2994,21 @@ flist_toggle_fold(view_t *view)
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	void *folded = NULL;
-	(void)trie_get(view->custom.folded_paths, full_path, &folded);
-	assert(curr->folded == (folded != NULL) && "Metadata is not in sync.");
+	FoldState state = get_fold_state(view->custom.folded_paths, full_path);
 
-	folded = (curr->folded ? NULL : &folded_marker);
-	if(trie_set(view->custom.folded_paths, full_path, folded) >= 0)
+	assert(curr->folded == (state == FOLD_USER_CLOSED ||
+				state == FOLD_AUTO_CLOSED) && "Metadata is not in sync.");
+
+	switch(state)
+	{
+		case FOLD_UNDEFINED:   state = FOLD_USER_CLOSED; break;
+		case FOLD_USER_OPENED: state = FOLD_USER_CLOSED; break;
+		case FOLD_USER_CLOSED: state = FOLD_USER_OPENED; break;
+		case FOLD_AUTO_OPENED: state = FOLD_USER_CLOSED; break;
+		case FOLD_AUTO_CLOSED: state = FOLD_AUTO_OPENED; break;
+	}
+
+	if(set_fold_state(view->custom.folded_paths, full_path, state))
 	{
 		curr->folded = !curr->folded;
 		/* We reload even on folding to update number of filtered entries
@@ -3807,18 +3826,22 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 		free(root);
 	}
 
-	free(old_name);
-
 	/* Cloning of a folded directory should produce a folded clone. */
 	if(entry->folded)
 	{
 		char full_path[PATH_MAX + 1];
+		build_path(full_path, sizeof(full_path), entry->origin, old_name);
+
+		FoldState state = get_fold_state(view->custom.folded_paths, full_path);
+
 		get_full_path_of(entry, sizeof(full_path), full_path);
-		if(trie_set(view->custom.folded_paths, full_path, &folded_marker) < 0)
+		if(!set_fold_state(view->custom.folded_paths, full_path, state))
 		{
 			entry->folded = 0;
 		}
 	}
+
+	free(old_name);
 }
 
 int
@@ -4172,6 +4195,8 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		return -1;
 	}
 
+	FoldState parent_fold = get_fold_state(folded_paths, path);
+
 	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
 		int dir;
@@ -4188,12 +4213,30 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 		dir = is_dir(full_path);
 		if(!tree_candidate_is_visible(view, path, lst[i], dir, 1))
 		{
+			const int real_dir = (dir && !is_symlink(full_path));
+
+			FoldState state;
+			if(real_dir)
+			{
+				state = get_fold_state(folded_paths, full_path);
+			}
+
+			if(real_dir &&
+					(depth == 0 ||
+					 (state == FOLD_UNDEFINED && parent_fold == FOLD_AUTO_OPENED)))
+			{
+				if(set_fold_state(folded_paths, full_path, FOLD_AUTO_CLOSED))
+				{
+					state = FOLD_AUTO_CLOSED;
+				}
+			}
+
 			/* Traverse directory (but not symlink to it) even if we're skipping it,
 			 * because we might need files that are inside of it. */
-			if(dir && depth > 0 && !is_symlink(full_path) &&
+			if(real_dir && depth > 0 &&
 					tree_candidate_is_visible(view, path, lst[i], dir, 0))
 			{
-				if(trie_get(folded_paths, full_path, &dummy) != 0 || dummy == NULL)
+				if(state != FOLD_AUTO_CLOSED && state != FOLD_USER_CLOSED)
 				{
 					nfiltered += add_files_recursively(view, full_path, excluded_paths,
 							folded_paths, parent_pos, 1, depth - 1);
@@ -4220,14 +4263,16 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 
 		/* Not using dir variable here, because it is set for symlinks to
 		 * directories as well. */
-		entry->folded = entry->type == FT_DIR
-		             && trie_get(folded_paths, full_path, &dummy) == 0
-		             && dummy != NULL;
+		FoldState state = get_fold_state(folded_paths, full_path);
+		entry->folded = (entry->type == FT_DIR)
+		             && (state == FOLD_USER_CLOSED || state == FOLD_AUTO_CLOSED);
+
 		if(entry->type == FT_DIR && !entry->folded)
 		{
-			if(depth == 0)
+			if(depth == 0 ||
+					(state == FOLD_UNDEFINED && parent_fold == FOLD_AUTO_OPENED))
 			{
-				if(trie_set(folded_paths, full_path, &folded_marker) >= 0)
+				if(set_fold_state(folded_paths, full_path, FOLD_AUTO_CLOSED))
 				{
 					entry->folded = 1;
 				}
@@ -4271,6 +4316,27 @@ add_files_recursively(view_t *view, const char path[], trie_t *excluded_paths,
 	}
 
 	return nfiltered;
+}
+
+/* Retrieves state of the fold if present.  Returns the state or
+ * FOLD_UNDEFINED. */
+static FoldState
+get_fold_state(trie_t *folded_paths, const char full_path[])
+{
+	void *data;
+	if(trie_get(folded_paths, full_path, &data) != 0)
+	{
+		return FOLD_UNDEFINED;
+	}
+
+	return (FoldState)(uintptr_t)data;
+}
+
+/* Sets state of a fold. */
+static int
+set_fold_state(trie_t *folded_paths, const char full_path[], FoldState state)
+{
+	return (trie_set(folded_paths, full_path, (void *)state) >= 0);
 }
 
 /* Checks whether file is visible according to all filters.  Returns non-zero if
@@ -4383,6 +4449,13 @@ init_parent_entry(view_t *view, dir_entry_t *entry, const char path[])
 	entry->nlinks = s.st_nlink;
 
 	return 0;
+}
+
+int
+flist_is_fs_backed(const view_t *view)
+{
+	/* Custom trees don't track file-system changes. */
+	return (!flist_custom_active(view) || view->custom.type == CV_TREE);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -123,16 +123,61 @@ TEST(cloning_does_not_work_in_custom_view)
 
 	create_file("do-not-clone-me");
 
+	/* Without specifying new name. */
+
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "do-not-clone-me");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	/* Without specifying new name. */
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_clone(&lwin, NULL, 0, 0, 1);
 	assert_failure(unlink("do-not-clone-me(1)"));
 
+	/* Must recreate custom view to account for cloning renaming a file entry. */
+
 	/* With name specified. */
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "do-not-clone-me");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	lwin.dir_entry[0].marked = 1;
+	(void)fops_clone(&lwin, names, 1, 0, 1);
+	assert_failure(unlink("a-clone"));
+
+	assert_success(unlink("do-not-clone-me"));
+}
+
+TEST(cloning_does_not_work_in_custom_tree)
+{
+	char *names[] = { "a-clone" };
+
+	create_file("do-not-clone-me");
+
+	/* Without specifying new name. */
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "do-not-clone-me");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(flist_load_tree(&lwin, ".", INT_MAX));
+	assert_int_equal(CV_CUSTOM_TREE, lwin.custom.type);
+
+	lwin.dir_entry[0].marked = 1;
+	(void)fops_clone(&lwin, NULL, 0, 0, 1);
+	assert_failure(unlink("do-not-clone-me(1)"));
+
+	/* Must recreate custom view to account for cloning renaming a file entry. */
+
+	/* With name specified. */
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "do-not-clone-me");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(flist_load_tree(&lwin, ".", INT_MAX));
+	assert_int_equal(CV_CUSTOM_TREE, lwin.custom.type);
+
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_clone(&lwin, names, 1, 0, 1);
 	assert_failure(unlink("a-clone"));

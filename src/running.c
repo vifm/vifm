@@ -904,11 +904,11 @@ run_shell_finish(const char cmd[], const char final_cmd[], ShellPause pause,
 	}
 
 	/* Force updates of views that don't have associated watchers. */
-	if(flist_custom_active(&lwin) && lwin.custom.type != CV_TREE)
+	if(!flist_is_fs_backed(&lwin))
 	{
 		ui_view_schedule_reload(&lwin);
 	}
-	if(flist_custom_active(&rwin) && rwin.custom.type != CV_TREE)
+	if(!flist_is_fs_backed(&rwin))
 	{
 		ui_view_schedule_reload(&rwin);
 	}

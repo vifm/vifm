@@ -1137,7 +1137,7 @@ fops_view_can_be_changed(const view_t *view)
 int
 fops_view_can_be_extended(const view_t *view, int at)
 {
-	if(flist_custom_active(view) && !cv_tree(view->custom.type))
+	if(!flist_is_fs_backed(view))
 	{
 		show_error_msg("Operation error",
 				"Custom view can't handle this operation.");

@@ -219,6 +219,10 @@
 	Fixed issues with displaying composite characters.  Thanks to Dennis
 	Preiser (a.k.a. 0xDP).
 
+	Fixed some file operations not being blocked in custom trees even though
+	they can't handle them (custom views in general can't).  Thanks to
+	filterfalse.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.

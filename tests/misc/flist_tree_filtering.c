@@ -293,6 +293,16 @@ TEST(filtering_does_not_hide_parent_refs)
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 }
 
+TEST(filtering_and_nesting_limit)
+{
+	(void)filter_set(&lwin.local_filter.filter, "^[^1]+$");
+
+	assert_success(load_limited_tree(&lwin, TEST_DATA_PATH "/tree", cwd, 0));
+	assert_int_equal(2, lwin.list_rows);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(2, lwin.list_rows);
+}
+
 static void
 column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info)
