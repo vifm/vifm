@@ -119,6 +119,7 @@ static void draw_lines(const strlist_t *lines, int wrapped,
 static void write_message(const char msg[], const preview_area_t *parea);
 static void cleanup_for_text(const preview_area_t *parea);
 static void wipe_area(const preview_area_t *parea);
+static void fill_area(const preview_area_t *parea);
 
 /* Cached preview data for a single file entry. */
 static quickview_cache_t qv_cache;
@@ -229,17 +230,8 @@ qv_draw_on(const dir_entry_t *entry, const preview_area_t *parea)
 {
 	static quickview_cache_t lwin_cache, rwin_cache;
 
-	char filler[parea->w + 1];
-	memset(filler, ' ', sizeof(filler) - 1U);
-	filler[sizeof(filler) - 1U] = '\0';
-
 	ui_set_attr(parea->view->win, &parea->def_col, -1);
-
-	int line;
-	for(line = parea->y; line < parea->y + parea->h; ++line)
-	{
-		mvwaddstr(parea->view->win, line, parea->x, filler);
-	}
+	fill_area(parea);
 
 	quickview_cache_t *cache = (parea->view == &lwin ? &lwin_cache : &rwin_cache);
 
@@ -923,6 +915,21 @@ wipe_area(const preview_area_t *parea)
 	col_attr_t col = { .fg = parea->def_col.fg, .bg = parea->def_col.bg };
 	ui_set_attr(parea->view->win, &col, -1);
 
+	fill_area(parea);
+	/* The check is for tests, which work otherwise. */
+	if(parea->view->win != NULL)
+	{
+		redrawwin(parea->view->win);
+	}
+	ui_refresh_win(parea->view->win);
+
+	ui_set_attr(parea->view->win, &parea->def_col, -1);
+}
+
+/* Fills preview area with spaces just to clear background. */
+static void
+fill_area(const preview_area_t *parea)
+{
 	char filler[parea->w + 1];
 	memset(filler, ' ', sizeof(filler) - 1U);
 	filler[sizeof(filler) - 1U] = '\0';
@@ -932,14 +939,6 @@ wipe_area(const preview_area_t *parea)
 	{
 		mvwaddstr(parea->view->win, line, parea->x, filler);
 	}
-	/* The check is for tests, which work otherwise. */
-	if(parea->view->win != NULL)
-	{
-		redrawwin(parea->view->win);
-	}
-	ui_refresh_win(parea->view->win);
-
-	ui_set_attr(parea->view->win, &parea->def_col, -1);
 }
 
 const char *
