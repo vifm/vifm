@@ -382,26 +382,31 @@ draw_right_column(view_t *view)
 		return;
 	}
 
+	const col_scheme_t *const cs = ui_view_get_cs(view);
+	col_attr_t def_col = ui_get_win_color(view, cs);
+	cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
+
+	const preview_area_t parea = {
+		.source = view,
+		.view = view,
+		.def_col = def_col,
+		.x = offset,
+		.y = 0,
+		.w = ui_view_right_reserved(view) - 1,
+		.h = view->window_rows,
+	};
+
 	dir_entry_t *const entry = get_current_entry(view);
 	if(view->miller_preview_files && !fentry_is_dir(entry))
 	{
-		const col_scheme_t *const cs = ui_view_get_cs(view);
-		col_attr_t def_col = ui_get_win_color(view, cs);
-		cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
-
-		const preview_area_t parea = {
-			.source = view,
-			.view = view,
-			.def_col = def_col,
-			.x = offset,
-			.y = 0,
-			.w = ui_view_right_reserved(view) - 1,
-			.h = view->window_rows,
-		};
 		const char *clear_cmd = qv_draw_on(entry, &parea);
 		update_string(&view->file_preview_clear_cmd, clear_cmd);
 		return;
 	}
+
+	/* Do this even if there is no clear command. */
+	qv_cleanup_area(&parea, view->file_preview_clear_cmd);
+	update_string(&view->file_preview_clear_cmd, NULL);
 
 	char path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(path), path);
