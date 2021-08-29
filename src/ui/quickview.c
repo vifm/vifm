@@ -912,7 +912,9 @@ wipe_area(const preview_area_t *parea)
 
 	/* User doesn't need to see fake filling so draw it with the color of
 	 * background. */
-	col_attr_t col = { .fg = parea->def_col.fg, .bg = parea->def_col.bg };
+	col_attr_t col = parea->def_col;
+	col.attr = 0;
+	col.gui_attr = 0;
 	ui_set_attr(parea->view->win, &col, -1);
 
 	fill_area(parea);
