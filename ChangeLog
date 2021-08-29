@@ -223,6 +223,10 @@
 	they can't handle them (custom views in general can't).  Thanks to
 	filterfalse.
 
+	Fixed graphical preview of files in the right column of miller view not
+	being properly cleared on switching to a directory preview.  Thanks to
+	TheMystifyingCharacter.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
