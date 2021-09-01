@@ -159,6 +159,10 @@ TEST(find_first_and_last_siblings)
 	lwin.list_pos = 11;
 	assert_int_equal(0, fpos_first_sibling(&lwin));
 	assert_int_equal(11, fpos_last_sibling(&lwin));
+
+	lwin.list_pos = 1;
+	assert_int_equal(1, fpos_first_sibling(&lwin));
+	assert_int_equal(7, fpos_last_sibling(&lwin));
 }
 
 TEST(find_next_and_prev_dir_sibling)
