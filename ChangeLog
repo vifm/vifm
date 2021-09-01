@@ -230,6 +230,9 @@
 	Fixed sample :zip command to work with multiple files.  Thanks to
 	Branislav Gerazov.
 
+	Fixed handling of broken links that exist at destination on putting files.
+	Thanks to aleksejrs.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
