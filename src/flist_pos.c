@@ -643,7 +643,7 @@ fpos_next_dir_sibling(const view_t *view)
 	                 : pos - view->dir_entry[pos].child_pos;
 	const int past_end = parent == -1
 	                   ? view->list_rows
-	                   : parent + view->dir_entry[parent].child_count;
+	                   : parent + 1 + view->dir_entry[parent].child_count;
 	pos += view->dir_entry[pos].child_count + 1;
 	while(pos < past_end)
 	{

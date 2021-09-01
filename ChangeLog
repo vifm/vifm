@@ -233,6 +233,9 @@
 	Fixed handling of broken links that exist at destination on putting files.
 	Thanks to aleksejrs.
 
+	Fixed zj not working before the last entry if it's an empty directory.
+	Thanks to filterfalse.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
