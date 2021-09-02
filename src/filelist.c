@@ -3819,6 +3819,7 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 					free(e->origin);
 				}
 				e->origin = new_origin;
+				e->folded = 0;
 				e->owns_origin = 1;
 			}
 		}

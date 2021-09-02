@@ -217,6 +217,40 @@ TEST(cloning_folded_dir)
 	assert_success(rmdir("dir(1)"));
 }
 
+TEST(cloning_dir_with_folds)
+{
+	create_dir("dir");
+	create_dir("dir/sub");
+	create_file("dir/sub/a");
+
+	flist_load_tree(&lwin, ".", INT_MAX);
+	assert_int_equal(3, lwin.list_rows);
+
+	lwin.list_pos = 1;
+	flist_toggle_fold(&lwin);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.dir_entry[0].marked = 1;
+	(void)fops_clone(&lwin, NULL, 0, 0, 1);
+
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(5, lwin.list_rows);
+
+	lwin.list_pos = 3;
+	flist_toggle_fold(&lwin);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(4, lwin.list_rows);
+
+	remove_file("dir(1)/sub/a");
+	remove_dir("dir(1)/sub");
+	remove_dir("dir(1)");
+
+	remove_file("dir/sub/a");
+	remove_dir("dir/sub");
+	remove_dir("dir");
+}
+
 TEST(cloning_of_broken_symlink, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
