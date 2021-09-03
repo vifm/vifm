@@ -217,7 +217,7 @@ TEST(cloning_folded_dir)
 	assert_success(rmdir("dir(1)"));
 }
 
-TEST(cloning_dir_with_folds)
+TEST(cloning_dir_clones_child_folds)
 {
 	create_dir("dir");
 	create_dir("dir/sub");
@@ -235,12 +235,12 @@ TEST(cloning_dir_with_folds)
 	(void)fops_clone(&lwin, NULL, 0, 0, 1);
 
 	populate_dir_list(&lwin, /*reload=*/1);
-	assert_int_equal(5, lwin.list_rows);
+	assert_int_equal(4, lwin.list_rows);
 
 	lwin.list_pos = 3;
 	flist_toggle_fold(&lwin);
 	populate_dir_list(&lwin, /*reload=*/1);
-	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(5, lwin.list_rows);
 
 	remove_file("dir(1)/sub/a");
 	remove_dir("dir(1)/sub");

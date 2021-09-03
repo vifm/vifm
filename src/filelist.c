@@ -3811,6 +3811,10 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 			dir_entry_t *const e = &view->dir_entry[i];
 			if(path_starts_with(e->origin, root))
 			{
+				char full_path[PATH_MAX + 1];
+				get_full_path_of(e, sizeof(full_path), full_path);
+				FoldState state = get_fold_state(view->custom.folded_paths, full_path);
+
 				char *const new_origin = format_str("%s/%s%s", entry->origin, to,
 						e->origin + root_len);
 				chosp(new_origin);
@@ -3819,8 +3823,15 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 					free(e->origin);
 				}
 				e->origin = new_origin;
-				e->folded = 0;
 				e->owns_origin = 1;
+
+				/* Clone visible child folds. */
+				e->folded = 0;
+				get_full_path_of(e, sizeof(full_path), full_path);
+				if(set_fold_state(view->custom.folded_paths, full_path, state))
+				{
+					e->folded = (state == FOLD_USER_CLOSED || state == FOLD_AUTO_CLOSED);
+				}
 			}
 		}
 
