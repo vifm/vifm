@@ -51,6 +51,7 @@ SETUP()
 	saved_cwd = save_cwd();
 
 	regs_init();
+	fops_init(NULL, NULL);
 
 	view_setup(&lwin);
 	lwin.sort[0] = SK_BY_NAME;
@@ -396,10 +397,7 @@ TEST(broken_link_does_not_stop_putting, IF(not_windows))
 
 	create_dir(SANDBOX_PATH "/dir2");
 	create_dir(SANDBOX_PATH "/dst");
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("dir2", SANDBOX_PATH "/dir1"));
-#endif
+	assert_success(make_symlink("dir2", SANDBOX_PATH "/dir1"));
 
 	make_abs_path(path, sizeof(path), SANDBOX_PATH, "dir1", saved_cwd);
 	assert_success(regs_append('a', path));
@@ -419,6 +417,26 @@ TEST(broken_link_does_not_stop_putting, IF(not_windows))
 	assert_success(rmdir(SANDBOX_PATH "/dst/dir2"));
 
 	assert_success(rmdir(SANDBOX_PATH "/dst"));
+}
+
+TEST(broken_link_behaves_like_a_regular_file_on_conflict, IF(not_windows))
+{
+	create_dir(SANDBOX_PATH "/src");
+	create_file(SANDBOX_PATH "/src/symlink");
+	assert_success(make_symlink("notarget", SANDBOX_PATH "/symlink"));
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "src/symlink", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &cm_no);
+	(void)fops_put(&lwin, -1, 'a', /*move=*/1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	remove_file(SANDBOX_PATH "/src/symlink");
+	remove_dir(SANDBOX_PATH "/src");
+	remove_file(SANDBOX_PATH "/symlink");
 }
 
 static void

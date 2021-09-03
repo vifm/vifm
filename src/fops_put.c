@@ -582,7 +582,7 @@ put_next(int force)
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dst_name);
 	chosp(dst_buf);
 
-	if(!put_confirm.append && path_exists(dst_buf, DEREF))
+	if(!put_confirm.append && path_exists(dst_buf, NODEREF))
 	{
 		if(force)
 		{

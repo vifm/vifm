@@ -681,7 +681,7 @@ prepare_suggestion_box(int *height)
 			ui_stat_job_bar_height() - 2;
 		*height = MIN(count, max_height);
 		wresize(stat_win, *height, getmaxx(stdscr));
-		ui_stat_reposition(getmaxy(status_bar), 1);
+		ui_stat_reposition(getmaxy(status_bar), *height);
 		win = stat_win;
 	}
 

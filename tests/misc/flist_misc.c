@@ -159,6 +159,10 @@ TEST(find_first_and_last_siblings)
 	lwin.list_pos = 11;
 	assert_int_equal(0, fpos_first_sibling(&lwin));
 	assert_int_equal(11, fpos_last_sibling(&lwin));
+
+	lwin.list_pos = 1;
+	assert_int_equal(1, fpos_first_sibling(&lwin));
+	assert_int_equal(7, fpos_last_sibling(&lwin));
 }
 
 TEST(find_next_and_prev_dir_sibling)
@@ -180,6 +184,19 @@ TEST(find_next_and_prev_dir_sibling)
 
 	assert_int_equal(8, fpos_prev_dir_sibling(&lwin));
 	assert_int_equal(11, fpos_next_dir_sibling(&lwin));
+
+	/* When last sibling is an empty dir. */
+
+	cfg.dot_dirs &= ~DD_TREE_LEAFS_PARENT;
+	lwin.dir_entry[6].selected = 1;
+	lwin.selected_files = 1;
+	flist_custom_exclude(&lwin, 1);
+	assert_int_equal(11, lwin.list_rows);
+
+	lwin.list_pos = 5;
+	assert_int_equal(2, fpos_prev_dir_sibling(&lwin));
+	lwin.list_pos = 2;
+	assert_int_equal(5, fpos_next_dir_sibling(&lwin));
 }
 
 TEST(find_next_and_prev_mismatches)
