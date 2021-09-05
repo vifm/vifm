@@ -1752,9 +1752,7 @@ fview_previews(view_t *view, const char path[])
 		return 0;
 	}
 
-	char previewed[PATH_MAX + 1];
-	get_full_path_of(entry, sizeof(previewed), previewed);
-	return paths_are_equal(path, previewed);
+	return fentry_points_to(entry, path);
 }
 
 void

@@ -53,6 +53,26 @@ TEST(missing_file_is_handled)
 	assert_int_equal(0, lines.nitems);
 }
 
+/* This tests broken handling of broken links which are resolved outside of the
+ * unit. */
+TEST(non_existing_file_with_a_viewer)
+{
+	const char *viewer = "echo aaa";
+	strlist_t lines = vcache_lookup(SANDBOX_PATH "/no-file", viewer, MF_NONE,
+			VK_TEXTUAL, /*max_lines=*/10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	assert_true(wait_for_cache());
+
+	lines = vcache_lookup(SANDBOX_PATH "/no-file", viewer, MF_NONE, VK_TEXTUAL,
+			/*max_lines=*/10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("aaa", lines.items[0]);
+}
+
 TEST(unreadable_directory_file_is_handled, IF(regular_unix_user))
 {
 	create_dir(SANDBOX_PATH "/dir");

@@ -294,6 +294,9 @@ int fentry_is_valid(const dir_entry_t *entry);
 /* Checks whether entry corresponds to a directory (including symbolic links to
  * directories).  Returns non-zero if so, otherwise zero is returned. */
 int fentry_is_dir(const dir_entry_t *entry);
+/* Checks whether entry points to a path resolving symbolic links if necessary.
+ * Returns non-zero if so, otherwise zero is returned. */
+int fentry_points_to(const dir_entry_t *entry, const char path[]);
 /* Loads directory tree specified by its path into the view.  The depth
  * parameter can be used to limit nesting level (>= 0).  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */
