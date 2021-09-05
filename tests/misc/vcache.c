@@ -17,6 +17,7 @@
 #include "../../src/status.h"
 #include "../../src/vcache.h"
 
+static int wait_for_cache(void);
 static int is_previewed(const char path[]);
 
 static const char *error;
@@ -352,12 +353,7 @@ TEST(vcache_check_reports_correct_status)
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("[...]", lines.items[0]);
 
-	int i;
-	for(i = 0; i < 10000 && !vcache_check(&is_previewed); ++i)
-	{
-		usleep(10);
-	}
-	assert_true(i < 10000);
+	assert_true(wait_for_cache());
 	vcache_finish();
 	assert_false(vcache_check(&is_previewed));
 	assert_false(vcache_check(&is_previewed));
@@ -389,6 +385,17 @@ TEST(kill_all_async_previews_on_exit, IF(not_windows))
 			break;
 		}
 	}
+}
+
+static int
+wait_for_cache(void)
+{
+	int i;
+	for(i = 0; i < 10000 && !vcache_check(&is_previewed); ++i)
+	{
+		usleep(10);
+	}
+	return (i < 10000);
 }
 
 static int
