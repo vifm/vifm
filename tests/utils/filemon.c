@@ -10,6 +10,7 @@ TEST(uninitialized_is_not_equal_even_to_itself)
 {
 	filemon_t mon = {};
 	assert_false(filemon_equal(&mon, &mon));
+	assert_false(filemon_is_set(&mon));
 }
 
 TEST(reset_filemon_is_not_equal_even_to_itself)
@@ -17,6 +18,7 @@ TEST(reset_filemon_is_not_equal_even_to_itself)
 	filemon_t mon;
 	filemon_reset(&mon);
 	assert_false(filemon_equal(&mon, &mon));
+	assert_false(filemon_is_set(&mon));
 }
 
 TEST(uninitialized_are_not_equal)
@@ -24,6 +26,13 @@ TEST(uninitialized_are_not_equal)
 	filemon_t mon1 = {};
 	filemon_t mon2 = {};
 	assert_false(filemon_equal(&mon1, &mon2));
+}
+
+TEST(filemon_can_be_set)
+{
+	filemon_t mon;
+	filemon_from_file(TEST_DATA_PATH "/existing-files/a", FMT_MODIFIED, &mon);
+	assert_true(filemon_is_set(&mon));
 }
 
 TEST(equal_after_two_independent_reads)

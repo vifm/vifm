@@ -56,6 +56,10 @@ filemon_t;
  * instance. */
 void filemon_reset(filemon_t *timestamp);
 
+/* Checks whether this monitor is initialized.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int filemon_is_set(const filemon_t *timestamp);
+
 /* Sets file monitor from a file.  Returns zero on success, otherwise non-zero
  * is returned and *timestamp is reset. */
 int filemon_from_file(const char path[], FileMonType type,
