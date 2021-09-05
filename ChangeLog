@@ -121,6 +121,8 @@
 
 	Updated logo of the project.  Thanks to Hescalalu for making it.
 
+	Detect broken links on preview and report them as such.
+
 	Fixed pointing 'trashdir' to a symbolic link to a directory causing
 	issues.  Thanks to ChongChong He.
 
