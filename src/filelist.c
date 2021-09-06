@@ -3875,6 +3875,22 @@ fentry_is_dir(const dir_entry_t *entry)
 }
 
 int
+fentry_points_to(const dir_entry_t *entry, const char path[])
+{
+	char previewed[PATH_MAX + 1];
+	get_full_path_of(entry, sizeof(previewed), previewed);
+
+	if(entry->type == FT_LINK)
+	{
+		/* Failure won't change the buffer. */
+		(void)get_link_target_abs(previewed, entry->origin, previewed,
+				sizeof(previewed));
+	}
+
+	return paths_are_equal(path, previewed);
+}
+
+int
 flist_load_tree(view_t *view, const char path[], int depth)
 {
 	char full_path[PATH_MAX + 1];

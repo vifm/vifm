@@ -17,6 +17,7 @@
 #include "../../src/status.h"
 #include "../../src/vcache.h"
 
+static int wait_for_cache(void);
 static int is_previewed(const char path[]);
 
 static const char *error;
@@ -50,6 +51,26 @@ TEST(missing_file_is_handled)
 			VK_TEXTUAL, 10, VC_SYNC, &error);
 	assert_string_equal("Failed to read file's contents", error);
 	assert_int_equal(0, lines.nitems);
+}
+
+/* This tests broken handling of broken links which are resolved outside of the
+ * unit. */
+TEST(non_existing_file_with_a_viewer)
+{
+	const char *viewer = "echo aaa";
+	strlist_t lines = vcache_lookup(SANDBOX_PATH "/no-file", viewer, MF_NONE,
+			VK_TEXTUAL, /*max_lines=*/10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	assert_true(wait_for_cache());
+
+	lines = vcache_lookup(SANDBOX_PATH "/no-file", viewer, MF_NONE, VK_TEXTUAL,
+			/*max_lines=*/10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("aaa", lines.items[0]);
 }
 
 TEST(unreadable_directory_file_is_handled, IF(regular_unix_user))
@@ -352,12 +373,7 @@ TEST(vcache_check_reports_correct_status)
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("[...]", lines.items[0]);
 
-	int i;
-	for(i = 0; i < 10000 && !vcache_check(&is_previewed); ++i)
-	{
-		usleep(10);
-	}
-	assert_true(i < 10000);
+	assert_true(wait_for_cache());
 	vcache_finish();
 	assert_false(vcache_check(&is_previewed));
 	assert_false(vcache_check(&is_previewed));
@@ -389,6 +405,17 @@ TEST(kill_all_async_previews_on_exit, IF(not_windows))
 			break;
 		}
 	}
+}
+
+static int
+wait_for_cache(void)
+{
+	int i;
+	for(i = 0; i < 10000 && !vcache_check(&is_previewed); ++i)
+	{
+		usleep(10);
+	}
+	return (i < 10000);
 }
 
 static int

@@ -32,6 +32,12 @@ filemon_reset(filemon_t *timestamp)
 }
 
 int
+filemon_is_set(const filemon_t *timestamp)
+{
+	return (timestamp->type != FMT_UNINITIALIZED);
+}
+
+int
 filemon_from_file(const char path[], FileMonType type, filemon_t *timestamp)
 {
 	assert(type != FMT_UNINITIALIZED && "Wrong type for a file monitor.");

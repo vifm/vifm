@@ -285,6 +285,15 @@ view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 				write_message("Cannot resolve Link", parea);
 				break;
 			}
+
+			if(!path_exists(path, DEREF))
+			{
+				char *msg = format_str("Cannot access link's target: %s", path);
+				write_message(msg, parea);
+				free(msg);
+				break;
+			}
+
 			if(!ends_with_slash(path) && is_dir(path))
 			{
 				strncat(path, "/", sizeof(path) - strlen(path) - 1);

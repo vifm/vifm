@@ -415,7 +415,12 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
 	(void)filemon_from_file(path, FMT_MODIFIED, &filemon);
 	if(!filemon_equal(&centry->filemon, &filemon))
 	{
-		return 0;
+		/* Error before and error now make a match, so we don't fail in that
+		 * case. */
+		if(filemon_is_set(&filemon) || filemon_is_set(&centry->filemon))
+		{
+			return 0;
+		}
 	}
 
 	if(centry->top_tree_stats != cfg.top_tree_stats && is_dir(path))

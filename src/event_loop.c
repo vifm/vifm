@@ -45,7 +45,6 @@
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
-#include "utils/path.h"
 #include "utils/test_helpers.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -437,9 +436,8 @@ is_previewed(const char path[])
 {
 	if(curr_stats.preview.on)
 	{
-		char previewed[PATH_MAX + 1];
-		get_current_full_path(curr_view, sizeof(previewed), previewed);
-		return paths_are_equal(path, previewed);
+		dir_entry_t *entry = get_current_entry(curr_view);
+		return fentry_points_to(entry, path);
 	}
 
 	return (fview_previews(curr_view, path) || fview_previews(other_view, path));

@@ -113,7 +113,8 @@ TEST(cmds_add)
 
 	ui_sb_msg("");
 	assert_failure(exec_command("bcmd", curr_view, CIT_COMMAND));
-	assert_true(ends_with(ui_sb_last(), "to call a nil value (global 'adsf')"));
+	assert_true(ends_with(ui_sb_last(),
+				"global 'adsf' is not callable (a nil value)"));
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"

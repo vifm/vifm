@@ -1134,11 +1134,6 @@ static void
 update_window_lazy(WINDOW *win)
 {
 	touchwin(win);
-	/*
-	 * redrawwin() shouldn't be needed.  But without it there is a
-	 * lot of flickering when redrawing the windows?
-	 */
-	redrawwin(win);
 	wnoutrefresh(win);
 }
 
