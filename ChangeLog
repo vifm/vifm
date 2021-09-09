@@ -238,6 +238,8 @@
 	Fixed zj not working before the last entry if it's an empty directory.
 	Thanks to filterfalse.
 
+	Fixed processing of keypad keys on Windows.  Thanks to Roland.
+
 0.11-beta to 0.11 (2020-09-24)
 
 	Recommend against setting 'shellcmdflag' to "-ic" value.
