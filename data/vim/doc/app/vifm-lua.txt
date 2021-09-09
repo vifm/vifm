@@ -210,7 +210,7 @@ Possible fields of {column}:
    Name of the command.  Must consist of Latin characters and not start with
    the lower case one (those are reserved for builtin columns).
  - "handler" (function)
-   Handler which accepts {info} and returns one or two values.  See below.
+   Handler which accepts {info} and returns a table.  See below.
  - "isprimary" (boolean) (default: false)
    Whether this column is highlighted with file color and search match
    is highlighted as well.
@@ -219,10 +219,15 @@ Fields of {info} argument for {column}.handler:
  - "entry" (table)
    Information about a file list entry.  See below.
 
-Return values of {column}.handler:
- 1. Value for the table's cell as a string or convertible to it.
- 2. Optional table with two integer values defining  highlighting range:
-    start and end offsets within the returned string.
+Fields of table returned by {column}.handler:
+ - "text" (string)
+    Table cell's value as a string or convertible to it.
+ - "matchstart" (integer) (default: 0)
+    For a search match this is the end position of a substring found in
+    entry's name, zero otherwise.
+ - "matchend" (integer) (default: 0)
+    For a search match this is the end position of a substring found in
+    entry's name, zero otherwise.
 
 Fields of {info}.entry for {column}.handler:
  - "classify" (table)

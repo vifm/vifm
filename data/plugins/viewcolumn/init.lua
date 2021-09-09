@@ -24,11 +24,15 @@ local function nameLink(info)
     end
 
     if not e.match then
-        return text
+        return { text = text }
     end
 
     local offset = e.classify.prefix:len()
-    return text, {offset + e.matchstart, offset + e.matchend}
+    return {
+        text = text,
+        matchstart = offset + e.matchstart,
+        matchend = offset + e.matchend
+    }
 end
 
 local function lsSize(info)
@@ -53,7 +57,7 @@ local function lsSize(info)
         unit = unit + 1
     end
 
-    return str..string.sub('BKMGTPEZY', unit, unit)
+    return { text = str..string.sub('BKMGTPEZY', unit, unit) }
 end
 
 local function mcSize(info)
@@ -64,7 +68,7 @@ local function mcSize(info)
     while true do
         str = tostring(size)..string.sub('KMGTPEZY', unit, unit)
         if str:len() <= maxLen then
-            return str
+            return { text = str }
         end
 
         size = size//1000
@@ -77,9 +81,9 @@ local function lsTime(info)
     local time = info.entry.mtime
     local ageYears = os.difftime(os.time(), time)//secsPerYear
     if ageYears == 0 then
-        return os.date('%b %d %H:%M', time)
+        return { text = os.date('%b %d %H:%M', time) }
     else
-        return os.date('%b %d  %Y', time)
+        return { text = os.date('%b %d  %Y', time) }
     end
 end
 
@@ -133,12 +137,13 @@ local function get_age(seconds)
     for _, time_unit in ipairs(time_units) do
         if diff >= time_unit.seconds then
             local int = math.floor(diff / time_unit.seconds)
-            return string.format('%3s %-7s',
+            text = string.format('%3s %-7s',
                 future_sign .. tostring(int),
                 time_unit.name .. (int > 1 and 's' or ' '))
+            return { text = text }
         end
     end
-    return '  0 seconds'
+    return { text = '  0 seconds' }
 end
 
 for _, stat_name in ipairs({'atime', 'ctime', 'mtime'}) do

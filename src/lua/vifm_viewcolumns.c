@@ -219,7 +219,7 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 	cdt->match_from = 0;
 	cdt->match_to = 0;
 
-	if(lua_pcall(lua, 1, 2, 0) != LUA_OK)
+	if(lua_pcall(lua, 1, 1, 0) != LUA_OK)
 	{
 		const char *error = lua_tostring(lua, -1);
 		ui_sb_err(error);
@@ -228,18 +228,30 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 		return;
 	}
 
-	const char *text = lua_tostring(lua, -2);
-	copy_str(buf, buf_len, (text == NULL ? "NOVALUE" : text));
-
-	if(lua_istable(lua, -1))
+	if(!lua_istable(lua, -1))
 	{
-		int has_start, has_end;
+		copy_str(buf, buf_len, "NOVALUE");
+		lua_pop(lua, 1);
+		return;
+	}
 
-		lua_geti(lua, -1, 1);
-		int start = lua_tointegerx(lua, -1, &has_start) - 1;
-		lua_geti(lua, -2, 2);
-		int end = lua_tointegerx(lua, -1, &has_end) - 1;
+	if(lua_getfield(lua, -1, "text") == LUA_TNIL)
+	{
+		copy_str(buf, buf_len, "NOVALUE");
 		lua_pop(lua, 2);
+		return;
+	}
+
+	const char *text = lua_tostring(lua, -1);
+	copy_str(buf, buf_len, (text == NULL ? "NOVALUE" : text));
+	lua_pop(lua, 1);
+
+	int has_start = (lua_getfield(lua, -1, "matchstart") == LUA_TNUMBER);
+	int has_end = (lua_getfield(lua, -2, "matchend") == LUA_TNUMBER);
+	if(has_start && has_end)
+	{
+		int start = lua_tointegerx(lua, -2, &has_start) - 1;
+		int end = lua_tointegerx(lua, -1, &has_end) - 1;
 
 		if(has_start && has_end && start >= 0 && end >= 0 && start <= end)
 		{
@@ -248,7 +260,7 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 		}
 	}
 
-	lua_pop(lua, 2);
+	lua_pop(lua, 3);
 }
 
 /* Creates a new VifmEntry (actually a table where user data is passed using
