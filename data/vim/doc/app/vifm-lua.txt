@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jul 6
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -273,7 +273,7 @@ Possible fields of {handler}:
    Partial name of the handler.  Must not contain any spaces.  Can be
    #-separated list of names, e.g. "view#pdf".
  - "handler" (function)
-   Handler which accepts {info} and returns {result}.  See below.
+   Handler which accepts {info} and returns a table.  See below.
 
 Fields of {info} argument for {handler}.handler:
  - "command" (string)
@@ -289,7 +289,9 @@ Fields of {info} argument for {handler}.handler:
  - "height" (integer)
    Height of the preview area in characters.
 
-Return value of {handler}.handler: array of strings.
+Fields of a table returned by {handler}.handler:
+ - "lines" (array of strings)
+   Expected by :fileviewer.
 
 Return:~
   `true` if handler was added, `false` if a handler with such name already
