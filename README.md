@@ -2,7 +2,7 @@
 
 ![Vifm logo](data/graphics/vifm-96px.png)
 
-[![][AA]][A]  [![][FF]][F]  [![][CC]][C]  [![][UU]][U]
+[![][AA]][A]  [![][FF]][F]  [![][UU]][U]
 
 _Latest release is 0.11.  This file last updated on 1 August, 2021._
 
@@ -79,8 +79,6 @@ GNU General Public License, version 2 or later.
 
 [AA]: https://ci.appveyor.com/api/projects/status/ywfhdev1l3so1f5e/branch/master?svg=true
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
-[CC]: https://coveralls.io/repos/github/vifm/vifm/badge.svg?branch=master
-[C]: https://coveralls.io/github/vifm/vifm?branch=master
 [FF]: http://ci.vifm.info/badges/svg/master
 [F]: http://ci.vifm.info/
 [UU]: http://cov.vifm.info/badges/svg/master
