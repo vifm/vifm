@@ -310,7 +310,8 @@ columns_format_line(columns_t *cols, void *format_data, size_t max_line_width)
 		const column_t *const col = &cols->list[i];
 		const format_info_t info = {
 			.data = format_data,
-			.id = col->info.column_id
+			.id = col->info.column_id,
+			.width = col->print_width,
 		};
 
 		if(col->info.literal == NULL)

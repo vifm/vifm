@@ -102,7 +102,9 @@ TEST(duplicate_rejected)
 TEST(invoked)
 {
 	assert_success(vlua_run_string(vlua,
-				"function handler(info) return {info.command, info.path} end"));
+				"function handler(info)"
+				"  return { lines = {info.command, info.path} }\n"
+				"end"));
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
@@ -143,6 +145,21 @@ TEST(error_invocation)
 TEST(wrong_return)
 {
 	assert_success(vlua_run_string(vlua, "function handle() return true end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
+	assert_int_equal(0, lines.nitems);
+	free_string_array(lines.items, lines.nitems);
+}
+
+TEST(missing_field)
+{
+	assert_success(vlua_run_string(vlua, "function handle() return {} end"));
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,

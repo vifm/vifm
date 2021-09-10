@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Jul 6
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -9,9 +9,11 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-lua-plugins|     Sample plugins.
 |vifm-lua-lua|         Generic reasoning behind this API.
 |vifm-lua-design|      Generic ideas about the design.
+|vifm-lua-evolution|   Plans on Lua API.
 |vifm-lua-loading|     Which plugins get loaded.
 |vifm-lua-libs|        What Lua libraries are available.
 |vifm-lua-handlers|    Lua handlers concept.
+|vifm-lua-caps|        What using Lua in Vifm buys you.
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
@@ -56,7 +58,7 @@ for the purpose of ease of use, which however makes automation harder.  When
 things like that start to get in the way, it's a good idea to reimplement
 relevant functionality in Lua.
 
-On top of that user's preferences differ and contradict each other, this can
+On top of that users' preferences differ and contradict each other, this can
 lead to proliferation of options to account for very fine-grained details.
 It's better to let users implement their wild and highly specific ideas on their
 own rather than trying to squeeze all possible use case into the application.
@@ -86,6 +88,25 @@ some safe version of asynchronous execution might be made available if safe
 way of implementing it exists (need to sandbox callbacks somehow).  All
 callback-based mechanisms are susceptible to this issue, but asynchronous API
 makes it much worse because these callbacks are created all the time.
+
+--------------------------------------------------------------------------------
+*vifm-lua-evolution*
+
+Lua version is fixed at 5.4 and is bundled as part of Vifm to avoid plugin
+compatibility issues.
+
+At the moment API can change, but the idea is to figure out key principles of
+organization, kinds of entities, naming strategy, ways to extend, etc. and
+fix them.  Initial stable version of the API doesn't need to be exhaustive,
+just sensible and relatively future proof.  Future releases should extend
+functionality rather than change it (unless absolutely necessary).  Doing this
+needs usage cases along with success and failure stories, so feedback is
+welcome.
+
+Current design principles:
+ 1. Callbacks in Lua accept a table and return one (if they return anything).
+    This allows adding new fields to both input and output, while staying
+    backward compatible and readable.
 
 --------------------------------------------------------------------------------
 *vifm-lua-loading*
@@ -151,14 +172,24 @@ A handler is a named Lua function, which is registered via a call to
 prepended with a namespace ("`#pluginname#`" string) behind the scenes to form
 a full name.  This is done to avoid conflicts between plugins.
 
-A handler can be used in place of an external viewer in |vifm-:fileviewer|
-command like this: >
-  fileviewer {*.vim} #pluginname#view --strip-comments %c
-
 The scope of handlers is limited to extensions that accept and return all
 relevant information on each invocation.  Things like keys or commands can't
 be handled this way because they need to communicate metadata about how to
 call them.
+
+A handler can be used in place of an external viewer in |vifm-:fileviewer|
+command like this: >
+  fileviewer {*.vim} #pluginname#view --strip-comments %c
+
+--------------------------------------------------------------------------------
+*vifm-lua-caps*
+
+This is what one can do by using Lua at the moment:
+ * :commands in Lua with completion (|vifm-l_vifm.cmds|)
+ * save and reset options (e.g., some kind of presets) (|vifm-l_vifm.opts|)
+ * custom columns (|vifm-l_vifm.addcolumntype()|)
+ * :fileviewer handlers in Lua (|vifm-lua-handlers|)
+ * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)
 
 --------------------------------------------------------------------------------
 *vifm-lua-api*
@@ -210,7 +241,7 @@ Possible fields of {column}:
    Name of the command.  Must consist of Latin characters and not start with
    the lower case one (those are reserved for builtin columns).
  - "handler" (function)
-   Handler which accepts {info} and returns one or two values.  See below.
+   Handler which accepts {info} and returns a table.  See below.
  - "isprimary" (boolean) (default: false)
    Whether this column is highlighted with file color and search match
    is highlighted as well.
@@ -218,11 +249,18 @@ Possible fields of {column}:
 Fields of {info} argument for {column}.handler:
  - "entry" (table)
    Information about a file list entry.  See below.
+ - "width" (table)
+   Calculated width of the column.
 
-Return values of {column}.handler:
- 1. Value for the table's cell as a string or convertible to it.
- 2. Optional table with two integer values defining  highlighting range:
-    start and end offsets within the returned string.
+Fields of table returned by {column}.handler:
+ - "text" (string)
+    Table cell's value as a string or convertible to it.
+ - "matchstart" (integer) (default: 0)
+    For a search match this is the end position of a substring found in
+    entry's name, zero otherwise.
+ - "matchend" (integer) (default: 0)
+    For a search match this is the end position of a substring found in
+    entry's name, zero otherwise.
 
 Fields of {info}.entry for {column}.handler:
  - "classify" (table)
@@ -273,7 +311,7 @@ Possible fields of {handler}:
    Partial name of the handler.  Must not contain any spaces.  Can be
    #-separated list of names, e.g. "view#pdf".
  - "handler" (function)
-   Handler which accepts {info} and returns {result}.  See below.
+   Handler which accepts {info} and returns a table.  See below.
 
 Fields of {info} argument for {handler}.handler:
  - "command" (string)
@@ -289,7 +327,9 @@ Fields of {info} argument for {handler}.handler:
  - "height" (integer)
    Height of the preview area in characters.
 
-Return value of {handler}.handler: array of strings.
+Fields of a table returned by {handler}.handler:
+ - "lines" (array of strings)
+   Expected by :fileviewer.
 
 Return:~
   `true` if handler was added, `false` if a handler with such name already

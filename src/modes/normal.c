@@ -2048,6 +2048,12 @@ cmd_zr(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zx(key_info_t key_info, keys_info_t *keys_info)
 {
+	dir_entry_t *curr = get_current_entry(curr_view);
+	if(curr->type != FT_DIR && curr->child_pos != 0)
+	{
+		fpos_set_pos(curr_view, curr_view->list_pos - curr->child_pos);
+	}
+
 	flist_toggle_fold(curr_view);
 }
 

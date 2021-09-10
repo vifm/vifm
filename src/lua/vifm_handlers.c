@@ -129,6 +129,12 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 		return result;
 	}
 
+	if(lua_getfield(vlua->lua, -1, "lines") != LUA_TTABLE)
+	{
+		lua_pop(vlua->lua, 4);
+		return result;
+	}
+
 	lua_pushnil(vlua->lua);
 	while(lua_next(vlua->lua, -2) != 0)
 	{
@@ -137,7 +143,7 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 		lua_pop(vlua->lua, 1);
 	}
 
-	lua_pop(vlua->lua, 3);
+	lua_pop(vlua->lua, 4);
 	return result;
 }
 

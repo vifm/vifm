@@ -5,9 +5,9 @@ Enables use of Ueberzug for viewing images.
 Usage example:
 
     :fileviewer {*.png}
-        \ #ueberzug#view %px %py %pw %ph
-        \ %pc
-        \ #ueberzug#clear
+              \ #ueberzug#view %px %py %pw %ph
+              \ %pc
+              \ #ueberzug#clear
 
 Ueberzug: https://github.com/seebye/ueberzug/
 
@@ -40,7 +40,7 @@ local function view(info)
     print(message)
     pipe:write(message)
     pipe:flush()
-    return {}
+    return { lines = {} }
 end
 
 local function clear(info)
@@ -50,7 +50,7 @@ local function clear(info)
     print(message)
     pipe:write(message)
     pipe:flush()
-    return {}
+    return { lines = {} }
 end
 
 local added = vifm.addhandler {

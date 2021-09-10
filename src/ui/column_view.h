@@ -61,6 +61,7 @@ struct format_info_t
 {
 	void *data; /* User data passed to columns_format_line(). */
 	int id;     /* Id of the column. */
+	int width;  /* Calculated width of the column. */
 };
 
 /* A column callback function, which should fill the buf with column text. */

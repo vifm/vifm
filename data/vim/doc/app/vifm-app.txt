@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Aug 23
+*vifm-app.txt*    For Vifm version 0.11  Last change: 2021 Sep 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -430,7 +430,9 @@ zk                                             *vifm-zk*
     go to previous directory sibling of current entry or do nothing.
 
 
-zx  toggle fold under the cursor.              *vifm-zx*
+zx                                             *vifm-zx*
+    toggle fold under the cursor or parent entry of the current file if cursor
+    is not on a directory.
 
 Other Normal Mode Keys~
 

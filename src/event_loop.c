@@ -412,12 +412,37 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			{
 				if(result == KEY_CODE_YES)
 				{
-					*c = K(*c);
+#ifdef __PDCURSES__
+					switch(*c)
+					{
+						case PADENTER: *c = WC_CR; result = OK; break;
+						case PADSLASH: *c = '/'; result = OK; break;
+						case PADMINUS: *c = '-'; result = OK; break;
+						case PADSTAR: *c = '*'; result = OK; break;
+						case PADPLUS: *c = '+'; result = OK; break;
+
+						case KEY_A1: *c = KEY_HOME; break;
+						case KEY_A2: *c = KEY_UP; break;
+						case KEY_A3: *c = KEY_PPAGE; break;
+						case KEY_B1: *c = KEY_LEFT; break;
+						case KEY_B3: *c = KEY_RIGHT; break;
+						case KEY_C1: *c = KEY_END; break;
+						case KEY_C2: *c = KEY_DOWN; break;
+						case KEY_C3: *c = KEY_NPAGE; break;
+						case PADSTOP: *c = KEY_DC; break;
+					}
+
+					if(result == KEY_CODE_YES)
+#endif
+					{
+						*c = K(*c);
+					}
 				}
 				else if(*c == L'\0')
 				{
 					*c = WC_C_SPACE;
 				}
+
 				return result;
 			}
 

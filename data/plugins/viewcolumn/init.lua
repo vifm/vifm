@@ -5,14 +5,14 @@ Provides six user-defined view column types:
  * LsSize   -- ls-like size column (at most 4 characters in width)
  * LsTime   -- ls-like (also MC-like) time where time is shown if year matches
                current, otherwise year is displayed instead of time
- * MCSize   -- MC-like size column (at most 7 characters in width)
+ * MCSize   -- MC-like size column
  * AgeAtime -- integer age based on the atime stat (11 characters in width)
  * AgeCtime -- integer age based on the ctime stat (11 characters in width)
  * AgeMtime -- integer age based on the mtime stat (11 characters in width)
 
 Usage example:
 
-    :set viewcolumns=-{NameLink},8{MCSize}
+    :set viewcolumns=-{NameLink},8.7{MCSize}
 
 --]]
 
@@ -24,11 +24,15 @@ local function nameLink(info)
     end
 
     if not e.match then
-        return text
+        return { text = text }
     end
 
     local offset = e.classify.prefix:len()
-    return text, {offset + e.matchstart, offset + e.matchend}
+    return {
+        text = text,
+        matchstart = offset + e.matchstart,
+        matchend = offset + e.matchend
+    }
 end
 
 local function lsSize(info)
@@ -53,18 +57,18 @@ local function lsSize(info)
         unit = unit + 1
     end
 
-    return str..string.sub('BKMGTPEZY', unit, unit)
+    return { text = str..string.sub('BKMGTPEZY', unit, unit) }
 end
 
 local function mcSize(info)
-    local maxLen = 7
+    local maxLen = info.width
     local unit = 0
     local size = info.entry.size
     local str
     while true do
         str = tostring(size)..string.sub('KMGTPEZY', unit, unit)
         if str:len() <= maxLen then
-            return str
+            return { text = str }
         end
 
         size = size//1000
@@ -77,9 +81,9 @@ local function lsTime(info)
     local time = info.entry.mtime
     local ageYears = os.difftime(os.time(), time)//secsPerYear
     if ageYears == 0 then
-        return os.date('%b %d %H:%M', time)
+        return { text = os.date('%b %d %H:%M', time) }
     else
-        return os.date('%b %d  %Y', time)
+        return { text = os.date('%b %d  %Y', time) }
     end
 end
 
@@ -133,12 +137,13 @@ local function get_age(seconds)
     for _, time_unit in ipairs(time_units) do
         if diff >= time_unit.seconds then
             local int = math.floor(diff / time_unit.seconds)
-            return string.format('%3s %-7s',
+            text = string.format('%3s %-7s',
                 future_sign .. tostring(int),
                 time_unit.name .. (int > 1 and 's' or ' '))
+            return { text = text }
         end
     end
-    return '  0 seconds'
+    return { text = '  0 seconds' }
 end
 
 for _, stat_name in ipairs({'atime', 'ctime', 'mtime'}) do
