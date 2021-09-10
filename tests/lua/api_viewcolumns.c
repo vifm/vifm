@@ -122,9 +122,10 @@ TEST(columns_are_used)
 	assert_success(vlua_run_string(vlua, "function err() func() end"));
 	assert_success(vlua_run_string(vlua, "function noval() end"));
 	assert_success(vlua_run_string(vlua, "function badval() return {} end"));
-	assert_success(vlua_run_string(vlua, "function good(info)\n"
-	                                     "  return { text = info.entry.name }\n"
-	                                     "end"));
+	assert_success(vlua_run_string(vlua,
+				"function good(info)\n"
+				"  return { text = info.entry.name .. info.width }\n"
+				"end"));
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.addcolumntype{ name = 'Err',"
 				                         " handler = err })"));
@@ -149,7 +150,7 @@ TEST(columns_are_used)
 
 	columns_set_line_print_func(&column_line_print);
 	columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
-	assert_string_equal("     ERROR   NOVALUE   NOVALUE      name", print_buffer);
+	assert_string_equal("     ERROR   NOVALUE   NOVALUE    name10", print_buffer);
 
 	opt_handlers_teardown();
 	columns_free(lwin.columns);

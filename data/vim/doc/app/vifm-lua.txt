@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 9
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -218,6 +218,8 @@ Possible fields of {column}:
 Fields of {info} argument for {column}.handler:
  - "entry" (table)
    Information about a file list entry.  See below.
+ - "width" (table)
+   Calculated width of the column.
 
 Fields of table returned by {column}.handler:
  - "text" (string)

@@ -209,6 +209,9 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 
 	lua_newtable(lua);
 
+	lua_pushinteger(lua, info->width);
+	lua_setfield(lua, -2, "width");
+
 	column_data_t *cdt = info->data;
 	dir_entry_t *entry = cdt->entry;
 	vifmentry_new(lua, entry);

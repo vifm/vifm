@@ -5,14 +5,14 @@ Provides six user-defined view column types:
  * LsSize   -- ls-like size column (at most 4 characters in width)
  * LsTime   -- ls-like (also MC-like) time where time is shown if year matches
                current, otherwise year is displayed instead of time
- * MCSize   -- MC-like size column (at most 7 characters in width)
+ * MCSize   -- MC-like size column
  * AgeAtime -- integer age based on the atime stat (11 characters in width)
  * AgeCtime -- integer age based on the ctime stat (11 characters in width)
  * AgeMtime -- integer age based on the mtime stat (11 characters in width)
 
 Usage example:
 
-    :set viewcolumns=-{NameLink},8{MCSize}
+    :set viewcolumns=-{NameLink},8.7{MCSize}
 
 --]]
 
@@ -61,7 +61,7 @@ local function lsSize(info)
 end
 
 local function mcSize(info)
-    local maxLen = 7
+    local maxLen = info.width
     local unit = 0
     local size = info.entry.size
     local str
