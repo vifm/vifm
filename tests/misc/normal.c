@@ -106,6 +106,12 @@ TEST(folding)
 	(void)vle_keys_exec_timed_out(WK_z WK_x);
 	populate_dir_list(&lwin, /*reload=*/1);
 	assert_int_equal(12, lwin.list_rows);
+
+	lwin.list_pos = 4;
+	(void)vle_keys_exec_timed_out(WK_z WK_x);
+	populate_dir_list(&lwin, /*reload=*/1);
+	assert_int_equal(10, lwin.list_rows);
+	assert_int_equal(2, lwin.list_pos);
 }
 
 TEST(gf, IF(not_windows))
