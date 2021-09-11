@@ -21,6 +21,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
+|vifm-l_VifmEntry|     `VifmEntry` type.
 |vifm-l_VifmJob|       `VifmJob` type.
 |vifm-l_VifmView|      `VifmView` type.
 
@@ -253,7 +254,7 @@ Possible fields of {column}:
 
 Fields of {info} argument for {column}.handler:
  - "entry" (table)
-   Information about a file list entry.  See below.
+   Information about a file list entry as an instance of |vifm-l_VifmEntry|.
  - "width" (table)
    Calculated width of the column.
 
@@ -266,40 +267,6 @@ Fields of table returned by {column}.handler:
  - "matchend" (integer) (default: 0)
     For a search match this is the end position of a substring found in
     entry's name, zero otherwise.
-
-Fields of {info}.entry for {column}.handler:
- - "classify" (table)
-   Table that describes name decorations.  See below.
- - "name" (string)
-   Name of the file.
- - "location" (string)
-   Location of the file.
- - "size" (integer)
-   Size of the file in bytes.
- - "atime" (integer)
-   File access time (e.g., read, executed).  In seconds since the Unix epoch.
- - "ctime" (integer)
-   File change time (changes in metadata, like mode).  In seconds since the
-   Unix epoch.
- - "mtime" (integer)
-   File modification time (when file contents is changed).  In seconds since
-   the Unix epoch.
- - "type" (string)
-   Type of the entry.  See |vifm-filetype()| for the list of values.
- - "match" (boolean)
-   Whether this entry is a search match.
- - "matchstart" (integer)
-   For a search match this is the start position of a substring found in name,
-   zero otherwise.
- - "matchend" (integer)
-   For a search match this is the end position of a substring found in name,
-   zero otherwise.
-
-Fields of {info}.entry.classify for "handler":
- - "prefix" (string)
-   File name prefix.
- - "suffix" (string)
-   File name suffix.
 
 Return:~
   `true` if column was added.
@@ -512,7 +479,7 @@ Return:~
 
 This global `vifm.opts` table groups items related to options in general.
 
-opts.global                                    *vifm-l_vifm.opts.global*
+opts.global (table)                            *vifm-l_vifm.opts.global*
 Table that provides access to global options.  The mapping between option
 types and Lua types is quite obvious:
  - boolean option   -> boolean type
@@ -577,6 +544,63 @@ Parameters:~
   {msg}  Message to display.
 
 --------------------------------------------------------------------------------
+*vifm-l_VifmEntry*
+
+Instances of this type are used in filetype |vifm-lua-handlers| and in
+callbacks of |vifm-l_vifm.addcolumntype()|.
+
+VifmEntry.classify (table)                     *vifm-l_VifmEntry.classify*
+Table that describes name decorations.  Its fields:
+ - "prefix" (string)
+   File name prefix.
+ - "suffix" (string)
+   File name suffix.
+
+VifmEntry.name (string)                        *vifm-l_VifmEntry.name*
+Name of the file.
+
+VifmEntry.location (string)                    *vifm-l_VifmEntry.location*
+Location of the file.
+
+VifmEntry.size (integer)                       *vifm-l_VifmEntry.size*
+Size of the file in bytes.
+
+VifmEntry.atime (integer)                      *vifm-l_VifmEntry.atime*
+File access time (e.g., read, executed).  In seconds since the Unix epoch.
+
+VifmEntry.ctime (integer)                      *vifm-l_VifmEntry.ctime*
+File change time (changes in metadata, like mode).  In seconds since the
+Unix epoch.
+
+VifmEntry.mtime (integer)                      *vifm-l_VifmEntry.mtime*
+File modification time (when file contents is changed).  In seconds since
+the Unix epoch.
+
+VifmEntry.type (string)                        *vifm-l_VifmEntry.type*
+Type of the entry.  See |vifm-filetype()| for the list of values.
+
+VifmEntry.match (boolean)                      *vifm-l_VifmEntry.match*
+Whether this entry is a search match.
+
+VifmEntry.matchstart (integer)                 *vifm-l_VifmEntry.matchstart*
+For a search match this is the start position of a substring found in name,
+zero otherwise.
+
+VifmEntry.matchend (integer)                   *vifm-l_VifmEntry.matchend*
+For a search match this is the end position of a substring found in name,
+zero otherwise.
+
+VifmEntry:gettarget()                          *vifm-l_VifmEntry.gettarget()*
+Gets target of a symbolic link (not to be confused with real path resolution).
+
+Return:~
+  Returns target as a string.
+
+Raises an error:~
+  If entry doesn't correspond to a symbolic link.
+  If resolving symbolic link has failed.
+
+--------------------------------------------------------------------------------
 *vifm-l_VifmJob*
 
 Instances of this type are returned by |vifm-l_vifm.startjob()|.
@@ -637,12 +661,12 @@ Instances of this type are returned by |vifm-l_vifm.currview()|.
 The corresponding view exists independently of this type and once the view is
 gone (e.g., its tab is closed) accessing bound instance raises an error.
 
-VifmView.locopts                               *vifm-l_VifmView.viewopts*
+VifmView.locopts (table)                       *vifm-l_VifmView.viewopts*
 Equivalent of |vifm-l_vifm.opts.global| for location-specific values of
 view-specific options.  These are "local" values of view-specific options,
 which are reset to "global" ones on file list change.
 
-VifmView.viewopts                              *vifm-l_VifmView.locopts*
+VifmView.viewopts (table)                      *vifm-l_VifmView.locopts*
 Equivalent of |vifm-l_vifm.opts.global| for view-specific options, see there
 for details.  These are "global" values of view-specific options.
 

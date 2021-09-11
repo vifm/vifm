@@ -110,6 +110,7 @@ there for instructions.
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
     |  |  |-- vifm_handlers.c - implementation of `vifm.addhandler`
     |  |  |-- vifm_viewcolumns.c - implementation of `vifm.addcolumntype`
+    |  |  |-- vifmentry.c - implementation of VifmEntry
     |  |  |-- vifmjob.c - implementation of VifmJob
     |  |  |-- vifmview.c - implementation of VifmView
     |  |  |-- vlua.c - main Lua interface unit
