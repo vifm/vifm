@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 11
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -180,6 +180,10 @@ relevant information on each invocation.  Things like keys or commands can't
 be handled this way because they need to communicate metadata about how to
 call them.
 
+A handler can be used in place of an external program in |vifm-:filetype| or
+|vifm-:filextype| commands like this: >
+  filetype {*.png} #pluginname#open
+
 A handler can be used in place of an external viewer in |vifm-:fileviewer|
 command like this: >
   fileviewer {*.vim} #pluginname#view --strip-comments %c
@@ -191,7 +195,7 @@ This is what one can do by using Lua at the moment:
  * :commands in Lua with completion (|vifm-l_vifm.cmds|)
  * save and reset options (e.g., some kind of presets) (|vifm-l_vifm.opts|)
  * custom columns (|vifm-l_vifm.addcolumntype()|)
- * :fileviewer handlers in Lua (|vifm-lua-handlers|)
+ * :filetype/:filextype/:fileviewer handlers in Lua (|vifm-lua-handlers|)
  * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)
 
 --------------------------------------------------------------------------------
@@ -285,7 +289,7 @@ Possible fields of {handler}:
  - "handler" (function)
    Handler which accepts {info} and returns a table.  See below.
 
-Fields of {info} argument for {handler}.handler:
+Fields of {info} argument for {handler}.handler for :fileviewer:
  - "command" (string)
    Command with which the viewer was invoked.
  - "path" (string)
@@ -299,9 +303,17 @@ Fields of {info} argument for {handler}.handler:
  - "height" (integer)
    Height of the preview area in characters.
 
-Fields of a table returned by {handler}.handler:
+Fields of {info} argument for {handler}.handler for :file[x]type:
+ - "command" (string)
+   Command which handles the file.
+ - "entry" (table)
+   Information about a file list entry as an instance of |vifm-l_VifmEntry|.
+
+Fields of a table returned by {handler}.handler for :fileviewer:
  - "lines" (array of strings)
-   Expected by :fileviewer.
+   Preview text.
+
+:filetype and :filextype handlers don't need a return value.
 
 Return:~
   `true` if handler was added, `false` if a handler with such name already

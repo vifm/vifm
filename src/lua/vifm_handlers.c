@@ -33,6 +33,7 @@
 #include "common.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "vifmentry.h"
 #include "vlua_state.h"
 
 static char * extract_handler_name(const char viewer[]);
@@ -145,6 +146,44 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 
 	lua_pop(vlua->lua, 4);
 	return result;
+}
+
+void
+vifm_handlers_open(vlua_t *vlua, const char prog[],
+		const struct dir_entry_t *entry)
+{
+	char *name = extract_handler_name(prog);
+
+	/* Don't need lua_pcall() to handle errors, because no one should be able to
+	 * mess with internal tables. */
+	vlua_state_get_table(vlua, &handlers_key);
+	if(lua_getfield(vlua->lua, -1, name) != LUA_TTABLE)
+	{
+		free(name);
+		lua_pop(vlua->lua, 2);
+		return;
+	}
+
+	free(name);
+
+	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
+			"Handler must be a function here.");
+
+	lua_newtable(vlua->lua);
+	lua_pushstring(vlua->lua, prog);
+	lua_setfield(vlua->lua, -2, "command");
+	vifmentry_new(vlua->lua, entry);
+	lua_setfield(vlua->lua, -2, "entry");
+
+	if(lua_pcall(vlua->lua, 1, 0, 0) != LUA_OK)
+	{
+		const char *error = lua_tostring(vlua->lua, -1);
+		ui_sb_err(error);
+		lua_pop(vlua->lua, 3);
+		return;
+	}
+
+	lua_pop(vlua->lua, 2);
 }
 
 /* Extracts name of the handler from a command.  Returns a newly allocated

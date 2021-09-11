@@ -27,6 +27,7 @@
 typedef struct vlua_t vlua_t;
 
 struct cmd_info_t;
+struct dir_entry_t;
 struct plug_t;
 struct preview_area_t;
 struct strlist_t;
@@ -67,6 +68,10 @@ int vlua_handler_present(vlua_t *vlua, const char cmd[]);
  * be freed by the caller. */
 struct strlist_t vlua_view_file(vlua_t *vlua, const char viewer[],
 		const char path[], const struct preview_area_t *parea);
+
+/* Invokes a file handler. */
+void vlua_open_file(vlua_t *vlua, const char prog[],
+		const struct dir_entry_t *entry);
 
 #endif /* VIFM__LUA__VLUA_H__ */
 

@@ -19,6 +19,7 @@
 #ifndef VIFM__LUA__VIFM_HANDLERS_H__
 #define VIFM__LUA__VIFM_HANDLERS_H__
 
+struct dir_entry_t;
 struct lua_State;
 struct preview_area_t;
 struct strlist_t;
@@ -39,6 +40,10 @@ int vifm_handlers_present(struct vlua_t *vlua, const char cmd[]);
  * be freed by the caller. */
 struct strlist_t vifm_handlers_view(struct vlua_t *vlua, const char viewer[],
 		const char path[], const struct preview_area_t *parea);
+
+/* Invokes a fiel handler. */
+void vifm_handlers_open(struct vlua_t *vlua, const char prog[],
+		const struct dir_entry_t *entry);
 
 /* Member of `vifm` that adds a Lua handler invokable from the app.  Returns a
  * boolean, which is true on success. */

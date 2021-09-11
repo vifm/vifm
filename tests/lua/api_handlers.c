@@ -22,6 +22,12 @@ static const preview_area_t parea = {
 	.h = 4,
 };
 
+static dir_entry_t entry = {
+	.name = "binary-data",
+	.origin = TEST_DATA_PATH "/test-data/read",
+	.name_dec_num = -1,
+};
+
 SETUP()
 {
 	vlua = vlua_init();
@@ -125,6 +131,8 @@ TEST(bad_invocation)
 		vlua_view_file(vlua, "#vifmtest#nosuchhandle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
 	free_string_array(lines.items, lines.nitems);
+
+	vlua_open_file(vlua, "#vifmtest#nosuchhandle", &entry);
 }
 
 TEST(error_invocation)
@@ -170,6 +178,22 @@ TEST(missing_field)
 	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
 	free_string_array(lines.items, lines.nitems);
+}
+
+TEST(error_open_invocation)
+{
+	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	ui_sb_msg("");
+	vlua_open_file(vlua, "#vifmtest#handle", &entry);
+	assert_true(ends_with(ui_sb_last(),
+				": global 'asdf' is not callable (a nil value)"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
