@@ -201,6 +201,19 @@ TEST(plugins_can_be_whitelisted)
 	remove_dir(SANDBOX_PATH "/plugins/plug2");
 }
 
+TEST(plugin_metadata)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"return { name = vifm.plugin.name }");
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.name)"));
+	assert_string_equal("plug", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
 TEST(plugins_can_add_handler)
 {
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua",

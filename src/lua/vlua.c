@@ -413,6 +413,14 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_setfield(lua, -2, "__index");
 	lua_setmetatable(lua, -2);
 
+	/* Plugin-specific `vifm.plugin` table. */
+	lua_newtable(lua);
+	lua_pushstring(lua, plug->name);
+	lua_setfield(lua, -2, "name");
+	lua_pushstring(lua, plug->path);
+	lua_setfield(lua, -2, "path");
+	lua_setfield(lua, -2, "plugin");
+
 	/* Plugin-specific `vifm.addhandler()`. */
 	lua_pushlightuserdata(lua, plug);
 	lua_pushcclosure(lua, &vifm_addhandler, 1);
