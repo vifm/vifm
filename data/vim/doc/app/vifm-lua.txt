@@ -131,6 +131,7 @@ as well as for debugging.
 The following standard libraries are enabled:
  * basic (core global functions)
  * table manipulation (`tbl` table)
+ * package library (`require` global and `package` table)
  * string manipulation (`string` table)
  * input and output (`io` table)
  * mathematical functions (`math` table)
