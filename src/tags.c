@@ -679,6 +679,7 @@ const char *tags[] = {
 	"vifm-l_vifm.plugin",
 	"vifm-l_vifm.plugin.name",
 	"vifm-l_vifm.plugin.path",
+	"vifm-l_vifm.plugin.require()",
 	"vifm-l_vifm.plugins",
 	"vifm-l_vifm.plugins.all",
 	"vifm-l_vifm.sb",

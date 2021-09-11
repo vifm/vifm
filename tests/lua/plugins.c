@@ -214,6 +214,35 @@ TEST(plugin_metadata)
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
 
+TEST(good_plugin_module)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"return vifm.plugin.require('sub')");
+	make_file(SANDBOX_PATH "/plugins/plug/sub.lua",
+			"return { source = 'sub' }");
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.source)"));
+	assert_string_equal("sub", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/plugins/plug/sub.lua");
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
+TEST(missing_plugin_module)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"return vifm.plugin.require('sub')");
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug)"));
+	assert_string_equal("nil", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
 TEST(plugins_can_add_handler)
 {
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua",

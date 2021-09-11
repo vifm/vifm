@@ -60,6 +60,8 @@ static int vifm_fnamemodify(lua_State *lua);
 static int vifm_exists(lua_State *lua);
 static int vifm_makepath(lua_State *lua);
 static int vifm_expand(lua_State *lua);
+static int vifm_plugin_require(lua_State *lua);
+static int require_plugin_module(lua_State *lua);
 static int sb_info(lua_State *lua);
 static int sb_error(lua_State *lua);
 static int sb_quick(lua_State *lua);
@@ -363,7 +365,7 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 	snprintf(full_path, sizeof(full_path), "%s/plugins/%s/init.lua",
 			cfg.config_dir, name);
 
-	if(luaL_loadfile(lua, full_path))
+	if(luaL_loadfile(lua, full_path) != LUA_OK)
 	{
 		const char *error = lua_tostring(lua, -1);
 		plug_log(plug, error);
@@ -373,7 +375,7 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 	}
 
 	setup_plugin_env(lua, plug);
-	if(lua_pcall(lua, 0, 1, 0))
+	if(lua_pcall(lua, 0, 1, 0) != LUA_OK)
 	{
 		const char *error = lua_tostring(lua, -1);
 		plug_log(plug, error);
@@ -419,6 +421,10 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_setfield(lua, -2, "name");
 	lua_pushstring(lua, plug->path);
 	lua_setfield(lua, -2, "path");
+	/* Plugin-specific `vifm.plugin.require`. */
+	lua_pushlightuserdata(lua, plug);
+	lua_pushcclosure(lua, &vifm_plugin_require, 1);
+	lua_setfield(lua, -2, "require");
 	lua_setfield(lua, -2, "plugin");
 
 	/* Plugin-specific `vifm.addhandler()`. */
@@ -438,6 +444,45 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	{
 		lua_pop(lua, 1);
 	}
+}
+
+/* Member of `vifm.plugin` that loads a module relative to the plugin's root.
+ * Returns module's return. */
+static int
+vifm_plugin_require(lua_State *lua)
+{
+	const char *mod_name = luaL_checkstring(lua, 1);
+
+	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
+	if(plug == NULL)
+	{
+		assert(false && "vifm.plugin.require() called outside a plugin?");
+		return 0;
+	}
+
+	char full_path[PATH_MAX + 1];
+	snprintf(full_path, sizeof(full_path), "%s/%s.lua", plug->path, mod_name);
+	if(!path_exists(full_path, DEREF))
+	{
+		snprintf(full_path, sizeof(full_path), "%s/%s/init.lua", plug->path,
+				mod_name);
+	}
+
+	luaL_requiref(lua, full_path, &require_plugin_module, 1);
+	return 1;
+}
+
+/* Helper that loads a module.  Returns module's return. */
+static int
+require_plugin_module(lua_State *lua)
+{
+	const char *mod = luaL_checkstring(lua, 1);
+	if(luaL_loadfile(lua, mod) != LUA_OK || lua_pcall(lua, 0, 1, 0) != LUA_OK)
+	{
+		const char *error = lua_tostring(lua, -1);
+		return luaL_error(lua, "vifm.plugin.require('%s'): %s", mod, error);
+	}
+	return 1;
 }
 
 int

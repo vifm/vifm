@@ -531,6 +531,18 @@ Name of the plugin.
 plugin.path (string)                           *vifm-l_vifm.plugin.path*
 Full path to plugin's root directory.
 
+plugin.require({modname})                      *vifm-l_vifm.plugin.require()*
+Plugin-specific `require`, which loads Lua modules relative to plugin's root.
+
+Parameters:~
+  {modname}  Name of the module, similar to the argument for `require`.
+
+Return:~
+  Return value of the module or `nil` on error.
+
+Raises an error:~
+  On issues with finding or running the module.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm.plugins*
 
