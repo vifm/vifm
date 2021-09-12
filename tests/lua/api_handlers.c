@@ -38,6 +38,15 @@ TEARDOWN()
 	vlua_finish(vlua);
 }
 
+TEST(handler_check)
+{
+	assert_false(vlua_handler_cmd(vlua, "normal command"));
+	assert_false(vlua_handler_cmd(vlua, "#something"));
+	assert_true(vlua_handler_cmd(vlua, "#something#"));
+	assert_true(vlua_handler_cmd(vlua, "#something#more"));
+	assert_true(vlua_handler_cmd(vlua, "#something#more here"));
+}
+
 TEST(bad_args)
 {
 	ui_sb_msg("");

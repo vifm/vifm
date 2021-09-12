@@ -49,7 +49,7 @@ static char handlers_key;
 int
 vifm_handlers_check(vlua_t *vlua, const char cmd[])
 {
-	return (cmd[0] == '#');
+	return (cmd[0] == '#' && strchr(cmd + 1, '#') != NULL);
 }
 
 void
