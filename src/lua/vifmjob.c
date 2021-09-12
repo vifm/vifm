@@ -60,6 +60,13 @@ static job_stream_t * job_stream_open(lua_State *lua, bg_job_t *job,
 static void job_stream_close(lua_State *lua, job_stream_t *js);
 static int VLUA_IMPL(jobstream_closef)(lua_State *lua);
 
+VLUA_DECLARE_SAFE(vifmjob_gc);
+VLUA_DECLARE_SAFE(vifmjob_wait);
+VLUA_DECLARE_SAFE(vifmjob_exitcode);
+VLUA_DECLARE_SAFE(vifmjob_stdin);
+VLUA_DECLARE_SAFE(vifmjob_stdout);
+VLUA_DECLARE_SAFE(vifmjob_errors);
+
 /* Methods of VifmJob type. */
 static const luaL_Reg vifmjob_methods[] = {
 	{ "__gc",     VLUA_REF(vifmjob_gc)       },

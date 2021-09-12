@@ -39,6 +39,10 @@ static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static void push_str_array(lua_State *lua, char *array[], int len);
 static int apply_completion(lua_State *lua, const char str[]);
 
+VLUA_DECLARE_SAFE(cmds_add);
+VLUA_DECLARE_SAFE(cmds_command);
+VLUA_DECLARE_SAFE(cmds_delcommand);
+
 /* Functions of `vifm.cmds` table. */
 static const luaL_Reg vifm_cmds_methods[] = {
 	{ "add",        VLUA_REF(cmds_add)        },

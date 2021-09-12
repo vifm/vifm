@@ -26,13 +26,24 @@
 #define VLUA_JOIN_(a, b) a##b
 
 /* Declaration, taking a reference and call wrappers for user-facing API. */
-#define VLUA_API(name) VLUA_JOIN(name, api)
-#define VLUA_REF(name) &VLUA_JOIN(name, api)
-#define VLUA_CALL(name) VLUA_JOIN(name, api)
+#define VLUA_API(name) name
+#define VLUA_REF(name) &VLUA_JOIN(name, _guard)
+#define VLUA_CALL(name) VLUA_JOIN(name, _guard)
 
 /* Declaration and taking a reference wrappers for internal Lua calls. */
 #define VLUA_IMPL(name) VLUA_JOIN(name, iapi)
 #define VLUA_IREF(name) &VLUA_JOIN(name, iapi)
+
+#define VLUA_DECLARE_SAFE(name) \
+	static int VLUA_JOIN(name, _guard)(struct lua_State *lua) \
+	{ \
+		return name(lua); \
+	}
+#define VLUA_DECLARE_UNSAFE(name) \
+	static int VLUA_JOIN(name, _guard)(struct lua_State *lua) \
+	{ \
+		return name(lua); \
+	}
 
 #endif /* VIFM__LUA__API_H__ */
 

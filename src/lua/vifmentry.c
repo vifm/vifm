@@ -40,6 +40,9 @@ vifm_entry_t;
 static int VLUA_API(vifmentry_gc)(lua_State *lua);
 static int VLUA_API(vifmentry_gettarget)(lua_State *lua);
 
+VLUA_DECLARE_SAFE(vifmentry_gc);
+VLUA_DECLARE_SAFE(vifmentry_gettarget);
+
 /* Methods of VifmEntry type. */
 static const luaL_Reg vifmentry_methods[] = {
 	{ "__gc", VLUA_REF(vifmentry_gc) },

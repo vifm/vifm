@@ -69,6 +69,25 @@ static int VLUA_API(sb_quick)(lua_State *lua);
 static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
 static void setup_plugin_env(lua_State *lua, plug_t *plug);
 
+VLUA_DECLARE_SAFE(print);
+VLUA_DECLARE_SAFE(opts_global_index);
+VLUA_DECLARE_UNSAFE(opts_global_newindex);
+VLUA_DECLARE_SAFE(vifm_errordialog);
+VLUA_DECLARE_SAFE(vifm_fnamemodify);
+VLUA_DECLARE_SAFE(vifm_exists);
+VLUA_DECLARE_SAFE(vifm_makepath);
+VLUA_DECLARE_SAFE(vifm_expand);
+VLUA_DECLARE_UNSAFE(vifm_plugin_require);
+VLUA_DECLARE_SAFE(sb_info);
+VLUA_DECLARE_SAFE(sb_error);
+VLUA_DECLARE_SAFE(sb_quick);
+
+/* These are defined in other units. */
+VLUA_DECLARE_SAFE(vifmjob_new);
+VLUA_DECLARE_SAFE(vifmview_currview);
+VLUA_DECLARE_UNSAFE(vifm_addcolumntype);
+VLUA_DECLARE_SAFE(vifm_addhandler);
+
 /* Functions of `vifm` global table. */
 static const struct luaL_Reg vifm_methods[] = {
 	{ "errordialog",   VLUA_REF(vifm_errordialog)   },

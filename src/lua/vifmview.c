@@ -44,6 +44,13 @@ static int VLUA_API(vifmview_cd)(lua_State *lua);
 static view_t * check_view(lua_State *lua);
 static view_t * find_view(lua_State *lua, unsigned int id);
 
+VLUA_DECLARE_SAFE(vifmview_index);
+VLUA_DECLARE_SAFE(viewopts_index);
+VLUA_DECLARE_UNSAFE(viewopts_newindex);
+VLUA_DECLARE_SAFE(locopts_index);
+VLUA_DECLARE_UNSAFE(locopts_newindex);
+VLUA_DECLARE_UNSAFE(vifmview_cd);
+
 /* Methods of VifmView type. */
 static const luaL_Reg vifmview_methods[] = {
 	{ "cd", VLUA_REF(vifmview_cd) },
