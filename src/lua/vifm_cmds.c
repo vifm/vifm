@@ -28,22 +28,23 @@
 #include "../status.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "api.h"
 #include "common.h"
 #include "vlua_state.h"
 
-static int cmds_add(lua_State *lua);
-static int cmds_command(lua_State *lua);
-static int cmds_delcommand(lua_State *lua);
+static int VLUA_API(cmds_add)(lua_State *lua);
+static int VLUA_API(cmds_command)(lua_State *lua);
+static int VLUA_API(cmds_delcommand)(lua_State *lua);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static void push_str_array(lua_State *lua, char *array[], int len);
 static int apply_completion(lua_State *lua, const char str[]);
 
 /* Functions of `vifm.cmds` table. */
 static const luaL_Reg vifm_cmds_methods[] = {
-	{ "add",        &cmds_add        },
-	{ "command",    &cmds_command    },
-	{ "delcommand", &cmds_delcommand },
-	{ NULL,         NULL             }
+	{ "add",        VLUA_REF(cmds_add)        },
+	{ "command",    VLUA_REF(cmds_command)    },
+	{ "delcommand", VLUA_REF(cmds_delcommand) },
+	{ NULL,         NULL                      }
 };
 
 void
@@ -55,7 +56,7 @@ vifm_cmds_init(lua_State *lua)
 /* Member of `vifm.cmds` that registers a new :command or raises an error.
  * Returns boolean, which is true on success. */
 static int
-cmds_add(lua_State *lua)
+VLUA_API(cmds_add)(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
 
@@ -124,7 +125,7 @@ cmds_add(lua_State *lua)
 /* Member of `vifm.command` that registers a new user-defined :command or raises
  * an error.  Returns boolean, which is true on success. */
 static int
-cmds_command(lua_State *lua)
+VLUA_API(cmds_command)(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
 
@@ -160,7 +161,7 @@ cmds_command(lua_State *lua)
 /* Member of `vifm.command` that unregisters a user-defined :command.  Returns
  * boolean, which is true on success. */
 static int
-cmds_delcommand(lua_State *lua)
+VLUA_API(cmds_delcommand)(lua_State *lua)
 {
 	const char *name = luaL_checkstring(lua, 1);
 

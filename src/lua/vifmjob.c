@@ -27,6 +27,7 @@
 #include "../background.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "api.h"
 #include "common.h"
 
 /* User data of file stream associated with job's output stream. */
@@ -47,27 +48,27 @@ typedef struct
 }
 vifm_job_t;
 
-static int vifmjob_gc(lua_State *lua);
-static int vifmjob_wait(lua_State *lua);
-static int vifmjob_exitcode(lua_State *lua);
-static int vifmjob_stdin(lua_State *lua);
-static int vifmjob_stdout(lua_State *lua);
-static int vifmjob_errors(lua_State *lua);
+static int VLUA_API(vifmjob_gc)(lua_State *lua);
+static int VLUA_API(vifmjob_wait)(lua_State *lua);
+static int VLUA_API(vifmjob_exitcode)(lua_State *lua);
+static int VLUA_API(vifmjob_stdin)(lua_State *lua);
+static int VLUA_API(vifmjob_stdout)(lua_State *lua);
+static int VLUA_API(vifmjob_errors)(lua_State *lua);
 static void job_stream_gc(lua_State *lua, job_stream_t *js);
 static job_stream_t * job_stream_open(lua_State *lua, bg_job_t *job,
 		FILE *stream);
 static void job_stream_close(lua_State *lua, job_stream_t *js);
-static int jobstream_closef(lua_State *lua);
+static int VLUA_IMPL(jobstream_closef)(lua_State *lua);
 
 /* Methods of VifmJob type. */
 static const luaL_Reg vifmjob_methods[] = {
-	{ "__gc",     &vifmjob_gc       },
-	{ "wait",     &vifmjob_wait     },
-	{ "exitcode", &vifmjob_exitcode },
-	{ "stdin",    &vifmjob_stdin    },
-	{ "stdout",   &vifmjob_stdout   },
-	{ "errors",   &vifmjob_errors   },
-	{ NULL,       NULL              }
+	{ "__gc",     VLUA_REF(vifmjob_gc)       },
+	{ "wait",     VLUA_REF(vifmjob_wait)     },
+	{ "exitcode", VLUA_REF(vifmjob_exitcode) },
+	{ "stdin",    VLUA_REF(vifmjob_stdin)    },
+	{ "stdout",   VLUA_REF(vifmjob_stdout)   },
+	{ "errors",   VLUA_REF(vifmjob_errors)   },
+	{ NULL,       NULL                       }
 };
 
 void
@@ -81,7 +82,7 @@ vifmjob_init(lua_State *lua)
 }
 
 int
-vifmjob_new(lua_State *lua)
+VLUA_API(vifmjob_new)(lua_State *lua)
 {
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
@@ -147,7 +148,7 @@ vifmjob_new(lua_State *lua)
 /* Method of of VifmJob that frees associated resources.  Doesn't return
  * anything. */
 static int
-vifmjob_gc(lua_State *lua)
+VLUA_API(vifmjob_gc)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 	bg_job_decref(vifm_job->job);
@@ -167,7 +168,7 @@ vifmjob_gc(lua_State *lua)
 /* Method of of VifmJob that waits for the job to finish.  Raises an error if
  * waiting has failed.  Doesn't return anything. */
 static int
-vifmjob_wait(lua_State *lua)
+VLUA_API(vifmjob_wait)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
@@ -197,11 +198,11 @@ vifmjob_wait(lua_State *lua)
  * to finish if it hasn't already.  Raises an error if waiting has failed.
  * Returns an integer representing the exit code. */
 static int
-vifmjob_exitcode(lua_State *lua)
+VLUA_API(vifmjob_exitcode)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
-	vifmjob_wait(lua);
+	VLUA_CALL(vifmjob_wait)(lua);
 
 	pthread_spin_lock(&vifm_job->job->status_lock);
 	int running = vifm_job->job->running;
@@ -220,7 +221,7 @@ vifmjob_exitcode(lua_State *lua)
 /* Method of VifmJob that retrieves stream associated with input stream of the
  * job.  Returns file stream object compatible with I/O library. */
 static int
-vifmjob_stdin(lua_State *lua)
+VLUA_API(vifmjob_stdin)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
@@ -246,7 +247,7 @@ vifmjob_stdin(lua_State *lua)
 /* Method of VifmJob that retrieves stream associated with output stream of the
  * job.  Returns file stream object compatible with I/O library. */
 static int
-vifmjob_stdout(lua_State *lua)
+VLUA_API(vifmjob_stdout)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
@@ -272,7 +273,7 @@ vifmjob_stdout(lua_State *lua)
 /* Method of VifmJob that retrieves errors produces by the job.  Returns string
  * with the errors. */
 static int
-vifmjob_errors(lua_State *lua)
+VLUA_API(vifmjob_errors)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
@@ -311,7 +312,7 @@ job_stream_open(lua_State *lua, bg_job_t *job, FILE *stream)
 	luaL_setmetatable(lua, LUA_FILEHANDLE);
 
 	js->lua_stream.f = stream;
-	js->lua_stream.closef = &jobstream_closef;
+	js->lua_stream.closef = VLUA_IREF(jobstream_closef);
 	js->job = job;
 	bg_job_incref(job);
 
@@ -332,7 +333,7 @@ job_stream_close(lua_State *lua, job_stream_t *js)
 /* Custom destructor for luaL_Stream that decrements use counter of the job.
  * Returns status. */
 static int
-jobstream_closef(lua_State *lua)
+VLUA_IMPL(jobstream_closef)(lua_State *lua)
 {
 	job_stream_t *js = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
 

@@ -31,6 +31,7 @@
 #include "../types.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "api.h"
 #include "common.h"
 #include "vifmentry.h"
 #include "vlua_state.h"
@@ -98,7 +99,7 @@ vifm_viewcolumns_is_primary(vlua_t *vlua, int column_id)
 }
 
 int
-vifm_addcolumntype(lua_State *lua)
+VLUA_API(vifm_addcolumntype)(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
 

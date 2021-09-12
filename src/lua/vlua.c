@@ -42,6 +42,7 @@
 #include "../status.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "api.h"
 #include "common.h"
 #include "vifm_cmds.h"
 #include "vifm_handlers.h"
@@ -52,42 +53,42 @@
 
 static void patch_env(lua_State *lua);
 static void load_api(lua_State *lua);
-static int print(lua_State *lua);
-static int opts_global_index(lua_State *lua);
-static int opts_global_newindex(lua_State *lua);
-static int vifm_errordialog(lua_State *lua);
-static int vifm_fnamemodify(lua_State *lua);
-static int vifm_exists(lua_State *lua);
-static int vifm_makepath(lua_State *lua);
-static int vifm_expand(lua_State *lua);
-static int vifm_plugin_require(lua_State *lua);
-static int require_plugin_module(lua_State *lua);
-static int sb_info(lua_State *lua);
-static int sb_error(lua_State *lua);
-static int sb_quick(lua_State *lua);
+static int VLUA_API(print)(lua_State *lua);
+static int VLUA_API(opts_global_index)(lua_State *lua);
+static int VLUA_API(opts_global_newindex)(lua_State *lua);
+static int VLUA_API(vifm_errordialog)(lua_State *lua);
+static int VLUA_API(vifm_fnamemodify)(lua_State *lua);
+static int VLUA_API(vifm_exists)(lua_State *lua);
+static int VLUA_API(vifm_makepath)(lua_State *lua);
+static int VLUA_API(vifm_expand)(lua_State *lua);
+static int VLUA_API(vifm_plugin_require)(lua_State *lua);
+static int VLUA_IMPL(require_plugin_module)(lua_State *lua);
+static int VLUA_API(sb_info)(lua_State *lua);
+static int VLUA_API(sb_error)(lua_State *lua);
+static int VLUA_API(sb_quick)(lua_State *lua);
 static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
 static void setup_plugin_env(lua_State *lua, plug_t *plug);
 
 /* Functions of `vifm` global table. */
 static const struct luaL_Reg vifm_methods[] = {
-	{ "errordialog",   &vifm_errordialog   },
-	{ "fnamemodify",   &vifm_fnamemodify   },
-	{ "exists",        &vifm_exists        },
-	{ "makepath",      &vifm_makepath      },
-	{ "startjob",      &vifmjob_new        },
-	{ "expand",        &vifm_expand        },
-	{ "currview",      &vifmview_currview  },
-	{ "addcolumntype", &vifm_addcolumntype },
-	{ "addhandler",    &vifm_addhandler    },
-	{ NULL,            NULL                }
+	{ "errordialog",   VLUA_REF(vifm_errordialog)   },
+	{ "fnamemodify",   VLUA_REF(vifm_fnamemodify)   },
+	{ "exists",        VLUA_REF(vifm_exists)        },
+	{ "makepath",      VLUA_REF(vifm_makepath)      },
+	{ "startjob",      VLUA_REF(vifmjob_new)        },
+	{ "expand",        VLUA_REF(vifm_expand)        },
+	{ "currview",      VLUA_REF(vifmview_currview)  },
+	{ "addcolumntype", VLUA_REF(vifm_addcolumntype) },
+	{ "addhandler",    VLUA_REF(vifm_addhandler)    },
+	{ NULL,            NULL                         }
 };
 
 /* Functions of `vifm.sb` table. */
 static const struct luaL_Reg sb_methods[] = {
-	{ "info",   &sb_info  },
-	{ "error",  &sb_error },
-	{ "quick",  &sb_quick },
-	{ NULL,     NULL      }
+	{ "info",   VLUA_REF(sb_info)  },
+	{ "error",  VLUA_REF(sb_error) },
+	{ "quick",  VLUA_REF(sb_quick) },
+	{ NULL,     NULL               }
 };
 
 vlua_t *
@@ -115,7 +116,7 @@ vlua_finish(vlua_t *vlua)
 static void
 patch_env(lua_State *lua)
 {
-	lua_pushcfunction(lua, &print);
+	lua_pushcfunction(lua, VLUA_REF(print));
 	lua_setglobal(lua, "print");
 
 	lua_getglobal(lua, "os");
@@ -159,9 +160,9 @@ load_api(lua_State *lua)
 	lua_setfield(lua, -3, "opts");
 	lua_newtable(lua);
 	lua_newtable(lua);
-	lua_pushcfunction(lua, &opts_global_index);
+	lua_pushcfunction(lua, VLUA_REF(opts_global_index));
 	lua_setfield(lua, -2, "__index");
-	lua_pushcfunction(lua, &opts_global_newindex);
+	lua_pushcfunction(lua, VLUA_REF(opts_global_newindex));
 	lua_setfield(lua, -2, "__newindex");
 	lua_setmetatable(lua, -2);
 	lua_setfield(lua, -2, "global");
@@ -184,7 +185,7 @@ load_api(lua_State *lua)
 /* Replacement of standard global `print` function.  Outputs to statusbar.
  * Doesn't return anything. */
 static int
-print(lua_State *lua)
+VLUA_API(print)(lua_State *lua)
 {
 	char *msg = NULL;
 	size_t msg_len = 0U;
@@ -220,7 +221,7 @@ print(lua_State *lua)
 /* Provides read access to global options by their name as
  * `vifm.opts.global[name]`. */
 static int
-opts_global_index(lua_State *lua)
+VLUA_API(opts_global_index)(lua_State *lua)
 {
 	const char *opt_name = luaL_checkstring(lua, 2);
 
@@ -236,7 +237,7 @@ opts_global_index(lua_State *lua)
 /* Provides write access to global options by their name as
  * `vifm.opts.global[name] = value`. */
 static int
-opts_global_newindex(lua_State *lua)
+VLUA_API(opts_global_newindex)(lua_State *lua)
 {
 	const char *opt_name = luaL_checkstring(lua, 2);
 
@@ -251,7 +252,7 @@ opts_global_newindex(lua_State *lua)
 
 /* Member of `vifm` that displays an error dialog.  Doesn't return anything. */
 static int
-vifm_errordialog(lua_State *lua)
+VLUA_API(vifm_errordialog)(lua_State *lua)
 {
 	const char *title = luaL_checkstring(lua, 1);
 	const char *msg = luaL_checkstring(lua, 2);
@@ -262,7 +263,7 @@ vifm_errordialog(lua_State *lua)
 /* Member of `vifm` that modifies path according to specifiers.  Returns
  * modified path. */
 static int
-vifm_fnamemodify(lua_State *lua)
+VLUA_API(vifm_fnamemodify)(lua_State *lua)
 {
 	const char *path = luaL_checkstring(lua, 1);
 	const char *modifiers = luaL_checkstring(lua, 2);
@@ -274,7 +275,7 @@ vifm_fnamemodify(lua_State *lua)
 /* Member of `vifm` that checks whether specified path exists without resolving
  * symbolic links.  Returns a boolean, which is true when path does exist. */
 static int
-vifm_exists(lua_State *lua)
+VLUA_API(vifm_exists)(lua_State *lua)
 {
 	const char *path = luaL_checkstring(lua, 1);
 	lua_pushboolean(lua, path_exists(path, NODEREF));
@@ -284,7 +285,7 @@ vifm_exists(lua_State *lua)
 /* Member of `vifm` that creates a directory and all of its missing parent
  * directories.  Returns a boolean, which is true on success. */
 static int
-vifm_makepath(lua_State *lua)
+VLUA_API(vifm_makepath)(lua_State *lua)
 {
 	const char *path = luaL_checkstring(lua, 1);
 	lua_pushboolean(lua, make_path(path, 0755) == 0);
@@ -294,7 +295,7 @@ vifm_makepath(lua_State *lua)
 /* Member of `vifm` that expands macros and environment variables.  Returns the
  * expanded string. */
 static int
-vifm_expand(lua_State *lua)
+VLUA_API(vifm_expand)(lua_State *lua)
 {
 	const char *str = luaL_checkstring(lua, 1);
 
@@ -310,7 +311,7 @@ vifm_expand(lua_State *lua)
 /* Member of `vifm.sb` that prints a normal message on the statusbar.  Doesn't
  * return anything. */
 static int
-sb_info(lua_State *lua)
+VLUA_API(sb_info)(lua_State *lua)
 {
 	const char *msg = luaL_checkstring(lua, 1);
 	ui_sb_msg(msg);
@@ -321,7 +322,7 @@ sb_info(lua_State *lua)
 /* Member of `vifm.sb` that prints an error message on the statusbar.  Doesn't
  * return anything. */
 static int
-sb_error(lua_State *lua)
+VLUA_API(sb_error)(lua_State *lua)
 {
 	const char *msg = luaL_checkstring(lua, 1);
 	ui_sb_err(msg);
@@ -332,7 +333,7 @@ sb_error(lua_State *lua)
 /* Member of `vifm.sb` that prints statusbar message that's not stored in
  * history.  Doesn't return anything. */
 static int
-sb_quick(lua_State *lua)
+VLUA_API(sb_quick)(lua_State *lua)
 {
 	const char *msg = luaL_checkstring(lua, 1);
 	ui_sb_quick_msgf("%s", msg);
@@ -423,13 +424,13 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_setfield(lua, -2, "path");
 	/* Plugin-specific `vifm.plugin.require`. */
 	lua_pushlightuserdata(lua, plug);
-	lua_pushcclosure(lua, &vifm_plugin_require, 1);
+	lua_pushcclosure(lua, VLUA_REF(vifm_plugin_require), 1);
 	lua_setfield(lua, -2, "require");
 	lua_setfield(lua, -2, "plugin");
 
 	/* Plugin-specific `vifm.addhandler()`. */
 	lua_pushlightuserdata(lua, plug);
-	lua_pushcclosure(lua, &vifm_addhandler, 1);
+	lua_pushcclosure(lua, VLUA_REF(vifm_addhandler), 1);
 	lua_setfield(lua, -2, "addhandler");
 
 	/* Assign `vifm` as a plugin-specific global. */
@@ -437,7 +438,7 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 
 	/* Plugin-specific `print()`. */
 	lua_pushlightuserdata(lua, plug);
-	lua_pushcclosure(lua, &print, 1);
+	lua_pushcclosure(lua, VLUA_REF(print), 1);
 	lua_setfield(lua, -2, "print");
 
 	if(lua_setupvalue(lua, -2, 1) == NULL)
@@ -449,7 +450,7 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 /* Member of `vifm.plugin` that loads a module relative to the plugin's root.
  * Returns module's return. */
 static int
-vifm_plugin_require(lua_State *lua)
+VLUA_API(vifm_plugin_require)(lua_State *lua)
 {
 	const char *mod_name = luaL_checkstring(lua, 1);
 
@@ -468,13 +469,13 @@ vifm_plugin_require(lua_State *lua)
 				mod_name);
 	}
 
-	luaL_requiref(lua, full_path, &require_plugin_module, 1);
+	luaL_requiref(lua, full_path, VLUA_IREF(require_plugin_module), 1);
 	return 1;
 }
 
 /* Helper that loads a module.  Returns module's return. */
 static int
-require_plugin_module(lua_State *lua)
+VLUA_IMPL(require_plugin_module)(lua_State *lua)
 {
 	const char *mod = luaL_checkstring(lua, 1);
 	if(luaL_loadfile(lua, mod) != LUA_OK || lua_pcall(lua, 0, 1, 0) != LUA_OK)

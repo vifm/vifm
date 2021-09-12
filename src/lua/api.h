@@ -16,26 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__LUA__VIFMVIEW_H__
-#define VIFM__LUA__VIFMVIEW_H__
+#ifndef VIFM__LUA__API_H__
+#define VIFM__LUA__API_H__
 
-#include "api.h"
+/* This file provides a way to mark functions that are invoked by Lua. */
 
-struct lua_State;
-struct view_t;
+/* Helper macros to concatenate tokens. */
+#define VLUA_JOIN(a, b) VLUA_JOIN_(a, b)
+#define VLUA_JOIN_(a, b) a##b
 
-/* Initializes VifmView type unit. */
-void vifmview_init(struct lua_State *lua);
+/* Declaration, taking a reference and call wrappers for user-facing API. */
+#define VLUA_API(name) VLUA_JOIN(name, api)
+#define VLUA_REF(name) &VLUA_JOIN(name, api)
+#define VLUA_CALL(name) VLUA_JOIN(name, api)
 
-/* Retrieves a reference to a view.  Leaves an object of VifmView type on the
- * stack. */
-void vifmview_new(struct lua_State *lua, struct view_t *view);
+/* Declaration and taking a reference wrappers for internal Lua calls. */
+#define VLUA_IMPL(name) VLUA_JOIN(name, iapi)
+#define VLUA_IREF(name) &VLUA_JOIN(name, iapi)
 
-/* Retrieves a reference to current view.  Returns an object of VifmView
- * type. */
-int VLUA_API(vifmview_currview)(struct lua_State *lua);
-
-#endif /* VIFM__LUA__VIFMVIEW_H__ */
+#endif /* VIFM__LUA__API_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -27,33 +27,34 @@
 #include "../opt_handlers.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "api.h"
 #include "common.h"
 
-static int vifmview_index(lua_State *lua);
-static int viewopts_index(lua_State *lua);
-static int viewopts_newindex(lua_State *lua);
+static int VLUA_API(vifmview_index)(lua_State *lua);
+static int VLUA_API(viewopts_index)(lua_State *lua);
+static int VLUA_API(viewopts_newindex)(lua_State *lua);
 static opt_t * find_view_opt(const char name[]);
-static int locopts_index(lua_State *lua);
-static int locopts_newindex(lua_State *lua);
+static int VLUA_API(locopts_index)(lua_State *lua);
+static int VLUA_API(locopts_newindex)(lua_State *lua);
 static int do_opt(lua_State *lua, opt_t *opt, int set);
-static int restore_curr_view(lua_State *lua);
-static int get_opt_wrapper(lua_State *lua);
-static int set_opt_wrapper(lua_State *lua);
-static int vifmview_cd(lua_State *lua);
+static int VLUA_IMPL(restore_curr_view)(lua_State *lua);
+static int VLUA_IMPL(get_opt_wrapper)(lua_State *lua);
+static int VLUA_IMPL(set_opt_wrapper)(lua_State *lua);
+static int VLUA_API(vifmview_cd)(lua_State *lua);
 static view_t * check_view(lua_State *lua);
 static view_t * find_view(lua_State *lua, unsigned int id);
 
 /* Methods of VifmView type. */
 static const luaL_Reg vifmview_methods[] = {
-	{ "cd", &vifmview_cd  },
-	{ NULL, NULL          }
+	{ "cd", VLUA_REF(vifmview_cd) },
+	{ NULL, NULL                  }
 };
 
 void
 vifmview_init(struct lua_State *lua)
 {
 	luaL_newmetatable(lua, "VifmView");
-	lua_pushcfunction(lua, &vifmview_index);
+	lua_pushcfunction(lua, VLUA_REF(vifmview_index));
 	lua_setfield(lua, -2, "__index");
 	luaL_setfuncs(lua, vifmview_methods, 0);
 	lua_pop(lua, 1);
@@ -61,7 +62,7 @@ vifmview_init(struct lua_State *lua)
 
 /* Handles indexing of `VifmView` objects. */
 static int
-vifmview_index(lua_State *lua)
+VLUA_API(vifmview_index)(lua_State *lua)
 {
 	const char *key = luaL_checkstring(lua, 2);
 
@@ -96,9 +97,11 @@ vifmview_index(lua_State *lua)
 	lua_newtable(lua);
 	lua_pushvalue(lua, -1);
 	lua_setmetatable(lua, -2);
-	lua_pushcfunction(lua, viewopts ? &viewopts_index : &locopts_index);
+	lua_pushcfunction(lua,
+			viewopts ? VLUA_REF(viewopts_index) : VLUA_REF(locopts_index));
 	lua_setfield(lua, -2, "__index");
-	lua_pushcfunction(lua, viewopts ? &viewopts_newindex : &locopts_newindex);
+	lua_pushcfunction(lua,
+		viewopts ? VLUA_REF(viewopts_newindex) : VLUA_REF(locopts_newindex));
 	lua_setfield(lua, -2, "__newindex");
 	lua_setmetatable(lua, -2);
 	return 1;
@@ -107,7 +110,7 @@ vifmview_index(lua_State *lua)
 /* Provides read access to view options by their name as
  * `VifmView:viewopts[name]`.  These are "global" values of view options. */
 static int
-viewopts_index(lua_State *lua)
+VLUA_API(viewopts_index)(lua_State *lua)
 {
 	const char *opt_name = luaL_checkstring(lua, 2);
 	opt_t *opt = find_view_opt(opt_name);
@@ -123,7 +126,7 @@ viewopts_index(lua_State *lua)
  * `VifmView:viewopts[name] = value`.  These are "global" values of view
  * options. */
 static int
-viewopts_newindex(lua_State *lua)
+VLUA_API(viewopts_newindex)(lua_State *lua)
 {
 	const char *opt_name = luaL_checkstring(lua, 2);
 	opt_t *opt = find_view_opt(opt_name);
@@ -153,7 +156,7 @@ find_view_opt(const char name[])
  * `VifmView:viewopts[name]`.  These are "local" values of location-specific
  * options. */
 static int
-locopts_index(lua_State *lua)
+VLUA_API(locopts_index)(lua_State *lua)
 {
 	const char *opt_name = luaL_checkstring(lua, 2);
 	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
@@ -169,7 +172,7 @@ locopts_index(lua_State *lua)
  * `VifmView:viewopts[name] = value`.  These are "local" values of
  * location-specific options. */
 static int
-locopts_newindex(lua_State *lua)
+VLUA_API(locopts_newindex)(lua_State *lua)
 {
 	const char *opt_name = luaL_checkstring(lua, 2);
 	opt_t *opt = vle_opts_find(opt_name, OPT_LOCAL);
@@ -200,8 +203,9 @@ do_opt(lua_State *lua, opt_t *opt, int set)
 	load_view_options(curr_view);
 
 	lua_pushlightuserdata(lua, curr);
-	lua_pushcclosure(lua, &restore_curr_view, 1);
-	lua_pushcfunction(lua, set ? &set_opt_wrapper : &get_opt_wrapper);
+	lua_pushcclosure(lua, VLUA_IREF(restore_curr_view), 1);
+	lua_pushcfunction(lua,
+			set ? VLUA_IREF(set_opt_wrapper) : VLUA_IREF(get_opt_wrapper));
 	lua_pushlightuserdata(lua, opt);
 	lua_pushvalue(lua, 2);
 	lua_pushvalue(lua, 3);
@@ -221,7 +225,7 @@ do_opt(lua_State *lua, opt_t *opt, int set)
 
 /* Restores `curr_view` after an error. */
 static int
-restore_curr_view(lua_State *lua)
+VLUA_IMPL(restore_curr_view)(lua_State *lua)
 {
 	view_t *curr = lua_touserdata(lua, lua_upvalueindex(1));
 	curr_view = curr;
@@ -231,7 +235,7 @@ restore_curr_view(lua_State *lua)
 
 /* Lua-wrapper of get_opt(). */
 static int
-get_opt_wrapper(lua_State *lua)
+VLUA_IMPL(get_opt_wrapper)(lua_State *lua)
 {
 	opt_t *opt = lua_touserdata(lua, 1);
 	return get_opt(lua, opt);
@@ -239,7 +243,7 @@ get_opt_wrapper(lua_State *lua)
 
 /* Lua-wrapper of set_opt(). */
 static int
-set_opt_wrapper(lua_State *lua)
+VLUA_IMPL(set_opt_wrapper)(lua_State *lua)
 {
 	opt_t *opt = lua_touserdata(lua, 1);
 	return set_opt(lua, opt);
@@ -256,7 +260,7 @@ vifmview_new(lua_State *lua, view_t *view)
 }
 
 int
-vifmview_currview(lua_State *lua)
+VLUA_API(vifmview_currview)(lua_State *lua)
 {
 	vifmview_new(lua, curr_view);
 	return 1;
@@ -265,7 +269,7 @@ vifmview_currview(lua_State *lua)
 /* Method of `VifmView` that changes directory of current view.  Returns
  * boolean, which is true if location change was successful. */
 static int
-vifmview_cd(lua_State *lua)
+VLUA_API(vifmview_cd)(lua_State *lua)
 {
 	view_t *view = check_view(lua);
 

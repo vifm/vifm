@@ -19,6 +19,8 @@
 #ifndef VIFM__LUA__VIFM_HANDLERS_H__
 #define VIFM__LUA__VIFM_HANDLERS_H__
 
+#include "api.h"
+
 struct dir_entry_t;
 struct lua_State;
 struct preview_area_t;
@@ -53,7 +55,7 @@ char * vifm_handlers_make_status_line(struct vlua_t *vlua, const char format[],
 
 /* Member of `vifm` that adds a Lua handler invokable from the app.  Returns a
  * boolean, which is true on success. */
-int vifm_addhandler(struct lua_State *lua);
+int VLUA_API(vifm_addhandler)(struct lua_State *lua);
 
 #endif /* VIFM__LUA__VIFM_HANDLERS_H__ */
 

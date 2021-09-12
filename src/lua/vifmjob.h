@@ -19,6 +19,8 @@
 #ifndef VIFM__LUA__VIFMJOB_H__
 #define VIFM__LUA__VIFMJOB_H__
 
+#include "api.h"
+
 struct lua_State;
 
 /* Initializes VifmJob type unit. */
@@ -26,7 +28,7 @@ void vifmjob_init(struct lua_State *lua);
 
 /* Starts an external application as detached from a terminal.  Returns an
  * object of VifmJob type or raises an error. */
-int vifmjob_new(struct lua_State *lua);
+int VLUA_API(vifmjob_new)(struct lua_State *lua);
 
 #endif /* VIFM__LUA__VIFMJOB_H__ */
 

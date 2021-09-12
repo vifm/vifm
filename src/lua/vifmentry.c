@@ -21,12 +21,13 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
-#include "lua/lauxlib.h"
-#include "lua/lua.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../filelist.h"
 #include "../types.h"
+#include "lua/lauxlib.h"
+#include "lua/lua.h"
+#include "api.h"
 
 /* User data of view entry object. */
 typedef struct
@@ -36,13 +37,13 @@ typedef struct
 }
 vifm_entry_t;
 
-static int vifmentry_gc(lua_State *lua);
-static int vifmentry_gettarget(lua_State *lua);
+static int VLUA_API(vifmentry_gc)(lua_State *lua);
+static int VLUA_API(vifmentry_gettarget)(lua_State *lua);
 
 /* Methods of VifmEntry type. */
 static const luaL_Reg vifmentry_methods[] = {
-	{ "__gc", &vifmentry_gc },
-	{ NULL,   NULL          }
+	{ "__gc", VLUA_REF(vifmentry_gc) },
+	{ NULL,   NULL                   }
 };
 
 void
@@ -102,7 +103,7 @@ vifmentry_new(lua_State *lua, const dir_entry_t *entry)
 	luaL_getmetatable(lua, "VifmEntry");
 	lua_setmetatable(lua, -2);
 
-	lua_pushcclosure(lua, &vifmentry_gettarget, 1);
+	lua_pushcclosure(lua, VLUA_REF(vifmentry_gettarget), 1);
 	lua_setfield(lua, -2, "gettarget");
 
 	char full_path[PATH_MAX + 1];
@@ -114,7 +115,7 @@ vifmentry_new(lua_State *lua, const dir_entry_t *entry)
 
 /* Frees memory allocated to vifm_entry_t fields. */
 static int
-vifmentry_gc(lua_State *lua)
+VLUA_API(vifmentry_gc)(lua_State *lua)
 {
 	vifm_entry_t *vifm_entry = luaL_checkudata(lua, 1, "VifmEntry");
 	free(vifm_entry->full_path);
@@ -123,7 +124,7 @@ vifmentry_gc(lua_State *lua)
 
 /* Gets target of a symbolic link. */
 static int
-vifmentry_gettarget(lua_State *lua)
+VLUA_API(vifmentry_gettarget)(lua_State *lua)
 {
 	vifm_entry_t *vifm_entry = lua_touserdata(lua, lua_upvalueindex(1));
 

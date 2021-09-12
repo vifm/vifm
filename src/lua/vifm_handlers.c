@@ -251,7 +251,7 @@ extract_handler_name(const char viewer[])
 }
 
 int
-vifm_addhandler(lua_State *lua)
+VLUA_API(vifm_addhandler)(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
 
