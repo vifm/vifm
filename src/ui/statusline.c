@@ -60,6 +60,7 @@ static cline_t parse_view_macros(view_t *view, const char **format,
 static int expand_num(char buf[], size_t buf_len, int val);
 static const char * get_tip(void);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
+static char * fetch_status_line(view_t *view, int width);
 TSTATIC char * find_view_macro(const char **format, const char macros[],
 		char macro, int opt);
 static pthread_spinlock_t * get_job_bar_changed_lock(void);
@@ -120,14 +121,14 @@ ui_stat_update(view_t *view, int lazy_redraw)
 static void
 split_and_print_status_line(view_t *view, int width)
 {
-	char *copy = strdup(cfg.status_line);
+	char *status_line = fetch_status_line(view, width);
 
-	const char *status_line = copy;
+	const char *part = status_line;
 	int line = 0;
-	while(*status_line != '\0')
+	while(*part != '\0')
 	{
-		const char *current = status_line;
-		char *next = find_view_macro(&status_line, STATUS_LINE_MACROS, 'N', 0);
+		const char *current = part;
+		char *next = find_view_macro(&part, STATUS_LINE_MACROS, 'N', 0);
 		if(next != NULL)
 		{
 			*next = '\0';
@@ -142,7 +143,7 @@ split_and_print_status_line(view_t *view, int width)
 		cline_dispose(&result);
 	}
 
-	free(copy);
+	free(status_line);
 }
 
 /* Formats status line in the "old way" (before introduction of 'statusline'
@@ -679,20 +680,30 @@ ui_stat_height(void)
 		return 0;
 	}
 
-	const char *status_line = cfg.status_line;
+	char *status_line = fetch_status_line(curr_view, getmaxx(stdscr));
+	const char *part = status_line;
 
 	int height = 0;
 	do
 	{
 		++height;
 	}
-	while(find_view_macro(&status_line, STATUS_LINE_MACROS, 'N', 0) != NULL);
+	while(find_view_macro(&part, STATUS_LINE_MACROS, 'N', 0) != NULL);
+
+	free(status_line);
 
 	if(curr_stats.reusing_statusline)
 	{
 		return MIN(getmaxy(stat_win), height);
 	}
 	return height;
+}
+
+/* Retrieves status line format.  Returns newly allocated string. */
+static char *
+fetch_status_line(view_t *view, int width)
+{
+	return strdup(cfg.status_line);
 }
 
 /* strstr() for format line.  Basically parse_view_macros() in dry mode.
