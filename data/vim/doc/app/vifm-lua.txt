@@ -188,6 +188,9 @@ A handler can be used in place of an external viewer in |vifm-:fileviewer|
 command like this: >
   fileviewer {*.vim} #pluginname#view --strip-comments %c
 
+A handler can be used to generate |vifm-:'statusline'| value like this: >
+  set statusline=#pluginname#statusline
+
 --------------------------------------------------------------------------------
 *vifm-lua-caps*
 
@@ -196,6 +199,7 @@ This is what one can do by using Lua at the moment:
  * save and reset options (e.g., some kind of presets) (|vifm-l_vifm.opts|)
  * custom columns (|vifm-l_vifm.addcolumntype()|)
  * :filetype/:filextype/:fileviewer handlers in Lua (|vifm-lua-handlers|)
+ * 'statusline' generator in Lua (|vifm-lua-handlers|)
  * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)
 
 --------------------------------------------------------------------------------
@@ -289,7 +293,19 @@ Possible fields of {handler}:
  - "handler" (function)
    Handler which accepts {info} and returns a table.  See below.
 
-Fields of {info} argument for {handler}.handler for :fileviewer:
+:filetype or :filextype handler~
+
+Fields of {info} argument for {handler}.handler for :file[x]type:
+ - "command" (string)
+   Command which handles the file.
+ - "entry" (table)
+   Information about a file list entry as an instance of |vifm-l_VifmEntry|.
+
+There is no return value.
+
+:fileviewer handler~
+
+Fields of {info} argument:
  - "command" (string)
    Command with which the viewer was invoked.
  - "path" (string)
@@ -303,17 +319,21 @@ Fields of {info} argument for {handler}.handler for :fileviewer:
  - "height" (integer)
    Height of the preview area in characters.
 
-Fields of {info} argument for {handler}.handler for :file[x]type:
- - "command" (string)
-   Command which handles the file.
- - "entry" (table)
-   Information about a file list entry as an instance of |vifm-l_VifmEntry|.
-
-Fields of a table returned by {handler}.handler for :fileviewer:
+Fields of returned table:
  - "lines" (array of strings)
    Preview text.
 
-:filetype and :filextype handlers don't need a return value.
+'statusline' handler~
+
+Fields of {info} argument:
+ - "view" (|vifm-l_VifmView|)
+   Current view.
+ - "width" (integer)
+   Width of the status line.
+
+Fields of returned table:
+ - "format" (string)
+   Value for |vifm-'statusline'|.
 
 Return:~
   `true` if handler was added, `false` if a handler with such name already

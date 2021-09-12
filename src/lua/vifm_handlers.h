@@ -23,6 +23,7 @@ struct dir_entry_t;
 struct lua_State;
 struct preview_area_t;
 struct strlist_t;
+struct view_t;
 struct vlua_t;
 
 /* Initializes this unit. */
@@ -44,6 +45,11 @@ struct strlist_t vifm_handlers_view(struct vlua_t *vlua, const char viewer[],
 /* Invokes a fiel handler. */
 void vifm_handlers_open(struct vlua_t *vlua, const char prog[],
 		const struct dir_entry_t *entry);
+
+/* Invokes status line formatting handler.  Returns newly allocated string with
+ * status line format. */
+char * vifm_handlers_make_status_line(struct vlua_t *vlua, const char format[],
+		struct view_t *view, int width);
 
 /* Member of `vifm` that adds a Lua handler invokable from the app.  Returns a
  * boolean, which is true on success. */

@@ -35,6 +35,7 @@
 #include "../engine/mode.h"
 #include "../engine/parsing.h"
 #include "../engine/var.h"
+#include "../lua/vlua.h"
 #include "../modes/modes.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
@@ -703,6 +704,11 @@ ui_stat_height(void)
 static char *
 fetch_status_line(view_t *view, int width)
 {
+	if(vlua_handler_cmd(curr_stats.vlua, cfg.status_line))
+	{
+		return vlua_make_status_line(curr_stats.vlua, cfg.status_line, view, width);
+	}
+
 	return strdup(cfg.status_line);
 }
 

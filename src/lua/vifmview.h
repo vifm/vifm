@@ -20,9 +20,14 @@
 #define VIFM__LUA__VIFMVIEW_H__
 
 struct lua_State;
+struct view_t;
 
 /* Initializes VifmView type unit. */
 void vifmview_init(struct lua_State *lua);
+
+/* Retrieves a reference to a view.  Leaves an object of VifmView type on the
+ * stack. */
+void vifmview_new(struct lua_State *lua, struct view_t *view);
 
 /* Retrieves a reference to current view.  Returns an object of VifmView
  * type. */

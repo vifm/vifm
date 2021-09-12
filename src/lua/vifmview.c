@@ -245,15 +245,20 @@ set_opt_wrapper(lua_State *lua)
 	return set_opt(lua, opt);
 }
 
-int
-vifmview_currview(struct lua_State *lua)
+void
+vifmview_new(lua_State *lua, view_t *view)
 {
 	unsigned int *data = lua_newuserdatauv(lua, sizeof(*data), 0);
-	*data = curr_view->id;
+	*data = view->id;
 
 	luaL_getmetatable(lua, "VifmView");
 	lua_setmetatable(lua, -2);
+}
 
+int
+vifmview_currview(lua_State *lua)
+{
+	vifmview_new(lua, curr_view);
 	return 1;
 }
 

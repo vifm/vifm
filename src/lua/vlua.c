@@ -543,5 +543,12 @@ vlua_open_file(vlua_t *vlua, const char prog[], const struct dir_entry_t *entry)
 	return vifm_handlers_open(vlua, prog, entry);
 }
 
+char *
+vlua_make_status_line(struct vlua_t *vlua, const char format[],
+		struct view_t *view, int width)
+{
+	return vifm_handlers_make_status_line(vlua, format, view, width);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
