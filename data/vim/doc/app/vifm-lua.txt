@@ -591,6 +591,12 @@ the Unix epoch.
 VifmEntry.type (string)                        *vifm-l_VifmEntry.type*
 Type of the entry.  See |vifm-filetype()| for the list of values.
 
+VifmEntry.folded (boolean)                     *vifm-l_VifmEntry.folded*
+Whether this entry is folded.
+
+VifmEntry.selected (boolean)                   *vifm-l_VifmEntry.selected*
+Whether this entry is selected.
+
 VifmEntry.match (boolean)                      *vifm-l_VifmEntry.match*
 Whether this entry is a search match.
 

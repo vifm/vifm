@@ -83,6 +83,12 @@ vifmentry_new(lua_State *lua, const dir_entry_t *entry)
 	lua_pushinteger(lua, (match ? entry->match_right + 1 : 0));
 	lua_setfield(lua, -2, "matchend");
 
+	lua_pushboolean(lua, entry->selected);
+	lua_setfield(lua, -2, "selected");
+
+	lua_pushboolean(lua, entry->folded);
+	lua_setfield(lua, -2, "folded");
+
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
 	lua_newtable(lua);
