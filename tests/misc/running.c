@@ -12,6 +12,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -134,6 +135,30 @@ TEST(full_path_regexps_are_handled_for_selection2)
 	rn_open(&lwin, FHE_NO_RUN);
 
 	/* If we don't crash, then everything is fine. */
+}
+
+TEST(can_open_via_plugin)
+{
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function open(info) name = info.entry.name\n end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'open', handler = open }"));
+
+	char *error;
+	matchers_t *ms = matchers_alloc("*", 0, 1, "", &error);
+	assert_non_null(ms);
+	ft_set_programs(ms, "#vifmtest#open", /*for_x=*/0, /*in_x=*/1);
+
+	rn_open(&lwin, FHE_NO_RUN);
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(curr_stats.vlua, "print(name)"));
+	assert_string_equal("a", ui_sb_last());
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
 }
 
 TEST(following_resolves_links_in_origin, IF(not_windows))

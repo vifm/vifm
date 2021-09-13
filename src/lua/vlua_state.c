@@ -18,6 +18,7 @@
 
 #include "vlua_state.h"
 
+#include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* calloc() free() malloc() */
 
@@ -50,7 +51,8 @@ vlua_state_alloc(void)
 	luaL_requiref(vlua->lua, LUA_STRLIBNAME, &luaopen_string, 1);
 	luaL_requiref(vlua->lua, LUA_MATHLIBNAME, &luaopen_math, 1);
 	luaL_requiref(vlua->lua, LUA_OSLIBNAME, &luaopen_os, 1);
-	lua_pop(vlua->lua, 5);
+	luaL_requiref(vlua->lua, LUA_LOADLIBNAME, &luaopen_package, 1);
+	lua_pop(vlua->lua, 7);
 
 	return vlua;
 }
@@ -140,6 +142,25 @@ vlua_state_get_table(vlua_t *vlua, void *key)
 {
 	lua_pushlightuserdata(vlua->lua, key);
 	lua_gettable(vlua->lua, LUA_REGISTRYINDEX);
+}
+
+void
+vlua_state_safe_mode_set(lua_State *lua, int safe_mode)
+{
+	vlua_t *vlua = get_state(lua);
+	assert(vlua->is_safe_mode_on != safe_mode && "Mismatched safe mode change!");
+	vlua->is_safe_mode_on = safe_mode;
+}
+
+int
+vlua_state_proxy_call(lua_State *lua, int (*call)(lua_State *lua))
+{
+		if(get_state(lua)->is_safe_mode_on)
+		{
+			return luaL_error(lua, "%s",
+					"Unsafe functions can't be called in this environment!");
+		}
+		return call(lua);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

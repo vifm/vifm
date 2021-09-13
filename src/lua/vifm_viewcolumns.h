@@ -19,6 +19,8 @@
 #ifndef VIFM__LUA__VIFM_VIEWCOLUMNS_H__
 #define VIFM__LUA__VIFM_VIEWCOLUMNS_H__
 
+#include "api.h"
+
 struct lua_State;
 struct vlua_t;
 
@@ -34,7 +36,7 @@ int vifm_viewcolumns_is_primary(struct vlua_t *vlua, int column_id);
 
 /* Member of `vifm` that adds a user-defined view column.  Returns a boolean,
  * which is true on success. */
-int vifm_addcolumntype(struct lua_State *lua);
+int VLUA_API(vifm_addcolumntype)(struct lua_State *lua);
 
 #endif /* VIFM__LUA__VIFM_VIEWCOLUMNS_H__ */
 

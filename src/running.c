@@ -50,6 +50,7 @@
 #include "int/fuse.h"
 #include "int/path_env.h"
 #include "int/vim.h"
+#include "lua/vlua.h"
 #include "menus/users_menu.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/view.h"
@@ -534,6 +535,12 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 	if(!path_exists_at(curr->origin, curr->name, DEREF))
 	{
 		show_error_msg("Access Error", "File doesn't exist.");
+		return;
+	}
+
+	if(vlua_handler_cmd(curr_stats.vlua, prog_spec))
+	{
+		vlua_open_file(curr_stats.vlua, prog_spec, curr);
 		return;
 	}
 

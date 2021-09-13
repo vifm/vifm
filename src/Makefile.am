@@ -177,10 +177,12 @@ vifm_SOURCES = \
 	lua/lua/lvm.c lua/lua/lvm.h \
 	lua/lua/lzio.c lua/lua/lzio.h \
 	\
+	lua/api.h \
 	lua/common.c lua/common.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
 	lua/vifm_handlers.c lua/vifm_handlers.h \
 	lua/vifm_viewcolumns.c lua/vifm_viewcolumns.h \
+	lua/vifmentry.c lua/vifmentry.h \
 	lua/vifmjob.c lua/vifmjob.h \
 	lua/vifmview.c lua/vifmview.h \
 	lua/vlua.c lua/vlua.h \

@@ -22,6 +22,12 @@ static const preview_area_t parea = {
 	.h = 4,
 };
 
+static dir_entry_t entry = {
+	.name = "binary-data",
+	.origin = TEST_DATA_PATH "/test-data/read",
+	.name_dec_num = -1,
+};
+
 SETUP()
 {
 	vlua = vlua_init();
@@ -30,6 +36,15 @@ SETUP()
 TEARDOWN()
 {
 	vlua_finish(vlua);
+}
+
+TEST(handler_check)
+{
+	assert_false(vlua_handler_cmd(vlua, "normal command"));
+	assert_false(vlua_handler_cmd(vlua, "#something"));
+	assert_true(vlua_handler_cmd(vlua, "#something#"));
+	assert_true(vlua_handler_cmd(vlua, "#something#more"));
+	assert_true(vlua_handler_cmd(vlua, "#something#more here"));
 }
 
 TEST(bad_args)
@@ -125,6 +140,8 @@ TEST(bad_invocation)
 		vlua_view_file(vlua, "#vifmtest#nosuchhandle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
 	free_string_array(lines.items, lines.nitems);
+
+	vlua_open_file(vlua, "#vifmtest#nosuchhandle", &entry);
 }
 
 TEST(error_invocation)
@@ -170,6 +187,71 @@ TEST(missing_field)
 	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
 	free_string_array(lines.items, lines.nitems);
+}
+
+TEST(error_open_invocation)
+{
+	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	ui_sb_msg("");
+	vlua_open_file(vlua, "#vifmtest#handle", &entry);
+	assert_true(ends_with(ui_sb_last(),
+				": global 'asdf' is not callable (a nil value)"));
+}
+
+TEST(bad_statusline_formatter)
+{
+	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
+	assert_true(ends_with(format,
+				": global 'asdf' is not callable (a nil value)"));
+	free(format);
+}
+
+TEST(good_statusline_formatter)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info) return { format = info.width } end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
+	assert_string_equal("10", format);
+	free(format);
+}
+
+TEST(handlers_run_in_safe_mode)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info) vifm.opts.global.statusline = 'value' end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
+	assert_true(ends_with(format,
+				": Unsafe functions can't be called in this environment!"));
+	free(format);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

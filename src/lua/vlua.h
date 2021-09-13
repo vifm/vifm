@@ -27,9 +27,11 @@
 typedef struct vlua_t vlua_t;
 
 struct cmd_info_t;
+struct dir_entry_t;
 struct plug_t;
 struct preview_area_t;
 struct strlist_t;
+struct view_t;
 
 /* Creates new instance of the unit.  Returns the instance or NULL. */
 vlua_t * vlua_init(void);
@@ -67,6 +69,15 @@ int vlua_handler_present(vlua_t *vlua, const char cmd[]);
  * be freed by the caller. */
 struct strlist_t vlua_view_file(vlua_t *vlua, const char viewer[],
 		const char path[], const struct preview_area_t *parea);
+
+/* Invokes a file handler. */
+void vlua_open_file(vlua_t *vlua, const char prog[],
+		const struct dir_entry_t *entry);
+
+/* Invokes status line formatting handler.  Returns newly allocated string with
+ * status line format. */
+char * vlua_make_status_line(struct vlua_t *vlua, const char format[],
+		struct view_t *view, int width);
 
 #endif /* VIFM__LUA__VLUA_H__ */
 

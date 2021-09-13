@@ -19,7 +19,7 @@
 #include "vifm_handlers.h"
 
 #include <assert.h> /* assert() */
-#include <string.h> /* strcspn() */
+#include <string.h> /* strchr() strcspn() strdup() */
 
 #include <curses.h>
 
@@ -33,6 +33,8 @@
 #include "common.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "vifmentry.h"
+#include "vifmview.h"
 #include "vlua_state.h"
 
 static char * extract_handler_name(const char viewer[]);
@@ -48,7 +50,7 @@ static char handlers_key;
 int
 vifm_handlers_check(vlua_t *vlua, const char cmd[])
 {
-	return (cmd[0] == '#');
+	return (cmd[0] == '#' && strchr(cmd + 1, '#') != NULL);
 }
 
 void
@@ -115,13 +117,18 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 		lua_setfield(vlua->lua, -2, "height");
 	}
 
+	vlua_state_safe_mode_set(vlua->lua, 1);
 	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
 	{
+		vlua_state_safe_mode_set(vlua->lua, 0);
+
 		const char *error = lua_tostring(vlua->lua, -1);
 		ui_sb_err(error);
 		lua_pop(vlua->lua, 3);
 		return result;
 	}
+
+	vlua_state_safe_mode_set(vlua->lua, 0);
 
 	if(!lua_istable(vlua->lua, -1))
 	{
@@ -147,6 +154,107 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 	return result;
 }
 
+void
+vifm_handlers_open(vlua_t *vlua, const char prog[],
+		const struct dir_entry_t *entry)
+{
+	char *name = extract_handler_name(prog);
+
+	/* Don't need lua_pcall() to handle errors, because no one should be able to
+	 * mess with internal tables. */
+	vlua_state_get_table(vlua, &handlers_key);
+	if(lua_getfield(vlua->lua, -1, name) != LUA_TTABLE)
+	{
+		free(name);
+		lua_pop(vlua->lua, 2);
+		return;
+	}
+
+	free(name);
+
+	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
+			"Handler must be a function here.");
+
+	lua_newtable(vlua->lua);
+	lua_pushstring(vlua->lua, prog);
+	lua_setfield(vlua->lua, -2, "command");
+	vifmentry_new(vlua->lua, entry);
+	lua_setfield(vlua->lua, -2, "entry");
+
+	vlua_state_safe_mode_set(vlua->lua, 1);
+	if(lua_pcall(vlua->lua, 1, 0, 0) != LUA_OK)
+	{
+		vlua_state_safe_mode_set(vlua->lua, 0);
+
+		const char *error = lua_tostring(vlua->lua, -1);
+		ui_sb_err(error);
+		lua_pop(vlua->lua, 3);
+		return;
+	}
+
+	vlua_state_safe_mode_set(vlua->lua, 0);
+	lua_pop(vlua->lua, 2);
+}
+
+char *
+vifm_handlers_make_status_line(vlua_t *vlua, const char format[],
+		struct view_t *view, int width)
+{
+	char *name = extract_handler_name(format);
+
+	/* Don't need lua_pcall() to handle errors, because no one should be able to
+	 * mess with internal tables. */
+	vlua_state_get_table(vlua, &handlers_key);
+	if(lua_getfield(vlua->lua, -1, name) != LUA_TTABLE)
+	{
+		free(name);
+		lua_pop(vlua->lua, 2);
+		return strdup("Invalid handler");
+	}
+
+	free(name);
+
+	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
+			"Handler must be a function here.");
+
+	lua_newtable(vlua->lua);
+	vifmview_new(vlua->lua, view);
+	lua_setfield(vlua->lua, -2, "view");
+	lua_pushinteger(vlua->lua, width);
+	lua_setfield(vlua->lua, -2, "width");
+
+	vlua_state_safe_mode_set(vlua->lua, 1);
+	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
+	{
+		vlua_state_safe_mode_set(vlua->lua, 0);
+
+		char *error = strdup(lua_tostring(vlua->lua, -1));
+		lua_pop(vlua->lua, 3);
+		return error;
+	}
+
+	vlua_state_safe_mode_set(vlua->lua, 0);
+
+	if(!lua_istable(vlua->lua, -1))
+	{
+		lua_pop(vlua->lua, 3);
+		return strdup("Return value isn't a table.");
+	}
+
+	if(lua_getfield(vlua->lua, -1, "format") == LUA_TSTRING)
+	{
+		lua_pop(vlua->lua, 4);
+		return strdup("Return value is missing 'format' key.");
+	}
+
+	const char *result = lua_tostring(vlua->lua, -1);
+	char *status_line = strdup(result == NULL ? "" : result);
+
+	lua_pop(vlua->lua, 4);
+
+	return status_line;
+}
+
 /* Extracts name of the handler from a command.  Returns a newly allocated
  * string. */
 static char *
@@ -157,7 +265,7 @@ extract_handler_name(const char viewer[])
 }
 
 int
-vifm_addhandler(lua_State *lua)
+VLUA_API(vifm_addhandler)(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
 

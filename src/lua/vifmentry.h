@@ -16,26 +16,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__LUA__VIFMVIEW_H__
-#define VIFM__LUA__VIFMVIEW_H__
+#ifndef VIFM__LUA__VIFMENTRY_H__
+#define VIFM__LUA__VIFMENTRY_H__
 
-#include "api.h"
-
+struct dir_entry_t;
 struct lua_State;
-struct view_t;
 
-/* Initializes VifmView type unit. */
-void vifmview_init(struct lua_State *lua);
+/* Initializes VifmEntry type unit. */
+void vifmentry_init(struct lua_State *lua);
 
-/* Retrieves a reference to a view.  Leaves an object of VifmView type on the
- * stack. */
-void vifmview_new(struct lua_State *lua, struct view_t *view);
+/* Creates a new VifmEntry (actually a table where user data is passed using
+ * upvalues).  Leaves it on the top of the stack. */
+void vifmentry_new(struct lua_State *lua, const struct dir_entry_t *entry);
 
-/* Retrieves a reference to current view.  Returns an object of VifmView
- * type. */
-int VLUA_API(vifmview_currview)(struct lua_State *lua);
-
-#endif /* VIFM__LUA__VIFMVIEW_H__ */
+#endif /* VIFM__LUA__VIFMENTRY_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
