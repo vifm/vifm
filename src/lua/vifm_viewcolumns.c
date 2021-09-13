@@ -202,14 +202,19 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 	cdt->match_from = 0;
 	cdt->match_to = 0;
 
+	vlua_state_safe_mode_set(lua, 1);
 	if(lua_pcall(lua, 1, 1, 0) != LUA_OK)
 	{
+		vlua_state_safe_mode_set(lua, 0);
+
 		const char *error = lua_tostring(lua, -1);
 		ui_sb_err(error);
 		copy_str(buf, buf_len, "ERROR");
 		lua_pop(lua, 1);
 		return;
 	}
+
+	vlua_state_safe_mode_set(lua, 0);
 
 	if(!lua_istable(lua, -1))
 	{

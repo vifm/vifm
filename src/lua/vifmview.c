@@ -29,6 +29,7 @@
 #include "lua/lua.h"
 #include "api.h"
 #include "common.h"
+#include "vlua_state.h"
 
 static int VLUA_API(vifmview_index)(lua_State *lua);
 static int VLUA_API(viewopts_index)(lua_State *lua);

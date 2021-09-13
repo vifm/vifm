@@ -117,13 +117,18 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 		lua_setfield(vlua->lua, -2, "height");
 	}
 
+	vlua_state_safe_mode_set(vlua->lua, 1);
 	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
 	{
+		vlua_state_safe_mode_set(vlua->lua, 0);
+
 		const char *error = lua_tostring(vlua->lua, -1);
 		ui_sb_err(error);
 		lua_pop(vlua->lua, 3);
 		return result;
 	}
+
+	vlua_state_safe_mode_set(vlua->lua, 0);
 
 	if(!lua_istable(vlua->lua, -1))
 	{
@@ -176,14 +181,18 @@ vifm_handlers_open(vlua_t *vlua, const char prog[],
 	vifmentry_new(vlua->lua, entry);
 	lua_setfield(vlua->lua, -2, "entry");
 
+	vlua_state_safe_mode_set(vlua->lua, 1);
 	if(lua_pcall(vlua->lua, 1, 0, 0) != LUA_OK)
 	{
+		vlua_state_safe_mode_set(vlua->lua, 0);
+
 		const char *error = lua_tostring(vlua->lua, -1);
 		ui_sb_err(error);
 		lua_pop(vlua->lua, 3);
 		return;
 	}
 
+	vlua_state_safe_mode_set(vlua->lua, 0);
 	lua_pop(vlua->lua, 2);
 }
 
@@ -214,12 +223,17 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[],
 	lua_pushinteger(vlua->lua, width);
 	lua_setfield(vlua->lua, -2, "width");
 
+	vlua_state_safe_mode_set(vlua->lua, 1);
 	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
 	{
+		vlua_state_safe_mode_set(vlua->lua, 0);
+
 		char *error = strdup(lua_tostring(vlua->lua, -1));
 		lua_pop(vlua->lua, 3);
 		return error;
 	}
+
+	vlua_state_safe_mode_set(vlua->lua, 0);
 
 	if(!lua_istable(vlua->lua, -1))
 	{

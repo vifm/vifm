@@ -42,7 +42,7 @@
 #define VLUA_DECLARE_UNSAFE(name) \
 	static int VLUA_JOIN(name, _guard)(struct lua_State *lua) \
 	{ \
-		return name(lua); \
+		return vlua_state_proxy_call(lua, &name); \
 	}
 
 #endif /* VIFM__LUA__API_H__ */

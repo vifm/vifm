@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 12
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -73,23 +73,26 @@ the code base.
 The intent is for Lua to be a way of extending the core.  It's not meant
 neither as a replacement of :commands nor as a continuation of it.  Instead
 it's supposed to be a more low-level way of interacting with the core and
-extension.
+extending it.
 
-One implication is that there is no way of calling Lua from :commands or vice
-versa.  This gets too ugly too quickly, hence they are separated except for
-certain well-defined extension points where Lua parts integrate with
+One implication is that there is no builtin way of calling Lua from :commands
+or vice versa.  This gets too ugly too quickly, hence they are separated except
+for certain well-defined extension points where Lua parts integrate with
 :commands.
 
 Therefore one should think of :commands as a user-facing interface and Lua
 part as an internal extension language with wider range of possibilities.
 
-The API is synchronous.  Asynchronous API has some inherent issues due to
-invariant invalidation (by the time callback is executed everything might have
-changed), which is quite dangerous when dealing with file systems.  That said,
-some safe version of asynchronous execution might be made available if safe
-way of implementing it exists (need to sandbox callbacks somehow).  All
-callback-based mechanisms are susceptible to this issue, but asynchronous API
-makes it much worse because these callbacks are created all the time.
+Callback safety~
+
+Whenever Vifm invokes a Lua function from C code, there is a danger that Lua
+will break some invariant.  To account for this, all API calls (including
+things like table indexing) are classified as either "safe" or "unsafe".
+Safe ones can be called from anywhere, but unsafe API is not always
+accessible.  As an example, you can't change directory of any view or add a
+view column from a view column handler.
+
+Unsafe API is marked with {unsafe} in its description.
 
 --------------------------------------------------------------------------------
 *vifm-lua-evolution*
@@ -107,8 +110,22 @@ welcome.
 
 Current design principles:
  1. Callbacks in Lua accept a table and return one (if they return anything).
-    This allows adding new fields to both input and output, while staying
+    This allows adding new fields to both input and output while staying
     backward compatible and readable.
+
+Random ideas~
+
+Use camelCase?
+Use tables more often?  Supposed to be more extensible.
+Make "description" a required argument?
+
+Add VifmJob:succeeded() ?
+Add VifmJob:haserrors() ?
+
+Map options to arrays when possible, like for set options ?
+Forbid use of option abbreviations ?
+Technically options are also part of user-interface and maybe shouldn't be
+exposed in this way.
 
 --------------------------------------------------------------------------------
 *vifm-lua-loading*
@@ -208,24 +225,19 @@ This is what one can do by using Lua at the moment:
 Builtin `print()` function puts messages to plugin's log (see |vifm-:plugins|
 menu).
 
-All API calls can raise errors on generic internal issues or when argument
-are missing or have wrong type, table keys are missing or have wrong type.
+All API calls can raise errors:
+ * on generic internal issues (like out of memory)
+ * when argument is missing
+ * when argument has wrong type
+ * when required table key is missing
+ * when table key has wrong type
+ * if the API call is unsafe and is disallowed in current environment
+
+The following callbacks can perform only safe API calls:
+ * all Lua handlers (|vifm-lua-handlers|)
+ * view column handlers (|vifm-l_vifm.addcolumntype()|)
 
 Interaction with the host happens through `vifm` global table.  See |vifm-l_vifm|.
-
-Some ideas~
-
-Use camelCase?
-Use tables more often?  Supposed to be more extensible.
-Make "description" a mandatory argument?
-
-Add VifmJob:succeeded() ?
-Add VifmJob:haserrors() ?
-
-Map options to arrays when possible, like for set options ?
-Forbid use of option abbreviations ?
-Technically options are also part of user-interface and maybe shouldn't be
-exposed in this way.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm*
@@ -519,6 +531,8 @@ types and Lua types is quite obvious:
  - any other option -> string type
  - bad option       -> nil type
 
+Assigning global options is {unsafe}.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm.plugin*
 
@@ -532,6 +546,8 @@ Full path to plugin's root directory.
 
 plugin.require({modname})                      *vifm-l_vifm.plugin.require()*
 Plugin-specific `require`, which loads Lua modules relative to plugin's root.
+
+This function is {unsafe}.
 
 Parameters:~
   {modname}  Name of the module, similar to the argument for `require`.
@@ -704,12 +720,18 @@ Equivalent of |vifm-l_vifm.opts.global| for location-specific values of
 view-specific options.  These are "local" values of view-specific options,
 which are reset to "global" ones on file list change.
 
+Assigning local options is {unsafe}.
+
 VifmView.viewopts (table)                      *vifm-l_VifmView.locopts*
 Equivalent of |vifm-l_vifm.opts.global| for view-specific options, see there
 for details.  These are "global" values of view-specific options.
 
+Assigning view options is {unsafe}.
+
 VifmView:cd({path})                            *vifm-l_VifmView:cd()*
 Changes location of the view.  {path} isn't expanded in any way.
+
+This function is {unsafe}.
 
 Parameters:~
   {path}  Path to visit.

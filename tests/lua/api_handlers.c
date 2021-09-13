@@ -237,5 +237,22 @@ TEST(good_statusline_formatter)
 	free(format);
 }
 
+TEST(handlers_run_in_safe_mode)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info) vifm.opts.global.statusline = 'value' end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
+	assert_true(ends_with(format,
+				": Unsafe functions can't be called in this environment!"));
+	free(format);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

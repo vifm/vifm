@@ -42,6 +42,8 @@ struct vlua_t
 	DA_INSTANCE_FIELD(ptrs); /* Declarations to enable use of DA_* on ptrs. */
 
 	strlist_t strings; /* Interned strings. */
+
+	int is_safe_mode_on; /* Whether API must be limited to safe calls. */
 };
 
 /* Creates new empty state.  Returns the state or NULL. */
@@ -67,6 +69,13 @@ void vlua_state_make_table(vlua_t *vlua, void *key);
 /* Retrieves table previously created by vlua_state_get_table() and puts it on
  * the top of the stack. */
 void vlua_state_get_table(vlua_t *vlua, void *key);
+
+/* Enables or disables safe mode. */
+void vlua_state_safe_mode_set(struct lua_State *lua, int safe_mode);
+
+/* Runs a Lua C function if it's allowed to run in current context. */
+int vlua_state_proxy_call(struct lua_State *lua,
+		int (*call)(struct lua_State *lua));
 
 #endif /* VIFM__LUA__VLUA_STATE_H__ */
 
