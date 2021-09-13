@@ -241,7 +241,7 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[],
 		return strdup("Return value isn't a table.");
 	}
 
-	if(lua_getfield(vlua->lua, -1, "format") == LUA_TSTRING)
+	if(lua_getfield(vlua->lua, -1, "format") == LUA_TNIL)
 	{
 		lua_pop(vlua->lua, 4);
 		return strdup("Return value is missing 'format' key.");

@@ -205,7 +205,14 @@ TEST(error_open_invocation)
 				": global 'asdf' is not callable (a nil value)"));
 }
 
-TEST(bad_statusline_formatter)
+TEST(invalid_statusline_formatter)
+{
+	char *format = vlua_make_status_line(vlua, "#vifmtest#nohandle", &lwin, 10);
+	assert_string_equal("Invalid handler", format);
+	free(format);
+}
+
+TEST(error_statusline_formatter)
 {
 	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
 
@@ -221,10 +228,9 @@ TEST(bad_statusline_formatter)
 	free(format);
 }
 
-TEST(good_statusline_formatter)
+TEST(bad_statusline_formatter)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle(info) return { format = info.width } end"));
+	assert_success(vlua_run_string(vlua, "function handle() return 'format' end"));
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
@@ -233,7 +239,23 @@ TEST(good_statusline_formatter)
 	assert_string_equal("true", ui_sb_last());
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
-	assert_string_equal("10", format);
+	assert_string_equal("Return value isn't a table.", format);
+	free(format);
+}
+
+TEST(good_statusline_formatter)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info) return { format = 'width='..info.width } end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
+	assert_string_equal("width=10", format);
 	free(format);
 }
 
