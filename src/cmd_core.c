@@ -954,7 +954,7 @@ is_out_of_arg(const char cmd[], const char pos[])
 			return 1;
 		}
 		if(get_cmd_args_type(cmd) == CAT_EXPR &&
-				pos != cmd && *pos == '|' && pos[-1] != '|' && pos[1] != '|')
+				pos != cmd && pos[0] == '|' && pos[-1] != '|' && pos[1] != '|')
 		{
 			/* For "*[^|]|[^|]*" report that we're out of argument. */
 			return 1;

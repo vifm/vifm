@@ -169,13 +169,13 @@ bmarks_find(const char tags[], bmarks_find_cb cb, void *arg)
 		int nmatches = 0;
 		int nmismatches = 0;
 
-		char *tag = clone, *state = NULL;
-		while((tag = split_and_get(tag, ',', &state)) != NULL)
+		char *tag = clone, *tag_state = NULL;
+		while((tag = split_and_get(tag, ',', &tag_state)) != NULL)
 		{
 			int match = 0;
 
-			char *bmark_tag = bmarks[i].tags, *state = NULL;
-			while((bmark_tag = split_and_get(bmark_tag, ',', &state)) != NULL)
+			char *bmark_tag = bmarks[i].tags, *bmark_state = NULL;
+			while((bmark_tag = split_and_get(bmark_tag, ',', &bmark_state)) != NULL)
 			{
 				if(strcmp(tag, bmark_tag) == 0)
 				{

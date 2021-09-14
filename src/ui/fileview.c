@@ -1338,7 +1338,7 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 			int color = (view == curr_view || !cdt->is_main) ? CURR_LINE_COLOR
 			                                                 : OTHER_LINE_COLOR;
 			/* Avoid combining attributes for non-primary column. */
-			if(is_current && !primary)
+			if(!primary)
 			{
 				cs_overlap_colors(&col, &cs->color[color]);
 			}
