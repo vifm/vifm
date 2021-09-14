@@ -601,7 +601,8 @@ Parameters:~
 *vifm-l_VifmEntry*
 
 Instances of this type are used in filetype |vifm-lua-handlers| and in
-callbacks of |vifm-l_vifm.addcolumntype()|.
+callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by
+|vifm-l_VifmView:entry()|.
 
 VifmEntry.classify (table)                     *vifm-l_VifmEntry.classify*
 Table that describes name decorations.  Its fields:
@@ -735,6 +736,15 @@ for details.  These are "global" values of view-specific options.
 
 Assigning view options is {unsafe}.
 
+VifmView.currententry (integer)                *vifm-l_VifmView.currententry*
+Index of the current entry (starts at zero).
+
+VifmView.cwd (string)                          *vifm-l_VifmView.cwd*
+Location of the current view.
+
+VifmView.entrycount (integer)                  *vifm-l_VifmView.entrycount*
+Number of entries in the view.
+
 VifmView:cd({path})                            *vifm-l_VifmView:cd()*
 Changes location of the view.  {path} isn't expanded in any way.
 
@@ -745,6 +755,15 @@ Parameters:~
 
 Return:~
   `true` on success.
+
+VifmView:entry({index})                        *vifm-l_VifmView:entry()*
+Retrieves an entry by index.
+
+Parameters:~
+  {index}  Value in the range from `1` to `VifmEntry.entrycount` inclusive.
+
+Return:~
+  |vifm-l_VifmEntry| on success and `nil` on wrong index.
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:

@@ -30,6 +30,7 @@
 #include "api.h"
 #include "common.h"
 #include "vlua_state.h"
+#include "vifmentry.h"
 
 static int VLUA_API(vifmview_index)(lua_State *lua);
 static int VLUA_API(viewopts_index)(lua_State *lua);
@@ -42,6 +43,7 @@ static int VLUA_IMPL(restore_curr_view)(lua_State *lua);
 static int VLUA_IMPL(get_opt_wrapper)(lua_State *lua);
 static int VLUA_IMPL(set_opt_wrapper)(lua_State *lua);
 static int VLUA_API(vifmview_cd)(lua_State *lua);
+static int VLUA_API(vifmview_entry)(lua_State *lua);
 static view_t * check_view(lua_State *lua);
 static view_t * find_view(lua_State *lua, unsigned int id);
 
@@ -51,11 +53,13 @@ VLUA_DECLARE_UNSAFE(viewopts_newindex);
 VLUA_DECLARE_SAFE(locopts_index);
 VLUA_DECLARE_UNSAFE(locopts_newindex);
 VLUA_DECLARE_UNSAFE(vifmview_cd);
+VLUA_DECLARE_SAFE(vifmview_entry);
 
 /* Methods of VifmView type. */
 static const luaL_Reg vifmview_methods[] = {
-	{ "cd", VLUA_REF(vifmview_cd) },
-	{ NULL, NULL                  }
+	{ "cd",    VLUA_REF(vifmview_cd)    },
+	{ "entry", VLUA_REF(vifmview_entry) },
+	{ NULL,    NULL                     }
 };
 
 void
@@ -82,6 +86,24 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	else if(strcmp(key, "locopts") == 0)
 	{
 		viewopts = 0;
+	}
+	else if(strcmp(key, "cwd") == 0)
+	{
+		view_t *view = check_view(lua);
+		lua_pushstring(lua, flist_get_dir(view));
+		return 1;
+	}
+	else if(strcmp(key, "entrycount") == 0)
+	{
+		view_t *view = check_view(lua);
+		lua_pushinteger(lua, view->list_rows);
+		return 1;
+	}
+	else if(strcmp(key, "currententry") == 0)
+	{
+		view_t *view = check_view(lua);
+		lua_pushinteger(lua, view->list_pos + 1);
+		return 1;
 	}
 	else
 	{
@@ -291,6 +313,24 @@ VLUA_API(vifmview_cd)(lua_State *lua)
 	const char *path = luaL_checkstring(lua, 2);
 	int success = (navigate_to(view, path) == 0);
 	lua_pushboolean(lua, success);
+	return 1;
+}
+
+/* Method of `VifmView` that return an entry by its index.  Returns an instance
+ * of `VifmEntry` or `nil` on wrong index. */
+static int
+VLUA_API(vifmview_entry)(lua_State *lua)
+{
+	view_t *view = check_view(lua);
+
+	int idx = luaL_checkinteger(lua, 2) - 1;
+	if(idx < 0 || idx >= view->list_rows)
+	{
+		lua_pushnil(lua);
+		return 1;
+	}
+
+	vifmentry_new(lua, &view->dir_entry[idx]);
 	return 1;
 }
 
