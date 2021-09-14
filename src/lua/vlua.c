@@ -85,6 +85,7 @@ VLUA_DECLARE_SAFE(sb_quick);
 /* These are defined in other units. */
 VLUA_DECLARE_SAFE(vifmjob_new);
 VLUA_DECLARE_SAFE(vifmview_currview);
+VLUA_DECLARE_SAFE(vifmview_otherview);
 VLUA_DECLARE_UNSAFE(vifm_addcolumntype);
 VLUA_DECLARE_SAFE(vifm_addhandler);
 
@@ -97,6 +98,7 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "startjob",      VLUA_REF(vifmjob_new)        },
 	{ "expand",        VLUA_REF(vifm_expand)        },
 	{ "currview",      VLUA_REF(vifmview_currview)  },
+	{ "otherview",     VLUA_REF(vifmview_otherview) },
 	{ "addcolumntype", VLUA_REF(vifm_addcolumntype) },
 	{ "addhandler",    VLUA_REF(vifm_addhandler)    },
 	{ NULL,            NULL                         }

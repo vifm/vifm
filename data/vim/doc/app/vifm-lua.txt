@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 13
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -354,7 +354,13 @@ Return:~
 Raises an error:~
   If {handler}.name has incorrect value.
 
-vifm.currview({path})                          *vifm-l_vifm.currview()*
+vifm.currview()                                *vifm-l_vifm.currview()*
+Retrives a reference to current view.
+
+Return:~
+  Returns an instance of |vifm-l_VifmView|.
+
+vifm.otherview()                               *vifm-l_vifm.otherview()*
 Retrives a reference to current view.
 
 Return:~
@@ -595,7 +601,8 @@ Parameters:~
 *vifm-l_VifmEntry*
 
 Instances of this type are used in filetype |vifm-lua-handlers| and in
-callbacks of |vifm-l_vifm.addcolumntype()|.
+callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by
+|vifm-l_VifmView:entry()|.
 
 VifmEntry.classify (table)                     *vifm-l_VifmEntry.classify*
 Table that describes name decorations.  Its fields:
@@ -710,7 +717,8 @@ Return:~
 --------------------------------------------------------------------------------
 *vifm-l_VifmView*
 
-Instances of this type are returned by |vifm-l_vifm.currview()|.
+Instances of this type are returned by |vifm-l_vifm.currview()| and
+|vifm-l_vifm.otherview()|.
 
 The corresponding view exists independently of this type and once the view is
 gone (e.g., its tab is closed) accessing bound instance raises an error.
@@ -728,6 +736,15 @@ for details.  These are "global" values of view-specific options.
 
 Assigning view options is {unsafe}.
 
+VifmView.currententry (integer)                *vifm-l_VifmView.currententry*
+Index of the current entry (starts at zero).
+
+VifmView.cwd (string)                          *vifm-l_VifmView.cwd*
+Location of the current view.
+
+VifmView.entrycount (integer)                  *vifm-l_VifmView.entrycount*
+Number of entries in the view.
+
 VifmView:cd({path})                            *vifm-l_VifmView:cd()*
 Changes location of the view.  {path} isn't expanded in any way.
 
@@ -738,6 +755,15 @@ Parameters:~
 
 Return:~
   `true` on success.
+
+VifmView:entry({index})                        *vifm-l_VifmView:entry()*
+Retrieves an entry by index.
+
+Parameters:~
+  {index}  Value in the range from `1` to `VifmEntry.entrycount` inclusive.
+
+Return:~
+  |vifm-l_VifmEntry| on success and `nil` on wrong index.
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:

@@ -35,6 +35,10 @@ void vifmview_new(struct lua_State *lua, struct view_t *view);
  * type. */
 int VLUA_API(vifmview_currview)(struct lua_State *lua);
 
+/* Retrieves a reference to inactive view.  Returns an object of VifmView
+ * type. */
+int VLUA_API(vifmview_otherview)(struct lua_State *lua);
+
 #endif /* VIFM__LUA__VIFMVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
