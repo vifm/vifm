@@ -274,6 +274,13 @@ VLUA_API(vifmview_currview)(lua_State *lua)
 	return 1;
 }
 
+int
+VLUA_API(vifmview_otherview)(lua_State *lua)
+{
+	vifmview_new(lua, other_view);
+	return 1;
+}
+
 /* Method of `VifmView` that changes directory of current view.  Returns
  * boolean, which is true if location change was successful. */
 static int

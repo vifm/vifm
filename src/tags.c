@@ -691,6 +691,7 @@ const char *tags[] = {
 	"vifm-l_vifm.makepath()",
 	"vifm-l_vifm.opts",
 	"vifm-l_vifm.opts.global",
+	"vifm-l_vifm.otherview()",
 	"vifm-l_vifm.plugin",
 	"vifm-l_vifm.plugin.name",
 	"vifm-l_vifm.plugin.path",
