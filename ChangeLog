@@ -5,7 +5,7 @@
 	Affects you only if you relied on that implicit bold attribute.  Thanks to
 	Jose Riha (a.k.a. jose1711).
 
-	Added beginnings of Lua plugins.
+	Added experimental Lua plugins support.
 
 	Added :plugins command that opens plugins menu.
 
@@ -13,8 +13,8 @@
 	to All, Top, xx% or Bot to indicate position within the view.  Thanks to
 	iSeeU816.
 
-	Added percent-like (corresponds to new %P macro of 'rulerformat') to the
-	ruler of the view mode.  Thanks to iSeeU816.
+	Added progress indication to the ruler of the view mode (corresponds to new
+	%P macro of 'rulerformat').  Thanks to iSeeU816.
 
 	Added i view mode key that toggles raw mode (ignoring of defined viewers).
 	Thanks to j-xella.
@@ -41,7 +41,7 @@
 	Added literal values to 'viewcolumns' option.  Thanks to Jose Riha (a.k.a.
 	jose1711), chelovechishko, DieSpinne and rwtallant13.
 
-	Added flag toggling shortcuts to permissions dialog on *nix.  Patch by
+	Added shortcuts for toggling flags in permissions dialog on *nix.  Patch by
 	qsmodo.
 
 	Added %v macro for vertical splitting in terminal multiplexers.  Patch by
