@@ -1251,8 +1251,8 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 	dir_entry_t *entry;
 	const char *const curr_dir = flist_get_dir(view);
 
-	snprintf(undo_msg, sizeof(undo_msg), "ch%s in %s: ",
-			((u && g) || u) ? "own" : "grp", replace_home_part(curr_dir));
+	snprintf(undo_msg, sizeof(undo_msg), "ch%s in %s: ", u ? "own" : "grp",
+			replace_home_part(curr_dir));
 
 	ops = fops_get_ops(OP_CHOWN, "re-owning", curr_dir, curr_dir);
 	(void)fops_enqueue_marked_files(ops, view, NULL, 0);

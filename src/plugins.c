@@ -315,7 +315,7 @@ plug_log(plug_t *plug, const char msg[])
 TSTATIC void
 plugs_sort(plugs_t *plugs)
 {
-	safe_qsort(plugs->plugs, DA_SIZE(plugs->plugs), sizeof(plugs->plugs),
+	safe_qsort(plugs->plugs, DA_SIZE(plugs->plugs), sizeof(*plugs->plugs),
 			&plug_cmp);
 }
 

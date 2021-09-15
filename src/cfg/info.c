@@ -1637,7 +1637,7 @@ merge_dhistory(int session_load, JSON_Object *current,
 	JSON_Array *merged = json_array(merged_value);
 
 	int i;
-	int lower_limit = (session_load ? 0 : total - cfg.history_len);
+	int lower_limit = total - cfg.history_len;
 	for(i = MAX(0, lower_limit); i < total; ++i)
 	{
 		JSON_Value *value = json_object_get_wrapping_value(combined[i]);
@@ -1925,7 +1925,7 @@ merge_history(int session_load, JSON_Object *current,
 	JSON_Value *merged_value = json_value_init_array();
 	JSON_Array *merged = json_array(merged_value);
 
-	int lower_limit = (session_load ? 0 : n - cfg.history_len);
+	int lower_limit = n - cfg.history_len;
 	for(n = json_array_get_count(combined), i = MAX(0, lower_limit); i < n; ++i)
 	{
 		JSON_Value *entry = json_object_get_wrapping_value(entries_sorted[i]);
