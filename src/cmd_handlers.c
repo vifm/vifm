@@ -570,7 +570,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "highlight",         .abbr = "hi",    .id = COM_HIGHLIGHT,
 	  .descr = "display/define TUI highlighting",
 	  .flags = HAS_COMMENT,
-	  .handler = &highlight_cmd,   .min_args = 0,   .max_args = 4, },
+	  .handler = &highlight_cmd,   .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "history",           .abbr = "his",   .id = COM_HISTORY,
 	  .descr = "display/use history items",
 	  .flags = HAS_QUOTED_ARGS | HAS_COMMENT,
