@@ -3,6 +3,8 @@
 	Fixed maximum number of arguments for :highlight command.  Thanks to
 	Yuriy Artemyev (a.k.a. anuvyklack).
 
+	Fixed binary data messing up TUI.
+
 0.11 to 0.12-beta (2021-09-15)
 
 	Changed semantics of light* color groups to add bold attribute only for

@@ -178,7 +178,11 @@ run_with_input(char command[], FILE *input, ShellRequester by)
 void
 recover_after_shellout(void)
 {
-	/* Do nothing.  No need to recover anything on this platform. */
+	if(curr_stats.load_stage > 0)
+	{
+		reset_prog_mode();
+		doupdate();
+	}
 }
 
 void
