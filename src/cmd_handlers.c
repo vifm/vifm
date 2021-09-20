@@ -2913,7 +2913,7 @@ get_hi_str(const char title[], const col_attr_t *col)
 	cs_color_to_str(col->bg, sizeof(bg_buf), bg_buf, /*is_gui=*/0);
 
 	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
-			title, cs_attrs_to_str(col->attr), fg_buf, bg_buf);
+			title, cs_attrs_to_str(col, /*gui_part=*/0), fg_buf, bg_buf);
 
 	if(!col->gui_set)
 	{
@@ -2924,8 +2924,8 @@ get_hi_str(const char title[], const col_attr_t *col)
 	cs_color_to_str(col->gui_bg, sizeof(bg_buf), bg_buf, /*is_gui=*/1);
 
 	snprintf(gui_buf, sizeof(gui_buf), "%s\n%*s gui=%s guifg=%-7s guibg=%-7s",
-			buf, (int)MAX(utf8_strsw(title), 10U), "", cs_attrs_to_str(col->gui_attr),
-			fg_buf, bg_buf);
+			buf, (int)MAX(utf8_strsw(title), 10U), "",
+			cs_attrs_to_str(col, /*gui_part=*/1), fg_buf, bg_buf);
 
 	return gui_buf;
 }

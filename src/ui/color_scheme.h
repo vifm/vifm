@@ -121,7 +121,7 @@ void cs_complete(const char name[]);
 
 /* Converts set of attributes into a string.  Returns pointer to a statically
  * allocated buffer. */
-const char * cs_attrs_to_str(int attrs);
+const char * cs_attrs_to_str(const col_attr_t *color, int gui_part);
 
 /* Associates color scheme specified by its name with the given path. */
 void cs_assoc_dir(const char name[], const char dir[]);

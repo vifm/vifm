@@ -120,6 +120,16 @@ TEST(attributes_are_printed_back_correctly)
 				CIT_COMMAND));
 
 	ui_sb_msg("");
+	assert_success(exec_commands("highlight AuxWin cterm=combine", &lwin,
+				CIT_COMMAND));
+	assert_failure(exec_commands("highlight AuxWin", &lwin, CIT_COMMAND));
+	assert_string_equal(
+			"AuxWin     cterm=combine ctermfg=default ctermbg=default", ui_sb_last());
+
+	assert_success(exec_commands("highlight Win cterm=underline,inverse", &lwin,
+				CIT_COMMAND));
+
+	ui_sb_msg("");
 	assert_failure(exec_commands("highlight Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
 			"Win        cterm=underline,reverse ctermfg=white   ctermbg=black  ",

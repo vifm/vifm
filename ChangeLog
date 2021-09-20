@@ -5,6 +5,9 @@
 
 	Fixed binary data messing up TUI.
 
+	Fixed new "combine" highlight attribute not being completed or displayed
+	by :highlight command.
+
 0.11 to 0.12-beta (2021-09-15)
 
 	Changed semantics of light* color groups to add bold attribute only for
