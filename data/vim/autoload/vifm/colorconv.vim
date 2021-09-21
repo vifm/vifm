@@ -1,19 +1,22 @@
 " Vim script that converts Vim colorschemes to Vifm
 " Author:      Roman Plšl
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: October 12, 2020
+" Last Change: September 21, 2021
 
 function! s:ConvertGroup(gr, to, deffg, defbg)
 	let syn = synIDtrans(hlID(a:gr))
 	let fg = synIDattr(syn, "fg")
 	let bg = synIDattr(syn, "bg")
+	let prefix = 'cterm'
 	let bold = (synIDattr(syn, "bold") == "1")
 	let reverse = (synIDattr(syn, "reverse") == "1")
 	let errors = []
 	let line = "highlight " . a:to
 
 	if fg[0] == '#' || bg[0] == '#'
-		throw VifmTrueColors
+		let fg = synIDattr(syn, "fg#")
+		let bg = synIDattr(syn, "bg#")
+		let prefix = 'gui'
 	endif
 
 	" handle foreground
@@ -23,7 +26,7 @@ function! s:ConvertGroup(gr, to, deffg, defbg)
 		\]
 		let fg = a:deffg
 	endif
-	let line .= " ctermfg=" . fg
+	let line .= " " . prefix . "fg=" . fg
 
 	" handle background
 	if empty(bg)
@@ -32,7 +35,7 @@ function! s:ConvertGroup(gr, to, deffg, defbg)
 		\]
 		let bg = a:defbg
 	endif
-	let line .= " ctermbg=" . bg
+	let line .= " " . prefix . "bg=" . bg
 
 	" handle attributes
 	if bold || reverse
@@ -43,9 +46,9 @@ function! s:ConvertGroup(gr, to, deffg, defbg)
 		if reverse
 			let attrs += ["reverse"]
 		endif
-		let line .= " cterm=" . join(attrs, ',')
+		let line .= " " . prefix . "=" . join(attrs, ',')
 	else
-		let line .= " cterm=none"
+		let line .= " " . prefix . "=none"
 	endif
 	return [errors, line]
 endfun
@@ -117,15 +120,6 @@ function! s:ConvertCurrentScheme()
 endfun
 
 function! vifm#colorconv#convert(...) abort
-	if has('gui_running')
-		echoerr 'Should be run in a terminal'
-		return
-	endif
-	if &t_Co != 256
-		echoerr 'Should be run in 256-color mode'
-		return
-	endif
-
 	let cs = g:colors_name
 
 	try
@@ -140,9 +134,6 @@ function! vifm#colorconv#convert(...) abort
 				let output += s:ConvertCurrentScheme()
 				call writefile(output, scheme . ".vifm")
 			catch /E185:/ " cannot find color scheme
-			catch /VifmTrueColors/ " cannot find color scheme
-				echoerr "Can't convert ".scheme." while 'termguicolors' is on"
-				return
 			endtry
 		endfor
 	finally

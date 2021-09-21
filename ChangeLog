@@ -1,5 +1,7 @@
 0.12-beta to current
 
+	Made :VifmCs of the plugin handle 24-bit colors.
+
 	Fixed maximum number of arguments for :highlight command.  Thanks to
 	Yuriy Artemyev (a.k.a. anuvyklack).
 
@@ -74,7 +76,7 @@
 	Added periodic forced flushing of data on copying data when 'syscalls' is
 	set.  Thanks to Matthias Braun (a.k.a. mb720).
 
-	Added :st[op] command what behaves like Ctrl-Z.  It's to be used in
+	Added :st[op] command that behaves like Ctrl-Z.  It's to be used in
 	mappings.  Thanks to GummyGun.
 
 	Added zx normal mode key to fold/unfold directories in tree views.  The
