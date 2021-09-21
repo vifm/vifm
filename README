@@ -1,9 +1,9 @@
-Vifm - Vim like file manager
+Vifm - Vim-like file manager
 2001 - 2021
 
 Version: 0.12-beta
 
-This file last updated: 15 September, 2021
+This file last updated: 21 September, 2021
 
 Brief Description
 
@@ -55,5 +55,6 @@ Contacts
     * https://github.com/cirala/vifm_devicons
     * https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 
-    Preview script:
+    Preview scripts:
     * https://github.com/cirala/vifmimg
+    * https://github.com/eylles/vifm-sixel-preview

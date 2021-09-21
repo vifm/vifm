@@ -683,6 +683,7 @@ cs_write(void)
 	fprintf(fp, "\" reverse or inverse\n");
 	fprintf(fp, "\" standout\n");
 	fprintf(fp, "\" italic (on unsupported systems becomes reverse)\n");
+	fprintf(fp, "\" combine\n");
 	fprintf(fp, "\" none\n\n");
 
 	fprintf(fp, "\" Vifm supports 256 colors you can use color numbers 0-255\n");
@@ -709,7 +710,7 @@ cs_write(void)
 		else
 		{
 			fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
-					cs_attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
+					cs_attrs_to_str(&default_cs[i], /*gui_part=*/0), fg_buf, bg_buf);
 		}
 	}
 
@@ -1089,11 +1090,15 @@ cs_complete(const char name[])
 }
 
 const char *
-cs_attrs_to_str(int attrs)
+cs_attrs_to_str(const col_attr_t *color, int gui_part)
 {
 	static char result[64];
 
-	if(attrs == 0 || attrs == -1)
+	const int attrs = (gui_part ? color->gui_attr : color->attr);
+	const int combine =
+		(gui_part ? color->combine_gui_attrs : color->combine_attrs);
+
+	if((attrs == 0 || attrs == -1) && !combine)
 	{
 		return strcpy(result, "none");
 	}
@@ -1111,6 +1116,8 @@ cs_attrs_to_str(int attrs)
 	if((attrs & A_ITALIC) == A_ITALIC)
 		strcat(result, "italic,");
 #endif
+	if(combine)
+		strcat(result, "combine,");
 	if(result[0] != '\0')
 		result[strlen(result) - 1] = '\0';
 	return result;

@@ -4,7 +4,7 @@
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]
 
-_Latest release is 0.11.  This file last updated on 1 August, 2021._
+_Latest release is 0.12-beta.  This file last updated on 21 September, 2021._
 
 ## Brief Description ##
 
@@ -37,13 +37,14 @@ functionality should be enough for most of use cases.
 
 ### Other resources ###
 
-| Usage                     | Where to find                                                                                      |
-| :---:                     | :---:                                                                                              |
-| Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                                                       |
-| Vim Plugin                | [Repository][vim-plugin]                                                                           |
-| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]                               |
-| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                                               |
-| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images)                            |
+| Usage                     | Where to find                                                           |
+| :---:                     | :---:                                                                   |
+| Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                            |
+| Vim Plugin                | [Repository][vim-plugin]                                                |
+| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]    |
+| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                    |
+| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images) |
+| sixel image preview       | [Repository][sixel-preview] (for [Sixel][wiki-sixel]-capable terminals) |
 
 ## Screenshot ##
 
@@ -69,6 +70,7 @@ GNU General Public License, version 2 or later.
 [devicons-1]: https://github.com/cirala/vifm_devicons
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 [vifmimg]: https://github.com/cirala/vifmimg
+[sixel-preview]: https://github.com/eylles/vifm-sixel-preview
 [ueberzug]: https://github.com/seebye/ueberzug
 [bugs-gh]: https://github.com/vifm/vifm/issues
 [bugs-sf]: https://sourceforge.net/p/vifm/_list/tickets
@@ -76,6 +78,7 @@ GNU General Public License, version 2 or later.
 [repo-sf]: https://sourceforge.net/projects/vifm/
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
+[wiki-sixel]: https://en.wikipedia.org/wiki/Sixel
 
 [AA]: https://ci.appveyor.com/api/projects/status/ywfhdev1l3so1f5e/branch/master?svg=true
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
