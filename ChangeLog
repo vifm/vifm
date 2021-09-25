@@ -2,6 +2,9 @@
 
 	Made :VifmCs of the plugin handle 24-bit colors.
 
+	Collect desktop files also from ~/.local/share/applications.  Thanks to
+	Jose Riha (a.k.a. jose1711).
+
 	Fixed maximum number of arguments for :highlight command.  Thanks to
 	Yuriy Artemyev (a.k.a. anuvyklack).
 
