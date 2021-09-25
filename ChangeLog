@@ -13,6 +13,8 @@
 	Fixed new "combine" highlight attribute not being completed or displayed
 	by :highlight command.
 
+	Fixed garbage being printed sometimes after doing search in a menu.
+
 0.11 to 0.12-beta (2021-09-15)
 
 	Changed semantics of light* color groups to add bold attribute only for
