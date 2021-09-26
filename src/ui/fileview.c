@@ -368,6 +368,7 @@ draw_left_column(view_t *view)
 static void
 draw_right_column(view_t *view)
 {
+	const int displayed_graphics = view->displays_graphics;
 	view->displays_graphics = 0;
 
 	const int padding = (cfg.extra_padding ? 1 : 0);
@@ -404,9 +405,12 @@ draw_right_column(view_t *view)
 		return;
 	}
 
-	/* Do this even if there is no clear command. */
-	qv_cleanup_area(&parea, view->file_preview_clear_cmd);
-	update_string(&view->file_preview_clear_cmd, NULL);
+	if(displayed_graphics)
+	{
+		/* Do this even if there is no clear command. */
+		qv_cleanup_area(&parea, view->file_preview_clear_cmd);
+		update_string(&view->file_preview_clear_cmd, NULL);
+	}
 
 	char path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(path), path);
