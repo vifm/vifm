@@ -21,6 +21,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
 #include "../compat/dtype.h"
@@ -203,12 +204,13 @@ load_api(lua_State *lua)
 	lua_pop(lua, 1);
 }
 
-/* Replacement of standard global `print` function.  Outputs to statusbar.
- * Doesn't return anything. */
+/* Replacement of standard global `print` function.  If plugin is present,
+ * outputs to a plugin log, otherwise outputs to statusbar.  Doesn't return
+ * anything. */
 static int
 VLUA_API(print)(lua_State *lua)
 {
-	char *msg = NULL;
+	char *msg = strdup("");
 	size_t msg_len = 0U;
 
 	int nargs = lua_gettop(lua);
