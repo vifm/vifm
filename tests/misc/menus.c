@@ -79,13 +79,13 @@ TEST(search_via_menu_search)
 
 TEST(ok_to_print_message_if_there_is_no_pattern)
 {
-	menus_search_print_msg(m.state);
+	menus_search_print_msg(&m);
 }
 
 TEST(ok_to_print_message_for_wrong_pattern)
 {
 	assert_true(menus_search("*", &m, 1));
-	menus_search_print_msg(m.state);
+	menus_search_print_msg(&m);
 }
 
 TEST(forward_found_no_wrap)

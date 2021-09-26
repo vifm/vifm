@@ -1076,52 +1076,53 @@ navigate_to_match(menu_state_t *m, int pos)
 			menus_erase_current(m);
 			menus_set_pos(m, pos);
 		}
-		menus_search_print_msg(m);
+		menus_search_print_msg(m->d);
 	}
 	else
 	{
 		menus_set_pos(m, m->d->pos);
 		if(cfg.wrap_scan)
 		{
-			menus_search_print_msg(m);
+			menus_search_print_msg(m->d);
 		}
 	}
 	return 1;
 }
 
 void
-menus_search_print_msg(const menu_state_t *m)
+menus_search_print_msg(const menu_data_t *m)
 {
+	const menu_state_t *ms = m->state;
 	int cflags;
 	regex_t re;
 	int err;
 
 	/* Can be NULL after regex compilation failure. */
-	if(m->regexp == NULL)
+	if(ms->regexp == NULL)
 	{
 		return;
 	}
 
-	cflags = get_regexp_cflags(m->regexp);
-	err = regcomp(&re, m->regexp, cflags);
+	cflags = get_regexp_cflags(ms->regexp);
+	err = regcomp(&re, ms->regexp, cflags);
 
 	if(err != 0)
 	{
-		ui_sb_errf("Regexp (%s) error: %s", m->regexp, get_regexp_error(err, &re));
+		ui_sb_errf("Regexp (%s) error: %s", ms->regexp, get_regexp_error(err, &re));
 		regfree(&re);
 		return;
 	}
 
 	regfree(&re);
 
-	if(m->matching_entries > 0)
+	if(ms->matching_entries > 0)
 	{
-		ui_sb_msgf("%d of %d %s", get_match_index(m), m->matching_entries,
-				(m->matching_entries == 1) ? "match" : "matches");
+		ui_sb_msgf("%d of %d %s", get_match_index(ms), ms->matching_entries,
+				(ms->matching_entries == 1) ? "match" : "matches");
 	}
 	else
 	{
-		ui_sb_errf("No matches for: %s", m->regexp);
+		ui_sb_errf("No matches for: %s", ms->regexp);
 	}
 }
 

@@ -284,5 +284,30 @@ TEST(can_not_load_same_plugin_twice, IF(not_windows))
 	remove_file(SANDBOX_PATH "/plugins/plug2");
 }
 
+TEST(print_outputs_to_plugin_log)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"print('arg1', 'arg2'); return {}");
+
+	ui_sb_msg("");
+	assert_success(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_string_equal("", ui_sb_last());
+	assert_string_equal("arg1\targ2", plug_dummy.log);
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
+TEST(print_without_arguments)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"print('first line'); print(); print('third line'); return {}");
+
+	update_string(&plug_dummy.log, NULL);
+	assert_success(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_string_equal("first line\n\nthird line", plug_dummy.log);
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
