@@ -202,5 +202,18 @@ TEST(vifm_currview)
 	conf_teardown();
 }
 
+TEST(vifm_version)
+{
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.version.api.has('feature'))"));
+	assert_string_equal("false", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.version.api.atleast(0, 0, 0))"));
+	assert_string_equal("true", ui_sb_last());
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

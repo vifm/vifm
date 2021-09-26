@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 21
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -21,6 +21,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
+|vifm-l_vifm.version|  `vifm.version` global table.
 |vifm-l_VifmEntry|     `VifmEntry` type.
 |vifm-l_VifmJob|       `VifmJob` type.
 |vifm-l_VifmView|      `VifmView` type.
@@ -261,6 +262,9 @@ Table for managing plugins.  See |vifm-l_vifm.plugins|.
 
 vifm.sb
 Table for managing statusbar.  See |vifm-l_vifm.sb|.
+
+vifm.version
+Table with version information.  See |vifm-l_vifm.version|.
 
 vifm.addcolumntype({column})                   *vifm-l_vifm.addcolumntype()*
 Registers a new view column type to be used in |vifm-'viewcolumns'| option.
@@ -599,6 +603,46 @@ isn't stored in the history of messages.
 
 Parameters:~
   {msg}  Message to display.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.version*
+
+This global `vifm.version` table provides information about Vifm and Lua API.
+It contains the following items:
+
+version.app.str (string)                       *vifm-l_vifm.version.app.str*
+Version of Vifm as a string.
+
+version.api.major (integer)                    *vifm-l_vifm.version.api.major*
+Major version of Lua API.  0 now, should become 1 when API design settles and
+remain at 1.
+
+version.api.minor (integer)                    *vifm-l_vifm.version.api.minor*
+Minor version of Lua API.  0 now.
+
+version.api.patch (integer)                    *vifm-l_vifm.version.api.patch*
+Patch version of Lua API.  0 now.
+
+version.api.has({feature})                     *vifm-l_vifm.version.api.has()*
+Checks presence of a feature.  There are no features to test yet.
+
+Parameters:~
+  {feature}  Name of the feature
+
+Return:~
+  `true` if the feature is present and `false` otherwise.
+
+                                             *vifm-l_vifm.version.api.atleast()*
+version.api.atleast({major}, {minor}, {patch})
+Checks version of Lua API.
+
+Parameters:~
+  {major}  Value to check `version.api.major` against.
+  {minor}  Value to check `version.api.minor` against. (default: 0)
+  {patch}  Value to check `version.api.patch` against. (default: 0)
+
+Return:~
+  `true` if the version is equal or more recent than the specified one.
 
 --------------------------------------------------------------------------------
 *vifm-l_VifmEntry*

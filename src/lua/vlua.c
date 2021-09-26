@@ -54,6 +54,8 @@
 
 static void patch_env(lua_State *lua);
 static void load_api(lua_State *lua);
+static int VLUA_API(api_is_at_least)(lua_State *lua);
+static int VLUA_API(api_has)(lua_State *lua);
 static int VLUA_API(print)(lua_State *lua);
 static int VLUA_API(opts_global_index)(lua_State *lua);
 static int VLUA_API(opts_global_newindex)(lua_State *lua);
@@ -70,6 +72,8 @@ static int VLUA_API(sb_quick)(lua_State *lua);
 static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
 static void setup_plugin_env(lua_State *lua, plug_t *plug);
 
+VLUA_DECLARE_SAFE(api_is_at_least);
+VLUA_DECLARE_SAFE(api_has);
 VLUA_DECLARE_SAFE(print);
 VLUA_DECLARE_SAFE(opts_global_index);
 VLUA_DECLARE_UNSAFE(opts_global_newindex);
@@ -196,12 +200,52 @@ load_api(lua_State *lua)
 	lua_setfield(lua, -2, "all");
 	lua_setfield(lua, -2, "plugins");
 
+	/* Setup vifm.version. */
+	lua_newtable(lua);
+	lua_newtable(lua);
+	lua_pushstring(lua, VERSION);
+	lua_setfield(lua, -2, "str");
+	lua_setfield(lua, -2, "app");
+	lua_newtable(lua);
+	lua_pushinteger(lua, 0);
+	lua_setfield(lua, -2, "major");
+	lua_pushinteger(lua, 0);
+	lua_setfield(lua, -2, "minor");
+	lua_pushinteger(lua, 0);
+	lua_setfield(lua, -2, "patch");
+	lua_pushcfunction(lua, VLUA_REF(api_has));
+	lua_setfield(lua, -2, "has");
+	lua_pushcfunction(lua, VLUA_REF(api_is_at_least));
+	lua_setfield(lua, -2, "atleast");
+	lua_setfield(lua, -2, "api");
+	lua_setfield(lua, -2, "version");
+
 	/* Setup vifm.sb. */
 	luaL_newlib(lua, sb_methods);
 	lua_setfield(lua, -2, "sb");
 
 	/* vifm. */
 	lua_pop(lua, 1);
+}
+
+/* Checks version of the API.  Returns a boolean. */
+static int
+VLUA_API(api_is_at_least)(lua_State *lua)
+{
+	const int major = luaL_checkinteger(lua, 1);
+	const int minor = luaL_optinteger(lua, 2, 0);
+	const int patch = luaL_optinteger(lua, 3, 0);
+	lua_pushboolean(lua, (major == 0 && minor == 0 && patch == 0));
+	return 1;
+}
+
+/* Performs tests for API features.  Returns a boolean. */
+static int
+VLUA_API(api_has)(lua_State *lua)
+{
+	(void)luaL_checkstring(lua, 1);
+	lua_pushboolean(lua, 0);
+	return 1;
 }
 
 /* Replacement of standard global `print` function.  If plugin is present,
