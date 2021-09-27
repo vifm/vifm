@@ -73,7 +73,7 @@ TEST(gui_colors_are_printed)
 	assert_failure(exec_commands("hi Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
 			"Win        cterm=none ctermfg=white   ctermbg=black  \n"
-			"           gui=none guifg=#1234fe guibg=red    ",
+			"           gui=none   guifg=#1234fe   guibg=red    ",
 			ui_sb_last());
 }
 
