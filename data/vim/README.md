@@ -38,6 +38,10 @@ The interface between the plugin and Vifm has changed significantly in v0.8.
 Other than that versions don't have to match perfectly for all basic
 functionality to work correctly.
 
+### Screenshot ###
+
+![Screenshot](screenshot.png)
+
 [vim]: https://www.vim.org/
 [vifm]: https://vifm.info/
 [vimhelp]: https://vifm.info/vimdoc.shtml#vifm-%27vimhelp%27
