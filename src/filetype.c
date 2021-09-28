@@ -143,7 +143,7 @@ ft_get_viewers(const char file[])
 }
 
 /* Finds first existing command which pattern matches given file.  Returns the
- * command (it's lifetime is managed by this unit) or NULL on failure. */
+ * command (its lifetime is managed by this unit) or NULL on failure. */
 static const char *
 find_existing_cmd(const assoc_list_t *record_list, const char file[])
 {
