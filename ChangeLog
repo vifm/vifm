@@ -5,6 +5,8 @@
 	Collect desktop files also from ~/.local/share/applications.  Thanks to
 	Jose Riha (a.k.a. jose1711).
 
+	Align output of :highlight better.
+
 	Fixed maximum number of arguments for :highlight command.  Thanks to
 	Yuriy Artemyev (a.k.a. anuvyklack).
 
