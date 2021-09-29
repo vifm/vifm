@@ -282,8 +282,16 @@ get_handlers(const char mime_type[])
 	parse_app_dir("/usr/local/share/applications", mime_type, &handlers);
 
 	char local_dir[PATH_MAX + 1];
-	build_path(local_dir, sizeof(local_dir), cfg.home_dir,
-			".local/share/applications");
+	const char *xdg_data_home = getenv("XDG_DATA_HOME");
+	if(is_null_or_empty(xdg_data_home))
+	{
+		build_path(local_dir, sizeof(local_dir), cfg.home_dir,
+				".local/share/applications");
+	}
+	else
+	{
+		build_path(local_dir, sizeof(local_dir), xdg_data_home, "applications");
+	}
 	parse_app_dir(local_dir, mime_type, &handlers);
 #endif
 
