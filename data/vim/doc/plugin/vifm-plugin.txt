@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.12-beta  Last change: 2021 Sep 15
+*vifm-plugin.txt*    For Vifm version 0.12  Last change: 2021 Sep 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
