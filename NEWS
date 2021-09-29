@@ -1,3 +1,162 @@
+September 29, 2021
+==================
+
+Vifm v0.12
+----------
+
+New version makes textual preview asynchronous, provides support for 24-bit
+colors, improves tree-view and introduces experimental Lua plugins support.
+
+Thanks to everyone who tried out the beta.
+
+Main changes:
+ - color schemes and preview now support 24-bit colors;
+ - depth of tree-view can now be limited and directories in it can be folded;
+ - textual preview of files is now done asynchronously;
+ - list of files can now be directly piped to programs via new macros;
+ - external editing now asks for a re-edit after a failure;
+ - status line can now take up several lines;
+ - new keys for controlling viewer while in view mode;
+ - view column separators;
+ - Vifm has received a more advanced, but currently experimental, extension
+   interface in a form of Lua plugins;
+ - new logo.
+
+More detailed list of changes.
+
+Core:
+ - added experimental Lua plugins support;
+ - added interactive re-editing of file names in external editor.  Format now
+   supports comments for displaying last error and original file names (thanks
+   to Jose Riha, a.k.a. jose1711 and Diogo Lemos (a.k.a. dmlemos));
+ - started using quickview's cache in view mode;
+ - extended cache of viewer's output to contain multiple entries (initial
+   version of the cache was added to skip redrawing graphics);
+ - run background programs detached from a terminal (thanks to Miguel Madrid
+   Mencía, a.k.a. mimame).
+
+File operations:
+ - added periodic forced flushing of data on copying data when 'syscalls' is set
+   (thanks to Matthias Braun, a.k.a. mb720).
+
+Invocation:
+ - don't list inaccessible instances on --server-list.
+
+Important fixes:
+ - fixed losing files as a result of executing ":copy! &" or ":move! &" when
+   both panes show the same directory (thanks to Hans Bieshaar);
+ - fixed copying of executable files not working on FreeBSD (thanks to
+   makijato);
+ - fixed inability to map escape sequences due to extended keys in terminfo
+   database (patch by M Kelly);
+ - fixed hang on using previewer that takes over control over the terminal (like
+   7z does to read password) (thanks to PRESFIL);
+ - fixed vifm-convert-dircolors dropping copies of entries that differ only by
+   case (thanks to flux242).
+
+Normal and visual modes:
+ - added zx normal mode key to fold/unfold directories in tree views.  The
+   implementation is not optimal at this moment though (thanks to filterfalse,
+   Ben Lu, a.k.a. ayroblu, RR0925 and Alexandre Viau).
+
+Key bindings:
+ - added a and A view mode keys that switch to next and previous viewer of
+   current file correspondingly (thanks to j-xella);
+ - added i view mode key that toggles raw mode (ignoring of defined viewers)
+   (thanks to j-xella).
+
+Command-line mode:
+ - added :plugins command that opens plugins menu;
+ - added :plugin command that manages plugins;
+ - added :st[op] command what behaves like Ctrl-Z.  It's to be used in mappings
+   (thanks to GummyGun);
+ - added "depth=N" parameter to the :tree command (thanks to filterfalse);
+ - added "combine" pseudo-attribute to "cterm" parameter of :highlight command.
+   It changes behaviour from overwriting attributes of a parent highlight group
+   (within their hierarchy) to appending to it (thanks to Andrew Savchenko);
+ - added "gui", "guifg" and "guibg" parameters to :highlight command;
+ - added network mount and `subst` targets to :volumes menu (patch by Phil
+   Runninger);
+ - made :compare obey file name filters (patch by qsmodo);
+ - allow user-defined commands to include numbers in their names (thanks to
+   anonymous at Vifm Q2A site).
+
+:set command and options:
+ - added %P macro to 'rulerformat' (and thus to 'statusline'), which expands to
+   All, Top, xx% or Bot to indicate position within the view (thanks to
+   iSeeU816);
+ - added 'previewoptions' option to allow tweaking graphics preview a bit
+   (thanks to Joshua Jensch, a.k.a., patroclos and flux242);
+ - added "toptreestats" value to 'previewoptions' option, which makes stats
+   appear before the tree (patch by qsmodo);
+ - added literal values to 'viewcolumns' option (thanks to Jose Riha, a.k.a.
+   jose1711, chelovechishko, DieSpinne and rwtallant13);
+ - added %N macro to 'statusline' option, which adds a line break and increases
+   height of the status line (thanks to Jose Riha, a.k.a. jose1711, qsmodo and
+   jcarreja);
+ - added "l" and "r" flags to the 'tuioptions' option.  It controls truncation
+   of view titles (patch by qsmodo);
+ - added %c 'statusline' macro that displays size of current file-system (thanks
+   to Jose Riha, a.k.a. jose1711).
+
+Macros:
+ - added %Pl and %Pz macros for redirecting list of files to standard input of
+   commands (thanks to PRESFIL);
+ - added %v macro for vertical splitting in terminal multiplexers (patch by
+   qsmodo).
+
+File preview:
+ - allow exploring empty files or output of viewers (thanks to Andrew
+   Savchenko);
+ - implemented asynchronous previewing for textual and pass-through (think
+   sixel) viewers (thanks to StillSteal, laur89, Joshua Jensch, a.k.a. patroclos
+   and p-kolacz);
+ - detect broken links on preview and report them as such.
+
+Color schemes:
+ - changed semantics of light* color groups to add bold attribute only for
+   terminals with less than 16 colors.  Aligns the behaviour with Vim.  Affects
+   you only if you relied on that implicit bold attribute (thanks to Jose Riha,
+   a.k.a. jose1711).
+
+Menus and dialogs:
+ - added shortcuts for toggling flags in permissions dialog on *nix (patch by
+   qsmodo);
+ - added some additional information about instance to the :version/:vifm menu;
+ - made contents of map menus easier to comprehend by adding captions;
+ - include shortcut prefix in title of map menus;
+ - always display UID/GID in numeric form in File Info dialog (in parenthesis if
+   the id was resolved to a string).
+
+TUI (Text User Interface):
+ - added support for direct/"true"/24-bit colors for ncurses 6.0 or later
+   (thanks to Anton Kochkov, a.k.a. XVilka and IvanBarsukov);
+ - added progress indication to the ruler of the view mode (corresponds to new
+   %P macro of 'rulerformat') (thanks to iSeeU816).
+
+Documentation:
+ - document how %i macro affects background jobs.
+
+Only on Windows:
+ - fixed :goto not working with backslashes (thanks to Grueslayer);
+ - fixed processing of keypad keys (thanks to Roland);
+ - fixed :empty leaving empty directories (thanks to Grueslayer).
+
+Packaging:
+ - made it possible to build AppImage for Vifm (patch by michaellee8);
+ - fixed running tests as root user (thanks to Michka Popoff, a.k.a. iMichka);
+ - fixed an issue with packaging on one system (Linux in this case) and
+   building on the other (OS X) (thanks to chenrui333).
+
+Vim-plugin:
+ - made :VifmCs of the plugin handle 24-bit colors.
+
+Other changes:
+ - updated logo of the project (thanks to Hescalalu for making it).
+
+See change log for the full list of changes and by whom they were suggested or
+implemented.
+
 September 15, 2021
 ==================
 
