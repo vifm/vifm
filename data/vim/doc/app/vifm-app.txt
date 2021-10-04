@@ -2777,7 +2777,7 @@ The command macros may be used in user commands.
                                                                *vifm-%Pl*
   %Pl       pipe list of files to standard input of a command.
                                                                *vifm-%Pz*
-  %Pz       same as %Pz, but separates paths by null ('\0') character.
+  %Pz       same as %Pl, but separates paths by null ('\0') character.
 
                                                                *vifm-%pc*
   %pc       marks the end of the main command and the beginning of the
