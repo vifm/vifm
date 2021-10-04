@@ -597,8 +597,17 @@ find_cmd_advance(cmd_t *cmd, const char name[])
 static int
 find_cmd_match(cmd_t *cmd, const char name[])
 {
-	return (cmd != NULL)
-	    && (strncmp(name, cmd->name, strlen(name)) == 0);
+	if(cmd == NULL)
+	{
+		return 0;
+	}
+
+	if(name[0] == '\0')
+	{
+		return (cmd->name[0] == '\0');
+	}
+
+	return (strncmp(name, cmd->name, strlen(name)) == 0);
 }
 
 /* Parses whole command range (e.g. "<val>;+<val>,,-<val>").  Returns advanced
