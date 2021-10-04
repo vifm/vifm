@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Sep 29
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Oct 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4044,9 +4044,9 @@ values are available:
                                                *vifm-'syncregs'*
 syncregs
 type: string
-default:
+default: ""
 
-Specifies identifier of group of instances that share registers between each
+Specifies identifier of group of instances that share registers among each
 other.  When several instances of vifm have this option set to identical
 value, they automatically synchronize contents of their registers on
 operations which use them.
