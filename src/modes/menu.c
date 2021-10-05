@@ -55,6 +55,7 @@
 
 static const int SCROLL_GAP = 2;
 
+static int complete_line_in_menu(const char cmd_line[], void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * menu_expand_macros(const char str[], int for_shell, int *usr1,
@@ -204,6 +205,7 @@ static const cmd_add_t commands[] = {
 
 /* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
+	.complete_line = &complete_line_in_menu,
 	.complete_args = &complete_args,
 	.swap_range = &swap_range,
 	.resolve_mark = &resolve_mark,
@@ -213,6 +215,13 @@ static cmds_conf_t cmds_conf = {
 	.select_range = &menu_select_range,
 	.skip_at_beginning = &skip_at_beginning,
 };
+
+/* Completes whole command-line.  Returns completion offset. */
+static int
+complete_line_in_menu(const char cmd_line[], void *extra_arg)
+{
+	return 0;
+}
 
 static int
 swap_range(void)

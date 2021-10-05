@@ -128,6 +128,7 @@ TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 
 /* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
+	.complete_line = &complete_line,
 	.complete_args = &complete_args,
 	.swap_range = &swap_range,
 	.resolve_mark = &resolve_mark,

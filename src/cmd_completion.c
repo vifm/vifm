@@ -128,6 +128,12 @@ static int file_matches(const char fname[], const char prefix[],
 		size_t prefix_len);
 
 int
+complete_line(const char cmd_line[], void *extra_arg)
+{
+	return 0;
+}
+
+int
 complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
 	if(id == COM_FOREIGN)

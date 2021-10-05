@@ -47,7 +47,8 @@ static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
 static void format_none(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
-static int complete_stub(int id, const cmd_info_t *cmd_info, int arg_pos,
+static int complete_line_stub(const char cmd_line[], void *extra_arg);
+static int complete_args_stub(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
@@ -271,6 +272,7 @@ void
 engine_cmds_setup(int real_completion)
 {
 	static cmds_conf_t cmds_conf = {
+		.complete_line = &complete_line_stub,
 		.swap_range = &swap_range,
 		.resolve_mark = &resolve_mark,
 		.expand_macros = &expand_macros,
@@ -280,12 +282,20 @@ engine_cmds_setup(int real_completion)
 		.skip_at_beginning = &skip_at_beginning,
 	};
 
-	cmds_conf.complete_args = (real_completion ? &complete_args : &complete_stub);
+	cmds_conf.complete_args = real_completion ? &complete_args
+	                                          : &complete_args_stub;
 	vle_cmds_init(1, &cmds_conf);
 }
 
 static int
-complete_stub(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
+complete_line_stub(const char cmd_line[], void *extra_arg)
+{
+	return 0;
+}
+
+static int
+complete_args_stub(int id, const cmd_info_t *cmd_info, int arg_pos,
+		void *extra_arg)
 {
 	return 0;
 }
