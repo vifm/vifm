@@ -3156,20 +3156,22 @@ int
 cd(view_t *view, const char base_dir[], const char path[])
 {
 	char dir[PATH_MAX + 1];
-	char canonic_dir[PATH_MAX + 1];
 	int updir;
 
 	flist_pick_cd_path(view, base_dir, path, &updir, dir, sizeof(dir));
-	to_canonic_path(dir, base_dir, canonic_dir, sizeof(canonic_dir));
 
 	if(updir)
 	{
 		rn_leave(view, 1);
 	}
-	else if(!cd_is_possible(canonic_dir) ||
-			change_directory(view, canonic_dir) < 0)
+	else
 	{
-		return 0;
+		char canonic_dir[PATH_MAX + 1];
+		to_canonic_path(dir, base_dir, canonic_dir, sizeof(canonic_dir));
+		if(!cd_is_possible(canonic_dir) || change_directory(view, canonic_dir) < 0)
+		{
+			return 0;
+		}
 	}
 
 	load_dir_list(view, 0);

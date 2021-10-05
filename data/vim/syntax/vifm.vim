@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: August 14, 2021
+" Last Change: October 5, 2021
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -136,9 +136,9 @@ syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 syntax case match
 
 " Options
-syntax keyword vifmOption contained aproposprg autochpos caseoptions cdpath cd
-		\ chaselinks classify columns co confirm cf cpoptions cpo cvoptions
-		\ deleteprg dotdirs dotfiles dirsize fastrun fillchars fcs findprg
+syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
+		\ cdpath cd chaselinks classify columns co confirm cf cpoptions cpo
+		\ cvoptions deleteprg dotdirs dotfiles dirsize fastrun fillchars fcs findprg
 		\ followlinks fusehome gdefault grepprg histcursor history hi hlsearch hls
 		\ iec ignorecase ic iooptions incsearch is laststatus lines locateprg ls
 		\ lsoptions lsview mediaprg milleroptions millerview mintimeoutlen number nu
@@ -152,20 +152,21 @@ syntax keyword vifmOption contained aproposprg autochpos caseoptions cdpath cd
 		\ wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
-syntax keyword vifmOption contained noautochpos nocf nochaselinks nodotfiles
-		\ nofastrun nofollowlinks nohlsearch nohls noiec noignorecase noic
-		\ noincsearch nois nolaststatus nols nolsview nomillerview nonumber nonu
-		\ noquickview norelativenumber nornu noscrollbind noscb norunexec
+syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks
+		\ nodotfiles nofastrun nofollowlinks nohlsearch nohls noiec noignorecase
+		\ noic noincsearch nois nolaststatus nols nolsview nomillerview nonumber
+		\ nonu noquickview norelativenumber nornu noscrollbind noscb norunexec
 		\ nosmartcase noscs nosortnumbers nosyscalls notitle notrash novimhelp
 		\ nowildmenu nowmnu nowrap nowrapscan nows
 
 " Inverted boolean options
-syntax keyword vifmOption contained invautochpos invcf invchaselinks invdotfiles
-		\ invfastrun invfollowlinks invhlsearch invhls inviec invignorecase invic
-		\ invincsearch invis invlaststatus invls invlsview invmillerview invnumber
-		\ invnu invquickview invrelativenumber invrnu invscrollbind invscb
-		\ invrunexec invsmartcase invscs invsortnumbers invsyscalls invtitle
-		\ invtrash invvimhelp invwildmenu invwmnu invwrap invwrapscan invws
+syntax keyword vifmOption contained invautocd invautochpos invcf invchaselinks
+		\ invdotfiles invfastrun invfollowlinks invhlsearch invhls inviec
+		\ invignorecase invic invincsearch invis invlaststatus invls invlsview
+		\ invmillerview invnumber invnu invquickview invrelativenumber invrnu
+		\ invscrollbind invscb invrunexec invsmartcase invscs invsortnumbers
+		\ invsyscalls invtitle invtrash invvimhelp invwildmenu invwmnu invwrap
+		\ invwrapscan invws
 
 " Expressions
 syntax region vifmStatement start='^\(\s\|:\)*'

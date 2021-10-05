@@ -130,7 +130,15 @@ static int file_matches(const char fname[], const char prefix[],
 int
 complete_line(const char cmd_line[], void *extra_arg)
 {
-	return 0;
+	if(!cfg.auto_cd)
+	{
+		return 0;
+	}
+
+	const char *slash = strrchr(cmd_line, '/');
+	int offset = (slash == NULL ? 0 : slash - cmd_line + 1);
+	offset += filename_completion(cmd_line, CT_DIRONLY, 0);
+	return offset;
 }
 
 int

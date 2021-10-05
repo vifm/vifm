@@ -2202,6 +2202,7 @@ store_global_options(JSON_Object *root)
 				escape_spaces(cfg.apropos_prg)));
 	append_dstr(options, format_str("%sautochpos", cfg.auto_ch_pos ? "" : "no"));
 	append_dstr(options, format_str("cdpath=%s", cfg.cd_path));
+	append_dstr(options, format_str("%sautocd", cfg.auto_cd ? "" : "no"));
 	append_dstr(options, format_str("%schaselinks", cfg.chase_links ? "" : "no"));
 	append_dstr(options, format_str("columns=%d", cfg.columns));
 	append_dstr(options, format_str("cpoptions=%s",
@@ -2212,7 +2213,7 @@ store_global_options(JSON_Object *root)
 	if(strcmp(cfg.border_filler, " ") != 0)
 	{
 		append_dstr(options, format_str("fillchars+=vborder:%s",
-					cfg.border_filler));
+					escape_spaces(cfg.border_filler)));
 	}
 	append_dstr(options, format_str("findprg=%s", escape_spaces(cfg.find_prg)));
 	append_dstr(options, format_str("%sfollowlinks",

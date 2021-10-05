@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Oct 4
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Oct 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3109,6 +3109,15 @@ command.  The format supports expanding of macros, specific for a particular
 option should include the %a macro to specify placement of arguments passed
 to the |vifm-:apropos| command.  If the macro is not used, it will be
 implicitly added after a space to the value of this option.
+
+                                               *vifm-'autocd'*
+autocd
+type: boolean
+default: false
+
+When enabled unknown command-line commands are interpreted as implicit
+invocation of |vifm-:cd| with one argument and no escaping.  Tilde is
+expanded, but not macros or environment variables.
 
                                                *vifm-'autochpos'*
 autochpos

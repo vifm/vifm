@@ -2015,7 +2015,7 @@ compare_cmd(const cmd_info_t *cmd_info)
 	if(parse_compare_properties(cmd_info, &ct, &lt, &single_pane,
 				&group_ids, &skip_empty) != 0)
 	{
-		return 1;
+		return CMDS_ERR_CUSTOM;
 	}
 
 	return single_pane

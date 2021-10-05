@@ -109,6 +109,7 @@ static void load_options_defaults(void);
 static void add_options(void);
 static void load_sort_option_inner(view_t *view, signed char sort_keys[]);
 static void aproposprg_handler(OPT_OP op, optval_t val);
+static void autocd_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void caseoptions_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
@@ -580,6 +581,10 @@ options[] = {
 	{ "aproposprg", "", ":apropos invocation format",
 	  OPT_STR, 0, NULL, &aproposprg_handler, NULL,
 	  { .ref.str_val = &cfg.apropos_prg },
+	},
+	{ "autocd", "", "interpret invalid :commands as directory change command",
+	  OPT_BOOL, 0, NULL, &autocd_handler, NULL,
+	  { .ref.bool_val = &cfg.auto_cd },
 	},
 	{ "autochpos", "", "restore cursor after cd",
 	  OPT_BOOL, 0, NULL, &autochpos_handler, NULL,
@@ -1645,6 +1650,13 @@ static void
 aproposprg_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.apropos_prg, val.str_val);
+}
+
+/* Handles changes of 'autocd' option. */
+static void
+autocd_handler(OPT_OP op, optval_t val)
+{
+	cfg.auto_cd = val.bool_val;
 }
 
 static void

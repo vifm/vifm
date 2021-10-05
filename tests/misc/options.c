@@ -784,5 +784,13 @@ TEST(previewoptions)
 	assert_false(cfg.top_tree_stats);
 }
 
+TEST(autocd)
+{
+	assert_success(exec_commands("set autocd", &lwin, CIT_COMMAND));
+	assert_true(cfg.auto_cd);
+	assert_success(exec_commands("set noautocd", &lwin, CIT_COMMAND));
+	assert_false(cfg.auto_cd);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

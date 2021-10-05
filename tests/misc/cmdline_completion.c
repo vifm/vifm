@@ -291,6 +291,37 @@ TEST(non_latin_prefix_does_not_break_completion, IF(utf8_locale))
 	assert_wstring_equal(L"абвгд | set all", stats.line);
 }
 
+TEST(autocd_completion)
+{
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+
+	cfg.auto_cd = 1;
+
+	create_dir(SANDBOX_PATH "/mydir1");
+	create_dir(SANDBOX_PATH "/mydir2");
+	create_dir(SANDBOX_PATH "/mydir3");
+
+	ASSERT_COMPLETION(L"myd", L"mydir1/");
+	ASSERT_NEXT_MATCH("mydir2/");
+	ASSERT_NEXT_MATCH("mydir3/");
+	ASSERT_NEXT_MATCH("myd");
+
+	ASSERT_COMPLETION(L"../m", L"../misc/");
+	ASSERT_COMPLETION(L"../misc/my", L"../misc/mydir1/");
+
+	cfg.auto_cd = 0;
+
+	ASSERT_NO_COMPLETION(L"myd");
+
+	remove_dir(SANDBOX_PATH "/mydir1");
+	remove_dir(SANDBOX_PATH "/mydir2");
+	remove_dir(SANDBOX_PATH "/mydir3");
+}
+
 static int
 dquotes_allowed_in_paths(void)
 {
