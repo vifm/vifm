@@ -289,7 +289,47 @@ TEST(udf_completion)
 TEST(completing_args_of_unknown_command)
 {
 	vle_compl_reset();
-	assert_int_equal(7, vle_cmds_complete("unknown ", NULL));
+	assert_int_equal(0, vle_cmds_complete("unknown ", NULL));
+}
+
+TEST(line_completion_no_args)
+{
+	char *buf;
+
+	vle_compl_reset();
+	assert_int_equal(0, vle_cmds_complete("notreallyacommand", NULL));
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line1", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line2", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("notreallyacommand", buf);
+	free(buf);
+}
+
+TEST(line_completion_args)
+{
+	char *buf;
+
+	vle_compl_reset();
+	assert_int_equal(0, vle_cmds_complete("notreally a command", NULL));
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line1", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line2", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("notreally a command", buf);
+	free(buf);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

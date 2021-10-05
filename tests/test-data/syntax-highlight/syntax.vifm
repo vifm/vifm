@@ -532,6 +532,7 @@ hi OddLine
 " "tabprefix" should be highlighted as 'option'
 " "tabsuffix" should be highlighted as 'option'
 " "previewoptions" should be highlighted as 'option'
+" "autocd" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -551,6 +552,7 @@ set sessionoptions ssop
 set tabprefix
 set tabsuffix
 set previewoptions
+set autocd noautocd invautocd autocd!
 
 " "term" should be highlighted as a function()
 echo term('cmd')

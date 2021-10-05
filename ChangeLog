@@ -1,3 +1,8 @@
+0.12 to current
+
+	Add 'autocd' option.  Makes invalid :commands be interpreted as an
+	implicit :cd command.  Thanks to Taras Halturin (a.k.a. halturin).
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

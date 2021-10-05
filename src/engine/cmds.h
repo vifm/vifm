@@ -196,8 +196,13 @@ typedef struct
 	int current; /* Current position between [begin; end]. */
 	int end;     /* The highest valid number of the range. */
 
-	/* Argument completion function.  arg is user supplied value, which is passed
-	 * through.  The functions must not modify any strings passed to it. */
+	/* Whole line completion function.  arg is a user supplied value, which is
+	 * passed through.  The functions should return completion offset. */
+	int (*complete_line)(const char cmd_line[], void *arg);
+
+	/* Argument completion function.  arg is a user supplied value, which is
+	 * passed through.  The functions must not modify any strings passed to it.
+	 * The functions should return completion offset. */
 	int (*complete_args)(int id, const cmd_info_t *cmd_info, int arg_pos,
 			void *arg);
 

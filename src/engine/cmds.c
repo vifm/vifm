@@ -116,6 +116,7 @@ vle_cmds_init(int udf, cmds_conf_t *conf)
 
 	if(inner == NULL)
 	{
+		assert(conf->complete_line != NULL);
 		assert(conf->complete_args != NULL);
 		assert(conf->swap_range != NULL);
 		assert(conf->resolve_mark != NULL);
@@ -515,12 +516,26 @@ vle_cmds_complete(const char cmd[], void *arg)
 		if(*args == '\0' && strcmp(cmd_name, "!") != 0)
 		{
 			complete_cmd_name(cmd_name, 0);
-			prefix_len += cmd_name_pos - cmd;
+
+			if(vle_compl_get_count() == 0)
+			{
+				prefix_len += cmds_conf->complete_line(cmd_name, arg);
+			}
+			else
+			{
+				vle_compl_add_last_match(cmd_name);
+				prefix_len += cmd_name_pos - cmd;
+			}
+		}
+		else if(cur == NULL || cur->name[0] == '\0')
+		{
+			/* Handle empty command specially here. */
+			prefix_len += cmds_conf->complete_line(cmd, arg);
 		}
 		else
 		{
 			prefix_len += args - cmd;
-			cmd_info.user_data = (cur == NULL ? NULL : cur->user_data);
+			cmd_info.user_data = cur->user_data;
 			prefix_len += complete_cmd_args(cur, args, &cmd_info, arg);
 		}
 	}
@@ -597,8 +612,17 @@ find_cmd_advance(cmd_t *cmd, const char name[])
 static int
 find_cmd_match(cmd_t *cmd, const char name[])
 {
-	return (cmd != NULL)
-	    && (strncmp(name, cmd->name, strlen(name)) == 0);
+	if(cmd == NULL)
+	{
+		return 0;
+	}
+
+	if(name[0] == '\0')
+	{
+		return (cmd->name[0] == '\0');
+	}
+
+	return (strncmp(name, cmd->name, strlen(name)) == 0);
 }
 
 /* Parses whole command range (e.g. "<val>;+<val>,,-<val>").  Returns advanced
@@ -797,7 +821,7 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 	return t;
 }
 
-/* Returns offset at which completion was done. */
+/* Completes command arguments.  Returns offset at which completion was done. */
 static int
 complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		void *arg)
@@ -805,7 +829,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 	const char *tmp_args = args;
 	int result = 0;
 
-	if(cur == NULL || (cur->id >= NO_COMPLETION_BOUNDARY && cur->id < 0))
+	if(cur->id >= NO_COMPLETION_BOUNDARY && cur->id < 0)
 		return 0;
 
 	args = parse_tail(cur, tmp_args, cmd_info);
@@ -820,6 +844,8 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		arg = (arg == NULL) ? args : (arg + 1);
 
 		complete_cmd_name(arg, 1);
+		vle_compl_add_last_match(arg);
+
 		result += arg - args;
 	}
 	else
@@ -867,8 +893,6 @@ complete_cmd_name(const char cmd_name[], int user_only)
 			vle_compl_add_match(cur->name, cur->descr);
 		cur = cur->next;
 	}
-
-	vle_compl_add_last_match(cmd_name);
 }
 
 void

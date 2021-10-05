@@ -12,6 +12,7 @@
 
 #include "suite.h"
 
+static int complete_line(const char cmd_line[], void *extra_arg);
 static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 static int should_swap_range(void);
@@ -29,6 +30,7 @@ cmd_info_t user_cmd_info;
 cmd_handler user_cmd_handler;
 
 cmds_conf_t cmds_conf = {
+	.complete_line = &complete_line,
 	.complete_args = &complete_args,
 	.swap_range = &should_swap_range,
 	.resolve_mark = &resolve_mark,
@@ -71,6 +73,17 @@ SETUP()
 TEARDOWN()
 {
 	vle_cmds_reset();
+}
+
+static int
+complete_line(const char cmd_line[], void *extra_arg)
+{
+	vle_compl_reset();
+	vle_compl_add_match("whole-line1", "");
+	vle_compl_add_match("whole-line2", "");
+	vle_compl_finish_group();
+	vle_compl_add_last_match(cmd_line);
+	return 0;
 }
 
 static int

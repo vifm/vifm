@@ -266,6 +266,10 @@ typedef struct config_t
 	/* Comma-separated list of places to look for relative path to directories. */
 	char *cd_path;
 
+	/* Interpret unknown command-line commands as implicit argument to directory
+	 * change command. */
+	int auto_cd;
+
 	/* < 0 - always show ellipsis on the left of the pane title,
 	 * = 0 - show ellipsis on the left for current pane, on the right for other,
 	 * > 0 - always show ellipsis on the right of the pane title. */

@@ -110,6 +110,10 @@ CompletionPreProcessing;
 
 struct cmd_info_t;
 
+/* Completes whole command-line.  Returns completion offset. */
+int complete_line(const char cmd_line[], void *extra_arg);
+
+/* Completes arguments of a command.  Returns completion offset. */
 int complete_args(int id, const struct cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 
