@@ -109,7 +109,7 @@ TEST(preview_is_closed_on_request)
 TEST(macros_are_expanded_for_viewer)
 {
 	strcpy(curr_view->curr_dir, "echo");
-	char *expanded = qv_expand_viewer("%d 1");
+	char *expanded = qv_expand_viewer(curr_view, "%d 1");
 	assert_string_equal("echo 1", expanded);
 	free(expanded);
 }

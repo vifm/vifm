@@ -423,8 +423,9 @@ get_lines(const quickview_cache_t *cache)
 
 	const char *error;
 
-	char *expanded = (cache->viewer == NULL) ? NULL
-	                                         : qv_expand_viewer(cache->viewer);
+	char *expanded = (cache->viewer == NULL)
+	               ? NULL
+	               : qv_expand_viewer(cache->pa.source, cache->viewer);
 	strlist_t lines = vcache_lookup(cache->path, expanded, MF_NONE, cache->kind,
 			cache->max_lines, VC_ASYNC, &error);
 	free(expanded);
@@ -833,15 +834,13 @@ qv_hide(void)
 	}
 }
 
-/* Returns a pointer to newly allocated memory, which should be released by the
- * caller. */
 char *
-qv_expand_viewer(const char viewer[])
+qv_expand_viewer(view_t *view, const char viewer[])
 {
 	char *result;
 	if(strchr(viewer, '%') == NULL)
 	{
-		char *escaped = shell_like_escape(get_current_file_name(curr_view), 0);
+		char *escaped = shell_like_escape(get_current_file_name(view), 0);
 		result = format_str("%s %s", viewer, escaped);
 		free(escaped);
 	}
@@ -882,7 +881,7 @@ qv_cleanup_area(const preview_area_t *parea, const char cmd[])
 	curr_stats.preview.clearing = 1;
 	curr_stats.preview_hint = parea;
 
-	char *expanded = qv_expand_viewer(cmd);
+	char *expanded = qv_expand_viewer(parea->view, cmd);
 	if(vlua_handler_cmd(curr_stats.vlua, expanded))
 	{
 		char path[PATH_MAX + 1];

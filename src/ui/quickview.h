@@ -64,7 +64,9 @@ void qv_toggle(void);
 /* Quits preview pane or view modes. */
 void qv_hide(void);
 
-char * qv_expand_viewer(const char viewer[]);
+/* Expands viewer for the view.  Returns a pointer to newly allocated memory,
+ * which should be released by the caller. */
+char * qv_expand_viewer(struct view_t *view, const char viewer[]);
 
 /* Performs view clearing with the given command, which can be NULL in which
  * case only internal clearing is done. */
