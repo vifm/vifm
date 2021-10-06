@@ -187,7 +187,7 @@ filextype {*.djvu},<image/vnd.djvu>
 filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
         \<audio/*>
        \ {Play using ffplay}
-       \ ffplay -nodisp -autoexit %c,
+       \ ffplay -nodisp -hide_banner -autoexit %c,
        \ {Play using MPlayer}
        \ mplayer %f,
 fileviewer {*.mp3},<audio/mpeg> mp3info
@@ -199,7 +199,7 @@ filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
           \*.as[fx]},
          \<video/*>
         \ {View using ffplay}
-        \ ffplay -fs -autoexit %f,
+        \ ffplay -fs -hide_banner -autoexit %f,
         \ {View using Dragon}
         \ dragon %f:p,
         \ {View using mplayer}
@@ -208,7 +208,7 @@ fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
            \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
            \*.as[fx]},
           \<video/*>
-         \ ffprobe -pretty %c 2>&1
+         \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Web
 filextype {*.html,*.htm},<text/html>
