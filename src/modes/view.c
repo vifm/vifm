@@ -1133,11 +1133,12 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	}
 	else
 	{
+		MacroFlags flags = MF_NONE;
 		char *expanded = (viewer == NULL)
 		               ? NULL
-		               : qv_expand_viewer(curr_view, viewer);
-		lines = vcache_lookup(file_to_view, expanded, MF_NONE, kind, INT_MAX,
-				VC_SYNC, &error);
+		               : qv_expand_viewer(curr_view, viewer, &flags);
+		lines = vcache_lookup(file_to_view, expanded, flags, kind, INT_MAX, VC_SYNC,
+				&error);
 		free(expanded);
 	}
 

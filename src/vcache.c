@@ -173,7 +173,7 @@ vcache_lookup(const char full_path[], const char viewer[], MacroFlags flags,
 		replace_string(&non_cache.path, full_path);
 		update_string(&non_cache.viewer, viewer);
 
-		non_cache.lines = view_entry(&non_cache, MF_NONE, error);
+		non_cache.lines = view_entry(&non_cache, flags, error);
 		wait_async_finish(&non_cache);
 
 		return non_cache.lines;
@@ -717,6 +717,11 @@ view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 			ma_flags_present(flags, MF_PIPE_FILE_LIST_Z))
 	{
 		bg_flags |= BJF_SUPPLY_INPUT;
+	}
+
+	if(ma_flags_present(flags, MF_KEEP_SESSION))
+	{
+		bg_flags |= BJF_KEEP_SESSION;
 	}
 
 	centry->job = bg_run_external_job(centry->viewer, bg_flags);

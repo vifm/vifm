@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 5, 2021" "vifm 0.12"
+.TH VIFM 1 "October 7, 2021" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3354,6 +3354,9 @@ Same as %s, but splits vertically.
 .TP
 .BI %n
 Forbid use of terminal multiplexer to run the command.
+.TP
+.BI %N
+Do not detach viewer from terminal session (leaves `/dev/tty` available).
 .TP
 .BI %i
 Completely ignore command output.  For background jobs this suppresses error

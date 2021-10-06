@@ -1,7 +1,10 @@
 0.12 to current
 
-	Add 'autocd' option.  Makes invalid :commands be interpreted as an
+	Added 'autocd' option.  Makes invalid :commands be interpreted as an
 	implicit :cd command.  Thanks to Taras Halturin (a.k.a. halturin).
+
+	Added %N macro that prevents detaching viewers from current session.
+	Thanks to emorozov.
 
 0.12-beta to 0.12 (2021-09-29)
 

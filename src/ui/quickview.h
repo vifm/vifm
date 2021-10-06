@@ -23,6 +23,7 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE */
 
+#include "../macros.h"
 #include "colors.h"
 
 struct dir_entry_t;
@@ -64,9 +65,10 @@ void qv_toggle(void);
 /* Quits preview pane or view modes. */
 void qv_hide(void);
 
-/* Expands viewer for the view.  Returns a pointer to newly allocated memory,
- * which should be released by the caller. */
-char * qv_expand_viewer(struct view_t *view, const char viewer[]);
+/* Expands viewer for the view.  The flags parameter can be NULL.  Returns a
+ * pointer to newly allocated memory, which should be released by the caller. */
+char * qv_expand_viewer(struct view_t *view, const char viewer[],
+		MacroFlags *flags);
 
 /* Performs view clearing with the given command, which can be NULL in which
  * case only internal clearing is done. */
