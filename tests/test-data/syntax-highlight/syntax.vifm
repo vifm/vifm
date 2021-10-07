@@ -367,18 +367,18 @@ filextype /reg\/ex/,{*.pdf}
 filetype {*.spx,*.opus},
         \<audio/mpeg,audio/x-wav>
        \ {Play using ffplay}
-       \ ffplay -nodisp -autoexit %c
+       \ ffplay -nodisp -hide_banner -autoexit %c
 
 filetype {*.wav}
         \<audio/mpeg,audio/x-wav>
        \ {Play using ffplay}
-       \ ffplay -nodisp -autoexit %c
+       \ ffplay -nodisp -hide_banner -autoexit %c
 
 filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
           \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
           \*.as[fx]}
         \ {View using ffplay}
-        \ ffplay -fs -autoexit %f
+        \ ffplay -fs -hide_banner -autoexit %f
 
 if $sort_type == 'size'
     set sort=+mtime
