@@ -908,6 +908,8 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	const int merge_streams = (capture_output && (flags & BJF_MERGE_STREAMS));
 
 #ifndef _WIN32
+	const int keep_session = (flags & BJF_KEEP_SESSION);
+
 	pid_t pid;
 	int input_pipe[2];
 	int output_pipe[2];
@@ -1019,9 +1021,17 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 			}
 		}
 
+		if(keep_session)
+		{
+			if(setpgid(0, 0) == -1)
+			{
+				perror("setpgid");
+				_Exit(EXIT_FAILURE);
+			}
+		}
 		/* setsid() creates process group as well and doesn't work if current
 		 * process is a group leader, so don't do setpgid(). */
-		if(setsid() == (pid_t)-1)
+		else if(setsid() == (pid_t)-1)
 		{
 			perror("setsid");
 			_Exit(EXIT_FAILURE);

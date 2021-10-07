@@ -50,6 +50,8 @@ typedef enum
 	MF_IGNORE,      /* Completely ignore command output. */
 	MF_NO_TERM_MUX, /* Forbid using terminal multiplexer, even if active. */
 
+	MF_KEEP_SESSION, /* Don't detach command from terminal session. */
+
 	/* Second set of mutually exclusive flags. */
 	MF_SECOND_SET_ = 0x10,
 
