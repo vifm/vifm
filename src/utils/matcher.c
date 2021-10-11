@@ -271,11 +271,13 @@ is_fglobs(char expr[])
 	char *glob = expr, *state = NULL;
 	while((glob = split_and_get_dc(glob, &state)) != NULL)
 	{
-		if(glob[strcspn(glob, "[?*")] == '\0')
+		const size_t pos = strcspn(glob, "[?*");
+		if(glob[pos] == '\0')
 		{
 			continue;
 		}
-		if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+		if(glob[pos] == '*' &&
+				glob[pos + 1 + strcspn(glob + pos + 1, "[?*")] == '\0')
 		{
 			continue;
 		}
@@ -424,19 +426,48 @@ fglobs_matches(const matcher_t *matcher, const char path[])
 	char *glob = globs, *state = NULL;
 	while((glob = split_and_get_dc(glob, &state)) != NULL)
 	{
-		if(glob[strcspn(glob, "[?*")] == '\0')
+		const char *asterisk = until_first(glob, '*');
+
+		/* Literal with no special characters. */
+		if(*asterisk == '\0')
 		{
 			if(strcasecmp(path, glob) == 0)
 			{
 				break;
 			}
+			continue;
 		}
-		if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+
+		size_t pos = asterisk - glob;
+		/* `*something` */
+		if(pos == 0)
 		{
 			if(path[0] != '.' && ends_with_case(path + 1, glob + 1))
 			{
 				break;
 			}
+			continue;
+		}
+
+		/* Literal with one escaped asterisk. */
+		if(asterisk[-1] == '\\')
+		{
+			/* Compare parts around '\\' to ignore it. */
+			--pos;
+			if(strncasecmp(path, glob, pos) == 0 &&
+					strcasecmp(path + pos, glob + pos + 1) == 0)
+			{
+				break;
+			}
+			continue;
+		}
+
+		/* Either `something*` or `some*thing`.  First case work here by matching
+		 * its empty suffix. */
+		if(strncasecmp(path, glob, pos) == 0 &&
+				ends_with_case(path + pos, glob + pos + 1))
+		{
+			break;
 		}
 	}
 	free(globs);

@@ -344,7 +344,7 @@ TEST(fast_globs)
 	char *error;
 	matcher_t *m;
 
-	m = matcher_alloc("{*suffix,literal}", 0, 1, "", &error);
+	m = matcher_alloc("{*suffix,prefix*,mid*dle,literal}", 0, 1, "", &error);
 	assert_true(matcher_is_fast(m));
 	assert_non_null(m);
 	assert_null(error);
@@ -352,12 +352,18 @@ TEST(fast_globs)
 	matcher_free(m);
 
 	/* Control against equivalent non-fast-globs. */
-	m = matcher_alloc("{*[s]uffix,[l]iteral}", 0, 1, "",
+	m = matcher_alloc("{*[s]uffix,[p]refix*,[m]id*dle,[l]iteral}", 0, 1, "",
 			&error);
 	assert_false(matcher_is_fast(m));
 	assert_non_null(m);
 	assert_null(error);
 	check_fast_globs(m);
+	matcher_free(m);
+
+	m = matcher_alloc("{mid\\*dle}", 0, 1, "", &error);
+	assert_true(matcher_is_fast(m));
+	assert_true(matcher_matches(m, "mid*dle"));
+	assert_false(matcher_matches(m, "middle"));
 	matcher_free(m);
 }
 
@@ -474,10 +480,22 @@ check_fast_globs(matcher_t *m)
 	assert_false(matcher_matches(m, "suffix0"));
 	assert_false(matcher_matches(m, "0suffix0"));
 
+	assert_true(matcher_matches(m, "prefix"));
+	assert_true(matcher_matches(m, "prefix0"));
+	assert_true(matcher_matches(m, "prefix00"));
+	assert_false(matcher_matches(m, "0prefix"));
+	assert_false(matcher_matches(m, "0prefix0"));
+
 	assert_true(matcher_matches(m, "literal"));
 	assert_false(matcher_matches(m, "0literal"));
 	assert_false(matcher_matches(m, "literal0"));
 	assert_false(matcher_matches(m, "0literal0"));
+
+	assert_true(matcher_matches(m, "middle"));
+	assert_true(matcher_matches(m, "mid123dle"));
+	assert_false(matcher_matches(m, "0middle"));
+	assert_false(matcher_matches(m, "middle0"));
+	assert_false(matcher_matches(m, "0middle0"));
 }
 
 static void
