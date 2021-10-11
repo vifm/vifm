@@ -11,6 +11,7 @@
 #include "../../src/utils/matcher.h"
 
 static void check_glob(matcher_t *m);
+static void check_fast_globs(matcher_t *m);
 static void check_regexp(matcher_t *m);
 static int has_mime_type_detection(void);
 static int has_mime_type_detection_and_not_windows(void);
@@ -338,6 +339,28 @@ TEST(globs_are_case_insensitive)
 	matcher_free(clone);
 }
 
+TEST(fast_globs)
+{
+	char *error;
+	matcher_t *m;
+
+	m = matcher_alloc("{*suffix,literal}", 0, 1, "", &error);
+	assert_true(matcher_is_fast(m));
+	assert_non_null(m);
+	assert_null(error);
+	check_fast_globs(m);
+	matcher_free(m);
+
+	/* Control against equivalent non-fast-globs. */
+	m = matcher_alloc("{*[s]uffix,[l]iteral}", 0, 1, "",
+			&error);
+	assert_false(matcher_is_fast(m));
+	assert_non_null(m);
+	assert_null(error);
+	check_fast_globs(m);
+	matcher_free(m);
+}
+
 TEST(regexps_are_cloned)
 {
 	char *error;
@@ -440,6 +463,21 @@ check_glob(matcher_t *m)
 	assert_true(matcher_matches(m, "name.ext"));
 
 	assert_false(matcher_matches(m, "{,ext"));
+}
+
+static void
+check_fast_globs(matcher_t *m)
+{
+	assert_false(matcher_matches(m, "suffix"));
+	assert_true(matcher_matches(m, "0suffix"));
+	assert_true(matcher_matches(m, "00suffix"));
+	assert_false(matcher_matches(m, "suffix0"));
+	assert_false(matcher_matches(m, "0suffix0"));
+
+	assert_true(matcher_matches(m, "literal"));
+	assert_false(matcher_matches(m, "0literal"));
+	assert_false(matcher_matches(m, "literal0"));
+	assert_false(matcher_matches(m, "0literal0"));
 }
 
 static void

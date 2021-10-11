@@ -29,6 +29,7 @@
 #include "path.h"
 #include "regexp.h"
 #include "str.h"
+#include "test_helpers.h"
 
 /* Type of a matcher. */
 typedef enum
@@ -70,6 +71,7 @@ static int is_negated(const char **expr);
 static int is_re_expr(const char expr[], int allow_empty);
 static int is_globs_expr(const char expr[]);
 static int is_mime_expr(const char expr[]);
+TSTATIC int matcher_is_fast(const matcher_t *matcher);
 
 matcher_t *
 matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
@@ -558,6 +560,12 @@ int
 matcher_is_full_path(const matcher_t *matcher)
 {
 	return matcher->full_path;
+}
+
+TSTATIC int
+matcher_is_fast(const matcher_t *matcher)
+{
+	return matcher->fglobs;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
