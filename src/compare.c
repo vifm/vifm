@@ -711,15 +711,6 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 static char *
 get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 {
-#if INTPTR_MAX == INT64_MAX
-#define XX_BITS 64
-#else
-#define XX_BITS 32
-#endif
-#define XX__(name, bits) XXH ## bits ## _ ## name
-#define XX_(name, bits) XX__(name, bits)
-#define XX(name) XX_(name, XX_BITS)
-
 	char block[BLOCK_SIZE];
 	size_t to_read = PREFIX_SIZE;
 	FILE *in = os_fopen(path, "rb");
@@ -728,17 +719,17 @@ get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 		return strdup("");
 	}
 
-	XX(state_t) *st = XX(createState)();
+	XXH3_state_t *st = XXH3_createState();
 	if(st == NULL)
 	{
 		fclose(in);
 		return strdup("");
 	}
 
-	if(XX(reset)(st, 0U) == XXH_ERROR)
+	if(XXH3_64bits_reset(st) == XXH_ERROR)
 	{
 		fclose(in);
-		XX(freeState)(st);
+		XXH3_freeState(st);
 		return strdup("");
 	}
 
@@ -751,21 +742,16 @@ get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 			break;
 		}
 
-		XX(update)(st, block, nread);
+		XXH3_64bits_update(st, block, nread);
 		to_read -= nread;
 	}
 	fclose(in);
 
-	const unsigned long long digest = XX(digest)(st);
-	XX(freeState)(st);
+	const unsigned long long digest = XXH3_64bits_digest(st);
+	XXH3_freeState(st);
 
 	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL,
 			(unsigned long long)entry->size, digest);
-
-#undef XX_BITS
-#undef XX__
-#undef XX_
-#undef XX
 }
 
 /* Retrieves file from the trie by its fingerprint.  Returns non-zero if it was
