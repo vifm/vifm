@@ -29,6 +29,7 @@
 #include "path.h"
 #include "regexp.h"
 #include "str.h"
+#include "test_helpers.h"
 
 /* Type of a matcher. */
 typedef enum
@@ -70,6 +71,7 @@ static int is_negated(const char **expr);
 static int is_re_expr(const char expr[], int allow_empty);
 static int is_globs_expr(const char expr[]);
 static int is_mime_expr(const char expr[]);
+TSTATIC int matcher_is_fast(const matcher_t *matcher);
 
 matcher_t *
 matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
@@ -269,11 +271,13 @@ is_fglobs(char expr[])
 	char *glob = expr, *state = NULL;
 	while((glob = split_and_get_dc(glob, &state)) != NULL)
 	{
-		if(glob[strcspn(glob, "[?*")] == '\0')
+		const size_t pos = strcspn(glob, "[?*");
+		if(glob[pos] == '\0')
 		{
 			continue;
 		}
-		if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+		if(glob[pos] == '*' &&
+				glob[pos + 1 + strcspn(glob + pos + 1, "[?*")] == '\0')
 		{
 			continue;
 		}
@@ -422,19 +426,48 @@ fglobs_matches(const matcher_t *matcher, const char path[])
 	char *glob = globs, *state = NULL;
 	while((glob = split_and_get_dc(glob, &state)) != NULL)
 	{
-		if(glob[strcspn(glob, "[?*")] == '\0')
+		const char *asterisk = until_first(glob, '*');
+
+		/* Literal with no special characters. */
+		if(*asterisk == '\0')
 		{
 			if(strcasecmp(path, glob) == 0)
 			{
 				break;
 			}
+			continue;
 		}
-		if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+
+		size_t pos = asterisk - glob;
+		/* `*something` */
+		if(pos == 0)
 		{
 			if(path[0] != '.' && ends_with_case(path + 1, glob + 1))
 			{
 				break;
 			}
+			continue;
+		}
+
+		/* Literal with one escaped asterisk. */
+		if(asterisk[-1] == '\\')
+		{
+			/* Compare parts around '\\' to ignore it. */
+			--pos;
+			if(strncasecmp(path, glob, pos) == 0 &&
+					strcasecmp(path + pos, glob + pos + 1) == 0)
+			{
+				break;
+			}
+			continue;
+		}
+
+		/* Either `something*` or `some*thing`.  First case work here by matching
+		 * its empty suffix. */
+		if(strncasecmp(path, glob, pos) == 0 &&
+				ends_with_case(path + pos, glob + pos + 1))
+		{
+			break;
 		}
 	}
 	free(globs);
@@ -558,6 +591,12 @@ int
 matcher_is_full_path(const matcher_t *matcher)
 {
 	return matcher->full_path;
+}
+
+TSTATIC int
+matcher_is_fast(const matcher_t *matcher)
+{
+	return matcher->fglobs;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

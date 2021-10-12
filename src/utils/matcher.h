@@ -22,6 +22,8 @@
 #ifndef VIFM__UTILS__MATCHER_H__
 #define VIFM__UTILS__MATCHER_H__
 
+#include "test_helpers.h"
+
 /* File path/name matcher (glob/regexp/mime-type). */
 
 /* Opaque matcher type. */
@@ -63,6 +65,10 @@ int matcher_includes(const matcher_t *matcher, const matcher_t *like);
 /* Checks whether given matcher is a full path matcher.  Returns non-zero if so,
  * otherwise zero is returned. */
 int matcher_is_full_path(const matcher_t *matcher);
+
+TSTATIC_DEFS(
+	int matcher_is_fast(const matcher_t *matcher);
+)
 
 #endif /* VIFM__UTILS__MATCHER_H__ */
 
