@@ -3,7 +3,7 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* rmdir() symlink() */
 
-#include <stdio.h> /* remove() */
+#include <stdio.h> /* FILE fopen() fwrite() fclose() remove() */
 #include <string.h> /* strcpy() */
 
 #include <test-utils.h>
@@ -285,6 +285,37 @@ TEST(relatively_complex_match)
 	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
 	assert_success(remove(SANDBOX_PATH "/utf8-bom-1"));
 	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
+}
+
+/* Tests hashing of files with identical size. */
+TEST(content_difference_is_detected)
+{
+	create_dir(SANDBOX_PATH "/a");
+	create_dir(SANDBOX_PATH "/b");
+	copy_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/a/two-lines");
+	copy_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/b/two-lines");
+
+	FILE *fp = fopen(SANDBOX_PATH "/b/two-lines", "r+b");
+	char data = 'x';
+	assert_int_equal(1, fwrite(&data, 1, 1, fp));
+	fclose(fp);
+
+	curr_view = &lwin;
+	other_view = &rwin;
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
+	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+
+	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(1, rwin.list_rows);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, rwin.dir_entry[0].id);
+
+	remove_file(SANDBOX_PATH "/a/two-lines");
+	remove_file(SANDBOX_PATH "/b/two-lines");
+	remove_dir(SANDBOX_PATH "/a");
+	remove_dir(SANDBOX_PATH "/b");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
