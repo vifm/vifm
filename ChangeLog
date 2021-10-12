@@ -9,6 +9,8 @@
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
+	Updated xxHash to 0.8.0.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

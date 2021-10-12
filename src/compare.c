@@ -720,7 +720,6 @@ get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 #define XX_(name, bits) XX__(name, bits)
 #define XX(name) XX_(name, XX_BITS)
 
-	XX(state_t) st;
 	char block[BLOCK_SIZE];
 	size_t to_read = PREFIX_SIZE;
 	FILE *in = os_fopen(path, "rb");
@@ -729,7 +728,20 @@ get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 		return strdup("");
 	}
 
-	XX(reset)(&st, 0U);
+	XX(state_t) *st = XX(createState)();
+	if(st == NULL)
+	{
+		fclose(in);
+		return strdup("");
+	}
+
+	if(XX(reset)(st, 0U) == XXH_ERROR)
+	{
+		fclose(in);
+		XX(freeState)(st);
+		return strdup("");
+	}
+
 	while(to_read != 0U)
 	{
 		const size_t portion = MIN(sizeof(block), to_read);
@@ -739,13 +751,16 @@ get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 			break;
 		}
 
-		XX(update)(&st, block, nread);
+		XX(update)(st, block, nread);
 		to_read -= nread;
 	}
 	fclose(in);
 
+	const unsigned long long digest = XX(digest)(st);
+	XX(freeState)(st);
+
 	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL,
-			(unsigned long long)entry->size, (unsigned long long)XX(digest)(&st));
+			(unsigned long long)entry->size, digest);
 
 #undef XX_BITS
 #undef XX__
