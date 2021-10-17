@@ -440,7 +440,7 @@ input_line_changed(void)
 	}
 
 	/* Hide cursor during view update, otherwise user might notice it blinking in
-	 * wrong place. */
+	 * wrong places. */
 	curs_set(0);
 
 	/* set_view_port() should not be called if none of the conditions are true. */
@@ -678,6 +678,10 @@ modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 void
 modcline_redraw(void)
 {
+	/* Hide cursor during redraw, otherwise user might notice it blinking in wrong
+	 * places. */
+	curs_set(0);
+
 	if(prev_mode == MENU_MODE)
 	{
 		modmenu_full_redraw();
@@ -698,7 +702,6 @@ modcline_redraw(void)
 	line_width = getmaxx(stdscr);
 	update_cmdline_size();
 	draw_cmdline_text(&input_stat);
-	curs_set(1);
 
 	if(input_stat.complete_continue && cfg.wild_menu)
 	{
@@ -709,6 +712,9 @@ modcline_redraw(void)
 	{
 		update_all_windows();
 	}
+
+	/* Make cursor visible after all redraws. */
+	curs_set(1);
 }
 
 /* Performs all necessary preparations for command-line mode to start
@@ -757,15 +763,17 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(1);
-	}
 
 	curr_stats.save_msg = 1;
 
 	if(prev_mode == NORMAL_MODE)
 		init_commands();
+
+	/* Make cursor visible only after all initial draws. */
+	if(curr_stats.load_stage > 0)
+	{
+		curs_set(1);
+	}
 }
 
 /* Stores view port parameters (top line, current position). */
@@ -827,6 +835,12 @@ is_line_edited(void)
 static void
 leave_cmdline_mode(void)
 {
+	/* Hide the cursor first. */
+	if(curr_stats.load_stage > 0)
+	{
+		curs_set(0);
+	}
+
 	const int multiline_status_bar = (getmaxy(status_bar) > 1);
 
 	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
@@ -848,10 +862,6 @@ leave_cmdline_mode(void)
 	input_stat.initial_line = NULL;
 	input_stat.line_buf = NULL;
 
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(0);
-	}
 	curr_stats.save_msg = 0;
 	ui_sb_unlock();
 	ui_sb_clear();
