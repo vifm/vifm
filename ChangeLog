@@ -13,6 +13,8 @@
 
 	Fixed cursor appearing at random places on entering command-line mode.
 
+	Fixed flicker and loosing parts of input on incremental search in menus.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

@@ -470,7 +470,7 @@ input_line_changed(void)
 	}
 	else if(prev_mode == MENU_MODE)
 	{
-		modmenu_full_redraw();
+		modmenu_partial_redraw();
 	}
 
 	/* Hardware cursor is moved on the screen only on refresh, so refresh status
