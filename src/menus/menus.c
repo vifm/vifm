@@ -33,6 +33,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "../engine/mode.h"
 #include "../int/term_title.h"
 #include "../int/vim.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -299,16 +300,21 @@ menus_set_pos(menu_state_t *ms, int pos)
 	else
 	{
 		draw_menu_item(ms, m->pos, ms->current, 0);
+		show_position_in_menu(m);
 	}
-	checked_wmove(menu_win, ms->current, 2);
 
-	show_position_in_menu(m);
+	checked_wmove(menu_win, ms->current, 2);
 }
 
 /* Displays current menu position on a ruler. */
 static void
 show_position_in_menu(const menu_data_t *m)
 {
+	if(vle_mode_is(CMDLINE_MODE))
+	{
+		return;
+	}
+
 	char pos_buf[32];
 	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
 
@@ -441,6 +447,8 @@ menus_partial_redraw(menu_state_t *m)
 	{
 		draw_menu_item(m, pos, i + 1, 0);
 	}
+
+	show_position_in_menu(m->d);
 }
 
 /* Draws single menu item at position specified by line argument.  Non-zero

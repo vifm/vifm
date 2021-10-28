@@ -1419,6 +1419,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(prev_mode == MENU_MODE)
 		{
+			modmenu_partial_redraw();
 			menus_search_print_msg(sub_mode_ptr);
 			curr_stats.save_msg = 1;
 		}
