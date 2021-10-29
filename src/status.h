@@ -27,6 +27,7 @@
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
 #include "utils/hist.h"
+#include "utils/test_helpers.h"
 #include "filetype.h"
 
 /* Special value foe dcache fields meaning that it wasn't set. */
@@ -357,6 +358,11 @@ void dcache_update_parent_sizes(const char path[], uint64_t by);
  * non-zero is returned. */
 int dcache_set_at(const char path[], uint64_t inode, uint64_t size,
 		uint64_t nitems);
+
+TSTATIC_DEFS(
+	time_t dcache_get_size_timestamp(const char path[]);
+	void dcache_set_size_timestamp(const char path[], time_t ts);
+)
 
 #endif /* VIFM__STATUS_H__ */
 
