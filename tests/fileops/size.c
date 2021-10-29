@@ -4,7 +4,7 @@
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include <string.h> /* strcpy() strdup() */
-#include <time.h> /* time_t */
+#include <time.h> /* time() time_t */
 
 #include <test-utils.h>
 
@@ -81,6 +81,25 @@ TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
 
 	assert_success(rmdir(SANDBOX_PATH "/dir/subdir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(directory_size_is_not_recalculated)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	setup_single_entry(&lwin, ".");
+	lwin.dir_entry[0].selected = 1;
+
+	fops_size_bg(&lwin, 0);
+	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
+
+	const time_t ts = time(NULL) + 10;
+	dcache_set_size_timestamp(TEST_DATA_PATH "/various-sizes", ts);
+
+	fops_size_bg(&lwin, 0);
+	wait_for_bg();
+
+	assert_ulong_equal(ts,
+			dcache_get_size_timestamp(TEST_DATA_PATH "/various-sizes"));
 }
 
 TEST(symlinks_to_dirs, IF(not_windows))

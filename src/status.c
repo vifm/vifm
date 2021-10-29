@@ -47,6 +47,7 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "cmd_completion.h"
 #include "cmd_core.h"
@@ -78,6 +79,8 @@ static void set_last_cmdline_command(const char cmd[]);
 static void dcache_get(const char path[], time_t mtime, uint64_t inode,
 		dcache_result_t *size, dcache_result_t *nitems);
 static void size_updater(void *data, void *arg);
+TSTATIC time_t dcache_get_size_timestamp(const char path[]);
+TSTATIC void dcache_set_size_timestamp(const char path[], time_t ts);
 
 status_t curr_stats;
 
@@ -682,6 +685,29 @@ dcache_set_at(const char path[], uint64_t inode, uint64_t size, uint64_t nitems)
 	}
 
 	return ret;
+}
+
+TSTATIC time_t
+dcache_get_size_timestamp(const char path[])
+{
+	dcache_data_t size_data;
+	if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) == 0)
+	{
+		return size_data.timestamp;
+	}
+
+	return -1;
+}
+
+TSTATIC void
+dcache_set_size_timestamp(const char path[], time_t ts)
+{
+	dcache_data_t size_data;
+	if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) == 0)
+	{
+		size_data.timestamp = ts;
+		(void)fsdata_set(dcache_size, path, &size_data, sizeof(size_data));
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
