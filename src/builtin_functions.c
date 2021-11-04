@@ -428,30 +428,26 @@ layoutis_builtin(const call_info_t *call_info)
 static var_t
 has_builtin(const call_info_t *call_info)
 {
-	var_t result;
+	int result = 0;
 
 	char *const str_val = var_to_str(call_info->argv[0]);
 
 	if(strcmp(str_val, "unix") == 0)
 	{
-		result = var_from_bool(get_env_type() == ET_UNIX);
+		result = (get_env_type() == ET_UNIX);
 	}
 	else if(strcmp(str_val, "win") == 0)
 	{
-		result = var_from_bool(get_env_type() == ET_WIN);
+		result = (get_env_type() == ET_WIN);
 	}
 	else if(str_val[0] == '#')
 	{
-		result = var_from_bool(vlua_handler_present(curr_stats.vlua, str_val));
-	}
-	else
-	{
-		result = var_false();
+		result = vlua_handler_present(curr_stats.vlua, str_val);
 	}
 
 	free(str_val);
 
-	return result;
+	return var_from_bool(result);
 }
 
 /* Checks for relative position of current pane.  Returns boolean value that
