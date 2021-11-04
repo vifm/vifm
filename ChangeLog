@@ -11,6 +11,8 @@
 
 	Updated xxHash to 0.8.0 and switched to XXH3 variant.
 
+	Extended has() builtin function to check for Lua handlers.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.

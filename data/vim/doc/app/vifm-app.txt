@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Oct 7
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Nov 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4871,6 +4871,7 @@ true/present, otherwise 0 is returned.  Currently the following properties
 are supported (anything else will yield 0):
     unix  runs in *nix-like environment (including Cygwin)
     win   runs on Windows
+    #*    whether particular Lua handler exists (|vifm-lua-handlers|)
 
 Usage example: >
   " skip user/group on Windows

@@ -30,6 +30,7 @@
 #include "engine/functions.h"
 #include "engine/text_buffer.h"
 #include "engine/var.h"
+#include "lua/vlua.h"
 #include "ui/cancellation.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
@@ -438,6 +439,10 @@ has_builtin(const call_info_t *call_info)
 	else if(strcmp(str_val, "win") == 0)
 	{
 		result = var_from_bool(get_env_type() == ET_WIN);
+	}
+	else if(str_val[0] == '#')
+	{
+		result = var_from_bool(vlua_handler_present(curr_stats.vlua, str_val));
 	}
 	else
 	{

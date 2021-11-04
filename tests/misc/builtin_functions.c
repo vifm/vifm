@@ -16,6 +16,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/variables.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
@@ -373,6 +374,22 @@ TEST(has)
 	ASSERT_OK("has('anythingelse')", "0");
 	ASSERT_OK("has('nix')", "0");
 	ASSERT_OK("has('windows')", "0");
+}
+
+TEST(has_handler)
+{
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function handler(info) end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'handler', handler = handler }"));
+
+	ASSERT_OK("has('#vifmtest#nohandler')", "0");
+	ASSERT_OK("has('#vifmtest#handler')", "1");
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
 }
 
 TEST(extcached)
