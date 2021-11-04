@@ -24,6 +24,7 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../cfg/info.h"
 #include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../engine/options.h"
@@ -64,6 +65,7 @@ static int VLUA_API(vifm_fnamemodify)(lua_State *lua);
 static int VLUA_API(vifm_exists)(lua_State *lua);
 static int VLUA_API(vifm_makepath)(lua_State *lua);
 static int VLUA_API(vifm_expand)(lua_State *lua);
+static int VLUA_API(vifm_sessions_current)(lua_State *lua);
 static int VLUA_API(vifm_plugin_require)(lua_State *lua);
 static int VLUA_IMPL(require_plugin_module)(lua_State *lua);
 static int VLUA_API(sb_info)(lua_State *lua);
@@ -82,6 +84,7 @@ VLUA_DECLARE_SAFE(vifm_fnamemodify);
 VLUA_DECLARE_SAFE(vifm_exists);
 VLUA_DECLARE_SAFE(vifm_makepath);
 VLUA_DECLARE_SAFE(vifm_expand);
+VLUA_DECLARE_SAFE(vifm_sessions_current);
 VLUA_DECLARE_UNSAFE(vifm_plugin_require);
 VLUA_DECLARE_SAFE(sb_info);
 VLUA_DECLARE_SAFE(sb_error);
@@ -223,6 +226,12 @@ load_api(lua_State *lua)
 	/* Setup vifm.sb. */
 	luaL_newlib(lua, sb_methods);
 	lua_setfield(lua, -2, "sb");
+
+	/* Setup vifm.sessions. */
+	lua_newtable(lua);
+	lua_pushcfunction(lua, VLUA_REF(vifm_sessions_current));
+	lua_setfield(lua, -2, "current");
+	lua_setfield(lua, -2, "sessions");
 
 	/* vifm. */
 	lua_pop(lua, 1);
@@ -512,6 +521,22 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	{
 		lua_pop(lua, 1);
 	}
+}
+
+/* Member of `vifm.sessions` that retrieves name of the current session.
+ * Returns string or nil. */
+static int
+VLUA_API(vifm_sessions_current)(lua_State *lua)
+{
+	if(sessions_active())
+	{
+		lua_pushstring(lua, sessions_current());
+	}
+	else
+	{
+		lua_pushnil(lua);
+	}
+	return 1;
 }
 
 /* Member of `vifm.plugin` that loads a module relative to the plugin's root.

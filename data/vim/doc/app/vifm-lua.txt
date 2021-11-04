@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Sep 26
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Nov 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -21,6 +21,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
+|vifm-l_vifm.sessions| `vifm.sessions` global table.
 |vifm-l_vifm.version|  `vifm.version` global table.
 |vifm-l_VifmEntry|     `VifmEntry` type.
 |vifm-l_VifmJob|       `VifmJob` type.
@@ -262,6 +263,9 @@ Table for managing plugins.  See |vifm-l_vifm.plugins|.
 
 vifm.sb
 Table for managing statusbar.  See |vifm-l_vifm.sb|.
+
+vifm.sessions
+Table for managing sessions.  See |vifm-l_vifm.sessions|.
 
 vifm.version
 Table with version information.  See |vifm-l_vifm.version|.
@@ -603,6 +607,18 @@ isn't stored in the history of messages.
 
 Parameters:~
   {msg}  Message to display.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.sessions*
+
+This global `vifm.sessions` table provides means for inspecting and
+controlling sessions.
+
+sessions.current()                             *vifm-l_vifm.sessions.current*
+Retrives name of the current session.
+
+Return:~
+  `nil` if there is no active session or its name as a string otherwise.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.version*
