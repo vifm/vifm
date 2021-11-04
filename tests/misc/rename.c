@@ -229,10 +229,9 @@ TEST(re_editing_cancellation, IF(not_windows))
 	const char *edited = "second";
 	const char *cancel = "#only comments";
 	char *modified[] = { "second" };
-	char *none[] = { };
 	check_editing(orig, ARRAY_LEN(orig), NULL, edited, modified,
 			ARRAY_LEN(modified));
-	check_editing(orig, ARRAY_LEN(orig), NULL, cancel, none, ARRAY_LEN(none));
+	check_editing(orig, ARRAY_LEN(orig), NULL, cancel, NULL, 0);
 	check_editing(orig, ARRAY_LEN(orig), NULL, NULL, orig, ARRAY_LEN(orig));
 }
 
@@ -240,9 +239,8 @@ TEST(re_editing_unchanged_skips_caching, IF(not_windows))
 {
 	char *orig[] = { "a", "b" };
 	const char *same = "a\nb";
-	char *none[] = { };
-	check_editing(orig, ARRAY_LEN(orig), same, same, none, ARRAY_LEN(none));
-	check_editing(orig, ARRAY_LEN(orig), same, same, none, ARRAY_LEN(none));
+	check_editing(orig, ARRAY_LEN(orig), same, same, NULL, 0);
+	check_editing(orig, ARRAY_LEN(orig), same, same, NULL, 0);
 }
 
 TEST(last_rename_error_is_displayed, IF(not_windows))
@@ -261,15 +259,15 @@ TEST(last_rename_error_is_displayed, IF(not_windows))
 	check_editing(orig, ARRAY_LEN(orig), NULL, edited, modified,
 			ARRAY_LEN(modified));
 	update_string(&ext_edit.last_error, "test error");
-	check_editing(orig, ARRAY_LEN(orig), template, edited, modified, ARRAY_LEN(modified));
+	check_editing(orig, ARRAY_LEN(orig), template, edited, modified,
+			ARRAY_LEN(modified));
 }
 
 TEST(unchanged_list, IF(not_windows))
 {
 	char *orig[] = { "aaa" };
 	const char *edited = "aaa";
-	char *final[] = { };
-	check_editing(orig, ARRAY_LEN(orig), NULL, edited, final, ARRAY_LEN(final));
+	check_editing(orig, ARRAY_LEN(orig), NULL, edited, NULL, 0);
 }
 
 static void

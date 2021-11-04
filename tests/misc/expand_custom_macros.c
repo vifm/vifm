@@ -229,18 +229,16 @@ TEST(explicit_use_sets_appropriate_flag)
 
 TEST(optional_empty)
 {
-	custom_macro_t macros[] = {};
-
 	const char *pattern = "%[%]";
-	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
+	char *expanded = ma_expand_custom(pattern, /*nmacros=*/0, /*macros=*/NULL,
+			MA_OPT);
 	assert_string_equal("", expanded);
 	free(expanded);
 }
 
 TEST(optional_unmatched)
 {
-	custom_macro_t macros[] = {};
-	check_hi("%[%1*a", ARRAY_LEN(macros), macros, MA_OPT,
+	check_hi("%[%1*a", /*nmacros=*/0, /*macros=*/NULL, MA_OPT,
 			"%[a",
 			"  1");
 }

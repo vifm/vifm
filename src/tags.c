@@ -708,6 +708,8 @@ const char *tags[] = {
 	"vifm-l_vifm.sb.error()",
 	"vifm-l_vifm.sb.info()",
 	"vifm-l_vifm.sb.quick()",
+	"vifm-l_vifm.sessions",
+	"vifm-l_vifm.sessions.current",
 	"vifm-l_vifm.startjob()",
 	"vifm-l_vifm.version",
 	"vifm-l_vifm.version.api.atleast()",
