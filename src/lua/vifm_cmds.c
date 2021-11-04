@@ -33,6 +33,7 @@
 #include "vlua_state.h"
 
 static int VLUA_API(cmds_add)(lua_State *lua);
+static void parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd);
 static int VLUA_API(cmds_command)(lua_State *lua);
 static int VLUA_API(cmds_delcommand)(lua_State *lua);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
@@ -69,12 +70,6 @@ VLUA_API(cmds_add)(lua_State *lua)
 	check_field(lua, 1, "name", LUA_TSTRING);
 	const char *name = lua_tostring(lua, -1);
 
-	const char *descr = "";
-	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
-	{
-		descr = state_store_string(vlua, lua_tostring(lua, -1));
-	}
-
 	int id = -1;
 
 	lua_newtable(lua);
@@ -91,7 +86,7 @@ VLUA_API(cmds_add)(lua_State *lua)
 	  .name = name,
 	  .abbr = NULL,
 	  .id = id,
-	  .descr = descr,
+	  .descr = "",
 	  .flags = 0,
 	  .handler = &lua_cmd_handler,
 	  .user_data = NULL,
@@ -99,22 +94,7 @@ VLUA_API(cmds_add)(lua_State *lua)
 	  .max_args = 0,
 	};
 
-	if(check_opt_field(lua, 1, "minargs", LUA_TNUMBER))
-	{
-		cmd.min_args = lua_tointeger(lua, -1);
-	}
-	if(check_opt_field(lua, 1, "maxargs", LUA_TNUMBER))
-	{
-		cmd.max_args = lua_tointeger(lua, -1);
-		if(cmd.max_args < 0)
-		{
-			cmd.max_args = NOT_DEF;
-		}
-	}
-	else
-	{
-		cmd.max_args = cmd.min_args;
-	}
+	parse_cmd_params(vlua, &cmd);
 
 	cmd.user_data = state_store_pointer(vlua, handler);
 	if(cmd.user_data == NULL)
@@ -124,6 +104,33 @@ VLUA_API(cmds_add)(lua_State *lua)
 
 	lua_pushboolean(lua, vle_cmds_add_foreign(&cmd) == 0);
 	return 1;
+}
+
+/* Initializes fields of cmd_add_t from parameter for `vifm.cmds.add`. */
+static void
+parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd)
+{
+	if(check_opt_field(vlua->lua, 1, "description", LUA_TSTRING))
+	{
+		cmd->descr = state_store_string(vlua, lua_tostring(vlua->lua, -1));
+	}
+
+	if(check_opt_field(vlua->lua, 1, "minargs", LUA_TNUMBER))
+	{
+		cmd->min_args = lua_tointeger(vlua->lua, -1);
+	}
+	if(check_opt_field(vlua->lua, 1, "maxargs", LUA_TNUMBER))
+	{
+		cmd->max_args = lua_tointeger(vlua->lua, -1);
+		if(cmd->max_args < 0)
+		{
+			cmd->max_args = NOT_DEF;
+		}
+	}
+	else
+	{
+		cmd->max_args = cmd->min_args;
+	}
 }
 
 /* Member of `vifm.command` that registers a new user-defined :command or raises
