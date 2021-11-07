@@ -22,6 +22,9 @@
 	Fixed severe performance degradation after measuring size of large
 	directory trees.
 
+	Fixed building when fdatasync() call isn't available.  Thanks to Schrijvers
+	Luc (a.k.a. Begasus).
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
