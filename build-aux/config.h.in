@@ -32,6 +32,9 @@
 /* extended curses colors are present */
 #undef HAVE_EXTENDED_COLORS
 
+/* fdatasync() is available. */
+#undef HAVE_FDATASYNC
+
 /* Define if file program present */
 #undef HAVE_FILE_PROG
 

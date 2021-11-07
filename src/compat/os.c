@@ -356,8 +356,11 @@ os_fdatasync(int fd)
 #ifdef F_FULLFSYNC
 	/* OS X system might not have fdatasync(). */
 	return fcntl(fd, F_FULLFSYNC);
-#else
+#elif defined(HAVE_FDATASYNC)
 	return fdatasync(fd);
+#else
+	/* At least Haiku lacks fdatasync(). */
+	return fsync(fd);
 #endif
 }
 
