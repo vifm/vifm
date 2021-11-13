@@ -534,12 +534,18 @@ fops_retarget(view_t *view)
 		/* An error has occurred. */
 		return 1;
 	}
+
+	int result;
 	if(nfiles == 0)
 	{
-		return retarget_one(view);
+		result = retarget_one(view);
+	}
+	else
+	{
+		result = retarget_many(view, files, nfiles);
 	}
 
-	int result = retarget_many(view, files, nfiles);
+	flist_sel_stash(view);
 	free_string_array(files, nfiles);
 	return result;
 }
@@ -682,10 +688,9 @@ retarget_many(view_t *view, char *files[], int nfiles)
 	{
 		free(to);
 		free_string_array(from, nfrom);
-		return 0;
+		ui_sb_msg("0 links retargeted");
+		return 1;
 	}
-
-	flist_sel_stash(view);
 
 	const char *curr_dir = flist_get_dir(view);
 	ops_t *ops = fops_get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);

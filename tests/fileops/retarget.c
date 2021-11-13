@@ -74,6 +74,37 @@ TEST(not_symlink, IF(not_windows))
 	remove_file(SANDBOX_PATH "/file");
 }
 
+TEST(no_changes, IF(not_windows))
+{
+	assert_success(make_symlink("target1", "symlink1"));
+	assert_success(make_symlink("target2", "symlink2"));
+
+	populate_dir_list(&lwin, 0);
+
+	create_executable("script");
+	make_file("script", "#!/bin/sh\n");
+
+	update_string(&cfg.shell, "/bin/sh");
+	stats_update_shell_type(cfg.shell);
+
+	curr_stats.exec_env_type = EET_LINUX_NATIVE;
+	update_string(&cfg.vi_command, "./script");
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	assert_int_equal(1, fops_retarget(&lwin));
+
+	char target[PATH_MAX + 1];
+	assert_success(get_link_target("symlink1", target, sizeof(target)));
+	assert_string_equal("target1", target);
+	assert_success(get_link_target("symlink2", target, sizeof(target)));
+	assert_string_equal("target2", target);
+
+	remove_file("symlink1");
+	remove_file("symlink2");
+	remove_file("script");
+}
+
 TEST(retarget_files, IF(not_windows))
 {
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
