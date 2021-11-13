@@ -47,8 +47,8 @@ typedef enum
 	OP_ADDATTR,
 	OP_SUBATTR,
 #endif
-	OP_SYMLINK,
-	OP_SYMLINK2,
+	OP_SYMLINK,  /* symlink creation */
+	OP_SYMLINK2, /* symlink replacement */
 	OP_MKDIR,
 	OP_RMDIR,
 	OP_MKFILE,
