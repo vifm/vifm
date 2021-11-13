@@ -69,6 +69,7 @@ static const char * get_top_dir(const view_t *view);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
+static int retarget_one(view_t *view);
 static void change_link_cb(const char new_target[]);
 static void change_link(ops_t *ops, const char path[], const char from[],
 		const char to[]);
@@ -511,10 +512,6 @@ prepare_register(int reg)
 int
 fops_retarget(view_t *view)
 {
-	char full_path[PATH_MAX + 1];
-	char linkto[PATH_MAX + 1];
-	const dir_entry_t *const entry = get_current_entry(view);
-
 	if(!symlinks_available())
 	{
 		show_error_msg("Symbolic Links Error",
@@ -525,6 +522,18 @@ fops_retarget(view_t *view)
 	{
 		return 0;
 	}
+
+	return retarget_one(view);
+}
+
+/* Changes target of a symbolic link under the cursor.  Returns new value for
+ * save_msg. */
+static int
+retarget_one(view_t *view)
+{
+	char full_path[PATH_MAX + 1];
+	char linkto[PATH_MAX + 1];
+	const dir_entry_t *const entry = get_current_entry(view);
 
 	if(fentry_is_fake(entry))
 	{
