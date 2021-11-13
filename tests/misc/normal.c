@@ -10,11 +10,13 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
+#include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
+#include "../../src/fops_common.h"
 #include "../../src/status.h"
 
 #include "utils.h"
@@ -170,6 +172,38 @@ TEST(gF, IF(not_windows))
 	remove_file(SANDBOX_PATH "/link2");
 	remove_file(SANDBOX_PATH "/link1");
 	remove_dir(SANDBOX_PATH "/dir");
+}
+
+TEST(cl, IF(not_windows))
+{
+	conf_setup();
+	undo_setup();
+	fops_init(&modcline_prompt, NULL);
+
+	assert_success(make_symlink("target", SANDBOX_PATH "/symlink"));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+
+	/* Start link editing. */
+	(void)vle_keys_exec_timed_out(WK_c WK_l);
+	/* Edit. */
+	(void)vle_keys_exec_timed_out(L"path");
+	/* Save. */
+	(void)vle_keys_exec_timed_out(WK_CR);
+
+	chdir(cwd);
+
+	char target[PATH_MAX + 1];
+	assert_success(get_link_target(SANDBOX_PATH "/symlink", target,
+				sizeof(target)));
+	assert_string_equal("targetpath", target);
+
+	remove_file(SANDBOX_PATH "/symlink");
+
+	fops_init(NULL, NULL);
+	undo_teardown();
+	conf_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
