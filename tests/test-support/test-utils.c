@@ -97,6 +97,7 @@ conf_setup(void)
 	update_string(&cfg.tab_prefix, "");
 	update_string(&cfg.tab_label, "");
 	update_string(&cfg.tab_suffix, "");
+	update_string(&cfg.delete_prg, "");
 
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
@@ -127,7 +128,10 @@ conf_teardown(void)
 	update_string(&cfg.locate_prg, NULL);
 	update_string(&cfg.media_prg, NULL);
 	update_string(&cfg.border_filler, NULL);
+	update_string(&cfg.tab_prefix, NULL);
 	update_string(&cfg.tab_label, NULL);
+	update_string(&cfg.tab_suffix, NULL);
+	update_string(&cfg.delete_prg, NULL);
 	update_string(&cfg.shell, NULL);
 	update_string(&cfg.shell_cmd_flag, NULL);
 

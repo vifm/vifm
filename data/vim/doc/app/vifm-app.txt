@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Nov 4
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Nov 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -545,7 +545,9 @@ cw                                             *vifm-cw*
 cW                                             *vifm-cW*
     change WORD is used to change only name of file (without extension).
 
-cl - change link target.                       *vifm-cl*
+cl                                             *vifm-cl*
+    change link target.  If multiple files are selected, an editor is spawn
+    to edit paths.
 
                                                *vifm-co*
 co - change file owner.                        {only for *nix}
@@ -822,6 +824,9 @@ gu, u                                          *vifm-v_gu* *vifm-v_u*
 
 gU, U                                          *vifm-v_gU* *vifm-v_U*
     make names of selected files uppercase.
+
+cl                                             *vifm-v_cl*
+    change target of symbolic link(s).
 
 cw                                             *vifm-v_cw*
     same as running |vifm-:rename| command without arguments.

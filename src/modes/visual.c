@@ -105,6 +105,7 @@ static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void delete(key_info_t key_info, int use_trash);
 static void cmd_av(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_cl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cw(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
@@ -220,6 +221,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_a WK_v,     {{&cmd_av}, .descr = "leave/switch to amending visual mode"}},
 	{WK_d,          {{&cmd_d},  .descr = "remove files"}},
 	{WK_f,          {{&cmd_f}, FOLLOWED_BY_MULTIKEY, .descr = "char-search forward"}},
+	{WK_c WK_l,     {{&cmd_cl}, .descr = "change symlink target"}},
 	{WK_c WK_p,     {{&cmd_cp}, .descr = "change file permissions/attributes"}},
 	{WK_c WK_w,     {{&cmd_cw}, .descr = "rename files"}},
 	{WK_g WK_A,     {{&cmd_gA}, .descr = "(re)calculate size"}},
@@ -741,6 +743,17 @@ cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
 	fops_size_bg(view, 0);
 	accept_and_leave(0);
+}
+
+/* Change symbolic link(s). */
+static void
+cmd_cl(key_info_t key_info, keys_info_t *keys_info)
+{
+	update_marks(view);
+	modvis_leave(0, 1, 0);
+
+	flist_set_marking(view, 0);
+	curr_stats.save_msg = fops_retarget(view);
 }
 
 /* Change file attributes (permissions or properties). */

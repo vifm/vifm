@@ -33,7 +33,6 @@ SETUP()
 
 	opt_handlers_setup();
 
-	cfg.delete_prg = strdup("");
 	cfg.use_system_calls = 1;
 	cfg.sizefmt.base = 1;
 
@@ -50,8 +49,6 @@ TEARDOWN()
 	view_teardown(&rwin);
 
 	opt_handlers_teardown();
-
-	free(cfg.delete_prg);
 
 	undo_teardown();
 }

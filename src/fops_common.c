@@ -849,7 +849,7 @@ fops_query_list(size_t orig_len, char *orig[], int *edited_len, int load_always,
 			nlines = 0;
 
 			/* Stray space prevents removal of the line. */
-			if(prompt_msgf("Naming error", "%s\n \nRe-edit names?", error_str))
+			if(prompt_msgf("Editing error", "%s\n \nRe-edit paths?", error_str))
 			{
 				update_string(&ext_edit.last_error, error_str);
 				continue;

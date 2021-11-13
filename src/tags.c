@@ -893,6 +893,7 @@ const char *tags[] = {
 	"vifm-v_U",
 	"vifm-v_V",
 	"vifm-v_av",
+	"vifm-v_cl",
 	"vifm-v_cw",
 	"vifm-v_gU",
 	"vifm-v_gu",

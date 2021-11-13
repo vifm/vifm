@@ -69,10 +69,17 @@ static const char * get_top_dir(const view_t *view);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
+static char ** list_files_to_retarget(view_t *view, int *len);
+static int retarget_one(view_t *view);
 static void change_link_cb(const char new_target[]);
+static int retarget_many(view_t *view, char *files[], int nfiles);
+static int verify_retarget_list(char *files[], int nfiles, char *names[],
+		int nnames, char **error, void *data);
+static void change_link(ops_t *ops, const char path[], const char from[],
+		const char to[]);
 static int complete_filename(const char str[], void *arg);
-static int verify_list(char *files[], int nfiles, char *names[], int nnames,
-		char **error, void *data);
+static int verify_clone_list(char *files[], int nfiles, char *names[],
+		int nnames, char **error, void *data);
 TSTATIC const char * gen_clone_name(const char dir[], const char normal_name[]);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
@@ -509,10 +516,6 @@ prepare_register(int reg)
 int
 fops_retarget(view_t *view)
 {
-	char full_path[PATH_MAX + 1];
-	char linkto[PATH_MAX + 1];
-	const dir_entry_t *const entry = get_current_entry(view);
-
 	if(!symlinks_available())
 	{
 		show_error_msg("Symbolic Links Error",
@@ -523,6 +526,66 @@ fops_retarget(view_t *view)
 	{
 		return 0;
 	}
+
+	int nfiles;
+	char **files = list_files_to_retarget(view, &nfiles);
+	if(nfiles == -1)
+	{
+		/* An error has occurred. */
+		return 1;
+	}
+
+	int result;
+	if(nfiles == 0)
+	{
+		result = retarget_one(view);
+	}
+	else
+	{
+		result = retarget_many(view, files, nfiles);
+	}
+
+	flist_sel_stash(view);
+	free_string_array(files, nfiles);
+	return result;
+}
+
+/* Makes list of symbolic links to be retargeted.  Always sets *len.  Returns
+ * list of files (NULL if empty) or NULL and sets *len to -1 on error. */
+static char **
+list_files_to_retarget(view_t *view, int *len)
+{
+	*len = 0;
+
+	char **files = NULL;
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		char path[PATH_MAX + 1];
+		get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
+
+		if(entry->type != FT_LINK)
+		{
+			ui_sb_errf("File is not a symbolic link: %s", path);
+			free_string_array(files, *len);
+			*len = -1;
+			return NULL;
+		}
+
+		*len = add_to_string_array(&files, *len, path);
+	}
+
+	return files;
+}
+
+/* Changes target of a symbolic link under the cursor.  Returns new value for
+ * save_msg. */
+static int
+retarget_one(view_t *view)
+{
+	char full_path[PATH_MAX + 1];
+	char linkto[PATH_MAX + 1];
+	const dir_entry_t *const entry = get_current_entry(view);
 
 	if(fentry_is_fake(entry))
 	{
@@ -579,14 +642,7 @@ change_link_cb(const char new_target[])
 			replace_home_part(flist_get_dir(curr_view)), fname, linkto, new_target);
 	un_group_open(undo_msg);
 
-	if(perform_operation(OP_REMOVESL, ops, NULL, full_path, NULL) == 0)
-	{
-		un_group_add_op(OP_REMOVESL, NULL, NULL, full_path, linkto);
-	}
-	if(perform_operation(OP_SYMLINK2, ops, NULL, new_target, full_path) == 0)
-	{
-		un_group_add_op(OP_SYMLINK2, NULL, NULL, new_target, full_path);
-	}
+	change_link(ops, full_path, linkto, new_target);
 
 	un_group_close();
 
@@ -599,6 +655,107 @@ complete_filename(const char str[], void *arg)
 {
 	const char *name_begin = after_last(str, '/');
 	return name_begin - str + filename_completion(str, CT_ALL_WOE, 0);
+}
+
+/* Changes target of marked fifles.  Returns new value for save_msg. */
+static int
+retarget_many(view_t *view, char *files[], int nfiles)
+{
+	int nfrom = 0;
+	char **from = NULL;
+
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		char linkto[PATH_MAX + 1];
+		if(get_link_target(full_path, linkto, sizeof(linkto)) != 0)
+		{
+			free_string_array(from, nfrom);
+			show_error_msgf("Error", "Failed to read target of %s", full_path);
+			return 1;
+		}
+
+		nfrom = add_to_string_array(&from, nfrom, linkto);
+	}
+
+	int nto;
+	char **to = fops_query_list(nfrom, from, &nto, /*load_always=*/0,
+			&verify_retarget_list, NULL);
+	if(nto == 0)
+	{
+		free(to);
+		free_string_array(from, nfrom);
+		ui_sb_msg("0 links retargeted");
+		return 1;
+	}
+
+	const char *curr_dir = flist_get_dir(view);
+	ops_t *ops = fops_get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);
+
+	char undo_msg[2*PATH_MAX + 32];
+	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: ",
+			replace_home_part(flist_get_dir(view)));
+	fops_append_marked_files(view, undo_msg, to);
+	un_group_open(undo_msg);
+
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		ops_enqueue(ops, full_path, full_path);
+	}
+
+	int i = 0;
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		change_link(ops, full_path, from[i], to[i]);
+		ops_advance(ops, /*succeeded=*/1);
+
+		++i;
+	}
+
+	un_group_close();
+
+	ui_sb_msgf("%d link%s retargeted%s", ops->succeeded,
+			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
+
+	fops_free_ops(ops);
+
+	free_string_array(from, nfrom);
+	free_string_array(to, nto);
+	return 1;
+}
+
+/* Checks that retargeting can be performed.  Returns non-zero if so, otherwise
+ * zero is returned along with setting *error. */
+static int
+verify_retarget_list(char *files[], int nfiles, char *names[], int nnames,
+		char **error, void *data)
+{
+	return 1;
+}
+
+/* Changes target of a symbolic link. */
+static void
+change_link(ops_t *ops, const char path[], const char from[], const char to[])
+{
+	if(perform_operation(OP_REMOVESL, ops, NULL, path, NULL) == 0)
+	{
+		un_group_add_op(OP_REMOVESL, NULL, NULL, path, from);
+	}
+
+	if(perform_operation(OP_SYMLINK2, ops, NULL, to, path) == 0)
+	{
+		un_group_add_op(OP_SYMLINK2, NULL, NULL, to, path);
+	}
 }
 
 int
@@ -647,7 +804,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	const int from_file = (nlines < 0);
 	if(from_file)
 	{
-		list = fops_query_list(nmarked, marked, &nlines, 0, &verify_list,
+		list = fops_query_list(nmarked, marked, &nlines, 0, &verify_clone_list,
 				&verify_args);
 		if(list == NULL)
 		{
@@ -661,7 +818,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 	char *error_str = NULL;
 	if(nlines > 0 &&
-			!verify_list(NULL, nmarked, list, nlines, &error_str, &verify_args))
+			!verify_clone_list(NULL, nmarked, list, nlines, &error_str, &verify_args))
 	{
 		if(error_str != NULL)
 		{
@@ -757,8 +914,8 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 /* Checks that cloning can be performed.  Returns non-zero if so, otherwise zero
  * is returned along with setting *error. */
 static int
-verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
-		void *data)
+verify_clone_list(char *files[], int nfiles, char *names[], int nnames,
+		char **error, void *data)
 {
 	verify_args_t *args = data;
 	return fops_is_name_list_ok(nfiles, nnames, names, NULL, error)
