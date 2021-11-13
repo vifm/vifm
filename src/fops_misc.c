@@ -74,8 +74,8 @@ static void change_link_cb(const char new_target[]);
 static void change_link(ops_t *ops, const char path[], const char from[],
 		const char to[]);
 static int complete_filename(const char str[], void *arg);
-static int verify_list(char *files[], int nfiles, char *names[], int nnames,
-		char **error, void *data);
+static int verify_clone_list(char *files[], int nfiles, char *names[],
+		int nnames, char **error, void *data);
 TSTATIC const char * gen_clone_name(const char dir[], const char normal_name[]);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
@@ -666,7 +666,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	const int from_file = (nlines < 0);
 	if(from_file)
 	{
-		list = fops_query_list(nmarked, marked, &nlines, 0, &verify_list,
+		list = fops_query_list(nmarked, marked, &nlines, 0, &verify_clone_list,
 				&verify_args);
 		if(list == NULL)
 		{
@@ -680,7 +680,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 	char *error_str = NULL;
 	if(nlines > 0 &&
-			!verify_list(NULL, nmarked, list, nlines, &error_str, &verify_args))
+			!verify_clone_list(NULL, nmarked, list, nlines, &error_str, &verify_args))
 	{
 		if(error_str != NULL)
 		{
@@ -776,8 +776,8 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 /* Checks that cloning can be performed.  Returns non-zero if so, otherwise zero
  * is returned along with setting *error. */
 static int
-verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
-		void *data)
+verify_clone_list(char *files[], int nfiles, char *names[], int nnames,
+		char **error, void *data)
 {
 	verify_args_t *args = data;
 	return fops_is_name_list_ok(nfiles, nnames, names, NULL, error)
