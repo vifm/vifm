@@ -825,6 +825,9 @@ gu, u                                          *vifm-v_gu* *vifm-v_u*
 gU, U                                          *vifm-v_gU* *vifm-v_U*
     make names of selected files uppercase.
 
+cl                                             *vifm-v_cl*
+    change target of symbolic link(s).
+
 cw                                             *vifm-v_cw*
     same as running |vifm-:rename| command without arguments.
 

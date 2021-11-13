@@ -6,6 +6,8 @@
 	Added %N macro that prevents detaching viewers from current session.
 	Thanks to emorozov.
 
+	Added cl key visual mode (similar to its function in normal mode).
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
