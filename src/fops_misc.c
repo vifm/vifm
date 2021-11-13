@@ -69,8 +69,12 @@ static const char * get_top_dir(const view_t *view);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
+static char ** list_files_to_retarget(view_t *view, int *len);
 static int retarget_one(view_t *view);
 static void change_link_cb(const char new_target[]);
+static int retarget_many(view_t *view, char *files[], int nfiles);
+static int verify_retarget_list(char *files[], int nfiles, char *names[],
+		int nnames, char **error, void *data);
 static void change_link(ops_t *ops, const char path[], const char from[],
 		const char to[]);
 static int complete_filename(const char str[], void *arg);
@@ -523,7 +527,49 @@ fops_retarget(view_t *view)
 		return 0;
 	}
 
-	return retarget_one(view);
+	int nfiles;
+	char **files = list_files_to_retarget(view, &nfiles);
+	if(nfiles == -1)
+	{
+		/* An error has occurred. */
+		return 1;
+	}
+	if(nfiles == 0)
+	{
+		return retarget_one(view);
+	}
+
+	int result = retarget_many(view, files, nfiles);
+	free_string_array(files, nfiles);
+	return result;
+}
+
+/* Makes list of symbolic links to be retargeted.  Always sets *len.  Returns
+ * list of files (NULL if empty) or NULL and sets *len to -1 on error. */
+static char **
+list_files_to_retarget(view_t *view, int *len)
+{
+	*len = 0;
+
+	char **files = NULL;
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		char path[PATH_MAX + 1];
+		get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
+
+		if(entry->type != FT_LINK)
+		{
+			ui_sb_errf("File is not a symbolic link: %s", path);
+			free_string_array(files, *len);
+			*len = -1;
+			return NULL;
+		}
+
+		*len = add_to_string_array(&files, *len, path);
+	}
+
+	return files;
 }
 
 /* Changes target of a symbolic link under the cursor.  Returns new value for
@@ -603,6 +649,93 @@ complete_filename(const char str[], void *arg)
 {
 	const char *name_begin = after_last(str, '/');
 	return name_begin - str + filename_completion(str, CT_ALL_WOE, 0);
+}
+
+/* Changes target of marked fifles.  Returns new value for save_msg. */
+static int
+retarget_many(view_t *view, char *files[], int nfiles)
+{
+	int nfrom = 0;
+	char **from = NULL;
+
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		char linkto[PATH_MAX + 1];
+		if(get_link_target(full_path, linkto, sizeof(linkto)) != 0)
+		{
+			free_string_array(from, nfrom);
+			show_error_msgf("Error", "Failed to read target of %s", full_path);
+			return 1;
+		}
+
+		nfrom = add_to_string_array(&from, nfrom, linkto);
+	}
+
+	int nto;
+	char **to = fops_query_list(nfrom, from, &nto, /*load_always=*/0,
+			&verify_retarget_list, NULL);
+	if(nto == 0)
+	{
+		free(to);
+		free_string_array(from, nfrom);
+		return 0;
+	}
+
+	flist_sel_stash(view);
+
+	const char *curr_dir = flist_get_dir(view);
+	ops_t *ops = fops_get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);
+
+	char undo_msg[2*PATH_MAX + 32];
+	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: ",
+			replace_home_part(flist_get_dir(view)));
+	fops_append_marked_files(view, undo_msg, to);
+	un_group_open(undo_msg);
+
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		ops_enqueue(ops, full_path, full_path);
+	}
+
+	int i = 0;
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		change_link(ops, full_path, from[i], to[i]);
+		ops_advance(ops, /*succeeded=*/1);
+
+		++i;
+	}
+
+	un_group_close();
+
+	ui_sb_msgf("%d link%s retargeted%s", ops->succeeded,
+			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
+
+	fops_free_ops(ops);
+
+	free_string_array(from, nfrom);
+	free_string_array(to, nto);
+	return 1;
+}
+
+/* Checks that retargeting can be performed.  Returns non-zero if so, otherwise
+ * zero is returned along with setting *error. */
+static int
+verify_retarget_list(char *files[], int nfiles, char *names[], int nnames,
+		char **error, void *data)
+{
+	return 1;
 }
 
 /* Changes target of a symbolic link. */

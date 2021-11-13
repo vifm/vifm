@@ -1433,10 +1433,15 @@ cmd_cg(key_info_t key_info, keys_info_t *keys_info)
 }
 #endif
 
-/* Change symbolic link. */
+/* Change symbolic link(s). */
 static void
 cmd_cl(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(curr_view->selected_files > 1)
+	{
+		flist_set_marking(curr_view, 0);
+	}
+
 	curr_stats.save_msg = fops_retarget(curr_view);
 }
 

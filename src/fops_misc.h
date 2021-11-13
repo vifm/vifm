@@ -46,7 +46,9 @@ int fops_delete_bg(struct view_t *view, int use_trash);
  * parameter.  Returns new value for save_msg. */
 int fops_yank(struct view_t *view, int reg);
 
-/* Changes link target interactively.  Returns new value for save_msg. */
+/* Changes target of symbolic links interactively.  When marking is present,
+ * link targets are edited in external editor, otherwise new value for current
+ * file is prompted.  Returns new value for save_msg. */
 int fops_retarget(struct view_t *view);
 
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
