@@ -70,6 +70,8 @@ static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
 static void change_link_cb(const char new_target[]);
+static void change_link(ops_t *ops, const char path[], const char from[],
+		const char to[]);
 static int complete_filename(const char str[], void *arg);
 static int verify_list(char *files[], int nfiles, char *names[], int nnames,
 		char **error, void *data);
@@ -579,14 +581,7 @@ change_link_cb(const char new_target[])
 			replace_home_part(flist_get_dir(curr_view)), fname, linkto, new_target);
 	un_group_open(undo_msg);
 
-	if(perform_operation(OP_REMOVESL, ops, NULL, full_path, NULL) == 0)
-	{
-		un_group_add_op(OP_REMOVESL, NULL, NULL, full_path, linkto);
-	}
-	if(perform_operation(OP_SYMLINK2, ops, NULL, new_target, full_path) == 0)
-	{
-		un_group_add_op(OP_SYMLINK2, NULL, NULL, new_target, full_path);
-	}
+	change_link(ops, full_path, linkto, new_target);
 
 	un_group_close();
 
@@ -599,6 +594,21 @@ complete_filename(const char str[], void *arg)
 {
 	const char *name_begin = after_last(str, '/');
 	return name_begin - str + filename_completion(str, CT_ALL_WOE, 0);
+}
+
+/* Changes target of a symbolic link. */
+static void
+change_link(ops_t *ops, const char path[], const char from[], const char to[])
+{
+	if(perform_operation(OP_REMOVESL, ops, NULL, path, NULL) == 0)
+	{
+		un_group_add_op(OP_REMOVESL, NULL, NULL, path, from);
+	}
+
+	if(perform_operation(OP_SYMLINK2, ops, NULL, to, path) == 0)
+	{
+		un_group_add_op(OP_SYMLINK2, NULL, NULL, to, path);
+	}
 }
 
 int
