@@ -805,8 +805,8 @@ ui_stat_refresh(void)
 {
 	ui_stat_job_bar_check_for_updates();
 
-	ui_refresh_win(job_bar);
-	ui_refresh_win(stat_win);
+	wnoutrefresh(job_bar);
+	wnoutrefresh(stat_win);
 }
 
 int

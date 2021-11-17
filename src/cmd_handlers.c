@@ -267,6 +267,7 @@ static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
 static int session_cmd(const cmd_info_t *cmd_info);
+static int switch_to_a_session(const char session_name[]);
 static int restart_into_session(const char session[], int full);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
@@ -4071,7 +4072,7 @@ session_cmd(const cmd_info_t *cmd_info)
 		if(sessions_stop() == 0)
 		{
 			ui_sb_msgf("Detached from session without saving: %s", current);
-			free(current);
+			put_string(&curr_stats.last_session, current);
 			return 1;
 		}
 		ui_sb_msg("No active session");
@@ -4086,6 +4087,39 @@ session_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	if(strcmp(session_name, "-") == 0)
+	{
+		if(is_null_or_empty(curr_stats.last_session))
+		{
+			ui_sb_err("No previous session");
+			return 1;
+		}
+		if(!sessions_exists(curr_stats.last_session))
+		{
+			ui_sb_err("Previous session doesn't exist");
+			return 1;
+		}
+
+		session_name = curr_stats.last_session;
+	}
+
+	char *old_current_session = NULL;
+	update_string(&old_current_session, sessions_current());
+
+	if(switch_to_a_session(session_name) == 0)
+	{
+		update_string(&curr_stats.last_session, old_current_session);
+	}
+
+	free(old_current_session);
+	return 1;
+}
+
+/* Performs switch to a session by its name.  Always prints status bar message.
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+switch_to_a_session(const char session_name[])
+{
 	if(sessions_active())
 	{
 		if(sessions_current_is(session_name))
@@ -4100,7 +4134,7 @@ session_cmd(const cmd_info_t *cmd_info)
 	if(sessions_create(session_name) == 0)
 	{
 		ui_sb_msgf("Switched to a new session: %s", sessions_current());
-		return 1;
+		return 0;
 	}
 
 	if(restart_into_session(session_name, 0) != 0)
@@ -4118,7 +4152,7 @@ session_cmd(const cmd_info_t *cmd_info)
 	}
 
 	ui_sb_msgf("Loaded session: %s", sessions_current());
-	return 1;
+	return 0;
 }
 
 /* Performs restart and optional (re)loading of a session.  Returns zero on

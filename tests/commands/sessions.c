@@ -15,6 +15,7 @@
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
+#include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
@@ -221,6 +222,41 @@ TEST(can_fail_to_switch_and_still_be_in_a_session)
 
 	remove_file(SANDBOX_PATH "/vifmrc");
 	remove_file(SANDBOX_PATH "/sessions/empty.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+
+	curr_stats.load_stage = 0;
+	env_remove("MYVIFMRC");
+}
+
+TEST(load_previous_session)
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	curr_stats.load_stage = -1;
+	env_set("MYVIFMRC", SANDBOX_PATH "/vifmrc");
+	cfg.session_options = VINFO_CHISTORY;
+
+	/* No previous session. */
+	update_string(&curr_stats.last_session, NULL);
+	ui_sb_msg("");
+	assert_failure(exec_commands("session -", &lwin, CIT_COMMAND));
+	assert_string_equal("No previous session", ui_sb_last());
+
+	/* Detached session. */
+	assert_failure(exec_commands("session tmp", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session", &lwin, CIT_COMMAND));
+	ui_sb_msg("");
+	assert_failure(exec_commands("session -", &lwin, CIT_COMMAND));
+	assert_string_equal("Previous session doesn't exist", ui_sb_last());
+
+	/* Previous session. */
+	assert_failure(exec_commands("session first", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session second", &lwin, CIT_COMMAND));
+	ui_sb_msg("");
+	assert_failure(exec_commands("session -", &lwin, CIT_COMMAND));
+	assert_string_equal("Loaded session: first", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/sessions/first.json");
+	remove_file(SANDBOX_PATH "/sessions/second.json");
 	remove_dir(SANDBOX_PATH "/sessions");
 
 	curr_stats.load_stage = 0;

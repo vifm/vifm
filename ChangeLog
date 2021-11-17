@@ -8,6 +8,8 @@
 
 	Added cl key visual mode (similar to its function in normal mode).
 
+	Added handling of "-" in :session for switching to a previous session.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
@@ -29,6 +31,8 @@
 
 	Fixed building when fdatasync() call isn't available.  Thanks to Schrijvers
 	Luc (a.k.a. Begasus).
+
+	Fixed flicker of status line on editing in command-line mode.
 
 0.12-beta to 0.12 (2021-09-29)
 

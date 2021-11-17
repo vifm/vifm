@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Nov 13
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2021 Nov 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2312,6 +2312,9 @@ yet supported) and might be changed in future releases, or get an alias.
     can't contain slashes.  Session active at the moment is saved before the
     switch.  Session is also automatically saved when quiting the
     application in usual ways.  Sets |vifm-v:session|.
+:session -
+    switch to a previous session if it still exists (wasn't removed or
+    detached from without saving).
 
                                                *vifm-:set* *vifm-:se*
 :se[t]
