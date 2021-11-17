@@ -204,6 +204,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	update_string(&stats->on_choose, NULL);
 
+	update_string(&stats->last_session, NULL);
+
 	stats->preview_hint = NULL;
 
 	stats->global_local_settings = 0;

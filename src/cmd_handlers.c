@@ -4072,7 +4072,7 @@ session_cmd(const cmd_info_t *cmd_info)
 		if(sessions_stop() == 0)
 		{
 			ui_sb_msgf("Detached from session without saving: %s", current);
-			free(current);
+			put_string(&curr_stats.last_session, current);
 			return 1;
 		}
 		ui_sb_msg("No active session");
@@ -4087,7 +4087,31 @@ session_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	(void)switch_to_a_session(session_name);
+	if(strcmp(session_name, "-") == 0)
+	{
+		if(is_null_or_empty(curr_stats.last_session))
+		{
+			ui_sb_err("No previous session");
+			return 1;
+		}
+		if(!sessions_exists(curr_stats.last_session))
+		{
+			ui_sb_err("Previous session doesn't exist");
+			return 1;
+		}
+
+		session_name = curr_stats.last_session;
+	}
+
+	char *old_current_session = NULL;
+	update_string(&old_current_session, sessions_current());
+
+	if(switch_to_a_session(session_name) == 0)
+	{
+		update_string(&curr_stats.last_session, old_current_session);
+	}
+
+	free(old_current_session);
 	return 1;
 }
 

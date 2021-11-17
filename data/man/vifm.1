@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 13, 2021" "vifm 0.12"
+.TH VIFM 1 "November 17, 2021" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2720,6 +2720,10 @@ create or load and switch to a session with the specified name.  Name
 can't contain slashes.  Session active at the moment is saved before the
 switch.  Session is also automatically saved when quiting the application in
 usual ways.  Sets v:session.
+.TP
+.BI ":session -"
+switch to a previous session if it still exists (wasn't removed or
+detached from without saving).
 .TP
 .BI "                                         :set"
 .TP

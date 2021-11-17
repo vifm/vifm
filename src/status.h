@@ -211,6 +211,8 @@ typedef struct
 
 	char *on_choose; /* Command to execute on picking files. */
 
+	char *last_session; /* Name of the previously used session. */
+
 	const void *preview_hint; /* Hint on which view is used for preview. */
 
 	int global_local_settings; /* Set local settings globally. */

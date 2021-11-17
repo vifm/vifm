@@ -8,6 +8,8 @@
 
 	Added cl key visual mode (similar to its function in normal mode).
 
+	Added handling of "-" in :session for switching to a previous session.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
