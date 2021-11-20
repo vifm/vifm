@@ -191,7 +191,7 @@ extcached_builtin(const call_info_t *call_info)
 	static trie_t *cache;
 	if(cache == NULL)
 	{
-		cache = trie_create();
+		cache = trie_create(&free);
 	}
 
 	char *cache_name = var_to_str(call_info->argv[0]);

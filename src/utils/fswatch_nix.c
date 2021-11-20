@@ -95,10 +95,10 @@ fswatch_create(const char path[])
 	w->inode = st.st_ino;
 
 	/* Create tree to collect update frequency statistics. */
-	w->stats = trie_create();
+	w->stats = trie_create(&free);
 	if(w->stats == NULL)
 	{
-		trie_free_with_data(w->stats, &free);
+		trie_free(w->stats);
 		free(w);
 		return NULL;
 	}
@@ -107,7 +107,7 @@ fswatch_create(const char path[])
 	w->fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 	if(w->fd == -1)
 	{
-		trie_free_with_data(w->stats, &free);
+		trie_free(w->stats);
 		free(w);
 		return NULL;
 	}
@@ -117,7 +117,7 @@ fswatch_create(const char path[])
 	if(w->wd == -1)
 	{
 		close(w->fd);
-		trie_free_with_data(w->stats, &free);
+		trie_free(w->stats);
 		free(w);
 		return NULL;
 	}
@@ -138,7 +138,7 @@ fswatch_free(fswatch_t *w)
 	if(w != NULL)
 	{
 		free(w->path);
-		trie_free_with_data(w->stats, &free);
+		trie_free(w->stats);
 		close(w->fd);
 		free(w);
 	}

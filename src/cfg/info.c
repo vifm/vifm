@@ -1881,7 +1881,7 @@ merge_history(int session_load, JSON_Object *current,
 		return;
 	}
 
-	trie_t *trie = trie_create();
+	trie_t *trie = trie_create(/*free_func=*/NULL);
 	int i, n;
 
 	JSON_Value *combined_value = json_value_init_array();
@@ -1948,7 +1948,7 @@ merge_history_by_order(JSON_Object *current, const JSON_Object *admixture,
 	JSON_Array *updated = json_object_get_array(admixture, node);
 
 	int i, n;
-	trie_t *trie = trie_create();
+	trie_t *trie = trie_create(/*free_func=*/NULL);
 
 	JSON_Value *merged_value = json_value_init_array();
 	JSON_Array *merged = json_array(merged_value);
