@@ -20,6 +20,13 @@
 
 #include <stdlib.h> /* calloc() free() */
 
+#include "../compat/reallocarray.h"
+
+#include "macros.h"
+
+/* Number of elements in each trie_t::nodes[*]. */
+#define NODES_PER_BANK 1024
+
 /* Trie node. */
 typedef struct trie_node_t
 {
@@ -33,19 +40,21 @@ typedef struct trie_node_t
 }
 trie_node_t;
 
-/* Trie. */
+/* Trie.  Manages storage of nodes. */
 struct trie_t
 {
-	trie_node_t *root; /* Root node. */
+	trie_node_t *root;   /* Root node. */
+	trie_node_t **nodes; /* Node storage (NODES_PER_BANK elements per item). */
+	int node_count;      /* Number of (allocated) nodes. */
 };
 
 static trie_node_t * clone_nodes(trie_t *trie, const trie_node_t *node,
 		int *error);
-static void free_nodes(trie_node_t *node);
-static void free_nodes_data(trie_node_t *trie, trie_free_func free_func);
+static void free_nodes_data(trie_node_t *node, trie_free_func free_func);
 static void get_or_create(trie_t *trie, const char str[], void *data,
 		int *result);
-static int trie_get_nodes(trie_node_t *trie, const char str[], void **data);
+static trie_node_t * make_node(trie_t *trie);
+static int trie_get_nodes(trie_node_t *node, const char str[], void **data);
 
 trie_t *
 trie_create(void)
@@ -88,7 +97,7 @@ clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
 		return NULL;
 	}
 
-	trie_node_t *new_node = malloc(sizeof(*new_node));
+	trie_node_t *new_node = make_node(new_trie);
 	if(new_node == NULL)
 	{
 		*error = 1;
@@ -110,21 +119,14 @@ trie_free(trie_t *trie)
 {
 	if(trie != NULL)
 	{
-		free_nodes(trie->root);
+		int banks = DIV_ROUND_UP(trie->node_count, NODES_PER_BANK);
+		int bank;
+		for(bank = 0; bank < banks; ++bank)
+		{
+			free(trie->nodes[bank]);
+		}
+		free(trie->nodes);
 		free(trie);
-	}
-}
-
-/* Frees each node. */
-static void
-free_nodes(trie_node_t *node)
-{
-	if(node != NULL)
-	{
-		free_nodes(node->left);
-		free_nodes(node->right);
-		free_nodes(node->children);
-		free(node);
 	}
 }
 
@@ -184,7 +186,7 @@ get_or_create(trie_t *trie, const char str[], void *data, int *result)
 		/* Create inexistent node. */
 		if(node == NULL)
 		{
-			node = calloc(1U, sizeof(*node));
+			node = make_node(trie);
 			if(node == NULL)
 			{
 				*result = -1;
@@ -214,6 +216,29 @@ get_or_create(trie_t *trie, const char str[], void *data, int *result)
 		}
 		node = *link;
 	}
+}
+
+/* Allocates a new node for the trie.  Returns pointer to the node or NULL. */
+static trie_node_t *
+make_node(trie_t *trie)
+{
+	const int bank = trie->node_count/NODES_PER_BANK;
+	const int bank_index = trie->node_count%NODES_PER_BANK;
+	++trie->node_count;
+
+	if(bank_index == 0)
+	{
+		void *nodes = reallocarray(trie->nodes, bank + 1, sizeof(*trie->nodes));
+		if(nodes == NULL)
+		{
+			return NULL;
+		}
+
+		trie->nodes = nodes;
+		trie->nodes[bank] = calloc(NODES_PER_BANK, sizeof(**trie->nodes));
+	}
+
+	return &trie->nodes[bank][bank_index];
 }
 
 int
