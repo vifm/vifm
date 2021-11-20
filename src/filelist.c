@@ -841,7 +841,7 @@ flist_custom_start(view_t *view, const char title[])
 	(void)replace_string(&view->custom.next_title, title);
 
 	trie_free(view->custom.paths_cache);
-	view->custom.paths_cache = trie_create();
+	view->custom.paths_cache = trie_create(/*free_func=*/NULL);
 }
 
 dir_entry_t *
@@ -1207,7 +1207,7 @@ flist_custom_exclude(view_t *view, int selection_only)
 	}
 
 	dir_entry_t *entry = NULL;
-	trie_t *excluded = trie_create();
+	trie_t *excluded = trie_create(/*free_func=*/NULL);
 	while(iter_marked_entries(view, &entry))
 	{
 		char full_path[PATH_MAX + 1];
@@ -2428,7 +2428,7 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 	int i;
 	int closest_dist;
 	const int prev_pos = view->list_pos;
-	trie_t *prev_names = trie_create();
+	trie_t *prev_names = trie_create(/*free_func=*/NULL);
 
 	for(i = 0; i < len; ++i)
 	{
@@ -2469,7 +2469,7 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 TSTATIC void
 check_file_uniqueness(view_t *view)
 {
-	trie_t *file_names = trie_create();
+	trie_t *file_names = trie_create(/*free_func=*/NULL);
 
 	int had_dups = view->has_dups;
 
@@ -3962,7 +3962,8 @@ static int
 flist_load_tree_internal(view_t *view, const char path[], int reload, int depth)
 {
 	trie_t *excluded_paths = reload ? view->custom.excluded_paths : NULL;
-	trie_t *folded_paths = reload ? view->custom.folded_paths : trie_create();
+	trie_t *folded_paths = reload ? view->custom.folded_paths
+	                              : trie_create(/*free_func=*/NULL);
 	if(make_tree(view, path, reload, excluded_paths, folded_paths, depth) != 0)
 	{
 		if(!reload)
@@ -3975,7 +3976,7 @@ flist_load_tree_internal(view_t *view, const char path[], int reload, int depth)
 	if(!reload)
 	{
 		trie_free(view->custom.excluded_paths);
-		view->custom.excluded_paths = trie_create();
+		view->custom.excluded_paths = trie_create(/*free_func=*/NULL);
 
 		trie_free(view->custom.folded_paths);
 		view->custom.folded_paths = folded_paths;

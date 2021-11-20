@@ -162,7 +162,7 @@ void
 flist_sel_restore(view_t *view, reg_t *reg)
 {
 	int i;
-	trie_t *const selection_trie = trie_create();
+	trie_t *const selection_trie = trie_create(/*free_func=*/NULL);
 
 	flist_sel_drop(view);
 
@@ -285,7 +285,7 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	}
 
 	/* Compose trie out of absolute paths of files to [un]select. */
-	selection_trie = trie_create();
+	selection_trie = trie_create(/*free_func=*/NULL);
 	for(i = 0; i < nfiles; ++i)
 	{
 		char *const path = parse_line_for_path(files[i], flist_get_dir(view));

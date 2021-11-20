@@ -18,6 +18,7 @@
 
 #include "trie.h"
 
+#include <assert.h> /* assert() */
 #include <stdlib.h> /* calloc() free() */
 
 #include "../compat/reallocarray.h"
@@ -43,9 +44,12 @@ trie_node_t;
 /* Trie.  Manages storage of nodes. */
 struct trie_t
 {
-	trie_node_t *root;   /* Root node. */
+	trie_node_t *root; /* Root node. */
+
 	trie_node_t **nodes; /* Node storage (NODES_PER_BANK elements per item). */
 	int node_count;      /* Number of (allocated) nodes. */
+
+	trie_free_func free_func; /* Function for freeing dynamic data. */
 };
 
 static trie_node_t * clone_nodes(trie_t *trie, const trie_node_t *node,
@@ -57,9 +61,11 @@ static trie_node_t * make_node(trie_t *trie);
 static int trie_get_nodes(trie_node_t *node, const char str[], void **data);
 
 trie_t *
-trie_create(void)
+trie_create(trie_free_func free_func)
 {
-	return calloc(1U, sizeof(struct trie_t));
+	trie_t *trie = calloc(1U, sizeof(*trie));
+	trie->free_func = free_func;
+	return trie;
 }
 
 trie_t *
@@ -70,7 +76,9 @@ trie_clone(trie_t *trie)
 		return NULL;
 	}
 
-	trie_t *new_trie = trie_create();
+	assert(trie->free_func == NULL && "Can't clone a trie with dynamic data!");
+
+	trie_t *new_trie = trie_create(/*free_func=*/NULL);
 	if(new_trie == NULL)
 	{
 		return NULL;
@@ -117,27 +125,24 @@ clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
 void
 trie_free(trie_t *trie)
 {
-	if(trie != NULL)
+	if(trie == NULL)
 	{
-		int banks = DIV_ROUND_UP(trie->node_count, NODES_PER_BANK);
-		int bank;
-		for(bank = 0; bank < banks; ++bank)
-		{
-			free(trie->nodes[bank]);
-		}
-		free(trie->nodes);
-		free(trie);
+		return;
 	}
-}
 
-void
-trie_free_with_data(trie_t *trie, trie_free_func free_func)
-{
-	if(trie != NULL)
+	if(trie->free_func != NULL)
 	{
-		free_nodes_data(trie->root, free_func);
-		trie_free(trie);
+		free_nodes_data(trie->root, trie->free_func);
 	}
+
+	int banks = DIV_ROUND_UP(trie->node_count, NODES_PER_BANK);
+	int bank;
+	for(bank = 0; bank < banks; ++bank)
+	{
+		free(trie->nodes[bank]);
+	}
+	free(trie->nodes);
+	free(trie);
 }
 
 /* Calls custom free function on data stored in every node. */
