@@ -21,19 +21,31 @@
 #include <stdlib.h> /* calloc() free() */
 
 /* Trie node. */
+typedef struct trie_node_t
+{
+	struct trie_node_t *left;     /* Nodes with values less than value. */
+	struct trie_node_t *right;    /* Nodes with values greater than value. */
+	struct trie_node_t *children; /* Child nodes. */
+
+	void *data;  /* Data associated with the key. */
+	char value;  /* Value of the node. */
+	char exists; /* Whether this node exists or it's an intermediate node. */
+}
+trie_node_t;
+
+/* Trie. */
 struct trie_t
 {
-	trie_t *left;     /* Nodes with values less than value. */
-	trie_t *right;    /* Nodes with values greater than value. */
-	trie_t *children; /* Child nodes. */
-	void *data;       /* Data associated with the key. */
-	char value;       /* Value of the node. */
-	char exists;      /* Whether this node exists or it's an intermediate node. */
+	trie_node_t *root; /* Root node. */
 };
 
-static trie_t *clone_nodes(trie_t *trie, int *error);
+static trie_node_t * clone_nodes(trie_t *trie, const trie_node_t *node,
+		int *error);
+static void free_nodes(trie_node_t *node);
+static void free_nodes_data(trie_node_t *trie, trie_free_func free_func);
 static void get_or_create(trie_t *trie, const char str[], void *data,
 		int *result);
+static int trie_get_nodes(trie_node_t *trie, const char str[], void **data);
 
 trie_t *
 trie_create(void)
@@ -44,43 +56,53 @@ trie_create(void)
 trie_t *
 trie_clone(trie_t *trie)
 {
-	int error = 0;
-
-	trie = clone_nodes(trie, &error);
-	if(error)
-	{
-		trie_free(trie);
-		return NULL;
-	}
-
-	return trie;
-}
-
-/* Clones node and all its relatives.  Sets *error to non-zero on error.
- * Returns new node. */
-static trie_t *
-clone_nodes(trie_t *trie, int *error)
-{
-	trie_t *new_trie;
-
 	if(trie == NULL)
 	{
 		return NULL;
 	}
 
-	new_trie = malloc(sizeof(*new_trie));
+	trie_t *new_trie = trie_create();
 	if(new_trie == NULL)
+	{
+		return NULL;
+	}
+
+	int error = 0;
+	new_trie->root = clone_nodes(new_trie, trie->root, &error);
+	if(error)
+	{
+		trie_free(new_trie);
+		return NULL;
+	}
+
+	return new_trie;
+}
+
+/* Clones node and all its relatives.  Sets *error to non-zero on error.
+ * Returns new node. */
+static trie_node_t *
+clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
+{
+	if(node == NULL)
+	{
+		return NULL;
+	}
+
+	trie_node_t *new_node = malloc(sizeof(*new_node));
+	if(new_node == NULL)
 	{
 		*error = 1;
 		return NULL;
 	}
 
-	*new_trie = *trie;
-	new_trie->left = clone_nodes(trie->left, error);
-	new_trie->right = clone_nodes(trie->right, error);
-	new_trie->children = clone_nodes(trie->children, error);
+	new_node->left = clone_nodes(new_trie, node->left, error);
+	new_node->right = clone_nodes(new_trie, node->right, error);
+	new_node->children = clone_nodes(new_trie, node->children, error);
+	new_node->data = node->data;
+	new_node->value = node->value;
+	new_node->exists = node->exists;
 
-	return new_trie;
+	return new_node;
 }
 
 void
@@ -88,10 +110,21 @@ trie_free(trie_t *trie)
 {
 	if(trie != NULL)
 	{
-		trie_free(trie->left);
-		trie_free(trie->right);
-		trie_free(trie->children);
+		free_nodes(trie->root);
 		free(trie);
+	}
+}
+
+/* Frees each node. */
+static void
+free_nodes(trie_node_t *node)
+{
+	if(node != NULL)
+	{
+		free_nodes(node->left);
+		free_nodes(node->right);
+		free_nodes(node->children);
+		free(node);
 	}
 }
 
@@ -100,11 +133,21 @@ trie_free_with_data(trie_t *trie, trie_free_func free_func)
 {
 	if(trie != NULL)
 	{
-		trie_free_with_data(trie->left, free_func);
-		trie_free_with_data(trie->right, free_func);
-		trie_free_with_data(trie->children, free_func);
-		free_func(trie->data);
-		free(trie);
+		free_nodes_data(trie->root, free_func);
+		trie_free(trie);
+	}
+}
+
+/* Calls custom free function on data stored in every node. */
+static void
+free_nodes_data(trie_node_t *node, trie_free_func free_func)
+{
+	if(node != NULL)
+	{
+		free_nodes_data(node->left, free_func);
+		free_nodes_data(node->right, free_func);
+		free_nodes_data(node->children, free_func);
+		free_func(node->data);
 	}
 }
 
@@ -134,73 +177,86 @@ trie_set(trie_t *trie, const char str[], const void *data)
 static void
 get_or_create(trie_t *trie, const char str[], void *data, int *result)
 {
-	trie_t **link = &trie;
+	trie_node_t **link = &trie->root;
+	trie_node_t *node = trie->root;
 	while(1)
 	{
 		/* Create inexistent node. */
-		if(trie == NULL)
+		if(node == NULL)
 		{
-			trie = trie_create();
-			if(trie == NULL)
+			node = calloc(1U, sizeof(*node));
+			if(node == NULL)
 			{
 				*result = -1;
 				break;
 			}
-			trie->value = *str;
-			*link = trie;
+			node->value = *str;
+			*link = node;
 		}
 
-		if(trie->value == *str)
+		if(node->value == *str)
 		{
 			if(*str == '\0')
 			{
 				/* Found full match. */
-				*result = (trie->exists != 0);
-				trie->exists = 1;
-				trie->data = data;
+				*result = (node->exists != 0);
+				node->exists = 1;
+				node->data = data;
 				break;
 			}
 
-			link = &trie->children;
+			link = &node->children;
 			++str;
 		}
 		else
 		{
-			link = (*str < trie->value) ? &trie->left : &trie->right;
+			link = (*str < node->value) ? &node->left : &node->right;
 		}
-		trie = *link;
+		node = *link;
 	}
 }
 
 int
 trie_get(trie_t *trie, const char str[], void **data)
 {
+	if(trie == NULL)
+	{
+		return 1;
+	}
+	return trie_get_nodes(trie->root, str, data);
+}
+
+/* Looks up data for the str.  Node can be NULL.  Returns zero when found and
+ * sets *data, otherwise returns non-zero. */
+static int
+trie_get_nodes(trie_node_t *node, const char str[], void **data)
+{
 	while(1)
 	{
-		if(trie == NULL)
+		if(node == NULL)
 		{
 			return 1;
 		}
 
-		if(trie->value == *str)
+		if(node->value == *str)
 		{
 			if(*str == '\0')
 			{
 				/* Found full match. */
-				if(!trie->exists)
+				if(!node->exists)
 				{
 					return 1;
 				}
-				*data = trie->data;
+				*data = node->data;
 				return 0;
 			}
 
-			trie = trie->children;
+			node = node->children;
 			++str;
 			continue;
 		}
 
-		trie = (*str < trie->value) ? trie->left : trie->right;
+		node = (*str < node->value) ? node->left : node->right;
 	}
 }
 
