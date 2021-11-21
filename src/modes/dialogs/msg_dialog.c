@@ -75,7 +75,8 @@ static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void prompt_msg_internal(const char title[], const char message[],
 		const response_variant variants[], int with_list);
-static void enter(int result_mask);
+static void enter(const char title[], const char message[], int prompt_skip,
+		int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip, int lazy);
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
@@ -299,9 +300,8 @@ prompt_error_msg_internal(const char title[], const char message[],
 
 	msg_kind = D_ERROR;
 
-	redraw_error_msg(title, message, prompt_skip, 0);
-
-	enter(MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0));
+	enter(title, message, prompt_skip,
+			MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0));
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -351,9 +351,8 @@ prompt_msg_internal(const char title[], const char message[],
 	responses = variants;
 	msg_kind = (with_list ? D_QUERY_WITH_LIST : D_QUERY_WITHOUT_LIST);
 
-	redraw_error_msg(title, message, 0, 0);
-
-	enter(variants == NULL ? MASK(DR_YES, DR_NO) : 0);
+	enter(title, message, /*prompt_skip=*/0,
+			variants == NULL ? MASK(DR_YES, DR_NO) : 0);
 
 	modes_redraw();
 }
@@ -361,12 +360,13 @@ prompt_msg_internal(const char title[], const char message[],
 /* Enters the mode, which won't be left until one of expected results specified
  * by the mask is picked by the user. */
 static void
-enter(int result_mask)
+enter(const char title[], const char message[], int prompt_skip,
+		int result_mask)
 {
 	const int prev_use_input_bar = curr_stats.use_input_bar;
 	const vle_mode_t prev_mode = vle_mode_get();
 
-	/* Message must be displayed to the user for him to close it.  It won't happen
+	/* Message must be visible to the user for him to close it.  It won't happen
 	 * without user interaction as new event loop is out of scope of a mapping
 	 * that started it. */
 	stats_unsilence_ui();
@@ -374,6 +374,8 @@ enter(int result_mask)
 	accept_mask = result_mask;
 	curr_stats.use_input_bar = 0;
 	vle_mode_set(MSG_MODE, VMT_SECONDARY);
+
+	redraw_error_msg(title, message, prompt_skip, /*lazy=*/0);
 
 	quit = 0;
 	/* Avoid starting nested loop in tests. */
