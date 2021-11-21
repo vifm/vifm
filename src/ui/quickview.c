@@ -317,6 +317,14 @@ view_file(const char path[], const preview_area_t *parea,
 	const char *viewer = qv_get_viewer(path);
 	const char *clear_cmd = (viewer != NULL ? ma_get_clear_cmd(viewer) : NULL);
 
+	/* Don't draw graphics while dialog is shown as they aren't combined nicely
+	 * on the screen. */
+	const ViewerKind kind = ft_viewer_kind(viewer);
+	if(kind != VK_TEXTUAL && vle_mode_is(MSG_MODE))
+	{
+		return NULL;
+	}
+
 	if(is_cache_valid(cache, path, viewer, parea))
 	{
 		/* Update area as we might draw preview at a different location. */
@@ -326,7 +334,6 @@ view_file(const char path[], const preview_area_t *parea,
 		return clear_cmd;
 	}
 
-	ViewerKind kind = ft_viewer_kind(viewer);
 	int max_lines = is_dir(path) ? ui_qv_height(parea->view)
 	                             : MAX_PREVIEW_LINES;
 
