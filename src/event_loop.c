@@ -176,6 +176,7 @@ event_loop(const int *quit)
 		}
 		while(1);
 
+		const int suggestions_were_visible = suggestions_are_visible;
 		suggestions_are_visible = 0;
 
 		/* Ensure that current working directory is set correctly (some pieces of
@@ -218,7 +219,10 @@ event_loop(const int *quit)
 		counter = vle_keys_counter();
 		if(!got_input && last_result == KEYS_WAIT_SHORT)
 		{
-			hide_suggestion_box();
+			if(suggestions_were_visible)
+			{
+				hide_suggestion_box();
+			}
 
 			last_result = vle_keys_exec_timed_out(input_buf);
 			counter = vle_keys_counter() - counter;
@@ -232,7 +236,8 @@ event_loop(const int *quit)
 		}
 		else
 		{
-			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
+			if(suggestions_were_visible &&
+					(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT))
 			{
 				hide_suggestion_box();
 			}
@@ -725,10 +730,7 @@ prepare_suggestion_box(int *height)
 static void
 hide_suggestion_box(void)
 {
-	if(should_display_suggestion_box())
-	{
-		update_screen(UT_REDRAW);
-	}
+	update_screen(UT_REDRAW);
 }
 
 /* Checks whether suggestion box should be displayed.  Returns non-zero if so,
