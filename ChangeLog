@@ -20,6 +20,8 @@
 	Extended cl normal mode key to handle selection of multiple files.  Thanks
 	to aleksejrs.
 
+	Hide graphics when displaying dialogs.  Thanks to heelsleeh and PRESFIL.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.
