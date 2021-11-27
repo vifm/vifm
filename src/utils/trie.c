@@ -31,9 +31,9 @@
 /* Trie node. */
 typedef struct trie_node_t
 {
-	struct trie_node_t *left;     /* Nodes with values less than value. */
-	struct trie_node_t *right;    /* Nodes with values greater than value. */
-	struct trie_node_t *children; /* Child nodes. */
+	struct trie_node_t *left;  /* Nodes with values less than value. */
+	struct trie_node_t *right; /* Nodes with values greater than value. */
+	struct trie_node_t *down;  /* Child nodes which match prefix of the query. */
 
 	void *data;  /* Data associated with the key. */
 	char value;  /* Value of the node. */
@@ -114,7 +114,7 @@ clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
 
 	new_node->left = clone_nodes(new_trie, node->left, error);
 	new_node->right = clone_nodes(new_trie, node->right, error);
-	new_node->children = clone_nodes(new_trie, node->children, error);
+	new_node->down = clone_nodes(new_trie, node->down, error);
 	new_node->data = node->data;
 	new_node->value = node->value;
 	new_node->exists = node->exists;
@@ -153,7 +153,7 @@ free_nodes_data(trie_node_t *node, trie_free_func free_func)
 	{
 		free_nodes_data(node->left, free_func);
 		free_nodes_data(node->right, free_func);
-		free_nodes_data(node->children, free_func);
+		free_nodes_data(node->down, free_func);
 		free_func(node->data);
 	}
 }
@@ -212,7 +212,7 @@ get_or_create(trie_t *trie, const char str[], void *data, int *result)
 				break;
 			}
 
-			link = &node->children;
+			link = &node->down;
 			++str;
 		}
 		else
@@ -281,7 +281,7 @@ trie_get_nodes(trie_node_t *node, const char str[], void **data)
 				return 0;
 			}
 
-			node = node->children;
+			node = node->down;
 			++str;
 			continue;
 		}
