@@ -39,7 +39,6 @@
 #include "../../utils/utf8.h"
 #include "../../event_loop.h"
 #include "../../status.h"
-#include "../view.h"
 #include "../wk.h"
 
 /* Kinds of dialogs. */
@@ -373,13 +372,7 @@ enter(const char title[], const char message[], int prompt_skip,
 	 * that started it. */
 	stats_unsilence_ui();
 
-	/* Hide graphics before displaying the dialog, so it won't look messed up or
-	 * be drawn behind an image. */
-	if(curr_stats.preview.on && curr_stats.preview.kind != VK_TEXTUAL)
-	{
-		qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
-	}
-	modview_hide_graphics();
+	ui_hide_graphics();
 
 	accept_mask = result_mask;
 	curr_stats.use_input_bar = 0;

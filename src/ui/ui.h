@@ -719,6 +719,9 @@ int ui_qv_width(const view_t *view);
  * isn't enough. */
 void ui_qv_cleanup_if_needed(void);
 
+/* Hides any visible graphics. */
+void ui_hide_graphics(void);
+
 /* Invalidates views-specific knowledge about given color scheme. */
 void ui_invalidate_cs(const col_scheme_t *cs);
 
