@@ -129,6 +129,7 @@ modmore_enter(const char txt[])
 	curr_vline = 0;
 
 	vle_mode_set(MORE_MODE, VMT_PRIMARY);
+	ui_qv_cleanup_if_needed();
 
 	modmore_redraw();
 }
