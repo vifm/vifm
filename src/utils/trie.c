@@ -31,12 +31,12 @@
 /* Trie node. */
 typedef struct trie_node_t
 {
-	struct trie_node_t *left;  /* Nodes with values less than value. */
-	struct trie_node_t *right; /* Nodes with values greater than value. */
+	struct trie_node_t *left;  /* Nodes with keys less than query. */
+	struct trie_node_t *right; /* Nodes with keys greater than query. */
 	struct trie_node_t *down;  /* Child nodes which match prefix of the query. */
 
 	void *data;  /* Data associated with the key. */
-	char value;  /* Value of the node. */
+	char key;    /* Key of the node. */
 	char exists; /* Whether this node exists or it's an intermediate node. */
 }
 trie_node_t;
@@ -116,7 +116,7 @@ clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
 	new_node->right = clone_nodes(new_trie, node->right, error);
 	new_node->down = clone_nodes(new_trie, node->down, error);
 	new_node->data = node->data;
-	new_node->value = node->value;
+	new_node->key = node->key;
 	new_node->exists = node->exists;
 
 	return new_node;
@@ -197,11 +197,11 @@ get_or_create(trie_t *trie, const char str[], void *data, int *result)
 				*result = -1;
 				break;
 			}
-			node->value = *str;
+			node->key = *str;
 			*link = node;
 		}
 
-		if(node->value == *str)
+		if(node->key == *str)
 		{
 			if(*str == '\0')
 			{
@@ -217,7 +217,7 @@ get_or_create(trie_t *trie, const char str[], void *data, int *result)
 		}
 		else
 		{
-			link = (*str < node->value) ? &node->left : &node->right;
+			link = (*str < node->key) ? &node->left : &node->right;
 		}
 		node = *link;
 	}
@@ -268,7 +268,7 @@ trie_get_nodes(trie_node_t *node, const char str[], void **data)
 			return 1;
 		}
 
-		if(node->value == *str)
+		if(node->key == *str)
 		{
 			if(*str == '\0')
 			{
@@ -286,7 +286,7 @@ trie_get_nodes(trie_node_t *node, const char str[], void **data)
 			continue;
 		}
 
-		node = (*str < node->value) ? node->left : node->right;
+		node = (*str < node->key) ? node->left : node->right;
 	}
 }
 
