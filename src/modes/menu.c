@@ -314,6 +314,7 @@ modmenu_enter(menu_data_t *m, view_t *active_view)
 	view = active_view;
 	menu = m;
 	vle_mode_set(MENU_MODE, VMT_PRIMARY);
+	ui_qv_cleanup_if_needed();
 	stats_refresh_later();
 	was_redraw = 0;
 

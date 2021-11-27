@@ -20,7 +20,8 @@
 	Extended cl normal mode key to handle selection of multiple files.  Thanks
 	to aleksejrs.
 
-	Hide graphics when displaying dialogs.  Thanks to heelsleeh and PRESFIL.
+	Hide graphics when displaying dialogs or entering menus, more or file info
+	modes.  Thanks to heelsleeh and PRESFIL.
 
 	Fixed cursor appearing at random places on entering command-line mode.
 

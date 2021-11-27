@@ -355,6 +355,12 @@ is_in_menu_like_mode(void)
 	return ANY(vle_primary_mode_is, MENU_MODE, FILE_INFO_MODE, MORE_MODE);
 }
 
+int
+modes_is_dialog_like(void)
+{
+	return ANY(vle_mode_is, SORT_MODE, ATTR_MODE, CHANGE_MODE, MSG_MODE);
+}
+
 void
 abort_menu_like_mode(void)
 {

@@ -161,6 +161,7 @@ enter_attr_mode(view_t *active_view)
 
 	view = active_view;
 	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
+	ui_hide_graphics();
 	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 
