@@ -58,6 +58,9 @@ void clear_input_bar(void);
 /* Returns non-zero if current mode is a menu like one. */
 int is_in_menu_like_mode(void);
 
+/* Checks if current mode is a dialog.  Returns non-zero if so. */
+int modes_is_dialog_like(void);
+
 /* Aborts one of menu-like modes if any of them is currently active. */
 void abort_menu_like_mode(void);
 

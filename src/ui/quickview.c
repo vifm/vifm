@@ -320,7 +320,7 @@ view_file(const char path[], const preview_area_t *parea,
 	/* Don't draw graphics while dialog is shown as they aren't combined nicely
 	 * on the screen. */
 	const ViewerKind kind = ft_viewer_kind(viewer);
-	if(kind != VK_TEXTUAL && vle_mode_is(MSG_MODE))
+	if(kind != VK_TEXTUAL && modes_is_dialog_like())
 	{
 		return NULL;
 	}
