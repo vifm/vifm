@@ -200,6 +200,7 @@ enter_sort_mode(view_t *active_view)
 	view = active_view;
 	descending = (view->sort[0] < 0);
 	vle_mode_set(SORT_MODE, VMT_SECONDARY);
+	ui_hide_graphics();
 
 	top = 4;
 	bottom = top + SK_COUNT - 1;
@@ -266,7 +267,7 @@ leave_sort_mode(void)
 
 	ui_view_reset_selection_and_reload(view);
 
-	update_all_windows();
+	stats_redraw_later();
 }
 
 /* Redraws the dialog. */

@@ -102,6 +102,7 @@ enter_change_mode(view_t *active_view)
 
 	view = active_view;
 	vle_mode_set(CHANGE_MODE, VMT_SECONDARY);
+	ui_hide_graphics();
 
 	curs_set(0);
 	update_all_windows();
@@ -156,7 +157,7 @@ leave_change_mode(int clear_selection)
 		ui_view_reset_selection_and_reload(view);
 	}
 
-	update_all_windows();
+	stats_redraw_later();
 }
 
 static void
