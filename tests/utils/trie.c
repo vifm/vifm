@@ -71,11 +71,11 @@ TEST(multiple_puts)
 	trie_free(trie);
 }
 
-TEST(empty_string_does_not_exists_after_trie_creation)
+TEST(empty_string_cannot_be_added)
 {
 	trie_t *const trie = trie_create(/*free_func=*/NULL);
 
-	assert_int_equal(0, trie_put(trie, ""));
+	assert_int_equal(-1, trie_put(trie, ""));
 
 	trie_free(trie);
 }
@@ -161,6 +161,22 @@ TEST(trie_cloning_works)
 	assert_int_equal(0, trie_put(trie, "string"));
 
 	trie_free(clone);
+	trie_free(trie);
+}
+
+TEST(assign_to_existing_prefix)
+{
+	trie_t *const trie = trie_create(/*free_func=*/NULL);
+	void *data = NULL;
+
+	assert_success(trie_put(trie, "bcd"));
+	assert_success(trie_get(trie, "bcd", &data));
+
+	assert_success(trie_put(trie, "bd"));
+	assert_success(trie_get(trie, "bd", &data));
+
+	assert_success(trie_get(trie, "bcd", &data));
+
 	trie_free(trie);
 }
 
