@@ -55,7 +55,7 @@ struct trie_t
 static trie_node_t * clone_nodes(trie_t *trie, const trie_node_t *node,
 		int *error);
 static void free_nodes_data(trie_node_t *node, trie_free_func free_func);
-static void get_or_create(trie_t *trie, const char str[], void *data,
+static void set_or_create(trie_t *trie, const char str[], void *data,
 		int *result);
 static trie_node_t * make_node(trie_t *trie);
 static int trie_get_nodes(trie_node_t *node, const char str[], void **data);
@@ -174,15 +174,15 @@ trie_set(trie_t *trie, const char str[], const void *data)
 		return -1;
 	}
 
-	get_or_create(trie, str, (void *)data, &result);
+	set_or_create(trie, str, (void *)data, &result);
 	return result;
 }
 
-/* Gets node which might involve its creation.  Sets *return to negative value
- * on error, to zero on successful insertion and to positive number if element
- * was already in the trie. */
+/* Sets node's value which might involve its creation.  Sets *return to negative
+ * value on error, to zero on successful insertion and to positive number if
+ * element was already in the trie. */
 static void
-get_or_create(trie_t *trie, const char str[], void *data, int *result)
+set_or_create(trie_t *trie, const char str[], void *data, int *result)
 {
 	trie_node_t **link = &trie->root;
 	trie_node_t *node = trie->root;
