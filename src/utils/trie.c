@@ -44,6 +44,10 @@
  *  - strings are similarly appended to relatively large buffers without NUL
  *    bytes and are reused on breaking nodes (so no string copying there)
  *    Note: this puts a limit on key length, which can't be longer than buffer.
+ *
+ * Another optimization is caching of the first character of the key to avoid
+ * pointer dereferencing when we don't need it (first character decides if we
+ * need to go to left or right sibling next).
  */
 
 /* Number of elements in each trie_t::nodes[*]. */
@@ -60,6 +64,7 @@ typedef struct trie_node_t
 	struct trie_node_t *down;  /* Child nodes which match prefix of the query. */
 
 	const char *key; /* Key of the node (NO trailing '\0'!). */
+	char first;      /* First character of the key for faster access. */
 	char exists;     /* Whether this node exists or it's an intermediate node. */
 	int key_len;     /* Length of the key. */
 	void *data;      /* Data associated with the key. */
@@ -146,6 +151,7 @@ clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
 	new_node->right = clone_nodes(new_trie, node->right, error);
 	new_node->down = clone_nodes(new_trie, node->down, error);
 	new_node->key = alloc_string(new_trie, node->key, node->key_len);
+	new_node->first = node->key[0];
 	new_node->key_len = node->key_len;
 	new_node->exists = node->exists;
 	new_node->data = node->data;
@@ -245,6 +251,7 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 			}
 			node->key_len = strlen(str);
 			node->key = alloc_string(trie, str, node->key_len);
+			node->first = str[0];
 			*link = node;
 			goto match;
 		}
@@ -268,7 +275,7 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 		}
 		else if(i == 0)
 		{
-			link = (*str < *node->key) ? &node->left : &node->right;
+			link = (*str < node->first) ? &node->left : &node->right;
 		}
 		else
 		{
@@ -281,6 +288,7 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 				break;
 			}
 			new_node->key = node->key + i;
+			new_node->first = node->key[i];
 			new_node->key_len = node->key_len - i;
 			new_node->exists = node->exists;
 			new_node->data = node->data;
@@ -393,7 +401,7 @@ trie_get_nodes(trie_node_t *node, const char str[], void **data)
 			return 1;
 		}
 
-		if(*str == *node->key)
+		if(*str == node->first)
 		{
 			if(str_len < node->key_len ||
 					memcmp(node->key + 1, str + 1, node->key_len - 1) != 0)
@@ -419,7 +427,7 @@ trie_get_nodes(trie_node_t *node, const char str[], void **data)
 			continue;
 		}
 
-		node = (*str < *node->key) ? node->left : node->right;
+		node = (*str < node->first) ? node->left : node->right;
 	}
 }
 
