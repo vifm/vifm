@@ -89,8 +89,6 @@ struct trie_t
 static trie_node_t * clone_nodes(trie_t *trie, const trie_node_t *node,
 		int *error);
 static void free_nodes_data(trie_node_t *node, trie_free_func free_func);
-static void set_or_create(trie_t *trie, const char str[], void *data,
-		int *result);
 static trie_node_t * make_node(trie_t *trie);
 static char * alloc_string(trie_t *trie, const char str[], int len);
 static int trie_get_nodes(trie_node_t *node, const char str[], void **data);
@@ -212,30 +210,17 @@ trie_put(trie_t *trie, const char str[])
 int
 trie_set(trie_t *trie, const char str[], const void *data)
 {
-	int result;
-
 	if(trie == NULL)
 	{
 		return -1;
 	}
 
-	set_or_create(trie, str, (void *)data, &result);
-	return result;
-}
-
-/* Sets node's value which might involve its creation.  Sets *return to negative
- * value on error, to zero on successful insertion and to positive number if
- * element was already in the trie. */
-static void
-set_or_create(trie_t *trie, const char str[], void *data, int *result)
-{
 	trie_node_t **link = &trie->root;
 	trie_node_t *node = trie->root;
 
 	if(*str == '\0')
 	{
-		*result = -1;
-		return;
+		return -1;
 	}
 
 	while(1)
@@ -246,14 +231,13 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 			node = make_node(trie);
 			if(node == NULL)
 			{
-				*result = -1;
-				break;
+				return -1;
 			}
 			node->key_len = strlen(str);
 			node->key = alloc_string(trie, str, node->key_len);
 			node->first = str[0];
 			*link = node;
-			goto match;
+			break;
 		}
 
 		int i = 0;
@@ -270,7 +254,7 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 			if(*str == '\0')
 			{
 				/* Found full match. */
-				goto match;
+				break;
 			}
 		}
 		else if(i == 0)
@@ -284,8 +268,7 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 			trie_node_t *new_node = make_node(trie);
 			if(new_node == NULL)
 			{
-				*result = -1;
-				break;
+				return -1;
 			}
 			new_node->key = node->key + i;
 			new_node->first = node->key[i];
@@ -302,7 +285,7 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 			/* Return the leading part of the node we just broke in two. */
 			if(str[i] == '\0')
 			{
-				goto match;
+				break;
 			}
 
 			str += i;
@@ -311,12 +294,10 @@ set_or_create(trie_t *trie, const char str[], void *data, int *result)
 		node = *link;
 	}
 
-	return;
-
-match:
-	*result = (node->exists != 0);
+	const int result = (node->exists != 0);
 	node->exists = 1;
-	node->data = data;
+	node->data = (void *)data;
+	return result;
 }
 
 /* Allocates a new node for the trie.  Returns pointer to the node or NULL. */
