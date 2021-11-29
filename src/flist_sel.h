@@ -56,13 +56,13 @@ void flist_sel_by_range(struct view_t *view, int begin, int end, int select);
 
 /* Selects or unselects entries that match list of files supplied by external
  * utility.  Returns zero on success, otherwise non-zero is returned and error
- * message is printed on statusbar. */
+ * message is printed on status bar. */
 int flist_sel_by_filter(struct view_t *view, const char cmd[], int erase_old,
 		int select);
 
 /* Selects or unselects entries that match given pattern.  Returns zero on
  * success, otherwise non-zero is returned and error message is printed on
- * statusbar. */
+ * status bar. */
 int flist_sel_by_pattern(struct view_t *view, const char pattern[],
 		int erase_old, int select);
 

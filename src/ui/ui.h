@@ -53,7 +53,7 @@
 
 /* Menus don't look like menus as all if height is less than 5. */
 #define MIN_TERM_HEIGHT 5
-/* There is a lower limit on statusbar width. */
+/* There is a lower limit on status bar width. */
 #define MIN_TERM_WIDTH (INPUT_WIN_WIDTH + 1 + POS_WIN_MIN_WIDTH)
 
 /* Width of the ruler and input windows. */

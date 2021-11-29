@@ -118,7 +118,7 @@ int complete_args(int id, const struct cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 
 /* Completes name of an executable after extracting it from the cmd.  Returns
- * NULL and sets statusbar error message when command is ambiguous, otherwise
+ * NULL and sets status bar error message when command is ambiguous, otherwise
  * newly allocated string, which should be returned by caller, is returned. */
 char * fast_run_complete(const char cmd[]);
 

@@ -275,7 +275,7 @@
 	Fixed number of filtered files not being updated in tree views on pressing
 	zf key.
 
-	Fixed "Building tree..." message not restoring contents of statusbar in
+	Fixed "Building tree..." message not restoring contents of status bar in
 	command-line mode.  Thanks to filterfalse.
 
 	Fixed issues with displaying composite characters.  Thanks to Dennis
@@ -642,7 +642,7 @@
 	Fixed selection being lost or incorrectly preserved on changes of local
 	filter in custom views.  Thanks to filterfalse.
 
-	Fixed statusbar message not being cleared sometimes.  Thanks to
+	Fixed status bar message not being cleared sometimes.  Thanks to
 	filterfalse.
 
 	Fixed graphics preview not being cleared on switching tabs or starting
@@ -1071,7 +1071,7 @@
 	Fixed outdated comment about 'vimhelp' in sample vifmrc file.  Thanks to
 	Tiago.
 
-	Fixed statusbar clearing messages when inside directories with
+	Fixed status bar clearing messages when inside directories with
 	directory-specific color scheme.
 
 	Fixed reading data past initialized region on printing control message of
@@ -1561,7 +1561,7 @@
 	Fixed not recording last visited directory on leaving custom view.  Thanks
 	to filterfalse.
 
-	Fixed displaying of wild menu popup when statusbar is more than single
+	Fixed displaying of wild menu popup when status bar is more than single
 	line in height.
 
 	Fixed weird view scrolling after zO (hard to notice) and Ctrl-A/X.
@@ -1577,7 +1577,7 @@
 	Fixed handling Tab and Shift-Tab on search prompt as if they are command
 	prompts.
 
-	Fixed horrible flickering of multiline statusbar for interactive queries.
+	Fixed horrible flickering of multiline status bar for interactive queries.
 
 	Fixed :normal command resetting selection.  Thanks to filterfalse.
 
@@ -2278,7 +2278,7 @@
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 
-	Fixed resetting statusbar contents on displaying message dialog.
+	Fixed resetting status bar contents on displaying message dialog.
 
 	Fixed parsing background mark after quote (as in `:put " &`).
 
@@ -4042,7 +4042,7 @@
 	Check destination path existence before changing directory to it on :sync
 	command.
 
-	Consider 'classify' option on displaying file name in the statusbar.
+	Consider 'classify' option on displaying file name in the status bar.
 
 	Don't overwrite directory stack stored in vifminfo on exit unless it was
 	changed in current session.
@@ -4655,7 +4655,7 @@
 
 	Draw quickview on startup only once.
 
-	Faster redrawing of statusbar with "-- VISUAL --" message after "Press
+	Faster redrawing of status bar with "-- VISUAL --" message after "Press
 	Enter message".
 
 	Show correct number of selected files in visual mode after n and N keys.
@@ -4981,7 +4981,7 @@
 
 	Fixed creation of Trash dir if it doesn't exist in ~/.vifm/.
 
-	Fixed statusbar message after Ctrl-A/Ctrl-X on Windows.
+	Fixed status bar message after Ctrl-A/Ctrl-X on Windows.
 
 	Fixed bug with drawing extra character after file list redraw (e.g. on
 	za).
@@ -5019,7 +5019,7 @@
 
 	Fixed Ctrl-U/D/F/B keys in visual and menu modes one again.
 
-	Fixed a typo in statusbar message after :mkdir.
+	Fixed a typo in status bar message after :mkdir.
 
 	Fixed sorting with ignoring case.
 

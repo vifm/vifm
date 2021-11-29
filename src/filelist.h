@@ -97,7 +97,7 @@ void leave_invalid_dir(view_t *view);
  * if so, otherwise zero is returned. */
 int pane_in_dir(const view_t *view, const char path[]);
 /* Navigates to next/previous sibling directory (does nothing for root or custom
- * view) with optional wrapping.  Returns non-zero if statusbar message should
+ * view) with optional wrapping.  Returns non-zero if status bar message should
  * be preserved. */
 int go_to_sibling_dir(view_t *view, int offset, int wrap);
 /* Picks new directory or requested going up one level judging from supplied
@@ -169,7 +169,7 @@ int populate_dir_list(view_t *view, int reload);
 void load_dir_list(view_t *view, int reload);
 /* Resorts view without reloading it and preserving current file under cursor
  * along with its relative position in the list.  msg parameter controls whether
- * to show "Sorting..." statusbar message. */
+ * to show "Sorting..." status bar message. */
 void resort_dir_list(int msg, view_t *view);
 /* Reloads file list while preserving cursor position if possible. */
 void load_saving_pos(view_t *view);

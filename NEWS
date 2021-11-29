@@ -4324,7 +4324,7 @@ TUI (Text User Interface):
  - preserve current cursor position on view resorting;
  - force split-view when two paths are specified on command-line (thanks to
    filterfalse);
- - consider 'classify' option on displaying file name in the statusbar (thanks
+ - consider 'classify' option on displaying file name in the status bar (thanks
    to Thomas Nemeth).
 
 For Vim:
@@ -4471,7 +4471,7 @@ TUI (Text User Interface):
  - preserve current cursor position on view resorting;
  - force split-view when two paths are specified on command-line (thanks to
    filterfalse);
- - consider 'classify' option on displaying file name in the statusbar (thanks
+ - consider 'classify' option on displaying file name in the status bar (thanks
    to Thomas Nemeth).
 
 For Vim:
@@ -4927,7 +4927,7 @@ Documentation:
  - faster execution of `:set sort=foo sortorder sortnumbers` in vifmrc.
 
 TUI (Terminal User Interface):
- - faster redrawing of statusbar with "-- VISUAL --" message after "Press
+ - faster redrawing of status bar with "-- VISUAL --" message after "Press
    Enter" message.
 
 Command-line mode related changes:

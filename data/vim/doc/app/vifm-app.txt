@@ -782,7 +782,7 @@ performing an operation on selected items (e.g. yanking them via |vifm-y|)
 moves cursor to the top of current selection region (not to the top most
 selected file of the view).
 
-In turn, selection editing supports three types of editing (look at statusbar
+In turn, selection editing supports three types of editing (look at status bar
 to know which one is currently active):
  - append - amend selection by selecting elements in selection region;
  - remove - amend selection by deselecting elements in selection region;
@@ -2918,7 +2918,7 @@ files), further operations are cancelled too.  In this case undo history will
 contain only actually performed operations.
 
 Cancelled operations are indicated by "(cancelled)" suffix appended to
-information message on statusbar.
+information message on status bar.
 
 File system operations~
 

@@ -258,7 +258,7 @@ VLUA_API(api_has)(lua_State *lua)
 }
 
 /* Replacement of standard global `print` function.  If plugin is present,
- * outputs to a plugin log, otherwise outputs to statusbar.  Doesn't return
+ * outputs to a plugin log, otherwise outputs to status bar.  Doesn't return
  * anything. */
 static int
 VLUA_API(print)(lua_State *lua)
@@ -384,7 +384,7 @@ VLUA_API(vifm_expand)(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm.sb` that prints a normal message on the statusbar.  Doesn't
+/* Member of `vifm.sb` that prints a normal message on the status bar.  Doesn't
  * return anything. */
 static int
 VLUA_API(sb_info)(lua_State *lua)
@@ -395,7 +395,7 @@ VLUA_API(sb_info)(lua_State *lua)
 	return 0;
 }
 
-/* Member of `vifm.sb` that prints an error message on the statusbar.  Doesn't
+/* Member of `vifm.sb` that prints an error message on the status bar.  Doesn't
  * return anything. */
 static int
 VLUA_API(sb_error)(lua_State *lua)
@@ -406,7 +406,7 @@ VLUA_API(sb_error)(lua_State *lua)
 	return 0;
 }
 
-/* Member of `vifm.sb` that prints statusbar message that's not stored in
+/* Member of `vifm.sb` that prints status bar message that's not stored in
  * history.  Doesn't return anything. */
 static int
 VLUA_API(sb_quick)(lua_State *lua)

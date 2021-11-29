@@ -2404,7 +2404,7 @@ resort_dir_list(int msg, view_t *view)
 }
 
 /* Resorts view without reloading it.  msg parameter controls whether to show
- * "Sorting..." statusbar message. */
+ * "Sorting..." status bar message. */
 static void
 sort_dir_list(int msg, view_t *view)
 {
