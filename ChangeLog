@@ -4195,7 +4195,7 @@
 	Baumann, a.k.a. derflob).
 
 	Added 'shortmess' option and its first flag: "T" to shorten long
-	status-bar messages.
+	status bar messages.
 
 	Added --without/[with]-dyn-X11 flag to the configure script to control
 	static/dynamic linking against libX11 library.  Thanks to Hendrik

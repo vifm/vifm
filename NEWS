@@ -4551,7 +4551,7 @@ Macros:
    Baumann, a.k.a. derflob).
 
 :set command and options:
- - added 'shortmess' option and its first flag: "T" to shorten long status-bar
+ - added 'shortmess' option and its first flag: "T" to shorten long status bar
    messages (thanks to ranousse);
  - added "perms" sorting key on *nix (proposed by Daniel Dettlaff, a.k.a.
    dmilith);
@@ -4652,7 +4652,7 @@ Macros:
    Baumann, a.k.a. derflob).
 
 :set command and options:
- - added 'shortmess' option and its first flag: "T" to shorten long status-bar
+ - added 'shortmess' option and its first flag: "T" to shorten long status bar
    messages (thanks to ranousse);
  - added "perms" sorting key on *nix (proposed by Daniel Dettlaff, a.k.a.
    dmilith);
