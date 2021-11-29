@@ -19,25 +19,55 @@
 #include "trie.h"
 
 #include <assert.h> /* assert() */
-#include <stdlib.h> /* calloc() free() */
+#include <stdlib.h> /* calloc() free() malloc() */
+#include <string.h> /* memcpy() strlen() strncmp() */
 
+#include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 
 #include "macros.h"
 
+/*
+ * This is an implementation of a compressed 3-way trie that doesn't support
+ * deletion (not necessary for the application).  Each node contains the longest
+ * key it can, but it's broken on addition of new keys which differ in their
+ * suffix.
+ *
+ * In order to not look enumerate children linearly, every node contains links
+ * to siblings with smaller/larger keys, which makes the trie similar to a
+ * regular binary tree without balancing.
+ *
+ * For better performance memory management is optimized:
+ *  - monolithic allocation of node structures in large amounts to not use
+ *    allocator on every node creation and be able to destruct with several
+ *    calls to free()
+ *  - strings are similarly appended to relatively large buffers without NUL
+ *    bytes and are reused on breaking nodes (so no string copying there)
+ *    Note: this puts a limit on key length, which can't be longer than buffer.
+ *
+ * Another optimization is caching of the first character of the key to avoid
+ * pointer dereferencing when we don't need it (first character decides if we
+ * need to go to left or right sibling next).
+ */
+
 /* Number of elements in each trie_t::nodes[*]. */
 #define NODES_PER_BANK 1024
+
+/* Size of each trie_t::str_bufs[*]. */
+#define STR_BUF_SIZE (PATH_MAX*2)
 
 /* Trie node. */
 typedef struct trie_node_t
 {
-	struct trie_node_t *left;     /* Nodes with values less than value. */
-	struct trie_node_t *right;    /* Nodes with values greater than value. */
-	struct trie_node_t *children; /* Child nodes. */
+	struct trie_node_t *left;  /* Nodes with keys less than query. */
+	struct trie_node_t *right; /* Nodes with keys greater than query. */
+	struct trie_node_t *down;  /* Child nodes which match prefix of the query. */
 
-	void *data;  /* Data associated with the key. */
-	char value;  /* Value of the node. */
-	char exists; /* Whether this node exists or it's an intermediate node. */
+	const char *key; /* Key of the node (NO trailing '\0'!). */
+	char first;      /* First character of the key for faster access. */
+	char exists;     /* Whether this node exists or it's an intermediate node. */
+	int key_len;     /* Length of the key. */
+	void *data;      /* Data associated with the key. */
 }
 trie_node_t;
 
@@ -49,15 +79,18 @@ struct trie_t
 	trie_node_t **nodes; /* Node storage (NODES_PER_BANK elements per item). */
 	int node_count;      /* Number of (allocated) nodes. */
 
+	char **str_bufs;   /* String storage (STR_BUF_SIZE bytes per item). */
+	int str_buf_count; /* Number of string buffers. */
+	int last_offset;   /* Offset in current string buffer. */
+
 	trie_free_func free_func; /* Function for freeing dynamic data. */
 };
 
 static trie_node_t * clone_nodes(trie_t *trie, const trie_node_t *node,
 		int *error);
 static void free_nodes_data(trie_node_t *node, trie_free_func free_func);
-static void get_or_create(trie_t *trie, const char str[], void *data,
-		int *result);
 static trie_node_t * make_node(trie_t *trie);
+static char * alloc_string(trie_t *trie, const char str[], int len);
 static int trie_get_nodes(trie_node_t *node, const char str[], void **data);
 
 trie_t *
@@ -114,10 +147,12 @@ clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
 
 	new_node->left = clone_nodes(new_trie, node->left, error);
 	new_node->right = clone_nodes(new_trie, node->right, error);
-	new_node->children = clone_nodes(new_trie, node->children, error);
-	new_node->data = node->data;
-	new_node->value = node->value;
+	new_node->down = clone_nodes(new_trie, node->down, error);
+	new_node->key = alloc_string(new_trie, node->key, node->key_len);
+	new_node->first = node->key[0];
+	new_node->key_len = node->key_len;
 	new_node->exists = node->exists;
+	new_node->data = node->data;
 
 	return new_node;
 }
@@ -142,6 +177,14 @@ trie_free(trie_t *trie)
 		free(trie->nodes[bank]);
 	}
 	free(trie->nodes);
+
+	int i;
+	for(i = 0; i < trie->str_buf_count; ++i)
+	{
+		free(trie->str_bufs[i]);
+	}
+	free(trie->str_bufs);
+
 	free(trie);
 }
 
@@ -153,7 +196,7 @@ free_nodes_data(trie_node_t *node, trie_free_func free_func)
 	{
 		free_nodes_data(node->left, free_func);
 		free_nodes_data(node->right, free_func);
-		free_nodes_data(node->children, free_func);
+		free_nodes_data(node->down, free_func);
 		free_func(node->data);
 	}
 }
@@ -167,25 +210,19 @@ trie_put(trie_t *trie, const char str[])
 int
 trie_set(trie_t *trie, const char str[], const void *data)
 {
-	int result;
-
 	if(trie == NULL)
 	{
 		return -1;
 	}
 
-	get_or_create(trie, str, (void *)data, &result);
-	return result;
-}
-
-/* Gets node which might involve its creation.  Sets *return to negative value
- * on error, to zero on successful insertion and to positive number if element
- * was already in the trie. */
-static void
-get_or_create(trie_t *trie, const char str[], void *data, int *result)
-{
 	trie_node_t **link = &trie->root;
 	trie_node_t *node = trie->root;
+
+	if(*str == '\0')
+	{
+		return -1;
+	}
+
 	while(1)
 	{
 		/* Create inexistent node. */
@@ -194,33 +231,73 @@ get_or_create(trie_t *trie, const char str[], void *data, int *result)
 			node = make_node(trie);
 			if(node == NULL)
 			{
-				*result = -1;
-				break;
+				return -1;
 			}
-			node->value = *str;
+			node->key_len = strlen(str);
+			node->key = alloc_string(trie, str, node->key_len);
+			node->first = str[0];
 			*link = node;
+			break;
 		}
 
-		if(node->value == *str)
+		int i = 0;
+		while(i < node->key_len && node->key[i] == str[i])
 		{
+			++i;
+		}
+
+		if(i == node->key_len)
+		{
+			link = &node->down;
+			str += node->key_len;
+
 			if(*str == '\0')
 			{
 				/* Found full match. */
-				*result = (node->exists != 0);
-				node->exists = 1;
-				node->data = data;
 				break;
 			}
-
-			link = &node->children;
-			++str;
+		}
+		else if(i == 0)
+		{
+			link = (*str < node->first) ? &node->left : &node->right;
 		}
 		else
 		{
-			link = (*str < node->value) ? &node->left : &node->right;
+			/* Break current node in two as me matched in the middle. */
+
+			trie_node_t *new_node = make_node(trie);
+			if(new_node == NULL)
+			{
+				return -1;
+			}
+			new_node->key = node->key + i;
+			new_node->first = node->key[i];
+			new_node->key_len = node->key_len - i;
+			new_node->exists = node->exists;
+			new_node->data = node->data;
+			new_node->down = node->down;
+
+			node->key_len = i;
+			node->down = new_node;
+			node->exists = 0;
+			node->data = NULL;
+
+			/* Return the leading part of the node we just broke in two. */
+			if(str[i] == '\0')
+			{
+				break;
+			}
+
+			str += i;
+			link = &node->down;
 		}
 		node = *link;
 	}
+
+	const int result = (node->exists != 0);
+	node->exists = 1;
+	node->data = (void *)data;
+	return result;
 }
 
 /* Allocates a new node for the trie.  Returns pointer to the node or NULL. */
@@ -246,6 +323,36 @@ make_node(trie_t *trie)
 	return &trie->nodes[bank][bank_index];
 }
 
+/* Allocates string in a trie.  Returns pointer to it or NULL if out of
+ * memory. */
+static char *
+alloc_string(trie_t *trie, const char str[], int len)
+{
+	assert(len <= STR_BUF_SIZE && "Key is too large.");
+
+	if(trie->last_offset + len > STR_BUF_SIZE || trie->str_buf_count == 0)
+	{
+		void *str_bufs = reallocarray(trie->str_bufs, trie->str_buf_count + 1,
+				sizeof(*trie->str_bufs));
+		if(str_bufs == NULL)
+		{
+			return NULL;
+		}
+
+		trie->str_bufs = str_bufs;
+		trie->str_bufs[trie->str_buf_count] = malloc(STR_BUF_SIZE);
+
+		++trie->str_buf_count;
+		trie->last_offset = 0;
+	}
+
+	char *buf = trie->str_bufs[trie->str_buf_count - 1] + trie->last_offset;
+	memcpy(buf, str, len);
+
+	trie->last_offset += len;
+	return buf;
+}
+
 int
 trie_get(trie_t *trie, const char str[], void **data)
 {
@@ -261,6 +368,13 @@ trie_get(trie_t *trie, const char str[], void **data)
 static int
 trie_get_nodes(trie_node_t *node, const char str[], void **data)
 {
+	if(*str == '\0')
+	{
+		return 1;
+	}
+
+	int str_len = strlen(str);
+
 	while(1)
 	{
 		if(node == NULL)
@@ -268,8 +382,17 @@ trie_get_nodes(trie_node_t *node, const char str[], void **data)
 			return 1;
 		}
 
-		if(node->value == *str)
+		if(*str == node->first)
 		{
+			if(str_len < node->key_len ||
+					memcmp(node->key + 1, str + 1, node->key_len - 1) != 0)
+			{
+				return 1;
+			}
+
+			str += node->key_len;
+			str_len -= node->key_len;
+
 			if(*str == '\0')
 			{
 				/* Found full match. */
@@ -281,12 +404,11 @@ trie_get_nodes(trie_node_t *node, const char str[], void **data)
 				return 0;
 			}
 
-			node = node->children;
-			++str;
+			node = node->down;
 			continue;
 		}
 
-		node = (*str < node->value) ? node->left : node->right;
+		node = (*str < node->first) ? node->left : node->right;
 	}
 }
 
