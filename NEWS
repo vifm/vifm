@@ -421,7 +421,7 @@ TUI (Text User Interface):
  - reduce width of top line when side borders are hidden (`set tuioptions-=s`)
    (thanks to Svyatoslav Mishyn, a.k.a. juef);
  - escape some characters as ^X in view and tab titles, custom menu titles, on
-   statusline and in terminal title (thanks to filterfalse);
+   status line and in terminal title (thanks to filterfalse);
  - use the same label for :grep and :find custom lists as the one used for
    :grep and :find menus (thanks to filterfalse);
  - use unexpanded command for title of custom file lists produced using %u or
@@ -657,7 +657,7 @@ TUI (Text User Interface):
  - reduce width of top line when side borders are hidden (`set tuioptions-=s`)
    (thanks to Svyatoslav Mishyn, a.k.a. juef);
  - escape some characters as ^X in view and tab titles, custom menu titles, on
-   statusline and in terminal title (thanks to filterfalse);
+   status line and in terminal title (thanks to filterfalse);
  - use the same label for :grep and :find custom lists as the one used for
    :grep and :find menus (thanks to filterfalse);
  - use unexpanded command for title of custom file lists produced using %u or
@@ -1238,7 +1238,7 @@ Main changes:
    instances;
  - added menu for managing media (relies on helper that does the managing);
  - improved cursor positioning and control over it;
- - ability to colorize statusline.
+ - ability to colorize status line.
 
 More detailed list of changes.
 
@@ -1408,7 +1408,7 @@ Main changes:
    instances;
  - added menu for managing media (relies on helper that does the managing);
  - improved cursor positioning and control over it;
- - ability to colorize statusline.
+ - ability to colorize status line.
 
 More detailed list of changes.
 
@@ -1682,7 +1682,7 @@ Important fixes:
  - fixed the plugin in neovim (patch by John Shea, a.k.a. coachshea);
  - fixed cloning of files like `.name` to produce `.name(1)` instead of
    `(1).name` (thanks to filterfalse);
- - fixed directory size in statusline (patch by Dmitry Frank, a.k.a. dimonomid);
+ - fixed directory size in status line (patch by Dmitry Frank, a.k.a. dimonomid);
  - fixed CWD of the process not matching current view after vifm picked up
    change in file system (patch by Daniel Mueller);
  - fixed :normal command resetting selection (thanks to filterfalse);
@@ -1827,7 +1827,7 @@ Important fixes:
  - fixed the plugin in neovim (patch by John Shea, a.k.a. coachshea);
  - fixed cloning of files like `.name` to produce `.name(1)` instead of
    `(1).name` (thanks to filterfalse);
- - fixed directory size in statusline (patch by Dmitry Frank, a.k.a. dimonomid);
+ - fixed directory size in status line (patch by Dmitry Frank, a.k.a. dimonomid);
  - fixed CWD of the process not matching current view after vifm picked up
    change in file system (patch by Daniel Mueller);
  - fixed :normal command resetting selection (thanks to filterfalse);

@@ -1840,7 +1840,7 @@ ui_view_win_changed(view_t *view)
 	refresh_bottom_lines();
 }
 
-/* Makes sure that statusline and status bar are drawn over view window after
+/* Makes sure that status line and status bar are drawn over view window after
  * view refresh. */
 static void
 refresh_bottom_lines(void)

@@ -23,6 +23,9 @@
 	Hide graphics when displaying dialogs or entering menus, more or file info
 	modes.  Thanks to heelsleeh and PRESFIL.
 
+	More consistent spelling of "status bar" and "status line" in
+	documentation.  Thanks to tcftbl.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.
@@ -224,7 +227,7 @@
 	Fixed losing files as a result of executing ":copy! &" or ":move! &" when
 	both panes show the same directory.  Thanks to Hans Bieshaar.
 
-	Fixed a memory leak possible on formatting tab titles and statusline.
+	Fixed a memory leak possible on formatting tab titles and status line.
 
 	Fixed possible crash after changing 'classify' and then switching to
 	inactive tab.
@@ -490,7 +493,7 @@
 	Update terminal title when in menus.  Thanks to filterfalse.
 
 	Escape some characters as ^X in view and tab titles, custom menu titles,
-	on statusline and in terminal title.  Thanks to filterfalse.
+	on status line and in terminal title.  Thanks to filterfalse.
 
 	Use name of user-defined command in titles of custom views and menus.
 	Thanks to filterfalse.
@@ -714,7 +717,7 @@
 
 	Fixed highlighting of `fileviewer .*/,*/` as if it contains a pattern.
 
-	Fixed highlighting of statusline being shifted due to unmatched `%[`.
+	Fixed highlighting of status line being shifted due to unmatched `%[`.
 
 	Fixed weird tabline layout on very large number of tabs.
 
@@ -1109,7 +1112,7 @@
 	Fixed crash on previewing contents of directory without execute right in
 	miller view.  Thanks to filterfalse.
 
-	Fixed statusline highlighting being broken by wide characters.
+	Fixed status line highlighting being broken by wide characters.
 
 0.9.1 to 0.10-beta (2018-10-28)
 
@@ -1546,7 +1549,7 @@
 	Fixed ".." not being preserved in path loaded into custom view.  Thanks to
 	filterfalse.
 
-	Fixed directory size in statusline.  Patch by Dmitry Frank (a.k.a.
+	Fixed directory size in status line.  Patch by Dmitry Frank (a.k.a.
 	dimonomid).
 
 	Fixed extra width of inactive cursor in ls-like view when 'classify'
@@ -2922,7 +2925,7 @@
 	fixes issue with passing input to FUSE mounter.  Thanks to Johannes (a.k.a.
 	johannesmeng).
 
-	Added %[ and %] macros for statusline/ruler.  Thanks to ranousse.
+	Added %[ and %] macros for status line/ruler.  Thanks to ranousse.
 
 	Added single-argument form of :file[x]type and :fileviewer commands that
 	lists (in menu mode) currently registered patterns that match specified
