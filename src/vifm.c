@@ -429,7 +429,7 @@ parse_received_arguments(char *argv[])
 
 	args_free(&args);
 
-	/* XXX: why force clearing of the statusbar? */
+	/* XXX: why force clearing of the status bar? */
 	ui_sb_clear();
 	curr_stats.save_msg = 0;
 }

@@ -111,7 +111,7 @@ ui_sb_quick_msg_clear(void)
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		/* Restore previous contents of the statusbar. */
+		/* Restore previous contents of the status bar. */
 		stats_redraw_later();
 	}
 }

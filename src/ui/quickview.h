@@ -44,11 +44,11 @@ struct preview_area_t
 
 /* Enables quick view (just enables, no drawing) if possible.  Returns zero on
  * success, otherwise non-zero is returned and error message is printed on the
- * statusbar.*/
+ * status bar.*/
 int qv_ensure_is_shown(void);
 
 /* Checks whether quick view can be shown.  Returns non-zero if so, otherwise
- * zero is returned and error message is printed on the statusbar. */
+ * zero is returned and error message is printed on the status bar. */
 int qv_can_show(void);
 
 /* Draws current file of the view in other view.  Does nothing if drawing

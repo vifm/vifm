@@ -262,7 +262,7 @@ vifm.plugins
 Table for managing plugins.  See |vifm-l_vifm.plugins|.
 
 vifm.sb
-Table for managing statusbar.  See |vifm-l_vifm.sb|.
+Table for managing status bar.  See |vifm-l_vifm.sb|.
 
 vifm.sessions
 Table for managing sessions.  See |vifm-l_vifm.sessions|.
@@ -590,19 +590,19 @@ This global `vifm.sb` table groups functions for managing status bar.  It
 contains the following items:
 
 sb.info({msg})                                 *vifm-l_vifm.sb.info()*
-Displays a regular message on statusbar.
+Displays a regular message on status bar.
 
 Parameters:~
   {msg}  Message to display.
 
 sb.error({msg})                                *vifm-l_vifm.sb.error()*
-Displays an error message on statusbar.
+Displays an error message on status bar.
 
 Parameters:~
   {msg}  Message to display.
 
 sb.quick({msg})                                *vifm-l_vifm.sb.quick()*
-Displays a quick message on statusbar.  It's discarded on first redraw and
+Displays a quick message on status bar.  It's discarded on first redraw and
 isn't stored in the history of messages.
 
 Parameters:~

@@ -2138,7 +2138,7 @@ dunmap_cmd(const cmd_info_t *cmd_info)
 	return result != 0;
 }
 
-/* Evaluates arguments as expression and outputs result to statusbar. */
+/* Evaluates arguments as expression and outputs result to status bar. */
 static int
 echo_cmd(const cmd_info_t *cmd_info)
 {
@@ -2498,7 +2498,7 @@ get_filter_inversion_state(const cmd_info_t *cmd_info)
 
 /* Tries to update filter of the view rejecting incorrect regular expression.
  * On empty pattern fallback is used.  Returns non-zero if message on the
- * statusbar should be saved, otherwise zero is returned. */
+ * status bar should be saved, otherwise zero is returned. */
 static int
 set_view_filter(view_t *view, const char filter[], const char fallback[],
 		int invert)
@@ -5063,7 +5063,7 @@ vunmap_cmd(const cmd_info_t *cmd_info)
 }
 
 /* Unmaps keys for the specified mode.  Returns zero on success, otherwise
- * non-zero is returned and message is printed on the statusbar. */
+ * non-zero is returned and message is printed on the status bar. */
 static int
 do_unmap(const char keys[], int mode)
 {
