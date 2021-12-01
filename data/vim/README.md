@@ -38,6 +38,22 @@ The interface between the plugin and Vifm has changed significantly in v0.8.
 Other than that versions don't have to match perfectly for all basic
 functionality to work correctly.
 
+### Installation example ###
+
+For a particular combination of [pacman] and [vundle]:
+
+1. Install the application with the following command:
+```bash
+sudo pacman -S vifm
+```
+2. Add the following configuration to your `.vimrc`:
+```
+Plugin 'vifm/vifm.vim'
+```
+3. Install this plugin with `:PluginInstall`.
+
+Use different commands for other package/plugin managers.
+
 ### Screenshot ###
 
 ![Screenshot](screenshot.png)
@@ -45,3 +61,5 @@ functionality to work correctly.
 [vim]: https://www.vim.org/
 [vifm]: https://vifm.info/
 [vimhelp]: https://vifm.info/vimdoc.shtml#vifm-%27vimhelp%27
+[pacman]: https://archlinux.org/packages/core/x86_64/pacman/
+[vundle]: https://github.com/VundleVim/Vundle.vim
