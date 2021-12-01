@@ -505,28 +505,13 @@ list_sorted_files(const char path[], int *len)
 int
 is_regular_file(const char path[])
 {
-	char resolved_link[PATH_MAX + 1];
-	if(is_symlink(path))
+	char path_real[PATH_MAX + 1];
+	if(os_realpath(path, path_real) != path_real)
 	{
-		char *const symlink_base = strdup(path);
-
-		if(!is_root_dir(symlink_base))
-		{
-			remove_last_path_component(symlink_base);
-		}
-
-		if(get_link_target_abs(path, symlink_base, resolved_link,
-					sizeof(resolved_link)) != 0)
-		{
-			free(symlink_base);
-			return 0;
-		}
-		free(symlink_base);
-
-		path = resolved_link;
+		return 0;
 	}
 
-	return is_regular_file_noderef(path);
+	return is_regular_file_noderef(path_real);
 }
 
 int
