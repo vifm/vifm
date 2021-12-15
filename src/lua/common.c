@@ -26,7 +26,7 @@
 void
 check_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 {
-	int type = lua_getfield(lua, 1, name);
+	int type = lua_getfield(lua, table_idx, name);
 	if(type == LUA_TNIL)
 	{
 		luaL_error(lua, "`%s` key is mandatory", name);
@@ -41,7 +41,7 @@ check_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 int
 check_opt_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 {
-	int type = lua_getfield(lua, 1, name);
+	int type = lua_getfield(lua, table_idx, name);
 	if(type == LUA_TNIL)
 	{
 		lua_pop(lua, 1);
