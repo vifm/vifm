@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Nov 4
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Dec 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -237,6 +237,8 @@ All API calls can raise errors:
  * when required table key is missing
  * when table key has wrong type
  * if the API call is unsafe and is disallowed in current environment
+
+Indices passed in or returned by the API start at 1 as arrays do in Lua.
 
 The following callbacks can perform only safe API calls:
  * all Lua handlers (|vifm-lua-handlers|)
@@ -800,7 +802,7 @@ for details.  These are "global" values of view-specific options.
 Assigning view options is {unsafe}.
 
 VifmView.currententry (integer)                *vifm-l_VifmView.currententry*
-Index of the current entry (starts at zero).
+Index of the current entry.
 
 VifmView.cwd (string)                          *vifm-l_VifmView.cwd*
 Location of the current view.
