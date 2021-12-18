@@ -669,6 +669,9 @@ Instances of this type are used in filetype |vifm-lua-handlers| and in
 callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by
 |vifm-l_VifmView:entry()|.
 
+Fields of this table are just copies, changing their values won't affect state
+of the application.
+
 VifmEntry.classify (table)                     *vifm-l_VifmEntry.classify*
 Table that describes name decorations.  Its fields:
  - "prefix" (string)
