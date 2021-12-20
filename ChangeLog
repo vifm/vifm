@@ -43,6 +43,9 @@
 	Fixed resolving symlinks to symlinks on checks for regular file.  Thanks
 	to Olmo Kramer.
 
+	Fixed :goto command not positioning cursor correctly if provided on
+	command-line.  Thanks to Toan Nguyen (a.k.a. toan2406).
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
