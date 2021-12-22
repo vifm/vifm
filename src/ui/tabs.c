@@ -45,8 +45,9 @@
  * variables.  The exception is occasional looping through hidden views (the
  * ones in inactive tabs).
  *
- * When a view changes its state (hidden <-> visible), origins of its entries
- * are updated to reflect change in location of view_t::curr_dir field.
+ * All tabs have an id which is unique during a running session.  IDs are unique
+ * among all tabs ignoring its type (so even a global and a pane tab can never
+ * have the same id).
  */
 
 /* Pane-specific tab (contains information about only one view). */
@@ -56,6 +57,7 @@ typedef struct
 	                           hidden. */
 	preview_t preview;      /* Information about state of the quickview. */
 	char *name;             /* Name of the tab.  Might be NULL. */
+	unsigned int id;        /* Unique during the session id of the tab. */
 	unsigned int init_mark; /* Which initialization this tab has seen. */
 }
 pane_tab_t;
@@ -84,6 +86,7 @@ typedef struct
 	double splitter_ratio;  /* Relative position of the splitter. */
 	preview_t preview;      /* Information about state of the quickview. */
 	char *name;             /* Name of the tab.  Might be NULL. */
+	unsigned int id;        /* Unique during the session id of the tab. */
 	unsigned int init_mark; /* Which initialization this tab has seen. */
 }
 global_tab_t;
@@ -121,6 +124,8 @@ static global_tab_t *gtabs;
 static DA_INSTANCE(gtabs);
 /* Index of current global tab. */
 static int current_gtab;
+/* Id number to use on creation of a new tab (global or pane). */
+unsigned int next_tab_id = 1;
 
 void
 tabs_init(void)
@@ -195,6 +200,7 @@ tabs_new_global(const char name[], const char path[], int at, int clean)
 	}
 	update_string(&new_tab.name, name);
 	capture_global_state(&new_tab);
+	new_tab.id = next_tab_id++;
 
 	DA_COMMIT(gtabs);
 
@@ -239,6 +245,7 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *side, const char name[],
 				sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (at + 1)));
 	}
 
+	new_tab->id = next_tab_id++;
 	ptabs->tabs[at] = new_tab;
 	return new_tab;
 }
@@ -664,6 +671,7 @@ get_pane_tab(view_t *side, int idx, tab_info_t *tab_info)
 	}
 
 	tab_info->name = ptabs->tabs[idx]->name;
+	tab_info->id = ptabs->tabs[idx]->id;
 	tab_info->last = (idx == n - 1);
 	return 1;
 }
@@ -682,6 +690,7 @@ get_global_tab(view_t *side, int idx, tab_info_t *tab_info, int return_active)
 
 	global_tab_t *gtab = &gtabs[idx];
 	tab_info->name = gtab->name;
+	tab_info->id = gtab->id;
 	tab_info->last = (idx == n - 1);
 
 	if(idx == current_gtab)

@@ -43,6 +43,7 @@ struct tab_info_t
 	struct view_t *view; /* View associated with the tab. */
 	const char *name;    /* Name of the view or NULL. */
 	tab_layout_t layout; /* UI configuration information. */
+	unsigned int id;     /* Unique id of this tab. */
 	int last;            /* This is the last tab. */
 };
 
