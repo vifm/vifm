@@ -161,8 +161,9 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	lua/lua/lundump.$(OBJEXT) lua/lua/lutf8lib.$(OBJEXT) \
 	lua/lua/lvm.$(OBJEXT) lua/lua/lzio.$(OBJEXT) \
 	lua/common.$(OBJEXT) lua/vifm_cmds.$(OBJEXT) \
-	lua/vifm_handlers.$(OBJEXT) lua/vifm_viewcolumns.$(OBJEXT) \
-	lua/vifmentry.$(OBJEXT) lua/vifmjob.$(OBJEXT) \
+	lua/vifm_handlers.$(OBJEXT) lua/vifm_tabs.$(OBJEXT) \
+	lua/vifm_viewcolumns.$(OBJEXT) lua/vifmentry.$(OBJEXT) \
+	lua/vifmjob.$(OBJEXT) lua/vifmtab.$(OBJEXT) \
 	lua/vifmview.$(OBJEXT) lua/vlua.$(OBJEXT) \
 	lua/vlua_state.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
 	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
@@ -307,8 +308,9 @@ am__depfiles_remade = ./$(DEPDIR)/args.Po ./$(DEPDIR)/background.Po \
 	io/private/$(DEPDIR)/ioeta.Po io/private/$(DEPDIR)/ionotif.Po \
 	io/private/$(DEPDIR)/traverser.Po lua/$(DEPDIR)/common.Po \
 	lua/$(DEPDIR)/vifm_cmds.Po lua/$(DEPDIR)/vifm_handlers.Po \
-	lua/$(DEPDIR)/vifm_viewcolumns.Po lua/$(DEPDIR)/vifmentry.Po \
-	lua/$(DEPDIR)/vifmjob.Po lua/$(DEPDIR)/vifmview.Po \
+	lua/$(DEPDIR)/vifm_tabs.Po lua/$(DEPDIR)/vifm_viewcolumns.Po \
+	lua/$(DEPDIR)/vifmentry.Po lua/$(DEPDIR)/vifmjob.Po \
+	lua/$(DEPDIR)/vifmtab.Po lua/$(DEPDIR)/vifmview.Po \
 	lua/$(DEPDIR)/vlua.Po lua/$(DEPDIR)/vlua_state.Po \
 	lua/lua/$(DEPDIR)/lapi.Po lua/lua/$(DEPDIR)/lauxlib.Po \
 	lua/lua/$(DEPDIR)/lbaselib.Po lua/lua/$(DEPDIR)/lcode.Po \
@@ -876,9 +878,11 @@ vifm_SOURCES = \
 	lua/common.c lua/common.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
 	lua/vifm_handlers.c lua/vifm_handlers.h \
+	lua/vifm_tabs.c lua/vifm_tabs.h \
 	lua/vifm_viewcolumns.c lua/vifm_viewcolumns.h \
 	lua/vifmentry.c lua/vifmentry.h \
 	lua/vifmjob.c lua/vifmjob.h \
+	lua/vifmtab.c lua/vifmtab.h \
 	lua/vifmview.c lua/vifmview.h \
 	lua/vlua.c lua/vlua.h \
 	lua/vlua_state.c lua/vlua_state.h \
@@ -1323,11 +1327,15 @@ lua/vifm_cmds.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_handlers.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
+lua/vifm_tabs.$(OBJEXT): lua/$(am__dirstamp) \
+	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_viewcolumns.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifmentry.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifmjob.$(OBJEXT): lua/$(am__dirstamp) \
+	lua/$(DEPDIR)/$(am__dirstamp)
+lua/vifmtab.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifmview.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
@@ -1693,9 +1701,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_cmds.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_handlers.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_tabs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_viewcolumns.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifmentry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifmjob.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifmtab.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifmview.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vlua.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vlua_state.Po@am__quote@ # am--include-marker
@@ -2660,9 +2670,11 @@ distclean: distclean-am
 	-rm -f lua/$(DEPDIR)/common.Po
 	-rm -f lua/$(DEPDIR)/vifm_cmds.Po
 	-rm -f lua/$(DEPDIR)/vifm_handlers.Po
+	-rm -f lua/$(DEPDIR)/vifm_tabs.Po
 	-rm -f lua/$(DEPDIR)/vifm_viewcolumns.Po
 	-rm -f lua/$(DEPDIR)/vifmentry.Po
 	-rm -f lua/$(DEPDIR)/vifmjob.Po
+	-rm -f lua/$(DEPDIR)/vifmtab.Po
 	-rm -f lua/$(DEPDIR)/vifmview.Po
 	-rm -f lua/$(DEPDIR)/vlua.Po
 	-rm -f lua/$(DEPDIR)/vlua_state.Po
@@ -2915,9 +2927,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f lua/$(DEPDIR)/common.Po
 	-rm -f lua/$(DEPDIR)/vifm_cmds.Po
 	-rm -f lua/$(DEPDIR)/vifm_handlers.Po
+	-rm -f lua/$(DEPDIR)/vifm_tabs.Po
 	-rm -f lua/$(DEPDIR)/vifm_viewcolumns.Po
 	-rm -f lua/$(DEPDIR)/vifmentry.Po
 	-rm -f lua/$(DEPDIR)/vifmjob.Po
+	-rm -f lua/$(DEPDIR)/vifmtab.Po
 	-rm -f lua/$(DEPDIR)/vifmview.Po
 	-rm -f lua/$(DEPDIR)/vlua.Po
 	-rm -f lua/$(DEPDIR)/vlua_state.Po

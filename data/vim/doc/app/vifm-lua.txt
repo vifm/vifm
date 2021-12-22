@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Dec 18
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Dec 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -22,9 +22,11 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
 |vifm-l_vifm.sb|       `vifm.sb` global table.
 |vifm-l_vifm.sessions| `vifm.sessions` global table.
+|vifm-l_vifm.tabs|     `vifm.tabs` global table.
 |vifm-l_vifm.version|  `vifm.version` global table.
 |vifm-l_VifmEntry|     `VifmEntry` type.
 |vifm-l_VifmJob|       `VifmJob` type.
+|vifm-l_VifmTab|       `VifmTab` type.
 |vifm-l_VifmView|      `VifmView` type.
 
 --------------------------------------------------------------------------------
@@ -268,6 +270,9 @@ Table for managing status bar.  See |vifm-l_vifm.sb|.
 
 vifm.sessions
 Table for managing sessions.  See |vifm-l_vifm.sessions|.
+
+vifm.tabs
+Table for managing tabs.  See |vifm-l_vifm.tabs|.
 
 vifm.version
 Table with version information.  See |vifm-l_vifm.version|.
@@ -623,6 +628,50 @@ Return:~
   `nil` if there is no active session or its name as a string otherwise.
 
 --------------------------------------------------------------------------------
+*vifm-l_vifm.tabs*
+
+This global `vifm.tabs` table provides means for inspecting and controlling
+tabs.
+
+tabs.get({query})                              *vifm-l_vifm.tabs.get()*
+Retrives a tab.
+
+Possible fields of {query}:
+ - "index" (integer)
+   Index of the tab.
+ - "other" (boolean) (default: false)
+   Whether to get a pane tab from inactive view.  Ignored if global tabs are
+   active.
+
+Return:~
+  Returns an instance of |vifm-l_VifmTab| or `nil` if index is out of range.
+
+Raises an error:~
+  If tab index is out of range.
+
+tabs.getcount([{query}])                       *vifm-l_vifm.tabs.getcount()*
+Retrieves number of open tabs.
+
+Possible fields of {query}:
+ - "other" (boolean) (default: false)
+   Whether to operate on tab from inactive view.  Ignored if global tabs are
+   active.
+
+Return:~
+  Returns the count as an integer.
+
+tabs.getcurrent([{query}])                     *vifm-l_vifm.tabs.getcurrent()*
+Retrieves index of current tab.
+
+Possible fields of {query}:
+ - "other" (boolean) (default: false)
+   Whether to operate on tab from inactive view.  Ignored if global tabs are
+   active.
+
+Return:~
+  Returns the index as an integer.
+
+--------------------------------------------------------------------------------
 *vifm-l_vifm.version*
 
 This global `vifm.version` table provides information about Vifm and Lua API.
@@ -783,10 +832,35 @@ Return:~
   Returns a string.
 
 --------------------------------------------------------------------------------
+*vifm-l_VifmTab*
+
+Instances of this type are returned by |vifm-l_vifm.tabs.get()|.
+
+The corresponding tab exists independently of this type and once the tab is
+closed accessing bound instance raises an error.
+
+VifmTab:getname()                              *vifm-l_VifmTab:getname()*
+
+Return:~
+  Returns name of the tab as a string, which is empty if unset.
+
+VifmTab:getview([{query}])                     *vifm-l_VifmTab:getview()*
+
+Possible fields of {query}:
+ - "pane" (integer) (default: 1)
+   Which view to get from a global tab.  1 is left/top pane, 2 is right/bottom
+   one.  Ignored for a pane tab.
+
+Return:~
+  Returns an instance of |vifm-l_VifmView|.
+
+--------------------------------------------------------------------------------
 *vifm-l_VifmView*
 
-Instances of this type are returned by |vifm-l_vifm.currview()| and
-|vifm-l_vifm.otherview()|.
+Instances of this type are returned by:
+ * |vifm-l_vifm.currview()|
+ * |vifm-l_vifm.otherview()|
+ * |vifm-l_VifmTab:getview()|
 
 The corresponding view exists independently of this type and once the view is
 gone (e.g., its tab is closed) accessing bound instance raises an error.
