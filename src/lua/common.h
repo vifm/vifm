@@ -21,6 +21,11 @@
 
 struct lua_State;
 
+/* Retrieves optional argument while checking its type and aborting (Lua does
+ * longjmp()) if it doesn't match.  Returns non-zero if the argument is present
+ * and is of correct type. */
+int check_opt_arg(struct lua_State *lua, int arg_idx, int expected_type);
+
 /* Retrieves mandatory field of a table while checking its type and aborting
  * (Lua does longjmp()) if it's missing or doesn't match. */
 void check_field(struct lua_State *lua, int table_idx, const char name[],

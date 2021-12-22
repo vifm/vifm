@@ -23,10 +23,27 @@
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
 
+int
+check_opt_arg(lua_State *lua, int arg_idx, int expected_type)
+{
+	int type = lua_type(lua, arg_idx);
+	if(type == LUA_TNONE)
+	{
+		return 0;
+	}
+
+	if(lua_type(lua, arg_idx) != expected_type)
+	{
+		luaL_error(lua, "Parameter #%d value must be a %s", arg_idx,
+				lua_typename(lua, expected_type));
+	}
+	return 1;
+}
+
 void
 check_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 {
-	int type = lua_getfield(lua, 1, name);
+	int type = lua_getfield(lua, table_idx, name);
 	if(type == LUA_TNIL)
 	{
 		luaL_error(lua, "`%s` key is mandatory", name);
@@ -41,7 +58,7 @@ check_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 int
 check_opt_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 {
-	int type = lua_getfield(lua, 1, name);
+	int type = lua_getfield(lua, table_idx, name);
 	if(type == LUA_TNIL)
 	{
 		lua_pop(lua, 1);

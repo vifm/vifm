@@ -109,9 +109,11 @@ there for instructions.
     |  |  |-- common.c - common code for Lua API implementation
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
     |  |  |-- vifm_handlers.c - implementation of `vifm.addhandler`
+    |  |  |-- vifm_tabs.c - implementation of `vifm.tabs`
     |  |  |-- vifm_viewcolumns.c - implementation of `vifm.addcolumntype`
     |  |  |-- vifmentry.c - implementation of VifmEntry
     |  |  |-- vifmjob.c - implementation of VifmJob
+    |  |  |-- vifmtab.c - implementation of VifmTab
     |  |  |-- vifmview.c - implementation of VifmView
     |  |  |-- vlua.c - main Lua interface unit
     |  |  `-- vlua_state.c - management of state of vlua.c unit

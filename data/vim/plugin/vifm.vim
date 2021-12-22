@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2021 March 22
+" Last Change: 2021 December 16
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -178,7 +178,8 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 
 			let oldbuf = bufname('%')
 			execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
-			setlocal nonumber norelativenumber
+			" This is for Neovim, which uses these options even in terminal mode
+			setlocal nonumber norelativenumber nospell
 			execute bufnr(oldbuf).'bwipeout'
 			" Use execute to not break highlighting.
 			execute 'startinsert'

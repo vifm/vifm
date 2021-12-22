@@ -48,6 +48,7 @@
 #include "common.h"
 #include "vifm_cmds.h"
 #include "vifm_handlers.h"
+#include "vifm_tabs.h"
 #include "vifm_viewcolumns.h"
 #include "vifmjob.h"
 #include "vifmview.h"
@@ -182,6 +183,10 @@ load_api(lua_State *lua)
 	/* Setup vifm.cmds. */
 	vifm_cmds_init(lua);
 	lua_setfield(lua, -2, "cmds");
+
+	/* Setup vifm.tabs. */
+	vifm_tabs_init(lua);
+	lua_setfield(lua, -2, "tabs");
 
 	/* Setup vifm.opts. */
 	lua_newtable(lua);

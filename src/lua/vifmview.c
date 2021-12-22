@@ -316,8 +316,8 @@ VLUA_API(vifmview_cd)(lua_State *lua)
 	return 1;
 }
 
-/* Method of `VifmView` that return an entry by its index.  Returns an instance
- * of `VifmEntry` or `nil` on wrong index. */
+/* Method of `VifmView` that retrieves an entry by its index.  Returns an
+ * instance of `VifmEntry` or `nil` on wrong index. */
 static int
 VLUA_API(vifmview_entry)(lua_State *lua)
 {

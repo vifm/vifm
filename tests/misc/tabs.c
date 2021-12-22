@@ -684,5 +684,40 @@ TEST(special_marks_are_not_shared_among_tabs)
 	assert_string_equal("l1file<", mark->file);
 }
 
+TEST(tab_ids_global_tabs)
+{
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	int id = tab_info.id;
+
+	/* Multiplied by 3 because each new global tab creates two pane tabs. */
+	assert_true(tabs_get(&lwin, 2, &tab_info));
+	assert_int_equal(id + 1*3, tab_info.id);
+	assert_true(tabs_get(&lwin, 3, &tab_info));
+	assert_int_equal(id + 2*3, tab_info.id);
+}
+
+TEST(tab_ids_pane_tabs)
+{
+	cfg.pane_tabs = 1;
+
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	int id = tab_info.id;
+
+	assert_true(tabs_get(&lwin, 2, &tab_info));
+	assert_int_equal(id + 1, tab_info.id);
+	assert_true(tabs_get(&lwin, 3, &tab_info));
+	assert_int_equal(id + 2, tab_info.id);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

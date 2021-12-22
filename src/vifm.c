@@ -352,6 +352,10 @@ vifm_main(int argc, char *argv[])
 
 	curr_stats.load_stage = 3;
 
+	/* Update screen after startup commands while in load state 3 so CHPOS_STARTUP
+	 * has no effect and doesn't reset cursor position after `+"goto path"`. */
+	update_screen(stats_update_fetch());
+
 	event_loop(&quit);
 
 	return 0;
@@ -399,6 +403,7 @@ parse_received_arguments(char *argv[])
 
 	abort_menu_like_mode();
 	exec_startup_commands(&args);
+	update_screen(stats_update_fetch());
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
 	{
@@ -530,6 +535,7 @@ void
 vifm_reexec_startup_commands(void)
 {
 	exec_startup_commands(&vifm_args);
+	update_screen(stats_update_fetch());
 }
 
 /* Executes list of startup commands. */
@@ -544,8 +550,6 @@ exec_startup_commands(const args_t *args)
 
 		(void)exec_commands(args->cmds[i], curr_view, CIT_COMMAND);
 	}
-
-	update_screen(stats_update_fetch());
 }
 
 void
