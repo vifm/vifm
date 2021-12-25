@@ -43,14 +43,14 @@ NCURSES_DIR="$PWD/ncurses-6.2"
 pushd "$NCURSES_DIR"
 ./configure --without-shared --enable-widec --prefix=/ \
     --without-normal --without-debug --without-cxx --without-cxx-binding \
-    --without-ada --without-manpages --without-tests
+    --without-ada --without-manpages --without-tests --without-gpm
 make -j4
 make DESTDIR="$PWD/build" install
 popd
 
 # Configure vifm to use our libncursesw6
 ./configure --sysconfdir=/etc --prefix=/usr --with-curses="$NCURSES_DIR/build" \
-    --without-gtk --without-X11
+    --without-gtk --without-X11 --without-libmagic
 make -j4
 make DESTDIR="$BUILD_DIR/AppDir" install
 
