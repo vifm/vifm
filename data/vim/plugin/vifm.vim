@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2021 December 16
+" Last Change: 2021 December 28
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -287,6 +287,9 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 	if empty(expand('%')) && editcmd =~ '^v\?split$'
 		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
+		if len(flist) == 0
+			return
+		endif
 	endif
 
 	" We emulate :args to not leave unnamed buffer around after we open our
@@ -301,6 +304,12 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 			execute 'argadd' fnamemodify(file, ':.')
 		endif
 	endfor
+
+	" When we open a single file, there is no need to navigate to its window,
+	" because we're already there
+	if len(flist) == 1
+		return
+	endif
 
 	" Go to the first file working around possibility that :drop command is not
 	" evailable, if possible
