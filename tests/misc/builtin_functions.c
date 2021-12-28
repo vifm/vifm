@@ -250,6 +250,7 @@ TEST(chooseopt_options_are_not_set)
 
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
 	args_process(&args, AS_GENERAL);
+	args_process(&args, AS_IPC);
 	args_process(&args, AS_OTHER);
 
 	ASSERT_OK("chooseopt('files')", "");
@@ -276,6 +277,7 @@ TEST(chooseopt_options_are_set)
 
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
 	args_process(&args, AS_GENERAL);
+	args_process(&args, AS_IPC);
 	args_process(&args, AS_OTHER);
 
 	ASSERT_OK("chooseopt('files')", "/files-file");

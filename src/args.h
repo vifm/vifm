@@ -28,6 +28,7 @@
 typedef enum
 {
 	AS_GENERAL, /* --help and --version which depend on nothing. */
+	AS_IPC,     /* --remote and --remote-expr which require IPC. */
 	AS_OTHER,   /* All other options. */
 }
 ArgsSubset;

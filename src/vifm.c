@@ -249,6 +249,7 @@ vifm_main(int argc, char *argv[])
 		var_free(var);
 	}
 
+	args_process(&vifm_args, AS_IPC);
 	args_process(&vifm_args, AS_OTHER);
 
 	bg_init();
@@ -399,6 +400,7 @@ parse_received_arguments(char *argv[])
 	(void)vifm_chdir(argv[0]);
 	opterr = 0;
 	args_parse(&args, count_strings(argv), argv, argv[0]);
+	args_process(&args, AS_IPC);
 	args_process(&args, AS_OTHER);
 
 	abort_menu_like_mode();
