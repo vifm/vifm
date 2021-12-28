@@ -176,7 +176,7 @@ vifm_main(int argc, char *argv[])
 	json_set_check_strings(0);
 
 	args_parse(&vifm_args, argc, argv, dir);
-	args_process(&vifm_args, 1);
+	args_process(&vifm_args, AS_GENERAL);
 
 	lwin_cv = (strcmp(vifm_args.lwin_path, "-") == 0 && vifm_args.lwin_handle);
 	rwin_cv = (strcmp(vifm_args.rwin_path, "-") == 0 && vifm_args.rwin_handle);
@@ -249,7 +249,7 @@ vifm_main(int argc, char *argv[])
 		var_free(var);
 	}
 
-	args_process(&vifm_args, 0);
+	args_process(&vifm_args, AS_OTHER);
 
 	bg_init();
 
@@ -399,7 +399,7 @@ parse_received_arguments(char *argv[])
 	(void)vifm_chdir(argv[0]);
 	opterr = 0;
 	args_parse(&args, count_strings(argv), argv, argv[0]);
-	args_process(&args, 0);
+	args_process(&args, AS_OTHER);
 
 	abort_menu_like_mode();
 	exec_startup_commands(&args);

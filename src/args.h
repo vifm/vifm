@@ -24,6 +24,14 @@
 
 #include "compat/fs_limits.h"
 
+/* Set of arguments that are processed at the same time. */
+typedef enum
+{
+	AS_GENERAL, /* --help and --version which depend on nothing. */
+	AS_OTHER,   /* All other options. */
+}
+ArgsSubset;
+
 /* Parsed command-line arguments. */
 typedef struct
 {
@@ -60,9 +68,8 @@ args_t;
 /* Parses command-line arguments into fields of the *args structure. */
 void args_parse(args_t *args, int argc, char *argv[], const char dir[]);
 
-/* Processes command-line arguments from fields of the *args structure.  General
- * args are --help and --version. */
-void args_process(args_t *args, int general);
+/* Processes command-line arguments from fields of the *args structure. */
+void args_process(args_t *args, ArgsSubset subset);
 
 /* Frees memory allocated for the structure.  args can be NULL. */
 void args_free(args_t *args);

@@ -334,15 +334,16 @@ parse_path(const char dir[], const char path[], char buf[])
 }
 
 void
-args_process(args_t *args, int general)
+args_process(args_t *args, ArgsSubset subset)
 {
-	if(general)
+	switch(subset)
 	{
-		process_general_args(args);
-	}
-	else
-	{
-		process_non_general_args(args);
+		case AS_GENERAL: /* --help, --version */
+			process_general_args(args);
+			break;
+		case AS_OTHER:   /* All other options. */
+			process_non_general_args(args);
+			break;
 	}
 }
 
