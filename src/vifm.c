@@ -176,7 +176,7 @@ vifm_main(int argc, char *argv[])
 	json_set_check_strings(0);
 
 	args_parse(&vifm_args, argc, argv, dir);
-	args_process(&vifm_args, 1);
+	args_process(&vifm_args, AS_GENERAL);
 
 	lwin_cv = (strcmp(vifm_args.lwin_path, "-") == 0 && vifm_args.lwin_handle);
 	rwin_cv = (strcmp(vifm_args.rwin_path, "-") == 0 && vifm_args.rwin_handle);
@@ -193,13 +193,24 @@ vifm_main(int argc, char *argv[])
 	(void)setlocale(LC_ALL, "");
 	srand(time(NULL));
 
-	cfg_init();
-
 	if(vifm_args.logging)
 	{
 		init_logger(1, vifm_args.startup_log_path);
 	}
 
+	/* Process --remote* parameters even before initializing configuration as it
+	 * indirectly depends on terminal initialization and IPC interaction mustn't
+	 * need a terminal. */
+	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
+			&eval_received_expression);
+	if(ipc_enabled() && curr_stats.ipc == NULL)
+	{
+		fputs("Failed to initialize IPC unit", stderr);
+		return -1;
+	}
+	args_process(&vifm_args, AS_IPC);
+
+	cfg_init();
 	init_filelists();
 	tabs_init();
 	regs_init();
@@ -235,21 +246,14 @@ vifm_main(int argc, char *argv[])
 		state_load(0);
 	}
 
-	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
-			&eval_received_expression);
-	if(ipc_enabled() && curr_stats.ipc == NULL)
-	{
-		fputs("Failed to initialize IPC unit", stderr);
-		return -1;
-	}
-	/* Export chosen server name to parsing unit. */
+	/* Export chosen IPC server name to parsing unit. */
 	{
 		var_t var = var_from_str(ipc_get_name(curr_stats.ipc));
 		setvar("v:servername", var);
 		var_free(var);
 	}
 
-	args_process(&vifm_args, 0);
+	args_process(&vifm_args, AS_OTHER);
 
 	bg_init();
 
@@ -399,7 +403,8 @@ parse_received_arguments(char *argv[])
 	(void)vifm_chdir(argv[0]);
 	opterr = 0;
 	args_parse(&args, count_strings(argv), argv, argv[0]);
-	args_process(&args, 0);
+	args_process(&args, AS_IPC);
+	args_process(&args, AS_OTHER);
 
 	abort_menu_like_mode();
 	exec_startup_commands(&args);
