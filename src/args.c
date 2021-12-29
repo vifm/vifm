@@ -48,7 +48,7 @@ static void parse_path(const char dir[], const char path[], char buf[]);
 static void process_general_args(args_t *args);
 static void show_help_msg(const char wrong_arg[]);
 static void show_version_msg(void);
-static void process_ipc_args(args_t *args);
+static void process_ipc_args(args_t *args, ipc_t *ipc);
 static void process_other_args(args_t *args);
 static void quit_on_arg_parsing(int code);
 
@@ -335,7 +335,7 @@ parse_path(const char dir[], const char path[], char buf[])
 }
 
 void
-args_process(args_t *args, ArgsSubset subset)
+args_process(args_t *args, ArgsSubset subset, ipc_t *ipc)
 {
 	switch(subset)
 	{
@@ -343,7 +343,7 @@ args_process(args_t *args, ArgsSubset subset)
 			process_general_args(args);
 			break;
 		case AS_IPC:     /* --remote, --remote-expr */
-			process_ipc_args(args);
+			process_ipc_args(args, ipc);
 			break;
 		case AS_OTHER:   /* All other options. */
 			process_other_args(args);
@@ -453,7 +453,7 @@ show_version_msg(void)
 
 /* Processes options related to IPC client functionality. */
 static void
-process_ipc_args(args_t *args)
+process_ipc_args(args_t *args, ipc_t *ipc)
 {
 	if(args->remote_cmds != NULL && args->remote_expr != NULL)
 	{
@@ -462,7 +462,7 @@ process_ipc_args(args_t *args)
 	}
 	else if(args->remote_cmds != NULL)
 	{
-		if(ipc_send(curr_stats.ipc, args->target_name, args->remote_cmds) != 0)
+		if(ipc_send(ipc, args->target_name, args->remote_cmds) != 0)
 		{
 			fprintf(stderr, "%s\n", "Sending remote commands failed.");
 			quit_on_arg_parsing(EXIT_FAILURE);
@@ -471,8 +471,7 @@ process_ipc_args(args_t *args)
 	}
 	else if(args->remote_expr != NULL)
 	{
-		char *const result = ipc_eval(curr_stats.ipc, args->target_name,
-				args->remote_expr);
+		char *const result = ipc_eval(ipc, args->target_name, args->remote_expr);
 		if(result == NULL)
 		{
 			fprintf(stderr, "%s\n", "Evaluating expression remotely failed.");

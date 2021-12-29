@@ -176,7 +176,7 @@ vifm_main(int argc, char *argv[])
 	json_set_check_strings(0);
 
 	args_parse(&vifm_args, argc, argv, dir);
-	args_process(&vifm_args, AS_GENERAL);
+	args_process(&vifm_args, AS_GENERAL, curr_stats.ipc);
 
 	lwin_cv = (strcmp(vifm_args.lwin_path, "-") == 0 && vifm_args.lwin_handle);
 	rwin_cv = (strcmp(vifm_args.rwin_path, "-") == 0 && vifm_args.rwin_handle);
@@ -201,14 +201,14 @@ vifm_main(int argc, char *argv[])
 	/* Process --remote* parameters even before initializing configuration as it
 	 * indirectly depends on terminal initialization and IPC interaction mustn't
 	 * need a terminal. */
-	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
+	struct ipc_t *ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
 			&eval_received_expression);
-	if(ipc_enabled() && curr_stats.ipc == NULL)
+	if(ipc_enabled() && ipc == NULL)
 	{
 		fputs("Failed to initialize IPC unit", stderr);
 		return -1;
 	}
-	args_process(&vifm_args, AS_IPC);
+	args_process(&vifm_args, AS_IPC, ipc);
 
 	cfg_init();
 	init_filelists();
@@ -230,6 +230,8 @@ vifm_main(int argc, char *argv[])
 		puts("Error during session status initialization.");
 		return -1;
 	}
+
+	curr_stats.ipc = ipc;
 
 	/* Tell file type module what function to use to check availability of
 	 * external programs. */
@@ -253,7 +255,7 @@ vifm_main(int argc, char *argv[])
 		var_free(var);
 	}
 
-	args_process(&vifm_args, AS_OTHER);
+	args_process(&vifm_args, AS_OTHER, curr_stats.ipc);
 
 	bg_init();
 
@@ -403,8 +405,8 @@ parse_received_arguments(char *argv[])
 	(void)vifm_chdir(argv[0]);
 	opterr = 0;
 	args_parse(&args, count_strings(argv), argv, argv[0]);
-	args_process(&args, AS_IPC);
-	args_process(&args, AS_OTHER);
+	args_process(&args, AS_IPC, curr_stats.ipc);
+	args_process(&args, AS_OTHER, curr_stats.ipc);
 
 	abort_menu_like_mode();
 	exec_startup_commands(&args);
