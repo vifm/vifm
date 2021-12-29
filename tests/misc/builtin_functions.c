@@ -249,9 +249,9 @@ TEST(chooseopt_options_are_not_set)
 	assert_success(stats_init(&cfg));
 
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
-	args_process(&args, AS_GENERAL);
-	args_process(&args, AS_IPC);
-	args_process(&args, AS_OTHER);
+	args_process(&args, AS_GENERAL, /*ipc=*/NULL);
+	args_process(&args, AS_IPC, /*ipc=*/NULL);
+	args_process(&args, AS_OTHER, /*ipc=*/NULL);
 
 	ASSERT_OK("chooseopt('files')", "");
 	ASSERT_OK("chooseopt('dir')", "");
@@ -276,9 +276,9 @@ TEST(chooseopt_options_are_set)
 	assert_success(stats_init(&cfg));
 
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
-	args_process(&args, AS_GENERAL);
-	args_process(&args, AS_IPC);
-	args_process(&args, AS_OTHER);
+	args_process(&args, AS_GENERAL, /*ipc=*/NULL);
+	args_process(&args, AS_IPC, /*ipc=*/NULL);
+	args_process(&args, AS_OTHER, /*ipc=*/NULL);
 
 	ASSERT_OK("chooseopt('files')", "/files-file");
 	ASSERT_OK("chooseopt('dir')", "/dir-file");

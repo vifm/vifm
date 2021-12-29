@@ -66,11 +66,13 @@ typedef struct
 }
 args_t;
 
+struct ipc_t;
+
 /* Parses command-line arguments into fields of the *args structure. */
 void args_parse(args_t *args, int argc, char *argv[], const char dir[]);
 
 /* Processes command-line arguments from fields of the *args structure. */
-void args_process(args_t *args, ArgsSubset subset);
+void args_process(args_t *args, ArgsSubset subset, struct ipc_t *ipc);
 
 /* Frees memory allocated for the structure.  args can be NULL. */
 void args_free(args_t *args);
