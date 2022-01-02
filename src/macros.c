@@ -320,6 +320,12 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 				{
 					return expanded;
 				}
+				if(key == 'u') /* Do not cache preview result. */
+				{
+					ma_flags_set(flags, MF_NO_CACHE);
+					++x;
+					break;
+				}
 				/* Just skip %pd. */
 				if(key == 'd')
 				{
@@ -408,11 +414,15 @@ ma_flags_set(MacroFlags *flags, MacroFlags flag)
 	}
 	else if(flag < MF_SECOND_SET_)
 	{
-		*flags = (*flags & ~0x0f) | flag;
+		*flags = (*flags & ~0x00f) | flag;
+	}
+	else if(flag < MF_THIRD_SET_)
+	{
+		*flags = (*flags & ~0x0f0) | flag;
 	}
 	else
 	{
-		*flags = (*flags & 0x0f) | flag;
+		*flags = (*flags & ~0xf00) | flag;
 	}
 }
 
@@ -839,11 +849,15 @@ ma_flags_present(MacroFlags flags, MacroFlags flag)
 	}
 	else if(flag < MF_SECOND_SET_)
 	{
-		return ((flags & 0x0f) == flag);
+		return ((flags & 0x00f) == flag);
+	}
+	else if(flag < MF_THIRD_SET_)
+	{
+		return ((flags & 0x0f0) == flag);
 	}
 	else
 	{
-		return ((flags & ~0x0f) == flag);
+		return ((flags & 0xf00) == flag);
 	}
 }
 
@@ -860,6 +874,7 @@ ma_flags_to_str(MacroFlags flags)
 	{
 		case MF_FIRST_SET_:
 		case MF_SECOND_SET_:
+		case MF_THIRD_SET_:
 		case MF_NONE: return "";
 
 		case MF_MENU_OUTPUT: return "%m";
@@ -880,6 +895,8 @@ ma_flags_to_str(MacroFlags flags)
 
 		case MF_PIPE_FILE_LIST: return "%Pl";
 		case MF_PIPE_FILE_LIST_Z: return "%Pz";
+
+		case MF_NO_CACHE: return "%pu";
 	}
 
 	assert(0 && "Unhandled MacroFlags item.");

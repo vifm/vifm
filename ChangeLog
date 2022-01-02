@@ -10,6 +10,9 @@
 
 	Added handling of "-" in :session for switching to a previous session.
 
+	Added %pu macro that disables caching of viewer's output.  Thanks to
+	b0x4it.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

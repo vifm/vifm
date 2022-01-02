@@ -2802,6 +2802,10 @@ The command macros may be used in user commands.
             cursor position, using this with anything else is likely to
             mangle terminal state.
 
+                                                               *vifm-%pu*
+  %pu       uncached preview.  Intended to be used for commands that just
+            send file path somewhere for preview.
+
   The following dimensions and coordinates are in characters:
                                                                *vifm-%px*
   %px       x coordinate of top-left corner of preview area.

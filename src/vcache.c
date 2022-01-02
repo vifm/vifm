@@ -163,9 +163,10 @@ vcache_lookup(const char full_path[], const char viewer[], MacroFlags flags,
 {
 	*error = NULL;
 
-	if(kind == VK_GRAPHICAL)
+	/* Skip caching of data if we can't really cache it or when user doesn't want
+	 * it to be cached. */
+	if(kind == VK_GRAPHICAL || ma_flags_present(flags, MF_NO_CACHE))
 	{
-		/* Skip caching of data we can't really cache. */
 		static vcache_entry_t non_cache;
 		free_cache_entry(&non_cache);
 

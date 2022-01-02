@@ -3385,6 +3385,10 @@ Marks a preview command as one that directly communicates with the terminal.
 Beware that this is for things like sixel which are self-contained sequences
 that depend only on current cursor position, using this with anything else is
 likely to mangle terminal state.
+.TP
+.BI %pu
+Uncached preview.  Intended to be used for commands that just send file path
+somewhere for preview.
 .LP
 The following dimensions and coordinates are in characters:
 .TP
