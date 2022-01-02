@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 17, 2021" "vifm 0.12"
+.TH VIFM 1 "January 2, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5320,7 +5320,7 @@ might be mapped to single key code, for example:
 .IP \- 2
 <tab> and <c-i>;
 .IP \- 2
-<c-h> and <bs>;
+<c-h> and <bs> and <del>;
 .IP \- 2
 etc.
 .RE
@@ -5338,6 +5338,9 @@ Alternatively, provide your mapping in one form and add one of the following:
   " if mappings with <bs> in the LHS work
   map <bs> <c-h>
 .EE
+
+Also sometimes neither of them might work and it's <del> key which corresponds
+to your backspace (don't mind the name).
 
 .B Whitespace
 

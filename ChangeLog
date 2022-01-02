@@ -26,6 +26,8 @@
 	More consistent spelling of "status bar" and "status line" in
 	documentation.  Thanks to tcftbl.
 
+	Document that <del> key might correspond to <bs>.  Thanks to dalvand.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.
