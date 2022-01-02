@@ -10,6 +10,9 @@
 
 	Added handling of "-" in :session for switching to a previous session.
 
+	Added %pu macro that disables caching of viewer's output.  Thanks to
+	b0x4it.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
@@ -25,6 +28,8 @@
 
 	More consistent spelling of "status bar" and "status line" in
 	documentation.  Thanks to tcftbl.
+
+	Document that <del> key might correspond to <bs>.  Thanks to dalvand.
 
 	Fixed cursor appearing at random places on entering command-line mode.
 

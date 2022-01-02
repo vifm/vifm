@@ -57,6 +57,11 @@ typedef enum
 
 	MF_PIPE_FILE_LIST   = 0x20, /* Provide \n-separated file list on stdin. */
 	MF_PIPE_FILE_LIST_Z = 0x30, /* Provide \0-separated file list on stdin. */
+
+	/* Third set of mutually exclusive flags. */
+	MF_THIRD_SET_ = 0x100,
+
+	MF_NO_CACHE = 0x200, /* Inhibit caching of preview results. */
 }
 MacroFlags;
 

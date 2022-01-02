@@ -299,6 +299,11 @@ TEST(good_flag_macros)
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_PIPE_FILE_LIST_Z, flags);
 	free(expanded);
+
+	expanded = ma_expand("%pu echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_NO_CACHE, flags);
+	free(expanded);
 }
 
 TEST(bad_flag_macros)
@@ -330,6 +335,14 @@ TEST(flags_from_different_sets)
 	expanded = ma_expand("echo%q%Pz", "", &flags, 0);
 	assert_string_equal("echo", expanded);
 	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_PREVIEW_OUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("echo%m%pu%Pz", "", &flags, 0);
+	assert_string_equal("echo", expanded);
+	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_MENU_OUTPUT | MF_NO_CACHE, flags);
+	assert_true(ma_flags_present(flags, MF_PIPE_FILE_LIST_Z));
+	assert_true(ma_flags_present(flags, MF_MENU_OUTPUT));
+	assert_true(ma_flags_present(flags, MF_NO_CACHE));
 	free(expanded);
 }
 
@@ -728,6 +741,8 @@ TEST(flags_to_str)
 
 	assert_string_equal("%Pl", ma_flags_to_str(MF_PIPE_FILE_LIST));
 	assert_string_equal("%Pz", ma_flags_to_str(MF_PIPE_FILE_LIST_Z));
+
+	assert_string_equal("%pu", ma_flags_to_str(MF_NO_CACHE));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
