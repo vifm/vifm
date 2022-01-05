@@ -26,6 +26,7 @@
 #include <stddef.h> /* size_t wchar_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
+#include <time.h> /* time_t */
 
 #include "../macros.h"
 #include "../status.h"
@@ -185,6 +186,10 @@ FILE * make_in_file(struct view_t *view, MacroFlags flags);
 /* Writes list of marked files to the file.  Files are separated by new line or
  * null characters. */
 void write_marked_paths(FILE *file, struct view_t *view, int null_sep);
+
+/* Formats time as a string independent of settings.  Writes empty string on
+ * error. */
+void format_iso_time(time_t t, char buf[], size_t buf_size);
 
 /* Checks line for path in it.  Ignores empty lines and attempts to parse it as
  * location line (path followed by a colon and optional line and column

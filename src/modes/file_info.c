@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
-#include <time.h> /* tm localtime() strftime() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -61,7 +60,6 @@ static int print_item(const char label[], const char path[], int curr_y);
 static int show_file_type(view_t *view, int curr_y);
 static int print_link_info(const dir_entry_t *curr, int curr_y);
 static int show_mime_type(view_t *view, int curr_y);
-static void format_time(time_t t, char buf[], size_t buf_size);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
@@ -178,13 +176,13 @@ modfinfo_redraw(void)
 	curr_y += print_item("Hard Links: ", buf, curr_y);
 #endif
 
-	format_time(curr->mtime, buf, sizeof(buf));
+	format_iso_time(curr->mtime, buf, sizeof(buf));
 	curr_y += print_item("Modified: ", buf, curr_y);
 
-	format_time(curr->atime, buf, sizeof(buf));
+	format_iso_time(curr->atime, buf, sizeof(buf));
 	curr_y += print_item("Accessed: ", buf, curr_y);
 
-	format_time(curr->ctime, buf, sizeof(buf));
+	format_iso_time(curr->ctime, buf, sizeof(buf));
 #ifndef _WIN32
 	curr_y += print_item("Changed: ", buf, curr_y);
 #else
@@ -434,20 +432,6 @@ show_mime_type(view_t *view, int curr_y)
 	}
 
 	return print_item("Mime Type: ", mimetype, curr_y);
-}
-
-/* Formats single time field as a string.  Writes empty string on error. */
-static void
-format_time(time_t t, char buf[], size_t buf_size)
-{
-	struct tm *const tm = localtime(&t);
-	if(tm == NULL)
-	{
-		copy_str(buf, buf_size, "");
-		return;
-	}
-
-	strftime(buf, buf_size, "%a, %d %b %Y %H:%M:%S", tm);
 }
 
 static void
