@@ -67,6 +67,9 @@ static void handle_prompt_response(const char fname[], const char caused_by[],
 static void prompt_dst_name(const char src_name[]);
 static void prompt_dst_name_cb(const char dst_name[]);
 static void put_continue(int force);
+static void show_difference(const char fname[], const char caused_by[]);
+static char * compare_files(const char dst_path[], const char src_path[],
+		struct stat *dst, struct stat *src);
 
 /* Global state for file putting and name conflicts resolution that happen in
  * the process. */
@@ -942,6 +945,7 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	/* Strange spacing is for left alignment.  Doesn't look nice here, but it is
 	 * problematic to get such alignment otherwise. */
 	static const response_variant
+		compare       = { .key = 'c', .descr = "[c]ompare files              \n" },
 		rename        = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
 		enter         = { .key = '\r', .descr = "" },
 		skip          = { .key = 's', .descr = "[s]kip " },
@@ -961,10 +965,17 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.dst_dir, fname);
 	const int same_file = paths_are_equal(dst_buf, caused_by);
 
+	if(!same_file)
+	{
+		responses[i++] = compare;
+	}
+
 	responses[i++] = rename;
 	responses[i++] = enter;
+
 	responses[i++] = skip;
 	responses[i++] = skip_all;
+
 	if(!same_file)
 	{
 		if(cfg.use_system_calls && is_regular_file_noderef(fname) &&
@@ -1018,6 +1029,11 @@ handle_prompt_response(const char fname[], const char caused_by[],
 	if(response == '\r' || response == 'r')
 	{
 		prompt_dst_name(fname);
+	}
+	else if(response == 'c')
+	{
+		show_difference(fname, caused_by);
+		prompt_what_to_do(fname, caused_by);
 	}
 	else if(response == 's' || response == 'S')
 	{
@@ -1116,6 +1132,89 @@ put_continue(int force)
 		++put_confirm.index;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
+}
+
+/* Displays differences in metadata among two conflicting files in a dialog. */
+static void
+show_difference(const char fname[], const char caused_by[])
+{
+	char dst_path[PATH_MAX + 1];
+	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, fname);
+
+	struct stat dst;
+	if(os_stat(dst_path, &dst) != 0)
+	{
+		show_error_msgf("Comparison error", "Unable to query metadata of %s",
+				dst_path);
+		return;
+	}
+
+	struct stat src;
+	if(os_stat(caused_by, &src) != 0)
+	{
+		show_error_msgf("Comparison error", "Unable to query metadata of %s",
+				caused_by);
+		return;
+	}
+
+	char *diff = compare_files(dst_path, caused_by, &dst, &src);
+
+	static const response_variant responses[] = {
+		{ .key = '\r', .descr = "Press Enter to continue", },
+		{ },
+	};
+	(void)prompt_msg_custom("File difference", diff, responses);
+
+	free(diff);
+}
+
+/* Produces textual description of metadata difference between two files.
+ * Returns newly allocated string. */
+static char *
+compare_files(const char dst_path[], const char src_path[], struct stat *dst,
+		struct stat *src)
+{
+	vle_textbuf *text = vle_tb_create();
+
+	vle_tb_append_linef(text, "Target file: %s", replace_home_part(dst_path));
+	vle_tb_append_linef(text, "Source file: %s", replace_home_part(src_path));
+
+	char buf[64];
+
+	vle_tb_append_line(text, " ");
+	format_iso_time(dst->st_mtime, buf, sizeof(buf));
+	if(dst->st_mtime == src->st_mtime)
+	{
+		vle_tb_append_linef(text, "Same modification date: %s", buf);
+	}
+	else
+	{
+		vle_tb_append_line(text, "Modification dates:");
+		vle_tb_append_linef(text, "%s", buf);
+
+		format_iso_time(src->st_mtime, buf, sizeof(buf));
+		vle_tb_append_linef(text, "%s", buf);
+	}
+
+	vle_tb_append_line(text, " ");
+	(void)friendly_size_notation(dst->st_size, sizeof(buf), buf);
+	if(dst->st_size == src->st_size)
+	{
+		vle_tb_append_linef(text, "Same size: %s (%llu)", buf,
+				(unsigned long long)dst->st_size);
+	}
+	else
+	{
+		vle_tb_append_line(text, "Sizes:");
+		vle_tb_append_linef(text, "%s (%llu)", buf,
+				(unsigned long long)dst->st_size);
+
+		(void)friendly_size_notation(src->st_size, sizeof(buf), buf);
+		vle_tb_append_linef(text, "%s (%llu)", buf,
+				(unsigned long long)src->st_size);
+	}
+
+	return vle_tb_release(text);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

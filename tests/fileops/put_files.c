@@ -33,6 +33,8 @@ static char options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants);
 static char options_prompt_skip_all(const char title[], const char message[],
 		const struct response_variant *variants);
+static char options_prompt_compare(const char title[], const char message[],
+		const struct response_variant *variants);
 static char cm_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
 static char cm_no(const char title[], const char message[],
@@ -118,6 +120,14 @@ options_prompt_skip_all(const char title[], const char message[],
 		const struct response_variant *variants)
 {
 	return 'S';
+}
+
+static char
+options_prompt_compare(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	fops_init(NULL, &options_prompt_abort);
+	return 'c';
 }
 
 static char
@@ -652,6 +662,24 @@ TEST(cursor_is_moved_even_if_no_file_was_processed)
 
 	assert_success(unlink(SANDBOX_PATH "/b"));
 	assert_success(unlink(SANDBOX_PATH "/a"));
+}
+
+TEST(files_can_be_diffed)
+{
+	create_file(SANDBOX_PATH "/a");
+	create_dir(SANDBOX_PATH "/dir");
+	create_file(SANDBOX_PATH "/dir/a");
+
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/a"));
+
+	fops_init(&line_prompt, &options_prompt_compare);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink(SANDBOX_PATH "/dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -13,6 +13,9 @@
 	Added %pu macro that disables caching of viewer's output.  Thanks to
 	b0x4it.
 
+	Added comparison action to conflict resolution dialog.  Thanks to
+	anonymous at Vifm Q2A site and dalvand.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
