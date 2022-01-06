@@ -37,6 +37,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() qsort() */
 #include <string.h> /* memcpy() strdup() strchr() strlen() strpbrk() strtol() */
+#include <time.h> /* tm localtime() strftime() */
 #include <wchar.h> /* wcwidth() */
 
 #include "../cfg/config.h"
@@ -821,6 +822,19 @@ write_marked_paths(FILE *file, view_t *view, int null_sep)
 		const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
 		fprintf(file, "%s%s%s%c", entry->origin, sep, entry->name, separator);
 	}
+}
+
+void
+format_iso_time(time_t t, char buf[], size_t buf_size)
+{
+	struct tm *const tm = localtime(&t);
+	if(tm == NULL)
+	{
+		copy_str(buf, buf_size, "");
+		return;
+	}
+
+	strftime(buf, buf_size, "%a, %d %b %Y %H:%M:%S", tm);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
