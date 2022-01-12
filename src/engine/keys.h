@@ -23,6 +23,11 @@
 
 enum
 {
+	MAX_LHS_LEN = 4
+};
+
+enum
+{
 	NO_COUNT_GIVEN = -1,
 	NO_REG_GIVEN = -1,
 };
@@ -127,7 +132,7 @@ key_conf_t;
 
 typedef struct
 {
-	const wchar_t keys[5];
+	const wchar_t keys[MAX_LHS_LEN + 1];
 	key_conf_t info;
 }
 keys_add_info_t;
