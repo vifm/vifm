@@ -38,6 +38,7 @@ git checkout --force stash@{0}^
 git stash pop
 
 find -name '*.gcda' -delete
+make -C ../tests build
 make check
 
 uncov new-gcovi --capture-worktree \
