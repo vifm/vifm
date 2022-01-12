@@ -65,7 +65,7 @@ if !has('nvim') && exists('*term_start')
 		if (bufnr('%') == bufnr('#') || !bufexists(0)) && !data.split
 			enew
 		else
-			buffer #
+			silent! buffer #
 		endif
 		silent! bdelete! #
 		if data.split
@@ -145,7 +145,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 				if (bufnr('%') == bufnr('#') || !bufexists(0)) && !self.split
 					enew
 				else
-					buffer #
+					silent! buffer #
 				endif
 				silent! bdelete! #
 				if self.split
