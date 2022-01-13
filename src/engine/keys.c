@@ -43,7 +43,7 @@
 typedef enum
 {
 	BUILTIN_WAIT_POINT, /* Infinite wait of next key press. */
-	BUILTIN_KEYS,       /* Normal builtin key. */
+	BUILTIN_KEYS,       /* Normal builtin key or a foreign if in user's tree. */
 	BUILTIN_NIM_KEYS,   /* NIM - number in the middle. */
 	USER_CMD,           /* User mapping. */
 }
@@ -944,6 +944,25 @@ combine_counts(int count_a, int count_b)
 }
 
 int
+vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info, int mode)
+{
+	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
+	if(curr == NULL)
+	{
+		return -1;
+	}
+
+	if(curr->type == USER_CMD)
+	{
+		free(curr->conf.data.cmd);
+	}
+
+	curr->type = BUILTIN_KEYS;
+	curr->conf = *info;
+	return 0;
+}
+
+int
 vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
 		int flags)
 {
@@ -980,7 +999,11 @@ vle_keys_user_remove(const wchar_t keys[], int mode)
 	if((curr = find_user_keys(keys, mode)) == NULL)
 		return -1;
 
-	free(curr->conf.data.cmd);
+	if(curr->type == USER_CMD)
+	{
+		free(curr->conf.data.cmd);
+	}
+
 	curr->type = BUILTIN_WAIT_POINT;
 	curr->conf.data.handler = NULL;
 
@@ -1033,7 +1056,7 @@ find_user_keys(const wchar_t *keys, int mode)
 		curr = p;
 		keys++;
 	}
-	return (curr->type == USER_CMD) ? curr : NULL;
+	return curr;
 }
 
 int
