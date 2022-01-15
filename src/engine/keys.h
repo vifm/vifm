@@ -75,9 +75,10 @@ FollowedBy;
 /* Describes single key (command or selector) on its own. */
 typedef struct
 {
-	int count; /* Repeat count, may be equal NO_COUNT_GIVEN. */
-	int reg;   /* Number of selected register. */
-	int multi; /* Multikey. */
+	int count;       /* Repeat count, may be equal NO_COUNT_GIVEN. */
+	int reg;         /* Number of selected register. */
+	int multi;       /* Multikey. */
+	void *user_data; /* User data for the key (can be NULL). */
 }
 key_info_t;
 
@@ -124,6 +125,7 @@ typedef struct
 	vle_suggest_func suggest;   /* Suggestion function (can be NULL).  Invoked for
 	                               multikeys. */
 	const char *descr;          /* Brief description of the key (can be NULL). */
+	void *user_data;            /* User data for the key (can be NULL). */
 	int nim;                    /* Whether additional count in the middle is
 	                               allowed. */
 	int skip_suggestion;        /* Do not print this among suggestions. */

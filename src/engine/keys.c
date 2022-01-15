@@ -17,7 +17,7 @@
  */
 
 /* WARNING: code implementing execution of keys deserves a prize in nomination
- *          "insanely perplex control flow".  You have been warned.
+ *          "insanely perplexed control flow".  You have been warned.
  * TODO: seriously, indirect recursion and jumps between routines is a horrible
  *       mess, even not touching tree representation this should be possible to
  *       rewrite with master loop that simply goes through the string in
@@ -426,6 +426,8 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 				return KEYS_UNKNOWN;
 			}
 
+			key_info.user_data = curr->conf.user_data;
+
 			has_duplicate = root == &user_cmds_root[vle_mode_get()] &&
 					contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
 			result = execute_next_keys(curr, curr->type == USER_CMD ? keys : L"",
@@ -460,6 +462,8 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 	{
 		return KEYS_WAIT_SHORT;
 	}
+
+	key_info.user_data = curr->conf.user_data;
 
 	has_duplicate = root == &user_cmds_root[vle_mode_get()] &&
 			contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
@@ -517,6 +521,8 @@ dispatch_selector(const wchar_t keys[], keys_info_t *keys_info,
 	{
 		return KEYS_WAIT_SHORT;
 	}
+
+	key_info.user_data = curr->conf.user_data;
 
 	/* Execute the selector. */
 	if(curr->conf.followed == FOLLOWED_BY_MULTIKEY && keys[0] != L'\0')
