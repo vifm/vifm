@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2021 Dec 22
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Jan 16
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -17,6 +17,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
+|vifm-l_vifm.keys|     `vifm.keys` global table.
 |vifm-l_vifm.opts|     `vifm.opts` global table.
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
@@ -465,6 +466,8 @@ Raises an error:~
 --------------------------------------------------------------------------------
 *vifm-l_vifm.cmds*
 
+This global `vifm.cmds` table provides means of managing command-line commands.
+
 vifm.cmds.add({cmd})                           *vifm-l_vifm.cmds.add()*
 Registers a new :command of a kind that's equivalent to builtin commands.
 
@@ -538,6 +541,39 @@ of |vifm-:delcommand| builtin command.
 
 Parameters:~
   {name}  Name of the command.
+
+Return:~
+  `true` on success.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.keys*
+
+This global `vifm.keys` table provides means of managing key bindings.
+
+vifm.keys.add({key})                           *vifm-l_vifm.keys.add()*
+Registers a new user-defined key in one or several modes or replaces an
+existing one.
+
+Possible fields of {key}:
+ - "shortcut" (string)
+   Left-hand side of the mapping.
+ - "description" (string) (default: "")
+   Description of the key.
+ - "modes" (array of strings)
+   List of modes to register the key in.  Supported values: cmdline, normal,
+   visual, menus, view and dialogs (sort, attributes, change and file info).
+   Unsupported values are ignored.
+ - "handler" (function)
+   Handler which accepts {info}.
+
+Fields of {info} argument for "handler":
+ - "count" (integer)
+   Count preceding the key or nil if none.
+ - "register" (string)
+   Register name or nil if none was specified.
+
+Parameters:~
+  {cmd}  Table with information about a key.
 
 Return:~
   `true` on success.

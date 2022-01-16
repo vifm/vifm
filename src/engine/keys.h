@@ -23,6 +23,11 @@
 
 enum
 {
+	MAX_LHS_LEN = 4
+};
+
+enum
+{
 	NO_COUNT_GIVEN = -1,
 	NO_REG_GIVEN = -1,
 };
@@ -70,9 +75,10 @@ FollowedBy;
 /* Describes single key (command or selector) on its own. */
 typedef struct
 {
-	int count; /* Repeat count, may be equal NO_COUNT_GIVEN. */
-	int reg;   /* Number of selected register. */
-	int multi; /* Multikey. */
+	int count;       /* Repeat count, may be equal NO_COUNT_GIVEN. */
+	int reg;         /* Number of selected register. */
+	int multi;       /* Multikey. */
+	void *user_data; /* User data for the key (can be NULL). */
 }
 key_info_t;
 
@@ -119,6 +125,7 @@ typedef struct
 	vle_suggest_func suggest;   /* Suggestion function (can be NULL).  Invoked for
 	                               multikeys. */
 	const char *descr;          /* Brief description of the key (can be NULL). */
+	void *user_data;            /* User data for the key (can be NULL). */
 	int nim;                    /* Whether additional count in the middle is
 	                               allowed. */
 	int skip_suggestion;        /* Do not print this among suggestions. */
@@ -127,7 +134,7 @@ key_conf_t;
 
 typedef struct
 {
-	const wchar_t keys[5];
+	const wchar_t keys[MAX_LHS_LEN + 1];
 	key_conf_t info;
 }
 keys_add_info_t;
@@ -169,6 +176,10 @@ int vle_keys_add(keys_add_info_t cmds[], size_t len, int mode);
 /* Registers cmds[0 .. len-1] selectors for the mode.  Returns non-zero on
  * error, otherwise zero is returned. */
 int vle_keys_add_selectors(keys_add_info_t cmds[], size_t len, int mode);
+
+/* Registers a foreign builtin-like key, but does it among user's keys.
+ * Returns non-zero on error, otherwise zero is returned. */
+int vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info, int mode);
 
 /* Registers user key mapping.  The flags parameter accepts combinations of
  * KEYS_FLAG_*.  Returns non-zero or error, otherwise zero is returned. */

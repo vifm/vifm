@@ -17,7 +17,7 @@
  */
 
 /* WARNING: code implementing execution of keys deserves a prize in nomination
- *          "insanely perplex control flow".  You have been warned.
+ *          "insanely perplexed control flow".  You have been warned.
  * TODO: seriously, indirect recursion and jumps between routines is a horrible
  *       mess, even not touching tree representation this should be possible to
  *       rewrite with master loop that simply goes through the string in
@@ -43,7 +43,7 @@
 typedef enum
 {
 	BUILTIN_WAIT_POINT, /* Infinite wait of next key press. */
-	BUILTIN_KEYS,       /* Normal builtin key. */
+	BUILTIN_KEYS,       /* Normal builtin key or a foreign if in user's tree. */
 	BUILTIN_NIM_KEYS,   /* NIM - number in the middle. */
 	USER_CMD,           /* User mapping. */
 }
@@ -426,6 +426,8 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 				return KEYS_UNKNOWN;
 			}
 
+			key_info.user_data = curr->conf.user_data;
+
 			has_duplicate = root == &user_cmds_root[vle_mode_get()] &&
 					contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
 			result = execute_next_keys(curr, curr->type == USER_CMD ? keys : L"",
@@ -460,6 +462,8 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 	{
 		return KEYS_WAIT_SHORT;
 	}
+
+	key_info.user_data = curr->conf.user_data;
 
 	has_duplicate = root == &user_cmds_root[vle_mode_get()] &&
 			contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
@@ -517,6 +521,8 @@ dispatch_selector(const wchar_t keys[], keys_info_t *keys_info,
 	{
 		return KEYS_WAIT_SHORT;
 	}
+
+	key_info.user_data = curr->conf.user_data;
 
 	/* Execute the selector. */
 	if(curr->conf.followed == FOLLOWED_BY_MULTIKEY && keys[0] != L'\0')
@@ -944,6 +950,25 @@ combine_counts(int count_a, int count_b)
 }
 
 int
+vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info, int mode)
+{
+	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
+	if(curr == NULL)
+	{
+		return -1;
+	}
+
+	if(curr->type == USER_CMD)
+	{
+		free(curr->conf.data.cmd);
+	}
+
+	curr->type = BUILTIN_KEYS;
+	curr->conf = *info;
+	return 0;
+}
+
+int
 vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
 		int flags)
 {
@@ -980,7 +1005,11 @@ vle_keys_user_remove(const wchar_t keys[], int mode)
 	if((curr = find_user_keys(keys, mode)) == NULL)
 		return -1;
 
-	free(curr->conf.data.cmd);
+	if(curr->type == USER_CMD)
+	{
+		free(curr->conf.data.cmd);
+	}
+
 	curr->type = BUILTIN_WAIT_POINT;
 	curr->conf.data.handler = NULL;
 
@@ -1033,7 +1062,7 @@ find_user_keys(const wchar_t *keys, int mode)
 		curr = p;
 		keys++;
 	}
-	return (curr->type == USER_CMD) ? curr : NULL;
+	return curr;
 }
 
 int
