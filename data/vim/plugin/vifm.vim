@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2021 December 28
+" Last Change: 2022 January 18
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -410,8 +410,13 @@ endfunction
 if get(g:, 'vifm_replace_netrw')
 	function! s:HandleBufEnter(fname) abort
 		if a:fname !=# '' && isdirectory(a:fname)
-			buffer #
+			if bufexists(0)
+				buffer #
+			else
+				enew
+			endif
 			silent! bdelete! #
+
 			let embed_split = get(g:, 'vifm_embed_split', 0)
 			let g:vifm_embed_split = 0
 			exec get(g:, 'vifm_replace_netrw_cmd', 'Vifm') . ' ' . a:fname
