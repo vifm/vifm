@@ -57,6 +57,10 @@
 	Fixed --remote and --remote-expr failing if $TERM isn't valid (regression
 	in 0.11-beta).  Thanks to b0x4it.
 
+	Fixed `:compare listunique` yielding different results depending on which
+	view is active due to not processing bottom files in the current view in
+	some situations.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
