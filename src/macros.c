@@ -56,13 +56,17 @@ PathType;
 typedef char (*macro_filter_func)(int *quoted, char c, char data,
 		int ncurr, int nother);
 
+/* File iteration function. */
+typedef int (*iter_func)(view_t *view, dir_entry_t **entry);
+
 static char filter_all(int *quoted, char c, char data, int ncurr, int nother);
 static char filter_single(int *quoted, char c, char data,
 		int ncurr, int nother);
 static char * expand_macros_i(const char command[], const char args[],
 		MacroFlags *flags, int for_shell, macro_filter_func filter);
 TSTATIC char * append_selected_files(view_t *view, char expanded[],
-		int under_cursor, int quotes, const char mod[], int for_shell);
+		int under_cursor, int quotes, const char mod[], iter_func iter,
+		int for_shell);
 static char * append_entry(view_t *view, char expanded[], PathType type,
 		dir_entry_t *entry, int quotes, const char mod[], int for_shell);
 static char * expand_directory_path(view_t *view, char *expanded, int quotes,
@@ -180,6 +184,8 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		return strdup(command);
 	}
 
+	iter_func iter = &iter_marked_entries;
+
 	/* Turn selection into marking. */
 	flist_set_marking(&lwin, 0);
 	flist_set_marking(&rwin, 0);
@@ -223,30 +229,30 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 				break;
 			case 'b': /* selected files of both dirs */
 				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1, for_shell);
+						command + x + 1, iter, for_shell);
 				expanded = append_to_expanded(expanded, " ");
 				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1, for_shell);
+						command + x + 1, iter, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'c': /* current dir file under the cursor */
 				expanded = append_selected_files(curr_view, expanded, 1, quotes,
-						command + x + 1, for_shell);
+						command + x + 1, iter, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'C': /* other dir file under the cursor */
 				expanded = append_selected_files(other_view, expanded, 1, quotes,
-						command + x + 1, for_shell);
+						command + x + 1, iter, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'f': /* current dir selected files */
 				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1, for_shell);
+						command + x + 1, iter, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'F': /* other dir selected files */
 				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1, for_shell);
+						command + x + 1, iter, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */
@@ -428,7 +434,7 @@ ma_flags_set(MacroFlags *flags, MacroFlags flag)
 
 TSTATIC char *
 append_selected_files(view_t *view, char expanded[], int under_cursor,
-		int quotes, const char mod[], int for_shell)
+		int quotes, const char mod[], iter_func iter, int for_shell)
 {
 	const PathType type = (view == other_view)
 	                    ? PT_FULL
@@ -441,7 +447,7 @@ append_selected_files(view_t *view, char expanded[], int under_cursor,
 	{
 		int first = 1;
 		dir_entry_t *entry = NULL;
-		while(iter_marked_entries(view, &entry))
+		while(iter(view, &entry))
 		{
 			if(!first)
 			{
