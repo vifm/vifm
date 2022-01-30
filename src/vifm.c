@@ -362,7 +362,7 @@ vifm_main(int argc, char *argv[])
 	 * has no effect and doesn't reset cursor position after `+"goto path"`. */
 	update_screen(stats_update_fetch());
 
-	event_loop(&quit);
+	event_loop(&quit, /*manage_marking=*/1);
 
 	return 0;
 }

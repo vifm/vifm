@@ -123,39 +123,39 @@ TEST(colon_p)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 	                    expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:p ", "", &flags, MER_SHELL);
 	assert_string_equal(
 			" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 " SL "rwin" SL"rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin" SL "lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin" SL "existing-files" SL "a " SL "lwin" SL "existing-files" SL "b " SL "lwin" SL "existing-files" SL "c ", expanded);
 	free(expanded);
 }
@@ -167,38 +167,38 @@ TEST(colon_p_in_root)
 
 	strcpy(lwin.curr_dir, "/");
 
-	expanded = ma_expand(" cp %f:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lfile0 " SL "lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 	                    expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:p ", "", &flags, MER_SHELL);
 	assert_string_equal(
 			" cp " SL "lfile0 " SL "lfile2 " SL "rwin" SL"rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL " ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:p ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "existing-files" SL "a " SL "existing-files" SL "b " SL "existing-files" SL "c ", expanded);
 	free(expanded);
 }
@@ -208,52 +208,52 @@ TEST(colon_tilde)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:p:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:p:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:p:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:p:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(
 			" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin" SL "lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp \\~" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp \\~ ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:~ ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:~ ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp existing-files" SL "a existing-files" SL "b existing-files" SL "c ", expanded);
 	free(expanded);
 }
@@ -263,57 +263,57 @@ TEST(colon_dot)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:p:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:p:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:~:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:~:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:. ", "", &flags, MER_SHELL);
 	assert_string_equal(
 			" cp lfile0 lfile2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:p:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:p:. ", "", &flags, MER_SHELL);
 	assert_string_equal(
 			" cp lfile0 lfile2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp existing-files" SL "a existing-files" SL "b existing-files" SL "c ", expanded);
 	free(expanded);
 }
@@ -323,48 +323,48 @@ TEST(colon_h)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp . . ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:p:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:p:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin " SL "lwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:~:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:~:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp \\~ \\~ \\~ ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin " SL "rwin " SL "rwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp . . " SL "rwin " SL "rwin " SL "rwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:p:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:p:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin " SL "lwin " SL "rwin " SL "rwin " SL "rwin ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL " ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:h:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:h:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL " ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:h ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp existing-files existing-files existing-files ", expanded);
 	free(expanded);
 }
@@ -374,47 +374,47 @@ TEST(colon_t)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:p:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:p:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %F:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %F:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfile1 rfile3 rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 rfile1 rfile3 rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %b:p:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %b:p:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2 rfile1 rfile3 rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:t:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:t:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:t ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:t ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp a b c ", expanded);
 	free(expanded);
 }
@@ -427,49 +427,49 @@ TEST(colon_r)
 	strcpy(rwin.curr_dir, "/rw.in");
 	rwin.list_pos = 4;
 
-	expanded = ma_expand(" cp %c:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:r:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:r:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin" SL "lfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rw.in" SL "rfile4.tar ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:r:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:r:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rw.in" SL "rfile4 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:r:r:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:r:r:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rw.in" SL "rfile4 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "rw ", expanded);
 	free(expanded);
 
 	lwin.list_pos = 4;
 
-	expanded = ma_expand(" cp %c:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp .lfile4 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL "lwin" SL ".lfile4 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:t:r ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:t:r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp a b c ", expanded);
 	free(expanded);
 }
@@ -482,51 +482,51 @@ TEST(colon_e)
 	strcpy(rwin.curr_dir, "" SL "rw.in");
 	rwin.list_pos = 4;
 
-	expanded = ma_expand(" cp %c:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:e:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:e:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp gz ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %C:e:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:e:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
 	rwin.list_pos = 2;
 
-	expanded = ma_expand(" cp %C:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %C:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %d:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %d:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %D:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %D:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp in ", expanded);
 	free(expanded);
 
 	lwin.list_pos = 4;
 
-	expanded = ma_expand(" cp %c:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %c:p:e ", "", &flags, 1);
+	expanded = ma_expand(" cp %c:p:e ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:t:. ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:t:. ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp a b c ", expanded);
 	free(expanded);
 }
@@ -536,27 +536,27 @@ TEST(colon_s)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:s?l?r ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:s?l?r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:s?l?r? ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:s?l?r? ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfile0 rfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:salara ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:salara ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfile0 rfile2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:s?l?r?k? ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:s?l?r?k? ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfile0 rfile2k? ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:s?l?r?:s!f!k!k? ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:s?l?r?:s!f!k!k? ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rkile0 rkile2k? ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:t:s?a?y? ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:t:s?a?y? ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp y b c ", expanded);
 	free(expanded);
 }
@@ -566,23 +566,23 @@ TEST(colon_gs)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:gs?l?r ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:gs?l?r ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp lfile0 lfile2", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:gs?l?r? ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:gs?l?r? ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfire0 rfire2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:gsalara ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:gsalara ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfire0 rfire2 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %f:gs?l?r?k? ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:gs?l?r?k? ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp rfire0 rfire2k? ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" cp %rz:t:gs?b?y? ", "", &flags, 1);
+	expanded = ma_expand(" cp %rz:t:gs?b?y? ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp a y c ", expanded);
 	free(expanded);
 
@@ -590,7 +590,7 @@ TEST(colon_gs)
 	{
 		char *old = cfg.shell;
 		cfg.shell = strdup("bash");
-		expanded = ma_expand(" cp %f:p:gs?\\?/? ", "", &flags, 1);
+		expanded = ma_expand(" cp %f:p:gs?\\?/? ", "", &flags, MER_SHELL);
 		assert_string_equal(" cp /lwin/lfile0 /lwin/lfile2 ", expanded);
 		free(expanded);
 		free(cfg.shell);
@@ -606,13 +606,13 @@ TEST(colon_u)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand("%f:p:u", "", &flags, 1);
+	expanded = ma_expand("%f:p:u", "", &flags, MER_SHELL);
 	assert_string_starts_with("\\\\", expanded);
 	free(expanded);
 
 	strcpy(lwin.curr_dir, "//server/share/directory");
 
-	expanded = ma_expand(" cp %f:p:u ", "", &flags, 1);
+	expanded = ma_expand(" cp %f:p:u ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp " SL SL "server " SL SL "server ", expanded);
 	free(expanded);
 }
@@ -624,21 +624,21 @@ TEST(windows_specific)
 
 	strcpy(lwin.curr_dir, "h:/rwin");
 
-	expanded = ma_expand(" %d:h ", "", &flags, 1);
+	expanded = ma_expand(" %d:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" h:\\\\ ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" %d:h:h ", "", &flags, 1);
+	expanded = ma_expand(" %d:h:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" h:\\\\ ", expanded);
 	free(expanded);
 
 	strcpy(lwin.curr_dir, "//ZX-Spectrum");
 
-	expanded = ma_expand(" %d:h ", "", &flags, 1);
+	expanded = ma_expand(" %d:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" \\\\\\\\ZX-Spectrum ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" %d:h:h ", "", &flags, 1);
+	expanded = ma_expand(" %d:h:h ", "", &flags, MER_SHELL);
 	assert_string_equal(" \\\\\\\\ZX-Spectrum ", expanded);
 	free(expanded);
 }
@@ -650,7 +650,8 @@ TEST(modif_without_macros)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand(" cp %f:t :p :~ :. :h :t :r :e :s :gs ", "", &flags, 0);
+	expanded = ma_expand(" cp %f:t :p :~ :. :h :t :r :e :s :gs ", "", &flags,
+			MER_OP);
 	assert_string_equal(" cp lfile0 lfile2 :p :~ :. :h :t :r :e :s :gs ",
 			expanded);
 	free(expanded);
@@ -660,7 +661,7 @@ TEST(with_quotes)
 {
 	MacroFlags flags;
 
-	char *expanded = ma_expand(" cp %\"f:p ", "", &flags, 1);
+	char *expanded = ma_expand(" cp %\"f:p ", "", &flags, MER_SHELL);
 	assert_string_equal(" cp \"" SL "lwin" SL "lfile0\" \"" SL "lwin" SL "lfile2\" ",
 			expanded);
 	free(expanded);

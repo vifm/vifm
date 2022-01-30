@@ -579,5 +579,48 @@ TEST(the_same_directories_are_not_compared)
 	assert_false(flist_custom_active(&rwin));
 }
 
+/* Results should be the same regardless of which pane is active. */
+TEST(two_panes_unique_is_symmetric)
+{
+	create_dir(SANDBOX_PATH "/a");
+	create_dir(SANDBOX_PATH "/b");
+	create_file(SANDBOX_PATH "/a/filea");
+	create_file(SANDBOX_PATH "/a/fileb");
+	create_file(SANDBOX_PATH "/b/filea");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "a",
+			saved_cwd);
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "b",
+			saved_cwd);
+
+	curr_view = &lwin;
+	other_view = &rwin;
+	compare_two_panes(CT_NAME, LT_UNIQUE, /*group_paths=*/0, /*skip_empty=*/0);
+	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(1, rwin.list_rows);
+	assert_string_equal("fileb", lwin.dir_entry[0].name);
+	assert_string_equal("..", rwin.dir_entry[0].name);
+
+	rn_leave(&lwin, 1);
+	rn_leave(&rwin, 1);
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	compare_two_panes(CT_NAME, LT_UNIQUE, /*group_paths=*/0, /*skip_empty=*/0);
+	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(1, rwin.list_rows);
+	assert_string_equal("fileb", lwin.dir_entry[0].name);
+	assert_string_equal("..", rwin.dir_entry[0].name);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	remove_file(SANDBOX_PATH "/a/filea");
+	remove_file(SANDBOX_PATH "/a/fileb");
+	remove_file(SANDBOX_PATH "/b/filea");
+	remove_dir(SANDBOX_PATH "/a");
+	remove_dir(SANDBOX_PATH "/b");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -186,6 +186,8 @@ make_unique_lists(entries_t curr, entries_t other)
 	flist_custom_start(curr_view, "unique");
 	flist_custom_start(other_view, "unique");
 
+	/* Inspect entries of both sides in a manner similar to the merging procedure.
+	 * Put unique ones into custom views and purge non-unique ones in place. */
 	for(i = 0; i < other.nentries; ++i)
 	{
 		const int id = other.entries[i].id;
@@ -210,7 +212,15 @@ make_unique_lists(entries_t curr, entries_t other)
 		{
 			fentry_free(other_view, &other.entries[i++]);
 		}
+		/* Want to revisit this entry on the next iteration of the loop. */
 		--i;
+	}
+
+	/* After iterating through all elements in the other view, all entries that
+	 * remain in the current view are unique to it. */
+	while(j < curr.nentries)
+	{
+		flist_custom_put(curr_view, &curr.entries[j++]);
 	}
 
 	/* Entries' data has been moved out of them or freed, so need to free only the

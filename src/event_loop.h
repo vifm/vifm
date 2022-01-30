@@ -25,7 +25,7 @@
 /* Everything is driven from this function with the exception of signals which
  * are handled in signals.c.  It is reentrant so remote pieces of code can run
  * nested event loops. */
-void event_loop(const int *quit);
+void event_loop(const int *quit, int manage_marking);
 
 void update_input_buf(void);
 

@@ -9,7 +9,10 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/filelist.h"
 #include "../../src/macros.h"
+
+static iter_func iter = &iter_marked_entries;
 
 SETUP()
 {
@@ -82,24 +85,26 @@ TEST(f)
 	char *expanded;
 
 	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 0, 0, "", 1);
+	expanded = append_selected_files(&lwin, expanded, 0, 0, "", iter, 1);
 	assert_string_equal("lfile0 lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 0, 0, "", 1);
+	expanded = append_selected_files(&lwin, expanded, 0, 0, "", iter, 1);
 	assert_string_equal("/lfile0 lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 0, 0, "", 1);
-	assert_string_equal(SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
+	expanded = append_selected_files(&rwin, expanded, 0, 0, "", iter, 1);
+	assert_string_equal(SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 "
+	                    SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
 			expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 0, 0, "", 1);
-	assert_string_equal("/" SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
+	expanded = append_selected_files(&rwin, expanded, 0, 0, "", iter, 1);
+	assert_string_equal("/" SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 "
+	                    SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
 			expanded);
 	free(expanded);
 }
@@ -109,22 +114,22 @@ TEST(c)
 	char *expanded;
 
 	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 1, 0, "", 1);
+	expanded = append_selected_files(&lwin, expanded, 1, 0, "", iter, 1);
 	assert_string_equal("lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 1, 0, "", 1);
+	expanded = append_selected_files(&lwin, expanded, 1, 0, "", iter, 1);
 	assert_string_equal("/lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 1, 0, "", 1);
+	expanded = append_selected_files(&rwin, expanded, 1, 0, "", iter, 1);
 	assert_string_equal("" SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 1, 0, "", 1);
+	expanded = append_selected_files(&rwin, expanded, 1, 0, "", iter, 1);
 	assert_string_equal("/" SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }

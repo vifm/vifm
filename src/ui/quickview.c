@@ -857,7 +857,7 @@ qv_expand_viewer(view_t *view, const char viewer[], MacroFlags *flags)
 	}
 	else
 	{
-		result = ma_expand(viewer, NULL, flags, 1);
+		result = ma_expand(viewer, NULL, flags, MER_SHELL);
 	}
 	return result;
 }

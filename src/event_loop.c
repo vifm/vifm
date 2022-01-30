@@ -89,7 +89,7 @@ static int suggestions_are_visible;
 static wchar_t input_queue[128];
 
 void
-event_loop(const int *quit)
+event_loop(const int *quit, int manage_marking)
 {
 	/* TODO: refactor this function event_loop(). */
 
@@ -121,11 +121,14 @@ event_loop(const int *quit)
 		size_t counter;
 		int got_input;
 
-		/* Reset marking from previous commands.  They are temporary.  Don't really
-		 * like this, any better ideas?  How about post-hook for engine/keys
-		 * unit? */
-		lwin.pending_marking = 0;
-		rwin.pending_marking = 0;
+		if(manage_marking)
+		{
+			/* Reset marking from previous commands.  They are temporary.  Don't
+			 * really like this, any better ideas?  How about post-hook for
+			 * engine/keys unit? */
+			lwin.pending_marking = 0;
+			rwin.pending_marking = 0;
+		}
 
 		modes_pre();
 

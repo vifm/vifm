@@ -384,7 +384,7 @@ enter(const char title[], const char message[], int prompt_skip,
 	/* Avoid starting nested loop in tests. */
 	if(curr_stats.load_stage > 0)
 	{
-		event_loop(&quit);
+		event_loop(&quit, /*manage_marking=*/0);
 	}
 
 	vle_mode_set(prev_mode, VMT_SECONDARY);

@@ -191,7 +191,7 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 	assert_success(regs_append('r', "b"));
-	char *expanded = ma_expand("%rr:p", NULL, NULL, 0);
+	char *expanded = ma_expand("%rr:p", NULL, NULL, MER_OP);
 	snprintf(path, sizeof(path), "%s/existing-files/b", test_data);
 	assert_string_equal(path, expanded);
 	free(expanded);
@@ -208,11 +208,11 @@ TEST(dir_macros_are_expanded_to_orig_dir)
 
 	setup_custom_view(&lwin, 0);
 
-	expanded = ma_expand("%d", NULL, NULL, 0);
+	expanded = ma_expand("%d", NULL, NULL, MER_OP);
 	assert_string_equal(path, expanded);
 	free(expanded);
 
-	expanded = ma_expand("%D", NULL, NULL, 0);
+	expanded = ma_expand("%D", NULL, NULL, MER_OP);
 	assert_string_equal(path, expanded);
 	free(expanded);
 }
