@@ -575,7 +575,7 @@ static void
 run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 {
 	MacroFlags flags;
-	char *const cmd = ma_expand(prog_spec, NULL, &flags, 1);
+	char *const cmd = ma_expand(prog_spec, NULL, &flags, MER_SHELL_OP);
 
 	const ShellPause pause_shell = (pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR);
 
@@ -632,7 +632,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 		name_macro = (view == curr_view) ? "%c" : "%C";
 	}
 
-	file_name = ma_expand(name_macro, NULL, NULL, 1);
+	file_name = ma_expand(name_macro, NULL, NULL, MER_SHELL_OP);
 	snprintf(cmd, sizeof(cmd), "%s %s", spec, file_name);
 	free(file_name);
 

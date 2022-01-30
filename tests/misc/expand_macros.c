@@ -102,14 +102,14 @@ TEARDOWN()
 
 TEST(literal_percent)
 {
-	char *expanded = ma_expand("echo log %%", "", NULL, 0);
+	char *expanded = ma_expand("echo log %%", "", NULL, MER_OP);
 	assert_string_equal("echo log %", expanded);
 	free(expanded);
 }
 
 TEST(argument_expansion)
 {
-	char *expanded = ma_expand("echo %a", "this is arg", NULL, 0);
+	char *expanded = ma_expand("echo %a", "this is arg", NULL, MER_OP);
 	assert_string_equal("echo this is arg", expanded);
 	free(expanded);
 }
@@ -118,12 +118,12 @@ TEST(b_both_have_selection)
 {
 	char *expanded;
 
-	expanded = ma_expand("/%b ", "", NULL, 1);
+	expanded = ma_expand("/%b ", "", NULL, MER_SHELL);
 	assert_string_equal(
 			"/lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("%b", "", NULL, 1);
+	expanded = ma_expand("%b", "", NULL, MER_SHELL);
 	assert_string_equal(
 			"lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
@@ -136,11 +136,11 @@ TEST(f_both_have_selection)
 	lwin.dir_entry[2].selected = 0;
 	lwin.selected_files--;
 
-	expanded = ma_expand("/%f ", "", NULL, 0);
+	expanded = ma_expand("/%f ", "", NULL, MER_OP);
 	assert_string_equal("/lfi\\ le0 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("%f", "", NULL, 0);
+	expanded = ma_expand("%f", "", NULL, MER_OP);
 	assert_string_equal("lfi\\ le0", expanded);
 	free(expanded);
 }
@@ -151,12 +151,12 @@ TEST(b_only_lwin_has_selection)
 
 	flist_sel_stash(&lwin);
 
-	expanded = ma_expand("/%b ", "", NULL, 1);
+	expanded = ma_expand("/%b ", "", NULL, MER_SHELL);
 	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand("%b", "", NULL, 1);
+	expanded = ma_expand("%b", "", NULL, MER_SHELL);
 	assert_string_equal("lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5",
 			expanded);
 	free(expanded);
@@ -168,12 +168,12 @@ TEST(b_only_rwin_has_selection)
 
 	flist_sel_stash(&rwin);
 
-	expanded = ma_expand("/%b ", "", NULL, 1);
+	expanded = ma_expand("/%b ", "", NULL, MER_SHELL);
 	assert_string_equal("/lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand("%b", "", NULL, 1);
+	expanded = ma_expand("%b", "", NULL, MER_SHELL);
 	assert_string_equal("lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
@@ -185,11 +185,11 @@ TEST(b_noone_has_selection)
 	flist_sel_stash(&lwin);
 	flist_sel_stash(&rwin);
 
-	expanded = ma_expand("/%b ", "", NULL, 1);
+	expanded = ma_expand("/%b ", "", NULL, MER_SHELL);
 	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("%b", "", NULL, 1);
+	expanded = ma_expand("%b", "", NULL, MER_SHELL);
 	assert_string_equal("lfile\\\"2 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
@@ -199,7 +199,7 @@ TEST(no_slash_after_dirname)
 	rwin.list_pos = 6;
 	curr_view = &rwin;
 	other_view = &lwin;
-	char *expanded = ma_expand("%c", "", NULL, 0);
+	char *expanded = ma_expand("%c", "", NULL, MER_OP);
 	assert_string_equal("rdir6", expanded);
 	free(expanded);
 }
@@ -211,11 +211,11 @@ TEST(forward_slashes_on_win_for_non_shell)
 	flist_sel_stash(&lwin);
 	flist_sel_stash(&rwin);
 
-	expanded = ma_expand("/%b ", "", NULL, 0);
+	expanded = ma_expand("/%b ", "", NULL, MER_OP);
 	assert_string_equal("/lfile\\\"2 /rwin/rfile5 ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("%b", "", NULL, 0);
+	expanded = ma_expand("%b", "", NULL, MER_OP);
 	assert_string_equal("lfile\\\"2 /rwin/rfile5", expanded);
 	free(expanded);
 }
@@ -225,82 +225,82 @@ TEST(good_flag_macros)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand("%i echo log", "", &flags, 0);
+	expanded = ma_expand("%i echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_IGNORE, flags);
 	free(expanded);
 
-	expanded = ma_expand("%Iu echo log", "", &flags, 0);
+	expanded = ma_expand("%Iu echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_CUSTOMVIEW_IOUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%IU echo log", "", &flags, 0);
+	expanded = ma_expand("%IU echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_VERYCUSTOMVIEW_IOUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%m echo log", "", &flags, 0);
+	expanded = ma_expand("%m echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_MENU_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%M echo log", "", &flags, 0);
+	expanded = ma_expand("%M echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_MENU_NAV_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%n echo log", "", &flags, 0);
+	expanded = ma_expand("%n echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_NO_TERM_MUX, flags);
 	free(expanded);
 
-	expanded = ma_expand("%q echo log", "", &flags, 0);
+	expanded = ma_expand("%q echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_PREVIEW_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%s echo log", "", &flags, 0);
+	expanded = ma_expand("%s echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_SPLIT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%S echo log", "", &flags, 0);
+	expanded = ma_expand("%S echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_STATUSBAR_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%u echo log", "", &flags, 0);
+	expanded = ma_expand("%u echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_CUSTOMVIEW_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%U echo log", "", &flags, 0);
+	expanded = ma_expand("%U echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_VERYCUSTOMVIEW_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%v echo log", "", &flags, 0);
+	expanded = ma_expand("%v echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_SPLIT_VERT, flags);
 	free(expanded);
 
-	expanded = ma_expand("%N echo log", "", &flags, 0);
+	expanded = ma_expand("%N echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_KEEP_SESSION, flags);
 	free(expanded);
 
-	expanded = ma_expand("%Pl echo log", "", &flags, 0);
+	expanded = ma_expand("%Pl echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_PIPE_FILE_LIST, flags);
 	free(expanded);
 
-	expanded = ma_expand("%Pz echo log", "", &flags, 0);
+	expanded = ma_expand("%Pz echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_PIPE_FILE_LIST_Z, flags);
 	free(expanded);
 
-	expanded = ma_expand("%pu echo log", "", &flags, 0);
+	expanded = ma_expand("%pu echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_NO_CACHE, flags);
 	free(expanded);
@@ -311,12 +311,12 @@ TEST(bad_flag_macros)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand("%IX echo log", "", &flags, 0);
+	expanded = ma_expand("%IX echo log", "", &flags, MER_OP);
 	assert_string_equal("X echo log", expanded);
 	assert_int_equal(MF_NONE, flags);
 	free(expanded);
 
-	expanded = ma_expand("%PX echo log", "", &flags, 0);
+	expanded = ma_expand("%PX echo log", "", &flags, MER_OP);
 	assert_string_equal("X echo log", expanded);
 	assert_int_equal(MF_NONE, flags);
 	free(expanded);
@@ -327,17 +327,17 @@ TEST(flags_from_different_sets)
 	MacroFlags flags;
 	char *expanded;
 
-	expanded = ma_expand("echo%Pl%S", "", &flags, 0);
+	expanded = ma_expand("echo%Pl%S", "", &flags, MER_OP);
 	assert_string_equal("echo", expanded);
 	assert_int_equal(MF_PIPE_FILE_LIST | MF_STATUSBAR_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("echo%q%Pz", "", &flags, 0);
+	expanded = ma_expand("echo%q%Pz", "", &flags, MER_OP);
 	assert_string_equal("echo", expanded);
 	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_PREVIEW_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("echo%m%pu%Pz", "", &flags, 0);
+	expanded = ma_expand("echo%m%pu%Pz", "", &flags, MER_OP);
 	assert_string_equal("echo", expanded);
 	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_MENU_OUTPUT | MF_NO_CACHE, flags);
 	assert_true(ma_flags_present(flags, MF_PIPE_FILE_LIST_Z));
@@ -364,7 +364,7 @@ TEST(r_well_formed)
 		regs_append(key, "b");
 		regs_append(key, "c");
 
-		expanded = ma_expand(line, NULL, NULL, 0);
+		expanded = ma_expand(line, NULL, NULL, MER_OP);
 		if(key == '_')
 		{
 			assert_string_equal("", expanded);
@@ -399,7 +399,7 @@ TEST(r_ill_formed)
 
 		if(!char_is_one_of(valid_registers, key) && key != '%')
 		{
-			char *const expanded = ma_expand(line, NULL, NULL, 0);
+			char *const expanded = ma_expand(line, NULL, NULL, MER_OP);
 			expected[5] = key;
 			assert_string_equal(expected, expanded);
 			free(expanded);
@@ -414,38 +414,38 @@ TEST(with_quotes)
 {
 	char *expanded;
 
-	expanded = ma_expand("/%\"b ", "", NULL, 1);
+	expanded = ma_expand("/%\"b ", "", NULL, MER_SHELL);
 	assert_string_equal(
 			"/\"lfi le0\" \"lfile\\\"2\" "
 			"\"" SL "rwin" SL "rfile1\" \"" SL "rwin" SL "rfile3\" \"" SL "rwin" SL "rfile5\" ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("/%\"f ", "", NULL, 1);
+	expanded = ma_expand("/%\"f ", "", NULL, MER_SHELL);
 	assert_string_equal("/\"lfi le0\" \"lfile\\\"2\" ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("/%\"F ", "", NULL, 1);
+	expanded = ma_expand("/%\"F ", "", NULL, MER_SHELL);
 	assert_string_equal("/\"" SL "rwin" SL "rfile1\" \"" SL "rwin" SL "rfile3\" \"" SL "rwin" SL "rfile5\" ",
 			expanded);
 	free(expanded);
 
-	expanded = ma_expand("/%\"c ", "", NULL, 1);
+	expanded = ma_expand("/%\"c ", "", NULL, MER_SHELL);
 	assert_string_equal("/\"lfile\\\"2\" ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("/%\"C ", "", NULL, 1);
+	expanded = ma_expand("/%\"C ", "", NULL, MER_SHELL);
 	assert_string_equal("/\"" SL "rwin" SL "rfile5\" ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("/%\"d ", "", NULL, 1);
+	expanded = ma_expand("/%\"d ", "", NULL, MER_SHELL);
 	assert_string_equal("/\"" SL "lwin\" ", expanded);
 	free(expanded);
 
-	expanded = ma_expand("/%\"D ", "", NULL, 1);
+	expanded = ma_expand("/%\"D ", "", NULL, MER_SHELL);
 	assert_string_equal("/\"" SL "rwin\" ", expanded);
 	free(expanded);
 
-	expanded = ma_expand(" %\"a %\"m %\"M %\"s ", "", NULL, 0);
+	expanded = ma_expand(" %\"a %\"m %\"M %\"s ", "", NULL, MER_OP);
 	assert_string_equal(" a m M s ", expanded);
 	free(expanded);
 
@@ -456,7 +456,7 @@ TEST(with_quotes)
 	regs_append(DEFAULT_REG_NAME, "b");
 	regs_append(DEFAULT_REG_NAME, "c");
 
-	expanded = ma_expand("/%\"r ", "", NULL, 1);
+	expanded = ma_expand("/%\"r ", "", NULL, MER_SHELL);
 	assert_string_equal("/\"a\" \"b\" \"c\" ", expanded);
 	free(expanded);
 
@@ -465,21 +465,21 @@ TEST(with_quotes)
 
 TEST(single_percent_sign)
 {
-	char *expanded = ma_expand("%", "", NULL, 0);
+	char *expanded = ma_expand("%", "", NULL, MER_OP);
 	assert_string_equal("", expanded);
 	free(expanded);
 }
 
 TEST(percent_sign_and_double_quote)
 {
-	char *expanded = ma_expand("%\"", "", NULL, 0);
+	char *expanded = ma_expand("%\"", "", NULL, MER_OP);
 	assert_string_equal("", expanded);
 	free(expanded);
 }
 
 TEST(empty_line_ok)
 {
-	char *expanded = ma_expand("", "", NULL, 0);
+	char *expanded = ma_expand("", "", NULL, MER_OP);
 	assert_string_equal("", expanded);
 	free(expanded);
 }
@@ -552,7 +552,7 @@ TEST(marking_is_not_disturbed)
 	assert_false(lwin.dir_entry[2].marked);
 	assert_true(lwin.dir_entry[3].marked);
 
-	char *expanded = ma_expand("%%", "", NULL, 0);
+	char *expanded = ma_expand("%%", "", NULL, MER_OP);
 	assert_string_equal("%", expanded);
 	free(expanded);
 
@@ -620,12 +620,12 @@ TEST(dollar_and_backtick_are_escaped_in_dquotes)
 	assert_success(replace_string(&lwin.dir_entry[lwin.list_pos].name, "a$`b"));
 
 	curr_stats.shell_type = ST_NORMAL;
-	expanded = ma_expand("%\"c", "", NULL, 0);
+	expanded = ma_expand("%\"c", "", NULL, MER_OP);
 	assert_string_equal("\"a\\$\\`b\"", expanded);
 	free(expanded);
 
 	curr_stats.shell_type = ST_CMD;
-	expanded = ma_expand("%\"c", "", NULL, 0);
+	expanded = ma_expand("%\"c", "", NULL, MER_OP);
 	assert_string_equal("\"a$`b\"", expanded);
 	free(expanded);
 
@@ -638,14 +638,14 @@ TEST(newline_is_escaped_with_quotes)
 	lwin.list_pos = 3;
 	assert_success(replace_string(&lwin.dir_entry[lwin.list_pos].name, "a\nb"));
 
-	char *expanded = ma_expand("%c", "", NULL, 0);
+	char *expanded = ma_expand("%c", "", NULL, MER_OP);
 	assert_string_equal("a\"\n\"b", expanded);
 	free(expanded);
 }
 
 TEST(bad_preview_macro)
 {
-	char *expanded = ma_expand("draw %pz", "", NULL, 0);
+	char *expanded = ma_expand("draw %pz", "", NULL, MER_OP);
 	assert_string_equal("draw z", expanded);
 	free(expanded);
 }
@@ -655,7 +655,7 @@ TEST(preview_macros)
 	lwin.window_cols = 15;
 	lwin.window_rows = 10;
 
-	char *expanded = ma_expand("draw %pw %ph", "", NULL, 0);
+	char *expanded = ma_expand("draw %pw %ph", "", NULL, MER_OP);
 	assert_string_equal("draw 15 10", expanded);
 	free(expanded);
 }
@@ -676,7 +676,7 @@ TEST(preview_macros_use_hint)
 
 	curr_stats.preview_hint = &parea;
 
-	char *expanded = ma_expand("draw %pw %ph %px %py", "", NULL, 0);
+	char *expanded = ma_expand("draw %pw %ph %px %py", "", NULL, MER_OP);
 	assert_string_equal("draw 3 4 0 1", expanded);
 	free(expanded);
 
@@ -688,7 +688,7 @@ TEST(preview_clear_cmd_gets_cut_off)
 	lwin.window_cols = 20;
 	lwin.window_rows = 30;
 
-	char *expanded = ma_expand("draw %pw %ph %pc clear", "", NULL, 0);
+	char *expanded = ma_expand("draw %pw %ph %pc clear", "", NULL, MER_OP);
 	assert_string_equal("draw 20 30 ", expanded);
 	free(expanded);
 }
@@ -705,7 +705,7 @@ TEST(preview_clear_cmd_is_optional)
 
 TEST(preview_direct_is_expanded_to_nothing)
 {
-	char *expanded = ma_expand("draw %pd arg", "", NULL, 0);
+	char *expanded = ma_expand("draw %pd arg", "", NULL, MER_OP);
 	assert_string_equal("draw  arg", expanded);
 	free(expanded);
 }

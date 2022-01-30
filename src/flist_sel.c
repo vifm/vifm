@@ -262,7 +262,7 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	int i;
 
 	MacroFlags flags;
-	char *const expanded_cmd = ma_expand(cmd, NULL, &flags, 1);
+	char *const expanded_cmd = ma_expand(cmd, NULL, &flags, MER_SHELL_OP);
 
 	if(rn_for_lines(view, expanded_cmd, &files, &nfiles, flags) != 0)
 	{

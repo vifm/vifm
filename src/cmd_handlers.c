@@ -5338,9 +5338,14 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int bg;
 	int save_msg = 0;
 
+	MacroExpandReason mer = MER_OP;
+	if(vle_cmds_identify(cmd_info->user_action) == COM_EXECUTE)
+	{
+		mer = MER_SHELL_OP;
+	}
+
 	/* Expand macros in a bound command. */
-	expanded_com = ma_expand(cmd_info->user_action, cmd_info->args, &flags,
-			vle_cmds_identify(cmd_info->user_action) == COM_EXECUTE);
+	expanded_com = ma_expand(cmd_info->user_action, cmd_info->args, &flags, mer);
 
 	if(expanded_com[0] == ':')
 	{

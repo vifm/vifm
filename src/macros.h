@@ -65,6 +65,20 @@ typedef enum
 }
 MacroFlags;
 
+/* Greater context in which macro expansion takes place.  External command
+ * context imply escaping specific to configured shell and current OS.
+ * Operation is anything that uses marking possibly derived from selection,
+ * non-operations process selection or current file. */
+typedef enum
+{
+	MER_OP,       /* Paths are collected for an internal operation. */
+	MER_SHELL_OP, /* Paths are collected for an operation via external command. */
+	MER_SHELL,    /* Paths are collected for an external command which isn't part
+	                 of a file-processing operation. */
+	MER_DISPLAY,  /* Paths are collected for other non-shell purposes. */
+}
+MacroExpandReason;
+
 /* Named boolean values of "with_opt" parameter for better readability. */
 enum
 {
@@ -93,7 +107,7 @@ custom_macro_t;
  * freed in the calling function.  After executing flags is a combination of
  * MF_* values. */
 char * ma_expand(const char command[], const char args[], MacroFlags *flags,
-		int for_shell);
+		MacroExpandReason reason);
 
 /* Like ma_expand(), but expands only single element macros and aims for
  * single string, so escaping is disabled. */

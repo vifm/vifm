@@ -61,6 +61,11 @@
 	view is active due to not processing bottom files in the current view in
 	some situations.
 
+	Fixed information about implicit file selection (count or ranges) being
+	lost due to the use of expand() builtin function in 'statusline'.  It was
+	fixed previously, but the fix got undone prior to the release.  Thanks
+	to dalvand.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

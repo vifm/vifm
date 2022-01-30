@@ -697,7 +697,7 @@ menus_get_targets(view_t *view)
 	if(view->selected_files > 0 ||
 			(view->pending_marking && flist_count_marked(view) > 0))
 	{
-		return ma_expand("%f", NULL, NULL, 1);
+		return ma_expand("%f", NULL, NULL, MER_SHELL_OP);
 	}
 
 	if(!flist_custom_active(view))

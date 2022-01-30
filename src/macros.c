@@ -85,12 +85,15 @@ static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 
 char *
 ma_expand(const char command[], const char args[], MacroFlags *flags,
-		int for_shell)
+		MacroExpandReason reason)
 {
+	int for_shell = (reason == MER_SHELL || reason == MER_SHELL_OP);
+	int for_op = (reason == MER_OP || reason == MER_SHELL_OP);
+
 	int lpending_marking = lwin.pending_marking;
 	int rpending_marking = rwin.pending_marking;
 
-	char *res = expand_macros_i(command, args, flags, for_shell, /*for_op=*/1,
+	char *res = expand_macros_i(command, args, flags, for_shell, for_op,
 			&filter_all);
 
 	lwin.pending_marking = lpending_marking;

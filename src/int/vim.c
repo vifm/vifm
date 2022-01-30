@@ -131,7 +131,7 @@ TSTATIC char *
 format_edit_marking_cmd(int *bg)
 {
 	const char *const fmt = (get_env_type() == ET_WIN) ? "%\"f" : "%f";
-	char *const files = ma_expand(fmt, NULL, NULL, 1);
+	char *const files = ma_expand(fmt, NULL, NULL, MER_SHELL_OP);
 	char *const cmd = format_str("%s %s", cfg_get_vicmd(bg), files);
 	free(files);
 	return cmd;
@@ -364,7 +364,7 @@ vim_run_choose_cmd(view_t *view)
 		return 0;
 	}
 
-	expanded_cmd = ma_expand(curr_stats.on_choose, NULL, NULL, 1);
+	expanded_cmd = ma_expand(curr_stats.on_choose, NULL, NULL, MER_SHELL_OP);
 	if(vifm_system(expanded_cmd, SHELL_BY_USER) != EXIT_SUCCESS)
 	{
 		free(expanded_cmd);
