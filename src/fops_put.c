@@ -298,7 +298,7 @@ initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 		put_confirm.file_order[i] = i;
 	}
 
-	/* If slashes are harmful, order files by descending depth in the file system
+	/* If clashes are harmful, order files by descending depth in the file system
 	 * and then move all that will clash to the tail of the array. */
 	if(op == CMLO_MOVE || op == CMLO_COPY)
 	{
