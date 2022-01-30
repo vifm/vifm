@@ -42,7 +42,7 @@ TEARDOWN()
 TEST(quit_immediately)
 {
 	int quit = 1;
-	event_loop(&quit);
+	event_loop(&quit, /*manage_marking=*/1);
 }
 
 TEST(quit_on_key_press)
@@ -53,7 +53,7 @@ TEST(quit_on_key_press)
 	feed_keys(L"x");
 
 	quit = 0;
-	event_loop(&quit);
+	event_loop(&quit, /*manage_marking=*/1);
 }
 
 TEST(pending_flags_are_reset)
@@ -67,7 +67,7 @@ TEST(pending_flags_are_reset)
 	feed_keys(L"xw");
 
 	quit = 0;
-	event_loop(&quit);
+	event_loop(&quit, /*manage_marking=*/1);
 
 	lwin.pending_marking = 0;
 	rwin.pending_marking = 0;
