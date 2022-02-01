@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Jan 2
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4809,8 +4809,8 @@ Example: >
 
 expand({expr})                                 *vifm-expand()*
 
-Expands environment variables and macros in {expr} just like it's done for
-command-line commands.  Returns a string.  See |vifm-macros|.
+Expands environment variables and macros in {expr} (in this order).  Returns
+a string.  See |vifm-macros|.
 
 Examples: >
   " percent sign
@@ -4819,6 +4819,8 @@ Examples: >
   :echo expand('%D:t')
   " $PATH environment variable (same as `:echo $PATH`)
   :echo expand('$PATH')
+  " full path to the current file with backslashes
+  :echo expand('%c:p:gs!/!\\!')
 
 extcached({cache}, {path}, {extcmd})           *vifm-extcached()*
 

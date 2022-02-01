@@ -79,6 +79,36 @@ TEST(expand_expands_environment_variables)
 	ASSERT_OK("expand('$OPEN_ME')", "Found something interesting?");
 }
 
+TEST(expand_allows_escaping_dollar)
+{
+	let_variables("$NO_EXPAND = 'value'");
+	ASSERT_OK("expand('\\$NO_EXPAND')", "$NO_EXPAND");
+}
+
+TEST(expand_escapes_paths)
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	init_view_list(&lwin);
+	replace_string(&lwin.dir_entry[0].name, "f i l e");
+	strcpy(lwin.curr_dir, "/dir");
+
+	ASSERT_OK("expand('%c')", "f\\ i\\ l\\ e");
+}
+
+TEST(expand_does_not_need_double_escaping)
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	init_view_list(&lwin);
+	replace_string(&lwin.dir_entry[0].name, "file");
+	strcpy(lwin.curr_dir, "/dir");
+
+	ASSERT_OK("expand('%c:p:gs!/!\\\\!')", "\\\\dir\\\\file");
+}
+
 TEST(system_catches_stdout)
 {
 	ASSERT_OK("system('echo a')", "a");

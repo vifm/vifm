@@ -166,19 +166,16 @@ executable_builtin(const call_info_t *call_info)
 static var_t
 expand_builtin(const call_info_t *call_info)
 {
-	var_t result;
-	char *result_str;
-	char *str_val;
-	char *env_expanded_str_val;
+	char *arg = var_to_str(call_info->argv[0]);
 
-	str_val = var_to_str(call_info->argv[0]);
-	env_expanded_str_val = expand_envvars(str_val, EEF_NONE);
-	result_str = ma_expand(env_expanded_str_val, NULL, NULL, MER_DISPLAY);
-	free(env_expanded_str_val);
-	free(str_val);
+	char *env_expanded = expand_envvars(arg, EEF_KEEP_ESCAPES);
+	free(arg);
 
-	result = var_from_str(result_str);
-	free(result_str);
+	char *macro_expanded = ma_expand(env_expanded, NULL, NULL, MER_DISPLAY);
+	free(env_expanded);
+
+	var_t result = var_from_str(macro_expanded);
+	free(macro_expanded);
 
 	return result;
 }

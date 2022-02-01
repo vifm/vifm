@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 2, 2022" "vifm 0.12"
+.TH VIFM 1 "February 1, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5744,8 +5744,8 @@ Example:
 
 .BI expand({expr})
 
-Expands environment variables and macros in {expr} just like it's done for
-command-line commands.  Returns a string.  See "Command macros" section above.
+Expands environment variables and macros in {expr} (in this order).  Returns
+a string.  See "Command macros" section above.
 .br
 
 Examples:
@@ -5757,6 +5757,8 @@ Examples:
   :echo expand('%D:t')
   " $PATH environment variable (same as `:echo $PATH`)
   :echo expand('$PATH')
+  " full path to the current file with backslashes
+  :echo expand('%c:p:gs!/!\\!')
 .EE
 
 .BI "extcached({cache}, {path}, {extcmd})"

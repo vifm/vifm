@@ -87,6 +87,10 @@
 
 	Fixed miller preview blinking too much.  Thanks to filterfalse.
 
+	Fixed expand() builtin function requiring backslashes to be escaped
+	twice (once for environment variable expansion and once for macro
+	expansion), which isn't convenient nor intuitive.
+
 0.11 to 0.12-beta (2021-09-15)
 
 	Changed semantics of light* color groups to add bold attribute only for
