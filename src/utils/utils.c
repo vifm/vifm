@@ -179,14 +179,17 @@ vifm_chdir(const char path[])
 char *
 expand_path(const char path[])
 {
-	char *const expanded_envvars = expand_envvars(path, 0);
-	/* replace_tilde() frees memory pointed to by expand_envvars. */
+	char *const expanded_envvars = expand_envvars(path, EEF_NONE);
+	/* replace_tilde() frees memory returned by expand_envvars. */
 	return replace_tilde(expanded_envvars);
 }
 
 char *
-expand_envvars(const char str[], int escape_vals)
+expand_envvars(const char str[], int flags)
 {
+	const int escape_vals = (flags & EEF_ESCAPE_VALS);
+	const int keep_escapes = (flags & EEF_KEEP_ESCAPES);
+
 	char *result = NULL;
 	size_t len = 0;
 	int prev_slash = 0;
@@ -230,7 +233,7 @@ expand_envvars(const char str[], int escape_vals)
 		{
 			prev_slash = (*str == '\\') ? !prev_slash : 0;
 
-			if(!prev_slash || escape_vals)
+			if(!prev_slash || (keep_escapes && (str[1] != '$' || !isalpha(str[2]))))
 			{
 				const char single_char[] = { *str, '\0' };
 				result = extend_string(result, single_char, &len);

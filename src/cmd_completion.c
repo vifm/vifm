@@ -1393,7 +1393,7 @@ get_cmd_path(const char cmd[], size_t path_len, char path[])
 
 	if(contains_slash(cmd))
 	{
-		char *const expanded = replace_tilde(expand_envvars(cmd, 0));
+		char *const expanded = replace_tilde(expand_envvars(cmd, EEF_NONE));
 		copy_str(path, path_len, expanded);
 		free(expanded);
 		return 0;
