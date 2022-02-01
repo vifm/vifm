@@ -182,7 +182,7 @@ cmds_expand_macros(const char str[], int for_shell, int *usr1, int *usr2)
 char *
 cmds_expand_envvars(const char str[])
 {
-	return expand_envvars(str, 1);
+	return expand_envvars(str, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
 }
 
 void
@@ -490,7 +490,7 @@ static char *
 pattern_expand_hook(const char pattern[])
 {
 	char *const no_tilde = expand_tilde(pattern);
-	char *const expanded_pattern = expand_envvars(no_tilde, 0);
+	char *const expanded_pattern = expand_envvars(no_tilde, EEF_NONE);
 	free(no_tilde);
 
 	return expanded_pattern;

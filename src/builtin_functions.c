@@ -172,7 +172,7 @@ expand_builtin(const call_info_t *call_info)
 	char *env_expanded_str_val;
 
 	str_val = var_to_str(call_info->argv[0]);
-	env_expanded_str_val = expand_envvars(str_val, 0);
+	env_expanded_str_val = expand_envvars(str_val, EEF_NONE);
 	result_str = ma_expand(env_expanded_str_val, NULL, NULL, MER_DISPLAY);
 	free(env_expanded_str_val);
 	free(str_val);

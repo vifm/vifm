@@ -26,7 +26,8 @@ TEARDOWN()
 TEST(empty_string_ok)
 {
 	const char *const path = "";
-	char *const expanded_path = expand_envvars(path, 1);
+	char *const expanded_path =
+		expand_envvars(path, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
 	assert_string_equal("", expanded_path);
 	free(expanded_path);
 }
@@ -34,7 +35,8 @@ TEST(empty_string_ok)
 TEST(no_envvars_ok)
 {
 	const char *const path = "/usr/bin/vifm";
-	char *const expanded_path = expand_envvars(path, 1);
+	char *const expanded_path =
+		expand_envvars(path, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
 	assert_string_equal(path, expanded_path);
 	free(expanded_path);
 }
@@ -42,7 +44,8 @@ TEST(no_envvars_ok)
 TEST(expanding_works)
 {
 	const char *const path = "/$" VAR_A "/$" VAR_B "/vifm";
-	char *const expanded_path = expand_envvars(path, 1);
+	char *const expanded_path =
+		expand_envvars(path, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
 	assert_string_equal("/" VAR_A_ESCAPED_VAL "/" VAR_B_VAL "/vifm",
 			expanded_path);
 	free(expanded_path);
@@ -51,7 +54,8 @@ TEST(expanding_works)
 TEST(ends_with_dollar_sign_ok)
 {
 	const char *const path = "/usr/bin/vifm$";
-	char *const expanded_path = expand_envvars(path, 1);
+	char *const expanded_path =
+		expand_envvars(path, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
 	assert_string_equal(path, expanded_path);
 	free(expanded_path);
 }
@@ -59,7 +63,8 @@ TEST(ends_with_dollar_sign_ok)
 TEST(double_dollar_sign_not_folded)
 {
 	const char *const path = "/usr/b$$" VAR_A "/vifm";
-	char *const expanded_path = expand_envvars(path, 1);
+	char *const expanded_path =
+		expand_envvars(path, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
 	assert_string_equal("/usr/b$" VAR_A_ESCAPED_VAL "/vifm", expanded_path);
 	free(expanded_path);
 }
@@ -67,24 +72,24 @@ TEST(double_dollar_sign_not_folded)
 TEST(escaped_dollar_sign_not_expanded)
 {
 	const char *const path = "/usr/b\\$in/vifm";
-	char *const expanded_path = expand_envvars(path, 1);
-	assert_string_equal("/usr/b\\$in/vifm", expanded_path);
+	char *const expanded_path =
+		expand_envvars(path, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
+	assert_string_equal("/usr/b$in/vifm", expanded_path);
 	free(expanded_path);
 }
 
 TEST(no_escaping_works)
 {
 	const char *const path = "/$" VAR_A "/$" VAR_B "/vifm";
-	char *const expanded_path = expand_envvars(path, 0);
-	assert_string_equal("/" VAR_A_VAL "/" VAR_B_VAL "/vifm",
-			expanded_path);
+	char *const expanded_path = expand_envvars(path, EEF_NONE);
+	assert_string_equal("/" VAR_A_VAL "/" VAR_B_VAL "/vifm", expanded_path);
 	free(expanded_path);
 }
 
 TEST(escaped_dollar_sign_folded)
 {
 	const char *const path = "/usr/b\\$in/vifm";
-	char *const expanded_path = expand_envvars(path, 0);
+	char *const expanded_path = expand_envvars(path, EEF_NONE);
 	assert_string_equal("/usr/b$in/vifm", expanded_path);
 	free(expanded_path);
 }
