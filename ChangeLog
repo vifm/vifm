@@ -66,6 +66,9 @@
 	fixed previously, but the fix got undone prior to the release.  Thanks
 	to dalvand.
 
+	Fixed assertion failure on processing mappings with RHS of the form
+	"{mapping with selector}{something else}".  Thanks to dalvand.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

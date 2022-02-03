@@ -252,6 +252,8 @@ event_loop(const int *quit, int manage_marking)
 
 			last_result = vle_keys_exec(input_buf);
 
+			/* XXX: counter is never updated for nested event loops! Therefore, they
+			 *      work only as long as they handle at most one command! */
 			counter = vle_keys_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)

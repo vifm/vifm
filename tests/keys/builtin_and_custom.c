@@ -17,6 +17,8 @@ SETUP()
 	vle_keys_user_add(L"ZD", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
 
 	vle_keys_user_add(L"abc", L"", NORMAL_MODE, KEYS_FLAG_NONE);
+
+	vle_keys_user_add(L"ZT", L"ykk", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
 TEST(builtin_key_at_sequence_begin)
@@ -107,6 +109,15 @@ TEST(counter_no_change_on_reenter)
 	counter = vle_keys_counter();
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"norm")));
 	assert_int_equal(counter + 4, vle_keys_counter());
+}
+
+TEST(counter_udm_and_selectors)
+{
+	size_t counter;
+
+	counter = vle_keys_counter();
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"ZT")));
+	assert_int_equal(counter + 2, vle_keys_counter());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
