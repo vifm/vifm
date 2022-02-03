@@ -50,9 +50,11 @@ ShellRequester;
 /* Fine tuning of expand_envvars() behaviour. */
 typedef enum
 {
-	EEF_NONE         = 0x00, /* None of the other options. */
-	EEF_ESCAPE_VALS  = 0x01, /* Escape value suitable for internal use. */
-	EEF_KEEP_ESCAPES = 0x02, /* Only remove \ in front of $ and keep others. */
+	EEF_NONE            = 0x00, /* None of the other options. */
+	EEF_ESCAPE_VALS     = 0x01, /* Escape value suitable for internal use. */
+	EEF_KEEP_ESCAPES    = 0x02, /* Only remove \ in front of $ and keep others. */
+	EEF_DOUBLE_PERCENTS = 0x04, /* Double percents to make the resulting string
+	                               suitable for further macro expansion. */
 }
 ExpandEnvFlags;
 

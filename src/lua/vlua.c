@@ -385,7 +385,8 @@ VLUA_API(vifm_expand)(lua_State *lua)
 {
 	const char *str = luaL_checkstring(lua, 1);
 
-	char *env_expanded = expand_envvars(str, EEF_KEEP_ESCAPES);
+	char *env_expanded = expand_envvars(str,
+			EEF_KEEP_ESCAPES | EEF_DOUBLE_PERCENTS);
 	char *full_expanded = ma_expand(env_expanded, NULL, NULL, MER_DISPLAY);
 	lua_pushstring(lua, full_expanded);
 	free(env_expanded);

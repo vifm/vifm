@@ -189,6 +189,7 @@ expand_envvars(const char str[], int flags)
 {
 	const int escape_vals = (flags & EEF_ESCAPE_VALS);
 	const int keep_escapes = (flags & EEF_KEEP_ESCAPES);
+	const int double_percents = (flags & EEF_DOUBLE_PERCENTS);
 
 	char *result = NULL;
 	size_t len = 0;
@@ -213,14 +214,23 @@ expand_envvars(const char str[], int flags)
 			if(!is_null_or_empty(var_value))
 			{
 				char *escaped_var_value = NULL;
+				char *doubled_percents_var_value = NULL;
+
 				if(escape_vals)
 				{
 					escaped_var_value = shell_like_escape(var_value, 2);
 					var_value = escaped_var_value;
 				}
 
+				if(double_percents)
+				{
+					doubled_percents_var_value = double_char(var_value, '%');
+					var_value = doubled_percents_var_value;
+				}
+
 				result = extend_string(result, var_value, &len);
 				free(escaped_var_value);
+				free(doubled_percents_var_value);
 
 				str = p;
 			}

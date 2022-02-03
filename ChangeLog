@@ -34,6 +34,8 @@
 
 	Document that <del> key might correspond to <bs>.  Thanks to dalvand.
 
+	Don't expand() macros in environment variables.  Patch by filterfalse.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.
