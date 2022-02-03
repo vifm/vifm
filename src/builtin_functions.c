@@ -168,7 +168,8 @@ expand_builtin(const call_info_t *call_info)
 {
 	char *arg = var_to_str(call_info->argv[0]);
 
-	char *env_expanded = expand_envvars(arg, EEF_KEEP_ESCAPES);
+	char *env_expanded = expand_envvars(arg,
+			EEF_KEEP_ESCAPES | EEF_DOUBLE_PERCENTS);
 	free(arg);
 
 	char *macro_expanded = ma_expand(env_expanded, NULL, NULL, MER_DISPLAY);
