@@ -561,7 +561,8 @@ dispatch_selector(const wchar_t keys[], keys_info_t *keys_info,
 		return 0;
 	}
 	/* Process the rest of the line. */
-	return execute_keys_general(keys, keys_info->after_wait, 0, no_remap);
+	return execute_keys_general(keys, keys_info->after_wait, keys_info->mapped,
+			no_remap);
 }
 
 /* Fills *key_info advancing input if necessary.  Returns zero on success,
