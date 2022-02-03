@@ -93,6 +93,11 @@ TEST(vifm_expand)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "print(vifm.expand('%d'))"));
 	assert_string_equal("/tst", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.expand('%d:p:gs!/!\\\\\\\\!'))"));
+	assert_string_equal("\\\\tst", ui_sb_last());
 }
 
 TEST(vifmview_cd)

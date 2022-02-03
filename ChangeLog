@@ -66,6 +66,10 @@
 	fixed previously, but the fix got undone prior to the release.  Thanks
 	to dalvand.
 
+	Fixed expand() requiring backslashes to be escaped twice (once for
+	environment variable expansion and once for macro expansion), which isn't
+	convenient nor intuitive.
+
 	Fixed assertion failure on processing mappings with RHS of the form
 	"{mapping with selector}{something else}".  Thanks to dalvand.
 
@@ -89,10 +93,6 @@
 	Fixed garbage being printed sometimes after doing search in a menu.
 
 	Fixed miller preview blinking too much.  Thanks to filterfalse.
-
-	Fixed expand() builtin function requiring backslashes to be escaped
-	twice (once for environment variable expansion and once for macro
-	expansion), which isn't convenient nor intuitive.
 
 0.11 to 0.12-beta (2021-09-15)
 

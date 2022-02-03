@@ -121,8 +121,9 @@ int vifm_chdir(const char path[]);
  * memory, that should be freed by the caller. */
 char * expand_path(const char path[]);
 
-/* Expands all environment variables in the str of the form "$envvar".
- * Allocates and returns memory that should be freed by the caller. */
+/* Expands all environment variables in the str of the form "$envvar".  Flags is
+ * a combination of EEF_* values.  Allocates and returns memory that should be
+ * freed by the caller. */
 char * expand_envvars(const char str[], int flags);
 
 /* Makes filename unique by adding an unique suffix to it.
