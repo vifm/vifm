@@ -226,6 +226,7 @@ expand_envvars(const char str[], int flags)
 			}
 			else
 			{
+				result = extend_string(result, "$", &len);
 				str++;
 			}
 		}

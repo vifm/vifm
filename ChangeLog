@@ -70,6 +70,9 @@
 	environment variable expansion and once for macro expansion), which isn't
 	convenient nor intuitive.
 
+	Fixed truncation of the dollar sign during expansion of non-existent
+	environment variables.  Patch by filterfalse.
+
 	Fixed assertion failure on processing mappings with RHS of the form
 	"{mapping with selector}{something else}".  Thanks to dalvand.
 

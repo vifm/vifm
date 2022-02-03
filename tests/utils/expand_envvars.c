@@ -10,12 +10,15 @@
 #define VAR_A_ESCAPED_VAL   "VA%R_\\ _VAL"
 #define VAR_B               "VAR_B"
 #define VAR_B_VAL           "VAR_B_VAL"
+#define VAR_NON_EXISTENT    "VAR_NON_EXISTENT"
 
 SETUP()
 {
 	init_variables();
 	let_variables("$" VAR_A " = '" VAR_A_VAL "'");
 	let_variables("$" VAR_B " = '" VAR_B_VAL "'");
+	let_variables("$" VAR_NON_EXISTENT " = ''");
+	unlet_variables("$" VAR_NON_EXISTENT);
 }
 
 TEARDOWN()
@@ -66,6 +69,14 @@ TEST(double_dollar_sign_not_folded)
 	char *const expanded_path =
 		expand_envvars(path, EEF_ESCAPE_VALS | EEF_KEEP_ESCAPES);
 	assert_string_equal("/usr/b$" VAR_A_ESCAPED_VAL "/vifm", expanded_path);
+	free(expanded_path);
+}
+
+TEST(dollar_sign_not_truncated)
+{
+	const char *const path = "$" VAR_NON_EXISTENT;
+	char *const expanded_path = expand_envvars(path, EEF_ESCAPE_VALS);
+	assert_string_equal(path, expanded_path);
 	free(expanded_path);
 }
 
