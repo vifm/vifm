@@ -585,6 +585,23 @@ TEST(normal_command_does_not_reset_selection)
 	vle_keys_reset();
 }
 
+TEST(keepsel_preserves_selection)
+{
+	init_view_list(&lwin);
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+	assert_failure(exec_commands("echo 'hi'", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+	assert_failure(exec_commands("keepsel echo 'hi'", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+}
+
 TEST(goto_command)
 {
 	assert_failure(exec_commands("goto /", &lwin, CIT_COMMAND));

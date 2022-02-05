@@ -282,6 +282,7 @@ const char *tags[] = {
 	"vifm-:if",
 	"vifm-:invert",
 	"vifm-:jobs",
+	"vifm-:keepsel",
 	"vifm-:let",
 	"vifm-:locate",
 	"vifm-:ls",

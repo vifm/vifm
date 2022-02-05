@@ -486,6 +486,7 @@ plugin
 st
 sto
 stop
+keepsel
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session

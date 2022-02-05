@@ -404,7 +404,7 @@ cmds_select_range(int id, const cmd_info_t *cmd_info)
 static int
 skip_at_beginning(int id, const char args[])
 {
-	if(id == COM_WINDO)
+	if(id == COM_KEEPSEL || id == COM_WINDO)
 	{
 		return 0;
 	}
@@ -496,9 +496,8 @@ pattern_expand_hook(const char pattern[])
 	return expanded_pattern;
 }
 
-/* Returns negative value in case of error */
-static int
-execute_command(view_t *view, const char command[], int menu)
+int
+cmds_exec(view_t *view, const char command[], int menu, int keep_sel)
 {
 	int id;
 	int result;
@@ -546,7 +545,7 @@ execute_command(view_t *view, const char command[], int menu)
 		un_group_close();
 	}
 
-	keep_view_selection = 0;
+	keep_view_selection = keep_sel;
 	result = vle_cmds_run(command);
 
 	if(result >= 0)
@@ -1064,6 +1063,7 @@ get_cmd_args_type(const char cmd[])
 		case COM_FILETYPE:
 		case COM_FILEVIEWER:
 		case COM_FILEXTYPE:
+		case COM_KEEPSEL:
 		case COM_MAP:
 		case COM_MMAP:
 		case COM_MNOREMAP:
@@ -1172,7 +1172,7 @@ exec_command(const char cmd[], view_t *view, CmdInputType type)
 
 		case CIT_MENU_COMMAND: menu = 1; /* Fall through. */
 		case CIT_COMMAND:
-			return execute_command(view, cmd, menu);
+			return cmds_exec(view, cmd, menu, /*keep_sel=*/0);
 
 		case CIT_FILTER_PATTERN:
 			if(view->custom.type != CV_DIFF)
@@ -1213,7 +1213,7 @@ repeat_command(view_t *view, CmdInputType type)
 			return modview_find(NULL, backward);
 
 		case CIT_COMMAND:
-			return execute_command(view, NULL, 0);
+			return cmds_exec(view, NULL, /*menu=*/0, /*keep_sel=*/0);
 
 		case CIT_FILTER_PATTERN:
 			local_filter_apply(view, "");

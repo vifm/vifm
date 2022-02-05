@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 1
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1181,6 +1181,7 @@ These commands see '|' as part of their arguments even when it's escaped:
     :filetype
     :fileviewer
     :filextype
+    :keepsel
     :map
     :mmap
     :mnoremap
@@ -2090,6 +2091,15 @@ important in certain cases.
     display menu of current backgrounded processes.  See
     |vifm-menus-and-dialogs| for controls.
 
+:keepsel [command...]                          *vifm-:keepsel*
+    preserve selection during some :command by default.  Note that this
+    doesn't save and restore selection to preserve it no matter what, but
+    precludes its clearing at the end of a command and thus won't help if
+    selection is cleared explicitly during operation.
+
+    Example: >
+      :keepsel view
+<
                                                *vifm-:let*
 :let $ENV_VAR = <expr>
     set an environment variable.  Note: setting environment variable to an

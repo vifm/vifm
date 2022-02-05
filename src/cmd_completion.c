@@ -240,7 +240,7 @@ non_path_completion(completion_data_t *data)
 	{
 		return complete_select(data);
 	}
-	else if(id == COM_WINDO)
+	else if(id == COM_KEEPSEL || id == COM_WINDO)
 		;
 	else if(id == COM_WINRUN)
 	{

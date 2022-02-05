@@ -69,6 +69,11 @@ int exec_commands(const char cmd[], struct view_t *view, CmdInputType type);
  * message. */
 int exec_command(const char cmd[], struct view_t *view, CmdInputType type);
 
+/* Executes a single command-line command.  Returns negative value in case of
+ * an error or value from command handler. */
+int cmds_exec(struct view_t *view, const char command[], int menu,
+		int keep_sel);
+
 /* Should precede new command execution scope (e.g. before start of sourced
  * script). */
 void commands_scope_start(void);

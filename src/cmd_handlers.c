@@ -222,6 +222,7 @@ static int invert_cmd(const cmd_info_t *cmd_info);
 static void print_inversion_state(char state_type);
 static void invert_state(char state_type);
 static int jobs_cmd(const cmd_info_t *cmd_info);
+static int keepsel_cmd(const cmd_info_t *cmd_info);
 static int let_cmd(const cmd_info_t *cmd_info);
 static int locate_cmd(const cmd_info_t *cmd_info);
 static int ls_cmd(const cmd_info_t *cmd_info);
@@ -597,6 +598,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display active jobs",
 	  .flags = HAS_COMMENT,
 	  .handler = &jobs_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "keepsel",           .abbr = NULL,    .id = COM_KEEPSEL,
+	  .descr = "preserve selection during :command by default",
+	  .flags = 0,
+	  .handler = &keepsel_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	/* engine/parsing unit handles comments to resolve parsing ambiguity. */
 	{ .name = "let",               .abbr = NULL,    .id = COM_LET,
 	  .descr = "assign variables",
@@ -3351,6 +3356,14 @@ static int
 jobs_cmd(const cmd_info_t *cmd_info)
 {
 	return show_jobs_menu(curr_view) != 0;
+}
+
+/* Change default from resetting selection at the end of a command to keeping
+ * it. */
+static int
+keepsel_cmd(const cmd_info_t *cmd_info)
+{
+	return cmds_exec(curr_view, cmd_info->args, /*menu=*/0, /*keep_sel=*/1);
 }
 
 static int
