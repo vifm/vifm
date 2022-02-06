@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Jan 16
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Feb 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -164,9 +164,9 @@ The following standard libraries are enabled:
 --------------------------------------------------------------------------------
 *vifm-plugins*
 
-After processing of |vifm-vifmrc| contents of the $VIFM/plugins/ directory is
+After processing contents of |vifm-vifmrc| $VIFM/plugins/ directory is
 enumerated in search of plugins.  Directories or symbolic links to directories
-are considered as candidates.
+are considered as candidates.  Those starting with a dot are ignored.
 
 Implications of the default order of initialization:
  * :commands defined in configuration have precedence over :commands defined by
