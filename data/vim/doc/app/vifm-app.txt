@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 5
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -140,7 +140,9 @@ See |vifm-startup| section below for the explanations on |vifm-$VIFM|.
 Ctrl-C or Escape                               *vifm-Escape* *vifm-CTRL-C*
     cancel most operations (see |vifm-cancellation|), clear all selected files.
 
-Ctrl-L - clear and redraw the screen.          *vifm-CTRL-L*
+Ctrl-L                                         *vifm-CTRL-L*
+    clear and redraw the screen.  Can also reload file list in appropriate
+    modes (like normal and visual).
 
 --------------------------------------------------------------------------------
 *vifm-normal*
