@@ -117,15 +117,15 @@ execute_history_cb(view_t *view, menu_data_t *m)
 			break;
 		case FSEARCHHISTORY:
 			hists_search_save(line);
-			exec_commands(line, view, CIT_FSEARCH_PATTERN);
+			exec_command(line, view, CIT_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
 			hists_search_save(line);
-			exec_commands(line, view, CIT_BSEARCH_PATTERN);
+			exec_command(line, view, CIT_BSEARCH_PATTERN);
 			break;
 		case FILTERHISTORY:
 			hists_filter_save(line);
-			exec_commands(line, view, CIT_FILTER_PATTERN);
+			exec_command(line, view, CIT_FILTER_PATTERN);
 			break;
 		case PROMPTHISTORY:
 			/* Can't replay prompt input. */
