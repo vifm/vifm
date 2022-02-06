@@ -251,6 +251,7 @@ void
 view_teardown(view_t *view)
 {
 	flist_free_view(view);
+	view->last_search[0] = '\0';
 }
 
 void
