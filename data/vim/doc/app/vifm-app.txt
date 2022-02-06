@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 1
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -140,7 +140,9 @@ See |vifm-startup| section below for the explanations on |vifm-$VIFM|.
 Ctrl-C or Escape                               *vifm-Escape* *vifm-CTRL-C*
     cancel most operations (see |vifm-cancellation|), clear all selected files.
 
-Ctrl-L - clear and redraw the screen.          *vifm-CTRL-L*
+Ctrl-L                                         *vifm-CTRL-L*
+    clear and redraw the screen.  Can also reload file list in appropriate
+    modes (like normal and visual).
 
 --------------------------------------------------------------------------------
 *vifm-normal*
@@ -1181,6 +1183,7 @@ These commands see '|' as part of their arguments even when it's escaped:
     :filetype
     :fileviewer
     :filextype
+    :keepsel
     :map
     :mmap
     :mnoremap
@@ -2090,6 +2093,15 @@ important in certain cases.
     display menu of current backgrounded processes.  See
     |vifm-menus-and-dialogs| for controls.
 
+:keepsel [command...]                          *vifm-:keepsel*
+    preserve selection during some :command by default.  Note that this
+    doesn't save and restore selection to preserve it no matter what, but
+    precludes its clearing at the end of a command and thus won't help if
+    selection is cleared explicitly during operation.
+
+    Example: >
+      :keepsel view
+<
                                                *vifm-:let*
 :let $ENV_VAR = <expr>
     set an environment variable.  Note: setting environment variable to an

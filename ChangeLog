@@ -16,6 +16,10 @@
 	Added comparison action to conflict resolution dialog.  Thanks to
 	anonymous at Vifm Q2A site and dalvand.
 
+	Added :keepsel command.  Changes default behaviour after running a
+	:command to not reset selection of a view.  Thanks to dalvand and
+	sharklasers996.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
