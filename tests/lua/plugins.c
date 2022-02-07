@@ -83,6 +83,19 @@ TEST(runtime_error)
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
 
+TEST(hidden_dir_is_ignored)
+{
+	remove_dir(SANDBOX_PATH "/plugins/plug");
+	create_dir(SANDBOX_PATH "/plugins/.git");
+
+	ui_sb_msg("");
+	plugs_load(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+
+	remove_dir(SANDBOX_PATH "/plugins/.git");
+	create_dir(SANDBOX_PATH "/plugins/plug");
+}
+
 TEST(multiple_plugins_loaded)
 {
 	create_dir(SANDBOX_PATH "/plugins/plug2");

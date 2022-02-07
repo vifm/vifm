@@ -82,6 +82,9 @@
 	Fixed assertion failure on processing mappings with RHS of the form
 	"{mapping with selector}{something else}".  Thanks to dalvand.
 
+	Fixed search and local filter values set from :history menu being split at
+	bar (|) and each piece applied in turn.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
