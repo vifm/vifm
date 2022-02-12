@@ -3638,7 +3638,7 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 			return fops_cpmv_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
 		}
 
-		return fops_cpmv(curr_view, NULL, -1, op, 0) != 0;
+		return fops_cpmv(curr_view, NULL, -1, op, CMLF_NONE) != 0;
 	}
 
 	if(cmd_info->bg)
@@ -3647,8 +3647,8 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 				cmd_info->emark) != 0;
 	}
 
-	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op,
-			cmd_info->emark) != 0;
+	int flags = (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
+	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op, flags) != 0;
 }
 
 static int
@@ -3978,11 +3978,11 @@ link_cmd(const cmd_info_t *cmd_info, int absolute)
 			ui_sb_err("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
-		return fops_cpmv(curr_view, NULL, -1, op, 0) != 0;
+		return fops_cpmv(curr_view, NULL, -1, op, CMLF_NONE) != 0;
 	}
 
-	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op,
-			cmd_info->emark) != 0;
+	int flags = (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
+	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op, flags) != 0;
 }
 
 /* Shows status of terminal multiplexers support, sets it or toggles it. */

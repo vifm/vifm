@@ -68,8 +68,10 @@ static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 		int bg, int cancellable, ops_t *ops, int force);
 
 int
-fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
+fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int flags)
 {
+	const int force = (flags & CMLF_FORCE);
+
 	int err;
 	int nmarked_files;
 	int custom_fnames;
