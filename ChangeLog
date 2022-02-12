@@ -85,6 +85,10 @@
 	Fixed search and local filter values set from :history menu being split at
 	bar (|) and each piece applied in turn.
 
+	Fixed losing visual mode selection after executing two command-line
+	commands where the first one enters visual mode and the second one
+	implicitly resets selection.  Thanks to dalvand.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

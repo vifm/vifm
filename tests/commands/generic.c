@@ -398,6 +398,22 @@ TEST(conversion_failure_is_handled)
 	vle_keys_reset();
 }
 
+TEST(selection_is_not_reset_in_visual_mode)
+{
+	init_modes();
+
+	init_view_list(&lwin);
+	update_string(&lwin.dir_entry[0].name, "name");
+
+	(void)exec_commands("if 1 == 1 | execute 'norm! ggvG' | endif", &lwin,
+			CIT_COMMAND);
+
+	assert_true(lwin.dir_entry[0].selected);
+	assert_int_equal(1, lwin.selected_files);
+
+	vle_keys_reset();
+}
+
 TEST(usercmd_range_is_as_good_as_selection)
 {
 	stats_init(&cfg);

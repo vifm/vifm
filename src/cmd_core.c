@@ -375,7 +375,9 @@ commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 static void
 post(int id)
 {
-	if(!keep_view_selection)
+	/* When one command in a sequence enters visual mode, we don't want to break
+	 * it by resetting selection. */
+	if(!keep_view_selection && vle_mode_is(NORMAL_MODE))
 	{
 		flist_sel_stash_if_nonempty(curr_view);
 	}
