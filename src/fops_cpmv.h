@@ -49,10 +49,10 @@ int fops_cpmv(struct view_t *view, char *list[], int nlines, CopyMoveLikeOp op,
  * view. */
 void fops_replace(struct view_t *view, const char dst[], int force);
 
-/* Copies or moves marked files to the other view in background.  Returns new
- * value for save_msg flag. */
+/* Copies or moves marked files to the other view in background.  Flags is a
+ * combination of CMLF_* values.  Returns new value for save_msg flag. */
 int fops_cpmv_bg(struct view_t *view, char *list[], int nlines, int move,
-		int force);
+		int flags);
 
 #endif /* VIFM__FOPS_CPMV_H__ */
 

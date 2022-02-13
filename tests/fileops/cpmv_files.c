@@ -301,7 +301,7 @@ TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
 		}
 		else
 		{
-			(void)fops_cpmv_bg(&rwin, NULL, 0, CMLO_MOVE, 0);
+			(void)fops_cpmv_bg(&rwin, NULL, 0, CMLO_MOVE, CMLF_NONE);
 			wait_for_bg();
 		}
 
@@ -387,13 +387,13 @@ TEST(bail_out_if_source_matches_destination)
 	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, CMLF_NONE);
 	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, CMLF_FORCE);
 
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, /*force=*/0);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, CMLF_NONE);
 	wait_for_bg();
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, /*force=*/1);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, CMLF_FORCE);
 	wait_for_bg();
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, /*force=*/0);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, CMLF_NONE);
 	wait_for_bg();
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, /*force=*/1);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, CMLF_FORCE);
 	wait_for_bg();
 
 	remove_file("file");
@@ -427,7 +427,7 @@ TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 		}
 		else
 		{
-			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 0);
+			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_COPY, CMLF_NONE);
 			wait_for_bg();
 		}
 
@@ -445,7 +445,7 @@ TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 		}
 		else
 		{
-			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
+			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, CMLF_NONE);
 			wait_for_bg();
 		}
 

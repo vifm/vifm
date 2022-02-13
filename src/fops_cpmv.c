@@ -271,8 +271,10 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 }
 
 int
-fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int force)
+fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int flags)
 {
+	const int force = (flags & CMLF_FORCE);
+
 	int err;
 	size_t i;
 	char task_desc[COMMAND_GROUP_INFO_LEN];

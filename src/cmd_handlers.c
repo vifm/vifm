@@ -3622,6 +3622,7 @@ static int
 cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
+	const int flags = (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
 
 	flist_set_marking(curr_view, 0);
 
@@ -3635,7 +3636,7 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 
 		if(cmd_info->bg)
 		{
-			return fops_cpmv_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
+			return fops_cpmv_bg(curr_view, NULL, -1, move, flags) != 0;
 		}
 
 		return fops_cpmv(curr_view, NULL, -1, op, CMLF_NONE) != 0;
@@ -3644,10 +3645,9 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 	if(cmd_info->bg)
 	{
 		return fops_cpmv_bg(curr_view, cmd_info->argv, cmd_info->argc, move,
-				cmd_info->emark) != 0;
+				flags) != 0;
 	}
 
-	int flags = (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
 	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op, flags) != 0;
 }
 
