@@ -37,6 +37,7 @@ typedef enum
 {
 	CMLF_NONE  = 0x00, /* None of the other options. */
 	CMLF_FORCE = 0x01, /* Remove destination if it already exists. */
+	CMLF_SKIP  = 0x02, /* Skip paths that already exist at destination. */
 }
 CopyMoveLikeFlags;
 

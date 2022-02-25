@@ -455,6 +455,49 @@ TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 	}
 }
 
+TEST(can_skip_existing_files)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "dir",
+			saved_cwd);
+
+	int bg;
+	for(bg = 0; bg < 2; ++bg)
+	{
+		create_dir("dir");
+		make_file("dir/file", "aaa");
+		create_file("file");
+
+		CopyMoveLikeOp ops[] = {
+			CMLO_COPY,
+			CMLO_MOVE,
+			CMLO_LINK_REL,
+			CMLO_LINK_ABS,
+		};
+
+		size_t op;
+		for(op = 0; op < ARRAY_LEN(ops); ++op)
+		{
+			lwin.dir_entry[0].marked = 1;
+
+			if(!bg)
+			{
+				(void)fops_cpmv(&lwin, NULL, 0, ops[op], CMLF_SKIP);
+			}
+			else
+			{
+				(void)fops_cpmv_bg(&lwin, NULL, 0, ops[op], CMLF_SKIP);
+				wait_for_bg();
+			}
+
+			assert_int_equal(0, get_file_size("file"));
+		}
+
+		remove_file("file");
+		remove_file("dir/file");
+		remove_dir("dir");
+	}
+}
+
 static void
 check_directory_clash(int parent_to_child, CopyMoveLikeOp op)
 {
