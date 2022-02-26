@@ -614,7 +614,7 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 {
 	char dst_full[PATH_MAX + 1];
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
-	if(path_exists(dst_full, DEREF))
+	if(path_exists(dst_full, NODEREF))
 	{
 		if(skip)
 		{

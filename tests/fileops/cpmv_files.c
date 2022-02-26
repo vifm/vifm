@@ -16,6 +16,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_cpmv.h"
 #include "../../src/trash.h"
@@ -495,6 +496,37 @@ TEST(can_skip_existing_files)
 		remove_file("file");
 		remove_file("dir/file");
 		remove_dir("dir");
+	}
+}
+
+TEST(broken_link_behaves_like_a_regular_file_on_conflict, IF(not_windows))
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "src",
+			saved_cwd);
+	replace_string(&lwin.dir_entry[0].name, "symlink");
+
+	int bg;
+	for(bg = 0; bg < 2; ++bg)
+	{
+		create_dir("src");
+		create_file("src/symlink");
+		assert_success(make_symlink("notarget", "symlink"));
+
+		lwin.dir_entry[0].marked = 1;
+
+		if(!bg)
+		{
+			(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, CMLF_SKIP);
+		}
+		else
+		{
+			(void)fops_cpmv_bg(&lwin, NULL, 0, CMLO_MOVE, CMLF_SKIP);
+			wait_for_bg();
+		}
+
+		remove_file("src/symlink");
+		remove_dir("src");
+		remove_file("symlink");
 	}
 }
 

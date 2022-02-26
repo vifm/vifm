@@ -93,6 +93,10 @@
 	commands where the first one enters visual mode and the second one
 	implicitly resets selection.  Thanks to dalvand.
 
+	Fixed background :copy/:move handling broken symlinks as non-existent
+	files during the operation (which wasn't happening if such file was there
+	initially).
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
