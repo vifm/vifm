@@ -148,13 +148,13 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int flags)
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
-		if(path_exists(dst_full, NODEREF) && !from_trash)
+		if(path_exists(dst_full, NODEREF))
 		{
 			if(skip)
 			{
 				skipped = 1;
 			}
-			else if(force)
+			else if(force && !from_trash)
 			{
 				(void)perform_operation(OP_REMOVESL, NULL, NULL, dst_full, NULL);
 			}
@@ -614,14 +614,14 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 {
 	char dst_full[PATH_MAX + 1];
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
-	if(path_exists(dst_full, DEREF) && !from_trash)
+	if(path_exists(dst_full, DEREF))
 	{
 		if(skip)
 		{
 			return;
 		}
 
-		if(force)
+		if(force && !from_trash)
 		{
 			(void)perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
 		}

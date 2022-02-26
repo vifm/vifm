@@ -591,6 +591,19 @@ TEST(highlight_is_completed)
 	ASSERT_COMPLETION(L"hi clear ", L"hi clear {*.jpg}");
 }
 
+TEST(command_options_are_completed)
+{
+	ASSERT_COMPLETION(L"copy -", L"copy -skip");
+
+	other_view = &rwin;
+#ifndef _WIN32
+	ASSERT_COMPLETION(L"copy -- -", L"copy -- ./-");
+#else
+	ASSERT_COMPLETION(L"copy -- -", L"copy -- -");
+#endif
+	other_view = NULL;
+}
+
 static void
 dummy_handler(OPT_OP op, optval_t val)
 {

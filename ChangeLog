@@ -20,6 +20,10 @@
 	:command to not reset selection of a view.  Thanks to dalvand and
 	sharklasers996.
 
+	Added -skip parameter to :copy/:move/:alink/:rlink.  Makes the commands
+	automatically skip files that exist at destination instead of refusing to
+	proceed.  Thanks to Jose Riha (a.k.a. jose1711).
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

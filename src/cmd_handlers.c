@@ -265,6 +265,7 @@ static int restart_cmd(const cmd_info_t *cmd_info);
 static int restore_cmd(const cmd_info_t *cmd_info);
 static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int absolute);
+static int parse_cpmv_flags(int *argc, char ***argv);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
 static int session_cmd(const cmd_info_t *cmd_info);
@@ -3622,15 +3623,24 @@ static int
 cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
-	const int flags = (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
 
 	flist_set_marking(curr_view, 0);
 
+	int argc = cmd_info->argc;
+	char **argv = cmd_info->argv;
+	int flags = parse_cpmv_flags(&argc, &argv);
+	if(flags < 0)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
+	flags |= (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
+
 	if(cmd_info->qmark)
 	{
-		if(cmd_info->argc > 0)
+		if(argc > 0)
 		{
-			ui_sb_err("No arguments are allowed if you use \"?\"");
+			ui_sb_err("No positional arguments are allowed if you use \"?\"");
 			return 1;
 		}
 
@@ -3639,16 +3649,15 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 			return fops_cpmv_bg(curr_view, NULL, -1, move, flags) != 0;
 		}
 
-		return fops_cpmv(curr_view, NULL, -1, op, CMLF_NONE) != 0;
+		return fops_cpmv(curr_view, NULL, -1, op, flags) != 0;
 	}
 
 	if(cmd_info->bg)
 	{
-		return fops_cpmv_bg(curr_view, cmd_info->argv, cmd_info->argc, move,
-				flags) != 0;
+		return fops_cpmv_bg(curr_view, argv, argc, move, flags) != 0;
 	}
 
-	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op, flags) != 0;
+	return fops_cpmv(curr_view, argv, argc, op, flags) != 0;
 }
 
 static int
@@ -3969,20 +3978,69 @@ link_cmd(const cmd_info_t *cmd_info, int absolute)
 {
 	const CopyMoveLikeOp op = absolute ? CMLO_LINK_ABS : CMLO_LINK_REL;
 
+	int argc = cmd_info->argc;
+	char **argv = cmd_info->argv;
+	int flags = parse_cpmv_flags(&argc, &argv);
+	if(flags < 0)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
+	flags |= (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
+
 	flist_set_marking(curr_view, 0);
 
 	if(cmd_info->qmark)
 	{
-		if(cmd_info->argc > 0)
+		if(argc > 0)
 		{
-			ui_sb_err("No arguments are allowed if you use \"?\"");
+			ui_sb_err("No positional arguments are allowed if you use \"?\"");
 			return 1;
 		}
-		return fops_cpmv(curr_view, NULL, -1, op, CMLF_NONE) != 0;
+		return fops_cpmv(curr_view, NULL, -1, op, flags) != 0;
 	}
 
-	int flags = (cmd_info->emark ? CMLF_FORCE : CMLF_NONE);
-	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op, flags) != 0;
+	return fops_cpmv(curr_view, argv, argc, op, flags) != 0;
+}
+
+/* Parses leading copy/move options and adjusts argc/argv to exclude them.
+ * Returns -1 on parsing error, otherwise combination of CMLF_* values is
+ * returned. */
+static int
+parse_cpmv_flags(int *argc, char ***argv)
+{
+	int flags = 0;
+
+	int i;
+	for(i = 0; i < *argc; ++i)
+	{
+		if(argv[0][i][0] != '-')
+		{
+			/* Implicit end of options. */
+			break;
+		}
+		if(strcmp(argv[0][i], "--") == 0)
+		{
+			++i;
+			/* Explicit end of options. */
+			break;
+		}
+
+		if(strcmp(argv[0][i], "-skip") == 0)
+		{
+			flags |= CMLF_SKIP;
+		}
+		else
+		{
+			ui_sb_errf("Unrecognized :command option: %s", argv[0][i]);
+			return -1;
+		}
+	}
+
+	*argc -= i;
+	*argv += i;
+
+	return flags;
 }
 
 /* Shows status of terminal multiplexers support, sets it or toggles it. */
