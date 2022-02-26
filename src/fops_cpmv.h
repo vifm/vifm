@@ -32,19 +32,28 @@ typedef enum
 }
 CopyMoveLikeOp;
 
-/* Performs copy/moves-like operation on marked files.  Returns new value for
- * save_msg flag. */
+/* Fine tuning of fops_cpmv() behaviour. */
+typedef enum
+{
+	CMLF_NONE  = 0x00, /* None of the other options. */
+	CMLF_FORCE = 0x01, /* Remove destination if it already exists. */
+	CMLF_SKIP  = 0x02, /* Skip paths that already exist at destination. */
+}
+CopyMoveLikeFlags;
+
+/* Performs copy/moves-like operation on marked files.  Flags is a combination
+ * of CMLF_* values.  Returns new value for save_msg flag. */
 int fops_cpmv(struct view_t *view, char *list[], int nlines, CopyMoveLikeOp op,
-		int force);
+		int flags);
 
 /* Replaces file specified by dst with a copy of the current file of the
  * view. */
 void fops_replace(struct view_t *view, const char dst[], int force);
 
-/* Copies or moves marked files to the other view in background.  Returns new
- * value for save_msg flag. */
+/* Copies or moves marked files to the other view in background.  Flags is a
+ * combination of CMLF_* values.  Returns new value for save_msg flag. */
 int fops_cpmv_bg(struct view_t *view, char *list[], int nlines, int move,
-		int force);
+		int flags);
 
 #endif /* VIFM__FOPS_CPMV_H__ */
 

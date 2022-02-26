@@ -95,6 +95,7 @@ static int non_path_completion(completion_data_t *data);
 static int path_completion(completion_data_t *data);
 static int earg_num(int argc, const char cmdline[]);
 static int cmd_ends_with_space(const char cmdline[]);
+static int is_option(const cmd_info_t *cmd_info);
 static void complete_expr(const char str[], const char **start);
 static void complete_compare(const char str[]);
 static void complete_selective_sync(const char str[]);
@@ -292,6 +293,14 @@ non_path_completion(completion_data_t *data)
 			complete_wincmd(arg);
 		}
 	}
+	else if(is_option(data->cmd_info) && (id == COM_COPY || id == COM_MOVE ||
+				id == COM_ALINK || id == COM_RLINK))
+	{
+		static const char *lines[][2] = {
+			{ "-skip", "skip files with conflicting names" }
+		};
+		complete_from_string_list(arg, lines, ARRAY_LEN(lines), /*ignore_case=*/0);
+	}
 	else
 	{
 		return -1;
@@ -443,6 +452,34 @@ cmd_ends_with_space(const char cmdline[])
 		++cmdline;
 	}
 	return (cmdline[0] == ' ');
+}
+
+/* Checks whether option completion should be performed.  Returns non-zero if
+ * so, otherwise zero is returned. */
+static int
+is_option(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->argc == 0)
+	{
+		return 0;
+	}
+
+	int i;
+	for(i = 0; i < cmd_info->argc; ++i)
+	{
+		if(cmd_info->argv[i][0] != '-')
+		{
+			/* Implicit end of options. */
+			return 0;
+		}
+		if(strcmp(cmd_info->argv[i], "--") == 0)
+		{
+			/* Explicit end of options. */
+			return 0;
+		}
+	}
+
+	return 1;
 }
 
 /* Completes expressions. */

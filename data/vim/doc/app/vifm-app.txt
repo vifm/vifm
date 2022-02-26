@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 6
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1247,6 +1247,8 @@ The builtin commands are:
 :[range]alink[!] name1 name2...
     create absolute symbolic links of files in directory of other view giving
     each next link a corresponding name from the argument list.
+:[range]alink[!?] -skip ...
+    see |vifm-skip-param|.
 
                                                *vifm-:apropos*
 :apropos keyword...
@@ -1507,6 +1509,8 @@ The builtin commands are:
 :[range]co[py][!] name1 name2...[ &]
     copy files to directory of other view giving each next file a
     corresponding name from the argument list.  "!" forces overwrite.
+:[range]co[py][!?] -skip ...
+    see |vifm-skip-param|.
 
 :cq[uit][!]                                    *vifm-:cquit* *vifm-:cq*
     same as |vifm-:quit|, but also aborts directory choosing via
@@ -2177,6 +2181,8 @@ order using the '.' operator.  Any whitespace is ignored.
 :[range]m[ove][!] name1 name2...[ &]
     move files to directory of other view giving each next file a
     corresponding name from the argument list.  "!" forces overwrite.
+:[range]m[ove][!?] -skip ...
+    see |vifm-skip-param|.
 
 :noh[lsearch]                                  *vifm-:nohlsearch* *vifm-:noh*
     clear selection in current pane.
@@ -2280,6 +2286,8 @@ order using the '.' operator.  Any whitespace is ignored.
     create relative symbolic links of files in directory of other view giving
     each next link a corresponding name from the argument list.  "!" forces
     overwrite.
+:[range]rlink[!?] -skip ...
+    see |vifm-skip-param|.
 
                                                *vifm-:screen*
 :screen
@@ -2713,6 +2721,22 @@ yet supported) and might be changed in future releases, or get an alias.
 :nun[map] lhs - remove user mapping of lhs from normal mode.
 :qun[map] lhs - remove user mapping of lhs from view mode.
 :vu[nmap] lhs - remove user mapping of lhs from visual mode.
+
+:command parameters~
+                                                       *vifm-:command-params*
+Some of the command-line commands accept parameters in the form of
+`-paramname`.  Arguments of such commands can be split into two groups:
+parameters and positional arguments.  Items from the two groups cannot be
+interleaved and parameters always come first.  List of parameters is
+terminated implicitly by the first argument that doesn't start with a
+dash ("-") or explicitly via "--" separator (needs to be a separate
+argument), which is just discarded.  These strict rules allow arbitrary
+positional arguments, such as file names that start with a dash.
+
+-skip                                                      *vifm-skip-param*
+This parameter makes |vifm-:copy|, |vifm-:move|, |vifm-:alink| and
+|vifm-:rlink| automatically skip source files that already exist at the
+destination rather than refusing to perform the operation.
 
 Ranges~
                                                                *vifm-ranges*

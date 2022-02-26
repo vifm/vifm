@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 6, 2022" "vifm 0.12"
+.TH VIFM 1 "February 26, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1416,6 +1416,9 @@ create absolute symbolic links to files in directory specified by the path
 create absolute symbolic links of files in directory of other view giving each
 next link a corresponding name from the argument list.
 .TP
+.BI ":[range]alink[!?] -skip ..."
+see "\-skip parameter" section below.
+.TP
 .BI "                                         :apropos"
 .TP
 .BI ":apropos keyword..."
@@ -1739,6 +1742,9 @@ directory of other view).  "!" forces overwrite.
 .BI ":[range]co[py][!] name1 name2...[ &]"
 copy files to directory of other view giving each next file a corresponding name
 from the argument list.  "!" forces overwrite.
+.TP
+.BI ":[range]co[py][!?] -skip ...[ &]"
+see "\-skip parameter" section below.
 .TP
 .BI "                                         :cquit"
 .TP
@@ -2538,6 +2544,9 @@ directory of other view).  "!" forces overwrite.
 move files to directory of other view giving each next file a
 corresponding name from the argument list.  "!" forces overwrite.
 .TP
+.BI ":[range]m[ove][!?] -skip ...[ &]"
+see "\-skip parameter" section below.
+.TP
 .BI "                                         :nohlsearch"
 .TP
 .BI :noh[lsearch]
@@ -2679,6 +2688,9 @@ overwrite.
 create relative symbolic links of files in directory of other view giving
 each next link a corresponding name from the argument list.  "!" forces
 overwrite.
+.TP
+.BI ":[range]rlink[!?] -skip ...[ &]"
+see "\-skip parameter" section below.
 .TP
 .BI "                                         :screen"
 .TP
@@ -3308,6 +3320,23 @@ If a backward range is given :4,2delete \- an query message is given and
 user can chose what to do next.
 
 The builtin commands that accept a range are :d[elete] and :y[ank].
+.\" ---------------------------------------------------------------------------
+.SH :command parameters
+.\" ---------------------------------------------------------------------------
+Some of the command-line commands accept parameters in the form of
+`\-paramname`.  Arguments of such commands can be split into two groups:
+parameters and positional arguments.  Items from the two groups cannot be
+interleaved and parameters always come first.  List of parameters is
+terminated implicitly by the first argument that doesn't start with a
+dash ("-") or explicitly via "--" separator (needs to be a separate
+argument), which is just discarded.  These strict rules allow arbitrary
+positional arguments, such as file names that start with a dash.
+
+.TP
+.BI "\-skip parameter"
+This parameter makes :copy, :move, :alink and :rlink automatically skip source
+files that already exist at the destination rather than refusing to perform the
+operation.
 .\" ---------------------------------------------------------------------------
 .SH Command macros
 .\" ---------------------------------------------------------------------------

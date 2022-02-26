@@ -44,6 +44,7 @@ typedef struct
 	int nlines;              /* Number of user supplied file names (list size). */
 	int move;                /* Whether this is a move operation. */
 	int force;               /* Whether destination files should be removed. */
+	int skip;                /* Skip files that already exist at destination. */
 	char **sel_list;         /* Full paths of files to be processed. */
 	size_t sel_list_len;     /* Number of files to process (sel_list size). */
 	char path[PATH_MAX + 1]; /* Path at which processing should take place. */

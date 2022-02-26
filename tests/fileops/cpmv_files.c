@@ -16,6 +16,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_cpmv.h"
 #include "../../src/trash.h"
@@ -67,7 +68,7 @@ TEST(move_file)
 	create_file(lwin.dir_entry[0].name);
 
 	lwin.dir_entry[0].marked = 1;
-	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
+	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, CMLF_NONE);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -85,7 +86,7 @@ TEST(make_relative_link, IF(not_windows))
 	strcpy(lwin.curr_dir, "/fake/absolute/path");
 
 	lwin.dir_entry[0].marked = 1;
-	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_LINK_REL, 0);
+	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_LINK_REL, CMLF_NONE);
 
 	assert_true(path_exists(link_name, NODEREF));
 
@@ -104,7 +105,7 @@ TEST(make_absolute_link, IF(not_windows))
 	strcpy(lwin.curr_dir, "/fake/absolute/path");
 
 	lwin.dir_entry[0].marked = 1;
-	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_LINK_ABS, 0);
+	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_LINK_ABS, CMLF_NONE);
 
 	assert_true(path_exists(link_name, NODEREF));
 
@@ -137,10 +138,10 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 
 	check_marking(curr_view, 0, NULL);
 
-	(void)fops_cpmv(&rwin, NULL, 0, CMLO_COPY, 0);
-	(void)fops_cpmv(&rwin, NULL, 0, CMLO_COPY, 1);
-	(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, 0);
-	(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, 1);
+	(void)fops_cpmv(&rwin, NULL, 0, CMLO_COPY, CMLF_NONE);
+	(void)fops_cpmv(&rwin, NULL, 0, CMLO_COPY, CMLF_FORCE);
+	(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, CMLF_NONE);
+	(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, CMLF_FORCE);
 
 	assert_false(path_exists("a", NODEREF));
 }
@@ -174,10 +175,10 @@ TEST(operation_with_rename_of_identically_named_files_is_allowed)
 	make_abs_path(b_path, sizeof(b_path), SANDBOX_PATH, "b", saved_cwd);
 
 	/* Not testing moving for simplicity. */
-	(void)fops_cpmv(&rwin, list, ARRAY_LEN(list), CMLO_COPY, 0);
+	(void)fops_cpmv(&rwin, list, ARRAY_LEN(list), CMLO_COPY, CMLF_NONE);
 	remove_file(a_path);
 	remove_file(b_path);
-	(void)fops_cpmv(&rwin, list, ARRAY_LEN(list), CMLO_COPY, 1);
+	(void)fops_cpmv(&rwin, list, ARRAY_LEN(list), CMLO_COPY, CMLF_FORCE);
 	remove_file(a_path);
 	remove_file(b_path);
 }
@@ -222,8 +223,9 @@ TEST(cpmv_crash_on_wrong_list_access)
 
 	/* cpmv used to use presence of the argument as indication of availability of
 	 * file list and access memory beyond array boundaries. */
-	assert_failure(fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 0));
-	assert_failure(fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 1));
+	assert_failure(fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_COPY, CMLF_NONE));
+	assert_failure(fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_COPY,
+				CMLF_FORCE));
 
 	assert_success(remove(SANDBOX_PATH "/a"));
 	assert_success(remove(SANDBOX_PATH "/b"));
@@ -243,7 +245,7 @@ TEST(cpmv_considers_tree_structure)
 	flist_load_tree(&rwin, rwin.curr_dir, INT_MAX);
 	rwin.list_pos = 1;
 	lwin.dir_entry[0].marked = 1;
-	(void)fops_cpmv(&lwin, list, 1, CMLO_MOVE, 0);
+	(void)fops_cpmv(&lwin, list, 1, CMLO_MOVE, CMLF_NONE);
 	assert_success(unlink("dir/new_name"));
 
 	/* Move back. */
@@ -254,7 +256,7 @@ TEST(cpmv_considers_tree_structure)
 	flist_load_tree(&rwin, flist_get_dir(&rwin), INT_MAX);
 	lwin.list_pos = 0;
 	rwin.dir_entry[1].marked = 1;
-	(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, 0);
+	(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, CMLF_NONE);
 	assert_success(unlink("file"));
 
 	assert_success(rmdir("dir"));
@@ -296,11 +298,11 @@ TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
 
 		if(!bg)
 		{
-			(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, 0);
+			(void)fops_cpmv(&rwin, NULL, 0, CMLO_MOVE, CMLF_NONE);
 		}
 		else
 		{
-			(void)fops_cpmv_bg(&rwin, NULL, 0, CMLO_MOVE, 0);
+			(void)fops_cpmv_bg(&rwin, NULL, 0, CMLO_MOVE, CMLF_NONE);
 			wait_for_bg();
 		}
 
@@ -362,7 +364,7 @@ TEST(copying_is_aborted_if_we_can_not_read_a_file, IF(regular_unix_user))
 
 	lwin.dir_entry[0].marked = 1;
 	lwin.dir_entry[1].marked = 1;
-	assert_int_equal(0, fops_cpmv(&lwin, NULL, 0, CMLO_COPY, 0));
+	assert_int_equal(0, fops_cpmv(&lwin, NULL, 0, CMLO_COPY, CMLF_NONE));
 
 	assert_success(unlink("can-read"));
 	assert_success(unlink("can-not-read"));
@@ -377,22 +379,22 @@ TEST(bail_out_if_source_matches_destination)
 
 	lwin.dir_entry[0].marked = 1;
 
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_COPY, /*force=*/0);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_COPY, /*force=*/1);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, /*force=*/0);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, /*force=*/1);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_REL, /*force=*/0);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_REL, /*force=*/1);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, /*force=*/0);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, /*force=*/1);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_COPY, CMLF_NONE);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_COPY, CMLF_FORCE);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, CMLF_NONE);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, CMLF_FORCE);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_REL, CMLF_NONE);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_REL, CMLF_FORCE);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, CMLF_NONE);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_LINK_ABS, CMLF_FORCE);
 
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, /*force=*/0);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, CMLF_NONE);
 	wait_for_bg();
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, /*force=*/1);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/0, CMLF_FORCE);
 	wait_for_bg();
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, /*force=*/0);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, CMLF_NONE);
 	wait_for_bg();
-	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, /*force=*/1);
+	(void)fops_cpmv_bg(&lwin, NULL, 0, /*move=*/1, CMLF_FORCE);
 	wait_for_bg();
 
 	remove_file("file");
@@ -422,11 +424,11 @@ TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 
 		if(!bg)
 		{
-			(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 0);
+			(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_COPY, CMLF_NONE);
 		}
 		else
 		{
-			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 0);
+			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_COPY, CMLF_NONE);
 			wait_for_bg();
 		}
 
@@ -440,17 +442,91 @@ TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
 
 		if(!bg)
 		{
-			(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
+			(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, CMLF_NONE);
 		}
 		else
 		{
-			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
+			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, CMLF_NONE);
 			wait_for_bg();
 		}
 
 		assert_success(unlink("dir/file1"));
 		assert_success(unlink("dir/file2"));
 		assert_success(rmdir("dir"));
+	}
+}
+
+TEST(can_skip_existing_files)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "dir",
+			saved_cwd);
+
+	int bg;
+	for(bg = 0; bg < 2; ++bg)
+	{
+		create_dir("dir");
+		make_file("dir/file", "aaa");
+		create_file("file");
+
+		CopyMoveLikeOp ops[] = {
+			CMLO_COPY,
+			CMLO_MOVE,
+			CMLO_LINK_REL,
+			CMLO_LINK_ABS,
+		};
+
+		size_t op;
+		for(op = 0; op < ARRAY_LEN(ops); ++op)
+		{
+			lwin.dir_entry[0].marked = 1;
+
+			if(!bg)
+			{
+				(void)fops_cpmv(&lwin, NULL, 0, ops[op], CMLF_SKIP);
+			}
+			else
+			{
+				(void)fops_cpmv_bg(&lwin, NULL, 0, ops[op], CMLF_SKIP);
+				wait_for_bg();
+			}
+
+			assert_int_equal(0, get_file_size("file"));
+		}
+
+		remove_file("file");
+		remove_file("dir/file");
+		remove_dir("dir");
+	}
+}
+
+TEST(broken_link_behaves_like_a_regular_file_on_conflict, IF(not_windows))
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "src",
+			saved_cwd);
+	replace_string(&lwin.dir_entry[0].name, "symlink");
+
+	int bg;
+	for(bg = 0; bg < 2; ++bg)
+	{
+		create_dir("src");
+		create_file("src/symlink");
+		assert_success(make_symlink("notarget", "symlink"));
+
+		lwin.dir_entry[0].marked = 1;
+
+		if(!bg)
+		{
+			(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, CMLF_SKIP);
+		}
+		else
+		{
+			(void)fops_cpmv_bg(&lwin, NULL, 0, CMLO_MOVE, CMLF_SKIP);
+			wait_for_bg();
+		}
+
+		remove_file("src/symlink");
+		remove_dir("src");
+		remove_file("symlink");
 	}
 }
 
@@ -468,7 +544,7 @@ check_directory_clash(int parent_to_child, CopyMoveLikeOp op)
 
 	lwin.dir_entry[0].marked = 1;
 	assert_string_equal("dir", lwin.dir_entry[0].name);
-	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, 1);
+	(void)fops_cpmv(&lwin, NULL, 0, CMLO_MOVE, CMLF_FORCE);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
