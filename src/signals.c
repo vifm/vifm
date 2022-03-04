@@ -174,6 +174,7 @@ setup_signals(void)
 	signal(SIGUSR2, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
 	signal(SIGTSTP, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
 #else
 	if(!SetConsoleCtrlHandler(ctrl_handler, TRUE))
 	{
