@@ -104,6 +104,23 @@ TEST(vifmjob_stdin, IF(have_cat))
 	remove_file(SANDBOX_PATH "/file");
 }
 
+TEST(vifmjob_stdin_broken_pipe, IF(not_windows))
+{
+	conf_setup();
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+	      "info = { cmd = 'no-such-command-exists', iomode = 'w' }"
+	      "job = vifm.startjob(info)"
+	      "vifm.startjob({ cmd = 'sleep 0.01' }):wait()"
+	      "print(job:stdin():write('text') == job:stdin())"
+	      "job:stdin():close()"
+	      "job:wait()"));
+	assert_string_equal("true", ui_sb_last());
+
+	conf_teardown();
+}
+
 TEST(vifmjob_stdout)
 {
 	conf_setup();

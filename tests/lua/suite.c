@@ -5,6 +5,7 @@
 #include "../../src/ui/tabs.h"
 #include "../../src/utils/fs.h"
 #include "../../src/background.h"
+#include "../../src/signals.h"
 
 static char *saved_cwd;
 
@@ -19,8 +20,8 @@ SETUP_ONCE()
 	saved_cwd = save_cwd();
 
 	bg_init();
-
 	tabs_init();
+	setup_signals();
 }
 
 TEARDOWN()
