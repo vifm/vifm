@@ -10,6 +10,7 @@ int last;
 int last_command_count;
 int last_command_register;
 int last_selector_count;
+int last_indexes_count;
 int key_is_mapped;
 int mapping_state;
 
@@ -183,6 +184,7 @@ keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 4;
 	last_command_count = key_info.count;
+	last_indexes_count = keys_info->count;
 }
 
 static void

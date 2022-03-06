@@ -101,6 +101,8 @@ static size_t mapping_enter_seq;
 /* User-provided callback for silencing UI. */
 static vle_silence_func silence_ui;
 
+static void remove_foreign_in_tree(key_chunk_t *chunk);
+static void remove_foreign_in_forest(key_chunk_t *forest, size_t size);
 static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
@@ -203,10 +205,47 @@ vle_keys_reset(void)
 void
 vle_keys_user_clear(void)
 {
+	remove_foreign_in_forest(selectors_root, max_modes);
 	free_forest(user_cmds_root, max_modes);
 
 	user_cmds_root = calloc(max_modes, sizeof(*user_cmds_root));
 	assert(user_cmds_root != NULL);
+}
+
+/* Removes foreign keys in trees from array of length size. */
+static void
+remove_foreign_in_forest(key_chunk_t *forest, size_t size)
+{
+	size_t i;
+	for(i = 0; i < size; ++i)
+	{
+		remove_foreign_in_tree(&forest[i]);
+	}
+}
+
+/* Removes foreign keys from a tree. */
+static void
+remove_foreign_in_tree(key_chunk_t *chunk)
+{
+	/* To postpone deletion until we're done with the chunk. */
+	enter_chunk(chunk);
+
+	if(chunk->child != NULL)
+	{
+		remove_foreign_in_tree(chunk->child);
+	}
+
+	if(chunk->next != NULL)
+	{
+		remove_foreign_in_tree(chunk->next);
+	}
+
+	if(chunk->type == BUILTIN_KEYS)
+	{
+		remove_chunk(chunk);
+	}
+
+	leave_chunk(chunk);
 }
 
 /* Releases array of trees of length size including trees. */
@@ -952,9 +991,18 @@ combine_counts(int count_a, int count_b)
 }
 
 int
-vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info, int mode)
+vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
+		int is_selector, int mode)
 {
-	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
+	key_chunk_t *root = is_selector ? &selectors_root[mode]
+	                                : &user_cmds_root[mode];
+
+	if(is_selector && find_keys(root, lhs) != NULL)
+	{
+		return -1;
+	}
+
+	key_chunk_t *curr = add_keys_inner(root, lhs);
 	if(curr == NULL)
 	{
 		return -1;

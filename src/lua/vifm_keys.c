@@ -108,7 +108,7 @@ VLUA_API(keys_add)(lua_State *lua)
 	{
 		if(modes[i])
 		{
-			success &= (vle_keys_foreign_add(lhs, &key, i) == 0);
+			success &= (vle_keys_foreign_add(lhs, &key, /*is_selector=*/0, i) == 0);
 		}
 	}
 

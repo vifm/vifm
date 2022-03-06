@@ -177,9 +177,11 @@ int vle_keys_add(keys_add_info_t cmds[], size_t len, int mode);
  * error, otherwise zero is returned. */
 int vle_keys_add_selectors(keys_add_info_t cmds[], size_t len, int mode);
 
-/* Registers a foreign builtin-like key, but does it among user's keys.
- * Returns non-zero on error, otherwise zero is returned. */
-int vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info, int mode);
+/* Registers a foreign builtin-like key (but among user's keys) or a selector
+ * (among builtin selectors, so they can't clash).  Returns non-zero on error,
+ * otherwise zero is returned. */
+int vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
+		int is_selector, int mode);
 
 /* Registers user key mapping.  The flags parameter accepts combinations of
  * KEYS_FLAG_*.  Returns non-zero or error, otherwise zero is returned. */
