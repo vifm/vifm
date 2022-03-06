@@ -101,6 +101,8 @@ static size_t mapping_enter_seq;
 /* User-provided callback for silencing UI. */
 static vle_silence_func silence_ui;
 
+static void remove_foreign_in_tree(key_chunk_t *chunk);
+static void remove_foreign_in_forest(key_chunk_t *forest, size_t size);
 static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
@@ -136,7 +138,8 @@ static const wchar_t * get_reg(const wchar_t *keys, int *reg);
 static const wchar_t * get_count(const wchar_t keys[], int *count);
 static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
-static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
+static key_chunk_t * find_keys(key_chunk_t *root, const wchar_t keys[]);
+static void remove_chunk(key_chunk_t *chunk);
 static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
 		size_t len);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
@@ -202,10 +205,47 @@ vle_keys_reset(void)
 void
 vle_keys_user_clear(void)
 {
+	remove_foreign_in_forest(selectors_root, max_modes);
 	free_forest(user_cmds_root, max_modes);
 
 	user_cmds_root = calloc(max_modes, sizeof(*user_cmds_root));
 	assert(user_cmds_root != NULL);
+}
+
+/* Removes foreign keys in trees from array of length size. */
+static void
+remove_foreign_in_forest(key_chunk_t *forest, size_t size)
+{
+	size_t i;
+	for(i = 0; i < size; ++i)
+	{
+		remove_foreign_in_tree(&forest[i]);
+	}
+}
+
+/* Removes foreign keys from a tree. */
+static void
+remove_foreign_in_tree(key_chunk_t *chunk)
+{
+	/* To postpone deletion until we're done with the chunk. */
+	enter_chunk(chunk);
+
+	if(chunk->child != NULL)
+	{
+		remove_foreign_in_tree(chunk->child);
+	}
+
+	if(chunk->next != NULL)
+	{
+		remove_foreign_in_tree(chunk->next);
+	}
+
+	if(chunk->type == BUILTIN_KEYS)
+	{
+		remove_chunk(chunk);
+	}
+
+	leave_chunk(chunk);
 }
 
 /* Releases array of trees of length size including trees. */
@@ -951,9 +991,18 @@ combine_counts(int count_a, int count_b)
 }
 
 int
-vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info, int mode)
+vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
+		int is_selector, int mode)
 {
-	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
+	key_chunk_t *root = is_selector ? &selectors_root[mode]
+	                                : &user_cmds_root[mode];
+
+	if(is_selector && find_keys(root, lhs) != NULL)
+	{
+		return -1;
+	}
+
+	key_chunk_t *curr = add_keys_inner(root, lhs);
 	if(curr == NULL)
 	{
 		return -1;
@@ -995,64 +1044,30 @@ vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
 int
 vle_keys_user_exists(const wchar_t keys[], int mode)
 {
-	return find_user_keys(keys, mode) != NULL;
+	return find_keys(&user_cmds_root[mode], keys) != NULL;
 }
 
 int
 vle_keys_user_remove(const wchar_t keys[], int mode)
 {
-	key_chunk_t *curr, *p;
-
-	if((curr = find_user_keys(keys, mode)) == NULL)
+	key_chunk_t *chunk = find_keys(&user_cmds_root[mode], keys);
+	if(chunk == NULL)
 		return -1;
 
-	if(curr->type == USER_CMD)
-	{
-		free(curr->conf.data.cmd);
-	}
-
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->conf.data.handler = NULL;
-
-	p = curr;
-	while(p->parent != NULL)
-	{
-		p->parent->children_count--;
-		p = p->parent;
-	}
-
-	if(curr->children_count > 0)
-		return 0;
-
-	do
-	{
-		key_chunk_t *const parent = curr->parent;
-		if(curr->prev != NULL)
-			curr->prev->next = curr->next;
-		else
-			parent->child = curr->next;
-		if(curr->next != NULL)
-			curr->next->prev = curr->prev;
-		free_chunk(curr);
-		curr = parent;
-	}
-	while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
-			curr->parent->type == BUILTIN_WAIT_POINT &&
-			curr->parent->children_count == 0);
-
+	remove_chunk(chunk);
 	return 0;
 }
 
+/* Finds chunk that corresponds to key sequence.  Returns the chunk or NULL. */
 static key_chunk_t *
-find_user_keys(const wchar_t *keys, int mode)
+find_keys(key_chunk_t *root, const wchar_t keys[])
 {
-	key_chunk_t *curr = &user_cmds_root[mode];
-
 	if(*keys == L'\0')
 	{
 		return NULL;
 	}
 
+	key_chunk_t *curr = root;
 	while(*keys != L'\0')
 	{
 		key_chunk_t *p = curr->child;
@@ -1064,6 +1079,46 @@ find_user_keys(const wchar_t *keys, int mode)
 		keys++;
 	}
 	return curr;
+}
+
+/* Removes information within the chunk and removes it from the tree if it has
+ * no child chunks.  Updates all parent nodes. */
+static void
+remove_chunk(key_chunk_t *chunk)
+{
+	if(chunk->type == USER_CMD)
+	{
+		free(chunk->conf.data.cmd);
+	}
+
+	chunk->type = BUILTIN_WAIT_POINT;
+	chunk->conf.data.handler = NULL;
+
+	key_chunk_t *p = chunk;
+	while(p->parent != NULL)
+	{
+		p->parent->children_count--;
+		p = p->parent;
+	}
+
+	if(chunk->children_count > 0)
+		return;
+
+	do
+	{
+		key_chunk_t *const parent = chunk->parent;
+		if(chunk->prev != NULL)
+			chunk->prev->next = chunk->next;
+		else
+			parent->child = chunk->next;
+		if(chunk->next != NULL)
+			chunk->next->prev = chunk->prev;
+		free_chunk(chunk);
+		chunk = parent;
+	}
+	while(chunk->parent != NULL && chunk->parent->conf.data.handler == NULL &&
+			chunk->parent->type == BUILTIN_WAIT_POINT &&
+			chunk->parent->children_count == 0);
 }
 
 int

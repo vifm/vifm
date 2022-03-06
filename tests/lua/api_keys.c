@@ -1,21 +1,27 @@
 #include <stic.h>
 
+#include <string.h>
+
 #include "../../src/engine/keys.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/bracket_notation.h"
-#include "../../src/status.h"
-
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/registers.h"
+#include "../../src/status.h"
+
+#include <test-utils.h>
 
 static vlua_t *vlua;
 
 SETUP_ONCE()
 {
 	init_bracket_notation();
+	stub_colmgr();
 }
 
 SETUP()
@@ -26,15 +32,30 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
+	view_setup(&lwin);
+	strcpy(lwin.curr_dir, "/lwin");
+	lwin.list_rows = 2;
+	lwin.list_pos = 1;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("file0");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("file1");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
 	init_modes();
+	regs_init();
 }
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
+
 	vlua_finish(vlua);
 	curr_stats.vlua = NULL;
 
 	vle_keys_reset();
+	regs_reset();
 }
 
 TEST(keys_add_errors)
@@ -64,9 +85,16 @@ TEST(keys_add_errors)
 	                                     "}"));
 	assert_true(ends_with(ui_sb_last(),
 				": Shortcut can't be empty or longer than 15"));
+
+	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  isselector = 10,"
+	                                     "}"));
+	assert_true(ends_with(ui_sb_last(),
+				": `isselector` value must be a boolean"));
 }
 
-TEST(keys_bad_handler)
+TEST(keys_bad_key_handler)
 {
 	assert_success(vlua_run_string(vlua, "function badhandler()\n"
 	                                     "  adsf()\n"
@@ -82,6 +110,101 @@ TEST(keys_bad_handler)
 	(void)vle_keys_exec_timed_out(WK_X);
 	assert_true(ends_with(ui_sb_last(),
 				": global 'adsf' is not callable (a nil value)"));
+}
+
+TEST(keys_bad_selector_handler)
+{
+	assert_success(vlua_run_string(vlua, "function badhandler()\n"
+	                                     "  adsf()\n"
+	                                     "end"));
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  isselector = true,"
+	                                     "  handler = badhandler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	(void)vle_keys_exec_timed_out(L"yX");
+	assert_true(ends_with(ui_sb_last(),
+				": global 'adsf' is not callable (a nil value)"));
+}
+
+TEST(keys_bad_selector_return)
+{
+	assert_success(vlua_run_string(vlua, "function badhandler()\n"
+	                                     "  return 1\n"
+	                                     "end"));
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  isselector = true,"
+	                                     "  handler = badhandler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(L"yX");
+	assert_string_equal("", ui_sb_last());
+}
+
+TEST(keys_bad_selector_return_table)
+{
+	assert_success(vlua_run_string(vlua, "function badhandler()\n"
+	                                     "  return {}\n"
+	                                     "end"));
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  isselector = true,"
+	                                     "  handler = badhandler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(L"yX");
+	assert_string_equal("", ui_sb_last());
+}
+
+TEST(keys_bad_selector_index)
+{
+	assert_success(vlua_run_string(vlua, "function badhandler()\n"
+	                                     "  return { indexes = { 0 } }\n"
+	                                     "end"));
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  isselector = true,"
+	                                     "  handler = badhandler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(L"yX");
+	assert_string_equal("", ui_sb_last());
+}
+
+TEST(keys_selector_duplicated_indexes)
+{
+	assert_success(vlua_run_string(vlua, "function badhandler()\n"
+	                                     "  return { indexes = { 1, 1 } }\n"
+	                                     "end"));
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  isselector = true,"
+	                                     "  handler = badhandler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	(void)vle_keys_exec_timed_out(L"yX");
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_equal("1 file yanked", ui_sb_last());
 }
 
 TEST(keys_add)
@@ -126,6 +249,36 @@ TEST(keys_add)
 	(void)vle_keys_exec_timed_out(L"\"\"22X");
 	assert_int_equal(1, curr_stats.save_msg);
 	assert_string_equal("22\"", ui_sb_last());
+}
+
+TEST(keys_add_selector)
+{
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "function handler(info)"
+	                                     "  print('in handler')"
+	                                     "  return { indexes = { 1, 2 } }"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'cmdline', 'normal' },"
+	                                     "  description = 'print a message',"
+	                                     "  isselector = true,"
+	                                     "  handler = handler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	(void)vle_keys_exec_timed_out(L"yX");
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_equal("2 files yanked", ui_sb_last());
+
+	reg_t *reg = regs_find(DEFAULT_REG_NAME);
+	assert_non_null(reg);
+	assert_int_equal(2, reg->nfiles);
+	assert_string_equal("/lwin/file0", reg->files[0]);
+	assert_string_equal("/lwin/file1", reg->files[1]);
 }
 
 TEST(keys_add_modes)
