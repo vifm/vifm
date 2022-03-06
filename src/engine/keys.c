@@ -136,7 +136,7 @@ static const wchar_t * get_reg(const wchar_t *keys, int *reg);
 static const wchar_t * get_count(const wchar_t keys[], int *count);
 static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
-static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
+static key_chunk_t * find_keys(key_chunk_t *root, const wchar_t keys[]);
 static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
 		size_t len);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
@@ -995,15 +995,14 @@ vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
 int
 vle_keys_user_exists(const wchar_t keys[], int mode)
 {
-	return find_user_keys(keys, mode) != NULL;
+	return find_keys(&user_cmds_root[mode], keys) != NULL;
 }
 
 int
 vle_keys_user_remove(const wchar_t keys[], int mode)
 {
-	key_chunk_t *curr, *p;
-
-	if((curr = find_user_keys(keys, mode)) == NULL)
+	key_chunk_t *curr = find_keys(&user_cmds_root[mode], keys);
+	if(curr == NULL)
 		return -1;
 
 	if(curr->type == USER_CMD)
@@ -1014,7 +1013,7 @@ vle_keys_user_remove(const wchar_t keys[], int mode)
 	curr->type = BUILTIN_WAIT_POINT;
 	curr->conf.data.handler = NULL;
 
-	p = curr;
+	key_chunk_t *p = curr;
 	while(p->parent != NULL)
 	{
 		p->parent->children_count--;
@@ -1043,16 +1042,16 @@ vle_keys_user_remove(const wchar_t keys[], int mode)
 	return 0;
 }
 
+/* Finds chunk that corresponds to key sequence.  Returns the chunk or NULL. */
 static key_chunk_t *
-find_user_keys(const wchar_t *keys, int mode)
+find_keys(key_chunk_t *root, const wchar_t keys[])
 {
-	key_chunk_t *curr = &user_cmds_root[mode];
-
 	if(*keys == L'\0')
 	{
 		return NULL;
 	}
 
+	key_chunk_t *curr = root;
 	while(*keys != L'\0')
 	{
 		key_chunk_t *p = curr->child;
