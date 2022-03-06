@@ -20,11 +20,14 @@
 
 #include <wchar.h>
 
+#include "../compat/reallocarray.h"
 #include "../engine/keys.h"
 #include "../modes/modes.h"
 #include "../ui/statusbar.h"
+#include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../bracket_notation.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
@@ -39,6 +42,10 @@ VLUA_DECLARE_SAFE(keys_add);
 
 static void parse_modes(vlua_t *vlua, char modes[MODES_COUNT]);
 static void lua_key_handler(key_info_t key_info, keys_info_t *keys_info);
+static void build_handler_args(lua_State *lua, key_info_t key_info);
+static int extract_indexes(lua_State *lua, keys_info_t *keys_info);
+static int deduplicate_ints(int array[], int count);
+static int int_sorter(const void *first, const void *second);
 
 /* Functions of `vifm.keys` table. */
 static const luaL_Reg vifm_keys_methods[] = {
@@ -81,6 +88,12 @@ VLUA_API(keys_add)(lua_State *lua)
 		descr = state_store_string(vlua, lua_tostring(lua, -1));
 	}
 
+	int is_selector = 0;
+	if(check_opt_field(lua, 1, "isselector", LUA_TBOOLEAN))
+	{
+		is_selector = lua_toboolean(lua, -1);
+	}
+
 	char modes[MODES_COUNT] = { };
 	check_field(lua, 1, "modes", LUA_TTABLE);
 	parse_modes(vlua, modes);
@@ -88,6 +101,8 @@ VLUA_API(keys_add)(lua_State *lua)
 	lua_newtable(lua);
 	check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_setfield(lua, -2, "handler");
+	lua_pushboolean(lua, is_selector);
+	lua_setfield(lua, -2, "isselector");
 	void *handler = to_pointer(lua);
 
 	key_conf_t key = {
@@ -103,12 +118,12 @@ VLUA_API(keys_add)(lua_State *lua)
 
 	int success = 1;
 
-	int i;
-	for(i = 0; i < MODES_COUNT; ++i)
+	int mode;
+	for(mode = 0; mode < MODES_COUNT; ++mode)
 	{
-		if(modes[i])
+		if(modes[mode])
 		{
-			success &= (vle_keys_foreign_add(lhs, &key, /*is_selector=*/0, i) == 0);
+			success &= (vle_keys_foreign_add(lhs, &key, is_selector, mode) == 0);
 		}
 	}
 
@@ -166,8 +181,46 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 	lua_State *lua = p->vlua->lua;
 
 	from_pointer(lua, p->ptr);
-	lua_getfield(lua, -1, "handler");
+	lua_getfield(lua, -1, "isselector");
+	int is_selector = lua_toboolean(lua, -1);
+	lua_getfield(lua, -2, "handler");
 
+	build_handler_args(lua, key_info);
+
+	curr_stats.save_msg = 0;
+
+	if(is_selector)
+	{
+		vlua_state_safe_mode_set(lua, 1);
+	}
+
+	int result = lua_pcall(lua, 1, 1, 0);
+
+	if(is_selector)
+	{
+		vlua_state_safe_mode_set(lua, 0);
+	}
+
+	if(result != LUA_OK)
+	{
+		ui_sb_err(lua_tostring(lua, -1));
+		lua_pop(lua, 3);
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	if(is_selector && extract_indexes(lua, keys_info) == 0)
+	{
+		keys_info->count = deduplicate_ints(keys_info->indexes, keys_info->count);
+	}
+
+	lua_pop(lua, 3);
+}
+
+/* Builds table passed to key handler, leaves it at the top of the stack. */
+static void
+build_handler_args(lua_State *lua, key_info_t key_info)
+{
 	lua_newtable(lua);
 
 	if(key_info.count == NO_COUNT_GIVEN)
@@ -190,20 +243,95 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 		lua_pushstring(lua, reg_name);
 	}
 	lua_setfield(lua, -2, "register");
+}
 
-	curr_stats.save_msg = 0;
-
-	if(lua_pcall(lua, 1, 0, 0) != LUA_OK)
+/* Extracts selected indexes from "indexes" field of the table at the top of
+ * Lua stack.  Returns zero on success and non-zero on error. */
+static int
+extract_indexes(lua_State *lua, keys_info_t *keys_info)
+{
+	if(!lua_istable(lua, -1))
 	{
-		const char *error = lua_tostring(lua, -1);
-		ui_sb_err(error);
-		lua_pop(lua, 2);
-		curr_stats.save_msg = 1;
-		return;
+		return 1;
 	}
 
-	lua_pop(lua, 1);
-	return;
+	if(lua_getfield(lua, -1, "indexes") != LUA_TTABLE)
+	{
+		lua_pop(lua, 1);
+		return 1;
+	}
+
+	lua_len(lua, -1);
+	keys_info->count = lua_tointeger(lua, -1);
+
+	keys_info->indexes = reallocarray(NULL, keys_info->count,
+			sizeof(keys_info->indexes[0]));
+	if(keys_info->indexes == NULL)
+	{
+		keys_info->count = 0;
+		lua_pop(lua, 2);
+		return 1;
+	}
+
+	int i = 0;
+	lua_pushnil(lua);
+	while(lua_next(lua, -3) != 0)
+	{
+		int idx = lua_tointeger(lua, -1) - 1;
+		if(idx >= 0 && idx < curr_view->list_rows)
+		{
+			keys_info->indexes[i++] = idx;
+		}
+		lua_pop(lua, 1);
+	}
+	keys_info->count = i;
+
+	if(keys_info->count == 0)
+	{
+		free(keys_info->indexes);
+		keys_info->indexes = NULL;
+	}
+
+	lua_pop(lua, 2);
+	return 0;
+}
+
+/* Removes duplicates from array of ints while sorting it.  Returns new array
+ * size. */
+static int
+deduplicate_ints(int array[], int count)
+{
+	if(count == 0)
+	{
+		return 0;
+	}
+
+	/* Sort list of indexes to simplify finding duplicates. */
+	safe_qsort(array, count, sizeof(array[0]), &int_sorter);
+
+	/* Drop duplicates from the list of indexes. */
+	int i;
+	int j = 1;
+	for(i = 1; i < count; ++i)
+	{
+		if(array[i] != array[j - 1])
+		{
+			array[j++] = array[i];
+		}
+	}
+
+	return j;
+}
+
+/* qsort() comparer that sorts ints.  Returns standard -1, 0, 1 for
+ * comparisons. */
+static int
+int_sorter(const void *first, const void *second)
+{
+	const int *a = first;
+	const int *b = second;
+
+	return (*a - *b);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

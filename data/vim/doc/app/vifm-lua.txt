@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Feb 6
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -226,6 +226,7 @@ This is what one can do by using Lua at the moment:
  * :filetype/:filextype/:fileviewer/%q handlers in Lua (|vifm-lua-handlers|)
  * 'statusline' generator in Lua (|vifm-lua-handlers|)
  * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)
+ * defining custom keys and selectors (|vifm-l_vifm.keys.add()|)
 
 --------------------------------------------------------------------------------
 *vifm-lua-api*
@@ -290,6 +291,9 @@ Possible fields of {column}:
  - "isprimary" (boolean) (default: false)
    Whether this column is highlighted with file color and search match
    is highlighted as well.
+
+{column}.handler is executed in a safe environment and can't call API marked
+as {unsafe}.
 
 Fields of {info} argument for {column}.handler:
  - "entry" (table)
@@ -551,8 +555,9 @@ Return:~
 This global `vifm.keys` table provides means of managing key bindings.
 
 vifm.keys.add({key})                           *vifm-l_vifm.keys.add()*
-Registers a new user-defined key in one or several modes or replaces an
-existing one.
+Registers in one or several modes:
+ * a new user-defined key which might replace an existing one
+ * a new selector which must not conflict with an existing one
 
 Possible fields of {key}:
  - "shortcut" (string)
@@ -563,14 +568,26 @@ Possible fields of {key}:
    List of modes to register the key in.  Supported values: cmdline, normal,
    visual, menus, view and dialogs (sort, attributes, change and file info).
    Unsupported values are ignored.
+ - "isselector" (boolean) (default: false)
+   Whether this handler defines a selector rather than a regular key.
  - "handler" (function)
-   Handler which accepts {info}.
+   Handler which accepts {info} and returns a table for selector handlers.
+   See below.
 
-Fields of {info} argument for "handler":
+{key}.handler for selectors is executed in a safe environment and can't call
+API marked as {unsafe}.
+
+Fields of {info} argument for {key}.handler:
  - "count" (integer)
    Count preceding the key or nil if none.
  - "register" (string)
    Register name or nil if none was specified.
+
+Fields of table returned by {key}.handler for selectors:
+ - "indexes" (table)
+   Table of indexes of entries of the current view (|vifm-l_vifm.currview()|)
+   that were selected for the operation.  Out of range values and duplicates
+   are silently ignored.  Indexes are sorted before processing.
 
 Parameters:~
   {cmd}  Table with information about a key.
