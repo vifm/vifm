@@ -137,6 +137,7 @@ static const wchar_t * get_count(const wchar_t keys[], int *count);
 static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
 static key_chunk_t * find_keys(key_chunk_t *root, const wchar_t keys[]);
+static void remove_chunk(key_chunk_t *chunk);
 static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
 		size_t len);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
@@ -1001,44 +1002,11 @@ vle_keys_user_exists(const wchar_t keys[], int mode)
 int
 vle_keys_user_remove(const wchar_t keys[], int mode)
 {
-	key_chunk_t *curr = find_keys(&user_cmds_root[mode], keys);
-	if(curr == NULL)
+	key_chunk_t *chunk = find_keys(&user_cmds_root[mode], keys);
+	if(chunk == NULL)
 		return -1;
 
-	if(curr->type == USER_CMD)
-	{
-		free(curr->conf.data.cmd);
-	}
-
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->conf.data.handler = NULL;
-
-	key_chunk_t *p = curr;
-	while(p->parent != NULL)
-	{
-		p->parent->children_count--;
-		p = p->parent;
-	}
-
-	if(curr->children_count > 0)
-		return 0;
-
-	do
-	{
-		key_chunk_t *const parent = curr->parent;
-		if(curr->prev != NULL)
-			curr->prev->next = curr->next;
-		else
-			parent->child = curr->next;
-		if(curr->next != NULL)
-			curr->next->prev = curr->prev;
-		free_chunk(curr);
-		curr = parent;
-	}
-	while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
-			curr->parent->type == BUILTIN_WAIT_POINT &&
-			curr->parent->children_count == 0);
-
+	remove_chunk(chunk);
 	return 0;
 }
 
@@ -1063,6 +1031,46 @@ find_keys(key_chunk_t *root, const wchar_t keys[])
 		keys++;
 	}
 	return curr;
+}
+
+/* Removes information within the chunk and removes it from the tree if it has
+ * no child chunks.  Updates all parent nodes. */
+static void
+remove_chunk(key_chunk_t *chunk)
+{
+	if(chunk->type == USER_CMD)
+	{
+		free(chunk->conf.data.cmd);
+	}
+
+	chunk->type = BUILTIN_WAIT_POINT;
+	chunk->conf.data.handler = NULL;
+
+	key_chunk_t *p = chunk;
+	while(p->parent != NULL)
+	{
+		p->parent->children_count--;
+		p = p->parent;
+	}
+
+	if(chunk->children_count > 0)
+		return;
+
+	do
+	{
+		key_chunk_t *const parent = chunk->parent;
+		if(chunk->prev != NULL)
+			chunk->prev->next = chunk->next;
+		else
+			parent->child = chunk->next;
+		if(chunk->next != NULL)
+			chunk->next->prev = chunk->prev;
+		free_chunk(chunk);
+		chunk = parent;
+	}
+	while(chunk->parent != NULL && chunk->parent->conf.data.handler == NULL &&
+			chunk->parent->type == BUILTIN_WAIT_POINT &&
+			chunk->parent->children_count == 0);
 }
 
 int
