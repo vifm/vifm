@@ -1013,7 +1013,8 @@ vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 		free(curr->conf.data.cmd);
 	}
 
-	curr->type = BUILTIN_KEYS;
+	curr->type = (info->followed == FOLLOWED_BY_NONE) ? BUILTIN_KEYS
+	                                                  : BUILTIN_WAIT_POINT;
 	curr->conf = *info;
 	return 0;
 }

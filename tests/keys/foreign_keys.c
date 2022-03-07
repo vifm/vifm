@@ -10,6 +10,8 @@ static void key_X(key_info_t key_info, keys_info_t *keys_info);
 static void selector_X(key_info_t key_info, keys_info_t *keys_info);
 
 static int called;
+static int indexes_count;
+static int multikey;
 
 SETUP()
 {
@@ -71,16 +73,50 @@ TEST(foreign_selectors_can_be_cleared)
 	assert_true(IS_KEYS_RET_CODE(vle_keys_exec(L"d10X")));
 }
 
+TEST(add_foreign_key_with_selector)
+{
+	key_conf_t selector = { { &selector_X } };
+	assert_success(vle_keys_foreign_add(L"X", &selector, /*is_selector=*/1,
+				NORMAL_MODE));
+
+	key_conf_t key = { { &key_X }, .followed = FOLLOWED_BY_SELECTOR };
+	assert_success(vle_keys_foreign_add(L"X", &key, /*is_selector=*/0,
+				NORMAL_MODE));
+	assert_true(vle_keys_user_exists(L"X", NORMAL_MODE));
+
+	indexes_count = 0;
+	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"X"));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"X4X")));
+	assert_int_equal(2, called);
+	assert_int_equal(4, indexes_count);
+}
+
+TEST(add_foreign_key_with_multikey)
+{
+	key_conf_t key = { { &key_X }, .followed = FOLLOWED_BY_MULTIKEY };
+	assert_success(vle_keys_foreign_add(L"X", &key, /*is_selector=*/0,
+				NORMAL_MODE));
+	assert_true(vle_keys_user_exists(L"X", NORMAL_MODE));
+
+	multikey = 0;
+	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"X"));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"X4")));
+	assert_int_equal(1, called);
+	assert_int_equal(L'4', multikey);
+}
+
 static void
 key_X(key_info_t key_info, keys_info_t *keys_info)
 {
-	called = 1;
+	++called;
+	indexes_count = keys_info->count;
+	multikey = key_info.multi;
 }
 
 static void
 selector_X(key_info_t key_info, keys_info_t *keys_info)
 {
-	called = 1;
+	++called;
 	keys_info->count = key_info.count;
 }
 

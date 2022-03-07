@@ -35,7 +35,7 @@ SETUP()
 	view_setup(&lwin);
 	strcpy(lwin.curr_dir, "/lwin");
 	lwin.list_rows = 2;
-	lwin.list_pos = 1;
+	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("file0");
@@ -85,6 +85,15 @@ TEST(keys_add_errors)
 	                                     "}"));
 	assert_true(ends_with(ui_sb_last(),
 				": Shortcut can't be empty or longer than 15"));
+
+	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'cmdline', 'normal' },"
+	                                     "  handler = handler,"
+	                                     "  followedby = 'something',"
+	                                     "}"));
+	assert_true(ends_with(ui_sb_last(),
+				": Unrecognized value for `followedby`: something"));
 
 	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
 	                                     "  shortcut = 'X',"
@@ -232,6 +241,7 @@ TEST(keys_add)
 	                                     "  shortcut = 'X',"
 	                                     "  modes = { 'cmdline', 'normal' },"
 	                                     "  description = 'print a message',"
+	                                     "  followedby = 'none',"
 	                                     "  handler = handler,"
 	                                     "})"));
 	assert_string_equal("true", ui_sb_last());
@@ -305,6 +315,52 @@ TEST(keys_add_modes)
 	assert_true(vle_keys_user_exists(L"X", FILE_INFO_MODE));
 	assert_false(vle_keys_user_exists(L"X", MSG_MODE));
 	assert_false(vle_keys_user_exists(L"X", MORE_MODE));
+}
+
+TEST(keys_followed_by_selector)
+{
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "function handler(info)"
+	                                     "  print(#info.indexes,"
+	                                     "         info.indexes[1],"
+	                                     "         info.indexes[2])"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  followedby = 'selector',"
+	                                     "  handler = handler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	(void)vle_keys_exec_timed_out(L"Xj");
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_equal("2\t1\t2", ui_sb_last());
+}
+
+TEST(keys_followed_by_multikey)
+{
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "function handler(info)"
+	                                     "  print(info.keyarg)"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  followedby = 'keyarg',"
+	                                     "  handler = handler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	(void)vle_keys_exec_timed_out(L"Xj");
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_equal("j", ui_sb_last());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -570,6 +570,8 @@ Possible fields of {key}:
    Unsupported values are ignored.
  - "isselector" (boolean) (default: false)
    Whether this handler defines a selector rather than a regular key.
+ - "followedby" (string) (default: "none")
+   "none", "selector" (e.g., "j" in "dj") or "keyarg" (e.g., "q" in "'q").
  - "handler" (function)
    Handler which accepts {info} and returns a table for selector handlers.
    See below.
@@ -582,6 +584,10 @@ Fields of {info} argument for {key}.handler:
    Count preceding the key or nil if none.
  - "register" (string)
    Register name or nil if none was specified.
+ - "indexes" (table) (present if key is followed by selector)
+   Table of indexes returned by selector key.
+ - "keyarg" (string) (present if key is followed by keyarg)
+   Key argument (e.g., "x" in "mx" sequence).
 
 Fields of table returned by {key}.handler for selectors:
  - "indexes" (table)
