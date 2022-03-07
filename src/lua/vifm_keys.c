@@ -42,7 +42,8 @@ VLUA_DECLARE_SAFE(keys_add);
 
 static void parse_modes(vlua_t *vlua, char modes[MODES_COUNT]);
 static void lua_key_handler(key_info_t key_info, keys_info_t *keys_info);
-static void build_handler_args(lua_State *lua, key_info_t key_info);
+static void build_handler_args(lua_State *lua, key_info_t key_info,
+		const keys_info_t *keys_info);
 static int extract_indexes(lua_State *lua, keys_info_t *keys_info);
 static int deduplicate_ints(int array[], int count);
 static int int_sorter(const void *first, const void *second);
@@ -94,6 +95,28 @@ VLUA_API(keys_add)(lua_State *lua)
 		is_selector = lua_toboolean(lua, -1);
 	}
 
+	FollowedBy followed_by = FOLLOWED_BY_NONE;
+	if(check_opt_field(lua, 1, "followedby", LUA_TSTRING))
+	{
+		const char *value = lua_tostring(lua, -1);
+		if(strcmp(value, "none") == 0)
+		{
+			followed_by = FOLLOWED_BY_NONE;
+		}
+		else if(strcmp(value, "selector") == 0)
+		{
+			followed_by = FOLLOWED_BY_SELECTOR;
+		}
+		else if(strcmp(value, "keyarg") == 0)
+		{
+			followed_by = FOLLOWED_BY_MULTIKEY;
+		}
+		else
+		{
+			return luaL_error(lua, "Unrecognized value for `followedby`: %s", value);
+		}
+	}
+
 	char modes[MODES_COUNT] = { };
 	check_field(lua, 1, "modes", LUA_TTABLE);
 	parse_modes(vlua, modes);
@@ -108,6 +131,7 @@ VLUA_API(keys_add)(lua_State *lua)
 	key_conf_t key = {
 		.data.handler = &lua_key_handler,
 		.descr = descr,
+		.followed = followed_by,
 	};
 
 	key.user_data = state_store_pointer(vlua, handler);
@@ -185,7 +209,12 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 	int is_selector = lua_toboolean(lua, -1);
 	lua_getfield(lua, -2, "handler");
 
-	build_handler_args(lua, key_info);
+	build_handler_args(lua, key_info, keys_info);
+
+	/* After we've built handler arguments, this list isn't needed anymore. */
+	free(keys_info->indexes);
+	keys_info->indexes = NULL;
+	keys_info->count = 0;
 
 	curr_stats.save_msg = 0;
 
@@ -219,7 +248,8 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 
 /* Builds table passed to key handler, leaves it at the top of the stack. */
 static void
-build_handler_args(lua_State *lua, key_info_t key_info)
+build_handler_args(lua_State *lua, key_info_t key_info,
+		const keys_info_t *keys_info)
 {
 	lua_newtable(lua);
 
@@ -243,6 +273,24 @@ build_handler_args(lua_State *lua, key_info_t key_info)
 		lua_pushstring(lua, reg_name);
 	}
 	lua_setfield(lua, -2, "register");
+
+	if(keys_info->selector)
+	{
+		int i;
+		lua_newtable(lua);
+		for(i = 0; i < keys_info->count; ++i)
+		{
+			lua_pushinteger(lua, keys_info->indexes[i] + 1);
+			lua_seti(lua, -2, i + 1);
+		}
+		lua_setfield(lua, -2, "indexes");
+	}
+
+	if(key_info.multi != L'\0')
+	{
+		lua_pushfstring(lua, "%U", key_info.multi);
+		lua_setfield(lua, -2, "keyarg");
+	}
 }
 
 /* Extracts selected indexes from "indexes" field of the table at the top of
