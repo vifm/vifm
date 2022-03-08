@@ -318,6 +318,18 @@ TEST(colon_dot)
 	free(expanded);
 }
 
+TEST(colon_dot_compares_paths_correctly)
+{
+	MacroFlags flags;
+	char *expanded;
+
+	strcpy(rwin.curr_dir, "/lwin_rwin");
+
+	expanded = ma_expand("echo %C:.", "", &flags, MER_SHELL);
+	assert_string_equal("echo " SL "lwin_rwin" SL "rfile5", expanded);
+	free(expanded);
+}
+
 TEST(colon_h)
 {
 	MacroFlags flags;
