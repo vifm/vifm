@@ -32,6 +32,7 @@
 #include "utils/path.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
+#include "filelist.h"
 #include "status.h"
 
 static const char * apply_mod(const char *path, const char *parent,
@@ -168,11 +169,11 @@ apply_tilde_mod(const char *path, char *buf, size_t buf_len)
 static int
 apply_dot_mod(const char *path, char *buf, size_t buf_len)
 {
-	size_t len = strlen(curr_view->curr_dir);
-	if(strnoscmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
-		copy_str(buf, buf_len, path);
+	const char *curr_dir = flist_get_dir(curr_view);
+	if(path_starts_with(path, curr_dir) && !paths_are_equal(path, curr_dir))
+		copy_str(buf, buf_len, make_rel_path(path, curr_dir));
 	else
-		copy_str(buf, buf_len, path + len + 1);
+		copy_str(buf, buf_len, path);
 	return 0;
 }
 
