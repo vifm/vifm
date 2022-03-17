@@ -64,6 +64,7 @@ static int VLUA_API(opts_global_index)(lua_State *lua);
 static int VLUA_API(opts_global_newindex)(lua_State *lua);
 static int VLUA_API(vifm_errordialog)(lua_State *lua);
 static int VLUA_API(vifm_fnamemodify)(lua_State *lua);
+static int VLUA_API(vifm_escape)(lua_State *lua);
 static int VLUA_API(vifm_exists)(lua_State *lua);
 static int VLUA_API(vifm_makepath)(lua_State *lua);
 static int VLUA_API(vifm_expand)(lua_State *lua);
@@ -83,6 +84,7 @@ VLUA_DECLARE_SAFE(opts_global_index);
 VLUA_DECLARE_UNSAFE(opts_global_newindex);
 VLUA_DECLARE_SAFE(vifm_errordialog);
 VLUA_DECLARE_SAFE(vifm_fnamemodify);
+VLUA_DECLARE_SAFE(vifm_escape);
 VLUA_DECLARE_SAFE(vifm_exists);
 VLUA_DECLARE_SAFE(vifm_makepath);
 VLUA_DECLARE_SAFE(vifm_expand);
@@ -103,6 +105,7 @@ VLUA_DECLARE_SAFE(vifm_addhandler);
 static const struct luaL_Reg vifm_methods[] = {
 	{ "errordialog",   VLUA_REF(vifm_errordialog)   },
 	{ "fnamemodify",   VLUA_REF(vifm_fnamemodify)   },
+	{ "escape",        VLUA_REF(vifm_escape)        },
 	{ "exists",        VLUA_REF(vifm_exists)        },
 	{ "makepath",      VLUA_REF(vifm_makepath)      },
 	{ "startjob",      VLUA_REF(vifmjob_new)        },
@@ -355,6 +358,15 @@ VLUA_API(vifm_fnamemodify)(lua_State *lua)
 	const char *modifiers = luaL_checkstring(lua, 2);
 	const char *base = luaL_optstring(lua, 3, flist_get_dir(curr_view));
 	lua_pushstring(lua, mods_apply(path, base, modifiers, 0));
+	return 1;
+}
+
+/* Member of `vifm` that escapes its input string.  Returns escaped string. */
+static int
+VLUA_API(vifm_escape)(lua_State *lua)
+{
+	const char *what = luaL_checkstring(lua, 1);
+	lua_pushstring(lua, enclose_in_dquotes(what));
 	return 1;
 }
 

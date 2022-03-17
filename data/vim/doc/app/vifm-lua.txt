@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 7
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -413,6 +413,16 @@ Parameters:~
   {mods}  Modifiers to apply (`:p`, `:t`, etc.).
   {base}  Base directory for relative paths.
           Default: path of active pane.
+
+Return:~
+  Modified path.
+
+vifm.escape({what})                            *vifm-l_vifm.escape()*
+Escapes input to make it suitable for use in an external command for current
+value of |vifm-'shell'|.
+
+Parameters:~
+  {what}  String to escape.
 
 Return:~
   Modified path.
