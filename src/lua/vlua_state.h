@@ -43,7 +43,7 @@ struct vlua_t
 
 	strlist_t strings; /* Interned strings. */
 
-	int is_safe_mode_on; /* Whether API must be limited to safe calls. */
+	int safe_mode_level; /* When non-zero, API is limited to safe calls. */
 };
 
 /* Creates new empty state.  Returns the state or NULL. */
@@ -70,8 +70,13 @@ void vlua_state_make_table(vlua_t *vlua, void *key);
  * the top of the stack. */
 void vlua_state_get_table(vlua_t *vlua, void *key);
 
-/* Enables or disables safe mode. */
-void vlua_state_safe_mode_set(struct lua_State *lua, int safe_mode);
+/* Enables safe mode if it's not already on.  Returns cookie value to be passed
+ * to vlua_state_safe_mode_off(). */
+int vlua_state_safe_mode_on(struct lua_State *lua);
+
+/* Disables safe mode.  Accepts cookie from a corresponding call to
+ * vlua_state_safe_mode_on(). */
+void vlua_state_safe_mode_off(struct lua_State *lua, int cookie);
 
 /* Runs a Lua C function if it's allowed to run in current context. */
 int vlua_state_proxy_call(struct lua_State *lua,

@@ -144,18 +144,27 @@ vlua_state_get_table(vlua_t *vlua, void *key)
 	lua_gettable(vlua->lua, LUA_REGISTRYINDEX);
 }
 
-void
-vlua_state_safe_mode_set(lua_State *lua, int safe_mode)
+int
+vlua_state_safe_mode_on(lua_State *lua)
 {
 	vlua_t *vlua = get_state(lua);
-	assert(vlua->is_safe_mode_on != safe_mode && "Mismatched safe mode change!");
-	vlua->is_safe_mode_on = safe_mode;
+	return vlua->safe_mode_level++;
+}
+
+void
+vlua_state_safe_mode_off(lua_State *lua, int cookie)
+{
+	vlua_t *vlua = get_state(lua);
+	--vlua->safe_mode_level;
+
+	assert(vlua->safe_mode_level == cookie && "Mismatched safe mode change!");
+	assert(vlua->safe_mode_level >= 0 && "Can't disabled disabled safe mode!");
 }
 
 int
 vlua_state_proxy_call(lua_State *lua, int (*call)(lua_State *lua))
 {
-	if(get_state(lua)->is_safe_mode_on)
+	if(get_state(lua)->safe_mode_level != 0)
 	{
 		return luaL_error(lua, "%s",
 				"Unsafe functions can't be called in this environment!");

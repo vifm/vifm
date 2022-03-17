@@ -218,16 +218,17 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 
 	curr_stats.save_msg = 0;
 
+	int sm_cookie;
 	if(is_selector)
 	{
-		vlua_state_safe_mode_set(lua, 1);
+		sm_cookie = vlua_state_safe_mode_on(lua);
 	}
 
 	int result = lua_pcall(lua, 1, 1, 0);
 
 	if(is_selector)
 	{
-		vlua_state_safe_mode_set(lua, 0);
+		vlua_state_safe_mode_off(lua, sm_cookie);
 	}
 
 	if(result != LUA_OK)
