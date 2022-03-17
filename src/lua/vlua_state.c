@@ -155,12 +155,12 @@ vlua_state_safe_mode_set(lua_State *lua, int safe_mode)
 int
 vlua_state_proxy_call(lua_State *lua, int (*call)(lua_State *lua))
 {
-		if(get_state(lua)->is_safe_mode_on)
-		{
-			return luaL_error(lua, "%s",
-					"Unsafe functions can't be called in this environment!");
-		}
-		return call(lua);
+	if(get_state(lua)->is_safe_mode_on)
+	{
+		return luaL_error(lua, "%s",
+				"Unsafe functions can't be called in this environment!");
+	}
+	return call(lua);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
