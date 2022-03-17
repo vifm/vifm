@@ -44,7 +44,7 @@ int vifm_handlers_present(struct vlua_t *vlua, const char cmd[]);
 struct strlist_t vifm_handlers_view(struct vlua_t *vlua, const char viewer[],
 		const char path[], const struct preview_area_t *parea);
 
-/* Invokes a fiel handler. */
+/* Invokes a file handler. */
 void vifm_handlers_open(struct vlua_t *vlua, const char prog[],
 		const struct dir_entry_t *entry);
 

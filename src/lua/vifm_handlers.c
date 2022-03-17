@@ -30,9 +30,9 @@
 #include "../utils/string_array.h"
 #include "../plugins.h"
 #include "../vifm.h"
-#include "common.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "common.h"
 #include "vifmentry.h"
 #include "vifmview.h"
 #include "vlua_state.h"
@@ -155,8 +155,7 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 }
 
 void
-vifm_handlers_open(vlua_t *vlua, const char prog[],
-		const struct dir_entry_t *entry)
+vifm_handlers_open(vlua_t *vlua, const char prog[], const dir_entry_t *entry)
 {
 	char *name = extract_handler_name(prog);
 
@@ -197,8 +196,8 @@ vifm_handlers_open(vlua_t *vlua, const char prog[],
 }
 
 char *
-vifm_handlers_make_status_line(vlua_t *vlua, const char format[],
-		struct view_t *view, int width)
+vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
+		int width)
 {
 	char *name = extract_handler_name(format);
 
