@@ -37,7 +37,6 @@ static void parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd);
 static int VLUA_API(cmds_command)(lua_State *lua);
 static int VLUA_API(cmds_delcommand)(lua_State *lua);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
-static void push_str_array(lua_State *lua, char *array[], int len);
 static int apply_completion(lua_State *lua, const char str[]);
 
 VLUA_DECLARE_SAFE(cmds_add);
@@ -242,19 +241,6 @@ vifm_cmds_complete(lua_State *lua, const cmd_info_t *cmd_info, int arg_pos)
 	}
 
 	return apply_completion(lua, cmd_info->args + arg_pos);
-}
-
-/* Creates an array of strings and leaves it on the top of the stack. */
-static void
-push_str_array(lua_State *lua, char *array[], int len)
-{
-	int i;
-	lua_newtable(lua);
-	for(i = 0; i < len; ++i)
-	{
-		lua_pushstring(lua, array[i]);
-		lua_seti(lua, -2, i + 1);
-	}
 }
 
 /* Does stack cleanup for the caller (-2).  Returns offset of completion
