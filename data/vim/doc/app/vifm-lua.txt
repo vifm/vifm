@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 17
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -216,6 +216,50 @@ A viewer can also be called through |vifm-%q|: >
 A handler can be used to generate |vifm-:'statusline'| value like this: >
   set statusline=#pluginname#statusline
 
+Below is a specification of input and output for different kinds of handlers.
+
+:filetype or :filextype handler~
+
+Fields of {info} argument for {handler}.handler for :file[x]type:
+ - "command" (string)
+   Command which handles the file.
+ - "entry" (table)
+   Information about a file list entry as an instance of |vifm-l_VifmEntry|.
+
+There is no return value.
+
+:fileviewer handler~
+
+Fields of {info} argument:
+ - "command" (string)
+   Command with which the viewer was invoked.
+ - "path" (string)
+   Path to the file which is being viewed.
+ - "x" (integer)
+   X coordinate of the preview area in characters.
+ - "y" (integer)
+   Y coordinate of the preview area in characters.
+ - "width" (integer)
+   Width of the preview area in characters.
+ - "height" (integer)
+   Height of the preview area in characters.
+
+Fields of returned table:
+ - "lines" (array of strings)
+   Preview text.
+
+'statusline' handler~
+
+Fields of {info} argument:
+ - "view" (|vifm-l_VifmView|)
+   Current view.
+ - "width" (integer)
+   Width of the status line.
+
+Fields of returned table:
+ - "format" (string)
+   Value for |vifm-'statusline'|.
+
 --------------------------------------------------------------------------------
 *vifm-lua-caps*
 
@@ -319,7 +363,8 @@ Raises an error:~
 
 vifm.addhandler({handler})                     *vifm-l_vifm.addhandler()*
 Registers a new handler that will be accessible in viewers.  See
-|vifm-lua-handlers|.
+|vifm-lua-handlers| for general description and details about specific
+use-cases.
 
 Possible fields of {handler}:
  - "name" (string)
@@ -327,48 +372,6 @@ Possible fields of {handler}:
    #-separated list of names, e.g. "view#pdf".
  - "handler" (function)
    Handler which accepts {info} and returns a table.  See below.
-
-:filetype or :filextype handler~
-
-Fields of {info} argument for {handler}.handler for :file[x]type:
- - "command" (string)
-   Command which handles the file.
- - "entry" (table)
-   Information about a file list entry as an instance of |vifm-l_VifmEntry|.
-
-There is no return value.
-
-:fileviewer handler~
-
-Fields of {info} argument:
- - "command" (string)
-   Command with which the viewer was invoked.
- - "path" (string)
-   Path to the file which is being viewed.
- - "x" (integer)
-   X coordinate of the preview area in characters.
- - "y" (integer)
-   Y coordinate of the preview area in characters.
- - "width" (integer)
-   Width of the preview area in characters.
- - "height" (integer)
-   Height of the preview area in characters.
-
-Fields of returned table:
- - "lines" (array of strings)
-   Preview text.
-
-'statusline' handler~
-
-Fields of {info} argument:
- - "view" (|vifm-l_VifmView|)
-   Current view.
- - "width" (integer)
-   Width of the status line.
-
-Fields of returned table:
- - "format" (string)
-   Value for |vifm-'statusline'|.
 
 Return:~
   `true` if handler was added, `false` if a handler with such name already
