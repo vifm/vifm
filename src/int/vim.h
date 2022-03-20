@@ -34,9 +34,9 @@ int vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size);
  * list.  Returns zero on success, otherwise non-zero is returned. */
 int vim_edit_files(int nfiles, char *files[]);
 
-/* Opens external editor to edit marked files of the current view.  Returns
- * non-zero on error, otherwise zero is returned. */
-int vim_edit_marking(void);
+/* Opens external editor to edit marked files of the view.  Returns non-zero on
+ * error, otherwise zero is returned. */
+int vim_edit_marking(struct view_t *view);
 
 /* Negative line/column means ignore parameter.  First line/column number has
  * number one, while zero means don't change it.  Returns zero on success, on

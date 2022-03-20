@@ -111,15 +111,15 @@ vim_edit_files(int nfiles, char *files[])
 }
 
 int
-vim_edit_marking(void)
+vim_edit_marking(view_t *view)
 {
-	const int cv = flist_custom_active(curr_view);
+	const int cv = flist_custom_active(view);
 
 	char **marked = NULL;
 	int nmarked = 0;
 
 	dir_entry_t *entry = NULL;
-	while(iter_marked_entries(curr_view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		if(!cv)
 		{
@@ -128,7 +128,7 @@ vim_edit_marking(void)
 		}
 
 		char path[PATH_MAX + 1];
-		get_short_path_of(curr_view, entry, NF_NONE, 0, sizeof(path), path);
+		get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
 		nmarked = add_to_string_array(&marked, nmarked, path);
 	}
 
