@@ -2187,12 +2187,11 @@ edit_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 
-	/* Reuse marking second time (for vifm_choose_files() or
-	 * vim_edit_marking()). */
-	curr_view->pending_marking = 1;
-
 	if(stats_file_choose_action_set())
 	{
+		/* Reuse marking second time. */
+		curr_view->pending_marking = 1;
+
 		/* The call below does not return. */
 		vifm_choose_files(curr_view, 0, NULL);
 	}

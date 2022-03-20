@@ -27,6 +27,7 @@
 #include <string.h> /* strcmp() strlen() strrchr() strstr() */
 
 #include "../cfg/config.h"
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
@@ -34,12 +35,11 @@
 #include "../utils/log.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
-#include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
 #include "../flist_sel.h"
-#include "../macros.h"
 #include "../running.h"
 #include "../status.h"
 #include "../vifm.h"
@@ -47,7 +47,6 @@
 /* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"
 
-TSTATIC char * format_edit_marking_cmd(int *bg);
 static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
 TSTATIC void trim_right(char text[]);
 static void dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[]);
@@ -114,27 +113,29 @@ vim_edit_files(int nfiles, char *files[])
 int
 vim_edit_marking(void)
 {
-	int error = 1;
-	int bg;
-	char *const cmd = format_edit_marking_cmd(&bg);
-	if(cmd != NULL)
-	{
-		error = run_vim(cmd, bg, 1);
-		free(cmd);
-	}
-	return error;
-}
+	const int cv = flist_custom_active(curr_view);
 
-/* Formats a command to edit marked files of the current view in an editor.
- * Returns a newly allocated string, which should be freed by the caller. */
-TSTATIC char *
-format_edit_marking_cmd(int *bg)
-{
-	const char *const fmt = (get_env_type() == ET_WIN) ? "%\"f" : "%f";
-	char *const files = ma_expand(fmt, NULL, NULL, MER_SHELL_OP);
-	char *const cmd = format_str("%s %s", cfg_get_vicmd(bg), files);
-	free(files);
-	return cmd;
+	char **marked = NULL;
+	int nmarked = 0;
+
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(curr_view, &entry))
+	{
+		if(!cv)
+		{
+			nmarked = add_to_string_array(&marked, nmarked, entry->name);
+			continue;
+		}
+
+		char path[PATH_MAX + 1];
+		get_short_path_of(curr_view, entry, NF_NONE, 0, sizeof(path), path);
+		nmarked = add_to_string_array(&marked, nmarked, path);
+	}
+
+	int result = vim_edit_files(nmarked, marked);
+
+	free_string_array(marked, nmarked);
+	return result;
 }
 
 int

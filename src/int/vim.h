@@ -65,7 +65,6 @@ int vim_run_choose_cmd(struct view_t *view);
 void vim_get_list_file_path(char buf[], size_t buf_size);
 
 TSTATIC_DEFS(
-	char * format_edit_marking_cmd(int *bg);
 	void trim_right(char str[]);
 )
 
