@@ -665,5 +665,32 @@ vlua_make_status_line(vlua_t *vlua, const char format[], view_t *view, int width
 	return vifm_handlers_make_status_line(vlua, format, view, width);
 }
 
+int
+vlua_open_help(vlua_t *vlua, const char handler[], const char topic[])
+{
+	return vifm_handlers_open_help(vlua, handler, topic);
+}
+
+int
+vlua_edit_one(vlua_t *vlua, const char handler[], const char path[], int line,
+		int column, int must_wait)
+{
+	return vifm_handlers_edit_one(vlua, handler, path, line, column, must_wait);
+}
+
+int
+vlua_edit_many(vlua_t *vlua, const char handler[], char *files[], int nfiles)
+{
+	return vifm_handlers_edit_many(vlua, handler, files, nfiles);
+}
+
+int
+vlua_edit_list(vlua_t *vlua, const char handler[], char *entries[],
+		int nentries, int current, int quickfix_format)
+{
+	return vifm_handlers_edit_list(vlua, handler, entries, nentries, current,
+			quickfix_format);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

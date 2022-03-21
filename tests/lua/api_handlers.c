@@ -1,11 +1,13 @@
 #include <stic.h>
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
+#include "../../src/utils/utils.h"
 #include "../../src/cmd_completion.h"
 #include "../../src/status.h"
 
@@ -274,6 +276,161 @@ TEST(handlers_run_in_safe_mode)
 	assert_true(ends_with(format,
 				": Unsafe functions can't be called in this environment!"));
 	free(format);
+}
+
+TEST(bad_editor_handler)
+{
+	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
+}
+
+TEST(error_editor_handler)
+{
+	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
+	assert_true(ends_with(ui_sb_last(),
+				": global 'asdf' is not callable (a nil value)"));
+}
+
+TEST(error_editor_handler_return)
+{
+	/* nil return. */
+
+	assert_success(vlua_run_string(vlua, "function handle() end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
+
+	/* Bad table fields. */
+
+	assert_success(vlua_run_string(vlua, "function handle() return {} end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle2',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle2", "path", -1, -1, 0));
+}
+
+TEST(good_editor_handler_return)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle() return { success = true } end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	assert_success(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
+}
+
+TEST(open_help_input)
+{
+#ifndef _WIN32
+	char vimdoc_dir[PATH_MAX + 1] = PACKAGE_DATA_DIR "/vim-doc";
+#else
+	char exe_dir[PATH_MAX + 1];
+	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
+
+	char vimdoc_dir[PATH_MAX + 1];
+	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc", exe_dir);
+#endif
+
+	assert_success(vlua_run_string(vlua,
+				"function handle(info)"
+				"  print(info.action, info.vimdocdir, info.topic)"
+				"  return { success = true }"
+				"end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char expected[PATH_MAX + 1];
+	snprintf(expected, sizeof(expected), "open-help\t%s\ttopic", vimdoc_dir);
+
+	assert_success(vlua_open_help(vlua, "#vifmtest#handle", "topic"));
+	assert_string_equal(expected, ui_sb_last());
+}
+
+TEST(edit_one_input)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info)"
+				"  print(info.action, info.path, info.mustwait, info.line, info.column)"
+				"  return { success = true }"
+				"end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	assert_success(vlua_edit_one(vlua, "#vifmtest#handle", "path", 10, 1, 0));
+	assert_string_equal("edit-one\tpath\tfalse\t10\t1", ui_sb_last());
+}
+
+TEST(edit_many_input)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info)"
+				"  print(info.action, #info.paths, info.paths[1])"
+				"  return { success = true }"
+				"end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char path[] = "path";
+	char *paths[] = { path };
+
+	assert_success(vlua_edit_many(vlua, "#vifmtest#handle", paths, 1));
+	assert_string_equal("edit-many\t1\tpath", ui_sb_last());
+}
+
+TEST(edit_list_input)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info)"
+				"  print(info.action, #info.entries, info.entries[1], info.entries[2],"
+				"        info.current, info.isquickfix)"
+				"  return { success = true }"
+				"end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char entry0[] = "e0";
+	char entry1[] = "e1";
+	char *entries[] = { entry0, entry1 };
+
+	assert_success(vlua_edit_list(vlua, "#vifmtest#handle", entries, 2,
+				/*current=*/1, /*quickfix=*/1));
+	assert_string_equal("edit-list\t2\te0\te1\t2\ttrue", ui_sb_last());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -79,6 +79,28 @@ void vlua_open_file(vlua_t *vlua, const char prog[],
 char * vlua_make_status_line(struct vlua_t *vlua, const char format[],
 		struct view_t *view, int width);
 
+/* Invokes an editor handler to view Vim-style documentation.  Returns zero on
+ * success and non-zero otherwise. */
+int vlua_open_help(struct vlua_t *vlua, const char handler[],
+		const char topic[]);
+
+/* Invokes an editor handler to view a single file optionally at a specified
+ * position (negative values mean they aren't provided).  Returns zero on
+ * success and non-zero otherwise. */
+int vlua_edit_one(struct vlua_t *vlua, const char handler[], const char path[],
+		int line, int column, int must_wait);
+
+/* Invokes an editor handler to view multiple files.  Returns zero on success
+ * and non-zero otherwise. */
+int vlua_edit_many(struct vlua_t *vlua, const char handler[], char *files[],
+		int nfiles);
+
+/* Invokes an editor handler to view multiple files from a quickfix list (each
+ * entry is of the form "path[:line[:column]][: message]", but can be a regular
+ * text).  Returns zero on success and non-zero otherwise. */
+int vlua_edit_list(struct vlua_t *vlua, const char handler[], char *entries[],
+		int nentries, int current, int quickfix_format);
+
 #endif /* VIFM__LUA__VLUA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
