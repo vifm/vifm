@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -92,6 +94,9 @@ SETUP()
 {
 	assert_success(chdir(TEST_DATA_PATH));
 
+	view_setup(&lwin);
+	view_setup(&rwin);
+
 	setup_lwin();
 	setup_rwin();
 
@@ -105,15 +110,8 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	dynarray_free(lwin.dir_entry);
-
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	dynarray_free(rwin.dir_entry);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	regs_reset();
 }
