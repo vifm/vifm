@@ -34,6 +34,7 @@
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../lua/vlua.h"
 #include "../menus/menus.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/fileview.h"
@@ -812,12 +813,13 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
-	int bg;
-	const char *vi_cmd;
 	FILE *vim_stdin;
 	char *cmd;
 	int i;
 	int qf = 1;
+
+	int bg;
+	const char *vi_cmd = cfg_get_vicmd(&bg);
 
 	/* If both first and last lines do not contain colons, treat lines as list of
 	 * file names. */
@@ -827,10 +829,19 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 		qf = 0;
 	}
 
+	if(vlua_handler_cmd(curr_stats.vlua, vi_cmd))
+	{
+		if(vlua_edit_list(curr_stats.vlua, vi_cmd, menu->items, menu->len,
+					menu->pos, qf) != 0)
+		{
+			show_error_msg("List View", "Failed to view list via handler");
+		}
+		return;
+	}
+
 	ui_shutdown();
 	stats_refresh_later();
 
-	vi_cmd = cfg_get_vicmd(&bg);
 	if(!qf)
 	{
 		char *const arg = shell_like_escape("+exe 'bd!|args' "

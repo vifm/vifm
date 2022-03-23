@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 20
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -259,6 +259,36 @@ Fields of {info} argument:
 Fields of returned table:
  - "format" (string)
    Value for |vifm-'statusline'|.
+
+'vicmd' or 'vixcmd' handler~
+
+Editor is invoked by Vifm in several different contexts with generally
+different input data and sometimes different expectations (like waiting until
+editing is finished).  This is why a handler needs to process several kinds of
+actions which correspond to those contexts.
+
+Format of returned table is currently the same for all actions:
+ - "success" (boolean)
+   Whether opening editor was successful.  If we're interested in the result
+   of editing (e.g., for bulk renaming), success condition also implies
+   receiving non-zero exit code from the editor.
+
+"edit-list" action
+
+Occurs on pressing |vifm-m_v| key in view mode.  Should open list of files or
+quickfix entries in an editor as a navigation list.
+
+Fields of {info} argument:
+ - "action" (string)
+   "edit-list" string.
+ - "current" (integer)
+   Position of the current entry.
+ - "entries" (array of strings)
+   List of entries to pass to an editor.
+ - "isquickfix" (boolean)
+   Whether input entries are of the form "path[:line[:column]][:text]".
+   Because such lists come from external tools, this information is determined
+   using a simple heuristic and might not always be correct.
 
 --------------------------------------------------------------------------------
 *vifm-lua-caps*
