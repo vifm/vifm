@@ -129,43 +129,6 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_true(paths_are_equal(rwin.curr_dir, path));
 }
 
-TEST(cpmv_does_not_crash_on_wrong_list_access)
-{
-	char path[PATH_MAX + 1];
-	snprintf(path, sizeof(path), "%s/existing-files", test_data);
-
-	assert_success(chdir(path));
-
-	strcpy(lwin.curr_dir, path);
-	strcpy(rwin.curr_dir, sandbox);
-
-	lwin.list_rows = 3;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 1;
-	lwin.dir_entry[2].name = strdup("c");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].selected = 1;
-	lwin.selected_files = 3;
-
-	/* cpmv used to use presence of the argument as indication of availability of
-	 * file list and access memory beyond array boundaries. */
-	(void)exec_commands("co .", &lwin, CIT_COMMAND);
-
-	snprintf(path, sizeof(path), "%s/a", sandbox);
-	assert_success(remove(path));
-	snprintf(path, sizeof(path), "%s/b", sandbox);
-	assert_success(remove(path));
-	snprintf(path, sizeof(path), "%s/c", sandbox);
-	assert_success(remove(path));
-}
-
 TEST(tr_extends_second_field)
 {
 	char path[PATH_MAX + 1];

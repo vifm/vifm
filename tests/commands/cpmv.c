@@ -1,10 +1,15 @@
 #include <stic.h>
 
+#include <unistd.h> /* chdir() */
+
+#include <string.h> /* strcpy() strdup() */
+
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -106,6 +111,51 @@ TEST(file_name_can_start_with_a_dash)
 
 	remove_file(SANDBOX_PATH "/right/-test");
 	remove_file(SANDBOX_PATH "/right/-skip");
+}
+
+TEST(cpmv_does_not_crash_on_wrong_list_access)
+{
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files", cwd);
+
+	char sandbox[PATH_MAX + 1];
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+
+	char *saved_cwd = save_cwd();
+	assert_success(chdir(path));
+
+	strcpy(lwin.curr_dir, path);
+	strcpy(rwin.curr_dir, sandbox);
+
+	free_dir_entries(&lwin, &lwin.dir_entry, &lwin.list_rows);
+
+	lwin.list_rows = 3;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].name = strdup("b");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].name = strdup("c");
+	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 3;
+
+	/* cpmv used to use presence of the argument as indication of availability of
+	 * file list and access memory beyond array boundaries. */
+	(void)exec_commands("co .", &lwin, CIT_COMMAND);
+
+	snprintf(path, sizeof(path), "%s/a", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/b", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/c", sandbox);
+	assert_success(remove(path));
+
+	restore_cwd(saved_cwd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
