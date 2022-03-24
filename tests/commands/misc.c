@@ -738,6 +738,44 @@ TEST(plugin_command)
 	curr_stats.vlua = NULL;
 }
 
+TEST(edit_command)
+{
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, "#vifmtest#editor");
+	cfg.config_dir[0] = '\0';
+
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function handler(info)"
+				"  local s = ginfo ~= nil"
+				"  ginfo = info"
+				"  return { success = s }"
+				"end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'editor', handler = handler }"));
+
+	int i;
+	for(i = 0; i < 2; ++i)
+	{
+		assert_success(exec_commands("edit a b", &lwin, CIT_COMMAND));
+
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
+		assert_string_equal("edit-many", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(#ginfo.paths)"));
+		assert_string_equal("2", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.paths[1])"));
+		assert_string_equal("a", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.paths[2])"));
+		assert_string_equal("b", ui_sb_last());
+
+		assert_success(vlua_run_string(curr_stats.vlua, "ginfo = {}"));
+	}
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {

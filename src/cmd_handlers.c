@@ -2168,7 +2168,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
-		vim_edit_files(cmd_info->argc, cmd_info->argv);
+		(void)vim_edit_files(cmd_info->argc, cmd_info->argv);
 		return 0;
 	}
 

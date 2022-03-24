@@ -29,6 +29,7 @@
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
+#include "../lua/vlua.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
@@ -86,13 +87,25 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 int
 vim_edit_files(int nfiles, char *files[])
 {
-	char *cmd = NULL;
-	size_t len = 0U;
 	int i;
 	int bg;
 	int error;
 
-	(void)strappend(&cmd, &len, cfg_get_vicmd(&bg));
+	const char *vi_cmd = cfg_get_vicmd(&bg);
+
+	if(vlua_handler_cmd(curr_stats.vlua, vi_cmd))
+	{
+		if(vlua_edit_many(curr_stats.vlua, vi_cmd, files, nfiles) != 0)
+		{
+			show_error_msg("File View", "Failed to view files via handler");
+			return 1;
+		}
+		return 0;
+	}
+
+	char *cmd = NULL;
+	size_t len = 0U;
+	(void)strappend(&cmd, &len, vi_cmd);
 
 	for(i = 0; i < nfiles; ++i)
 	{

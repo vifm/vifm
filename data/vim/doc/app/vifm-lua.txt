@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 23
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -272,6 +272,21 @@ Format of returned table is currently the same for all actions:
    Whether opening editor was successful.  If we're interested in the result
    of editing (e.g., for bulk renaming), success condition also implies
    receiving non-zero exit code from the editor.
+
+"edit-many" action
+
+Occurs on:
+ - opening selection or current file on |vifm-Enter| key in normal mode
+ - using |vifm-:edit| command
+
+Should open one or multiple files in an editor, likely as a list of buffers or
+tabs.
+
+Fields of {info} argument:
+ - "action" (string)
+   "edit-many" string.
+ - "paths" (array of strings)
+   Paths to the files to open.
 
 "edit-list" action
 
