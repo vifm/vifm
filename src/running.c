@@ -475,7 +475,7 @@ run_with_defaults(view_t *view)
 
 	/* Reuse marking second time. */
 	view->pending_marking = 1;
-	if(vim_edit_marking() != 0)
+	if(vim_edit_marking(view) != 0)
 	{
 		show_error_msg("Running error", "Can't edit selection");
 	}

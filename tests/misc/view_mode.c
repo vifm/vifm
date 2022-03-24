@@ -2,12 +2,15 @@
 
 #include <test-utils.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
@@ -238,6 +241,47 @@ TEST(operations_with_empty_output)
 	(void)vle_keys_exec_timed_out(WK_N);
 
 	modview_ruler_update();
+}
+
+TEST(cmd_v)
+{
+	assert_true(start_view_mode(NULL, NULL, TEST_DATA_PATH, "scripts"));
+
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function handler(info)"
+				"  local s = ginfo ~= nil"
+				"  ginfo = info"
+				"  return { success = s }"
+				"end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'editor', handler = handler }"));
+
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, "#vifmtest#editor");
+
+	int i;
+	for(i = 0; i < 2; ++i)
+	{
+		(void)vle_keys_exec_timed_out(WK_v);
+
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
+		assert_string_equal("edit-one", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.path)"));
+		assert_true(ends_with(ui_sb_last(), "scripts/append-env.vifm"));
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.mustwait)"));
+		assert_string_equal("false", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.line)"));
+		assert_string_equal("1", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.column)"));
+		assert_string_equal("nil", ui_sb_last());
+
+		assert_success(vlua_run_string(curr_stats.vlua, "ginfo = {}"));
+	}
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
 }
 
 static int

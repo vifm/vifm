@@ -56,6 +56,9 @@ int get_opt(struct lua_State *lua, struct opt_t *opt);
  * always zero. */
 int set_opt(struct lua_State *lua, struct opt_t *opt);
 
+/* Creates an array of strings and leaves it on the top of the stack. */
+void push_str_array(struct lua_State *lua, char *array[], int len);
+
 #endif /* VIFM__LUA__COMMON_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

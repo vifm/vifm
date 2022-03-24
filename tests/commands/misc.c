@@ -129,43 +129,6 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_true(paths_are_equal(rwin.curr_dir, path));
 }
 
-TEST(cpmv_does_not_crash_on_wrong_list_access)
-{
-	char path[PATH_MAX + 1];
-	snprintf(path, sizeof(path), "%s/existing-files", test_data);
-
-	assert_success(chdir(path));
-
-	strcpy(lwin.curr_dir, path);
-	strcpy(rwin.curr_dir, sandbox);
-
-	lwin.list_rows = 3;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 1;
-	lwin.dir_entry[2].name = strdup("c");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].selected = 1;
-	lwin.selected_files = 3;
-
-	/* cpmv used to use presence of the argument as indication of availability of
-	 * file list and access memory beyond array boundaries. */
-	(void)exec_commands("co .", &lwin, CIT_COMMAND);
-
-	snprintf(path, sizeof(path), "%s/a", sandbox);
-	assert_success(remove(path));
-	snprintf(path, sizeof(path), "%s/b", sandbox);
-	assert_success(remove(path));
-	snprintf(path, sizeof(path), "%s/c", sandbox);
-	assert_success(remove(path));
-}
-
 TEST(tr_extends_second_field)
 {
 	char path[PATH_MAX + 1];
@@ -771,6 +734,89 @@ TEST(plugin_command)
 
 	plugs_free(curr_stats.plugs);
 	curr_stats.plugs = NULL;
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
+TEST(help_command)
+{
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, "#vifmtest#editor");
+	cfg.config_dir[0] = '\0';
+
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function handler(info) ginfo = info; return { success = false } end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'editor', handler = handler }"));
+
+	cfg.use_vim_help = 0;
+
+	assert_success(exec_commands("help", &lwin, CIT_COMMAND));
+
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
+	assert_string_equal("edit-one", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.path)"));
+	assert_string_equal("/vifm-help.txt", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.mustwait)"));
+	assert_string_equal("false", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.line)"));
+	assert_string_equal("nil", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.column)"));
+	assert_string_equal("nil", ui_sb_last());
+
+	cfg.use_vim_help = 1;
+
+	assert_success(exec_commands("help", &lwin, CIT_COMMAND));
+
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
+	assert_string_equal("open-help", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.topic)"));
+	assert_string_equal("vifm-app.txt", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.vimdocdir)"));
+	assert_true(ends_with(ui_sb_last(), "/vim-doc"));
+
+	cfg.use_vim_help = 0;
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
+TEST(edit_command)
+{
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, "#vifmtest#editor");
+	cfg.config_dir[0] = '\0';
+
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function handler(info)"
+				"  local s = ginfo ~= nil"
+				"  ginfo = info"
+				"  return { success = s }"
+				"end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'editor', handler = handler }"));
+
+	int i;
+	for(i = 0; i < 2; ++i)
+	{
+		assert_success(exec_commands("edit a b", &lwin, CIT_COMMAND));
+
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
+		assert_string_equal("edit-many", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(#ginfo.paths)"));
+		assert_string_equal("2", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.paths[1])"));
+		assert_string_equal("a", ui_sb_last());
+		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.paths[2])"));
+		assert_string_equal("b", ui_sb_last());
+
+		assert_success(vlua_run_string(curr_stats.vlua, "ginfo = {}"));
+	}
+
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;
 }

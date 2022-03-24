@@ -162,5 +162,17 @@ set_opt(lua_State *lua, opt_t *opt)
 	return 0;
 }
 
+void
+push_str_array(lua_State *lua, char *array[], int len)
+{
+	int i;
+	lua_newtable(lua);
+	for(i = 0; i < len; ++i)
+	{
+		lua_pushstring(lua, array[i]);
+		lua_seti(lua, -2, i + 1);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

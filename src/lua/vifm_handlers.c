@@ -19,25 +19,29 @@
 #include "vifm_handlers.h"
 
 #include <assert.h> /* assert() */
+#include <stdio.h> /* snprintf() */
 #include <string.h> /* strchr() strcspn() strdup() */
 
 #include <curses.h>
 
+#include "../compat/fs_limits.h"
 #include "../ui/quickview.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/utils.h"
 #include "../plugins.h"
 #include "../vifm.h"
-#include "common.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+#include "common.h"
 #include "vifmentry.h"
 #include "vifmview.h"
 #include "vlua_state.h"
 
 static char * extract_handler_name(const char viewer[]);
+static int run_editor_handler(vlua_t *vlua, const char handler[]);
 static int check_handler_name(vlua_t *vlua, const char name[]);
 
 /* Characters considered to be whitespace. */
@@ -117,10 +121,10 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 		lua_setfield(vlua->lua, -2, "height");
 	}
 
-	vlua_state_safe_mode_set(vlua->lua, 1);
+	const int sm_cookie = vlua_state_safe_mode_on(vlua->lua);
 	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
 	{
-		vlua_state_safe_mode_set(vlua->lua, 0);
+		vlua_state_safe_mode_off(vlua->lua, sm_cookie);
 
 		const char *error = lua_tostring(vlua->lua, -1);
 		ui_sb_err(error);
@@ -128,7 +132,7 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 		return result;
 	}
 
-	vlua_state_safe_mode_set(vlua->lua, 0);
+	vlua_state_safe_mode_off(vlua->lua, sm_cookie);
 
 	if(!lua_istable(vlua->lua, -1))
 	{
@@ -155,8 +159,7 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 }
 
 void
-vifm_handlers_open(vlua_t *vlua, const char prog[],
-		const struct dir_entry_t *entry)
+vifm_handlers_open(vlua_t *vlua, const char prog[], const dir_entry_t *entry)
 {
 	char *name = extract_handler_name(prog);
 
@@ -181,10 +184,10 @@ vifm_handlers_open(vlua_t *vlua, const char prog[],
 	vifmentry_new(vlua->lua, entry);
 	lua_setfield(vlua->lua, -2, "entry");
 
-	vlua_state_safe_mode_set(vlua->lua, 1);
+	const int sm_cookie = vlua_state_safe_mode_on(vlua->lua);
 	if(lua_pcall(vlua->lua, 1, 0, 0) != LUA_OK)
 	{
-		vlua_state_safe_mode_set(vlua->lua, 0);
+		vlua_state_safe_mode_off(vlua->lua, sm_cookie);
 
 		const char *error = lua_tostring(vlua->lua, -1);
 		ui_sb_err(error);
@@ -192,13 +195,13 @@ vifm_handlers_open(vlua_t *vlua, const char prog[],
 		return;
 	}
 
-	vlua_state_safe_mode_set(vlua->lua, 0);
+	vlua_state_safe_mode_off(vlua->lua, sm_cookie);
 	lua_pop(vlua->lua, 2);
 }
 
 char *
-vifm_handlers_make_status_line(vlua_t *vlua, const char format[],
-		struct view_t *view, int width)
+vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
+		int width)
 {
 	char *name = extract_handler_name(format);
 
@@ -223,17 +226,17 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[],
 	lua_pushinteger(vlua->lua, width);
 	lua_setfield(vlua->lua, -2, "width");
 
-	vlua_state_safe_mode_set(vlua->lua, 1);
+	const int sm_cookie = vlua_state_safe_mode_on(vlua->lua);
 	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
 	{
-		vlua_state_safe_mode_set(vlua->lua, 0);
+		vlua_state_safe_mode_off(vlua->lua, sm_cookie);
 
 		char *error = strdup(lua_tostring(vlua->lua, -1));
 		lua_pop(vlua->lua, 3);
 		return error;
 	}
 
-	vlua_state_safe_mode_set(vlua->lua, 0);
+	vlua_state_safe_mode_off(vlua->lua, sm_cookie);
 
 	if(!lua_istable(vlua->lua, -1))
 	{
@@ -253,6 +256,155 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[],
 	lua_pop(vlua->lua, 4);
 
 	return status_line;
+}
+
+int
+vifm_handlers_open_help(vlua_t *vlua, const char handler[], const char topic[])
+{
+#ifndef _WIN32
+	char vimdoc_dir[PATH_MAX + 1] = PACKAGE_DATA_DIR "/vim-doc";
+#else
+	char exe_dir[PATH_MAX + 1];
+	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
+
+	char vimdoc_dir[PATH_MAX + 1];
+	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc", exe_dir);
+#endif
+
+	lua_newtable(vlua->lua);
+	lua_pushstring(vlua->lua, "open-help");
+	lua_setfield(vlua->lua, -2, "action");
+
+	lua_pushstring(vlua->lua, vimdoc_dir);
+	lua_setfield(vlua->lua, -2, "vimdocdir");
+
+	if(topic[0] != '\0')
+	{
+		lua_pushstring(vlua->lua, topic);
+		lua_setfield(vlua->lua, -2, "topic");
+	}
+
+	int result = run_editor_handler(vlua, handler);
+	lua_pop(vlua->lua, 1);
+	return result;
+}
+
+int
+vifm_handlers_edit_one(vlua_t *vlua, const char handler[], const char path[],
+		int line, int column, int must_wait)
+{
+	lua_newtable(vlua->lua);
+	lua_pushstring(vlua->lua, "edit-one");
+	lua_setfield(vlua->lua, -2, "action");
+	lua_pushstring(vlua->lua, path);
+	lua_setfield(vlua->lua, -2, "path");
+	lua_pushboolean(vlua->lua, must_wait);
+	lua_setfield(vlua->lua, -2, "mustwait");
+	if(line >= 0)
+	{
+		lua_pushinteger(vlua->lua, line);
+		lua_setfield(vlua->lua, -2, "line");
+		if(column >= 0)
+		{
+			lua_pushinteger(vlua->lua, column);
+			lua_setfield(vlua->lua, -2, "column");
+		}
+	}
+
+	int result = run_editor_handler(vlua, handler);
+	lua_pop(vlua->lua, 1);
+	return result;
+}
+
+int
+vifm_handlers_edit_many(struct vlua_t *vlua, const char handler[],
+		char *files[], int nfiles)
+{
+	lua_newtable(vlua->lua);
+	lua_pushstring(vlua->lua, "edit-many");
+	lua_setfield(vlua->lua, -2, "action");
+	push_str_array(vlua->lua, files, nfiles);
+	lua_setfield(vlua->lua, -2, "paths");
+
+	int result = run_editor_handler(vlua, handler);
+	lua_pop(vlua->lua, 1);
+	return result;
+}
+
+int
+vifm_handlers_edit_list(vlua_t *vlua, const char handler[], char *entries[],
+		int nentries, int current, int quickfix_format)
+{
+	lua_newtable(vlua->lua);
+	lua_pushstring(vlua->lua, "edit-list");
+	lua_setfield(vlua->lua, -2, "action");
+	push_str_array(vlua->lua, entries, nentries);
+	lua_setfield(vlua->lua, -2, "entries");
+	lua_pushinteger(vlua->lua, current + 1);
+	lua_setfield(vlua->lua, -2, "current");
+	lua_pushboolean(vlua->lua, quickfix_format);
+	lua_setfield(vlua->lua, -2, "isquickfix");
+
+	int result = run_editor_handler(vlua, handler);
+	lua_pop(vlua->lua, 1);
+	return result;
+}
+
+/* Invokes an editor handler.  Expects a table argument to it at the top of Lua
+ * stack.  Returns zero on success (no issues running the handler and handler
+ * reports success), otherwise non-zero is returned. */
+static int
+run_editor_handler(vlua_t *vlua, const char handler[])
+{
+	char *name = extract_handler_name(handler);
+
+	/* Don't need lua_pcall() to handle errors, because no one should be able to
+	 * mess with internal tables. */
+	vlua_state_get_table(vlua, &handlers_key);
+	if(lua_getfield(vlua->lua, -1, name) != LUA_TTABLE)
+	{
+		free(name);
+		lua_pop(vlua->lua, 2);
+		return -1;
+	}
+
+	free(name);
+
+	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
+			"Handler must be a function here.");
+
+	lua_pushvalue(vlua->lua, -4);
+
+	lua_pushstring(vlua->lua, handler);
+	lua_setfield(vlua->lua, -2, "command");
+
+	const int sm_cookie = vlua_state_safe_mode_on(vlua->lua);
+	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
+	{
+		vlua_state_safe_mode_off(vlua->lua, sm_cookie);
+
+		ui_sb_err(lua_tostring(vlua->lua, -1));
+		lua_pop(vlua->lua, 3);
+		return -1;
+	}
+
+	vlua_state_safe_mode_off(vlua->lua, sm_cookie);
+
+	if(!lua_istable(vlua->lua, -1))
+	{
+		lua_pop(vlua->lua, 3);
+		return -1;
+	}
+
+	if(lua_getfield(vlua->lua, -1, "success") != LUA_TNIL)
+	{
+		int success = lua_toboolean(vlua->lua, -1);
+		lua_pop(vlua->lua, 4);
+		return (success ? 0 : -1);
+	}
+
+	lua_pop(vlua->lua, 4);
+	return -1;
 }
 
 /* Extracts name of the handler from a command.  Returns a newly allocated

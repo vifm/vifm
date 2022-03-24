@@ -27,19 +27,20 @@
 #include <string.h> /* strcmp() strlen() strrchr() strstr() */
 
 #include "../cfg/config.h"
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
+#include "../lua/vlua.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
-#include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
 #include "../flist_sel.h"
-#include "../macros.h"
 #include "../running.h"
 #include "../status.h"
 #include "../vifm.h"
@@ -47,7 +48,6 @@
 /* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"
 
-TSTATIC char * format_edit_marking_cmd(int *bg);
 static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
 TSTATIC void trim_right(char text[]);
 static void dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[]);
@@ -87,13 +87,25 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 int
 vim_edit_files(int nfiles, char *files[])
 {
-	char *cmd = NULL;
-	size_t len = 0U;
 	int i;
 	int bg;
 	int error;
 
-	(void)strappend(&cmd, &len, cfg_get_vicmd(&bg));
+	const char *vi_cmd = cfg_get_vicmd(&bg);
+
+	if(vlua_handler_cmd(curr_stats.vlua, vi_cmd))
+	{
+		if(vlua_edit_many(curr_stats.vlua, vi_cmd, files, nfiles) != 0)
+		{
+			show_error_msg("File View", "Failed to view files via handler");
+			return 1;
+		}
+		return 0;
+	}
+
+	char *cmd = NULL;
+	size_t len = 0U;
+	(void)strappend(&cmd, &len, vi_cmd);
 
 	for(i = 0; i < nfiles; ++i)
 	{
@@ -112,29 +124,31 @@ vim_edit_files(int nfiles, char *files[])
 }
 
 int
-vim_edit_marking(void)
+vim_edit_marking(view_t *view)
 {
-	int error = 1;
-	int bg;
-	char *const cmd = format_edit_marking_cmd(&bg);
-	if(cmd != NULL)
-	{
-		error = run_vim(cmd, bg, 1);
-		free(cmd);
-	}
-	return error;
-}
+	const int cv = flist_custom_active(view);
 
-/* Formats a command to edit marked files of the current view in an editor.
- * Returns a newly allocated string, which should be freed by the caller. */
-TSTATIC char *
-format_edit_marking_cmd(int *bg)
-{
-	const char *const fmt = (get_env_type() == ET_WIN) ? "%\"f" : "%f";
-	char *const files = ma_expand(fmt, NULL, NULL, MER_SHELL_OP);
-	char *const cmd = format_str("%s %s", cfg_get_vicmd(bg), files);
-	free(files);
-	return cmd;
+	char **marked = NULL;
+	int nmarked = 0;
+
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		if(!cv)
+		{
+			nmarked = add_to_string_array(&marked, nmarked, entry->name);
+			continue;
+		}
+
+		char path[PATH_MAX + 1];
+		get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
+		nmarked = add_to_string_array(&marked, nmarked, path);
+	}
+
+	int result = vim_edit_files(nmarked, marked);
+
+	free_string_array(marked, nmarked);
+	return result;
 }
 
 int
@@ -164,13 +178,19 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 		return 1;
 	}
 
-#ifndef _WIN32
-	escaped = shell_like_escape(filename, 0);
-#else
-	escaped = (char *)enclose_in_dquotes(filename);
-#endif
-
 	copy_str(vicmd, sizeof(vicmd), cfg_get_vicmd(&bg));
+
+	if(vlua_handler_cmd(curr_stats.vlua, vicmd))
+	{
+		if(vlua_edit_one(curr_stats.vlua, vicmd, filename, line, column,
+					!allow_forking) != 0)
+		{
+			show_error_msg("File View", "Failed to view file via handler");
+			return 1;
+		}
+		return 0;
+	}
+
 	trim_right(vicmd);
 	if(!allow_forking)
 	{
@@ -180,6 +200,12 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 			*p = '\0';
 		}
 	}
+
+#ifndef _WIN32
+	escaped = shell_like_escape(filename, 0);
+#else
+	escaped = (char *)enclose_in_dquotes(filename);
+#endif
 
 	if(line < 0 && column < 0)
 		snprintf(cmd, sizeof(cmd), "%s %s %s", vicmd, fork_str, escaped);

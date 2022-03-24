@@ -55,6 +55,15 @@ TEST(fnamemodify)
 	assert_string_equal("/parent/c.d", ui_sb_last());
 }
 
+TEST(vifm_escape)
+{
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.escape(' '))"));
+	assert_string_equal("\" \"", ui_sb_last());
+}
+
 TEST(vifm_exists)
 {
 	ui_sb_msg("");

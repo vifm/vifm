@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 2 January, 2022)
+" Sample configuration file for vifm (last updated: 24 March, 2022)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -11,9 +11,18 @@
 " If you would like to use another vi clone such as Elvis or Vile
 " you will need to change this setting.
 
-set vicmd=vim
-" set vicmd=elvis\ -G\ termcap
-" set vicmd=vile
+if executable('vim')
+    set vicmd=vim
+elseif executable('nvim')
+    set vicmd=nvim
+elseif executable('elvis')
+    set vicmd=elvis\ -G\ termcap
+elseif executable('vile')
+    set vicmd=vile
+elseif $EDITOR != ''
+    echo 'Note: using `'.$EDITOR.'` as an editor'
+    let &vicmd = $EDITOR
+endif
 
 " This makes vifm perform file operations on its own instead of relying on
 " standard utilities like `cp`.  While using `cp` and alike is a more universal

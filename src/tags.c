@@ -697,6 +697,7 @@ const char *tags[] = {
 	"vifm-l_vifm.cmds.delcommand()",
 	"vifm-l_vifm.currview()",
 	"vifm-l_vifm.errordialog()",
+	"vifm-l_vifm.escape()",
 	"vifm-l_vifm.exists()",
 	"vifm-l_vifm.expand()",
 	"vifm-l_vifm.fnamemodify()",
