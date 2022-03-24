@@ -44,6 +44,9 @@
 
 	Don't expand() macros in environment variables.  Patch by filterfalse.
 
+	Try several editors and then $EDITOR for 'vim' option in sample vifmrc
+	files.  Thanks to Janek (a.k.a. xeruf) and Muhammed Zakir.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.
