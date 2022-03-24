@@ -1573,7 +1573,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
 	char path[PATH_MAX + 1];
 	get_current_full_path(curr_view, sizeof(path), path);
-	(void)vim_view_file(path, vi->line + ui_qv_height(vi->view)/2, -1, 1);
+	(void)vim_view_file(path, 1 + vi->line + ui_qv_height(vi->view)/2, -1, 1);
 	/* In some cases two redraw operations are needed, otherwise TUI is not fully
 	 * redrawn. */
 	update_screen(UT_REDRAW);

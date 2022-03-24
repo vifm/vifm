@@ -751,6 +751,21 @@ TEST(help_command)
 	assert_success(vlua_run_string(curr_stats.vlua,
 				"vifm.addhandler{ name = 'editor', handler = handler }"));
 
+	cfg.use_vim_help = 0;
+
+	assert_success(exec_commands("help", &lwin, CIT_COMMAND));
+
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
+	assert_string_equal("edit-one", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.path)"));
+	assert_string_equal("/vifm-help.txt", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.mustwait)"));
+	assert_string_equal("false", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.line)"));
+	assert_string_equal("nil", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.column)"));
+	assert_string_equal("nil", ui_sb_last());
+
 	cfg.use_vim_help = 1;
 
 	assert_success(exec_commands("help", &lwin, CIT_COMMAND));

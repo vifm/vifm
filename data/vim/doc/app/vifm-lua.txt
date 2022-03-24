@@ -288,6 +288,32 @@ Fields of {info} argument:
    Path to parent of doc/ directory with documentation in Vim format with tags
    file.
 
+"edit-one" action
+
+Occurs on:
+ - |vifm-:help| command if |vifm-'vimhelp'| is unset
+ - pressing |vifm-v_v| key in view mode
+ - opening file from a menu
+ - opening file with a FUSE mounter using |vifm-i|
+ - using |vifm-q:|, |vifm-q/| and |vifm-q?| commands in normal mode
+ - requests to provide file names (like on :copy? or |vifm-:rename|)
+
+Should open single file at an optionally specified location (line, column) and
+support waiting until editing has finished.
+
+Fields of {info} argument:
+ - "action" (string)
+   "edit-one" string.
+ - "path" (string)
+   Path to the file to open.
+ - "mustwait" (boolean)
+   Whether handler must not return until editor has exited.
+ - "line" (integer) (optional)
+   Line number at which to open the file.
+ - "column" (integer) (optional)
+   Column number at which to open the file.  Present only if "line" field is
+   present.
+
 "edit-many" action
 
 Occurs on:
@@ -329,6 +355,8 @@ This is what one can do by using Lua at the moment:
  * custom columns (|vifm-l_vifm.addcolumntype()|)
  * :filetype/:filextype/:fileviewer/%q handlers in Lua (|vifm-lua-handlers|)
  * 'statusline' generator in Lua (|vifm-lua-handlers|)
+ * fully integrate an arbitrary editor by changing |vifm-'vicmd'| or |vifm-'vixcmd'|
+   (|vifm-lua-handlers|), while builtin logic assumes compatibility with Vim
  * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)
  * defining custom keys and selectors (|vifm-l_vifm.keys.add()|)
 

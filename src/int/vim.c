@@ -178,13 +178,19 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 		return 1;
 	}
 
-#ifndef _WIN32
-	escaped = shell_like_escape(filename, 0);
-#else
-	escaped = (char *)enclose_in_dquotes(filename);
-#endif
-
 	copy_str(vicmd, sizeof(vicmd), cfg_get_vicmd(&bg));
+
+	if(vlua_handler_cmd(curr_stats.vlua, vicmd))
+	{
+		if(vlua_edit_one(curr_stats.vlua, vicmd, filename, line, column,
+					!allow_forking) != 0)
+		{
+			show_error_msg("File View", "Failed to view file via handler");
+			return 1;
+		}
+		return 0;
+	}
+
 	trim_right(vicmd);
 	if(!allow_forking)
 	{
@@ -194,6 +200,12 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 			*p = '\0';
 		}
 	}
+
+#ifndef _WIN32
+	escaped = shell_like_escape(filename, 0);
+#else
+	escaped = (char *)enclose_in_dquotes(filename);
+#endif
 
 	if(line < 0 && column < 0)
 		snprintf(cmd, sizeof(cmd), "%s %s %s", vicmd, fork_str, escaped);

@@ -2656,10 +2656,21 @@ help_cmd(const cmd_info_t *cmd_info)
 			return 1;
 		}
 
-		if(!path_exists_at(cfg.config_dir, VIFM_HELP, DEREF))
+		char help_file[PATH_MAX + 1];
+		build_path(help_file, sizeof(help_file), cfg.config_dir, VIFM_HELP);
+
+		if(use_handler)
 		{
-			show_error_msgf("No help file", "Can't find \"%s/" VIFM_HELP "\" file",
-					cfg.config_dir);
+			if(vlua_edit_one(curr_stats.vlua, vi_cmd, help_file, -1, -1, 0) != 0)
+			{
+				show_error_msg(":help", "Failed to open help file via handler");
+			}
+			return 0;
+		}
+
+		if(!path_exists(help_file, DEREF))
+		{
+			show_error_msgf("No help file", "Can't find \"%s\" file", help_file);
 			return 0;
 		}
 
