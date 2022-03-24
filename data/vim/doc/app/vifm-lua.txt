@@ -273,6 +273,21 @@ Format of returned table is currently the same for all actions:
    of editing (e.g., for bulk renaming), success condition also implies
    receiving non-zero exit code from the editor.
 
+"open-help" action
+
+Occurs on |vifm-:help| command if |vifm-'vimhelp'| is set.  Should open
+documentation in Vim's format and position cursor at the specified topic (help
+tag).
+
+Fields of {info} argument:
+ - "action" (string)
+   "open-help" string.
+ - "topic" (string)
+   Help topic (help tag).
+ - "vimdocdir" (string)
+   Path to parent of doc/ directory with documentation in Vim format with tags
+   file.
+
 "edit-many" action
 
 Occurs on:

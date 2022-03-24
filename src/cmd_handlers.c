@@ -54,6 +54,7 @@
 #include "engine/variables.h"
 #include "int/path_env.h"
 #include "int/vim.h"
+#include "lua/vlua.h"
 #include "modes/dialogs/attr_dialog.h"
 #include "modes/dialogs/change_dialog.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -2628,9 +2629,23 @@ help_cmd(const cmd_info_t *cmd_info)
 	char cmd[PATH_MAX + 1];
 	int bg;
 
+	const char *vi_cmd = cfg_get_vicmd(&bg);
+	const int use_handler = vlua_handler_cmd(curr_stats.vlua, vi_cmd);
+
 	if(cfg.use_vim_help)
 	{
 		const char *topic = (cmd_info->argc > 0) ? cmd_info->args : VIFM_VIM_HELP;
+
+		if(use_handler)
+		{
+			if(vlua_open_help(curr_stats.vlua, vi_cmd, topic) != 0)
+			{
+				show_error_msgf(":help", "Failed to display help for %s via handler",
+						topic);
+			}
+			return 0;
+		}
+
 		bg = vim_format_help_cmd(topic, cmd, sizeof(cmd));
 	}
 	else

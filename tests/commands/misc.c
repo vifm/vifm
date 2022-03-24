@@ -738,6 +738,36 @@ TEST(plugin_command)
 	curr_stats.vlua = NULL;
 }
 
+TEST(help_command)
+{
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, "#vifmtest#editor");
+	cfg.config_dir[0] = '\0';
+
+	curr_stats.vlua = vlua_init();
+
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"function handler(info) ginfo = info; return { success = false } end"));
+	assert_success(vlua_run_string(curr_stats.vlua,
+				"vifm.addhandler{ name = 'editor', handler = handler }"));
+
+	cfg.use_vim_help = 1;
+
+	assert_success(exec_commands("help", &lwin, CIT_COMMAND));
+
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
+	assert_string_equal("open-help", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.topic)"));
+	assert_string_equal("vifm-app.txt", ui_sb_last());
+	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.vimdocdir)"));
+	assert_true(ends_with(ui_sb_last(), "/vim-doc"));
+
+	cfg.use_vim_help = 0;
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
 TEST(edit_command)
 {
 	curr_stats.exec_env_type = EET_EMULATOR;
