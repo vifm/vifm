@@ -514,8 +514,8 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	if(ms->search_highlight && ms->matches != NULL && ms->matches[pos][0] >= 0)
 	{
 		const cchar_t cch = cs_color_to_cchar(&col, color_pair);
-		draw_search_match(item_tail, ms->matches[pos][0] - m->hor_pos,
-				ms->matches[pos][1] - m->hor_pos, line, width, &cch);
+		draw_search_match(item_tail, ms->matches[pos][0] - off,
+				ms->matches[pos][1] - off, line, width, &cch);
 	}
 
 	free(item_tail);
