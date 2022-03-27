@@ -58,6 +58,14 @@ typedef enum
 }
 ExpandEnvFlags;
 
+/* Defines an integer interval. */
+typedef struct
+{
+	int first; /* Left inclusive bound. */
+	int last;  /* Right inclusive bound. */
+}
+interval_t;
+
 /* Forward declarations. */
 struct dir_entry_t;
 struct view_t;
@@ -312,6 +320,10 @@ int get_drive_info(const char at[], uint64_t *total_bytes,
 /* Retrieves inode number that corresponds to the entry by resolving symbolic
  * links if necessary.  Returns the inode number. */
 uint64_t get_true_inode(const struct dir_entry_t *entry);
+
+/* Auxiliary function for binary search in interval table.  Returns non-zero
+ * if search was successful and zero otherwise. */
+int unichar_bisearch(wchar_t ucs, const interval_t table[], int max);
 
 #ifdef _WIN32
 #include "utils_win.h"

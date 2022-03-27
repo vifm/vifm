@@ -1,5 +1,6 @@
 /* vifm
  * Copyright (C) 2001 Ken Steen.
+ * Copyright (C) 2007-05-26 Markus Kuhn.
  * Copyright (C) 2011 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -849,6 +850,35 @@ format_iso_time(time_t t, char buf[], size_t buf_size)
 	}
 
 	strftime(buf, buf_size, "%a, %d %b %Y %H:%M:%S", tm);
+}
+
+int
+unichar_bisearch(wchar_t ucs, const interval_t table[], int max)
+{
+	if(ucs < table[0].first || ucs > table[max].last)
+	{
+		return 0;
+	}
+
+	int min = 0;
+	while(min <= max)
+	{
+		const int mid = min + (max - min)/2;
+		if(ucs > table[mid].last)
+		{
+			min = mid + 1;
+		}
+		else if(ucs < table[mid].first)
+		{
+			max = mid - 1;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
