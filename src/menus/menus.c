@@ -526,18 +526,27 @@ static void
 draw_search_match(char str[], int start, int end, int line, int width,
 		const cchar_t *attrs)
 {
+	if(start == end)
+	{
+		/* Empty match is not drawn. */
+		return;
+	}
+
 	const int len = strlen(str);
+
+	/* XXX: conditions for displaying <<< and >>> are for some reason different in
+	 *      file views. */
 
 	if(end <= 0)
 	{
-		/* Match is completely at the left. */
+		/* Match is completely on the left. */
 
 		checked_wmove(menu_win, line, 2);
 		wprinta(menu_win, "<<<", attrs, A_REVERSE);
 	}
 	else if(start >= len)
 	{
-		/* Match is completely at the right. */
+		/* Match is completely on the right. */
 
 		checked_wmove(menu_win, line, width - 3);
 		wprinta(menu_win, ">>>", attrs, A_REVERSE);
