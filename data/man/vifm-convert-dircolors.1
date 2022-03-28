@@ -1,4 +1,4 @@
-.TH VIFM\-CONVERT\-DIRCOLORS 1 "September 29, 2021" "vifm 0.12"
+.TH VIFM\-CONVERT\-DIRCOLORS 1 "March 28, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH "NAME"
 .\" ---------------------------------------------------------------------------
@@ -37,19 +37,19 @@ standard input stream is read.
 .SH "EXAMPLES"
 .\" ---------------------------------------------------------------------------
 Parse \fB$LS_COLORS\fR and append results of conversion to
-\fI~/.vifm/colors/Default\fR:
+\fI~/.config/vifm/colors/Default.vifm\fR:
 
 .EX
 .B
-    vifm\-convert\-dircolors \-e >> ~/.vifm/colors/Default
+    vifm\-convert\-dircolors \-e >> ~/.config/vifm/colors/Default.vifm
 .EE
 
 Parse \fI/etc/DIR_COLORS\fR and store results of conversion to
-\fI~/.vifm/colors/ls\-based\fR:
+\fI~/.config/vifm/colors/ls\-based.vifm\fR:
 
 .EX
 .B
-    vifm\-convert\-dircolors /etc/DIR_COLORS > ~/.vifm/colors/ls\-based
+    vifm\-convert\-dircolors /etc/DIR_COLORS > ~/.config/vifm/colors/ls\-based.vifm
 .EE
 .\" ---------------------------------------------------------------------------
 .SH "SEE ALSO"

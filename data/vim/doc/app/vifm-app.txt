@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Feb 26
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Mar 28
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4247,7 +4247,7 @@ the order of their appearance and uses first trash directory that it was able
 to create or that is already writable.
 
 Default value tries to use trash directory per mount point and falls back to
-~/.vifm/Trash on failure.
+trash common trash directory on failure.
 
 Will attempt to create the directory if it does not exist.
 
@@ -5835,11 +5835,11 @@ following piece of file system: >
 <
 Two color schemes: >
 
- # ~/.vifm/colors/for_bin
+ # ~/.config/vifm/colors/for_bin.vifm
  highlight Win cterm=none ctermfg=white ctermbg=red
  highlight CurrLine cterm=none ctermfg=red ctermbg=black
 
- # ~/.vifm/colors/for_bin_my
+ # ~/.config/vifm/colors/for_bin_my.vifm
  highlight CurrLine cterm=none ctermfg=green ctermbg=black
 <
 And these three commands in the vifmrc file: >
@@ -5968,10 +5968,10 @@ commands.
 *vifm-env-vars*
 
 |vifm-$VIFM|
-Points to main configuration directory (usually ~/.vifm/).
+Points to main configuration directory (usually ~/.config/vifm/).
 
 |vifm-$MYVIFMRC|
-Points to main configuration file (usually ~/.vifm/vifmrc).
+Points to main configuration file (usually ~/.config/vifm/vifmrc).
 
 These environment variables are valid inside vifm and also can be used to
 configure it by setting some of them before running vifm.
