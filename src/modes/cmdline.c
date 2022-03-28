@@ -109,6 +109,7 @@ typedef struct
 	size_t dot_len;   /* Previous completion length. */
 
 	/* Command completion. */
+	size_t prefix_len;          /* Prefix length for the active completion. */
 	int complete_continue;      /* If non-zero, continue previous completion. */
 	int reverse_completion;     /* Completion in the opposite direction. */
 	complete_cmd_func complete; /* Completion function. */
@@ -2470,18 +2471,17 @@ get_required_height(void)
 	return DIV_ROUND_UP(input_stat.prompt_wid + input_stat.len + 1, line_width);
 }
 
-/* Replaces [ prefix_len : stat->index ) range of stat->line with wide version
- * of the completed parameter.  Returns zero on success, otherwise non-zero is
- * returned. */
+/* Replaces [ stat->prefix_len : stat->index ) range of stat->line with wide
+ * version of the completed parameter.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
-line_part_complete(line_stats_t *stat, size_t prefix_len,
-		const char completed[])
+line_part_complete(line_stats_t *stat, const char completed[])
 {
 	void *t;
 	wchar_t *line_ending;
 	wchar_t *wide_completed;
 
-	const size_t new_len = prefix_len + wide_len(completed) +
+	const size_t new_len = stat->prefix_len + wide_len(completed) +
 		(stat->len - stat->index) + 1;
 
 	line_ending = vifm_wcsdup(stat->line + stat->index);
@@ -2499,7 +2499,7 @@ line_part_complete(line_stats_t *stat, size_t prefix_len,
 	stat->line = t;
 
 	wide_completed = to_wide(completed);
-	vifm_swprintf(stat->line + prefix_len, new_len,
+	vifm_swprintf(stat->line + stat->prefix_len, new_len,
 			L"%" WPRINTF_WSTR L"%" WPRINTF_WSTR, wide_completed, line_ending);
 	free(wide_completed);
 	free(line_ending);
@@ -2548,8 +2548,6 @@ update_cmdline_size(void)
 TSTATIC int
 line_completion(line_stats_t *stat)
 {
-	static size_t prefix_len;
-
 	char *completion;
 	int result;
 
@@ -2605,7 +2603,7 @@ line_completion(line_stats_t *stat)
 		{
 			line_mb[line_mb_cmd - line_mb + offset] = '\0';
 		}
-		prefix_len = wide_len(line_mb);
+		stat->prefix_len = wide_len(line_mb);
 		free(line_mb);
 
 		vle_compl_set_add_path_hook(NULL);
@@ -2617,7 +2615,7 @@ line_completion(line_stats_t *stat)
 		return 0;
 
 	completion = vle_compl_next();
-	result = line_part_complete(stat, prefix_len, completion);
+	result = line_part_complete(stat, completion);
 	free(completion);
 
 	if(vle_compl_get_count() >= 2)
