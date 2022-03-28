@@ -2479,26 +2479,27 @@ line_part_complete(line_stats_t *stat, const char completed[])
 {
 	void *t;
 	wchar_t *line_ending;
-	wchar_t *wide_completed;
+	wchar_t *wide_completed = to_wide_force(completed);
 
-	const size_t new_len = stat->prefix_len + wide_len(completed) +
+	const size_t new_len = stat->prefix_len + wcslen(wide_completed) +
 		(stat->len - stat->index) + 1;
 
 	line_ending = vifm_wcsdup(stat->line + stat->index);
 	if(line_ending == NULL)
 	{
+		free(wide_completed);
 		return -1;
 	}
 
 	t = reallocarray(stat->line, new_len, sizeof(wchar_t));
 	if(t == NULL)
 	{
+		free(wide_completed);
 		free(line_ending);
 		return -1;
 	}
 	stat->line = t;
 
-	wide_completed = to_wide(completed);
 	vifm_swprintf(stat->line + stat->prefix_len, new_len,
 			L"%" WPRINTF_WSTR L"%" WPRINTF_WSTR, wide_completed, line_ending);
 	free(wide_completed);

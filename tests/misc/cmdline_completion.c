@@ -270,7 +270,7 @@ TEST(percent_completion)
 	ASSERT_NEXT_MATCH("%%%%");
 }
 
-TEST(failure_to_turn_into_multibyte_is_handled, IF(not_windows))
+TEST(failure_to_turn_input_into_multibyte_is_handled, IF(not_windows))
 {
 	/* On Windows narrow locale doesn't really matter because UTF-8 is used
 	 * internally by vifm. */
@@ -281,6 +281,23 @@ TEST(failure_to_turn_into_multibyte_is_handled, IF(not_windows))
 	assert_failure(line_completion(&stats));
 	try_enable_utf8_locale();
 	assert_wstring_equal(L"абвгд | set  all", stats.line);
+}
+
+TEST(failure_to_turn_completion_into_multibyte_is_handled, IF(not_windows))
+{
+	/* On Windows narrow locale doesn't really matter because UTF-8 is used
+	 * internally by vifm. */
+	prepare_for_line_completion(L"");
+	stats.complete_continue = 1;
+
+	vle_compl_reset();
+	vle_compl_add_match("match is абвгд", "descr");
+
+	(void)setlocale(LC_ALL, "C");
+	assert_success(line_completion(&stats));
+	try_enable_utf8_locale();
+
+	assert_true(wcsncmp(L"match is ", stats.line, 9) == 0);
 }
 
 TEST(non_latin_prefix_does_not_break_completion, IF(utf8_locale))
@@ -341,6 +358,7 @@ prepare_for_line_completion(const wchar_t str[])
 	stats.len = wcslen(stats.line);
 	stats.index = stats.len;
 	stats.complete_continue = 0;
+	stats.prefix_len = 0;
 
 	vle_compl_reset();
 }

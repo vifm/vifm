@@ -112,6 +112,9 @@
 	Fixed displaced search highlighting when horizontal scrolling hid multi
 	byte text.
 
+	Fixed completion of broken filenames (those for which encoding to wide
+	character fails) causing memory corruption.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
