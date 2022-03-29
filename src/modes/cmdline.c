@@ -405,7 +405,7 @@ draw_cmdline_text(line_stats_t *stat)
 
 	werase(status_bar);
 
-	switch(input_stat.state)
+	switch(stat->state)
 	{
 		case PS_NORMAL:        group = CMD_LINE_COLOR; break;
 		case PS_WRONG_PATTERN: group = ERROR_MSG_COLOR; break;
@@ -2610,7 +2610,7 @@ line_completion(line_stats_t *stat)
 		vle_compl_set_add_path_hook(NULL);
 	}
 
-	vle_compl_set_order(input_stat.reverse_completion);
+	vle_compl_set_order(stat->reverse_completion);
 
 	if(vle_compl_get_count() == 0)
 		return 0;
