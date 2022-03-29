@@ -470,7 +470,11 @@ nnoremap cc cw<c-u>
 nnoremap A cw
 
 " Open console in current directory
-nnoremap ,t :!xterm &<cr>
+if $DISPLAY && executable('xterm')
+    nnoremap ,t :!xterm &<cr>
+elseif $TERMINAL
+    nnoremap ,t :!$TERMINAL &<cr>
+endif
 
 " Open editor to edit vifmrc and apply settings after returning to vifm
 nnoremap ,c :write | edit $MYVIFMRC | restart full<cr>
