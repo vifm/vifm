@@ -808,7 +808,8 @@ get_first_wchar(const char str[])
 	     ? (unsigned char)str[0]
 	     : wc[0];
 #else
-	return utf8_first_char(str);
+	int len;
+	return utf8_first_char(str, &len);
 #endif
 }
 

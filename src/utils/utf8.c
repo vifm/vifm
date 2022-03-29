@@ -275,16 +275,18 @@ utf8_strcpy(char dst[], const char src[], size_t dst_len)
 	return len - (dst_len - 1U);
 }
 
-#ifdef _WIN32
-
 wchar_t
-utf8_first_char(const char utf8[])
+utf8_first_char(const char utf8[], int *len)
 {
-	const size_t len = strlen(utf8);
-	wchar_t wc;
-	(void)MultiByteToWideChar(CP_UTF8, 0, utf8, len, &wc, 1);
-	return wc;
+	*len = utf8_chrw(utf8);
+	if(*len == 0)
+	{
+		return L'\0';
+	}
+	return utf8_char_to_wchar(utf8, *len);
 }
+
+#ifdef _WIN32
 
 wchar_t *
 utf8_to_utf16(const char utf8[])
