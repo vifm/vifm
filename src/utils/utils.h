@@ -171,6 +171,11 @@ char * escape_for_dquotes(const char string[], size_t offset);
  * Returns newly allocated string. */
 char * escape_unreadable(const char str[]);
 
+/* Calculates escaping overhead for some prefix of the string.  Returns
+ * byte length difference between unchanged prefix and prefix after escaping,
+ * which might be positive, zero or negative. */
+int escape_unreadableo(const char str[], int prefix_len);
+
 /* Expands double percent sequences into single percent character in place. */
 void expand_percent_escaping(char s[]);
 

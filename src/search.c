@@ -155,17 +155,20 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 				free(free_this);
 				continue;
 			}
-			free(free_this);
 
 			entry->search_match = nmatches + 1;
 			entry->match_left = matches[0].rm_so;
+			entry->match_left += escape_unreadableo(name, matches[0].rm_so);
 			entry->match_right = matches[0].rm_eo;
+			entry->match_right += escape_unreadableo(name, matches[0].rm_eo);
 			if(cfg.hl_search)
 			{
 				entry->selected = 1;
 				++view->selected_files;
 			}
 			++nmatches;
+
+			free(free_this);
 		}
 		regfree(&re);
 	}

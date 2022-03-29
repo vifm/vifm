@@ -591,6 +591,27 @@ escape_unreadable(const char str[])
 }
 
 int
+escape_unreadableo(const char str[], int prefix_len)
+{
+	int overhead = 0;
+	const char *in = str;
+	while(prefix_len > 0)
+	{
+		int char_len;
+
+		wchar_t ucs = utf8_first_char(in, &char_len);
+		if(!unichar_isprint(ucs))
+		{
+			overhead += 2 - char_len;
+		}
+
+		in += char_len;
+		prefix_len -= char_len;
+	}
+	return overhead;
+}
+
+int
 unichar_isprint(wchar_t ucs)
 {
 	/* Sorted list of non-overlapping intervals of non-spacing characters

@@ -48,7 +48,7 @@
 	files.  Thanks to Janek (a.k.a. xeruf) and Muhammed Zakir.
 
 	Add unprintable Unicode code points to the set of characters escaped in
-	file names.  Patch by MadMaverick9.
+	file names and start escaping them in file view.  Patch by MadMaverick9.
 
 	Fixed cursor appearing at random places on entering command-line mode.
 
