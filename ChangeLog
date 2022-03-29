@@ -47,6 +47,9 @@
 	Try several editors and then $EDITOR for 'vim' option in sample vifmrc
 	files.  Thanks to Janek (a.k.a. xeruf) and Muhammed Zakir.
 
+	Add unprintable Unicode code points to the set of characters escaped in
+	file names.  Patch by MadMaverick9.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.

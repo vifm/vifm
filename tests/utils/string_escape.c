@@ -32,6 +32,13 @@ TEST(escape_unreadable_escapes_control_codes)
 	free(escaped);
 }
 
+TEST(escape_unreadable_escapes_unprintable_unicode)
+{
+	char *const escaped = escape_unreadable("unicode\xe2\x80\x8etest");
+	assert_string_equal("unicode^?test", escaped);
+	free(escaped);
+}
+
 TEST(escape_unreadable_handles_composite_characters)
 {
 	const char *unescaped = "prefix\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f"
