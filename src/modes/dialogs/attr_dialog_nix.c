@@ -44,6 +44,7 @@
 #include "../../utils/str.h"
 #include "../../utils/test_helpers.h"
 #include "../../utils/utf8.h"
+#include "../../utils/utils.h"
 #include "../../filelist.h"
 #include "../../flist_sel.h"
 #include "../../ops.h"
@@ -300,7 +301,6 @@ get_perm_mark(int i)
 static char *
 get_title(int max_width)
 {
-	char *ellipsed, *title;
 	const int first_file_index = get_first_file_index();
 
 	if(!is_one_file_selected(first_file_index))
@@ -308,10 +308,14 @@ get_title(int max_width)
 		return format_str(" %d files ", get_selection_size(first_file_index));
 	}
 
-	ellipsed = right_ellipsis(view->dir_entry[first_file_index].name,
-			max_width - 2, curr_stats.ellipsis);
-	title = format_str(" %s ", ellipsed);
+	char *escaped = escape_unreadable(view->dir_entry[first_file_index].name);
+
+	char *ellipsed = right_ellipsis(escaped, max_width - 2, curr_stats.ellipsis);
+	free(escaped);
+
+	char *title = format_str(" %s ", ellipsed);
 	free(ellipsed);
+
 	return title;
 }
 

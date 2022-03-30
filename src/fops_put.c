@@ -177,7 +177,10 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 
 		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
 		{
-			ui_sb_errf("File \"%s\" already exists", dst);
+			char *escaped_dst = escape_unreadable(dst);
+			ui_sb_errf("File \"%s\" already exists", escaped_dst);
+			free(escaped_dst);
+
 			fops_free_bg_args(args);
 			return 1;
 		}
@@ -998,19 +1001,26 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
+	char *escaped_cause = escape_unreadable(replace_home_part(caused_by));
+
 	char msg[PATH_MAX*3];
 	if(same_file)
 	{
 		snprintf(msg, sizeof(msg),
 				"Same file is both source and destination:\n%s\nWhat to do?",
-				replace_home_part(caused_by));
+				escaped_cause);
 	}
 	else
 	{
+		char *escaped_fname = escape_unreadable(fname);
 		snprintf(msg, sizeof(msg),
-				"Name conflict for %s.  Caused by:\n%s\nWhat to do?", fname,
-				replace_home_part(caused_by));
+				"Name conflict for %s.  Caused by:\n%s\nWhat to do?", escaped_fname,
+				escaped_cause);
+		free(escaped_fname);
 	}
+
+	free(escaped_cause);
+
 	response = fops_options_prompt("File Conflict", msg, responses);
 	handle_prompt_response(fname, caused_by, response);
 }

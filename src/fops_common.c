@@ -584,7 +584,9 @@ fops_is_copy_list_ok(const char dst[], int count, char *list[], int force,
 	{
 		if(path_exists_at(dst, list[i], NODEREF))
 		{
-			put_string(error, format_str("File \"%s\" already exists", list[i]));
+			char *escaped = escape_unreadable(list[i]);
+			put_string(error, format_str("File \"%s\" already exists", escaped));
+			free(escaped);
 			return 0;
 		}
 	}
@@ -637,7 +639,9 @@ fops_check_file_rename(const char dir[], const char old[], const char new[],
 	if(path_exists_at(dir, new, NODEREF) && stroscmp(old, new) != 0 &&
 			!is_case_change(old, new))
 	{
-		put_string(error, format_str("File \"%s\" already exists", new));
+		char *escaped = escape_unreadable(new);
+		put_string(error, format_str("File \"%s\" already exists", escaped));
+		free(escaped);
 		return 0;
 	}
 
