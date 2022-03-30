@@ -475,15 +475,17 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	}
 	int color_pair = cs_load_color(&col);
 
+	char *escaped = escape_unreadable(m->items[pos]);
+
 	/* Calculate offset of m->hor_pos's character in item text. */
 	off = 0;
 	i = m->hor_pos;
-	while(i-- > 0 && m->items[pos][off] != '\0')
+	while(i-- > 0 && escaped[0] != '\0')
 	{
-		off += utf8_chrw(m->items[pos] + off);
+		off += utf8_chrw(escaped + off);
 	}
 
-	item_tail = strdup(m->items[pos] + off);
+	item_tail = escaped + off;
 	replace_char(item_tail, '\t', ' ');
 
 	ui_set_attr(menu_win, &col, color_pair);
@@ -499,7 +501,8 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	if(utf8_strsw(item_tail) > (size_t)(width - 2))
 	{
 		char *ellipsed = right_ellipsis(item_tail, width - 2, curr_stats.ellipsis);
-		free(item_tail);
+		free(escaped);
+		escaped = ellipsed;
 		item_tail = ellipsed;
 	}
 	else
@@ -518,7 +521,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 				ms->matches[pos][1] - off, line, width, &cch);
 	}
 
-	free(item_tail);
+	free(escaped);
 }
 
 /* Draws search match highlight on the element. */
@@ -991,10 +994,13 @@ search_menu(menu_state_t *ms, int start_pos, int print_errors)
 	for(i = 0; i < m->len; ++i)
 	{
 		regmatch_t matches[1];
-		if(regexec(&re, m->items[i], 1, matches, 0) == 0)
+		const char *item = m->items[i];
+		if(regexec(&re, item, 1, matches, 0) == 0)
 		{
-			ms->matches[i][0] = matches[0].rm_so;
-			ms->matches[i][1] = matches[0].rm_eo;
+			ms->matches[i][0] = matches[0].rm_so
+			                  + escape_unreadableo(item, matches[0].rm_so);
+			ms->matches[i][1] = matches[0].rm_eo
+			                  + escape_unreadableo(item, matches[0].rm_eo);
 
 			++ms->matching_entries;
 		}
