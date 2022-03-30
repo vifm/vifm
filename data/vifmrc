@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 24 March, 2022)
+" Sample configuration file for vifm (last updated: 30 March, 2022)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -425,10 +425,12 @@ nnoremap S :sort<cr>
 nnoremap w :view<cr>
 vnoremap w :view<cr>gv
 
-" Open file in existing instance of gvim
-nnoremap o :!gvim --remote-tab-silent %f<cr>
-" Open file in new instance of gvim
-nnoremap O :!gvim %f<cr>
+if $DISPLAY && executable('gvim')
+    " Open file in existing instance of gvim
+    nnoremap o :!gvim --remote-tab-silent %f<cr>
+    " Open file in new instance of gvim
+    nnoremap O :!gvim %f<cr>
+endif
 
 " Open file in the background using its default program
 nnoremap gb :file &<cr>l
@@ -439,18 +441,29 @@ if has('win')
     nnoremap yp :!echo %"d:gs!\!/! %i | clip<cr>
     " Yank path to current file to Windows clipboard with forward slashes
     nnoremap yf :!echo %"c:gs!\!/! %i | clip<cr>
-elseif executable('xclip')
-    " Yank current directory path into the clipboard
-    nnoremap yd :!echo %d | xclip %i<cr>
-    " Yank current file path into the clipboard
-    nnoremap yf :!echo %c:p | xclip %i<cr>
-elseif executable('xsel')
-    " Yank current directory path into primary and selection clipboards
-    nnoremap yd :!echo -n %d | xsel --input --primary %i &&
-                \ echo -n %d | xsel --clipboard --input %i<cr>
-    " Yank current file path into into primary and selection clipboards
-    nnoremap yf :!echo -n %c:p | xsel --input --primary %i &&
-                \ echo -n %c:p | xsel --clipboard --input %i<cr>
+elseif $WAYLAND_DISPLAY
+    if executable('wl-copy')
+        " Yank current directory path into primary and selection clipboards
+        nnoremap yd :!echo -n %d | wl-copy %i &&
+                    \ echo -n %d | wl-copy -p %i<cr>
+        " Yank current file path into into primary and selection clipboards
+        nnoremap yf :!echo -n %c:p | wl-copy %i &&
+                    \ echo -n %c:p | wl-copy -p %i<cr>
+    endif
+elseif $DISPLAY
+    if executable('xclip')
+        " Yank current directory path into the clipboard
+        nnoremap yd :!echo %d | xclip %i<cr>
+        " Yank current file path into the clipboard
+        nnoremap yf :!echo %c:p | xclip %i<cr>
+    elseif executable('xsel')
+        " Yank current directory path into primary and selection clipboards
+        nnoremap yd :!echo -n %d | xsel --input --primary %i &&
+                    \ echo -n %d | xsel --clipboard --input %i<cr>
+        " Yank current file path into into primary and selection clipboards
+        nnoremap yf :!echo -n %c:p | xsel --input --primary %i &&
+                    \ echo -n %c:p | xsel --clipboard --input %i<cr>
+    endif
 endif
 
 " Mappings for faster renaming
@@ -459,12 +472,19 @@ nnoremap cc cw<c-u>
 nnoremap A cw
 
 " Open console in current directory
-nnoremap ,t :!xterm &<cr>
+if $DISPLAY && executable('xterm')
+    nnoremap ,t :!xterm &<cr>
+elseif $TERMINAL
+    nnoremap ,t :!$TERMINAL &<cr>
+endif
 
 " Open editor to edit vifmrc and apply settings after returning to vifm
 nnoremap ,c :write | edit $MYVIFMRC | restart full<cr>
+
 " Open gvim to edit vifmrc
-nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
+if $DISPLAY && executable('gvim')
+    nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
+endif
 
 " Toggle wrap setting on ,w key
 nnoremap ,w :set wrap!<cr>
