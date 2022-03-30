@@ -15,3 +15,5 @@
 * 'chaselinks' resolves mount points on Windows, should it?
 * :apropos command doesn't escape its arguments.
 * gid/uid are displayed as -1 on some file systems.
+* Command-line doesn't work well with file names in encoding that doesn't match
+  locale when they fail to convert to wide encoding.

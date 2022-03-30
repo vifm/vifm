@@ -119,6 +119,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ================================================================================
 src/compat/wcwidth.c
 --------------------------------------------------------------------------------
+src/utils/utils.c (unichar_bisearch() function)
+--------------------------------------------------------------------------------
 
 Copyright (C) Markus Kuhn -- 2007-05-26 (Unicode 5.0)
 

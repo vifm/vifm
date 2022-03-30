@@ -72,14 +72,15 @@ size_t utf8_strso(const char str[]);
  * including terminating null character. */
 size_t utf8_strcpy(char dst[], const char src[], size_t dst_len);
 
+/* Extracts first utf-8 character from the string converting it to wide
+ * character representation.  Returns the wide character and sets *len to width
+ * of input character, which can be 0. */
+wchar_t utf8_first_char(const char utf8[], int *len);
+
 #ifdef _WIN32
 
 /* Converts utf-8 to utf-16 string.  Returns newly allocated utf-8 string. */
 wchar_t * utf8_to_utf16(const char utf8[]);
-
-/* Extracts first utf-8 character from the string converting it to wide
- * character representation.  Returns the wide character. */
-wchar_t utf8_first_char(const char utf8[]);
 
 /* Calculates how many utf-16 chars are needed to store given utf-8 string.
  * Returns the number. */

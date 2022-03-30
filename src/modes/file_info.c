@@ -148,8 +148,12 @@ modfinfo_redraw(void)
 
 	curr_y = 2;
 
-	curr_y += print_item("Path: ", curr->origin, curr_y);
-	curr_y += print_item("Name: ", curr->name, curr_y);
+	char *escaped = escape_unreadable(curr->origin);
+	curr_y += print_item("Path: ", escaped, curr_y);
+	free(escaped);
+	escaped = escape_unreadable(curr->name);
+	curr_y += print_item("Name: ", escaped, curr_y);
+	free(escaped);
 
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);

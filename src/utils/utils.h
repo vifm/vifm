@@ -58,6 +58,14 @@ typedef enum
 }
 ExpandEnvFlags;
 
+/* Defines an integer interval. */
+typedef struct
+{
+	int first; /* Left inclusive bound. */
+	int last;  /* Right inclusive bound. */
+}
+interval_t;
+
 /* Forward declarations. */
 struct dir_entry_t;
 struct view_t;
@@ -159,9 +167,17 @@ char * escape_for_squotes(const char string[], size_t offset);
  * quoted string, prefix is not escaped.  Returns newly allocated string. */
 char * escape_for_dquotes(const char string[], size_t offset);
 
-/* Escapes characters aren't visible or don't looks nice to the user.  Returns
- * newly allocated string. */
+/* Escapes characters that aren't visible or don't look nice to the user.
+ * Returns newly allocated string. */
 char * escape_unreadable(const char str[]);
+
+/* Calculates escaping overhead for some prefix of the string.  Returns
+ * byte length difference between unchanged prefix and prefix after escaping,
+ * which might be positive, zero or negative. */
+int escape_unreadableo(const char str[], int prefix_len);
+
+/* Wide version of escape_unreadable(). */
+wchar_t * escape_unreadablew(const wchar_t str[]);
 
 /* Expands double percent sequences into single percent character in place. */
 void expand_percent_escaping(char s[]);
@@ -312,6 +328,14 @@ int get_drive_info(const char at[], uint64_t *total_bytes,
 /* Retrieves inode number that corresponds to the entry by resolving symbolic
  * links if necessary.  Returns the inode number. */
 uint64_t get_true_inode(const struct dir_entry_t *entry);
+
+/* Auxiliary function for binary search in interval table.  Returns non-zero
+ * if search was successful and zero otherwise. */
+int unichar_bisearch(wchar_t ucs, const interval_t table[], int max);
+
+/* Checks whether Unicode character is printable.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int unichar_isprint(wchar_t ucs);
 
 #ifdef _WIN32
 #include "utils_win.h"

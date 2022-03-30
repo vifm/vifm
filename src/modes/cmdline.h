@@ -105,6 +105,7 @@ typedef struct
 	size_t dot_len;   /* Previous completion length. */
 
 	/* Command completion. */
+	size_t prefix_len;          /* Prefix length for the active completion. */
 	int complete_continue;      /* If non-zero, continue previous completion. */
 	int reverse_completion;     /* Completion in the opposite direction. */
 	complete_cmd_func complete; /* Completion function. */

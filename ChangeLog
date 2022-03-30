@@ -47,6 +47,12 @@
 	Try several editors and then $EDITOR for 'vim' option in sample vifmrc
 	files.  Thanks to Janek (a.k.a. xeruf) and Muhammed Zakir.
 
+	Add unprintable Unicode code points to the set of characters escaped in
+	file names and start escaping them in file view.  Patch by MadMaverick9.
+
+	Escape unreadable characters in menus, command-line mode, dialogs and
+	statusbar messages.  Thanks to MadMaverick9.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.
@@ -106,6 +112,14 @@
 	Fixed :. incorrectly checking for one path being parent of another and
 	producing weird results ("/pa" was considered parent of "/path", with "th"
 	being the result).  Thanks to Dennis Preiser (a.k.a. 0xDP).
+
+	Fixed displaying empty matches at the start/end of menu items.
+
+	Fixed displaced search highlighting when horizontal scrolling hid multi
+	byte text.
+
+	Fixed completion of broken filenames (those for which encoding to wide
+	character fails) causing memory corruption.
 
 0.12-beta to 0.12 (2021-09-29)
 
