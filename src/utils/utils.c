@@ -44,6 +44,7 @@
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "../engine/keys.h"
 #include "../engine/variables.h"
 #include "../int/fuse.h"
@@ -609,6 +610,40 @@ escape_unreadableo(const char str[], int prefix_len)
 		prefix_len -= char_len;
 	}
 	return overhead;
+}
+
+wchar_t *
+escape_unreadablew(const wchar_t str[])
+{
+	int str_len = wcslen(str);
+	wchar_t *escaped = reallocarray(NULL, str_len*2 + 1, sizeof(*escaped));
+
+	wchar_t *out = escaped;
+	while(str_len > 0)
+	{
+		if(unichar_isprint(*str))
+		{
+			*out++ = *str;
+		}
+		else
+		{
+			*out++ = L'^';
+			if(*str <= (wchar_t)0xff && iscntrl(*str))
+			{
+				*out++ = *str ^ 64;
+			}
+			else
+			{
+				*out++ = L'?';
+			}
+		}
+
+		++str;
+		--str_len;
+	}
+	*out = '\0';
+
+	return escaped;
 }
 
 int

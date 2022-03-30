@@ -50,7 +50,8 @@
 	Add unprintable Unicode code points to the set of characters escaped in
 	file names and start escaping them in file view.  Patch by MadMaverick9.
 
-	Escape unreadable characters in menus.  Thanks to MadMaverick9.
+	Escape unreadable characters in menus and command-line mode.  Thanks to
+	MadMaverick9.
 
 	Fixed cursor appearing at random places on entering command-line mode.
 

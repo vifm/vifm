@@ -176,6 +176,9 @@ char * escape_unreadable(const char str[]);
  * which might be positive, zero or negative. */
 int escape_unreadableo(const char str[], int prefix_len);
 
+/* Wide version of escape_unreadable(). */
+wchar_t * escape_unreadablew(const wchar_t str[]);
+
 /* Expands double percent sequences into single percent character in place. */
 void expand_percent_escaping(char s[]);
 

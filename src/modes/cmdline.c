@@ -244,6 +244,8 @@ static char * escaped_arg_hook(const char match[]);
 static char * squoted_arg_hook(const char match[]);
 static char * dquoted_arg_hook(const char match[]);
 static void update_line_stat(line_stats_t *stat, int new_len);
+static int esc_wcswidth(const wchar_t str[], size_t n);
+static int esc_wcwidth(wchar_t wc);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
 static void stop_dot_completion(void);
@@ -372,7 +374,7 @@ def_handler(wchar_t key)
 	wcsins(input_stat.line, buf, input_stat.index);
 	input_stat.len++;
 
-	input_stat.curs_pos += vifm_wcwidth(key);
+	input_stat.curs_pos += esc_wcwidth(key);
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
@@ -417,13 +419,19 @@ draw_cmdline_text(line_stats_t *stat)
 	prompt_col.attr ^= cfg.cs.color[group].attr;
 	prompt_col.gui_attr ^= cfg.cs.color[group].gui_attr;
 
-	ui_set_attr(status_bar, &prompt_col, cfg.cs.pair[group]);
-	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
+	wchar_t *escaped;
 
+	escaped = escape_unreadablew(stat->prompt);
+	ui_set_attr(status_bar, &prompt_col, cfg.cs.pair[group]);
+	compat_mvwaddwstr(status_bar, 0, 0, escaped);
+	free(escaped);
+
+	escaped = escape_unreadablew(stat->line);
 	ui_set_attr(status_bar, &cfg.cs.color[CMD_LINE_COLOR],
 			cfg.cs.pair[CMD_LINE_COLOR]);
 	compat_mvwaddwstr(status_bar, stat->prompt_wid/line_width,
-			stat->prompt_wid%line_width, stat->line);
+			stat->prompt_wid%line_width, escaped);
+	free(escaped);
 
 	update_cursor();
 	ui_refresh_win(status_bar);
@@ -733,7 +741,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.line = vifm_wcsdup(cmd);
 	input_stat.initial_line = vifm_wcsdup(input_stat.line);
 	input_stat.index = wcslen(cmd);
-	input_stat.curs_pos = vifm_wcswidth(input_stat.line, (size_t)-1);
+	input_stat.curs_pos = esc_wcswidth(input_stat.line, (size_t)-1);
 	input_stat.len = input_stat.index;
 	input_stat.cmd_pos = -1;
 	input_stat.complete_continue = 0;
@@ -759,7 +767,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	}
 
 	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
-	input_stat.prompt_wid = vifm_wcswidth(input_stat.prompt, (size_t)-1);
+	input_stat.prompt_wid = esc_wcswidth(input_stat.prompt, (size_t)-1);
 	input_stat.curs_pos += input_stat.prompt_wid;
 
 	update_cmdline_size();
@@ -1027,7 +1035,7 @@ cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.index--;
 	input_stat.len--;
 
-	input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index]);
+	input_stat.curs_pos -= esc_wcwidth(input_stat.line[input_stat.index]);
 
 	if(input_stat.index == input_stat.len)
 	{
@@ -1184,7 +1192,11 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 		while(*last_pos > 0 && l > 2)
 		{
 			--*last_pos;
-			l -= strlen(items[*last_pos].text);
+
+			char *escaped = escape_unreadable(items[*last_pos].text);
+			l -= strlen(escaped);
+			free(escaped);
+
 			if(*last_pos != 0)
 				l -= 2;
 		}
@@ -1194,7 +1206,9 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 
 	for(i = *last_pos; i < count && *len > 0; ++i)
 	{
-		*len -= strlen(items[i].text);
+		char *escaped = escape_unreadable(items[i].text);
+
+		*len -= strlen(escaped);
 		if(i != 0)
 			*len -= 2;
 
@@ -1206,6 +1220,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 		{
 			if(*len < 2)
 			{
+				free(escaped);
 				wprintw(stat_win, " >");
 				break;
 			}
@@ -1218,13 +1233,15 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
 			ui_set_attr(stat_win, &col, -1);
 		}
-		wprint(stat_win, items[i].text);
+		wprint(stat_win, escaped);
 		if(i == *pos)
 		{
 			ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
 					cfg.cs.pair[STATUS_LINE_COLOR]);
 			*pos = -*pos;
 		}
+
+		free(escaped);
 	}
 
 	return i;
@@ -1254,7 +1271,10 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	max_title_width = 0U;
 	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
 	{
-		const size_t width = utf8_strsw(items[i].text);
+		char *escaped = escape_unreadable(items[i].text);
+		const size_t width = utf8_strsw(escaped);
+		free(escaped);
+
 		if(width > max_title_width)
 		{
 			max_title_width = width;
@@ -1271,8 +1291,9 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 		}
 
 		checked_wmove(stat_win, j, 0);
-		ui_stat_draw_popup_line(stat_win, items[i].text, items[i].descr,
-				max_title_width);
+		char *escaped = escape_unreadable(items[i].text);
+		ui_stat_draw_popup_line(stat_win, escaped, items[i].descr, max_title_width);
+		free(escaped);
 
 		if(i == *pos)
 		{
@@ -1516,7 +1537,7 @@ exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos)
 
 	input_stat.len -= lhs_len;
 	input_stat.index -= lhs_len;
-	input_stat.curs_pos -= vifm_wcswidth(&input_stat.line[pos], lhs_len);
+	input_stat.curs_pos -= esc_wcswidth(&input_stat.line[pos], lhs_len);
 	(void)wcsdel(input_stat.line, pos + 1, lhs_len);
 
 	if(no_remap)
@@ -1762,7 +1783,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 
 	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
-		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
+		input_stat.curs_pos -= esc_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 	if(iswalnum(input_stat.line[input_stat.index - 1]))
@@ -1771,7 +1792,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 				iswalnum(input_stat.line[input_stat.index - 1]))
 		{
 			const wchar_t curr_wchar = input_stat.line[input_stat.index - 1];
-			input_stat.curs_pos -= vifm_wcwidth(curr_wchar);
+			input_stat.curs_pos -= esc_wcwidth(curr_wchar);
 			input_stat.index--;
 		}
 	}
@@ -1782,7 +1803,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 				!iswspace(input_stat.line[input_stat.index - 1]))
 		{
 			const wchar_t curr_wchar = input_stat.line[input_stat.index - 1];
-			input_stat.curs_pos -= vifm_wcwidth(curr_wchar);
+			input_stat.curs_pos -= esc_wcwidth(curr_wchar);
 			input_stat.index--;
 		}
 	}
@@ -2035,13 +2056,13 @@ find_prev_word(void)
 	while(input_stat.index > 0 &&
 			!cfg_is_word_wchar(input_stat.line[input_stat.index - 1]))
 	{
-		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
+		input_stat.curs_pos -= esc_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 	while(input_stat.index > 0 &&
 			cfg_is_word_wchar(input_stat.line[input_stat.index - 1]))
 	{
-		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
+		input_stat.curs_pos -= esc_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 }
@@ -2184,7 +2205,7 @@ insert_str(const wchar_t str[])
 	wcsins(input_stat.line, str, input_stat.index + 1);
 
 	input_stat.index += len;
-	input_stat.curs_pos += vifm_wcswidth(str, (size_t)-1);
+	input_stat.curs_pos += esc_wcswidth(str, (size_t)-1);
 	input_stat.len += len;
 
 	return 0;
@@ -2197,13 +2218,13 @@ find_next_word(void)
 	while(input_stat.index < input_stat.len
 			&& !cfg_is_word_wchar(input_stat.line[input_stat.index]))
 	{
-		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += esc_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 	while(input_stat.index < input_stat.len
 			&& cfg_is_word_wchar(input_stat.line[input_stat.index]))
 	{
-		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += esc_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 }
@@ -2217,7 +2238,7 @@ cmd_left(key_info_t key_info, keys_info_t *keys_info)
 	if(input_stat.index > 0)
 	{
 		input_stat.index--;
-		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos -= esc_wcwidth(input_stat.line[input_stat.index]);
 		update_cursor();
 	}
 }
@@ -2230,7 +2251,7 @@ cmd_right(key_info_t key_info, keys_info_t *keys_info)
 
 	if(input_stat.index < input_stat.len)
 	{
-		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += esc_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 		update_cursor();
 	}
@@ -2253,7 +2274,7 @@ cmd_end(key_info_t key_info, keys_info_t *keys_info)
 
 	input_stat.index = input_stat.len;
 	input_stat.curs_pos = input_stat.prompt_wid +
-			vifm_wcswidth(input_stat.line, (size_t)-1);
+			esc_wcswidth(input_stat.line, (size_t)-1);
 	update_cursor();
 }
 
@@ -2330,7 +2351,7 @@ cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += esc_wcwidth(input_stat.line[input_stat.index]);
 		++input_stat.index;
 	}
 
@@ -2451,7 +2472,7 @@ static void
 update_cmdline(line_stats_t *stat)
 {
 	int required_height;
-	stat->curs_pos = stat->prompt_wid + vifm_wcswidth(stat->line, stat->len);
+	stat->curs_pos = stat->prompt_wid + esc_wcswidth(stat->line, stat->len);
 	stat->index = stat->len;
 
 	required_height = get_required_height();
@@ -2659,8 +2680,30 @@ static void
 update_line_stat(line_stats_t *stat, int new_len)
 {
 	stat->index += (new_len - 1) - stat->len;
-	stat->curs_pos = stat->prompt_wid + vifm_wcswidth(stat->line, stat->index);
+	stat->curs_pos = stat->prompt_wid + esc_wcswidth(stat->line, stat->index);
 	stat->len = new_len - 1;
+}
+
+/* wcswidth()-like function which also accounts for unreadable characters that
+ * were escaped. */
+static int
+esc_wcswidth(const wchar_t str[], size_t n)
+{
+	int width = 0;
+	while(*str != L'\0' && n--)
+	{
+		width += esc_wcwidth(*str++);
+	}
+	return width;
+}
+
+/* wcwidth()-like function which also accounts for unreadable characters that
+ * were escaped. */
+static int
+esc_wcwidth(wchar_t wc)
+{
+	/* Escaped unreadable characters have a form of ^X. */
+	return (unichar_isprint(wc) ? vifm_wcwidth(wc) : 2);
 }
 
 /* Delete a character in a string
