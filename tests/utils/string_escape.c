@@ -39,6 +39,13 @@ TEST(escape_unreadable_escapes_unprintable_unicode)
 	free(escaped);
 }
 
+TEST(escape_unreadable_escapes_wrong_encoding)
+{
+	char *const escaped = escape_unreadable("L\224sungswege, Testf\204lle.pdf");
+	assert_string_equal("L^?sungswege, Testf^?lle.pdf", escaped);
+	free(escaped);
+}
+
 TEST(escape_unreadable_handles_composite_characters)
 {
 	const char *unescaped = "prefix\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f"

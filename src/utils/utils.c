@@ -573,13 +573,13 @@ escape_unreadable(const char str[])
 		else
 		{
 			*out++ = '^';
-			if(char_len == 0 || char_len > 1)
+			if(char_len == 1 && iscntrl(*str))
 			{
-				*out++ = '?';
+				*out++ = *str ^ 64;
 			}
 			else
 			{
-				*out++ = *str ^ 64;
+				*out++ = '?';
 			}
 		}
 
