@@ -49,6 +49,7 @@ functionality should be enough for most of use cases.
 ## Screenshot ##
 
 ![Screenshot](data/graphics/screenshot.png)
+![Screenshot](data/graphics/screenshot2.png)
 
 ## Getting Started ##
 
