@@ -4,7 +4,7 @@
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]
 
-_Latest release is 0.12.  This file last updated on 29 September, 2021._
+_Latest release is 0.12.  This file last updated on April 8, 2022._
 
 ## Brief Description ##
 
@@ -46,7 +46,7 @@ functionality should be enough for most of use cases.
 | vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images) |
 | sixel image preview       | [Repository][sixel-preview] (for [Sixel][wiki-sixel]-capable terminals) |
 
-## Screenshot ##
+## Screenshots ##
 
 ![Screenshot](data/graphics/screenshot.png)
 ![Screenshot](data/graphics/screenshot2.png)
