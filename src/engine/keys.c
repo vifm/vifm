@@ -57,6 +57,8 @@ typedef struct key_chunk_t
 	int enters;
 	/* General key type. */
 	KeyType type : 2;
+	/* This is a builtin-like user-defined key. */
+	unsigned int foreign : 1;
 	/* Whether RHS should be treated as if there are no user mappings. */
 	unsigned int no_remap : 1;
 	/* Postpone free() call for proper lazy deletion. */
@@ -240,7 +242,7 @@ remove_foreign_in_tree(key_chunk_t *chunk)
 		remove_foreign_in_tree(chunk->next);
 	}
 
-	if(chunk->type == BUILTIN_KEYS)
+	if(chunk->foreign)
 	{
 		remove_chunk(chunk);
 	}
@@ -1015,6 +1017,7 @@ vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 
 	curr->type = (info->followed == FOLLOWED_BY_NONE) ? BUILTIN_KEYS
 	                                                  : BUILTIN_WAIT_POINT;
+	curr->foreign = 1;
 	curr->conf = *info;
 	return 0;
 }
@@ -1202,6 +1205,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->children_count = 0;
 			c->enters = 0;
 			c->deleted = 0;
+			c->foreign = 0;
 			c->no_remap = 1;
 			c->silent = 0;
 			c->wait = 0;

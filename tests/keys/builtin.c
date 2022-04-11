@@ -22,6 +22,13 @@ TEST(handler_gets_user_data)
 	assert_true(user_data == &var);
 }
 
+TEST(builtin_selectors_can_not_be_cleared)
+{
+	vle_keys_user_clear();
+
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"dj")));
+}
+
 static void
 key_X(key_info_t key_info, keys_info_t *keys_info)
 {
