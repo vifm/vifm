@@ -47,11 +47,15 @@
 	Try several editors and then $EDITOR for 'vim' option in sample vifmrc
 	files.  Thanks to Janek (a.k.a. xeruf) and Muhammed Zakir.
 
-	Add unprintable Unicode code points to the set of characters escaped in
-	file names and start escaping them in file view.  Patch by MadMaverick9.
+	Include unprintable Unicode code points in the set of characters escaped
+	in file names and start escaping them in file view.  Patch by
+	MadMaverick9.
 
 	Escape unreadable characters in menus, command-line mode, dialogs and
 	statusbar messages.  Thanks to MadMaverick9.
+
+	Set `title` option by default if $TERM is foot* as its terminfo entry
+	might lack tsl and fsl attributes.  Thanks to nobodyatandnothing.
 
 	Fixed cursor appearing at random places on entering command-line mode.
 

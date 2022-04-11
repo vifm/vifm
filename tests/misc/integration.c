@@ -265,7 +265,7 @@ TEST(title_support_is_detected_correctly)
 	static char *XTERM_LIKE[] = {
 		"xterm", "xterm-256color", "xterm-termite", "xterm-anything",
 		"rxvt", "rxvt-256color", "rxvt-unicode", "rxvt-anything",
-		"aterm", "Eterm"
+		"aterm", "Eterm", "foot", "foot-direct"
 	};
 
 	static char *SCREEN_LIKE[] = {

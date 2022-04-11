@@ -252,7 +252,8 @@ title_kind_for_termenv(const char term[])
 #else
 	if(strcmp(term, "xterm") == 0 || starts_with_lit(term, "xterm-") ||
 			strcmp(term, "rxvt") == 0 || starts_with_lit(term, "rxvt-") ||
-			strcmp(term, "aterm") == 0 || strcmp(term, "Eterm") == 0)
+			strcmp(term, "aterm") == 0 || strcmp(term, "Eterm") == 0 ||
+			strcmp(term, "foot") == 0 || starts_with_lit(term, "foot-"))
 	{
 		return TK_REGULAR;
 	}
