@@ -52,7 +52,7 @@ KeyType;
 typedef struct key_chunk_t
 {
 	wchar_t key;
-	size_t children_count;
+	int children_count;
 	/* Number of current uses.  To prevent stack overflow and manager lifetime. */
 	int enters;
 	/* General key type. */
@@ -1242,7 +1242,7 @@ vle_keys_list(int mode, vle_keys_list_cb cb, int user_only)
 	cb(L"", L"", "User mappings:");
 
 	/* Don't traverse empty tries. */
-	if(user->children_count != 0U)
+	if(user->children_count != 0)
 	{
 		traverse_children(user, L"", &list_chunk, cb);
 	}
@@ -1250,7 +1250,7 @@ vle_keys_list(int mode, vle_keys_list_cb cb, int user_only)
 	cb(L"", L"", "");
 	cb(L"", L"", "Builtin mappings:");
 
-	if(!user_only && builtin->children_count != 0U)
+	if(!user_only && builtin->children_count != 0)
 	{
 		traverse_children(builtin, L"", &list_chunk, cb);
 	}
