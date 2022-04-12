@@ -125,6 +125,9 @@
 	Fixed completion of broken filenames (those for which encoding to wide
 	character fails) causing memory corruption.
 
+	Fixed running :set from autocommands triggered during processing of vifmrc
+	changing options for all views.  Thanks to Alexandre Viau.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

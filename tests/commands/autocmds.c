@@ -15,6 +15,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
+#include "../../src/status.h"
 
 static int change_view_directory(view_t *view, const char path[]);
 
@@ -34,6 +35,7 @@ SETUP_ONCE()
 SETUP()
 {
 	curr_view = &lwin;
+	other_view = &rwin;
 
 	update_string(&cfg.slow_fs_list, "");
 
@@ -41,11 +43,13 @@ SETUP()
 	opt_handlers_setup();
 
 	view_setup(&lwin);
+	view_setup(&rwin);
 }
 
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	opt_handlers_teardown();
 
@@ -323,6 +327,23 @@ TEST(direnter_is_triggered_on_leaving_custom_view_to_different_path)
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, test_data) >= 0);
 	assert_string_equal("1", env_get("a"));
+}
+
+TEST(autocmd_in_vifmrc_affects_only_current_view)
+{
+	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s' setlocal nodotfiles",
+			test_data);
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+
+	lwin.hide_dot = 0;
+	rwin.hide_dot = 0;
+
+	curr_stats.global_local_settings = 1;
+	assert_true(change_view_directory(curr_view, test_data) >= 0);
+	curr_stats.global_local_settings = 0;
+
+	assert_true(lwin.hide_dot);
+	assert_false(rwin.hide_dot);
 }
 
 /* Windows has various limitations on characters used in file names. */
