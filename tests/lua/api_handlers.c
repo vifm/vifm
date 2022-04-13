@@ -204,7 +204,7 @@ TEST(error_open_invocation)
 	ui_sb_msg("");
 	vlua_open_file(vlua, "#vifmtest#handle", &entry);
 	assert_true(ends_with(ui_sb_last(),
-				": global 'asdf' is not callable (a nil value)"));
+				": attempt to call a nil value (global 'asdf')"));
 }
 
 TEST(invalid_statusline_formatter)
@@ -226,7 +226,7 @@ TEST(error_statusline_formatter)
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
 	assert_true(ends_with(format,
-				": global 'asdf' is not callable (a nil value)"));
+				": attempt to call a nil value (global 'asdf')"));
 	free(format);
 }
 
@@ -295,7 +295,7 @@ TEST(error_editor_handler)
 
 	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
 	assert_true(ends_with(ui_sb_last(),
-				": global 'asdf' is not callable (a nil value)"));
+				": attempt to call a nil value (global 'asdf')"));
 }
 
 TEST(error_editor_handler_return)
