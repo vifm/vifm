@@ -118,7 +118,7 @@ TEST(keys_bad_key_handler)
 
 	(void)vle_keys_exec_timed_out(WK_X);
 	assert_true(ends_with(ui_sb_last(),
-				": global 'adsf' is not callable (a nil value)"));
+				": attempt to call a nil value (global 'adsf')"));
 }
 
 TEST(keys_bad_selector_handler)
@@ -137,7 +137,7 @@ TEST(keys_bad_selector_handler)
 
 	(void)vle_keys_exec_timed_out(L"yX");
 	assert_true(ends_with(ui_sb_last(),
-				": global 'adsf' is not callable (a nil value)"));
+				": attempt to call a nil value (global 'adsf')"));
 }
 
 TEST(keys_bad_selector_return)

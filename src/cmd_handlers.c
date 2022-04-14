@@ -1189,7 +1189,14 @@ aucmd_action_handler(const char action[], void *arg)
 
 	char *saved_cwd = save_cwd();
 	(void)vifm_chdir(flist_get_dir(view));
+
+	const int prev_global_local_settings = curr_stats.global_local_settings;
+	curr_stats.global_local_settings = 0;
+
 	(void)exec_commands(action, view, CIT_COMMAND);
+
+	curr_stats.global_local_settings = prev_global_local_settings;
+
 	restore_cwd(saved_cwd);
 
 	ui_view_unpick(view, tmp_curr, tmp_other);
