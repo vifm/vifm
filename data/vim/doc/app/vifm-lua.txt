@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 24
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -537,8 +537,36 @@ Return:~
   `true` on success.  Trying to create path that already exists is not
   considered to be an error.
 
+vifm.run({info})                               *vifm-l_vifm.run()*
+Runs an external command similar to |vifm-:!|.  Waits for it to finish if
+terminal multiplexer is not involved.
+
+Command is dispatched via a shell, but |vifm-'shellcmdflag'| is always
+ignored.
+
+Possible fields of {info}:
+ - "cmd" (string)
+   Comand to execute.
+ - "pause" (string) (default: "onerror")
+   When to pause after command execution: "never", "onerror", "always".
+ - "usetermmux" (boolean) (default: true)
+   Whether to open terminal multiplexer if support was enabled via
+   |vifm-:screen|.
+
+Parameters:~
+  {info}  Table with information about what and how to run.
+
+Return:~
+  Exit code of the command, see |vifm-l_VifmJob:exitcode()| for details.
+  Mind that if terminal multiplexer is used, this will be exit code of a
+  command that communicates with the multiplexer.
+
+Raises an error:~
+  If {info}.pause has incorrect value.
+
 vifm.startjob({job})                           *vifm-l_vifm.startjob()*
-Launches an external command.  Returns without waiting for it to finish.
+Launches an external command as a background job.  Returns without waiting
+for it to finish.
 
 Command is dispatched via a shell, but |vifm-'shellcmdflag'| is always
 ignored.

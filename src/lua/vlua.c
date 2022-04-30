@@ -41,6 +41,7 @@
 #include "../filename_modifiers.h"
 #include "../macros.h"
 #include "../plugins.h"
+#include "../running.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
@@ -68,6 +69,7 @@ static int VLUA_API(vifm_escape)(lua_State *lua);
 static int VLUA_API(vifm_exists)(lua_State *lua);
 static int VLUA_API(vifm_makepath)(lua_State *lua);
 static int VLUA_API(vifm_expand)(lua_State *lua);
+static int VLUA_API(vifm_run)(lua_State *lua);
 static int VLUA_API(vifm_sessions_current)(lua_State *lua);
 static int VLUA_API(vifm_plugin_require)(lua_State *lua);
 static int VLUA_IMPL(require_plugin_module)(lua_State *lua);
@@ -88,6 +90,7 @@ VLUA_DECLARE_SAFE(vifm_escape);
 VLUA_DECLARE_SAFE(vifm_exists);
 VLUA_DECLARE_SAFE(vifm_makepath);
 VLUA_DECLARE_SAFE(vifm_expand);
+VLUA_DECLARE_SAFE(vifm_run);
 VLUA_DECLARE_SAFE(vifm_sessions_current);
 VLUA_DECLARE_UNSAFE(vifm_plugin_require);
 VLUA_DECLARE_SAFE(sb_info);
@@ -114,6 +117,7 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "otherview",     VLUA_REF(vifmview_otherview) },
 	{ "addcolumntype", VLUA_REF(vifm_addcolumntype) },
 	{ "addhandler",    VLUA_REF(vifm_addhandler)    },
+	{ "run",           VLUA_REF(vifm_run)           },
 	{ NULL,            NULL                         }
 };
 
@@ -404,6 +408,47 @@ VLUA_API(vifm_expand)(lua_State *lua)
 	free(env_expanded);
 	free(full_expanded);
 
+	return 1;
+}
+
+/* Runs an external command similar to :!. */
+static int
+VLUA_API(vifm_run)(lua_State *lua)
+{
+	luaL_checktype(lua, 1, LUA_TTABLE);
+
+	check_field(lua, 1, "cmd", LUA_TSTRING);
+	const char *cmd = lua_tostring(lua, -1);
+
+	int use_term_mux = 1;
+	if(check_opt_field(lua, 1, "usetermmux", LUA_TBOOLEAN))
+	{
+		use_term_mux = lua_toboolean(lua, -1);
+	}
+
+	ShellPause pause = PAUSE_ON_ERROR;
+	if(check_opt_field(lua, 1, "pause", LUA_TSTRING))
+	{
+		const char *value = lua_tostring(lua, -1);
+		if(strcmp(value, "never") == 0)
+		{
+			pause = PAUSE_NEVER;
+		}
+		else if(strcmp(value, "onerror") == 0)
+		{
+			pause = PAUSE_ON_ERROR;
+		}
+		else if(strcmp(value, "always") == 0)
+		{
+			pause = PAUSE_ALWAYS;
+		}
+		else
+		{
+			return luaL_error(lua, "Unrecognized value for `pause`: %s", value);
+		}
+	}
+
+	lua_pushinteger(lua, rn_shell(cmd, pause, use_term_mux, SHELL_BY_APP));
 	return 1;
 }
 
