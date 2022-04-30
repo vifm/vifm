@@ -22,9 +22,7 @@
 #include <curses.h> /* FALSE curs_set() */
 
 #include <sys/stat.h> /* stat */
-#ifndef _WIN32
-#include <sys/wait.h> /* WEXITSTATUS() */
-#else
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shellapi.h>
@@ -896,7 +894,7 @@ run_shell_finish(const char cmd[], const char final_cmd[], ShellPause pause,
 {
 	cleanup_shellout_env();
 
-	int exit_code = WEXITSTATUS(status);
+	int exit_code = status_to_exit_code(status);
 
 	if(pause == PAUSE_ALWAYS && final_cmd != NULL && ends_with(final_cmd, "&"))
 	{
