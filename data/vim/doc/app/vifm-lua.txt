@@ -273,6 +273,10 @@ Format of returned table is currently the same for all actions:
    of editing (e.g., for bulk renaming), success condition also implies
    receiving non-zero exit code from the editor.
 
+There is also common field of the input table:
+ - "command" (string)
+   Command specified in one of the options.
+
 "open-help" action
 
 Occurs on |vifm-:help| command if |vifm-'vimhelp'| is set.  Should open

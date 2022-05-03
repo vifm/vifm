@@ -353,7 +353,7 @@ TEST(open_help_input)
 
 	assert_success(vlua_run_string(vlua,
 				"function handle(info)"
-				"  print(info.action, info.vimdocdir, info.topic)"
+				"  print(info.command, info.action, info.vimdocdir, info.topic)"
 				"  return { success = true }"
 				"end"));
 
@@ -364,7 +364,8 @@ TEST(open_help_input)
 	assert_string_equal("true", ui_sb_last());
 
 	char expected[PATH_MAX + 1];
-	snprintf(expected, sizeof(expected), "open-help\t%s\ttopic", vimdoc_dir);
+	snprintf(expected, sizeof(expected), "#vifmtest#handle\topen-help\t%s\ttopic",
+			vimdoc_dir);
 
 	assert_success(vlua_open_help(vlua, "#vifmtest#handle", "topic"));
 	assert_string_equal(expected, ui_sb_last());
@@ -374,7 +375,8 @@ TEST(edit_one_input)
 {
 	assert_success(vlua_run_string(vlua,
 				"function handle(info)"
-				"  print(info.action, info.path, info.mustwait, info.line, info.column)"
+				"  print(info.command, info.action, info.path, info.mustwait,"
+				"         info.line, info.column)"
 				"  return { success = true }"
 				"end"));
 
@@ -385,14 +387,15 @@ TEST(edit_one_input)
 	assert_string_equal("true", ui_sb_last());
 
 	assert_success(vlua_edit_one(vlua, "#vifmtest#handle", "path", 10, 1, 0));
-	assert_string_equal("edit-one\tpath\tfalse\t10\t1", ui_sb_last());
+	assert_string_equal("#vifmtest#handle\tedit-one\tpath\tfalse\t10\t1",
+			ui_sb_last());
 }
 
 TEST(edit_many_input)
 {
 	assert_success(vlua_run_string(vlua,
 				"function handle(info)"
-				"  print(info.action, #info.paths, info.paths[1])"
+				"  print(info.command, info.action, #info.paths, info.paths[1])"
 				"  return { success = true }"
 				"end"));
 
@@ -406,15 +409,15 @@ TEST(edit_many_input)
 	char *paths[] = { path };
 
 	assert_success(vlua_edit_many(vlua, "#vifmtest#handle", paths, 1));
-	assert_string_equal("edit-many\t1\tpath", ui_sb_last());
+	assert_string_equal("#vifmtest#handle\tedit-many\t1\tpath", ui_sb_last());
 }
 
 TEST(edit_list_input)
 {
 	assert_success(vlua_run_string(vlua,
 				"function handle(info)"
-				"  print(info.action, #info.entries, info.entries[1], info.entries[2],"
-				"        info.current, info.isquickfix)"
+				"  print(info.command, info.action, #info.entries, info.entries[1],"
+				"        info.entries[2], info.current, info.isquickfix)"
 				"  return { success = true }"
 				"end"));
 
@@ -430,7 +433,8 @@ TEST(edit_list_input)
 
 	assert_success(vlua_edit_list(vlua, "#vifmtest#handle", entries, 2,
 				/*current=*/1, /*quickfix=*/1));
-	assert_string_equal("edit-list\t2\te0\te1\t2\ttrue", ui_sb_last());
+	assert_string_equal("#vifmtest#handle\tedit-list\t2\te0\te1\t2\ttrue",
+			ui_sb_last());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
