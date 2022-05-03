@@ -229,5 +229,44 @@ TEST(vifm_version)
 	assert_string_equal("true", ui_sb_last());
 }
 
+TEST(vifm_run)
+{
+	conf_setup();
+
+	ui_sb_msg("");
+	assert_failure(vlua_run_string(vlua,
+				"print(vifm.run({ cmd = 'exit 3',"
+				                " usetermmux = false,"
+				                " pause = 'unknown' }))"));
+	assert_true(ends_with(ui_sb_last(),
+				": Unrecognized value for `pause`: unknown"));
+
+	/* This waits for user input on Windows. */
+#ifndef _WIN32
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.run({ cmd = 'exit 0',"
+				                " usetermmux = false,"
+				                " pause = 'onerror' }))"));
+	assert_string_equal("0", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.run({ cmd = 'exit 1',"
+				                " usetermmux = false,"
+				                " pause = 'always' }))"));
+	assert_string_equal("1", ui_sb_last());
+#endif
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.run({ cmd = 'exit 2',"
+				                " usetermmux = false,"
+				                " pause = 'never' }))"));
+	assert_string_equal("2", ui_sb_last());
+
+	conf_teardown();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

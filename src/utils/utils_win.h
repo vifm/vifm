@@ -104,6 +104,10 @@ int win_symlink_read(const char link[], char buf[], int buf_len);
  * otherwise. */
 int win_shortcut_read(const char shortcut[], char buf[], int buf_len);
 
+/* Converts status to exit code.  Input can be -1, meaning that status is
+ * unknown.  Returns the exit code or -1 for -1 status. */
+#define status_to_exit_code(status) (status)
+
 TSTATIC_DEFS(
 	int should_wait_for_program(const char cmd[]);
 )

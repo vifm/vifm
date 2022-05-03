@@ -62,9 +62,10 @@ M.handlers["edit-list"] = function(info)
     if info.isquickfix then
         cmd = string.format("gvim +cgetbuffer +bd! +cc%d -", info.current)
     else
-        local exec = "+exe 'bd!|args' join(map(getline('1','$'),'fnameescape(v:val)'))"
-        cmd = format_str("gvim %s +argument%d -",
-                         vifm.escape(exec), info.current)
+        local exec = "exe 'bd!|args' join(map(getline('1','$'),'fnameescape(v:val)'))"
+        cmd = string.format("gvim +%s +argument%d -",
+                            vifm.escape(exec),
+                            info.current)
     end
 
     local job = vifm.startjob {
