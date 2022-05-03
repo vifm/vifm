@@ -167,6 +167,8 @@ patch_env(lua_State *lua)
 	lua_setfield(lua, -2, "difftime");
 	lua_getfield(lua, -2, "time");
 	lua_setfield(lua, -2, "time");
+	lua_getfield(lua, -2, "tmpname");
+	lua_setfield(lua, -2, "tmpname");
 	lua_setglobal(lua, "os");
 	lua_pop(lua, 1);
 }

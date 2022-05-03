@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Mar 30
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 May 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -159,7 +159,7 @@ The following standard libraries are enabled:
  * input and output (`io` table)
  * mathematical functions (`math` table)
  * time subset of OS facilities (`clock`, `date`, `difftime` and `time`
-   elements of `os` table)
+   elements) and `tmpname` of `os` table
 
 --------------------------------------------------------------------------------
 *vifm-plugins*
