@@ -73,6 +73,16 @@ typedef enum
 }
 ErrorResolutionPolicy;
 
+struct response_variant;
+
+/* Function to choose an option.  Returns choice. */
+typedef char (*ops_choice_func)(const char title[], const char message[],
+		const struct response_variant *variants);
+
+/* Asks user to confirm some action by answering "Yes" or "No".  Returns
+ * non-zero when user answers yes, otherwise zero is returned. */
+typedef int (*ops_confirm_func)(const char title[], const char message[]);
+
 /* Description of file operation on a set of files.  Collects information and
  * helps to keep track of progress. */
 typedef struct
@@ -96,6 +106,10 @@ typedef struct
 	int use_system_calls;  /* Copy of 'syscalls' option value. */
 	int fast_file_cloning; /* Copy of part of 'iooptions' option value. */
 
+	/* Pointers to user-interaction functions. */
+	ops_choice_func choose;   /* Picking one of options. */
+	ops_confirm_func confirm; /* Yes/No choice. */
+
 	char *base_dir;   /* Base directory in which operation is taking place. */
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */
@@ -109,7 +123,8 @@ ops_t;
 
 /* Allocates and initializes new ops_t.  Returns just allocated structure. */
 ops_t * ops_alloc(OPS main_op, int bg, const char descr[],
-		const char base_dir[], const char target_dir[]);
+		const char base_dir[], const char target_dir[], ops_choice_func choose,
+		ops_confirm_func confirm);
 
 /* Describes main operation with one generic word.  Returns the description. */
 const char * ops_describe(const ops_t *ops);

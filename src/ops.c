@@ -164,18 +164,25 @@ static ops_t *curr_ops;
 
 ops_t *
 ops_alloc(OPS main_op, int bg, const char descr[], const char base_dir[],
-		const char target_dir[])
+		const char target_dir[], ops_choice_func choose, ops_confirm_func confirm)
 {
 	ops_t *const ops = calloc(1, sizeof(*ops));
+
 	ops->main_op = main_op;
 	ops->descr = descr;
+	ops->bg = bg;
+
 	update_string(&ops->slow_fs_list, cfg.slow_fs_list);
 	update_string(&ops->delete_prg, cfg.delete_prg);
 	ops->use_system_calls = cfg.use_system_calls;
 	ops->fast_file_cloning = cfg.fast_file_cloning;
+
+	ops->choose = choose;
+	ops->confirm = confirm;
+
 	ops->base_dir = strdup(base_dir);
 	ops->target_dir = strdup(target_dir);
-	ops->bg = bg;
+
 	return ops;
 }
 
@@ -283,12 +290,14 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 	if((ops == NULL || !ops->bg) && cfg_confirm_delete(0) &&
 			!curr_stats.confirmed)
 	{
+		ops_confirm_func confirm = (ops != NULL ? ops->confirm : &prompt_msg);
+
 		char *msg = format_str("Are you sure?  "
 				"At least the following file is about to be deleted:\n \n%s\n \n"
 				"If you're undoing a command and want to see file names, use "
 				":undolist! command.",
 				replace_home_part(src));
-		curr_stats.confirmed = prompt_msg("Permanent deletion", msg);
+		curr_stats.confirmed = confirm("Permanent deletion", msg);
 		free(msg);
 		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
@@ -1094,8 +1103,7 @@ dispatch_error(io_args_t *args, const ioe_err_t *err)
 	char *msg;
 	char response;
 
-	/* For tests. */
-	if(curr_stats.load_stage == 0)
+	if(curr_ops->choose == NULL)
 	{
 		return IO_ECR_BREAK;
 	}
@@ -1137,7 +1145,7 @@ prompt_user(const io_args_t *args, const char title[], const char msg[],
 	/* Active cancellation conflicts with input processing by putting terminal in
 	 * a cooked mode. */
 	ui_cancellation_push_off();
-	const char response = prompt_msg_custom(title, msg, variants);
+	const char response = curr_ops->choose(title, msg, variants);
 	ui_cancellation_pop();
 
 	return response;
