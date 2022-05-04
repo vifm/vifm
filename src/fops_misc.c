@@ -1032,6 +1032,8 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 		}
 	}
 
+	ops_t *ops = fops_get_ops(OP_MKDIR, "making dirs", dst_dir, dst_dir);
+
 	snprintf(buf, sizeof(buf), "mkdir in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
@@ -1042,7 +1044,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 		char full[PATH_MAX + 1];
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 
-		if(perform_operation(OP_MKDIR, NULL, cp, full, NULL) == 0)
+		if(perform_operation(OP_MKDIR, ops, cp, full, NULL) == 0)
 		{
 			un_group_add_op(OP_MKDIR, cp, NULL, full, "");
 			++n;
@@ -1070,6 +1072,8 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 
 	ui_sb_msgf("%d director%s created%s", n, (n == 1) ? "y" : "ies",
 			fops_get_cancellation_suffix());
+
+	fops_free_ops(ops);
 	return 1;
 }
 

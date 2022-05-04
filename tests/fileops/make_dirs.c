@@ -16,9 +16,14 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
+#include "../../src/fops_common.h"
 #include "../../src/fops_misc.h"
 
+static char choice_func(const char title[], const char message[],
+		const struct response_variant *variants);
+
 static char *saved_cwd;
+static int choice_called = 0;
 
 SETUP()
 {
@@ -175,6 +180,31 @@ TEST(check_by_absolute_path_is_performed_beforehand)
 
 	assert_failure(rmdir("a"));
 	assert_success(rmdir("b"));
+}
+
+TEST(make_dirs_errors_are_handled)
+{
+	cfg.use_system_calls = 1;
+	fops_init(NULL, &choice_func);
+
+	char path[] = "dir/sub";
+	char *paths[] = {path};
+
+	choice_called = 0;
+
+	fops_mkdirs(&lwin, -1, paths, 1, /*create_parent=*/0);
+	assert_int_equal(1, choice_called);
+
+	cfg.use_system_calls = 0;
+	fops_init(NULL, NULL);
+}
+
+static char
+choice_func(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	++choice_called;
+	return 'a';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
