@@ -88,7 +88,7 @@ iop_mkfile_internal(io_args_t *args)
 	FILE *f;
 	const char *const path = args->arg1.path;
 
-	if(path_exists(path, DEREF))
+	if(path_exists(path, NODEREF))
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, EEXIST,
 				"Such file already exists");
