@@ -88,6 +88,8 @@ iop_mkfile_internal(io_args_t *args)
 	FILE *f;
 	const char *const path = args->arg1.path;
 
+	ioeta_update(args->estim, path, path, /*finished=*/0, /*size=*/0);
+
 	if(path_exists(path, NODEREF))
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, EEXIST,
@@ -109,6 +111,8 @@ iop_mkfile_internal(io_args_t *args)
 				"Error while closing the file");
 		return -1;
 	}
+
+	ioeta_update(args->estim, path, path, /*finished=*/1, /*size=*/0);
 
 	return 0;
 }
@@ -132,6 +136,8 @@ iop_mkdir_internal(io_args_t *args)
 #else
 	enum { PATH_PREFIX_LEN = 2 };
 #endif
+
+	ioeta_update(args->estim, path, path, /*finished=*/0, /*size=*/0);
 
 	if(create_parent)
 	{
@@ -176,6 +182,9 @@ iop_mkdir_internal(io_args_t *args)
 				"Failed to create directory");
 		return 1;
 	}
+
+	ioeta_update(args->estim, path, path, /*finished=*/1, /*size=*/0);
+
 	return 0;
 }
 
