@@ -131,6 +131,8 @@
 	Fixed handling errors on :mkdir with 'syscalls' set.  They weren't
 	displayed and retry/ignore/abort prompt wasn't presented.
 
+	Fixed segfault on ignoring an error from :touch with 'syscalls' set.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

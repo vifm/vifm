@@ -134,7 +134,7 @@ static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
 TSTATIC char ** edit_list(struct ext_edit_t *ext_edit, size_t orig_len,
 		char *orig[], int *edited_len, int load_always);
-static progress_data_t * alloc_progress_data(int bg, void *info);
+TSTATIC progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
 
 line_prompt_func fops_line_prompt;
@@ -419,8 +419,15 @@ io_progress_fg_sb(const io_progress_t *state, int progress)
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
 
-	format_pretty_path(ops->base_dir, estim->item, pretty_path,
-			sizeof(pretty_path));
+	if(estim->item == NULL)
+	{
+		strcpy(pretty_path, "-");
+	}
+	else
+	{
+		format_pretty_path(ops->base_dir, estim->item, pretty_path,
+				sizeof(pretty_path));
+	}
 
 	switch(state->stage)
 	{
@@ -958,7 +965,7 @@ fops_get_bg_ops(OPS main_op, const char descr[], const char dir[])
 
 /* Allocates progress data with specified parameters and initializes all the
  * rest of structure fields with default values. */
-static progress_data_t *
+TSTATIC progress_data_t *
 alloc_progress_data(int bg, void *info)
 {
 	progress_data_t *const pdata = malloc(sizeof(*pdata));
