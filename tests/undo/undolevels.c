@@ -6,10 +6,10 @@
 
 #include "test.h"
 
-static int
-execute_dummy(OPS op, void *data, const char *src, const char *dst)
+static OpsResult
+execute_dummy(OPS op, void *data, const char src[], const char dst[])
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 TEST(undolevel_change_to_smaller)

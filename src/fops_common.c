@@ -1053,8 +1053,6 @@ int
 fops_mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		int cancellable, ops_t *ops)
 {
-	int result;
-
 	/* Compare case sensitive strings even on Windows to let user rename file
 	 * changing only case of some characters. */
 	if(strcmp(src, dst) == 0)
@@ -1062,12 +1060,18 @@ fops_mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		return 0;
 	}
 
-	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, src, dst);
-	if(result == 0 && !bg)
+	OpsResult result = perform_operation(op, ops, cancellable ? NULL : (void *)1,
+			src, dst);
+	if(result != OPS_SUCCEEDED)
+	{
+		return 1;
+	}
+
+	if(!bg)
 	{
 		un_group_add_op(op, NULL, NULL, src, dst);
 	}
-	return result;
+	return 0;
 }
 
 void

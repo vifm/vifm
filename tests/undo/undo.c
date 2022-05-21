@@ -8,7 +8,8 @@
 
 #include "test.h"
 
-static int execute(OPS op, void *data, const char *src, const char *dst);
+static OpsResult execute(OPS op, void *data, const char src[],
+		const char dst[]);
 
 static int i;
 
@@ -21,8 +22,8 @@ SETUP()
 	init_undo_list_for_tests(&execute, &undo_levels);
 }
 
-static int
-execute(OPS op, void *data, const char *src, const char *dst)
+static OpsResult
+execute(OPS op, void *data, const char src[], const char dst[])
 {
 	static const char *execs[] = {
 		"undo_msg3",
@@ -39,15 +40,15 @@ execute(OPS op, void *data, const char *src, const char *dst)
 	};
 
 	if(op == OP_NONE)
-		return 0;
+		return OPS_SUCCEEDED;
 	assert_string_equal(execs[i++], src);
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
-static int
-exec_dummy(OPS op, void *data, const char *src, const char *dst)
+static OpsResult
+exec_dummy(OPS op, void *data, const char src[], const char dst[])
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 TEST(underflow)
@@ -109,12 +110,12 @@ TEST(cmd_1undo_1redo)
 	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
 }
 
-static int
+static OpsResult
 execute_fail(OPS op, void *data, const char *src, const char *dst)
 {
 	if(op == OP_NONE)
-		return 0;
-	return !strcmp(src, "undo_msg0");
+		return OPS_SUCCEEDED;
+	return (strcmp(src, "undo_msg0") == 0 ? OPS_FAILED : OPS_SUCCEEDED);
 }
 
 TEST(failed_operation)
@@ -198,10 +199,10 @@ TEST(removing_of_incomplete_groups)
 	assert_int_equal(UN_ERR_NONE, un_group_undo());
 }
 
-static int
+static OpsResult
 exec_skip(OPS op, void *data, const char *src, const char *dst)
 {
-	return SKIP_UNDO_REDO_OPERATION;
+	return OPS_SKIPPED;
 }
 
 TEST(skipping)

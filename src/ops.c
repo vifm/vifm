@@ -53,7 +53,6 @@
 #include "bmarks.h"
 #include "status.h"
 #include "trash.h"
-#include "undo.h"
 
 #ifdef SUPPORT_NO_CLOBBER
 #define NO_CLOBBER "-n"
@@ -81,39 +80,58 @@ typedef enum
 ConflictAction;
 
 /* Type of function that implements single operation. */
-typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
+typedef OpsResult (*op_func)(ops_t *ops, void *data, const char src[],
+		const char dst[]);
 
-static int op_none(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_remove(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_removesl(ops_t *ops, void *data, const char *src,
-		const char *dst);
-static int op_copy(ops_t *ops, void *data, const char src[], const char dst[]);
-static int op_copyf(ops_t *ops, void *data, const char src[], const char dst[]);
-static int op_copya(ops_t *ops, void *data, const char src[], const char dst[]);
-static int op_cp(ops_t *ops, void *data, const char src[], const char dst[],
-		ConflictAction conflict_action);
-static int op_move(ops_t *ops, void *data, const char src[], const char dst[]);
-static int op_movef(ops_t *ops, void *data, const char src[], const char dst[]);
-static int op_movea(ops_t *ops, void *data, const char src[], const char dst[]);
-static int op_mv(ops_t *ops, void *data, const char src[], const char dst[],
-		ConflictAction conflict_action);
+static OpsResult op_none(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_remove(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_removesl(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_copy(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_copyf(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_copya(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_cp(ops_t *ops, void *data, const char src[],
+		const char dst[], ConflictAction conflict_action);
+static OpsResult op_move(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_movef(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_movea(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_mv(ops_t *ops, void *data, const char src[],
+		const char dst[], ConflictAction conflict_action);
 static IoCrs ca_to_crs(ConflictAction conflict_action);
-static int op_chown(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_chgrp(ops_t *ops, void *data, const char *src, const char *dst);
+static OpsResult op_chown(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_chgrp(ops_t *ops, void *data, const char src[],
+		const char dst[]);
 #ifndef _WIN32
-static int op_chmod(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_chmodr(ops_t *ops, void *data, const char *src, const char *dst);
+static OpsResult op_chmod(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_chmodr(ops_t *ops, void *data, const char src[],
+		const char dst[]);
 #else
-static int op_addattr(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_subattr(ops_t *ops, void *data, const char *src, const char *dst);
+static OpsResult op_addattr(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_subattr(ops_t *ops, void *data, const char src[],
+		const char dst[]);
 #endif
-static int op_symlink(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_mkdir(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
-static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
+static OpsResult op_symlink(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_mkdir(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_rmdir(ops_t *ops, void *data, const char src[],
+		const char dst[]);
+static OpsResult op_mkfile(ops_t *ops, void *data, const char src[],
+		const char dst[]);
 static int ops_uses_syscalls(const ops_t *ops);
-static int exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
-		int cancellable);
+static OpsResult exec_io_op(ops_t *ops, int (*func)(io_args_t *),
+		io_args_t *args, int cancellable);
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
@@ -122,9 +140,10 @@ static char prompt_user(const io_args_t *args, const char title[],
 		const char msg[], const response_variant variants[]);
 static int ui_cancellation_hook(void *arg);
 #ifndef _WIN32
-static int run_operation_command(ops_t *ops, char cmd[], int cancellable);
+static OpsResult run_operation_command(ops_t *ops, char cmd[], int cancellable);
 #endif
 static int bg_cancellation_hook(void *arg);
+static OpsResult result_from_code(int exit_code);
 
 /* List of functions that implement operations. */
 static op_func op_funcs[] = {
@@ -271,21 +290,21 @@ ops_free(ops_t *ops)
 	free(ops);
 }
 
-int
+OpsResult
 perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 		const char dst[])
 {
 	return op_funcs[op](ops, data, src, dst);
 }
 
-static int
-op_none(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_none(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
-static int
-op_remove(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_remove(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	if((ops == NULL || !ops->bg) && cfg_confirm_delete(0) &&
 			!curr_stats.confirmed)
@@ -300,14 +319,14 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 		curr_stats.confirmed = confirm("Permanent deletion", msg);
 		free(msg);
 		if(!curr_stats.confirmed)
-			return SKIP_UNDO_REDO_OPERATION;
+			return OPS_SKIPPED;
 	}
 
 	return op_removesl(ops, data, src, dst);
 }
 
-static int
-op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_removesl(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	const char *const delete_prg = (ops == NULL)
 	                             ? cfg.delete_prg
@@ -322,7 +341,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 		escaped = shell_like_escape(src, 0);
 		if(escaped == NULL)
 		{
-			return -1;
+			return OPS_FAILED;
 		}
 
 		snprintf(cmd, sizeof(cmd), "%s %s", delete_prg, escaped);
@@ -335,7 +354,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 		snprintf(cmd, sizeof(cmd), "%s \"%s\"", delete_prg, src);
 		internal_to_system_slashes(cmd);
 
-		return os_system(cmd);
+		return result_from_code(os_system(cmd));
 #endif
 	}
 
@@ -344,16 +363,15 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 #ifndef _WIN32
 		char *escaped;
 		char cmd[16 + PATH_MAX];
-		int result;
 		const int cancellable = data == NULL;
 
 		escaped = shell_like_escape(src, 0);
 		if(escaped == NULL)
-			return -1;
+			return OPS_FAILED;
 
 		snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
 		LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
-		result = run_operation_command(ops, cmd, cancellable);
+		OpsResult result = run_operation_command(ops, cmd, cancellable);
 
 		free(escaped);
 		return result;
@@ -375,7 +393,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 			if(new_utf16_path == NULL)
 			{
 				free(utf16_path);
-				return -1;
+				return OPS_FAILED;
 			}
 
 			utf16_path = new_utf16_path;
@@ -393,11 +411,10 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 			log_msg("Error: %d", err);
 			free(utf16_path);
 
-			return err;
+			return result_from_code(err);
 		}
 		else
 		{
-			int ok;
 			wchar_t *const utf16_path = utf8_to_utf16(src);
 			DWORD attributes = GetFileAttributesW(utf16_path);
 			if(attributes & FILE_ATTRIBUTE_READONLY)
@@ -405,14 +422,14 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 				SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
 			}
 
-			ok = DeleteFileW(utf16_path);
-			if(!ok)
+			BOOL success = DeleteFileW(utf16_path);
+			if(!success)
 			{
 				LOG_WERROR(GetLastError());
 			}
 
 			free(utf16_path);
-			return !ok;
+			return result_from_code(!success);
 		}
 #endif
 	}
@@ -424,33 +441,32 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 }
 
 /* OP_COPY operation handler.  Copies file/directory without overwriting
- * destination files (when it's supported by the system).  Returns non-zero on
- * error, otherwise zero is returned. */
-static int
+ * destination files (when it's supported by the system).  Returns status. */
+static OpsResult
 op_copy(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	return op_cp(ops, data, src, dst, CA_FAIL);
 }
 
 /* OP_COPYF operation handler.  Copies file/directory overwriting destination
- * files.  Returns non-zero on error, otherwise zero is returned. */
-static int
+ * files.  Returns status. */
+static OpsResult
 op_copyf(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	return op_cp(ops, data, src, dst, CA_OVERWRITE);
 }
 
 /* OP_COPYA operation handler.  Copies file appending rest of the source file to
- * the destination.  Returns non-zero on error, otherwise zero is returned. */
-static int
+ * the destination.  Returns status. */
+static OpsResult
 op_copya(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	return op_cp(ops, data, src, dst, CA_APPEND);
 }
 
 /* Copies file/directory overwriting/appending destination files if requested.
- * Returns non-zero on error, otherwise zero is returned. */
-static int
+ * Returns status. */
+static OpsResult
 op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action)
 {
@@ -463,7 +479,6 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 #ifndef _WIN32
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
-		int result;
 		const int cancellable = (data == NULL);
 
 		escaped_src = shell_like_escape(src, 0);
@@ -472,7 +487,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		{
 			free(escaped_dst);
 			free(escaped_src);
-			return -1;
+			return OPS_FAILED;
 		}
 
 		snprintf(cmd, sizeof(cmd),
@@ -481,7 +496,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 				fast_file_cloning ? REFLINK_AUTO : "",
 				escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
-		result = run_operation_command(ops, cmd, cancellable);
+		OpsResult result = run_operation_command(ops, cmd, cancellable);
 
 		free(escaped_dst);
 		free(escaped_src);
@@ -513,7 +528,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 			free(utf16_src);
 		}
 
-		return ret;
+		return result_from_code(ret);
 #endif
 	}
 
@@ -532,37 +547,36 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 }
 
 /* OP_MOVE operation handler.  Moves file/directory without overwriting
- * destination files (when it's supported by the system).  Returns non-zero on
- * error, otherwise zero is returned. */
-static int
+ * destination files (when it's supported by the system).  Returns status. */
+static OpsResult
 op_move(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	return op_mv(ops, data, src, dst, CA_FAIL);
 }
 
 /* OP_MOVEF operation handler.  Moves file/directory overwriting destination
- * files.  Returns non-zero on error, otherwise zero is returned. */
-static int
+ * files.  Returns status. */
+static OpsResult
 op_movef(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	return op_mv(ops, data, src, dst, CA_OVERWRITE);
 }
 
 /* OP_MOVEA operation handler.  Moves file appending rest of the source file to
- * the destination.  Returns non-zero on error, otherwise zero is returned. */
-static int
+ * the destination.  Returns status. */
+static OpsResult
 op_movea(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	return op_mv(ops, data, src, dst, CA_APPEND);
 }
 
 /* Moves file/directory overwriting/appending destination files if requested.
- * Returns non-zero on error, otherwise zero is returned. */
-static int
+ * Returns status. */
+static OpsResult
 op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action)
 {
-	int result;
+	OpsResult result;
 
 	if(!ops_uses_syscalls(ops))
 	{
@@ -575,7 +589,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		if(conflict_action == CA_FAIL && os_lstat(dst, &st) == 0 &&
 				!is_case_change(src, dst))
 		{
-			return -1;
+			return OPS_FAILED;
 		}
 
 		escaped_src = shell_like_escape(src, 0);
@@ -584,7 +598,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		{
 			free(escaped_dst);
 			free(escaped_src);
-			return -1;
+			return OPS_FAILED;
 		}
 
 		snprintf(cmd, sizeof(cmd), "mv %s %s %s",
@@ -595,29 +609,25 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 
 		LOG_INFO_MSG("Running mv command: \"%s\"", cmd);
 		result = run_operation_command(ops, cmd, cancellable);
-		if(result != 0)
-		{
-			return result;
-		}
 #else
 		wchar_t *const utf16_src = utf8_to_utf16(src);
 		wchar_t *const utf16_dst = utf8_to_utf16(dst);
 
-		BOOL ret = MoveFileW(utf16_src, utf16_dst);
+		BOOL success = MoveFileW(utf16_src, utf16_dst);
 
 		free(utf16_src);
 		free(utf16_dst);
 
-		if(!ret && GetLastError() == 5)
+		if(!success && GetLastError() == 5)
 		{
-			const int r = op_cp(ops, data, src, dst, conflict_action);
-			if(r != 0)
+			const OpsResult r = op_cp(ops, data, src, dst, conflict_action);
+			if(r != OPS_SUCCEEDED)
 			{
 				return r;
 			}
 			return op_removesl(ops, data, src, NULL);
 		}
-		result = (ret == 0);
+		result = result_from_code(!success);
 #endif
 	}
 	else
@@ -632,7 +642,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		result = exec_io_op(ops, &ior_mv, &args, data == NULL);
 	}
 
-	if(result == 0)
+	if(result == OPS_SUCCEEDED)
 	{
 		trash_file_moved(src, dst);
 		bmarks_file_moved(src, dst);
@@ -656,8 +666,8 @@ ca_to_crs(ConflictAction conflict_action)
 	return IO_CRS_FAIL;
 }
 
-static int
-op_chown(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_chown(ops_t *ops, void *data, const char src[], const char dst[])
 {
 #ifndef _WIN32
 	char cmd[10 + 32 + PATH_MAX];
@@ -671,12 +681,12 @@ op_chown(ops_t *ops, void *data, const char *src, const char *dst)
 	LOG_INFO_MSG("Running chown command: \"%s\"", cmd);
 	return run_operation_command(ops, cmd, 1);
 #else
-	return -1;
+	return OPS_FAILED;
 #endif
 }
 
-static int
-op_chgrp(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_chgrp(ops_t *ops, void *data, const char src[], const char dst[])
 {
 #ifndef _WIN32
 	char cmd[10 + 32 + PATH_MAX];
@@ -690,13 +700,13 @@ op_chgrp(ops_t *ops, void *data, const char *src, const char *dst)
 	LOG_INFO_MSG("Running chgrp command: \"%s\"", cmd);
 	return run_operation_command(ops, cmd, 1);
 #else
-	return -1;
+	return OPS_FAILED;
 #endif
 }
 
 #ifndef _WIN32
-static int
-op_chmod(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_chmod(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	char cmd[128 + PATH_MAX];
 	char *escaped;
@@ -709,8 +719,8 @@ op_chmod(ops_t *ops, void *data, const char *src, const char *dst)
 	return run_operation_command(ops, cmd, 1);
 }
 
-static int
-op_chmodr(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_chmodr(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	char cmd[128 + PATH_MAX];
 	char *escaped;
@@ -723,8 +733,8 @@ op_chmodr(ops_t *ops, void *data, const char *src, const char *dst)
 	return run_operation_command(ops, cmd, 1);
 }
 #else
-static int
-op_addattr(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_addattr(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	const DWORD add_mask = (size_t)data;
 	wchar_t *const utf16_path = utf8_to_utf16(src);
@@ -733,20 +743,20 @@ op_addattr(ops_t *ops, void *data, const char *src, const char *dst)
 	{
 		free(utf16_path);
 		LOG_WERROR(GetLastError());
-		return -1;
+		return OPS_FAILED;
 	}
 	if(!SetFileAttributesW(utf16_path, attrs | add_mask))
 	{
 		free(utf16_path);
 		LOG_WERROR(GetLastError());
-		return -1;
+		return OPS_FAILED;
 	}
 	free(utf16_path);
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
-static int
-op_subattr(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_subattr(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	const DWORD sub_mask = (size_t)data;
 	wchar_t *const utf16_path = utf8_to_utf16(src);
@@ -755,27 +765,27 @@ op_subattr(ops_t *ops, void *data, const char *src, const char *dst)
 	{
 		free(utf16_path);
 		LOG_WERROR(GetLastError());
-		return -1;
+		return OPS_FAILED;
 	}
 	if(!SetFileAttributesW(utf16_path, attrs & ~sub_mask))
 	{
 		free(utf16_path);
 		LOG_WERROR(GetLastError());
-		return -1;
+		return OPS_FAILED;
 	}
 	free(utf16_path);
-	return 0;
+	return OPS_SUCCEEDED;
 }
 #endif
 
-static int
-op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_symlink(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	if(!ops_uses_syscalls(ops))
 	{
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
-		int result;
+		OpsResult result;
 
 #ifndef _WIN32
 		escaped_src = shell_like_escape(src, 0);
@@ -789,7 +799,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		{
 			free(escaped_dst);
 			free(escaped_src);
-			return -1;
+			return OPS_FAILED;
 		}
 
 #ifndef _WIN32
@@ -802,12 +812,12 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		{
 			free(escaped_dst);
 			free(escaped_src);
-			return -1;
+			return OPS_FAILED;
 		}
 
 		snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", exe_dir, escaped_src,
 				escaped_dst);
-		result = os_system(cmd);
+		result = result_from_code(os_system(cmd));
 #endif
 
 		free(escaped_dst);
@@ -823,8 +833,8 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 	return exec_io_op(ops, &iop_ln, &args, 0);
 }
 
-static int
-op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_mkdir(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	if(!ops_uses_syscalls(ops))
 	{
@@ -842,9 +852,9 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 		if(data == NULL)
 		{
 			wchar_t *const utf16_path = utf8_to_utf16(src);
-			int r = CreateDirectoryW(utf16_path, NULL) == 0;
+			BOOL success = CreateDirectoryW(utf16_path, NULL);
 			free(utf16_path);
-			return r;
+			return result_from_code(!success);
 		}
 		else
 		{
@@ -861,13 +871,13 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 					{
 						free(utf16_path);
 						free(partial_path);
-						return -1;
+						return OPS_FAILED;
 					}
 					free(utf16_path);
 				}
 			}
 			free(partial_path);
-			return 0;
+			return OPS_SUCCEEDED;
 		}
 #endif
 	}
@@ -880,8 +890,8 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 	return exec_io_op(ops, &iop_mkdir, &args, 0);
 }
 
-static int
-op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_rmdir(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	if(!ops_uses_syscalls(ops))
 	{
@@ -896,9 +906,9 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 		return run_operation_command(ops, cmd, 1);
 #else
 		wchar_t *const utf16_path = utf8_to_utf16(src);
-		const BOOL r = RemoveDirectoryW(utf16_path);
+		const BOOL success = RemoveDirectoryW(utf16_path);
 		free(utf16_path);
-		return r == FALSE;
+		return result_from_code(!success);
 #endif
 	}
 
@@ -908,8 +918,8 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 	return exec_io_op(ops, &iop_rmdir, &args, 0);
 }
 
-static int
-op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
+static OpsResult
+op_mkfile(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	if(!ops_uses_syscalls(ops))
 	{
@@ -931,11 +941,11 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 		free(utf16_path);
 		if(hfile == INVALID_HANDLE_VALUE)
 		{
-			return -1;
+			return OPS_FAILED;
 		}
 
 		CloseHandle(hfile);
-		return 0;
+		return OPS_SUCCEEDED;
 #endif
 	}
 
@@ -953,14 +963,12 @@ ops_uses_syscalls(const ops_t *ops)
 	return ops == NULL ? cfg.use_system_calls : ops->use_system_calls;
 }
 
-/* Executes i/o operation with some predefined pre/post actions.  Returns exit
- * code of i/o operation. */
-static int
+/* Executes i/o operation with some predefined pre/post actions.  Returns
+ * status. */
+static OpsResult
 exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
 		int cancellable)
 {
-	int result;
-
 	args->estim = (ops == NULL) ? NULL : ops->estim;
 
 	if(ops != NULL)
@@ -991,7 +999,7 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
 	}
 
 	curr_ops = ops;
-	result = func(args);
+	OpsResult result = result_from_code(func(args));
 	curr_ops = NULL;
 
 	if(cancellable && (ops == NULL || !ops->bg))
@@ -1161,14 +1169,13 @@ ui_cancellation_hook(void *arg)
 #ifndef _WIN32
 
 /* Runs command in background and displays its errors to a user.  To determine
- * an error uses both stderr stream and exit status.  Returns zero on success,
- * otherwise non-zero is returned. */
-static int
+ * an error uses both stderr stream and exit status.  Returns status. */
+static OpsResult
 run_operation_command(ops_t *ops, char cmd[], int cancellable)
 {
 	if(!cancellable)
 	{
-		return bg_and_wait_for_errors(cmd, &no_cancellation);
+		return result_from_code(bg_and_wait_for_errors(cmd, &no_cancellation));
 	}
 
 	if(ops != NULL && ops->bg)
@@ -1177,15 +1184,15 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 			.arg = ops->bg_op,
 			.hook = &bg_cancellation_hook,
 		};
-		return bg_and_wait_for_errors(cmd, &bg_cancellation_info);
+		return result_from_code(bg_and_wait_for_errors(cmd, &bg_cancellation_info));
 	}
 	else
 	{
-		int result;
 		/* ui_cancellation_push_off() should be called outside this unit to allow
 		 * bulking several operations together. */
 		ui_cancellation_enable();
-		result = bg_and_wait_for_errors(cmd, &ui_cancellation_info);
+		OpsResult result =
+			result_from_code(bg_and_wait_for_errors(cmd, &ui_cancellation_info));
 		ui_cancellation_disable();
 		return result;
 	}
@@ -1198,6 +1205,13 @@ static int
 bg_cancellation_hook(void *arg)
 {
 	return bg_op_cancelled(arg);
+}
+
+/* Turns exit code into OpsResult.  Returns OpsResult. */
+static OpsResult
+result_from_code(int exit_code)
+{
+	return (exit_code == 0 ? OPS_SUCCEEDED : OPS_FAILED);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

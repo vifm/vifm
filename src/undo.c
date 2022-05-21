@@ -506,17 +506,21 @@ un_group_undo(void)
 	{
 		if(!skip)
 		{
-			int err = do_func(current->undo_op.op, current->undo_op.data,
+			OpsResult result = do_func(current->undo_op.op, current->undo_op.data,
 					current->undo_op.src, current->undo_op.dst);
-			if(err == SKIP_UNDO_REDO_OPERATION)
+			switch(result)
 			{
-				skip = 1;
-				current->group->balance++;
-			}
-			else if(err != 0)
-			{
-				current->group->error = 1;
-				errors = 1;
+				case OPS_SUCCEEDED:
+					/* Nothing to do here. */
+					break;
+				case OPS_SKIPPED:
+					skip = 1;
+					current->group->balance++;
+					break;
+				case OPS_FAILED:
+					current->group->error = 1;
+					errors = 1;
+					break;
 			}
 		}
 		current = current->prev;
@@ -581,17 +585,21 @@ un_group_redo(void)
 		current = current->next;
 		if(!skip)
 		{
-			int err = do_func(current->do_op.op, current->do_op.data,
+			OpsResult result = do_func(current->do_op.op, current->do_op.data,
 					current->do_op.src, current->do_op.dst);
-			if(err == SKIP_UNDO_REDO_OPERATION)
+			switch(result)
 			{
-				current->next->group->balance--;
-				skip = 1;
-			}
-			else if(err != 0)
-			{
-				current->group->error = 1;
-				errors = 1;
+				case OPS_SUCCEEDED:
+					/* Nothing to do here. */
+					break;
+				case OPS_SKIPPED:
+					current->next->group->balance--;
+					skip = 1;
+					break;
+				case OPS_FAILED:
+					current->group->error = 1;
+					errors = 1;
+					break;
 			}
 		}
 	}

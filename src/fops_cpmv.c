@@ -253,7 +253,7 @@ fops_replace(view_t *view, const char dst[], int force)
 	fops_progress_msg("Copying files", 0, 1);
 
 	if(!ui_cancellation_requested() && !is_valid_dir(dst_dir) &&
-			perform_operation(OP_MKDIR, NULL, cp, dst_dir, NULL) == 0)
+			perform_operation(OP_MKDIR, NULL, cp, dst_dir, NULL) == OPS_SUCCEEDED)
 	{
 		un_group_add_op(OP_MKDIR, cp, NULL, dst_dir, "");
 	}
@@ -670,13 +670,18 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 		}
 	}
 
-	int result = perform_operation(file_op, ops, cancellable ? NULL : (void *)1,
-			src, dst);
-	if(result == 0 && !bg)
+	OpsResult result = perform_operation(file_op, ops,
+			cancellable ? NULL : (void *)1, src, dst);
+	if(result != OPS_SUCCEEDED)
+	{
+		return 1;
+	}
+
+	if(!bg)
 	{
 		un_group_add_op(file_op, NULL, NULL, src, dst);
 	}
-	return result;
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

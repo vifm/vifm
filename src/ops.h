@@ -56,6 +56,15 @@ typedef enum
 }
 OPS;
 
+/* Result of trying to execute an operation via perform_operation(). */
+typedef enum
+{
+	OPS_SUCCEEDED, /* Operation has succeeded. */
+	OPS_SKIPPED,   /* Operation was rejected by the user. */
+	OPS_FAILED,    /* Operation has failed. */
+}
+OpsResult;
+
 /* Policy on treating conflicts during operation processing. */
 typedef enum
 {
@@ -140,8 +149,8 @@ void ops_advance(ops_t *ops, int succeeded);
 void ops_free(ops_t *ops);
 
 /* Performs single operations, possibly part of the ops (which can be NULL).
- * Returns non-zero on error, otherwise zero is returned. */
-int perform_operation(OPS op, ops_t *ops, void *data, const char src[],
+ * Returns status. */
+OpsResult perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 		const char dst[]);
 
 #endif /* VIFM__OPS_H__ */

@@ -7,7 +7,8 @@
 
 #include "test.h"
 
-static int execute(OPS op, void *data, const char *src, const char *dst);
+static OpsResult execute(OPS op, void *data, const char src[],
+		const char dst[]);
 
 static int i;
 
@@ -21,8 +22,8 @@ SETUP()
 	init_undo_list_for_tests(&execute, &undo_levels);
 }
 
-static int
-execute(OPS op, void *data, const char *src, const char *dst)
+static OpsResult
+execute(OPS op, void *data, const char src[], const char dst[])
 {
 	static const char *execs[] = {
 		"undo_msg3",
@@ -39,9 +40,9 @@ execute(OPS op, void *data, const char *src, const char *dst)
 	};
 
 	if(op == OP_NONE)
-		return 0;
+		return OPS_SUCCEEDED;
 	assert_string_equal(execs[i++], src);
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 TEST(empty_undo_list_true)

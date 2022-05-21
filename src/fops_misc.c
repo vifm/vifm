@@ -259,12 +259,15 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 
 	if(!use_trash)
 	{
-		result = perform_operation(OP_REMOVE, ops, NULL, full_path, NULL);
+		OpsResult r = perform_operation(OP_REMOVE, ops, NULL, full_path, NULL);
+		result = (r == OPS_SUCCEEDED ? 0 : -1);
+
 		/* For some reason "rm" sometimes returns 0 on cancellation. */
-		if(path_exists(full_path, NODEREF))
+		if(result == 0 && path_exists(full_path, NODEREF))
 		{
 			result = -1;
 		}
+
 		if(result == 0)
 		{
 			un_group_add_op(OP_REMOVE, NULL, NULL, full_path, "");
@@ -288,12 +291,15 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 		char *const dest = trash_gen_path(entry->origin, entry->name);
 		if(dest != NULL)
 		{
-			result = perform_operation(op, ops, NULL, full_path, dest);
+			OpsResult r = perform_operation(op, ops, NULL, full_path, dest);
+			result = (r == OPS_SUCCEEDED ? 0 : -1);
+
 			/* For some reason "rm" sometimes returns 0 on cancellation. */
-			if(path_exists(full_path, DEREF))
+			if(result == 0 && path_exists(full_path, NODEREF))
 			{
 				result = -1;
 			}
+
 			if(result == 0)
 			{
 				un_group_add_op(op, NULL, NULL, full_path, dest);
@@ -747,12 +753,12 @@ verify_retarget_list(char *files[], int nfiles, char *names[], int nnames,
 static void
 change_link(ops_t *ops, const char path[], const char from[], const char to[])
 {
-	if(perform_operation(OP_REMOVESL, ops, NULL, path, NULL) == 0)
+	if(perform_operation(OP_REMOVESL, ops, NULL, path, NULL) == OPS_SUCCEEDED)
 	{
 		un_group_add_op(OP_REMOVESL, NULL, NULL, path, from);
 	}
 
-	if(perform_operation(OP_SYMLINK2, ops, NULL, to, path) == 0)
+	if(perform_operation(OP_SYMLINK2, ops, NULL, to, path) == OPS_SUCCEEDED)
 	{
 		un_group_add_op(OP_SYMLINK2, NULL, NULL, to, path);
 	}
@@ -976,7 +982,8 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 	to_canonic_path(clone, path, clone_name, sizeof(clone_name));
 	if(path_exists(clone_name, DEREF))
 	{
-		if(perform_operation(OP_REMOVESL, NULL, NULL, clone_name, NULL) != 0)
+		if(perform_operation(OP_REMOVESL, NULL, NULL, clone_name, NULL) !=
+				OPS_SUCCEEDED)
 		{
 			return 1;
 		}
@@ -984,7 +991,8 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	if(perform_operation(OP_COPY, ops, NULL, full_path, clone_name) != 0)
+	if(perform_operation(OP_COPY, ops, NULL, full_path, clone_name) !=
+			OPS_SUCCEEDED)
 	{
 		return 1;
 	}
@@ -1044,7 +1052,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 		char full[PATH_MAX + 1];
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 
-		if(perform_operation(OP_MKDIR, ops, cp, full, NULL) == 0)
+		if(perform_operation(OP_MKDIR, ops, cp, full, NULL) == OPS_SUCCEEDED)
 		{
 			un_group_add_op(OP_MKDIR, cp, NULL, full, "");
 			++n;
@@ -1126,7 +1134,7 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 		char full[PATH_MAX + 1];
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 
-		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
+		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == OPS_SUCCEEDED)
 		{
 			un_group_add_op(OP_MKFILE, NULL, NULL, full, "");
 			++n;
@@ -1434,7 +1442,8 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(u && perform_operation(OP_CHOWN, ops, V(uid), full_path, NULL) == 0)
+		if(u && perform_operation(OP_CHOWN, ops, V(uid), full_path, NULL) ==
+				OPS_SUCCEEDED)
 		{
 			un_group_add_op(OP_CHOWN, V(uid), V(entry->uid), full_path, "");
 		}
@@ -1443,7 +1452,8 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 			full_success -= (u != 0);
 		}
 
-		if(g && perform_operation(OP_CHGRP, ops, V(gid), full_path, NULL) == 0)
+		if(g && perform_operation(OP_CHGRP, ops, V(gid), full_path, NULL) ==
+				OPS_SUCCEEDED)
 		{
 			un_group_add_op(OP_CHGRP, V(gid), V(entry->gid), full_path, "");
 		}

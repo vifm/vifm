@@ -618,7 +618,7 @@ put_next(int force)
 				}
 
 				if(!safe_operation && perform_operation(OP_REMOVESL, put_confirm.ops,
-							NULL, dst_buf, NULL) != 0)
+							NULL, dst_buf, NULL) != OPS_SUCCEEDED)
 				{
 					show_error_msgf("Can't replace a file",
 							"Failed to remove a file:\n%s", dst_buf);
@@ -702,22 +702,22 @@ put_next(int force)
 		}
 
 		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
-					unique_dst) == 0);
+					unique_dst) == OPS_SUCCEEDED);
 		if(success)
 		{
 			success = (perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
-						NULL) == 0);
+						NULL) == OPS_SUCCEEDED);
 		}
 		if(success)
 		{
 			success = (perform_operation(OP_MOVE, put_confirm.ops, NULL, unique_dst,
-						dst_buf) == 0);
+						dst_buf) == OPS_SUCCEEDED);
 		}
 	}
 	else
 	{
 		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
-					dst_buf) == 0);
+					dst_buf) == OPS_SUCCEEDED);
 	}
 
 	ops_advance(put_confirm.ops, success);
@@ -779,7 +779,6 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	struct stat st;
 	DIR *dir;
 	struct dirent *d;
-	int result;
 
 	if(os_stat(src, &st) != 0)
 	{
@@ -820,7 +819,7 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 		else
 		{
 			if(perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
-						dst_path) != 0)
+						dst_path) != OPS_SUCCEEDED)
 			{
 				break;
 			}
@@ -834,8 +833,9 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 		return 1;
 	}
 
-	result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src, NULL);
-	if(result == 0)
+	OpsResult result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src,
+			NULL);
+	if(result == OPS_SUCCEEDED)
 	{
 		un_group_add_op(OP_RMDIR, NULL, NULL, src, "");
 	}
@@ -845,7 +845,7 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	clone_attribs(dst, src, &st);
 	(void)chmod(dst, st.st_mode);
 
-	return result;
+	return (result == OPS_SUCCEEDED ? 0 : 1);
 }
 
 /* Goes through the rest of files in the register to see whether they are inside

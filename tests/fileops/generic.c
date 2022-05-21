@@ -165,8 +165,10 @@ TEST(error_lists_are_joined_with_newline_separator)
 
 	assert_non_null(ops = ops_alloc(OP_MKDIR, 0, "test", ".", ".", NULL, NULL));
 
-	assert_failure(perform_operation(OP_MKDIR, ops, NULL, ".", NULL));
-	assert_failure(perform_operation(OP_MKDIR, ops, NULL, ".", NULL));
+	assert_int_equal(OPS_FAILED, perform_operation(OP_MKDIR, ops, NULL, ".",
+				NULL));
+	assert_int_equal(OPS_FAILED, perform_operation(OP_MKDIR, ops, NULL, ".",
+				NULL));
 	assert_non_null(strchr(ops->errors, '\n'));
 
 	ops_free(ops);
@@ -225,13 +227,14 @@ perform_merge(int op)
 #ifndef _WIN32
 		if(!cfg.use_system_calls)
 		{
-			assert_success(
-					perform_operation(op, ops, NULL, "first/nested1", "second/"));
+			assert_int_equal(OPS_SUCCEEDED, perform_operation(op, ops, NULL,
+						"first/nested1", "second/"));
 		}
 		else
 #endif
 		{
-			assert_success(perform_operation(op, ops, NULL, "first", "second"));
+			assert_int_equal(OPS_SUCCEEDED, perform_operation(op, ops, NULL, "first",
+						"second"));
 		}
 	}
 	ops_free(ops);

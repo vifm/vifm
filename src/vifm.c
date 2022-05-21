@@ -97,7 +97,7 @@
 
 static int vifm_main(int argc, char *argv[]);
 static int get_start_cwd(char buf[], size_t buf_len);
-static int undo_perform_func(OPS op, void *data, const char src[],
+static OpsResult undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
 static char * eval_received_expression(const char expr[]);
@@ -390,7 +390,7 @@ get_start_cwd(char buf[], size_t buf_len)
 }
 
 /* perform_operation() interface adaptor for the undo unit. */
-static int
+static OpsResult
 undo_perform_func(OPS op, void *data, const char src[], const char dst[])
 {
 	return perform_operation(op, NULL, data, src, dst);

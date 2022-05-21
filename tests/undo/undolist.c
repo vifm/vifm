@@ -45,10 +45,10 @@ TEST(detail_after_reset)
 	free(list);
 }
 
-static int
-exec_func(OPS op, void *data, const char *src, const char *dst)
+static OpsResult
+exec_func(OPS op, void *data, const char src[], const char dst[])
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 TEST(detail_smaller_limit)
@@ -58,7 +58,7 @@ TEST(detail_smaller_limit)
 	char **list;
 	char **p;
 
-	init_undo_list_for_tests(exec_func, &undo_levels);
+	init_undo_list_for_tests(&exec_func, &undo_levels);
 
 	list = un_get_list(1);
 
