@@ -44,6 +44,14 @@ typedef enum
 }
 IoCrs;
 
+/* Result of trying to execute an operation. */
+typedef enum
+{
+	IO_RES_SUCCEEDED, /* Operation has succeeded. */
+	IO_RES_FAILED,    /* Operation has failed. */
+}
+IoRes;
+
 /* Forward declaration for io_confirm. */
 typedef struct io_args_t io_args_t;
 

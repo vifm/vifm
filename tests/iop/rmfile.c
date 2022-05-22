@@ -23,7 +23,7 @@ TEST(file_is_removed)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -41,7 +41,7 @@ TEST(directory_is_not_removed)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_rmfile(&args));
+		assert_int_equal(IO_RES_FAILED, iop_rmfile(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -64,7 +64,7 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -76,7 +76,7 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -88,7 +88,7 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 

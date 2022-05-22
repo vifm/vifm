@@ -58,13 +58,13 @@
 #define FLUSH_SIZE 256*1024*1024
 
 /* Type of io function used by retry_wrapper(). */
-typedef int (*iop_func)(io_args_t *args);
+typedef IoRes (*iop_func)(io_args_t *args);
 
-static int iop_mkfile_internal(io_args_t *args);
-static int iop_mkdir_internal(io_args_t *args);
-static int iop_rmfile_internal(io_args_t *args);
-static int iop_rmdir_internal(io_args_t *args);
-static int iop_cp_internal(io_args_t *args);
+static IoRes iop_mkfile_internal(io_args_t *args);
+static IoRes iop_mkdir_internal(io_args_t *args);
+static IoRes iop_rmfile_internal(io_args_t *args);
+static IoRes iop_rmdir_internal(io_args_t *args);
+static IoRes iop_cp_internal(io_args_t *args);
 static int clone_file(int dst_fd, int src_fd);
 #ifdef _WIN32
 static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
@@ -72,17 +72,18 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		LARGE_INTEGER stream_transfered, DWORD stream_num, DWORD reason,
 		HANDLE src_file, HANDLE dst_file, LPVOID param);
 #endif
-static int iop_ln_internal(io_args_t *args);
-static int retry_wrapper(iop_func func, io_args_t *args);
+static IoRes iop_ln_internal(io_args_t *args);
+static IoRes retry_wrapper(iop_func func, io_args_t *args);
+static IoRes io_res_from_code(int code);
 
-int
+IoRes
 iop_mkfile(io_args_t *args)
 {
 	return retry_wrapper(&iop_mkfile_internal, args);
 }
 
 /* Implementation of iop_mkfile(). */
-static int
+static IoRes
 iop_mkfile_internal(io_args_t *args)
 {
 	FILE *f;
@@ -94,7 +95,7 @@ iop_mkfile_internal(io_args_t *args)
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, EEXIST,
 				"Such file already exists");
-		return -1;
+		return IO_RES_FAILED;
 	}
 
 	f = os_fopen(path, "wb");
@@ -102,29 +103,29 @@ iop_mkfile_internal(io_args_t *args)
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, errno,
 				"Failed to open file for writing");
-		return -1;
+		return IO_RES_FAILED;
 	}
 
 	if(fclose(f) != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, errno,
 				"Error while closing the file");
-		return -1;
+		return IO_RES_FAILED;
 	}
 
 	ioeta_update(args->estim, path, path, /*finished=*/1, /*size=*/0);
 
-	return 0;
+	return IO_RES_SUCCEEDED;
 }
 
-int
+IoRes
 iop_mkdir(io_args_t *args)
 {
 	return retry_wrapper(&iop_mkdir_internal, args);
 }
 
 /* Implementation of iop_mkdir(). */
-static int
+static IoRes
 iop_mkdir_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
@@ -158,7 +159,7 @@ iop_mkdir_internal(io_args_t *args)
 						"Failed to create one of intermediate directories");
 
 				free(partial_path);
-				return -1;
+				return IO_RES_FAILED;
 			}
 		}
 
@@ -168,48 +169,48 @@ iop_mkdir_internal(io_args_t *args)
 			(void)ioe_errlst_append(&args->result.errors, partial_path, errno,
 					"Failed to setup directory permissions");
 			free(partial_path);
-			return 1;
+			return IO_RES_FAILED;
 		}
 #endif
 
 		free(partial_path);
-		return 0;
+		return IO_RES_SUCCEEDED;
 	}
 
 	if(os_mkdir(path, mode) != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, errno,
 				"Failed to create directory");
-		return 1;
+		return IO_RES_FAILED;
 	}
 
 	ioeta_update(args->estim, path, path, /*finished=*/1, /*size=*/0);
 
-	return 0;
+	return IO_RES_SUCCEEDED;
 }
 
-int
+IoRes
 iop_rmfile(io_args_t *args)
 {
 	return retry_wrapper(&iop_rmfile_internal, args);
 }
 
 /* Implementation of iop_rmfile(). */
-static int
+static IoRes
 iop_rmfile_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 
 	uint64_t size;
-	int result;
+	IoRes result;
 
 	ioeta_update(args->estim, path, path, 0, 0);
 
 	size = get_file_size(path);
 
 #ifndef _WIN32
-	result = unlink(path);
-	if(result != 0)
+	result = io_res_from_code(unlink(path));
+	if(result == IO_RES_FAILED)
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, errno,
 				"Failed to unlink file");
@@ -223,7 +224,7 @@ iop_rmfile_internal(io_args_t *args)
 		{
 			SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
 		}
-		result = (DeleteFileW(utf16_path) == FALSE);
+		result = io_res_from_code(!DeleteFileW(utf16_path));
 
 		if(result != 0)
 		{
@@ -240,24 +241,24 @@ iop_rmfile_internal(io_args_t *args)
 	return result;
 }
 
-int
+IoRes
 iop_rmdir(io_args_t *args)
 {
 	return retry_wrapper(&iop_rmdir_internal, args);
 }
 
 /* Implementation of iop_rmdir(). */
-static int
+static IoRes
 iop_rmdir_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 
-	int result;
+	IoRes result;
 
 	ioeta_update(args->estim, path, path, 0, 0);
 
 #ifndef _WIN32
-	result = os_rmdir(path);
+	result = io_res_from_code(os_rmdir(path));
 	if(result != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, errno,
@@ -267,7 +268,7 @@ iop_rmdir_internal(io_args_t *args)
 	{
 		wchar_t *const utf16_path = utf8_to_utf16(path);
 
-		result = (RemoveDirectoryW(utf16_path) == FALSE);
+		result = io_res_from_code(!RemoveDirectoryW(utf16_path));
 		if(result != 0)
 		{
 			/* FIXME: use real system error message here. */
@@ -284,14 +285,14 @@ iop_rmdir_internal(io_args_t *args)
 	return result;
 }
 
-int
+IoRes
 iop_cp(io_args_t *args)
 {
 	return retry_wrapper(&iop_cp_internal, args);
 }
 
 /* Implementation of iop_cp(). */
-static int
+static IoRes
 iop_cp_internal(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
@@ -315,7 +316,6 @@ iop_cp_internal(io_args_t *args)
 	if(is_symlink(src) || crs != IO_CRS_APPEND_TO_FILES)
 	{
 		DWORD flags;
-		int error;
 		wchar_t *utf16_src, *utf16_dst;
 
 		flags = COPY_FILE_COPY_SYMLINK;
@@ -328,17 +328,17 @@ iop_cp_internal(io_args_t *args)
 			/* Ask user whether to overwrite destination file. */
 			if(confirm != NULL && !confirm(args, src, dst))
 			{
-				return 0;
+				return IO_RES_SUCCEEDED;
 			}
 		}
 
 		utf16_src = utf8_to_utf16(src);
 		utf16_dst = utf8_to_utf16(dst);
 
-		error = CopyFileExW(utf16_src, utf16_dst, &win_progress_cb, args, NULL,
-				flags) == 0;
+		int success =
+			CopyFileExW(utf16_src, utf16_dst, &win_progress_cb, args, NULL, flags);
 
-		if(error)
+		if(!success)
 		{
 			/* FIXME: use real system error message here. */
 			(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
@@ -348,14 +348,14 @@ iop_cp_internal(io_args_t *args)
 		free(utf16_src);
 		free(utf16_dst);
 
-		if(error == 0)
+		if(success)
 		{
 			clone_attribs(dst, src, NULL);
 		}
 
 		ioeta_update(args->estim, NULL, NULL, 1, 0);
 
-		return error;
+		return io_res_from_code(!success);
 	}
 #endif
 
@@ -364,7 +364,6 @@ iop_cp_internal(io_args_t *args)
 	if(is_symlink(src))
 	{
 		char link_target[PATH_MAX + 1];
-		int error;
 
 		io_args_t ln_args = {
 			.arg1.path = link_target,
@@ -380,33 +379,32 @@ iop_cp_internal(io_args_t *args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
 					"Failed to get symbolic link target");
-			return 1;
+			return IO_RES_FAILED;
 		}
 
-		error = iop_ln(&ln_args);
+		IoRes result = iop_ln(&ln_args);
 		args->result = ln_args.result;
 
-		if(error != 0)
+		if(result == IO_RES_FAILED)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
 					"Failed to make symbolic link");
-			return 1;
 		}
-		return 0;
+		return IO_RES_SUCCEEDED;
 	}
 
 	if(is_dir(src))
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, EISDIR,
 				"Target path specifies existing directory");
-		return 1;
+		return IO_RES_FAILED;
 	}
 
 	if(os_stat(src, &st) != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, errno,
 				"Failed to stat() source file");
-		return 1;
+		return IO_RES_FAILED;
 	}
 
 #ifndef _WIN32
@@ -425,7 +423,7 @@ iop_cp_internal(io_args_t *args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
 					"Failed to open source file");
-			return 1;
+			return IO_RES_FAILED;
 		}
 	}
 
@@ -435,8 +433,6 @@ iop_cp_internal(io_args_t *args)
 	}
 	else if(crs != IO_CRS_FAIL)
 	{
-		int ec;
-
 		if(path_exists(dst, NODEREF))
 		{
 			/* Ask user whether to overwrite destination file. */
@@ -447,11 +443,11 @@ iop_cp_internal(io_args_t *args)
 					(void)ioe_errlst_append(&args->result.errors, src, errno,
 							"Error while closing source file");
 				}
-				return 0;
+				return IO_RES_SUCCEEDED;
 			}
 		}
 
-		ec = unlink(dst);
+		int ec = unlink(dst);
 		if(ec != 0 && errno != ENOENT)
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, errno,
@@ -461,7 +457,7 @@ iop_cp_internal(io_args_t *args)
 				(void)ioe_errlst_append(&args->result.errors, src, errno,
 						"Error while closing source file");
 			}
-			return ec;
+			return io_res_from_code(ec);
 		}
 
 		/* XXX: possible improvement would be to generate temporary file name in the
@@ -478,7 +474,7 @@ iop_cp_internal(io_args_t *args)
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
 					"Error while closing source file");
 		}
-		return 1;
+		return IO_RES_FAILED;
 	}
 
 #ifndef _WIN32
@@ -489,9 +485,9 @@ iop_cp_internal(io_args_t *args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
 					"Failed to create FIFO");
-			return 1;
+			return IO_RES_FAILED;
 		}
-		return 0;
+		return IO_RES_SUCCEEDED;
 	}
 
 	/* Replicate socket or device file without even opening it. */
@@ -501,9 +497,9 @@ iop_cp_internal(io_args_t *args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
 					"Failed to create node");
-			return 1;
+			return IO_RES_FAILED;
 		}
-		return 0;
+		return IO_RES_SUCCEEDED;
 	}
 #endif
 
@@ -517,7 +513,7 @@ iop_cp_internal(io_args_t *args)
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
 					"Error while closing source file");
 		}
-		return 1;
+		return IO_RES_FAILED;
 	}
 
 	error = 0;
@@ -650,7 +646,7 @@ iop_cp_internal(io_args_t *args)
 
 	ioeta_update(args->estim, NULL, NULL, 1, 0);
 
-	return error;
+	return io_res_from_code(error);
 }
 
 /* Try to clone file fast on btrfs.  Returns 0 on success, otherwise non-zero is
@@ -701,39 +697,40 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 #endif
 
 /* TODO: implement iop_chown(). */
-int iop_chown(io_args_t *args);
+IoRes iop_chown(io_args_t *args);
 
 /* TODO: implement iop_chgrp(). */
-int iop_chgrp(io_args_t *args);
+IoRes iop_chgrp(io_args_t *args);
 
 /* TODO: implement iop_chmod(). */
-int iop_chmod(io_args_t *args);
+IoRes iop_chmod(io_args_t *args);
 
-int
+IoRes
 iop_ln(io_args_t *args)
 {
 	return retry_wrapper(&iop_ln_internal, args);
 }
 
 /* Implementation of iop_ln(). */
-static int
+static IoRes
 iop_ln_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 	const char *const target = args->arg2.target;
 	const int overwrite = args->arg3.crs != IO_CRS_FAIL;
 
-	int result;
+	IoRes result;
 
 #ifndef _WIN32
-	result = symlink(path, target);
-	if(result != 0 && errno == EEXIST && overwrite && is_symlink(target))
+	result = io_res_from_code(symlink(path, target));
+	if(result == IO_RES_FAILED && errno == EEXIST && overwrite &&
+			is_symlink(target))
 	{
-		result = remove(target);
-		if(result == 0)
+		result = io_res_from_code(remove(target));
+		if(result == IO_RES_SUCCEEDED)
 		{
-			result = symlink(path, target);
-			if(result != 0)
+			result = io_res_from_code(symlink(path, target));
+			if(result == IO_RES_FAILED)
 			{
 				(void)ioe_errlst_append(&args->result.errors, path, errno,
 						"Error while creating symbolic link");
@@ -745,7 +742,7 @@ iop_ln_internal(io_args_t *args)
 					"Error while removing existing destination");
 		}
 	}
-	else if(result != 0 && errno != 0)
+	else if(result == IO_RES_FAILED && errno != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, errno,
 				"Error while creating symbolic link");
@@ -761,14 +758,14 @@ iop_ln_internal(io_args_t *args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, target, EEXIST,
 					"Destination path already exists");
-			return -1;
+			return IO_RES_FAILED;
 		}
 
 		if(!is_symlink(target))
 		{
 			(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
 					"Target is not a symbolic link");
-			return -1;
+			return IO_RES_FAILED;
 		}
 	}
 
@@ -780,7 +777,7 @@ iop_ln_internal(io_args_t *args)
 				"Not enough memory");
 		free(escaped_target);
 		free(escaped_path);
-		return -1;
+		return IO_RES_FAILED;
 	}
 
 	if(GetModuleFileNameA(NULL, base_dir, ARRAY_LEN(base_dir)) == 0)
@@ -789,15 +786,15 @@ iop_ln_internal(io_args_t *args)
 				"Failed to find win_helper");
 		free(escaped_target);
 		free(escaped_path);
-		return -1;
+		return IO_RES_FAILED;
 	}
 
 	break_atr(base_dir, '\\');
 	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", base_dir, escaped_path,
 			escaped_target);
 
-	result = os_system(cmd);
-	if(result != 0)
+	result = io_res_from_code(os_system(cmd));
+	if(result == IO_RES_FAILED)
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
 				"Running win_helper has failed");
@@ -812,10 +809,10 @@ iop_ln_internal(io_args_t *args)
 
 /* Implements detecting errors and querying user to decide whether to abort,
  * retry or ignore.  Returns zero on success and non-zero on error. */
-static int
+static IoRes
 retry_wrapper(iop_func func, io_args_t *args)
 {
-	int result;
+	IoRes result;
 	ioeta_estim_t estim = {};
 
 	/* Replace error list with an empty one to control which errors are going to
@@ -833,7 +830,7 @@ retry_wrapper(iop_func func, io_args_t *args)
 	while(1)
 	{
 		result = func(args);
-		if(result == 0 || args->result.errors_cb == NULL ||
+		if(result == IO_RES_SUCCEEDED || args->result.errors_cb == NULL ||
 				args->result.errors.error_count == 0U)
 		{
 			ioe_errlst_splice(&orig_errlist, &args->result.errors);
@@ -853,7 +850,7 @@ retry_wrapper(iop_func func, io_args_t *args)
 				continue;
 
 			case IO_ECR_IGNORE:
-				result = 0;
+				result = IO_RES_SUCCEEDED;
 				if(args->estim != NULL)
 				{
 					/* When we ignore a file, in order to make progress look nice pretend
@@ -882,6 +879,13 @@ retry_wrapper(iop_func func, io_args_t *args)
 	args->result.errors = orig_errlist;
 
 	return result;
+}
+
+/* Turns exit code into IoRes.  Returns IoRes. */
+static IoRes
+io_res_from_code(int code)
+{
+	return (code == 0 ? IO_RES_SUCCEEDED : IO_RES_FAILED);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

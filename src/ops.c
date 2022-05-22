@@ -130,7 +130,7 @@ static OpsResult op_rmdir(ops_t *ops, void *data, const char src[],
 static OpsResult op_mkfile(ops_t *ops, void *data, const char src[],
 		const char dst[]);
 static int ops_uses_syscalls(const ops_t *ops);
-static OpsResult exec_io_op(ops_t *ops, int (*func)(io_args_t *),
+static OpsResult exec_io_op(ops_t *ops, IoRes (*func)(io_args_t *),
 		io_args_t *args, int cancellable);
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
@@ -966,7 +966,7 @@ ops_uses_syscalls(const ops_t *ops)
 /* Executes i/o operation with some predefined pre/post actions.  Returns
  * status. */
 static OpsResult
-exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
+exec_io_op(ops_t *ops, IoRes (*func)(io_args_t *), io_args_t *args,
 		int cancellable)
 {
 	args->estim = (ops == NULL) ? NULL : ops->estim;
@@ -999,7 +999,12 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
 	}
 
 	curr_ops = ops;
-	OpsResult result = result_from_code(func(args));
+	OpsResult result = OPS_FAILED;
+	switch(func(args))
+	{
+		case IO_RES_SUCCEEDED: result = OPS_SUCCEEDED; break;
+		case IO_RES_FAILED:    result = OPS_FAILED; break;
+	}
 	curr_ops = NULL;
 
 	if(cancellable && (ops == NULL || !ops->bg))

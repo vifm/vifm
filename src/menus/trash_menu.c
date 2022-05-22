@@ -111,8 +111,6 @@ restore_current(menu_data_t *m)
 static KHandlerResponse
 delete_current(menu_data_t *m)
 {
-	int ret;
-
 	io_args_t args = {
 		.arg1.path = trash_list[m->pos].trash_name,
 
@@ -121,10 +119,10 @@ delete_current(menu_data_t *m)
 	ioe_errlst_init(&args.result.errors);
 
 	ui_cancellation_enable();
-	ret = ior_rm(&args);
+	IoRes result = ior_rm(&args);
 	ui_cancellation_disable();
 
-	if(ret != 0)
+	if(result != IO_RES_SUCCEEDED)
 	{
 		char *const errors = ioe_errlst_to_str(&args.result.errors);
 		ioe_errlst_free(&args.result.errors);

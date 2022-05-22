@@ -22,7 +22,7 @@ TEST(file_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -32,7 +32,7 @@ TEST(file_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -48,7 +48,7 @@ TEST(empty_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -58,7 +58,7 @@ TEST(empty_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -68,7 +68,7 @@ TEST(empty_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -84,7 +84,7 @@ TEST(non_empty_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -96,7 +96,7 @@ TEST(non_empty_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -106,7 +106,7 @@ TEST(non_empty_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -122,7 +122,7 @@ TEST(empty_nested_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -135,7 +135,7 @@ TEST(empty_nested_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -145,7 +145,7 @@ TEST(empty_nested_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -162,7 +162,7 @@ TEST(non_empty_nested_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -175,7 +175,7 @@ TEST(non_empty_nested_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -185,7 +185,7 @@ TEST(non_empty_nested_directory_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -201,7 +201,7 @@ TEST(fails_to_overwrite_file_by_default)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(ior_cp(&args));
+		assert_int_equal(IO_RES_FAILED, ior_cp(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -213,7 +213,7 @@ TEST(fails_to_overwrite_file_by_default)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -229,7 +229,7 @@ TEST(fails_to_overwrite_dir_by_default)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(ior_cp(&args));
+		assert_int_equal(IO_RES_FAILED, ior_cp(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -241,7 +241,7 @@ TEST(fails_to_overwrite_dir_by_default)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -258,7 +258,7 @@ TEST(overwrites_file_when_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -268,7 +268,7 @@ TEST(overwrites_file_when_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -285,7 +285,7 @@ TEST(overwrites_dir_when_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -295,7 +295,7 @@ TEST(overwrites_dir_when_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_rmdir(&args));
+		assert_int_equal(IO_RES_FAILED, iop_rmdir(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -309,7 +309,7 @@ TEST(overwrites_dir_when_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -330,7 +330,7 @@ TEST(directories_can_be_merged)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -343,7 +343,7 @@ TEST(directories_can_be_merged)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -353,7 +353,7 @@ TEST(directories_can_be_merged)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -369,7 +369,7 @@ TEST(fails_to_copy_directory_inside_itself)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(ior_cp(&args));
+		assert_int_equal(IO_RES_FAILED, ior_cp(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -381,7 +381,7 @@ TEST(fails_to_copy_directory_inside_itself)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -398,7 +398,7 @@ TEST(dir_permissions_are_preserved)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -409,7 +409,7 @@ TEST(dir_permissions_are_preserved)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -423,7 +423,7 @@ TEST(dir_permissions_are_preserved)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -433,7 +433,7 @@ TEST(dir_permissions_are_preserved)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -451,7 +451,7 @@ TEST(permissions_are_set_in_correct_order)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -464,7 +464,7 @@ TEST(permissions_are_set_in_correct_order)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -481,7 +481,7 @@ TEST(permissions_are_set_in_correct_order)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -491,7 +491,7 @@ TEST(permissions_are_set_in_correct_order)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -506,7 +506,7 @@ TEST(symlink_to_file_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -519,7 +519,7 @@ TEST(symlink_to_file_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -532,7 +532,7 @@ TEST(symlink_to_file_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -542,7 +542,7 @@ TEST(symlink_to_file_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -557,7 +557,7 @@ TEST(symlink_to_dir_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -570,7 +570,7 @@ TEST(symlink_to_dir_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -583,7 +583,7 @@ TEST(symlink_to_dir_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -593,7 +593,7 @@ TEST(symlink_to_dir_is_symlink_after_copy, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }

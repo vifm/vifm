@@ -32,7 +32,7 @@ TEST(file_removal_error_is_reported_and_logged_once, IF(not_windows))
 		ioe_errlst_init(&args.result.errors);
 
 		ignore_count = 0;
-		assert_failure(ior_rm(&args));
+		assert_int_equal(IO_RES_FAILED, ior_rm(&args));
 		assert_int_equal(0, ignore_count);
 
 		/* Second error must be about failure to remove directory, first one is
@@ -65,7 +65,7 @@ TEST(path_in_errors_has_no_double_slashes, IF(regular_unix_user))
 
 	ignore_count = 3;
 
-	assert_success(ior_cp(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 	assert_int_equal(1, ignore_count);
 	assert_int_equal(2, args.result.errors.error_count);
 	assert_string_equal(NULL, strstr(args.result.errors.errors[0].path, "//"));

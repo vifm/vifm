@@ -21,7 +21,7 @@ TEST(file_is_removed)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -39,7 +39,7 @@ TEST(empty_directory_is_removed)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -58,7 +58,7 @@ TEST(non_empty_directory_is_removed)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 

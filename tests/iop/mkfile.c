@@ -22,7 +22,7 @@ TEST(file_is_created)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -34,7 +34,7 @@ TEST(file_is_created)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -49,7 +49,7 @@ TEST(fails_if_file_exists)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -61,7 +61,7 @@ TEST(fails_if_file_exists)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_mkfile(&args));
+		assert_int_equal(IO_RES_FAILED, iop_mkfile(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -73,7 +73,7 @@ TEST(fails_if_file_exists)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -89,7 +89,7 @@ TEST(creating_files_reports_progress)
 	};
 	ioe_errlst_init(&args.result.errors);
 
-	assert_success(iop_mkfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_mkfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	assert_success(remove(FILE_NAME));
@@ -109,7 +109,7 @@ TEST(broken_link_is_an_existing_file, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -120,7 +120,7 @@ TEST(broken_link_is_an_existing_file, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_mkfile(&args));
+		assert_int_equal(IO_RES_FAILED, iop_mkfile(&args));
 		assert_int_equal(1, args.result.errors.error_count);
 		assert_string_equal("Such file already exists",
 				args.result.errors.errors[0].msg);

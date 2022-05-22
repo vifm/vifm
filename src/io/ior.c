@@ -46,16 +46,17 @@ static VisitResult rm_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_visitor(const char full_path[], VisitAction action,
 		void *param);
-static int mv_by_copy(io_args_t *args, int confirmed);
-static int mv_replacing_all(io_args_t *args);
-static int mv_replacing_files(io_args_t *args);
+static IoRes mv_by_copy(io_args_t *args, int confirmed);
+static IoRes mv_replacing_all(io_args_t *args);
+static IoRes mv_replacing_files(io_args_t *args);
 static int is_file(const char path[]);
 static VisitResult mv_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_mv_visitor(const char full_path[], VisitAction action,
 		void *param, int cp);
+static VisitResult vr_from_io_res(IoRes result);
 
-int
+IoRes
 ior_rm(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
@@ -92,7 +93,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.result = rm_args->result,
 				};
 
-				result = (iop_rmfile(&args) == 0) ? VR_OK : VR_ERROR;
+				result = vr_from_io_res(iop_rmfile(&args));
 				rm_args->result = args.result;
 				break;
 			}
@@ -107,7 +108,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.result = rm_args->result,
 				};
 
-				result = (iop_rmdir(&args) == 0) ? VR_OK : VR_ERROR;
+				result = vr_from_io_res(iop_rmdir(&args));
 				rm_args->result = args.result;
 				break;
 			}
@@ -116,7 +117,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 	return result;
 }
 
-int
+IoRes
 ior_cp(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
@@ -126,7 +127,7 @@ ior_cp(io_args_t *args)
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
 				"Can't copy parent path into subpath");
-		return 1;
+		return IO_RES_FAILED;
 	}
 
 	if(args->arg3.crs == IO_CRS_REPLACE_ALL)
@@ -140,11 +141,11 @@ ior_cp(io_args_t *args)
 			.result = args->result,
 		};
 
-		const int result = ior_rm(&rm_args);
+		const IoRes result = ior_rm(&rm_args);
 		args->result = rm_args.result;
-		if(result != 0)
+		if(result != IO_RES_SUCCEEDED)
 		{
-			if(!io_cancelled(args))
+			if(result == IO_RES_FAILED && !io_cancelled(args))
 			{
 				(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 						"Failed to remove");
@@ -164,7 +165,7 @@ cp_visitor(const char full_path[], VisitAction action, void *param)
 	return cp_mv_visitor(full_path, action, param, 1);
 }
 
-int
+IoRes
 ior_mv(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
@@ -177,7 +178,7 @@ ior_mv(io_args_t *args)
 	{
 		(void)ioe_errlst_append(&args->result.errors, dst, EEXIST,
 				"Destination path already exists");
-		return 1;
+		return IO_RES_FAILED;
 	}
 
 	if(crs == IO_CRS_APPEND_TO_FILES)
@@ -186,13 +187,13 @@ ior_mv(io_args_t *args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, EISDIR,
 					"Can't append when source is not a file");
-			return 1;
+			return IO_RES_FAILED;
 		}
 		if(!is_file(dst))
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, EISDIR,
 					"Can't append when destination is not a file");
-			return 1;
+			return IO_RES_FAILED;
 		}
 	}
 	else if(crs == IO_CRS_REPLACE_FILES && path_exists(dst, DEREF))
@@ -200,7 +201,7 @@ ior_mv(io_args_t *args)
 		/* Ask user whether to overwrite destination file. */
 		if(confirm != NULL && !confirm(args, src, dst))
 		{
-			return 0;
+			return IO_RES_SUCCEEDED;
 		}
 		confirmed = 1;
 	}
@@ -208,7 +209,7 @@ ior_mv(io_args_t *args)
 	if(os_rename(src, dst) == 0)
 	{
 		ioeta_update(args->estim, src, dst, 1, 0);
-		return 0;
+		return IO_RES_SUCCEEDED;
 	}
 
 	int error = errno;
@@ -246,26 +247,25 @@ ior_mv(io_args_t *args)
 
 	(void)ioe_errlst_append(&args->result.errors, src, error,
 			"Rename operation failed");
-	return error;
+	return (error == 0 ? IO_RES_SUCCEEDED : IO_RES_FAILED);
 }
 
-/* Performs a manual move: copy followed by deletion.  Returns zero on success
- * and non-zero on error. */
-static int
+/* Performs a manual move: copy followed by deletion.  Returns status. */
+static IoRes
 mv_by_copy(io_args_t *args, int confirmed)
 {
 	/* Do not ask for confirmation second time. */
 	const io_confirm confirm = args->confirm;
 	args->confirm = (confirmed ? NULL : confirm);
 
-	int result = ior_cp(args);
+	IoRes result = ior_cp(args);
 
 	args->confirm = confirm;
 
-	/* When result is zero, there still might be errors if they were
+	/* When result is success, there still might be errors if they were
 	 * ignored by the user.  Do not delete source in this case, some files
 	 * might be missing at the destination. */
-	if(result == 0 && args->result.errors.error_count == 0)
+	if(result == IO_RES_SUCCEEDED && args->result.errors.error_count == 0)
 	{
 		io_args_t rm_args = {
 			.arg1.path = args->arg1.src,
@@ -285,15 +285,13 @@ mv_by_copy(io_args_t *args, int confirmed)
 	return result;
 }
 
-/* Performs a move after deleting target first.  Returns zero on success and
- * non-zero on error. */
-static int
+/* Performs a move after deleting target first.  Returns status. */
+static IoRes
 mv_replacing_all(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 
-	int error;
 	io_args_t rm_args = {
 		.arg1.path = dst,
 
@@ -306,33 +304,32 @@ mv_replacing_all(io_args_t *args)
 	/* Ask user whether to overwrite destination file. */
 	if(args->confirm != NULL && !args->confirm(args, src, dst))
 	{
-		return 0;
+		return IO_RES_SUCCEEDED;
 	}
 
-	error = ior_rm(&rm_args);
+	IoRes result = ior_rm(&rm_args);
 	args->result = rm_args.result;
-	if(error != 0)
+	if(result != IO_RES_SUCCEEDED)
 	{
-		if(!io_cancelled(args))
+		if(result == IO_RES_FAILED && !io_cancelled(args))
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 					"Failed to remove");
 		}
-		return error;
+		return result;
 	}
 
 	if(os_rename(src, dst) != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, errno,
 				"Rename operation failed");
-		return 1;
+		return IO_RES_FAILED;
 	}
-	return 0;
+	return IO_RES_SUCCEEDED;
 }
 
-/* Performs a merging move (for directories).  Returns zero on success and
- * non-zero on error. */
-static int
+/* Performs a merging move (for directories).  Returns status. */
+static IoRes
 mv_replacing_files(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
@@ -349,16 +346,16 @@ mv_replacing_files(io_args_t *args)
 			.result = args->result,
 		};
 
-		const int error = iop_rmfile(&rm_args);
+		const IoRes result = iop_rmfile(&rm_args);
 		args->result = rm_args.result;
-		if(error != 0)
+		if(result != IO_RES_SUCCEEDED)
 		{
-			if(!io_cancelled(args))
+			if(result == IO_RES_FAILED && !io_cancelled(args))
 			{
 				(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 						"Failed to remove");
 			}
-			return error;
+			return result;
 		}
 	}
 
@@ -421,7 +418,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.result = cp_args->result,
 				};
 
-				result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
+				result = vr_from_io_res(iop_mkdir(&args));
 				cp_args->result = args.result;
 			}
 			break;
@@ -441,7 +438,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.result = cp_args->result,
 				};
 
-				result = ((cp ? iop_cp(&args) : ior_mv(&args)) == 0) ? VR_OK : VR_ERROR;
+				result = vr_from_io_res(cp ? iop_cp(&args) : ior_mv(&args));
 				cp_args->result = args.result;
 				break;
 			}
@@ -460,7 +457,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 						.result = cp_args->result,
 					};
 
-					result = (iop_rmdir(&rm_args) == 0) ? VR_OK : VR_ERROR;
+					result = vr_from_io_res(iop_rmdir(&rm_args));
 				}
 				else if(os_stat(full_path, &st) == 0)
 				{
@@ -487,6 +484,21 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	free(free_me);
 
 	return result;
+}
+
+/* Turns IoRes into VisitResult.  Returns VisitResult. */
+static VisitResult
+vr_from_io_res(IoRes result)
+{
+	switch(result)
+	{
+		case IO_RES_SUCCEEDED:
+			return VR_OK;
+		case IO_RES_FAILED:
+			return VR_ERROR;
+	}
+
+	return VR_ERROR;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

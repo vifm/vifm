@@ -14,7 +14,7 @@ create_test_file(const char name[])
 	};
 	ioe_errlst_init(&args.result.errors);
 
-	assert_success(iop_mkfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_mkfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 }
 
@@ -27,7 +27,7 @@ clone_test_file(const char src[], const char dst[])
 	};
 	ioe_errlst_init(&args.result.errors);
 
-	assert_success(iop_cp(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 }
 
@@ -39,7 +39,7 @@ delete_test_file(const char name[])
 	};
 	ioe_errlst_init(&args.result.errors);
 
-	assert_success(iop_rmfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	ioe_errlst_free(&args.result.errors);
