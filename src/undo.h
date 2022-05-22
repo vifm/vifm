@@ -24,8 +24,6 @@
 enum
 {
 	COMMAND_GROUP_INFO_LEN = 320,
-
-	SKIP_UNDO_REDO_OPERATION = -8192,
 };
 
 /* Error statuses for un_group_undo() and un_group_redo(). */
@@ -44,9 +42,8 @@ typedef enum
 UnErrCode;
 
 /* Operation execution handler.  data is from un_group_add_op() call.  Should
- * return zero on successful execution of operation, can return
- * SKIP_UNDO_REDO_OPERATION. */
-typedef int (*un_perform_func)(OPS op, void *data, const char src[],
+ * return status of the operation. */
+typedef OpsResult (*un_perform_func)(OPS op, void *data, const char src[],
 		const char dst[]);
 
 /* Return value meaning:

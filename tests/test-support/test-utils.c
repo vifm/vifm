@@ -43,7 +43,8 @@
 #include "../../src/status.h"
 #include "../../src/undo.h"
 
-static int exec_func(OPS op, void *data, const char *src, const char *dst);
+static OpsResult exec_func(OPS op, void *data, const char src[],
+		const char dst[]);
 static int op_avail(OPS op);
 static void format_none(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
@@ -187,10 +188,10 @@ undo_setup(void)
 	un_init(&exec_func, &op_avail, NULL, &max_undo_levels);
 }
 
-static int
+static OpsResult
 exec_func(OPS op, void *data, const char *src, const char *dst)
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 static int

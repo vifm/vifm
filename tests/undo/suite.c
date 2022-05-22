@@ -8,7 +8,8 @@
 
 #include "test.h"
 
-static int exec_func(OPS op, void *data, const char *src, const char *dst);
+static OpsResult exec_func(OPS op, void *data, const char src[],
+		const char dst[]);
 static int op_avail(OPS op);
 
 DEFINE_SUITE();
@@ -45,10 +46,10 @@ TEARDOWN()
 	un_reset();
 }
 
-static int
-exec_func(OPS op, void *data, const char *src, const char *dst)
+static OpsResult
+exec_func(OPS op, void *data, const char src[], const char dst[])
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 static int

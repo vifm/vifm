@@ -28,7 +28,7 @@ TEST(file_is_moved)
 			.arg1.src = SANDBOX_PATH "/binary-data",
 			.arg2.dst = SANDBOX_PATH "/moved-binary-data",
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_false(file_exists(SANDBOX_PATH "/binary-data"));
@@ -46,7 +46,7 @@ TEST(empty_directory_is_moved)
 			.arg1.src = SANDBOX_PATH "/empty-dir",
 			.arg2.dst = SANDBOX_PATH "/moved-empty-dir",
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_false(is_dir(SANDBOX_PATH "/empty-dir"));
@@ -64,7 +64,7 @@ TEST(non_empty_directory_is_moved)
 			.arg1.src = SANDBOX_PATH "/non-empty-dir",
 			.arg2.dst = SANDBOX_PATH "/moved-non-empty-dir",
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_true(file_exists(SANDBOX_PATH "/moved-non-empty-dir/a-file"));
@@ -81,7 +81,7 @@ TEST(empty_nested_directory_is_moved)
 			.arg1.src = SANDBOX_PATH "/non-empty-dir",
 			.arg2.dst = SANDBOX_PATH "/moved-non-empty-dir",
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_true(is_dir(SANDBOX_PATH "/moved-non-empty-dir/empty-nested-dir"));
@@ -99,7 +99,7 @@ TEST(non_empty_nested_directory_is_moved)
 			.arg1.src = SANDBOX_PATH "/non-empty-dir",
 			.arg2.dst = SANDBOX_PATH "/moved-non-empty-dir",
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_false(file_exists(SANDBOX_PATH "/non-empty-dir/nested-dir/a-file"));
@@ -118,7 +118,7 @@ TEST(fails_to_overwrite_file_by_default)
 			.arg1.src = TEST_DATA_PATH "/read/two-lines",
 			.arg2.dst = SANDBOX_PATH "/a-file",
 		};
-		assert_failure(ior_mv(&args));
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
 	}
 
 	delete_file(SANDBOX_PATH "/a-file");
@@ -133,7 +133,7 @@ TEST(fails_to_overwrite_dir_by_default)
 			.arg1.src = TEST_DATA_PATH "/read",
 			.arg2.dst = SANDBOX_PATH "/empty-dir",
 		};
-		assert_failure(ior_mv(&args));
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
 	}
 
 	delete_dir(SANDBOX_PATH "/empty-dir");
@@ -150,7 +150,7 @@ TEST(overwrites_file_when_asked)
 			.arg2.dst = SANDBOX_PATH "/a-file",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	delete_file(SANDBOX_PATH "/a-file");
@@ -165,7 +165,7 @@ TEST(overwrites_dir_when_asked)
 			.arg1.src = TEST_DATA_PATH "/read",
 			.arg2.dst = SANDBOX_PATH "/read",
 		};
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 	}
 
 	assert_success(chmod(SANDBOX_PATH "/read", 0700));
@@ -176,14 +176,14 @@ TEST(overwrites_dir_when_asked)
 			.arg2.dst = SANDBOX_PATH "/dir",
 			.arg3.crs = IO_CRS_REPLACE_ALL,
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	{
 		io_args_t args = {
 			.arg1.path = SANDBOX_PATH "/dir",
 		};
-		assert_failure(iop_rmdir(&args));
+		assert_int_equal(IO_RES_FAILED, iop_rmdir(&args));
 	}
 
 	delete_tree(SANDBOX_PATH "/dir");
@@ -198,7 +198,7 @@ TEST(appending_fails_for_directories)
 			.arg1.src = TEST_DATA_PATH "/read",
 			.arg2.dst = SANDBOX_PATH "/read",
 		};
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 	}
 
 	assert_success(chmod(SANDBOX_PATH "/read", 0700));
@@ -209,7 +209,7 @@ TEST(appending_fails_for_directories)
 			.arg2.dst = SANDBOX_PATH "/dir",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
-		assert_failure(ior_mv(&args));
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
 	}
 
 	delete_dir(SANDBOX_PATH "/dir");
@@ -233,7 +233,7 @@ TEST(appending_works_for_files)
 			.arg2.dst = SANDBOX_PATH "/two-lines",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_int_equal(size, get_file_size(SANDBOX_PATH "/two-lines"));
@@ -255,7 +255,7 @@ TEST(directories_can_be_merged)
 			.arg2.dst = SANDBOX_PATH "/second",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	/* Original directory must be deleted. */
@@ -283,7 +283,7 @@ TEST(nested_directories_can_be_merged)
 			.arg2.dst = SANDBOX_PATH "/second",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	/* Original directory must be deleted. */
@@ -305,7 +305,7 @@ TEST(fails_to_move_directory_inside_itself)
 			.arg1.src = SANDBOX_PATH "/empty-dir",
 			.arg2.dst = SANDBOX_PATH "/empty-dir/empty-dir-copy",
 		};
-		assert_failure(ior_mv(&args));
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
 	}
 
 	delete_dir(SANDBOX_PATH "/empty-dir");
@@ -319,7 +319,7 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 			.arg1.path = TEST_DATA_PATH "/read/two-lines",
 			.arg2.target = SANDBOX_PATH "/sym-link",
 		};
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 	}
 
 	assert_true(is_symlink(SANDBOX_PATH "/sym-link"));
@@ -329,7 +329,7 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 			.arg1.src = SANDBOX_PATH "/sym-link",
 			.arg2.dst = SANDBOX_PATH "/moved-sym-link",
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_false(is_symlink(SANDBOX_PATH "/sym-link"));
@@ -347,7 +347,7 @@ TEST(case_change_on_rename, IF(can_rename_changing_case))
 			.arg1.src = SANDBOX_PATH "/a-file",
 			.arg2.dst = SANDBOX_PATH "/A-file",
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	delete_file(SANDBOX_PATH "/A-file");
@@ -367,7 +367,7 @@ TEST(error_on_move_preserves_source_file, IF(regular_unix_user))
 	create_empty_dir(SANDBOX_PATH "/ro");
 	assert_success(chmod(SANDBOX_PATH "/ro", 0500));
 
-	assert_success(ior_mv(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	assert_int_equal(1, args.result.errors.error_count);
 	ioe_errlst_free(&args.result.errors);
 

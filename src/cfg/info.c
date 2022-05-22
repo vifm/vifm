@@ -1282,7 +1282,7 @@ copy_file(const char src[], const char dst[])
 		.arg3.crs = IO_CRS_REPLACE_FILES,
 	};
 
-	return iop_cp(&args);
+	return (iop_cp(&args) == IO_RES_SUCCEEDED ? 0 : 1);
 }
 
 /* Reads contents of the filename file as a JSON info file and updates it with

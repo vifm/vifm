@@ -1,11 +1,12 @@
 #include <stic.h>
 
 #include <sys/types.h>
-#include <unistd.h> /* F_OK access() geteuid() */
+#include <unistd.h> /* F_OK access() geteuid() rmdir() */
 
 #include <stdio.h> /* snprintf() */
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/io/ioeta.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
@@ -54,7 +55,7 @@ create_directory(const char path[], const char root[], int create_parents)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -67,7 +68,7 @@ create_directory(const char path[], const char root[], int create_parents)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -83,13 +84,34 @@ TEST(child_dir_is_not_created)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_mkdir(&args));
+		assert_int_equal(IO_RES_FAILED, iop_mkdir(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
 	}
 
 	assert_failure(access(NESTED_DIR_NAME, F_OK));
+}
+
+TEST(creating_dirs_reports_progress)
+{
+	const io_cancellation_t no_cancellation = {};
+
+	io_args_t args = {
+		.arg1.path = DIR_NAME,
+
+		.estim = ioeta_alloc(NULL, no_cancellation),
+	};
+	ioe_errlst_init(&args.result.errors);
+
+	assert_int_equal(IO_RES_SUCCEEDED, iop_mkdir(&args));
+	assert_int_equal(0, args.result.errors.error_count);
+
+	assert_success(rmdir(DIR_NAME));
+	assert_int_equal(1, args.estim->current_item);
+	assert_true(args.estim->item != NULL);
+
+	ioeta_free(args.estim);
 }
 
 TEST(permissions_are_taken_into_account, IF(non_root_on_unix_like_os))
@@ -102,7 +124,7 @@ TEST(permissions_are_taken_into_account, IF(non_root_on_unix_like_os))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -113,7 +135,7 @@ TEST(permissions_are_taken_into_account, IF(non_root_on_unix_like_os))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_mkdir(&args));
+		assert_int_equal(IO_RES_FAILED, iop_mkdir(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -125,7 +147,7 @@ TEST(permissions_are_taken_into_account, IF(non_root_on_unix_like_os))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
@@ -141,7 +163,7 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -153,7 +175,7 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -165,7 +187,7 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_mkdir(&args));
+		assert_int_equal(IO_RES_FAILED, iop_mkdir(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -177,7 +199,7 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -187,7 +209,7 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
@@ -197,7 +219,7 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 }

@@ -54,7 +54,8 @@ TEST(rename_triggers_bmark_update)
 	bmarks_list(&bmarks_cb, NULL);
 	assert_string_equal("./old", path);
 
-	assert_success(perform_operation(OP_MOVE, NULL, NULL, "./old", "./new"));
+	assert_int_equal(OPS_SUCCEEDED, perform_operation(OP_MOVE, NULL, NULL,
+				"./old", "./new"));
 
 	bmarks_list(&bmarks_cb, NULL);
 	assert_string_equal("./new", path);

@@ -28,7 +28,7 @@ TEST(confirm_is_not_called_for_no_overwrite)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_failure(iop_cp(&args));
+		assert_int_equal(IO_RES_FAILED, iop_cp(&args));
 		assert_int_equal(0, confirm_called);
 
 		assert_true(args.result.errors.error_count != 0);
@@ -54,7 +54,7 @@ TEST(confirm_is_called_for_overwrite)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 		assert_int_equal(1, confirm_called);
 
 		/* Skipping file by user is not real error. */
@@ -86,7 +86,7 @@ TEST(no_confirm_on_appending)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 		assert_int_equal(0, confirm_called);
 
 		assert_int_equal(0, args.result.errors.error_count);
@@ -117,7 +117,7 @@ TEST(deny_to_overwrite_is_considered)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 		assert_int_equal(1, confirm_called);
 
 		assert_int_equal(0, args.result.errors.error_count);

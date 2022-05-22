@@ -30,7 +30,7 @@ TEST(dir_is_not_copied)
 	};
 	ioe_errlst_init(&args.result.errors);
 
-	assert_failure(iop_cp(&args));
+	assert_int_equal(IO_RES_FAILED, iop_cp(&args));
 
 	assert_true(args.result.errors.error_count != 0);
 	ioe_errlst_free(&args.result.errors);
@@ -47,7 +47,7 @@ TEST(empty_file_is_copied)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -72,7 +72,7 @@ TEST(file_is_not_overwritten_if_not_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_cp(&args));
+		assert_int_equal(IO_RES_FAILED, iop_cp(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -97,7 +97,7 @@ TEST(file_is_overwritten_if_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -113,7 +113,7 @@ TEST(file_is_overwritten_if_asked)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -166,7 +166,7 @@ file_is_copied(const char original[])
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -194,7 +194,7 @@ TEST(appending_works_for_files)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -210,7 +210,7 @@ TEST(appending_works_for_files)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -237,7 +237,7 @@ TEST(appending_does_not_shrink_files)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -250,7 +250,7 @@ TEST(appending_does_not_shrink_files)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -278,7 +278,7 @@ TEST(file_permissions_are_preserved, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -304,7 +304,7 @@ TEST(file_symlink_copy_is_symlink, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -318,7 +318,7 @@ TEST(file_symlink_copy_is_symlink, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -351,7 +351,7 @@ TEST(timestamps_are_preserved)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -376,7 +376,7 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -391,7 +391,7 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -410,7 +410,7 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_rmdir(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -433,18 +433,18 @@ TEST(fifo_is_copied, IF(not_windows))
 
 	assert_success(mkfifo(args.arg1.src, 0755));
 
-	assert_success(iop_cp(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	assert_success(lstat(SANDBOX_PATH "/fifo-dst", &st));
 	assert_true(S_ISFIFO(st.st_mode));
 
 	args.arg1.path = SANDBOX_PATH "/fifo-src";
-	assert_success(iop_rmfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	args.arg1.path = SANDBOX_PATH "/fifo-dst";
-	assert_success(iop_rmfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 }
 
@@ -473,18 +473,18 @@ TEST(socket_is_copied, IF(can_create_sockets))
 
 	assert_success(mknod(args.arg1.src, S_IFSOCK | 0755, 0));
 
-	assert_success(iop_cp(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	assert_success(lstat(SANDBOX_PATH "/sock-dst", &st));
 	assert_true(S_ISSOCK(st.st_mode));
 
 	args.arg1.path = SANDBOX_PATH "/sock-src";
-	assert_success(iop_rmfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	args.arg1.path = SANDBOX_PATH "/sock-dst";
-	assert_success(iop_rmfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 }
 
@@ -514,7 +514,7 @@ TEST(append_truncates_destination_files_on_error, IF(not_windows))
 		}
 
 		/* We expect copy operation to fail. */
-		if(iop_cp(&args) == 0)
+		if(iop_cp(&args) == IO_RES_SUCCEEDED)
 		{
 			_Exit(EXIT_FAILURE);
 		}

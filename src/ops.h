@@ -56,6 +56,15 @@ typedef enum
 }
 OPS;
 
+/* Result of trying to execute an operation via perform_operation(). */
+typedef enum
+{
+	OPS_SUCCEEDED, /* Operation has succeeded. */
+	OPS_SKIPPED,   /* Operation was rejected by the user. */
+	OPS_FAILED,    /* Operation has failed. */
+}
+OpsResult;
+
 /* Policy on treating conflicts during operation processing. */
 typedef enum
 {
@@ -72,6 +81,16 @@ typedef enum
 	ERP_IGNORE_ALL, /* Automatically ignore all future errors. */
 }
 ErrorResolutionPolicy;
+
+struct response_variant;
+
+/* Function to choose an option.  Returns choice. */
+typedef char (*ops_choice_func)(const char title[], const char message[],
+		const struct response_variant *variants);
+
+/* Asks user to confirm some action by answering "Yes" or "No".  Returns
+ * non-zero when user answers yes, otherwise zero is returned. */
+typedef int (*ops_confirm_func)(const char title[], const char message[]);
 
 /* Description of file operation on a set of files.  Collects information and
  * helps to keep track of progress. */
@@ -96,6 +115,10 @@ typedef struct
 	int use_system_calls;  /* Copy of 'syscalls' option value. */
 	int fast_file_cloning; /* Copy of part of 'iooptions' option value. */
 
+	/* Pointers to user-interaction functions. */
+	ops_choice_func choose;   /* Picking one of options. */
+	ops_confirm_func confirm; /* Yes/No choice. */
+
 	char *base_dir;   /* Base directory in which operation is taking place. */
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */
@@ -109,7 +132,8 @@ ops_t;
 
 /* Allocates and initializes new ops_t.  Returns just allocated structure. */
 ops_t * ops_alloc(OPS main_op, int bg, const char descr[],
-		const char base_dir[], const char target_dir[]);
+		const char base_dir[], const char target_dir[], ops_choice_func choose,
+		ops_confirm_func confirm);
 
 /* Describes main operation with one generic word.  Returns the description. */
 const char * ops_describe(const ops_t *ops);
@@ -125,8 +149,8 @@ void ops_advance(ops_t *ops, int succeeded);
 void ops_free(ops_t *ops);
 
 /* Performs single operations, possibly part of the ops (which can be NULL).
- * Returns non-zero on error, otherwise zero is returned. */
-int perform_operation(OPS op, ops_t *ops, void *data, const char src[],
+ * Returns status. */
+OpsResult perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 		const char dst[]);
 
 #endif /* VIFM__OPS_H__ */

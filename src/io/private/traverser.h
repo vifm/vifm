@@ -19,6 +19,8 @@
 #ifndef VIFM__IO__PRIVATE__TRAVERSER_H__
 #define VIFM__IO__PRIVATE__TRAVERSER_H__
 
+#include "../ioc.h"
+
 /* Reason why file system traverse visitor is called. */
 typedef enum
 {
@@ -34,7 +36,7 @@ typedef enum
 	VR_OK,             /* Everything is OK, continue traversal. */
 	VR_ERROR,          /* Unrecoverable error, abort traversal. */
 	VR_SKIP_DIR_LEAVE, /* Valid only for VA_DIR_ENTER.  Prevents VA_DIR_LEAVE. */
-	VR_CANCELLED,      /* Operation was cancelled by user. */
+	VR_CANCELLED,      /* Operation was cancelled by the user. */
 }
 VisitResult;
 
@@ -45,9 +47,9 @@ typedef VisitResult (*subtree_visitor)(const char full_path[],
 
 /* A generic recursive file system traversing entry point.  Returns zero on
  * success, otherwise non-zero is returned. */
-int traverse(const char path[], subtree_visitor visitor, void *param);
+IoRes traverse(const char path[], subtree_visitor visitor, void *param);
 
-#endif // VIFM__IO__PRIVATE__TRAVERSER_H__
+#endif /* VIFM__IO__PRIVATE__TRAVERSER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

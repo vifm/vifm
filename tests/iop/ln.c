@@ -39,7 +39,7 @@ TEST(existent_file_is_not_overwritten_if_not_requested)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkfile(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -53,7 +53,7 @@ TEST(existent_file_is_not_overwritten_if_not_requested)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_ln(&args));
+		assert_int_equal(IO_RES_FAILED, iop_ln(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -76,7 +76,7 @@ TEST(existent_non_symlink_is_not_overwritten)
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_failure(iop_ln(&args));
+		assert_int_equal(IO_RES_FAILED, iop_ln(&args));
 
 		assert_true(args.result.errors.error_count != 0);
 		ioe_errlst_free(&args.result.errors);
@@ -98,7 +98,7 @@ TEST(nonexistent_symlink_is_created, IF(not_windows))
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}
@@ -119,7 +119,7 @@ TEST(existent_symlink_is_changed, IF(not_windows))
 
 	assert_failure(access(LINK_NAME, F_OK));
 
-	assert_success(iop_ln(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	assert_success(access(LINK_NAME, F_OK));
@@ -128,7 +128,7 @@ TEST(existent_symlink_is_changed, IF(not_windows))
 
 	args.arg1.path = NEW_ORIG_FILE_NAME;
 	args.arg3.crs = IO_CRS_REPLACE_FILES;
-	assert_success(iop_ln(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 	assert_int_equal(0, args.result.errors.error_count);
 
 	assert_success(remove(LINK_NAME));
@@ -149,7 +149,7 @@ new_file(const char path[])
 		};
 		ioe_errlst_init(&args.result.errors);
 
-		assert_success(iop_mkfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_mkfile(&args));
 
 		assert_int_equal(0, args.result.errors.error_count);
 	}

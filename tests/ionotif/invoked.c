@@ -59,7 +59,7 @@ TEST(cp_file_invokes_ionotif)
 
 			.estim = estim,
 		};
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -78,7 +78,7 @@ TEST(mv_file_invokes_ionotif)
 
 			.estim = estim,
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -96,7 +96,7 @@ TEST(rm_file_invokes_ionotif)
 
 			.estim = estim,
 		};
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -114,7 +114,7 @@ TEST(cp_dir_invokes_ionotif)
 
 			.estim = estim,
 		};
-		assert_success(ior_cp(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
 	}
 
 	assert_int_equal(7, invoked_eta);
@@ -133,7 +133,7 @@ TEST(mv_dir_invokes_ionotif)
 
 			.estim = estim,
 		};
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -153,7 +153,7 @@ TEST(rm_dir_invokes_ionotif)
 
 			.estim = estim,
 		};
-		assert_success(ior_rm(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 	}
 
 	assert_int_equal(7, invoked_eta);

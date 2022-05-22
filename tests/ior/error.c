@@ -32,7 +32,7 @@ TEST(file_removal_error_is_reported_and_logged_once, IF(not_windows))
 		ioe_errlst_init(&args.result.errors);
 
 		ignore_count = 0;
-		assert_failure(ior_rm(&args));
+		assert_int_equal(IO_RES_FAILED, ior_rm(&args));
 		assert_int_equal(0, ignore_count);
 
 		/* Second error must be about failure to remove directory, first one is
@@ -54,7 +54,6 @@ TEST(path_in_errors_has_no_double_slashes, IF(regular_unix_user))
 		.arg3.crs = IO_CRS_REPLACE_FILES,
 
 		.result.errors = IOE_ERRLST_INIT,
-		.result.errors_cb = &handle_errors,
 	};
 
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
@@ -63,13 +62,9 @@ TEST(path_in_errors_has_no_double_slashes, IF(regular_unix_user))
 	assert_success(chmod(SANDBOX_PATH "/dir/file", 0000));
 	assert_success(os_mkdir(SANDBOX_PATH "/dir2", 0000));
 
-	ignore_count = 3;
-
-	assert_success(ior_cp(&args));
-	assert_int_equal(1, ignore_count);
-	assert_int_equal(2, args.result.errors.error_count);
+	assert_int_equal(IO_RES_FAILED, ior_cp(&args));
+	assert_int_equal(1, args.result.errors.error_count);
 	assert_string_equal(NULL, strstr(args.result.errors.errors[0].path, "//"));
-	assert_string_equal(NULL, strstr(args.result.errors.errors[1].path, "//"));
 	ioe_errlst_free(&args.result.errors);
 
 	delete_file(SANDBOX_PATH "/dir/afile");

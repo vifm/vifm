@@ -128,6 +128,14 @@
 	Fixed running :set from autocommands triggered during processing of vifmrc
 	changing options for all views.  Thanks to Alexandre Viau.
 
+	Fixed handling errors on :mkdir with 'syscalls' set.  They weren't
+	displayed and retry/ignore/abort prompt wasn't presented.
+
+	Fixed segfault on ignoring an error from :touch with 'syscalls' set.
+
+	Fixed operations ignored via retry/ignore/abort prompt still being added
+	to undo history.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

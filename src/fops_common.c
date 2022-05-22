@@ -134,7 +134,7 @@ static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
 TSTATIC char ** edit_list(struct ext_edit_t *ext_edit, size_t orig_len,
 		char *orig[], int *edited_len, int load_always);
-static progress_data_t * alloc_progress_data(int bg, void *info);
+TSTATIC progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
 
 line_prompt_func fops_line_prompt;
@@ -419,8 +419,15 @@ io_progress_fg_sb(const io_progress_t *state, int progress)
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
 
-	format_pretty_path(ops->base_dir, estim->item, pretty_path,
-			sizeof(pretty_path));
+	if(estim->item == NULL)
+	{
+		strcpy(pretty_path, "-");
+	}
+	else
+	{
+		format_pretty_path(ops->base_dir, estim->item, pretty_path,
+				sizeof(pretty_path));
+	}
 
 	switch(state->stage)
 	{
@@ -731,7 +738,8 @@ ops_t *
 fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
+	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir,
+			fops_options_prompt, &prompt_msg);
 	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = alloc_progress_data(ops->bg, ops);
@@ -944,7 +952,8 @@ fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 ops_t *
 fops_get_bg_ops(OPS main_op, const char descr[], const char dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir);
+	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir, fops_options_prompt,
+			&prompt_msg);
 	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = alloc_progress_data(ops->bg, NULL);
@@ -956,7 +965,7 @@ fops_get_bg_ops(OPS main_op, const char descr[], const char dir[])
 
 /* Allocates progress data with specified parameters and initializes all the
  * rest of structure fields with default values. */
-static progress_data_t *
+TSTATIC progress_data_t *
 alloc_progress_data(int bg, void *info)
 {
 	progress_data_t *const pdata = malloc(sizeof(*pdata));
@@ -1044,8 +1053,6 @@ int
 fops_mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		int cancellable, ops_t *ops)
 {
-	int result;
-
 	/* Compare case sensitive strings even on Windows to let user rename file
 	 * changing only case of some characters. */
 	if(strcmp(src, dst) == 0)
@@ -1053,12 +1060,18 @@ fops_mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		return 0;
 	}
 
-	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, src, dst);
-	if(result == 0 && !bg)
+	OpsResult result = perform_operation(op, ops, cancellable ? NULL : (void *)1,
+			src, dst);
+	if(result != OPS_SUCCEEDED)
+	{
+		return 1;
+	}
+
+	if(!bg)
 	{
 		un_group_add_op(op, NULL, NULL, src, dst);
 	}
-	return result;
+	return 0;
 }
 
 void

@@ -86,7 +86,8 @@ TEST(merge_directories)
 
 		un_group_open("undo msg");
 
-		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", "."));
+		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", ".", NULL,
+					NULL));
 		ops->crp = CRP_OVERWRITE_ALL;
 		assert_success(merge_dirs("first", "second", ops));
 		ops_free(ops);
@@ -162,10 +163,12 @@ TEST(error_lists_are_joined_with_newline_separator)
 
 	cfg.use_system_calls = 1;
 
-	assert_non_null(ops = ops_alloc(OP_MKDIR, 0, "test", ".", "."));
+	assert_non_null(ops = ops_alloc(OP_MKDIR, 0, "test", ".", ".", NULL, NULL));
 
-	assert_failure(perform_operation(OP_MKDIR, ops, NULL, ".", NULL));
-	assert_failure(perform_operation(OP_MKDIR, ops, NULL, ".", NULL));
+	assert_int_equal(OPS_FAILED, perform_operation(OP_MKDIR, ops, NULL, ".",
+				NULL));
+	assert_int_equal(OPS_FAILED, perform_operation(OP_MKDIR, ops, NULL, ".",
+				NULL));
 	assert_non_null(strchr(ops->errors, '\n'));
 
 	ops_free(ops);
@@ -213,7 +216,7 @@ perform_merge(int op)
 
 	un_group_open("undo msg");
 
-	assert_non_null(ops = ops_alloc(op, 0, "merge", ".", "."));
+	assert_non_null(ops = ops_alloc(op, 0, "merge", ".", ".", NULL, NULL));
 	ops->crp = CRP_OVERWRITE_ALL;
 	if(op == OP_MOVEF)
 	{
@@ -224,13 +227,14 @@ perform_merge(int op)
 #ifndef _WIN32
 		if(!cfg.use_system_calls)
 		{
-			assert_success(
-					perform_operation(op, ops, NULL, "first/nested1", "second/"));
+			assert_int_equal(OPS_SUCCEEDED, perform_operation(op, ops, NULL,
+						"first/nested1", "second/"));
 		}
 		else
 #endif
 		{
-			assert_success(perform_operation(op, ops, NULL, "first", "second"));
+			assert_int_equal(OPS_SUCCEEDED, perform_operation(op, ops, NULL, "first",
+						"second"));
 		}
 	}
 	ops_free(ops);

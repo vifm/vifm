@@ -215,8 +215,11 @@ int fops_is_dir_writable(DirRole dir_role, const char path[]);
 
 TSTATIC_DEFS(
 	struct ext_edit_t;
+	struct progress_data_t;
+
 	char ** edit_list(struct ext_edit_t *ext_edit, size_t orig_len, char *orig[],
 		int *edited_len, int load_always);
+	struct progress_data_t * alloc_progress_data(int bg, void *info);
 )
 
 #endif /* VIFM__FOPS_COMMON_H__ */

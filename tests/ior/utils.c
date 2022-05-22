@@ -74,7 +74,7 @@ clone_file(const char src[], const char dst[])
 		.arg1.src = src,
 		.arg2.dst = dst,
 	};
-	assert_success(iop_cp(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_cp(&args));
 }
 
 void
@@ -83,7 +83,7 @@ delete_file(const char name[])
 	io_args_t args = {
 		.arg1.path = name,
 	};
-	assert_success(iop_rmfile(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 }
 
 void
@@ -92,7 +92,7 @@ delete_dir(const char name[])
 	io_args_t args = {
 		.arg1.path = name,
 	};
-	assert_success(iop_rmdir(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, iop_rmdir(&args));
 }
 
 void
@@ -101,7 +101,7 @@ delete_tree(const char name[])
 	io_args_t args = {
 		.arg1.path = name,
 	};
-	assert_success(ior_rm(&args));
+	assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
 }
 
 int

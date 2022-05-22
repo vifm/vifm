@@ -36,7 +36,7 @@ TEST(confirm_is_not_called_for_no_overwrite)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_failure(ior_mv(&args));
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
 		assert_int_equal(0, confirm_called);
 
 		assert_true(args.result.errors.error_count != 0);
@@ -62,7 +62,7 @@ TEST(confirm_is_called_for_file_overwrite)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 		assert_int_equal(1, confirm_called);
 
 		assert_int_equal(0, args.result.errors.error_count);
@@ -90,7 +90,7 @@ TEST(confirm_is_called_for_dir_overwrite, IF(regular_unix_user))
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_failure(ior_mv(&args));
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
 		assert_int_equal(1, confirm_called);
 
 		assert_int_equal(1, args.result.errors.error_count);
@@ -117,7 +117,7 @@ TEST(deny_to_overwrite_is_considered)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_success(ior_mv(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
 		assert_int_equal(1, confirm_called);
 
 		assert_int_equal(0, args.result.errors.error_count);

@@ -9,7 +9,8 @@
 #include "../../src/trash.h"
 #include "../../src/undo.h"
 
-static int exec_func(OPS op, void *data, const char src[], const char dst[]);
+static OpsResult exec_func(OPS op, void *data, const char src[],
+		const char dst[]);
 
 static char trash_path[PATH_MAX + 1];
 static char full_src[PATH_MAX + 1];
@@ -80,10 +81,10 @@ TEST(clearing_all_commands_in_all_trashes)
 	assert_true(un_last_group_empty());
 }
 
-static int
+static OpsResult
 exec_func(OPS op, void *data, const char src[], const char dst[])
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

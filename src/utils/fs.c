@@ -336,7 +336,7 @@ make_path(const char dir_name[], mode_t mode)
 		.arg3.mode = mode,
 	};
 
-	return iop_mkdir(&args);
+	return (iop_mkdir(&args) == IO_RES_SUCCEEDED ? 0 : 1);
 }
 
 int

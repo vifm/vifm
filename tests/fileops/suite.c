@@ -9,7 +9,8 @@
 #include "../../src/ui/ui.h"
 #include "../../src/undo.h"
 
-static int exec_func(OPS op, void *data, const char *src, const char *dst);
+static OpsResult exec_func(OPS op, void *data, const char src[],
+		const char dst[]);
 static void init_undo_list_for_tests(un_perform_func exec_func,
 		const int *max_levels);
 static int op_avail(OPS op);
@@ -60,10 +61,10 @@ TEARDOWN()
 	un_reset();
 }
 
-static int
+static OpsResult
 exec_func(OPS op, void *data, const char *src, const char *dst)
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 static void

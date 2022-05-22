@@ -75,7 +75,7 @@ TEST(symlink_calculated_as_zero_bytes)
 			.arg1.path = TEST_DATA_PATH "/existing-files",
 			.arg2.target = SANDBOX_PATH "/link",
 		};
-		assert_int_equal(0, iop_ln(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
 	}
 
 	ioeta_calculate(estim, SANDBOX_PATH "/link", 0);
@@ -89,7 +89,7 @@ TEST(symlink_calculated_as_zero_bytes)
 		io_args_t args = {
 			.arg1.path = SANDBOX_PATH "/link",
 		};
-		assert_int_equal(0, iop_rmfile(&args));
+		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 	}
 
 	ioeta_free(estim);

@@ -9,7 +9,8 @@
 #include "../../src/status.h"
 #include "../../src/undo.h"
 
-static int exec_func(OPS op, void *data, const char src[], const char dst[]);
+static OpsResult exec_func(OPS op, void *data, const char src[],
+		const char dst[]);
 static int op_avail(OPS op);
 
 SETUP()
@@ -64,10 +65,10 @@ TEST(undolist_allows_resetting_current_position)
 	(void)vle_keys_exec_timed_out(WK_q);
 }
 
-static int
+static OpsResult
 exec_func(OPS op, void *data, const char src[], const char dst[])
 {
-	return 0;
+	return OPS_SUCCEEDED;
 }
 
 static int
