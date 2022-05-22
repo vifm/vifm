@@ -133,6 +133,9 @@
 
 	Fixed segfault on ignoring an error from :touch with 'syscalls' set.
 
+	Fixed operations ignored via retry/ignore/abort prompt still being added
+	to undo history.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

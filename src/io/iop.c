@@ -850,7 +850,7 @@ retry_wrapper(iop_func func, io_args_t *args)
 				continue;
 
 			case IO_ECR_IGNORE:
-				result = IO_RES_SUCCEEDED;
+				result = IO_RES_SKIPPED;
 				if(args->estim != NULL)
 				{
 					/* When we ignore a file, in order to make progress look nice pretend

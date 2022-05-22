@@ -1003,6 +1003,7 @@ exec_io_op(ops_t *ops, IoRes (*func)(io_args_t *), io_args_t *args,
 	switch(func(args))
 	{
 		case IO_RES_SUCCEEDED: result = OPS_SUCCEEDED; break;
+		case IO_RES_SKIPPED:   result = OPS_SKIPPED; break;
 		case IO_RES_FAILED:    result = OPS_FAILED; break;
 	}
 	curr_ops = NULL;

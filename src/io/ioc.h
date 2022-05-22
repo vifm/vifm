@@ -48,6 +48,7 @@ IoCrs;
 typedef enum
 {
 	IO_RES_SUCCEEDED, /* Operation has succeeded. */
+	IO_RES_SKIPPED,   /* Operation was rejected by the user. */
 	IO_RES_FAILED,    /* Operation has failed. */
 }
 IoRes;

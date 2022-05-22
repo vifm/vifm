@@ -493,6 +493,7 @@ vr_from_io_res(IoRes result)
 	switch(result)
 	{
 		case IO_RES_SUCCEEDED:
+		case IO_RES_SKIPPED:
 			return VR_OK;
 		case IO_RES_FAILED:
 			return VR_ERROR;
