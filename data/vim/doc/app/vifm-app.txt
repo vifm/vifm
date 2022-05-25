@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 Mar 28
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 May 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3541,9 +3541,15 @@ changed.
                                                *vifm-'iooptions'*
 iooptions
 type: set
-default:
+default: datasync
 
 Controls details of file operations.  The following values are available:
+ - datasync - periodically synchronize writes on copying files when
+              |vifm-'syscalls'| is set.
+              (This makes copying last as long as it takes to actually write
+              data to the medium, which is slower than you might expect;
+              however, this also prevents system hanging due to filling memory
+              with file-system cache.)
  - fastfilecloning - perform fast file cloning (copy-on-write), when available
                      (available on Linux and btrfs file system).
 

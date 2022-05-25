@@ -24,6 +24,10 @@
 	automatically skip files that exist at destination instead of refusing to
 	proceed.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Added "datasync" value to 'iooptions' option to configure whether writes
+	on file copying when 'syscalls' is on are synchronized periodically.
+	Thanks to Andrew Savchenko and Afz.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

@@ -430,6 +430,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.arg3.crs = cp_args->arg3.crs,
 					/* It's safe to always use fast file cloning on moving files. */
 					.arg4.fast_file_cloning = cp ? cp_args->arg4.fast_file_cloning : 1,
+					.arg4.data_sync = cp_args->arg4.data_sync,
 
 					.cancellation = cp_args->cancellation,
 					.confirm = cp_args->confirm,

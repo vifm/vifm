@@ -118,8 +118,13 @@ struct io_args_t
 
 	union
 	{
-		/* Whether try to use O(1) file cloning feature of btrfs. */
-		int fast_file_cloning;
+		struct
+		{
+			/* Whether try to use O(1) file cloning feature of btrfs. */
+			unsigned int fast_file_cloning : 1;
+			/* Whether to call fdatasync() periodically. */
+			unsigned int data_sync : 1;
+		};
 	}
 	arg4;
 

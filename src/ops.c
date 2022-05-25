@@ -195,6 +195,7 @@ ops_alloc(OPS main_op, int bg, const char descr[], const char base_dir[],
 	update_string(&ops->delete_prg, cfg.delete_prg);
 	ops->use_system_calls = cfg.use_system_calls;
 	ops->fast_file_cloning = cfg.fast_file_cloning;
+	ops->data_sync = cfg.data_sync;
 
 	ops->choose = choose;
 	ops->confirm = confirm;
@@ -473,6 +474,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 	const int fast_file_cloning = (ops == NULL)
 	                             ? cfg.fast_file_cloning
 	                             : ops->fast_file_cloning;
+	const int data_sync = (ops == NULL ? cfg.data_sync : ops->data_sync);
 
 	if(!ops_uses_syscalls(ops))
 	{
@@ -541,7 +543,10 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		.arg1.src = src,
 		.arg2.dst = dst,
 		.arg3.crs = ca_to_crs(conflict_action),
-		.arg4.fast_file_cloning = fast_file_cloning,
+		.arg4 = {
+			.fast_file_cloning = fast_file_cloning,
+			.data_sync = data_sync,
+		},
 	};
 	return exec_io_op(ops, &ior_cp, &args, data == NULL);
 }
@@ -636,8 +641,11 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 			.arg1.src = src,
 			.arg2.dst = dst,
 			.arg3.crs = ca_to_crs(conflict_action),
-			/* It's safe to always use fast file cloning on moving files. */
-			.arg4.fast_file_cloning = 1,
+			.arg4 = {
+				/* It's safe to always use fast file cloning on moving files. */
+				.fast_file_cloning = 1,
+				.data_sync = (ops == NULL ? cfg.data_sync : ops->data_sync),
+			},
 		};
 		result = exec_io_op(ops, &ior_mv, &args, data == NULL);
 	}

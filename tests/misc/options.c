@@ -792,5 +792,17 @@ TEST(autocd)
 	assert_false(cfg.auto_cd);
 }
 
+TEST(iooptions)
+{
+	assert_success(exec_commands("set iooptions=fastfilecloning", &lwin,
+				CIT_COMMAND));
+	assert_true(cfg.fast_file_cloning);
+	assert_false(cfg.data_sync);
+
+	assert_success(exec_commands("set iooptions=datasync", &lwin, CIT_COMMAND));
+	assert_false(cfg.fast_file_cloning);
+	assert_true(cfg.data_sync);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
