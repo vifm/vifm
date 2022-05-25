@@ -223,6 +223,8 @@ cfg_init(void)
 	cfg.name_dec_count = 0;
 
 	cfg.fast_file_cloning = 0;
+	cfg.data_sync = 1;
+
 	cfg.cvoptions = 0;
 
 	cfg.case_override = 0;

@@ -553,6 +553,7 @@ iop_cp_internal(io_args_t *args)
 		size_t nread = (size_t)-1;
 #ifndef _WIN32
 		size_t ncopied = 0U;
+		const int data_sync = args->arg4.data_sync;
 #endif
 		while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 		{
@@ -576,7 +577,7 @@ iop_cp_internal(io_args_t *args)
 			/* Force flushing data to disk to not pollute RAM with this data too
 			 * much. */
 			ncopied += nread;
-			if(ncopied >= FLUSH_SIZE)
+			if(data_sync && ncopied >= FLUSH_SIZE)
 			{
 				(void)os_fdatasync(fileno(out));
 				ncopied -= FLUSH_SIZE;

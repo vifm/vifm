@@ -362,6 +362,7 @@ ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 /* Possible flags of 'iooptions'. */
 static const char *iooptions_vals[][2] = {
 	{ "fastfilecloning", "use COW if FS supports it" },
+	{ "datasync",        "synchronize writes to storage" },
 };
 
 /* Possible flags of 'shortmess' and their count. */
@@ -1237,7 +1238,8 @@ init_sizefmt(optval_t *val)
 static void
 init_iooptions(optval_t *val)
 {
-	val->set_items = (cfg.fast_file_cloning != 0) << 0;
+	val->set_items = (cfg.fast_file_cloning != 0) << 0
+	               | (cfg.data_sync         != 0) << 1;
 }
 
 /* Default-initializes whether to display file numbers. */
@@ -2197,6 +2199,7 @@ static void
 iooptions_handler(OPT_OP op, optval_t val)
 {
 	cfg.fast_file_cloning = ((val.set_items & 1) != 0);
+	cfg.data_sync = ((val.set_items & 2) != 0);
 }
 
 static void

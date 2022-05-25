@@ -320,6 +320,8 @@ typedef struct config_t
 
 	/* Controls use of fast file cloning for file systems that support it. */
 	int fast_file_cloning;
+	/* Force writing data onto media during file copying. */
+	int data_sync;
 
 	/* Whether various things should be reset on entering/leaving custom views. */
 	int cvoptions;
