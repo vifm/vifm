@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 May 25
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 May 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4502,13 +4502,16 @@ sequences that can be used in place of them.  They are:
 <c-@>                                          {only for *nix}
     Control + Space.
 <a-a>,<a-b>,...,<a-z>
-    Alt + some key.
 <m-a>,<m-b>,...,<m-z>
     Alt + some key.
 <a-c-a>,<a-c-b>,...,<a-c-z>                    {only for *nix}
-    Alt + Ctrl + some key.
 <m-c-a>,<m-c-b>,...,<m-c-z>                    {only for *nix}
     Alt + Ctrl + some key.
+<a-s-a>,<a-s-b>,...,<a-s-z>                    {only for *nix}
+<s-a-a>,<s-a-b>,...,<s-a-z>                    {only for *nix}
+<m-s-a>,<m-s-b>,...,<m-s-z>                    {only for *nix}
+<s-m-a>,<s-m-b>,...,<s-m-z>                    {only for *nix}
+    Alt + Shift + some key.
 <f0> - <f63>
     functional keys.
 <c-f1>,...,<c-f12>                             {only for MS-Windows}

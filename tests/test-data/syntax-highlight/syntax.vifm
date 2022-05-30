@@ -171,8 +171,12 @@ nnoremap gh :cd $HOME<cr>
 " "<home>" as bracket notation
 cnoremap <c-b> <home>
 
-" "<insert>" as bracket notation
-nnoremap <insert> something
+" left-hand side should be highlighted as bracket notation
+nnoremap <insert> rhs
+nnoremap <a-s-a> rhs
+nnoremap <s-a-b> rhs
+nnoremap <m-s-c> rhs
+nnoremap <s-m-d> rhs
 
 " "windo" and "normal" should be highlighted as :command
 " "<cr>" should NOT be highlighted as bracket notation

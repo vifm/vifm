@@ -28,6 +28,9 @@
 	on file copying when 'syscalls' is on are synchronized periodically.
 	Thanks to Andrew Savchenko and Afz.
 
+	Added angle-bracket notation for alpha keys with Alt and Shift
+	modifiers (<[am]-s-[a-z]>, <s-[am]-[a-z]>). Thanks to Reece Petersen.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
