@@ -1114,13 +1114,6 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 	};
 	curr_stats.preview_hint = &parea;
 
-	if(kind != VK_TEXTUAL)
-	{
-		/* Wait a bit to let terminal emulator do actual refresh (at least some of
-		 * them need this). */
-		usleep(cfg.graphics_delay);
-	}
-
 	const char *error;
 	const char *viewer = (vi->raw ? NULL : vi->curr_viewer);
 
@@ -1237,6 +1230,14 @@ switch_viewer(modview_info_t *vi, int offset)
 	if(i == vi->viewers.nitems)
 	{
 		return;
+	}
+
+	if(ft_viewer_kind(vi->curr_viewer) != VK_TEXTUAL)
+	{
+		cleanup(vi);
+		/* Wait a bit to let terminal emulator do actual refresh (at least some of
+		 * them need this). */
+		usleep(cfg.graphics_delay);
 	}
 
 	i = (i + vi->viewers.nitems + offset)%vi->viewers.nitems;
