@@ -94,8 +94,13 @@ PromptState;
 typedef struct
 {
 	/* Mode management. */
-	int sub_mode_allows_ee; /* Whether current submode allows external editing. */
-	void *sub_mode_ptr;     /* Extra parameter for submode-related calls. */
+
+	/* Kind of command-line mode. */
+	CmdLineSubmode sub_mode;
+	/* Whether current submode allows external editing. */
+	int sub_mode_allows_ee;
+	/* Extra parameter for submode-related calls. */
+	void *sub_mode_ptr;
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
@@ -137,7 +142,6 @@ typedef struct
 line_stats_t;
 
 static int prev_mode;
-static CmdLineSubmode sub_mode;
 static line_stats_t input_stat;
 
 /* Width of the status bar. */
@@ -153,7 +157,8 @@ static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete, int allow_ee, void *sub_mode_ptr);
+		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
+		void *sub_mode_ptr);
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
@@ -445,7 +450,8 @@ input_line_changed(void)
 {
 	static wchar_t *previous;
 
-	if(!cfg.inc_search || (!input_stat.search_mode && sub_mode != CLS_FILTER))
+	if(!cfg.inc_search ||
+			(!input_stat.search_mode && input_stat.sub_mode != CLS_FILTER))
 	{
 		return;
 	}
@@ -509,7 +515,7 @@ handle_empty_input(void)
 		ui_view_reset_search_highlight(curr_view);
 	}
 
-	if(sub_mode == CLS_FILTER)
+	if(input_stat.sub_mode == CLS_FILTER)
 	{
 		set_local_filter("");
 	}
@@ -522,7 +528,7 @@ handle_nonempty_input(void)
 	char *const mbinput = to_multibyte(input_stat.line);
 	int backward = 0;
 
-	switch(sub_mode)
+	switch(input_stat.sub_mode)
 	{
 		int result;
 
@@ -610,13 +616,13 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
+modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr)
 {
 	wchar_t *wcmd;
 	const wchar_t *wprompt;
 	complete_cmd_func complete_func = NULL;
 
-	if(cl_sub_mode == CLS_FILTER && curr_view->custom.type == CV_DIFF)
+	if(sub_mode == CLS_FILTER && curr_view->custom.type == CV_DIFF)
 	{
 		show_error_msg("Filtering", "No local filter for diff views");
 		return;
@@ -628,8 +634,6 @@ modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 		show_error_msg("Error", "Not enough memory");
 		return;
 	}
-
-	sub_mode = cl_sub_mode;
 
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
@@ -654,7 +658,8 @@ modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 		wprompt = L"E";
 	}
 
-	prepare_cmdline_mode(wprompt, wcmd, complete_func, /*allow_ee=*/0, ptr);
+	prepare_cmdline_mode(wprompt, wcmd, complete_func, sub_mode, /*allow_ee=*/0,
+			ptr);
 	free(wcmd);
 }
 
@@ -662,20 +667,16 @@ void
 modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee)
 {
-	wchar_t *wprompt;
-	wchar_t *wcmd;
+	wchar_t *wprompt = to_wide_force(prompt);
+	wchar_t *wcmd = to_wide_force(cmd);
 
-	sub_mode = CLS_PROMPT;
-
-	wprompt = to_wide_force(prompt);
-	wcmd = to_wide_force(cmd);
 	if(wprompt == NULL || wcmd == NULL)
 	{
 		show_error_msg("Error", "Not enough memory");
 	}
 	else
 	{
-		prepare_cmdline_mode(wprompt, wcmd, complete, allow_ee, cb);
+		prepare_cmdline_mode(wprompt, wcmd, complete, CLS_PROMPT, allow_ee, cb);
 	}
 
 	free(wprompt);
@@ -728,8 +729,10 @@ modcline_redraw(void)
  * operating. */
 static void
 prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete, int allow_ee, void *sub_mode_ptr)
+		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
+		void *sub_mode_ptr)
 {
+	input_stat.sub_mode = sub_mode;
 	input_stat.sub_mode_allows_ee = allow_ee;
 	input_stat.sub_mode_ptr = sub_mode_ptr;
 
@@ -811,12 +814,12 @@ set_view_port(void)
 		return;
 	}
 
-	if(sub_mode != CLS_FILTER || !is_line_edited())
+	if(input_stat.sub_mode != CLS_FILTER || !is_line_edited())
 	{
 		curr_view->top_line = input_stat.old_top;
 		curr_view->list_pos = input_stat.old_pos;
 	}
-	else if(sub_mode == CLS_FILTER)
+	else if(input_stat.sub_mode == CLS_FILTER)
 	{
 		/* Filtering itself doesn't update status line. */
 		ui_stat_update(curr_view, 1);
@@ -907,7 +910,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	save_input_to_history(keys_info, mbstr);
 	free(mbstr);
 
-	if(sub_mode != CLS_FILTER)
+	if(input_stat.sub_mode != CLS_FILTER)
 	{
 		input_stat.line[0] = L'\0';
 		input_line_changed();
@@ -923,11 +926,11 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 			fpos_set_pos(curr_view, marks_find_in_view(curr_view, '<'));
 		}
 	}
-	if(sub_mode == CLS_COMMAND)
+	if(input_stat.sub_mode == CLS_COMMAND)
 	{
 		curr_stats.save_msg = exec_commands("", curr_view, CIT_COMMAND);
 	}
-	else if(sub_mode == CLS_FILTER)
+	else if(input_stat.sub_mode == CLS_FILTER)
 	{
 		local_filter_cancel(curr_view);
 		curr_view->top_line = input_stat.old_top;
@@ -941,14 +944,15 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
-	const CmdInputType type = cls_to_editable_cit(sub_mode);
-	const int prompt_ee = sub_mode == CLS_PROMPT && input_stat.sub_mode_allows_ee;
+	const CmdInputType type = cls_to_editable_cit(input_stat.sub_mode);
+	const int prompt_ee = (input_stat.sub_mode == CLS_PROMPT)
+	                   && input_stat.sub_mode_allows_ee;
 	if(type != (CmdInputType)-1 || prompt_ee)
 	{
 		char *const mbstr = to_multibyte(input_stat.line);
 		leave_cmdline_mode();
 
-		if(sub_mode == CLS_FILTER)
+		if(input_stat.sub_mode == CLS_FILTER)
 		{
 			local_filter_cancel(curr_view);
 		}
@@ -1057,8 +1061,8 @@ should_quit_on_backspace(void)
 {
 	return input_stat.index == 0
 	    && input_stat.len == 0
-	    && sub_mode != CLS_PROMPT
-	    && (sub_mode != CLS_FILTER || no_initial_line());
+	    && input_stat.sub_mode != CLS_PROMPT
+	    && (input_stat.sub_mode != CLS_FILTER || no_initial_line());
 }
 
 /* Checks whether initial line was empty.  Returns non-zero if so, otherwise
@@ -1348,6 +1352,8 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
+	CmdLineSubmode sub_mode = input_stat.sub_mode;
+
 	if(is_input_line_empty() && sub_mode == CLS_MENU_COMMAND)
 	{
 		leave_cmdline_mode();
@@ -1560,7 +1566,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 	{
 		hists_search_save(input);
 	}
-	else if(sub_mode == CLS_COMMAND)
+	else if(input_stat.sub_mode == CLS_COMMAND)
 	{
 		const int mapped_input = input_stat.enter_mapping_state != 0 &&
 			vle_keys_mapping_state() == input_stat.enter_mapping_state;
@@ -1570,7 +1576,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 			hists_commands_save(input);
 		}
 	}
-	else if(sub_mode == CLS_PROMPT)
+	else if(input_stat.sub_mode == CLS_PROMPT)
 	{
 		hists_prompt_save(input);
 	}
@@ -1985,7 +1991,7 @@ paste_str(const char str[], int allow_escaping)
 
 	stop_completion();
 
-	escaped = (allow_escaping && sub_mode == CLS_COMMAND)
+	escaped = (allow_escaping && input_stat.sub_mode == CLS_COMMAND)
 	        ? escape_cmd_for_pasting(str)
 	        : NULL;
 	if(escaped != NULL)
@@ -2104,7 +2110,7 @@ cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t *wide;
 
-	if(sub_mode != CLS_COMMAND)
+	if(input_stat.sub_mode != CLS_COMMAND)
 	{
 		return;
 	}
@@ -2449,7 +2455,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 static const hist_t *
 pick_hist(void)
 {
-	if(sub_mode == CLS_COMMAND)
+	if(input_stat.sub_mode == CLS_COMMAND)
 	{
 		return &curr_stats.cmd_hist;
 	}
@@ -2457,11 +2463,11 @@ pick_hist(void)
 	{
 		return &curr_stats.search_hist;
 	}
-	if(sub_mode == CLS_PROMPT)
+	if(input_stat.sub_mode == CLS_PROMPT)
 	{
 		return &curr_stats.prompt_hist;
 	}
-	if(sub_mode == CLS_FILTER)
+	if(input_stat.sub_mode == CLS_FILTER)
 	{
 		return &curr_stats.filter_hist;
 	}
@@ -2596,7 +2602,8 @@ line_completion(line_stats_t *stat)
 		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
-		if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
+		if(input_stat.sub_mode == CLS_COMMAND ||
+				input_stat.sub_mode == CLS_MENU_COMMAND)
 		{
 			const CmdLineLocation ipt = get_cmdline_location(line_mb,
 					line_mb + strlen(line_mb));
