@@ -95,6 +95,8 @@ typedef struct
 {
 	/* Mode management. */
 
+	/* Mode that entered command-line mode. */
+	int prev_mode;
 	/* Kind of command-line mode. */
 	CmdLineSubmode sub_mode;
 	/* Whether current submode allows external editing. */
@@ -141,7 +143,6 @@ typedef struct
 }
 line_stats_t;
 
-static int prev_mode;
 static line_stats_t input_stat;
 
 /* Width of the status bar. */
@@ -479,13 +480,13 @@ input_line_changed(void)
 		handle_nonempty_input();
 	}
 
-	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
+	if(input_stat.prev_mode != MENU_MODE && input_stat.prev_mode != VISUAL_MODE)
 	{
 		fpos_set_pos(curr_view, curr_view->list_pos);
 		qv_ui_updated();
 		redraw_current_view();
 	}
-	else if(prev_mode == MENU_MODE)
+	else if(input_stat.prev_mode == MENU_MODE)
 	{
 		modmenu_partial_redraw();
 	}
@@ -501,7 +502,7 @@ static void
 handle_empty_input(void)
 {
 	/* Clear selection/highlight. */
-	if(prev_mode == MENU_MODE)
+	if(input_stat.prev_mode == MENU_MODE)
 	{
 		(void)menus_search("", input_stat.sub_mode_ptr, 0);
 	}
@@ -510,7 +511,7 @@ handle_empty_input(void)
 		flist_sel_stash(curr_view);
 	}
 
-	if(prev_mode != MENU_MODE)
+	if(input_stat.prev_mode != MENU_MODE)
 	{
 		ui_view_reset_search_highlight(curr_view);
 	}
@@ -690,18 +691,18 @@ modcline_redraw(void)
 	 * places. */
 	curs_set(0);
 
-	if(prev_mode == MENU_MODE)
+	if(input_stat.prev_mode == MENU_MODE)
 	{
 		modmenu_full_redraw();
 	}
 	else
 	{
 		ui_redraw_as_background();
-		if(prev_mode == SORT_MODE)
+		if(input_stat.prev_mode == SORT_MODE)
 		{
 			redraw_sort_dialog();
 		}
-		else if(prev_mode == ATTR_MODE)
+		else if(input_stat.prev_mode == ATTR_MODE)
 		{
 			redraw_attr_dialog();
 		}
@@ -716,7 +717,7 @@ modcline_redraw(void)
 		draw_wild_menu(-1);
 	}
 
-	if(prev_mode != MENU_MODE)
+	if(input_stat.prev_mode != MENU_MODE)
 	{
 		update_all_windows();
 	}
@@ -736,9 +737,10 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.sub_mode_allows_ee = allow_ee;
 	input_stat.sub_mode_ptr = sub_mode_ptr;
 
-	line_width = getmaxx(stdscr);
-	prev_mode = vle_mode_get();
+	input_stat.prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
+
+	line_width = getmaxx(stdscr);
 
 	ui_sb_lock();
 
@@ -779,7 +781,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 
 	curr_stats.save_msg = 1;
 
-	if(prev_mode == NORMAL_MODE)
+	if(input_stat.prev_mode == NORMAL_MODE)
 		init_commands();
 
 	/* Make cursor visible only after all initial draws. */
@@ -793,7 +795,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 static void
 save_view_port(void)
 {
-	if(prev_mode != MENU_MODE)
+	if(input_stat.prev_mode != MENU_MODE)
 	{
 		input_stat.old_top = curr_view->top_line;
 		input_stat.old_pos = curr_view->list_pos;
@@ -808,7 +810,7 @@ save_view_port(void)
 static void
 set_view_port(void)
 {
-	if(prev_mode == MENU_MODE)
+	if(input_stat.prev_mode == MENU_MODE)
 	{
 		modmenu_restore_pos();
 		return;
@@ -825,7 +827,7 @@ set_view_port(void)
 		ui_stat_update(curr_view, 1);
 	}
 
-	if(prev_mode == VISUAL_MODE)
+	if(input_stat.prev_mode == VISUAL_MODE)
 	{
 		modvis_update();
 	}
@@ -861,7 +863,7 @@ leave_cmdline_mode(void)
 	{
 		stats_redraw_later();
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
-		if(prev_mode == MENU_MODE)
+		if(input_stat.prev_mode == MENU_MODE)
 		{
 			wresize(menu_win, getmaxy(stdscr) - 1, getmaxx(stdscr));
 			modmenu_partial_redraw();
@@ -881,7 +883,7 @@ leave_cmdline_mode(void)
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		vle_mode_set(prev_mode, VMT_PRIMARY);
+		vle_mode_set(input_stat.prev_mode, VMT_PRIMARY);
 	}
 
 	if(!vle_mode_is(MENU_MODE))
@@ -889,7 +891,7 @@ leave_cmdline_mode(void)
 		ui_ruler_update(curr_view, 1);
 	}
 
-	if(prev_mode != MENU_MODE && prev_mode != VIEW_MODE)
+	if(input_stat.prev_mode != MENU_MODE && input_stat.prev_mode != VIEW_MODE)
 	{
 		redraw_current_view();
 	}
@@ -918,7 +920,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 
 	leave_cmdline_mode();
 
-	if(prev_mode == VISUAL_MODE)
+	if(input_stat.prev_mode == VISUAL_MODE)
 	{
 		if(!input_stat.search_mode)
 		{
@@ -1366,7 +1368,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	leave_cmdline_mode();
 
-	if(prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
+	if(input_stat.prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
 			sub_mode != CLS_VBSEARCH)
 	{
 		modvis_leave(curr_stats.save_msg, 1, 0);
@@ -1415,7 +1417,8 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			ui_view_schedule_reload(curr_view);
 		}
 	}
-	else if(!cfg.inc_search || prev_mode == VIEW_MODE || input[0] == '\0')
+	else if(!cfg.inc_search || input_stat.prev_mode == VIEW_MODE ||
+			input[0] == '\0')
 	{
 		const char *const pattern = (input[0] == '\0') ? hists_search_last()
 		                                               : input;
@@ -1446,7 +1449,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(cfg.inc_search && input_stat.search_mode)
 	{
-		if(prev_mode == MENU_MODE)
+		if(input_stat.prev_mode == MENU_MODE)
 		{
 			modmenu_partial_redraw();
 			menus_search_print_msg(input_stat.sub_mode_ptr);
@@ -1984,7 +1987,7 @@ paste_str(const char str[], int allow_escaping)
 	char *escaped;
 	wchar_t *wide;
 
-	if(prev_mode == MENU_MODE)
+	if(input_stat.prev_mode == MENU_MODE)
 	{
 		return;
 	}
@@ -2556,7 +2559,7 @@ update_cmdline_size(void)
 	mvwin(status_bar, getmaxy(stdscr) - required_height, 0);
 	wresize(status_bar, required_height, line_width);
 
-	if(prev_mode != MENU_MODE)
+	if(input_stat.prev_mode != MENU_MODE)
 	{
 		int stat_height = cfg.wild_menu
 		               && cfg.wild_popup

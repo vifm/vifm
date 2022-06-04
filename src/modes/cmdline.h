@@ -91,6 +91,8 @@ typedef struct
 {
 	/* Mode management. */
 
+	/* Mode that entered command-line mode. */
+	int prev_mode;
 	/* Kind of command-line mode. */
 	CmdLineSubmode sub_mode;
 	/* Whether current submode allows external editing. */
