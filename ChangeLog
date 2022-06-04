@@ -28,6 +28,12 @@
 	on file copying when 'syscalls' is on are synchronized periodically.
 	Thanks to Andrew Savchenko and Afz.
 
+	Added angle-bracket notation for alpha keys with Alt and Shift
+	modifiers (<[am]-s-[a-z]>, <s-[am]-[a-z]>). Thanks to Reece Petersen.
+
+	Added angle-bracket notation for numeric keys with Alt
+	modifier (<[am]-[0-9]>). Thanks to anonymous at Vifm Q2A site.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
@@ -139,6 +145,9 @@
 
 	Fixed operations ignored via retry/ignore/abort prompt still being added
 	to undo history.
+
+	Fixed graphics not being cleared properly on switching between viewers in
+	view mode.
 
 0.12-beta to 0.12 (2021-09-29)
 
