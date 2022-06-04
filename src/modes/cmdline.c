@@ -93,6 +93,9 @@ PromptState;
 /* Holds state of the command-line editing mode. */
 typedef struct
 {
+	/* Mode management. */
+	int sub_mode_allows_ee; /* Whether current submode allows external editing. */
+
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
 	wchar_t *initial_line;        /* Initial state of the line. */
@@ -135,11 +138,10 @@ line_stats_t;
 static int prev_mode;
 static CmdLineSubmode sub_mode;
 static line_stats_t input_stat;
+static void *sub_mode_ptr;
+
 /* Width of the status bar. */
 static int line_width = 1;
-static void *sub_mode_ptr;
-/* Whether current submode allows external editing. */
-static int sub_mode_allows_ee;
 
 static int def_handler(wchar_t key);
 static void update_cmdline_text(line_stats_t *stat);
@@ -151,7 +153,7 @@ static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete);
+		complete_cmd_func complete, int allow_ee);
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
@@ -629,7 +631,6 @@ modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 
 	sub_mode_ptr = ptr;
 	sub_mode = cl_sub_mode;
-	sub_mode_allows_ee = 0;
 
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
@@ -654,7 +655,7 @@ modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 		wprompt = L"E";
 	}
 
-	prepare_cmdline_mode(wprompt, wcmd, complete_func);
+	prepare_cmdline_mode(wprompt, wcmd, complete_func, /*allow_ee=*/0);
 	free(wcmd);
 }
 
@@ -667,7 +668,6 @@ modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 
 	sub_mode_ptr = cb;
 	sub_mode = CLS_PROMPT;
-	sub_mode_allows_ee = allow_ee;
 
 	wprompt = to_wide_force(prompt);
 	wcmd = to_wide_force(cmd);
@@ -677,7 +677,7 @@ modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 	}
 	else
 	{
-		prepare_cmdline_mode(wprompt, wcmd, complete);
+		prepare_cmdline_mode(wprompt, wcmd, complete, allow_ee);
 	}
 
 	free(wprompt);
@@ -730,8 +730,10 @@ modcline_redraw(void)
  * operating. */
 static void
 prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete)
+		complete_cmd_func complete, int allow_ee)
 {
+	input_stat.sub_mode_allows_ee = allow_ee;
+
 	line_width = getmaxx(stdscr);
 	prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
@@ -941,7 +943,7 @@ static void
 cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
 	const CmdInputType type = cls_to_editable_cit(sub_mode);
-	const int prompt_ee = sub_mode == CLS_PROMPT && sub_mode_allows_ee;
+	const int prompt_ee = sub_mode == CLS_PROMPT && input_stat.sub_mode_allows_ee;
 	if(type != (CmdInputType)-1 || prompt_ee)
 	{
 		char *const mbstr = to_multibyte(input_stat.line);

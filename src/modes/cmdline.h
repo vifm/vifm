@@ -89,6 +89,9 @@ PromptState;
 /* Holds state of the command-line editing mode. */
 typedef struct
 {
+	/* Mode management. */
+	int sub_mode_allows_ee; /* Whether current submode allows external editing. */
+
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
 	wchar_t *initial_line;        /* Initial state of the line. */
