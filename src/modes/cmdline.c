@@ -95,6 +95,7 @@ typedef struct
 {
 	/* Mode management. */
 	int sub_mode_allows_ee; /* Whether current submode allows external editing. */
+	void *sub_mode_ptr;     /* Extra parameter for submode-related calls. */
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
@@ -138,7 +139,6 @@ line_stats_t;
 static int prev_mode;
 static CmdLineSubmode sub_mode;
 static line_stats_t input_stat;
-static void *sub_mode_ptr;
 
 /* Width of the status bar. */
 static int line_width = 1;
@@ -153,7 +153,7 @@ static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete, int allow_ee);
+		complete_cmd_func complete, int allow_ee, void *sub_mode_ptr);
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
@@ -497,7 +497,7 @@ handle_empty_input(void)
 	/* Clear selection/highlight. */
 	if(prev_mode == MENU_MODE)
 	{
-		(void)menus_search("", sub_mode_ptr, 0);
+		(void)menus_search("", input_stat.sub_mode_ptr, 0);
 	}
 	else if(cfg.hl_search)
 	{
@@ -538,8 +538,8 @@ handle_nonempty_input(void)
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = menus_search(mbinput, sub_mode_ptr, 0);
-			update_state(result, menus_search_matched(sub_mode_ptr));
+			result = menus_search(mbinput, input_stat.sub_mode_ptr, 0);
+			update_state(result, menus_search_matched(input_stat.sub_mode_ptr));
 			break;
 		case CLS_FILTER:
 			set_local_filter(mbinput);
@@ -629,7 +629,6 @@ modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 		return;
 	}
 
-	sub_mode_ptr = ptr;
 	sub_mode = cl_sub_mode;
 
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
@@ -655,7 +654,7 @@ modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 		wprompt = L"E";
 	}
 
-	prepare_cmdline_mode(wprompt, wcmd, complete_func, /*allow_ee=*/0);
+	prepare_cmdline_mode(wprompt, wcmd, complete_func, /*allow_ee=*/0, ptr);
 	free(wcmd);
 }
 
@@ -666,7 +665,6 @@ modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 	wchar_t *wprompt;
 	wchar_t *wcmd;
 
-	sub_mode_ptr = cb;
 	sub_mode = CLS_PROMPT;
 
 	wprompt = to_wide_force(prompt);
@@ -677,7 +675,7 @@ modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 	}
 	else
 	{
-		prepare_cmdline_mode(wprompt, wcmd, complete, allow_ee);
+		prepare_cmdline_mode(wprompt, wcmd, complete, allow_ee, cb);
 	}
 
 	free(wprompt);
@@ -730,9 +728,10 @@ modcline_redraw(void)
  * operating. */
 static void
 prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete, int allow_ee)
+		complete_cmd_func complete, int allow_ee, void *sub_mode_ptr)
 {
 	input_stat.sub_mode_allows_ee = allow_ee;
+	input_stat.sub_mode_ptr = sub_mode_ptr;
 
 	line_width = getmaxx(stdscr);
 	prev_mode = vle_mode_get();
@@ -1431,7 +1430,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
 				stats_refresh_later();
-				curr_stats.save_msg = menus_search(pattern, sub_mode_ptr, 1);
+				curr_stats.save_msg = menus_search(pattern, input_stat.sub_mode_ptr, 1);
 				break;
 
 			default:
@@ -1444,7 +1443,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		if(prev_mode == MENU_MODE)
 		{
 			modmenu_partial_redraw();
-			menus_search_print_msg(sub_mode_ptr);
+			menus_search_print_msg(input_stat.sub_mode_ptr);
 			curr_stats.save_msg = 1;
 		}
 		else
@@ -1581,7 +1580,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 static void
 finish_prompt_submode(const char input[])
 {
-	const prompt_cb cb = (prompt_cb)sub_mode_ptr;
+	const prompt_cb cb = (prompt_cb)input_stat.sub_mode_ptr;
 
 	modes_post();
 	modes_pre();

@@ -91,6 +91,7 @@ typedef struct
 {
 	/* Mode management. */
 	int sub_mode_allows_ee; /* Whether current submode allows external editing. */
+	void *sub_mode_ptr;     /* Extra parameter for submode-related calls. */
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
