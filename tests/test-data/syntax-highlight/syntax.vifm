@@ -177,6 +177,8 @@ nnoremap <a-s-a> rhs
 nnoremap <s-a-b> rhs
 nnoremap <m-s-c> rhs
 nnoremap <s-m-d> rhs
+nnoremap <a-0> rhs
+nnoremap <m-1> rhs
 
 " "windo" and "normal" should be highlighted as :command
 " "<cr>" should NOT be highlighted as bracket notation

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 May 30
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4503,6 +4503,8 @@ sequences that can be used in place of them.  They are:
     Control + Space.
 <a-a>,<a-b>,...,<a-z>
 <m-a>,<m-b>,...,<m-z>
+<a-0>,<a-1>,...,<a-9>                          {only for *nix}
+<m-0>,<m-1>,...,<m-9>                          {only for *nix}
     Alt + some key.
 <a-c-a>,<a-c-b>,...,<a-c-z>                    {only for *nix}
 <m-c-a>,<m-c-b>,...,<m-c-z>                    {only for *nix}

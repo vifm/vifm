@@ -31,6 +31,9 @@
 	Added angle-bracket notation for alpha keys with Alt and Shift
 	modifiers (<[am]-s-[a-z]>, <s-[am]-[a-z]>). Thanks to Reece Petersen.
 
+	Added angle-bracket notation for numeric keys with Alt
+	modifier (<[am]-[0-9]>). Thanks to anonymous at Vifm Q2A site.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
