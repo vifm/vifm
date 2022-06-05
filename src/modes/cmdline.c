@@ -918,25 +918,27 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 		input_line_changed();
 	}
 
+	const line_stats_t old_input_stat = input_stat;
 	leave_cmdline_mode();
 
-	if(input_stat.prev_mode == VISUAL_MODE)
+	if(old_input_stat.prev_mode == VISUAL_MODE)
 	{
-		if(!input_stat.search_mode)
+		if(!old_input_stat.search_mode)
 		{
 			modvis_leave(curr_stats.save_msg, 1, 1);
 			fpos_set_pos(curr_view, marks_find_in_view(curr_view, '<'));
 		}
 	}
-	if(input_stat.sub_mode == CLS_COMMAND)
+
+	if(old_input_stat.sub_mode == CLS_COMMAND)
 	{
 		curr_stats.save_msg = exec_commands("", curr_view, CIT_COMMAND);
 	}
-	else if(input_stat.sub_mode == CLS_FILTER)
+	else if(old_input_stat.sub_mode == CLS_FILTER)
 	{
 		local_filter_cancel(curr_view);
-		curr_view->top_line = input_stat.old_top;
-		curr_view->list_pos = input_stat.old_pos;
+		curr_view->top_line = old_input_stat.old_top;
+		curr_view->list_pos = old_input_stat.old_pos;
 		redraw_current_view();
 	}
 }
@@ -952,20 +954,24 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 	if(type != (CmdInputType)-1 || prompt_ee)
 	{
 		char *const mbstr = to_multibyte(input_stat.line);
+		const CmdLineSubmode sub_mode = input_stat.sub_mode;
+		void *const sub_mode_ptr = input_stat.sub_mode_ptr;
+		const int index = input_stat.index;
+
 		leave_cmdline_mode();
 
-		if(input_stat.sub_mode == CLS_FILTER)
+		if(sub_mode == CLS_FILTER)
 		{
 			local_filter_cancel(curr_view);
 		}
 
 		if(prompt_ee)
 		{
-			extedit_prompt(mbstr, input_stat.index + 1, input_stat.sub_mode_ptr);
+			extedit_prompt(mbstr, index + 1, sub_mode_ptr);
 		}
 		else
 		{
-			get_and_execute_command(mbstr, input_stat.index + 1, type);
+			get_and_execute_command(mbstr, index + 1, type);
 		}
 
 		free(mbstr);
@@ -1348,8 +1354,6 @@ static void
 cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	/* TODO: refactor this cmd_return() function. */
-	char *input;
-
 	stop_completion();
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -1364,17 +1368,19 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	expand_abbrev();
 
-	input = to_multibyte(input_stat.line);
+	char *input = to_multibyte(input_stat.line);
+	save_input_to_history(keys_info, input);
 
+	const int prev_mode = input_stat.prev_mode;
+	void *const sub_mode_ptr = input_stat.sub_mode_ptr;
+	const int search_mode = input_stat.search_mode;
 	leave_cmdline_mode();
 
-	if(input_stat.prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
+	if(prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
 			sub_mode != CLS_VBSEARCH)
 	{
 		modvis_leave(curr_stats.save_msg, 1, 0);
 	}
-
-	save_input_to_history(keys_info, input);
 
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
@@ -1403,7 +1409,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		finish_prompt_submode(input, input_stat.sub_mode_ptr);
+		finish_prompt_submode(input, sub_mode_ptr);
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -1417,8 +1423,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			ui_view_schedule_reload(curr_view);
 		}
 	}
-	else if(!cfg.inc_search || input_stat.prev_mode == VIEW_MODE ||
-			input[0] == '\0')
+	else if(!cfg.inc_search || prev_mode == VIEW_MODE || input[0] == '\0')
 	{
 		const char *const pattern = (input[0] == '\0') ? hists_search_last()
 		                                               : input;
@@ -1439,7 +1444,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
 				stats_refresh_later();
-				curr_stats.save_msg = menus_search(pattern, input_stat.sub_mode_ptr, 1);
+				curr_stats.save_msg = menus_search(pattern, sub_mode_ptr, 1);
 				break;
 
 			default:
@@ -1447,12 +1452,12 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 				break;
 		}
 	}
-	else if(cfg.inc_search && input_stat.search_mode)
+	else if(cfg.inc_search && search_mode)
 	{
-		if(input_stat.prev_mode == MENU_MODE)
+		if(prev_mode == MENU_MODE)
 		{
 			modmenu_partial_redraw();
-			menus_search_print_msg(input_stat.sub_mode_ptr);
+			menus_search_print_msg(sub_mode_ptr);
 			curr_stats.save_msg = 1;
 		}
 		else
