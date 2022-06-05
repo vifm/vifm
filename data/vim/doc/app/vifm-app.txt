@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 4
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1015,6 +1015,11 @@ Down                                           *vifm-c_Down*
     command-line.
 
 Ctrl-] - trigger abbreviation expansion.       *vifm-c_CTRL-]*
+
+Ctrl-R =                                       *vifm-c_CTRL-R_=*
+    insert result of evaluating an expression.  Expression is to be entered
+    via nested command-line prompt (where this key does nothing).  Expansion
+    of an erroneous expression is empty.
 
 Pasting special values~
 

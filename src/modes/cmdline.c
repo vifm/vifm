@@ -39,6 +39,8 @@
 #include "../engine/completion.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../engine/parsing.h"
+#include "../engine/var.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/color_scheme.h"
 #include "../ui/colors.h"
@@ -143,6 +145,9 @@ typedef struct
 }
 line_stats_t;
 
+/* Stashed store of the state to support limited recursion. */
+static line_stats_t prev_input_stat;
+/* State of the command-line mode. */
 static line_stats_t input_stat;
 
 /* Width of the status bar. */
@@ -198,6 +203,8 @@ static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void hist_next(line_stats_t *stat, const hist_t *hist, size_t len);
+static void cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info);
+static void expr_reg_prompt_cb(const char expr[]);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info);
@@ -280,6 +287,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_a,             {{&cmd_home},   .descr = "move cursor to the beginning"}},
 	{WK_C_e,             {{&cmd_end},    .descr = "move cursor to the end"}},
 	{WK_C_d,             {{&cmd_delete}, .descr = "delete current character"}},
+	{WK_C_r WK_EQUALS,   {{&cmd_ctrl_requals}, .descr = "invoke expression register prompt"}},
 	{WK_C_u,             {{&cmd_ctrl_u}, .descr = "remove line part to the left"}},
 	{WK_C_w,             {{&cmd_ctrl_w}, .descr = "remove word to the left"}},
 	{WK_C_x WK_SLASH,    {{&cmd_ctrl_xslash}, .descr = "insert last search pattern"}},
@@ -733,6 +741,13 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
 		void *sub_mode_ptr)
 {
+	if(vle_mode_get() == CMDLINE_MODE)
+	{
+		/* We're recursing into command-line mode. */
+		ui_sb_unlock();
+		prev_input_stat = input_stat;
+	}
+
 	input_stat.sub_mode = sub_mode;
 	input_stat.sub_mode_allows_ee = allow_ee;
 	input_stat.sub_mode_ptr = sub_mode_ptr;
@@ -850,6 +865,28 @@ is_line_edited(void)
 static void
 leave_cmdline_mode(void)
 {
+	free(input_stat.line);
+	free(input_stat.initial_line);
+	free(input_stat.line_buf);
+	input_stat.line = NULL;
+	input_stat.initial_line = NULL;
+	input_stat.line_buf = NULL;
+
+	if(vle_mode_is(CMDLINE_MODE))
+	{
+		if(input_stat.prev_mode == CMDLINE_MODE)
+		{
+			/* We're restoring from a recursive command-line mode. */
+			input_stat = prev_input_stat;
+			/* Update is needed primarily on cancellation as callback isn't called
+			 * then. */
+			update_cmdline_text(&input_stat);
+			return;
+		}
+
+		vle_mode_set(input_stat.prev_mode, VMT_PRIMARY);
+	}
+
 	/* Hide the cursor first. */
 	if(curr_stats.load_stage > 0)
 	{
@@ -870,21 +907,9 @@ leave_cmdline_mode(void)
 		}
 	}
 
-	free(input_stat.line);
-	free(input_stat.initial_line);
-	free(input_stat.line_buf);
-	input_stat.line = NULL;
-	input_stat.initial_line = NULL;
-	input_stat.line_buf = NULL;
-
 	curr_stats.save_msg = 0;
 	ui_sb_unlock();
 	ui_sb_clear();
-
-	if(vle_mode_is(CMDLINE_MODE))
-	{
-		vle_mode_set(input_stat.prev_mode, VMT_PRIMARY);
-	}
 
 	if(!vle_mode_is(MENU_MODE))
 	{
@@ -1757,6 +1782,45 @@ hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 	{
 		stat->cmd_pos = len - 1;
 	}
+}
+
+/* Invokes expression register prompt. */
+static void
+cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
+{
+	input_stat.history_search = HIST_NONE;
+	stop_completion();
+
+	if(input_stat.prev_mode != CMDLINE_MODE)
+	{
+		modcline_prompt("(=)", "", &expr_reg_prompt_cb, NULL, /*allow_ee=*/1);
+	}
+}
+
+/* Handles result of expression register prompt. */
+static void
+expr_reg_prompt_cb(const char expr[])
+{
+	/* Try to parse expr, and convert the res to string if succeed. */
+	var_t res;
+	ParsingErrors parsing_error = parse(expr, 0, &res);
+	if(parsing_error != PE_NO_ERROR)
+	{
+		return;
+	}
+
+	char *res_str = var_to_str(res);
+	var_free(res);
+
+	wchar_t *wide = to_wide_force(res_str);
+	free(res_str);
+
+	if(insert_str(wide) == 0)
+	{
+		update_cmdline_text(&input_stat);
+	}
+
+	free(wide);
 }
 
 static void

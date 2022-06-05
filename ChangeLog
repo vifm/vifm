@@ -34,6 +34,9 @@
 	Added angle-bracket notation for numeric keys with Alt
 	modifier (<[am]-[0-9]>). Thanks to anonymous at Vifm Q2A site.
 
+	Added expression pseudo-register (Ctrl-R =) for command-line mode.  Thanks
+	to Marcos Cruz and Jiji from Vifm Q2A site.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 4, 2022" "vifm 0.12"
+.TH VIFM 1 "June 6, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1142,6 +1142,11 @@ recall older command-line from history, that begins as the current command-line.
 .TP
 .BI Ctrl-]
 trigger abbreviation expansion.
+.TP
+.BI "Ctrl-R ="
+insert result of evaluating an expression.  Expression is to be entered
+via nested command-line prompt (where this key does nothing).  Expansion of an
+erroneous expression is empty.
 .\" ---------------------------------------------------------------------------
 .SH Pasting special values
 .\" ---------------------------------------------------------------------------

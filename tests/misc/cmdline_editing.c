@@ -425,6 +425,22 @@ TEST(abbrevs_are_expanded)
 	memset(cfg.word_chars, 0, sizeof(cfg.word_chars));
 }
 
+TEST(expr_reg_good_expr)
+{
+	(void)vle_keys_exec_timed_out(L"ad" WK_C_b);
+	(void)vle_keys_exec_timed_out(WK_C_r WK_EQUALS);
+	(void)vle_keys_exec_timed_out(L"'bc'" WK_CR);
+	assert_wstring_equal(L"abcd", stats->line);
+}
+
+TEST(expr_reg_bad_expr)
+{
+	(void)vle_keys_exec_timed_out(L"ad" WK_C_b);
+	(void)vle_keys_exec_timed_out(WK_C_r WK_EQUALS);
+	(void)vle_keys_exec_timed_out(L"bc" WK_CR);
+	assert_wstring_equal(L"ad", stats->line);
+}
+
 static int
 have_ext_keys(void)
 {
