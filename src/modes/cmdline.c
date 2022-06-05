@@ -167,7 +167,7 @@ static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
-static void extedit_prompt(const char input[], int cursor_col);
+static void extedit_prompt(const char input[], int cursor_col, prompt_cb cb);
 static void cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
@@ -188,7 +188,7 @@ TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
 static void exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
-static void finish_prompt_submode(const char input[]);
+static void finish_prompt_submode(const char input[], prompt_cb cb);
 static CmdInputType search_cls_to_cit(CmdLineSubmode sub_mode);
 static int is_forward_search(CmdLineSubmode sub_mode);
 static int is_backward_search(CmdLineSubmode sub_mode);
@@ -961,7 +961,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 
 		if(prompt_ee)
 		{
-			extedit_prompt(mbstr, input_stat.index + 1);
+			extedit_prompt(mbstr, input_stat.index + 1, input_stat.sub_mode_ptr);
 		}
 		else
 		{
@@ -994,13 +994,13 @@ cls_to_editable_cit(CmdLineSubmode sub_mode)
 
 /* Queries prompt input using external editor. */
 static void
-extedit_prompt(const char input[], int cursor_col)
+extedit_prompt(const char input[], int cursor_col, prompt_cb cb)
 {
 	char *const ext_cmd = get_ext_command(input, cursor_col, CIT_PROMPT_INPUT);
 
 	if(ext_cmd != NULL)
 	{
-		finish_prompt_submode(ext_cmd);
+		finish_prompt_submode(ext_cmd, cb);
 	}
 	else
 	{
@@ -1403,7 +1403,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		finish_prompt_submode(input);
+		finish_prompt_submode(input, input_stat.sub_mode_ptr);
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -1587,10 +1587,8 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 
 /* Performs final actions on successful querying of prompt input. */
 static void
-finish_prompt_submode(const char input[])
+finish_prompt_submode(const char input[], prompt_cb cb)
 {
-	const prompt_cb cb = (prompt_cb)input_stat.sub_mode_ptr;
-
 	modes_post();
 	modes_pre();
 
