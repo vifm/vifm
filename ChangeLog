@@ -37,6 +37,9 @@
 	Added expression pseudo-register (Ctrl-R =) for command-line mode.  Thanks
 	to Marcos Cruz and Jiji from Vifm Q2A site.
 
+	Added "ehistory" value to 'vifminfo' and 'sessionoptions' option.  It
+	manages storing of expression register history.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

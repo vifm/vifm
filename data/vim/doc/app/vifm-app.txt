@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 6
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 8
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4378,6 +4378,7 @@ Controls what will be saved in the $VIFM/vifminfo file:
    cs        - primary color scheme
    savedirs  - save last visited directory
    chistory  - command line history
+   ehistory  - expression register history (see |vifm-c_Ctrl-R_=|)
    shistory  - search history (/ and ? commands)
    phistory  - prompt history
    fhistory  - history of local filter (see |vifm-=|)

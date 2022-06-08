@@ -163,6 +163,10 @@
  *      text = "item1"
  *      ts = 1440801895 # timestamp (optional)
  *  } ]
+ *  exprreg-hist = [ {
+ *      text = "item1"
+ *      ts = 1440801895 # timestamp (optional)
+ *  } ]
  *  active-gtab = 0
  *  use-term-multiplexer = true
  *  color-scheme = "almost-default"
@@ -673,6 +677,7 @@ load_state(JSON_Object *root, int reread)
 	load_dir_stack(root);
 	load_trash(root);
 	load_history(root, "cmd-hist", &curr_stats.cmd_hist);
+	load_history(root, "exprreg-hist", &curr_stats.exprreg_hist);
 	load_history(root, "search-hist", &curr_stats.search_hist);
 	load_history(root, "prompt-hist", &curr_stats.prompt_hist);
 	load_history(root, "lfilt-hist", &curr_stats.filter_hist);
@@ -1403,6 +1408,11 @@ serialize_state(int vinfo)
 		store_history(root, "cmd-hist", &curr_stats.cmd_hist);
 	}
 
+	if(vinfo & VINFO_EHISTORY)
+	{
+		store_history(root, "exprreg-hist", &curr_stats.exprreg_hist);
+	}
+
 	if(vinfo & VINFO_SHISTORY)
 	{
 		store_history(root, "search-hist", &curr_stats.search_hist);
@@ -1474,6 +1484,11 @@ merge_states(int vinfo, int session_load, JSON_Object *current,
 	if(vinfo & VINFO_CHISTORY)
 	{
 		merge_history(session_load, current, admixture, "cmd-hist");
+	}
+
+	if(vinfo & VINFO_EHISTORY)
+	{
+		merge_history(session_load, current, admixture, "exprreg-hist");
 	}
 
 	if(vinfo & VINFO_SHISTORY)

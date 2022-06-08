@@ -124,12 +124,13 @@ enum
 	VINFO_CHISTORY  = 1 << 9,  /* Command-line history. */
 	VINFO_DHISTORY  = 1 << 10, /* Directory history. */
 	VINFO_DIRSTACK  = 1 << 11, /* Directory stack. */
-	VINFO_FHISTORY  = 1 << 12, /* Filter history. */
-	VINFO_PHISTORY  = 1 << 13, /* Prompt history. */
-	VINFO_SHISTORY  = 1 << 14, /* Search history. */
-	VINFO_SAVEDIRS  = 1 << 15, /* Restore last used directories on startup. */
-	VINFO_TABS      = 1 << 16, /* Restore global or pane tabs. */
-	NUM_VINFO       = 17,      /* Number of VINFO_* constants. */
+	VINFO_EHISTORY  = 1 << 12, /* Expression register history. */
+	VINFO_FHISTORY  = 1 << 13, /* Filter history. */
+	VINFO_PHISTORY  = 1 << 14, /* Prompt history. */
+	VINFO_SHISTORY  = 1 << 15, /* Search history. */
+	VINFO_SAVEDIRS  = 1 << 16, /* Restore last used directories on startup. */
+	VINFO_TABS      = 1 << 17, /* Restore global or pane tabs. */
+	NUM_VINFO       = 18,      /* Number of VINFO_* constants. */
 
 	EMPTY_VINFO = 0,                   /* Empty set of flags. */
 	FULL_VINFO  = (1 << NUM_VINFO) - 1 /* Full set of flags. */
