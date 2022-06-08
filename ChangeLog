@@ -40,6 +40,9 @@
 	Added "ehistory" value to 'vifminfo' and 'sessionoptions' option.  It
 	manages storing of expression register history.
 
+	Added ":history exprreg" menu for displaying history of expression
+	register values.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

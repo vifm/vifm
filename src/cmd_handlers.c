@@ -3253,6 +3253,8 @@ history_cmd(const cmd_info_t *cmd_info)
 		return show_prompthistory_menu(curr_view) != 0;
 	else if(strcmp(type, "=") == 0 || starts_withn("filter", type, MAX(2U, len)))
 		return show_filterhistory_menu(curr_view) != 0;
+	else if(starts_withn("exprreg", type, len))
+		return show_exprreghistory_menu(curr_view) != 0;
 	else if(strcmp(type, ".") == 0 || starts_withn("dir", type, len))
 		return show_history_menu(curr_view) != 0;
 	else

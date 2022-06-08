@@ -2065,7 +2065,8 @@ important in certain cases.
       f[search] or /  show search history and search forward on l key.
       b[search] or ?  show search history and search backward on l key.
       i[nput]   or @  show prompt history (e.g. on one file renaming).
-      fi[lter]  or =  show filter history (see |vifm-=|).
+      fi[lter]  or =  show local filter history (see |vifm-=|).
+      e[xprreg]       show expression register history (see |vifm-c_Ctrl-R_=|).
     See |vifm-menus-and-dialogs| for controls.
 
 :histprev                                      *vifm-:histprev*

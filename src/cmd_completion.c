@@ -653,6 +653,8 @@ complete_history(const char str[])
 
 		{ "=",       "local filter patterns" },
 		{ "filter",  "local filter patterns" },
+
+		{ "exprreg", "expression register input" },
 	};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }
