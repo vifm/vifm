@@ -172,7 +172,8 @@ static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
-static void extedit_prompt(const char input[], int cursor_col, prompt_cb cb);
+static void extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
+		prompt_cb cb);
 static void cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
@@ -193,6 +194,7 @@ TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
 static void exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
+static void save_prompt_to_history(const char input[], int is_expr_reg);
 static void finish_prompt_submode(const char input[], prompt_cb cb);
 static CmdInputType search_cls_to_cit(CmdLineSubmode sub_mode);
 static int is_forward_search(CmdLineSubmode sub_mode);
@@ -979,6 +981,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 	if(type != (CmdInputType)-1 || prompt_ee)
 	{
 		char *const mbstr = to_multibyte(input_stat.line);
+		const int prev_mode = input_stat.prev_mode;
 		const CmdLineSubmode sub_mode = input_stat.sub_mode;
 		void *const sub_mode_ptr = input_stat.sub_mode_ptr;
 		const int index = input_stat.index;
@@ -992,7 +995,8 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 
 		if(prompt_ee)
 		{
-			extedit_prompt(mbstr, index + 1, sub_mode_ptr);
+			int is_expr_reg = (prev_mode == CMDLINE_MODE);
+			extedit_prompt(mbstr, index + 1, is_expr_reg, sub_mode_ptr);
 		}
 		else
 		{
@@ -1025,9 +1029,11 @@ cls_to_editable_cit(CmdLineSubmode sub_mode)
 
 /* Queries prompt input using external editor. */
 static void
-extedit_prompt(const char input[], int cursor_col, prompt_cb cb)
+extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
+		prompt_cb cb)
 {
-	char *const ext_cmd = get_ext_command(input, cursor_col, CIT_PROMPT_INPUT);
+	CmdInputType type = (is_expr_reg ? CIT_EXPRREG_INPUT : CIT_PROMPT_INPUT);
+	char *const ext_cmd = get_ext_command(input, cursor_col, type);
 
 	if(ext_cmd != NULL)
 	{
@@ -1035,7 +1041,7 @@ extedit_prompt(const char input[], int cursor_col, prompt_cb cb)
 	}
 	else
 	{
-		hists_prompt_save(input);
+		save_prompt_to_history(input, is_expr_reg);
 
 		ui_sb_err("Error querying data from external source.");
 		curr_stats.save_msg = 1;
@@ -1601,6 +1607,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 	}
 	else if(input_stat.sub_mode == CLS_COMMAND)
 	{
+		/* XXX: skipping should probably work for all histories. */
 		const int mapped_input = input_stat.enter_mapping_state != 0 &&
 			vle_keys_mapping_state() == input_stat.enter_mapping_state;
 		const int ignore_input = mapped_input || keys_info->recursive;
@@ -1610,6 +1617,21 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 		}
 	}
 	else if(input_stat.sub_mode == CLS_PROMPT)
+	{
+		const int is_expr_reg = (input_stat.prev_mode == CMDLINE_MODE);
+		save_prompt_to_history(input, is_expr_reg);
+	}
+}
+
+/* Save prompt input to history. */
+static void
+save_prompt_to_history(const char input[], int is_expr_reg)
+{
+	if(is_expr_reg)
+	{
+		hists_exprreg_save(input);
+	}
+	else
 	{
 		hists_prompt_save(input);
 	}
@@ -2535,6 +2557,10 @@ pick_hist(void)
 	}
 	if(input_stat.sub_mode == CLS_PROMPT)
 	{
+		if(input_stat.prev_mode == CMDLINE_MODE)
+		{
+			return &curr_stats.exprreg_hist;
+		}
 		return &curr_stats.prompt_hist;
 	}
 	if(input_stat.sub_mode == CLS_FILTER)
