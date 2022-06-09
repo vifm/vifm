@@ -96,7 +96,6 @@ static int path_completion(completion_data_t *data);
 static int earg_num(int argc, const char cmdline[]);
 static int cmd_ends_with_space(const char cmdline[]);
 static int is_option(const cmd_info_t *cmd_info);
-static void complete_expr(const char str[], const char **start);
 static void complete_compare(const char str[]);
 static void complete_selective_sync(const char str[]);
 static void complete_wincmd(const char str[]);
@@ -482,8 +481,7 @@ is_option(const cmd_info_t *cmd_info)
 	return 1;
 }
 
-/* Completes expressions. */
-static void
+void
 complete_expr(const char str[], const char **start)
 {
 	const char *ampersand = strrchr(str, '&');

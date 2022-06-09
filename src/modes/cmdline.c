@@ -207,6 +207,7 @@ static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 static void hist_next(line_stats_t *stat, const hist_t *hist, size_t len);
 static void cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info);
 static void expr_reg_prompt_cb(const char expr[]);
+static int expr_reg_prompt_completion(const char cmd[], void *arg);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info);
@@ -1815,7 +1816,8 @@ cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 
 	if(input_stat.prev_mode != CMDLINE_MODE)
 	{
-		modcline_prompt("(=)", "", &expr_reg_prompt_cb, NULL, /*allow_ee=*/1);
+		modcline_prompt("(=)", "", &expr_reg_prompt_cb, &expr_reg_prompt_completion,
+				/*allow_ee=*/1);
 	}
 }
 
@@ -1843,6 +1845,16 @@ expr_reg_prompt_cb(const char expr[])
 	}
 
 	free(wide);
+}
+
+/* Completion for expression register prompt.  Returns completion start
+ * offset. */
+static int
+expr_reg_prompt_completion(const char cmd[], void *arg)
+{
+	const char *start;
+	complete_expr(cmd, &start);
+	return (start - cmd);
 }
 
 static void
