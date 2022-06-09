@@ -158,6 +158,8 @@
 	Fixed graphics not being cleared properly on switching between viewers in
 	view mode.
 
+	Fixed externally edited prompt not being saved to history.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

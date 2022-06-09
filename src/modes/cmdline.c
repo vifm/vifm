@@ -1038,6 +1038,7 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 
 	if(ext_cmd != NULL)
 	{
+		save_prompt_to_history(ext_cmd, is_expr_reg);
 		finish_prompt_submode(ext_cmd, cb);
 	}
 	else

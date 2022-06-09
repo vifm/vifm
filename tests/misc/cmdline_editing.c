@@ -10,6 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/curses.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/abbrevs.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
@@ -20,6 +21,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
+#include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
@@ -451,6 +453,50 @@ TEST(expr_reg_completion)
 	(void)vle_keys_exec_timed_out(L"ex" WK_C_i);
 	assert_wstring_equal(L"executable(", stats->line);
 	(void)vle_keys_exec_timed_out(WK_C_c);
+}
+
+TEST(ext_edited_prompt_is_saved_to_history, IF(not_windows))
+{
+	FILE *fp;
+	char path[PATH_MAX + 1];
+
+	char *const saved_cwd = save_cwd();
+	assert_success(os_chdir(SANDBOX_PATH));
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(10);
+	cfg_resize_histories(0);
+	cfg_resize_histories(10);
+
+	update_string(&cfg.shell, "/bin/sh");
+	stats_update_shell_type(cfg.shell);
+
+	fp = fopen("./script", "w");
+	fputs("#!/bin/sh\n", fp);
+	fputs("echo \\'ext-edit\\' > $3\n", fp);
+	fclose(fp);
+	assert_success(os_chmod("script", 0777));
+
+	curr_stats.exec_env_type = EET_EMULATOR;
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "script", saved_cwd);
+	update_string(&cfg.vi_command, path);
+
+	(void)vle_keys_exec_timed_out(WK_C_r WK_EQUALS);
+	(void)vle_keys_exec_timed_out(WK_C_g);
+
+	assert_wstring_equal(L"ext-edit", stats->line);
+
+	update_string(&cfg.vi_command, NULL);
+	update_string(&cfg.shell, NULL);
+	assert_success(unlink(path));
+
+	restore_cwd(saved_cwd);
+
+	assert_int_equal(1, curr_stats.exprreg_hist.size);
+	assert_string_equal("'ext-edit'", curr_stats.exprreg_hist.items[0].text);
+
+	cfg_resize_histories(0);
 }
 
 static int
