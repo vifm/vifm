@@ -275,6 +275,8 @@ history_by_type(CmdInputType type)
 			return &curr_stats.cmd_hist;
 		case CIT_PROMPT_INPUT:
 			return &curr_stats.prompt_hist;
+		case CIT_EXPRREG_INPUT:
+			return &curr_stats.exprreg_hist;
 		case CIT_FILTER_PATTERN:
 			return &curr_stats.filter_hist;
 

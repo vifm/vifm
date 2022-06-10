@@ -34,6 +34,15 @@
 	Added angle-bracket notation for numeric keys with Alt
 	modifier (<[am]-[0-9]>). Thanks to anonymous at Vifm Q2A site.
 
+	Added expression pseudo-register (Ctrl-R =) for command-line mode.  Thanks
+	to Marcos Cruz and Jiji from Vifm Q2A site.
+
+	Added "ehistory" value to 'vifminfo' and 'sessionoptions' option.  It
+	manages storing of expression register history.
+
+	Added ":history exprreg" menu for displaying history of expression
+	register values.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
@@ -148,6 +157,11 @@
 
 	Fixed graphics not being cleared properly on switching between viewers in
 	view mode.
+
+	Fixed externally edited prompt not being saved to history.
+
+	Fixed completion of command-line prompts breaking input at pipe
+	symbol (|).
 
 0.12-beta to 0.12 (2021-09-29)
 

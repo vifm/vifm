@@ -52,7 +52,7 @@ void modcline_init(void);
 
 /* Enters command-line editing mode with specified submode.  cmd specifies
  * initial value, ptr is submode-specific data to be passed back. */
-void modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr);
+void modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr);
 
 /* Enters command-line editing mode with prompt submode activated.  cmd
  * specifies initial value, cb is callback called on success, complete is
@@ -89,6 +89,17 @@ PromptState;
 /* Holds state of the command-line editing mode. */
 typedef struct
 {
+	/* Mode management. */
+
+	/* Mode that entered command-line mode. */
+	int prev_mode;
+	/* Kind of command-line mode. */
+	CmdLineSubmode sub_mode;
+	/* Whether current submode allows external editing. */
+	int sub_mode_allows_ee;
+	/* Extra parameter for submode-related calls. */
+	void *sub_mode_ptr;
+
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
 	wchar_t *initial_line;        /* Initial state of the line. */

@@ -217,11 +217,12 @@ typedef struct
 
 	int global_local_settings; /* Set local settings globally. */
 
-	int history_size;   /* Number of elements in histories. */
-	hist_t cmd_hist;    /* History of command-line commands. */
-	hist_t search_hist; /* History of search patterns. */
-	hist_t prompt_hist; /* History of prompt input. */
-	hist_t filter_hist; /* History of local filter patterns. */
+	int history_size;    /* Number of elements in histories. */
+	hist_t cmd_hist;     /* History of command-line commands. */
+	hist_t exprreg_hist; /* History of expression register. */
+	hist_t search_hist;  /* History of search patterns. */
+	hist_t prompt_hist;  /* History of prompt input. */
+	hist_t filter_hist;  /* History of local filter patterns. */
 
 	struct ipc_t *ipc;     /* Handle for IPC mechanism. */
 	struct vlua_t *vlua;   /* Handle for Lua unit. */
@@ -326,6 +327,9 @@ void hists_resize(int new_size);
 
 /* Saves command to command history. */
 void hists_commands_save(const char command[]);
+
+/* Saves pattern to expression register history. */
+void hists_exprreg_save(const char pattern[]);
 
 /* Saves pattern to search history. */
 void hists_search_save(const char pattern[]);

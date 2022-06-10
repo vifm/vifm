@@ -121,6 +121,7 @@ stats_init(config_t *config)
 	update_string(&curr_stats.term_name, env_get("TERM"));
 
 	(void)hist_init(&curr_stats.cmd_hist, config->history_len);
+	(void)hist_init(&curr_stats.exprreg_hist, config->history_len);
 	(void)hist_init(&curr_stats.search_hist, config->history_len);
 	(void)hist_init(&curr_stats.prompt_hist, config->history_len);
 	(void)hist_init(&curr_stats.filter_hist, config->history_len);
@@ -499,6 +500,7 @@ hists_resize(int new_size)
 {
 	curr_stats.history_size = new_size;
 
+	hist_resize(&curr_stats.exprreg_hist, new_size);
 	hist_resize(&curr_stats.search_hist, new_size);
 	hist_resize(&curr_stats.cmd_hist, new_size);
 	hist_resize(&curr_stats.prompt_hist, new_size);
@@ -529,6 +531,12 @@ set_last_cmdline_command(const char cmd[])
 	}
 	assert(curr_stats.last_cmdline_command != NULL &&
 			"The field was not initialized properly");
+}
+
+void
+hists_exprreg_save(const char pattern[])
+{
+	hist_add(&curr_stats.exprreg_hist, pattern, -1);
 }
 
 void

@@ -38,6 +38,7 @@ typedef enum
 	BSEARCHHISTORY, /* Backward search history. */
 	PROMPTHISTORY,  /* Prompt input history. */
 	FILTERHISTORY,  /* Local filter history. */
+	EXPRREGHISTORY, /* Expression register history. */
 }
 HistoryType;
 
@@ -80,6 +81,13 @@ show_filterhistory_menu(view_t *view)
 {
 	return show_history(view, FILTERHISTORY, &curr_stats.filter_hist,
 			"Filter History");
+}
+
+int
+show_exprreghistory_menu(struct view_t *view)
+{
+	return show_history(view, EXPRREGHISTORY, &curr_stats.exprreg_hist,
+			"Expression Register History");
 }
 
 /* Returns non-zero if status bar message should be saved. */
@@ -127,6 +135,7 @@ execute_history_cb(view_t *view, menu_data_t *m)
 			hists_filter_save(line);
 			exec_command(line, view, CIT_FILTER_PATTERN);
 			break;
+		case EXPRREGHISTORY:
 		case PROMPTHISTORY:
 			/* Can't replay prompt input. */
 			break;
@@ -151,6 +160,7 @@ history_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 			case BSEARCHHISTORY: submode = CLS_BSEARCH; break;
 			case FILTERHISTORY:  submode = CLS_FILTER; break;
 
+			case EXPRREGHISTORY:
 			case PROMPTHISTORY:
 				/* Can't edit prompt input. */
 				return KHR_UNHANDLED;

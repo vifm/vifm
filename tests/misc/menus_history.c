@@ -102,6 +102,14 @@ TEST(prompt_hist_does_nothing_on_enter)
 	(void)vle_keys_exec(WK_CR);
 }
 
+TEST(exprreg_hist_does_nothing_on_enter)
+{
+	hists_exprreg_save("abc");
+	assert_success(show_exprreghistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+}
+
 TEST(commands_hist_allows_editing)
 {
 	hists_commands_save("echo 'a'");
@@ -154,6 +162,15 @@ TEST(prompt_hist_does_not_allow_editing)
 {
 	hists_prompt_save("abc");
 	assert_success(show_prompthistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_c);
+	assert_true(vle_mode_is(MENU_MODE));
+}
+
+TEST(exprreg_hist_does_not_allow_editing)
+{
+	hists_exprreg_save("abc");
+	assert_success(show_exprreghistory_menu(&lwin));
 
 	(void)vle_keys_exec(WK_c);
 	assert_true(vle_mode_is(MENU_MODE));

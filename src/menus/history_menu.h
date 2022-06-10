@@ -32,6 +32,8 @@ int show_bsearchhistory_menu(struct view_t *view);
 int show_prompthistory_menu(struct view_t *view);
 /* Returns non-zero if status bar message should be saved. */
 int show_filterhistory_menu(struct view_t *view);
+/* Returns non-zero if status bar message should be saved. */
+int show_exprreghistory_menu(struct view_t *view);
 
 #endif /* VIFM__MENUS__HISTORY_MENU_H__ */
 

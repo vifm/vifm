@@ -129,6 +129,10 @@ char * fast_run_complete(const char cmd[]);
 int filename_completion(const char str[], CompletionType type,
 		int skip_canonicalization);
 
+/* Completes expressions.  Sets *start to position at which completion
+ * happens. */
+void complete_expr(const char str[], const char **start);
+
 void complete_user_name(const char *str);
 
 void complete_group_name(const char *str);

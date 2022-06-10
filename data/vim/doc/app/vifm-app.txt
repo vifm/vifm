@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 4
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 8
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1015,6 +1015,11 @@ Down                                           *vifm-c_Down*
     command-line.
 
 Ctrl-] - trigger abbreviation expansion.       *vifm-c_CTRL-]*
+
+Ctrl-R =                                       *vifm-c_CTRL-R_=*
+    insert result of evaluating an expression.  Expression is to be entered
+    via nested command-line prompt (where this key does nothing).  Expansion
+    of an erroneous expression is empty.
 
 Pasting special values~
 
@@ -2060,7 +2065,8 @@ important in certain cases.
       f[search] or /  show search history and search forward on l key.
       b[search] or ?  show search history and search backward on l key.
       i[nput]   or @  show prompt history (e.g. on one file renaming).
-      fi[lter]  or =  show filter history (see |vifm-=|).
+      fi[lter]  or =  show local filter history (see |vifm-=|).
+      e[xprreg]       show expression register history (see |vifm-c_Ctrl-R_=|).
     See |vifm-menus-and-dialogs| for controls.
 
 :histprev                                      *vifm-:histprev*
@@ -4373,6 +4379,7 @@ Controls what will be saved in the $VIFM/vifminfo file:
    cs        - primary color scheme
    savedirs  - save last visited directory
    chistory  - command line history
+   ehistory  - expression register history (see |vifm-c_Ctrl-R_=|)
    shistory  - search history (/ and ? commands)
    phistory  - prompt history
    fhistory  - history of local filter (see |vifm-=|)

@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 4, 2022" "vifm 0.12"
+.TH VIFM 1 "June 8, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1142,6 +1142,11 @@ recall older command-line from history, that begins as the current command-line.
 .TP
 .BI Ctrl-]
 trigger abbreviation expansion.
+.TP
+.BI "Ctrl-R ="
+insert result of evaluating an expression.  Expression is to be entered
+via nested command-line prompt (where this key does nothing).  Expansion of an
+erroneous expression is empty.
 .\" ---------------------------------------------------------------------------
 .SH Pasting special values
 .\" ---------------------------------------------------------------------------
@@ -2368,8 +2373,11 @@ x can be:
 .br
   i[nput]   or @ show prompt history (e.g. on one file renaming).
 .br
-  fi[lter]  or = show filter history (see description of the "=" normal mode
-command).
+  fi[lter]  or = show local filter history (see description of the "=" normal
+mode command).
+.br
+  e[xprreg]      show expression register history (see description of Ctrl+R =
+in command-line mode).
 .br
 See "Menus and dialogs" section for controls.
 .TP
@@ -5187,6 +5195,8 @@ Controls what will be saved in the $VIFM/vifminfo file.
    cs        \- primary color scheme
    savedirs  \- save last visited directory
    chistory  \- command line history
+   ehistory  \- expression register history (see description of Ctrl+R =
+               in command-line mode)
    shistory  \- search history (/ and ? commands)
    phistory  \- prompt history
    fhistory  \- history of local filter (see description of the "=" normal mode
