@@ -2706,7 +2706,7 @@ line_completion(line_stats_t *stat)
 			return -1;
 		}
 
-		const char *const line_mb_cmd = find_last_command(line_mb);
+		const char *line_mb_cmd = line_mb;
 
 		vle_compl_reset();
 
@@ -2714,6 +2714,8 @@ line_completion(line_stats_t *stat)
 		if(input_stat.sub_mode == CLS_COMMAND ||
 				input_stat.sub_mode == CLS_MENU_COMMAND)
 		{
+			line_mb_cmd = find_last_command(line_mb);
+
 			const CmdLineLocation ipt = get_cmdline_location(line_mb,
 					line_mb + strlen(line_mb));
 			switch(ipt)

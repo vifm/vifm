@@ -455,6 +455,16 @@ TEST(expr_reg_completion)
 	(void)vle_keys_exec_timed_out(WK_C_c);
 }
 
+/* This tests requires some interactivity and full command-line mode similar to
+ * editing, hence it's here. */
+TEST(expr_reg_completion_ignores_pipe)
+{
+	(void)vle_keys_exec_timed_out(L":" WK_C_r WK_EQUALS);
+	(void)vle_keys_exec_timed_out(L"ab|ex" WK_C_i);
+	assert_wstring_equal(L"ab|ex", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+}
+
 TEST(ext_edited_prompt_is_saved_to_history, IF(not_windows))
 {
 	FILE *fp;
