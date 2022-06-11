@@ -189,7 +189,8 @@ cfg_init(void)
 	cfg.flexible_splitter = 1;
 	cfg.display_statusline = 1;
 
-	cfg.border_filler = strdup(" ");
+	cfg.vborder_filler = strdup(" ");
+	cfg.hborder_filler = strdup("");
 
 	cfg.set_title = term_title_restorable();
 

@@ -370,34 +370,37 @@ TEST(sorting_is_set_correctly_on_restart)
 
 TEST(fillchars_is_set_on_correct_input)
 {
-	(void)replace_string(&cfg.border_filler, "x");
-	assert_success(exec_commands("set fillchars=vborder:a", &lwin, CIT_COMMAND));
-	assert_string_equal("a", cfg.border_filler);
-	update_string(&cfg.border_filler, NULL);
+	(void)replace_string(&cfg.vborder_filler, "x");
+	(void)replace_string(&cfg.hborder_filler, "y");
+	assert_success(exec_commands("set fillchars=vborder:a,hborder:b", &lwin, CIT_COMMAND));
+	assert_string_equal("a", cfg.vborder_filler);
+	assert_string_equal("b", cfg.hborder_filler);
+	update_string(&cfg.vborder_filler, NULL);
+	update_string(&cfg.hborder_filler, NULL);
 }
 
 TEST(fillchars_not_changed_on_wrong_input)
 {
-	(void)replace_string(&cfg.border_filler, "x");
+	(void)replace_string(&cfg.vborder_filler, "x");
 	assert_failure(exec_commands("set fillchars=vorder:a", &lwin, CIT_COMMAND));
-	assert_string_equal("x", cfg.border_filler);
-	update_string(&cfg.border_filler, NULL);
+	assert_string_equal("x", cfg.vborder_filler);
+	update_string(&cfg.vborder_filler, NULL);
 }
 
 TEST(values_in_fillchars_are_deduplicated)
 {
-	(void)replace_string(&cfg.border_filler, "x");
+	(void)replace_string(&cfg.vborder_filler, "x");
 
 	assert_success(exec_commands("set fillchars=vborder:a", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("set fillchars+=vborder:b", &lwin, CIT_COMMAND));
-	assert_string_equal("b", cfg.border_filler);
-	update_string(&cfg.border_filler, NULL);
+	assert_string_equal("b", cfg.vborder_filler);
+	update_string(&cfg.vborder_filler, NULL);
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("fillchars?", OPT_GLOBAL));
-	assert_string_equal("  fillchars=vborder:b", vle_tb_get_data(vle_err));
+	assert_string_equal("  fillchars=vborder:b,hborder:", vle_tb_get_data(vle_err));
 
-	update_string(&cfg.border_filler, NULL);
+	update_string(&cfg.vborder_filler, NULL);
 }
 
 TEST(sizefmt_is_set_on_correct_input)
@@ -449,7 +452,7 @@ TEST(sizefmt_not_changed_on_wrong_input)
 
 TEST(values_in_sizefmt_are_deduplicated)
 {
-	(void)replace_string(&cfg.border_filler, "x");
+	(void)replace_string(&cfg.vborder_filler, "x");
 
 	assert_success(exec_commands("set sizefmt=units:si,space", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("set sizefmt+=nospace,units:iec,precision:10", &lwin,

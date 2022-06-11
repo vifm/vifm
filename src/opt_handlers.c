@@ -86,6 +86,7 @@ static void uni_handler(const char name[], optval_t val, OPT_SCOPE scope);
 static void init_classify(optval_t *val);
 static void init_cpoptions(optval_t *val);
 static void init_dirsize(optval_t *val);
+static void init_fillchars(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
 static void init_trashdir(optval_t *val);
 static void init_dotfiles(optval_t *val);
@@ -410,6 +411,7 @@ static const char *dirsize_enum[][2] = {
 /* Possible keys of 'fillchars' option. */
 static const char *fillchars_enum[][2] = {
 	{ "vborder:", "filler of vertical borders" },
+	{ "hborder:", "filler of horizontal border" },
 };
 
 /* Possible keys of 'milleroptions' option. */
@@ -646,7 +648,7 @@ options[] = {
 	{ "fillchars", "fcs", "fillers for interface parts",
 	  OPT_STRLIST, ARRAY_LEN(fillchars_enum), fillchars_enum, &fillchars_handler,
 	  NULL,
-	  { .ref.str_val = &empty },
+	  { .init = &init_fillchars },
 	},
 	{ "findprg", "", ":find invocation format",
 	  OPT_STR, 0, NULL, &findprg_handler, NULL,
@@ -1129,6 +1131,17 @@ static void
 init_dirsize(optval_t *val)
 {
 	val->enum_item = (cfg.view_dir_size == VDS_SIZE ? 0 : 1);
+}
+
+/* Initializes 'fillchars' option. */
+static void
+init_fillchars(optval_t *val)
+{
+	static char buf[128];
+	snprintf(buf, sizeof(buf), "vborder:%s,hborder:%s",
+			cfg.vborder_filler,
+			cfg.hborder_filler);
+	val->str_val = buf;
 }
 
 /* Convenience function to format an endpoint inside the buffer, which should be
@@ -2055,14 +2068,20 @@ fillchars_handler(OPT_OP op, optval_t val)
 	char *part = new_val, *state = NULL;
 
 	/* Save current state. */
-	char *const old_border = cfg.border_filler;
-	cfg.border_filler = NULL;
+	char *const old_vborder = cfg.vborder_filler;
+	char *const old_hborder = cfg.hborder_filler;
+	cfg.vborder_filler = NULL;
+	cfg.hborder_filler = NULL;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
 		if(starts_with_lit(part, "vborder:"))
 		{
-			(void)replace_string(&cfg.border_filler, after_first(part, ':'));
+			(void)replace_string(&cfg.vborder_filler, after_first(part, ':'));
+		}
+		else if(starts_with_lit(part, "hborder:"))
+		{
+			(void)replace_string(&cfg.hborder_filler, after_first(part, ':'));
 		}
 		else
 		{
@@ -2075,13 +2094,21 @@ fillchars_handler(OPT_OP op, optval_t val)
 	free(new_val);
 
 	/* Restore previous state of unset elements or drop saved state. */
-	if(cfg.border_filler == NULL)
+	if(cfg.vborder_filler == NULL)
 	{
-		cfg.border_filler = old_border;
+		cfg.vborder_filler = old_vborder;
 	}
 	else
 	{
-		free(old_border);
+		free(old_vborder);
+	}
+	if(cfg.hborder_filler == NULL)
+	{
+		cfg.hborder_filler = old_hborder;
+	}
+	else
+	{
+		free(old_hborder);
 	}
 
 	/* In case of error, restore previous value, otherwise reload it anyway to
@@ -2105,10 +2132,8 @@ load_fillchars(void)
 
 	value[0] = '\0';
 
-	if(strcmp(cfg.border_filler, " ") != 0)
-	{
-		snprintf(value, sizeof(value), "vborder:%s", cfg.border_filler);
-	}
+	snprintf(value, sizeof(value), "vborder:%s,hborder:%s", cfg.vborder_filler,
+			cfg.hborder_filler);
 
 	vle_opts_assign("fillchars", val, OPT_GLOBAL);
 }
