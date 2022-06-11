@@ -3369,9 +3369,14 @@ Sets characters used to fill borders.
 
     item          default         used for ~
     vborder:c     ' '             left, middle and right vertical borders
+    hborder:c     ''              middle horizontal border
 
-If value is omitted, its default value is used.  Example: >
-    set fillchars=vborder:.
+A null string for vborder is equivalent to a space.
+
+A null string for hborder omits the horizontal border.
+
+Example: >
+    set fillchars=vborder:".",hborder:""
 <
                                                *vifm-'findprg'*
 findprg
@@ -4303,7 +4308,7 @@ are visible.
                                                *vifm-to-u*
 u - use Unicode characters in the TUI (Unicode ellipsis instead of "...").
                                                *vifm-to-v*
-v - vary width of middle border to equalize view sizes.
+v - vary width of middle vertical border to equalize view sizes.
 
 Each pane title contains the path of the listed directory.  If too large, the
 path is truncated on the left for the active pane and on the right for the other
