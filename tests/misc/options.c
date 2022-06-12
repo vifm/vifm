@@ -323,6 +323,27 @@ TEST(values_in_fillchars_are_deduplicated)
 	update_string(&cfg.vborder_filler, NULL);
 }
 
+TEST(fillchars_can_be_reset)
+{
+	assert_success(exec_commands("set fillchars=vborder:v,hborder:h", &lwin,
+				CIT_COMMAND));
+
+	assert_success(exec_commands("set fillchars=vborder:v", &lwin, CIT_COMMAND));
+	assert_string_equal("v", cfg.vborder_filler);
+	assert_string_equal("", cfg.hborder_filler);
+
+	assert_success(exec_commands("set fillchars=hborder:h", &lwin, CIT_COMMAND));
+	assert_string_equal(" ", cfg.vborder_filler);
+	assert_string_equal("h", cfg.hborder_filler);
+
+	assert_success(exec_commands("set fillchars=", &lwin, CIT_COMMAND));
+	assert_string_equal(" ", cfg.vborder_filler);
+	assert_string_equal("", cfg.hborder_filler);
+
+	update_string(&cfg.vborder_filler, NULL);
+	update_string(&cfg.hborder_filler, NULL);
+}
+
 TEST(sizefmt_is_set_on_correct_input)
 {
 	assert_success(exec_commands("set sizefmt=units:si,precision:1", &lwin,
@@ -344,8 +365,8 @@ TEST(sizefmt_is_set_on_correct_input)
 	assert_int_equal(1, cfg.sizefmt.precision);
 	assert_int_equal(1, cfg.sizefmt.space);
 
-	assert_success(exec_commands("set sizefmt=units:iec,precision:2,nospace", &lwin,
-				CIT_COMMAND));
+	assert_success(exec_commands("set sizefmt=units:iec,precision:2,nospace",
+				&lwin, CIT_COMMAND));
 
 	assert_int_equal(1024, cfg.sizefmt.base);
 	assert_int_equal(2, cfg.sizefmt.precision);

@@ -2067,12 +2067,13 @@ fillchars_handler(OPT_OP op, optval_t val)
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
-	/* Save current state. */
+	/* Save current state and load default values. */
 	char *const old_vborder = cfg.vborder_filler;
 	char *const old_hborder = cfg.hborder_filler;
-	cfg.vborder_filler = NULL;
-	cfg.hborder_filler = NULL;
+	cfg.vborder_filler = strdup(" ");
+	cfg.hborder_filler = strdup("");
 
+	int error = 0;
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
 		if(starts_with_lit(part, "vborder:"))
@@ -2085,6 +2086,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 		}
 		else
 		{
+			error = 1;
 			break_at(part, ':');
 			vle_tb_append_linef(vle_err, "Unknown key for 'fillchars' option: %s",
 					part);
@@ -2093,33 +2095,25 @@ fillchars_handler(OPT_OP op, optval_t val)
 	}
 	free(new_val);
 
-	/* Restore previous state of unset elements or drop saved state. */
-	if(cfg.vborder_filler == NULL)
+	if(error)
 	{
-		cfg.vborder_filler = old_vborder;
+		/* Restore previous state on error. */
+		put_string(&cfg.vborder_filler, old_vborder);
+		put_string(&cfg.hborder_filler, old_hborder);
 	}
 	else
 	{
+		/* Schedule a redraw since option was set successfully. */
+		stats_redraw_later();
+
+		/* Drop saved state. */
 		free(old_vborder);
-	}
-	if(cfg.hborder_filler == NULL)
-	{
-		cfg.hborder_filler = old_hborder;
-	}
-	else
-	{
 		free(old_hborder);
 	}
 
 	/* In case of error, restore previous value, otherwise reload it anyway to
 	 * remove any duplicates. */
 	load_fillchars();
-
-	if(part == NULL)
-	{
-		/* Schedule a redraw if option was set successfully. */
-		stats_redraw_later();
-	}
 }
 
 /* Sets value of 'fillchars' option by composing it from current
@@ -2127,14 +2121,8 @@ fillchars_handler(OPT_OP op, optval_t val)
 static void
 load_fillchars(void)
 {
-	char value[128];
-	const optval_t val = { .str_val = value };
-
-	value[0] = '\0';
-
-	snprintf(value, sizeof(value), "vborder:%s,hborder:%s", cfg.vborder_filler,
-			cfg.hborder_filler);
-
+	optval_t val;
+	init_fillchars(&val);
 	vle_opts_assign("fillchars", val, OPT_GLOBAL);
 }
 
