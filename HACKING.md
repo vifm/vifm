@@ -264,7 +264,7 @@ there for instructions.
     |  |-- version.c - git hash and other version information
     |  |-- viewcolumns_parser.c - contains code for parsing 'viewcolumns' option
     |  |-- vifm.c - contains main initialization/termination code
-    |  `-- win_helper.c - needed for temporary rights evaluation on Windows
+    |  `-- win_helper.c - needed for temporary rights elevation on Windows
     |
     |-- tests/ - test suites
     |

@@ -2225,11 +2225,9 @@ store_global_options(JSON_Object *root)
 	append_dstr(options, format_str("deleteprg=%s",
 				escape_spaces(cfg.delete_prg)));
 	append_dstr(options, format_str("%sfastrun", cfg.fast_run ? "" : "no"));
-	if(strcmp(cfg.border_filler, " ") != 0)
-	{
-		append_dstr(options, format_str("fillchars+=vborder:%s",
-					escape_spaces(cfg.border_filler)));
-	}
+	append_dstr(options, format_str("fillchars+=vborder:%s,hborder:%s",
+				escape_spaces(cfg.vborder_filler),
+				escape_spaces(cfg.hborder_filler)));
 	append_dstr(options, format_str("findprg=%s", escape_spaces(cfg.find_prg)));
 	append_dstr(options, format_str("%sfollowlinks",
 				cfg.follow_links ? "" : "no"));

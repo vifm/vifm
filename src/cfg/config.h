@@ -296,7 +296,8 @@ typedef struct config_t
 	int display_statusline;
 
 	/* Per line pattern for borders. */
-	char *border_filler;
+	char *vborder_filler;
+	char *hborder_filler;
 
 	/* Whether terminal title should be updated or not. */
 	int set_title;

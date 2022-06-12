@@ -130,88 +130,6 @@ TEST(fails_to_set_sort_group_with_wrong_regexp)
 	assert_failure(exec_commands("set sortgroups=.*,*", &lwin, CIT_COMMAND));
 }
 
-TEST(suggestoptions_all_values)
-{
-	cfg.sug.flags = 0;
-	cfg.sug.maxregfiles = 0;
-	cfg.sug.delay = 0;
-
-	assert_success(exec_commands("set suggestoptions=normal,visual,view,otherpane"
-				",delay,keys,marks,registers,foldsubkeys", &lwin, CIT_COMMAND));
-
-	assert_int_equal(SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
-			SF_KEYS | SF_MARKS | SF_REGISTERS | SF_FOLDSUBKEYS, cfg.sug.flags);
-	assert_int_equal(5, cfg.sug.maxregfiles);
-	assert_int_equal(500, cfg.sug.delay);
-}
-
-TEST(suggestoptions_wrong_value)
-{
-	cfg.sug.flags = 0;
-	cfg.sug.maxregfiles = 0;
-	cfg.sug.delay = 0;
-
-	assert_failure(exec_commands("set suggestoptions=asdf", &lwin, CIT_COMMAND));
-
-	assert_int_equal(0, cfg.sug.flags);
-	assert_int_equal(0, cfg.sug.maxregfiles);
-	assert_int_equal(0, cfg.sug.delay);
-}
-
-TEST(suggestoptions_empty_value)
-{
-	assert_success(exec_commands("set suggestoptions=normal", &lwin,
-				CIT_COMMAND));
-
-	cfg.sug.flags = SF_NORMAL;
-	cfg.sug.maxregfiles = 0;
-	cfg.sug.delay = 0;
-
-	assert_success(exec_commands("set suggestoptions=", &lwin, CIT_COMMAND));
-
-	assert_int_equal(0, cfg.sug.flags);
-	assert_int_equal(5, cfg.sug.maxregfiles);
-	assert_int_equal(500, cfg.sug.delay);
-}
-
-TEST(suggestoptions_registers_number)
-{
-	cfg.sug.flags = SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
-					SF_KEYS | SF_MARKS | SF_REGISTERS | SF_FOLDSUBKEYS;
-	cfg.sug.maxregfiles = 4;
-
-	assert_failure(exec_commands("set suggestoptions=registers:-4", &lwin,
-				CIT_COMMAND));
-	assert_int_equal(4, cfg.sug.maxregfiles);
-
-	assert_failure(exec_commands("set suggestoptions=registers:0", &lwin,
-				CIT_COMMAND));
-	assert_int_equal(4, cfg.sug.maxregfiles);
-
-	assert_success(exec_commands("set suggestoptions=registers:1", &lwin,
-				CIT_COMMAND));
-
-	assert_int_equal(1, cfg.sug.maxregfiles);
-}
-
-TEST(suggestoptions_delay_number)
-{
-	cfg.sug.delay = 4;
-
-	assert_failure(exec_commands("set suggestoptions=delay:-4", &lwin,
-				CIT_COMMAND));
-	assert_int_equal(4, cfg.sug.delay);
-
-	assert_success(exec_commands("set suggestoptions=delay:0", &lwin,
-				CIT_COMMAND));
-	assert_int_equal(0, cfg.sug.delay);
-
-	assert_success(exec_commands("set suggestoptions=delay:100", &lwin,
-				CIT_COMMAND));
-
-	assert_int_equal(100, cfg.sug.delay);
-}
-
 TEST(dotfiles)
 {
 	assert_success(exec_commands("setlocal dotfiles", &lwin, CIT_COMMAND));
@@ -370,34 +288,60 @@ TEST(sorting_is_set_correctly_on_restart)
 
 TEST(fillchars_is_set_on_correct_input)
 {
-	(void)replace_string(&cfg.border_filler, "x");
-	assert_success(exec_commands("set fillchars=vborder:a", &lwin, CIT_COMMAND));
-	assert_string_equal("a", cfg.border_filler);
-	update_string(&cfg.border_filler, NULL);
+	(void)replace_string(&cfg.vborder_filler, "x");
+	(void)replace_string(&cfg.hborder_filler, "y");
+	assert_success(exec_commands("set fillchars=vborder:a,hborder:b", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("a", cfg.vborder_filler);
+	assert_string_equal("b", cfg.hborder_filler);
+	update_string(&cfg.vborder_filler, NULL);
+	update_string(&cfg.hborder_filler, NULL);
 }
 
 TEST(fillchars_not_changed_on_wrong_input)
 {
-	(void)replace_string(&cfg.border_filler, "x");
+	(void)replace_string(&cfg.vborder_filler, "x");
 	assert_failure(exec_commands("set fillchars=vorder:a", &lwin, CIT_COMMAND));
-	assert_string_equal("x", cfg.border_filler);
-	update_string(&cfg.border_filler, NULL);
+	assert_string_equal("x", cfg.vborder_filler);
+	update_string(&cfg.vborder_filler, NULL);
 }
 
 TEST(values_in_fillchars_are_deduplicated)
 {
-	(void)replace_string(&cfg.border_filler, "x");
+	(void)replace_string(&cfg.vborder_filler, "x");
 
 	assert_success(exec_commands("set fillchars=vborder:a", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("set fillchars+=vborder:b", &lwin, CIT_COMMAND));
-	assert_string_equal("b", cfg.border_filler);
-	update_string(&cfg.border_filler, NULL);
+	assert_string_equal("b", cfg.vborder_filler);
+	update_string(&cfg.vborder_filler, NULL);
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("fillchars?", OPT_GLOBAL));
-	assert_string_equal("  fillchars=vborder:b", vle_tb_get_data(vle_err));
+	assert_string_equal("  fillchars=vborder:b,hborder:",
+			vle_tb_get_data(vle_err));
 
-	update_string(&cfg.border_filler, NULL);
+	update_string(&cfg.vborder_filler, NULL);
+}
+
+TEST(fillchars_can_be_reset)
+{
+	assert_success(exec_commands("set fillchars=vborder:v,hborder:h", &lwin,
+				CIT_COMMAND));
+
+	assert_success(exec_commands("set fillchars=vborder:v", &lwin, CIT_COMMAND));
+	assert_string_equal("v", cfg.vborder_filler);
+	assert_string_equal("", cfg.hborder_filler);
+
+	assert_success(exec_commands("set fillchars=hborder:h", &lwin, CIT_COMMAND));
+	assert_string_equal(" ", cfg.vborder_filler);
+	assert_string_equal("h", cfg.hborder_filler);
+
+	assert_success(exec_commands("set fillchars=", &lwin, CIT_COMMAND));
+	assert_string_equal(" ", cfg.vborder_filler);
+	assert_string_equal("", cfg.hborder_filler);
+
+	update_string(&cfg.vborder_filler, NULL);
+	update_string(&cfg.hborder_filler, NULL);
 }
 
 TEST(sizefmt_is_set_on_correct_input)
@@ -421,8 +365,8 @@ TEST(sizefmt_is_set_on_correct_input)
 	assert_int_equal(1, cfg.sizefmt.precision);
 	assert_int_equal(1, cfg.sizefmt.space);
 
-	assert_success(exec_commands("set sizefmt=units:iec,precision:2,nospace", &lwin,
-				CIT_COMMAND));
+	assert_success(exec_commands("set sizefmt=units:iec,precision:2,nospace",
+				&lwin, CIT_COMMAND));
 
 	assert_int_equal(1024, cfg.sizefmt.base);
 	assert_int_equal(2, cfg.sizefmt.precision);
@@ -449,7 +393,7 @@ TEST(sizefmt_not_changed_on_wrong_input)
 
 TEST(values_in_sizefmt_are_deduplicated)
 {
-	(void)replace_string(&cfg.border_filler, "x");
+	(void)replace_string(&cfg.vborder_filler, "x");
 
 	assert_success(exec_commands("set sizefmt=units:si,space", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("set sizefmt+=nospace,units:iec,precision:10", &lwin,
