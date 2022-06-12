@@ -751,16 +751,6 @@ update_start(UpdateType update_kind)
 
 	update_attributes();
 
-	if(cfg.side_borders_visible)
-	{
-		clear_border(lborder);
-		clear_border(rborder);
-	}
-	if(middle_border_is_visible())
-	{
-		clear_border(mborder);
-	}
-
 	if(curr_stats.term_state != TS_NORMAL)
 	{
 		return 0;
@@ -1276,9 +1266,9 @@ update_attributes(void)
 	if(cfg.side_borders_visible)
 	{
 		ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-		werase(lborder);
+		clear_border(lborder);
 		ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-		werase(rborder);
+		clear_border(rborder);
 
 		ui_set_bg(ltop_line1, &cfg.cs.color[TOP_LINE_COLOR],
 				cfg.cs.pair[TOP_LINE_COLOR]);
@@ -1301,8 +1291,11 @@ update_attributes(void)
 		werase(rtop_line2);
 	}
 
-	ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-	werase(mborder);
+	if(middle_border_is_visible())
+	{
+		ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
+		clear_border(mborder);
+	}
 
 	ui_set_bg(tab_line, &cfg.cs.color[TAB_LINE_COLOR],
 			cfg.cs.pair[TAB_LINE_COLOR]);

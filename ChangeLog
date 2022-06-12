@@ -169,6 +169,8 @@
 	Fixed resetting 'fillchars' option and separate values.  Again, this one
 	is cursed.
 
+	Fixed borders not being filled after loading an empty color scheme.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
