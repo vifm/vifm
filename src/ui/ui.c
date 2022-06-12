@@ -938,7 +938,7 @@ clear_border(WINDOW *border)
 	else
 	{
 		/* Horizontal split */
-		if(*cfg.hborder_filler == '\0')
+		if(strcmp(cfg.hborder_filler, " ") == 0 || *cfg.hborder_filler == '\0')
 		{
 			return;
 		}

@@ -43,6 +43,9 @@
 	Added ":history exprreg" menu for displaying history of expression
 	register values.
 
+	Added optional border for horizontal split layout controlled by newly
+	added "hborder" in 'fillchars'.  Patch by qsmodo.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

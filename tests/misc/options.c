@@ -290,7 +290,8 @@ TEST(fillchars_is_set_on_correct_input)
 {
 	(void)replace_string(&cfg.vborder_filler, "x");
 	(void)replace_string(&cfg.hborder_filler, "y");
-	assert_success(exec_commands("set fillchars=vborder:a,hborder:b", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("set fillchars=vborder:a,hborder:b", &lwin,
+				CIT_COMMAND));
 	assert_string_equal("a", cfg.vborder_filler);
 	assert_string_equal("b", cfg.hborder_filler);
 	update_string(&cfg.vborder_filler, NULL);
@@ -316,7 +317,8 @@ TEST(values_in_fillchars_are_deduplicated)
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("fillchars?", OPT_GLOBAL));
-	assert_string_equal("  fillchars=vborder:b,hborder:", vle_tb_get_data(vle_err));
+	assert_string_equal("  fillchars=vborder:b,hborder:",
+			vle_tb_get_data(vle_err));
 
 	update_string(&cfg.vborder_filler, NULL);
 }

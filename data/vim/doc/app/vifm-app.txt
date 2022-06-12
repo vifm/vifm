@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 8
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4308,7 +4308,7 @@ are visible.
                                                *vifm-to-u*
 u - use Unicode characters in the TUI (Unicode ellipsis instead of "...").
                                                *vifm-to-v*
-v - vary width of middle vertical border to equalize view sizes.
+v - vary width of vertical middle border to equalize view sizes.
 
 Each pane title contains the path of the listed directory.  If too large, the
 path is truncated on the left for the active pane and on the right for the other
