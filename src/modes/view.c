@@ -203,6 +203,7 @@ static void reload_view(modview_info_t *vi, int silent);
 static void cleanup(modview_info_t *vi);
 static modview_info_t * view_info_alloc(void);
 TSTATIC int modview_is_raw(modview_info_t *vi);
+TSTATIC int modview_is_detached(modview_info_t *vi);
 TSTATIC const char * modview_current_viewer(modview_info_t *vi);
 TSTATIC int modview_current_line(modview_info_t *vi);
 TSTATIC strlist_t modview_lines(modview_info_t *vi);
@@ -413,7 +414,7 @@ try_resurrect_detached(const char full_path[], int explore)
 	                   && vi->detached
 	                   && vi->view == (explore ? curr_view : other_view)
 	                   && vi->filename != NULL
-	                   && stroscmp(vi->filename, full_path) == 0;
+	                   && paths_are_equal(vi->filename, full_path);
 	if(!same_file)
 	{
 		return 1;
@@ -1655,12 +1656,7 @@ is_trying_the_same_file(void)
 		return 0;
 	}
 
-	if(stroscmp(vi->filename, full_path) != 0)
-	{
-		return 0;
-	}
-
-	return 1;
+	return paths_are_equal(vi->filename, full_path);
 }
 
 /* Gets full path to the file that will be explored (the current file of the
@@ -1839,6 +1835,12 @@ TSTATIC int
 modview_is_raw(modview_info_t *vi)
 {
 	return vi->raw;
+}
+
+TSTATIC int
+modview_is_detached(modview_info_t *vi)
+{
+	return vi->detached;
 }
 
 TSTATIC const char *

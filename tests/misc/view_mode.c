@@ -11,6 +11,7 @@
 #include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/statusbar.h"
+#include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
@@ -32,6 +33,9 @@ SETUP()
 {
 	view_setup(&lwin);
 	lwin.window_rows = 1;
+	view_setup(&rwin);
+	rwin.window_rows = 1;
+	rwin.window_cols = 1;
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -43,11 +47,15 @@ SETUP()
 
 TEARDOWN()
 {
-	(void)vle_keys_exec_timed_out(WK_q);
+	if(vle_mode_is(VIEW_MODE))
+	{
+		modview_leave();
+	}
 
 	conf_teardown();
 
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 	curr_view = NULL;
 	other_view = NULL;
 
@@ -282,6 +290,43 @@ TEST(cmd_v)
 
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;
+}
+
+TEST(views_with_dirs_can_be_reattached)
+{
+	opt_handlers_setup();
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+	populate_dir_list(&lwin, 0);
+	/* The next call is to reset state of modview. */
+	assert_false(modview_detached_draw());
+	assert_success(qv_ensure_is_shown());
+
+	/* Enter the view. */
+	(void)vle_keys_exec_timed_out(WK_C_w WK_C_w);
+	assert_true(vle_mode_is(VIEW_MODE));
+
+	/* Scroll down a bit. */
+	(void)vle_keys_exec_timed_out(L"2j");
+	assert_int_equal(2, modview_current_line(curr_stats.preview.explore));
+
+	/* Detach the view. */
+	(void)vle_keys_exec_timed_out(WK_C_w WK_C_w);
+	assert_true(vle_mode_is(NORMAL_MODE));
+
+	/* Reattach it. */
+	(void)vle_keys_exec_timed_out(WK_C_w WK_C_w);
+	assert_true(vle_mode_is(VIEW_MODE));
+
+	/* It was resurrected. */
+	assert_true(modview_is_detached(curr_stats.preview.explore));
+	/* Its internal state probably wasn't reset if it allows scrolling. */
+	(void)vle_keys_exec_timed_out(L"k");
+	assert_int_equal(1, modview_current_line(curr_stats.preview.explore));
+	(void)vle_keys_exec_timed_out(L"k");
+	assert_int_equal(0, modview_current_line(curr_stats.preview.explore));
+
+	opt_handlers_teardown();
 }
 
 static int

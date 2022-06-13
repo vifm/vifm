@@ -96,6 +96,7 @@ void modview_info_free(modview_info_t *vi);
 
 TSTATIC_DEFS(
 	int modview_is_raw(modview_info_t *vi);
+	int modview_is_detached(modview_info_t *vi);
 	const char * modview_current_viewer(modview_info_t *vi);
 	int modview_current_line(modview_info_t *vi);
 	struct strlist_t;
