@@ -600,7 +600,7 @@ horizontal_layout(int screen_x, int screen_y)
 		splitter_pos = screen_y/2 - 1;
 	else
 		splitter_pos = curr_stats.splitter_pos;
-	int splitter_height = (strlen(cfg.hborder_filler) ? 1 : 0);
+	int splitter_height = (middle_border_is_visible() ? 1 : 0);
 	if(splitter_pos < 2)
 		splitter_pos = 2;
 	if(splitter_pos > get_working_area_height() - 1 - splitter_height)
@@ -750,16 +750,6 @@ update_start(UpdateType update_kind)
 	}
 
 	update_attributes();
-
-	if(cfg.side_borders_visible)
-	{
-		clear_border(lborder);
-		clear_border(rborder);
-	}
-	if(middle_border_is_visible())
-	{
-		clear_border(mborder);
-	}
 
 	if(curr_stats.term_state != TS_NORMAL)
 	{
@@ -956,7 +946,19 @@ clear_border(WINDOW *border)
 static int
 middle_border_is_visible(void)
 {
-	return (curr_stats.number_of_windows == 2);
+	if(curr_stats.number_of_windows != 2)
+	{
+		return 0;
+	}
+
+	if(curr_stats.split == VSPLIT)
+	{
+		/* Always visible for vertical split. */
+		return 1;
+	}
+
+	/* Optionally visible for horizontal split. */
+	return (strlen(cfg.hborder_filler) != 0);
 }
 
 /* Updates (redraws or reloads) views. */
@@ -1264,9 +1266,9 @@ update_attributes(void)
 	if(cfg.side_borders_visible)
 	{
 		ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-		werase(lborder);
+		clear_border(lborder);
 		ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-		werase(rborder);
+		clear_border(rborder);
 
 		ui_set_bg(ltop_line1, &cfg.cs.color[TOP_LINE_COLOR],
 				cfg.cs.pair[TOP_LINE_COLOR]);
@@ -1289,8 +1291,11 @@ update_attributes(void)
 		werase(rtop_line2);
 	}
 
-	ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-	werase(mborder);
+	if(middle_border_is_visible())
+	{
+		ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
+		clear_border(mborder);
+	}
 
 	ui_set_bg(tab_line, &cfg.cs.color[TAB_LINE_COLOR],
 			cfg.cs.pair[TAB_LINE_COLOR]);
