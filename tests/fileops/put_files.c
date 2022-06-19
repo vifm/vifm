@@ -10,6 +10,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/modes/dialogs/msg_dialog.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
@@ -45,6 +46,7 @@ static void parent_overwrite_with_put(int move);
 static void double_clash_with_put(int move);
 
 static fo_prompt_cb rename_cb;
+static int options_count;
 
 static char *saved_cwd;
 
@@ -69,6 +71,7 @@ TEARDOWN()
 	view_teardown(&lwin);
 	regs_reset();
 	restore_cwd(saved_cwd);
+	fops_init(NULL, NULL);
 }
 
 static void
@@ -112,6 +115,13 @@ static char
 options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants)
 {
+	options_count = 0;
+	while(variants->key != '\0')
+	{
+		++options_count;
+		++variants;
+	}
+
 	return '\x03';
 }
 
@@ -680,6 +690,49 @@ TEST(files_can_be_diffed)
 	assert_success(unlink(SANDBOX_PATH "/a"));
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(show_merge_all_option_if_paths_include_dir)
+{
+	char path[PATH_MAX + 1];
+
+	create_file(SANDBOX_PATH "/a");
+	create_dir(SANDBOX_PATH "/dir");
+	create_file(SANDBOX_PATH "/dir/a");
+	create_file(SANDBOX_PATH "/dir/b");
+	create_dir(SANDBOX_PATH "/dir/sub");
+
+	fops_init(&line_prompt, &options_prompt_abort);
+
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/a", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/b", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	options_count = 0;
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(9, options_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/sub", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	options_count = 0;
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(10, options_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/dir/a"));
+	assert_success(unlink(SANDBOX_PATH "/dir/b"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/sub"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	/* This one doesn't always get copied. */
+	(void)unlink(SANDBOX_PATH "/b");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -59,6 +59,7 @@ static int is_dir_clash(const char src_path[], const char dst_dir[]);
 static int put_files_i(view_t *view, int start);
 static void update_cursor_position(view_t *view);
 static int put_next(int force);
+static int unprocessed_dirs_present(void);
 TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static int handle_clashing(int move, const char src[], const char dst[]);
 static void prompt_what_to_do(const char fname[], const char caused_by[]);
@@ -85,6 +86,7 @@ static struct
 	int overwrite_all;   /* Overwrite all future conflicting files/directories. */
 	int append;          /* Whether we're appending ending of a file or not. */
 	int allow_merge;     /* Allow merging of files in directories. */
+	int allow_merge_all; /* Allow merging of files in directories by default. */
 	int merge;           /* Merge conflicting directory once. */
 	int merge_all;       /* Merge all conflicting directories. */
 	ops_t *ops;          /* Currently running operation. */
@@ -639,8 +641,14 @@ put_next(int force)
 		else
 		{
 			struct stat dst_st;
-			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
-					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
+			put_confirm.allow_merge = S_ISDIR(src_st.st_mode)
+			                       && (os_lstat(dst_buf, &dst_st) == 0)
+			                       && S_ISDIR(dst_st.st_mode);
+
+			/* Enable "merge all" in conflict resolution options if at least one of
+			 * source paths left to process (including current) is a directory. */
+			put_confirm.allow_merge_all = unprocessed_dirs_present();
+
 			prompt_what_to_do(dst_name, src_buf);
 			return 1;
 		}
@@ -768,6 +776,30 @@ put_next(int force)
 				put_confirm.put.nitems, dst_path);
 	}
 
+	return 0;
+}
+
+/* Checks whether current or any other unprocessed paths point to directories.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+unprocessed_dirs_present(void)
+{
+	int i;
+	for(i = put_confirm.index; i < put_confirm.reg->nfiles; ++i)
+	{
+		const char *path = put_confirm.reg->files[put_confirm.file_order[i]];
+		if(path == NULL)
+		{
+			/* This file has been excluded from processing. */
+			continue;
+		}
+
+		struct stat src_st;
+		if(os_lstat(path, &src_st) == 0 && S_ISDIR(src_st.st_mode))
+		{
+			return 1;
+		}
+	}
 	return 0;
 }
 
@@ -948,20 +980,22 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	/* Strange spacing is for left alignment.  Doesn't look nice here, but it is
 	 * problematic to get such alignment otherwise. */
 	static const response_variant
-		compare       = { .key = 'c', .descr = "[c]ompare files              \n" },
-		rename        = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
-		enter         = { .key = '\r', .descr = "" },
-		skip          = { .key = 's', .descr = "[s]kip " },
-		skip_all      = { .key = 'S', .descr = " [S]kip all          \n" },
-		append        = { .key = 'a', .descr = "[a]ppend the tail            \n" },
-		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
-		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
-		merge         = { .key = 'm', .descr = "[m]erge " },
-		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
-		escape        = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
+		compare        = { .key = 'c', .descr = "[c]ompare files              \n" },
+		rename         = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
+		enter          = { .key = '\r', .descr = "" },
+		skip           = { .key = 's', .descr = "[s]kip " },
+		skip_all       = { .key = 'S', .descr = " [S]kip all          \n" },
+		append         = { .key = 'a', .descr = "[a]ppend the tail            \n" },
+		overwrite      = { .key = 'o', .descr = "[o]verwrite " },
+		overwrite_all  = { .key = 'O', .descr = " [O]verwrite all\n" },
+		merge          = { .key = 'm', .descr = "[m]erge " },
+		merge_all      = { .key = 'M', .descr = " [M]erge all        \n" },
+		merge_all_only = { .key = 'M', .descr = "[M]erge all                  \n" },
+		escape         = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
 
 	char response;
-	response_variant responses[11] = {};
+	/* Last element is a terminator. */
+	response_variant responses[12] = {};
 	size_t i = 0;
 
 	char dst_buf[PATH_MAX + 1];
@@ -991,12 +1025,15 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		if(put_confirm.allow_merge)
 		{
 			responses[i++] = merge;
-			responses[i++] = merge_all;
+		}
+		if(put_confirm.allow_merge_all)
+		{
+			responses[i++] = (put_confirm.allow_merge ? merge_all : merge_all_only);
 		}
 	}
 
 	responses[i++] = escape;
-	assert(i < ARRAY_LEN(responses) && "Array is too small.");
+	assert(i + 1 <= ARRAY_LEN(responses) && "Array is too small.");
 
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
@@ -1074,7 +1111,7 @@ handle_prompt_response(const char fname[], const char caused_by[],
 		put_confirm.merge = 1;
 		put_continue(1);
 	}
-	else if(put_confirm.allow_merge && response == 'M')
+	else if(put_confirm.allow_merge_all && response == 'M')
 	{
 		put_confirm.merge_all = 1;
 		put_continue(1);
