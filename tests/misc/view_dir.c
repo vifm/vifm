@@ -294,5 +294,33 @@ TEST(top_tree_stats_in_small_window)
 	cfg.top_tree_stats = 0;
 }
 
+TEST(depth_limit)
+{
+	cfg.max_tree_depth = 2;
+
+	assert_success(os_mkdir("dir", 0777));
+	assert_success(os_mkdir("dir/nested1", 0777));
+	assert_success(os_mkdir("dir/nested1/nested2", 0777));
+
+	int nlines;
+	FILE *fp = qv_view_dir("dir", INT_MAX);
+	char **lines = read_file_lines(fp, &nlines);
+
+	assert_int_equal(4, nlines);
+	assert_string_equal("dir/", lines[0]);
+	assert_string_equal("`-- nested1/", lines[1]);
+	assert_string_equal("", lines[2]);
+	assert_string_equal("1 directory, 0 files", lines[3]);
+
+	free_string_array(lines, nlines);
+	fclose(fp);
+
+	assert_success(rmdir("dir/nested1/nested2"));
+	assert_success(rmdir("dir/nested1"));
+	assert_success(rmdir("dir"));
+
+	cfg.max_tree_depth = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

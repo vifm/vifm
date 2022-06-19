@@ -63,6 +63,8 @@ typedef struct vcache_entry_t
 	size_t size;       /* Size taken up by this entry (lower bound). */
 	int max_lines;     /* Number of lines requested. */
 
+	/* Value of maxtreedepth for this entry. */
+	int max_tree_depth;
 	/* Whether cache contains complete output of the viewer. */
 	unsigned int complete : 1;
 	/* Whether last line is truncated. */
@@ -424,7 +426,8 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
 		}
 	}
 
-	if(centry->top_tree_stats != cfg.top_tree_stats && is_dir(path))
+	if((centry->top_tree_stats != cfg.top_tree_stats ||
+			centry->max_tree_depth != cfg.max_tree_depth) && is_dir(path))
 	{
 		return 0;
 	}
@@ -671,6 +674,7 @@ view_builtin(vcache_entry_t *centry, const char **error)
 	if(dir)
 	{
 		centry->top_tree_stats = cfg.top_tree_stats;
+		centry->max_tree_depth = cfg.max_tree_depth;
 		fp = qv_view_dir(centry->path, centry->max_lines);
 	}
 	else

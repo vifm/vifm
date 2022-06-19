@@ -46,6 +46,9 @@
 	Added optional border for horizontal split layout controlled by newly
 	added "hborder" in 'fillchars'.  Patch by qsmodo.
 
+	Added "maxtreedepth" value to 'previewoptions' option, which allows
+	limiting depths of the displayed tree.  Thanks to Afz.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
