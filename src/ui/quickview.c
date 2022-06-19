@@ -86,6 +86,7 @@ typedef struct
 	int nfiles;        /* Number of seen files. */
 	int max;           /* Maximum line number. */
 	int full_stats;    /* Collect statistics for the whole tree. */
+	int depth;         /* Current depth of the traversal. */
 	char prefix[4096]; /* Prefix character for each tree level. */
 }
 tree_print_state_t;
@@ -533,6 +534,15 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 		return 1;
 	}
 
+	/* No need to check cfg.max_tree_depth for 0, after enter_dir s->depth is
+	 * greater than 0. */
+	if(s->depth == cfg.max_tree_depth)
+	{
+		free_string_array(lst, len);
+		leave_dir(s);
+		return 0;
+	}
+
 	int i;
 	int reached_limit = 0;
 	for(i = 0; i < len && !reached_limit && !ui_cancellation_requested(); ++i)
@@ -662,6 +672,7 @@ enter_dir(tree_print_state_t *s, const char path[], int last)
 	indent_prefix(s);
 	set_prefix_char(s, '|');
 
+	++s->depth;
 	return (++s->n >= s->max);
 }
 
@@ -696,6 +707,7 @@ static void
 leave_dir(tree_print_state_t *s)
 {
 	unindent_prefix(s);
+	--s->depth;
 }
 
 /* Adds one indentation level for the following elements of tree. */

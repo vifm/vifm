@@ -337,6 +337,7 @@ static const char *lsoptions_enum[][2] = {
 static const char *previewoptions_vals[][2] = {
 	{ "graphicsdelay:",    "delay before drawing graphics" },
 	{ "hardgraphicsclear", "redraw screen to get rid of graphics" },
+	{ "maxtreedepth:",     "how many tree levels too display" },
 	{ "toptreestats",      "show file counts on top of the tree" },
 };
 
@@ -1211,6 +1212,11 @@ init_previewoptions(optval_t *val)
 	if(cfg.top_tree_stats)
 	{
 		(void)sstrappend(buf, &len, sizeof(buf), "toptreestats,");
+	}
+	if(cfg.max_tree_depth > 0)
+	{
+		snprintf(buf + len, sizeof(buf) - len, "maxtreedepth:%d,",
+				cfg.max_tree_depth);
 	}
 	if(cfg.graphics_delay != 0)
 	{
@@ -2324,6 +2330,7 @@ previewoptions_handler(OPT_OP op, optval_t val)
 	int graphics_delay = 0;
 	int hard_graphics_clear = 0;
 	int top_tree_stats = 0;
+	int max_tree_depth = 0;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -2340,6 +2347,22 @@ previewoptions_handler(OPT_OP op, optval_t val)
 			{
 				vle_tb_append_linef(vle_err,
 						"\"graphicsdelay\" can't be negative, got: %s", num);
+				break;
+			}
+		}
+		else if(starts_with_lit(part, "maxtreedepth:"))
+		{
+			const char *const num = after_first(part, ':');
+			if(!read_int(num, &max_tree_depth))
+			{
+				vle_tb_append_linef(vle_err,
+						"Failed to parse \"maxtreedepth\" value: %s", num);
+				break;
+			}
+			if(max_tree_depth < 0)
+			{
+				vle_tb_append_linef(vle_err,
+						"\"maxtreedepth\" can't be negative, got: %s", num);
 				break;
 			}
 		}
@@ -2363,13 +2386,18 @@ previewoptions_handler(OPT_OP op, optval_t val)
 
 	if(part == NULL)
 	{
+		int need_update = (top_tree_stats != cfg.top_tree_stats)
+		               || (max_tree_depth != cfg.max_tree_depth);
+
 		cfg.graphics_delay = graphics_delay;
 		cfg.hard_graphics_clear = hard_graphics_clear;
-		if(top_tree_stats != cfg.top_tree_stats)
+		cfg.top_tree_stats = top_tree_stats;
+		cfg.max_tree_depth = max_tree_depth;
+
+		if(need_update)
 		{
 			text_option_changed();
 		}
-		cfg.top_tree_stats = top_tree_stats;
 	}
 
 	/* In case of error, restore previous value, otherwise reload it anyway to

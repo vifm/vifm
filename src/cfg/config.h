@@ -312,6 +312,8 @@ typedef struct config_t
 	int hard_graphics_clear;
 	/* Show file counts on top of the tree. */
 	int top_tree_stats;
+	/* Max depth of preview tree.  Zero means "no limit". */
+	int max_tree_depth;
 
 	int timeout_len;     /* Maximum period on waiting for the input. */
 	int min_timeout_len; /* Minimum period on waiting for the input. */
