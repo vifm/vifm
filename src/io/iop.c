@@ -588,7 +588,7 @@ iop_cp_internal(io_args_t *args)
 		if(nread == 0U && !feof(in) && ferror(in))
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					"Read from destination file failed");
+					"Read from source file failed");
 		}
 
 		/* fwrite() does caching, so we need to force flush to catch output errors
