@@ -180,6 +180,8 @@
 	Fixed directory preview resetting after detaching from it.  Thanks to Luka
 	Markušić (a.k.a. mark2185).
 
+	Fixed conflict dialog offering merging on rl and al normal mode commands.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

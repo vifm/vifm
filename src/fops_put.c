@@ -638,7 +638,7 @@ put_next(int force)
 		{
 			return 0;
 		}
-		else
+		else if(put_confirm.op == CMLO_COPY || put_confirm.op == CMLO_MOVE)
 		{
 			struct stat dst_st;
 			put_confirm.allow_merge = S_ISDIR(src_st.st_mode)
@@ -649,6 +649,14 @@ put_next(int force)
 			 * source paths left to process (including current) is a directory. */
 			put_confirm.allow_merge_all = unprocessed_dirs_present();
 
+			prompt_what_to_do(dst_name, src_buf);
+			return 1;
+		}
+		else
+		{
+			/* Merging makes sense only for copy and move. */
+			put_confirm.allow_merge = 0;
+			put_confirm.allow_merge_all = 0;
 			prompt_what_to_do(dst_name, src_buf);
 			return 1;
 		}

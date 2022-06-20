@@ -735,5 +735,30 @@ TEST(show_merge_all_option_if_paths_include_dir)
 	(void)unlink(SANDBOX_PATH "/b");
 }
 
+TEST(no_merge_options_on_putting_links)
+{
+	char path[PATH_MAX + 1];
+
+	create_dir(SANDBOX_PATH "/sub");
+	create_dir(SANDBOX_PATH "/dir");
+	create_dir(SANDBOX_PATH "/dir/sub");
+
+	fops_init(&line_prompt, &options_prompt_abort);
+
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/sub", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	options_count = 0;
+	(void)fops_put_links(&lwin, 'a', 0);
+	assert_int_equal(8, options_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(rmdir(SANDBOX_PATH "/dir/sub"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/sub"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
