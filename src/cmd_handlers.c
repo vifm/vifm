@@ -4810,7 +4810,7 @@ touch_cmd(const cmd_info_t *cmd_info)
 	return fops_mkfiles(curr_view, at, cmd_info->argv, cmd_info->argc) != 0;
 }
 
-/* Gets destination position based range.  Returns the position. */
+/* Gets destination position based on range.  Returns the position. */
 static int
 get_at(const view_t *view, const cmd_info_t *cmd_info)
 {
