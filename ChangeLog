@@ -1,5 +1,8 @@
 0.12 to current
 
+	Changed conflict dialog to offer "Merge all" option even for files if
+	there are some directories left to process.  Thanks to dalvand.
+
 	Added 'autocd' option.  Makes invalid :commands be interpreted as an
 	implicit :cd command.  Thanks to Taras Halturin (a.k.a. halturin).
 
@@ -176,6 +179,8 @@
 
 	Fixed directory preview resetting after detaching from it.  Thanks to Luka
 	Markušić (a.k.a. mark2185).
+
+	Fixed conflict dialog offering merging on rl and al normal mode commands.
 
 0.12-beta to 0.12 (2021-09-29)
 
