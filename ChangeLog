@@ -182,6 +182,9 @@
 
 	Fixed conflict dialog offering merging on rl and al normal mode commands.
 
+	Fixed :restart creating trash directory in incorrect location on Windows
+	in some cases.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

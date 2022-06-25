@@ -400,6 +400,8 @@ try_home_envvar_for_conf(int force)
 	}
 
 	snprintf(vifm, sizeof(vifm), "%s/.vifm", home);
+	system_to_internal_slashes(vifm);
+
 	if(!force && !is_dir(vifm))
 	{
 		return 0;
