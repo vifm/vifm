@@ -97,22 +97,13 @@ pause_shell(void)
 int
 run_in_shell_no_cls(char command[], ShellRequester by)
 {
-	int ret;
 	char *const sh_cmd = win_make_sh_cmd(command, by);
 
-	/* XXX: why do we use different functions for different cases? */
-	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_PS)
+	int returned_exit_code;
+	int ret = win_exec_cmd(sh_cmd, &returned_exit_code);
+	if(!returned_exit_code)
 	{
-		ret = os_system(sh_cmd);
-	}
-	else
-	{
-		int returned_exit_code;
-		ret = win_exec_cmd(sh_cmd, &returned_exit_code);
-		if (!returned_exit_code)
-		{
-			ret = -1;
-		}
+		ret = -1;
 	}
 
 	free(sh_cmd);
