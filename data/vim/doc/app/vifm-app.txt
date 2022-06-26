@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 19
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4062,6 +4062,7 @@ are supported:
     %T - symbolic link target (empty for other filetypes)
     %f - file name relative to current directory (considers 'classify')
     %A - file attributes (permissions on *nix or properties on Windows)
+    %o - file permissions in octal form on *nix (nothing on Windows)
     %u - user name or uid (if it cannot be resolved)
     %g - group name or gid (if it cannot be resolved)
     %s - file size in human readable format
