@@ -376,7 +376,8 @@ execute_file(const char full_path[], int elevate)
 	rn_shell(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
 	free(escaped);
 #else
-	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
+	char *const dquoted_full_path =
+		strdup(enclose_in_dquotes(full_path, curr_stats.shell_type));
 
 	internal_to_system_slashes(dquoted_full_path);
 	run_win_executable(dquoted_full_path, elevate);

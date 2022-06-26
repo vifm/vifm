@@ -654,7 +654,7 @@ append_path_to_expanded(char expanded[], int quotes, const char path[])
 {
 	if(quotes)
 	{
-		const char *const dquoted = enclose_in_dquotes(path);
+		const char *const dquoted = enclose_in_dquotes(path, curr_stats.shell_type);
 		expanded = append_to_expanded(expanded, dquoted);
 	}
 	else

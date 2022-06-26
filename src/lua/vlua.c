@@ -372,7 +372,7 @@ static int
 VLUA_API(vifm_escape)(lua_State *lua)
 {
 	const char *what = luaL_checkstring(lua, 1);
-	lua_pushstring(lua, enclose_in_dquotes(what));
+	lua_pushstring(lua, enclose_in_dquotes(what, curr_stats.shell_type));
 	return 1;
 }
 

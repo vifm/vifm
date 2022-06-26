@@ -115,6 +115,7 @@ typedef struct
 	int use_system_calls;  /* Copy of 'syscalls' option value. */
 	int fast_file_cloning; /* Copy of part of 'iooptions' option value. */
 	int data_sync;         /* Copy of part of 'iooptions' option value. */
+	int shell_type;        /* Copy of curr_stats.shell_type */
 
 	/* Pointers to user-interaction functions. */
 	ops_choice_func choose;   /* Picking one of options. */
