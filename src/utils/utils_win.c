@@ -80,7 +80,7 @@ static BOOL CALLBACK close_app_enum(HWND hwnd, LPARAM lParam);
 void
 pause_shell(void)
 {
-	if(curr_stats.shell_type == ST_CMD)
+	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
 	{
 		run_in_shell_no_cls("pause", SHELL_BY_APP);
 	}
@@ -286,6 +286,11 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
 		 * special characters work at the same time. */
 		fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
+	}
+	else if(curr_stats.shell_type == ST_YORI)
+	{
+		sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
+		fmt = "%s %s %s";
 	}
 	else if(curr_stats.shell_type == ST_PS)
 	{
@@ -684,6 +689,10 @@ get_shell_type(const char shell_cmd[])
 	if(stroscmp(shell_name, "cmd") == 0 || stroscmp(shell_name, "cmd.exe") == 0)
 	{
 		return ST_CMD;
+	}
+	if(stroscmp(shell_name, "yori") == 0 || stroscmp(shell_name, "yori.exe") == 0)
+	{
+		return ST_YORI;
 	}
 	if(stroscmp(shell_name, "powershell") == 0 ||
 			stroscmp(shell_name, "powershell.exe") == 0 ||

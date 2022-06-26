@@ -621,7 +621,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	strcpy(spec, prog_spec);
 	bg = cut_suffix(spec, " &") || force_bg;
 
-	if(curr_stats.shell_type == ST_CMD)
+	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
 	{
 		name_macro = (view == curr_view) ? "%\"c" : "%\"C";
 	}
@@ -1134,7 +1134,7 @@ gen_normal_cmd(const char cmd[], int pause)
 	{
 		const char *cmd_with_pause_fmt;
 
-		if(curr_stats.shell_type == ST_CMD)
+		if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
 		{
 			cmd_with_pause_fmt = "%s" PAUSE_STR;
 		}

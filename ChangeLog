@@ -55,6 +55,9 @@
 	Added %o macro to 'statusline', which expands to Unix permissions in octal
 	form (and to nothing on Windows).  Thanks to iSeeU816.
 
+	Added initial support for Yori shell on Windows (not everything might work
+	well at this point).  Thanks to LinArcX.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

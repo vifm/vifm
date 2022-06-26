@@ -95,6 +95,8 @@ typedef enum
 	ST_NORMAL,
 	/* Dumb cmd.exe shell on Windows. */
 	ST_CMD,
+	/* An improved version of cmd.exe shell on Windows. */
+	ST_YORI,
 	/* PowerShell on Windows. (Any less dumb?  I wish...) */
 	ST_PS,
 }
