@@ -52,6 +52,9 @@
 	Added "maxtreedepth" value to 'previewoptions' option, which allows
 	limiting depths of the displayed tree.  Thanks to Afz.
 
+	Added %o macro to 'statusline', which expands to Unix permissions in octal
+	form (and to nothing on Windows).  Thanks to iSeeU816.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
