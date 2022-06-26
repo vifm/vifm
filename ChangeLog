@@ -85,6 +85,9 @@
 	Set `title` option by default if $TERM is foot* as its terminfo entry
 	might lack tsl and fsl attributes.  Thanks to nobodyatandnothing.
 
+	Display permissions in octal form in File Info dialog and group them with
+	owner/group info.  Thanks to iSeeU816.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.

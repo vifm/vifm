@@ -187,7 +187,8 @@ modfinfo_redraw(void)
 
 #ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
-	curr_y += print_item("Permissions: ", perm_buf, curr_y);
+	snprintf(buf, sizeof(buf), "%s (%03o)", perm_buf, curr->mode & 0777);
+	curr_y += print_item("Permissions: ", buf, curr_y);
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(isdigit(id_buf[0]))
