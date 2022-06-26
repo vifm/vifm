@@ -356,17 +356,17 @@ enclose_in_dquotes(const char str[], ShellType shell_type)
 
 	p = buf;
 	*p++ = '"';
-	while(*str != '\0')
+	for(; *str != '\0'; ++str)
 	{
-		if((shell_type == ST_NORMAL && *str == '\\') ||
-				*str == '"' ||
-				(shell_type == ST_NORMAL && (*str == '$' || *str == '`')))
+		char c = *str;
+
+		if(c == '"' ||
+				(shell_type == ST_NORMAL && (c == '\\' || c == '$' || c == '`')))
 		{
 			*p++ = '\\';
 		}
-		*p++ = *str;
 
-		str++;
+		*p++ = c;
 	}
 	*p++ = '"';
 	*p = '\0';
