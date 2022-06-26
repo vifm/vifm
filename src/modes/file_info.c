@@ -168,14 +168,6 @@ modfinfo_redraw(void)
 	curr_y += show_mime_type(view, curr_y);
 
 #ifndef _WIN32
-	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
-	curr_y += print_item("Permissions: ", perm_buf, curr_y);
-#else
-	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(curr->attrs));
-	curr_y += print_item("Attributes: ", perm_buf, curr_y);
-#endif
-
-#ifndef _WIN32
 	snprintf(buf, sizeof(buf), "%d", curr->nlinks);
 	curr_y += print_item("Hard Links: ", buf, curr_y);
 #endif
@@ -194,6 +186,9 @@ modfinfo_redraw(void)
 #endif
 
 #ifndef _WIN32
+	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
+	curr_y += print_item("Permissions: ", perm_buf, curr_y);
+
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(isdigit(id_buf[0]))
 	{
@@ -215,6 +210,9 @@ modfinfo_redraw(void)
 		snprintf(buf, sizeof(buf), "%s (%lu)", id_buf, (unsigned long)curr->gid);
 	}
 	curr_y += print_item("Group: ", buf, curr_y);
+#else
+	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(curr->attrs));
+	curr_y += print_item("Attributes: ", perm_buf, curr_y);
 #endif
 
 	/* Fake use after last assignment. */
