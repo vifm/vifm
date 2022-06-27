@@ -200,6 +200,9 @@
 	Fixed slashes being doubled in macros like %"c on Windows with cmd.exe as
 	a shell.  Thanks to Toby Hawkins (a.k.a. HawkinsT).
 
+	Fixed auto-detection of GUI programs on Windows, which prevents Vifm from
+	waiting on them to finish.  Thanks to Azin Sharaf.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

@@ -100,7 +100,7 @@ run_in_shell_no_cls(char command[], ShellRequester by)
 	char *const sh_cmd = win_make_sh_cmd(command, by);
 
 	int returned_exit_code;
-	int ret = win_exec_cmd(sh_cmd, &returned_exit_code);
+	int ret = win_exec_cmd(command, sh_cmd, &returned_exit_code);
 	if(!returned_exit_code)
 	{
 		ret = -1;
@@ -239,9 +239,9 @@ wcwidth(wchar_t c)
 }
 
 int
-win_exec_cmd(char cmd[], int *returned_exit_code)
+win_exec_cmd(const char cmd[], char full_cmd[], int *returned_exit_code)
 {
-	wchar_t *utf16_cmd;
+	wchar_t *utf16_full_cmd;
 	BOOL ret;
 	DWORD code;
 	STARTUPINFOW startup = {};
@@ -249,10 +249,10 @@ win_exec_cmd(char cmd[], int *returned_exit_code)
 
 	*returned_exit_code = 0;
 
-	utf16_cmd = utf8_to_utf16(cmd);
-	ret = CreateProcessW(NULL, utf16_cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
-			&pinfo);
-	free(utf16_cmd);
+	utf16_full_cmd = utf8_to_utf16(full_cmd);
+	ret = CreateProcessW(NULL, utf16_full_cmd, NULL, NULL, 0, 0, NULL, NULL,
+			&startup, &pinfo);
+	free(utf16_full_cmd);
 
 	if(ret == 0)
 	{
@@ -392,6 +392,8 @@ handle_process(const char cmd[], HANDLE proc, int *got_exit_code)
 
 	if(cmd != NULL && !should_wait_for_program(cmd))
 	{
+		/* Simulate program finishing normally. */
+		*got_exit_code = 1;
 		return 0;
 	}
 
