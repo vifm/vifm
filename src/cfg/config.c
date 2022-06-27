@@ -460,6 +460,12 @@ try_xdg_for_conf(void)
 	env_set(VIFM_EV, config_dir);
 	free(config_dir);
 
+	/* If XDG is used for configuration directory, create correcponding data
+	 * directory, so it's also used at the same time. */
+	char data_dir[PATH_MAX + 1];
+	find_data_dir(data_dir, sizeof(data_dir));
+	(void)create_path(data_dir, S_IRWXU);
+
 	return 1;
 }
 
@@ -569,13 +575,25 @@ store_config_paths(const char data_dir[])
 			"%%r/.vifm-Trash,%s/" TRASH;
 #endif
 
-	char *trash_base = path_exists_at(cfg.config_dir, TRASH, DEREF)
-	                 ? escape_chars(cfg.config_dir, "$")
-	                 : escape_chars(data_dir, "$");
+	/* Determine where to store data giving preference to directories that already
+	 * exist. */
+	const char *base;
+	if(path_exists_at(data_dir, TRASH, DEREF))
+	{
+		base = data_dir;
+	}
+	else if(path_exists_at(cfg.config_dir, TRASH, DEREF))
+	{
+		base = cfg.config_dir;
+	}
+	else
+	{
+		base = (is_dir(data_dir) ? data_dir : cfg.config_dir);
+	}
+
+	char *trash_base = escape_chars(base, "$");
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), trash_dir_fmt, trash_base);
 	free(trash_base);
-
-	const char *base = (path_exists(data_dir, DEREF) ? data_dir : cfg.config_dir);
 
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, base);
 

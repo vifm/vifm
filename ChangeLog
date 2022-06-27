@@ -3,6 +3,10 @@
 	Changed conflict dialog to offer "Merge all" option even for files if
 	there are some directories left to process.  Thanks to dalvand.
 
+	Changed how location of trash directory is determined.  Now starting `vifm
+	--no-configs` won't mess anything up if you're using `~/.vifm`.  Can
+	potentially cause some trouble for existing configurations, but shouldn't.
+
 	Added 'autocd' option.  Makes invalid :commands be interpreted as an
 	implicit :cd command.  Thanks to Taras Halturin (a.k.a. halturin).
 
