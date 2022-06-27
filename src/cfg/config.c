@@ -94,12 +94,12 @@ static int try_exe_directory_for_conf(void);
 static int try_home_envvar_for_conf(int force);
 static int try_appdata_for_conf(void);
 static int try_xdg_for_conf(void);
-static void find_data_dir(void);
+static void find_data_dir(char buf[], size_t buf_size);
 static void find_config_file(void);
 static int try_myvifmrc_envvar_for_vifmrc(void);
 static int try_exe_directory_for_vifmrc(void);
 static int try_vifm_vifmrc_for_vifmrc(void);
-static void store_config_paths(void);
+static void store_config_paths(const char data_dir[]);
 static void setup_dirs(void);
 static void copy_help_file(void);
 static void create_scripts_dir(void);
@@ -252,12 +252,14 @@ cfg_discover_paths(void)
 {
 	LOG_FUNC_ENTER;
 
+	char data_dir[PATH_MAX + 1];
+
 	find_home_dir();
 	find_config_dir();
-	find_data_dir();
+	find_data_dir(data_dir, sizeof(data_dir));
 	find_config_file();
 
-	store_config_paths();
+	store_config_paths(data_dir);
 
 	setup_dirs();
 }
@@ -461,24 +463,25 @@ try_xdg_for_conf(void)
 	return 1;
 }
 
-/* Tries to find directory for data files. */
+/* Tries to find XDG directory for storing data files. */
 static void
-find_data_dir(void)
+find_data_dir(char buf[], size_t buf_size)
 {
 	LOG_FUNC_ENTER;
+
+	assert(buf_size >= 4 && "Buffer for find_data_dir() is too small!");
 
 	const char *const data_home = env_get("XDG_DATA_HOME");
 	if(is_null_or_empty(data_home) || !is_path_absolute(data_home))
 	{
-		snprintf(cfg.data_dir, sizeof(cfg.data_dir) - 4, "%s/.local/share/",
-				env_get(HOME_EV));
+		snprintf(buf, buf_size - 4, "%s/.local/share/", env_get(HOME_EV));
 	}
 	else
 	{
-		snprintf(cfg.data_dir, sizeof(cfg.data_dir) - 4, "%s/", data_home);
+		snprintf(buf, buf_size - 4, "%s/", data_home);
 	}
 
-	strcat(cfg.data_dir, "vifm");
+	strcat(buf, "vifm");
 }
 
 /* Tries to find configuration file. */
@@ -548,7 +551,7 @@ try_vifm_vifmrc_for_vifmrc(void)
 
 /* Writes path configuration file and directories for further usage. */
 static void
-store_config_paths(void)
+store_config_paths(const char data_dir[])
 {
 	LOG_FUNC_ENTER;
 
@@ -562,10 +565,8 @@ store_config_paths(void)
 	char *fuse_home;
 	const char *trash_base = path_exists_at(env_get(VIFM_EV), TRASH, DEREF)
 	                       ? cfg.config_dir
-	                       : cfg.data_dir;
-	const char *base = path_exists(cfg.data_dir, DEREF)
-	                 ? cfg.data_dir
-	                 : cfg.config_dir;
+	                       : data_dir;
+	const char *base = (path_exists(data_dir, DEREF) ? data_dir : cfg.config_dir);
 
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), env_get(VIFM_EV));

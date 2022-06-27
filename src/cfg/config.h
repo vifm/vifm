@@ -161,7 +161,6 @@ typedef struct config_t
 	char config_dir[PATH_MAX + 1];  /* Where local configuration files are
 	                                   stored. */
 	char colors_dir[PATH_MAX + 16]; /* Where local color files are stored. */
-	char data_dir[PATH_MAX + 1];    /* Where to store data files. */
 
 	char *session; /* Name of current session or NULL. */
 
