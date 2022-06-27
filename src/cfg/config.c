@@ -482,6 +482,8 @@ find_data_dir(char buf[], size_t buf_size)
 	}
 
 	strcat(buf, "vifm");
+
+	system_to_internal_slashes(buf);
 }
 
 /* Tries to find configuration file. */
@@ -555,6 +557,11 @@ store_config_paths(const char data_dir[])
 {
 	LOG_FUNC_ENTER;
 
+	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), env_get(VIFM_EV));
+	snprintf(cfg.colors_dir, sizeof(cfg.colors_dir), "%s/colors/",
+			cfg.config_dir);
+
 	const char *const trash_dir_fmt =
 #ifndef _WIN32
 			"%%r/.vifm-Trash-%%u,%s/" TRASH ",%%r/.vifm-Trash";
@@ -562,20 +569,17 @@ store_config_paths(const char data_dir[])
 			"%%r/.vifm-Trash,%s/" TRASH;
 #endif
 
-	char *fuse_home;
-	const char *trash_base = path_exists_at(env_get(VIFM_EV), TRASH, DEREF)
-	                       ? cfg.config_dir
-	                       : data_dir;
+	char *trash_base = path_exists_at(cfg.config_dir, TRASH, DEREF)
+	                 ? escape_chars(cfg.config_dir, "$")
+	                 : escape_chars(data_dir, "$");
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), trash_dir_fmt, trash_base);
+	free(trash_base);
+
 	const char *base = (path_exists(data_dir, DEREF) ? data_dir : cfg.config_dir);
 
-	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), env_get(VIFM_EV));
-	snprintf(cfg.colors_dir, sizeof(cfg.colors_dir), "%s/colors/",
-			cfg.config_dir);
-	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), trash_dir_fmt, trash_base);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, base);
 
-	fuse_home = format_str("%s/fuse/", base);
+	char *fuse_home = format_str("%s/fuse/", base);
 	(void)cfg_set_fuse_home(fuse_home);
 	free(fuse_home);
 }
