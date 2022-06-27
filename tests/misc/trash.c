@@ -3,11 +3,15 @@
 #include <unistd.h> /* symlink() */
 
 #include <stdio.h> /* snprintf() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
+#include "../../src/engine/variables.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/trash.h"
 
@@ -82,6 +86,22 @@ TEST(trash_allows_multiple_files_with_same_original_path)
 	snprintf(path, sizeof(path), "%s/trashed_2", sandbox);
 	assert_success(trash_add_entry("/some/path/src", path));
 	assert_int_equal(2, trash_list_size);
+}
+
+TEST(trash_specs_are_expanded_correctly)
+{
+	init_variables();
+	let_variables("$TEST_ENVVAR = '~'");
+
+	strcpy(cfg.home_dir, sandbox);
+	assert_success(trash_set_specs("~,$TEST_ENVVAR,~"));
+
+	assert_int_equal(3, nspecs);
+	assert_string_equal(sandbox, specs[0]);
+	assert_string_equal(sandbox, specs[1]);
+	assert_string_equal(sandbox, specs[2]);
+
+	clear_variables();
 }
 
 TEST(trash_dir_can_be_a_symlink, IF(not_windows))

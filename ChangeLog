@@ -203,6 +203,8 @@
 	Fixed auto-detection of GUI programs on Windows, which prevents Vifm from
 	waiting on them to finish.  Thanks to Azin Sharaf.
 
+	Fixed 'trashdir' expanding ~ only of the first entry.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.

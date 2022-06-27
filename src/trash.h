@@ -19,6 +19,8 @@
 #ifndef VIFM__TRASH_H__
 #define VIFM__TRASH_H__
 
+#include "utils/test_helpers.h"
+
 /* This unit keeps track of files inside potentially multiple trash
  * directories.  That's almost all of its responsibilities.  The only operation
  * on files that it performs is restoring a file.  Other than that, files are
@@ -104,6 +106,11 @@ const char * trash_get_real_name_of(const char trash_path[]);
 
 /* Removes entries that correspond to nonexistent files in trashes. */
 void trash_prune_dead_entries(void);
+
+TSTATIC_DEFS(
+	char **specs;
+	int nspecs;
+)
 
 #endif /* VIFM__TRASH_H__ */
 

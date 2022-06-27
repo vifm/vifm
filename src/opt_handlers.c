@@ -3548,14 +3548,12 @@ trash_handler(OPT_OP op, optval_t val)
 static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
-	char *const expanded_path = expand_path(val.str_val);
-	if(trash_set_specs(expanded_path) != 0)
+	if(trash_set_specs(val.str_val) != 0)
 	{
 		/* Reset the 'trashdir' option to its previous value. */
 		val.str_val = cfg.trash_dir;
 		vle_opts_assign("trashdir", val, OPT_GLOBAL);
 	}
-	free(expanded_path);
 }
 
 /* Parses set of TUI flags and changes appearance configuration accordingly. */
