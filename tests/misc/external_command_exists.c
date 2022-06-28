@@ -4,6 +4,7 @@
 
 #include "../../src/cmd_completion.h"
 #include "../../src/filetype.h"
+#include "../../src/status.h"
 
 TEST(system_shell_exists)
 {
@@ -14,6 +15,15 @@ TEST(system_shell_exists)
 #endif
 	const int exists = external_command_exists(shell);
 	assert_true(exists);
+}
+
+TEST(start_always_exists_in_cmd_like_shells)
+{
+	curr_stats.shell_type = ST_CMD;
+	assert_true(external_command_exists("start"));
+
+	curr_stats.shell_type = ST_YORI;
+	assert_true(external_command_exists("start"));
 }
 
 TEST(exe_path_with_backslashes, IF(windows))

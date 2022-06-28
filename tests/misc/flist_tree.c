@@ -202,7 +202,7 @@ TEST(nested_directory_change_detection)
 	assert_success(os_lstat(SANDBOX_PATH "/nested-dir", &st2));
 	/* On WINE time stamps aren't really cloned (even though success is
 	 * reported). */
-	if(st1.st_mtime == st2.st_mtime)
+	if(not_wine())
 	{
 		assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
 		assert_int_equal(3, lwin.list_rows);

@@ -1,9 +1,5 @@
 #include <stic.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strdup() */
@@ -247,14 +243,8 @@ enabled_and_not_in_wine(void)
 #ifndef _WIN32
 	return ipc_enabled();
 #else
-	const HMODULE dll = GetModuleHandle("ntdll.dll");
-	if(dll == INVALID_HANDLE_VALUE)
-	{
-		return 0;
-	}
-
 	/* Apparently, WINE doesn't implement some things related to named pipes. */
-	return (ipc_enabled() && GetProcAddress(dll, "wine_get_version") == NULL);
+	return (ipc_enabled() && not_wine());
 #endif
 }
 

@@ -52,9 +52,17 @@ static char *tmpdir_value;
 /* All of the tests need to run in exactly the order given for correct
  * results. */
 
+/* An update of Wine broke something, specifically second instance of helper
+ * application doesn't seem to be started in SETUP_ONCE. */
+
 /* Tests basic transfer of values from 0 to 1 and spawns processes. */
 SETUP_ONCE()
 {
+	if(!not_wine())
+	{
+		return;
+	}
+
 	/* Put all the temporary files into sandbox to avoid issues with running tests
 	 * from multiple accounts. */
 	char sandbox[PATH_MAX + 1];
@@ -79,7 +87,7 @@ SETUP_ONCE()
 			*curletr, *curletr, *curletr, *curletr, *curletr);
 	}
 
-	/* enable shared memory synchronization */
+	/* Enable shared memory synchronization. */
 	send_query(0, "sync_enable,test-shmem\n");
 	receive_ack(0);
 	send_query(1, "sync_enable,test-shmem\n");
@@ -88,6 +96,11 @@ SETUP_ONCE()
 
 TEARDOWN_ONCE()
 {
+	if(!not_wine())
+	{
+		return;
+	}
+
 	/* Make sure nothing is retained from the tests. */
 	gmux_destroy(gmux_create("regs-test-shmem"));
 	shmem_destroy(shmem_create("regs-test-shmem", 10, 10));
@@ -168,7 +181,7 @@ receive_answer(int instance, char lnbuf[])
 	lnbuf[strlen(lnbuf) - 1] = '\0';
 }
 
-TEST(make_sure_instance_0_does_not_lose_data)
+TEST(make_sure_instance_0_does_not_lose_data, IF(not_wine))
 {
 	sync_from(0);
 	check_is_initial(0, TEST_REGISTERS);
@@ -190,13 +203,13 @@ sync_from(int instance)
 	receive_ack(instance);
 }
 
-TEST(make_sure_sync_to_instance_1_works)
+TEST(make_sure_sync_to_instance_1_works, IF(not_wine))
 {
 	sync_from(1);
 	check_is_initial(1, TEST_REGISTERS);
 }
 
-TEST(chg_update_in_place)
+TEST(chg_update_in_place, IF(not_wine))
 {
 	send_query(1, "set,d,newd,nd1,nd2\n");
 	sync_to_from(1);
@@ -221,7 +234,7 @@ check_register_contents(int instance, char register_name,
 	assert_string_equal(expected_content, lnbuf);
 }
 
-TEST(chg_append_to_end)
+TEST(chg_append_to_end, IF(not_wine))
 {
 	send_query(1, "set,e,longerthanbeforee,le1,le2,le3\n");
 	sync_to_from(1);
@@ -235,7 +248,7 @@ TEST(chg_append_to_end)
 	check_is_initial(0, TEST_REGISTERS_MINUS_DE);
 }
 
-TEST(chg_double_allocation_size_till_fit)
+TEST(chg_double_allocation_size_till_fit, IF(not_wine))
 {
 	test_pat(pat4kib, 4096, 'f', 128, '4', 'f');
 	/* Check initial. */
@@ -272,14 +285,14 @@ test_pat(char result[], size_t patsz, char register_name, size_t pat_id_every,
 	check_register_contents(0, register_name, result + 2);
 }
 
-TEST(chg_double_allocation_to_max)
+TEST(chg_double_allocation_to_max, IF(not_wine))
 {
 	char result[16384 + 8];
 	test_pat(result, 16384, 'g', 512, '6', 'g');
 	check_is_initial(0, TEST_REGISTERS_MINUS_DEFG);
 }
 
-TEST(chg_halve_allocation)
+TEST(chg_halve_allocation, IF(not_wine))
 {
 	send_query(0, "set,g,G\n");
 	sync_to_from(0);
@@ -288,7 +301,7 @@ TEST(chg_halve_allocation)
 	check_is_initial(1, TEST_REGISTERS_MINUS_DEFG);
 }
 
-TEST(handover)
+TEST(handover, IF(not_wine))
 {
 	/* Open third instance. */
 	spawn_regcmd(2);
@@ -317,7 +330,7 @@ sync_disable(int instance)
 	fclose(instance_stdout[instance]);
 }
 
-TEST(teardown_once)
+TEST(teardown_once, IF(not_wine))
 {
 	sync_disable(2);
 }

@@ -507,6 +507,23 @@ not_windows(void)
 }
 
 int
+not_wine(void)
+{
+#ifndef _WIN32
+	return 1;
+#else
+	const HMODULE dll = GetModuleHandle("ntdll.dll");
+	if(dll == INVALID_HANDLE_VALUE)
+	{
+		return 0;
+	}
+
+	/* Newer WINE has some issues with spawning second instance. */
+	return (GetProcAddress(dll, "wine_get_version") == NULL);
+#endif
+}
+
+int
 regular_unix_user(void)
 {
 #ifdef _WIN32

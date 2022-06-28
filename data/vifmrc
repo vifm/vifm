@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 30 March, 2022)
+" Sample configuration file for vifm (last updated: 28 June, 2022)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -390,7 +390,7 @@ filextype */
 " For OS X:
 " filetype * open
 " For Windows:
-" filetype * start, explorer %"f &
+" filetype * explorer %"f &
 
 " ------------------------------------------------------------------------------
 
