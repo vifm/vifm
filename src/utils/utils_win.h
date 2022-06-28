@@ -45,11 +45,13 @@
 
 int wcwidth(wchar_t c);
 
-/* Executes a command (cmd) using CreateProcess() API function.  Expects path
- * that contain spaces to be enclosed in double quotes.  On internal error
- * returns last error code and sets *returned_exit_code to zero, otherwise sets
- * *returned_exit_code to non-zero and returns exit code of a process. */
-int win_exec_cmd(char cmd[], int *returned_exit_code);
+/* Executes a command (full_cmd) using CreateProcess() API function.  Expects
+ * path that contain spaces to be enclosed in double quotes.  cmd can equal
+ * full_cmd, otherwise it should be version of full_cmd without shell prefix.
+ * On internal error returns last error code and sets *returned_exit_code to
+ * zero, otherwise sets *returned_exit_code to non-zero and returns exit code of
+ * a process. */
+int win_exec_cmd(const char cmd[], char full_cmd[], int *returned_exit_code);
 
 /* Turns command into the one suitable to be run by a shell.  Returns the
  * string. */

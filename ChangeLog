@@ -3,6 +3,10 @@
 	Changed conflict dialog to offer "Merge all" option even for files if
 	there are some directories left to process.  Thanks to dalvand.
 
+	Changed how location of trash directory is determined.  Now starting `vifm
+	--no-configs` won't mess anything up if you're using `~/.vifm`.  Can
+	potentially cause some trouble for existing configurations, but shouldn't.
+
 	Added 'autocd' option.  Makes invalid :commands be interpreted as an
 	implicit :cd command.  Thanks to Taras Halturin (a.k.a. halturin).
 
@@ -54,6 +58,9 @@
 
 	Added %o macro to 'statusline', which expands to Unix permissions in octal
 	form (and to nothing on Windows).  Thanks to iSeeU816.
+
+	Added initial support for Yori shell on Windows (not everything might work
+	well at this point).  Thanks to LinArcX.
 
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
@@ -193,6 +200,14 @@
 
 	Fixed argument escaping issues for foreground programs on Windows.  Thanks
 	to fohrums.
+
+	Fixed slashes being doubled in macros like %"c on Windows with cmd.exe as
+	a shell.  Thanks to Toby Hawkins (a.k.a. HawkinsT).
+
+	Fixed auto-detection of GUI programs on Windows, which prevents Vifm from
+	waiting on them to finish.  Thanks to Azin Sharaf.
+
+	Fixed 'trashdir' expanding ~ only of the first entry.
 
 0.12-beta to 0.12 (2021-09-29)
 

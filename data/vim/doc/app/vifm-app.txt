@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 26
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 28
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -100,9 +100,10 @@ The other command line arguments are:
     The command may use any of |vifm-macros|.  The command is executed once for
     whole selection.
 --logging[=<startup log path>]                 *vifm---logging*
-    log some operational details $VIFM/log.  If the optional startup log path
-    is specified and permissions allow to open it for writing, then logging of
-    early initialization (before value of $VIFM is determined) is put there.
+    log some operational details to $XDG_DATA_HOME/vifm/log or $VIFM/log.  If
+    the optional startup log path is specified and permissions allow to open
+    it for writing, then logging of early initialization (before configuration
+    directories are determined) is put there.
 --server-list                                  *vifm---server-list*
     list available server names and exit.
 --server-name <name>                           *vifm---server-name*
@@ -3448,7 +3449,7 @@ directories, which are always entered (use |vifm-gf| for directories).
                                                *vifm-'fusehome'*
 fusehome
 type: string
-default: "($XDG_DATA_HOME/.local/share | $VIFM)/fuse/"
+default: "($XDG_DATA_HOME/vifm | $VIFM)/fuse/"
 
 Directory to be used as a root dir for FUSE mounts.  Value of the option can
 contain environment variables (in form "$envname"), which will be expanded
@@ -4245,11 +4246,13 @@ Use |vifm-trash| directory.
 trashdir
 type: string
 default: on *nix:
-         "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash" or if $VIFM/Trash
-         doesn't exist
-         "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
+           "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
+           or
+           "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash"
          on Windows:
-         "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
+           "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
+           or
+           "%r/.vifm-Trash,$VIFM/vifm/Trash"
 
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to |vifm-trash| directory

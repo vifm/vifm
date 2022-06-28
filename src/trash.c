@@ -39,6 +39,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "ops.h"
@@ -125,8 +126,8 @@ static char * format_root_spec(const char spec[], const char mount_point[]);
 trash_entry_t *trash_list;
 int trash_list_size;
 
-static char **specs;
-static int nspecs;
+TSTATIC char **specs;
+TSTATIC int nspecs;
 
 int
 trash_set_specs(const char new_specs[])
@@ -148,13 +149,16 @@ trash_set_specs(const char new_specs[])
 		const int last_element = *p == '\0';
 		*p = '\0';
 
+		spec = expand_path(spec);
+
 		if(!validate_spec(spec))
 		{
+			free(spec);
 			error = 1;
 			break;
 		}
 
-		ndirs = add_to_string_array(&dirs, ndirs, spec);
+		ndirs = put_into_string_array(&dirs, ndirs, spec);
 
 		if(last_element)
 		{

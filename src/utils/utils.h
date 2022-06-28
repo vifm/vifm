@@ -121,7 +121,7 @@ int refers_to_slower_fs(const char from[], const char to[]);
 int friendly_size_notation(uint64_t num, int str_size, char str[]);
 
 /* Returns pointer to a statically allocated buffer. */
-const char * enclose_in_dquotes(const char str[]);
+const char * enclose_in_dquotes(const char str[], ShellType shell_type);
 
 /* Changes current working directory of the process.  Does nothing if we already
  * at path.  Returns zero on success, otherwise -1 is returned. */

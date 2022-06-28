@@ -277,7 +277,7 @@ run_win_executable(char full_path[], int elevate)
 	else
 	{
 		int returned_exit_code;
-		const int error = win_exec_cmd(full_path, &returned_exit_code);
+		const int error = win_exec_cmd(full_path, full_path, &returned_exit_code);
 		if(error != 0 && !returned_exit_code)
 		{
 			if(error == ERROR_ELEVATION_REQUIRED && is_vista_and_above())
@@ -376,7 +376,8 @@ execute_file(const char full_path[], int elevate)
 	rn_shell(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
 	free(escaped);
 #else
-	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
+	char *const dquoted_full_path =
+		strdup(enclose_in_dquotes(full_path, curr_stats.shell_type));
 
 	internal_to_system_slashes(dquoted_full_path);
 	run_win_executable(dquoted_full_path, elevate);
@@ -621,7 +622,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	strcpy(spec, prog_spec);
 	bg = cut_suffix(spec, " &") || force_bg;
 
-	if(curr_stats.shell_type == ST_CMD)
+	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
 	{
 		name_macro = (view == curr_view) ? "%\"c" : "%\"C";
 	}
@@ -1134,7 +1135,7 @@ gen_normal_cmd(const char cmd[], int pause)
 	{
 		const char *cmd_with_pause_fmt;
 
-		if(curr_stats.shell_type == ST_CMD)
+		if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
 		{
 			cmd_with_pause_fmt = "%s" PAUSE_STR;
 		}

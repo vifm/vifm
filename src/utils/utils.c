@@ -349,23 +349,24 @@ split_size_double(double size, unsigned long long *ifraction,
 }
 
 const char *
-enclose_in_dquotes(const char str[])
+enclose_in_dquotes(const char str[], ShellType shell_type)
 {
 	static char buf[1 + PATH_MAX*2 + 1 + 1];
 	char *p;
 
 	p = buf;
 	*p++ = '"';
-	while(*str != '\0')
+	for(; *str != '\0'; ++str)
 	{
-		if((curr_stats.shell_type != ST_PS && *str == '\\') || *str == '"' ||
-				(curr_stats.shell_type == ST_NORMAL && (*str == '$' || *str == '`')))
+		char c = *str;
+
+		if(c == '"' ||
+				(shell_type == ST_NORMAL && (c == '\\' || c == '$' || c == '`')))
 		{
 			*p++ = '\\';
 		}
-		*p++ = *str;
 
-		str++;
+		*p++ = c;
 	}
 	*p++ = '"';
 	*p = '\0';

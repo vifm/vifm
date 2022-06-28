@@ -407,10 +407,11 @@ show_help_msg(const char wrong_arg[])
 	puts("    sets command to be executed on selected files instead of opening");
 	puts("    them.  Command can use any of command macros.\n");
 	puts("  vifm --logging[=<startup log path>]");
-	puts("    log some operational details $VIFM/log.  If the optional startup");
-	puts("    log path is specified and permissions allow to open it for");
-	puts("    writing, then logging of early initialization (before value of");
-	puts("    $VIFM is determined) is put there.\n");
+	puts("    log some operational details to $XDG_DATA_HOME/vifm/log or");
+	puts("    $VIFM/log.  If the optional startup log path is specified and");
+	puts("    permissions allow to open it for writing, then logging of early");
+	puts("    initialization (before configuration directories are determined)");
+	puts("    is put there.\n");
 
 #ifdef ENABLE_REMOTE_CMDS
 	puts("  vifm --server-list");

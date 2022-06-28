@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 26, 2022" "vifm 0.12"
+.TH VIFM 1 "June 28, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -69,9 +69,10 @@ command may use any of macros described in "Command macros" section below.  The
 command is executed once for whole selection.
 .TP
 .BI "\-\-logging[=<startup log path>]"
-Log some operational details $VIFM/log.  If the optional startup log path
-is specified and permissions allow to open it for writing, then logging of
-early initialization (before value of $VIFM is determined) is put there.
+Log some operational details to $XDG_DATA_HOME/vifm/log or $VIFM/log.  If
+the optional startup log path is specified and permissions allow to open
+it for writing, then logging of early initialization (before configuration
+directories are determined) is put there.
 .TP
 .BI \-\-server\-list
 List available server names and exit.
@@ -4140,7 +4141,7 @@ directories, which are always entered (use gf key for directories).
 .BI 'fusehome'
 type: string
 .br
-default: "($XDG_DATA_HOME/.local/share | $VIFM)/fuse/"
+default: "($XDG_DATA_HOME/vifm | $VIFM)/fuse/"
 .br
 Directory to be used as a root dir for FUSE mounts.  Value of the option can
 contain environment variables (in form "$envname"), which will be expanded
@@ -5079,12 +5080,15 @@ Use trash directory.  See "Trash directory" section below.
 .BI 'trashdir'
 type: string
 .br
-default: on *nix:
-   "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash"
-   or if $VIFM/Trash doesn't exist
-   "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
-         on Windows:
-   "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
+default:
+  on *nix:
+    "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
+    or
+    "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash"
+  on Windows:
+    "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
+    or
+    "%r/.vifm-Trash,$VIFM/vifm/Trash"
 .br
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to trash directory or a path

@@ -196,6 +196,7 @@ ops_alloc(OPS main_op, int bg, const char descr[], const char base_dir[],
 	ops->use_system_calls = cfg.use_system_calls;
 	ops->fast_file_cloning = cfg.fast_file_cloning;
 	ops->data_sync = cfg.data_sync;
+	ops->shell_type = curr_stats.shell_type;
 
 	ops->choose = choose;
 	ops->confirm = confirm;
@@ -799,8 +800,8 @@ op_symlink(ops_t *ops, void *data, const char src[], const char dst[])
 		escaped_src = shell_like_escape(src, 0);
 		escaped_dst = shell_like_escape(dst, 0);
 #else
-		escaped_src = strdup(enclose_in_dquotes(src));
-		escaped_dst = strdup(enclose_in_dquotes(dst));
+		escaped_src = strdup(enclose_in_dquotes(src, ops->shell_type));
+		escaped_dst = strdup(enclose_in_dquotes(dst, ops->shell_type));
 #endif
 
 		if(escaped_src == NULL || escaped_dst == NULL)
