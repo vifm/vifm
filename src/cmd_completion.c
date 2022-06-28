@@ -1411,6 +1411,15 @@ external_command_exists(const char cmd[])
 		return vlua_handler_present(curr_stats.vlua, cmd);
 	}
 
+	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
+	{
+		/* This is a builtin command. */
+		if(stroscmp(cmd, "start") == 0)
+		{
+			return 1;
+		}
+	}
+
 	char path[PATH_MAX + 1];
 	if(get_cmd_path(cmd, sizeof(path), path) == 0)
 	{
