@@ -146,7 +146,7 @@ Alborz Jafari added rate and progress bar to progress dialog.
 pkgs/AppImage/* provided by michaellee8.
 
 M Kelly fixed inability to map escape sequences due to extended keys in
-terminfo database.
+terminfo database and added notation for some shifted keys.
 
 Phil Runninger helped to provide target information for drives in :volumes
 menu.

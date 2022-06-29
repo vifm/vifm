@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 28, 2022" "vifm 0.12"
+.TH VIFM 1 "June 29, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5357,6 +5357,17 @@ common.
 .TP
 .BI "<insert>"
 Insert key.
+.TP
+.BI "<s-home> <s-end>"
+.RE
+.BI "<s-left> <s-right> <s-up> <s-down>"
+.br
+.BI "<s-pageup> <s-pagedown>"
+.br
+.BI "<s-delete> <s-insert>"
+.RS 8
+Shift + one of the keys from above, if terminal and its terminfo supports it.
+.RE
 .TP
 .BI "<c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_>"
 Control + some key (see key conflict description below).

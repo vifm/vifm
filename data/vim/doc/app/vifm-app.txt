@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 28
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4517,6 +4517,12 @@ sequences that can be used in place of them.  They are:
     more common.
 <insert>
     Insert key.
+<s-home> <s-end>
+<s-left> <s-right> <s-up> <s-down>
+<s-pageup> <s-pagedown>
+<s-delete> <s-insert>
+    Shift + one of the keys from above, if terminal and its terminfo supports
+    it.
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_>
     Control + some key (see key conflict description below).
 <c-@>                                          {only for *nix}
