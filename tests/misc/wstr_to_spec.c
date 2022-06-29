@@ -9,6 +9,7 @@
 
 #include "../../src/compat/curses.h"
 #include "../../src/modes/wk.h"
+#include "../../src/utils/macros.h"
 #include "../../src/utils/utils.h"
 #include "../../src/bracket_notation.h"
 
@@ -142,6 +143,63 @@ TEST(more_non_ascii_chars_are_handled_correctly, IF(utf8_locale))
 	spec = wstr_to_spec(L"ю");
 	assert_string_equal("ю", spec);
 	free(spec);
+}
+
+TEST(known_sequences)
+{
+	struct match {
+		const wchar_t from[5];
+		const char *to;
+	} matches[] = {
+		{ { L'\r' },            "<cr>" },
+		{ { L'\n' },            "<c-j>" },
+		{ { L'\177' },          "<del>" },
+		{ { K(KEY_HOME) },      "<home>" },
+		{ { K(KEY_END) },       "<end>" },
+		{ { K(KEY_UP) },        "<up>" },
+		{ { K(KEY_DOWN) },      "<down>" },
+		{ { K(KEY_LEFT) },      "<left>" },
+		{ { K(KEY_RIGHT) },     "<right>" },
+		{ { K(KEY_DC) },        "<delete>" },
+		{ { K(KEY_BTAB) },      "<s-tab>" },
+		{ { K(KEY_PPAGE) },     "<pageup>" },
+		{ { K(KEY_NPAGE) },     "<pagedown>" },
+		{ { WC_C_SPACE },       "<c-@>" },
+		{ { K(KEY_SHOME) },     "<s-home>" },
+		{ { K(KEY_SEND) },      "<s-end>" },
+		{ { K(KEY_SR) },        "<s-up>" },
+		{ { K(KEY_SF) },        "<s-down>" },
+		{ { K(KEY_SLEFT) },     "<s-left>" },
+		{ { K(KEY_SRIGHT) },    "<s-right>" },
+		{ { K(KEY_SDC) },       "<s-delete>" },
+		{ { K(KEY_SIC) },       "<s-insert>" },
+		{ { K(KEY_SPREVIOUS) }, "<s-pageup>" },
+		{ { K(KEY_SNEXT) },     "<s-pagedown>" },
+		{ { L"\x1b" },          "<esc>" },
+		{ { L"\x1b" L"a" },     "<a-a>" },
+		{ { L"\x1b" L"z" },     "<a-z>" },
+		{ { L"\x1b" L"0" },     "<a-0>" },
+		{ { L"\x1b" L"9" },     "<a-9>" },
+		{ { L"\x1b" L"A" },     "<a-s-a>" },
+		{ { L"\x1b" L"Z" },     "<a-s-z>" },
+		{ { L"\x1b[Z" },        "<s-tab>" },
+		{ { K(KEY_F(0)) },      "<f0>" },
+		{ { K(KEY_F(12)) },     "<f12>" },
+		{ { K(KEY_F(13)) },     "<s-f1>" },
+		{ { K(KEY_F(24)) },     "<s-f12>" },
+		{ { K(KEY_F(25)) },     "<c-f1>" },
+		{ { K(KEY_F(36)) },     "<c-f12>" },
+		{ { K(KEY_F(37)) },     "<a-f1>" },
+		{ { K(KEY_F(48)) },     "<a-f12>" },
+	};
+
+	unsigned int i;
+	for(i = 0; i < ARRAY_LEN(matches); ++i)
+	{
+		char *spec = wstr_to_spec(matches[i].from);
+		assert_string_equal(matches[i].to, spec);
+		free(spec);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
