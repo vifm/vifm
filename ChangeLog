@@ -62,6 +62,10 @@
 	Added initial support for Yori shell on Windows (not everything might work
 	well at this point).  Thanks to LinArcX.
 
+	Added angle-bracket notation for some shifted grey keys: <s-home>,
+	<s-end>, <s-left>, <s-right>, <s-up>, <s-down>, <s-pageup>, <s-pagedown>,
+	<s-delete>, <s-insert>.  Patch by M Kelly.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

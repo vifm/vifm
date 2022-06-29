@@ -774,20 +774,20 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 	*len = 1;
 	switch(*c)
 	{
-		case L' ':          strcpy(buf, "<space>");    break;
-		case L'\r':         strcpy(buf, "<cr>");       break;
-		case L'\n':         strcpy(buf, "<c-j>");      break;
-		case L'\177':       strcpy(buf, "<del>");      break;
-		case K(KEY_HOME):   strcpy(buf, "<home>");     break;
-		case K(KEY_END):    strcpy(buf, "<end>");      break;
-		case K(KEY_UP):     strcpy(buf, "<up>");       break;
-		case K(KEY_DOWN):   strcpy(buf, "<down>");     break;
-		case K(KEY_LEFT):   strcpy(buf, "<left>");     break;
-		case K(KEY_RIGHT):  strcpy(buf, "<right>");    break;
-		case K(KEY_DC):     strcpy(buf, "<delete>");   break;
-		case K(KEY_BTAB):   strcpy(buf, "<s-tab>");    break;
-		case K(KEY_PPAGE):  strcpy(buf, "<pageup>");   break;
-		case K(KEY_NPAGE):  strcpy(buf, "<pagedown>"); break;
+		case L' ':             strcpy(buf, "<space>");      break;
+		case L'\r':            strcpy(buf, "<cr>");         break;
+		case L'\n':            strcpy(buf, "<c-j>");        break;
+		case L'\177':          strcpy(buf, "<del>");        break;
+		case K(KEY_HOME):      strcpy(buf, "<home>");       break;
+		case K(KEY_END):       strcpy(buf, "<end>");        break;
+		case K(KEY_UP):        strcpy(buf, "<up>");         break;
+		case K(KEY_DOWN):      strcpy(buf, "<down>");       break;
+		case K(KEY_LEFT):      strcpy(buf, "<left>");       break;
+		case K(KEY_RIGHT):     strcpy(buf, "<right>");      break;
+		case K(KEY_DC):        strcpy(buf, "<delete>");     break;
+		case K(KEY_BTAB):      strcpy(buf, "<s-tab>");      break;
+		case K(KEY_PPAGE):     strcpy(buf, "<pageup>");     break;
+		case K(KEY_NPAGE):     strcpy(buf, "<pagedown>");   break;
 		case K(KEY_SHOME):     strcpy(buf, "<s-home>");     break;
 		case K(KEY_SEND):      strcpy(buf, "<s-end>");      break;
 		case K(KEY_SR):        strcpy(buf, "<s-up>");       break;
@@ -798,7 +798,7 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 		case K(KEY_SIC):       strcpy(buf, "<s-insert>");   break;
 		case K(KEY_SPREVIOUS): strcpy(buf, "<s-pageup>");   break;
 		case K(KEY_SNEXT):     strcpy(buf, "<s-pagedown>"); break;
-		case WC_C_SPACE:    strcpy(buf, "<c-@>");      break;
+		case WC_C_SPACE:       strcpy(buf, "<c-@>");        break;
 
 		case L'\b':
 			if(!bs)
