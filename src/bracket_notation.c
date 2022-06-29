@@ -504,6 +504,16 @@ static key_pair_t key_pairs[] = {
 	{ L"<insert>",   { K(KEY_IC) }        },
 	{ L"<pageup>",   { K(KEY_PPAGE) }     },
 	{ L"<pagedown>", { K(KEY_NPAGE) }     },
+	{ L"<s-home>",   { K(KEY_SHOME) }     },
+	{ L"<s-end>",    { K(KEY_SEND) }      },
+	{ L"<s-left>",   { K(KEY_SLEFT) }     },
+	{ L"<s-right>",  { K(KEY_SRIGHT) }    },
+	{ L"<s-up>",     { K(KEY_SR) }        },
+	{ L"<s-down>",   { K(KEY_SF) }        },
+	{ L"<s-delete>", { K(KEY_SDC) }       },
+	{ L"<s-insert>", { K(KEY_SIC) }       },
+	{ L"<s-pageup>", { K(KEY_SPREVIOUS) } },
+	{ L"<s-pagedown>", { K(KEY_SNEXT) }   },
 	{ L"<f0>",       { K(KEY_F(0)) }      },
 	{ L"<f1>",       { K(KEY_F(1)) }      },
 	{ L"<f2>",       { K(KEY_F(2)) }      },
@@ -778,6 +788,16 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 		case K(KEY_BTAB):   strcpy(buf, "<s-tab>");    break;
 		case K(KEY_PPAGE):  strcpy(buf, "<pageup>");   break;
 		case K(KEY_NPAGE):  strcpy(buf, "<pagedown>"); break;
+		case K(KEY_SHOME):     strcpy(buf, "<s-home>");     break;
+		case K(KEY_SEND):      strcpy(buf, "<s-end>");      break;
+		case K(KEY_SR):        strcpy(buf, "<s-up>");       break;
+		case K(KEY_SF):        strcpy(buf, "<s-down>");     break;
+		case K(KEY_SLEFT):     strcpy(buf, "<s-left>");     break;
+		case K(KEY_SRIGHT):    strcpy(buf, "<s-right>");    break;
+		case K(KEY_SDC):       strcpy(buf, "<s-delete>");   break;
+		case K(KEY_SIC):       strcpy(buf, "<s-insert>");   break;
+		case K(KEY_SPREVIOUS): strcpy(buf, "<s-pageup>");   break;
+		case K(KEY_SNEXT):     strcpy(buf, "<s-pagedown>"); break;
 		case WC_C_SPACE:    strcpy(buf, "<c-@>");      break;
 
 		case L'\b':
