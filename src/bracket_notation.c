@@ -819,8 +819,16 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 			}
 			if(c[1] != L'\0' && c[1] != L'\033')
 			{
-				strcpy(buf, "<m-a>");
-				buf[3] += c[1] - L'a';
+				if(isupper(c[1]))
+				{
+					strcpy(buf, "<a-s-a>");
+					buf[5] += c[1] - L'A';
+				}
+				else
+				{
+					strcpy(buf, "<a-a>");
+					buf[3] += c[1] - L'a';
+				}
 				++*len;
 				break;
 			}
