@@ -2781,10 +2781,16 @@ The command macros may be used in user commands.
                                                                *vifm-%C*
   %C  %"C   the current file under the cursor in the other directory.
                                                                *vifm-%f*
-  %f  %"f   all of the selected files, but see |vifm-selection|.
+  %f  %"f   all of the selected files or the current file, but see
+            |vifm-selection|.
                                                                *vifm-%F*
-  %F  %"F   all of the selected files in the other directory list,
-            but see |vifm-selection|.
+  %F  %"F   same as %f, %"f, but for the inactive pane.
+                                                               *vifm-%l*
+  %l  %"l   list of selected files.  Unlike %f from above, this is only for
+            explicit selection (i.e., not via a range) and is empty if no
+            files are selected.
+                                                               *vifm-%L*
+  %L  %"L   same as %l and %"l, but for the inactive pane.
                                                                *vifm-%b*
   %b  %"b   same as %f %F.
                                                                *vifm-%d*

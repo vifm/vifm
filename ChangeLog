@@ -66,6 +66,10 @@
 	<s-end>, <s-left>, <s-right>, <s-up>, <s-down>, <s-pageup>, <s-pagedown>,
 	<s-delete>, <s-insert>.  Patch by M Kelly.
 
+	Added %l/%"l and %L/%"L macros for the list of selected files.  %f is not
+	empty if there is no selection, which is not always desirable.  Thanks to
+	ratnamhof.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

@@ -3366,11 +3366,19 @@ The current file under the cursor.
 The current file under the cursor in the other directory.
 .TP
 .BI "%f %""f"
-All of the selected files, but see "Selection" section below.
+All of the selected files or the current file, but see "Selection" section
+below.
 .TP
 .BI "%F %""F"
-All of the selected files in the other directory list, but see "Selection"
-section below.
+Same as %f, %"f, but for the inactive pane.
+.TP
+.BI "%l %""l"
+List of selected files.  Unlike %f from above, this is only for
+explicit selection (i.e., not via a range) and is empty if no
+files are selected.
+.TP
+.BI "%L %""L"
+Same as %l, %"l, but for the inactive pane.
 .TP
 .BI "%b %""b"
 Same as %f %F.
