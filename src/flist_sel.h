@@ -32,9 +32,10 @@ void flist_sel_stash(struct view_t *view);
 /* Clears selection forgetting not saving it or overwriting last stash. */
 void flist_sel_drop(struct view_t *view);
 
-/* Callback-like function which triggers some selection updates after view
- * reload. */
-void flist_sel_view_reloaded(struct view_t *view, int location_changed);
+/* Callback-like function which triggers some selection updates when view
+ * reload or directory change occurs.  new_dir should be NULL if view is
+ * reloaded. */
+void flist_sel_view_to_reload(struct view_t *view, const char new_dir[]);
 
 /* Inverts selection of files in the view. */
 void flist_sel_invert(struct view_t *view);

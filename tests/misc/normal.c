@@ -16,6 +16,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
+#include "../../src/flist_sel.h"
 #include "../../src/fops_common.h"
 #include "../../src/status.h"
 
@@ -114,6 +115,57 @@ TEST(folding)
 	populate_dir_list(&lwin, /*reload=*/1);
 	assert_int_equal(10, lwin.list_rows);
 	assert_int_equal(2, lwin.list_pos);
+}
+
+TEST(gs_memory_explicit_stash)
+{
+	/* Load file list. */
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
+	load_dir_list(&lwin, 0);
+
+	/* Make a selection. */
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+
+	/* Drop selection. */
+	flist_sel_stash_if_nonempty(&lwin);
+
+	/* Leave directory. */
+	assert_int_equal(0, change_directory(&lwin, ".."));
+
+	/* Return to previous location */
+	navigate_back(&lwin);
+
+	/* Restore selection. */
+	flist_sel_restore(&lwin, /*reg=*/NULL);
+
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(gs_memory_implicit_stash)
+{
+	/* Load file list. */
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
+	load_dir_list(&lwin, 0);
+
+	/* Make a selection. */
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+
+	/* Leave directory.  Selection should be saved automatically. */
+	assert_int_equal(0, change_directory(&lwin, ".."));
+
+	/* Return to previous location */
+	navigate_back(&lwin);
+
+	/* Restore selection. */
+	flist_sel_restore(&lwin, /*reg=*/NULL);
+
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[2].selected);
 }
 
 TEST(gf, IF(not_windows))

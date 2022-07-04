@@ -695,7 +695,7 @@ change_directory(view_t *view, const char directory[])
 		chosp(dir_dup);
 	}
 
-	flist_sel_view_reloaded(view, location_changed);
+	flist_sel_view_to_reload(view, location_changed ? dir_dup : NULL);
 
 	/* Need to use dir_dup instead of calling get_cwd() to avoid resolving
 	 * symbolic links in path. */

@@ -367,6 +367,18 @@ void dcache_update_parent_sizes(const char path[], uint64_t by);
 int dcache_set_at(const char path[], uint64_t inode, uint64_t size,
 		uint64_t nitems);
 
+/* Selection history. */
+
+/* Adds/updates saved selection of files for a particular directory.  Takes
+ * ownership of the memory passed in.  Remembers up to 10 different directories,
+ * then overwrites the oldest entries. */
+void selhist_put(const char location[], char *paths[], int path_count);
+
+/* Retrieves saved selection for a path.  Caller takes ownership of the
+ * returned memory.  Doesn't set output parameters on failure.  Returns zero on
+ * success, otherwise non-zero is returned. */
+int selhist_get(const char location[], char ***paths, int *path_count);
+
 TSTATIC_DEFS(
 	time_t dcache_get_size_timestamp(const char path[]);
 	void dcache_set_size_timestamp(const char path[], time_t ts);

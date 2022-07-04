@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 29, 2022" "vifm 0.12"
+.TH VIFM 1 "July 4, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -602,10 +602,14 @@ go to visual mode into selection amending state preserving current selection.
 go to visual mode restoring last selection.
 .TP
 .BI [reg]gs
-when no register is specified, restore last t selection (similar to what
-gv does for visual mode selection).  If register is present, then all
-files listed in that register and which are visible in current view are
-selected.
+if register is present, then all files listed in that register that are
+visible in current view are selected.
+
+When no register is specified, restore the last selection saved for this
+view (similar to what gv does for visual mode selection).  When you
+leave a directory, its saved selection is remembered for that path and
+visiting the directory again restores it.  Selection for up to 10 distinct
+file-system locations are remembered.
 .TP
 .BI gu<selector>
 make names of selected files lowercase.
@@ -3362,11 +3366,19 @@ The current file under the cursor.
 The current file under the cursor in the other directory.
 .TP
 .BI "%f %""f"
-All of the selected files, but see "Selection" section below.
+All of the selected files or the current file, but see "Selection" section
+below.
 .TP
 .BI "%F %""F"
-All of the selected files in the other directory list, but see "Selection"
-section below.
+Same as %f, %"f, but for the inactive pane.
+.TP
+.BI "%l %""l"
+List of selected files.  Unlike %f from above, this is only for
+explicit selection (i.e., not via a range) and is empty if no
+files are selected.
+.TP
+.BI "%L %""L"
+Same as %l, %"l, but for the inactive pane.
 .TP
 .BI "%b %""b"
 Same as %f %F.

@@ -169,7 +169,7 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 	/* TODO: refactor this function expand_macros_i() */
 	/* FIXME: repetitive len = strlen(expanded) could be optimized. */
 
-	static const char MACROS_WITH_QUOTING[] = "cCfFbdDr";
+	static const char MACROS_WITH_QUOTING[] = "cCfFlLbdDr";
 
 	size_t cmd_len;
 	char *expanded;
@@ -270,6 +270,16 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 			case 'F': /* other dir selected files */
 				expanded = append_selected_files(other_view, expanded, 0, quotes,
 						command + x + 1, iter, for_shell);
+				len = strlen(expanded);
+				break;
+			case 'l': /* current dir selected files or nothing if no selection */
+				expanded = append_selected_files(curr_view, expanded, 0, quotes,
+						command + x + 1, &iter_selected_entries, for_shell);
+				len = strlen(expanded);
+				break;
+			case 'L': /* other dir selected files or nothing if no selection */
+				expanded = append_selected_files(other_view, expanded, 0, quotes,
+						command + x + 1, &iter_selected_entries, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */

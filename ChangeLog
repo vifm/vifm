@@ -66,6 +66,10 @@
 	<s-end>, <s-left>, <s-right>, <s-up>, <s-down>, <s-pageup>, <s-pagedown>,
 	<s-delete>, <s-insert>.  Patch by M Kelly.
 
+	Added %l/%"l and %L/%"L macros for the list of selected files.  %f is not
+	empty if there is no selection, which is not always desirable.  Thanks to
+	ratnamhof.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
@@ -101,6 +105,9 @@
 
 	Display permissions in octal form in File Info dialog and group them with
 	owner/group info.  Thanks to iSeeU816.
+
+	Made gs normal mode key remember selection for up to 10 last entered
+	directories.  Thanks to ratnamhof and Matthias Braun (a.k.a. mb720).
 
 	Fixed cursor appearing at random places on entering command-line mode.
 

@@ -31,7 +31,7 @@
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL */
-#include <string.h>
+#include <string.h> /* memcpy() memmove() */
 #include <time.h> /* time_t time() */
 
 #include "cfg/config.h"
@@ -42,11 +42,13 @@
 #include "ui/colors.h"
 #include "ui/ui.h"
 #include "utils/env.h"
+#include "utils/fs.h"
 #include "utils/fsdata.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "cmd_completion.h"
@@ -71,6 +73,16 @@ typedef struct
 }
 dcache_data_t;
 
+/* Saved view selection. */
+typedef struct
+{
+	char *location; /* Path at which selection was done. */
+
+	char **paths; /* Names of selected files. */
+	int length;   /* Number of items in paths. */
+}
+selection_t;
+
 static void load_def_values(status_t *stats, config_t *config);
 static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
@@ -81,6 +93,7 @@ static void dcache_get(const char path[], time_t mtime, uint64_t inode,
 static void size_updater(void *data, void *arg);
 TSTATIC time_t dcache_get_size_timestamp(const char path[]);
 TSTATIC void dcache_set_size_timestamp(const char path[], time_t ts);
+static void rotate_right(void *ptr, size_t count, size_t item_len);
 
 status_t curr_stats;
 
@@ -105,6 +118,9 @@ static fsdata_t *dcache_nitems;
 static int silent_ui;
 /* Whether silencing UI led to skipping of screen updates. */
 static int silence_skipped_updates;
+
+/* Selection history.  Most recently updated entry comes first. */
+static selection_t sel_hist[10];
 
 int
 stats_init(config_t *config)
@@ -718,6 +734,85 @@ dcache_set_size_timestamp(const char path[], time_t ts)
 		size_data.timestamp = ts;
 		(void)fsdata_set(dcache_size, path, &size_data, sizeof(size_data));
 	}
+}
+
+void
+selhist_put(const char location[], char *paths[], int path_count)
+{
+	if(path_count == 0)
+	{
+		free_string_array(paths, 0);
+		return;
+	}
+
+	char *location_copy = strdup(location);
+	if(location_copy == NULL)
+	{
+		free_string_array(paths, path_count);
+		return;
+	}
+
+	unsigned int i;
+	for(i = 0; i < ARRAY_LEN(sel_hist) - 1; ++i)
+	{
+		if(sel_hist[i].location != NULL &&
+				paths_are_same(sel_hist[i].location, location))
+		{
+			break;
+		}
+	}
+
+	/* At this point we have either found a match among all but the last element
+	 * or will use the last element (whether it's a match doesn't matter). */
+
+	free(sel_hist[i].location);
+	free_string_array(sel_hist[i].paths, sel_hist[i].length);
+
+	sel_hist[i].location = location_copy;
+	sel_hist[i].paths = paths;
+	sel_hist[i].length = path_count;
+
+	rotate_right(sel_hist, i + 1, sizeof(sel_hist[0]));
+}
+
+/* Rotates array's elements to the right once: 0 -> 1, ..., (n - 1) -> 0. */
+static void
+rotate_right(void *ptr, size_t count, size_t item_len)
+{
+	assert(count > 0 && "Can't rotate if item count is 0!");
+	assert(item_len > 0 && "Can't rotate if item size is 0!");
+
+	size_t slice_size = item_len*(count - 1);
+	char *p = ptr;
+
+	/* Stash last item. */
+	uint8_t buf[item_len];
+	memcpy(buf, p + slice_size, item_len);
+
+	/* Move all but the last item. */
+	memmove(p + item_len, p, slice_size);
+
+	/* Put last item in front. */
+	memcpy(p, buf, item_len);
+}
+
+int
+selhist_get(const char location[], char ***paths, int *path_count)
+{
+	unsigned int i;
+
+	for(i = 0; i < ARRAY_LEN(sel_hist); ++i)
+	{
+		if(sel_hist[i].location != NULL &&
+				paths_are_same(sel_hist[i].location, location))
+		{
+			*paths = copy_string_array(sel_hist[i].paths, sel_hist[i].length);
+			*path_count = sel_hist[i].length;
+			return 0;
+		}
+	}
+
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

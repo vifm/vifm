@@ -145,6 +145,27 @@ TEST(f_both_have_selection)
 	free(expanded);
 }
 
+TEST(l_selection)
+{
+	char *expanded = ma_expand("%l", "", NULL, MER_OP);
+	assert_string_equal("lfi\\ le0 lfile\\\"2", expanded);
+	free(expanded);
+}
+
+TEST(L_no_selection)
+{
+	curr_view = &rwin;
+	other_view = &lwin;
+
+	lwin.dir_entry[0].selected = 0;
+	lwin.dir_entry[2].selected = 0;
+	lwin.selected_files = 0;
+
+	char *expanded = ma_expand("%L", "", NULL, MER_OP);
+	assert_string_equal("", expanded);
+	free(expanded);
+}
+
 TEST(b_only_lwin_has_selection)
 {
 	char *expanded;
