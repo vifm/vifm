@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 28 June, 2022)
+" Sample configuration file for vifm (last updated: 4 July, 2022)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -74,7 +74,7 @@ colorscheme Default-256 Default
 " TIME_STAMP_FORMAT=%m/%d-%H:%M
 " See man date or man strftime for details.
 
-set timefmt=%m/%d\ %H:%M
+set timefmt='%Y/%m/%d %H:%M'
 
 " Show list of matches on tab completion in command-line mode
 
