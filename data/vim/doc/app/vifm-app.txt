@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 June 29
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 July 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -515,10 +515,14 @@ gv                                             *vifm-gv*
     go to visual mode restoring last selection.
 
 [reg]gs                                        *vifm-gs*
-    when no register is specified, restore last t selection (similar to what
-    gv does for visual mode selection).  If register is present, then all
-    files listed in that register and which are visible in current view are
-    selected.
+    If register is present, then all files listed in that register that are
+    visible in current view are selected.
+
+    When no register is specified, restore the last selection saved for this
+    view (similar to what |vifm-gv| does for visual mode selection).  When you
+    leave a directory, its saved selection is remembered for that path and
+    visiting the directory again restores it.  Selection for up to 10 distinct
+    file-system locations are remembered.
 
 
 gu<selector>                                   *vifm-gu*

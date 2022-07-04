@@ -102,6 +102,9 @@
 	Display permissions in octal form in File Info dialog and group them with
 	owner/group info.  Thanks to iSeeU816.
 
+	Made gs normal mode key remember selection for up to 10 last entered
+	directories.  Thanks to ratnamhof and Matthias Braun (a.k.a. mb720).
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.

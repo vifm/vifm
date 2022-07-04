@@ -69,16 +69,19 @@ flist_sel_drop(view_t *view)
 }
 
 void
-flist_sel_view_reloaded(view_t *view, int location_changed)
+flist_sel_view_to_reload(view_t *view, const char new_dir[])
 {
-	if(location_changed)
+	save_selection(view);
+
+	if(new_dir != NULL)
 	{
-		free_saved_selection(view);
+		selhist_put(view->curr_dir, view->saved_selection, view->nsaved_selection);
+		view->nsaved_selection = 0;
+		view->saved_selection = NULL;
+
+		selhist_get(new_dir, &view->saved_selection, &view->nsaved_selection);
 	}
-	else
-	{
-		save_selection(view);
-	}
+
 	flist_sel_drop(view);
 }
 
@@ -90,13 +93,13 @@ save_selection(view_t *view)
 	int i;
 	dir_entry_t *entry;
 
-	free_saved_selection(view);
-
 	flist_sel_recount(view);
 	if(view->selected_files == 0)
 	{
 		return;
 	}
+
+	free_saved_selection(view);
 
 	view->saved_selection = calloc(view->selected_files, sizeof(char *));
 	if(view->saved_selection == NULL)
