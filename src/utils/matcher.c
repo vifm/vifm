@@ -18,7 +18,7 @@
 
 #include "matcher.h"
 
-#include <regex.h> /* regex_t regcomp() regexec() regfree() */
+#include <regex.h> /* regex_t regexec() regfree() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
@@ -206,7 +206,7 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 		return 0;
 	}
 
-	err = regcomp(&m->regex, m->raw, m->cflags);
+	err = regexp_compile(&m->regex, m->raw, m->cflags);
 	if(err != 0)
 	{
 		replace_string(error, get_regexp_error(err, &m->regex));
@@ -352,7 +352,7 @@ matcher_clone(const matcher_t *matcher)
 	/* Don't compile regex for faster globs or empty matcher. */
 	if(!clone->fglobs && clone->raw[0] != '\0')
 	{
-		if(regcomp(&clone->regex, matcher->raw, matcher->cflags) != 0)
+		if(regexp_compile(&clone->regex, matcher->raw, matcher->cflags) != 0)
 		{
 			matcher_free(clone);
 			return NULL;

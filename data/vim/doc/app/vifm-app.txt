@@ -3113,6 +3113,20 @@ Associate `evince` to PDF-files only inside `/home/user/downloads/` directory
 All regular expressions are extended.  See `man 7 regex` for more details on
 what's supported.
 
+The following special sequences are additionally parsed:
+ - `\c` forces matching ignoring case of letters
+ - `\C` forces matching respecting case of letters
+
+`\c` and `\C` have the highest priority in determining whether case is matched
+or not and exist to override |vifm-'ignorecase'|, |vifm-'smartcase'| and
+`i`/`I` flags when necessary.
+
+If multiple sequences are present, the one which appears later takes
+precedence.
+
+Note that unlike in Vim character classes are affected by settings and
+sequences that control case sensitivity in regular expressions.
+
 --------------------------------------------------------------------------------
 *vifm-globs*
 

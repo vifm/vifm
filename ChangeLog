@@ -70,6 +70,10 @@
 	empty if there is no selection, which is not always desirable.  Thanks to
 	ratnamhof.
 
+	Added parsing of \c and \C sequences in regular expressions to force case
+	ignoring or matching respectively.  Thanks to filterfalse and Safal
+	Piya (a.k.a. mrsafalpiya).
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

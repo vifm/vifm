@@ -717,7 +717,7 @@ modview_find(const char pattern[], int backward)
 	if(vi->last_search_backward != -1)
 		regfree(&vi->re);
 	vi->last_search_backward = -1;
-	if((err = regcomp(&vi->re, pattern, get_regexp_cflags(pattern))) != 0)
+	if((err = regexp_compile(&vi->re, pattern, get_regexp_cflags(pattern))) != 0)
 	{
 		ui_sb_errf("Invalid pattern: %s", get_regexp_error(err, &vi->re));
 		regfree(&vi->re);

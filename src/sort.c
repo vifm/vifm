@@ -19,7 +19,7 @@
 
 #include "sort.h"
 
-#include <regex.h> /* regex_t regcomp() regexec() regfree() */
+#include <regex.h> /* regex_t regexec() regfree() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
@@ -242,7 +242,7 @@ sort_by_groups(dir_entry_t *entries, signed char key, size_t nentries)
 	for(i = ngroups - (optimize ? 1 : 0); i >= 1; --i)
 	{
 		regex_t regex;
-		(void)regcomp(&regex, groups[i], REG_EXTENDED | REG_ICASE);
+		(void)regexp_compile(&regex, groups[i], REG_EXTENDED | REG_ICASE);
 		sort_by_key(entries, nentries, key, &regex);
 		regfree(&regex);
 	}

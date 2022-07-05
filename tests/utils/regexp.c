@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/utils/regexp.h"
 
 static int not_osx(void);
@@ -42,6 +43,57 @@ TEST(back_reference_substitution)
 	assert_string_equal("barbaz", regexp_replace("foobaz", "foo", "bar\\", 1, 0));
 
 	assert_string_equal("f0t0tbaz", regexp_replace("foobaz", "o", "0\\t", 1, 0));
+}
+
+TEST(case_sequences_are_recognized)
+{
+	cfg.ignore_case = 1;
+	cfg.smart_case = 1;
+
+
+	assert_true(regexp_should_ignore_case("a\\c"));
+	assert_true(regexp_should_ignore_case("A\\c"));
+
+	assert_true(regexp_should_ignore_case("a\\\\c"));
+	assert_false(regexp_should_ignore_case("A\\\\c"));
+
+	assert_false(regexp_should_ignore_case("a\\C"));
+	assert_false(regexp_should_ignore_case("A\\C"));
+
+	assert_false(regexp_should_ignore_case("a\\\\C"));
+	assert_false(regexp_should_ignore_case("A\\\\C"));
+
+	cfg.ignore_case = 0;
+	cfg.smart_case = 0;
+}
+
+TEST(case_sequences_are_respected)
+{
+	/* Case is not ignored. */
+
+	assert_string_equal("bArz",
+			regexp_replace("bArbar", "bar\\C", "z", /*glob=*/1, /*ignore_case=*/1));
+
+	assert_string_equal("bArz",
+			regexp_replace("bArbar", "bar\\C", "z", /*glob=*/1, /*ignore_case=*/0));
+
+	/* Case is ignored. */
+
+	assert_string_equal("zz",
+			regexp_replace("bArbar", "bar\\c", "z", /*glob=*/1, /*ignore_case=*/0));
+
+	assert_string_equal("zz",
+			regexp_replace("bArbar", "bar\\c", "z", /*glob=*/1, /*ignore_case=*/1));
+
+	/* Not a special sequence. */
+
+	assert_string_equal("zz",
+			regexp_replace("bAr\\CbAr\\C", "bAr\\\\C", "z", /*glob=*/1,
+				/*ignore_case=*/0));
+
+	assert_string_equal("zbar",
+			regexp_replace("bAr\\Cbar", "bar\\\\c", "z", /*glob=*/1,
+				/*ignore_case=*/1));
 }
 
 static int
