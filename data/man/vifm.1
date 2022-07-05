@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 4, 2022" "vifm 0.12"
+.TH VIFM 1 "July 5, 2022" "vifm 0.12"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -394,7 +394,7 @@ matching item resets current selection in normal mode.  It is not the case if \
 search was already performed on files in the directory, thus selection is not \
 reset after clearing selection with escape key and hitting n/N key again.
 .LP
-Note: vifm uses extended regular expressions for / and ?.
+See also "Regular expressions" section.
 
 .TP
 .BI [count]f[character]
@@ -468,9 +468,9 @@ Examples:
   :filter /^.*\\.o\\/?$/
 .EE
 
-Note: vifm uses extended regular expressions.
+See also "Regular expressions" and "Patterns" sections.
 
-The basic vim folding key bindings are used for managing filters.
+The basic Vim folding key bindings are used for managing filters.
 
 .TP
 .BI za
@@ -3744,6 +3744,10 @@ Associate `evince` to PDF-files only inside `/home/user/downloads/` directory
 
 .EE
 .\" ---------------------------------------------------------------------------
+.SH Regular expressions
+.\" ---------------------------------------------------------------------------
+All regular expressions are modern/extended.  See `man 7 regex` for more
+details on what's supported.
 .SH Globs
 .\" ---------------------------------------------------------------------------
 Globs are always case insensitive as it makes sense in general case.

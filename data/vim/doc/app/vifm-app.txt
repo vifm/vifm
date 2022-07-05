@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 July 4
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 July 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -15,6 +15,7 @@
 |vifm-cancellation|       Cancellation of commands.
 |vifm-selection|          How selection is handled on launching.
 |vifm-patterns|           Description of file match patterns.
+|vifm-regexp|             Regular expressions.
 |vifm-globs|              How globs work in vifm.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Map arguments and special sequences.
@@ -330,7 +331,7 @@ case if search was already performed on files in the directory, thus selection
 is not reset after clearing selection with escape key and hitting n/N key
 again.
 
-Note: vifm uses extended regular expressions for / and ?.
+See also |vifm-regexp|.
 
 
 [count]f[character]                            *vifm-f*
@@ -383,14 +384,14 @@ Examples:
  :filter /^.*\.files\/$/
 
  " filter files which names end with '.d'
-  :filter {*.d}
+ :filter {*.d}
 
  " filter files and directories which names end with '.o'
  :filter /^.*\.o\/?$/
 <
-Note: vifm uses extended regular expressions.
+See also |vifm-patterns| and |vifm-regexp|.
 
-The basic vim folding key-bindings are used for managing filters.
+The basic Vim folding key-bindings are used for managing filters.
 
 za - toggle visibility of dot files.           *vifm-za*
 zo - show dot files.                           *vifm-zo*
@@ -3105,6 +3106,12 @@ Examples~
 Associate `evince` to PDF-files only inside `/home/user/downloads/` directory
 (excluding its subdirectories): >
  :filextype //^/home/user/downloads/[^/]*\.pdf$// evince %f
+
+--------------------------------------------------------------------------------
+*vifm-regexp*
+
+All regular expressions are extended.  See `man 7 regex` for more details on
+what's supported.
 
 --------------------------------------------------------------------------------
 *vifm-globs*
