@@ -32,6 +32,9 @@ int get_regexp_cflags(const char pattern[]);
  * ignored, otherwise zero is returned. */
 int regexp_should_ignore_case(const char pattern[]);
 
+/* Wrapper around regcomp() that handles \c and \C sequences. */
+int regexp_compile(regex_t *re, const char pattern[], int cflags);
+
 /* Turns error code into error message.  Returns pointer to a statically
  * allocated buffer. */
 const char * get_regexp_error(int err, const regex_t *re);

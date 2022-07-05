@@ -29,6 +29,7 @@
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strdup() strlen() */
 
+#include "regexp.h"
 #include "str.h"
 
 static int append_to_filter(filter_t *filter, const char value[]);
@@ -197,7 +198,7 @@ compile_regex(filter_t *filter, const char value[])
 {
 	int comp_error;
 	assert(!filter->is_regex_valid && "Filter should have been freed.");
-	comp_error = regcomp(&filter->regex, value, filter->cflags);
+	comp_error = regexp_compile(&filter->regex, value, filter->cflags);
 	filter->is_regex_valid = comp_error == 0;
 }
 

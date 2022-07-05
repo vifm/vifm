@@ -871,6 +871,7 @@ const char *tags[] = {
 	"vifm-q_y",
 	"vifm-q_z",
 	"vifm-ranges",
+	"vifm-regexp",
 	"vifm-registers",
 	"vifm-reserved",
 	"vifm-rl",

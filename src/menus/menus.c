@@ -980,7 +980,7 @@ search_menu(menu_state_t *ms, int start_pos, int print_errors)
 	}
 
 	cflags = get_regexp_cflags(ms->regexp);
-	err = regcomp(&re, ms->regexp, cflags);
+	err = regexp_compile(&re, ms->regexp, cflags);
 	if(err != 0)
 	{
 		if(print_errors)
@@ -1127,7 +1127,7 @@ menus_search_print_msg(const menu_data_t *m)
 	}
 
 	cflags = get_regexp_cflags(ms->regexp);
-	err = regcomp(&re, ms->regexp, cflags);
+	err = regexp_compile(&re, ms->regexp, cflags);
 
 	if(err != 0)
 	{

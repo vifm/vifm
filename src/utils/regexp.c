@@ -18,9 +18,11 @@
 
 #include "regexp.h"
 
-#include <regex.h> /* regex_t regmatch_t regerror() regexec() */
+#include <regex.h> /* regex_t regmatch_t regcomp() regerror() regexec() */
 
 #include <ctype.h> /* isdigit() */
+#include <stdlib.h> /* free() malloc() */
+#include <string.h> /* strlen() */
 
 #include "../cfg/config.h"
 #include "str.h"
@@ -40,6 +42,7 @@ int
 regexp_should_ignore_case(const char pattern[])
 {
 	int ignore_case = cfg.ignore_case;
+
 	if(cfg.ignore_case && cfg.smart_case)
 	{
 		if(has_uppercase_letters(pattern))
@@ -47,7 +50,69 @@ regexp_should_ignore_case(const char pattern[])
 			ignore_case = 0;
 		}
 	}
+
+	/* Look for \c and \C in the pattern, they have the highest priority. */
+	const char *s = pattern;
+	while(s[0] != '\0')
+	{
+		if(s[0] == '\\' && s[1] != '\0')
+		{
+			if(s[1] == 'c')
+			{
+				ignore_case = 1;
+			}
+			else if(s[1] == 'C')
+			{
+				ignore_case = 0;
+			}
+			++s;
+		}
+
+		++s;
+	}
+
 	return ignore_case;
+}
+
+int
+regexp_compile(regex_t *re, const char pattern[], int cflags)
+{
+	char *mod_pattern = malloc(strlen(pattern) + 1);
+	if(mod_pattern == NULL)
+	{
+		return REG_ESPACE;
+	}
+
+	char *p = mod_pattern;
+	const char *s = pattern;
+	while(s[0] != '\0')
+	{
+		if(s[0] == '\\' && s[1] != '\0')
+		{
+			if(s[1] == 'c')
+			{
+				cflags |= REG_ICASE;
+				s += 2;
+				continue;
+			}
+			else if(s[1] == 'C')
+			{
+				cflags &= ~REG_ICASE;
+				s += 2;
+				continue;
+			}
+
+			*p++ = *s++;
+		}
+
+		*p++ = *s++;
+	}
+	*p = '\0';
+
+	int result = regcomp(re, mod_pattern, cflags);
+	free(mod_pattern);
+
+	return result;
 }
 
 const char *
@@ -107,7 +172,7 @@ regexp_replace(const char line[], const char pattern[], const char sub[],
 	copy_str(buf, sizeof(buf), line);
 
 	const int flags = REG_EXTENDED | (ignore_case ? REG_ICASE : 0);
-	if(regcomp(&re, pattern, flags) != 0)
+	if(regexp_compile(&re, pattern, flags) != 0)
 	{
 		regfree(&re);
 		return buf;

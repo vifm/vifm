@@ -19,7 +19,7 @@
 
 #include "search.h"
 
-#include <regex.h> /* regmatch_t regcomp() regexec() regfree() */
+#include <regex.h> /* regmatch_t regexec() regfree() */
 
 #include <assert.h> /* assert() */
 #include <stdio.h> /* snprintf() */
@@ -129,7 +129,7 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	*found = 0;
 
 	cflags = get_regexp_cflags(pattern);
-	if((err = regcomp(&re, pattern, cflags)) == 0)
+	if((err = regexp_compile(&re, pattern, cflags)) == 0)
 	{
 		int i;
 		for(i = 0; i < view->list_rows; ++i)
@@ -272,7 +272,7 @@ print_search_fail_msg(const view_t *view, int backward)
 	}
 
 	cflags = get_regexp_cflags(regexp);
-	err = regcomp(&re, regexp, cflags);
+	err = regexp_compile(&re, regexp, cflags);
 
 	if(err != 0)
 	{

@@ -19,7 +19,7 @@
 #include "opt_handlers.h"
 
 #include <curses.h> /* stdscr */
-#include <regex.h> /* regex_t regcomp() regexec() regfree() */
+#include <regex.h> /* regex_t regexec() regfree() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -3050,7 +3050,7 @@ set_sortgroups(view_t *view, char **opt, char value[])
 	while((group = split_and_get(group, ',', &state)) != NULL)
 	{
 		regex_t regex;
-		const int err = regcomp(&regex, group, REG_EXTENDED | REG_ICASE);
+		const int err = regexp_compile(&regex, group, REG_EXTENDED | REG_ICASE);
 		if(err != 0)
 		{
 			vle_tb_append_linef(vle_err, "Regexp error in %s: %s", group,
@@ -3080,7 +3080,8 @@ set_sortgroups(view_t *view, char **opt, char value[])
 		if(scope == OPT_LOCAL)
 		{
 			regfree(&view->primary_group);
-			(void)regcomp(&view->primary_group, first, REG_EXTENDED | REG_ICASE);
+			(void)regexp_compile(&view->primary_group, first,
+					REG_EXTENDED | REG_ICASE);
 		}
 		free(first);
 	}

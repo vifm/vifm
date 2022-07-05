@@ -20,7 +20,7 @@
 #include "color_scheme.h"
 
 #include <curses.h>
-#include <regex.h> /* regcomp() regexec() */
+#include <regex.h> /* regexec() */
 
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MAX */

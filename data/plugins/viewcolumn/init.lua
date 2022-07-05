@@ -1,14 +1,14 @@
 --[[
 
-Provides six user-defined view column types:
+Provides the following user-defined view column types:
  * NameLink -- Name column that shows target of symbolic links
  * LsSize   -- ls-like size column (at most 4 characters in width)
  * LsTime   -- ls-like (also MC-like) time where time is shown if year matches
                current, otherwise year is displayed instead of time
  * MCSize   -- MC-like size column
- * AgeAtime -- integer age based on the atime stat (11 characters in width)
- * AgeCtime -- integer age based on the ctime stat (11 characters in width)
- * AgeMtime -- integer age based on the mtime stat (11 characters in width)
+ * AgeAtime -- relative age based on the atime stat (11 characters in width)
+ * AgeCtime -- relative age based on the ctime stat (11 characters in width)
+ * AgeMtime -- relative age based on the mtime stat (11 characters in width)
 
 Usage example:
 

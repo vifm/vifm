@@ -732,7 +732,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 		cflags = REG_EXTENDED;
 	}
 
-	if((err = regcomp(&re, pattern, cflags)) != 0)
+	if((err = regexp_compile(&re, pattern, cflags)) != 0)
 	{
 		ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
