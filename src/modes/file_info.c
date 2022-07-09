@@ -58,7 +58,8 @@
 /* Information necessary for drawing pieces of information. */
 typedef struct
 {
-	int curr_y; /* Current offset in the curses window. */
+	int curr_y;    /* Current offset in the curses window. */
+	int padding_y; /* Height of padding between entries. */
 }
 draw_ctx_t;
 
@@ -152,7 +153,7 @@ modfinfo_redraw(void)
 	size = fentry_get_size(view, curr);
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
-	draw_ctx_t ctx = { .curr_y = 2 };
+	draw_ctx_t ctx = { .curr_y = 2, .padding_y = 1 };
 
 	char *escaped = escape_unreadable(curr->origin);
 	print_item("Path: ", escaped, &ctx);
@@ -168,7 +169,7 @@ modfinfo_redraw(void)
 		snprintf(size_buf, sizeof(size_buf), " (%" PRId64 " bytes)", size);
 		waddstr(menu_win, size_buf);
 	}
-	ctx.curr_y += 2;
+	ctx.curr_y += 1 + ctx.padding_y;
 
 	show_file_type(view, &ctx);
 	show_mime_type(view, &ctx);
@@ -251,7 +252,7 @@ print_item(const char label[], const char text[], draw_ctx_t *ctx)
 	}
 	while(text[0] != '\0');
 
-	++ctx->curr_y;
+	ctx->curr_y += ctx->padding_y;
 }
 
 /* Prints type of the file and possibly some extra information about it. */
@@ -286,7 +287,7 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 		if((pipe = popen(command, "r")) == NULL)
 		{
 			mvwaddstr(menu_win, ctx->curr_y, 8, "Unable to open pipe to read file");
-			ctx->curr_y += 2;
+			ctx->curr_y += 1 + ctx->padding_y;
 			return;
 		}
 
@@ -333,7 +334,7 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 				snprintf(info, sizeof(info), "Device Id: 0x%x:0x%x", major(st.st_rdev),
 						minor(st.st_rdev));
 
-				ctx->curr_y += 2;
+				ctx->curr_y += 1 + ctx.padding_y;
 				mvwaddstr(menu_win, ctx->curr_y, 2, info);
 			}
 		}
@@ -353,7 +354,7 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 		mvwaddstr(menu_win, ctx->curr_y, 8, "Unknown");
 	}
 
-	ctx->curr_y += 2;
+	ctx->curr_y += 1 + ctx->padding_y;
 }
 
 /* Prints information about a link entry. */
@@ -372,7 +373,7 @@ print_link_info(const dir_entry_t *curr, draw_ctx_t *ctx)
 	if(curr->type == FT_LINK)
 	{
 		mvwaddstr(menu_win, ctx->curr_y, 8, "Link");
-		ctx->curr_y += 2;
+		ctx->curr_y += 1 + ctx->padding_y;
 		mvwaddstr(menu_win, ctx->curr_y, 2, "Link To: ");
 		broken_offset = 12;
 		target_offset = 11;
@@ -380,7 +381,7 @@ print_link_info(const dir_entry_t *curr, draw_ctx_t *ctx)
 	else
 	{
 		mvwaddstr(menu_win, ctx->curr_y, 8, "Shortcut");
-		ctx->curr_y += 2;
+		ctx->curr_y += 1 + ctx->padding_y;
 		mvwaddstr(menu_win, ctx->curr_y, 2, "Shortcut To: ");
 		broken_offset = 16;
 		target_offset = 15;
@@ -403,7 +404,7 @@ print_link_info(const dir_entry_t *curr, draw_ctx_t *ctx)
 
 	if(curr->type == FT_LINK)
 	{
-		ctx->curr_y += 2;
+		ctx->curr_y += 1 + ctx->padding_y;
 		mvwaddstr(menu_win, ctx->curr_y, 2, "Real Path: ");
 
 		char real[PATH_MAX + 1];
