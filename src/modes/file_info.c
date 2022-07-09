@@ -56,11 +56,13 @@
 #include "modes.h"
 #include "wk.h"
 
+/* Width of the first column of the output. */
+#define LHS_WIDTH 13
+
 /* Data necessary for drawing pieces of information. */
 typedef struct
 {
 	strlist_t lines; /* File info items. */
-	int padding_y;   /* Height of padding between items. */
 }
 draw_ctx_t;
 
@@ -139,7 +141,7 @@ modfinfo_redraw(void)
 		return;
 	}
 
-	draw_ctx_t ctx = { .padding_y = 1 };
+	draw_ctx_t ctx = { };
 	fill_items(&ctx);
 
 	ui_set_attr(menu_win, &cfg.cs.color[WIN_COLOR], cfg.cs.pair[WIN_COLOR]);
@@ -249,18 +251,18 @@ draw_items(const draw_ctx_t *ctx)
 	for(i = 0; i < ctx->lines.nitems; ++i)
 	{
 		const char *text = ctx->lines.items[i];
-		const char *colon = strchr(text, ':');
+		const char *rhs = text + LHS_WIDTH;
 
-		int x = 2 + (colon - text + 2);
+		int x = 2 + (rhs - text);
 		int max_width = menu_width - 2 - x;
 
 		char part[1000];
-		copy_str(part, MIN(sizeof(part), (size_t)(colon + 2 - text + 1)), text);
+		copy_str(part, MIN(sizeof(part), (size_t)(rhs - text + 1)), text);
 
 		checked_wmove(menu_win, curr_y, 2);
 		wprint(menu_win, part);
 
-		text = colon + 2;
+		text = rhs;
 
 		do
 		{
@@ -275,8 +277,6 @@ draw_items(const draw_ctx_t *ctx)
 			text += print_len;
 		}
 		while(text[0] != '\0');
-
-		curr_y += ctx->padding_y;
 	}
 }
 
@@ -284,7 +284,10 @@ draw_items(const draw_ctx_t *ctx)
 static void
 print_item(const char label[], const char text[], draw_ctx_t *ctx)
 {
-	char *line = format_str("%s: %s", label, text);
+	char prefix[LHS_WIDTH + 1];
+	snprintf(prefix, sizeof(prefix), "%s:", label);
+
+	char *line = format_str("%-*s%s", LHS_WIDTH, prefix, text);
 	ctx->lines.nitems =
 		put_into_string_array(&ctx->lines.items, ctx->lines.nitems, line);
 }
