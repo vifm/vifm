@@ -74,6 +74,9 @@
 	ignoring or matching respectively.  Thanks to filterfalse and Safal
 	Piya (a.k.a. mrsafalpiya).
 
+	Added :PeditVifm command (and corresponding :PeditVim) to the plugin.
+	Thanks to Mukund Mauji (a.k.a. maujim).
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

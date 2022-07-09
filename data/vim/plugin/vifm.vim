@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2022 January 18
+" Last Change: 2022 July 9
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -19,6 +19,7 @@ let s:script_path = expand('<sfile>')
 " Setup commands to run vifm.
 
 " :EditVifm - open file or files in current buffer.
+" :PeditVifm - open file in preview window.
 " :SplitVifm - split buffer and open file or files.
 " :VsplitVifm - vertically split buffer and open file or files.
 " :DiffVifm - load file for :vert diffsplit.
@@ -41,6 +42,8 @@ command! -bar -nargs=* -count -complete=dir Vifm
 			\ :call s:StartVifm('<mods>', <count>, 'edit', <f-args>)
 command! -bar -nargs=* -count -complete=dir EditVifm
 			\ :call s:StartVifm('<mods>', <count>, 'edit', <f-args>)
+command! -bar -nargs=* -count -complete=dir PeditVifm
+			\ :call s:StartVifm('<mods>', <count>, 'pedit', <f-args>)
 command! -bar -nargs=* -count -complete=dir VsplitVifm
 			\ :call s:StartVifm('<mods>', <count>, 'vsplit', <f-args>)
 command! -bar -nargs=* -count -complete=dir SplitVifm
@@ -119,6 +122,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 	    \ '+command VsplitVim :let $VIFM_OPEN_TYPE=''vsplit''' . edit,
 	    \ '+command SplitVim  :let $VIFM_OPEN_TYPE=''split''' . edit,
 	    \ '+command DiffVim   :let $VIFM_OPEN_TYPE=''vert diffsplit''' . edit,
+	    \ '+command PeditVim  :let $VIFM_OPEN_TYPE=''pedit''' . edit,
 	    \ '+command TabVim    :let $VIFM_OPEN_TYPE='''.s:tab_drop_cmd."'" . edit]
 	call map(pickargs, embed ? 'shellescape(v:val)' : 'shellescape(v:val, 1)')
 	let pickargsstr = join(pickargs, ' ')
@@ -296,6 +300,11 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 	" buffers.
 	if editcmd == 'edit' && len(flist) > 1
 		silent! %argdelete
+	endif
+
+	" Doesn't make sense to run :pedit multiple times in a row.
+	if editcmd == 'pedit' && len(flist) > 1
+		let flist = [ flist[0] ]
 	endif
 
 	for file in flist
