@@ -55,11 +55,18 @@
 #include "modes.h"
 #include "wk.h"
 
+/* Information necessary for drawing pieces of information. */
+typedef struct
+{
+	int curr_y; /* Current offset in the curses window. */
+}
+draw_ctx_t;
+
 static void leave_file_info_mode(void);
-static int print_item(const char label[], const char path[], int curr_y);
-static int show_file_type(view_t *view, int curr_y);
-static int print_link_info(const dir_entry_t *curr, int curr_y);
-static int show_mime_type(view_t *view, int curr_y);
+static void print_item(const char label[], const char path[], draw_ctx_t *ctx);
+static void show_file_type(view_t *view, draw_ctx_t *ctx);
+static void print_link_info(const dir_entry_t *curr, draw_ctx_t *ctx);
+static void show_mime_type(view_t *view, draw_ctx_t *ctx);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
@@ -127,7 +134,6 @@ modfinfo_redraw(void)
 #ifndef _WIN32
 	char id_buf[26];
 #endif
-	int curr_y;
 	uint64_t size;
 	int size_not_precise;
 
@@ -146,49 +152,49 @@ modfinfo_redraw(void)
 	size = fentry_get_size(view, curr);
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
-	curr_y = 2;
+	draw_ctx_t ctx = { .curr_y = 2 };
 
 	char *escaped = escape_unreadable(curr->origin);
-	curr_y += print_item("Path: ", escaped, curr_y);
+	print_item("Path: ", escaped, &ctx);
 	free(escaped);
 	escaped = escape_unreadable(curr->name);
-	curr_y += print_item("Name: ", escaped, curr_y);
+	print_item("Name: ", escaped, &ctx);
 	free(escaped);
 
-	mvwaddstr(menu_win, curr_y, 2, "Size: ");
-	mvwaddstr(menu_win, curr_y, 8, size_buf);
+	mvwaddstr(menu_win, ctx.curr_y, 2, "Size: ");
+	mvwaddstr(menu_win, ctx.curr_y, 8, size_buf);
 	if(size_not_precise)
 	{
 		snprintf(size_buf, sizeof(size_buf), " (%" PRId64 " bytes)", size);
 		waddstr(menu_win, size_buf);
 	}
-	curr_y += 2;
+	ctx.curr_y += 2;
 
-	curr_y += show_file_type(view, curr_y);
-	curr_y += show_mime_type(view, curr_y);
+	show_file_type(view, &ctx);
+	show_mime_type(view, &ctx);
 
 #ifndef _WIN32
 	snprintf(buf, sizeof(buf), "%d", curr->nlinks);
-	curr_y += print_item("Hard Links: ", buf, curr_y);
+	print_item("Hard Links: ", buf, &ctx);
 #endif
 
 	format_iso_time(curr->mtime, buf, sizeof(buf));
-	curr_y += print_item("Modified: ", buf, curr_y);
+	print_item("Modified: ", buf, &ctx);
 
 	format_iso_time(curr->atime, buf, sizeof(buf));
-	curr_y += print_item("Accessed: ", buf, curr_y);
+	print_item("Accessed: ", buf, &ctx);
 
 	format_iso_time(curr->ctime, buf, sizeof(buf));
 #ifndef _WIN32
-	curr_y += print_item("Changed: ", buf, curr_y);
+	print_item("Changed: ", buf, &ctx);
 #else
-	curr_y += print_item("Created: ", buf, curr_y);
+	print_item("Created: ", buf, &ctx);
 #endif
 
 #ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
 	snprintf(buf, sizeof(buf), "%s (%03o)", perm_buf, curr->mode & 0777);
-	curr_y += print_item("Permissions: ", buf, curr_y);
+	print_item("Permissions: ", buf, &ctx);
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(isdigit(id_buf[0]))
@@ -199,7 +205,7 @@ modfinfo_redraw(void)
 	{
 		snprintf(buf, sizeof(buf), "%s (%lu)", id_buf, (unsigned long)curr->uid);
 	}
-	curr_y += print_item("Owner: ", buf, curr_y);
+	print_item("Owner: ", buf, &ctx);
 
 	get_gid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(isdigit(id_buf[0]))
@@ -210,14 +216,11 @@ modfinfo_redraw(void)
 	{
 		snprintf(buf, sizeof(buf), "%s (%lu)", id_buf, (unsigned long)curr->gid);
 	}
-	curr_y += print_item("Group: ", buf, curr_y);
+	print_item("Group: ", buf, &ctx);
 #else
 	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(curr->attrs));
-	curr_y += print_item("Attributes: ", perm_buf, curr_y);
+	print_item("Attributes: ", perm_buf, &ctx);
 #endif
-
-	/* Fake use after last assignment. */
-	(void)curr_y;
 
 	box(menu_win, 0, 0);
 	checked_wmove(menu_win, 0, 3);
@@ -226,15 +229,14 @@ modfinfo_redraw(void)
 	checked_wmove(menu_win, 2, 2);
 }
 
-/* Prints item prefixed with a label wrapping the item if it's too long.
- * Returns increment for curr_y. */
-static int
-print_item(const char label[], const char text[], int curr_y)
+/* Prints item prefixed with a label wrapping the item if it's too long. */
+static void
+print_item(const char label[], const char text[], draw_ctx_t *ctx)
 {
-	mvwaddstr(menu_win, curr_y, 2, label);
+	mvwaddstr(menu_win, ctx->curr_y, 2, label);
+
 	int x = getcurx(menu_win);
 	int max_width = getmaxx(menu_win) - 2 - x;
-	int dy = 0;
 
 	do
 	{
@@ -245,28 +247,25 @@ print_item(const char label[], const char text[], int curr_y)
 		wprint(menu_win, part);
 
 		text += print_len;
-		++dy;
-		++curr_y;
-		checked_wmove(menu_win, curr_y, x);
+		checked_wmove(menu_win, ++ctx->curr_y, x);
 	}
 	while(text[0] != '\0');
 
-	return dy + 1;
+	++ctx->curr_y;
 }
 
-/* Returns increment for curr_y. */
-static int
-show_file_type(view_t *view, int curr_y)
+/* Prints type of the file and possibly some extra information about it. */
+static void
+show_file_type(view_t *view, draw_ctx_t *ctx)
 {
 	const dir_entry_t *curr;
-	int old_curr_y = curr_y;
 
 	curr = get_current_entry(view);
 
-	mvwaddstr(menu_win, curr_y, 2, "Type: ");
+	mvwaddstr(menu_win, ctx->curr_y, 2, "Type: ");
 	if(curr->type == FT_LINK || is_shortcut(curr->name))
 	{
-		curr_y += print_link_info(curr, curr_y);
+		print_link_info(curr, ctx);
 	}
 	else if(curr->type == FT_EXEC || curr->type == FT_REG)
 	{
@@ -286,8 +285,9 @@ show_file_type(view_t *view, int curr_y)
 
 		if((pipe = popen(command, "r")) == NULL)
 		{
-			mvwaddstr(menu_win, curr_y, 8, "Unable to open pipe to read file");
-			return 2;
+			mvwaddstr(menu_win, ctx->curr_y, 8, "Unable to open pipe to read file");
+			ctx->curr_y += 2;
+			return;
 		}
 
 		if(fgets(buf, sizeof(buf), pipe) != buf)
@@ -296,21 +296,21 @@ show_file_type(view_t *view, int curr_y)
 		pclose(pipe);
 
 		int max_x = getmaxx(menu_win);
-		mvwaddnstr(menu_win, curr_y, 8, buf, max_x - 9);
+		mvwaddnstr(menu_win, ctx->curr_y, 8, buf, max_x - 9);
 		if(max_x > 9 && strlen(buf) > (size_t)(max_x - 9))
 		{
-			mvwaddnstr(menu_win, curr_y + 1, 8, buf + max_x - 9, max_x - 9);
+			mvwaddnstr(menu_win, ++ctx->curr_y, 8, buf + max_x - 9, max_x - 9);
 		}
 #else /* #ifdef HAVE_FILE_PROG */
 		if(curr->type == FT_EXEC)
-			mvwaddstr(menu_win, curr_y, 8, "Executable");
+			mvwaddstr(menu_win, ctx->curr_y, 8, "Executable");
 		else
-			mvwaddstr(menu_win, curr_y, 8, "Regular File");
+			mvwaddstr(menu_win, ctx->curr_y, 8, "Regular File");
 #endif /* #ifdef HAVE_FILE_PROG */
 	}
 	else if(curr->type == FT_DIR)
 	{
-		mvwaddstr(menu_win, curr_y, 8, "Directory");
+		mvwaddstr(menu_win, ctx->curr_y, 8, "Directory");
 	}
 #ifndef _WIN32
 	else if(curr->type == FT_CHAR_DEV || curr->type == FT_BLOCK_DEV)
@@ -319,7 +319,7 @@ show_file_type(view_t *view, int curr_y)
 		                       ? "Character Device"
 		                       : "Block Device";
 
-		mvwaddstr(menu_win, curr_y, 8, type);
+		mvwaddstr(menu_win, ctx->curr_y, 8, type);
 
 #if defined(major) && defined(minor)
 		{
@@ -333,35 +333,33 @@ show_file_type(view_t *view, int curr_y)
 				snprintf(info, sizeof(info), "Device Id: 0x%x:0x%x", major(st.st_rdev),
 						minor(st.st_rdev));
 
-				curr_y += 2;
-				mvwaddstr(menu_win, curr_y, 2, info);
+				ctx->curr_y += 2;
+				mvwaddstr(menu_win, ctx->curr_y, 2, info);
 			}
 		}
 #endif
 	}
 	else if(curr->type == FT_SOCK)
 	{
-		mvwaddstr(menu_win, curr_y, 8, "Socket");
+		mvwaddstr(menu_win, ctx->curr_y, 8, "Socket");
 	}
 #endif
 	else if(curr->type == FT_FIFO)
 	{
-		mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
+		mvwaddstr(menu_win, ctx->curr_y, 8, "Fifo Pipe");
 	}
 	else
 	{
-		mvwaddstr(menu_win, curr_y, 8, "Unknown");
+		mvwaddstr(menu_win, ctx->curr_y, 8, "Unknown");
 	}
-	curr_y += 2;
 
-	return curr_y - old_curr_y;
+	ctx->curr_y += 2;
 }
 
-/* Prints information about a link entry.  Returns increment for curr_y. */
-static int
-print_link_info(const dir_entry_t *curr, int curr_y)
+/* Prints information about a link entry. */
+static void
+print_link_info(const dir_entry_t *curr, draw_ctx_t *ctx)
 {
-	int old_curr_y = curr_y;
 	int max_x = getmaxx(menu_win);
 
 	char full_path[PATH_MAX + 1];
@@ -373,57 +371,56 @@ print_link_info(const dir_entry_t *curr, int curr_y)
 	int target_offset;
 	if(curr->type == FT_LINK)
 	{
-		mvwaddstr(menu_win, curr_y, 8, "Link");
-		curr_y += 2;
-		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
+		mvwaddstr(menu_win, ctx->curr_y, 8, "Link");
+		ctx->curr_y += 2;
+		mvwaddstr(menu_win, ctx->curr_y, 2, "Link To: ");
 		broken_offset = 12;
 		target_offset = 11;
 	}
 	else
 	{
-		mvwaddstr(menu_win, curr_y, 8, "Shortcut");
-		curr_y += 2;
-		mvwaddstr(menu_win, curr_y, 2, "Shortcut To: ");
+		mvwaddstr(menu_win, ctx->curr_y, 8, "Shortcut");
+		ctx->curr_y += 2;
+		mvwaddstr(menu_win, ctx->curr_y, 2, "Shortcut To: ");
 		broken_offset = 16;
 		target_offset = 15;
 	}
 
 	if(get_link_target(full_path, linkto, sizeof(linkto)) == 0)
 	{
-		mvwaddnstr(menu_win, curr_y, target_offset, linkto, max_x - target_offset);
+		mvwaddnstr(menu_win, ctx->curr_y, target_offset, linkto,
+				max_x - target_offset);
 
 		if(!path_exists(linkto, DEREF))
 		{
-			mvwaddstr(menu_win, curr_y - 2, broken_offset, " (BROKEN)");
+			mvwaddstr(menu_win, ctx->curr_y - 2, broken_offset, " (BROKEN)");
 		}
 	}
 	else
 	{
-		mvwaddstr(menu_win, curr_y, target_offset, "Couldn't Resolve Link");
+		mvwaddstr(menu_win, ctx->curr_y, target_offset, "Couldn't Resolve Link");
 	}
 
 	if(curr->type == FT_LINK)
 	{
-		curr_y += 2;
-		mvwaddstr(menu_win, curr_y, 2, "Real Path: ");
+		ctx->curr_y += 2;
+		mvwaddstr(menu_win, ctx->curr_y, 2, "Real Path: ");
 
 		char real[PATH_MAX + 1];
 		if(os_realpath(full_path, real) == real)
 		{
-			mvwaddnstr(menu_win, curr_y, 13, real, max_x - 13);
+			mvwaddnstr(menu_win, ctx->curr_y, 13, real, max_x - 13);
 		}
 		else
 		{
 			waddstr(menu_win, "Couldn't Resolve Path");
 		}
 	}
-
-	return curr_y - old_curr_y;
 }
 
-/* Returns increment for curr_y. */
-static int
-show_mime_type(view_t *view, int curr_y)
+/* Prints mime-type of the file. */
+static void
+show_mime_type(view_t *view, draw_ctx_t *ctx)
 {
 	char full_path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(full_path), full_path);
@@ -434,7 +431,7 @@ show_mime_type(view_t *view, int curr_y)
 		mimetype = "Unknown";
 	}
 
-	return print_item("Mime Type: ", mimetype, curr_y);
+	print_item("Mime Type: ", mimetype, ctx);
 }
 
 static void
