@@ -80,7 +80,8 @@ AC_CHECK_HEADER([unistd.h], [], [AC_MSG_ERROR([unistd.h header not found.])])
 AC_CHECK_HEADER([wchar.h], [], [AC_MSG_ERROR([wchar.h header not found.])])
 AC_CHECK_HEADER([wctype.h], [], [AC_MSG_ERROR([wctype.h header not found.])])
 dnl Headers required for breaking too long command-lines.
-AC_CHECK_HEADERS([sys/param.h sys/user.h linux/binfmts.h], [], [],
+AC_CHECK_HEADERS([sys/sysmacros.h sys/param.h sys/user.h linux/binfmts.h], [],
+                 [],
                  [[#if HAVE_SYS_PARAM_H
                    # include <sys/param.h>
                    #endif

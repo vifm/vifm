@@ -22,6 +22,11 @@
 #include <curses.h>
 
 #include <sys/stat.h>
+#include <sys/types.h>
+
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
