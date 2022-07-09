@@ -46,6 +46,7 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -55,16 +56,19 @@
 #include "modes.h"
 #include "wk.h"
 
-/* Information necessary for drawing pieces of information. */
+/* Data necessary for drawing pieces of information. */
 typedef struct
 {
-	int curr_y;    /* Current offset in the curses window. */
-	int padding_y; /* Height of padding between entries. */
+	strlist_t lines; /* File info items. */
+	int padding_y;   /* Height of padding between items. */
 }
 draw_ctx_t;
 
 static void leave_file_info_mode(void);
+static void fill_items(draw_ctx_t *ctx);
+static void draw_items(const draw_ctx_t *ctx);
 static void print_item(const char label[], const char path[], draw_ctx_t *ctx);
+static void append_item(const char text[], draw_ctx_t *ctx);
 static void show_file_type(view_t *view, draw_ctx_t *ctx);
 static void print_link_info(const dir_entry_t *curr, draw_ctx_t *ctx);
 static void show_mime_type(view_t *view, draw_ctx_t *ctx);
@@ -128,16 +132,6 @@ leave_file_info_mode(void)
 void
 modfinfo_redraw(void)
 {
-	const dir_entry_t *curr;
-	char perm_buf[26];
-	char size_buf[64];
-	char buf[256];
-#ifndef _WIN32
-	char id_buf[26];
-#endif
-	uint64_t size;
-	int size_not_precise;
-
 	assert(view != NULL);
 
 	if(resize_for_menu_like() != 0)
@@ -145,57 +139,77 @@ modfinfo_redraw(void)
 		return;
 	}
 
+	draw_ctx_t ctx = { .padding_y = 1 };
+	fill_items(&ctx);
+
 	ui_set_attr(menu_win, &cfg.cs.color[WIN_COLOR], cfg.cs.pair[WIN_COLOR]);
 	werase(menu_win);
 
-	curr = get_current_entry(view);
+	draw_items(&ctx);
 
-	size = fentry_get_size(view, curr);
-	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
+	box(menu_win, 0, 0);
+	checked_wmove(menu_win, 0, 3);
+	wprint(menu_win, " File Information ");
+	ui_refresh_win(menu_win);
+	checked_wmove(menu_win, 2, 2);
 
-	draw_ctx_t ctx = { .curr_y = 2, .padding_y = 1 };
+	free_string_array(ctx.lines.items, ctx.lines.nitems);
+}
+
+/* Generates list of strings with information about the file. */
+static void
+fill_items(draw_ctx_t *ctx)
+{
+	char buf[256];
+	const dir_entry_t *curr = get_current_entry(view);
 
 	char *escaped = escape_unreadable(curr->origin);
-	print_item("Path: ", escaped, &ctx);
+	print_item("Path", escaped, ctx);
 	free(escaped);
 	escaped = escape_unreadable(curr->name);
-	print_item("Name: ", escaped, &ctx);
+	print_item("Name", escaped, ctx);
 	free(escaped);
 
-	mvwaddstr(menu_win, ctx.curr_y, 2, "Size: ");
-	mvwaddstr(menu_win, ctx.curr_y, 8, size_buf);
+	uint64_t size = fentry_get_size(view, curr);
+	int size_not_precise =
+		friendly_size_notation(size, sizeof(buf), buf);
+
+	print_item("Size", buf, ctx);
 	if(size_not_precise)
 	{
-		snprintf(size_buf, sizeof(size_buf), " (%" PRId64 " bytes)", size);
-		waddstr(menu_win, size_buf);
+		snprintf(buf, sizeof(buf), " (%" PRId64 " bytes)", size);
+		append_item(buf, ctx);
 	}
-	ctx.curr_y += 1 + ctx.padding_y;
 
-	show_file_type(view, &ctx);
-	show_mime_type(view, &ctx);
+	show_file_type(view, ctx);
+	show_mime_type(view, ctx);
 
 #ifndef _WIN32
 	snprintf(buf, sizeof(buf), "%d", curr->nlinks);
-	print_item("Hard Links: ", buf, &ctx);
+	print_item("Hard Links", buf, ctx);
 #endif
 
 	format_iso_time(curr->mtime, buf, sizeof(buf));
-	print_item("Modified: ", buf, &ctx);
+	print_item("Modified", buf, ctx);
 
 	format_iso_time(curr->atime, buf, sizeof(buf));
-	print_item("Accessed: ", buf, &ctx);
+	print_item("Accessed", buf, ctx);
 
 	format_iso_time(curr->ctime, buf, sizeof(buf));
 #ifndef _WIN32
-	print_item("Changed: ", buf, &ctx);
+	print_item("Changed", buf, ctx);
 #else
-	print_item("Created: ", buf, &ctx);
+	print_item("Created", buf, ctx);
 #endif
+
+	char perm_buf[26];
 
 #ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
 	snprintf(buf, sizeof(buf), "%s (%03o)", perm_buf, curr->mode & 0777);
-	print_item("Permissions: ", buf, &ctx);
+	print_item("Permissions", buf, ctx);
+
+	char id_buf[26];
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(isdigit(id_buf[0]))
@@ -206,7 +220,7 @@ modfinfo_redraw(void)
 	{
 		snprintf(buf, sizeof(buf), "%s (%lu)", id_buf, (unsigned long)curr->uid);
 	}
-	print_item("Owner: ", buf, &ctx);
+	print_item("Owner", buf, ctx);
 
 	get_gid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(isdigit(id_buf[0]))
@@ -217,42 +231,73 @@ modfinfo_redraw(void)
 	{
 		snprintf(buf, sizeof(buf), "%s (%lu)", id_buf, (unsigned long)curr->gid);
 	}
-	print_item("Group: ", buf, &ctx);
+	print_item("Group", buf, ctx);
 #else
 	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(curr->attrs));
-	print_item("Attributes: ", perm_buf, &ctx);
+	print_item("Attributes", perm_buf, ctx);
 #endif
+}
 
-	box(menu_win, 0, 0);
-	checked_wmove(menu_win, 0, 3);
-	wprint(menu_win, " File Information ");
-	ui_refresh_win(menu_win);
-	checked_wmove(menu_win, 2, 2);
+/* Draws list of items on the screen. */
+static void
+draw_items(const draw_ctx_t *ctx)
+{
+	const int menu_width = getmaxx(menu_win);
+
+	int i;
+	int curr_y = 2;
+	for(i = 0; i < ctx->lines.nitems; ++i)
+	{
+		const char *text = ctx->lines.items[i];
+		const char *colon = strchr(text, ':');
+
+		int x = 2 + (colon - text + 2);
+		int max_width = menu_width - 2 - x;
+
+		char part[1000];
+		copy_str(part, MIN(sizeof(part), (size_t)(colon + 2 - text + 1)), text);
+
+		checked_wmove(menu_win, curr_y, 2);
+		wprint(menu_win, part);
+
+		text = colon + 2;
+
+		do
+		{
+			const size_t print_len = utf8_nstrsnlen(text, max_width);
+
+			copy_str(part, MIN(sizeof(part), print_len + 1), text);
+
+			checked_wmove(menu_win, curr_y, x);
+			wprint(menu_win, part);
+
+			++curr_y;
+			text += print_len;
+		}
+		while(text[0] != '\0');
+
+		curr_y += ctx->padding_y;
+	}
 }
 
 /* Prints item prefixed with a label wrapping the item if it's too long. */
 static void
 print_item(const char label[], const char text[], draw_ctx_t *ctx)
 {
-	mvwaddstr(menu_win, ctx->curr_y, 2, label);
+	char *line = format_str("%s: %s", label, text);
+	ctx->lines.nitems =
+		put_into_string_array(&ctx->lines.items, ctx->lines.nitems, line);
+}
 
-	int x = getcurx(menu_win);
-	int max_width = getmaxx(menu_win) - 2 - x;
+/* Adds suffix to the last item. */
+static void
+append_item(const char suffix[], draw_ctx_t *ctx)
+{
+	assert(ctx->lines.nitems > 0 && "Can't append to a nonexistent element!");
 
-	do
-	{
-		const size_t print_len = utf8_nstrsnlen(text, max_width);
-
-		char part[1000];
-		copy_str(part, MIN(sizeof(part), print_len + 1), text);
-		wprint(menu_win, part);
-
-		text += print_len;
-		checked_wmove(menu_win, ++ctx->curr_y, x);
-	}
-	while(text[0] != '\0');
-
-	ctx->curr_y += ctx->padding_y;
+	char *old = ctx->lines.items[ctx->lines.nitems - 1];
+	ctx->lines.items[ctx->lines.nitems - 1] = format_str("%s%s", old, suffix);
+	free(old);
 }
 
 /* Prints type of the file and possibly some extra information about it. */
@@ -263,7 +308,6 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 
 	curr = get_current_entry(view);
 
-	mvwaddstr(menu_win, ctx->curr_y, 2, "Type: ");
 	if(curr->type == FT_LINK || is_shortcut(curr->name))
 	{
 		print_link_info(curr, ctx);
@@ -286,8 +330,7 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 
 		if((pipe = popen(command, "r")) == NULL)
 		{
-			mvwaddstr(menu_win, ctx->curr_y, 8, "Unable to open pipe to read file");
-			ctx->curr_y += 1 + ctx->padding_y;
+			print_item("Type", "Unable to open pipe to read file", ctx);
 			return;
 		}
 
@@ -296,22 +339,15 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 
 		pclose(pipe);
 
-		int max_x = getmaxx(menu_win);
-		mvwaddnstr(menu_win, ctx->curr_y, 8, buf, max_x - 9);
-		if(max_x > 9 && strlen(buf) > (size_t)(max_x - 9))
-		{
-			mvwaddnstr(menu_win, ++ctx->curr_y, 8, buf + max_x - 9, max_x - 9);
-		}
+		print_item("Type", buf, ctx);
 #else /* #ifdef HAVE_FILE_PROG */
-		if(curr->type == FT_EXEC)
-			mvwaddstr(menu_win, ctx->curr_y, 8, "Executable");
-		else
-			mvwaddstr(menu_win, ctx->curr_y, 8, "Regular File");
+		print_item("Type", (curr->type == FT_EXEC) ? "Executable" : "Regular File",
+				ctx);
 #endif /* #ifdef HAVE_FILE_PROG */
 	}
 	else if(curr->type == FT_DIR)
 	{
-		mvwaddstr(menu_win, ctx->curr_y, 8, "Directory");
+		print_item("Type", "Directory", ctx);
 	}
 #ifndef _WIN32
 	else if(curr->type == FT_CHAR_DEV || curr->type == FT_BLOCK_DEV)
@@ -319,8 +355,7 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 		const char *const type = (curr->type == FT_CHAR_DEV)
 		                       ? "Character Device"
 		                       : "Block Device";
-
-		mvwaddstr(menu_win, ctx->curr_y, 8, type);
+		print_item("Type", type, ctx);
 
 #if defined(major) && defined(minor)
 		{
@@ -330,91 +365,73 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 			if(os_stat(full_path, &st) == 0)
 			{
 				char info[64];
-
-				snprintf(info, sizeof(info), "Device Id: 0x%x:0x%x", major(st.st_rdev),
+				snprintf(info, sizeof(info), "0x%x:0x%x", major(st.st_rdev),
 						minor(st.st_rdev));
 
-				ctx->curr_y += 1 + ctx.padding_y;
-				mvwaddstr(menu_win, ctx->curr_y, 2, info);
+				print_item("Device Id", info, ctx);
 			}
 		}
 #endif
 	}
 	else if(curr->type == FT_SOCK)
 	{
-		mvwaddstr(menu_win, ctx->curr_y, 8, "Socket");
+		print_item("Type", "Socket", ctx);
 	}
 #endif
 	else if(curr->type == FT_FIFO)
 	{
-		mvwaddstr(menu_win, ctx->curr_y, 8, "Fifo Pipe");
+		print_item("Type", "Fifo Pipe", ctx);
 	}
 	else
 	{
-		mvwaddstr(menu_win, ctx->curr_y, 8, "Unknown");
+		print_item("Type", "Unknown", ctx);
 	}
-
-	ctx->curr_y += 1 + ctx->padding_y;
 }
 
 /* Prints information about a link entry. */
 static void
 print_link_info(const dir_entry_t *curr, draw_ctx_t *ctx)
 {
-	int max_x = getmaxx(menu_win);
-
 	char full_path[PATH_MAX + 1];
 	char linkto[PATH_MAX + NAME_MAX];
 
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	int broken_offset;
-	int target_offset;
+	const char *label;
 	if(curr->type == FT_LINK)
 	{
-		mvwaddstr(menu_win, ctx->curr_y, 8, "Link");
-		ctx->curr_y += 1 + ctx->padding_y;
-		mvwaddstr(menu_win, ctx->curr_y, 2, "Link To: ");
-		broken_offset = 12;
-		target_offset = 11;
+		print_item("Type", "Link", ctx);
+		label = "Link To";
 	}
 	else
 	{
-		mvwaddstr(menu_win, ctx->curr_y, 8, "Shortcut");
-		ctx->curr_y += 1 + ctx->padding_y;
-		mvwaddstr(menu_win, ctx->curr_y, 2, "Shortcut To: ");
-		broken_offset = 16;
-		target_offset = 15;
+		print_item("Type", "Shortcut", ctx);
+		label = "Shortcut To";
 	}
 
 	if(get_link_target(full_path, linkto, sizeof(linkto)) == 0)
 	{
-		mvwaddnstr(menu_win, ctx->curr_y, target_offset, linkto,
-				max_x - target_offset);
-
+		print_item(label, linkto, ctx);
 		if(!path_exists(linkto, DEREF))
 		{
-			mvwaddstr(menu_win, ctx->curr_y - 2, broken_offset, " (BROKEN)");
+			append_item(" (BROKEN)", ctx);
 		}
 	}
 	else
 	{
-		mvwaddstr(menu_win, ctx->curr_y, target_offset, "Couldn't Resolve Link");
+		print_item("Link", "Couldn't Resolve Link", ctx);
 	}
 
 	if(curr->type == FT_LINK)
 	{
-		ctx->curr_y += 1 + ctx->padding_y;
-		mvwaddstr(menu_win, ctx->curr_y, 2, "Real Path: ");
-
 		char real[PATH_MAX + 1];
 		if(os_realpath(full_path, real) == real)
 		{
-			mvwaddnstr(menu_win, ctx->curr_y, 13, real, max_x - 13);
+			print_item("Real Path", real, ctx);
 		}
 		else
 		{
-			waddstr(menu_win, "Couldn't Resolve Path");
+			print_item("Real Path", "Couldn't Resolve Path", ctx);
 		}
 	}
 }
@@ -432,7 +449,7 @@ show_mime_type(view_t *view, draw_ctx_t *ctx)
 		mimetype = "Unknown";
 	}
 
-	print_item("Mime Type: ", mimetype, ctx);
+	print_item("Mime Type", mimetype, ctx);
 }
 
 static void
