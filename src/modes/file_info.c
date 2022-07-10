@@ -72,7 +72,7 @@ typedef struct
 draw_ctx_t;
 
 static void leave_file_info_mode(void);
-static void fill_items(draw_ctx_t *ctx);
+static void fill_items(view_t *view, draw_ctx_t *ctx);
 static void draw_items(const draw_ctx_t *ctx);
 static void print_item(const char label[], const char path[], draw_ctx_t *ctx);
 static void append_item(const char text[], draw_ctx_t *ctx);
@@ -147,7 +147,7 @@ modfinfo_redraw(void)
 	}
 
 	draw_ctx_t ctx = { };
-	fill_items(&ctx);
+	fill_items(view, &ctx);
 
 	ui_set_attr(menu_win, &cfg.cs.color[WIN_COLOR], cfg.cs.pair[WIN_COLOR]);
 	werase(menu_win);
@@ -165,7 +165,7 @@ modfinfo_redraw(void)
 
 /* Generates list of strings with information about the file. */
 static void
-fill_items(draw_ctx_t *ctx)
+fill_items(view_t *view, draw_ctx_t *ctx)
 {
 	char buf[256];
 	const dir_entry_t *curr = get_current_entry(view);
