@@ -74,6 +74,9 @@
 	ignoring or matching respectively.  Thanks to filterfalse and Safal
 	Piya (a.k.a. mrsafalpiya).
 
+	Added :PeditVifm command (and corresponding :PeditVim) to the plugin.
+	Thanks to Mukund Mauji (a.k.a. maujim).
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 
@@ -112,6 +115,8 @@
 
 	Made gs normal mode key remember selection for up to 10 last entered
 	directories.  Thanks to ratnamhof and Matthias Braun (a.k.a. mb720).
+
+	Reformat File Info dialog to be more compact.  Thanks to chelovechishko.
 
 	Fixed cursor appearing at random places on entering command-line mode.
 

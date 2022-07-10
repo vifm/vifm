@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.12  Last change: 2021 Sep 29
+*vifm-plugin.txt*    For Vifm version 0.12  Last change: 2022 Jul 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -12,6 +12,8 @@ Commands:
   :EditVifm   select a file or files to open in the current buffer.
                                                *vifm-:Vifm*
   :Vifm       alias for :EditVifm.
+                                               *vifm-:PeditVifm*
+  :PeditVifm  select a file in preview window.
                                                *vifm-:SplitVifm*
   :SplitVifm  split buffer and select a file or files to open.
                                                *vifm-:VsplitVifm*
@@ -21,6 +23,7 @@ Commands:
               :vert diffsplit.
                                                *vifm-:TabVifm*
   :TabVifm    select a file or files to open in tabs.
+
                                                *vifm-:VifmCs*
   :VifmCs     "converts" specified color schemes or the current one to be
               used by Vifm.  Color scheme files are created in current
@@ -38,6 +41,7 @@ and opened in Vim.
 Once vifm is opened additional commands that correspond to commands listed
 above become available:
   :EditVim
+  :PeditVim
   :VsplitVim
   :SplitVim
   :DiffVim
