@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 July 5
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 July 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1173,6 +1173,7 @@ This means the complete command is nohlsearch, and the short one is noh.
 Most of command-line commands completely reset selection in the current view.
 However, there are several exceptions:
  - `:invert s` most likely leaves some files selected;
+ - :view command;
  - :normal command (when it doesn't leave command-line mode);
  - :if and :else commands don't affect selection on successful execution.
 
@@ -2588,7 +2589,7 @@ yet supported) and might be changed in future releases, or get an alias.
                                                *vifm-:view* *vifm-:vie*
 :vie[w]
     toggle on and off the quick file view (preview of file's contents).
-    See also |vifm-'quickview'| option.
+    See also |vifm-'quickview'| option and |vifm-commands-and-selection|.
 :vie[w]!
     turn on quick file view if it's off.
 

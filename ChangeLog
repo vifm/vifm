@@ -118,6 +118,8 @@
 
 	Reformat File Info dialog to be more compact.  Thanks to chelovechishko.
 
+	Do not reset selection on :view command.  Thanks to Alexandre Viau.
+
 	Fixed cursor appearing at random places on entering command-line mode.
 
 	Fixed flicker and loosing parts of input on incremental search in menus.

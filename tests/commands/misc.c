@@ -760,6 +760,30 @@ TEST(edit_command)
 	curr_stats.vlua = NULL;
 }
 
+TEST(view_command)
+{
+	opt_handlers_setup();
+
+	curr_stats.preview.on = 0;
+
+	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.preview.on);
+
+	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_false(curr_stats.preview.on);
+
+	assert_success(exec_commands("view!", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.preview.on);
+
+	assert_success(exec_commands("view!", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.preview.on);
+
+	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_false(curr_stats.preview.on);
+
+	opt_handlers_teardown();
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {
