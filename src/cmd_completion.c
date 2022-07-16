@@ -336,7 +336,8 @@ path_completion(completion_data_t *data)
 	}
 
 	/* Pre-process input with requested method. */
-	const CompletionPreProcessing cpp = (CompletionPreProcessing)data->extra_arg;
+	const CompletionPreProcessing cpp =
+		(CompletionPreProcessing)(uintptr_t)data->extra_arg;
 	if(cpp != CPP_NONE)
 	{
 		if(cpp != CPP_PERCENT_UNESCAPE)
