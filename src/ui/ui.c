@@ -1083,6 +1083,12 @@ touch_all_windows(void)
 	{
 		update_window_lazy(tab_line);
 
+		if(middle_border_is_visible())
+		{
+			update_window_lazy(mborder);
+			update_window_lazy(top_line);
+		}
+
 		if(curr_stats.number_of_windows == 1)
 		{
 			/* In one window view. */
@@ -1091,9 +1097,6 @@ touch_all_windows(void)
 		else
 		{
 			/* Two pane View. */
-			update_window_lazy(mborder);
-			update_window_lazy(top_line);
-
 			update_view(&lwin);
 			update_view(&rwin);
 		}
