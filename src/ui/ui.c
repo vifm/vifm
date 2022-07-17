@@ -103,10 +103,14 @@ static WINDOW *no_delay_window;
  * screen, sometimes used for reading input. */
 static WINDOW *inf_delay_window;
 
-static WINDOW *ltop_line1;
-static WINDOW *ltop_line2;
-static WINDOW *rtop_line1;
-static WINDOW *rtop_line2;
+/* Pieces of top line for the left/top view. */
+static WINDOW *ltop_line1; /* On top of left border. */
+static WINDOW *ltop_line2; /* Middle of right border in horizontal view. */
+/* On top of middle border. */
+static WINDOW *top_line;
+/* Pieces of top line for the right/bottom view. */
+static WINDOW *rtop_line1; /* On top of right border. */
+static WINDOW *rtop_line2; /* Middle of right border in horizontal view. */
 
 unsigned int ui_next_view_id = 3;
 
@@ -126,7 +130,6 @@ WINDOW *sort_win;
 WINDOW *change_win;
 WINDOW *error_win;
 
-static WINDOW *top_line;
 static WINDOW *tab_line;
 
 static WINDOW *lborder;
@@ -632,9 +635,6 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(tab_line, 1, screen_x);
 	mvwin(tab_line, 0, 0);
 
-	wresize(top_line, 1, 2 - screen_x%2);
-	mvwin(top_line, y, screen_x/2 - 1 + screen_x%2);
-
 	mvwin(rtop_line1, y, screen_x - 1);
 	mvwin(rtop_line2, splitter_pos, screen_x - 1);
 
@@ -643,6 +643,10 @@ horizontal_layout(int screen_x, int screen_y)
 
 	wresize(rborder, screen_y - 1, 1);
 	mvwin(rborder, y, screen_x - 1);
+
+	/* Unused in this layout. */
+	wresize(top_line, 1, 1);
+	mvwin(top_line, 0, 0);
 }
 
 /* Calculates height available for main area that contains file lists.  Returns
