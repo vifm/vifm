@@ -878,6 +878,11 @@ fview_draw_inactive_cursor(view_t *view)
 	 * be drawn next time. */
 	invalidate_cursor_pos_cache(view);
 
+	if(curr_stats.load_stage < 2)
+	{
+		return;
+	}
+
 	if(!ui_view_displays_columns(view))
 	{
 		/* Inactive cell in ls-like view usually takes less space than an active
