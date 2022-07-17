@@ -234,6 +234,10 @@
 	Fixed `start` in file[x]type commands on Windows not being considered as
 	present.
 
+	Fixed selection created prior to running av in normal mode showing up
+	after switching to a regular visual mode via v key and moving cursor over
+	it.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
