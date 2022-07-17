@@ -564,7 +564,6 @@ vertical_layout(int screen_x)
 	wresize(lwin.win, border_height, splitter_pos + size_correction);
 	mvwin(lwin.win, y + 1, pos_correction);
 
-	ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(mborder, border_height, splitter_width);
 	mvwin(mborder, y + 1, splitter_pos);
 
@@ -617,7 +616,6 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(lwin.win, splitter_pos - (y + 1), screen_x + size_correction);
 	mvwin(lwin.win, y + 1, pos_correction);
 
-	ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(mborder, splitter_height, screen_x);
 	mvwin(mborder, splitter_pos, 0);
 
