@@ -1283,10 +1283,6 @@ update_attributes(void)
 				cfg.cs.pair[TOP_LINE_COLOR]);
 		werase(ltop_line2);
 
-		ui_set_bg(top_line, &cfg.cs.color[TOP_LINE_COLOR],
-				cfg.cs.pair[TOP_LINE_COLOR]);
-		werase(top_line);
-
 		ui_set_bg(rtop_line1, &cfg.cs.color[TOP_LINE_COLOR],
 				cfg.cs.pair[TOP_LINE_COLOR]);
 		werase(rtop_line1);
@@ -1298,6 +1294,14 @@ update_attributes(void)
 
 	if(middle_border_is_visible())
 	{
+		ui_set_bg(top_line, &cfg.cs.color[TOP_LINE_COLOR],
+				cfg.cs.pair[TOP_LINE_COLOR]);
+		werase(top_line);
+		/* For some reason this wnoutrefresh is needed to make this window appear
+		 * at the same time along with others during startup.  Might be an
+		 * indication that all windows need a refresh, but that need is masked. */
+		wnoutrefresh(top_line);
+
 		ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 		clear_border(mborder);
 	}
