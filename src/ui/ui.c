@@ -107,7 +107,7 @@ static WINDOW *inf_delay_window;
 static WINDOW *ltop_line1; /* On top of left border. */
 static WINDOW *ltop_line2; /* Middle of right border in horizontal view. */
 /* On top of middle border. */
-static WINDOW *top_line;
+static WINDOW *mtop_line;
 /* Pieces of top line for the right/bottom view. */
 static WINDOW *rtop_line1; /* On top of right border. */
 static WINDOW *rtop_line2; /* Middle of right border in horizontal view. */
@@ -404,7 +404,7 @@ create_windows(void)
 	ltop_line1 = newwin(1, 1, 0, 0);
 	ltop_line2 = newwin(1, 1, 0, 0);
 
-	top_line = newwin(1, 1, 0, 0);
+	mtop_line = newwin(1, 1, 0, 0);
 	tab_line = newwin(1, 1, 0, 0);
 
 	rtop_line1 = newwin(1, 1, 0, 0);
@@ -434,7 +434,7 @@ create_windows(void)
 	leaveok(mborder, TRUE);
 	leaveok(ltop_line1, TRUE);
 	leaveok(ltop_line2, TRUE);
-	leaveok(top_line, TRUE);
+	leaveok(mtop_line, TRUE);
 	leaveok(tab_line, TRUE);
 	leaveok(rtop_line1, TRUE);
 	leaveok(rtop_line2, TRUE);
@@ -573,8 +573,8 @@ vertical_layout(int screen_x)
 	wresize(tab_line, 1, screen_x);
 	mvwin(tab_line, 0, 0);
 
-	wresize(top_line, 1, splitter_width);
-	mvwin(top_line, y, splitter_pos);
+	wresize(mtop_line, 1, splitter_width);
+	mvwin(mtop_line, y, splitter_pos);
 
 	mvwin(rtop_line1, y, screen_x - 1);
 	mvwin(rtop_line2, y, screen_x - 1);
@@ -643,8 +643,8 @@ horizontal_layout(int screen_x, int screen_y)
 	mvwin(rborder, y, screen_x - 1);
 
 	/* Unused in this layout. */
-	wresize(top_line, 1, 1);
-	mvwin(top_line, 0, 0);
+	wresize(mtop_line, 1, 1);
+	mvwin(mtop_line, 0, 0);
 }
 
 /* Calculates height available for main area that contains file lists.  Returns
@@ -1086,7 +1086,7 @@ touch_all_windows(void)
 		if(middle_border_is_visible())
 		{
 			update_window_lazy(mborder);
-			update_window_lazy(top_line);
+			update_window_lazy(mtop_line);
 		}
 
 		if(curr_stats.number_of_windows == 1)
@@ -1294,13 +1294,13 @@ update_attributes(void)
 
 	if(middle_border_is_visible())
 	{
-		ui_set_bg(top_line, &cfg.cs.color[TOP_LINE_COLOR],
+		ui_set_bg(mtop_line, &cfg.cs.color[TOP_LINE_COLOR],
 				cfg.cs.pair[TOP_LINE_COLOR]);
-		werase(top_line);
+		werase(mtop_line);
 		/* For some reason this wnoutrefresh is needed to make this window appear
 		 * at the same time along with others during startup.  Might be an
 		 * indication that all windows need a refresh, but that need is masked. */
-		wnoutrefresh(top_line);
+		wnoutrefresh(mtop_line);
 
 		ui_set_bg(mborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 		clear_border(mborder);
@@ -2404,8 +2404,8 @@ fixup_titles_attributes(const view_t *view, int active_view)
 		ui_set_bg(view->title, &col, cfg.cs.pair[TOP_LINE_COLOR]);
 		ui_set_attr(view->title, &col, cfg.cs.pair[TOP_LINE_COLOR]);
 
-		ui_set_bg(top_line, &col, cfg.cs.pair[TOP_LINE_COLOR]);
-		werase(top_line);
+		ui_set_bg(mtop_line, &col, cfg.cs.pair[TOP_LINE_COLOR]);
+		werase(mtop_line);
 	}
 
 	return col;
