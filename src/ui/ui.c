@@ -771,7 +771,7 @@ update_start(UpdateType update_kind)
 
 	ui_stat_update(curr_view, 0);
 
-	if(!ui_sb_multiline())
+	if(curr_stats.save_msg == 0 && !ui_sb_multiline())
 	{
 		if(curr_view->selected_files)
 		{
@@ -795,6 +795,10 @@ update_start(UpdateType update_kind)
 	if(curr_stats.save_msg == 0)
 	{
 		ui_sb_clear();
+	}
+	else
+	{
+		ui_sb_msg(NULL);
 	}
 
 	if(vle_mode_is(VIEW_MODE) ||
