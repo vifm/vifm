@@ -470,6 +470,9 @@ navigate_to(view_t *view, const char path[])
 		return 1;
 	}
 
+	/* Changing directory can require updating tab line. */
+	stats_redraw_later();
+
 	load_dir_list(view, 0);
 	fview_cursor_redraw(view);
 	return 0;

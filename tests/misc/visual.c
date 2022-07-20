@@ -38,10 +38,43 @@ SETUP()
 
 TEARDOWN()
 {
-	view_teardown(&lwin);
 	(void)vle_keys_exec_timed_out(WK_C_c);
+	view_teardown(&lwin);
 	vle_keys_reset();
 	opt_handlers_teardown();
+}
+
+TEST(v_after_av_drops_selection)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+
+	assert_int_equal(3, lwin.list_rows);
+
+	/* Select first file. */
+	(void)vle_keys_exec_timed_out(WK_t);
+	/* Select second file. */
+	(void)vle_keys_exec_timed_out(WK_j WK_t);
+
+	/* Enter visual mode with amend at the last file. */
+	(void)vle_keys_exec_timed_out(WK_j WK_a WK_v);
+	/* Switch to regular visual mode. */
+	(void)vle_keys_exec_timed_out(WK_v);
+
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	/* Go up and then back down. */
+	(void)vle_keys_exec_timed_out(WK_g WK_g);
+	(void)vle_keys_exec_timed_out(WK_G);
+
+	/* Temporarily including previously selected entries shouldn't fixate their
+	 * selection. */
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
 }
 
 TEST(cl, IF(not_windows))

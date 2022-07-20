@@ -5011,6 +5011,8 @@ unselect_cmd(const cmd_info_t *cmd_info)
 static int
 view_cmd(const cmd_info_t *cmd_info)
 {
+	cmds_preserve_selection();
+
 	if((!curr_stats.preview.on || cmd_info->emark) && !qv_can_show())
 	{
 		return 1;

@@ -1073,6 +1073,9 @@ change_amend_type(AmendType new_amend_type)
 	if(new_amend_type == AT_NONE)
 	{
 		flist_sel_stash(view);
+		/* All selection flags are reset, so this call actually clears the
+		 * backup. */
+		backup_selection_flags(view);
 	}
 	else
 	{

@@ -13,19 +13,16 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/engine/keys.h"
-#include "../../src/engine/functions.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
-#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
-#include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
@@ -275,64 +272,6 @@ TEST(putting_files_works)
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 
 	regs_reset();
-}
-
-TEST(wincmd_can_switch_views)
-{
-	init_modes();
-	opt_handlers_setup();
-	assert_success(stats_init(&cfg));
-
-	curr_view = &rwin;
-	other_view = &lwin;
-	assert_success(exec_commands("wincmd h", curr_view, CIT_COMMAND));
-	assert_true(curr_view == &lwin);
-
-	curr_view = &rwin;
-	other_view = &lwin;
-	assert_success(exec_commands("execute 'wincmd h'", curr_view, CIT_COMMAND));
-	assert_true(curr_view == &lwin);
-
-	init_builtin_functions();
-
-	curr_view = &rwin;
-	other_view = &lwin;
-	assert_success(
-			exec_commands("if paneisat('left') == 0 | execute 'wincmd h' | endif",
-				curr_view, CIT_COMMAND));
-	assert_true(curr_view == &lwin);
-
-	curr_view = &rwin;
-	other_view = &lwin;
-	assert_success(
-			exec_commands("if paneisat('left') == 0 "
-			             "|    execute 'wincmd h' "
-			             "|    let $a = paneisat('left') "
-			             "|endif",
-				curr_view, CIT_COMMAND));
-	assert_true(curr_view == &lwin);
-	assert_string_equal("1", env_get("a"));
-
-	function_reset_all();
-
-	opt_handlers_teardown();
-	assert_success(stats_reset(&cfg));
-	vle_keys_reset();
-}
-
-TEST(wincmd_ignores_mappings)
-{
-	init_modes();
-	opt_handlers_setup();
-
-	curr_view = &rwin;
-	other_view = &lwin;
-	assert_success(exec_commands("nnoremap <c-w> <nop>", curr_view, CIT_COMMAND));
-	assert_success(exec_commands("wincmd H", curr_view, CIT_COMMAND));
-	assert_true(curr_view == &lwin);
-
-	opt_handlers_teardown();
-	vle_keys_reset();
 }
 
 TEST(yank_works_with_ranges)
@@ -819,6 +758,30 @@ TEST(edit_command)
 
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;
+}
+
+TEST(view_command)
+{
+	opt_handlers_setup();
+
+	curr_stats.preview.on = 0;
+
+	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.preview.on);
+
+	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_false(curr_stats.preview.on);
+
+	assert_success(exec_commands("view!", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.preview.on);
+
+	assert_success(exec_commands("view!", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.preview.on);
+
+	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_false(curr_stats.preview.on);
+
+	opt_handlers_teardown();
 }
 
 static void

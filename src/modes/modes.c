@@ -187,7 +187,8 @@ modes_statusbar_update(void)
 	{
 		/* Status bar is used for special purposes. */
 	}
-	else if(curr_view->selected_files || vle_mode_is(VISUAL_MODE))
+	else if(!curr_stats.save_msg &&
+			(curr_view->selected_files || vle_mode_is(VISUAL_MODE)))
 	{
 		print_selected_msg();
 	}

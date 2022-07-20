@@ -318,7 +318,7 @@ split_size_double(double size, unsigned long long *ifraction,
 	*fraction_width = (cfg.sizefmt.precision == 0) ? 1 : cfg.sizefmt.precision;
 
 	ten_power = pow(10, *fraction_width + 1);
-	while(ten_power > ULLONG_MAX)
+	while(ten_power > (double)ULLONG_MAX)
 	{
 		ten_power /= 10;
 		--*fraction_width;

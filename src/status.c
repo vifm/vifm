@@ -38,6 +38,7 @@
 #include "compat/fs_limits.h"
 #include "compat/pthread.h"
 #include "compat/reallocarray.h"
+#include "lua/vlua.h"
 #include "modes/modes.h"
 #include "ui/colors.h"
 #include "ui/ui.h"
@@ -55,7 +56,9 @@
 #include "cmd_core.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "ipc.h"
 #include "opt_handlers.h"
+#include "plugins.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
  * identify the host. */
@@ -228,6 +231,10 @@ load_def_values(status_t *stats, config_t *config)
 	stats->global_local_settings = 0;
 
 	stats->history_size = 0;
+
+	ipc_free(stats->ipc);
+	plugs_free(stats->plugs);
+	vlua_finish(stats->vlua);
 
 	stats->ipc = NULL;
 	stats->vlua = NULL;
