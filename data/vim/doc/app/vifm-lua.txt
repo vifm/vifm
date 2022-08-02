@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 May 3
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Aug 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -473,13 +473,13 @@ Raises an error:~
   If {handler}.name has incorrect value.
 
 vifm.currview()                                *vifm-l_vifm.currview()*
-Retrives a reference to current view.
+Retrieves a reference to current view.
 
 Return:~
   Returns an instance of |vifm-l_VifmView|.
 
 vifm.otherview()                               *vifm-l_vifm.otherview()*
-Retrives a reference to current view.
+Retrieves a reference to current view.
 
 Return:~
   Returns an instance of |vifm-l_VifmView|.
@@ -814,7 +814,7 @@ This global `vifm.sessions` table provides means for inspecting and
 controlling sessions.
 
 sessions.current()                             *vifm-l_vifm.sessions.current*
-Retrives name of the current session.
+Retrieves name of the current session.
 
 Return:~
   `nil` if there is no active session or its name as a string otherwise.
@@ -825,11 +825,11 @@ Return:~
 This global `vifm.tabs` table provides means for inspecting and controlling
 tabs.
 
-tabs.get({query})                              *vifm-l_vifm.tabs.get()*
-Retrives a tab.
+tabs.get([{query}])                            *vifm-l_vifm.tabs.get()*
+Retrieves a tab.  Omitting {query} is equivalent to passing an empty one.
 
 Possible fields of {query}:
- - "index" (integer)
+ - "index" (integer) (default: `tabs.getcurrent()`)
    Index of the tab.
  - "other" (boolean) (default: false)
    Whether to get a pane tab from inactive view.  Ignored if global tabs are
@@ -1031,7 +1031,20 @@ Instances of this type are returned by |vifm-l_vifm.tabs.get()|.
 The corresponding tab exists independently of this type and once the tab is
 closed accessing bound instance raises an error.
 
+VifmTab:getlayout()                            *vifm-l_VifmTab:getlayout()*
+Retrieves layout of a global tab or shared TUI state for a pane tab.
+
+Fields of the result:
+ - "only" (boolean)
+   Whether there is only one visible window.
+ - "split" (string)
+   `nil` when in only one window is visible, "v" or "h" otherwise.
+
+Return:~
+  Returns description of current layout as a table.
+
 VifmTab:getname()                              *vifm-l_VifmTab:getname()*
+Retrieves name of the tab if it was set.
 
 Return:~
   Returns name of the tab as a string, which is empty if unset.

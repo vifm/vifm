@@ -8,6 +8,7 @@
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
+#include "../../src/status.h"
 
 static vlua_t *vlua;
 
@@ -166,6 +167,16 @@ TEST(getname_global_tabs)
 	assert_string_equal("tab2", ui_sb_last());
 
 	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ }):getname())"));
+	assert_string_equal("tab2", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get():getname())"));
+	assert_string_equal("tab2", ui_sb_last());
+
+	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 0 }):getname())"));
 	assert_true(ends_with(ui_sb_last(), ": No tab with index -1 on active side"));
@@ -189,6 +200,11 @@ TEST(getname_pane_tabs)
 				"print(vifm.tabs.get({ index = 2 }):getname())"));
 	assert_string_equal("tab2", ui_sb_last());
 
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ }):getname())"));
+	assert_string_equal("tab2", ui_sb_last());
+
 	swap_view_roles();
 
 	ui_sb_msg("");
@@ -200,6 +216,11 @@ TEST(getname_pane_tabs)
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 1, other = true }):getname())"));
 	assert_string_equal("tab1", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ other = true }):getname())"));
+	assert_string_equal("tab2", ui_sb_last());
 }
 
 TEST(getname_does_not_return_nil)
@@ -287,6 +308,57 @@ TEST(getview_pane_tabs)
 	assert_failure(vlua_run_string(vlua, "tab:getview()"));
 	assert_true(ends_with(ui_sb_last(),
 				": Invalid VifmTab object (associated tab is dead)"));
+}
+
+TEST(getlayout_global_tabs)
+{
+	tabs_rename(curr_view, "tab1");
+	tabs_new(NULL, NULL);
+	tabs_rename(curr_view, "tab2");
+
+	curr_stats.number_of_windows = 1;
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ index = 1 }):getlayout().split)"));
+	assert_string_equal("h", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ index = 2 }):getlayout().only)"));
+	assert_string_equal("true", ui_sb_last());
+
+	curr_stats.number_of_windows = 2;
+}
+
+TEST(getlayout_pane_tabs)
+{
+	cfg.pane_tabs = 1;
+
+	tabs_rename(curr_view, "tab1");
+	tabs_new(NULL, NULL);
+	tabs_rename(curr_view, "tab2");
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ index = 1 }):getlayout().only)"));
+	assert_string_equal("false", ui_sb_last());
+
+	curr_stats.number_of_windows = 1;
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ index = 2 }):getlayout().only)"));
+	assert_string_equal("true", ui_sb_last());
+
+	swap_view_roles();
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get():getlayout().split)"));
+	assert_string_equal("nil", ui_sb_last());
+
+	curr_stats.number_of_windows = 2;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
