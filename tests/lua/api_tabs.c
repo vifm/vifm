@@ -166,6 +166,16 @@ TEST(getname_global_tabs)
 	assert_string_equal("tab2", ui_sb_last());
 
 	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ }):getname())"));
+	assert_string_equal("tab2", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get():getname())"));
+	assert_string_equal("tab2", ui_sb_last());
+
+	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 0 }):getname())"));
 	assert_true(ends_with(ui_sb_last(), ": No tab with index -1 on active side"));
@@ -189,6 +199,11 @@ TEST(getname_pane_tabs)
 				"print(vifm.tabs.get({ index = 2 }):getname())"));
 	assert_string_equal("tab2", ui_sb_last());
 
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ }):getname())"));
+	assert_string_equal("tab2", ui_sb_last());
+
 	swap_view_roles();
 
 	ui_sb_msg("");
@@ -200,6 +215,11 @@ TEST(getname_pane_tabs)
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 1, other = true }):getname())"));
 	assert_string_equal("tab1", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get({ other = true }):getname())"));
+	assert_string_equal("tab2", ui_sb_last());
 }
 
 TEST(getname_does_not_return_nil)

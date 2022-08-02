@@ -825,11 +825,11 @@ Return:~
 This global `vifm.tabs` table provides means for inspecting and controlling
 tabs.
 
-tabs.get({query})                              *vifm-l_vifm.tabs.get()*
-Retrieves a tab.
+tabs.get([{query}])                            *vifm-l_vifm.tabs.get()*
+Retrieves a tab.  Omitting {query} is equivalent to passing an empty one.
 
 Possible fields of {query}:
- - "index" (integer)
+ - "index" (integer) (default: `tabs.getcurrent()`)
    Index of the tab.
  - "other" (boolean) (default: false)
    Whether to get a pane tab from inactive view.  Ignored if global tabs are

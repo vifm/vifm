@@ -57,13 +57,27 @@ vifmtab_init(lua_State *lua)
 int
 VLUA_API(vifmtab_new)(struct lua_State *lua)
 {
-	check_field(lua, 1, "index", LUA_TNUMBER);
-	int index = lua_tointeger(lua, -1) - 1;
-
 	view_t *side = curr_view;
-	if(check_opt_field(lua, 1, "other", LUA_TBOOLEAN) && lua_toboolean(lua, -1))
+	int index;
+	int index_set = 0;
+
+	if(!lua_isnoneornil(lua, 1))
 	{
-		side = other_view;
+		if(check_opt_field(lua, 1, "other", LUA_TBOOLEAN) && lua_toboolean(lua, -1))
+		{
+			side = other_view;
+		}
+
+		if(check_opt_field(lua, 1, "index", LUA_TNUMBER))
+		{
+			index = lua_tointeger(lua, -1) - 1;
+			index_set = 1;
+		}
+	}
+
+	if(!index_set)
+	{
+		index = tabs_current(side);
 	}
 
 	tab_info_t tab_info;
