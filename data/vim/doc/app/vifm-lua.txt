@@ -1031,7 +1031,20 @@ Instances of this type are returned by |vifm-l_vifm.tabs.get()|.
 The corresponding tab exists independently of this type and once the tab is
 closed accessing bound instance raises an error.
 
+VifmTab:getlayout()                            *vifm-l_VifmTab:getlayout()*
+Retrieves layout of a global tab or shared TUI state for a pane tab.
+
+Fields of the result:
+ - "only" (boolean)
+   Whether there is only one visible window.
+ - "split" (string)
+   `nil` when in only one window is visible, "v" or "h" otherwise.
+
+Return:~
+  Returns description of current layout as a table.
+
 VifmTab:getname()                              *vifm-l_VifmTab:getname()*
+Retrieves name of the tab if it was set.
 
 Return:~
   Returns name of the tab as a string, which is empty if unset.

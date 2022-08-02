@@ -27,6 +27,7 @@
 #include "common.h"
 #include "vifmview.h"
 
+static int VLUA_API(vifmtab_getlayout)(lua_State *lua);
 static int VLUA_API(vifmtab_getname)(lua_State *lua);
 static int VLUA_API(vifmtab_getview)(lua_State *lua);
 
@@ -34,14 +35,16 @@ static void find_tab(lua_State *lua, unsigned int id, tab_info_t *tab_info);
 static void find_side_tab(lua_State *lua, unsigned int id, tab_info_t *tab_info,
 		view_t *side);
 
+VLUA_DECLARE_SAFE(vifmtab_getlayout);
 VLUA_DECLARE_SAFE(vifmtab_getname);
 VLUA_DECLARE_SAFE(vifmtab_getview);
 
 /* Methods of VifmTab type. */
 static const luaL_Reg vifmtab_methods[] = {
-	{ "getname", VLUA_REF(vifmtab_getname), },
-	{ "getview", VLUA_REF(vifmtab_getview), },
-	{ NULL,      NULL                       }
+	{ "getlayout", VLUA_REF(vifmtab_getlayout), },
+	{ "getname",   VLUA_REF(vifmtab_getname), },
+	{ "getview",   VLUA_REF(vifmtab_getview), },
+	{ NULL,        NULL                       }
 };
 
 void
@@ -92,6 +95,27 @@ VLUA_API(vifmtab_new)(struct lua_State *lua)
 
 	luaL_getmetatable(lua, "VifmTab");
 	lua_setmetatable(lua, -2);
+
+	return 1;
+}
+
+/* Method of `VifmTab` that retrieves its layout.  Returns a table. */
+static int
+VLUA_API(vifmtab_getlayout)(lua_State *lua)
+{
+	const unsigned int *id = luaL_checkudata(lua, 1, "VifmTab");
+
+	tab_info_t tab_info;
+	find_tab(lua, *id, &tab_info);
+
+	lua_newtable(lua);
+	lua_pushboolean(lua, tab_info.layout.only_mode);
+	lua_setfield(lua, -2, "only");
+	if(!tab_info.layout.only_mode)
+	{
+		lua_pushstring(lua, tab_info.layout.split == HSPLIT ? "h" : "v");
+		lua_setfield(lua, -2, "split");
+	}
 
 	return 1;
 }
