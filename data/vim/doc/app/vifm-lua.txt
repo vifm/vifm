@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 May 3
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Aug 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -473,13 +473,13 @@ Raises an error:~
   If {handler}.name has incorrect value.
 
 vifm.currview()                                *vifm-l_vifm.currview()*
-Retrives a reference to current view.
+Retrieves a reference to current view.
 
 Return:~
   Returns an instance of |vifm-l_VifmView|.
 
 vifm.otherview()                               *vifm-l_vifm.otherview()*
-Retrives a reference to current view.
+Retrieves a reference to current view.
 
 Return:~
   Returns an instance of |vifm-l_VifmView|.
@@ -814,7 +814,7 @@ This global `vifm.sessions` table provides means for inspecting and
 controlling sessions.
 
 sessions.current()                             *vifm-l_vifm.sessions.current*
-Retrives name of the current session.
+Retrieves name of the current session.
 
 Return:~
   `nil` if there is no active session or its name as a string otherwise.
@@ -826,7 +826,7 @@ This global `vifm.tabs` table provides means for inspecting and controlling
 tabs.
 
 tabs.get({query})                              *vifm-l_vifm.tabs.get()*
-Retrives a tab.
+Retrieves a tab.
 
 Possible fields of {query}:
  - "index" (integer)
