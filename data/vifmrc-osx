@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 4 July, 2022)
+" Sample configuration file for vifm on OSX (last updated: 6 August, 2022)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -115,14 +115,18 @@ set slowfs=curlftpfs
 set statusline="  Hint: %z%= %A %10u:%-7g %15s %20d  "
 
 " ------------------------------------------------------------------------------
-
+"
+" Bookmarks
+"
 " :mark mark /full/directory/path [filename]
 
 mark b ~/bin/
 mark h ~/
 
 " ------------------------------------------------------------------------------
-
+"
+" Commands
+"
 " :com[mand][!] command_name action
 " These are some of the macros that can be used in a command:
 "  %a for user arguments
@@ -147,7 +151,9 @@ command! mkcd :mkdir %a | cd %a
 command! reload :write | restart full
 
 " ------------------------------------------------------------------------------
-
+"
+" File types association
+"
 " The file type is for the default programs to be used with
 " a file extension.
 " :filetype pattern1,pattern2 defaultprogram,program2
@@ -339,15 +345,18 @@ fileviewer {*.docx},
 filetype * open
 
 " ------------------------------------------------------------------------------
-
+"
+" Session
+"
 " What should be saved automatically between vifm sessions.  Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
 set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
     \phistory,fhistory,dirstack,registers,bookmarks,bmarks
 
 " ------------------------------------------------------------------------------
-
-" Examples of configuring both panels
+"
+" Panel configuration examples
+"
 
 " Customize view columns a bit (enable ellipsis for truncated file names)
 "
@@ -362,8 +371,9 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 " filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
 
 " ------------------------------------------------------------------------------
-
-" Sample mappings
+"
+" Sample keyboard mappings
+"
 
 " Start shell in current directory
 nnoremap s :shell<cr>
@@ -428,8 +438,9 @@ nnoremap <a-o> :sync %c<cr>
 nnoremap <c-u> <c-w>x
 
 " ------------------------------------------------------------------------------
-
+"
 " Various customization examples
+"
 
 " Use ag (the silver searcher) instead of grep
 "
