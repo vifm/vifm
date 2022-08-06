@@ -336,7 +336,7 @@ fileviewer {*.docx},
 " uncommenting one of lines below will result in ignoring 'vi[x]cmd' option
 " for unknown file types.
 " For OS X:
-" filetype * open
+filetype * open
 
 " ------------------------------------------------------------------------------
 
@@ -352,6 +352,10 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 " Customize view columns a bit (enable ellipsis for truncated file names)
 "
 " set viewcolumns=-{name}..,6{}.
+
+" Show vertical border
+"
+" set fillchars=vborder:│
 
 " Filter-out build and temporary files
 "
@@ -382,8 +386,8 @@ nnoremap gb :!open -g %f<cr>
 " Yank current directory path into the clipboard
 nnoremap yd :!printf %d | pbcopy<cr>
 
-" Yank current file path into the clipboard
-nnoremap yf :!printf %c:p | pbcopy<cr>
+" Yank current file path into the clipboard (escape spaces)
+nnoremap yf :!printf %f:p:gs? ?\\ ? | pbcopy<cr>
 
 " View preview in Quick Look
 nnoremap <space> :!qlmanage -p %f > /dev/null 2>&1<cr>
@@ -392,6 +396,12 @@ nnoremap <space> :!qlmanage -p %f > /dev/null 2>&1<cr>
 nnoremap I cw<c-a>
 nnoremap cc cw<c-u>
 nnoremap A cw
+"
+" without the file extension
+"
+" nnoremap I cW<c-a>
+" nnoremap cc cW<c-u>
+" nnoremap A cW
 
 " Open editor to edit vifmrc and apply settings after returning to vifm
 nnoremap ,c :write | edit $MYVIFMRC | restart full<cr>
@@ -441,3 +451,12 @@ nnoremap <c-u> <c-w>x
 "     vifm --server-name "$VIFM_SERVER_NAME" --remote +"cd '$PWD'"
 "
 " let $VIFM_SERVER_NAME = v:servername
+
+" Activate screen/tmux support
+"
+" screen!
+
+" ------------------------------------------------------------------------------
+" Icon decorations example
+"
+" https://github.com/cirala/vifm_devicons

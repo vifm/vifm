@@ -410,6 +410,10 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 "
 " set viewcolumns=-{name}..,6{}.
 
+" Show vertical border
+"
+" set fillchars=vborder:│
+
 " Filter-out build and temporary files
 "
 " filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
@@ -473,6 +477,12 @@ endif
 nnoremap I cw<c-a>
 nnoremap cc cw<c-u>
 nnoremap A cw
+"
+" without the file extension
+"
+" nnoremap I cW<c-a>
+" nnoremap cc cW<c-u>
+" nnoremap A cW
 
 " Open console in current directory
 if $DISPLAY && executable('xterm')
@@ -532,3 +542,12 @@ nnoremap <c-u> <c-w>x
 "     vifm --server-name "$VIFM_SERVER_NAME" --remote +"cd '$PWD'"
 "
 " let $VIFM_SERVER_NAME = v:servername
+
+" Activate screen/tmux support
+"
+" screen!
+
+" ------------------------------------------------------------------------------
+" Icon decorations example
+"
+" https://github.com/cirala/vifm_devicons
