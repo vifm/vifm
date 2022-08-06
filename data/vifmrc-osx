@@ -190,33 +190,32 @@ filetype {*.ps,*.eps,*.ps.gz},<application/postscript> open -a Preview.app
 filetype {*.djvu},<image/vnd.djvu> open -a MacDjView.app
 
 " Audio
-filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
-        \<audio/*>
-       \ {Play using MPlayerX}
-       \ open -a MPlayerX.app,
-       \ {Open in iTunes}
-       \ open -a iTunes.app,
+filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.aac},
+       \ <audio/*>
+       \ {Open in Music}
+       \ open -a Music.app,
        \ {Open in QuickTime Player}
        \ open -a QuickTime\ Player.app,
-fileviewer *.mp3 mp3info
-fileviewer *.flac soxi
+       \ {Open in IINA}
+       \ open -a IINA.app,
+fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.aac} ffprobe -hide_banner -pretty %c 2>&1
 
 " Video
 filetype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
-         \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-         \*.as[fx]},
-        \<video/*>
-       \ {Open in VLC}
-       \ open -a VLC.app,
+       \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+       \*.as[fx]},
+       \ <video/*>
        \ {Open in QuickTime Player}
        \ open -a QuickTime\ Player.app,
-       \ {Open in MPlayerX}
-       \ open -a MPlayerX.app,
+       \ {Open in IINA}
+       \ open -a IINA.app,
+       \ {Open in VLC}
+       \ open -a VLC.app,
 fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
-           \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-           \*.as[fx]},
-          \<video/*>
-         \ ffprobe -hide_banner -pretty %c 2>&1
+       \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+       \*.as[fx]},
+       \ <video/*>
+       \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Web
 filetype {*.html,*.htm},<text/html>
@@ -251,32 +250,32 @@ filetype *.md5
 " SHA1
 filetype *.sha1
        \ {Check SHA1 hash sum}
-       \ sha1sum -c %f %S,
+       \ shasum -c %f %S,
 
 " SHA256
 filetype *.sha256
        \ {Check SHA256 hash sum}
-       \ sha256sum -c %f %S,
+       \ shasum -a 256 -c %f %S,
 
 " SHA512
 filetype *.sha512
        \ {Check SHA512 hash sum}
-       \ sha512sum -c %f %S,
+       \ shasum -a 512 -c %f %S,
 
 " Torrent
 filetype {*.torrent},<application/x-bittorrent> open -a Transmission.app
 fileviewer {*.torrent},<application/x-bittorrent> dumptorrent -v %c
 
 " Extract zip files
-filetype {*.zip},<application/zip,application/java-archive> unzip %f
+filetype {*.zip},<application/zip,application/java-archive> mkdir %f:r && tar -vxf %f --directory %f:r
 fileviewer {*.zip,*.jar,*.war,*.ear},
           \<application/zip,application/java-archive>
-          \ zip -sf %c
+          \ tar -tf %f
 
 " Extract tar archives
 filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
         \<application/x-tar>
-       \ tar -xf %f
+       \ tar -vxf %f
 fileviewer {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
           \<application/x-tar>
          \ tar -tf %f
@@ -286,6 +285,10 @@ filetype *.bz2 bzip2 -d %f
 
 " Extract .gz files
 filetype *.gz gunzip %f
+
+" Extract rar files
+filetype *.rar unrar x -y -c- -ad %f %s
+fileviewer *.rar unrar lb %c
 
 " Mount .dmg archives
 filetype *.dmg open
