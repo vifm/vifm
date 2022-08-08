@@ -39,6 +39,11 @@ set syscalls
 " This probably shouldn't be an option.
 set trash
 
+" What should be saved automatically on restarting vifm.  Drop "savedirs"
+" value if you don't want vifm to remember last visited directories for you.
+set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
+            \phistory,fhistory,dirstack,registers,bookmarks,bmarks
+
 " This is how many directories to store in the directory history.
 set history=100
 
@@ -329,15 +334,6 @@ fileviewer {*.docx},
 " for unknown file types.
 " For OS X:
 filetype * open
-
-" ------------------------------------------------------------------------------
-" Session
-" ------------------------------------------------------------------------------
-
-" What should be saved automatically between vifm sessions.  Drop "savedirs"
-" value if you don't want vifm to remember last visited directories for you.
-set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
-    \phistory,fhistory,dirstack,registers,bookmarks,bmarks
 
 " ------------------------------------------------------------------------------
 " Panel configuration examples
