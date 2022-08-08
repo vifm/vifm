@@ -1,16 +1,17 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 4 July, 2022)
+" Sample configuration file for vifm (last updated: 8 August, 2022)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
 " The basic format for each item is shown with an example.
 
 " ------------------------------------------------------------------------------
+" Main settings
+" ------------------------------------------------------------------------------
 
 " Command used to edit files in various contexts.  The default is vim.
 " If you would like to use another vi clone such as Elvis or Vile
 " you will need to change this setting.
-
 if executable('vim')
     set vicmd=vim
 elseif executable('nvim')
@@ -28,7 +29,6 @@ endif
 " standard utilities like `cp`.  While using `cp` and alike is a more universal
 " solution, it's also much slower when processing large amounts of files and
 " doesn't support progress measuring.
-
 set syscalls
 
 " Trash Directory
@@ -37,85 +37,75 @@ set syscalls
 " files by deleting them and then using p to put the file in the new location.
 " I recommend not changing this until you are familiar with vifm.
 " This probably shouldn't be an option.
-
 set trash
 
-" This is how many directories to store in the directory history.
+" What should be saved automatically on restarting vifm.  Drop "savedirs"
+" value if you don't want vifm to remember last visited directories for you.
+set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
+            \phistory,fhistory,dirstack,registers,bookmarks,bmarks
 
+" This is how many directories to store in the directory history.
 set history=100
 
 " Automatically resolve symbolic links on l or Enter.
-
 set nofollowlinks
 
 " Natural sort of (version) numbers within text.
-
 set sortnumbers
 
 " Maximum number of changes that can be undone.
-
 set undolevels=100
 
 " Use Vim's format of help file (has highlighting and "hyperlinks").
 " If you would rather use a plain text help file set novimhelp.
-
 set vimhelp
 
 " If you would like to run an executable file when you
 " press Enter, l or Right Arrow, set this.
-
 set norunexec
 
 " List of color schemes to try (picks the first one supported by the terminal)
-
 colorscheme Default-256 Default
 
 " Format for displaying time in file list. For example:
 " TIME_STAMP_FORMAT=%m/%d-%H:%M
 " See man date or man strftime for details.
-
 set timefmt='%Y/%m/%d %H:%M'
 
 " Show list of matches on tab completion in command-line mode
-
 set wildmenu
 
 " Display completions in a form of popup with descriptions of the matches
-
 set wildstyle=popup
 
 " Display suggestions in normal, visual and view modes for keys, marks and
 " registers (at most 5 files).  In other view, when available.
-
 set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
 
 " Ignore case in search patterns unless it contains at least one uppercase
 " letter
-
 set ignorecase
 set smartcase
 
 " Don't highlight search results automatically
-
 set nohlsearch
 
 " Use increment searching (search while typing)
 set incsearch
 
 " Try to leave some space from cursor to upper/lower border in lists
-
 set scrolloff=4
 
 " Don't do too many requests to slow file systems
-
 if !has('win')
     set slowfs=curlftpfs
 endif
 
 " Set custom status line look
-
 set statusline="  Hint: %z%= %A %10u:%-7g %15s %20d  "
 
+" ------------------------------------------------------------------------------
+" Bookmarks
 " ------------------------------------------------------------------------------
 
 " :mark mark /full/directory/path [filename]
@@ -124,9 +114,12 @@ mark b ~/bin/
 mark h ~/
 
 " ------------------------------------------------------------------------------
+" Commands
+" ------------------------------------------------------------------------------
 
 " :com[mand][!] command_name action
-" These are some of the macros that can be used in a command:
+"
+" These are some of the macros that can be used in the action part:
 "  %a for user arguments
 "  %c for current file under the cursor
 "  %C for current file under the cursor of inactive pane
@@ -150,32 +143,39 @@ command! vgrep vim "+grep %a"
 command! reload :write | restart full
 
 " ------------------------------------------------------------------------------
+" File types association
+" ------------------------------------------------------------------------------
 
-" The file type is for the default programs to be used with
-" a file extension.
 " :filetype pattern1,pattern2 defaultprogram,program2
 " :fileviewer pattern1,pattern2 consoleviewer
-" The other programs for the file type can be accessed with the :file command
+"
+" The first entry is the default program to be used with a matching file.
+" The other programs for the file type can be accessed via :file command.
 " The command macros like %f, %F, %d, %D may be used in the commands.
 " The %a macro is ignored.  To use a % you must put %%.
+" Spaces in an app name must be escaped, for example: QuickTime\ Player.app
 
 " For automated FUSE mounts, you must register an extension with :file[x]type
-" in one of following formats:
+" in one of the following formats:
 "
-" :filetype extensions FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
-" %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
-" A sample line might look like this:
-" :filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+" :filetype patterns FUSE_MOUNT|mount_cmd %SOURCE_FILE %DESTINATION_DIR
 "
-" :filetype extensions FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
-" %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
-" A sample line might look like this:
-" :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
-" %PARAM value is filled from the first line of file (whole line).
-" Example first line for SshMount filetype: root@127.0.0.1:/
+" %SOURCE_FILE and %DESTINATION_DIR are filled in at runtime.
+"
+" Example:
+"   :filetype *.zip,*.[jwe]ar FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+"
+" :filetype patterns FUSE_MOUNT2|mount_cmd %PARAM %DESTINATION_DIR
+"
+" %PARAM and %DESTINATION_DIR are filled in at runtime.
+"
+" Example:
+"   :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+"
+" %PARAM value is the first line of the matched file, example: root@127.0.0.1:/
 "
 " You can also add %CLEAR if you want to clear screen before running FUSE
-" program.
+" program.  There is also %FOREGROUND, which is useful for entering passwords.
 
 " Pdf
 filextype {*.pdf},<application/pdf> zathura %c %i &, apvlv %c, xpdf %c
@@ -201,9 +201,12 @@ filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
        \ {Play using ffplay}
        \ ffplay -nodisp -hide_banner -autoexit %c,
        \ {Play using MPlayer}
-       \ mplayer %f,
-fileviewer {*.mp3},<audio/mpeg> mp3info
-fileviewer {*.flac},<audio/flac> soxi
+       \ mplayer %c,
+       \ {Play using mpv}
+       \ mpv --no-video %c %s,
+fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
+           \*.aac}
+         \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Video
 filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
@@ -216,6 +219,8 @@ filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
         \ dragon %f:p,
         \ {View using mplayer}
         \ mplayer %f,
+        \ {Play using mpv}
+        \ mpv --no-video %c %s,
 fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
            \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
            \*.as[fx]},
@@ -223,14 +228,12 @@ fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
          \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Web
-filextype {*.html,*.htm},<text/html>
-        \ {Open with dwb}
-        \ dwb %f %i &,
+filextype {*.xhtml,*.html,*.htm},<text/html>
+        \ {Open with qutebrowser}
+        \ qutebrowser %f %i &,
         \ {Open with firefox}
         \ firefox %f &,
-        \ {Open with uzbl}
-        \ uzbl-browser %f %i &,
-filetype {*.html,*.htm},<text/html> links, lynx
+filetype {*.xhtml,*.html,*.htm},<text/html> links, lynx
 
 " Object
 filetype {*.o},<application/x-object> nm %f | less
@@ -295,13 +298,14 @@ filetype {*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg},
        \ {Mount with fuse-zip}
        \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
        \ {View contents}
-       \ zip -sf %c | less,
+       \ tar -tf %f | less,
        \ {Extract here}
-       \ tar -xf %c,
-fileviewer *.zip,*.jar,*.war,*.ear,*.oxt zip -sf %c
+       \ tar -vxf %c,
+fileviewer *.zip,*.jar,*.war,*.ear,*.oxt tar -tf %f
 
 " ArchiveMount
-filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
+filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,
+         \*.tzst},
         \<application/x-tar>
        \ {Mount with archivemount}
        \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
@@ -373,11 +377,9 @@ filextype */
 " fileviewer *.c,*.h highlight -O ansi -s dante %c
 "
 " Or leave it for automatic detection
-"
 " fileviewer *[^/] pygmentize -O style=monokai -f console256 -g
 
 " Displaying pictures in terminal
-"
 " fileviewer *.jpg,*.png shellpic %c
 
 " Open all other files with default system programs (you can also remove all
@@ -393,27 +395,21 @@ filextype */
 " filetype * explorer %"f &
 
 " ------------------------------------------------------------------------------
-
-" What should be saved automatically between vifm sessions.  Drop "savedirs"
-" value if you don't want vifm to remember last visited directories for you.
-set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
-    \phistory,fhistory,dirstack,registers,bookmarks,bmarks
-
+" Panel configuration examples
 " ------------------------------------------------------------------------------
 
-" Examples of configuring both panels
-
 " Customize view columns a bit (enable ellipsis for truncated file names)
-"
 " set viewcolumns=-{name}..,6{}.
 
+" Show vertical border
+" set fillchars=vborder:│
+
 " Filter-out build and temporary files
-"
 " filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
 
 " ------------------------------------------------------------------------------
-
-" Sample mappings
+" Sample keyboard mappings
+" ------------------------------------------------------------------------------
 
 " Start shell in current directory
 nnoremap s :shell<cr>
@@ -471,6 +467,11 @@ nnoremap I cw<c-a>
 nnoremap cc cw<c-u>
 nnoremap A cw
 
+" As above, but without the file extension
+" nnoremap I cW<c-a>
+" nnoremap cc cW<c-u>
+" nnoremap A cW
+
 " Open console in current directory
 if $DISPLAY && executable('xterm')
     nnoremap ,t :!xterm &<cr>
@@ -506,19 +507,16 @@ nnoremap <a-o> :sync %c<cr>
 nnoremap <c-u> <c-w>x
 
 " ------------------------------------------------------------------------------
-
 " Various customization examples
+" ------------------------------------------------------------------------------
 
 " Use ag (the silver searcher) instead of grep
-"
 " set grepprg='ag --line-numbers %i %a %s'
 
 " Add additional place to look for executables
-"
 " let $PATH = $HOME.'/bin/fuse:'.$PATH
 
 " Block particular shortcut
-"
 " nnoremap <left> <nop>
 
 " Export IPC name of current instance as environment variable and use it to
@@ -529,3 +527,12 @@ nnoremap <c-u> <c-w>x
 "     vifm --server-name "$VIFM_SERVER_NAME" --remote +"cd '$PWD'"
 "
 " let $VIFM_SERVER_NAME = v:servername
+
+" Activate screen/tmux support
+" screen!
+
+" ------------------------------------------------------------------------------
+" Icon decorations example
+" ------------------------------------------------------------------------------
+
+" https://github.com/cirala/vifm_devicons
