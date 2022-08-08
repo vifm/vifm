@@ -113,7 +113,8 @@ mark h ~/
 " ------------------------------------------------------------------------------
 
 " :com[mand][!] command_name action
-" These are some of the macros that can be used in a command:
+"
+" These are some of the macros that can be used in the action part:
 "  %a for user arguments
 "  %c for current file under the cursor
 "  %C for current file under the cursor of inactive pane
@@ -140,31 +141,36 @@ command! reload :write | restart full
 " File types association
 " ------------------------------------------------------------------------------
 
-" The file type is for the default programs to be used with
-" a file extension.
 " :filetype pattern1,pattern2 defaultprogram,program2
 " :fileviewer pattern1,pattern2 consoleviewer
-" The other programs for the file type can be accessed with the :file command
+"
+" The first entry is the default program to be used with a matching file.
+" The other programs for the file type can be accessed via :file command.
 " The command macros like %f, %F, %d, %D may be used in the commands.
 " The %a macro is ignored.  To use a % you must put %%.
+" Spaces in an app name must be escaped, for example: QuickTime\ Player.app
 
 " For automated FUSE mounts, you must register an extension with :file[x]type
-" in one of following formats:
+" in one of the following formats:
 "
-" :filetype extensions FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
-" %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
-" A sample line might look like this:
-" :filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+" :filetype patterns FUSE_MOUNT|mount_cmd %SOURCE_FILE %DESTINATION_DIR
 "
-" :filetype extensions FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
-" %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
-" A sample line might look like this:
-" :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
-" %PARAM value is filled from the first line of file (whole line).
-" Example first line for SshMount filetype: root@127.0.0.1:/
+" %SOURCE_FILE and %DESTINATION_DIR are filled in at runtime.
+"
+" Example:
+"   :filetype *.zip,*.[jwe]ar FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+"
+" :filetype patterns FUSE_MOUNT2|mount_cmd %PARAM %DESTINATION_DIR
+"
+" %PARAM and %DESTINATION_DIR are filled in at runtime.
+"
+" Example:
+"   :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+"
+" %PARAM value is the first line of the matched file, example: root@127.0.0.1:/
 "
 " You can also add %CLEAR if you want to clear screen before running FUSE
-" program.
+" program.  There is also %FOREGROUND, which is useful for entering passwords.
 
 " Pdf
 filextype {*.pdf},<application/pdf> zathura %c %i &, apvlv %c, xpdf %c
@@ -463,9 +469,8 @@ endif
 nnoremap I cw<c-a>
 nnoremap cc cw<c-u>
 nnoremap A cw
-"
-" without the file extension
-"
+
+" As above, but without the file extension
 " nnoremap I cW<c-a>
 " nnoremap cc cW<c-u>
 " nnoremap A cW
