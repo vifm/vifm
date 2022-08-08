@@ -189,21 +189,24 @@ filetype {*.ps,*.eps,*.ps.gz},<application/postscript> open -a Preview.app
 filetype {*.djvu},<image/vnd.djvu> open -a MacDjView.app
 
 " Audio
-filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.aac},
-       \ <audio/*>
+filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
+         \*.aac},
+        \<audio/*>
        \ {Open in Music}
        \ open -a Music.app,
        \ {Open in QuickTime Player}
        \ open -a QuickTime\ Player.app,
        \ {Open in IINA}
        \ open -a IINA.app,
-fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.aac} ffprobe -hide_banner -pretty %c 2>&1
+fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
+           \*.aac}
+         \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Video
 filetype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
-       \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-       \*.as[fx]},
-       \ <video/*>
+         \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+         \*.as[fx]},
+        \<video/*>
        \ {Open in QuickTime Player}
        \ open -a QuickTime\ Player.app,
        \ {Open in IINA}
@@ -211,13 +214,13 @@ filetype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
        \ {Open in VLC}
        \ open -a VLC.app,
 fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
-       \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-       \*.as[fx]},
-       \ <video/*>
-       \ ffprobe -hide_banner -pretty %c 2>&1
+           \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+           \*.as[fx]},
+          \<video/*>
+         \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Web
-filetype {*.html,*.htm},<text/html>
+filetype {*.xhtml,*.html,*.htm},<text/html>
        \ {Open in Safari}
        \ open -a Safari.app,
        \ {Open in Firefox}
@@ -226,7 +229,7 @@ filetype {*.html,*.htm},<text/html>
        \ open -a Google\ Chrome.app,
        \ {Open in vim}
        \ vim,
-fileviewer {*.html,*.htm},<text/html> w3m -dump -T text/html
+fileviewer {*.xhtml,*.html,*.htm},<text/html> w3m -dump -T text/html
 
 " Object
 filetype {*.o},<application/x-object> nm %f | less
@@ -266,16 +269,19 @@ filetype {*.torrent},<application/x-bittorrent> open -a Transmission.app
 fileviewer {*.torrent},<application/x-bittorrent> dumptorrent -v %c
 
 " Extract zip files
-filetype {*.zip},<application/zip,application/java-archive> mkdir %f:r && tar -vxf %f --directory %f:r
+filetype {*.zip},<application/zip,application/java-archive>
+       \ mkdir %f:r && tar -vxf %f --directory %f:r
 fileviewer {*.zip,*.jar,*.war,*.ear},
           \<application/zip,application/java-archive>
           \ tar -tf %f
 
 " Extract tar archives
-filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
+filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,
+         \*.tzst},
         \<application/x-tar>
        \ tar -vxf %f
-fileviewer {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
+fileviewer {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,
+           \*.tzst},
           \<application/x-tar>
          \ tar -tf %f
 

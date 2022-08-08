@@ -197,20 +197,22 @@ filextype {*.djvu},<image/vnd.djvu>
 
 " Audio
 filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
-        \ <audio/*>
-        \ {Play using ffplay}
-        \ ffplay -nodisp -hide_banner -autoexit %c,
-        \ {Play using MPlayer}
-        \ mplayer %c,
-        \ {Play using mpv}
-        \ mpv --no-video %c %s,
-fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.aac} ffprobe -hide_banner -pretty %c 2>&1
+        \<audio/*>
+       \ {Play using ffplay}
+       \ ffplay -nodisp -hide_banner -autoexit %c,
+       \ {Play using MPlayer}
+       \ mplayer %c,
+       \ {Play using mpv}
+       \ mpv --no-video %c %s,
+fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
+           \*.aac}
+         \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Video
 filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
-        \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-        \*.as[fx]},
-        \ <video/*>
+          \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+          \*.as[fx]},
+         \<video/*>
         \ {View using ffplay}
         \ ffplay -fs -hide_banner -autoexit %f,
         \ {View using Dragon}
@@ -220,20 +222,18 @@ filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
         \ {Play using mpv}
         \ mpv --no-video %c %s,
 fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
-        \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-        \*.as[fx]},
-        \ <video/*>
-        \ ffprobe -hide_banner -pretty %c 2>&1
+           \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+           \*.as[fx]},
+          \<video/*>
+         \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Web
-filextype {*.html,*.htm},<text/html>
-        \ {Open with dwb}
-        \ dwb %f %i &,
+filextype {*.xhtml,*.html,*.htm},<text/html>
+        \ {Open with qutebrowser}
+        \ qutebrowser %f %i &,
         \ {Open with firefox}
         \ firefox %f &,
-        \ {Open with uzbl}
-        \ uzbl-browser %f %i &,
-filetype {*.html,*.htm},<text/html> links, lynx
+filetype {*.xhtml,*.html,*.htm},<text/html> links, lynx
 
 " Object
 filetype {*.o},<application/x-object> nm %f | less
@@ -294,7 +294,7 @@ fileviewer {*.torrent},<application/x-bittorrent> dumptorrent -v %c
 
 " FuseZipMount
 filetype {*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg},
-       \ <application/zip,application/java-archive>
+        \<application/zip,application/java-archive>
        \ {Mount with fuse-zip}
        \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
        \ {View contents}
@@ -304,7 +304,8 @@ filetype {*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg},
 fileviewer *.zip,*.jar,*.war,*.ear,*.oxt tar -tf %f
 
 " ArchiveMount
-filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst},
+filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,
+         \*.tzst},
         \<application/x-tar>
        \ {Mount with archivemount}
        \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
