@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2022 July 9
+" Last Change: 2022 August 16
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -193,10 +193,11 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 	else
 		" Gvim cannot handle ncurses so run vifm in a terminal.
 		if has('gui_running')
-			execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir
-			      \ pickargsstr
+			execute 'silent noautocmd !'
+			      \ g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir pickargsstr
 		else
-			execute 'silent !' g:vifm_exec g:vifm_exec_args ldir rdir pickargsstr
+			execute 'silent noautocmd !'
+			      \ g:vifm_exec g:vifm_exec_args ldir rdir pickargsstr
 		endif
 
 		" Execution of external command might have left Vim's window cleared, force
