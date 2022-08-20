@@ -3,6 +3,8 @@
 Provides :Bg command that runs external command in background displaying it on
 job bar until its done.
 
+Expands %-macros and $-environment variables.
+
 Usage example:
 
     :Bg sleep 10
@@ -10,9 +12,11 @@ Usage example:
 --]]
 
 local function bg(info)
-    local job = vifm.startjob {
-        cmd = info.args,
-        description = info.args,
+    local cmd = vifm.expand(info.args)
+
+    vifm.startjob {
+        cmd = cmd,
+        description = cmd,
         visible = true
     }
 end
