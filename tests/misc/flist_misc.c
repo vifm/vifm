@@ -216,11 +216,16 @@ TEST(find_next_and_prev_mismatches)
 	lwin.list_pos = 0;
 
 	assert_int_equal(0, fpos_prev_mismatch(&lwin));
+	assert_int_equal(1, fpos_next_mismatch(&lwin));
+
+	lwin.list_pos = 1;
+
+	assert_int_equal(1, fpos_prev_mismatch(&lwin));
 	assert_int_equal(2, fpos_next_mismatch(&lwin));
 
 	lwin.list_pos = 2;
 
-	assert_int_equal(2, fpos_prev_mismatch(&lwin));
+	assert_int_equal(1, fpos_prev_mismatch(&lwin));
 	assert_int_equal(2, fpos_next_mismatch(&lwin));
 
 	lwin.list_pos = 3;

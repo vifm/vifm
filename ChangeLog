@@ -7,6 +7,8 @@
 	--no-configs` won't mess anything up if you're using `~/.vifm`.  Can
 	potentially cause some trouble for existing configurations, but shouldn't.
 
+	Changed [c and ]c to also traverse added/missing entries.  Thanks to qsmodo.
+
 	Added 'autocd' option.  Makes invalid :commands be interpreted as an
 	implicit :cd command.  Thanks to Taras Halturin (a.k.a. halturin).
 

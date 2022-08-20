@@ -735,7 +735,7 @@ static int
 is_mismatched_entry(const dir_entry_t *entry)
 {
 	/* To avoid passing view pointer here, we exploit the fact that entry_to_pos()
-	 * checks whether it's argument belongs to the given view. */
+	 * checks whether its argument belongs to the given view. */
 	int pos = entry_to_pos(&lwin, entry);
 	view_t *other = &rwin;
 	if(pos == -1)
@@ -744,7 +744,9 @@ is_mismatched_entry(const dir_entry_t *entry)
 		other = &lwin;
 	}
 
-	return (other->dir_entry[pos].id != entry->id);
+	return other->dir_entry[pos].id != entry->id
+	    || fentry_is_fake(entry)
+	    || fentry_is_fake(&other->dir_entry[pos]);
 }
 
 /* Finds position of the next entry matching the predicate.  Returns new
