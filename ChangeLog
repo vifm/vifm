@@ -79,6 +79,8 @@
 	Added :PeditVifm command (and corresponding :PeditVim) to the plugin.
 	Thanks to Mukund Mauji (a.k.a. maujim).
 
+	Added CmpUnmatched and CmpBlank highlight groups.  Thanks to qsmodo.
+
 	Extended optimizations for globs to cover `something*` and `some*thing`
 	cases.
 

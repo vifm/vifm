@@ -1379,12 +1379,24 @@ mix_in_common_colors(col_attr_t *col, const view_t *view, dir_entry_t *entry,
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	view_t *const other = (view == &lwin) ? &rwin : &lwin;
 
-	/* If two files on the same line in side-by-side comparison have different
-	 * ids, that's a mismatch. */
-	if(view->custom.type == CV_DIFF &&
-			other->dir_entry[entry_to_pos(view, entry)].id != entry->id)
+	if(view->custom.type == CV_DIFF)
 	{
-		cs_mix_colors(col, &cs->color[MISMATCH_COLOR]);
+		const dir_entry_t *oentry = &other->dir_entry[entry_to_pos(view, entry)];
+
+		/* If two files on the same line in side-by-side comparison have different
+		 * ids, that's a mismatch. */
+		if(oentry->id != entry->id)
+		{
+			cs_mix_colors(col, &cs->color[MISMATCH_COLOR]);
+		}
+		else if(fentry_is_fake(entry))
+		{
+			cs_mix_colors(col, &cs->color[BLANK_COLOR]);
+		}
+		else if(fentry_is_fake(oentry))
+		{
+			cs_mix_colors(col, &cs->color[UNMATCHED_COLOR]);
+		}
 	}
 
 	if(entry->selected)

@@ -2175,6 +2175,8 @@ their content (e.g. regular files in views)
  \- Executable \- color of executable files
  \- Fifo \- color of fifo pipes
  \- CmpMismatch \- color of mismatched files in side-by-side comparison by path
+ \- CmpUnmatched \- comparison file entry that has no pair in the other pane
+ \- CmpBlank \- entry placeholder in a compare view, paired with CmpUnmatched
  \- User1..User9 \- 9 colors which can be used via %* 'statusline' macro
 
 Available colors:
@@ -2339,6 +2341,8 @@ transparency:
             Fifo
             Executable
               CmpMismatch
+              CmpUnmatched
+              CmpBlank
                 Selected
                   CurrLine
                     LineNr (in active pane)
@@ -6971,8 +6975,9 @@ StatusLine, JobLine, SuggestBox and WildMenu are always determined by the \
 primary color scheme;
 .IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
-Fifo, CmpMismatch, Win, AuxWin and OtherWin are determined by primary color \
-scheme and a set of local color schemes, which can be empty.
+Fifo, CmpMismatch, CmpUnmatched, CmpBlank, Win, AuxWin and OtherWin are \
+determined by primary color scheme and a set of local color schemes, which can \
+be empty.
 .RE
 
 There might be a set of local color schemes because they are structured

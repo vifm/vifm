@@ -512,6 +512,8 @@ nnoremap lhs :tabonly
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
 hi CmpMismatch
+hi CmpUnmatched
+hi CmpBlank
 hi AuxWin
 hi OtherWin
 hi TabLine
