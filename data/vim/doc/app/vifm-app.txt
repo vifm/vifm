@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 July 14
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 August 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2031,11 +2031,12 @@ transparency:
             Device
             Fifo
             Executable
-              Selected
-                CurrLine
-                  LineNr (in active pane)
-                OtherLine
-                  LineNr (in inactive pane)
+              CmpMismatch
+                Selected
+                  CurrLine
+                    LineNr (in active pane)
+                  OtherLine
+                    LineNr (in inactive pane)
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
