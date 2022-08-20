@@ -67,6 +67,8 @@ enum
 	JOB_LINE_COLOR,     /* Line that displays status of background jobs. */
 	SUGGEST_BOX_COLOR,  /* Style of suggestion box. */
 	MISMATCH_COLOR,     /* File entries that don't match each other in diff. */
+	UNMATCHED_COLOR,    /* Diff file entry that has no pair in the other pane. */
+	BLANK_COLOR,        /* Fake entry in a diff. */
 	AUX_WIN_COLOR,      /* Auxiliary part of window. */
 	TAB_LINE_COLOR,     /* Tab line. */
 	TAB_LINE_SEL_COLOR, /* Tip of selected tab. */

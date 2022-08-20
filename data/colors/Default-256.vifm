@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 12 June, 2022
+" This file last updated: 20 August, 2022
 
 highlight clear
 
@@ -27,6 +27,8 @@ hi LineNr                                     ctermfg=default  ctermbg=default
 
 hi Selected     cterm=bold                    ctermfg=213      ctermbg=default
 hi CmpMismatch  cterm=bold                    ctermfg=white    ctermbg=88
+hi CmpUnmatched cterm=bold                    ctermfg=white    ctermbg=28
+hi CmpBlank                                   ctermfg=default  ctermbg=default
 
 hi SuggestBox   cterm=bold,reverse            ctermfg=cyan     ctermbg=232
 hi WildMenu     cterm=underline,bold,reverse  ctermfg=yellow   ctermbg=black
