@@ -36,6 +36,8 @@
 #
 # make clean -- removes various build artifacts
 #
+# make TESTS_CFLAGS=... TESTS_LDFLAGS... -- prepend something to CFLAGS/LDFLAGS
+#
 # "B" variable might be set to build tree root to run tests out of the source
 # tree.
 
@@ -139,13 +141,13 @@ override LD = $(LD_$(V))
 AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
-override CFLAGS := $(CFLAGS) -MMD -MP -pipe \
+override CFLAGS := $(TESTS_CFLAGS) -MMD -MP -pipe \
                    -Wall -Wno-char-subscripts \
                    -Itest-support/ -Itest-support/stic/ \
                    -include $(B)../build-aux/config.h \
                    -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
-override LDFLAGS := $(LDFLAGS)
+override LDFLAGS := $(TESTS_LDFLAGS)
 ifdef unix_env
     MF := $(abspath $(B)../src/Makefile)
     ifneq ($(wildcard $(MF)),)
