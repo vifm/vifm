@@ -49,6 +49,7 @@
 #include "../flist_pos.h"
 #include "../opt_handlers.h"
 #include "../sort.h"
+#include "../vifm.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "quickview.h"
@@ -274,7 +275,7 @@ draw_dir_list_only(view_t *view)
 	size_t col_width, col_count;
 	int visible_cells;
 
-	if(curr_stats.load_stage < 2)
+	if(curr_stats.load_stage < 2 || vifm_testing())
 	{
 		return;
 	}

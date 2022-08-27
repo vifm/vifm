@@ -41,6 +41,10 @@
 # "B" variable might be set to build tree root to run tests out of the source
 # tree.
 
+# don't pass $TERM to tests, they should work without a terminal and this
+# variable
+unexport TERM
+
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
     ifeq ($(shell uname -o 2> /dev/null),Cygwin)

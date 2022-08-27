@@ -52,6 +52,7 @@
 #include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../vifm.h"
 
 /* Kind of title we're working with. */
 typedef enum
@@ -180,7 +181,7 @@ ensure_initialized(void)
 	title_state.kind = query_title_kind();
 	if(title_state.kind == TK_ABSENT)
 	{
-		title_state.kind = title_kind_for_termenv(env_get("TERM"));
+		title_state.kind = title_kind_for_termenv(env_get_def("TERM", ""));
 		apply_term_guess(title_state.kind);
 	}
 
@@ -198,7 +199,7 @@ query_title_kind(void)
 {
 #ifndef _WIN32
 	int need_cleanup = 0;
-	if(cur_term == NULL)
+	if(cur_term == NULL && !vifm_testing())
 	{
 		(void)setupterm((char *)env_get("TERM"), 1, (int *)0);
 		need_cleanup = 1;
