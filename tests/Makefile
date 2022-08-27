@@ -182,20 +182,20 @@ override CFLAGS += -fcommon
 ifeq (,$(findstring -lpthread,$(LDFLAGS)))
     override LDFLAGS += -pthread
 endif
-ifneq (,$(findstring --coverage, $(LDFLAGS)))
-    ifeq (,$(findstring clang,$(CC)))
+
+# work around clang
+ifeq (,$(findstring clang,$(shell $(ACTUAL_CC) --version)))
+    ifneq (,$(findstring --coverage, $(LDFLAGS)))
         # clang is inconvenient with regard to this flag, don't do coverage with
         # it
         override CFLAGS += --coverage
         override LDFLAGS += --coverage
     endif
-endif
-ifeq (,$(findstring clang,$(CC)))
+
     # don't precompile header with clang (on OS X gcc is likely to be a symlink
     # to clang) because it handles macros in a different way
-    ifneq (Darwin,$(shell uname -s))
-        GCH_DEP := $(BUILD)test-support/stic/stic.h.gch
-    endif
+    GCH_DEP := $(BUILD)test-support/stic/stic.h.gch
+
     # this flag seems to be gcc-specific and clang freaks out on it with -Werror
     override CFLAGS += -Wno-format-truncation
 endif
