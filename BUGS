@@ -1,5 +1,4 @@
 * Better to check for existence of $HOME.
-* On OpenBSD there might be issues with non-ascii characters.
 * Duplicate detection lags in custom views on :substitute.
 * filextype is useless on OS X.
 * :clone! is useless.

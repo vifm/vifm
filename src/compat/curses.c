@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifdef __OpenBSD__
+#ifdef BROKEN_WIDE_CURSES
 
 #include "curses.h"
 
@@ -31,7 +31,7 @@ int
 compat_wget_wch(WINDOW *w, wint_t *wc)
 {
 	*wc = wgetch(w);
-	return ((char)*wc == ERR) ? ERR : OK;
+	return ((char)*wc == ERR) ? ERR : (*wc >= KEY_MIN ? KEY_CODE_YES : OK);
 }
 
 int
@@ -52,7 +52,7 @@ compat_mvwaddwstr(WINDOW *w, int y, int x, const wchar_t wstr[])
 	return result;
 }
 
-#endif /* __OpenBSD__ */
+#endif /* BROKEN_WIDE_CURSES */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

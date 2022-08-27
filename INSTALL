@@ -196,3 +196,13 @@ Vim Specific Options:
     way as described above.  The script allows you to use Vifm from Vim to
     select files and open them in different ways (e.g. in splits, tabs).
     Note: you need at least Vim 7.3 to use it.
+
+Building with broken wide curses:
+
+    OpenBSD used to have perverted ncursesw library, which had stubs with
+    infinite loops instead of real wide functions.  Vifm had a workaround for
+    it.  The situation on OpenBSD has improved since then and the workaround is
+    now disabled by default.  If you still need it to build on older OpenBSD or
+    for some other system, run ./configure with "CFLAGS=-DBROKEN_WIDE_CURSES"
+    argument.  Mind that this is a workaround and it probably best works with
+    Latin characters.
