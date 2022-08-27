@@ -149,8 +149,7 @@ override CFLAGS := $(TESTS_CFLAGS) -MMD -MP -pipe \
                    -Wall -Wno-char-subscripts \
                    -Itest-support/ -Itest-support/stic/ \
                    -include $(B)../build-aux/config.h \
-                   -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
-                   -D_FILE_OFFSET_BITS=64
+                   -DTEST
 override LDFLAGS := $(TESTS_LDFLAGS)
 ifdef unix_env
     MF := $(abspath $(B)../src/Makefile)
