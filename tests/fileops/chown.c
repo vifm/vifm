@@ -20,7 +20,7 @@
 #include "../../src/fops_misc.h"
 
 static int get_gids(gid_t *gid1, gid_t *gid2);
-static int has_more_than_one_group(void);
+static int can_change_group(void);
 
 static char *saved_cwd;
 
@@ -40,7 +40,7 @@ TEARDOWN()
 	view_teardown(&lwin);
 }
 
-TEST(file_group_is_changed, IF(has_more_than_one_group))
+TEST(file_group_is_changed, IF(can_change_group))
 {
 	char path[PATH_MAX + 1];
 	struct stat s;
@@ -98,9 +98,17 @@ get_gids(gid_t *gid1, gid_t *gid2)
 }
 
 static int
-has_more_than_one_group(void)
+can_change_group(void)
 {
+#ifdef __OpenBSD__
+	/* Port system of OpenBSD mocks `chown` and breaks this test which works
+	 * outside of ports. */
+	return 0;
+#else
+	/* Only users that have more than one group can change group of a file
+	 * twice. */
 	return (getgroups(0, NULL) >= 2);
+#endif
 }
 
 #endif
