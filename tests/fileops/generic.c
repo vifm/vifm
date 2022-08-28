@@ -179,10 +179,6 @@ TEST(error_lists_are_joined_with_newline_separator)
 static void
 perform_merge(int op)
 {
-#ifndef _WIN32
-	struct stat src, dst;
-#endif
-
 	ops_t *ops;
 
 	create_dir("first");
@@ -194,6 +190,8 @@ perform_merge(int op)
 	create_dir("second/nested1");
 
 #ifndef _WIN32
+	struct stat src;
+
 	/* Something about GNU Hurd and OS X differs, so skip this workaround there.
 	 * Really need to figure out what's wrong with this thing... */
 #if !defined(__gnu_hurd__) && !defined(__APPLE__)
@@ -212,6 +210,7 @@ perform_merge(int op)
 		utimes("first/nested1", tv);
 	}
 #endif
+
 	assert_success(chmod("first/nested1", 0700));
 	assert_success(os_stat("first/nested1", &src));
 #endif
@@ -229,6 +228,7 @@ perform_merge(int op)
 #ifndef _WIN32
 		if(!cfg.use_system_calls)
 		{
+			/* cp/mv require first argument to be inside of directory being merged. */
 			assert_int_equal(OPS_SUCCEEDED, perform_operation(op, ops, NULL,
 						"first/nested1", "second/"));
 		}
@@ -244,12 +244,16 @@ perform_merge(int op)
 	un_group_close();
 
 #ifndef _WIN32
-	{
-		assert_success(os_stat("second/nested1", &dst));
+
 #ifndef HAVE_STRUCT_STAT_ST_MTIM
 #define st_atim st_atime
 #define st_mtim st_mtime
 #endif
+
+	{
+		struct stat dst;
+		assert_success(os_stat("second/nested1", &dst));
+
 		assert_success(memcmp(&src.st_atim, &dst.st_atim, sizeof(src.st_atim)));
 		assert_success(memcmp(&src.st_mtim, &dst.st_mtim, sizeof(src.st_mtim)));
 		assert_success(memcmp(&src.st_mode, &dst.st_mode, sizeof(src.st_mode)));
