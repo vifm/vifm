@@ -16,3 +16,5 @@
 * gid/uid are displayed as -1 on some file systems.
 * Command-line doesn't work well with file names in encoding that doesn't match
   locale when they fail to convert to wide encoding.
+* On systems with BSD-like chmod, setting executable bit for directories only
+  doesn't work.
