@@ -3,7 +3,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/utils/regexp.h"
 
-static int not_osx(void);
+static int has_empty_regexps(void);
 
 TEST(bad_regex_leaves_line_unchanged)
 {
@@ -11,10 +11,8 @@ TEST(bad_regex_leaves_line_unchanged)
 			regexp_replace("barfoobar", "*foo", "z", 1, 0));
 }
 
-TEST(no_infinite_loop_on_empty_global_match, IF(not_osx))
+TEST(no_infinite_loop_on_empty_global_match, IF(has_empty_regexps))
 {
-	/* On OS X, regular expressions which can match empty strings don't
-	 * compile. */
 	assert_string_equal("zbarfoobar", regexp_replace("barfoobar", "", "z", 1, 0));
 }
 
@@ -97,13 +95,18 @@ TEST(case_sequences_are_respected)
 }
 
 static int
-not_osx(void)
+has_empty_regexps(void)
 {
-#ifndef __APPLE__
-	return 1;
-#else
-	return 0;
-#endif
+	/* At least on OS X and OpenBSD, regular expressions which can match empty
+	 * strings don't compile. */
+	regex_t re;
+	int err = regcomp(&re, "", /*cflags=*/0);
+	if(err == 0)
+	{
+		err = regexec(&re, "bla", /*nmatch=*/0, /*pmatch=*/NULL, /*eflags=*/0);
+		regfree(&re);
+	}
+	return (err == 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -22,7 +22,7 @@ static void set_file_perms(const int perms[13]);
 static void alloc_file_list(view_t *view, const char filename[]);
 static mode_t perms_to_mode(const int perms[13]);
 static mode_t get_perms(const char path[]);
-static int not_osx(void);
+static int can_reset_x_on_files(void);
 
 static mode_t mask;
 
@@ -92,7 +92,7 @@ set_file_perms(const int perms[13])
 	assert_success(unlink(SANDBOX_PATH "/file"));
 }
 
-TEST(reset_executable_bits_from_files_only, IF(not_osx))
+TEST(reset_executable_bits_from_files_only, IF(can_reset_x_on_files))
 {
 	FILE *f;
 
@@ -187,14 +187,22 @@ get_perms(const char path[])
 	return (st.st_mode & 0777);
 }
 
+/* BSD-like chmod uses original permissions when evaluating X modifier. */
 static int
-not_osx(void)
+can_reset_x_on_files(void)
 {
-#ifndef __APPLE__
-	return 1;
-#else
-	return 0;
-#endif
+	FILE *f;
+	assert_non_null(f = fopen(SANDBOX_PATH "/file", "w"));
+	fclose(f);
+
+	assert_success(chmod(SANDBOX_PATH "/file", 0777));
+	assert_int_equal(0777, get_perms(SANDBOX_PATH "/file"));
+
+	assert_success(os_system("chmod a-x+X " SANDBOX_PATH "/file"));
+	int perms = get_perms(SANDBOX_PATH "/file");
+	assert_success(unlink(SANDBOX_PATH "/file"));
+
+	return (perms == 0666);
 }
 
 #endif

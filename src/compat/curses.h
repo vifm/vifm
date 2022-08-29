@@ -31,11 +31,11 @@
  * for implementation as it needs more than just wchar_t.) */
 #define K(x) ((wchar_t)((wint_t)0xe000 + 1 + (x)))
 
-/* OpenBSD has perverted ncurses library, which has stubs with infinite loops
- * instead of real wide functions.  As there is only a couple of wide functions
- * in use, they can be emulated. */
+/* OpenBSD used to have perverted ncursesw library.  It had stubs with infinite
+ * loops instead of real wide functions.  As there is only a couple of wide
+ * functions in use, they can be emulated on systems like that. */
 
-#ifndef __OpenBSD__
+#ifndef BROKEN_WIDE_CURSES
 
 #define compat_wget_wch wget_wch
 #define compat_waddwstr waddwstr

@@ -1418,7 +1418,7 @@ int
 fops_chown(int u, int g, uid_t uid, gid_t gid)
 {
 /* Integer to pointer conversion. */
-#define V(e) (void *)(long)(e)
+#define V(e) ((void *)(uintptr_t)(e))
 
 	view_t *const view = curr_view;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];

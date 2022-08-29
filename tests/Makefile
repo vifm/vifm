@@ -36,8 +36,14 @@
 #
 # make clean -- removes various build artifacts
 #
+# make TESTS_CFLAGS=... TESTS_LDFLAGS... -- prepend something to CFLAGS/LDFLAGS
+#
 # "B" variable might be set to build tree root to run tests out of the source
 # tree.
+
+# don't pass $TERM to tests, they should work without a terminal and this
+# variable
+unexport TERM
 
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
@@ -139,13 +145,12 @@ override LD = $(LD_$(V))
 AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
-override CFLAGS := $(CFLAGS) -MMD -MP -pipe \
+override CFLAGS := $(TESTS_CFLAGS) -MMD -MP -pipe \
                    -Wall -Wno-char-subscripts \
                    -Itest-support/ -Itest-support/stic/ \
                    -include $(B)../build-aux/config.h \
-                   -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
-                   -D_FILE_OFFSET_BITS=64
-override LDFLAGS := $(LDFLAGS)
+                   -DTEST
+override LDFLAGS := $(TESTS_LDFLAGS)
 ifdef unix_env
     MF := $(abspath $(B)../src/Makefile)
     ifneq ($(wildcard $(MF)),)
@@ -177,20 +182,20 @@ override CFLAGS += -fcommon
 ifeq (,$(findstring -lpthread,$(LDFLAGS)))
     override LDFLAGS += -pthread
 endif
-ifneq (,$(findstring --coverage, $(LDFLAGS)))
-    ifeq (,$(findstring clang,$(CC)))
+
+# work around clang
+ifeq (,$(findstring clang,$(shell $(ACTUAL_CC) --version)))
+    ifneq (,$(findstring --coverage, $(LDFLAGS)))
         # clang is inconvenient with regard to this flag, don't do coverage with
         # it
         override CFLAGS += --coverage
         override LDFLAGS += --coverage
     endif
-endif
-ifeq (,$(findstring clang,$(CC)))
+
     # don't precompile header with clang (on OS X gcc is likely to be a symlink
     # to clang) because it handles macros in a different way
-    ifneq (Darwin,$(shell uname -s))
-        GCH_DEP := $(BUILD)test-support/stic/stic.h.gch
-    endif
+    GCH_DEP := $(BUILD)test-support/stic/stic.h.gch
+
     # this flag seems to be gcc-specific and clang freaks out on it with -Werror
     override CFLAGS += -Wno-format-truncation
 endif

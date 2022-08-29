@@ -27,7 +27,8 @@ dist_sample_colors__DATA = ../data/colors/astrell-root.vifm \
 									 ../data/colors/dmilith-user.vifm \
 									 ../data/colors/istib-solarized-dark.vifm \
 									 ../data/colors/juef-zenburn.vifm \
-									 ../data/colors/reicheltd-light.vifm
+									 ../data/colors/reicheltd-light.vifm \
+									 ../data/colors/Default-256.vifm
 dist_vim_doc__DATA = ../data/vim/doc/plugin/vifm-plugin.txt
 nodist_vim_doc__DATA = $(abs_srcdir)/../data/vim/doc/plugin/tags
 dist_vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim \

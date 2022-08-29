@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 August 20
+*vifm-app.txt*    For Vifm version 0.12  Last change: 2022 August 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1508,8 +1508,8 @@ The builtin commands are:
     so values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
 
 :cope[n]                                       *vifm-:copen* *vifm-:cope*
-    opens menu with contents of the last displayed menu with navigation to
-    files by default, if any.
+    reopens the last visible menu that has navigation to files by default, if
+    any.
 
                                                *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &]
