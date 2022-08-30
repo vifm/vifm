@@ -134,7 +134,7 @@ vifm.res: vifm.rc ../data/graphics/vifm.ico
 vifmres.o: vifm.res
 	$(WINDRES) --use-temp-file -i ./vifm.res -o vifmres.o
 
-../build-aux/config.h:
+../build-aux/config.h: Makefile.win
 	@echo Creating sample $@
 	mkdir -p ../build-aux
 	echo '#define VERSION "0.12"' > $@; \
