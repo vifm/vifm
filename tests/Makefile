@@ -44,6 +44,8 @@
 # don't pass $TERM to tests, they should work without a terminal and this
 # variable
 unexport TERM
+# hide terminal multiplexers and graphic systems, so tests behave consistently
+unexport STY TMUX DISPLAY WAYLAND_DISPLAY
 
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
@@ -168,7 +170,7 @@ ifdef unix_env
     export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env
-    override CFLAGS += -pthread -DPDC_WIDE
+    override CFLAGS += -pthread
     override LDFLAGS += \
         $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
     # this part is in conditional of ../src/Makefile.win

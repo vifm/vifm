@@ -200,8 +200,8 @@ reload_list(menu_data_t *m)
 	if(process_cmd_output("Listing media", cmd, NULL, 0, 0, &output_handler,
 				&m) != 0)
 	{
-		free(cmd);
 		show_error_msgf("Listing media devices", "Unable to run: %s", cmd);
+		free(cmd);
 		return 1;
 	}
 	free(cmd);
