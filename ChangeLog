@@ -244,6 +244,9 @@
 
 	Fixed processing of extended keys on OpenBSD.
 
+	Fixed memory error in :media menu on an unlikely error path.  Thanks to
+	dcb314.
+
 0.12-beta to 0.12 (2021-09-29)
 
 	Made :VifmCs of the plugin handle 24-bit colors.
