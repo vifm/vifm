@@ -44,6 +44,8 @@
 # don't pass $TERM to tests, they should work without a terminal and this
 # variable
 unexport TERM
+# hide terminal multiplexers and graphic systems, so tests behave consistently
+unexport STY TMUX DISPLAY WAYLAND_DISPLAY
 
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
