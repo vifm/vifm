@@ -538,6 +538,7 @@ fops_retarget(view_t *view)
 	if(nfiles == -1)
 	{
 		/* An error has occurred. */
+		flist_sel_stash(view);
 		return 1;
 	}
 
