@@ -43,7 +43,7 @@ static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
-static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
+static int add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewers(matchers_t *matchers, const assoc_records_t *viewers);
 static assoc_records_t clone_assoc_records(const assoc_records_t *records,
 		const char pattern[], const assoc_list_t *dst);
@@ -260,10 +260,13 @@ parse_command_list(const char cmds[], int with_descr)
 static void
 register_assoc(assoc_t assoc, int for_x, int in_x)
 {
-	add_assoc(for_x ? &xfiletypes : &filetypes, assoc);
-	if(!for_x || in_x)
+	/* On error, add_assoc() frees assoc, so just exit then. */
+	if(add_assoc(for_x ? &xfiletypes : &filetypes, assoc) == 0)
 	{
-		add_assoc(&active_filetypes, assoc);
+		if(!for_x || in_x)
+		{
+			(void)add_assoc(&active_filetypes, assoc);
+		}
 	}
 }
 
@@ -311,7 +314,7 @@ assoc_viewers(matchers_t *matchers, const assoc_records_t *viewers)
 				&fileviewers),
 	};
 
-	add_assoc(&fileviewers, assoc);
+	(void)add_assoc(&fileviewers, assoc);
 }
 
 /* Clones list of association records.  Returns the clone. */
@@ -334,7 +337,9 @@ clone_assoc_records(const assoc_records_t *records, const char pattern[],
 	return list;
 }
 
-static void
+/* Adds association to the list of associations.  Returns non-zero on
+ * out of memory error, otherwise zero is returned. */
+static int
 add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 {
 	void *p;
@@ -342,12 +347,13 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 	if(p == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
+		return 1;
 	}
 
 	assoc_list->list = p;
 	assoc_list->list[assoc_list->count] = assoc;
 	assoc_list->count++;
+	return 0;
 }
 
 ViewerKind
