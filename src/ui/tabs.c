@@ -256,7 +256,8 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *side, const char name[],
 static void
 clone_view(view_t *dst, view_t *side, const char path[], int clean)
 {
-	strcpy(dst->curr_dir, path == NULL ? flist_get_dir(side) : path);
+	copy_str(dst->curr_dir, sizeof(dst->curr_dir),
+			path == NULL ? flist_get_dir(side) : path);
 
 	flist_init_view(dst);
 	/* This is for replace_dir_entries() below due to check in fentry_free(),
