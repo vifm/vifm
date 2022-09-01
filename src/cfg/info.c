@@ -452,7 +452,7 @@ read_legacy_info_file(const char info_file[])
 			{
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					int timestamp = read_optional_number(fp);
+					long long int timestamp = read_optional_number(fp);
 					if(timestamp == -1)
 					{
 						timestamp = time(NULL);
