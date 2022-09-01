@@ -914,7 +914,8 @@ load_filters(JSON_Object *pane, view_t *view)
 		return;
 	}
 
-	get_bool(filters, "invert", &view->invert);
+	/* Nothing to do if there is no "invert" key. */
+	(void)get_bool(filters, "invert", &view->invert);
 
 	int dot;
 	if(get_bool(filters, "dot", &dot))
