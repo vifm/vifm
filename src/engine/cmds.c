@@ -453,6 +453,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->args = NULL;
 	cmd_info->argc = 0;
 	cmd_info->argv = NULL;
+	cmd_info->argvp = NULL;
 	cmd_info->user_cmd = NULL;
 	cmd_info->user_action = NULL;
 	cmd_info->user_data = NULL;
