@@ -399,14 +399,15 @@ make_execv_array(char shell[], char shell_flag[], char cmd[])
 	}
 	(void)strappend(&eval_cmd, &len, "\"");
 
-	args[i++] = shell;
+	int j = 0;
+	args[j++] = shell;
 	if(with_sh_arg)
 	{
-		args[i++] = sh_arg;
+		args[j++] = sh_arg;
 	}
-	args[i++] = shell_flag;
-	args[i++] = eval_cmd;
-	args[i++ + npieces] = NULL;
+	args[j++] = shell_flag;
+	args[j++] = eval_cmd;
+	args[j + npieces] = NULL;
 
 	return args;
 }
