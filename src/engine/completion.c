@@ -44,7 +44,7 @@ static int curr = -1;
 static int group_begin;
 static int order;
 
-/* Function called . */
+/* Function called to pre-process path for completion list. */
 static vle_compl_add_path_hook_f add_path_hook = &strdup;
 
 static int add_match(char match[], const char descr[]);
@@ -73,13 +73,7 @@ vle_compl_reset(void)
 int
 vle_compl_add_match(const char match[], const char descr[])
 {
-	char *const match_dup = strdup(match);
-	const int result = vle_compl_put_match(match_dup, descr);
-	if(result != 0)
-	{
-		free(match_dup);
-	}
-	return result;
+	return add_match(strdup(match), descr);
 }
 
 int
@@ -91,23 +85,15 @@ vle_compl_put_match(char match[], const char descr[])
 int
 vle_compl_add_path_match(const char path[])
 {
-	char *const match = add_path_hook(path);
-	return add_match(match, "");
+	return vle_compl_put_match(add_path_hook(path), "");
 }
 
 int
 vle_compl_put_path_match(char path[])
 {
-	if(add_path_hook == &strdup)
-	{
-		return add_match(path, "");
-	}
-	else
-	{
-		const int result = vle_compl_add_path_match(path);
-		free(path);
-		return result;
-	}
+	int ret = vle_compl_add_path_match(path);
+	free(path);
+	return ret;
 }
 
 /* Adds new match to the list of matches.  Becomes an owner of memory pointed to
@@ -128,6 +114,7 @@ add_match(char match[], const char descr[])
 	item = DA_EXTEND(items);
 	if(item == NULL)
 	{
+		free(match);
 		return 1;
 	}
 
@@ -135,6 +122,7 @@ add_match(char match[], const char descr[])
 	item->descr = strdup(descr);
 	if(item->descr == NULL)
 	{
+		free(match);
 		return 1;
 	}
 
