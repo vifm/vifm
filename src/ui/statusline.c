@@ -786,7 +786,6 @@ find_view_macro(const char **format, const char macros[], char macro, int opt)
 			const char *e = strchr(*format, '}');
 			if(e == NULL)
 			{
-				ok = 0;
 				break;
 			}
 
