@@ -1102,8 +1102,7 @@ get_view_data(modview_info_t *vi, const char file_to_view[])
 
 	const ViewerKind kind = ft_viewer_kind(vi->curr_viewer);
 	view_t *const curr = curr_view;
-	curr_view = curr_stats.preview.on ? curr_view
-						: (vi->view != NULL) ? vi->view : curr_view;
+	curr_view = (curr_stats.preview.on ? curr_view : vi->view);
 
 	const preview_area_t parea = {
 		.source = vi->view,
@@ -1813,7 +1812,10 @@ static modview_info_t *
 view_info_alloc(void)
 {
 	modview_info_t *const vi = malloc(sizeof(*vi));
-	init_view_info(vi);
+	if(vi != NULL)
+	{
+		init_view_info(vi);
+	}
 	return vi;
 }
 

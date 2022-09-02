@@ -71,7 +71,7 @@ typedef struct ioeta_estim_t
 }
 ioeta_estim_t;
 
-/* Allocates and initializes new ioeta_estim_t. */
+/* Allocates and initializes new ioeta_estim_t.  Returns NULL on error. */
 ioeta_estim_t * ioeta_alloc(void *param, io_cancellation_t cancellation);
 
 /* Frees ioeta_estim_t.  The estim can be NULL. */

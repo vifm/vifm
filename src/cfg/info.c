@@ -452,7 +452,7 @@ read_legacy_info_file(const char info_file[])
 			{
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					int timestamp = read_optional_number(fp);
+					long long int timestamp = read_optional_number(fp);
 					if(timestamp == -1)
 					{
 						timestamp = time(NULL);
@@ -914,7 +914,8 @@ load_filters(JSON_Object *pane, view_t *view)
 		return;
 	}
 
-	get_bool(filters, "invert", &view->invert);
+	/* Nothing to do if there is no "invert" key. */
+	(void)get_bool(filters, "invert", &view->invert);
 
 	int dot;
 	if(get_bool(filters, "dot", &dot))

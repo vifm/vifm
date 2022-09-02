@@ -294,7 +294,13 @@ fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int flags)
 	int err;
 	size_t i;
 	char task_desc[COMMAND_GROUP_INFO_LEN];
+
 	bg_args_t *args = calloc(1, sizeof(*args));
+	if(args == NULL)
+	{
+		show_error_msg("Can't perform operation", "Out of memory");
+		return 0;
+	}
 
 	args->nlines = nlines;
 	args->move = move;

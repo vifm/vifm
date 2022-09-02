@@ -453,6 +453,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->args = NULL;
 	cmd_info->argc = 0;
 	cmd_info->argv = NULL;
+	cmd_info->argvp = NULL;
 	cmd_info->user_cmd = NULL;
 	cmd_info->user_action = NULL;
 	cmd_info->user_data = NULL;
@@ -1371,7 +1372,6 @@ TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		int noescaping, int comments, int *last_pos, int (**positions)[2])
 {
-	char *cmdstr;
 	int len;
 	int i;
 	int st;
@@ -1394,7 +1394,13 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	{
 		args = vle_cmds_at_arg(args);
 	}
-	cmdstr = strdup(args);
+
+	char *cmdstr = strdup(args);
+	if(cmdstr == NULL)
+	{
+		return NULL;
+	}
+
 	len = strlen(cmdstr);
 	for(i = 0, st = 0, state = BEGIN; i <= len; ++i)
 	{
@@ -1624,6 +1630,11 @@ vle_cmds_print_udcs(const char beginning[])
 		if(content == NULL)
 		{
 			content = strdup("Command -- Action");
+			if(content == NULL)
+			{
+				return NULL;
+			}
+
 			content_len = strlen(content);
 		}
 		new_size = content_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1;

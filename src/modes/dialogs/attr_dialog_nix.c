@@ -659,10 +659,7 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 		{
 			perms[permnum] = 1;
 		}
-		else
-		{
-			perms[permnum] = 0;
-		}
+		/* perms[permnum] < 0 is handled above. */
 	}
 	else
 	{

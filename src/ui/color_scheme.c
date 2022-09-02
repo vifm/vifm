@@ -959,6 +959,11 @@ cs_load_local(int left, const char dir[])
 
 	/* TODO: maybe use split_and_get() here as in io/iop:iop_mkdir(). */
 	char *const dir_copy = strdup(dir);
+	if(dir_copy == NULL)
+	{
+		return 0;
+	}
+
 	char *p = dir_copy;
 	int altered = 0;
 	char t;

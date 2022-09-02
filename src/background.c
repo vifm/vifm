@@ -911,8 +911,8 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	const int keep_session = (flags & BJF_KEEP_SESSION);
 
 	pid_t pid;
-	int input_pipe[2];
-	int output_pipe[2];
+	int input_pipe[2] = { -1, -1 };
+	int output_pipe[2] = { -1, -1 };
 
 	/* For the sake of simplicity just use -1, calling close(-1) won't hurt. */
 	int error_pipe[2] = { -1, -1 };

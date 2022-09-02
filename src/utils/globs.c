@@ -64,7 +64,13 @@ char *
 glob_to_regex(const char glob[], int extended)
 {
 	static const char CHARS_TO_ESCAPE[] = "^.$()|+{";
+
 	char *result = strdup("^$");
+	if(result == NULL)
+	{
+		return NULL;
+	}
+
 	size_t result_len = 1;
 	while(*glob != '\0')
 	{

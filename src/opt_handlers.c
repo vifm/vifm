@@ -1898,7 +1898,7 @@ pick_out_decoration(char classify_item[], FileType *type, const char **expr)
 		 * len = snprintf(name, sizeof(name), ":%s:", get_type_str(filetype)); */
 		char name[16];
 		name[0] = ':';
-		int len = copy_str(name + 1, sizeof(name) - 1, get_type_str(filetype));
+		int len = copy_str(name + 1, sizeof(name) - 2, get_type_str(filetype));
 		name[len++] = ':';
 		name[len] = '\0';
 

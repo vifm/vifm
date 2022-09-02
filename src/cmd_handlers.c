@@ -1531,6 +1531,10 @@ cds_cmd(const cmd_info_t *cmd_info)
 	const char *const curr_dir = flist_get_dir(curr_view);
 	char *const new_path = strdup(regexp_replace(curr_dir, cmd_info->argv[0],
 				cmd_info->argv[1], 0, !case_sensitive));
+	if(new_path == NULL)
+	{
+		return CMDS_ERR_NO_MEM;
+	}
 
 	if(strcmp(curr_dir, new_path) == 0)
 	{

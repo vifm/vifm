@@ -304,15 +304,21 @@ is_path_arg(const char arg[])
 }
 
 /* Ensures that path is in suitable form for processing.  buf should be at least
- * PATH_MAX characters length */
+ * PATH_MAX characters length. */
 static void
 parse_path(const char dir[], const char path[], char buf[])
 {
-	strcpy(buf, path);
+	if(copy_str(buf, PATH_MAX, path) == PATH_MAX && path[PATH_MAX - 1] != '\0')
+	{
+		fprintf(stderr, "An argument is too long: %s\n", path);
+		quit_on_arg_parsing(EXIT_FAILURE);
+	}
+
 	system_to_internal_slashes(buf);
+
 	if(is_path_absolute(buf) || strcmp(path, "-") == 0)
 	{
-		copy_str(buf, PATH_MAX, path);
+		/* Do nothing. */
 	}
 #ifdef _WIN32
 	else if(buf[0] == '/')

@@ -1124,6 +1124,10 @@ filename_completion(const char str[], CompletionType type,
 	char *cwd;
 
 	char *dirname = expand_tilde(str);
+	if(dirname == NULL)
+	{
+		return 0;
+	}
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
@@ -1143,6 +1147,11 @@ filename_completion(const char str[], CompletionType type,
 	}
 
 	filename = strdup(dirname);
+	if(filename == NULL)
+	{
+		free(dirname);
+		return 0;
+	}
 
 	temp = cmds_expand_envvars(dirname);
 	free(dirname);

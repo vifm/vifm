@@ -578,6 +578,11 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 		const char *const modified = mods_apply(reg->files[i], curr_dir, mod,
 				for_shell);
 		expanded = append_path_to_expanded(expanded, quotes, modified);
+		if(expanded == NULL)
+		{
+			return NULL;
+		}
+
 		if(i != reg->nfiles - 1)
 		{
 			expanded = append_to_expanded(expanded, " ");

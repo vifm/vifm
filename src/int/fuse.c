@@ -319,6 +319,10 @@ register_mount(fuse_mount_t **mounts, const char file_full_path[],
 		const char mount_point[], int id, int needs_unmounting)
 {
 	fuse_mount_t *fuse_mount = malloc(sizeof(*fuse_mount));
+	if(fuse_mount == NULL)
+	{
+		return;
+	}
 
 	copy_str(fuse_mount->source_file_path, sizeof(fuse_mount->source_file_path),
 			file_full_path);
