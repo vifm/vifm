@@ -535,7 +535,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 #endif
 	}
 
-	if(conflict_action == CA_OVERWRITE)
+	if(ops != NULL && conflict_action == CA_OVERWRITE)
 	{
 		ops->crp = CRP_OVERWRITE_ALL;
 	}
