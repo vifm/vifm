@@ -1812,7 +1812,10 @@ static modview_info_t *
 view_info_alloc(void)
 {
 	modview_info_t *const vi = malloc(sizeof(*vi));
-	init_view_info(vi);
+	if(vi != NULL)
+	{
+		init_view_info(vi);
+	}
 	return vi;
 }
 

@@ -364,6 +364,10 @@ shell_like_escape(const char string[], int type)
 	len = strlen(string);
 
 	dup = ret = malloc(len*3 + 2 + 1);
+	if(dup == NULL)
+	{
+		return NULL;
+	}
 
 	if(*string == '-')
 	{
@@ -623,12 +627,13 @@ void
 to_canonic_path(const char path[], const char base[], char buf[],
 		size_t buf_len)
 {
-	char *normalized = strdup(path);
+	char normalized[PATH_MAX + 1];
+	copy_str(normalized, sizeof(normalized), path);
 	system_to_internal_slashes(normalized);
 
 	if(!is_path_absolute(normalized))
 	{
-		char full_path[PATH_MAX + 1];
+		char full_path[PATH_MAX*2 + 1];
 		/* Assert is not level above to keep "." in curr_dir in tests, but this
 		 * should be possible to change. */
 		assert(is_path_absolute(base) && "Base path has to be absolute.");
@@ -639,8 +644,6 @@ to_canonic_path(const char path[], const char base[], char buf[],
 	{
 		canonicalize_path(normalized, buf, buf_len);
 	}
-
-	free(normalized);
 
 	if(!is_root_dir(buf))
 	{

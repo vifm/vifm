@@ -612,13 +612,20 @@ break_in_two(char str[], size_t max, const char separator[])
 {
 	char *break_point = strstr(str, separator);
 	if(break_point == NULL)
+	{
 		return str;
+	}
 
 	const size_t separator_len = strlen(separator);
 	const size_t len = utf8_strsw(str) - separator_len;
 	const size_t size = MAX(strlen(str), max);
 
 	char *result = malloc(size*4 + 2);
+	if(result == NULL)
+	{
+		return NULL;
+	}
+
 	copy_str(result, break_point - str + 1, str);
 
 	if(len > max)
@@ -700,6 +707,10 @@ escape_chars(const char string[], const char chars[])
 	len = strlen(string);
 
 	dup = ret = malloc(len*2 + 2 + 1);
+	if(dup == NULL)
+	{
+		return NULL;
+	}
 
 	for(i = 0; i < len; i++)
 	{
@@ -1102,6 +1113,11 @@ char *
 double_char(const char str[], char c)
 {
 	char *doubled = malloc(strlen(str) + chars_in_str(str, c) + 1);
+	if(doubled == NULL)
+	{
+		return NULL;
+	}
+
 	char *p = doubled;
 	while(*str != '\0')
 	{

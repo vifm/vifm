@@ -158,8 +158,19 @@ update_cache(fsddata_t *cache, const char path[], const char mimetype[],
 	(void)filemon_from_file(path, FMT_MODIFIED, filemon);
 
 	data = malloc(sizeof(*data));
-	data->mime = strdup(mimetype);
+	if(data == NULL)
+	{
+		return;
+	}
+
 	data->filemon = *filemon;
+	data->mime = strdup(mimetype);
+	if(data->mime == NULL)
+	{
+		free(data);
+		return;
+	}
+
 	fsddata_set(cache, path, data);
 }
 

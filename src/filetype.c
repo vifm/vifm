@@ -457,9 +457,6 @@ int
 ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		const char cmd[])
 {
-	int i;
-	char *undoubled;
-
 	if(*cmd == '{')
 	{
 		const char *const descr_end = strchr(cmd + 1, '}');
@@ -469,9 +466,15 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		}
 	}
 
-	undoubled = strdup(cmd);
+	char *undoubled = strdup(cmd);
+	if(undoubled == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 0;
+	}
 	undouble_commas(undoubled);
 
+	int i;
 	for(i = 0; i < assocs->count; ++i)
 	{
 		int j;

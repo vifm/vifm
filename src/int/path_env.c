@@ -140,6 +140,10 @@ add_to_path(const char *path)
 {
 	const char *old_path = env_get_def("PATH", "");
 	char *new_path = malloc(strlen(path) + 1 + strlen(old_path) + 1);
+	if(new_path == NULL)
+	{
+		return;
+	}
 
 #ifndef _WIN32
 	sprintf(new_path, "%s:%s", path, old_path);

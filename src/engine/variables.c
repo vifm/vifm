@@ -566,7 +566,8 @@ perform_opt_op(const char name[], VariableType vt, VariableOperation vo,
 	return 0;
 }
 
-/* Searches for variable and creates new record if it didn't existed. */
+/* Searches for variable and creates new record if it doesn't exist yet.
+ * Returns a record or NULL on error.*/
 static envvar_t *
 get_record(const char *name)
 {

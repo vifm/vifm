@@ -123,6 +123,10 @@ static void
 split_and_print_status_line(view_t *view, int width)
 {
 	char *status_line = fetch_status_line(view, width);
+	if(status_line == NULL)
+	{
+		return;
+	}
 
 	const char *part = status_line;
 	int line = 0;
@@ -497,6 +501,11 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					 * TODO: we could temporarily use buf for that, to avoid extra
 					 * allocation, but explicitly named variable reads better. */
 					expr = calloc(e - (*format) + 1 /* NUL-term */, 1);
+					if(expr == NULL)
+					{
+						ok = 0;
+						break;
+					}
 					memcpy(expr, *format, e - (*format));
 
 					/* Try to parse expr, and convert the res to string if succeed. */

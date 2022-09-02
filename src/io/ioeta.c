@@ -34,6 +34,11 @@ ioeta_estim_t *
 ioeta_alloc(void *param, io_cancellation_t cancellation)
 {
 	ioeta_estim_t *const estim = calloc(1U, sizeof(*estim));
+	if(estim == NULL)
+	{
+		return NULL;
+	}
+
 	estim->param = param;
 	estim->cancellation = cancellation;
 	return estim;

@@ -323,7 +323,6 @@ int
 fops_delete_bg(view_t *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
-	bg_args_t *args;
 	const char *const top_dir = get_top_dir(view);
 	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
@@ -341,7 +340,13 @@ fops_delete_bg(view_t *view, int use_trash)
 		return 0;
 	}
 
-	args = calloc(1, sizeof(*args));
+	bg_args_t *args = calloc(1, sizeof(*args));
+	if(args == NULL)
+	{
+		show_error_msg("Can't perform deletion", "Out of memory");
+		return 0;
+	}
+
 	args->use_trash = use_trash;
 
 	fops_prepare_for_bg_task(view, args);
@@ -1278,6 +1283,12 @@ start_dir_size_calc(const char path[], int force)
 	dir_size_args_t *args;
 
 	args = malloc(sizeof(*args));
+	if(args == NULL)
+	{
+		show_error_msg("Can't calculate size", "Out of memory");
+		return;
+	}
+
 	args->path = strdup(path);
 	args->force = force;
 
