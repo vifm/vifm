@@ -294,6 +294,7 @@ update_progress_bar(progress_data_t *pdata, const ioeta_estim_t *estim)
 	pdata->progress_bar_value = value;
 	pdata->progress_bar_max = max_width;
 
+	free(pdata->progress_bar);
 	pdata->progress_bar = malloc(max_width + 3);
 
 	pdata->progress_bar[0] = '[';
