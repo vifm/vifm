@@ -661,11 +661,11 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 		{
 			perms[permnum] = -1;
 		}
-		else if(perms[permnum] == 0)
+		else
 		{
+			/* perms[permnum] < 0 is handled above, so it must be 0 here. */
 			perms[permnum] = 1;
 		}
-		/* perms[permnum] < 0 is handled above. */
 	}
 	else
 	{
