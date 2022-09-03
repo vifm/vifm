@@ -1,3 +1,216 @@
+September 5, 2022
+=================
+
+Vifm v0.12.1 beta
+-----------------
+
+The beta stage will last about two weeks.  In case any serious bugs are found
+during this period, another beta version might be released.
+
+Changes overview:
+
+ - Expression register for command-line prompts (Ctrl-R =).
+
+   If you ever wanted to insert result of evaluating an expression into
+   command-line, now you can.  One of the most useful applications of this is
+   pasting clipboard's contents without the risk of it being processed as user
+   input (e.g., `:<c-r>=system('xsel')`).
+
+ - Selection handling improvements.
+
+   New :keepsel command-prefix is meant to suppress clearing of selection done
+   automatically after most of command-line commands thus avoiding the need for
+   using `gs` command to restore it.  As a common case, the behaviour for :view
+   command has been changed to not drop selection.
+
+   Restoring selection in a newly entered directory can now be done not just
+   from a register populated ahead via yanking selection (`"rgs`), but just by
+   executing `gs` to restore selection the directory had before it was left
+   last time.  Vifm remembers last 10 locations with non-empty selection.
+
+ - An arbitrary editor can now be fully integrated via Lua.
+
+   'vicmd' and 'vixcmd' were always there, but commands specified in these
+   options could receive Vim-specific arguments they don't expect.  Writing a
+   shell wrapper was an option, but it had to do guesswork while
+   post-processing arguments meant for Vim, which is error prone.  A Lua
+   handler can now be used instead.  It receives full context about editor
+   invocation and can perfectly forward the request to an arbitrary editor.
+
+ - TUI improvements.
+
+   Escaping of unprintable characters, less of annoying flickering, slightly
+   better File Info dialog.
+
+   Conflict resolution dialog now provides a sub-dialog for comparing
+   conflicting files and is also smarter at picking which actions to offer.
+
+ - Lua API additions (still experimental).
+
+   The API now gives some access to layout, tabs and keys.
+
+   Unlike :*map commands, keys API allows defining custom selectors (like "2j"
+   in "d2j"), keys that accept an argument (like "a" in "ma") and keys that
+   accept selectors (custom or builtin).
+
+ - Other.
+
+   Bulk retargetting of links, optional implicit `:cd` on command line, macros
+   that expand to non-empty selection, supporting more `<keys>`.
+
+ - Fixes.
+
+   Escaping of arguments and slashes in paths will now hopefully work better on
+   Windows, which is generally an issue there.  Yori shell is now also handled
+   on Windows.
+
+   New %N macro can be used to fix image preview in Kitty terminal.
+
+Core:
+ - added expression pseudo-register (Ctrl-R =) for command-line mode (thanks to
+   Marcos Cruz and Jiji from Vifm Q2A site);
+ - added parsing of \c and \C sequences in regular expressions to force case
+   ignoring or matching respectively (thanks to filterfalse and Safal Piya,
+   a.k.a. mrsafalpiya).
+
+Configuration:
+ - changed how location of trash directory is determined.  Now starting
+   `vifm --no-configs` won't mess anything up if you're using `~/.vifm`.  Can
+   potentially cause some trouble for existing configurations, but shouldn't.
+
+Command-line mode:
+ - added :keepsel command.  Changes default behaviour after running a :command
+   to not reset selection of a view (thanks to dalvand and sharklasers996);
+ - added -skip parameter to :copy/:move/:alink/:rlink.  Makes the commands
+   automatically skip files that exist at destination instead of refusing to
+   proceed (thanks to Jose Riha, a.k.a. jose1711);
+ - added handling of "-" in :session for switching to a previous session;
+ - added ":history exprreg" menu for displaying history of expression register
+   values;
+ - do not reset selection on :view command (thanks to Alexandre Viau).
+
+Normal and visual modes:
+ - changed [c and ]c to also traverse added/missing entries (thanks to qsmodo);
+ - added cl key visual mode (similar to its function in normal mode);
+ - extended cl normal mode key to handle selection of multiple files (thanks to
+   aleksejrs);
+ - made gs normal mode key remember selection for up to 10 last entered
+   directories (thanks to ratnamhof and Matthias Braun, a.k.a. mb720).
+
+:set command and options:
+ - added 'autocd' option.  Makes invalid :commands be interpreted as an implicit
+   :cd command (thanks to Taras Halturin, a.k.a. halturin);
+ - added %o macro to 'statusline', which expands to Unix permissions in octal
+   form (and to nothing on Windows) (thanks to iSeeU816);
+ - added "datasync" value to 'iooptions' option to configure whether writes on
+   file copying when 'syscalls' is on are synchronized periodically (thanks to
+   Andrew Savchenko and Afz);
+ - added "ehistory" value to 'vifminfo' and 'sessionoptions' option.  It manages
+   storing of expression register history;
+ - added optional border for horizontal split layout controlled by newly added
+   "hborder" in 'fillchars' (patch by qsmodo);
+ - added "maxtreedepth" value to 'previewoptions' option, which allows limiting
+   depths of the displayed tree (thanks to Afz);
+ - set 'title' option by default if $TERM is foot* as its terminfo entry might
+   lack tsl and fsl attributes (thanks to nobodyatandnothing).
+
+Macros:
+ - added %N macro that prevents detaching viewers from current session (thanks
+   to emorozov);
+ - added %pu macro that disables caching of viewer's output (thanks to b0x4it);
+ - added %l/%"l and %L/%"L macros for the list of selected files.  %f is not
+   empty if there is no selection, which is not always desirable (thanks to
+   ratnamhof).
+
+Angle bracket notation:
+ - added angle-bracket notation for alpha keys with Alt and Shift modifiers
+   (<[am]-s-[a-z]>, <s-[am]-[a-z]>) (thanks to Reece Petersen);
+ - added angle-bracket notation for numeric keys with Alt modifier
+   (<[am]-[0-9]>) (thanks to anonymous at Vifm Q2A site);
+ - added angle-bracket notation for some shifted grey keys: <s-home>, <s-end>,
+   <s-left>, <s-right>, <s-up>, <s-down>, <s-pageup>, <s-pagedown>, <s-delete>,
+   <s-insert> (patch by M Kelly).
+
+Scripting:
+ - extended has() builtin function to check for Lua handlers;
+ - don't expand() macros in environment variables (patch by filterfalse).
+
+Lua:
+ - upgraded Lua from 5.4.3 to 5.4.4;
+ - added sample plugin for using mpc;
+ - added sample plugin for customizing editor;
+ - added vifm.escape() function;
+ - added vifm.run() function (similar to `:!`);
+ - added vifm.sessions.current() function;
+ - added vifm.keys.add() for adding mappings (can accept selectors or an
+   argument like in `'a`) and selectors;
+ - enable os.tmpname();
+ - exposed minimal API for tabs (includes layout).
+
+TUI (Text User Interface):
+ - escape unreadable characters in menus, command-line mode, dialogs and
+   statusbar messages (thanks to MadMaverick9);
+ - hide graphics when displaying dialogs or entering menus, more or file info
+   modes (thanks to heelsleeh and PRESFIL);
+ - fixed multiple cases of cursor/UI flickering.
+
+Color schemes:
+ - added CmpUnmatched and CmpBlank highlight groups (thanks to qsmodo).
+
+Menus and dialogs:
+ - changed conflict dialog to offer "Merge all" option even for files if there
+   are some directories left to process (thanks to dalvand);
+ - added comparison action to conflict resolution dialog (thanks to anonymous at
+   Vifm Q2A site and dalvand);
+ - display permissions in octal form in File Info dialog and group them with
+   owner/group info (thanks to iSeeU816);
+ - reformat File Info dialog to be more compact (thanks to chelovechishko).
+
+Performance:
+ - extended optimizations for globs to cover `something*` and `some*thing`
+   cases.
+
+Vim-plugin:
+ - added :PeditVifm command (and corresponding :PeditVim) to the plugin (thanks
+   to Mukund Mauji, a.k.a. maujim).
+
+Only on Windows:
+ - added initial support for Yori shell on Windows (not everything might work
+   well at this point) (thanks to LinArcX);
+ - fixed argument escaping issues for foreground programs on Windows (thanks to
+   fohrums);
+ - fixed auto-detection of GUI programs on Windows, which prevents Vifm from
+   waiting on them to finish (thanks to Azin Sharaf);
+ - fixed `start` in :file[x]type commands on Windows not being considered as
+   present;
+ - fixed slashes being doubled in macros like %"c on Windows with cmd.exe as a
+   shell (thanks to Toby Hawkins, a.k.a. HawkinsT).
+
+Documentation:
+ - documented that <del> key might correspond to <bs> (thanks to dalvand).
+
+Noteworthy fixes:
+ - fixed building when fdatasync() call isn't available (thanks to Schrijvers
+   Luc, a.k.a. Begasus);
+ - fixed severe performance degradation after measuring size of large directory
+   trees;
+ - fixed `:compare listunique` yielding different results depending on which
+   view is active due to not processing bottom files in the current view in some
+   situations;
+ - fixed graphics not being cleared properly on switching between viewers in
+   view mode;
+ - fixed processing of extended keys on OpenBSD;
+ - fixed :. file modifier incorrectly checking for one path being parent of
+   another and producing weird results ("/pa" was considered parent of "/path",
+   with "th" being the result) (thanks to Dennis Preiser, a.k.a. 0xDP);
+ - fixed --remote and --remote-expr failing if $TERM isn't valid (regression in
+   0.11-beta) (thanks to b0x4it);
+ - fixed directory preview resetting after detaching from it (thanks to Luka
+   Markušić, a.k.a. mark2185).
+
+See change log for the full list of changes and by whom they were suggested or
+implemented.
+
 September 29, 2021
 ==================
 
