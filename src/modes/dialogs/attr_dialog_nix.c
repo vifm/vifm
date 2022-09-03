@@ -405,11 +405,17 @@ set_perm_string(view_t *view, const int perms[13], const int origin_perms[13],
 		int adv_perms[3])
 {
 	int i = 0;
-	char *add_perm[] = {"u+r", "u+w", "u+x", "u+s", "g+r", "g+w", "g+x", "g+s",
-											"o+r", "o+w", "o+x", "o+t"};
-	char *sub_perm[] = {"u-r", "u-w", "u-x", "u-s", "g-r", "g-w", "g-x", "g-s",
-											"o-r", "o-w", "o-x", "o-t"};
-	char *add_adv_perm[] = {"u-x+X", "g-x+X", "o-x+X"};
+	const char *add_perm[] = {
+		"u+r", "u+w", "u+x", "u+s",
+		"g+r", "g+w", "g+x", "g+s",
+		"o+r", "o+w", "o+x", "o+t"
+	};
+	const char *sub_perm[] = {
+		"u-r", "u-w", "u-x", "u-s",
+		"g-r", "g-w", "g-x", "g-s",
+		"o-r", "o-w", "o-x", "o-t"
+	};
+	const char *add_adv_perm[] = { "u-x+X", "g-x+X", "o-x+X" };
 	char perm_str[64] = " ";
 	size_t perm_str_len = strlen(perm_str);
 
