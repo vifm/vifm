@@ -411,7 +411,7 @@ parse_tail(cmd_t *cur, const char cmd[], cmd_info_t *cmd_info)
 	{
 		if(cur->cust_sep)
 		{
-			cmd_info->sep = isspace(*cmd) ? ' ' : *cmd;
+			cmd_info->sep = *cmd;
 		}
 		return cmd;
 	}
