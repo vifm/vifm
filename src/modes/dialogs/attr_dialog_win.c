@@ -519,13 +519,9 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 		}
 		else if(attrs[attr_num] == 0)
 		{
+			/* attrs[attr_num] < 0 is handled above, so it must be 0 here. */
 			c = '*';
 			attrs[attr_num] = 1;
-		}
-		else
-		{
-			c = ' ';
-			attrs[attr_num] = 0;
 		}
 	}
 	else

@@ -207,6 +207,7 @@ reload_list(menu_data_t *m)
 	free(cmd);
 
 	int i;
+	/* The NULL check is for tests. */
 	const int menu_rows = (menu_win != NULL ? (getmaxy(menu_win) + 1) - 3 : 100);
 	int max_rows_with_blanks = info_count       /* Device lines. */
 		                       + (info_count - 1) /* Blank lines. */;

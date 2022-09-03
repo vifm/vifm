@@ -613,10 +613,10 @@ major="${version%.*}"
 minor="${version#*.}"
 
 if test "x$major" != "x" -a "x$minor" != "x" ; then
-    if test $major -ge 7 -a $minor -ge 1; then
+    if test $major -eq 7 -a $minor -ge 1 -o $major -gt 7; then
         AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
     fi
-    if test $major -ge 7 -a $minor -ge 6; then
+    if test $major -eq 7 -a $minor -ge 6 -o $major -gt 7; then
         AC_DEFINE([SUPPORT_REFLINK_AUTO], [1], [--reflink=auto option is available for cp])
     fi
 fi
