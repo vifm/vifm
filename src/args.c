@@ -474,7 +474,10 @@ process_ipc_args(args_t *args, ipc_t *ipc)
 			fprintf(stderr, "%s\n", "Sending remote commands failed.");
 			quit_on_arg_parsing(EXIT_FAILURE);
 		}
-		quit_on_arg_parsing(EXIT_SUCCESS);
+		else
+		{
+			quit_on_arg_parsing(EXIT_SUCCESS);
+		}
 	}
 	else if(args->remote_expr != NULL)
 	{
@@ -484,8 +487,11 @@ process_ipc_args(args_t *args, ipc_t *ipc)
 			fprintf(stderr, "%s\n", "Evaluating expression remotely failed.");
 			quit_on_arg_parsing(EXIT_FAILURE);
 		}
-		fprintf(stdout, "%s\n", result);
-		quit_on_arg_parsing(EXIT_SUCCESS);
+		else
+		{
+			fprintf(stdout, "%s\n", result);
+			quit_on_arg_parsing(EXIT_SUCCESS);
+		}
 	}
 }
 
