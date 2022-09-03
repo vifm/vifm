@@ -35,8 +35,9 @@ reallocarray(void *optr, size_t nmemb, size_t size)
 		errno = EINVAL;
 		return NULL;
 	}
+
 	if((nmemb >= MUL_NO_OVERFLOW || size >= MUL_NO_OVERFLOW) &&
-			nmemb > 0U && SIZE_MAX/nmemb < size)
+			SIZE_MAX/nmemb < size)
 	{
 		errno = ENOMEM;
 		return NULL;
