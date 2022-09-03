@@ -1657,7 +1657,7 @@ split_view(SPLIT orientation)
 	curr_stats.split = orientation;
 	curr_stats.number_of_windows = 2;
 
-	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
+	if(curr_stats.splitter_pos > 0)
 	{
 		stats_set_splitter_ratio(curr_stats.splitter_ratio);
 	}
