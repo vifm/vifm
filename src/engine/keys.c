@@ -1120,9 +1120,8 @@ remove_chunk(key_chunk_t *chunk)
 		free_chunk(chunk);
 		chunk = parent;
 	}
-	while(chunk->parent != NULL && chunk->parent->conf.data.handler == NULL &&
-			chunk->parent->type == BUILTIN_WAIT_POINT &&
-			chunk->parent->children_count == 0);
+	while(chunk->parent != NULL && chunk->conf.data.handler == NULL &&
+			chunk->type == BUILTIN_WAIT_POINT && chunk->children_count == 0);
 }
 
 int

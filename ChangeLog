@@ -3,6 +3,9 @@
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
 	FollieHiyuki).
 
+	Fixed prefix mappings being left after removing a key (e.g., "a" remaining
+	after mapping and unmapping "ab").  Patch by filterfalse.
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if
