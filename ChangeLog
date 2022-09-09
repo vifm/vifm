@@ -3,6 +3,9 @@
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
 	FollieHiyuki).
 
+	Permit directories with trailing slashes supplied by external commands in
+	`:[un]select !cmd`.  Patch by filterfalse.
+
 	Fixed prefix mappings being left after removing a key (e.g., "a" remaining
 	after mapping and unmapping "ab").  Patch by filterfalse.
 

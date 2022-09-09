@@ -314,11 +314,23 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 		}
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
-		if(trie_get(selection_trie, full_path, &ignored_data) == 0)
+		if(trie_get(selection_trie, full_path, &ignored_data) != 0)
 		{
-			entry->selected = select;
-			view->selected_files += (select ? 1 : -1);
+			if(!fentry_is_dir(entry))
+			{
+				continue;
+			}
+
+			/* Allow trailing slash for directory names. */
+			strcat(full_path, "/");
+			if(trie_get(selection_trie, full_path, &ignored_data) != 0)
+			{
+				continue;
+			}
 		}
+
+		entry->selected = select;
+		view->selected_files += (select ? 1 : -1);
 	}
 
 	trie_free(selection_trie);
