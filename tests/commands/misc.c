@@ -784,6 +784,23 @@ TEST(view_command)
 	opt_handlers_teardown();
 }
 
+TEST(invert_command)
+{
+	opt_handlers_setup();
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("set sort? sortorder?", &lwin, CIT_COMMAND));
+	assert_string_equal("  sort=+name\n  sortorder=ascending", ui_sb_last());
+
+	assert_success(exec_commands("invert o", &lwin, CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("set sort? sortorder?", &lwin, CIT_COMMAND));
+	assert_string_equal("  sort=-name\n  sortorder=descending", ui_sb_last());
+
+	opt_handlers_teardown();
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {

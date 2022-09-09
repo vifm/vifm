@@ -9,6 +9,9 @@
 	Fixed infinite loop on restoring visual selection after changing the order
 	of files to the opposite (`:invert o`).  Patch by filterfalse.
 
+	Fixed 'sort' and 'sortorder' string representations not being updated
+	after `:invert o`.  Patch by filterfalse.
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if

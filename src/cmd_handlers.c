@@ -3383,6 +3383,7 @@ invert_state(char state_type)
 	{
 		invert_sorting_order(curr_view);
 		resort_dir_list(1, curr_view);
+		load_sort_option(curr_view);
 		redraw_view(curr_view);
 	}
 	else
