@@ -84,6 +84,10 @@ zshcompldir = $(datadir)/zsh/site-functions
 zshcomplfile = ../data/shell-completion/zsh/_vifm
 dist_zshcompl_DATA = $(zshcomplfile)
 
+fishcompldir = $(datadir)/fish/vendor_completions.d
+fishcomplfile = ../data/shell-completion/fish/vifm.fish
+dist_fishcompl_DATA = $(fishcomplfile)
+
 docsfile = ../AUTHORS ../BUGS ../COPYING ../ChangeLog ../FAQ ../INSTALL \
 					 ../NEWS ../README ../TODO
 docsdir = $(docdir)
