@@ -1,3 +1,8 @@
+0.12.1-beta to current
+
+	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
+	FollieHiyuki).
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if
