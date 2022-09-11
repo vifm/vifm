@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1-beta  Last change: 2022 Sep 05
+*vifm-app.txt*    For Vifm version 0.12.1-beta  Last change: 2022 Sep 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -509,11 +509,11 @@ gr                                             {only for MS-Windows}
 
 
 av                                             *vifm-av*
-    go to visual mode into selection amending state preserving current
-    selection.
+    go into visual mode for updating current selection, any existing selection
+    is preserved.
 
 gv                                             *vifm-gv*
-    go to visual mode restoring last selection.
+    go into visual mode restoring last selection.
 
 [reg]gs                                        *vifm-gs*
     If register is present, then all files listed in that register that are

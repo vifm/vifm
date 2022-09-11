@@ -1,5 +1,4 @@
 Basic things:
-  * Merged directory history for both panes.
   * Improve ga and gA commands. (partially done)
   * Queueing of file operations.
   * Backgrounding of commands with job control (pause/resume/kill). (partially
@@ -10,9 +9,10 @@ Basic things:
   * Filtering in menus.
   * Process shell pause request for running in %s.
   * Responsive TUI during blocking operations.
-  * Better failed operation messages (partially done)
+  * Better failed operation messages. (partially done)
   * Make status bar able to display error and info messages at the same time.
-  * Command to create multiple copies of selected file
+  * Editing registers in Vim.
+  * Command to create multiple copies of selected file.
 
 Documentation:
   * State the need of *nix tools on Windows more explicitly.
@@ -45,7 +45,7 @@ Vi(m) specific features:
   * Add =~ and !~ operators to expressions.
   * Add titleold option.
   * Support hex and octal numbers in :set.
-  * Add %p and %P macros to rulerformat option.
+  * Maybe add %p macro to rulerformat option.
 
 Windows:
   * Make properties dialog change file attributes recursively.
@@ -65,6 +65,7 @@ Possible things to add:
   * Position macros for user defined commands (%1, %2, ..., %9).
   * Improve sorting (iext; choosing multiple sorting keys in dialog).
     (partially done)
+  * Merged directory history for both panes.
   * Wrapping of lines in the menus.
   * Something like :g/.../com and :v/.../com in Vim.
   * Don't reread config files on :restart for --no-configs session.
@@ -83,7 +84,6 @@ Possible things to add:
   * Templates for :touch.
   * Reverse searching
   * Add g/ and g? commands (search, but don't select files).
-  * Support true-colors for colorschemes.
   * Parse escape sequences in menus as in preview.
   * Virtual File System - currently vifm can use FUSE to mount most file
     systems.
@@ -100,17 +100,13 @@ Possible things to add:
   * Make use of new job information in :jobs menu.
   * Update visible symlinks in the other pane on updating current pane.
   * Mouse support. (partially done)
-  * Permanent tabs.
-  * Asynchronous quick preview?
   * Possibility to make colorful background per column.
   * Add a key to menu mode to repeat command and update menu.
   * Consider preserving more on file copy (ACL, sparse files).
-  * Extract vim plugin part of install to vifm.vim README.
   * File access history.
   * Make :alink, :copy, ... accept globs (e.g. :co *.c).
   * Highlight first line of command-editing buffer in different color.
   * Output numbers on :hi if it were numbers in color scheme.
-  * Add timestamps to history items.
 
 Questionable things:
   * Full client-server operation of vifm (separate core from TUI).
@@ -136,8 +132,6 @@ Questionable things:
   * Consider adding "da" to remove all elements in :bmarks menu.
   * Command like :run[ &].
   * Add :set to menu mode command-line.
-  * Add :mksession command and 'sessionoptions' option.
-  * Add :keepsel prefix.
   * Consider asking more often before performing file operations.
   * Termcap or terminfo support for keybindings
   * Shorten home path to ~ in item origins?
@@ -162,10 +156,8 @@ Code improvements:
   * Consider mentioning libncursesw5-dev in configuration error for
     Debian-based systems.
   * Reduce number of magic numbers. (partially done)
-  * Intermediate language for scripting. (partially done)
   * Create separate utilities for engine/ part to make them self-contained.
   * Fix code duplication related to composing of undo messages.
-  * Share common part of tests.
   * Allow limiting input length for command-line prompt submode.
   * Get rid of repeatable `menu->win_rows - 3` in menu.c.
   * Separate filelist data from view data (extract into separate structure).

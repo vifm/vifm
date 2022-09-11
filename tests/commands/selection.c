@@ -299,6 +299,48 @@ TEST(select_expands_macros_in_external_command)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(select_directory_supplied_by_external_command)
+{
+	create_dir(SANDBOX_PATH "/selection");
+
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("selection");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].type = FT_DIR;
+	lwin.dir_entry[1].name = strdup("a.c");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[1];
+	lwin.dir_entry[1].type = FT_REG;
+	lwin.selected_files = 0;
+
+	assert_success(exec_commands("select! !echo selection", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	assert_success(exec_commands("select! !echo selection/", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	assert_success(exec_commands("select! !echo selection//////", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	assert_success(exec_commands("select! !echo a.c/", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	remove_dir(SANDBOX_PATH "/selection");
+}
+
 TEST(select_and_unselect_consider_trailing_slash)
 {
 	lwin.list_rows = 4;

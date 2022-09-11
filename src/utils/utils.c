@@ -781,6 +781,12 @@ parse_line_for_path(const char line[], const char cwd[])
 char *
 parse_file_spec(const char spec[], int *line_num, const char cwd[])
 {
+#ifdef _WIN32
+	enum { MIN_COLON_OFFSET = 2 };
+#else
+	enum { MIN_COLON_OFFSET = 0 };
+#endif
+
 	char *path_buf;
 	const char *colon;
 	const size_t bufs_len = strlen(cwd) + 1U + strlen(spec) + 1U + 1U;
@@ -802,7 +808,7 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 	}
 
 #ifdef _WIN32
-	colon = strchr(spec + (is_path_absolute(spec) ? 2 : 0), ':');
+	colon = strchr(spec + (is_path_absolute(spec) ? MIN_COLON_OFFSET : 0), ':');
 	if(colon != NULL && !is_line_spec(colon + 1))
 	{
 		colon = NULL;
@@ -836,16 +842,17 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 		strcat(path_buf, spec);
 		*line_num = 1;
 
-		while(!path_exists(path_buf, NODEREF) && strchr(path_buf, ':') != NULL)
+		while(!path_exists(path_buf, NODEREF) &&
+				strchr(path_buf + MIN_COLON_OFFSET, ':') != NULL)
 		{
 			break_atr(path_buf, ':');
 		}
 	}
 
 	chomp(path_buf);
-	canonicalize_path(path_buf, canonicalized, sizeof(canonicalized));
+	system_to_internal_slashes(path_buf);
 
-	system_to_internal_slashes(canonicalized);
+	canonicalize_path(path_buf, canonicalized, sizeof(canonicalized));
 
 	if(!ends_with_slash(path_buf) && !is_root_dir(canonicalized) &&
 			strcmp(canonicalized, "./") != 0)

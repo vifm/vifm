@@ -39,6 +39,22 @@ TEST(unmap_parent_chunk_before_child)
 	assert_false(vle_keys_user_exists(L"kk", NORMAL_MODE));
 }
 
+TEST(unmapping_removes_non_mapped_parents)
+{
+	assert_success(vle_keys_user_add(L"k1", L"k1", NORMAL_MODE, KEYS_FLAG_NONE));
+	assert_success(vle_keys_user_add(L"k123", L"k123", NORMAL_MODE,
+				KEYS_FLAG_NONE));
+
+	/* Closest mapped parent remains. */
+	assert_success(vle_keys_user_remove(L"k123", NORMAL_MODE));
+	assert_false(vle_keys_user_exists(L"k12", NORMAL_MODE));
+	assert_true(vle_keys_user_exists(L"k1", NORMAL_MODE));
+
+	/* The whole chain is gone. */
+	assert_success(vle_keys_user_remove(L"k1", NORMAL_MODE));
+	assert_false(vle_keys_user_exists(L"k", NORMAL_MODE));
+}
+
 TEST(unmap_remapped)
 {
 	assert_success(vle_keys_exec(L"j"));

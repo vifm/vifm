@@ -841,6 +841,18 @@ restore_previous_selection(void)
 	if(ub < 0 || lb < 0)
 		return;
 
+	if(ub > lb)
+	{
+		int t = ub;
+		ub = lb;
+		lb = t;
+
+		marks_set_special(view, '<', view->dir_entry[ub].origin,
+				view->dir_entry[ub].name);
+		marks_set_special(view, '>', view->dir_entry[lb].origin,
+				view->dir_entry[lb].name);
+	}
+
 	flist_sel_drop(view);
 
 	start_pos = ub;
@@ -848,7 +860,7 @@ restore_previous_selection(void)
 
 	select_first_one();
 
-	while(view->list_pos != lb)
+	while(view->list_pos < lb)
 		select_down_one(view, start_pos);
 
 	if(upwards_range)
