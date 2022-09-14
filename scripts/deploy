@@ -81,23 +81,23 @@ if [ "$target" = all ] || [ "$target" = update ]; then
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimappdoc}"
 
     # update date in README
-    sed -i "/^This file last updated:/s/:.*/:$(date '+ %d %B, %Y')/" README
+    sed -i "/^This file last updated:/s/:.*/:$(date '+ %d %B %Y')/" README
     # update version in README
     sed -i "/^Version:/s/ .*/ $ver/" README
     # update year in README
     sed -i "/^2001 - /s/-.*/$(date '+- %Y')/" README
 
     # update date in README.md
-    sed -i "/^_Latest release is /s/on .*/on $(date '+%d %B, %Y')._/" README.md
+    sed -i "/^_Latest release is /s/on .*/on $(date '+%d %B %Y')._/" README.md
     # update version in README.md
     sed -i "/^_Latest release is /s/is .*\.  /is ${ver}.  /" README.md
 
     # update man pages
-    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/man/*.1
+    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%d %B %Y')\" \"vifm $ver\"/" data/man/*.1
 
     # update first header in the NEWS file
-    sed -i -e "1s/.*/$(date '+%B %d, %Y')/" \
-           -e "2{s/.*/$(date '+%B %d, %Y')/;s/./=/g}" NEWS
+    sed -i -e "1s/.*/$(date '+%d %B %Y')/" \
+           -e "2{s/.*/$(date '+%d %B %Y')/;s/./=/g}" NEWS
 fi
 
 if [ "$target" = all ] || [ "$target" = commit ]; then
