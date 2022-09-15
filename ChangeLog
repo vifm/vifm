@@ -17,6 +17,9 @@
 
 	Fixed memory leak on using 'cdpath'.
 
+	Fixed NULL pointer dereference on parsing desktop files, if no MIME
+	type recognizers are available.  Patch by filterfalse.
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if
