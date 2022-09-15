@@ -2,6 +2,7 @@
 
 Provides the following user-defined view column types:
  * NameLink -- Name column that shows target of symbolic links
+ * MimeType -- column that shows MIME type of an entry
  * LsSize   -- ls-like size column (at most 4 characters in width)
  * LsTime   -- ls-like (also MC-like) time where time is shown if year matches
                current, otherwise year is displayed instead of time
@@ -32,6 +33,12 @@ local function nameLink(info)
         text = text,
         matchstart = offset + e.matchstart,
         matchend = offset + e.matchend
+    }
+end
+
+local function mimeType(info)
+    return {
+        text = '<' .. (info.entry:mimetype() or 'UNAVAILABLE') .. '>'
     }
 end
 
@@ -94,6 +101,14 @@ local added = vifm.addcolumntype {
 }
 if not added then
     vifm.sb.error("Failed to add NameLink view column")
+end
+
+local added = vifm.addcolumntype {
+    name = 'MimeType',
+    handler = mimeType
+}
+if not added then
+    vifm.sb.error("Failed to add MimeType view column")
 end
 
 local added = vifm.addcolumntype {
