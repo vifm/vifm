@@ -2,6 +2,7 @@
 
 #include <string.h> /* strdup() */
 
+#include "../../src/int/file_magic.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
@@ -9,6 +10,9 @@
 #include "../../src/utils/str.h"
 
 #include <test-utils.h>
+
+static int has_mime_type_detection(void);
+static int has_no_mime_type_detection(void);
 
 static vlua_t *vlua;
 
@@ -82,6 +86,40 @@ TEST(vifmview_entry)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "print(vifm.currview():entry(3))"));
 	assert_string_equal("nil", ui_sb_last());
+}
+
+TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))
+{
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.currview():entry(2):mimetype())"));
+	assert_string_equal("nil", ui_sb_last());
+}
+
+TEST(vifmview_entry_mimetype, IF(has_mime_type_detection))
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", NULL);
+	lwin.dir_entry[1].origin = SANDBOX_PATH;
+	copy_file(TEST_DATA_PATH "/read/very-long-line", SANDBOX_PATH "/file1");
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.currview():entry(2):mimetype())"));
+	assert_string_equal("text/plain", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/file1");
+}
+
+static int
+has_mime_type_detection(void)
+{
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL;
+}
+
+static int
+has_no_mime_type_detection(void)
+{
+	return has_mime_type_detection() == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

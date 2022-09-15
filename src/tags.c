@@ -669,6 +669,7 @@ const char *tags[] = {
 	"vifm-l_VifmEntry.match",
 	"vifm-l_VifmEntry.matchend",
 	"vifm-l_VifmEntry.matchstart",
+	"vifm-l_VifmEntry.mimetype()",
 	"vifm-l_VifmEntry.mtime",
 	"vifm-l_VifmEntry.name",
 	"vifm-l_VifmEntry.selected",
