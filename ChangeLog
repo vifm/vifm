@@ -15,6 +15,8 @@
 	Fixed 'sort' and 'sortorder' string representations not being updated
 	after `:invert o`.  Patch by filterfalse.
 
+	Fixed memory leak on using 'cdpath'.
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if
