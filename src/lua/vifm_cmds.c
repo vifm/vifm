@@ -264,7 +264,33 @@ apply_completion(lua_State *lua, const char str[])
 		lua_pushnil(lua);
 		while(lua_next(lua, -2) != 0)
 		{
-			vle_compl_add_match(lua_tostring(lua, -1), "");
+			const char *match = NULL;
+			const char *descr = NULL;
+
+			if(lua_type(lua, -1) == LUA_TSTRING)
+			{
+				match = lua_tostring(lua, -1);
+			}
+			else if(lua_type(lua, -1) == LUA_TTABLE)
+			{
+				(void)lua_getfield(lua, -1, "match");
+				match = lua_tostring(lua, -1);
+
+				if(match != NULL)
+				{
+					(void)lua_getfield(lua, -2, "description");
+					descr = lua_tostring(lua, -1);
+					lua_pop(lua, 1);
+				}
+
+				lua_pop(lua, 1);
+			}
+
+			if(match != NULL)
+			{
+				vle_compl_add_match(match, descr == NULL ? "" : descr);
+			}
+
 			lua_pop(lua, 1);
 		}
 

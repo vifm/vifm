@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Aug 2
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Sep 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -645,8 +645,16 @@ Fields of {results} return value of "complete":
    Offset from beginning of the argument.  This is useful to avoid prepending
    prefix that's common to all matches, thus completing only essential part.
    For example, in case of "var=val" use offset=4 to complete part after "=".
- - "matches" (table)
-   List of matches in values of the table (keys are ignored).
+ - "matches" (array of strings or tables)
+   List of items in values of the table (keys are ignored).  Each list item
+   can either be a string or a table.  When item is a string it is used as a
+   completion match.  When item is a table it can contain these keys:
+    - "match" (string)
+      Use "match" as a completion match.
+    - "description" (string) (optional)
+      A string that will be showed along with the "match" but not inserted on
+      the command line.
+   All other items of unspecified types will be silently ignored.
 
 Parameters:~
   {cmd}  Table with information about a command.
