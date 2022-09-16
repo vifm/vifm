@@ -430,7 +430,7 @@ show_help_msg(const char wrong_arg[])
 	puts("    passes expression to vifm server and prints result.\n");
 #endif
 	puts("  vifm -c <command> | +<command>");
-	puts("    run <command> on startup.\n");
+	puts("    run command-line mode <command> on startup.\n");
 	puts("  vifm --help | -h");
 	puts("    show this help message and quit.\n");
 	puts("  vifm --version | -v");
