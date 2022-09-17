@@ -525,6 +525,7 @@ TEST(delsession_is_completed)
 TEST(plugin_is_completed)
 {
 	ASSERT_COMPLETION(L"plugin ", L"plugin blacklist");
+	ASSERT_NEXT_MATCH("load");
 	ASSERT_NEXT_MATCH("whitelist");
 	ASSERT_NEXT_MATCH("");
 
