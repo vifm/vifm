@@ -49,8 +49,8 @@ typedef struct
 }
 assoc_record_t;
 
-/* It's guarantied that for existent association there is at least on element in
- * the records list */
+/* It's guarantied that for existent association there is at least one element
+ * in the records list */
 typedef struct
 {
 	assoc_record_t *list;

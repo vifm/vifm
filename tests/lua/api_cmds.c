@@ -230,11 +230,26 @@ TEST(cmds_completion)
 	                                     "    print 'arg or argv is wrong'\n"
 	                                     "  end\n"
 	                                     "  return {\n"
-	                                     "    offset = 1, \n"
-	                                     "    matches = { 'aa', 'ab', 'bc' } \n"
+	                                     "    offset = 1,\n"
+	                                     "    matches = {\n"
+	                                     "      'aa',\n"
+	                                     "      {match = 'ab',\n"
+	                                     "       description = 'desc'},\n"
+	                                     "      {description = 'only desc'},\n"
+	                                     "      {match = 'bc'} \n"
+	                                     "    }\n"
 	                                     "  }\n"
 	                                     "end"));
 	assert_string_equal("", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "function evilcompletor()\n"
+	                                     "  return {"
+	                                     "    offset = 0,"
+	                                     "    matches = { evilcompletor }"
+	                                     "  }"
+	                                     "end"));
+	assert_string_equal("", ui_sb_last());
+
+	/* :command without completion. */
 
 	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'nocompl',"
@@ -244,6 +259,8 @@ TEST(cmds_completion)
 
 	assert_int_equal(7, vle_cmds_complete("nocompl a", NULL));
 	assert_int_equal(0, vle_compl_get_count());
+
+	/* :command with working completion. */
 
 	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'test',"
@@ -259,6 +276,8 @@ TEST(cmds_completion)
 	check_next_completion("bc");
 	check_next_completion("a");
 
+	/* :command with completion that returns nil. */
+
 	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'testcmd',"
 	                                     "  handler = handler,"
@@ -269,6 +288,8 @@ TEST(cmds_completion)
 	assert_int_equal(8, vle_cmds_complete("testcmd p", NULL));
 	assert_int_equal(0, vle_compl_get_count());
 
+	/* :command with completion that errors. */
+
 	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'tcmd',"
 	                                     "  handler = handler,"
@@ -278,6 +299,18 @@ TEST(cmds_completion)
 	vle_compl_reset();
 	assert_int_equal(5, vle_cmds_complete("tcmd z", NULL));
 	assert_int_equal(0, vle_compl_get_count());
+
+	/* :command with completion that has unsupported values. */
+
+	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
+	                                     "  name = 'evilcmpl',"
+	                                     "  handler = handler,"
+	                                     "  complete = evilcompletor"
+	                                     "}"));
+	assert_string_equal("", ui_sb_last());
+	vle_compl_reset();
+	assert_int_equal(9, vle_cmds_complete("evilcmpl z", NULL));
+	assert_int_equal(1, vle_compl_get_count());
 }
 
 static void

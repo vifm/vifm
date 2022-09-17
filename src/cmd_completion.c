@@ -745,6 +745,7 @@ complete_plugin(const char str[], char *argv[], int arg_num)
 	if(arg_num == 0 || arg_num == 1)
 	{
 		static const char *subcommands[][2] = {
+			{ "load",      "load plugins if they weren't loaded yet" },
 			{ "blacklist", "avoid loading this plugin" },
 			{ "whitelist", "ignore all but this and other whitelisted plugins" },
 		};

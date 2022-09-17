@@ -18,6 +18,7 @@ static void check_empty_file(const char fname[]);
 static int has_mime_type_detection_and_symlinks(void);
 static int has_mime_type_detection_and_can_test_cache(void);
 static int has_mime_type_detection(void);
+static int has_no_mime_type_detection(void);
 
 TEST(escaping_for_determining_mime_type, IF(has_mime_type_detection))
 {
@@ -76,6 +77,18 @@ TEST(relatively_large_file_name_does_not_crash,
 	assert_success(rmdir(SANDBOX_PATH "/A"));
 }
 
+TEST(empty_magic_handlers_on_no_mime_type_detection,
+		IF(has_no_mime_type_detection))
+{
+	copy_file(TEST_DATA_PATH "/read/very-long-line", SANDBOX_PATH "/file");
+
+	assert_null(get_mimetype(SANDBOX_PATH "/file", /*resolve_symlinks=*/1));
+	assoc_records_t handlers = get_magic_handlers(SANDBOX_PATH "/file");
+	assert_int_equal(0, handlers.count);
+
+	remove_file(SANDBOX_PATH "/file");
+}
+
 static void
 check_empty_file(const char fname[])
 {
@@ -117,6 +130,12 @@ has_mime_type_detection(void)
 	}
 
 	return 1;
+}
+
+static int
+has_no_mime_type_detection(void)
+{
+	return has_mime_type_detection() == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

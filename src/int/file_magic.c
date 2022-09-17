@@ -288,6 +288,11 @@ get_handlers(const char mime_type[])
 	static assoc_records_t handlers;
 	ft_assoc_records_free(&handlers);
 
+	if(mime_type == NULL)
+	{
+		return handlers;
+	}
+
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 	parse_app_dir("/usr/share/applications", mime_type, &handlers);
 	parse_app_dir("/usr/local/share/applications", mime_type, &handlers);
