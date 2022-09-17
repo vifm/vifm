@@ -3254,7 +3254,10 @@ find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 	state = NULL;
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
-		snprintf(buf, buf_size, "%s/%s", expand_tilde(part), dst);
+		char *expanded = expand_tilde(part);
+
+		build_path(buf, buf_size, expanded, dst);
+		free(expanded);
 
 		if(is_dir(buf))
 		{

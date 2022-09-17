@@ -1631,13 +1631,13 @@ merge_dhistory(int session_load, JSON_Object *current,
 	if(total > 0)
 	{
 		const char *last_dir = "";
-		get_str(combined[0], "dir", &last_dir);
+		(void)get_str(combined[0], "dir", &last_dir);
 
 		int i, j = 0;
 		for(i = 1; i < total; ++i)
 		{
 			const char *curr_dir = "";
-			get_str(combined[i], "dir", &curr_dir);
+			(void)get_str(combined[i], "dir", &curr_dir);
 			if(stroscmp(last_dir, curr_dir) != 0)
 			{
 				++j;
