@@ -24,6 +24,8 @@
 
 	Fixed <silent> not being highlighted after :cnoremap and :cmap.
 
+	Fixed parts of graphics being left on entering menu mode.
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if
