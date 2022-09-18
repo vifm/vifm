@@ -22,6 +22,8 @@
 
 	Fixed "load" subcommand of :plugin not being completed.
 
+	Fixed <silent> not being highlighted after :cnoremap and :cmap.
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if

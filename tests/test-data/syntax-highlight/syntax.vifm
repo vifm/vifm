@@ -44,6 +44,14 @@ map <silent>,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silent><silent>,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silent> <silent>,b :set viewcolumns="-{name}..,6{}."<cr>
 map <wait><silent>,b :set viewcolumns="-{name}..,6{}."<cr>
+nnoremap <silent> a b
+nmap <silent> a b
+cnoremap <silent> a b
+cmap <silent> a b
+qnoremap <silent> a b
+qmap <silent> a b
+dnoremap <silent> a b
+dmap <silent> a b
 " "<silEnt>" shouldn't be highlighted
 " "<silent>" shouldn't be highlighted
 map <silEnt> ,b :set viewcolumns="-{name}..,6{}."<cr>
