@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: August 20, 2022
+" Last Change: September 18, 2022
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -257,7 +257,7 @@ syntax region vifmMapArgs start='\ze\S\+'
 syntax region vifmCMapArgs start='\S\+'
 		\ end='\n\s*\\' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
-		\ contains=vifmMapLhs,vifmMapCRhs
+		\ contains=vifmMapArgList,vifmMapLhs,vifmMapCRhs
 syntax region vifmMapLhs start='\S\+'
 		\ end='\ze\s' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
