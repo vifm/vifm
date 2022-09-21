@@ -26,6 +26,10 @@
 
 	Fixed parts of graphics being left on entering menu mode.
 
+	Fixed %i without " &" preventing some applications from running by closing
+	their standard output and error.  Thanks to Daniel J. Perry (a.k.a.
+	BioBox).
+
 0.12 to 0.12.1-beta (2022-09-05)
 
 	Changed conflict dialog to offer "Merge all" option even for files if
