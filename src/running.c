@@ -127,7 +127,6 @@ static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 static void output_to_statusbar(const char cmd[], view_t *view,
 		MacroFlags flags);
 static int output_to_preview(view_t *view, const char cmd[], MacroFlags flags);
-static void output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags);
 static void run_in_split(const view_t *view, const char cmd[], int vert_split);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
@@ -1247,24 +1246,31 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 	}
 	else if(ma_flags_present(flags, MF_IGNORE))
 	{
-		*save_msg = 0;
-		if(bg)
+		/* TODO: consider merging with rn_start_bg_command(). */
+
+		const int supply_input = ma_flags_present(flags, MF_PIPE_FILE_LIST)
+		                      || ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+		FILE *input = NULL;
+		FILE **input_ptr = (supply_input ? &input : NULL);
+		int error = 0;
+
+		setup_shellout_env();
+		if(bg_run_external(cmd, 1, SHELL_BY_USER, input_ptr) != 0)
 		{
-			int error;
-
-			setup_shellout_env();
-			error = (bg_run_external(cmd, 1, SHELL_BY_USER, NULL) != 0);
-			cleanup_shellout_env();
-
-			if(error)
-			{
-				ui_sb_errf("Failed to start in bg: %s", cmd);
-				*save_msg = 1;
-			}
+			error = 1;
 		}
-		else
+		cleanup_shellout_env();
+
+		if(input != NULL)
 		{
-			output_to_nowhere(cmd, view, flags);
+			const int null_sep = ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
+			write_marked_paths(input, view, null_sep);
+			fclose(input);
+		}
+
+		if(error)
+		{
+			show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		}
 		return -1;
 	}
@@ -1361,39 +1367,6 @@ output_to_preview(view_t *view, const char cmd[], MacroFlags flags)
 	return 0;
 }
 
-/* Executes the cmd ignoring its output. */
-static void
-output_to_nowhere(const char cmd[], view_t *view, MacroFlags flags)
-{
-	FILE *file, *err;
-	FILE *input_tmp = make_in_file(view, flags);
-
-	setup_shellout_env();
-	int error = 0;
-	if(bg_run_and_capture((char *)cmd, 1, input_tmp, &file, &err) == (pid_t)-1)
-	{
-		error = 1;
-	}
-	cleanup_shellout_env();
-
-	if(input_tmp != NULL)
-	{
-		fclose(input_tmp);
-	}
-
-	if(error)
-	{
-		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return;
-	}
-
-	/* FIXME: better way of doing this would be to redirect these streams to
-	 *        /dev/null rather than closing them, but not sure about Windows (NUL
-	 *        device might work). */
-	fclose(file);
-	fclose(err);
-}
-
 /* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
  * is NULL. */
 static void
@@ -1449,6 +1422,8 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 void
 rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 {
+	/* TODO: similar code in rn_ext(). */
+
 	const int supply_input = ma_flags_present(flags, MF_PIPE_FILE_LIST)
 	                      || ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
 	FILE *input = NULL;
