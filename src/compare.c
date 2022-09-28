@@ -311,73 +311,114 @@ fill_side_by_side(entries_t curr, entries_t other, int group_paths)
 	enum { UP, LEFT, DIAG };
 
 	int i, j;
-	/* Describes results of solving sub-problems. */
-	int (*d)[other.nentries + 1] =
-		reallocarray(NULL, curr.nentries + 1, sizeof(*d));
-	/* Describes paths (backtracking handles ambiguity badly). */
-	char (*p)[other.nentries + 1] =
-		reallocarray(NULL, curr.nentries + 1, sizeof(*p));
 
-	for(i = 0; i <= curr.nentries; ++i)
+	if (group_paths)
 	{
-		for(j = 0; j <= other.nentries; ++j)
+		i = 0;
+		j = 0;
+
+		while ((i < curr.nentries) || (j < other.nentries)) {
+			int pathcmp, namecmp;
+
+			if ((i < curr.nentries) && (j < other.nentries)) {
+				pathcmp = strcmp(curr.entries[i].origin + strlen(curr_view->curr_dir), other.entries[j].origin + strlen(other_view->curr_dir));
+				namecmp = strcmp(curr.entries[i].name, other.entries[j].name);
+			}
+			else if (i < curr.nentries) {
+				pathcmp = -1;
+				namecmp = -1;
+			}
+			else { // if (j < other.nentries)
+				pathcmp = 1;
+				namecmp = 1;
+			}
+
+			if ((pathcmp == 0) && (namecmp == 0)) {
+				flist_custom_put(curr_view, &curr.entries[i]);
+				flist_custom_put(other_view, &other.entries[j]);
+				i++;
+				j++;
+			}
+			else if ((pathcmp < 0) || ((pathcmp == 0) && (namecmp < 0))) {
+				flist_custom_put(curr_view, &curr.entries[i]);
+				flist_custom_add_separator(other_view, curr.entries[i].id);
+				i++;
+			}
+			else { // if ((pathcmp > 0) || ((pathcmp == 0) && (namecmp > 0)))
+				flist_custom_put(other_view, &other.entries[j]);
+				flist_custom_add_separator(curr_view, other.entries[j].id);
+				j++;
+			}
+		}
+	}
+	else
+	{
+		/* Describes results of solving sub-problems. */
+		int (*d)[other.nentries + 1] =
+			reallocarray(NULL, curr.nentries + 1, sizeof(*d));
+		/* Describes paths (backtracking handles ambiguity badly). */
+		char (*p)[other.nentries + 1] =
+			reallocarray(NULL, curr.nentries + 1, sizeof(*p));
+
+		for(i = 0; i <= curr.nentries; ++i)
 		{
-			if(i == 0)
+			for(j = 0; j <= other.nentries; ++j)
 			{
-				d[i][j] = j;
-				p[i][j] = LEFT;
-			}
-			else if(j == 0)
-			{
-				d[i][j] = i;
-				p[i][j] = UP;
-			}
-			else
-			{
-				const dir_entry_t *centry = &curr.entries[curr.nentries - i];
-				const dir_entry_t *oentry = &other.entries[other.nentries - j];
-
-				d[i][j] = MIN(d[i - 1][j] + 1, d[i][j - 1] + 1);
-				p[i][j] = d[i][j] == d[i - 1][j] + 1 ? UP : LEFT;
-
-				if((centry->id == oentry->id ||
-							(group_paths && stroscmp(centry->name, oentry->name) == 0)) &&
-						d[i - 1][j - 1] <= d[i][j])
+				if(i == 0)
 				{
-					d[i][j] = d[i - 1][j - 1];
-					p[i][j] = DIAG;
+					d[i][j] = j;
+					p[i][j] = LEFT;
+				}
+				else if(j == 0)
+				{
+					d[i][j] = i;
+					p[i][j] = UP;
+				}
+				else
+				{
+					const dir_entry_t *centry = &curr.entries[curr.nentries - i];
+					const dir_entry_t *oentry = &other.entries[other.nentries - j];
+
+					d[i][j] = MIN(d[i - 1][j] + 1, d[i][j - 1] + 1);
+					p[i][j] = d[i][j] == d[i - 1][j] + 1 ? UP : LEFT;
+
+					if(centry->id == oentry->id && d[i - 1][j - 1] <= d[i][j])
+					{
+						d[i][j] = d[i - 1][j - 1];
+						p[i][j] = DIAG;
+					}
 				}
 			}
 		}
-	}
 
-	i = curr.nentries;
-	j = other.nentries;
-	while(i != 0 || j != 0)
-	{
-		switch(p[i][j])
+		i = curr.nentries;
+		j = other.nentries;
+		while(i != 0 || j != 0)
 		{
-			dir_entry_t *e;
+			switch(p[i][j])
+			{
+				dir_entry_t *e;
 
-			case UP:
-				e = &curr.entries[curr.nentries - 1 - --i];
-				flist_custom_put(curr_view, e);
-				flist_custom_add_separator(other_view, e->id);
-				break;
-			case LEFT:
-				e = &other.entries[other.nentries - 1 - --j];
-				flist_custom_put(other_view, e);
-				flist_custom_add_separator(curr_view, e->id);
-				break;
-			case DIAG:
-				flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
-				flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
-				break;
+				case UP:
+					e = &curr.entries[curr.nentries - 1 - --i];
+					flist_custom_put(curr_view, e);
+					flist_custom_add_separator(other_view, e->id);
+					break;
+				case LEFT:
+					e = &other.entries[other.nentries - 1 - --j];
+					flist_custom_put(other_view, e);
+					flist_custom_add_separator(curr_view, e->id);
+					break;
+				case DIAG:
+					flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
+					flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
+					break;
+			}
 		}
-	}
 
-	free(d);
-	free(p);
+		free(d);
+		free(p);
+	}
 
 	/* Entries' data has been moved out of them, so need to free only the
 	 * lists. */
