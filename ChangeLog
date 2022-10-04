@@ -1,3 +1,8 @@
+0.12.1 to current
+
+	Changed implementation of `:compare grouppaths` to juxtapose only files
+	with identical relative paths.	Patch by Alexandr Keyp (a.k.a. IAmKapuze).
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

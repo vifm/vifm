@@ -427,7 +427,7 @@ TEST(two_pane_dups_renumbering)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
-	compare_two_panes(CT_CONTENTS, LT_DUPS, 1, 0);
+	compare_two_panes(CT_CONTENTS, LT_DUPS, /*group_paths=*/0, /*skip_empty=*/0);
 
 	check_compare_invariants(2);
 
@@ -446,7 +446,7 @@ TEST(removing_all_files_of_same_id_and_fake_entry_on_the_other_side)
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, /*group_paths=*/0, /*skip_empty=*/0);
 
 	check_compare_invariants(7);
 
@@ -472,8 +472,8 @@ TEST(compare_considers_dot_filter)
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/tree/dir5");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
-	assert_int_equal(5, lwin.list_rows);
-	assert_int_equal(5, rwin.list_rows);
+	assert_int_equal(6, lwin.list_rows);
+	assert_int_equal(6, rwin.list_rows);
 }
 
 TEST(compare_considers_name_filters)
@@ -517,7 +517,8 @@ TEST(custom_views_are_compared)
 {
 	char path[PATH_MAX + 1];
 
-	strcpy(lwin.curr_dir, "no-such-path");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"/compare/a", saved_cwd);
 	flist_custom_start(&lwin, "test");
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH,
 			"compare/a/same-content-different-name-1", saved_cwd);

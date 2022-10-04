@@ -69,7 +69,9 @@ compare_record_t;
 static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg);
-static void fill_side_by_side(entries_t curr, entries_t other, int group_paths);
+static void fill_side_by_side_by_paths(entries_t curr, entries_t other);
+static void fill_side_by_side_by_ids(entries_t curr, entries_t other);
+static int compare_entries(dir_entry_t *curr, dir_entry_t *other);
 static int id_sorter(const void *first, const void *second);
 static void put_or_free(view_t *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, view_t *view, int *next_id,
@@ -149,7 +151,19 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 	flist_custom_start(curr_view, lt == LT_ALL ? "diff" : "dups diff");
 	flist_custom_start(other_view, lt == LT_ALL ? "diff" : "dups diff");
 
-	fill_side_by_side(curr, other, group_paths);
+	if(group_paths)
+	{
+		fill_side_by_side_by_paths(curr, other);
+	}
+	else
+	{
+		fill_side_by_side_by_ids(curr, other);
+	}
+
+	/* Entries' data has been moved out of them, so need to free only the
+	 * lists. */
+	dynarray_free(curr.entries);
+	dynarray_free(other.entries);
 
 	if(flist_custom_finish(curr_view, CV_DIFF, 0) != 0)
 	{
@@ -304,126 +318,169 @@ is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg)
 	return entry->id != -1;
 }
 
-/* Composes side-by-side comparison of files in two views. */
+/* Composes side-by-side comparison of files in two views centered around their
+ * relative paths. */
 static void
-fill_side_by_side(entries_t curr, entries_t other, int group_paths)
+fill_side_by_side_by_paths(entries_t curr, entries_t other)
+{
+	int i = 0;
+	int j = 0;
+
+	while(i < curr.nentries || j < other.nentries)
+	{
+		int cmp;
+
+		if(i < curr.nentries && j < other.nentries)
+		{
+			cmp = compare_entries(&curr.entries[i], &other.entries[j]);
+		}
+		else
+		{
+			cmp = (i < curr.nentries ? -1 : 1);
+		}
+
+		if(cmp == 0)
+		{
+			flist_custom_put(curr_view, &curr.entries[i++]);
+			flist_custom_put(other_view, &other.entries[j++]);
+		}
+		else if(cmp < 0)
+		{
+			flist_custom_put(curr_view, &curr.entries[i]);
+			flist_custom_add_separator(other_view, curr.entries[i].id);
+			i++;
+		}
+		else
+		{
+			flist_custom_put(other_view, &other.entries[j]);
+			flist_custom_add_separator(curr_view, other.entries[j].id);
+			j++;
+		}
+	}
+}
+
+/* Composes side-by-side comparison of files in two views that is guided by
+ * comparison ids and minimizes edit script. */
+static void
+fill_side_by_side_by_ids(entries_t curr, entries_t other)
 {
 	enum { UP, LEFT, DIAG };
 
 	int i, j;
 
-	if (group_paths)
+	/* Describes results of solving sub-problems. */
+	int (*d)[other.nentries + 1] =
+		reallocarray(NULL, curr.nentries + 1, sizeof(*d));
+	/* Describes paths (backtracking handles ambiguity badly). */
+	char (*p)[other.nentries + 1] =
+		reallocarray(NULL, curr.nentries + 1, sizeof(*p));
+
+	for(i = 0; i <= curr.nentries; ++i)
 	{
-		i = 0;
-		j = 0;
+		for(j = 0; j <= other.nentries; ++j)
+		{
+			if(i == 0)
+			{
+				d[i][j] = j;
+				p[i][j] = LEFT;
+			}
+			else if(j == 0)
+			{
+				d[i][j] = i;
+				p[i][j] = UP;
+			}
+			else
+			{
+				const dir_entry_t *centry = &curr.entries[curr.nentries - i];
+				const dir_entry_t *oentry = &other.entries[other.nentries - j];
 
-		while ((i < curr.nentries) || (j < other.nentries)) {
-			int pathcmp, namecmp;
+				d[i][j] = MIN(d[i - 1][j] + 1, d[i][j - 1] + 1);
+				p[i][j] = d[i][j] == d[i - 1][j] + 1 ? UP : LEFT;
 
-			if ((i < curr.nentries) && (j < other.nentries)) {
-				pathcmp = strcmp(curr.entries[i].origin + strlen(curr_view->curr_dir), other.entries[j].origin + strlen(other_view->curr_dir));
-				namecmp = strcmp(curr.entries[i].name, other.entries[j].name);
-			}
-			else if (i < curr.nentries) {
-				pathcmp = -1;
-				namecmp = -1;
-			}
-			else { // if (j < other.nentries)
-				pathcmp = 1;
-				namecmp = 1;
-			}
-
-			if ((pathcmp == 0) && (namecmp == 0)) {
-				flist_custom_put(curr_view, &curr.entries[i]);
-				flist_custom_put(other_view, &other.entries[j]);
-				i++;
-				j++;
-			}
-			else if ((pathcmp < 0) || ((pathcmp == 0) && (namecmp < 0))) {
-				flist_custom_put(curr_view, &curr.entries[i]);
-				flist_custom_add_separator(other_view, curr.entries[i].id);
-				i++;
-			}
-			else { // if ((pathcmp > 0) || ((pathcmp == 0) && (namecmp > 0)))
-				flist_custom_put(other_view, &other.entries[j]);
-				flist_custom_add_separator(curr_view, other.entries[j].id);
-				j++;
+				if(centry->id == oentry->id && d[i - 1][j - 1] <= d[i][j])
+				{
+					d[i][j] = d[i - 1][j - 1];
+					p[i][j] = DIAG;
+				}
 			}
 		}
 	}
-	else
+
+	i = curr.nentries;
+	j = other.nentries;
+	while(i != 0 || j != 0)
 	{
-		/* Describes results of solving sub-problems. */
-		int (*d)[other.nentries + 1] =
-			reallocarray(NULL, curr.nentries + 1, sizeof(*d));
-		/* Describes paths (backtracking handles ambiguity badly). */
-		char (*p)[other.nentries + 1] =
-			reallocarray(NULL, curr.nentries + 1, sizeof(*p));
-
-		for(i = 0; i <= curr.nentries; ++i)
+		switch(p[i][j])
 		{
-			for(j = 0; j <= other.nentries; ++j)
-			{
-				if(i == 0)
-				{
-					d[i][j] = j;
-					p[i][j] = LEFT;
-				}
-				else if(j == 0)
-				{
-					d[i][j] = i;
-					p[i][j] = UP;
-				}
-				else
-				{
-					const dir_entry_t *centry = &curr.entries[curr.nentries - i];
-					const dir_entry_t *oentry = &other.entries[other.nentries - j];
+			dir_entry_t *e;
 
-					d[i][j] = MIN(d[i - 1][j] + 1, d[i][j - 1] + 1);
-					p[i][j] = d[i][j] == d[i - 1][j] + 1 ? UP : LEFT;
-
-					if(centry->id == oentry->id && d[i - 1][j - 1] <= d[i][j])
-					{
-						d[i][j] = d[i - 1][j - 1];
-						p[i][j] = DIAG;
-					}
-				}
-			}
+			case UP:
+				e = &curr.entries[curr.nentries - 1 - --i];
+				flist_custom_put(curr_view, e);
+				flist_custom_add_separator(other_view, e->id);
+				break;
+			case LEFT:
+				e = &other.entries[other.nentries - 1 - --j];
+				flist_custom_put(other_view, e);
+				flist_custom_add_separator(curr_view, e->id);
+				break;
+			case DIAG:
+				flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
+				flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
+				break;
 		}
-
-		i = curr.nentries;
-		j = other.nentries;
-		while(i != 0 || j != 0)
-		{
-			switch(p[i][j])
-			{
-				dir_entry_t *e;
-
-				case UP:
-					e = &curr.entries[curr.nentries - 1 - --i];
-					flist_custom_put(curr_view, e);
-					flist_custom_add_separator(other_view, e->id);
-					break;
-				case LEFT:
-					e = &other.entries[other.nentries - 1 - --j];
-					flist_custom_put(other_view, e);
-					flist_custom_add_separator(curr_view, e->id);
-					break;
-				case DIAG:
-					flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
-					flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
-					break;
-			}
-		}
-
-		free(d);
-		free(p);
 	}
 
-	/* Entries' data has been moved out of them, so need to free only the
-	 * lists. */
-	dynarray_free(curr.entries);
-	dynarray_free(other.entries);
+	free(d);
+	free(p);
+}
+
+/* Compares entries by their short paths.  Returns strcmp()-like result. */
+static int
+compare_entries(dir_entry_t *curr, dir_entry_t *other)
+{
+	char path_a[PATH_MAX + 1], path_b[PATH_MAX + 1];
+	get_full_path_of(curr, sizeof(path_a), path_a);
+	get_full_path_of(other, sizeof(path_b), path_b);
+
+	/* If at least one path is case-sensitive, don't ignore case.  Otherwise, we
+	 * would end up with multiple matching pairs of paths. */
+	int case_sensitive = case_sensitive_paths(path_a)
+	                  || case_sensitive_paths(path_b);
+
+	get_short_path_of(curr_view, curr, NF_NONE, 0, sizeof(path_a), path_a);
+	get_short_path_of(other_view, other, NF_NONE, 0, sizeof(path_b), path_b);
+
+	const char *a = path_a, *b = path_b;
+
+	char lower_a[PATH_MAX + 1], lower_b[PATH_MAX + 1];
+	if(!case_sensitive)
+	{
+		str_to_lower(path_a, lower_a, sizeof(lower_a));
+		str_to_lower(path_b, lower_b, sizeof(lower_b));
+
+		a = lower_a;
+		b = lower_b;
+	}
+
+	while(*a == *b && *a != '\0')
+	{
+		++a;
+		++b;
+	}
+
+	int cmp = *a - *b;
+
+	/* Correct result to reflect that a directory is smaller than a
+	 * non-directory. */
+	int dir_a = (strchr(a, '/') != NULL);
+	int dir_b = (strchr(b, '/') != NULL);
+	if(dir_a != dir_b)
+	{
+		cmp = (dir_a ? -1 : 1);
+	}
+
+	return cmp;
 }
 
 int

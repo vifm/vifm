@@ -253,33 +253,48 @@ TEST(relatively_complex_match)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 
-	check_compare_invariants(8);
+	check_compare_invariants(10);
 
 	assert_int_equal(1, lwin.dir_entry[0].id);
 	assert_int_equal(2, lwin.dir_entry[1].id);
-	assert_int_equal(3, lwin.dir_entry[2].id);
-	assert_int_equal(4, lwin.dir_entry[3].id);
-	assert_int_equal(2, lwin.dir_entry[4].id);
-	assert_int_equal(5, lwin.dir_entry[5].id);
-	assert_int_equal(6, lwin.dir_entry[6].id);
+	assert_int_equal(2, lwin.dir_entry[2].id);
+	assert_int_equal(2, lwin.dir_entry[3].id);
+	assert_int_equal(3, lwin.dir_entry[4].id);
+	assert_int_equal(4, lwin.dir_entry[5].id);
+	assert_int_equal(5, lwin.dir_entry[6].id);
 	assert_int_equal(5, lwin.dir_entry[7].id);
+	assert_int_equal(5, lwin.dir_entry[8].id);
+	assert_int_equal(6, lwin.dir_entry[9].id);
 
 	assert_string_equal("", lwin.dir_entry[0].name);
 	assert_string_equal("binary-data", rwin.dir_entry[0].name);
-	assert_string_equal("dos-eof-1", lwin.dir_entry[1].name);
+
+	assert_string_equal("", lwin.dir_entry[1].name);
 	assert_string_equal("dos-eof", rwin.dir_entry[1].name);
-	assert_string_equal("", lwin.dir_entry[2].name);
-	assert_string_equal("dos-line-endings", rwin.dir_entry[2].name);
-	assert_string_equal("", lwin.dir_entry[3].name);
-	assert_string_equal("two-lines", rwin.dir_entry[3].name);
-	assert_string_equal("dos-eof-2", lwin.dir_entry[4].name);
-	assert_string_equal("", rwin.dir_entry[4].name);
-	assert_string_equal("utf8-bom-1", lwin.dir_entry[5].name);
-	assert_string_equal("utf8-bom", rwin.dir_entry[5].name);
+
+	assert_string_equal("dos-eof-1", lwin.dir_entry[2].name);
+	assert_string_equal("", rwin.dir_entry[2].name);
+
+	assert_string_equal("dos-eof-2", lwin.dir_entry[3].name);
+	assert_string_equal("", rwin.dir_entry[3].name);
+
+	assert_string_equal("", lwin.dir_entry[4].name);
+	assert_string_equal("dos-line-endings", rwin.dir_entry[4].name);
+
+	assert_string_equal("", lwin.dir_entry[5].name);
+	assert_string_equal("two-lines", rwin.dir_entry[5].name);
+
 	assert_string_equal("", lwin.dir_entry[6].name);
-	assert_string_equal("very-long-line", rwin.dir_entry[6].name);
-	assert_string_equal("utf8-bom-2", lwin.dir_entry[7].name);
+	assert_string_equal("utf8-bom", rwin.dir_entry[6].name);
+
+	assert_string_equal("utf8-bom-1", lwin.dir_entry[7].name);
 	assert_string_equal("", rwin.dir_entry[7].name);
+
+	assert_string_equal("utf8-bom-2", lwin.dir_entry[8].name);
+	assert_string_equal("", rwin.dir_entry[8].name);
+
+	assert_string_equal("", lwin.dir_entry[9].name);
+	assert_string_equal("very-long-line", rwin.dir_entry[9].name);
 
 	assert_success(remove(SANDBOX_PATH "/dos-eof-1"));
 	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
