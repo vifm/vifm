@@ -1,7 +1,9 @@
 0.12.1 to current
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files
-	with identical relative paths.	Patch by Alexandr Keyp (a.k.a. IAmKapuze).
+	with identical relative paths.  Patch by Alexandr Keyp (a.k.a. IAmKapuze).
+
+	Reduced amount of memory consumed by `:compare groupids`.
 
 0.12.1-beta to 0.12.1 (2022-09-21)
 

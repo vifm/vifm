@@ -368,25 +368,26 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other)
 
 	int i, j;
 
-	/* Describes results of solving sub-problems. */
-	int (*d)[other.nentries + 1] =
-		reallocarray(NULL, curr.nentries + 1, sizeof(*d));
+	/* Describes results of solving sub-problems.  Only two rows of the full
+	 * table. */
+	int (*d)[other.nentries + 1] = reallocarray(NULL, 2, sizeof(*d));
 	/* Describes paths (backtracking handles ambiguity badly). */
 	char (*p)[other.nentries + 1] =
 		reallocarray(NULL, curr.nentries + 1, sizeof(*p));
 
 	for(i = 0; i <= curr.nentries; ++i)
 	{
+		int row = i%2;
 		for(j = 0; j <= other.nentries; ++j)
 		{
 			if(i == 0)
 			{
-				d[i][j] = j;
+				d[row][j] = j;
 				p[i][j] = LEFT;
 			}
 			else if(j == 0)
 			{
-				d[i][j] = i;
+				d[row][j] = i;
 				p[i][j] = UP;
 			}
 			else
@@ -394,12 +395,12 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other)
 				const dir_entry_t *centry = &curr.entries[curr.nentries - i];
 				const dir_entry_t *oentry = &other.entries[other.nentries - j];
 
-				d[i][j] = MIN(d[i - 1][j] + 1, d[i][j - 1] + 1);
-				p[i][j] = d[i][j] == d[i - 1][j] + 1 ? UP : LEFT;
+				d[row][j] = MIN(d[1 - row][j] + 1, d[row][j - 1] + 1);
+				p[i][j] = d[row][j] == d[1 - row][j] + 1 ? UP : LEFT;
 
-				if(centry->id == oentry->id && d[i - 1][j - 1] <= d[i][j])
+				if(centry->id == oentry->id && d[1 - row][j - 1] <= d[row][j])
 				{
-					d[i][j] = d[i - 1][j - 1];
+					d[row][j] = d[1 - row][j - 1];
 					p[i][j] = DIAG;
 				}
 			}
