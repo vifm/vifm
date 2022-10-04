@@ -620,6 +620,7 @@ get_tip(void)
 	  ":copen reopens the last list of files found by a :grep-like command",
 	  "Up/down arrows on command-line load history entries with identical prefix",
 	  ":copy/:move commands accept absolute paths",
+	  "Using dp on blank compare entry removes the other file",
 	};
 
 	if(need_to_shuffle)
