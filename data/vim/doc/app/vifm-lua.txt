@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Sep 17
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Oct 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -587,7 +587,7 @@ Possible fields of {job}:
     - "w" - providing input to the process (see |vifm-l_VifmJob:stdin()|)
     - ""  - no I/O interaction
  - "mergestreams" (boolean) (default: false)
-   Whether to merge error streams of the command with output stream.
+   Whether to merge error stream of the command with its output stream.
  - "visible" (boolean) (default: false)
    Whether to show this job on a job bar.
 

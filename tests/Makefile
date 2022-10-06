@@ -41,9 +41,14 @@
 # "B" variable might be set to build tree root to run tests out of the source
 # tree.
 
-# don't pass $TERM to tests, they should work without a terminal and this
-# variable
-unexport TERM
+# don't undefine $TERM if we're going to invoke gdb or it will prevent its TUI
+# from starting
+ifneq ($(DEBUG),gdb)
+    # don't pass $TERM to tests, they should work without a terminal and this
+    # variable
+    unexport TERM
+endif
+
 # hide terminal multiplexers and graphic systems, so tests behave consistently
 unexport STY TMUX DISPLAY WAYLAND_DISPLAY
 

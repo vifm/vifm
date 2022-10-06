@@ -74,8 +74,8 @@ TEST(moving_fake_entry_removes_the_other_file)
 	create_file(SANDBOX_PATH "/empty");
 
 	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
-	rwin.list_pos = 4;
-	lwin.list_pos = 4;
+	rwin.list_pos = 0;
+	lwin.list_pos = 0;
 	(void)compare_move(&lwin, &rwin);
 
 	assert_failure(remove(SANDBOX_PATH "/empty"));
