@@ -952,16 +952,25 @@ put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
 		CompareType ct)
 {
 	compare_record_t *const record = malloc(sizeof(*record));
-	void *data = NULL;
-	(void)trie_get(trie, fingerprint, &data);
 
 	record->id = id;
-	record->next = data;
+	record->next = NULL;
 
 	/* Comparison by contents is the only one when we need to resolve fingerprint
 	 * conflicts. */
 	record->path = (ct == CT_CONTENTS ? strdup(path) : NULL);
 
+	/* Just add new entry to the list if something is already there. */
+	void *data = NULL;
+	(void)trie_get(trie, fingerprint, &data);
+	compare_record_t *prev = data;
+	if(prev != NULL)
+	{
+		prev->next = record;
+		return;
+	}
+
+	/* Otherwise we're the head of the list. */
 	if(trie_set(trie, fingerprint, record) < 0)
 	{
 		free(record->path);
