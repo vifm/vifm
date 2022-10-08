@@ -275,11 +275,10 @@ dir_entry_t * add_dir_entry(dir_entry_t **list, size_t *list_size,
  * entry or NULL on error. */
 dir_entry_t * entry_list_add(view_t *view, dir_entry_t **list, int *list_size,
 		const char path[]);
-/* Frees list of directory entries related to the view.  Sets *entries and
- * *count to safe values. */
-void free_dir_entries(view_t *view, dir_entry_t **entries, int *count);
+/* Frees list of directory entries.  Sets *entries and *count to safe values. */
+void free_dir_entries(dir_entry_t **entries, int *count);
 /* Frees single directory entry. */
-void fentry_free(const view_t *view, dir_entry_t *entry);
+void fentry_free(dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
 void add_parent_dir(view_t *view);
 /* Changes name of a file entry, performing additional required updates. */
@@ -310,7 +309,7 @@ int flist_clone_tree(view_t *to, const view_t *from);
 int flist_update_cache(view_t *view, cached_entries_t *cache,
 		const char path[]);
 /* Frees the cache. */
-void flist_free_cache(view_t *view, cached_entries_t *cache);
+void flist_free_cache(cached_entries_t *cache);
 /* Updates non-heap-allocated origin pointers of entries in file list
  * entries. */
 void flist_update_origins(view_t *view);

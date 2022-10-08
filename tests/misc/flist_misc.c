@@ -461,7 +461,7 @@ TEST(cache_handles_noexec_dirs, IF(regular_unix_user))
 	cached_entries_t cache = {};
 	assert_true(flist_update_cache(&lwin, &cache, SANDBOX_PATH "/dir"));
 	assert_int_equal(0, cache.entries.nentries);
-	flist_free_cache(&lwin, &cache);
+	flist_free_cache(&cache);
 
 	assert_success(chmod(SANDBOX_PATH "/dir", 0777));
 	assert_success(remove(SANDBOX_PATH "/dir/file"));

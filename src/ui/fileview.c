@@ -346,7 +346,7 @@ draw_left_column(view_t *view)
 	               - (cfg.extra_padding ? 1 : 0) - 1;
 	if(lcol_width <= 0)
 	{
-		flist_free_cache(view, &view->left_column);
+		flist_free_cache(&view->left_column);
 		return;
 	}
 
@@ -380,7 +380,7 @@ draw_right_column(view_t *view)
 	const int rcol_width = ui_view_right_reserved(view) - padding - 1;
 	if(rcol_width <= 0)
 	{
-		flist_free_cache(view, &view->right_column);
+		flist_free_cache(&view->right_column);
 		return;
 	}
 

@@ -122,8 +122,8 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 
 	if(ui_cancellation_requested())
 	{
-		free_dir_entries(curr_view, &curr.entries, &curr.nentries);
-		free_dir_entries(other_view, &other.entries, &other.nentries);
+		free_dir_entries(&curr.entries, &curr.nentries);
+		free_dir_entries(&other.entries, &other.nentries);
 		ui_sb_msg("Comparison has been cancelled");
 		return 1;
 	}
@@ -220,11 +220,11 @@ make_unique_lists(entries_t curr, entries_t other)
 
 		while(j < curr.nentries && curr.entries[j].id == id)
 		{
-			fentry_free(curr_view, &curr.entries[j++]);
+			fentry_free(&curr.entries[j++]);
 		}
 		while(i < other.nentries && other.entries[i].id == id)
 		{
-			fentry_free(other_view, &other.entries[i++]);
+			fentry_free(&other.entries[i++]);
 		}
 		/* Want to revisit this entry on the next iteration of the loop. */
 		--i;
@@ -508,7 +508,7 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 
 	if(ui_cancellation_requested())
 	{
-		free_dir_entries(view, &curr.entries, &curr.nentries);
+		free_dir_entries(&curr.entries, &curr.nentries);
 		ui_sb_msg("Comparison has been cancelled");
 		return 1;
 	}
@@ -593,7 +593,7 @@ put_or_free(view_t *view, dir_entry_t *entry, int id, int take)
 	}
 	else
 	{
-		fentry_free(view, entry);
+		fentry_free(entry);
 	}
 }
 
@@ -632,7 +632,7 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 
 		if(skip_empty && entry->size == 0)
 		{
-			fentry_free(view, entry);
+			fentry_free(entry);
 			--r.nentries;
 			continue;
 		}
@@ -643,7 +643,7 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 		if(is_null_or_empty(fingerprint))
 		{
 			free(fingerprint);
-			fentry_free(view, entry);
+			fentry_free(entry);
 			--r.nentries;
 			continue;
 		}

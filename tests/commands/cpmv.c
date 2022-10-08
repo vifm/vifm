@@ -127,7 +127,7 @@ TEST(cpmv_does_not_crash_on_wrong_list_access)
 	strcpy(lwin.curr_dir, path);
 	strcpy(rwin.curr_dir, sandbox);
 
-	free_dir_entries(&lwin, &lwin.dir_entry, &lwin.list_rows);
+	free_dir_entries(&lwin.dir_entry, &lwin.list_rows);
 
 	lwin.list_rows = 3;
 	lwin.list_pos = 0;
