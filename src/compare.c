@@ -84,7 +84,7 @@ static void list_files_recursively(const view_t *view, const char path[],
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
 static char * get_contents_fingerprint(const char path[],
-		const dir_entry_t *entry);
+		unsigned long long size);
 static int get_file_id(trie_t *trie, const char path[],
 		const char fingerprint[], int *id, CompareType ct);
 static int files_are_identical(const char a[], const char b[]);
@@ -809,7 +809,7 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		case CT_SIZE:
 			return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
 		case CT_CONTENTS:
-			return get_contents_fingerprint(path, entry);
+			return get_contents_fingerprint(path, entry->size);
 	}
 	assert(0 && "Unexpected diffing type.");
 	return strdup("");
@@ -818,7 +818,7 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 /* Makes fingerprint of file contents (all or part of it of fixed size).
  * Returns the fingerprint as a string, which is empty or NULL on error. */
 static char *
-get_contents_fingerprint(const char path[], const dir_entry_t *entry)
+get_contents_fingerprint(const char path[], unsigned long long size)
 {
 	char block[BLOCK_SIZE];
 	size_t to_read = PREFIX_SIZE;
@@ -859,8 +859,7 @@ get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 	const unsigned long long digest = XXH3_64bits_digest(st);
 	XXH3_freeState(st);
 
-	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL,
-			(unsigned long long)entry->size, digest);
+	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL, size, digest);
 }
 
 /* Retrieves file from the trie by its fingerprint.  Returns non-zero if it was
