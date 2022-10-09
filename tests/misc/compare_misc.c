@@ -130,13 +130,16 @@ TEST(compare_skips_dir_symlinks, IF(not_windows))
 TEST(not_available_files_are_ignored, IF(regular_unix_user))
 {
 	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
 	assert_success(chmod(SANDBOX_PATH "/utf8-bom", 0000));
+	assert_success(chmod(SANDBOX_PATH "/utf8-bom-2", 0000));
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, /*skip_empty=*/0);
 	assert_false(flist_custom_active(&lwin));
 
 	assert_success(remove(SANDBOX_PATH "/utf8-bom"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
 }
 
 TEST(two_panes_are_left_in_sync)

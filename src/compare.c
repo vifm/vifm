@@ -47,6 +47,22 @@
 #include "fops_misc.h"
 #include "running.h"
 
+/*
+ * Optimization for content-based matching.
+ *
+ * At first fingerprint uses only size of the file, then it's looked up to see
+ * if there is any other file of the same size.  If there isn't, store compare
+ * record by that fingerprint.
+ *
+ * If there is, two cases are possible:
+ *   - there is only one conflicting file and its contents fingerprint wasn't
+ *     yet computed:
+ *       * compute contents fingerprint for that file and insert it
+ *       * compute contents fingerprint for current file and insert it
+ *   - there is more than one conflicting file:
+ *       * compute contents fingerprint for current file and insert it
+ */
+
 /* This is the only unit that uses xxhash, so import it directly here. */
 #define XXH_PRIVATE_API
 #include "utils/xxhash.h"
@@ -62,7 +78,8 @@ typedef struct compare_record_t
 {
 	char *path;                    /* Full path to file with sample content. */
 	int id;                        /* Chosen id. */
-	struct compare_record_t *next; /* Next entry in the list. */
+	int is_partial;                /* Shows that fingerprinting was lazy. */
+	struct compare_record_t *next; /* Next entry in the list of conflicts. */
 }
 compare_record_t;
 
@@ -82,14 +99,14 @@ static int append_valid_nodes(const char name[], int valid,
 static void list_files_recursively(const view_t *view, const char path[],
 		int skip_dot_files, strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
-		CompareType ct);
+		CompareType ct, int lazy);
 static char * get_contents_fingerprint(const char path[],
 		unsigned long long size);
-static int get_file_id(trie_t *trie, const char path[],
-		const char fingerprint[], int *id, CompareType ct);
+static int add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
+		CompareType ct, int dups_only, int *next_id);
 static int files_are_identical(const char a[], const char b[]);
 static void put_file_id(trie_t *trie, const char path[],
-		const char fingerprint[], int id, CompareType ct);
+		const char fingerprint[], int id, int is_partial, CompareType ct);
 static void free_compare_records(void *ptr);
 
 int
@@ -624,8 +641,6 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
 	{
 		int progress;
-		int existing_id;
-		char *fingerprint;
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
 				path);
@@ -637,34 +652,14 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 			continue;
 		}
 
-		fingerprint = get_file_fingerprint(path, entry, ct);
-		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
-		 * files isn't readable), ignore the file and keep going. */
-		if(is_null_or_empty(fingerprint))
+		entry->tag = i;
+		entry->id = add_file_to_diff(trie, path, entry, ct, dups_only, next_id);
+
+		if(entry->id == -1)
 		{
-			free(fingerprint);
 			fentry_free(entry);
 			--r.nentries;
-			continue;
 		}
-
-		entry->tag = i;
-		if(get_file_id(trie, path, fingerprint, &existing_id, ct))
-		{
-			entry->id = existing_id;
-		}
-		else if(dups_only)
-		{
-			entry->id = -1;
-		}
-		else
-		{
-			entry->id = *next_id;
-			++*next_id;
-			put_file_id(trie, path, fingerprint, entry->id, ct);
-		}
-
-		free(fingerprint);
 
 		progress = (i*100)/files.nitems;
 		if(progress != last_progress)
@@ -789,11 +784,13 @@ list_files_recursively(const view_t *view, const char path[],
 }
 
 /* Computes fingerprint of the file specified by path and entry.  Type of the
- * fingerprint is determined by ct parameter.  Returns newly allocated string
- * with the fingerprint, which is empty or NULL on error. */
+ * fingerprint is determined by ct parameter.  Lazy fingerprint is an
+ * optimization which prevents computing contents fingerprint until there is
+ * more than one file of the given size.  Returns newly allocated string with
+ * the fingerprint, which is empty or NULL on error. */
 static char *
 get_file_fingerprint(const char path[], const dir_entry_t *entry,
-		CompareType ct)
+		CompareType ct, int lazy)
 {
 	switch(ct)
 	{
@@ -809,6 +806,16 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		case CT_SIZE:
 			return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
 		case CT_CONTENTS:
+			if(lazy)
+			{
+				/* Comparing by contents can't be done if file can't be read. */
+				if(os_access(path, R_OK) != 0)
+				{
+					return strdup("");
+				}
+
+				return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
+			}
 			return get_contents_fingerprint(path, entry->size);
 	}
 	assert(0 && "Unexpected diffing type.");
@@ -862,42 +869,101 @@ get_contents_fingerprint(const char path[], unsigned long long size)
 	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL, size, digest);
 }
 
-/* Retrieves file from the trie by its fingerprint.  Returns non-zero if it was
- * in the trie and sets *id, otherwise zero is returned. */
+/* Looks up file in the trie by its fingerprint.  Returns id for the file or -1
+ * if it should be skipped. */
 static int
-get_file_id(trie_t *trie, const char path[], const char fingerprint[], int *id,
-		CompareType ct)
+add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
+		CompareType ct, int dups_only, int *next_id)
 {
-	void *data;
-	compare_record_t *record;
-	if(trie_get(trie, fingerprint, &data) != 0)
+	char *fingerprint = get_file_fingerprint(path, entry, ct, /*lazy=*/1);
+	if(is_null_or_empty(fingerprint))
 	{
-		return 0;
-	}
-	record = data;
-
-	/* Comparison by contents is the only one when we need to resolve fingerprint
-	 * conflicts. */
-	if(ct != CT_CONTENTS)
-	{
-		*id = record->id;
-		return 1;
+		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
+		 * the file isn't readable), ignore the file and keep going. */
+		free(fingerprint);
+		return -1;
 	}
 
-	/* Fingerprint does not guarantee a match, go through files and find file with
-	 * identical content. */
-	do
+	void *data = NULL;
+	(void)trie_get(trie, fingerprint, &data);
+
+	compare_record_t *record = data;
+	int is_partial = (ct == CT_CONTENTS);
+
+	/* Comparison by contents is the only one when we need to account for lazy
+	 * fingerprint computation or resolve fingerprint conflicts. */
+	if(record != NULL && ct == CT_CONTENTS)
 	{
-		if(files_are_identical(path, record->path))
+		free(fingerprint);
+		is_partial = 0;
+
+		fingerprint = get_file_fingerprint(path, entry, ct, /*lazy=*/0);
+		if(is_null_or_empty(fingerprint))
 		{
-			*id = record->id;
-			return 1;
+			/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
+			 * the file isn't readable), ignore the file and keep going. */
+			free(fingerprint);
+			return -1;
 		}
-		record = record->next;
-	}
-	while(record != NULL);
 
-	return 0;
+		if(record->is_partial)
+		{
+			/* There is another file of the same size whose contents fingerprint
+			 * hasn't been computed yet.  Do it here. */
+			char *other_fingerprint = get_contents_fingerprint(record->path,
+					entry->size);
+			if(is_null_or_empty(fingerprint))
+			{
+				/* That other file has issues, don't update it and skip any other file
+				 * that can conflict with it by size.  The file itself won't be skipped
+				 * though, should it be? */
+				free(other_fingerprint);
+				free(fingerprint);
+				return -1;
+			}
+
+			put_file_id(trie, record->path, other_fingerprint, record->id,
+					/*is_partial=*/0, ct);
+			free(other_fingerprint);
+
+			record->is_partial = 0;
+		}
+
+		/* Repeat trie lookup with contents fingerprint. */
+		(void)trie_get(trie, fingerprint, &data);
+		record = data;
+
+		/* Fingerprint does not guarantee a match, go through files and find file
+		 * with identical contents. */
+		do
+		{
+			if(files_are_identical(path, record->path))
+			{
+				break;
+			}
+			record = record->next;
+		}
+		while(record != NULL);
+	}
+
+	if(record != NULL)
+	{
+		free(fingerprint);
+		return record->id;
+	}
+
+	if(dups_only)
+	{
+		free(fingerprint);
+		return -1;
+	}
+
+	int id = *next_id;
+	++*next_id;
+	put_file_id(trie, path, fingerprint, id, is_partial, ct);
+
+	free(fingerprint);
+	return id;
 }
 
 /* Checks whether two files specified by their names hold identical content.
@@ -949,11 +1015,12 @@ files_are_identical(const char a[], const char b[])
 /* Stores id of a file with given fingerprint in the trie. */
 static void
 put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
-		CompareType ct)
+		int is_partial, CompareType ct)
 {
 	compare_record_t *const record = malloc(sizeof(*record));
 
 	record->id = id;
+	record->is_partial = is_partial;
 	record->next = NULL;
 
 	/* Comparison by contents is the only one when we need to resolve fingerprint
@@ -1061,8 +1128,8 @@ compare_move(view_t *from, view_t *to)
 	/* Try to update id of the other entry by computing fingerprint of both files
 	 * and checking if they match. */
 
-	from_fingerprint = get_file_fingerprint(from_path, curr, ct);
-	to_fingerprint = get_file_fingerprint(to_path, other, ct);
+	from_fingerprint = get_file_fingerprint(from_path, curr, ct, /*lazy=*/0);
+	to_fingerprint = get_file_fingerprint(to_path, other, ct, /*lazy=*/0);
 
 	if(!is_null_or_empty(from_fingerprint) && !is_null_or_empty(to_fingerprint))
 	{
