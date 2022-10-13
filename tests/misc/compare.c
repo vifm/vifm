@@ -41,7 +41,7 @@ TEARDOWN()
 TEST(files_are_compared_by_name)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
-	compare_one_pane(&lwin, CT_NAME, LT_ALL, 0);
+	compare_one_pane(&lwin, CT_NAME, LT_ALL, CF_NONE);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(3, lwin.list_rows);
@@ -53,7 +53,7 @@ TEST(files_are_compared_by_name)
 TEST(files_are_compared_by_size)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
-	compare_one_pane(&lwin, CT_SIZE, LT_ALL, 0);
+	compare_one_pane(&lwin, CT_SIZE, LT_ALL, CF_NONE);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(3, lwin.list_rows);
@@ -65,7 +65,7 @@ TEST(files_are_compared_by_size)
 TEST(files_are_compared_by_contents)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, CF_NONE);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(4, lwin.list_rows);
@@ -79,7 +79,7 @@ TEST(two_panes_all_group_ids)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, 0, 0);
+	compare_two_panes(CT_NAME, LT_ALL, CF_NONE);
 
 	check_compare_invariants(4);
 
@@ -104,7 +104,7 @@ TEST(two_panes_all_group_paths)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, 1, 0);
+	compare_two_panes(CT_NAME, LT_ALL, CF_GROUP_PATHS);
 
 	check_compare_invariants(4);
 
@@ -129,7 +129,7 @@ TEST(two_panes_dups_one_is_empty)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
 
 	check_compare_invariants(4);
 
@@ -152,7 +152,7 @@ TEST(two_panes_dups)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_DUPS, 1, 0);
+	compare_two_panes(CT_CONTENTS, LT_DUPS, CF_GROUP_PATHS);
 
 	check_compare_invariants(3);
 
@@ -172,7 +172,7 @@ TEST(two_panes_unique)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 1, 0);
+	compare_two_panes(CT_CONTENTS, LT_UNIQUE, CF_GROUP_PATHS);
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(1, rwin.list_rows);
@@ -189,7 +189,7 @@ TEST(single_pane_all)
 	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, CF_NONE);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(4, lwin.list_rows);
@@ -209,7 +209,7 @@ TEST(single_pane_all)
 TEST(single_pane_dups)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS, 0);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS, CF_NONE);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(5, lwin.list_rows);
@@ -229,7 +229,7 @@ TEST(single_pane_unique)
 	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_UNIQUE, 0);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_UNIQUE, CF_NONE);
 
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	assert_int_equal(1, lwin.list_rows);
@@ -251,7 +251,7 @@ TEST(relatively_complex_match)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
 
 	check_compare_invariants(10);
 
@@ -319,7 +319,7 @@ TEST(content_difference_is_detected)
 	other_view = &rwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
 	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(1, rwin.list_rows);

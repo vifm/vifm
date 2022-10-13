@@ -265,7 +265,7 @@ TEST(getpanetype_for_compare_view)
 	other_view = &rwin;
 
 	opt_handlers_setup();
-	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS, 0);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS, CF_NONE);
 	opt_handlers_teardown();
 
 	ASSERT_OK("getpanetype()", "compare");

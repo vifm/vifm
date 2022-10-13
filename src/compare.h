@@ -30,15 +30,23 @@ typedef enum
 }
 ListType;
 
-/* Composes two panes containing information about derived from two file system
- * trees.  If group_paths is zero, views are sorted by ids.  Returns non-zero if
- * status bar message should be preserved. */
-int compare_two_panes(CompareType ct, ListType lt, int group_paths,
-		int skip_empty);
+/* Comparison flags. */
+typedef enum
+{
+	CF_NONE        = 0, /* No flags. */
+	CF_GROUP_PATHS = 1, /* Otherwise ids are grouped.  Only for two-pane
+                       * compare. */
+	CF_SKIP_EMPTY  = 2, /* Exclude empty files from comparison. */
+}
+CompareFlags;
+
+/* Composes two panes containing information about files derived from two file
+ * system trees.  Returns non-zero if status bar message should be preserved. */
+int compare_two_panes(CompareType ct, ListType lt, int flags);
 
 /* Replaces single pane with information derived from its files.  Returns
  * non-zero if status bar message should be preserved. */
-int compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty);
+int compare_one_pane(view_t *view, CompareType ct, ListType lt, int flags);
 
 /* Moves current file from one view to the other.  Returns non-zero if status
  * bar message should be preserved. */

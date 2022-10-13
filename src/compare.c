@@ -110,8 +110,11 @@ static void put_file_id(trie_t *trie, const char path[],
 static void free_compare_records(void *ptr);
 
 int
-compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
+compare_two_panes(CompareType ct, ListType lt, int flags)
 {
+	const int group_paths = flags & CF_GROUP_PATHS;
+	const int skip_empty = flags & CF_SKIP_EMPTY;
+
 	/* We don't compare lists of files, so skip the check if at least one of the
 	 * views is a custom one. */
 	if(!flist_custom_active(&lwin) && !flist_custom_active(&rwin) &&
@@ -502,8 +505,10 @@ compare_entries(dir_entry_t *curr, dir_entry_t *other)
 }
 
 int
-compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
+compare_one_pane(view_t *view, CompareType ct, ListType lt, int flags)
 {
+	const int skip_empty = flags & CF_SKIP_EMPTY;
+
 	int i, dup_id;
 	view_t *other = (view == curr_view) ? other_view : curr_view;
 	const char *const title = (lt == LT_ALL)  ? "compare"
