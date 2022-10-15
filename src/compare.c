@@ -199,8 +199,8 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	other_view->list_pos = 0;
 	curr_view->custom.diff_cmp_type = ct;
 	other_view->custom.diff_cmp_type = ct;
-	curr_view->custom.diff_path_group = group_paths;
-	other_view->custom.diff_path_group = group_paths;
+	curr_view->custom.diff_cmp_flags = flags;
+	other_view->custom.diff_cmp_flags = flags;
 
 	assert(curr_view->list_rows == other_view->list_rows &&
 			"Diff views must be in sync!");
@@ -1072,11 +1072,12 @@ compare_move(view_t *from, view_t *to)
 	char *from_fingerprint, *to_fingerprint;
 
 	const CompareType ct = from->custom.diff_cmp_type;
+	const CompareType flags = from->custom.diff_cmp_flags;
 
 	dir_entry_t *const curr = &from->dir_entry[from->list_pos];
 	dir_entry_t *const other = &to->dir_entry[from->list_pos];
 
-	if(from->custom.type != CV_DIFF || !from->custom.diff_path_group)
+	if(from->custom.type != CV_DIFF || !(flags & CF_GROUP_PATHS))
 	{
 		ui_sb_err("Not in diff mode with path grouping");
 		return 1;
