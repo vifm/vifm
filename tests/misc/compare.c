@@ -75,6 +75,53 @@ TEST(files_are_compared_by_contents)
 	assert_int_equal(3, lwin.dir_entry[3].id);
 }
 
+TEST(two_panes_by_name_ignore_case)
+{
+	create_file(SANDBOX_PATH "/A");
+	create_file(SANDBOX_PATH "/Aa");
+	create_file(SANDBOX_PATH "/aAa");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/rename");
+
+	compare_two_panes(CT_NAME, LT_ALL, CF_GROUP_PATHS | CF_IGNORE_CASE);
+
+	check_compare_invariants(3);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+
+	assert_string_equal("A", lwin.dir_entry[0].name);
+	assert_string_equal("a", rwin.dir_entry[0].name);
+	assert_string_equal("Aa", lwin.dir_entry[1].name);
+	assert_string_equal("aa", rwin.dir_entry[1].name);
+	assert_string_equal("aAa", lwin.dir_entry[2].name);
+	assert_string_equal("aaa", rwin.dir_entry[2].name);
+
+	remove_file(SANDBOX_PATH "/A");
+	remove_file(SANDBOX_PATH "/Aa");
+	remove_file(SANDBOX_PATH "/aAa");
+}
+
+TEST(two_panes_by_name_respect_case)
+{
+	create_file(SANDBOX_PATH "/A");
+	create_file(SANDBOX_PATH "/Aa");
+	create_file(SANDBOX_PATH "/aAa");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/rename");
+
+	compare_two_panes(CT_NAME, LT_ALL, CF_GROUP_PATHS | CF_RESPECT_CASE);
+
+	check_compare_invariants(6);
+
+	remove_file(SANDBOX_PATH "/A");
+	remove_file(SANDBOX_PATH "/Aa");
+	remove_file(SANDBOX_PATH "/aAa");
+}
+
 TEST(two_panes_all_group_ids)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");

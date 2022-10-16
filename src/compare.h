@@ -33,10 +33,13 @@ ListType;
 /* Comparison flags. */
 typedef enum
 {
-	CF_NONE        = 0, /* No flags. */
-	CF_GROUP_PATHS = 1, /* Otherwise ids are grouped.  Only for two-pane
-                       * compare. */
-	CF_SKIP_EMPTY  = 2, /* Exclude empty files from comparison. */
+	CF_NONE         = 0, /* No flags. */
+	CF_GROUP_PATHS  = 1, /* Otherwise ids are grouped.  Only for two-pane
+                        * compare. */
+	CF_SKIP_EMPTY   = 2, /* Exclude empty files from comparison. */
+	CF_IGNORE_CASE  = 4, /* Compare file names case-insensitively. */
+	CF_RESPECT_CASE = 8, /* Compare file names case-sensitively.  Case is
+	                        OS/FS-specific if neither CF_*_CASE flag is set. */
 }
 CompareFlags;
 

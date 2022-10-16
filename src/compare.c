@@ -86,24 +86,25 @@ compare_record_t;
 static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg);
-static void fill_side_by_side_by_paths(entries_t curr, entries_t other);
+static void fill_side_by_side_by_paths(entries_t curr, entries_t other,
+		int flags);
 static void fill_side_by_side_by_ids(entries_t curr, entries_t other);
-static int compare_entries(dir_entry_t *curr, dir_entry_t *other);
+static int compare_entries(dir_entry_t *curr, dir_entry_t *other, int flags);
 static int id_sorter(const void *first, const void *second);
 static void put_or_free(view_t *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, view_t *view, int *next_id,
-		CompareType ct, int skip_empty, int dups_only);
+		CompareType ct, int dups_only, int flags);
 static void list_view_entries(const view_t *view, strlist_t *list);
 static int append_valid_nodes(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 static void list_files_recursively(const view_t *view, const char path[],
 		int skip_dot_files, strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
-		CompareType ct, int lazy);
+		CompareType ct, int flags, int lazy);
 static char * get_contents_fingerprint(const char path[],
 		unsigned long long size);
 static int add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
-		CompareType ct, int dups_only, int *next_id);
+		CompareType ct, int dups_only, int flags, int *next_id);
 static int files_are_identical(const char a[], const char b[]);
 static void put_file_id(trie_t *trie, const char path[],
 		const char fingerprint[], int id, int is_partial, CompareType ct);
@@ -112,8 +113,10 @@ static void free_compare_records(void *ptr);
 int
 compare_two_panes(CompareType ct, ListType lt, int flags)
 {
+	assert((flags & (CF_IGNORE_CASE | CF_RESPECT_CASE)) !=
+			(CF_IGNORE_CASE | CF_RESPECT_CASE) && "Wrong combination of flags.");
+
 	const int group_paths = flags & CF_GROUP_PATHS;
-	const int skip_empty = flags & CF_SKIP_EMPTY;
 
 	/* We don't compare lists of files, so skip the check if at least one of the
 	 * views is a custom one. */
@@ -130,9 +133,8 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	trie_t *const trie = trie_create(&free_compare_records);
 	ui_cancellation_push_on();
 
-	curr = make_diff_list(trie, curr_view, &next_id, ct, skip_empty, 0);
-	other = make_diff_list(trie, other_view, &next_id, ct, skip_empty,
-			lt == LT_DUPS);
+	curr = make_diff_list(trie, curr_view, &next_id, ct, /*dups_only=*/0, flags);
+	other = make_diff_list(trie, other_view, &next_id, ct, lt == LT_DUPS, flags);
 
 	ui_cancellation_pop();
 	trie_free(trie);
@@ -173,7 +175,7 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 
 	if(group_paths)
 	{
-		fill_side_by_side_by_paths(curr, other);
+		fill_side_by_side_by_paths(curr, other, flags);
 	}
 	else
 	{
@@ -341,7 +343,7 @@ is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg)
 /* Composes side-by-side comparison of files in two views centered around their
  * relative paths. */
 static void
-fill_side_by_side_by_paths(entries_t curr, entries_t other)
+fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags)
 {
 	int i = 0;
 	int j = 0;
@@ -352,7 +354,7 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other)
 
 		if(i < curr.nentries && j < other.nentries)
 		{
-			cmp = compare_entries(&curr.entries[i], &other.entries[j]);
+			cmp = compare_entries(&curr.entries[i], &other.entries[j], flags);
 		}
 		else
 		{
@@ -458,16 +460,28 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other)
 
 /* Compares entries by their short paths.  Returns strcmp()-like result. */
 static int
-compare_entries(dir_entry_t *curr, dir_entry_t *other)
+compare_entries(dir_entry_t *curr, dir_entry_t *other, int flags)
 {
 	char path_a[PATH_MAX + 1], path_b[PATH_MAX + 1];
 	get_full_path_of(curr, sizeof(path_a), path_a);
 	get_full_path_of(other, sizeof(path_b), path_b);
 
-	/* If at least one path is case-sensitive, don't ignore case.  Otherwise, we
-	 * would end up with multiple matching pairs of paths. */
-	int case_sensitive = case_sensitive_paths(path_a)
-	                  || case_sensitive_paths(path_b);
+	int case_sensitive;
+	if(flags & CF_IGNORE_CASE)
+	{
+		case_sensitive = 0;
+	}
+	else if(flags & CF_RESPECT_CASE)
+	{
+		case_sensitive = 1;
+	}
+	else
+	{
+		/* If at least one path is case-sensitive, don't ignore case.  Otherwise, we
+		 * would end up with multiple matching pairs of paths. */
+		case_sensitive = case_sensitive_paths(path_a)
+		              || case_sensitive_paths(path_b);
+	}
 
 	get_short_path_of(curr_view, curr, NF_NONE, 0, sizeof(path_a), path_a);
 	get_short_path_of(other_view, other, NF_NONE, 0, sizeof(path_b), path_b);
@@ -507,7 +521,8 @@ compare_entries(dir_entry_t *curr, dir_entry_t *other)
 int
 compare_one_pane(view_t *view, CompareType ct, ListType lt, int flags)
 {
-	const int skip_empty = flags & CF_SKIP_EMPTY;
+	assert((flags & (CF_IGNORE_CASE | CF_RESPECT_CASE)) !=
+			(CF_IGNORE_CASE | CF_RESPECT_CASE) && "Wrong combination of flags.");
 
 	int i, dup_id;
 	view_t *other = (view == curr_view) ? other_view : curr_view;
@@ -520,7 +535,7 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int flags)
 	trie_t *trie = trie_create(&free_compare_records);
 	ui_cancellation_push_on();
 
-	curr = make_diff_list(trie, view, &next_id, ct, skip_empty, 0);
+	curr = make_diff_list(trie, view, &next_id, ct, /*dups_only=*/0, flags);
 
 	ui_cancellation_pop();
 	trie_free(trie);
@@ -624,8 +639,10 @@ put_or_free(view_t *view, dir_entry_t *entry, int id, int take)
  * trie. */
 static entries_t
 make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
-		int skip_empty, int dups_only)
+		int dups_only, int flags)
 {
+	const int skip_empty = flags & CF_SKIP_EMPTY;
+
 	int i;
 	strlist_t files = {};
 	entries_t r = {};
@@ -658,7 +675,8 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 		}
 
 		entry->tag = i;
-		entry->id = add_file_to_diff(trie, path, entry, ct, dups_only, next_id);
+		entry->id = add_file_to_diff(trie, path, entry, ct, dups_only, flags,
+				next_id);
 
 		if(entry->id == -1)
 		{
@@ -795,17 +813,32 @@ list_files_recursively(const view_t *view, const char path[],
  * the fingerprint, which is empty or NULL on error. */
 static char *
 get_file_fingerprint(const char path[], const dir_entry_t *entry,
-		CompareType ct, int lazy)
+		CompareType ct, int flags, int lazy)
 {
 	switch(ct)
 	{
+		int case_sensitive;
 		char name[NAME_MAX + 1];
 
 		case CT_NAME:
-			if(case_sensitive_paths(path))
+			if(flags & CF_IGNORE_CASE)
+			{
+				case_sensitive = 0;
+			}
+			else if(flags & CF_RESPECT_CASE)
+			{
+				case_sensitive = 1;
+			}
+			else
+			{
+				case_sensitive = case_sensitive_paths(path);
+			}
+
+			if(case_sensitive)
 			{
 				return strdup(entry->name);
 			}
+
 			str_to_lower(entry->name, name, sizeof(name));
 			return strdup(name);
 		case CT_SIZE:
@@ -878,9 +911,9 @@ get_contents_fingerprint(const char path[], unsigned long long size)
  * if it should be skipped. */
 static int
 add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
-		CompareType ct, int dups_only, int *next_id)
+		CompareType ct, int dups_only, int flags, int *next_id)
 {
-	char *fingerprint = get_file_fingerprint(path, entry, ct, /*lazy=*/1);
+	char *fingerprint = get_file_fingerprint(path, entry, ct, flags, /*lazy=*/1);
 	if(is_null_or_empty(fingerprint))
 	{
 		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
@@ -902,7 +935,7 @@ add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
 		free(fingerprint);
 		is_partial = 0;
 
-		fingerprint = get_file_fingerprint(path, entry, ct, /*lazy=*/0);
+		fingerprint = get_file_fingerprint(path, entry, ct, flags, /*lazy=*/0);
 		if(is_null_or_empty(fingerprint))
 		{
 			/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
@@ -1134,8 +1167,9 @@ compare_move(view_t *from, view_t *to)
 	/* Try to update id of the other entry by computing fingerprint of both files
 	 * and checking if they match. */
 
-	from_fingerprint = get_file_fingerprint(from_path, curr, ct, /*lazy=*/0);
-	to_fingerprint = get_file_fingerprint(to_path, other, ct, /*lazy=*/0);
+	from_fingerprint = get_file_fingerprint(from_path, curr, ct, flags,
+			/*lazy=*/0);
+	to_fingerprint = get_file_fingerprint(to_path, other, ct, flags, /*lazy=*/0);
 
 	if(!is_null_or_empty(from_fingerprint) && !is_null_or_empty(to_fingerprint))
 	{
