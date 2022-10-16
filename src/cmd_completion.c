@@ -534,6 +534,9 @@ complete_compare(const char str[])
 		{ "grouppaths", "group files in two panes by paths" },
 
 		{ "skipempty",  "exclude empty files from comparison" },
+
+		{ "withicase",  "force ignoring case on comparing names" },
+		{ "withrcase",  "force respecting case on comparing names" },
 	};
 
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);

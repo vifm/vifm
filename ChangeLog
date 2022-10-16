@@ -3,6 +3,10 @@
 	Changed implementation of `:compare grouppaths` to juxtapose only files
 	with identical relative paths.  Patch by Alexandr Keyp (a.k.a. IAmKapuze).
 
+	Added "withicase" and "withrcase" to :compare that force ignoring and
+	respecting case respectively on comparing file names and paths.  Thanks to
+	Jose Riha (a.k.a. jose1711).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

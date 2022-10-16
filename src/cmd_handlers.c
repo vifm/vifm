@@ -2071,6 +2071,16 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 		else if(strcmp(property, "groupids") == 0)   *flags &= ~CF_GROUP_PATHS;
 		else if(strcmp(property, "grouppaths") == 0) *flags |= CF_GROUP_PATHS;
 		else if(strcmp(property, "skipempty") == 0)  *flags |= CF_SKIP_EMPTY;
+		else if(strcmp(property, "withicase") == 0)
+		{
+			*flags &= ~CF_RESPECT_CASE;
+			*flags |= CF_IGNORE_CASE;
+		}
+		else if(strcmp(property, "withrcase") == 0)
+		{
+			*flags &= ~CF_IGNORE_CASE;
+			*flags |= CF_RESPECT_CASE;
+		}
 		else
 		{
 			ui_sb_errf("Unknown comparison property: %s", property);

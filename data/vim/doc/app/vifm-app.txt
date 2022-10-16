@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Sep 21
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Oct 16
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1500,8 +1500,11 @@ The builtin commands are:
       :%copy
 <
                                                *vifm-:compare*
-:compare [byname | bysize | bycontents | listall | listunique | listdups |
-          ofboth | ofone | groupids | grouppaths | skipempty]...
+:compare [byname | bysize | bycontents |
+          listall | listunique | listdups |
+          ofboth | ofone |
+          groupids | grouppaths |
+          skipempty | withicase | withrcase]...
     compare files in one or two views according to the arguments.  The default
     is "bycontents listall ofboth grouppaths".  See |vifm-compare-views| for
     details.  Diff structure is incompatible with alternative representations,
@@ -5459,8 +5462,15 @@ How results are grouped (has no effect if "ofone" specified):
 Which files to omit:
  - skipempty - ignore empty files.
 
+Comparison tweaks:
+ - withicase - ignore case when comparing file names/paths;
+ - withrcase - respect case when comparing file names/paths.
+
 Each argument can appear multiple times, the rightmost one of the group is
 considered.  Arguments alter default behaviour instead of substituting it.
+
+When neither `withicase` nor `withrcase` is specified, case depends on the
+running operating system and the file system on which the files are located.
 
 Examples~
 
