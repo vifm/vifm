@@ -262,7 +262,7 @@ struct cv_data_t
 
 	/* Additional data about CV_DIFF type. */
 	CompareType diff_cmp_type; /* Type of comparison. */
-	int diff_path_group;       /* Whether entries are grouped by paths. */
+	int diff_cmp_flags;        /* Flags used to build the diff. */
 
 	/* This is temporary storage for custom list entries used during its
 	 * construction. */

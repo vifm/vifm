@@ -367,7 +367,7 @@ filters_drop_temporaries(view_t *view, dir_entry_t entries[])
 
 		if(entry->temporary)
 		{
-			fentry_free(view, entry);
+			fentry_free(entry);
 			continue;
 		}
 
@@ -559,7 +559,7 @@ update_filtering_lists(view_t *view, int add, int clear)
 			{
 				if(clear)
 				{
-					fentry_free(view, entry);
+					fentry_free(entry);
 				}
 				continue;
 			}
@@ -592,7 +592,7 @@ update_filtering_lists(view_t *view, int add, int clear)
 		{
 			if(clear)
 			{
-				fentry_free(view, entry);
+				fentry_free(entry);
 			}
 		}
 	}
@@ -604,7 +604,7 @@ update_filtering_lists(view_t *view, int add, int clear)
 		if(!parent_added && parent_entry != NULL && list_size != 0U &&
 				view->dir_entry[0].name != parent_entry->name)
 		{
-			fentry_free(view, parent_entry);
+			fentry_free(parent_entry);
 		}
 	}
 	if(add)

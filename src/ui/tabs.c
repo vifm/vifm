@@ -260,9 +260,6 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 			path == NULL ? flist_get_dir(side) : path);
 
 	flist_init_view(dst);
-	/* This is for replace_dir_entries() below due to check in fentry_free(),
-	 * should adjust the check instead? */
-	dst->dir_entry[0].origin = side->curr_dir;
 
 	clone_local_options(side, dst, 1);
 	reset_local_options(dst);

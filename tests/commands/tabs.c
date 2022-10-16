@@ -130,7 +130,7 @@ TEST(newtab_fails_in_diff_mode_for_tab_panes)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 
 	cfg.pane_tabs = 1;
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
 	assert_failure(exec_commands("tabnew", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_count(&lwin));
 }

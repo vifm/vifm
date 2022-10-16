@@ -54,7 +54,7 @@ TEST(compare_view_defines_id_grouping)
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
 			"compare/a", cwd);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, CF_NONE);
 
 	assert_int_equal(3, lwin.list_rows);
 
@@ -208,7 +208,7 @@ TEST(find_next_and_prev_mismatches)
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
 
 	assert_int_equal(4, lwin.list_rows);
 	assert_int_equal(4, rwin.list_rows);
@@ -461,7 +461,7 @@ TEST(cache_handles_noexec_dirs, IF(regular_unix_user))
 	cached_entries_t cache = {};
 	assert_true(flist_update_cache(&lwin, &cache, SANDBOX_PATH "/dir"));
 	assert_int_equal(0, cache.entries.nentries);
-	flist_free_cache(&lwin, &cache);
+	flist_free_cache(&cache);
 
 	assert_success(chmod(SANDBOX_PATH "/dir", 0777));
 	assert_success(remove(SANDBOX_PATH "/dir/file"));

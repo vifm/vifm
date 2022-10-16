@@ -47,6 +47,22 @@
 #include "fops_misc.h"
 #include "running.h"
 
+/*
+ * Optimization for content-based matching.
+ *
+ * At first fingerprint uses only size of the file, then it's looked up to see
+ * if there is any other file of the same size.  If there isn't, store compare
+ * record by that fingerprint.
+ *
+ * If there is, two cases are possible:
+ *   - there is only one conflicting file and its contents fingerprint wasn't
+ *     yet computed:
+ *       * compute contents fingerprint for that file and insert it
+ *       * compute contents fingerprint for current file and insert it
+ *   - there is more than one conflicting file:
+ *       * compute contents fingerprint for current file and insert it
+ */
+
 /* This is the only unit that uses xxhash, so import it directly here. */
 #define XXH_PRIVATE_API
 #include "utils/xxhash.h"
@@ -62,39 +78,46 @@ typedef struct compare_record_t
 {
 	char *path;                    /* Full path to file with sample content. */
 	int id;                        /* Chosen id. */
-	struct compare_record_t *next; /* Next entry in the list. */
+	int is_partial;                /* Shows that fingerprinting was lazy. */
+	struct compare_record_t *next; /* Next entry in the list of conflicts. */
 }
 compare_record_t;
 
 static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg);
-static void fill_side_by_side_by_paths(entries_t curr, entries_t other);
+static void fill_side_by_side_by_paths(entries_t curr, entries_t other,
+		int flags);
 static void fill_side_by_side_by_ids(entries_t curr, entries_t other);
-static int compare_entries(dir_entry_t *curr, dir_entry_t *other);
+static int compare_entries(dir_entry_t *curr, dir_entry_t *other, int flags);
 static int id_sorter(const void *first, const void *second);
 static void put_or_free(view_t *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, view_t *view, int *next_id,
-		CompareType ct, int skip_empty, int dups_only);
+		CompareType ct, int dups_only, int flags);
 static void list_view_entries(const view_t *view, strlist_t *list);
 static int append_valid_nodes(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 static void list_files_recursively(const view_t *view, const char path[],
 		int skip_dot_files, strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
-		CompareType ct);
+		CompareType ct, int flags, int lazy);
 static char * get_contents_fingerprint(const char path[],
-		const dir_entry_t *entry);
-static int get_file_id(trie_t *trie, const char path[],
-		const char fingerprint[], int *id, CompareType ct);
+		unsigned long long size);
+static int add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
+		CompareType ct, int dups_only, int flags, int *next_id);
 static int files_are_identical(const char a[], const char b[]);
 static void put_file_id(trie_t *trie, const char path[],
-		const char fingerprint[], int id, CompareType ct);
+		const char fingerprint[], int id, int is_partial, CompareType ct);
 static void free_compare_records(void *ptr);
 
 int
-compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
+compare_two_panes(CompareType ct, ListType lt, int flags)
 {
+	assert((flags & (CF_IGNORE_CASE | CF_RESPECT_CASE)) !=
+			(CF_IGNORE_CASE | CF_RESPECT_CASE) && "Wrong combination of flags.");
+
+	const int group_paths = flags & CF_GROUP_PATHS;
+
 	/* We don't compare lists of files, so skip the check if at least one of the
 	 * views is a custom one. */
 	if(!flist_custom_active(&lwin) && !flist_custom_active(&rwin) &&
@@ -110,9 +133,8 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 	trie_t *const trie = trie_create(&free_compare_records);
 	ui_cancellation_push_on();
 
-	curr = make_diff_list(trie, curr_view, &next_id, ct, skip_empty, 0);
-	other = make_diff_list(trie, other_view, &next_id, ct, skip_empty,
-			lt == LT_DUPS);
+	curr = make_diff_list(trie, curr_view, &next_id, ct, /*dups_only=*/0, flags);
+	other = make_diff_list(trie, other_view, &next_id, ct, lt == LT_DUPS, flags);
 
 	ui_cancellation_pop();
 	trie_free(trie);
@@ -122,8 +144,8 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 
 	if(ui_cancellation_requested())
 	{
-		free_dir_entries(curr_view, &curr.entries, &curr.nentries);
-		free_dir_entries(other_view, &other.entries, &other.nentries);
+		free_dir_entries(&curr.entries, &curr.nentries);
+		free_dir_entries(&other.entries, &other.nentries);
 		ui_sb_msg("Comparison has been cancelled");
 		return 1;
 	}
@@ -153,7 +175,7 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 
 	if(group_paths)
 	{
-		fill_side_by_side_by_paths(curr, other);
+		fill_side_by_side_by_paths(curr, other, flags);
 	}
 	else
 	{
@@ -179,8 +201,8 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 	other_view->list_pos = 0;
 	curr_view->custom.diff_cmp_type = ct;
 	other_view->custom.diff_cmp_type = ct;
-	curr_view->custom.diff_path_group = group_paths;
-	other_view->custom.diff_path_group = group_paths;
+	curr_view->custom.diff_cmp_flags = flags;
+	other_view->custom.diff_cmp_flags = flags;
 
 	assert(curr_view->list_rows == other_view->list_rows &&
 			"Diff views must be in sync!");
@@ -220,11 +242,11 @@ make_unique_lists(entries_t curr, entries_t other)
 
 		while(j < curr.nentries && curr.entries[j].id == id)
 		{
-			fentry_free(curr_view, &curr.entries[j++]);
+			fentry_free(&curr.entries[j++]);
 		}
 		while(i < other.nentries && other.entries[i].id == id)
 		{
-			fentry_free(other_view, &other.entries[i++]);
+			fentry_free(&other.entries[i++]);
 		}
 		/* Want to revisit this entry on the next iteration of the loop. */
 		--i;
@@ -321,7 +343,7 @@ is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg)
 /* Composes side-by-side comparison of files in two views centered around their
  * relative paths. */
 static void
-fill_side_by_side_by_paths(entries_t curr, entries_t other)
+fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags)
 {
 	int i = 0;
 	int j = 0;
@@ -332,7 +354,7 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other)
 
 		if(i < curr.nentries && j < other.nentries)
 		{
-			cmp = compare_entries(&curr.entries[i], &other.entries[j]);
+			cmp = compare_entries(&curr.entries[i], &other.entries[j], flags);
 		}
 		else
 		{
@@ -438,16 +460,28 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other)
 
 /* Compares entries by their short paths.  Returns strcmp()-like result. */
 static int
-compare_entries(dir_entry_t *curr, dir_entry_t *other)
+compare_entries(dir_entry_t *curr, dir_entry_t *other, int flags)
 {
 	char path_a[PATH_MAX + 1], path_b[PATH_MAX + 1];
 	get_full_path_of(curr, sizeof(path_a), path_a);
 	get_full_path_of(other, sizeof(path_b), path_b);
 
-	/* If at least one path is case-sensitive, don't ignore case.  Otherwise, we
-	 * would end up with multiple matching pairs of paths. */
-	int case_sensitive = case_sensitive_paths(path_a)
-	                  || case_sensitive_paths(path_b);
+	int case_sensitive;
+	if(flags & CF_IGNORE_CASE)
+	{
+		case_sensitive = 0;
+	}
+	else if(flags & CF_RESPECT_CASE)
+	{
+		case_sensitive = 1;
+	}
+	else
+	{
+		/* If at least one path is case-sensitive, don't ignore case.  Otherwise, we
+		 * would end up with multiple matching pairs of paths. */
+		case_sensitive = case_sensitive_paths(path_a)
+		              || case_sensitive_paths(path_b);
+	}
 
 	get_short_path_of(curr_view, curr, NF_NONE, 0, sizeof(path_a), path_a);
 	get_short_path_of(other_view, other, NF_NONE, 0, sizeof(path_b), path_b);
@@ -485,8 +519,11 @@ compare_entries(dir_entry_t *curr, dir_entry_t *other)
 }
 
 int
-compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
+compare_one_pane(view_t *view, CompareType ct, ListType lt, int flags)
 {
+	assert((flags & (CF_IGNORE_CASE | CF_RESPECT_CASE)) !=
+			(CF_IGNORE_CASE | CF_RESPECT_CASE) && "Wrong combination of flags.");
+
 	int i, dup_id;
 	view_t *other = (view == curr_view) ? other_view : curr_view;
 	const char *const title = (lt == LT_ALL)  ? "compare"
@@ -498,7 +535,7 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 	trie_t *trie = trie_create(&free_compare_records);
 	ui_cancellation_push_on();
 
-	curr = make_diff_list(trie, view, &next_id, ct, skip_empty, 0);
+	curr = make_diff_list(trie, view, &next_id, ct, /*dups_only=*/0, flags);
 
 	ui_cancellation_pop();
 	trie_free(trie);
@@ -508,7 +545,7 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 
 	if(ui_cancellation_requested())
 	{
-		free_dir_entries(view, &curr.entries, &curr.nentries);
+		free_dir_entries(&curr.entries, &curr.nentries);
 		ui_sb_msg("Comparison has been cancelled");
 		return 1;
 	}
@@ -593,7 +630,7 @@ put_or_free(view_t *view, dir_entry_t *entry, int id, int take)
 	}
 	else
 	{
-		fentry_free(view, entry);
+		fentry_free(entry);
 	}
 }
 
@@ -602,8 +639,10 @@ put_or_free(view_t *view, dir_entry_t *entry, int id, int take)
  * trie. */
 static entries_t
 make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
-		int skip_empty, int dups_only)
+		int dups_only, int flags)
 {
+	const int skip_empty = flags & CF_SKIP_EMPTY;
+
 	int i;
 	strlist_t files = {};
 	entries_t r = {};
@@ -624,47 +663,26 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
 	{
 		int progress;
-		int existing_id;
-		char *fingerprint;
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
 				path);
 
 		if(skip_empty && entry->size == 0)
 		{
-			fentry_free(view, entry);
-			--r.nentries;
-			continue;
-		}
-
-		fingerprint = get_file_fingerprint(path, entry, ct);
-		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
-		 * files isn't readable), ignore the file and keep going. */
-		if(is_null_or_empty(fingerprint))
-		{
-			free(fingerprint);
-			fentry_free(view, entry);
+			fentry_free(entry);
 			--r.nentries;
 			continue;
 		}
 
 		entry->tag = i;
-		if(get_file_id(trie, path, fingerprint, &existing_id, ct))
-		{
-			entry->id = existing_id;
-		}
-		else if(dups_only)
-		{
-			entry->id = -1;
-		}
-		else
-		{
-			entry->id = *next_id;
-			++*next_id;
-			put_file_id(trie, path, fingerprint, entry->id, ct);
-		}
+		entry->id = add_file_to_diff(trie, path, entry, ct, dups_only, flags,
+				next_id);
 
-		free(fingerprint);
+		if(entry->id == -1)
+		{
+			fentry_free(entry);
+			--r.nentries;
+		}
 
 		progress = (i*100)/files.nitems;
 		if(progress != last_progress)
@@ -789,27 +807,54 @@ list_files_recursively(const view_t *view, const char path[],
 }
 
 /* Computes fingerprint of the file specified by path and entry.  Type of the
- * fingerprint is determined by ct parameter.  Returns newly allocated string
- * with the fingerprint, which is empty or NULL on error. */
+ * fingerprint is determined by ct parameter.  Lazy fingerprint is an
+ * optimization which prevents computing contents fingerprint until there is
+ * more than one file of the given size.  Returns newly allocated string with
+ * the fingerprint, which is empty or NULL on error. */
 static char *
 get_file_fingerprint(const char path[], const dir_entry_t *entry,
-		CompareType ct)
+		CompareType ct, int flags, int lazy)
 {
 	switch(ct)
 	{
+		int case_sensitive;
 		char name[NAME_MAX + 1];
 
 		case CT_NAME:
-			if(case_sensitive_paths(path))
+			if(flags & CF_IGNORE_CASE)
+			{
+				case_sensitive = 0;
+			}
+			else if(flags & CF_RESPECT_CASE)
+			{
+				case_sensitive = 1;
+			}
+			else
+			{
+				case_sensitive = case_sensitive_paths(path);
+			}
+
+			if(case_sensitive)
 			{
 				return strdup(entry->name);
 			}
+
 			str_to_lower(entry->name, name, sizeof(name));
 			return strdup(name);
 		case CT_SIZE:
 			return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
 		case CT_CONTENTS:
-			return get_contents_fingerprint(path, entry);
+			if(lazy)
+			{
+				/* Comparing by contents can't be done if file can't be read. */
+				if(os_access(path, R_OK) != 0)
+				{
+					return strdup("");
+				}
+
+				return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
+			}
+			return get_contents_fingerprint(path, entry->size);
 	}
 	assert(0 && "Unexpected diffing type.");
 	return strdup("");
@@ -818,7 +863,7 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 /* Makes fingerprint of file contents (all or part of it of fixed size).
  * Returns the fingerprint as a string, which is empty or NULL on error. */
 static char *
-get_contents_fingerprint(const char path[], const dir_entry_t *entry)
+get_contents_fingerprint(const char path[], unsigned long long size)
 {
 	char block[BLOCK_SIZE];
 	size_t to_read = PREFIX_SIZE;
@@ -859,46 +904,104 @@ get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 	const unsigned long long digest = XXH3_64bits_digest(st);
 	XXH3_freeState(st);
 
-	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL,
-			(unsigned long long)entry->size, digest);
+	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL, size, digest);
 }
 
-/* Retrieves file from the trie by its fingerprint.  Returns non-zero if it was
- * in the trie and sets *id, otherwise zero is returned. */
+/* Looks up file in the trie by its fingerprint.  Returns id for the file or -1
+ * if it should be skipped. */
 static int
-get_file_id(trie_t *trie, const char path[], const char fingerprint[], int *id,
-		CompareType ct)
+add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
+		CompareType ct, int dups_only, int flags, int *next_id)
 {
-	void *data;
-	compare_record_t *record;
-	if(trie_get(trie, fingerprint, &data) != 0)
+	char *fingerprint = get_file_fingerprint(path, entry, ct, flags, /*lazy=*/1);
+	if(is_null_or_empty(fingerprint))
 	{
-		return 0;
-	}
-	record = data;
-
-	/* Comparison by contents is the only one when we need to resolve fingerprint
-	 * conflicts. */
-	if(ct != CT_CONTENTS)
-	{
-		*id = record->id;
-		return 1;
+		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
+		 * the file isn't readable), ignore the file and keep going. */
+		free(fingerprint);
+		return -1;
 	}
 
-	/* Fingerprint does not guarantee a match, go through files and find file with
-	 * identical content. */
-	do
+	void *data = NULL;
+	(void)trie_get(trie, fingerprint, &data);
+
+	compare_record_t *record = data;
+	int is_partial = (ct == CT_CONTENTS);
+
+	/* Comparison by contents is the only one when we need to account for lazy
+	 * fingerprint computation or resolve fingerprint conflicts. */
+	if(record != NULL && ct == CT_CONTENTS)
 	{
-		if(files_are_identical(path, record->path))
+		free(fingerprint);
+		is_partial = 0;
+
+		fingerprint = get_file_fingerprint(path, entry, ct, flags, /*lazy=*/0);
+		if(is_null_or_empty(fingerprint))
 		{
-			*id = record->id;
-			return 1;
+			/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
+			 * the file isn't readable), ignore the file and keep going. */
+			free(fingerprint);
+			return -1;
 		}
-		record = record->next;
-	}
-	while(record != NULL);
 
-	return 0;
+		if(record->is_partial)
+		{
+			/* There is another file of the same size whose contents fingerprint
+			 * hasn't been computed yet.  Do it here. */
+			char *other_fingerprint = get_contents_fingerprint(record->path,
+					entry->size);
+			if(is_null_or_empty(fingerprint))
+			{
+				/* That other file has issues, don't update it and skip any other file
+				 * that can conflict with it by size.  The file itself won't be skipped
+				 * though, should it be? */
+				free(other_fingerprint);
+				free(fingerprint);
+				return -1;
+			}
+
+			put_file_id(trie, record->path, other_fingerprint, record->id,
+					/*is_partial=*/0, ct);
+			free(other_fingerprint);
+
+			record->is_partial = 0;
+		}
+
+		/* Repeat trie lookup with contents fingerprint. */
+		(void)trie_get(trie, fingerprint, &data);
+		record = data;
+
+		/* Fingerprint does not guarantee a match, go through files and find file
+		 * with identical contents. */
+		do
+		{
+			if(files_are_identical(path, record->path))
+			{
+				break;
+			}
+			record = record->next;
+		}
+		while(record != NULL);
+	}
+
+	if(record != NULL)
+	{
+		free(fingerprint);
+		return record->id;
+	}
+
+	if(dups_only)
+	{
+		free(fingerprint);
+		return -1;
+	}
+
+	int id = *next_id;
+	++*next_id;
+	put_file_id(trie, path, fingerprint, id, is_partial, ct);
+
+	free(fingerprint);
+	return id;
 }
 
 /* Checks whether two files specified by their names hold identical content.
@@ -950,19 +1053,29 @@ files_are_identical(const char a[], const char b[])
 /* Stores id of a file with given fingerprint in the trie. */
 static void
 put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
-		CompareType ct)
+		int is_partial, CompareType ct)
 {
 	compare_record_t *const record = malloc(sizeof(*record));
-	void *data = NULL;
-	(void)trie_get(trie, fingerprint, &data);
 
 	record->id = id;
-	record->next = data;
+	record->is_partial = is_partial;
+	record->next = NULL;
 
 	/* Comparison by contents is the only one when we need to resolve fingerprint
 	 * conflicts. */
 	record->path = (ct == CT_CONTENTS ? strdup(path) : NULL);
 
+	/* Just add new entry to the list if something is already there. */
+	void *data = NULL;
+	(void)trie_get(trie, fingerprint, &data);
+	compare_record_t *prev = data;
+	if(prev != NULL)
+	{
+		prev->next = record;
+		return;
+	}
+
+	/* Otherwise we're the head of the list. */
 	if(trie_set(trie, fingerprint, record) < 0)
 	{
 		free(record->path);
@@ -992,11 +1105,12 @@ compare_move(view_t *from, view_t *to)
 	char *from_fingerprint, *to_fingerprint;
 
 	const CompareType ct = from->custom.diff_cmp_type;
+	const CompareType flags = from->custom.diff_cmp_flags;
 
 	dir_entry_t *const curr = &from->dir_entry[from->list_pos];
 	dir_entry_t *const other = &to->dir_entry[from->list_pos];
 
-	if(from->custom.type != CV_DIFF || !from->custom.diff_path_group)
+	if(from->custom.type != CV_DIFF || !(flags & CF_GROUP_PATHS))
 	{
 		ui_sb_err("Not in diff mode with path grouping");
 		return 1;
@@ -1053,8 +1167,9 @@ compare_move(view_t *from, view_t *to)
 	/* Try to update id of the other entry by computing fingerprint of both files
 	 * and checking if they match. */
 
-	from_fingerprint = get_file_fingerprint(from_path, curr, ct);
-	to_fingerprint = get_file_fingerprint(to_path, other, ct);
+	from_fingerprint = get_file_fingerprint(from_path, curr, ct, flags,
+			/*lazy=*/0);
+	to_fingerprint = get_file_fingerprint(to_path, other, ct, flags, /*lazy=*/0);
 
 	if(!is_null_or_empty(from_fingerprint) && !is_null_or_empty(to_fingerprint))
 	{

@@ -184,8 +184,7 @@ static void tree_from_cv(view_t *view);
 static int complete_tree(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
 static void reset_entry_list(view_t *view, dir_entry_t **entries, int *count);
-static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
-		int extra);
+static void drop_tops(dir_entry_t *entries, int *nentries, int extra);
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, trie_t *folded_paths, int parent_pos,
 		int no_direct_parent, int depth);
@@ -260,8 +259,8 @@ flist_free_view(view_t *view)
 	/* For the application, we don't need to zero out fields after freeing them,
 	 * but doing so allows reusing this function in tests. */
 
-	free_dir_entries(view, &view->dir_entry, &view->list_rows);
-	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
+	free_dir_entries(&view->dir_entry, &view->list_rows);
+	free_dir_entries(&view->custom.entries, &view->custom.entry_count);
 
 	update_string(&view->custom.next_title, NULL);
 	update_string(&view->custom.orig_dir, NULL);
@@ -273,8 +272,7 @@ flist_free_view(view_t *view)
 	view->custom.folded_paths = NULL;
 	view->custom.paths_cache = NULL;
 
-	free_dir_entries(view, &view->custom.full.entries,
-			&view->custom.full.nentries);
+	free_dir_entries(&view->custom.full.entries, &view->custom.full.nentries);
 
 	/* Two pointer fields below don't contain valid data that needs to be freed,
 	 * zeroing them for tests and to at least mention them to signal that they
@@ -304,8 +302,8 @@ flist_free_view(view_t *view)
 
 	update_string(&view->last_dir, NULL);
 
-	flist_free_cache(view, &view->left_column);
-	flist_free_cache(view, &view->right_column);
+	flist_free_cache(&view->left_column);
+	flist_free_cache(&view->right_column);
 
 	update_string(&view->last_curr_file, NULL);
 
@@ -840,7 +838,7 @@ flist_custom_active(const view_t *view)
 void
 flist_custom_start(view_t *view, const char title[])
 {
-	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
+	free_dir_entries(&view->custom.entries, &view->custom.entry_count);
 	(void)replace_string(&view->custom.next_title, title);
 
 	trie_free(view->custom.paths_cache);
@@ -1069,7 +1067,7 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 
 	if(empty_view && !allow_empty)
 	{
-		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
+		free_dir_entries(&view->custom.entries, &view->custom.entry_count);
 		update_string(&view->custom.next_title, NULL);
 		return 1;
 	}
@@ -1111,7 +1109,7 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 	}
 
 	/* Replace view file list with custom list. */
-	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+	free_dir_entries(&view->dir_entry, &view->list_rows);
 	view->dir_entry = view->custom.entries;
 	view->list_rows = view->custom.entry_count;
 	view->custom.entries = NULL;
@@ -1398,8 +1396,8 @@ flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 		++j;
 	}
 
-	free_dir_entries(to, &to->custom.entries, &to->custom.entry_count);
-	free_dir_entries(to, &to->dir_entry, &to->list_rows);
+	free_dir_entries(&to->custom.entries, &to->custom.entry_count);
+	free_dir_entries(&to->dir_entry, &to->list_rows);
 	to->dir_entry = dst;
 	to->list_rows = j;
 
@@ -1434,7 +1432,7 @@ flist_custom_uncompress_tree(view_t *view)
 
 		if(entries[i].child_pos == 0 && is_parent_dir(entries[i].name))
 		{
-			fentry_free(view, &entries[i]);
+			fentry_free(&entries[i]);
 			restore_parent = 1;
 			continue;
 		}
@@ -1452,7 +1450,7 @@ flist_custom_uncompress_tree(view_t *view)
 	fsdata_free(tree);
 	dynarray_free(entries);
 
-	drop_tops(view, view->dir_entry, &view->list_rows, 0);
+	drop_tops(view->dir_entry, &view->list_rows, 0);
 
 	if(restore_parent)
 	{
@@ -1488,8 +1486,7 @@ flist_custom_save(view_t *view)
 static void
 flist_custom_drop_save(view_t *view)
 {
-	free_dir_entries(view, &view->custom.full.entries,
-			&view->custom.full.nentries);
+	free_dir_entries(&view->custom.full.entries, &view->custom.full.nentries);
 }
 
 const char *
@@ -1701,8 +1698,8 @@ populate_dir_list_internal(view_t *view, int reload)
 	 * date with main column. */
 	if(reload)
 	{
-		flist_free_cache(view, &view->left_column);
-		flist_free_cache(view, &view->right_column);
+		flist_free_cache(&view->left_column);
+		flist_free_cache(&view->right_column);
 	}
 
 	if(flist_custom_active(view))
@@ -1982,7 +1979,7 @@ zap_compare_view(view_t *view, view_t *other, zap_filter filter, void *arg)
 			const int separator = find_separator(other, i);
 			if(separator >= 0)
 			{
-				fentry_free(view, entry);
+				fentry_free(entry);
 				other->dir_entry[separator].temporary = 1;
 
 				if(view->list_pos == i)
@@ -2167,7 +2164,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 		int k;
 		for(k = 0; k < nremoved; ++k)
 		{
-			fentry_free(view, &entry[k]);
+			fentry_free(&entry[k]);
 		}
 
 		/* If we're removing file from main list of entries and cursor is right on
@@ -2272,7 +2269,7 @@ is_dir_big(const char path[])
 static void
 free_view_entries(view_t *view)
 {
-	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+	free_dir_entries(&view->dir_entry, &view->list_rows);
 }
 
 /* Updates file list with files from current directory.  Returns zero on
@@ -2288,7 +2285,7 @@ update_dir_list(view_t *view, int reload)
 	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, view) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
-		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
+		free_dir_entries(&prev_dir_entries, &prev_list_rows);
 		return 1;
 	}
 
@@ -2340,7 +2337,7 @@ finish_dir_list_change(view_t *view, dir_entry_t *entries, int len)
 	if(entries != NULL)
 	{
 		merge_lists(view, entries, len);
-		free_dir_entries(view, &entries, &len);
+		free_dir_entries(&entries, &len);
 	}
 
 	view->dir_entry = dynarray_shrink(view->dir_entry);
@@ -2381,7 +2378,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 	}
 	else
 	{
-		fentry_free(view, entry);
+		fentry_free(entry);
 	}
 
 	return 0;
@@ -2703,23 +2700,23 @@ replace_dir_entries(view_t *view, dir_entry_t **entries, int *count,
 		if(entry->name == NULL || entry->origin == NULL)
 		{
 			int count_so_far = i + 1;
-			free_dir_entries(view, &new, &count_so_far);
+			free_dir_entries(&new, &count_so_far);
 			return;
 		}
 	}
 
-	free_dir_entries(view, entries, count);
+	free_dir_entries(entries, count);
 	*entries = new;
 	*count = with_count;
 }
 
 void
-free_dir_entries(view_t *view, dir_entry_t **entries, int *count)
+free_dir_entries(dir_entry_t **entries, int *count)
 {
 	int i;
 	for(i = 0; i < *count; ++i)
 	{
-		fentry_free(view, &(*entries)[i]);
+		fentry_free(&(*entries)[i]);
 	}
 
 	dynarray_free(*entries);
@@ -2728,7 +2725,7 @@ free_dir_entries(view_t *view, dir_entry_t **entries, int *count)
 }
 
 void
-fentry_free(const view_t *view, dir_entry_t *entry)
+fentry_free(dir_entry_t *entry)
 {
 	free(entry->name);
 	entry->name = NULL;
@@ -2772,7 +2769,7 @@ entry_list_add(view_t *view, dir_entry_t **list, int *list_size,
 
 	if(fill_dir_entry_by_path(dir_entry, path) != 0)
 	{
-		fentry_free(view, dir_entry);
+		fentry_free(dir_entry);
 		return NULL;
 	}
 
@@ -2914,7 +2911,7 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 		{
 			/* Reset the cache on failure to create a watcher to do not accidentally
 			 * provide incorrect data. */
-			flist_free_cache(view, cache);
+			flist_free_cache(cache);
 			return 0;
 		}
 
@@ -2925,7 +2922,7 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 
 	if(poll_watcher(cache->watch, path) != FSWS_UNCHANGED || update)
 	{
-		free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
+		free_dir_entries(&cache->entries.entries, &cache->entries.nentries);
 		cache->entries = flist_list_in(view, path, 0, 1);
 		return 1;
 	}
@@ -2958,9 +2955,9 @@ poll_watcher(fswatch_t *watch, const char path[])
 }
 
 void
-flist_free_cache(view_t *view, cached_entries_t *cache)
+flist_free_cache(cached_entries_t *cache)
 {
-	free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
+	free_dir_entries(&cache->entries.entries, &cache->entries.nentries);
 	update_string(&cache->dir, NULL);
 	fswatch_free(cache->watch);
 	cache->watch = NULL;
@@ -3033,7 +3030,7 @@ remove_child_entries(view_t *view, dir_entry_t *entry)
 	int i;
 	for(i = 0; i < child_count; ++i)
 	{
-		fentry_free(view, &entry[1 + i]);
+		fentry_free(&entry[1 + i]);
 	}
 
 	fix_tree_links(view->dir_entry, entry, pos, pos, 0, -child_count);
@@ -3303,7 +3300,7 @@ go_to_sibling_dir(view_t *view, int offset, int wrap)
 		}
 	}
 
-	free_dir_entries(view, &parent_dirs.entries, &parent_dirs.nentries);
+	free_dir_entries(&parent_dirs.entries, &parent_dirs.nentries);
 	return save_msg;
 }
 
@@ -3387,7 +3384,7 @@ flist_list_in(view_t *view, const char path[], int only_dirs,
 		if((only_dirs && !is_dir) ||
 				!filters_file_is_visible(view, path, list[i], is_dir, 0))
 		{
-			fentry_free(view, entry);
+			fentry_free(entry);
 			--siblings.nentries;
 		}
 	}
@@ -4078,7 +4075,7 @@ tree_from_cv(view_t *view)
 		}
 		else
 		{
-			fentry_free(view, &entries[i]);
+			fentry_free(&entries[i]);
 		}
 	}
 
@@ -4090,7 +4087,7 @@ tree_from_cv(view_t *view)
 	fsdata_free(tree);
 	dynarray_free(entries);
 
-	drop_tops(view, view->custom.entries, &view->custom.entry_count, 1);
+	drop_tops(view->custom.entries, &view->custom.entry_count, 1);
 }
 
 /* fsdata_traverse() callback that flattens the tree into array of entries.
@@ -4186,14 +4183,14 @@ complete_tree(const char name[], int valid, const void *parent_data, void *data,
 static void
 reset_entry_list(view_t *view, dir_entry_t **entries, int *count)
 {
-	free_dir_entries(view, entries, count);
+	free_dir_entries(entries, count);
 	add_parent_entry(view, entries, count);
 }
 
 /* Traverses root children and drops fake root nodes and optionally extra tops
  * of subtrees. */
 static void
-drop_tops(view_t *view, dir_entry_t *entries, int *nentries, int extra)
+drop_tops(dir_entry_t *entries, int *nentries, int extra)
 {
 	int i;
 	for(i = 0; i < *nentries - 1; i += entries[i].child_count + 1)
@@ -4203,7 +4200,7 @@ drop_tops(view_t *view, dir_entry_t *entries, int *nentries, int extra)
 				((extra && entries[j].child_count == entries[j + 1].child_count + 1) ||
 				 entries[j].name[0] == '\0') && entries[j].tag != 1)
 		{
-			fentry_free(view, &entries[j++]);
+			fentry_free(&entries[j++]);
 		}
 
 		memmove(&entries[i], &entries[j], sizeof(*entries)*(*nentries - j));
@@ -4464,7 +4461,7 @@ init_parent_entry(view_t *view, dir_entry_t *entry, const char path[])
 	/* Load the inode info or leave blank values in entry. */
 	if(os_lstat(path, &s) != 0)
 	{
-		fentry_free(view, entry);
+		fentry_free(entry);
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s\"", path);
 		log_cwd();
 		return 1;

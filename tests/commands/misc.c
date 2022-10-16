@@ -24,6 +24,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/cmd_core.h"
+#include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
 #include "../../src/plugins.h"
@@ -394,7 +395,6 @@ TEST(touch)
 TEST(compare)
 {
 	opt_handlers_setup();
-
 	create_file(SANDBOX_PATH "/file");
 
 	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
@@ -403,13 +403,24 @@ TEST(compare)
 	assert_success(exec_commands("compare ofone skipempty", &lwin, CIT_COMMAND));
 	assert_false(flist_custom_active(&lwin));
 
+	/* Verify that later arguments override the former ones. */
 	(void)exec_commands("compare byname bysize bycontents listall listdups "
 			"listunique ofboth ofone groupids grouppaths", &lwin, CIT_COMMAND);
 	assert_true(flist_custom_active(&lwin));
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 
-	assert_success(remove(SANDBOX_PATH "/file"));
+	/* Verify that two-pane compare gets correct arguments. */
+	assert_int_equal(0, change_directory(&lwin, ".."));
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH, "rename",
+			cwd);
+	(void)exec_commands("compare byname withrcase withicase", &lwin, CIT_COMMAND);
+	assert_true(flist_custom_active(&lwin));
+	assert_true(flist_custom_active(&rwin));
+	assert_int_equal(CT_NAME, lwin.custom.diff_cmp_type);
+	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE, lwin.custom.diff_cmp_flags);
+	assert_success(chdir(cwd));
 
+	assert_success(remove(SANDBOX_PATH "/file"));
 	opt_handlers_teardown();
 }
 
