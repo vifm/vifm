@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Oct 4
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Oct 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -950,6 +950,9 @@ the Unix epoch.
 
 VifmEntry.type (string)                        *vifm-l_VifmEntry.type*
 Type of the entry.  See |vifm-filetype()| for the list of values.
+
+VifmEntry.isdir (boolean)                      *vifm-l_VifmEntry.isdir*
+True if an entry is either a directory or a symbolic link to a directory.
 
 VifmEntry.folded (boolean)                     *vifm-l_VifmEntry.folded*
 Whether this entry is folded.
