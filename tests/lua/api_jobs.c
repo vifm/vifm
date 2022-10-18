@@ -3,6 +3,7 @@
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/str.h"
+#include "../../src/background.h"
 
 #include <test-utils.h>
 
@@ -116,6 +117,17 @@ TEST(vifmjob_stdin_broken_pipe, IF(not_windows))
 	      "print(job:stdin():write('text') == job:stdin())"
 	      "job:stdin():close()"
 	      "job:wait()"));
+	assert_string_equal("true", ui_sb_last());
+
+	/* Broken pipe + likely dead parent VifmJob object. */
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+	      "info = { cmd = 'no-such-command-exists', iomode = 'w' }"
+	      "stdin = vifm.startjob(info):stdin()"
+	      "print(stdin:write('text') == stdin)"));
+	assert_string_equal("true", ui_sb_last());
+	bg_check();
+	assert_success(vlua_run_string(vlua, "print(stdin:write('text') == stdin)"));
 	assert_string_equal("true", ui_sb_last());
 
 	conf_teardown();
