@@ -777,6 +777,10 @@ update_start(UpdateType update_kind)
 		{
 			print_selected_msg();
 		}
+		else if (cv_compare(curr_view->custom.type))
+		{
+			print_compare_msg();
+		}
 		else
 		{
 			ui_sb_clear();

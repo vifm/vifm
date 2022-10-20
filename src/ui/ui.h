@@ -254,6 +254,16 @@ typedef struct
 }
 entries_t;
 
+/* Entry with comparison results */
+typedef struct compare_result_t
+{
+	int identical;
+	int different;
+	int unique_left;
+	int unique_right;
+}
+compare_result_t;
+
 /* Data related to custom filling. */
 struct cv_data_t
 {
@@ -263,6 +273,7 @@ struct cv_data_t
 	/* Additional data about CV_DIFF type. */
 	CompareType diff_cmp_type; /* Type of comparison. */
 	int diff_cmp_flags;        /* Flags used to build the diff. */
+	compare_result_t diff_cmp_result; /* List of comparison results */
 
 	/* This is temporary storage for custom list entries used during its
 	 * construction. */

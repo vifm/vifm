@@ -173,6 +173,9 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	flist_custom_start(curr_view, lt == LT_ALL ? "diff" : "dups diff");
 	flist_custom_start(other_view, lt == LT_ALL ? "diff" : "dups diff");
 
+	/* Clear previous comparison results for curr_view */
+	memset(&curr_view->custom.diff_cmp_result, 0, sizeof(struct compare_result_t));
+
 	if(group_paths)
 	{
 		fill_side_by_side_by_paths(curr, other, flags);
@@ -181,6 +184,9 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	{
 		fill_side_by_side_by_ids(curr, other);
 	}
+
+	/* Copy comparison results from curr_view to other_view */
+	memcpy(&other_view->custom.diff_cmp_result, &curr_view->custom.diff_cmp_result, sizeof(struct compare_result_t));
 
 	/* Entries' data has been moved out of them, so need to free only the
 	 * lists. */
@@ -363,17 +369,29 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags)
 
 		if(cmp == 0)
 		{
+			curr.entries[i].id == other.entries[j].id ?
+				curr_view->custom.diff_cmp_result.identical++ :
+				curr_view->custom.diff_cmp_result.different++;
+
 			flist_custom_put(curr_view, &curr.entries[i++]);
 			flist_custom_put(other_view, &other.entries[j++]);
 		}
 		else if(cmp < 0)
 		{
+			curr_view == &lwin ?
+				curr_view->custom.diff_cmp_result.unique_left++ :
+				curr_view->custom.diff_cmp_result.unique_right++;
+
 			flist_custom_put(curr_view, &curr.entries[i]);
 			flist_custom_add_separator(other_view, curr.entries[i].id);
 			i++;
 		}
 		else
 		{
+			curr_view == &lwin ?
+				curr_view->custom.diff_cmp_result.unique_right++ :
+				curr_view->custom.diff_cmp_result.unique_left++;
+
 			flist_custom_put(other_view, &other.entries[j]);
 			flist_custom_add_separator(curr_view, other.entries[j].id);
 			j++;
@@ -438,16 +456,26 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other)
 			dir_entry_t *e;
 
 			case UP:
+				curr_view == &lwin ?
+					curr_view->custom.diff_cmp_result.unique_left++ :
+					curr_view->custom.diff_cmp_result.unique_right++;
+
 				e = &curr.entries[curr.nentries - 1 - --i];
 				flist_custom_put(curr_view, e);
 				flist_custom_add_separator(other_view, e->id);
 				break;
 			case LEFT:
+				curr_view == &lwin ?
+					curr_view->custom.diff_cmp_result.unique_right++ :
+					curr_view->custom.diff_cmp_result.unique_left++;
+
 				e = &other.entries[other.nentries - 1 - --j];
 				flist_custom_put(other_view, e);
 				flist_custom_add_separator(curr_view, e->id);
 				break;
 			case DIAG:
+				curr_view->custom.diff_cmp_result.identical++;
+
 				flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
 				flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
 				break;

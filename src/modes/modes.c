@@ -43,6 +43,7 @@
 #include "normal.h"
 #include "view.h"
 #include "visual.h"
+#include "compare.h"
 
 static int mode_flags[] = {
 	MF_USES_COUNT | MF_USES_REGS, /* NORMAL_MODE */
@@ -191,6 +192,10 @@ modes_statusbar_update(void)
 			(curr_view->selected_files || vle_mode_is(VISUAL_MODE)))
 	{
 		print_selected_msg();
+	}
+	else if (!curr_stats.save_msg && cv_compare(curr_view->custom.type))
+	{
+		print_compare_msg();
 	}
 	else if(!curr_stats.save_msg)
 	{
@@ -391,6 +396,27 @@ print_selected_msg(void)
 	{
 		ui_sb_msgf("%d %s selected", curr_view->selected_files,
 				curr_view->selected_files == 1 ? "file" : "files");
+	}
+	curr_stats.save_msg = 2;
+}
+
+void
+print_compare_msg(void)
+{
+	if (curr_view->custom.diff_cmp_flags & CF_GROUP_PATHS)
+	{
+		ui_sb_msgf("Initial result: identical: %d, different: %d, unique: %d/%d",
+					curr_view->custom.diff_cmp_result.identical,
+					curr_view->custom.diff_cmp_result.different,
+					curr_view->custom.diff_cmp_result.unique_left,
+					curr_view->custom.diff_cmp_result.unique_right);
+	}
+	else
+	{
+		ui_sb_msgf("Initial result: identical: %d, unique: %d/%d",
+					curr_view->custom.diff_cmp_result.identical,
+					curr_view->custom.diff_cmp_result.unique_left,
+					curr_view->custom.diff_cmp_result.unique_right);
 	}
 	curr_stats.save_msg = 2;
 }
