@@ -147,7 +147,11 @@ vlua_init(void)
 void
 vlua_finish(vlua_t *vlua)
 {
-	vlua_state_free(vlua);
+	if(vlua != NULL)
+	{
+		vifmjob_finish(vlua->lua);
+		vlua_state_free(vlua);
+	}
 }
 
 /* Adjusts standard libraries. */
