@@ -28,6 +28,7 @@
 #include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../engine/options.h"
+#include "../engine/variables.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
@@ -61,6 +62,7 @@ static void load_api(lua_State *lua);
 static int VLUA_API(api_is_at_least)(lua_State *lua);
 static int VLUA_API(api_has)(lua_State *lua);
 static int VLUA_API(print)(lua_State *lua);
+static int VLUA_API(os_getenv)(lua_State *lua);
 static int VLUA_API(opts_global_index)(lua_State *lua);
 static int VLUA_API(opts_global_newindex)(lua_State *lua);
 static int VLUA_API(vifm_errordialog)(lua_State *lua);
@@ -82,6 +84,7 @@ static void setup_plugin_env(lua_State *lua, plug_t *plug);
 VLUA_DECLARE_SAFE(api_is_at_least);
 VLUA_DECLARE_SAFE(api_has);
 VLUA_DECLARE_SAFE(print);
+VLUA_DECLARE_SAFE(os_getenv);
 VLUA_DECLARE_SAFE(opts_global_index);
 VLUA_DECLARE_UNSAFE(opts_global_newindex);
 VLUA_DECLARE_SAFE(vifm_errordialog);
@@ -169,6 +172,8 @@ patch_env(lua_State *lua)
 	lua_setfield(lua, -2, "date");
 	lua_getfield(lua, -2, "difftime");
 	lua_setfield(lua, -2, "difftime");
+	lua_pushcfunction(lua, VLUA_REF(os_getenv));
+	lua_setfield(lua, -2, "getenv");
 	lua_getfield(lua, -2, "time");
 	lua_setfield(lua, -2, "time");
 	lua_getfield(lua, -2, "tmpname");
@@ -315,6 +320,14 @@ VLUA_API(print)(lua_State *lua)
 
 	free(msg);
 	return 0;
+}
+
+/* os.getenv() that's aware of Vifm's internal variables. */
+static int
+VLUA_API(os_getenv)(lua_State *lua)
+{
+	lua_pushstring(lua, local_getenv_null(luaL_checkstring(lua, 1)));
+	return 1;
 }
 
 /* Provides read access to global options by their name as

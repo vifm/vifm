@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
@@ -34,6 +35,23 @@ TEST(print_outputs_to_statusbar)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "print('arg1', 'arg2')"));
 	assert_string_equal("arg1\targ2", ui_sb_last());
+}
+
+TEST(os_getenv_works)
+{
+	init_variables();
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "print(os.getenv('VIFM_TEST'))"));
+	assert_string_equal("nil", ui_sb_last());
+
+	assert_success(let_variables("$VIFM_TEST='test'"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "print(os.getenv('VIFM_TEST'))"));
+	assert_string_equal("test", ui_sb_last());
+
+	clear_variables();
 }
 
 TEST(vifm_errordialog)
