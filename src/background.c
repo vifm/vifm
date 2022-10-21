@@ -196,9 +196,17 @@ bg_check(void)
 
 		active_jobs += (running != 0 && p->in_menu);
 
-		if(!running && p->on_job_bar)
+		if(!running)
 		{
-			get_off_job_bar(p);
+			if(p->on_job_bar)
+			{
+				get_off_job_bar(p);
+			}
+			if(p->exit_cb != NULL)
+			{
+				p->exit_cb(p, p->exit_cb_arg);
+				p->exit_cb = NULL;
+			}
 		}
 
 		/* Remove job if it is finished now. */
@@ -1314,6 +1322,9 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	new->input = NULL;
 	new->output = NULL;
 
+	new->exit_cb = NULL;
+	new->exit_cb_arg = NULL;
+
 #ifndef _WIN32
 	new->err_stream = (int)err;
 #else
@@ -1404,6 +1415,13 @@ bg_has_active_jobs(int important_only)
 	}
 
 	return running;
+}
+
+void
+bg_job_set_exit_cb(bg_job_t *job, bg_job_exit_func cb, void *arg)
+{
+	job->exit_cb = cb;
+	job->exit_cb_arg = arg;
 }
 
 int
