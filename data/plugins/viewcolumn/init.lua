@@ -11,6 +11,8 @@ Provides the following user-defined view column types:
  * AgeCtime -- relative age based on the ctime stat (11 characters in width)
  * AgeMtime -- relative age based on the mtime stat (11 characters in width)
 
+ * FileMtime -- modification time for files only
+
 Usage example:
 
     :set viewcolumns=-{NameLink},8.7{MCSize}
@@ -83,6 +85,14 @@ local function mcSize(info)
     end
 end
 
+local function fileMtime(info)
+    local text = ''
+    if not info.entry.isdir then
+        text = os.date(vifm.opts.global.timefmt, info.entry.mtime)
+    end
+    return { text = text }
+end
+
 local secsPerYear<const> = 365*24*60*60
 local function lsTime(info)
     local time = info.entry.mtime
@@ -133,6 +143,14 @@ local added = vifm.addcolumntype {
 }
 if not added then
     vifm.sb.error("Failed to add MCSize view column")
+end
+
+local added = vifm.addcolumntype {
+    name = 'FileMtime',
+    handler = fileMtime
+}
+if not added then
+    vifm.sb.error("Failed to add FileMtime view column")
 end
 
 local time_units = {

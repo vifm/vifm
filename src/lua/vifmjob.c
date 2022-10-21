@@ -18,6 +18,7 @@
 
 #include "vifmjob.h"
 
+#include <assert.h> /* assert() */
 #include <stdio.h> /* fclose() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() */
@@ -29,6 +30,7 @@
 #include "lua/lua.h"
 #include "api.h"
 #include "common.h"
+#include "vlua_state.h"
 
 /* User data of file stream associated with job's output stream. */
 typedef struct
@@ -54,7 +56,7 @@ static int VLUA_API(vifmjob_exitcode)(lua_State *lua);
 static int VLUA_API(vifmjob_stdin)(lua_State *lua);
 static int VLUA_API(vifmjob_stdout)(lua_State *lua);
 static int VLUA_API(vifmjob_errors)(lua_State *lua);
-static void job_stream_gc(lua_State *lua, job_stream_t *js);
+static void job_exit_cb(struct bg_job_t *job, void *arg);
 static job_stream_t * job_stream_open(lua_State *lua, bg_job_t *job,
 		FILE *stream);
 static void job_stream_close(lua_State *lua, job_stream_t *js);
@@ -78,6 +80,9 @@ static const luaL_Reg vifmjob_methods[] = {
 	{ NULL,       NULL                       }
 };
 
+/* Address of this variable serves as a key in Lua table. */
+static char jobs_key;
+
 void
 vifmjob_init(lua_State *lua)
 {
@@ -86,11 +91,31 @@ vifmjob_init(lua_State *lua)
 	lua_setfield(lua, -2, "__index");
 	luaL_setfuncs(lua, vifmjob_methods, 0);
 	lua_pop(lua, 1);
+
+	vlua_state_make_table(get_state(lua), &jobs_key);
+}
+
+void
+vifmjob_finish(lua_State *lua)
+{
+	vlua_state_get_table(get_state(lua), &jobs_key);
+	lua_pushnil(lua);
+	while(lua_next(lua, -2) != 0)
+	{
+		lua_pop(lua, 1);
+
+		bg_job_t *job = lua_touserdata(lua, -1);
+		bg_job_set_exit_cb(job, NULL, NULL);
+	}
+
+	lua_pop(lua, 1);
 }
 
 int
 VLUA_API(vifmjob_new)(lua_State *lua)
 {
+	vlua_t *vlua = get_state(lua);
+
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
 	check_field(lua, 1, "cmd", LUA_TSTRING);
@@ -146,10 +171,59 @@ VLUA_API(vifmjob_new)(lua_State *lua)
 	luaL_getmetatable(lua, "VifmJob");
 	lua_setmetatable(lua, -2);
 
+	/* Map job onto data. */
+	vlua_state_get_table(vlua, &jobs_key);
+	lua_pushlightuserdata(lua, job);
+	lua_pushvalue(lua, -3);
+	lua_settable(lua, -3);
+	lua_pop(lua, 1);
+
+	bg_job_set_exit_cb(job, &job_exit_cb, vlua);
+
 	data->job = job;
 	data->input = NULL;
 	data->output = NULL;
 	return 1;
+}
+
+/* Handles job's exit by closing its streams and doing some cleanup. */
+static void
+job_exit_cb(struct bg_job_t *job, void *arg)
+{
+	vlua_t *vlua = arg;
+
+	/* Find vifm_job_t that corresponds to the job. */
+	vlua_state_get_table(vlua, &jobs_key);
+	lua_pushlightuserdata(vlua->lua, job);
+	if(lua_gettable(vlua->lua, -2) != LUA_TUSERDATA)
+	{
+		assert(0 && "Exited job has no associated Lua job data!");
+		lua_pop(vlua->lua, 2);
+		return;
+	}
+
+	vifm_job_t *vifm_job = lua_touserdata(vlua->lua, -1);
+
+	/* Remove the table entry we've just used. */
+	lua_pushlightuserdata(vlua->lua, job);
+	lua_pushnil(vlua->lua);
+	lua_settable(vlua->lua, -4);
+
+	/* Close input and output streams to make them error on use. */
+
+	if(vifm_job->input != NULL)
+	{
+		job_stream_close(vlua->lua, vifm_job->input);
+		vifm_job->input = NULL;
+	}
+
+	if(vifm_job->output != NULL)
+	{
+		job_stream_close(vlua->lua, vifm_job->output);
+		vifm_job->output = NULL;
+	}
+
+	lua_pop(vlua->lua, 2);
 }
 
 /* Method of of VifmJob that frees associated resources.  Doesn't return
@@ -162,11 +236,11 @@ VLUA_API(vifmjob_gc)(lua_State *lua)
 
 	if(vifm_job->input != NULL)
 	{
-		job_stream_gc(lua, vifm_job->input);
+		drop_pointer(lua, vifm_job->input->obj);
 	}
 	if(vifm_job->output != NULL)
 	{
-		job_stream_gc(lua, vifm_job->output);
+		drop_pointer(lua, vifm_job->output->obj);
 	}
 
 	return 0;
@@ -179,18 +253,32 @@ VLUA_API(vifmjob_wait)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
-	/* Close Lua input stream to avoid situation when the job is blocked on
-	 * read. */
+	/* Close input stream to avoid situation when the job is blocked on read. */
 	if(vifm_job->input != NULL)
 	{
 		job_stream_close(lua, vifm_job->input);
+		vifm_job->input = NULL;
+
+		/* The stream might have been closed explicitly earlier. */
+		if(vifm_job->job->input != NULL)
+		{
+			fclose(vifm_job->job->input);
+			vifm_job->job->input = NULL;
+		}
 	}
 
-	/* Close Lua output stream to avoid situation when the job is blocked on
-	 * write. */
+	/* Close output stream to avoid situation when the job is blocked on write. */
 	if(vifm_job->output != NULL)
 	{
 		job_stream_close(lua, vifm_job->output);
+		vifm_job->output = NULL;
+
+		/* The stream might have been closed explicitly earlier. */
+		if(vifm_job->job->output != NULL)
+		{
+			fclose(vifm_job->job->output);
+			vifm_job->job->output = NULL;
+		}
 	}
 
 	if(bg_job_wait(vifm_job->job) != 0)
@@ -301,15 +389,6 @@ VLUA_API(vifmjob_errors)(lua_State *lua)
 	return 1;
 }
 
-/* Frees job stream when its parent is garbage collected. */
-static void
-job_stream_gc(lua_State *lua, job_stream_t *js)
-{
-	drop_pointer(lua, js->obj);
-	bg_job_decref(js->job);
-	js->job = NULL;
-}
-
 /* Creates a job stream.  Returns a pointer to new user data. */
 static job_stream_t *
 job_stream_open(lua_State *lua, bg_job_t *job, FILE *stream)
@@ -346,18 +425,17 @@ VLUA_IMPL(jobstream_closef)(lua_State *lua)
 
 	int stat = 1;
 
-	if(js->job != NULL)
+	if(js->lua_stream.f == js->job->input)
 	{
-		if(js->lua_stream.f == js->job->input)
-		{
-			stat = (fclose(js->job->input) == 0);
-			js->job->input = NULL;
-		}
-		else if(js->lua_stream.f == js->job->output)
-		{
-			stat = (fclose(js->job->output) == 0);
-			js->job->output = NULL;
-		}
+		stat = (fclose(js->job->input) == 0);
+		js->job->input = NULL;
+		bg_job_decref(js->job);
+	}
+	else if(js->lua_stream.f == js->job->output)
+	{
+		stat = (fclose(js->job->output) == 0);
+		js->job->output = NULL;
+		bg_job_decref(js->job);
 	}
 
 	return luaL_fileresult(lua, stat, NULL);

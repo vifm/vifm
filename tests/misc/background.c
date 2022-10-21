@@ -17,6 +17,7 @@
 #include "../../src/signals.h"
 #include "../../src/status.h"
 
+static void on_job_exit(struct bg_job_t *job, void *data);
 static void task(bg_op_t *bg_op, void *arg);
 static void wait_until_locked(pthread_spinlock_t *lock);
 
@@ -197,6 +198,38 @@ TEST(capture_output_of_external_command)
 	assert_int_equal(0, job->exit_code);
 
 	bg_job_decref(job);
+}
+
+TEST(jobs_exit_cb_is_called)
+{
+	bg_job_t *job = bg_run_external_job("echo there", BJF_NONE);
+	assert_non_null(job);
+
+	int called = 0;
+	bg_job_set_exit_cb(job, &on_job_exit, &called);
+
+	int counter = 0;
+	while(bg_job_is_running(job))
+	{
+		usleep(5000);
+		bg_check();
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			return;
+		}
+	}
+
+	assert_int_equal(1, called);
+
+	bg_job_decref(job);
+}
+
+static void
+on_job_exit(struct bg_job_t *job, void *data)
+{
+	int *called = data;
+	*called = 1;
 }
 
 TEST(supply_input_to_external_command, IF(have_cat))

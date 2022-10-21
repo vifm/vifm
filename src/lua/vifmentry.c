@@ -81,6 +81,8 @@ vifmentry_new(lua_State *lua, const dir_entry_t *entry)
 	lua_setfield(lua, -2, "ctime");
 	lua_pushstring(lua, get_type_str(entry->type));
 	lua_setfield(lua, -2, "type");
+	lua_pushboolean(lua, fentry_is_dir(entry));
+	lua_setfield(lua, -2, "isdir");
 
 	int match = (entry->search_match != 0);
 	lua_pushboolean(lua, match);

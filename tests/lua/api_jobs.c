@@ -1,8 +1,11 @@
 #include <stic.h>
 
+#include "../../src/engine/var.h"
+#include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/str.h"
+#include "../../src/background.h"
 
 #include <test-utils.h>
 
@@ -106,6 +109,10 @@ TEST(vifmjob_stdin, IF(have_cat))
 
 TEST(vifmjob_stdin_broken_pipe, IF(not_windows))
 {
+	var_t var = var_from_int(0);
+	setvar("v:jobcount", var);
+	var_free(var);
+
 	conf_setup();
 
 	ui_sb_msg("");
@@ -117,6 +124,18 @@ TEST(vifmjob_stdin_broken_pipe, IF(not_windows))
 	      "job:stdin():close()"
 	      "job:wait()"));
 	assert_string_equal("true", ui_sb_last());
+
+	/* Broken pipe + likely dead parent VifmJob object. */
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+	      "info = { cmd = 'no-such-command-exists', iomode = 'w' }"
+	      "stdin = vifm.startjob(info):stdin()"
+	      "vifm.startjob({ cmd = 'sleep 0.01' }):wait()"
+	      "print(stdin:write('text') == stdin)"));
+	assert_string_equal("true", ui_sb_last());
+	bg_check();
+	assert_failure(vlua_run_string(vlua, "print(stdin:write('text') == stdin)"));
+	assert_true(ends_with(ui_sb_last(), ": attempt to use a closed file"));
 
 	conf_teardown();
 }

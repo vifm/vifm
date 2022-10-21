@@ -35,6 +35,11 @@
  * undefined total number of countable operations. */
 #define BG_UNDEFINED_TOTAL (-1)
 
+struct bg_job_t;
+
+/* Type of a function to invoke when the job is done. */
+typedef void (*bg_job_exit_func)(struct bg_job_t *job, void *data);
+
 /* Type of background job. */
 typedef enum
 {
@@ -96,6 +101,9 @@ typedef struct bg_job_t
 
 	FILE *input;  /* File stream of standard input or NULL. */
 	FILE *output; /* File stream of standard output or NULL. */
+
+	bg_job_exit_func exit_cb; /* Function to invoke when the job exits. */
+	void *exit_cb_arg;        /* Argument to pass to that function. */
 
 	int with_bg_op;                /* Whether bg_op* fields are active. */
 	int on_job_bar;                /* Whether this task was put on a job bar. */
@@ -172,6 +180,9 @@ int bg_execute(const char descr[], const char op_descr[], int total,
  * jobs or tasks (important_only is zero) running in background.  External
  * applications whose state is tracked are always ignored by this function. */
 int bg_has_active_jobs(int important_only);
+
+/* Sets exit callback for the job. */
+void bg_job_set_exit_cb(bg_job_t *job, bg_job_exit_func cb, void *arg);
 
 /* Cancels the job.  Returns non-zero if job wasn't cancelled before, but is
  * after this call, otherwise zero is returned. */

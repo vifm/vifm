@@ -150,8 +150,15 @@ init_variables(void)
 const char *
 local_getenv(const char envname[])
 {
+	const char *value = local_getenv_null(envname);
+	return (value == NULL ? "" : value);
+}
+
+const char *
+local_getenv_null(const char envname[])
+{
 	envvar_t *record = find_record(envname);
-	return (record == NULL || record->removed) ? "" : record->val;
+	return (record == NULL || record->removed) ? NULL : record->val;
 }
 
 /* Initializes environment variable inherited from parent process. */

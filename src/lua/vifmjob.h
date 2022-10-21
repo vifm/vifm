@@ -26,6 +26,9 @@ struct lua_State;
 /* Initializes VifmJob type unit. */
 void vifmjob_init(struct lua_State *lua);
 
+/* Cleans up after this unit. */
+void vifmjob_finish(struct lua_State *lua);
+
 /* Starts an external application as detached from a terminal.  Returns an
  * object of VifmJob type or raises an error. */
 int VLUA_API(vifmjob_new)(struct lua_State *lua);

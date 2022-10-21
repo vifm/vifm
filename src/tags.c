@@ -665,6 +665,7 @@ const char *tags[] = {
 	"vifm-l_VifmEntry.ctime",
 	"vifm-l_VifmEntry.folded",
 	"vifm-l_VifmEntry.gettarget()",
+	"vifm-l_VifmEntry.isdir",
 	"vifm-l_VifmEntry.location",
 	"vifm-l_VifmEntry.match",
 	"vifm-l_VifmEntry.matchend",
