@@ -636,7 +636,7 @@ VLUA_API(vifm_plugin_require)(lua_State *lua)
 	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
 	if(plug == NULL)
 	{
-		assert(false && "vifm.plugin.require() called outside a plugin?");
+		assert(0 && "vifm.plugin.require() called outside a plugin?");
 		return 0;
 	}
 
