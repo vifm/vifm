@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Oct 18
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Oct 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -770,6 +770,7 @@ Full path to plugin's root directory.
 
 plugin.require({modname})                      *vifm-l_vifm.plugin.require()*
 Plugin-specific `require`, which loads Lua modules relative to plugin's root.
+Does not create a global variable for the module.
 
 This function is {unsafe}.
 

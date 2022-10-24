@@ -132,18 +132,26 @@ static const struct luaL_Reg sb_methods[] = {
 	{ NULL,     NULL               }
 };
 
+/* Address of this variable serves as a key in Lua table. */
+static char plugin_envs;
+
 vlua_t *
 vlua_init(void)
 {
 	vlua_t *vlua = vlua_state_alloc();
-	if(vlua != NULL)
+	if(vlua == NULL)
 	{
-		patch_env(vlua->lua);
-		load_api(vlua->lua);
-
-		vifm_viewcolumns_init(vlua);
-		vifm_handlers_init(vlua);
+		return NULL;
 	}
+
+	patch_env(vlua->lua);
+	load_api(vlua->lua);
+
+	vifm_viewcolumns_init(vlua);
+	vifm_handlers_init(vlua);
+
+	vlua_state_make_table(vlua, &plugin_envs);
+
 	return vlua;
 }
 
@@ -604,6 +612,13 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_pushcclosure(lua, VLUA_REF(print), 1);
 	lua_setfield(lua, -2, "print");
 
+	/* Map plug to plugin environment for future queries. */
+	vlua_state_get_table(get_state(lua), &plugin_envs);
+	lua_pushlightuserdata(lua, plug);
+	lua_pushvalue(lua, -3);
+	lua_settable(lua, -3);
+	lua_pop(lua, 1);
+
 	if(lua_setupvalue(lua, -2, 1) == NULL)
 	{
 		lua_pop(lua, 1);
@@ -648,7 +663,21 @@ VLUA_API(vifm_plugin_require)(lua_State *lua)
 				mod_name);
 	}
 
-	luaL_requiref(lua, full_path, VLUA_IREF(require_plugin_module), 1);
+	/* luaL_requiref() equivalent that passes plug to require_plugin_module(). */
+	luaL_getsubtable(lua, LUA_REGISTRYINDEX, LUA_LOADED_TABLE);
+	lua_getfield(lua, -1, full_path);
+	if(!lua_toboolean(lua, -1))
+	{
+		lua_pop(lua, 1);
+		lua_pushlightuserdata(lua, plug);
+		lua_pushcclosure(lua, VLUA_IREF(require_plugin_module), 1);
+		lua_pushstring(lua, full_path);
+		lua_call(lua, 1, 1);
+		lua_pushvalue(lua, -1);
+		lua_setfield(lua, -3, full_path);
+	}
+	lua_remove(lua, -2);
+
 	return 1;
 }
 
@@ -657,7 +686,32 @@ static int
 VLUA_IMPL(require_plugin_module)(lua_State *lua)
 {
 	const char *mod = luaL_checkstring(lua, 1);
-	if(luaL_loadfile(lua, mod) != LUA_OK || lua_pcall(lua, 0, 1, 0) != LUA_OK)
+	if(luaL_loadfile(lua, mod) != LUA_OK)
+	{
+		const char *error = lua_tostring(lua, -1);
+		return luaL_error(lua, "vifm.plugin.require('%s'): %s", mod, error);
+	}
+
+	/* Fetch custom environment of the current plugin. */
+	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
+	assert(plug != NULL && "Invalid call to require_plugin_module()");
+	vlua_state_get_table(get_state(lua), &plugin_envs);
+	lua_pushlightuserdata(lua, plug);
+	if(lua_gettable(lua, -2) != LUA_TTABLE)
+	{
+		return luaL_error(lua,
+				"vifm.plugin.require('%s'): failed to fetch plugin env", mod);
+	}
+	lua_remove(lua, -2);
+
+	/* Use that environment for the newly loaded module. */
+	if(lua_setupvalue(lua, -2, 1) == NULL)
+	{
+		return luaL_error(lua,
+				"vifm.plugin.require('%s'): failed to copy plugin env", mod);
+	}
+
+	if(lua_pcall(lua, 0, 1, 0) != LUA_OK)
 	{
 		const char *error = lua_tostring(lua, -1);
 		return luaL_error(lua, "vifm.plugin.require('%s'): %s", mod, error);

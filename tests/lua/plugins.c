@@ -232,13 +232,16 @@ TEST(good_plugin_module)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
 			"return vifm.plugin.require('sub')");
 	make_file(SANDBOX_PATH "/plugins/plug/sub.lua",
-			"return { source = 'sub' }");
+			"return vifm.plugin.require('subsub')");
+	make_file(SANDBOX_PATH "/plugins/plug/subsub.lua",
+			"return { source = 'subsub' }");
 
 	ui_sb_msg("");
 	plugs_load(plugs, cfg.config_dir);
 	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.source)"));
-	assert_string_equal("sub", ui_sb_last());
+	assert_string_equal("subsub", ui_sb_last());
 
+	remove_file(SANDBOX_PATH "/plugins/plug/subsub.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug/sub.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
