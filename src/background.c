@@ -1604,6 +1604,7 @@ bg_job_decref(bg_job_t *job)
 {
 	pthread_spin_lock(&job->status_lock);
 	--job->use_count;
+	assert(job->use_count >= 0 && "Excessive bg_job_decref() call!");
 	pthread_spin_unlock(&job->status_lock);
 }
 

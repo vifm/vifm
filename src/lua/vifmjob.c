@@ -411,8 +411,13 @@ job_stream_open(lua_State *lua, bg_job_t *job, FILE *stream)
 static void
 job_stream_close(lua_State *lua, job_stream_t *js)
 {
-	js->lua_stream.closef = NULL;
-	bg_job_decref(js->job);
+	/* The stream might have already been closed from Lua. */
+	if(js->lua_stream.closef != NULL)
+	{
+		js->lua_stream.closef = NULL;
+		bg_job_decref(js->job);
+	}
+
 	drop_pointer(lua, js->obj);
 }
 
