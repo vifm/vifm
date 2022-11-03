@@ -194,6 +194,7 @@ vifm_SOURCES = \
 	lua/vifmtab.c lua/vifmtab.h \
 	lua/vifmview.c lua/vifmview.h \
 	lua/vlua.c lua/vlua.h \
+	lua/vlua_cbacks.c lua/vlua_cbacks.h \
 	lua/vlua_state.c lua/vlua_state.h \
 	\
 	menus/all.h \

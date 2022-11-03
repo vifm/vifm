@@ -116,6 +116,7 @@ there for instructions.
     |  |  |-- vifmtab.c - implementation of VifmTab
     |  |  |-- vifmview.c - implementation of VifmView
     |  |  |-- vlua.c - main Lua interface unit
+    |  |  |-- vlua_cbacks.c - manager of callback functions
     |  |  `-- vlua_state.c - management of state of vlua.c unit
     |  |
     |  |-- menus/ - implementation of all menus

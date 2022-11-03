@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <unistd.h> /* usleep() */
+
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
@@ -8,6 +10,8 @@
 #include "../../src/background.h"
 
 #include <test-utils.h>
+
+static void wait_for_job(void);
 
 static vlua_t *vlua;
 
@@ -201,6 +205,77 @@ TEST(vifmjob_no_in)
 	assert_true(ends_with(ui_sb_last(), "The job has no input stream"));
 
 	conf_teardown();
+}
+
+TEST(vifmjob_onexit_good)
+{
+	var_t var = var_from_int(0);
+	setvar("v:jobcount", var);
+	var_free(var);
+
+	conf_setup();
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua,
+	      "info = { cmd = 'echo hi',"
+	              " onexit = function(job) print(job:exitcode()) end }"
+	      "vifm.startjob(info)"));
+
+	wait_for_job();
+	vlua_process_callbacks(vlua);
+
+	assert_string_equal("0", ui_sb_last());
+
+	conf_teardown();
+}
+
+TEST(vifmjob_onexit_bad)
+{
+	var_t var = var_from_int(0);
+	setvar("v:jobcount", var);
+	var_free(var);
+
+	conf_setup();
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua,
+	      "info = { cmd = 'echo hi',"
+	              " onexit = function(job) fail_here() end }"
+	      "vifm.startjob(info)"));
+
+	wait_for_job();
+	vlua_process_callbacks(vlua);
+
+	assert_true(ends_with(ui_sb_last(),
+				": attempt to call a nil value (global 'fail_here')"));
+
+	conf_teardown();
+}
+
+static void
+wait_for_job(void)
+{
+	bg_job_t *job = bg_jobs;
+	assert_non_null(job);
+
+	bg_job_incref(job);
+
+	int counter = 0;
+	while(bg_job_is_running(job))
+	{
+		usleep(5000);
+		bg_check();
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			return;
+		}
+	}
+
+	assert_int_equal(0, job->exit_code);
+	bg_job_decref(job);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

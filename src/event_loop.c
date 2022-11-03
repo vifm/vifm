@@ -35,6 +35,7 @@
 #include "engine/completion.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
+#include "lua/vlua.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/wk.h"
@@ -149,6 +150,15 @@ event_loop(const int *quit, int manage_marking)
 			modes_periodic();
 
 			bg_check();
+
+			/* Lua might not be initialized in tests. */
+			if(input_buf_pos == 0 && !wait_for_enter && vle_mode_is(NORMAL_MODE) &&
+					curr_stats.vlua != NULL)
+			{
+				/* We're not waiting for anything, so side-effects of callbacks
+				 * shouldn't be disruptive to the user. */
+				vlua_process_callbacks(curr_stats.vlua);
+			}
 
 			got_input = (get_char_async_loop(status_bar, &c, actual_timeout) != ERR);
 

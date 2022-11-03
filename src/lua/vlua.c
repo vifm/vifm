@@ -55,6 +55,7 @@
 #include "vifm_viewcolumns.h"
 #include "vifmjob.h"
 #include "vifmview.h"
+#include "vlua_cbacks.h"
 #include "vlua_state.h"
 
 static void patch_env(lua_State *lua);
@@ -147,6 +148,7 @@ vlua_init(void)
 	patch_env(vlua->lua);
 	load_api(vlua->lua);
 
+	vlua_cbacks_init(vlua);
 	vifm_viewcolumns_init(vlua);
 	vifm_handlers_init(vlua);
 
@@ -808,6 +810,12 @@ vlua_edit_list(vlua_t *vlua, const char handler[], char *entries[],
 {
 	return vifm_handlers_edit_list(vlua, handler, entries, nentries, current,
 			quickfix_format);
+}
+
+void
+vlua_process_callbacks(vlua_t *vlua)
+{
+	vlua_cbacks_process(vlua);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

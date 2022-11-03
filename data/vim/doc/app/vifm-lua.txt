@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Oct 24
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Nov 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -97,7 +97,11 @@ Safe ones can be called from anywhere, but unsafe API is not always
 accessible.  As an example, you can't change directory of any view or add a
 view column from a view column handler.
 
-Unsafe API is marked with {unsafe} in its description.
+Unsafe API is marked with {unsafe} in its description.  If description of a
+handler doesn't say that it's run in a safe environment, it can use unsafe API
+as well.  In order to allow use of unsafe API, an execution of a handler might
+be postponed until Vifm reaches a state where it holds the least amount of
+assumptions about what's going on, such handlers are marked as {delayed}.
 
 --------------------------------------------------------------------------------
 *vifm-lua-evolution*
@@ -116,7 +120,7 @@ welcome.
 Current design principles:
  1. Callbacks in Lua accept a table and return one (if they return anything).
     This allows adding new fields to both input and output while staying
-    backward compatible and readable.
+    backward compatible and readable at the cost of being a bit more verbose.
 
 Random ideas~
 
@@ -586,6 +590,8 @@ Possible fields of {job}:
     - "r" - reading output of the process (see |vifm-l_VifmJob:stdout()|)
     - "w" - providing input to the process (see |vifm-l_VifmJob:stdin()|)
     - ""  - no I/O interaction
+ - "onexit" (function) (default: `nil`)
+   Handler to invoke when the job is done.  The handler is {delayed}.
  - "mergestreams" (boolean) (default: false)
    Whether to merge error stream of the command with its output stream.
  - "visible" (boolean) (default: false)

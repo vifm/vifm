@@ -30,6 +30,7 @@
 #include "lua/lua.h"
 #include "api.h"
 #include "common.h"
+#include "vlua_cbacks.h"
 #include "vlua_state.h"
 
 /* User data of file stream associated with job's output stream. */
@@ -155,6 +156,8 @@ VLUA_API(vifmjob_new)(lua_State *lua)
 		descr = lua_tostring(lua, -1);
 	}
 
+	int with_on_exit = check_opt_field(lua, 1, "onexit", LUA_TFUNCTION);
+
 	bg_job_t *job = bg_run_external_job(cmd, flags);
 	if(job == NULL)
 	{
@@ -175,6 +178,11 @@ VLUA_API(vifmjob_new)(lua_State *lua)
 	lua_newtable(lua);
 	lua_pushvalue(lua, -2);
 	lua_setfield(lua, -2, "obj");
+	if(with_on_exit)
+	{
+		lua_pushvalue(lua, -3);
+		lua_setfield(lua, -2, "onexit");
+	}
 	vlua_state_get_table(vlua, &jobs_key);
 	lua_pushlightuserdata(lua, job);
 	lua_pushvalue(lua, -3);
@@ -205,13 +213,15 @@ job_exit_cb(struct bg_job_t *job, void *arg)
 		return;
 	}
 
-	lua_getfield(vlua->lua, -1, "obj");
+	int with_on_exit = (lua_getfield(vlua->lua, -1, "onexit") == LUA_TFUNCTION);
+
+	lua_getfield(vlua->lua, -2, "obj");
 	vifm_job_t *vifm_job = lua_touserdata(vlua->lua, -1);
 
 	/* Remove the table entry we've just used. */
 	lua_pushlightuserdata(vlua->lua, job);
 	lua_pushnil(vlua->lua);
-	lua_settable(vlua->lua, -5);
+	lua_settable(vlua->lua, -6);
 
 	/* Close input and output streams to make them error on use. */
 
@@ -227,7 +237,15 @@ job_exit_cb(struct bg_job_t *job, void *arg)
 		vifm_job->output = NULL;
 	}
 
-	lua_pop(vlua->lua, 3);
+	if(with_on_exit)
+	{
+		vlua_cbacks_schedule(vlua, /*argc=*/1);
+		lua_pop(vlua->lua, 2);
+	}
+	else
+	{
+		lua_pop(vlua->lua, 4);
+	}
 }
 
 /* Method of of VifmJob that frees associated resources.  Doesn't return
