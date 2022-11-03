@@ -46,9 +46,13 @@ void vlua_finish(vlua_t *vlua);
  * returned. */
 int vlua_run_string(vlua_t *vlua, const char str[]);
 
+/* Command-line commands. */
+
 /* Performs completion of a command.  Returns offset of completion matches. */
 int vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info,
 		int arg_pos);
+
+/* View columns. */
 
 /* Maps column name to column id.  Returns column id or -1 on error. */
 int vlua_viewcolumn_map(vlua_t *vlua, const char name[]);
@@ -56,6 +60,8 @@ int vlua_viewcolumn_map(vlua_t *vlua, const char name[]);
 /* Checks whether specified view column should be considered a primary one.
  * Returns non-zero if so, otherwise zero is returned. */
 int vlua_viewcolumn_is_primary(vlua_t *vlua, int column_id);
+
+/* Handlers. */
 
 /* Checks command for a Lua handler.  Returns non-zero if it's present and zero
  * otherwise. */
@@ -79,6 +85,8 @@ void vlua_open_file(vlua_t *vlua, const char prog[],
 char * vlua_make_status_line(struct vlua_t *vlua, const char format[],
 		struct view_t *view, int width);
 
+/* Operations with editor. */
+
 /* Invokes an editor handler to view Vim-style documentation.  Returns zero on
  * success and non-zero otherwise. */
 int vlua_open_help(struct vlua_t *vlua, const char handler[],
@@ -100,6 +108,8 @@ int vlua_edit_many(struct vlua_t *vlua, const char handler[], char *files[],
  * text).  Returns zero on success and non-zero otherwise. */
 int vlua_edit_list(struct vlua_t *vlua, const char handler[], char *entries[],
 		int nentries, int current, int quickfix_format);
+
+/* Callbacks. */
 
 /* Processes all callbacks accumulated so far in the queue. */
 void vlua_process_callbacks(struct vlua_t *vlua);
