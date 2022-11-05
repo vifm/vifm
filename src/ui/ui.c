@@ -1624,6 +1624,9 @@ ui_swap_view_data(view_t *left, view_t *right)
 	WINDOW *tmp;
 	int t;
 
+	/* Data in some fields doesn't need to be swapped.  Swap it beforehand so that
+	 * swapping structures will put it back. */
+
 	tmp = left->win;
 	left->win = right->win;
 	right->win = tmp;
@@ -1639,6 +1642,18 @@ ui_swap_view_data(view_t *left, view_t *right)
 	tmp = left->title;
 	left->title = right->title;
 	right->title = tmp;
+
+	/* Swap these fields so they reflect updated layout. */
+
+	t = left->custom.diff_cmp_result.unique_left;
+	left->custom.diff_cmp_result.unique_left =
+		left->custom.diff_cmp_result.unique_right;
+	left->custom.diff_cmp_result.unique_right = t;
+
+	t = right->custom.diff_cmp_result.unique_left;
+	right->custom.diff_cmp_result.unique_left =
+		right->custom.diff_cmp_result.unique_right;
+	right->custom.diff_cmp_result.unique_right = t;
 
 	tmp_view = *left;
 	*left = *right;

@@ -30,6 +30,7 @@
 #include "../ui/ui.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../compare.h"
 #include "../event_loop.h"
 #include "../status.h"
 #include "dialogs/attr_dialog.h"
@@ -43,7 +44,6 @@
 #include "normal.h"
 #include "view.h"
 #include "visual.h"
-#include "compare.h"
 
 static int mode_flags[] = {
 	MF_USES_COUNT | MF_USES_REGS, /* NORMAL_MODE */
