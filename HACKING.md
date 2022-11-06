@@ -108,6 +108,7 @@ there for instructions.
     |  |  |-- lua/ - Lua 5.4.2 sources
     |  |  |-- common.c - common code for Lua API implementation
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
+    |  |  |-- vifm_events.c - implementation of `vifm.events`
     |  |  |-- vifm_handlers.c - implementation of `vifm.addhandler`
     |  |  |-- vifm_tabs.c - implementation of `vifm.tabs`
     |  |  |-- vifm_viewcolumns.c - implementation of `vifm.addcolumntype`
@@ -116,6 +117,7 @@ there for instructions.
     |  |  |-- vifmtab.c - implementation of VifmTab
     |  |  |-- vifmview.c - implementation of VifmView
     |  |  |-- vlua.c - main Lua interface unit
+    |  |  |-- vlua_cbacks.c - manager of callback functions
     |  |  `-- vlua_state.c - management of state of vlua.c unit
     |  |
     |  |-- menus/ - implementation of all menus

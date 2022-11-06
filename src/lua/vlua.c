@@ -49,12 +49,14 @@
 #include "api.h"
 #include "common.h"
 #include "vifm_cmds.h"
+#include "vifm_events.h"
 #include "vifm_handlers.h"
 #include "vifm_keys.h"
 #include "vifm_tabs.h"
 #include "vifm_viewcolumns.h"
 #include "vifmjob.h"
 #include "vifmview.h"
+#include "vlua_cbacks.h"
 #include "vlua_state.h"
 
 static void patch_env(lua_State *lua);
@@ -147,6 +149,7 @@ vlua_init(void)
 	patch_env(vlua->lua);
 	load_api(vlua->lua);
 
+	vlua_cbacks_init(vlua);
 	vifm_viewcolumns_init(vlua);
 	vifm_handlers_init(vlua);
 
@@ -210,6 +213,10 @@ load_api(lua_State *lua)
 	/* Setup vifm.cmds. */
 	vifm_cmds_init(lua);
 	lua_setfield(lua, -2, "cmds");
+
+	/* Setup vifm.events. */
+	vifm_events_init(lua);
+	lua_setfield(lua, -2, "events");
 
 	/* Setup vifm.keys. */
 	vifm_keys_init(lua);
@@ -778,7 +785,8 @@ vlua_open_file(vlua_t *vlua, const char prog[], const dir_entry_t *entry)
 }
 
 char *
-vlua_make_status_line(vlua_t *vlua, const char format[], view_t *view, int width)
+vlua_make_status_line(vlua_t *vlua, const char format[], view_t *view,
+		int width)
 {
 	return vifm_handlers_make_status_line(vlua, format, view, width);
 }
@@ -808,6 +816,18 @@ vlua_edit_list(vlua_t *vlua, const char handler[], char *entries[],
 {
 	return vifm_handlers_edit_list(vlua, handler, entries, nentries, current,
 			quickfix_format);
+}
+
+void
+vlua_process_callbacks(vlua_t *vlua)
+{
+	vlua_cbacks_process(vlua);
+}
+
+void
+vlua_events_app_exit(vlua_t *vlua)
+{
+	vifm_events_app_exit(vlua);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

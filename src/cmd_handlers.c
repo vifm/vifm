@@ -2199,7 +2199,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(path_exists(full_path, DEREF) && !path_exists(full_path, NODEREF))
+		if(!path_exists(full_path, DEREF) && path_exists(full_path, NODEREF))
 		{
 			show_error_msgf("Access error",
 					"Can't access destination of link \"%s\". It might be broken.",

@@ -571,6 +571,10 @@ vifm_try_leave(int store_state, int cquit, int force)
 		}
 	}
 
+	/* Has to be run early when UI is up and state can still be changed. */
+	vlua_events_app_exit(curr_stats.vlua);
+	vlua_process_callbacks(curr_stats.vlua);
+
 	fuse_unmount_all();
 
 	if(store_state)
@@ -594,6 +598,10 @@ vifm_try_leave(int store_state, int cquit, int force)
 void _gnuc_noreturn
 vifm_choose_files(view_t *view, int nfiles, char *files[])
 {
+	/* Has to be run early when UI is up and state can still be changed. */
+	vlua_events_app_exit(curr_stats.vlua);
+	vlua_process_callbacks(curr_stats.vlua);
+
 	/* As curses can do something with terminal on shutting down, disable it
 	 * before writing anything to the screen. */
 	ui_shutdown();
