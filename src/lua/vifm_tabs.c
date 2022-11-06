@@ -51,7 +51,7 @@ vifm_tabs_init(lua_State *lua)
 	vifmtab_init(lua);
 }
 
-/* Member of `vifm.tabs` that number of tabs.  Returns an integer. */
+/* Member of `vifm.tabs` that retrieves number of tabs.  Returns an integer. */
 static int
 VLUA_API(tabs_getcount)(lua_State *lua)
 {
