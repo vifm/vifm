@@ -41,7 +41,6 @@ static void strings_list_is(const strlist_t expected, const strlist_t actual);
 SETUP_ONCE()
 {
 	cfg.sizefmt.base = 1;
-	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
 
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
@@ -57,24 +56,9 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	cfg.cd_path = strdup("");
-	cfg.fuse_home = strdup("");
-	cfg.slow_fs_list = strdup("");
-	cfg.use_system_calls = 1;
-
-#ifndef _WIN32
-	replace_string(&cfg.shell, "/bin/sh");
-	update_string(&cfg.shell_cmd_flag, "-c");
-#else
-	replace_string(&cfg.shell, "cmd");
-	update_string(&cfg.shell_cmd_flag, "/C");
-#endif
-
-	stats_update_shell_type(cfg.shell);
-
-	init_commands();
-
+	conf_setup();
 	undo_setup();
+	init_commands();
 
 	saved_cwd = save_cwd();
 }
@@ -83,19 +67,11 @@ TEARDOWN()
 {
 	restore_cwd(saved_cwd);
 
-	update_string(&cfg.cd_path, NULL);
-	update_string(&cfg.fuse_home, NULL);
-	update_string(&cfg.slow_fs_list, NULL);
-
-	stats_update_shell_type("/bin/sh");
-	update_string(&cfg.shell_cmd_flag, NULL);
-	update_string(&cfg.shell, NULL);
-
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 
+	conf_teardown();
 	vle_cmds_reset();
-
 	undo_teardown();
 }
 
