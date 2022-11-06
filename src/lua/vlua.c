@@ -49,6 +49,7 @@
 #include "api.h"
 #include "common.h"
 #include "vifm_cmds.h"
+#include "vifm_events.h"
 #include "vifm_handlers.h"
 #include "vifm_keys.h"
 #include "vifm_tabs.h"
@@ -212,6 +213,10 @@ load_api(lua_State *lua)
 	/* Setup vifm.cmds. */
 	vifm_cmds_init(lua);
 	lua_setfield(lua, -2, "cmds");
+
+	/* Setup vifm.events. */
+	vifm_events_init(lua);
+	lua_setfield(lua, -2, "events");
 
 	/* Setup vifm.keys. */
 	vifm_keys_init(lua);
@@ -817,6 +822,12 @@ void
 vlua_process_callbacks(vlua_t *vlua)
 {
 	vlua_cbacks_process(vlua);
+}
+
+void
+vlua_events_app_exit(vlua_t *vlua)
+{
+	vifm_events_app_exit(vlua);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

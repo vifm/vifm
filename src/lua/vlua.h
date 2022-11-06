@@ -114,6 +114,11 @@ int vlua_edit_list(struct vlua_t *vlua, const char handler[], char *entries[],
 /* Processes all callbacks accumulated so far in the queue. */
 void vlua_process_callbacks(struct vlua_t *vlua);
 
+/* Events. */
+
+/* Schedules all handlers for exit event as callbacks to process. */
+void vlua_events_app_exit(struct vlua_t *vlua);
+
 #endif /* VIFM__LUA__VLUA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

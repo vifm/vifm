@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Nov 3
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Nov 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -17,6 +17,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
+|vifm-l_vifm.events|   `vifm.events` global table.
 |vifm-l_vifm.keys|     `vifm.keys` global table.
 |vifm-l_vifm.opts|     `vifm.opts` global table.
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
@@ -695,6 +696,35 @@ Parameters:~
 
 Return:~
   `true` on success.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.events*
+
+This global `vifm.events` table groups items related to events.
+
+events.listen({event})                         *vifm-l_vifm.events.listen()*
+Registers a handler for an event.
+
+Possible fields of {event}:
+ - "event" (string)
+   Name of event to listen for.  See below.
+ - "handler" (function)
+   Handler to invoke when the event happens.
+
+Events:
+ - "app.exit"
+   Occurs before Vifm exits normally.  Does not happen on |vifm-:restart|.
+
+Registering the same handler more than once for the same event has no effect.
+
+Parameters:~
+  {event}  Table with information about event handling.
+
+Return:~
+  `nil`
+
+Raises an error:~
+  On unknown event name.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.keys*

@@ -108,6 +108,7 @@ there for instructions.
     |  |  |-- lua/ - Lua 5.4.2 sources
     |  |  |-- common.c - common code for Lua API implementation
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
+    |  |  |-- vifm_events.c - implementation of `vifm.events`
     |  |  |-- vifm_handlers.c - implementation of `vifm.addhandler`
     |  |  |-- vifm_tabs.c - implementation of `vifm.tabs`
     |  |  |-- vifm_viewcolumns.c - implementation of `vifm.addcolumntype`
