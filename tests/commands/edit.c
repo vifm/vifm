@@ -120,5 +120,29 @@ TEST(edit_command)
 	curr_stats.vlua = NULL;
 }
 
+TEST(edit_broken_symlink, IF(not_windows))
+{
+	make_symlink("no-such-file", SANDBOX_PATH "/broken");
+
+	update_string(&cfg.vi_command, "rm");
+	update_string(&cfg.vi_x_command, "");
+
+	char *saved_cwd = save_cwd();
+	assert_success(chdir(sandbox));
+
+	strcpy(lwin.curr_dir, sandbox);
+	lwin.list_rows = 1;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("broken");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+
+	(void)exec_commands("edit", &lwin, CIT_COMMAND);
+
+	restore_cwd(saved_cwd);
+	remove_file(SANDBOX_PATH "/broken");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
