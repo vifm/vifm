@@ -285,15 +285,7 @@ event_loop(const int *quit, int manage_marking)
 					clear_input_bar();
 				}
 
-				if(!curr_stats.save_msg && curr_view->selected_files &&
-						!vle_mode_is(CMDLINE_MODE))
-				{
-					print_selected_msg();
-				}
-				else if(!curr_stats.save_msg && cv_compare(curr_view->custom.type))
-				{
-					print_compare_msg();
-				}
+				modes_statusbar_update();
 				continue;
 			}
 		}

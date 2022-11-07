@@ -91,7 +91,7 @@ static mode_init_func mode_init_funcs[] = {
 };
 ARRAY_GUARD(mode_init_funcs, MODES_COUNT);
 
-static void modes_statusbar_update(void);
+static void print_compare_stats(void);
 static void update_vmode_input(void);
 
 void
@@ -184,20 +184,29 @@ modes_post(void)
 void
 modes_statusbar_update(void)
 {
-	if(vle_mode_is(MORE_MODE))
+	if(vle_mode_is(MORE_MODE) || vle_mode_is(CMDLINE_MODE) ||
+			curr_stats.save_msg != 0)
 	{
-		/* Status bar is used for special purposes. */
+		return;
 	}
-	else if(!curr_stats.save_msg &&
-			(curr_view->selected_files || vle_mode_is(VISUAL_MODE)))
+
+	if(vle_mode_is(VISUAL_MODE))
 	{
-		print_selected_msg();
+		ui_sb_msgf("-- %s -- ", modvis_describe());
+		update_vmode_input();
+		curr_stats.save_msg = 2;
 	}
-	else if(!curr_stats.save_msg && cv_compare(curr_view->custom.type))
+	else if(curr_view->selected_files)
 	{
-		print_compare_msg();
+		ui_sb_msgf("%d %s selected", curr_view->selected_files,
+				curr_view->selected_files == 1 ? "file" : "files");
+		curr_stats.save_msg = 2;
 	}
-	else if(!curr_stats.save_msg)
+	else if(cv_compare(curr_view->custom.type))
+	{
+		print_compare_stats();
+	}
+	else
 	{
 		ui_sb_clear();
 	}
@@ -384,39 +393,24 @@ abort_menu_like_mode(void)
 	}
 }
 
-void
-print_selected_msg(void)
-{
-	if(vle_mode_is(VISUAL_MODE))
-	{
-		ui_sb_msgf("-- %s -- ", modvis_describe());
-		update_vmode_input();
-	}
-	else
-	{
-		ui_sb_msgf("%d %s selected", curr_view->selected_files,
-				curr_view->selected_files == 1 ? "file" : "files");
-	}
-	curr_stats.save_msg = 2;
-}
-
-void
-print_compare_msg(void)
+/* Prints compare stats on status line. */
+static void
+print_compare_stats(void)
 {
 	if(curr_view->custom.diff_cmp_flags & CF_GROUP_PATHS)
 	{
 		ui_sb_msgf("Initial result: identical: %d, different: %d, unique: %d/%d",
-					curr_view->custom.diff_stats.identical,
-					curr_view->custom.diff_stats.different,
-					curr_view->custom.diff_stats.unique_left,
-					curr_view->custom.diff_stats.unique_right);
+				curr_view->custom.diff_stats.identical,
+				curr_view->custom.diff_stats.different,
+				curr_view->custom.diff_stats.unique_left,
+				curr_view->custom.diff_stats.unique_right);
 	}
 	else
 	{
 		ui_sb_msgf("Initial result: identical: %d, unique: %d/%d",
-					curr_view->custom.diff_stats.identical,
-					curr_view->custom.diff_stats.unique_left,
-					curr_view->custom.diff_stats.unique_right);
+				curr_view->custom.diff_stats.identical,
+				curr_view->custom.diff_stats.unique_left,
+				curr_view->custom.diff_stats.unique_right);
 	}
 	curr_stats.save_msg = 2;
 }

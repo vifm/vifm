@@ -65,9 +65,9 @@ int modes_is_dialog_like(void);
 /* Aborts one of menu-like modes if any of them is currently active. */
 void abort_menu_like_mode(void);
 
-void print_selected_msg(void);
-
-void print_compare_msg(void);
+/* Either prints appropriate message on the statusbar or clears it depending on
+ * the mode and its state. */
+void modes_statusbar_update(void);
 
 #endif /* VIFM__MODES__MODES_H__ */
 

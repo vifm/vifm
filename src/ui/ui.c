@@ -773,18 +773,7 @@ update_start(UpdateType update_kind)
 
 	if(curr_stats.save_msg == 0 && !ui_sb_multiline())
 	{
-		if(curr_view->selected_files)
-		{
-			print_selected_msg();
-		}
-		else if(cv_compare(curr_view->custom.type))
-		{
-			print_compare_msg();
-		}
-		else
-		{
-			ui_sb_clear();
-		}
+		modes_statusbar_update();
 
 		if(vle_mode_is(VIEW_MODE))
 		{
