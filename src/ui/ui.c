@@ -773,14 +773,7 @@ update_start(UpdateType update_kind)
 
 	if(curr_stats.save_msg == 0 && !ui_sb_multiline())
 	{
-		if(curr_view->selected_files)
-		{
-			print_selected_msg();
-		}
-		else
-		{
-			ui_sb_clear();
-		}
+		modes_statusbar_update();
 
 		if(vle_mode_is(VIEW_MODE))
 		{
@@ -1620,6 +1613,9 @@ ui_swap_view_data(view_t *left, view_t *right)
 	WINDOW *tmp;
 	int t;
 
+	/* Data in some fields doesn't need to be swapped.  Swap it beforehand so that
+	 * swapping structures will put it back. */
+
 	tmp = left->win;
 	left->win = right->win;
 	right->win = tmp;
@@ -1635,6 +1631,16 @@ ui_swap_view_data(view_t *left, view_t *right)
 	tmp = left->title;
 	left->title = right->title;
 	right->title = tmp;
+
+	/* Swap these fields so they reflect updated layout. */
+
+	t = left->custom.diff_stats.unique_left;
+	left->custom.diff_stats.unique_left = left->custom.diff_stats.unique_right;
+	left->custom.diff_stats.unique_right = t;
+
+	t = right->custom.diff_stats.unique_left;
+	right->custom.diff_stats.unique_left = right->custom.diff_stats.unique_right;
+	right->custom.diff_stats.unique_right = t;
 
 	tmp_view = *left;
 	*left = *right;

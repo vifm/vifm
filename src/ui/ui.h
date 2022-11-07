@@ -254,15 +254,26 @@ typedef struct
 }
 entries_t;
 
+/* Entry with comparison results. */
+typedef struct
+{
+	int identical;    /* Number of matched files judged identical. */
+	int different;    /* Number of matched files judged different. */
+	int unique_left;  /* Number of unmatched files on the left. */
+	int unique_right; /* Number of unmatched files on the right. */
+}
+compare_stats_t;
+
 /* Data related to custom filling. */
 struct cv_data_t
 {
 	/* Type of the custom view. */
 	CVType type;
 
-	/* Additional data about CV_DIFF type. */
-	CompareType diff_cmp_type; /* Type of comparison. */
-	int diff_cmp_flags;        /* Flags used to build the diff. */
+	/* Additional data for CV_DIFF type. */
+	CompareType diff_cmp_type;  /* Type of comparison. */
+	int diff_cmp_flags;         /* Flags used to build the diff. */
+	compare_stats_t diff_stats; /* List of comparison results */
 
 	/* This is temporary storage for custom list entries used during its
 	 * construction. */

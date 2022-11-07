@@ -51,7 +51,8 @@ void modes_redraw(void);
 
 void modes_update(void);
 
-void modupd_input_bar(wchar_t *str);
+/* Clears input bar or draws current input there depending on the mode. */
+void modupd_input_bar(const wchar_t str[]);
 
 void clear_input_bar(void);
 
@@ -64,7 +65,9 @@ int modes_is_dialog_like(void);
 /* Aborts one of menu-like modes if any of them is currently active. */
 void abort_menu_like_mode(void);
 
-void print_selected_msg(void);
+/* Either prints appropriate message on the statusbar or clears it depending on
+ * the mode and its state. */
+void modes_statusbar_update(void);
 
 #endif /* VIFM__MODES__MODES_H__ */
 
