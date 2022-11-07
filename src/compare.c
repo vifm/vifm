@@ -87,8 +87,9 @@ static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg);
 static void fill_side_by_side_by_paths(entries_t curr, entries_t other,
-		int flags);
-static void fill_side_by_side_by_ids(entries_t curr, entries_t other);
+		int flags, compare_stats_t *stats);
+static void fill_side_by_side_by_ids(entries_t curr, entries_t other,
+		compare_stats_t *stats);
 static int compare_entries(dir_entry_t *curr, dir_entry_t *other, int flags);
 static int id_sorter(const void *first, const void *second);
 static void put_or_free(view_t *view, dir_entry_t *entry, int id, int take);
@@ -173,20 +174,16 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	flist_custom_start(curr_view, lt == LT_ALL ? "diff" : "dups diff");
 	flist_custom_start(other_view, lt == LT_ALL ? "diff" : "dups diff");
 
-	/* Clear previous comparison results for curr_view */
-	memset(&curr_view->custom.diff_cmp_result, 0, sizeof(struct compare_result_t));
+	compare_stats_t stats = {};
 
 	if(group_paths)
 	{
-		fill_side_by_side_by_paths(curr, other, flags);
+		fill_side_by_side_by_paths(curr, other, flags, &stats);
 	}
 	else
 	{
-		fill_side_by_side_by_ids(curr, other);
+		fill_side_by_side_by_ids(curr, other, &stats);
 	}
-
-	/* Copy comparison results from curr_view to other_view */
-	memcpy(&other_view->custom.diff_cmp_result, &curr_view->custom.diff_cmp_result, sizeof(struct compare_result_t));
 
 	/* Entries' data has been moved out of them, so need to free only the
 	 * lists. */
@@ -209,6 +206,11 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	other_view->custom.diff_cmp_type = ct;
 	curr_view->custom.diff_cmp_flags = flags;
 	other_view->custom.diff_cmp_flags = flags;
+
+	/* Both views share the same stats, alternatively can put to status_t, but
+	 * then have to save/store per global tab. */
+	curr_view->custom.diff_stats = stats;
+	other_view->custom.diff_stats = stats;
 
 	assert(curr_view->list_rows == other_view->list_rows &&
 			"Diff views must be in sync!");
@@ -349,7 +351,8 @@ is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg)
 /* Composes side-by-side comparison of files in two views centered around their
  * relative paths. */
 static void
-fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags)
+fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags,
+		compare_stats_t *stats)
 {
 	int i = 0;
 	int j = 0;
@@ -369,18 +372,15 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags)
 
 		if(cmp == 0)
 		{
-			curr.entries[i].id == other.entries[j].id ?
-				curr_view->custom.diff_cmp_result.identical++ :
-				curr_view->custom.diff_cmp_result.different++;
+			(curr.entries[i].id == other.entries[j].id) ? stats->identical++
+			                                            : stats->different++;
 
 			flist_custom_put(curr_view, &curr.entries[i++]);
 			flist_custom_put(other_view, &other.entries[j++]);
 		}
 		else if(cmp < 0)
 		{
-			curr_view == &lwin ?
-				curr_view->custom.diff_cmp_result.unique_left++ :
-				curr_view->custom.diff_cmp_result.unique_right++;
+			(curr_view == &lwin) ? stats->unique_left++ : stats->unique_right++;
 
 			flist_custom_put(curr_view, &curr.entries[i]);
 			flist_custom_add_separator(other_view, curr.entries[i].id);
@@ -388,9 +388,7 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags)
 		}
 		else
 		{
-			curr_view == &lwin ?
-				curr_view->custom.diff_cmp_result.unique_right++ :
-				curr_view->custom.diff_cmp_result.unique_left++;
+			(curr_view == &lwin) ? stats->unique_right++ : stats->unique_left++;
 
 			flist_custom_put(other_view, &other.entries[j]);
 			flist_custom_add_separator(curr_view, other.entries[j].id);
@@ -402,7 +400,8 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags)
 /* Composes side-by-side comparison of files in two views that is guided by
  * comparison ids and minimizes edit script. */
 static void
-fill_side_by_side_by_ids(entries_t curr, entries_t other)
+fill_side_by_side_by_ids(entries_t curr, entries_t other,
+		compare_stats_t *stats)
 {
 	enum { UP, LEFT, DIAG };
 
@@ -456,25 +455,21 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other)
 			dir_entry_t *e;
 
 			case UP:
-				curr_view == &lwin ?
-					curr_view->custom.diff_cmp_result.unique_left++ :
-					curr_view->custom.diff_cmp_result.unique_right++;
+				(curr_view == &lwin) ? stats->unique_left++ : stats->unique_right++;
 
 				e = &curr.entries[curr.nentries - 1 - --i];
 				flist_custom_put(curr_view, e);
 				flist_custom_add_separator(other_view, e->id);
 				break;
 			case LEFT:
-				curr_view == &lwin ?
-					curr_view->custom.diff_cmp_result.unique_right++ :
-					curr_view->custom.diff_cmp_result.unique_left++;
+				(curr_view == &lwin) ? stats->unique_right++ : stats->unique_left++;
 
 				e = &other.entries[other.nentries - 1 - --j];
 				flist_custom_put(other_view, e);
 				flist_custom_add_separator(curr_view, e->id);
 				break;
 			case DIAG:
-				curr_view->custom.diff_cmp_result.identical++;
+				stats->identical++;
 
 				flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
 				flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);

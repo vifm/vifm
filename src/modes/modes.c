@@ -193,7 +193,7 @@ modes_statusbar_update(void)
 	{
 		print_selected_msg();
 	}
-	else if (!curr_stats.save_msg && cv_compare(curr_view->custom.type))
+	else if(!curr_stats.save_msg && cv_compare(curr_view->custom.type))
 	{
 		print_compare_msg();
 	}
@@ -403,20 +403,20 @@ print_selected_msg(void)
 void
 print_compare_msg(void)
 {
-	if (curr_view->custom.diff_cmp_flags & CF_GROUP_PATHS)
+	if(curr_view->custom.diff_cmp_flags & CF_GROUP_PATHS)
 	{
 		ui_sb_msgf("Initial result: identical: %d, different: %d, unique: %d/%d",
-					curr_view->custom.diff_cmp_result.identical,
-					curr_view->custom.diff_cmp_result.different,
-					curr_view->custom.diff_cmp_result.unique_left,
-					curr_view->custom.diff_cmp_result.unique_right);
+					curr_view->custom.diff_stats.identical,
+					curr_view->custom.diff_stats.different,
+					curr_view->custom.diff_stats.unique_left,
+					curr_view->custom.diff_stats.unique_right);
 	}
 	else
 	{
 		ui_sb_msgf("Initial result: identical: %d, unique: %d/%d",
-					curr_view->custom.diff_cmp_result.identical,
-					curr_view->custom.diff_cmp_result.unique_left,
-					curr_view->custom.diff_cmp_result.unique_right);
+					curr_view->custom.diff_stats.identical,
+					curr_view->custom.diff_stats.unique_left,
+					curr_view->custom.diff_stats.unique_right);
 	}
 	curr_stats.save_msg = 2;
 }

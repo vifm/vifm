@@ -777,7 +777,7 @@ update_start(UpdateType update_kind)
 		{
 			print_selected_msg();
 		}
-		else if (cv_compare(curr_view->custom.type))
+		else if(cv_compare(curr_view->custom.type))
 		{
 			print_compare_msg();
 		}
@@ -1645,15 +1645,13 @@ ui_swap_view_data(view_t *left, view_t *right)
 
 	/* Swap these fields so they reflect updated layout. */
 
-	t = left->custom.diff_cmp_result.unique_left;
-	left->custom.diff_cmp_result.unique_left =
-		left->custom.diff_cmp_result.unique_right;
-	left->custom.diff_cmp_result.unique_right = t;
+	t = left->custom.diff_stats.unique_left;
+	left->custom.diff_stats.unique_left = left->custom.diff_stats.unique_right;
+	left->custom.diff_stats.unique_right = t;
 
-	t = right->custom.diff_cmp_result.unique_left;
-	right->custom.diff_cmp_result.unique_left =
-		right->custom.diff_cmp_result.unique_right;
-	right->custom.diff_cmp_result.unique_right = t;
+	t = right->custom.diff_stats.unique_left;
+	right->custom.diff_stats.unique_left = right->custom.diff_stats.unique_right;
+	right->custom.diff_stats.unique_right = t;
 
 	tmp_view = *left;
 	*left = *right;
