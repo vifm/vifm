@@ -333,7 +333,7 @@ modes_update(void)
 }
 
 void
-modupd_input_bar(wchar_t *str)
+modupd_input_bar(const wchar_t str[])
 {
 	if(vle_mode_is(VISUAL_MODE))
 	{

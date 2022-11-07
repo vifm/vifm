@@ -51,7 +51,8 @@ void modes_redraw(void);
 
 void modes_update(void);
 
-void modupd_input_bar(wchar_t *str);
+/* Clears input bar or draws current input there depending on the mode. */
+void modupd_input_bar(const wchar_t str[]);
 
 void clear_input_bar(void);
 
