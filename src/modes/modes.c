@@ -399,7 +399,7 @@ print_compare_stats(void)
 {
 	if(curr_view->custom.diff_cmp_flags & CF_GROUP_PATHS)
 	{
-		ui_sb_msgf("Initial result: identical: %d, different: %d, unique: %d/%d",
+		ui_sb_msgf("(on compare) identical: %d, different: %d, unique: %d/%d",
 				curr_view->custom.diff_stats.identical,
 				curr_view->custom.diff_stats.different,
 				curr_view->custom.diff_stats.unique_left,
@@ -407,7 +407,7 @@ print_compare_stats(void)
 	}
 	else
 	{
-		ui_sb_msgf("Initial result: identical: %d, unique: %d/%d",
+		ui_sb_msgf("(on compare) identical: %d, unique: %d/%d",
 				curr_view->custom.diff_stats.identical,
 				curr_view->custom.diff_stats.unique_left,
 				curr_view->custom.diff_stats.unique_right);
