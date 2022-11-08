@@ -172,8 +172,9 @@ static void dotfiles_global(OPT_OP op, optval_t val);
 static void dotfiles_local(OPT_OP op, optval_t val);
 static void lsoptions_global(OPT_OP op, optval_t val);
 static void lsoptions_local(OPT_OP op, optval_t val);
-static void set_lsoptions(int *transposed, optval_t val, OPT_SCOPE scope);
-static void fill_lsoptions(optval_t *val, int transposed);
+static void set_lsoptions(int *transposed, int *column_count, optval_t val,
+		OPT_SCOPE scope);
+static void fill_lsoptions(optval_t *val, int transposed, int column_count);
 static void lsview_global(OPT_OP op, optval_t val);
 static void lsview_local(OPT_OP op, optval_t val);
 static void milleroptions_global(OPT_OP op, optval_t val);
@@ -330,7 +331,8 @@ ARRAY_GUARD(histcursor_vals, NUM_CHPOS);
 
 /* Possible keys of 'lsoptions' option. */
 static const char *lsoptions_enum[][2] = {
-	{ "transposed", "fill grid by column instead of by line" },
+	{ "columncount:", "fixed number of columns to display or 0" },
+	{ "transposed",   "fill grid by column instead of by line" },
 };
 
 /* Possible values of 'previewoptions'. */
@@ -1171,7 +1173,7 @@ init_dotfiles(optval_t *val)
 static void
 init_lsoptions(optval_t *val)
 {
-	fill_lsoptions(val, curr_view->ls_transposed_g);
+	fill_lsoptions(val, curr_view->ls_transposed_g, curr_view->ls_cols_g);
 }
 
 /* Initializes 'lsview' option from global value. */
@@ -1422,7 +1424,7 @@ reset_local_options(view_t *view)
 	vle_opts_assign("dotfiles", val, OPT_LOCAL);
 
 	view->ls_transposed = view->ls_transposed_g;
-	fill_lsoptions(&val, view->ls_transposed_g);
+	fill_lsoptions(&val, view->ls_transposed_g, view->ls_cols_g);
 	vle_opts_assign("lsoptions", val, OPT_LOCAL);
 
 	fview_set_lsview(view, view->ls_view_g);
@@ -1484,9 +1486,9 @@ load_view_options(view_t *view)
 	val.bool_val = !view->hide_dot_g;
 	vle_opts_assign("dotfiles", val, OPT_GLOBAL);
 
-	fill_lsoptions(&val, view->ls_transposed);
+	fill_lsoptions(&val, view->ls_transposed, view->ls_cols);
 	vle_opts_assign("lsoptions", val, OPT_LOCAL);
-	fill_lsoptions(&val, view->ls_transposed_g);
+	fill_lsoptions(&val, view->ls_transposed_g, view->ls_cols_g);
 	vle_opts_assign("lsoptions", val, OPT_GLOBAL);
 
 	val.bool_val = view->ls_view;
@@ -2642,30 +2644,48 @@ dotfiles_local(OPT_OP op, optval_t val)
 static void
 lsoptions_global(OPT_OP op, optval_t val)
 {
-	set_lsoptions(&curr_view->ls_transposed_g, val, OPT_GLOBAL);
+	set_lsoptions(&curr_view->ls_transposed_g, &curr_view->ls_cols_g, val,
+			OPT_GLOBAL);
 }
 
 /* Handles update of ls settings as a local option. */
 static void
 lsoptions_local(OPT_OP op, optval_t val)
 {
-	set_lsoptions(&curr_view->ls_transposed, val, OPT_LOCAL);
+	set_lsoptions(&curr_view->ls_transposed, &curr_view->ls_cols, val, OPT_LOCAL);
 }
 
 /* Handles update of ls-view settings. */
 static void
-set_lsoptions(int *transposed, optval_t val, OPT_SCOPE scope)
+set_lsoptions(int *transposed, int *column_count, optval_t val, OPT_SCOPE scope)
 {
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
 	int transpose = 0;
+	int fixed_columns = 0;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
-		if(strcmp(part, "transposed") == 0)
+		const char *option = part;
+		if(strcmp(option, "transposed") == 0)
 		{
 			transpose = 1;
+		}
+		else if(skip_prefix(&option, "columncount:"))
+		{
+			if(!read_int(option, &fixed_columns))
+			{
+				vle_tb_append_linef(vle_err,
+						"Failed to parse \"columncount\" value: %s", option);
+				break;
+			}
+			if(fixed_columns < 0)
+			{
+				vle_tb_append_linef(vle_err,
+						"\"columncount\" can't be less than 0, got: %s", option);
+				break;
+			}
 		}
 		else
 		{
@@ -2680,6 +2700,7 @@ set_lsoptions(int *transposed, optval_t val, OPT_SCOPE scope)
 	if(part == NULL)
 	{
 		*transposed = transpose;
+		*column_count = fixed_columns;
 
 		if(!ui_view_displays_columns(curr_view) &&
 				transposed == &curr_view->ls_transposed)
@@ -2688,16 +2709,17 @@ set_lsoptions(int *transposed, optval_t val, OPT_SCOPE scope)
 		}
 	}
 
-	fill_lsoptions(&val, *transposed);
+	fill_lsoptions(&val, *transposed, *column_count);
 	vle_opts_assign("lsoptions", val, scope);
 }
 
 /* Loads value of lsoptions as a string. */
 static void
-fill_lsoptions(optval_t *val, int transposed)
+fill_lsoptions(optval_t *val, int transposed, int column_count)
 {
 	static char buf[64];
-	copy_str(buf, sizeof(buf), transposed ? "transposed" : "");
+	snprintf(buf, sizeof(buf), "columncount:%d%s", column_count,
+			transposed ? ",transposed" : "");
 	val->str_val = buf;
 }
 

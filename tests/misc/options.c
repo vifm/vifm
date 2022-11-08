@@ -457,25 +457,29 @@ TEST(lsoptions_empty_input)
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("lsoptions?", OPT_GLOBAL));
-	assert_string_equal("  lsoptions=", vle_tb_get_data(vle_err));
+	assert_string_equal("  lsoptions=columncount:0", vle_tb_get_data(vle_err));
 }
 
 TEST(lsoptions_handles_wrong_input)
 {
 	assert_failure(exec_commands("se lsoptions=transposed:yes", &lwin,
 				CIT_COMMAND));
-	assert_failure(exec_commands("se lsoptions=transpose", &lwin,
+	assert_failure(exec_commands("se lsoptions=transpose", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("se lsoptions=columncount:-1", &lwin,
+				CIT_COMMAND));
+	assert_failure(exec_commands("se lsoptions=columncount:wrong", &lwin,
 				CIT_COMMAND));
 }
 
 TEST(lsoptions_accepts_correct_input)
 {
-	assert_success(exec_commands("set lsview lsoptions=transposed", &lwin,
-				CIT_COMMAND));
+	assert_success(exec_commands("set lsview lsoptions=transposed,columncount:2",
+				&lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("lsoptions?", OPT_GLOBAL));
-	assert_string_equal("  lsoptions=transposed", vle_tb_get_data(vle_err));
+	assert_string_equal("  lsoptions=columncount:2,transposed",
+			vle_tb_get_data(vle_err));
 }
 
 TEST(lsoptions_normalizes_input)
@@ -485,7 +489,8 @@ TEST(lsoptions_normalizes_input)
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("lsoptions?", OPT_GLOBAL));
-	assert_string_equal("  lsoptions=transposed", vle_tb_get_data(vle_err));
+	assert_string_equal("  lsoptions=columncount:0,transposed",
+			vle_tb_get_data(vle_err));
 }
 
 TEST(previewprg_updates_state_of_view)

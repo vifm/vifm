@@ -229,6 +229,7 @@ fview_reset(view_t *view)
 {
 	view->ls_view_g = view->ls_view = 0;
 	view->ls_transposed_g = view->ls_transposed = 0;
+	view->ls_cols_g = view->ls_cols = 0;
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;;
 	view->column_count = 1;
@@ -1791,13 +1792,25 @@ fview_set_millerview(view_t *view, int enabled)
 static size_t
 calculate_column_width(view_t *view)
 {
-	const int column_gap = (cfg.extra_padding ? 2 : 1);
-	if(view->max_filename_width == 0)
+	size_t max_width = ui_view_available_width(view);
+
+	size_t column_width;
+	if(view->ls_cols == 0)
 	{
-		view->max_filename_width = get_max_filename_width(view);
+		if(view->max_filename_width == 0)
+		{
+			view->max_filename_width = get_max_filename_width(view);
+		}
+
+		const int column_gap = (cfg.extra_padding ? 2 : 1);
+		column_width = view->max_filename_width + column_gap;
 	}
-	return MIN(view->max_filename_width + column_gap,
-	           (size_t)ui_view_available_width(view));
+	else
+	{
+		column_width = max_width/view->ls_cols;
+	}
+
+	return MIN(column_width, max_width);
 }
 
 void
