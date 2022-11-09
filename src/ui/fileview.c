@@ -2068,10 +2068,12 @@ position_hardware_cursor(view_t *view)
 		return;
 	}
 
+	int cell = view->list_pos - view->top_line;
+
 	calculate_table_conf(view, &col_count, &col_width);
-	current_line = view->curr_line/col_count;
+	current_line = fpos_get_line(view, cell);
 	column_offset = ui_view_left_reserved(view)
-	              + (view->curr_line%col_count)*col_width;
+	              + fpos_get_col(view, cell)*col_width;
 	format_name(NULL, sizeof(buf) - 1U, buf, &info);
 
 	checked_wmove(view->win, current_line,
