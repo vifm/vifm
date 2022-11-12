@@ -298,10 +298,10 @@ filetype {*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg},
        \ {Mount with fuse-zip}
        \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
        \ {View contents}
-       \ tar -tf %f | less,
+       \ unzip -l %f | less,
        \ {Extract here}
-       \ tar -vxf %c,
-fileviewer *.zip,*.jar,*.war,*.ear,*.oxt tar -tf %f
+       \ unzip %c,
+fileviewer *.zip,*.jar,*.war,*.ear,*.oxt unzip -l %f
 
 " ArchiveMount
 filetype {*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,
