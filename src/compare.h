@@ -33,13 +33,24 @@ ListType;
 /* Comparison flags. */
 typedef enum
 {
-	CF_NONE         = 0, /* No flags. */
-	CF_GROUP_PATHS  = 1, /* Otherwise ids are grouped.  Only for two-pane
-                        * compare. */
-	CF_SKIP_EMPTY   = 2, /* Exclude empty files from comparison. */
-	CF_IGNORE_CASE  = 4, /* Compare file names case-insensitively. */
-	CF_RESPECT_CASE = 8, /* Compare file names case-sensitively.  Case is
-	                        OS/FS-specific if neither CF_*_CASE flag is set. */
+	CF_NONE              = 0, /* No flags. */
+	CF_GROUP_PATHS       = 1, /* Otherwise ids are grouped.  Only for two-pane
+                             * compare. */
+	CF_SKIP_EMPTY        = 2, /* Exclude empty files from comparison. */
+	CF_IGNORE_CASE       = 4, /* Compare file names case-insensitively. */
+	CF_RESPECT_CASE      = 8, /* Compare file names case-sensitively.  Case is
+	                             OS/FS-specific if neither CF_*_CASE flag is set. */
+
+	CF_SHOW_IDENTICAL    = 16,  /* Show identical files in comparison. */
+	CF_SHOW_DIFFERENT    = 32,  /* Show different files in comparison. */
+	CF_SHOW_UNIQUE_LEFT  = 64,  /* Show unique left files in comparison. */
+	CF_SHOW_UNIQUE_RIGHT = 128, /* Show unique right files in comparison. */
+
+	/* Mask of show* flags. */
+	CF_SHOW = CF_SHOW_IDENTICAL
+	        | CF_SHOW_DIFFERENT
+	        | CF_SHOW_UNIQUE_LEFT
+	        | CF_SHOW_UNIQUE_RIGHT,
 }
 CompareFlags;
 

@@ -519,24 +519,29 @@ static void
 complete_compare(const char str[])
 {
 	static const char *lines[][2] = {
-		{ "byname",     "compare by file name" },
-		{ "bysize",     "compare by file size" },
-		{ "bycontents", "compare by file size and hash" },
+		{ "byname",          "compare by file name" },
+		{ "bysize",          "compare by file size" },
+		{ "bycontents",      "compare by file size and hash" },
 
-		{ "ofboth",     "use files of two views" },
-		{ "ofone",      "use files of two current view only" },
+		{ "ofboth",          "use files of two views" },
+		{ "ofone",           "use files of two current view only" },
 
-		{ "listall",    "list all files" },
-		{ "listunique", "list only unique files" },
-		{ "listdups",   "list only duplicated files" },
+		{ "listall",         "list all files" },
+		{ "listunique",      "list only unique files" },
+		{ "listdups",        "list only duplicated files" },
 
-		{ "groupids",   "group files in two panes by ids" },
-		{ "grouppaths", "group files in two panes by paths" },
+		{ "groupids",        "group files in two panes by ids" },
+		{ "grouppaths",      "group files in two panes by paths" },
 
-		{ "skipempty",  "exclude empty files from comparison" },
+		{ "skipempty",       "exclude empty files from comparison" },
 
-		{ "withicase",  "force ignoring case on comparing names" },
-		{ "withrcase",  "force respecting case on comparing names" },
+		{ "showidentical",   "toggle identical files viewing into comparison" },
+		{ "showdifferent",   "toggle different files viewing into comparison" },
+		{ "showuniqueleft",  "toggle unique left files viewing into comparison" },
+		{ "showuniqueright", "toggle unique right files viewing into comparison" },
+
+		{ "withicase",       "force ignoring case on comparing names" },
+		{ "withrcase",       "force respecting case on comparing names" },
 	};
 
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);

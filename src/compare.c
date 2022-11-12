@@ -88,7 +88,7 @@ static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg);
 static void fill_side_by_side_by_paths(entries_t curr, entries_t other,
 		int flags, compare_stats_t *stats);
-static void fill_side_by_side_by_ids(entries_t curr, entries_t other,
+static void fill_side_by_side_by_ids(entries_t curr, entries_t other, int flags,
 		compare_stats_t *stats);
 static int compare_entries(dir_entry_t *curr, dir_entry_t *other, int flags);
 static int id_sorter(const void *first, const void *second);
@@ -118,6 +118,16 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 			(CF_IGNORE_CASE | CF_RESPECT_CASE) && "Wrong combination of flags.");
 
 	const int group_paths = flags & CF_GROUP_PATHS;
+
+	/* If comparison is already running, toggle show* arguments. */
+	if(cv_compare(curr_view->custom.type))
+	{
+		flags ^= curr_view->custom.diff_cmp_flags & CF_SHOW;
+	}
+	else if((flags & CF_SHOW) == 0)
+	{
+		flags |= CF_SHOW;
+	}
 
 	/* We don't compare lists of files, so skip the check if at least one of the
 	 * views is a custom one. */
@@ -182,7 +192,7 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	}
 	else
 	{
-		fill_side_by_side_by_ids(curr, other, &stats);
+		fill_side_by_side_by_ids(curr, other, flags, &stats);
 	}
 
 	/* Entries' data has been moved out of them, so need to free only the
@@ -372,26 +382,72 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags,
 
 		if(cmp == 0)
 		{
-			(curr.entries[i].id == other.entries[j].id) ? stats->identical++
-			                                            : stats->different++;
+			if(curr.entries[i].id == other.entries[j].id)
+			{
+				stats->identical++;
+				if(flags & CF_SHOW_IDENTICAL)
+				{
+					flist_custom_put(curr_view, &curr.entries[i]);
+					flist_custom_put(other_view, &other.entries[j]);
+				}
+			}
+			else
+			{
+				stats->different++;
+				if(flags & CF_SHOW_DIFFERENT)
+				{
+					flist_custom_put(curr_view, &curr.entries[i]);
+					flist_custom_put(other_view, &other.entries[j]);
+				}
+			}
 
-			flist_custom_put(curr_view, &curr.entries[i++]);
-			flist_custom_put(other_view, &other.entries[j++]);
+			i++;
+			j++;
 		}
 		else if(cmp < 0)
 		{
-			(curr_view == &lwin) ? stats->unique_left++ : stats->unique_right++;
+			if(curr_view == &lwin)
+			{
+				stats->unique_left++;
+				if(flags & CF_SHOW_UNIQUE_LEFT)
+				{
+					flist_custom_put(curr_view, &curr.entries[i]);
+					flist_custom_add_separator(other_view, curr.entries[i].id);
+				}
+			}
+			else
+			{
+				stats->unique_right++;
+				if(flags & CF_SHOW_UNIQUE_RIGHT)
+				{
+					flist_custom_put(curr_view, &curr.entries[i]);
+					flist_custom_add_separator(other_view, curr.entries[i].id);
+				}
+			}
 
-			flist_custom_put(curr_view, &curr.entries[i]);
-			flist_custom_add_separator(other_view, curr.entries[i].id);
 			i++;
 		}
 		else
 		{
-			(curr_view == &lwin) ? stats->unique_right++ : stats->unique_left++;
+			if(curr_view == &lwin)
+			{
+				stats->unique_right++;
+				if(flags & CF_SHOW_UNIQUE_RIGHT)
+				{
+					flist_custom_put(other_view, &other.entries[j]);
+					flist_custom_add_separator(curr_view, other.entries[j].id);
+				}
+			}
+			else
+			{
+				stats->unique_left++;
+				if(flags & CF_SHOW_UNIQUE_LEFT)
+				{
+					flist_custom_put(other_view, &other.entries[j]);
+					flist_custom_add_separator(curr_view, other.entries[j].id);
+				}
+			}
 
-			flist_custom_put(other_view, &other.entries[j]);
-			flist_custom_add_separator(curr_view, other.entries[j].id);
 			j++;
 		}
 	}
@@ -400,7 +456,7 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags,
 /* Composes side-by-side comparison of files in two views that is guided by
  * comparison ids and minimizes edit script. */
 static void
-fill_side_by_side_by_ids(entries_t curr, entries_t other,
+fill_side_by_side_by_ids(entries_t curr, entries_t other, int flags,
 		compare_stats_t *stats)
 {
 	enum { UP, LEFT, DIAG };
@@ -455,24 +511,64 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other,
 			dir_entry_t *e;
 
 			case UP:
-				(curr_view == &lwin) ? stats->unique_left++ : stats->unique_right++;
+				if(curr_view == &lwin)
+				{
+					stats->unique_left++;
+					if(flags & CF_SHOW_UNIQUE_LEFT)
+					{
+						e = &curr.entries[curr.nentries - i];
+						flist_custom_put(curr_view, e);
+						flist_custom_add_separator(other_view, e->id);
+					}
+				}
+				else
+				{
+					stats->unique_right++;
+					if(flags & CF_SHOW_UNIQUE_RIGHT)
+					{
+						e = &curr.entries[curr.nentries - i];
+						flist_custom_put(curr_view, e);
+						flist_custom_add_separator(other_view, e->id);
+					}
+				}
+				i--;
 
-				e = &curr.entries[curr.nentries - 1 - --i];
-				flist_custom_put(curr_view, e);
-				flist_custom_add_separator(other_view, e->id);
 				break;
 			case LEFT:
-				(curr_view == &lwin) ? stats->unique_right++ : stats->unique_left++;
+				if(curr_view == &lwin)
+				{
+					stats->unique_right++;
+					if(flags & CF_SHOW_UNIQUE_RIGHT)
+					{
+						e = &other.entries[other.nentries - j];
+						flist_custom_put(other_view, e);
+						flist_custom_add_separator(curr_view, e->id);
+					}
+				}
+				else
+				{
+					stats->unique_left++;
+					if(flags & CF_SHOW_UNIQUE_LEFT)
+					{
+						e = &other.entries[other.nentries - j];
+						flist_custom_put(other_view, e);
+						flist_custom_add_separator(curr_view, e->id);
+					}
+				}
+				j--;
 
-				e = &other.entries[other.nentries - 1 - --j];
-				flist_custom_put(other_view, e);
-				flist_custom_add_separator(curr_view, e->id);
 				break;
 			case DIAG:
 				stats->identical++;
 
-				flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
-				flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
+				if(flags & CF_SHOW_IDENTICAL)
+				{
+					flist_custom_put(curr_view, &curr.entries[curr.nentries - i]);
+					flist_custom_put(other_view, &other.entries[other.nentries - j]);
+				}
+				i--;
+				j--;
+
 				break;
 		}
 	}

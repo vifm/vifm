@@ -13,6 +13,9 @@
 	Added "columncount:" value to 'lsoptions' to always display fixed number of
 	columns.  Thanks to Aleksandr Vysotskiy (a.k.a. loki1368).
 
+	Added show* arguments to :compare command to control/switch which sets of
+	files are displayed.  Patch by Alexandr Keyp (a.k.a. IAmKapuze).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

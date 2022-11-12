@@ -1736,10 +1736,13 @@ equals
 .br
 .BI "   groupids | grouppaths |"
 .br
-.BI "   skipempty | withicase | withrcase]..."
+.BI "   skipempty | withicase | withrcase |"
+.br
+.BI "   showidentical | showdifferent | showuniqueleft | showuniqueright]..."
 .br
 compare files in one or two views according to the arguments.  The default
-is "bycontents listall ofboth grouppaths".  See "Compare views" section below
+is "bycontents listall ofboth grouppaths showidentical showdifferent
+showuniqueleft showuniqueright".  See "Compare views" section below
 for details.  Diff structure is incompatible with alternative representations,
 so values of 'lsview' and 'millerview' options are ignored.
 .TP
@@ -6426,7 +6429,7 @@ grouping to preserve as all file ids are guaranteed to be distinct.
 
 .B Creation
 
-Arguments passed to :compare form four categories each with its own
+Arguments passed to :compare form seven categories each with its own
 prefix and is responsible for particular property of operation.
 
 Which files to compare:
@@ -6457,6 +6460,12 @@ Comparison tweaks:
  \- withicase \- ignore case when comparing file names/paths;
  \- withrcase \- respect case when comparing file names/paths.
 
+Which results to show:
+ \- showidentical   \- toggle showing of identical files;
+ \- showdifferent   \- toggle showing of different files;
+ \- showuniqueleft  \- toggle showing of unique top/left files;
+ \- showuniqueright \- toggle showing of unique bottom/right files.
+
 Each argument can appear multiple times, the rightmost one of the group is
 considered.  Arguments alter default behaviour instead of substituting it.
 
@@ -6472,6 +6481,7 @@ files in two trees with grouping by paths, so the following are equivalent:
   :compare
   :compare bycontents grouppaths
   :compare bycontents listall ofboth grouppaths
+  :compare showidentical showdifferent showuniqueleft showuniqueright
 .EE
 
 Another use case is to find duplicates in the current sub-tree:

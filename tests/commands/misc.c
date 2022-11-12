@@ -356,7 +356,8 @@ TEST(compare)
 	assert_true(flist_custom_active(&lwin));
 	assert_true(flist_custom_active(&rwin));
 	assert_int_equal(CT_NAME, lwin.custom.diff_cmp_type);
-	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE, lwin.custom.diff_cmp_flags);
+	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW,
+			lwin.custom.diff_cmp_flags);
 	assert_success(chdir(cwd));
 
 	assert_success(remove(SANDBOX_PATH "/file"));

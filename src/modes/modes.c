@@ -397,20 +397,31 @@ abort_menu_like_mode(void)
 static void
 print_compare_stats(void)
 {
-	if(curr_view->custom.diff_cmp_flags & CF_GROUP_PATHS)
+	int flags = curr_view->custom.diff_cmp_flags;
+	const compare_stats_t *stats = &curr_view->custom.diff_stats;
+
+	if(flags & CF_GROUP_PATHS)
 	{
-		ui_sb_msgf("(on compare) identical: %d, different: %d, unique: %d/%d",
-				curr_view->custom.diff_stats.identical,
-				curr_view->custom.diff_stats.different,
-				curr_view->custom.diff_stats.unique_left,
-				curr_view->custom.diff_stats.unique_right);
+		ui_sb_msgf("(on compare) "
+				"%cidentical: %d, %cdifferent: %d, %c/%cunique: %d/%d",
+				flags & CF_SHOW_IDENTICAL ? '+' : '-',
+				stats->identical,
+				flags & CF_SHOW_DIFFERENT ? '+' : '-',
+				stats->different,
+				flags & CF_SHOW_UNIQUE_LEFT ? '+' : '-',
+				flags & CF_SHOW_UNIQUE_RIGHT ? '+' : '-',
+				stats->unique_left,
+				stats->unique_right);
 	}
 	else
 	{
-		ui_sb_msgf("(on compare) identical: %d, unique: %d/%d",
-				curr_view->custom.diff_stats.identical,
-				curr_view->custom.diff_stats.unique_left,
-				curr_view->custom.diff_stats.unique_right);
+		ui_sb_msgf("(on compare) %cidentical: %d, %c/%cunique: %d/%d",
+				flags & CF_SHOW_IDENTICAL ? '+' : '-',
+				stats->identical,
+				flags & CF_SHOW_UNIQUE_LEFT ? '+' : '-',
+				flags & CF_SHOW_UNIQUE_RIGHT ? '+' : '-',
+				stats->unique_left,
+				stats->unique_right);
 	}
 	curr_stats.save_msg = 2;
 }

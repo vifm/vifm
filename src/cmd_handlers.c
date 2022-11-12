@@ -2060,17 +2060,32 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 	for(i = 0; i < cmd_info->argc; ++i)
 	{
 		const char *const property = cmd_info->argv[i];
+
 		if     (strcmp(property, "byname") == 0)     *ct = CT_NAME;
 		else if(strcmp(property, "bysize") == 0)     *ct = CT_SIZE;
 		else if(strcmp(property, "bycontents") == 0) *ct = CT_CONTENTS;
+
 		else if(strcmp(property, "listall") == 0)    *lt = LT_ALL;
 		else if(strcmp(property, "listunique") == 0) *lt = LT_UNIQUE;
 		else if(strcmp(property, "listdups") == 0)   *lt = LT_DUPS;
+
 		else if(strcmp(property, "ofboth") == 0)     *single_pane = 0;
 		else if(strcmp(property, "ofone") == 0)      *single_pane = 1;
+
 		else if(strcmp(property, "groupids") == 0)   *flags &= ~CF_GROUP_PATHS;
 		else if(strcmp(property, "grouppaths") == 0) *flags |= CF_GROUP_PATHS;
+
 		else if(strcmp(property, "skipempty") == 0)  *flags |= CF_SKIP_EMPTY;
+
+		else if(strcmp(property, "showidentical") == 0)
+			*flags |= CF_SHOW_IDENTICAL;
+		else if(strcmp(property, "showdifferent") == 0)
+			*flags |= CF_SHOW_DIFFERENT;
+		else if(strcmp(property, "showuniqueleft") == 0)
+			*flags |= CF_SHOW_UNIQUE_LEFT;
+		else if(strcmp(property, "showuniqueright") == 0)
+			*flags |= CF_SHOW_UNIQUE_RIGHT;
+
 		else if(strcmp(property, "withicase") == 0)
 		{
 			*flags &= ~CF_RESPECT_CASE;
@@ -2081,6 +2096,7 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 			*flags &= ~CF_IGNORE_CASE;
 			*flags |= CF_RESPECT_CASE;
 		}
+
 		else
 		{
 			ui_sb_errf("Unknown comparison property: %s", property);
