@@ -299,10 +299,11 @@ draw_dir_list_only(view_t *view)
 	draw_left_column(view);
 
 	visible_cells = view->window_cells;
-	if(fview_is_transposed(view) &&
+	if(fview_is_transposed(view) && view->ls_cols == 0 &&
 			view->column_count*(int)col_width < ui_view_available_width(view))
 	{
-		/* Add extra visual column to display more context. */
+		/* Add extra visual column to display more context, unless user requested
+		 * fixed number of columns. */
 		visible_cells += view->window_rows;
 	}
 
