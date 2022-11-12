@@ -400,6 +400,11 @@ print_compare_stats(void)
 	int flags = curr_view->custom.diff_cmp_flags;
 	const compare_stats_t *stats = &curr_view->custom.diff_stats;
 
+	if(flags & CF_SINGLE_PANE)
+	{
+		return;
+	}
+
 	if(flags & CF_GROUP_PATHS)
 	{
 		ui_sb_msgf("(on compare) "
@@ -423,6 +428,7 @@ print_compare_stats(void)
 				stats->unique_left,
 				stats->unique_right);
 	}
+
 	curr_stats.save_msg = 2;
 }
 

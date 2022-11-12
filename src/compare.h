@@ -46,6 +46,8 @@ typedef enum
 	CF_SHOW_UNIQUE_LEFT  = 64,  /* Show unique left files in comparison. */
 	CF_SHOW_UNIQUE_RIGHT = 128, /* Show unique right files in comparison. */
 
+	CF_SINGLE_PANE       = 256, /* Single pane mode */
+
 	/* Mask of show* flags. */
 	CF_SHOW = CF_SHOW_IDENTICAL
 	        | CF_SHOW_DIFFERENT

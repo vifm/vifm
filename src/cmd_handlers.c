@@ -154,7 +154,7 @@ static int command_cmd(const cmd_info_t *cmd_info);
 static int compare_cmd(const cmd_info_t *cmd_info);
 static int copen_cmd(const cmd_info_t *cmd_info);
 static int parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
-		ListType *lt, int *single_pane, int *flags);
+		ListType *lt, int *flags);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
@@ -2030,13 +2030,13 @@ compare_cmd(const cmd_info_t *cmd_info)
 {
 	CompareType ct = CT_CONTENTS;
 	ListType lt = LT_ALL;
-	int single_pane = 0, flags = CF_GROUP_PATHS;
-	if(parse_compare_properties(cmd_info, &ct, &lt, &single_pane, &flags) != 0)
+	int flags = CF_GROUP_PATHS;
+	if(parse_compare_properties(cmd_info, &ct, &lt, &flags) != 0)
 	{
 		return CMDS_ERR_CUSTOM;
 	}
 
-	return single_pane
+	return (flags & CF_SINGLE_PANE)
 	     ? (compare_one_pane(curr_view, ct, lt, flags) != 0)
 	     : (compare_two_panes(ct, lt, flags) != 0);
 }
@@ -2054,7 +2054,7 @@ copen_cmd(const cmd_info_t *cmd_info)
  * error message is displayed on the status bar. */
 static int
 parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
-		ListType *lt, int *single_pane, int *flags)
+		ListType *lt, int *flags)
 {
 	int i;
 	for(i = 0; i < cmd_info->argc; ++i)
@@ -2069,8 +2069,8 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 		else if(strcmp(property, "listunique") == 0) *lt = LT_UNIQUE;
 		else if(strcmp(property, "listdups") == 0)   *lt = LT_DUPS;
 
-		else if(strcmp(property, "ofboth") == 0)     *single_pane = 0;
-		else if(strcmp(property, "ofone") == 0)      *single_pane = 1;
+		else if(strcmp(property, "ofboth") == 0)     *flags &= ~CF_SINGLE_PANE;
+		else if(strcmp(property, "ofone") == 0)      *flags |= CF_SINGLE_PANE;
 
 		else if(strcmp(property, "groupids") == 0)   *flags &= ~CF_GROUP_PATHS;
 		else if(strcmp(property, "grouppaths") == 0) *flags |= CF_GROUP_PATHS;

@@ -722,6 +722,9 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int flags)
 		rn_leave(other, 1);
 	}
 
+	curr_view->custom.diff_cmp_flags = flags;
+	other_view->custom.diff_cmp_flags = flags;
+
 	view->list_pos = 0;
 	ui_view_schedule_redraw(view);
 	return 0;
