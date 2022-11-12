@@ -965,7 +965,7 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 {
 	size_t prefix_len = 0U;
 
-	const size_t print_width = calculate_print_width(cdt->view, cdt->line_pos,
+	size_t print_width = calculate_print_width(cdt->view, cdt->line_pos,
 			col_width);
 
 	cdt->current_line = fpos_get_line(cdt->view, cell);
@@ -982,6 +982,10 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 		/* Padding in ls-like view adds additional empty single character between
 		 * columns, on which we shouldn't draw anything here. */
 		--col_width;
+		if(print_width < col_width)
+		{
+			print_width = col_width;
+		}
 	}
 
 	draw_cell(get_view_columns(cdt->view, cell >= cdt->view->window_cells), cdt,
