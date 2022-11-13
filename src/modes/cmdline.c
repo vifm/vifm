@@ -268,6 +268,7 @@ static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
 static void stop_dot_completion(void);
 static void stop_regular_completion(void);
+static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 
 static keys_add_info_t builtin_cmds[] = {
 	{WK_C_c,             {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
@@ -329,6 +330,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{{K(KEY_DC)},        {{&cmd_delete}, .descr = "delete current character"}},
 	{{K(KEY_BTAB)},      {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
 #endif /* ENABLE_EXTENDED_KEYS */
+	{{K(KEY_MOUSE)},     {{&handle_mouse_event}, FOLLOWED_BY_NONE}},
 };
 
 void
@@ -2891,6 +2893,44 @@ line_stats_t *
 get_line_stats(void)
 {
 	return &input_stat;
+}
+
+/* Processes events from the mouse. */
+static void
+handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
+{
+	MEVENT e;
+	if(getmouse(&e) != OK)
+	{
+		return;
+	}
+
+	if(!wenclose(status_bar, e.y, e.x))
+	{
+		return;
+	}
+
+	if(e.bstate & BUTTON1_PRESSED)
+	{
+		wmouse_trafo(status_bar, &e.y, &e.x, FALSE);
+
+		input_stat.index = e.y*getmaxx(status_bar) + e.x - 1;
+		if(input_stat.index > input_stat.len)
+		{
+			input_stat.index = input_stat.len;
+		}
+		input_stat.curs_pos = input_stat.index + input_stat.prompt_wid;
+
+		update_cmdline_text(&input_stat);
+	}
+	else if(e.bstate & BUTTON4_PRESSED)
+	{
+		cmd_ctrl_p(key_info, keys_info);
+	}
+	else if(e.bstate & (BUTTON2_PRESSED | BUTTON5_PRESSED))
+	{
+		cmd_ctrl_n(key_info, keys_info);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -29,6 +29,8 @@
 #include "../compat/curses.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../menus/filetypes_menu.h"
+#include "../menus/menus.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/fileview.h"
 #include "../ui/statusbar.h"
@@ -169,6 +171,7 @@ static void goto_pos_force_update(int pos);
 static void goto_pos(int pos);
 static void update_ui(void);
 static int move_pos(int pos);
+static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 
 static view_t *view;
 static int start_pos;
@@ -274,6 +277,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{{K(KEY_UP)},      {{&cmd_k},      .descr = "go to item above"}},
 	{{K(KEY_RIGHT)},   {{&cmd_l},      .descr = "open selection/go to item to the right"}},
 #endif /* ENABLE_EXTENDED_KEYS */
+	{{K(KEY_MOUSE)}, {{&handle_mouse_event}, FOLLOWED_BY_NONE}},
 };
 
 void
@@ -1557,6 +1561,48 @@ modvis_describe(void)
 	ARRAY_GUARD(descriptions, AT_COUNT);
 
 	return descriptions[amend_type];
+}
+
+/* Processes events from the mouse. */
+static void
+handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
+{
+	MEVENT e;
+	if(getmouse(&e) != OK)
+	{
+		return;
+	}
+
+	if(!wenclose(view->win, e.y, e.x))
+	{
+		return;
+	}
+
+	if(e.bstate & BUTTON1_PRESSED)
+	{
+		wmouse_trafo(view->win, &e.y, &e.x, FALSE);
+
+		/* Only handle clicks on non-blank lines. */
+		if(e.y < curr_view->list_rows)
+		{
+			int old_pos = curr_view->list_pos;
+
+			goto_pos(view->top_line + e.y);
+
+			if(curr_view->list_pos == old_pos)
+			{
+				cmd_gl(key_info, keys_info);
+			}
+		}
+	}
+	else if(e.bstate & BUTTON4_PRESSED)
+	{
+		cmd_ctrl_y(key_info, keys_info);
+	}
+	else if(e.bstate & (BUTTON2_PRESSED | BUTTON5_PRESSED))
+	{
+		cmd_ctrl_e(key_info, keys_info);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

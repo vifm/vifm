@@ -41,6 +41,7 @@
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../engine/variables.h"
+#include "../menus/filetypes_menu.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
 #include "../ui/fileview.h"
@@ -247,6 +248,7 @@ static void pick_files(view_t *view, int end, keys_info_t *keys_info);
 static void selector_S(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
 static void selector_s(key_info_t key_info, keys_info_t *keys_info);
+static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
@@ -441,6 +443,7 @@ static keys_add_info_t builtin_cmds[] = {
 #else
 	{WK_ESC L"[Z",               {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #endif /* ENABLE_EXTENDED_KEYS */
+	{{K(KEY_MOUSE)}, {{&handle_mouse_event}, FOLLOWED_BY_NONE}},
 };
 
 static keys_add_info_t selectors[] = {
@@ -2362,6 +2365,70 @@ modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 		save_msg += (goto_search_match(view, backward) != 0);
 	}
 	return save_msg;
+}
+
+/* Processes events from the mouse. */
+static void
+handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
+{
+	MEVENT e;
+	if(getmouse(&e) != OK)
+	{
+		return;
+	}
+
+	if(wenclose(lwin.win, e.y, e.x))
+	{
+		if(curr_view != &lwin)
+		{
+			go_to_other_window();
+			return;
+		}
+	}
+	else if(wenclose(rwin.win, e.y, e.x))
+	{
+		if(curr_view != &rwin)
+		{
+			go_to_other_window();
+			return;
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	if(e.bstate & BUTTON1_PRESSED)
+	{
+		wmouse_trafo(curr_view->win, &e.y, &e.x, FALSE);
+
+		/* Only handle clicks on non-blank lines. */
+		if(e.y < curr_view->list_rows)
+		{
+			int old_pos = curr_view->list_pos;
+
+			fpos_set_pos(curr_view, curr_view->top_line + e.y);
+
+			if(curr_view->list_pos == old_pos)
+			{
+				cmd_return(key_info, keys_info);
+			}
+		}
+	}
+	else if(e.bstate & BUTTON3_PRESSED)
+	{
+		wmouse_trafo(curr_view->win, &e.y, &e.x, FALSE);
+		fpos_set_pos(curr_view, curr_view->top_line + e.y);
+		curr_stats.save_msg = show_file_menu(curr_view, 0);
+	}
+	else if(e.bstate & BUTTON4_PRESSED)
+	{
+		cmd_ctrl_y(key_info, keys_info);
+	}
+	else if(e.bstate & (BUTTON2_PRESSED | BUTTON5_PRESSED))
+	{
+		cmd_ctrl_e(key_info, keys_info);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -108,7 +108,9 @@ static void cmd_zh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zz(key_info_t key_info, keys_info_t *keys_info);
+static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 static int all_lines_visible(const menu_data_t *menu);
+
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
@@ -174,6 +176,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{{WC_z, K(KEY_LEFT)},  {{&cmd_zh},     .descr = "scroll one column left"}},
 	{{WC_z, K(KEY_RIGHT)}, {{&cmd_zl},     .descr = "scroll one column right"}},
 #endif /* ENABLE_EXTENDED_KEYS */
+	{{K(KEY_MOUSE)}, {{&handle_mouse_event}, FOLLOWED_BY_NONE}},
 };
 
 /* Specification of builtin commands. */
@@ -1097,5 +1100,44 @@ menu_get_current(void)
 	return menu;
 }
 
+/* Processes events from the mouse. */
+static void
+handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
+{
+	MEVENT e;
+	if(getmouse(&e) != OK)
+	{
+		return;
+	}
+
+	if(!wenclose(menu_win, e.y, e.x))
+	{
+		return;
+	}
+
+	if(e.bstate & BUTTON1_PRESSED)
+	{
+		wmouse_trafo(menu_win, &e.y, &e.x, FALSE);
+
+		int old_pos = menu->pos;
+
+		menus_erase_current(menu->state);
+		menus_set_pos(menu->state, menu->top + e.y - 1);
+		ui_refresh_win(menu_win);
+
+		if(menu->pos == old_pos)
+		{
+			cmd_return(key_info, keys_info);
+		}
+	}
+	else if(e.bstate & BUTTON4_PRESSED)
+	{
+		cmd_ctrl_y(key_info, keys_info);
+	}
+	else if(e.bstate & (BUTTON2_PRESSED | BUTTON5_PRESSED))
+	{
+		cmd_ctrl_e(key_info, keys_info);
+	}
+}
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
