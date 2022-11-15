@@ -233,6 +233,10 @@ wait_for_job(void)
 		}
 	}
 
+	/* When the job is marked as not running, the callback might not yet been
+	 * dispatched, so call bg_check() once again to be sure. */
+	bg_check();
+
 	assert_int_equal(0, job->exit_code);
 	bg_job_decref(job);
 }

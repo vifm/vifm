@@ -60,8 +60,9 @@
 
 static void draw_left_column(view_t *view);
 static void draw_right_column(view_t *view);
-static void print_column(view_t *view, entries_t entries, const char current[],
-		const char path[], int width, int offset, int number_width);
+static void print_side_column(view_t *view, entries_t entries,
+		const char current[], const char path[], int width, int offset,
+		int number_width);
 static void fill_column(view_t *view, int start_line, int top, int width,
 		int offset);
 static void calculate_table_conf(view_t *view, size_t *count, size_t *width);
@@ -70,10 +71,7 @@ static int calculate_number_width(const view_t *view, int list_length,
 static int count_digits(int num);
 static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
-static size_t calculate_print_width(const view_t *view, int i,
-		size_t max_width);
-static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
-		size_t print_width);
+static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width);
 static columns_t * get_view_columns(const view_t *view, int truncated);
 static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
@@ -81,7 +79,7 @@ static cchar_t prepare_inactive_color(view_t *view, dir_entry_t *entry,
 		int line_color);
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
 static void compute_and_draw_cell(column_data_t *cdt, int cell,
-		size_t col_width);
+		size_t col_count, size_t col_width);
 static void column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void draw_line_number(const column_data_t *cdt, int column);
@@ -229,6 +227,7 @@ fview_reset(view_t *view)
 {
 	view->ls_view_g = view->ls_view = 0;
 	view->ls_transposed_g = view->ls_transposed = 0;
+	view->ls_cols_g = view->ls_cols = 0;
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;;
 	view->column_count = 1;
@@ -298,10 +297,11 @@ draw_dir_list_only(view_t *view)
 	draw_left_column(view);
 
 	visible_cells = view->window_cells;
-	if(fview_is_transposed(view) &&
+	if(fview_is_transposed(view) && view->ls_cols == 0 &&
 			view->column_count*(int)col_width < ui_view_available_width(view))
 	{
-		/* Add extra visual column to display more context. */
+		/* Add extra visual column to display more context, unless user requested
+		 * fixed number of columns. */
 		visible_cells += view->window_rows;
 	}
 
@@ -316,7 +316,7 @@ draw_dir_list_only(view_t *view)
 			.current_pos = view->list_pos,
 		};
 
-		compute_and_draw_cell(&cdt, cell, col_width);
+		compute_and_draw_cell(&cdt, cell, col_count, col_width);
 	}
 
 	draw_right_column(view);
@@ -360,7 +360,7 @@ draw_left_column(view_t *view)
 
 	if(view->left_column.entries.nentries >= 0)
 	{
-		print_column(view, view->left_column.entries, dir, path, lcol_width, 0,
+		print_side_column(view, view->left_column.entries, dir, path, lcol_width, 0,
 				number_width);
 	}
 }
@@ -419,7 +419,7 @@ draw_right_column(view_t *view)
 
 	if(view->right_column.entries.nentries >= 0)
 	{
-		print_column(view, view->right_column.entries, NULL, path, rcol_width,
+		print_side_column(view, view->right_column.entries, NULL, path, rcol_width,
 				offset, 0);
 	}
 }
@@ -427,7 +427,7 @@ draw_right_column(view_t *view)
 /* Prints column full of entry names.  Current is a hint that tells which column
  * has to be selected (otherwise position from history record is used). */
 static void
-print_column(view_t *view, entries_t entries, const char current[],
+print_side_column(view_t *view, entries_t entries, const char current[],
 		const char path[], int width, int offset, int number_width)
 {
 	columns_t *const columns = get_name_column(0);
@@ -477,6 +477,8 @@ print_column(view_t *view, entries_t entries, const char current[],
 		flist_hist_update(view, path, get_last_path_component(current), pos - top);
 	}
 
+	int padding = (cfg.extra_padding ? 1 : 0);
+
 	for(i = top; i < entries.nentries && i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
@@ -493,7 +495,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 			.prefix_len = &prefix_len,
 		};
 
-		draw_cell(columns, &cdt, width, width - 1);
+		draw_cell(columns, &cdt, width - padding);
 	}
 
 	fill_column(view, i, top, number_width + width, offset);
@@ -665,28 +667,28 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 	}
 }
 
-/* Calculates width of the column using entry and maximum width. */
-static size_t
-calculate_print_width(const view_t *view, int i, size_t max_width)
+/* Draws a full cell of the file list. */
+static void
+draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width)
 {
-	if(!ui_view_displays_columns(view))
+	size_t width_left;
+	if(cdt->view->ls_view)
 	{
-		const size_t raw_name_width = get_filename_width(view, i);
-		return MIN(max_width - 1, raw_name_width);
+		/* Ls-like view with fixed number of columns is special because padding is
+		 * part of column width for it to account for padding in between columns. */
+		width_left = cdt->view->window_cols
+		           - cdt->column_offset
+		           - ui_view_right_reserved(cdt->view)
+		           - (cdt->view->ls_cols == 0 && cfg.extra_padding ? 2 : 0);
+	}
+	else
+	{
+		width_left = cdt->is_main
+	             ? ui_view_available_width(cdt->view) -
+	               (cdt->column_offset - ui_view_left_reserved(cdt->view))
+	             : col_width + 1U;
 	}
 
-	return max_width;
-}
-
-/* Draws a full cell of the file list.  print_width <= col_width. */
-static void
-draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
-		size_t print_width)
-{
-	size_t width_left = cdt->is_main
-	                  ? ui_view_available_width(cdt->view) - (cdt->column_offset -
-	                    ui_view_left_reserved(cdt->view))
-	                  : col_width + 1U;
 	const format_info_t info = {
 		.data = cdt,
 		.id = FILL_COLUMN_ID
@@ -701,7 +703,7 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 
 	if(cfg.extra_padding && width_left >= col_width)
 	{
-		column_line_print(" ", print_width, AT_LEFT, " ", &info);
+		column_line_print(" ", col_width, AT_LEFT, " ", &info);
 	}
 }
 
@@ -953,22 +955,21 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 		.line_pos = pos,
 		.current_pos = is_current ? view->list_pos : -1,
 	};
-	compute_and_draw_cell(&cdt, cursor, col_width);
+	compute_and_draw_cell(&cdt, cursor, col_count, col_width);
 }
 
 /* Fills in fields of cdt based on passed in arguments and
  * view/entry/line_pos/current_pos fields of cdt.  Then draws the cell. */
 static void
-compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
+compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
+		size_t col_width)
 {
 	size_t prefix_len = 0U;
 
-	const size_t print_width = calculate_print_width(cdt->view, cdt->line_pos,
-			col_width);
+	int col = fpos_get_col(cdt->view, cell);
 
 	cdt->current_line = fpos_get_line(cdt->view, cell);
-	cdt->column_offset = ui_view_left_reserved(cdt->view)
-	                   + fpos_get_col(cdt->view, cell)*col_width;
+	cdt->column_offset = ui_view_left_reserved(cdt->view) + col*col_width;
 	cdt->line_hi_group = get_line_color(cdt->view, cdt->entry);
 	cdt->number_width = cdt->view->real_num_width;
 	cdt->total_width = ui_view_available_width(cdt->view);
@@ -977,13 +978,22 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 
 	if(cfg.extra_padding && !ui_view_displays_columns(cdt->view))
 	{
-		/* Padding in ls-like view adds additional empty single character between
-		 * columns, on which we shouldn't draw anything here. */
-		--col_width;
+		if(cdt->view->ls_cols != 0 && col_count > 1 && col == (int)col_count - 1)
+		{
+			/* Reserve one character column after the last ls column. */
+			col_width -= 1;
+		}
+		else
+		{
+			/* Reserve two character columns between two ls columns to draw padding or
+			 * before and after single column if it's the only one. */
+			col_width -= 2;
+		}
 	}
 
-	draw_cell(get_view_columns(cdt->view, cell >= cdt->view->window_cells), cdt,
-			col_width, print_width);
+	int truncated = (cell >= cdt->view->window_cells);
+	columns_t *columns = get_view_columns(cdt->view, truncated);
+	draw_cell(columns, cdt, col_width);
 
 	cdt->prefix_len = NULL;
 }
@@ -1791,13 +1801,26 @@ fview_set_millerview(view_t *view, int enabled)
 static size_t
 calculate_column_width(view_t *view)
 {
-	const int column_gap = (cfg.extra_padding ? 2 : 1);
-	if(view->max_filename_width == 0)
+	size_t max_width = view->window_cols
+	                 - ui_view_left_reserved(view) - ui_view_right_reserved(view);
+
+	size_t column_width;
+	if(view->ls_cols == 0)
 	{
-		view->max_filename_width = get_max_filename_width(view);
+		if(view->max_filename_width == 0)
+		{
+			view->max_filename_width = get_max_filename_width(view);
+		}
+
+		const int column_gap = (cfg.extra_padding ? 2 : 1);
+		column_width = view->max_filename_width + column_gap;
 	}
-	return MIN(view->max_filename_width + column_gap,
-	           (size_t)ui_view_available_width(view));
+	else
+	{
+		column_width = max_width/view->ls_cols;
+	}
+
+	return MIN(column_width, max_width);
 }
 
 void
@@ -1874,7 +1897,9 @@ calculate_columns_count(view_t *view)
 	if(!ui_view_displays_columns(view))
 	{
 		const size_t column_width = calculate_column_width(view);
-		return ui_view_available_width(view)/column_width;
+		size_t max_width = view->window_cols - ui_view_left_reserved(view)
+		                 - ui_view_right_reserved(view);
+		return max_width/column_width;
 	}
 	return 1U;
 }
@@ -2055,10 +2080,12 @@ position_hardware_cursor(view_t *view)
 		return;
 	}
 
+	int cell = view->list_pos - view->top_line;
+
 	calculate_table_conf(view, &col_count, &col_width);
-	current_line = view->curr_line/col_count;
+	current_line = fpos_get_line(view, cell);
 	column_offset = ui_view_left_reserved(view)
-	              + (view->curr_line%col_count)*col_width;
+	              + fpos_get_col(view, cell)*col_width;
 	format_name(NULL, sizeof(buf) - 1U, buf, &info);
 
 	checked_wmove(view->win, current_line,
