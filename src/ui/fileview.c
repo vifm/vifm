@@ -70,8 +70,7 @@ static int calculate_number_width(const view_t *view, int list_length,
 static int count_digits(int num);
 static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
-static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
-		size_t print_width);
+static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width);
 static columns_t * get_view_columns(const view_t *view, int truncated);
 static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
@@ -495,7 +494,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 			.prefix_len = &prefix_len,
 		};
 
-		draw_cell(columns, &cdt, width - padding, width - padding);
+		draw_cell(columns, &cdt, width - padding);
 	}
 
 	fill_column(view, i, top, number_width + width, offset);
@@ -667,10 +666,9 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 	}
 }
 
-/* Draws a full cell of the file list.  print_width <= col_width. */
+/* Draws a full cell of the file list. */
 static void
-draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
-		size_t print_width)
+draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width)
 {
 	size_t width_left = cdt->is_main
 	                  ? ui_view_available_width(cdt->view) - (cdt->column_offset -
@@ -690,7 +688,7 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 
 	if(cfg.extra_padding && width_left >= col_width)
 	{
-		column_line_print(" ", print_width, AT_LEFT, " ", &info);
+		column_line_print(" ", col_width, AT_LEFT, " ", &info);
 	}
 }
 
@@ -968,8 +966,9 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 		--col_width;
 	}
 
-	draw_cell(get_view_columns(cdt->view, cell >= cdt->view->window_cells), cdt,
-			col_width, col_width);
+	int truncated = (cell >= cdt->view->window_cells);
+	columns_t *columns = get_view_columns(cdt->view, truncated);
+	draw_cell(columns, cdt, col_width);
 
 	cdt->prefix_len = NULL;
 }
