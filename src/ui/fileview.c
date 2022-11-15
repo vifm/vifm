@@ -60,8 +60,9 @@
 
 static void draw_left_column(view_t *view);
 static void draw_right_column(view_t *view);
-static void print_column(view_t *view, entries_t entries, const char current[],
-		const char path[], int width, int offset, int number_width);
+static void print_side_column(view_t *view, entries_t entries,
+		const char current[], const char path[], int width, int offset,
+		int number_width);
 static void fill_column(view_t *view, int start_line, int top, int width,
 		int offset);
 static void calculate_table_conf(view_t *view, size_t *count, size_t *width);
@@ -359,7 +360,7 @@ draw_left_column(view_t *view)
 
 	if(view->left_column.entries.nentries >= 0)
 	{
-		print_column(view, view->left_column.entries, dir, path, lcol_width, 0,
+		print_side_column(view, view->left_column.entries, dir, path, lcol_width, 0,
 				number_width);
 	}
 }
@@ -418,7 +419,7 @@ draw_right_column(view_t *view)
 
 	if(view->right_column.entries.nentries >= 0)
 	{
-		print_column(view, view->right_column.entries, NULL, path, rcol_width,
+		print_side_column(view, view->right_column.entries, NULL, path, rcol_width,
 				offset, 0);
 	}
 }
@@ -426,7 +427,7 @@ draw_right_column(view_t *view)
 /* Prints column full of entry names.  Current is a hint that tells which column
  * has to be selected (otherwise position from history record is used). */
 static void
-print_column(view_t *view, entries_t entries, const char current[],
+print_side_column(view_t *view, entries_t entries, const char current[],
 		const char path[], int width, int offset, int number_width)
 {
 	columns_t *const columns = get_name_column(0);
