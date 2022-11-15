@@ -70,8 +70,6 @@ static int calculate_number_width(const view_t *view, int list_length,
 static int count_digits(int num);
 static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
-static size_t calculate_print_width(const view_t *view, int i,
-		size_t max_width);
 static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 		size_t print_width);
 static columns_t * get_view_columns(const view_t *view, int truncated);
@@ -669,19 +667,6 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 	}
 }
 
-/* Calculates width of the column using entry and maximum width. */
-static size_t
-calculate_print_width(const view_t *view, int i, size_t max_width)
-{
-	if(!ui_view_displays_columns(view))
-	{
-		const size_t raw_name_width = get_filename_width(view, i);
-		return MIN(max_width - 1, raw_name_width);
-	}
-
-	return max_width;
-}
-
 /* Draws a full cell of the file list.  print_width <= col_width. */
 static void
 draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
@@ -967,9 +952,6 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 {
 	size_t prefix_len = 0U;
 
-	size_t print_width = calculate_print_width(cdt->view, cdt->line_pos,
-			col_width);
-
 	cdt->current_line = fpos_get_line(cdt->view, cell);
 	cdt->column_offset = ui_view_left_reserved(cdt->view)
 	                   + fpos_get_col(cdt->view, cell)*col_width;
@@ -984,14 +966,10 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 		/* Padding in ls-like view adds additional empty single character between
 		 * columns, on which we shouldn't draw anything here. */
 		--col_width;
-		if(print_width < col_width)
-		{
-			print_width = col_width;
-		}
 	}
 
 	draw_cell(get_view_columns(cdt->view, cell >= cdt->view->window_cells), cdt,
-			col_width, print_width);
+			col_width, col_width);
 
 	cdt->prefix_len = NULL;
 }
