@@ -78,7 +78,7 @@ static cchar_t prepare_inactive_color(view_t *view, dir_entry_t *entry,
 		int line_color);
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
 static void compute_and_draw_cell(column_data_t *cdt, int cell,
-		size_t col_width);
+		size_t col_count, size_t col_width);
 static void column_line_print(const char buf[], size_t offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void draw_line_number(const column_data_t *cdt, int column);
@@ -315,7 +315,7 @@ draw_dir_list_only(view_t *view)
 			.current_pos = view->list_pos,
 		};
 
-		compute_and_draw_cell(&cdt, cell, col_width);
+		compute_and_draw_cell(&cdt, cell, col_count, col_width);
 	}
 
 	draw_right_column(view);
@@ -670,10 +670,24 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 static void
 draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width)
 {
-	size_t width_left = cdt->is_main
-	                  ? ui_view_available_width(cdt->view) - (cdt->column_offset -
-	                    ui_view_left_reserved(cdt->view))
-	                  : col_width + 1U;
+	size_t width_left;
+	if(cdt->view->ls_view)
+	{
+		/* Ls-like view with fixed number of columns is special because padding is
+		 * part of column width for it to account for padding in between columns. */
+		width_left = cdt->view->window_cols
+		           - cdt->column_offset
+		           - ui_view_right_reserved(cdt->view)
+		           - (cdt->view->ls_cols == 0 && cfg.extra_padding ? 2 : 0);
+	}
+	else
+	{
+		width_left = cdt->is_main
+	             ? ui_view_available_width(cdt->view) -
+	               (cdt->column_offset - ui_view_left_reserved(cdt->view))
+	             : col_width + 1U;
+	}
+
 	const format_info_t info = {
 		.data = cdt,
 		.id = FILL_COLUMN_ID
@@ -940,19 +954,21 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 		.line_pos = pos,
 		.current_pos = is_current ? view->list_pos : -1,
 	};
-	compute_and_draw_cell(&cdt, cursor, col_width);
+	compute_and_draw_cell(&cdt, cursor, col_count, col_width);
 }
 
 /* Fills in fields of cdt based on passed in arguments and
  * view/entry/line_pos/current_pos fields of cdt.  Then draws the cell. */
 static void
-compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
+compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
+		size_t col_width)
 {
 	size_t prefix_len = 0U;
 
+	int col = fpos_get_col(cdt->view, cell);
+
 	cdt->current_line = fpos_get_line(cdt->view, cell);
-	cdt->column_offset = ui_view_left_reserved(cdt->view)
-	                   + fpos_get_col(cdt->view, cell)*col_width;
+	cdt->column_offset = ui_view_left_reserved(cdt->view) + col*col_width;
 	cdt->line_hi_group = get_line_color(cdt->view, cdt->entry);
 	cdt->number_width = cdt->view->real_num_width;
 	cdt->total_width = ui_view_available_width(cdt->view);
@@ -961,9 +977,17 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 
 	if(cfg.extra_padding && !ui_view_displays_columns(cdt->view))
 	{
-		/* Padding in ls-like view adds additional empty single character between
-		 * columns, on which we shouldn't draw anything here. */
-		--col_width;
+		if(cdt->view->ls_cols != 0 && col_count > 1 && col == (int)col_count - 1)
+		{
+			/* Reserve one character column after the last ls column. */
+			col_width -= 1;
+		}
+		else
+		{
+			/* Reserve two character columns between two ls columns to draw padding or
+			 * before and after single column if it's the only one. */
+			col_width -= 2;
+		}
 	}
 
 	int truncated = (cell >= cdt->view->window_cells);
@@ -1776,7 +1800,8 @@ fview_set_millerview(view_t *view, int enabled)
 static size_t
 calculate_column_width(view_t *view)
 {
-	size_t max_width = ui_view_available_width(view);
+	size_t max_width = view->window_cols
+	                 - ui_view_left_reserved(view) - ui_view_right_reserved(view);
 
 	size_t column_width;
 	if(view->ls_cols == 0)
@@ -1871,7 +1896,9 @@ calculate_columns_count(view_t *view)
 	if(!ui_view_displays_columns(view))
 	{
 		const size_t column_width = calculate_column_width(view);
-		return ui_view_available_width(view)/column_width;
+		size_t max_width = view->window_cols - ui_view_left_reserved(view)
+		                 - ui_view_right_reserved(view);
+		return max_width/column_width;
 	}
 	return 1U;
 }
