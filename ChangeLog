@@ -28,6 +28,8 @@
 	Fixed width of file names that don't fit into ls-like column being larger
 	than the width of other files.
 
+	Fixed ellipses being lost in side columns of miller view.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

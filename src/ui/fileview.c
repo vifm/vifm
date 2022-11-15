@@ -479,6 +479,8 @@ print_column(view_t *view, entries_t entries, const char current[],
 		flist_hist_update(view, path, get_last_path_component(current), pos - top);
 	}
 
+	int padding = (cfg.extra_padding ? 1 : 0);
+
 	for(i = top; i < entries.nentries && i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
@@ -495,7 +497,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 			.prefix_len = &prefix_len,
 		};
 
-		draw_cell(columns, &cdt, width, width - 1);
+		draw_cell(columns, &cdt, width - padding, width - padding);
 	}
 
 	fill_column(view, i, top, number_width + width, offset);
