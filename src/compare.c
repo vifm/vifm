@@ -477,64 +477,59 @@ static void
 put_side_by_side_pair(dir_entry_t *curr, dir_entry_t *other, int flags,
 		compare_stats_t *stats)
 {
+	/* Integer type to avoid warning about unhandled cases in switch(). */
+	int flag;
+
 	if(other == NULL)
 	{
-		if(curr_view == &lwin)
-		{
-			stats->unique_left++;
-			if(flags & CF_SHOW_UNIQUE_LEFT)
-			{
-				flist_custom_put(curr_view, curr);
-				flist_custom_add_separator(other_view, curr->id);
-			}
-		}
-		else
-		{
-			stats->unique_right++;
-			if(flags & CF_SHOW_UNIQUE_RIGHT)
-			{
-				flist_custom_put(curr_view, curr);
-				flist_custom_add_separator(other_view, curr->id);
-			}
-		}
+		flag = (curr_view == &lwin ? CF_SHOW_UNIQUE_LEFT : CF_SHOW_UNIQUE_RIGHT);
 	}
 	else if(curr == NULL)
 	{
-		if(curr_view == &lwin)
+		flag = (other_view == &lwin ? CF_SHOW_UNIQUE_LEFT : CF_SHOW_UNIQUE_RIGHT);
+	}
+	else
+	{
+		flag = (curr->id == other->id ? CF_SHOW_IDENTICAL : CF_SHOW_DIFFERENT);
+	}
+
+	switch(flag)
+	{
+		case CF_SHOW_UNIQUE_LEFT:  ++stats->unique_left;  break;
+		case CF_SHOW_UNIQUE_RIGHT: ++stats->unique_right; break;
+		case CF_SHOW_IDENTICAL:    ++stats->identical;    break;
+		case CF_SHOW_DIFFERENT:    ++stats->different;    break;
+	}
+
+	if(flags & flag)
+	{
+		if(curr != NULL)
 		{
-			stats->unique_right++;
-			if(flags & CF_SHOW_UNIQUE_RIGHT)
-			{
-				flist_custom_put(other_view, other);
-				flist_custom_add_separator(curr_view, other->id);
-			}
+			flist_custom_put(curr_view, curr);
 		}
 		else
 		{
-			stats->unique_left++;
-			if(flags & CF_SHOW_UNIQUE_LEFT)
-			{
-				flist_custom_put(other_view, other);
-				flist_custom_add_separator(curr_view, other->id);
-			}
+			flist_custom_add_separator(curr_view, other->id);
 		}
-	}
-	else if(curr->id == other->id)
-	{
-		stats->identical++;
-		if(flags & CF_SHOW_IDENTICAL)
+
+		if(other != NULL)
 		{
-			flist_custom_put(curr_view, curr);
 			flist_custom_put(other_view, other);
+		}
+		else
+		{
+			flist_custom_add_separator(other_view, curr->id);
 		}
 	}
 	else
 	{
-		stats->different++;
-		if(flags & CF_SHOW_DIFFERENT)
+		if(curr != NULL)
 		{
-			flist_custom_put(curr_view, curr);
-			flist_custom_put(other_view, other);
+			fentry_free(curr);
+		}
+		if(other != NULL)
+		{
+			fentry_free(other);
 		}
 	}
 }
