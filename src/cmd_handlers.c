@@ -154,7 +154,7 @@ static int command_cmd(const cmd_info_t *cmd_info);
 static int compare_cmd(const cmd_info_t *cmd_info);
 static int copen_cmd(const cmd_info_t *cmd_info);
 static int parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
-		ListType *lt, int *single_pane, int *flags);
+		ListType *lt, int *flags);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
@@ -433,7 +433,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &command_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "compare",           .abbr = NULL,    .id = COM_COMPARE,
 	  .descr = "compare directories in two panes",
-	  .flags = HAS_COMMENT,
+	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &compare_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "copen",             .abbr = "cope",  .id = -1,
 	  .descr = "reopen last displayed navigation menu",
@@ -2028,15 +2028,35 @@ make_bmark_path(const char path[])
 static int
 compare_cmd(const cmd_info_t *cmd_info)
 {
+	int in_compare = cv_compare(curr_view->custom.type);
+
+	if(cmd_info->emark && !in_compare)
+	{
+		ui_sb_err("Toggling requires active compare view");
+		return CMDS_ERR_CUSTOM;
+	}
+
 	CompareType ct = CT_CONTENTS;
 	ListType lt = LT_ALL;
-	int single_pane = 0, flags = CF_GROUP_PATHS;
-	if(parse_compare_properties(cmd_info, &ct, &lt, &single_pane, &flags) != 0)
+	int flags = (in_compare ? CF_NONE : CF_GROUP_PATHS);
+	if(parse_compare_properties(cmd_info, &ct, &lt, &flags) != 0)
 	{
 		return CMDS_ERR_CUSTOM;
 	}
 
-	return single_pane
+	if(in_compare)
+	{
+		struct cv_data_t *cv = &curr_view->custom;
+		return (compare_two_panes(cv->diff_cmp_type, cv->diff_list_type,
+					cv->diff_cmp_flags ^ flags) != 0);
+	}
+
+	if((flags & CF_SHOW) == 0)
+	{
+		flags |= CF_SHOW;
+	}
+
+	return (flags & CF_SINGLE_PANE)
 	     ? (compare_one_pane(curr_view, ct, lt, flags) != 0)
 	     : (compare_two_panes(ct, lt, flags) != 0);
 }
@@ -2054,23 +2074,44 @@ copen_cmd(const cmd_info_t *cmd_info)
  * error message is displayed on the status bar. */
 static int
 parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
-		ListType *lt, int *single_pane, int *flags)
+		ListType *lt, int *flags)
 {
 	int i;
 	for(i = 0; i < cmd_info->argc; ++i)
 	{
 		const char *const property = cmd_info->argv[i];
+
+		if(cmd_info->emark && !starts_with_lit(property, "show"))
+		{
+			ui_sb_errf("Unexpected property for toggling: %s", property);
+			return 1;
+		}
+
 		if     (strcmp(property, "byname") == 0)     *ct = CT_NAME;
 		else if(strcmp(property, "bysize") == 0)     *ct = CT_SIZE;
 		else if(strcmp(property, "bycontents") == 0) *ct = CT_CONTENTS;
+
 		else if(strcmp(property, "listall") == 0)    *lt = LT_ALL;
 		else if(strcmp(property, "listunique") == 0) *lt = LT_UNIQUE;
 		else if(strcmp(property, "listdups") == 0)   *lt = LT_DUPS;
-		else if(strcmp(property, "ofboth") == 0)     *single_pane = 0;
-		else if(strcmp(property, "ofone") == 0)      *single_pane = 1;
+
+		else if(strcmp(property, "ofboth") == 0)     *flags &= ~CF_SINGLE_PANE;
+		else if(strcmp(property, "ofone") == 0)      *flags |= CF_SINGLE_PANE;
+
 		else if(strcmp(property, "groupids") == 0)   *flags &= ~CF_GROUP_PATHS;
 		else if(strcmp(property, "grouppaths") == 0) *flags |= CF_GROUP_PATHS;
+
 		else if(strcmp(property, "skipempty") == 0)  *flags |= CF_SKIP_EMPTY;
+
+		else if(strcmp(property, "showidentical") == 0)
+			*flags |= CF_SHOW_IDENTICAL;
+		else if(strcmp(property, "showdifferent") == 0)
+			*flags |= CF_SHOW_DIFFERENT;
+		else if(strcmp(property, "showuniqueleft") == 0)
+			*flags |= CF_SHOW_UNIQUE_LEFT;
+		else if(strcmp(property, "showuniqueright") == 0)
+			*flags |= CF_SHOW_UNIQUE_RIGHT;
+
 		else if(strcmp(property, "withicase") == 0)
 		{
 			*flags &= ~CF_RESPECT_CASE;
@@ -2081,6 +2122,7 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 			*flags &= ~CF_IGNORE_CASE;
 			*flags |= CF_RESPECT_CASE;
 		}
+
 		else
 		{
 			ui_sb_errf("Unknown comparison property: %s", property);

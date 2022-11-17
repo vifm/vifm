@@ -88,9 +88,11 @@ static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg);
 static void fill_side_by_side_by_paths(entries_t curr, entries_t other,
 		int flags, compare_stats_t *stats);
-static void fill_side_by_side_by_ids(entries_t curr, entries_t other,
+static void fill_side_by_side_by_ids(entries_t curr, entries_t other, int flags,
 		compare_stats_t *stats);
 static int compare_entries(dir_entry_t *curr, dir_entry_t *other, int flags);
+static void put_side_by_side_pair(dir_entry_t *curr, dir_entry_t *other,
+		int flags, compare_stats_t *stats);
 static int id_sorter(const void *first, const void *second);
 static void put_or_free(view_t *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, view_t *view, int *next_id,
@@ -182,7 +184,7 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	}
 	else
 	{
-		fill_side_by_side_by_ids(curr, other, &stats);
+		fill_side_by_side_by_ids(curr, other, flags, &stats);
 	}
 
 	/* Entries' data has been moved out of them, so need to free only the
@@ -204,6 +206,8 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	other_view->list_pos = 0;
 	curr_view->custom.diff_cmp_type = ct;
 	other_view->custom.diff_cmp_type = ct;
+	curr_view->custom.diff_list_type = lt;
+	other_view->custom.diff_list_type = lt;
 	curr_view->custom.diff_cmp_flags = flags;
 	other_view->custom.diff_cmp_flags = flags;
 
@@ -372,27 +376,16 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags,
 
 		if(cmp == 0)
 		{
-			(curr.entries[i].id == other.entries[j].id) ? stats->identical++
-			                                            : stats->different++;
-
-			flist_custom_put(curr_view, &curr.entries[i++]);
-			flist_custom_put(other_view, &other.entries[j++]);
+			put_side_by_side_pair(&curr.entries[i++], &other.entries[j++], flags,
+					stats);
 		}
 		else if(cmp < 0)
 		{
-			(curr_view == &lwin) ? stats->unique_left++ : stats->unique_right++;
-
-			flist_custom_put(curr_view, &curr.entries[i]);
-			flist_custom_add_separator(other_view, curr.entries[i].id);
-			i++;
+			put_side_by_side_pair(&curr.entries[i++], NULL, flags, stats);
 		}
 		else
 		{
-			(curr_view == &lwin) ? stats->unique_right++ : stats->unique_left++;
-
-			flist_custom_put(other_view, &other.entries[j]);
-			flist_custom_add_separator(curr_view, other.entries[j].id);
-			j++;
+			put_side_by_side_pair(NULL, &other.entries[j++], flags, stats);
 		}
 	}
 }
@@ -400,7 +393,7 @@ fill_side_by_side_by_paths(entries_t curr, entries_t other, int flags,
 /* Composes side-by-side comparison of files in two views that is guided by
  * comparison ids and minimizes edit script. */
 static void
-fill_side_by_side_by_ids(entries_t curr, entries_t other,
+fill_side_by_side_by_ids(entries_t curr, entries_t other, int flags,
 		compare_stats_t *stats)
 {
 	enum { UP, LEFT, DIAG };
@@ -452,33 +445,85 @@ fill_side_by_side_by_ids(entries_t curr, entries_t other,
 	{
 		switch(p[i][j])
 		{
-			dir_entry_t *e;
-
 			case UP:
-				(curr_view == &lwin) ? stats->unique_left++ : stats->unique_right++;
-
-				e = &curr.entries[curr.nentries - 1 - --i];
-				flist_custom_put(curr_view, e);
-				flist_custom_add_separator(other_view, e->id);
+				put_side_by_side_pair(&curr.entries[curr.nentries - i--], NULL, flags,
+						stats);
 				break;
 			case LEFT:
-				(curr_view == &lwin) ? stats->unique_right++ : stats->unique_left++;
-
-				e = &other.entries[other.nentries - 1 - --j];
-				flist_custom_put(other_view, e);
-				flist_custom_add_separator(curr_view, e->id);
+				put_side_by_side_pair(NULL, &other.entries[other.nentries - j--], flags,
+						stats);
 				break;
 			case DIAG:
-				stats->identical++;
-
-				flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
-				flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
+				put_side_by_side_pair(&curr.entries[curr.nentries - i--],
+						&other.entries[other.nentries - j--], flags, stats);
 				break;
 		}
 	}
 
 	free(d);
 	free(p);
+}
+
+/* Adds an entry per side.  Either curr or other can be NULL. */
+static void
+put_side_by_side_pair(dir_entry_t *curr, dir_entry_t *other, int flags,
+		compare_stats_t *stats)
+{
+	/* Integer type to avoid warning about unhandled cases in switch(). */
+	int flag;
+
+	if(other == NULL)
+	{
+		flag = (curr_view == &lwin ? CF_SHOW_UNIQUE_LEFT : CF_SHOW_UNIQUE_RIGHT);
+	}
+	else if(curr == NULL)
+	{
+		flag = (other_view == &lwin ? CF_SHOW_UNIQUE_LEFT : CF_SHOW_UNIQUE_RIGHT);
+	}
+	else
+	{
+		flag = (curr->id == other->id ? CF_SHOW_IDENTICAL : CF_SHOW_DIFFERENT);
+	}
+
+	switch(flag)
+	{
+		case CF_SHOW_UNIQUE_LEFT:  ++stats->unique_left;  break;
+		case CF_SHOW_UNIQUE_RIGHT: ++stats->unique_right; break;
+		case CF_SHOW_IDENTICAL:    ++stats->identical;    break;
+		case CF_SHOW_DIFFERENT:    ++stats->different;    break;
+	}
+
+	if(flags & flag)
+	{
+		if(curr != NULL)
+		{
+			flist_custom_put(curr_view, curr);
+		}
+		else
+		{
+			flist_custom_add_separator(curr_view, other->id);
+		}
+
+		if(other != NULL)
+		{
+			flist_custom_put(other_view, other);
+		}
+		else
+		{
+			flist_custom_add_separator(other_view, curr->id);
+		}
+	}
+	else
+	{
+		if(curr != NULL)
+		{
+			fentry_free(curr);
+		}
+		if(other != NULL)
+		{
+			fentry_free(other);
+		}
+	}
 }
 
 /* Compares entries by their short paths.  Returns strcmp()-like result. */
@@ -625,6 +670,9 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int flags)
 	{
 		rn_leave(other, 1);
 	}
+
+	curr_view->custom.diff_cmp_flags = flags;
+	other_view->custom.diff_cmp_flags = flags;
 
 	view->list_pos = 0;
 	ui_view_schedule_redraw(view);
