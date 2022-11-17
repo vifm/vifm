@@ -73,7 +73,7 @@ TEST(moving_fake_entry_removes_the_other_file)
 
 	create_file(SANDBOX_PATH "/empty");
 
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 	rwin.list_pos = 0;
 	lwin.list_pos = 0;
 	(void)compare_move(&lwin, &rwin);
@@ -88,7 +88,7 @@ TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
 			"compare/b", saved_cwd);
 
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 	rwin.list_pos = 3;
 	lwin.list_pos = 3;
 	(void)compare_move(&lwin, &rwin);
@@ -139,7 +139,7 @@ TEST(moving_mismatched_entry_makes_files_equal)
 	assert_false(files_are_identical(SANDBOX_PATH "/same-name-different-content",
 				TEST_DATA_PATH "/compare/b/same-name-different-content"));
 
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 	rwin.list_pos = 2;
 	lwin.list_pos = 2;
 	(void)compare_move(&lwin, &rwin);
@@ -161,7 +161,7 @@ TEST(moving_equal_does_nothing)
 	assert_true(files_are_identical(SANDBOX_PATH "/same-name-same-content",
 				TEST_DATA_PATH "/compare/b/same-name-same-content"));
 
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 
 	/* Replace file unbeknownst to main code. */
 	copy_file(TEST_DATA_PATH "/compare/a/same-name-different-content",
@@ -193,7 +193,7 @@ TEST(file_id_is_not_updated_on_failed_move, IF(regular_unix_user))
 	assert_false(files_are_identical(SANDBOX_PATH "/same-name-different-content",
 				TEST_DATA_PATH "/compare/b/same-name-different-content"));
 
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 	rwin.list_pos = 2;
 	lwin.list_pos = 2;
 

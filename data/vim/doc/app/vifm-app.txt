@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Nov 9
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Nov 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1511,6 +1511,11 @@ The builtin commands are:
     showuniqueleft showuniqueright".  See |vifm-compare-views| for
     details.  Diff structure is incompatible with alternative representations,
     so values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
+:compare! (showidentical | showdifferent | showuniqueleft |
+           showuniqueright)...
+    this invocation form works only when compare view is active and results in
+    redoing of the previous :compare with toggled state of the passed in
+    options.
 
 :cope[n]                                       *vifm-:copen* *vifm-:cope*
     reopens the last visible menu that has navigation to files by default, if
@@ -5469,7 +5474,7 @@ Comparison tweaks:
  - withicase - ignore case when comparing file names/paths;
  - withrcase - respect case when comparing file names/paths.
 
-Which results to show:
+Which results to show (has no effect for single pane comparison):
  - showidentical   - toggle showing of identical files;
  - showdifferent   - toggle showing of different files;
  - showuniqueleft  - toggle showing of unique top/left files;

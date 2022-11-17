@@ -84,7 +84,7 @@ TEST(two_panes_by_name_ignore_case)
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/rename");
 
-	compare_two_panes(CT_NAME, LT_ALL, CF_GROUP_PATHS | CF_IGNORE_CASE);
+	compare_two_panes(CT_NAME, LT_ALL, CF_SHOW | CF_GROUP_PATHS | CF_IGNORE_CASE);
 
 	check_compare_invariants(3);
 
@@ -113,7 +113,8 @@ TEST(two_panes_by_name_respect_case)
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/rename");
 
-	compare_two_panes(CT_NAME, LT_ALL, CF_GROUP_PATHS | CF_RESPECT_CASE);
+	compare_two_panes(CT_NAME, LT_ALL,
+			CF_SHOW | CF_GROUP_PATHS | CF_RESPECT_CASE);
 
 	check_compare_invariants(6);
 
@@ -126,7 +127,7 @@ TEST(two_panes_all_group_ids)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, CF_NONE);
+	compare_two_panes(CT_NAME, LT_ALL, CF_SHOW);
 
 	check_compare_invariants(4);
 
@@ -151,7 +152,7 @@ TEST(two_panes_all_group_paths)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, CF_GROUP_PATHS);
+	compare_two_panes(CT_NAME, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 
 	check_compare_invariants(4);
 
@@ -176,7 +177,7 @@ TEST(two_panes_dups_one_is_empty)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 
 	check_compare_invariants(4);
 
@@ -199,7 +200,7 @@ TEST(two_panes_dups)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_DUPS, CF_GROUP_PATHS);
+	compare_two_panes(CT_CONTENTS, LT_DUPS, CF_GROUP_PATHS | CF_SHOW);
 
 	check_compare_invariants(3);
 
@@ -219,7 +220,7 @@ TEST(two_panes_unique)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_UNIQUE, CF_GROUP_PATHS);
+	compare_two_panes(CT_CONTENTS, LT_UNIQUE, CF_GROUP_PATHS | CF_SHOW);
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(1, rwin.list_rows);
@@ -298,7 +299,7 @@ TEST(relatively_complex_match)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
-	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 
 	check_compare_invariants(10);
 
@@ -366,7 +367,7 @@ TEST(content_difference_is_detected)
 	other_view = &rwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
 	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(1, rwin.list_rows);

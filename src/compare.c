@@ -121,16 +121,6 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 
 	const int group_paths = flags & CF_GROUP_PATHS;
 
-	/* If comparison is already running, toggle show* arguments. */
-	if(cv_compare(curr_view->custom.type))
-	{
-		flags ^= curr_view->custom.diff_cmp_flags & CF_SHOW;
-	}
-	else if((flags & CF_SHOW) == 0)
-	{
-		flags |= CF_SHOW;
-	}
-
 	/* We don't compare lists of files, so skip the check if at least one of the
 	 * views is a custom one. */
 	if(!flist_custom_active(&lwin) && !flist_custom_active(&rwin) &&
@@ -216,6 +206,8 @@ compare_two_panes(CompareType ct, ListType lt, int flags)
 	other_view->list_pos = 0;
 	curr_view->custom.diff_cmp_type = ct;
 	other_view->custom.diff_cmp_type = ct;
+	curr_view->custom.diff_list_type = lt;
+	other_view->custom.diff_list_type = lt;
 	curr_view->custom.diff_cmp_flags = flags;
 	other_view->custom.diff_cmp_flags = flags;
 

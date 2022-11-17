@@ -208,7 +208,7 @@ TEST(find_next_and_prev_mismatches)
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS);
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 
 	assert_int_equal(4, lwin.list_rows);
 	assert_int_equal(4, rwin.list_rows);

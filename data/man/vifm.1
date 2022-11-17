@@ -1,4 +1,4 @@
-.TH VIFM 1 "9 November 2022" "vifm 0.12.1"
+.TH VIFM 1 "17 November 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1745,6 +1745,12 @@ is "bycontents listall ofboth grouppaths showidentical showdifferent
 showuniqueleft showuniqueright".  See "Compare views" section below
 for details.  Diff structure is incompatible with alternative representations,
 so values of 'lsview' and 'millerview' options are ignored.
+.TP
+.BI ":compare! (showidentical | showdifferent | showuniqueleft |"
+.BI "    showuniqueright)..."
+this invocation form works only when compare view is active and results in
+redoing of the previous :compare with toggled state of the passed in
+options.
 .TP
 .BI "                                         :copen"
 .TP
@@ -6460,7 +6466,7 @@ Comparison tweaks:
  \- withicase \- ignore case when comparing file names/paths;
  \- withrcase \- respect case when comparing file names/paths.
 
-Which results to show:
+Which results to show (has no effect for single pane comparison):
  \- showidentical   \- toggle showing of identical files;
  \- showdifferent   \- toggle showing of different files;
  \- showuniqueleft  \- toggle showing of unique top/left files;

@@ -348,16 +348,34 @@ TEST(compare)
 	assert_true(flist_custom_active(&lwin));
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 
-	/* Verify that two-pane compare gets correct arguments. */
 	assert_int_equal(0, change_directory(&lwin, ".."));
+	/* No toggling. */
+	(void)exec_commands("compare! showdifferent", &lwin, CIT_COMMAND);
+	assert_string_equal("Toggling requires active compare view", ui_sb_last());
+	/* Verify that two-pane compare gets correct arguments. */
 	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH, "rename",
 			cwd);
 	(void)exec_commands("compare byname withrcase withicase", &lwin, CIT_COMMAND);
 	assert_true(flist_custom_active(&lwin));
 	assert_true(flist_custom_active(&rwin));
 	assert_int_equal(CT_NAME, lwin.custom.diff_cmp_type);
+	assert_int_equal(LT_ALL, lwin.custom.diff_list_type);
 	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW,
 			lwin.custom.diff_cmp_flags);
+	/* Toggling. */
+	(void)exec_commands("compare! showidentical showdifferent", &lwin,
+			CIT_COMMAND);
+	assert_true(flist_custom_active(&lwin));
+	assert_true(flist_custom_active(&rwin));
+	assert_int_equal(CT_NAME, lwin.custom.diff_cmp_type);
+	assert_int_equal(LT_ALL, lwin.custom.diff_list_type);
+	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW_UNIQUE_LEFT |
+			CF_SHOW_UNIQUE_RIGHT, lwin.custom.diff_cmp_flags);
+	/* Bad toggling. */
+	(void)exec_commands("compare! byname", &lwin, CIT_COMMAND);
+	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW_UNIQUE_LEFT |
+			CF_SHOW_UNIQUE_RIGHT, lwin.custom.diff_cmp_flags);
+	assert_string_equal("Unexpected property for toggling: byname", ui_sb_last());
 	assert_success(chdir(cwd));
 
 	assert_success(remove(SANDBOX_PATH "/file"));

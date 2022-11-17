@@ -433,7 +433,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &command_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "compare",           .abbr = NULL,    .id = COM_COMPARE,
 	  .descr = "compare directories in two panes",
-	  .flags = HAS_COMMENT,
+	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &compare_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "copen",             .abbr = "cope",  .id = -1,
 	  .descr = "reopen last displayed navigation menu",
@@ -2028,12 +2028,32 @@ make_bmark_path(const char path[])
 static int
 compare_cmd(const cmd_info_t *cmd_info)
 {
+	int in_compare = cv_compare(curr_view->custom.type);
+
+	if(cmd_info->emark && !in_compare)
+	{
+		ui_sb_err("Toggling requires active compare view");
+		return CMDS_ERR_CUSTOM;
+	}
+
 	CompareType ct = CT_CONTENTS;
 	ListType lt = LT_ALL;
-	int flags = CF_GROUP_PATHS;
+	int flags = (in_compare ? CF_NONE : CF_GROUP_PATHS);
 	if(parse_compare_properties(cmd_info, &ct, &lt, &flags) != 0)
 	{
 		return CMDS_ERR_CUSTOM;
+	}
+
+	if(in_compare)
+	{
+		struct cv_data_t *cv = &curr_view->custom;
+		return (compare_two_panes(cv->diff_cmp_type, cv->diff_list_type,
+					cv->diff_cmp_flags ^ flags) != 0);
+	}
+
+	if((flags & CF_SHOW) == 0)
+	{
+		flags |= CF_SHOW;
 	}
 
 	return (flags & CF_SINGLE_PANE)
@@ -2060,6 +2080,12 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 	for(i = 0; i < cmd_info->argc; ++i)
 	{
 		const char *const property = cmd_info->argv[i];
+
+		if(cmd_info->emark && !starts_with_lit(property, "show"))
+		{
+			ui_sb_errf("Unexpected property for toggling: %s", property);
+			return 1;
+		}
 
 		if     (strcmp(property, "byname") == 0)     *ct = CT_NAME;
 		else if(strcmp(property, "bysize") == 0)     *ct = CT_SIZE;

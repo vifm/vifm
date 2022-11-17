@@ -21,15 +21,6 @@
 
 #include "ui/ui.h"
 
-/* Type of files to list after a comparison. */
-typedef enum
-{
-	LT_ALL,    /* All files. */
-	LT_DUPS,   /* Files that have at least 1 dup on other side or in this view. */
-	LT_UNIQUE, /* Files unique to this view or within this view. */
-}
-ListType;
-
 /* Comparison flags. */
 typedef enum
 {
