@@ -160,6 +160,8 @@ cfg_init(void)
 
 	cfg.dot_dirs = DD_NONROOT_PARENT | DD_TREE_LEAFS_PARENT;
 
+	cfg.mouse = 0;
+
 	cfg.filter_inverted_by_default = 1;
 
 	cfg.apropos_prg = strdup("apropos %a");

@@ -46,6 +46,18 @@ typedef enum
 }
 DotDirs;
 
+/* When to handle mouse events. */
+typedef enum
+{
+	M_ALL_MODES    = 1 << 0, /* In all supported modes. */
+	M_NORMAL_MODE  = 1 << 1, /* In normal mode. */
+	M_VISUAL_MODE  = 1 << 2, /* In visual mode. */
+	M_CMDLINE_MODE = 1 << 3, /* In command-line mode. */
+	M_MENU_MODE    = 1 << 4, /* In menu mode. */
+	NUM_M_OPTS     =      5  /* Number of options for compile-time checks. */
+}
+Mouse;
+
 /* Tweaks of case sensitivity. */
 typedef enum
 {
@@ -238,6 +250,8 @@ typedef struct config_t
 	int columns; /* Terminal width in characters. */
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
 	int dot_dirs;
+	/* Controls mouse support.  Combination of Mouse flags. */
+	int mouse;
 	/* File type specific prefixes and suffixes ('classify'). */
 	char type_decs[FT_COUNT][2][9];
 	/* File name specific prefixes and suffixes ('classify'). */
@@ -253,6 +267,8 @@ typedef struct config_t
 	char *locate_prg;  /* locate tool calling pattern. */
 	char *delete_prg;  /* File removal application. */
 	char *media_prg;   /* Helper for managing media devices. */
+
+
 
 	/* Message shortening controlled by 'shortmess'. */
 	int tail_tab_line_paths;   /* Display only last directory in tab line. */

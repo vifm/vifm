@@ -2307,6 +2307,8 @@ store_global_options(JSON_Object *root)
 			escape_spaces(vle_opts_get("confirm", OPT_GLOBAL))));
 	append_dstr(options, format_str("dotdirs=%s",
 			escape_spaces(vle_opts_get("dotdirs", OPT_GLOBAL))));
+	append_dstr(options, format_str("mouse=%s",
+			escape_spaces(vle_opts_get("mouse", OPT_GLOBAL))));
 	append_dstr(options, format_str("caseoptions=%s",
 			escape_spaces(vle_opts_get("caseoptions", OPT_GLOBAL))));
 	append_dstr(options, format_str("suggestoptions=%s",

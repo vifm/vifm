@@ -31,6 +31,24 @@
  * for implementation as it needs more than just wchar_t.) */
 #define K(x) ((wchar_t)((wint_t)0xe000 + 1 + (x)))
 
+/* getmouse() is ncurses-specific, use it in the source and handle naming
+ * discrepancy with PDCurses. */
+#ifdef __PDCURSES__
+#define getmouse nc_getmouse
+#endif
+
+/* In 32-bit mode curses doesn't have enough space for a 5th button, use 2nd
+ * button instead. */
+#ifndef BUTTON5_PRESSED
+
+#define	BUTTON5_RELEASED        BUTTON2_RELEASED
+#define	BUTTON5_PRESSED         BUTTON2_PRESSED
+#define	BUTTON5_CLICKED         BUTTON2_CLICKED
+#define	BUTTON5_DOUBLE_CLICKED  BUTTON2_DOUBLE_CLICKED
+#define	BUTTON5_TRIPLE_CLICKED  BUTTON2_TRIPLE_CLICKED
+
+#endif
+
 /* OpenBSD used to have perverted ncursesw library.  It had stubs with infinite
  * loops instead of real wide functions.  As there is only a couple of wide
  * functions in use, they can be emulated on systems like that. */

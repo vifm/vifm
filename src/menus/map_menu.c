@@ -26,6 +26,7 @@
 #include <string.h> /* strdup() strlen() strcat() */
 #include <wchar.h> /* wcsncmp() wcslen() */
 
+#include "../compat/curses.h"
 #include "../compat/reallocarray.h"
 #include "../engine/keys.h"
 #include "../modes/modes.h"
@@ -87,6 +88,12 @@ static void
 add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 {
 	enum { MAP_WIDTH = 11 };
+
+	/* Skip group of mouse events, can't print them nicely in this form. */
+	if(lhs[0] == K(KEY_MOUSE))
+	{
+		return;
+	}
 
 	const int is_separator = (lhs[0] == L'\0');
 	if(!is_separator)

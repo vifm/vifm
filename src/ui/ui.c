@@ -373,6 +373,25 @@ move_pair(int from, int to)
 	}
 }
 
+void
+ui_set_mouse_active(int active)
+{
+	if(vifm_testing())
+	{
+		return;
+	}
+
+	if(active)
+	{
+		mousemask(ALL_MOUSE_EVENTS, /*oldmask=*/NULL);
+		mouseinterval(0);
+	}
+	else
+	{
+		mousemask(/*newmask=*/0, /*oldmask=*/NULL);
+	}
+}
+
 /* Initializes all WINDOW variables by calling newwin() to create ncurses
  * windows and configures hardware cursor. */
 static void
