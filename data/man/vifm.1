@@ -4458,6 +4458,19 @@ made by external applications, monitoring background jobs, redrawing UI).  There
 are no strict guarantees, however the higher this value is, the less is CPU load
 in idle mode.
 .TP
+.BI "'mouse'"
+type: charset
+.br
+default: ""
+.br
+
+Contains a sequence of single-character flags:
+ - a - all supported modes (a shorthand for all the rest and future additions)
+ - c - command-line mode
+ - m - menu mode
+ - n - normal mode
+ - v - visual mode
+.TP
 .BI "'number' 'nu'"
 type: boolean
 .br

@@ -94,6 +94,7 @@ static void init_lsoptions(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_milleroptions(optval_t *val);
 static void init_millerview(optval_t *val);
+static void init_mouse(optval_t *val);
 static void init_previewoptions(optval_t *val);
 static void init_quickview(optval_t *val);
 static void init_shortmess(optval_t *val);
@@ -151,6 +152,7 @@ static void mediaprg_handler(OPT_OP op, optval_t val);
 #endif
 static void mintimeoutlen_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(view_t *view);
+static void mouse_handler(OPT_OP op, optval_t val);
 static void previewoptions_handler(OPT_OP op, optval_t val);
 static void quickview_handler(OPT_OP op, optval_t val);
 static void rulerformat_handler(OPT_OP op, optval_t val);
@@ -334,6 +336,17 @@ static const char *lsoptions_enum[][2] = {
 	{ "columncount:", "fixed number of columns to display or 0" },
 	{ "transposed",   "fill grid by column instead of by line" },
 };
+
+/* Possible values of 'mouse'. */
+static const char *mouse_vals[][2] = {
+	{ "acmnv", "all mouse values" },
+	{ "a", "all supported modes" },
+	{ "c", "command-line mode" },
+	{ "m", "menu mode" },
+	{ "n", "normal mode" },
+	{ "v", "visual mode" },
+};
+ARRAY_GUARD(mouse_vals, 1 + NUM_M_OPTS);
 
 /* Possible values of 'previewoptions'. */
 static const char *previewoptions_vals[][2] = {
@@ -724,6 +737,10 @@ options[] = {
 	{ "mintimeoutlen", "", "delay between input polls",
 	  OPT_INT, 0, NULL, &mintimeoutlen_handler, NULL,
 	  { .ref.int_val = &cfg.min_timeout_len },
+	},
+	{ "mouse", "", "which modes handle mouse",
+	  OPT_CHARSET, ARRAY_LEN(mouse_vals), mouse_vals, &mouse_handler, NULL,
+	  { .init = &init_mouse },
 	},
 	{ "previewoptions", "", "tweaks for how preview is done",
 	  OPT_STRLIST, ARRAY_LEN(previewoptions_vals), previewoptions_vals,
@@ -1196,6 +1213,20 @@ static void
 init_millerview(optval_t *val)
 {
 	val->bool_val = curr_view->miller_view_g;
+}
+
+/* Initializes 'mouse' option from global state. */
+static void
+init_mouse(optval_t *val)
+{
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s",
+			cfg.mouse & M_ALL_MODES ? "a" : "",
+			cfg.mouse & M_CMDLINE_MODE ? "c" : "",
+			cfg.mouse & M_MENU_MODE ? "m" : "",
+			cfg.mouse & M_NORMAL_MODE ? "n" : "",
+			cfg.mouse & M_VISUAL_MODE ? "v" : "");
+	val->str_val = buf;
 }
 
 /* Initializes 'previewoptions' option from global state. */
@@ -2320,6 +2351,32 @@ scroll_line_down(view_t *view)
 		draw_dir_list(view);
 	}
 	wresize(view->win, view->window_rows, view->window_cols);
+}
+
+/* Handles updates of the 'mouse' option. */
+static void
+mouse_handler(OPT_OP op, optval_t val)
+{
+	int mouse = 0;
+
+	const char *p;
+	for(p = val.str_val; *p != '\0'; ++p)
+	{
+		switch(*p)
+		{
+			case 'a': mouse |= M_ALL_MODES; break;
+			case 'c': mouse |= M_CMDLINE_MODE; break;
+			case 'm': mouse |= M_MENU_MODE; break;
+			case 'n': mouse |= M_NORMAL_MODE; break;
+			case 'v': mouse |= M_VISUAL_MODE; break;
+
+			default:
+				assert(0 && "Unhandled mouse flag.");
+				break;
+		}
+	}
+
+	cfg.mouse = mouse;
 }
 
 /* Handles updates of the 'previewoptions' option. */

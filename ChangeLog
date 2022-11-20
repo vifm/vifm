@@ -20,6 +20,9 @@
 	Added builtin handling of mouse events.  Patch by 高浩亮 (a.k.a.
 	haolian9).  Thanks to ranousse, Sergei Shilovsky and user451421541757324.
 
+	Added 'mouse' option to control when mouse input is handled (not handled by
+	default).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

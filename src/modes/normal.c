@@ -2377,6 +2377,11 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
+	if((cfg.mouse & (M_ALL_MODES | M_NORMAL_MODE)) == 0)
+	{
+		return;
+	}
+
 	if(wenclose(lwin.win, e.y, e.x))
 	{
 		if(curr_view != &lwin)

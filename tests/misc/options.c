@@ -775,5 +775,18 @@ TEST(iooptions)
 	assert_true(cfg.data_sync);
 }
 
+TEST(mouse)
+{
+	assert_success(exec_commands("set mouse=acmnv", &lwin, CIT_COMMAND));
+	assert_int_equal(M_ALL_MODES | M_NORMAL_MODE | M_VISUAL_MODE |
+			M_CMDLINE_MODE | M_MENU_MODE, cfg.mouse);
+
+	assert_success(exec_commands("set mouse=", &lwin, CIT_COMMAND));
+	assert_int_equal(0, cfg.mouse);
+
+	assert_success(exec_commands("set mouse=cn", &lwin, CIT_COMMAND));
+	assert_int_equal(M_CMDLINE_MODE | M_NORMAL_MODE, cfg.mouse);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

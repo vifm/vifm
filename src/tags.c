@@ -89,6 +89,7 @@ const char *tags[] = {
 	"vifm-'milleroptions'",
 	"vifm-'millerview'",
 	"vifm-'mintimeoutlen'",
+	"vifm-'mouse'",
 	"vifm-'nu'",
 	"vifm-'number'",
 	"vifm-'numberwidth'",
