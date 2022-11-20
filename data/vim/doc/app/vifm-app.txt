@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Nov 17
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Nov 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -35,6 +35,7 @@
 |vifm-trash|              Details about trash directory in vifm.
 |vifm-clientserver|       Client-server communication.
 |vifm-ext-rename|         About editing buffer of file names in an editor.
+|vifm-mouse-using|        Using the mouse.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
 |vifm-env-vars|           Environment variables that affect vifm or set by it.
@@ -6051,6 +6052,65 @@ vertical split.
 
 You can cancel renaming by removing all non-comments from the buffer.  This
 also erases information about previous edits.
+
+--------------------------------------------------------------------------------
+*vifm-mouse-using*
+
+Note: <ScrollWheelDown> is not available on 32-bit *nix systems, because
+ncurses doesn't support it there (limitation of implementation).
+
+Note: these are not available in mappings at the momemnt.
+
+                                               *vifm-mouse-overview*
+Normal Mode:
+event             position  change  action        ~
+                   cursor   window                ~
+<LeftMouse>         yes      yes    <cr> if cursor wasn't moved
+<LeftRelease>        no      yes
+<MiddleMouse>        no      yes    <c-e>
+<MiddleRelease>      no      yes
+<RightMouse>        yes      yes    |vifm-:file|
+<RightRelease>       no      yes
+<ScrollWheelUp>      no      yes    <c-y>
+<ScrollWheelDown>    no      yes    <c-e>
+
+Clicking on inactive pane, makes it active and does nothing else.
+
+Visual Mode:
+event             position  selection  action     ~
+                   cursor                         ~
+<LeftMouse>         yes      update    <cr> if cursor wasn't moved
+<LeftRelease>        no
+<MiddleMouse>        no      update    <c-e>
+<MiddleRelease>      no
+<RightMouse>         no
+<RightRelease>       no
+<ScrollWheelUp>      no      update    <c-y>
+<ScrollWheelDown>    no      update    <c-e>
+
+Command-line Mode:
+event             position  action                ~
+                   cursor                         ~
+<LeftMouse>         yes
+<LeftRelease>        no
+<MiddleMouse>        no     <c-n>
+<MiddleRelease>      no
+<RightMouse>         no
+<RightRelease>       no
+<ScrollWheelUp>      no     <c-p>
+<ScrollWheelDown>    no     <c-n>
+
+Menu Mode:
+event             position  action                ~
+                   cursor                         ~
+<LeftMouse>         yes     <cr> if cursor wasn't moved
+<LeftRelease>        no
+<MiddleMouse>        no     <c-e>
+<MiddleRelease>      no
+<RightMouse>         no
+<RightRelease>       no
+<ScrollWheelUp>      no     <c-y>
+<ScrollWheelDown>    no     <c-e>
 
 --------------------------------------------------------------------------------
 *vifm-plugin*
