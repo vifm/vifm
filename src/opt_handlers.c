@@ -2376,6 +2376,12 @@ mouse_handler(OPT_OP op, optval_t val)
 		}
 	}
 
+	/* Update terminal state only if there is a need for it. */
+	if((cfg.mouse == 0) != (mouse == 0))
+	{
+		ui_set_mouse_active(mouse != 0);
+	}
+
 	cfg.mouse = mouse;
 }
 

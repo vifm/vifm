@@ -141,7 +141,6 @@ static int init_pair_wrapper(int pair, int fg, int bg);
 static int pair_content_wrapper(int pair, int *fg, int *bg);
 static int pair_in_use(int pair);
 static void move_pair(int from, int to);
-static void setup_mouse(void);
 static void create_windows(void);
 static void update_geometry(void);
 static int update_start(UpdateType update_kind);
@@ -301,8 +300,6 @@ setup_ncurses_interface(void)
 
 	ui_resize_all();
 
-	setup_mouse();
-
 	return 1;
 }
 
@@ -376,12 +373,23 @@ move_pair(int from, int to)
 	}
 }
 
-/* Enables and configures mouse support in curses library. */
-static void
-setup_mouse(void)
+void
+ui_set_mouse_active(int active)
 {
-	mousemask(ALL_MOUSE_EVENTS, NULL);
-	mouseinterval(0);
+	if(vifm_testing())
+	{
+		return;
+	}
+
+	if(active)
+	{
+		mousemask(ALL_MOUSE_EVENTS, /*oldmask=*/NULL);
+		mouseinterval(0);
+	}
+	else
+	{
+		mousemask(/*newmask=*/0, /*oldmask=*/NULL);
+	}
 }
 
 /* Initializes all WINDOW variables by calling newwin() to create ncurses
