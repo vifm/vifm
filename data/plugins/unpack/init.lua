@@ -13,7 +13,6 @@ Usage example:
 -- TODO: a way to specify default path for unpacking
 -- TODO: fix processing archives with spaces in their name
 -- TODO: support .tgz and similar extensions in addition to current .tar.*
--- TODO: support .rar as well
 
 local M = {}
 
@@ -23,6 +22,8 @@ local function get_common_prefix(archive, format)
         cmd = string.format('tar tf %q', archive)
     elseif format == 'zip' then
         cmd = string.format('zip --show-files %q', archive)
+    elseif format == 'rar' then
+        cmd = string.format('unrar vb %q', archive)
     else
         return nil, 'Unsupported format: '..format
     end
@@ -91,7 +92,7 @@ local function unpack(info)
     end
 
     local ext = vifm.fnamemodify(current, ':t:e')
-    if ext ~= 'zip' then
+    if ext ~= 'zip' and ext ~= 'rar' then
         ext = vifm.fnamemodify(current, ':t:r:e')
         if ext ~= 'tar' then
             vifm.sb.error('Unsupported file format')
@@ -140,6 +141,8 @@ local function unpack(info)
         cmd = string.format('tar -C %q -vxf %q', outdir, current)
     elseif ext == 'zip' then
         cmd = string.format('unzip -d %q %q', outdir, current)
+    elseif ext == 'rar' then
+        cmd = string.format('cd %q && unrar x %q', outdir, current)
     end
     local job = vifm.startjob { cmd = cmd }
 
