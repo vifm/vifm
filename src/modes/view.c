@@ -350,8 +350,19 @@ modview_enter(view_t *view, int explore)
 
 	vi->filename = is_dir(full_path) ? format_str("%s/", full_path)
 	                                 : strdup(full_path);
-	vi->viewers = ft_get_viewers(vi->filename);
 	vi->view = view;
+
+	if(is_null_or_empty(curr_view->preview_prg))
+	{
+		vi->viewers = ft_get_viewers(vi->filename);
+	}
+	else
+	{
+		strlist_t previewer = {};
+		previewer.nitems = add_to_string_array(&previewer.items, previewer.nitems,
+				curr_view->preview_prg);
+		vi->viewers = previewer;
+	}
 
 	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{

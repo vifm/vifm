@@ -40,6 +40,9 @@
 
 	Fixed ellipses being lost in side columns of miller view.
 
+	Fixed 'previewprg' not being respected on switching to view mode (regression
+	in 0.12-beta).  Thanks to Sitaram Chamarty.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
