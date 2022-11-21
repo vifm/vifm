@@ -329,6 +329,35 @@ TEST(views_with_dirs_can_be_reattached)
 	opt_handlers_teardown();
 }
 
+TEST(previewprg_is_applied)
+{
+	opt_handlers_setup();
+	update_string(&lwin.preview_prg, "echo previewprg_is_applied%%");
+
+	char *error;
+	matchers_t *ms = matchers_alloc("*", 0, 1, "", &error);
+	assert_non_null(ms);
+	ft_set_viewers(ms, "echo viewer%%");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			NULL);
+	populate_dir_list(&lwin, 0);
+
+	qv_ensure_is_shown();
+	curr_stats.number_of_windows = 2;
+
+	assert_true(vle_mode_is(NORMAL_MODE));
+	(void)vle_keys_exec_timed_out(WK_C_w WK_w);
+	assert_true(vle_mode_is(VIEW_MODE));
+
+	strlist_t lines = modview_lines(curr_stats.preview.explore);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("previewprg_is_applied%", lines.items[0]);
+
+	qv_hide();
+	opt_handlers_teardown();
+}
+
 static int
 start_view_mode(const char pattern[], const char viewers[],
 		const char base_dir[], const char sub_path[])
@@ -343,6 +372,7 @@ start_view_mode(const char pattern[], const char viewers[],
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), base_dir, sub_path, NULL);
 	populate_dir_list(&lwin, 0);
+
 	(void)vle_keys_exec_timed_out(WK_e);
 
 	return vle_mode_is(VIEW_MODE);
