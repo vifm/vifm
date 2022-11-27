@@ -43,6 +43,9 @@
 	Fixed 'previewprg' not being respected on switching to view mode (regression
 	in 0.12-beta).  Thanks to Sitaram Chamarty.
 
+	Fixed $VIFM_APPDIR_ROOT being ignored by :help command, which made it not
+	work properly from AppImage.  Thanks to infinitewhileloop.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
