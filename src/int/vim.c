@@ -107,7 +107,7 @@ vim_edit_files(int nfiles, char *files[])
 	for(i = 0; i < nfiles; ++i)
 	{
 		char *const expanded_path = expand_tilde(files[i]);
-		char *const escaped = shell_like_escape(expanded_path, 0);
+		char *const escaped = shell_arg_escape(expanded_path);
 		(void)strappendch(&cmd, &len, ' ');
 		(void)strappend(&cmd, &len, escaped);
 		free(escaped);

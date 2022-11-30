@@ -300,5 +300,34 @@ TEST(title_support_is_detected_correctly)
 #endif
 }
 
+TEST(paths_are_escaped_for_the_editor)
+{
+	char *const saved_cwd = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
+
+	conf_setup();
+	update_string(&cfg.vi_command, "echo success>");
+
+	char content_buf[] = "success";
+	const char *content = content_buf;
+
+	char path_buf[128];
+	char *path = path_buf;
+
+	strcpy(path_buf, "a b c");
+	assert_success(vim_edit_files(/*nfiles=*/1, &path));
+	file_is(path_buf, &content, /*nlines=*/1);
+	remove_file(path_buf);
+
+	strcpy(path_buf, "a & c - + % ; . ,");
+	assert_success(vim_edit_files(/*nfiles=*/1, &path));
+	file_is(path_buf, &content, /*nlines=*/1);
+	remove_file(path_buf);
+
+	conf_teardown();
+
+	restore_cwd(saved_cwd);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

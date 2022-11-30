@@ -46,6 +46,9 @@
 	Fixed $VIFM_APPDIR_ROOT being ignored by :help command, which made it not
 	work properly from AppImage.  Thanks to infinitewhileloop.
 
+	Fixed escaping of file paths when using 'vicmd' or 'vixcmd' to open a
+	file on Windows.  Thanks to Phil Runninger.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
