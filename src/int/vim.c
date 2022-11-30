@@ -49,6 +49,7 @@
 #define LIST_FILE "vimfiles"
 
 static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
+static char * shell_arg_escape(const char what[]);
 TSTATIC void trim_right(char text[]);
 static void dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[]);
 
@@ -197,11 +198,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 		}
 	}
 
-#ifndef _WIN32
-	escaped = shell_like_escape(filename, 0);
-#else
-	escaped = (char *)enclose_in_dquotes(filename, curr_stats.shell_type);
-#endif
+	escaped = shell_arg_escape(filename);
 
 	if(line < 0 && column < 0)
 		snprintf(cmd, sizeof(cmd), "%s %s %s", vicmd, fork_str, escaped);
@@ -211,9 +208,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 		snprintf(cmd, sizeof(cmd), "%s %s \"+call cursor(%d, %d)\" %s", vicmd,
 				fork_str, line, column, escaped);
 
-#ifndef _WIN32
 	free(escaped);
-#endif
 
 	result = run_vim(cmd, bg && allow_forking, allow_forking);
 
@@ -224,6 +219,18 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 	}
 
 	return result;
+}
+
+/* Escapes a string so that it can be used as a command argument in a shell
+ * invocation.  Returns newly allocated string. */
+static char *
+shell_arg_escape(const char what[])
+{
+#ifndef _WIN32
+	return shell_like_escape(what, /*type=*/0);
+#else
+	return strdup(enclose_in_dquotes(what, curr_stats.shell_type));
+#endif
 }
 
 /* Removes all trailing whitespace. */
