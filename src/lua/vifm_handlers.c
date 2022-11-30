@@ -261,15 +261,9 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
 int
 vifm_handlers_open_help(vlua_t *vlua, const char handler[], const char topic[])
 {
-#ifndef _WIN32
-	char vimdoc_dir[PATH_MAX + 1] = PACKAGE_DATA_DIR "/vim-doc";
-#else
-	char exe_dir[PATH_MAX + 1];
-	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-
 	char vimdoc_dir[PATH_MAX + 1];
-	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc", exe_dir);
-#endif
+	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc",
+			get_installed_data_dir());
 
 	lua_newtable(vlua->lua);
 	lua_pushstring(vlua->lua, "open-help");
