@@ -49,6 +49,9 @@
 	Fixed escaping of file paths when using 'vicmd' or 'vixcmd' to open a
 	file on Windows.  Thanks to Phil Runninger.
 
+	Fixed :locate never escaping its arguments (should be done unless the
+	first one starts with a dash).  This is a regression in 0.7.6.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

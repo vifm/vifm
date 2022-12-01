@@ -5,6 +5,7 @@
 
 #include <test-utils.h>
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/menu.h"
@@ -113,6 +114,32 @@ TEST(menu_is_turned_into_cv)
 	assert_string_equal("!echo existing-files/a%M", lwin.custom.title);
 
 	undo_teardown();
+}
+
+TEST(locate_menu_can_escape_args, IF(not_windows))
+{
+	char script_path[PATH_MAX + 1];
+	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", NULL);
+
+	char locate_prg[PATH_MAX + 1];
+	snprintf(locate_prg, sizeof(locate_prg), "%s", script_path);
+	update_string(&cfg.locate_prg, locate_prg);
+
+	create_executable(SANDBOX_PATH "/script");
+	make_file(SANDBOX_PATH "/script",
+			"#!/bin/sh\n"
+			"for arg; do echo \"$arg\"; done\n");
+
+	assert_success(exec_commands("locate a  b", &lwin, CIT_COMMAND));
+	assert_int_equal(1, menu_get_current()->len);
+	assert_string_equal("a  b", menu_get_current()->items[0]);
+
+	assert_success(exec_commands("locate -a  b", &lwin, CIT_COMMAND));
+	assert_int_equal(2, menu_get_current()->len);
+	assert_string_equal("-a", menu_get_current()->items[0]);
+	assert_string_equal("b", menu_get_current()->items[1]);
+
+	assert_success(remove(script_path));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
