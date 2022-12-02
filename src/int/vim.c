@@ -56,29 +56,23 @@ static void dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[]);
 int
 vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 {
+	char *escaped_data = posix_like_escape(get_installed_data_dir(), /*type=*/0);
+	char *set_rtp = format_str("+set runtimepath+=%s/vim-doc", escaped_data);
+	free(escaped_data);
+
+	char *escaped_set_rtp = shell_arg_escape(set_rtp, curr_stats.shell_type);
+	free(set_rtp);
+
+	char *help = format_str("+help %s", topic);
+	char *escaped_help = shell_arg_escape(help, curr_stats.shell_type);
+	free(help);
+
 	int bg;
+	snprintf(cmd, cmd_size, "%s %s %s -c only", cfg_get_vicmd(&bg),
+			escaped_set_rtp, escaped_help);
 
-#ifndef _WIN32
-	char *const escaped_rtp =
-		posix_like_escape(get_installed_data_dir(), /*type=*/0);
-	char *const escaped_args = shell_arg_escape(topic, curr_stats.shell_type);
-
-	snprintf(cmd, cmd_size,
-			"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
-			cfg_get_vicmd(&bg), escaped_rtp, escaped_args);
-
-	free(escaped_args);
-	free(escaped_rtp);
-#else
-	char *escaped_rtp = posix_like_escape(get_installed_data_dir(), /*type=*/0);
-
-	snprintf(cmd, cmd_size,
-			"%s -c \"set runtimepath+=%s/vim-doc\" -c \"help %s\" -c only",
-			cfg_get_vicmd(&bg), escaped_rtp, topic);
-
-	free(escaped_rtp);
-#endif
-
+	free(escaped_set_rtp);
+	free(escaped_help);
 	return bg;
 }
 
