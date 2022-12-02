@@ -1294,7 +1294,7 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 	        ma_flags_present(flags, MF_CUSTOMVIEW_IOUTPUT) ||
 	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_IOUTPUT))
 	{
-		rn_for_flist(view, cmd, title, flags);
+		rn_for_flist(view, cmd, title, /*user_sh=*/1, flags);
 	}
 	else
 	{
@@ -1442,7 +1442,7 @@ rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 }
 
 int
-rn_for_flist(view_t *view, const char cmd[], const char title[],
+rn_for_flist(view_t *view, const char cmd[], const char title[], int user_sh,
 		MacroFlags flags)
 {
 	enum { MAX_TITLE_WIDTH = 80 };
@@ -1470,8 +1470,8 @@ rn_for_flist(view_t *view, const char cmd[], const char title[],
 	FILE *input_tmp = make_in_file(view, flags);
 
 	setup_shellout_env();
-	int error = (process_cmd_output("Loading custom view", cmd, input_tmp, 1,
-				interactive, &path_handler, view) != 0);
+	int error = (process_cmd_output("Loading custom view", cmd, input_tmp,
+				user_sh, interactive, &path_handler, view) != 0);
 	cleanup_shellout_env();
 
 	if(input_tmp != NULL)

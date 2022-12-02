@@ -89,7 +89,7 @@ void rn_start_bg_command(struct view_t *view, const char cmd[],
  * or very custom view.  Returns zero on success, otherwise non-zero is
  * returned. */
 int rn_for_flist(struct view_t *view, const char cmd[], const char title[],
-		MacroFlags flags);
+		int user_sh, MacroFlags flags);
 
 /* Executes external command capturing its output as list of lines.  Sets *lines
  * and *nlines.  Returns zero on success, otherwise non-zero is returned. */
