@@ -31,7 +31,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcat() strcmp() strdup() strncmp() strncat()
                        strchr() strcpy() strlen() strrchr() */
 
@@ -352,89 +352,6 @@ is_unc_root(const char *path)
 #else
 	return 0;
 #endif
-}
-
-char *
-posix_like_escape(const char string[], int type)
-{
-	size_t len;
-	size_t i;
-	char *ret, *dup;
-
-	len = strlen(string);
-
-	dup = ret = malloc(len*3 + 2 + 1);
-	if(dup == NULL)
-	{
-		return NULL;
-	}
-
-	if(*string == '-')
-	{
-		*dup++ = '.';
-		*dup++ = '/';
-	}
-
-	for(i = 0; i < len; i++, string++, dup++)
-	{
-		switch(*string)
-		{
-			case '%':
-				if(type == 1)
-				{
-					*dup++ = '%';
-				}
-				break;
-
-			/* Escape the following characters anywhere in the line. */
-			case '\'':
-			case '\\':
-			case '\r':
-			case '\t':
-			case '"':
-			case ';':
-			case ' ':
-			case '?':
-			case '|':
-			case '[':
-			case ']':
-			case '{':
-			case '}':
-			case '<':
-			case '>':
-			case '`':
-			case '!':
-			case '$':
-			case '&':
-			case '*':
-			case '(':
-			case ')':
-			case '#':
-				*dup++ = '\\';
-				break;
-
-			case '\n':
-				if(type != 0)
-				{
-					break;
-				}
-
-				*dup++ = '"';
-				*dup++ = '\n';
-				*dup = '"';
-				continue;
-
-			/* Escape the following characters only at the beginning of the line. */
-			case '~':
-			case '=': /* Command-path expansion in zsh. */
-				if(dup == ret)
-					*dup++ = '\\';
-				break;
-		}
-		*dup = *string;
-	}
-	*dup = '\0';
-	return ret;
 }
 
 char *

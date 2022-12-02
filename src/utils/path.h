@@ -57,12 +57,6 @@ int is_root_dir(const char *path);
 
 int is_unc_root(const char *path);
 
-/* Escapes the string for the purpose of inserting it into a POSIX-like shell or
- * command-line.  type == 1 enables prepending percent sign with a percent
- * sign and not escaping newline, because we do only worse.  type == 2 only
- * skips escaping of newline.  Returns new string, caller should free it. */
-char * posix_like_escape(const char string[], int type);
-
 /* Replaces leading path to home directory with a tilde, trims trailing slash.
  * Returns pointer to a statically allocated buffer of size PATH_MAX. */
 char * replace_home_part(const char path[]);

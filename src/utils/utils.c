@@ -978,5 +978,88 @@ unichar_bisearch(wchar_t ucs, const interval_t table[], int max)
 	return 0;
 }
 
+char *
+posix_like_escape(const char string[], int type)
+{
+	size_t len;
+	size_t i;
+	char *ret, *dup;
+
+	len = strlen(string);
+
+	dup = ret = malloc(len*3 + 2 + 1);
+	if(dup == NULL)
+	{
+		return NULL;
+	}
+
+	if(*string == '-')
+	{
+		*dup++ = '.';
+		*dup++ = '/';
+	}
+
+	for(i = 0; i < len; i++, string++, dup++)
+	{
+		switch(*string)
+		{
+			case '%':
+				if(type == 1)
+				{
+					*dup++ = '%';
+				}
+				break;
+
+			/* Escape the following characters anywhere in the line. */
+			case '\'':
+			case '\\':
+			case '\r':
+			case '\t':
+			case '"':
+			case ';':
+			case ' ':
+			case '?':
+			case '|':
+			case '[':
+			case ']':
+			case '{':
+			case '}':
+			case '<':
+			case '>':
+			case '`':
+			case '!':
+			case '$':
+			case '&':
+			case '*':
+			case '(':
+			case ')':
+			case '#':
+				*dup++ = '\\';
+				break;
+
+			case '\n':
+				if(type != 0)
+				{
+					break;
+				}
+
+				*dup++ = '"';
+				*dup++ = '\n';
+				*dup = '"';
+				continue;
+
+			/* Escape the following characters only at the beginning of the line. */
+			case '~':
+			case '=': /* Command-path expansion in zsh. */
+				if(dup == ret)
+					*dup++ = '\\';
+				break;
+		}
+		*dup = *string;
+	}
+	*dup = '\0';
+	return ret;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
