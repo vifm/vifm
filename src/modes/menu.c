@@ -847,7 +847,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 
 	if(!qf)
 	{
-		ShellType shell_type = (get_env_type() == ET_UNIX ? ST_NORMAL : ST_CMD);
+		ShellType shell_type = (get_env_type() == ET_UNIX ? ST_POSIX : ST_CMD);
 		char *const arg = shell_arg_escape("+exe 'bd!|args' "
 				"join(map(getline('1','$'),'fnameescape(v:val)'))",
 				shell_type);

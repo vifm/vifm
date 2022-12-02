@@ -332,7 +332,7 @@ show_file_type(view_t *view, draw_ctx_t *ctx)
 		get_current_full_path(view, sizeof(full_path), full_path);
 
 		/* Use the file command to get file information. */
-		ShellType shell_type = (get_env_type() == ET_UNIX ? ST_NORMAL : ST_CMD);
+		ShellType shell_type = (get_env_type() == ET_UNIX ? ST_POSIX : ST_CMD);
 		escaped_full_path = shell_arg_escape(full_path, shell_type);
 		snprintf(command, sizeof(command), "file %s -b", escaped_full_path);
 		free(escaped_full_path);

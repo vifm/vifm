@@ -703,7 +703,7 @@ get_shell_type(const char shell_cmd[])
 	{
 		return ST_PS;
 	}
-	return ST_NORMAL;
+	return ST_POSIX;
 }
 
 char *

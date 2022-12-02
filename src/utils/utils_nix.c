@@ -813,13 +813,13 @@ get_exec_env_type(void)
 ShellType
 get_shell_type(const char shell_cmd[])
 {
-	return ST_NORMAL;
+	return ST_POSIX;
 }
 
 char *
 shell_arg_escape(const char what[], ShellType shell_type)
 {
-	assert(shell_type == ST_NORMAL && "Unexpected shell type.");
+	assert(shell_type == ST_POSIX && "Unexpected shell type.");
 	return posix_like_escape(what, /*type=*/0);
 }
 

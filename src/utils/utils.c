@@ -361,7 +361,7 @@ enclose_in_dquotes(const char str[], ShellType shell_type)
 		char c = *str;
 
 		if(c == '"' ||
-				(shell_type == ST_NORMAL && (c == '\\' || c == '$' || c == '`')))
+				(shell_type == ST_POSIX && (c == '\\' || c == '$' || c == '`')))
 		{
 			*p++ = '\\';
 		}

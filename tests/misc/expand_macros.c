@@ -640,7 +640,7 @@ TEST(dollar_and_backtick_are_escaped_in_dquotes)
 	lwin.list_pos = 3;
 	assert_success(replace_string(&lwin.dir_entry[lwin.list_pos].name, "a$`b"));
 
-	curr_stats.shell_type = ST_NORMAL;
+	curr_stats.shell_type = ST_POSIX;
 	expanded = ma_expand("%\"c", "", NULL, MER_OP);
 	assert_string_equal("\"a\\$\\`b\"", expanded);
 	free(expanded);
@@ -651,7 +651,7 @@ TEST(dollar_and_backtick_are_escaped_in_dquotes)
 	free(expanded);
 
 	/* Restore normal value or some further tests can get broken. */
-	curr_stats.shell_type = ST_NORMAL;
+	curr_stats.shell_type = ST_POSIX;
 }
 
 TEST(newline_is_escaped_with_quotes)

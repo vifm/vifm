@@ -256,7 +256,7 @@ get_file_mimetype(const char filename[], char buf[], size_t buf_sz)
 #ifdef HAVE_FILE_PROG
 	FILE *pipe;
 	char command[1024];
-	ShellType shell_type = (get_env_type() == ET_UNIX ? ST_NORMAL : ST_CMD);
+	ShellType shell_type = (get_env_type() == ET_UNIX ? ST_POSIX : ST_CMD);
 	char *const escaped_filename = shell_arg_escape(filename, shell_type);
 
 	/* Use the file command to get mimetype */
