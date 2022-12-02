@@ -27,8 +27,8 @@
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
-#include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../macros.h"
 #include "menus.h"
 
@@ -76,7 +76,7 @@ show_grep_menu(view_t *view, const char args[], int invert)
 	macros[M_A].value = args;
 	if(args[0] != '-')
 	{
-		escaped_args = shell_like_escape(args, 0);
+		escaped_args = shell_arg_escape(args, curr_stats.shell_type);
 		macros[M_a].value = escaped_args;
 	}
 

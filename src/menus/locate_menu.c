@@ -26,8 +26,8 @@
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
-#include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../macros.h"
 #include "../running.h"
 #include "menus.h"
@@ -43,8 +43,10 @@ show_locate_menu(view_t *view, const char args[])
 	char *margs;
 	int save_msg;
 
+	margs = (args[0] == '-') ? strdup(args)
+	                         : shell_arg_escape(args, curr_stats.shell_type);
+
 	static menu_data_t m;
-	margs = (args[0] == '-') ? strdup(args) : shell_like_escape(args, 0);
 	menus_init_data(&m, view, format_str("Locate %s", margs),
 			strdup("No files found"));
 

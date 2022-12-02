@@ -40,6 +40,7 @@
 #include "../utils/fsddata.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../filetype.h"
 #include "../status.h"
 #include "desktop.h"
@@ -255,7 +256,8 @@ get_file_mimetype(const char filename[], char buf[], size_t buf_sz)
 #ifdef HAVE_FILE_PROG
 	FILE *pipe;
 	char command[1024];
-	char *const escaped_filename = shell_like_escape(filename, 0);
+	ShellType shell_type = (get_env_type() == ET_UNIX ? ST_NORMAL : ST_CMD);
+	char *const escaped_filename = shell_arg_escape(filename, shell_type);
 
 	/* Use the file command to get mimetype */
 	snprintf(command, sizeof(command), "file %s -b --mime-type",

@@ -706,6 +706,12 @@ get_shell_type(const char shell_cmd[])
 	return ST_NORMAL;
 }
 
+char *
+shell_arg_escape(const char what[], ShellType shell_type)
+{
+	return strdup(enclose_in_dquotes(what, shell_type));
+}
+
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {

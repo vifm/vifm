@@ -130,6 +130,7 @@ static OpsResult op_rmdir(ops_t *ops, void *data, const char src[],
 static OpsResult op_mkfile(ops_t *ops, void *data, const char src[],
 		const char dst[]);
 static int ops_uses_syscalls(const ops_t *ops);
+static ShellType ops_shell_type(const ops_t *ops);
 static OpsResult exec_io_op(ops_t *ops, IoRes (*func)(io_args_t *),
 		io_args_t *args, int cancellable);
 static int confirm_overwrite(io_args_t *args, const char src[],
@@ -340,7 +341,7 @@ op_removesl(ops_t *ops, void *data, const char src[], const char dst[])
 		char cmd[2*PATH_MAX + 1];
 		const int cancellable = (data == NULL);
 
-		escaped = shell_like_escape(src, 0);
+		escaped = shell_arg_escape(src, ops_shell_type(ops));
 		if(escaped == NULL)
 		{
 			return OPS_FAILED;
@@ -367,7 +368,7 @@ op_removesl(ops_t *ops, void *data, const char src[], const char dst[])
 		char cmd[16 + PATH_MAX];
 		const int cancellable = data == NULL;
 
-		escaped = shell_like_escape(src, 0);
+		escaped = shell_arg_escape(src, ops_shell_type(ops));
 		if(escaped == NULL)
 			return OPS_FAILED;
 
@@ -484,8 +485,8 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		char cmd[6 + PATH_MAX*2 + 1];
 		const int cancellable = (data == NULL);
 
-		escaped_src = shell_like_escape(src, 0);
-		escaped_dst = shell_like_escape(dst, 0);
+		escaped_src = shell_arg_escape(src, ops_shell_type(ops));
+		escaped_dst = shell_arg_escape(dst, ops_shell_type(ops));
 		if(escaped_src == NULL || escaped_dst == NULL)
 		{
 			free(escaped_dst);
@@ -598,8 +599,8 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 			return OPS_FAILED;
 		}
 
-		escaped_src = shell_like_escape(src, 0);
-		escaped_dst = shell_like_escape(dst, 0);
+		escaped_src = shell_arg_escape(src, ops_shell_type(ops));
+		escaped_dst = shell_arg_escape(dst, ops_shell_type(ops));
 		if(escaped_src == NULL || escaped_dst == NULL)
 		{
 			free(escaped_dst);
@@ -683,7 +684,7 @@ op_chown(ops_t *ops, void *data, const char src[], const char dst[])
 	char *escaped;
 	uid_t uid = (uid_t)(long)data;
 
-	escaped = shell_like_escape(src, 0);
+	escaped = shell_arg_escape(src, ops_shell_type(ops));
 	snprintf(cmd, sizeof(cmd), "chown -fR %u %s", uid, escaped);
 	free(escaped);
 
@@ -702,7 +703,7 @@ op_chgrp(ops_t *ops, void *data, const char src[], const char dst[])
 	char *escaped;
 	gid_t gid = (gid_t)(long)data;
 
-	escaped = shell_like_escape(src, 0);
+	escaped = shell_arg_escape(src, ops_shell_type(ops));
 	snprintf(cmd, sizeof(cmd), "chown -fR :%u %s", gid, escaped);
 	free(escaped);
 
@@ -720,7 +721,7 @@ op_chmod(ops_t *ops, void *data, const char src[], const char dst[])
 	char cmd[128 + PATH_MAX];
 	char *escaped;
 
-	escaped = shell_like_escape(src, 0);
+	escaped = shell_arg_escape(src, ops_shell_type(ops));
 	snprintf(cmd, sizeof(cmd), "chmod %s %s", (char *)data, escaped);
 	free(escaped);
 
@@ -734,7 +735,7 @@ op_chmodr(ops_t *ops, void *data, const char src[], const char dst[])
 	char cmd[128 + PATH_MAX];
 	char *escaped;
 
-	escaped = shell_like_escape(src, 0);
+	escaped = shell_arg_escape(src, ops_shell_type(ops));
 	snprintf(cmd, sizeof(cmd), "chmod -R %s %s", (char *)data, escaped);
 	free(escaped);
 
@@ -792,17 +793,13 @@ op_symlink(ops_t *ops, void *data, const char src[], const char dst[])
 {
 	if(!ops_uses_syscalls(ops))
 	{
-		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
 		OpsResult result;
 
-#ifndef _WIN32
-		escaped_src = shell_like_escape(src, 0);
-		escaped_dst = shell_like_escape(dst, 0);
-#else
-		escaped_src = strdup(enclose_in_dquotes(src, ops->shell_type));
-		escaped_dst = strdup(enclose_in_dquotes(dst, ops->shell_type));
-#endif
+		ShellType shell_type = (get_env_type() == ET_UNIX) ? ops_shell_type(ops)
+		                                                   : ST_CMD;
+		char *escaped_src = shell_arg_escape(src, shell_type);
+		char *escaped_dst = shell_arg_escape(dst, shell_type);
 
 		if(escaped_src == NULL || escaped_dst == NULL)
 		{
@@ -851,7 +848,7 @@ op_mkdir(ops_t *ops, void *data, const char src[], const char dst[])
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
-		escaped = shell_like_escape(src, 0);
+		escaped = shell_arg_escape(src, ops_shell_type(ops));
 		snprintf(cmd, sizeof(cmd), "mkdir %s %s", (data == NULL) ? "" : "-p",
 				escaped);
 		free(escaped);
@@ -908,7 +905,7 @@ op_rmdir(ops_t *ops, void *data, const char src[], const char dst[])
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
-		escaped = shell_like_escape(src, 0);
+		escaped = shell_arg_escape(src, ops_shell_type(ops));
 		snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
 		free(escaped);
 		LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
@@ -936,7 +933,7 @@ op_mkfile(ops_t *ops, void *data, const char src[], const char dst[])
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
-		escaped = shell_like_escape(src, 0);
+		escaped = shell_arg_escape(src, ops_shell_type(ops));
 		snprintf(cmd, sizeof(cmd), "touch %s", escaped);
 		free(escaped);
 		LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
@@ -970,6 +967,13 @@ static int
 ops_uses_syscalls(const ops_t *ops)
 {
 	return ops == NULL ? cfg.use_system_calls : ops->use_system_calls;
+}
+
+/* Retrieves shell type for the operation.  Returns the type. */
+static ShellType
+ops_shell_type(const ops_t *ops)
+{
+	return (ops == NULL ? curr_stats.shell_type : (ShellType)ops->shell_type);
 }
 
 /* Executes i/o operation with some predefined pre/post actions.  Returns

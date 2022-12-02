@@ -371,7 +371,7 @@ static void
 execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
-	char *const escaped = shell_like_escape(full_path, 0);
+	char *const escaped = shell_arg_escape(full_path, curr_stats.shell_type);
 	rn_shell(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
 	free(escaped);
 #else
@@ -970,7 +970,7 @@ setup_shellout_env(void)
 			return;
 	}
 
-	escaped_path = shell_like_escape(mount_file, 0);
+	escaped_path = shell_arg_escape(mount_file, curr_stats.shell_type);
 	cmd = format_str(term_multiplexer_fmt, FUSE_FILE_ENVVAR, escaped_path);
 	(void)vifm_system(cmd, SHELL_BY_APP);
 	free(cmd);
@@ -1042,7 +1042,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, ShellRequester by)
 	title_arg = gen_term_multiplexer_title_arg(cmd);
 
 	raw_shell_cmd = format_str("%s%s", cmd, pause ? PAUSE_STR : "");
-	escaped_shell_cmd = shell_like_escape(raw_shell_cmd, 0);
+	escaped_shell_cmd = shell_arg_escape(raw_shell_cmd, curr_stats.shell_type);
 
 	const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 
@@ -1050,7 +1050,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, ShellRequester by)
 	{
 		char *const arg = format_str("%s %s %s", cfg.shell, sh_flag,
 				escaped_shell_cmd);
-		char *const escaped_arg = shell_like_escape(arg, 0);
+		char *const escaped_arg = shell_arg_escape(arg, curr_stats.shell_type);
 
 		shell_cmd = format_str("tmux new-window %s %s", title_arg, escaped_arg);
 
@@ -1115,7 +1115,7 @@ gen_term_multiplexer_title_arg(const char cmd[])
 	else
 	{
 		const char opt_c = (curr_stats.term_multiplexer == TM_SCREEN) ? 't' : 'n';
-		char *const escaped_title = shell_like_escape(title, 0);
+		char *const escaped_title = shell_arg_escape(title, curr_stats.shell_type);
 		title_arg = format_str("-%c %s", opt_c, escaped_title);
 		free(escaped_title);
 	}
@@ -1161,7 +1161,7 @@ gen_normal_cmd(const char cmd[], int pause)
 static void
 set_pwd_in_screen(const char path[])
 {
-	char *const escaped_dir = shell_like_escape(path, 0);
+	char *const escaped_dir = shell_arg_escape(path, curr_stats.shell_type);
 	char *const set_pwd = format_str("screen -X setenv PWD %s", escaped_dir);
 
 	(void)vifm_system(set_pwd, SHELL_BY_APP);
@@ -1374,7 +1374,7 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 {
 	char *const escaped_cmd = (cmd == NULL)
 	                        ? strdup(cfg.shell)
-	                        : shell_like_escape(cmd, 0);
+	                        : shell_arg_escape(cmd, curr_stats.shell_type);
 
 	setup_shellout_env();
 
@@ -1391,7 +1391,8 @@ run_in_split(const view_t *view, const char cmd[], int vert_split)
 
 		/* "eval" executes each argument as a separate argument, but escaping rules
 		 * are not exactly like in shell, so last command is run separately. */
-		char *const escaped_dir = shell_like_escape(flist_get_dir(view), 0);
+		char *const escaped_dir =
+			shell_arg_escape(flist_get_dir(view), curr_stats.shell_type);
 		if(vert_split)
 		{
 			snprintf(cmd, sizeof(cmd), "screen -X eval chdir\\ %s 'focus right' "

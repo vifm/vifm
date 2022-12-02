@@ -38,6 +38,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
+#include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
 #include "../flist_sel.h"
@@ -49,7 +50,6 @@
 #define LIST_FILE "vimfiles"
 
 static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
-static char * shell_arg_escape(const char what[]);
 TSTATIC void trim_right(char text[]);
 static void dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[]);
 
@@ -60,7 +60,7 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 
 #ifndef _WIN32
 	char *const escaped_rtp = shell_like_escape(get_installed_data_dir(), 0);
-	char *const escaped_args = shell_like_escape(topic, 0);
+	char *const escaped_args = shell_arg_escape(topic, curr_stats.shell_type);
 
 	snprintf(cmd, cmd_size,
 			"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
@@ -107,7 +107,8 @@ vim_edit_files(int nfiles, char *files[])
 	for(i = 0; i < nfiles; ++i)
 	{
 		char *const expanded_path = expand_tilde(files[i]);
-		char *const escaped = shell_arg_escape(expanded_path);
+		char *const escaped =
+			shell_arg_escape(expanded_path, curr_stats.shell_type);
 		(void)strappendch(&cmd, &len, ' ');
 		(void)strappend(&cmd, &len, escaped);
 		free(escaped);
@@ -198,7 +199,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 		}
 	}
 
-	escaped = shell_arg_escape(filename);
+	escaped = shell_arg_escape(filename, curr_stats.shell_type);
 
 	if(line < 0 && column < 0)
 		snprintf(cmd, sizeof(cmd), "%s %s %s", vicmd, fork_str, escaped);
@@ -219,18 +220,6 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 	}
 
 	return result;
-}
-
-/* Escapes a string so that it can be used as a command argument in a shell
- * invocation.  Returns newly allocated string. */
-static char *
-shell_arg_escape(const char what[])
-{
-#ifndef _WIN32
-	return shell_like_escape(what, /*type=*/0);
-#else
-	return strdup(enclose_in_dquotes(what, curr_stats.shell_type));
-#endif
 }
 
 /* Removes all trailing whitespace. */

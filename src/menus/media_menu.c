@@ -413,7 +413,7 @@ mediaprg_mount(const char data[], menu_data_t *m)
 	const char *action = (mount ? "mount" : "unmount");
 	const char *description = (mount ? "Mounting" : "Unmounting");
 
-	char *escaped_path = shell_like_escape(path, 0);
+	char *escaped_path = shell_arg_escape(path, curr_stats.shell_type);
 	char *cmd = format_str("%s %s %s", cfg.media_prg, action, escaped_path);
 	if(rn_shell(cmd, PAUSE_NEVER, 0, SHELL_BY_APP) == 0)
 	{

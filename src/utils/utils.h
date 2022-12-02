@@ -267,6 +267,10 @@ ExecEnvType get_exec_env_type(void);
 /* Determines kind of the shell by its invocation command.  Returns the kind. */
 ShellType get_shell_type(const char shell_cmd[]);
 
+/* Escapes a string so that it can be used as a command argument in a shell
+ * invocation.  Returns newly allocated string. */
+char * shell_arg_escape(const char what[], ShellType shell_type);
+
 /* Formats command to view documentation in plain-text format.  Returns non-zero
  * if command that should be run in background, otherwise zero is returned. */
 int format_help_cmd(char cmd[], size_t cmd_size);

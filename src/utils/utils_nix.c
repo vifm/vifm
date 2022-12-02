@@ -816,6 +816,13 @@ get_shell_type(const char shell_cmd[])
 	return ST_NORMAL;
 }
 
+char *
+shell_arg_escape(const char what[], ShellType shell_type)
+{
+	assert(shell_type == ST_NORMAL && "Unexpected shell type.");
+	return shell_like_escape(what, /*type=*/0);
+}
+
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {

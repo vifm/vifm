@@ -847,8 +847,10 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 
 	if(!qf)
 	{
-		char *const arg = shell_like_escape("+exe 'bd!|args' "
-				"join(map(getline('1','$'),'fnameescape(v:val)'))", 0);
+		ShellType shell_type = (get_env_type() == ET_UNIX ? ST_NORMAL : ST_CMD);
+		char *const arg = shell_arg_escape("+exe 'bd!|args' "
+				"join(map(getline('1','$'),'fnameescape(v:val)'))",
+				shell_type);
 		cmd = format_str("%s %s +argument%d -", vi_cmd, arg, menu->pos + 1);
 		free(arg);
 	}
