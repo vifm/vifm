@@ -220,7 +220,7 @@ expand_envvars(const char str[], int flags)
 
 				if(escape_vals)
 				{
-					escaped_var_value = shell_like_escape(var_value, 2);
+					escaped_var_value = posix_like_escape(var_value, /*type=*/2);
 					var_value = escaped_var_value;
 				}
 

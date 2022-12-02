@@ -820,14 +820,14 @@ char *
 shell_arg_escape(const char what[], ShellType shell_type)
 {
 	assert(shell_type == ST_NORMAL && "Unexpected shell type.");
-	return shell_like_escape(what, /*type=*/0);
+	return posix_like_escape(what, /*type=*/0);
 }
 
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
-	char *const escaped = shell_like_escape(cfg.config_dir, 0);
+	char *const escaped = posix_like_escape(cfg.config_dir, /*type=*/0);
 	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, cfg_get_vicmd(&bg), escaped);
 	free(escaped);
 	return bg;

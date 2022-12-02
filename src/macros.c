@@ -674,7 +674,7 @@ append_path_to_expanded(char expanded[], int quotes, const char path[])
 	}
 	else
 	{
-		char *const escaped = shell_like_escape(path, 0);
+		char *const escaped = posix_like_escape(path, /*type=*/0);
 		if(escaped == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");

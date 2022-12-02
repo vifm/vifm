@@ -355,7 +355,7 @@ is_unc_root(const char *path)
 }
 
 char *
-shell_like_escape(const char string[], int type)
+posix_like_escape(const char string[], int type)
 {
 	size_t len;
 	size_t i;

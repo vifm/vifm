@@ -59,7 +59,8 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 	int bg;
 
 #ifndef _WIN32
-	char *const escaped_rtp = shell_like_escape(get_installed_data_dir(), 0);
+	char *const escaped_rtp =
+		posix_like_escape(get_installed_data_dir(), /*type=*/0);
 	char *const escaped_args = shell_arg_escape(topic, curr_stats.shell_type);
 
 	snprintf(cmd, cmd_size,
@@ -69,7 +70,7 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 	free(escaped_args);
 	free(escaped_rtp);
 #else
-	char *escaped_rtp = shell_like_escape(get_installed_data_dir(), 0);
+	char *escaped_rtp = posix_like_escape(get_installed_data_dir(), /*type=*/0);
 
 	snprintf(cmd, cmd_size,
 			"%s -c \"set runtimepath+=%s/vim-doc\" -c \"help %s\" -c only",
