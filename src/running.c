@@ -375,13 +375,14 @@ execute_file(const char full_path[], int elevate)
 	rn_shell(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
 	free(escaped);
 #else
-	char *const dquoted_full_path =
-		strdup(enclose_in_dquotes(full_path, curr_stats.shell_type));
+	char *copy = strdup(full_path);
+	internal_to_system_slashes(copy);
 
-	internal_to_system_slashes(dquoted_full_path);
-	run_win_executable(dquoted_full_path, elevate);
+	char *escaped = shell_arg_escape(copy, curr_stats.shell_type);
+	free(copy);
 
-	free(dquoted_full_path);
+	run_win_executable(escaped, elevate);
+	free(escaped);
 #endif
 }
 

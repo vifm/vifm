@@ -771,8 +771,8 @@ iop_ln_internal(io_args_t *args)
 	}
 
 	/* We're using os_system() below, hence ST_CMD is hard-coded. */
-	escaped_path = strdup(enclose_in_dquotes(path, ST_CMD));
-	escaped_target = strdup(enclose_in_dquotes(target, ST_CMD));
+	escaped_path = shell_arg_escape(path, ST_CMD);
+	escaped_target = shell_arg_escape(target, ST_CMD);
 	if(escaped_path == NULL || escaped_target == NULL)
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
