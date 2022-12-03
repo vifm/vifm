@@ -415,6 +415,7 @@ extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[])
 	else
 #endif
 	{
+		/* TODO: this should account for escaping (regular, squotes, dquotes). */
 		result = strchr(line, ' ');
 	}
 	if(result == NULL)
