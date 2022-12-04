@@ -212,7 +212,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->ellipsis = "...";
 
-	stats->shell_type = ST_NORMAL;
+	stats->shell_type = ST_POSIX;
 
 	stats->fuse_umount_cmd = "";
 

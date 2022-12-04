@@ -43,6 +43,17 @@
 	Fixed 'previewprg' not being respected on switching to view mode (regression
 	in 0.12-beta).  Thanks to Sitaram Chamarty.
 
+	Fixed $VIFM_APPDIR_ROOT being ignored by :help command, which made it not
+	work properly from AppImage.  Thanks to infinitewhileloop.
+
+	Fixed escaping of file paths when using 'vicmd' or 'vixcmd' to open a
+	file on Windows.  Thanks to Phil Runninger.
+
+	Fixed :locate never escaping its arguments (should be done unless the
+	first one starts with a dash).  This is a regression in 0.7.6.
+
+	Fixed trash directory being created at default location on :restart.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

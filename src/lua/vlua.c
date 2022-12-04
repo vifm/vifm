@@ -404,7 +404,9 @@ static int
 VLUA_API(vifm_escape)(lua_State *lua)
 {
 	const char *what = luaL_checkstring(lua, 1);
-	lua_pushstring(lua, enclose_in_dquotes(what, curr_stats.shell_type));
+	char *escaped = shell_arg_escape(what, curr_stats.shell_type);
+	lua_pushstring(lua, escaped);
+	free(escaped);
 	return 1;
 }
 

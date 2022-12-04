@@ -458,7 +458,8 @@ TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 
 	create_file("a\nb");
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
-	assert_success(rn_for_flist(&lwin, "cat list", "title", MF_NONE));
+	assert_success(rn_for_flist(&lwin, "cat list", "title", /*user_sh=*/1,
+				MF_NONE));
 	assert_success(unlink("a\nb"));
 	assert_success(unlink("list"));
 
@@ -487,7 +488,8 @@ TEST(current_directory_can_be_added_via_dot)
 #endif
 	stats_update_shell_type(cfg.shell);
 
-	assert_success(rn_for_flist(&lwin, "echo ../misc", "title", MF_NONE));
+	assert_success(rn_for_flist(&lwin, "echo ../misc", "title", /*user_sh=*/1,
+				MF_NONE));
 
 	stats_update_shell_type("/bin/sh");
 	update_string(&cfg.shell, NULL);
@@ -528,7 +530,7 @@ TEST(built_with_custom_input, IF(have_cat))
 	create_file("a");
 	create_file("b");
 
-	assert_success(rn_for_flist(&lwin, "cat", "title",
+	assert_success(rn_for_flist(&lwin, "cat", "title", /*user_sh=*/1,
 				MF_CUSTOMVIEW_OUTPUT | MF_PIPE_FILE_LIST));
 
 	stats_update_shell_type("/bin/sh");

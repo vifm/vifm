@@ -864,7 +864,7 @@ menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 	if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) ||
 			ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT))
 	{
-		rn_for_flist(view, cmd, m->title, flags);
+		rn_for_flist(view, cmd, m->title, user_sh, flags);
 		menus_reset_data(m);
 		return 0;
 	}

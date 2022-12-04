@@ -1390,7 +1390,7 @@ complete_with_shared(const char *server, const char *file)
 				strcat(buf, "/");
 				if(file_matches(buf, file, len))
 				{
-					vle_compl_put_match(shell_like_escape(buf, 1), "");
+					vle_compl_add_path_match(buf);
 				}
 				p++;
 			}

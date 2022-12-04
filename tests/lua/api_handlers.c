@@ -341,15 +341,9 @@ TEST(good_editor_handler_return)
 
 TEST(open_help_input)
 {
-#ifndef _WIN32
-	char vimdoc_dir[PATH_MAX + 1] = PACKAGE_DATA_DIR "/vim-doc";
-#else
-	char exe_dir[PATH_MAX + 1];
-	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-
 	char vimdoc_dir[PATH_MAX + 1];
-	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc", exe_dir);
-#endif
+	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc",
+			get_installed_data_dir());
 
 	assert_success(vlua_run_string(vlua,
 				"function handle(info)"

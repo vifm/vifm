@@ -732,6 +732,15 @@ TEST(invert_command)
 	opt_handlers_teardown();
 }
 
+TEST(locate_command)
+{
+	ui_sb_msg("");
+
+	/* Nothing to repeat. */
+	assert_failure(exec_commands("locate", &lwin, CIT_COMMAND));
+	assert_string_equal("Nothing to repeat", ui_sb_last());
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {

@@ -91,8 +91,9 @@ TermState;
 
 typedef enum
 {
-	/* Shell that is aware of command escaping and backslashes in paths. */
-	ST_NORMAL,
+	/* POSIX-like shell that is aware of command escaping and backslashes in
+	 * paths. */
+	ST_POSIX,
 	/* Dumb cmd.exe shell on Windows. */
 	ST_CMD,
 	/* An improved version of cmd.exe shell on Windows. */

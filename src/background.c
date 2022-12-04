@@ -672,7 +672,6 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 
 	if(pid == 0)
 	{
-		char *sh;
 		char *sh_flag;
 
 		close(out_pipe[0]);
@@ -698,10 +697,10 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 			fclose(in);
 		}
 
-		sh = user_sh ? get_execv_path(cfg.shell) : "/bin/sh";
 		sh_flag = user_sh ? cfg.shell_cmd_flag : "-c";
 		prepare_for_exec();
-		execvp(sh, make_execv_array(sh, sh_flag, cmd));
+		execvp(get_execv_path(cfg.shell),
+				make_execv_array(cfg.shell, sh_flag, cmd));
 		_Exit(127);
 	}
 

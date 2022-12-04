@@ -39,6 +39,7 @@
 #include "plugins.h"
 #include "registers.h"
 #include "status.h"
+#include "trash.h"
 #include "undo.h"
 #include "vifm.h"
 
@@ -136,6 +137,13 @@ instance_finish_restart(void)
 	vifm_reexec_startup_commands();
 
 	curr_stats.restart_in_progress = 0;
+
+	if(cfg.use_trash)
+	{
+		/* Applying 'trashdir' is postponed during restart to not create directory
+		 * at default location. */
+		(void)trash_set_specs(cfg.trash_dir);
+	}
 
 	/* Trigger auto-commands for initial directories. */
 	vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);

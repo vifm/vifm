@@ -3634,6 +3634,15 @@ trash_handler(OPT_OP op, optval_t val)
 static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
+	if(curr_stats.restart_in_progress && op == OP_RESET)
+	{
+		/* This must be a valid value, just set it without checks.  It will be
+		 * applied at the end of the restart.  This avoids creation of unwanted
+		 * creation of the trash at default location. */
+		copy_str(cfg.trash_dir, sizeof(cfg.trash_dir), val.str_val);
+		return;
+	}
+
 	if(trash_set_specs(val.str_val) != 0)
 	{
 		/* Reset the 'trashdir' option to its previous value. */

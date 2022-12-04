@@ -863,7 +863,8 @@ qv_expand_viewer(view_t *view, const char viewer[], MacroFlags *flags)
 	char *result;
 	if(strchr(viewer, '%') == NULL)
 	{
-		char *escaped = shell_like_escape(get_current_file_name(view), 0);
+		char *escaped =
+			shell_arg_escape(get_current_file_name(view), curr_stats.shell_type);
 		result = format_str("%s %s", viewer, escaped);
 		free(escaped);
 	}

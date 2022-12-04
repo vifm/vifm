@@ -38,6 +38,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
+#include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
 #include "../flist_sel.h"
@@ -55,32 +56,23 @@ static void dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[]);
 int
 vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 {
+	char *escaped_data = posix_like_escape(get_installed_data_dir(), /*type=*/0);
+	char *set_rtp = format_str("+set runtimepath+=%s/vim-doc", escaped_data);
+	free(escaped_data);
+
+	char *escaped_set_rtp = shell_arg_escape(set_rtp, curr_stats.shell_type);
+	free(set_rtp);
+
+	char *help = format_str("+help %s", topic);
+	char *escaped_help = shell_arg_escape(help, curr_stats.shell_type);
+	free(help);
+
 	int bg;
+	snprintf(cmd, cmd_size, "%s %s %s -c only", cfg_get_vicmd(&bg),
+			escaped_set_rtp, escaped_help);
 
-#ifndef _WIN32
-	char *const escaped_rtp = shell_like_escape(PACKAGE_DATA_DIR, 0);
-	char *const escaped_args = shell_like_escape(topic, 0);
-
-	snprintf(cmd, cmd_size,
-			"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
-			cfg_get_vicmd(&bg), escaped_rtp, escaped_args);
-
-	free(escaped_args);
-	free(escaped_rtp);
-#else
-	char exe_dir[PATH_MAX + 1];
-	char *escaped_rtp;
-
-	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-	escaped_rtp = shell_like_escape(exe_dir, 0);
-
-	snprintf(cmd, cmd_size,
-			"%s -c \"set runtimepath+=%s/data/vim-doc\" -c \"help %s\" -c only",
-			cfg_get_vicmd(&bg), escaped_rtp, topic);
-
-	free(escaped_rtp);
-#endif
-
+	free(escaped_set_rtp);
+	free(escaped_help);
 	return bg;
 }
 
@@ -110,7 +102,8 @@ vim_edit_files(int nfiles, char *files[])
 	for(i = 0; i < nfiles; ++i)
 	{
 		char *const expanded_path = expand_tilde(files[i]);
-		char *const escaped = shell_like_escape(expanded_path, 0);
+		char *const escaped =
+			shell_arg_escape(expanded_path, curr_stats.shell_type);
 		(void)strappendch(&cmd, &len, ' ');
 		(void)strappend(&cmd, &len, escaped);
 		free(escaped);
@@ -201,11 +194,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 		}
 	}
 
-#ifndef _WIN32
-	escaped = shell_like_escape(filename, 0);
-#else
-	escaped = (char *)enclose_in_dquotes(filename, curr_stats.shell_type);
-#endif
+	escaped = shell_arg_escape(filename, curr_stats.shell_type);
 
 	if(line < 0 && column < 0)
 		snprintf(cmd, sizeof(cmd), "%s %s %s", vicmd, fork_str, escaped);
@@ -215,9 +204,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 		snprintf(cmd, sizeof(cmd), "%s %s \"+call cursor(%d, %d)\" %s", vicmd,
 				fork_str, line, column, escaped);
 
-#ifndef _WIN32
 	free(escaped);
-#endif
 
 	result = run_vim(cmd, bg && allow_forking, allow_forking);
 

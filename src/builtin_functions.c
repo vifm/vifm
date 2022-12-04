@@ -351,7 +351,7 @@ fnameescape_builtin(const call_info_t *call_info)
 	var_t result;
 
 	char *const str_val = var_to_str(call_info->argv[0]);
-	char *const escaped = shell_like_escape(str_val, 1);
+	char *const escaped = posix_like_escape(str_val, /*type=*/1);
 	free(str_val);
 
 	result = var_from_str(escaped);

@@ -26,8 +26,8 @@
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
-#include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../macros.h"
 #include "../running.h"
 #include "menus.h"
@@ -42,24 +42,27 @@ show_locate_menu(view_t *view, const char args[])
 	char *cmd;
 	char *margs;
 	int save_msg;
-	custom_macro_t macros[] = {
-		[M_a] = { .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
 
-		[M_u] = { .letter = 'u', .value = "",   .uses_left = 1, .group = -1 },
-		[M_U] = { .letter = 'U', .value = "",   .uses_left = 1, .group = -1 },
-	};
+	margs = (args[0] == '-') ? strdup(args)
+	                         : shell_arg_escape(args, curr_stats.shell_type);
 
 	static menu_data_t m;
-	margs = (args[0] == '-') ? strdup(args) : shell_like_escape(args, 0);
 	menus_init_data(&m, view, format_str("Locate %s", margs),
 			strdup("No files found"));
-	free(margs);
+
+	custom_macro_t macros[] = {
+		[M_a] = { .letter = 'a', .value = margs, .uses_left = 1, .group = -1 },
+
+		[M_u] = { .letter = 'u', .value = "",    .uses_left = 1, .group = -1 },
+		[M_U] = { .letter = 'U', .value = "",    .uses_left = 1, .group = -1 },
+	};
 
 	m.stashable = 1;
 	m.execute_handler = &execute_locate_cb;
 	m.key_handler = &menus_def_khandler;
 
 	cmd = ma_expand_custom(cfg.locate_prg, ARRAY_LEN(macros), macros, MA_NOOPT);
+	free(margs);
 
 	MacroFlags flags = MF_NONE;
 	if(macros[M_u].explicit_use)

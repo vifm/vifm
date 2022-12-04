@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/int/fuse.h"
 
 TEST(no_macro_string_unchanged)
@@ -59,7 +61,9 @@ TEST(options_before_macros)
 	int foreground;
 	char buf[256];
 	char format[] = "FUSE_MOUNT2|mount -o opt1=-,opt2 %PARAM %DESTINATION_DIR";
-	char expected[] = "mount -o opt1=-,opt2 param /mnt/point";
+	const char *expected = not_windows()
+	                     ? "mount -o opt1=-,opt2 param /mnt/point"
+	                     : "mount -o opt1=-,opt2 param \"/mnt/point\"";
 
 	format_mount_command("/mnt/point", "/file/path/dir/file", "param", format,
 			sizeof(buf), buf, &foreground);
@@ -87,7 +91,7 @@ TEST(too_long_destination)
 	int foreground;
 	char buf[10];
 	char format[] = "FUSE_MOUNT2|%DESTINATION_DIR";
-	char expected[] = "012345678";
+	const char *expected = (not_windows() ? "012345678" : "\"01234567");
 
 	format_mount_command("0123456789abcdefghijklmnopqrstuvw", "y", "z", format,
 			sizeof(buf), buf, &foreground);
@@ -101,7 +105,7 @@ TEST(too_long_source)
 	int foreground;
 	char buf[10];
 	char format[] = "FUSE_MOUNT2|%SOURCE_FILE";
-	char expected[] = "012345678";
+	const char *expected = (not_windows() ? "012345678" : "\"01234567");
 
 	format_mount_command("a", "0123456789abcdefghijklmnopqrstuvw", "z", format,
 			sizeof(buf), buf, &foreground);

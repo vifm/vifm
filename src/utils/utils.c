@@ -220,7 +220,7 @@ expand_envvars(const char str[], int flags)
 
 				if(escape_vals)
 				{
-					escaped_var_value = shell_like_escape(var_value, 2);
+					escaped_var_value = posix_like_escape(var_value, /*type=*/2);
 					var_value = escaped_var_value;
 				}
 
@@ -361,7 +361,7 @@ enclose_in_dquotes(const char str[], ShellType shell_type)
 		char c = *str;
 
 		if(c == '"' ||
-				(shell_type == ST_NORMAL && (c == '\\' || c == '$' || c == '`')))
+				(shell_type == ST_POSIX && (c == '\\' || c == '$' || c == '`')))
 		{
 			*p++ = '\\';
 		}
@@ -415,6 +415,7 @@ extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[])
 	else
 #endif
 	{
+		/* TODO: this should account for escaping (regular, squotes, dquotes). */
 		result = strchr(line, ' ');
 	}
 	if(result == NULL)
@@ -976,6 +977,89 @@ unichar_bisearch(wchar_t ucs, const interval_t table[], int max)
 	}
 
 	return 0;
+}
+
+char *
+posix_like_escape(const char string[], int type)
+{
+	size_t len;
+	size_t i;
+	char *ret, *dup;
+
+	len = strlen(string);
+
+	dup = ret = malloc(len*3 + 2 + 1);
+	if(dup == NULL)
+	{
+		return NULL;
+	}
+
+	if(*string == '-')
+	{
+		*dup++ = '.';
+		*dup++ = '/';
+	}
+
+	for(i = 0; i < len; i++, string++, dup++)
+	{
+		switch(*string)
+		{
+			case '%':
+				if(type == 1)
+				{
+					*dup++ = '%';
+				}
+				break;
+
+			/* Escape the following characters anywhere in the line. */
+			case '\'':
+			case '\\':
+			case '\r':
+			case '\t':
+			case '"':
+			case ';':
+			case ' ':
+			case '?':
+			case '|':
+			case '[':
+			case ']':
+			case '{':
+			case '}':
+			case '<':
+			case '>':
+			case '`':
+			case '!':
+			case '$':
+			case '&':
+			case '*':
+			case '(':
+			case ')':
+			case '#':
+				*dup++ = '\\';
+				break;
+
+			case '\n':
+				if(type != 0)
+				{
+					break;
+				}
+
+				*dup++ = '"';
+				*dup++ = '\n';
+				*dup = '"';
+				continue;
+
+			/* Escape the following characters only at the beginning of the line. */
+			case '~':
+			case '=': /* Command-path expansion in zsh. */
+				if(dup == ret)
+					*dup++ = '\\';
+				break;
+		}
+		*dup = *string;
+	}
+	*dup = '\0';
+	return ret;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -6,6 +6,7 @@
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/utils.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
@@ -79,7 +80,8 @@ TEST(vifm_escape)
 
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.escape(' '))"));
-	assert_string_equal("\" \"", ui_sb_last());
+	assert_string_equal(get_env_type() == ET_UNIX ? "\\ " : "\" \"",
+			ui_sb_last());
 }
 
 TEST(vifm_exists)
