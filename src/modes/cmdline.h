@@ -102,8 +102,10 @@ typedef struct
 	CmdLineSubmode sub_mode;
 	/* Whether current submode allows external editing. */
 	int sub_mode_allows_ee;
-	/* Extra parameter for submode-related calls. */
-	void *sub_mode_ptr;
+	/* CLS_MENU_*-specific data. */
+	struct menu_data_t *menu;
+	/* CLS_PROMPT-specific data. */
+	prompt_cb prompt_callback;
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */

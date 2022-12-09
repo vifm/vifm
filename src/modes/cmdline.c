@@ -103,8 +103,10 @@ typedef struct
 	CmdLineSubmode sub_mode;
 	/* Whether current submode allows external editing. */
 	int sub_mode_allows_ee;
-	/* Extra parameter for submode-related calls. */
-	void *sub_mode_ptr;
+	/* CLS_MENU_*-specific data. */
+	struct menu_data_t *menu;
+	/* CLS_PROMPT-specific data. */
+	prompt_cb prompt_callback;
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
@@ -517,7 +519,7 @@ handle_empty_input(void)
 	/* Clear selection/highlight. */
 	if(input_stat.prev_mode == MENU_MODE)
 	{
-		(void)menus_search("", input_stat.sub_mode_ptr, 0);
+		(void)menus_search("", input_stat.menu, 0);
 	}
 	else if(cfg.hl_search)
 	{
@@ -558,8 +560,8 @@ handle_nonempty_input(void)
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = menus_search(mbinput, input_stat.sub_mode_ptr, 0);
-			update_state(result, menus_search_matched(input_stat.sub_mode_ptr));
+			result = menus_search(mbinput, input_stat.menu, 0);
+			update_state(result, menus_search_matched(input_stat.menu));
 			break;
 		case CLS_FILTER:
 			set_local_filter(mbinput);
@@ -649,7 +651,7 @@ modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
 
 	if(enter_submode(sub_mode, /*initial=*/"") == 0)
 	{
-		input_stat.sub_mode_ptr = m;
+		input_stat.menu = m;
 	}
 }
 
@@ -718,7 +720,7 @@ modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 	else
 	{
 		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT, allow_ee);
-		input_stat.sub_mode_ptr = cb;
+		input_stat.prompt_callback = cb;
 	}
 
 	free(wprompt);
@@ -782,7 +784,8 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 
 	input_stat.sub_mode = sub_mode;
 	input_stat.sub_mode_allows_ee = allow_ee;
-	input_stat.sub_mode_ptr = NULL;
+	input_stat.menu = NULL;
+	input_stat.prompt_callback = NULL;
 
 	input_stat.prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
@@ -916,7 +919,7 @@ leave_cmdline_mode(int cancelled)
 		if(cancelled && input_stat.sub_mode == CLS_PROMPT)
 		{
 			/* Invoke callback with NULL for a result to inform about cancellation. */
-			finish_prompt_submode(/*input=*/NULL, input_stat.sub_mode_ptr);
+			finish_prompt_submode(/*input=*/NULL, input_stat.prompt_callback);
 		}
 
 		vle_mode_set(input_stat.prev_mode, VMT_PRIMARY);
@@ -1013,7 +1016,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		char *const mbstr = to_multibyte(input_stat.line);
 		const int prev_mode = input_stat.prev_mode;
 		const CmdLineSubmode sub_mode = input_stat.sub_mode;
-		void *const sub_mode_ptr = input_stat.sub_mode_ptr;
+		const prompt_cb prompt_callback = input_stat.prompt_callback;
 		const int index = input_stat.index;
 
 		leave_cmdline_mode(/*cancelled=*/0);
@@ -1026,7 +1029,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		if(prompt_ee)
 		{
 			int is_expr_reg = (prev_mode == CMDLINE_MODE);
-			extedit_prompt(mbstr, index + 1, is_expr_reg, sub_mode_ptr);
+			extedit_prompt(mbstr, index + 1, is_expr_reg, prompt_callback);
 		}
 		else
 		{
@@ -1435,7 +1438,8 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	save_input_to_history(keys_info, input);
 
 	const int prev_mode = input_stat.prev_mode;
-	void *const sub_mode_ptr = input_stat.sub_mode_ptr;
+	struct menu_data_t *const menu = input_stat.menu;
+	const prompt_cb prompt_callback = input_stat.prompt_callback;
 	const int search_mode = input_stat.search_mode;
 	leave_cmdline_mode(/*cancelled=*/0);
 
@@ -1472,7 +1476,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		finish_prompt_submode(input, sub_mode_ptr);
+		finish_prompt_submode(input, prompt_callback);
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -1507,7 +1511,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
 				stats_refresh_later();
-				curr_stats.save_msg = menus_search(pattern, sub_mode_ptr, 1);
+				curr_stats.save_msg = menus_search(pattern, menu, 1);
 				break;
 
 			default:
@@ -1520,7 +1524,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		if(prev_mode == MENU_MODE)
 		{
 			modmenu_partial_redraw();
-			menus_search_print_msg(sub_mode_ptr);
+			menus_search_print_msg(menu);
 			curr_stats.save_msg = 1;
 		}
 		else
