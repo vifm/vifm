@@ -163,8 +163,7 @@ static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
-		void *sub_mode_ptr);
+		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee);
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
@@ -673,7 +672,9 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[], void *ptr)
 	}
 
 	prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
-			/*allow_ee=*/0, ptr);
+			/*allow_ee=*/0);
+	input_stat.sub_mode_ptr = ptr;
+
 	free(winitial);
 }
 
@@ -690,7 +691,8 @@ modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 	}
 	else
 	{
-		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT, allow_ee, cb);
+		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT, allow_ee);
+		input_stat.sub_mode_ptr = cb;
 	}
 
 	free(wprompt);
@@ -743,8 +745,7 @@ modcline_redraw(void)
  * operating. */
 static void
 prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
-		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
-		void *sub_mode_ptr)
+		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee)
 {
 	if(vle_mode_get() == CMDLINE_MODE)
 	{
@@ -755,7 +756,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 
 	input_stat.sub_mode = sub_mode;
 	input_stat.sub_mode_allows_ee = allow_ee;
-	input_stat.sub_mode_ptr = sub_mode_ptr;
+	input_stat.sub_mode_ptr = NULL;
 
 	input_stat.prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
