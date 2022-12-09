@@ -1177,9 +1177,9 @@ menus_search_reset_hilight(menu_state_t *m)
 }
 
 int
-menus_search_matched(menu_state_t *m)
+menus_search_matched(const menu_data_t *m)
 {
-	return m->matching_entries;
+	return m->state->matching_entries;
 }
 
 void
