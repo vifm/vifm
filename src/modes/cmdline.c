@@ -168,7 +168,7 @@ static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
-static void leave_cmdline_mode(void);
+static void leave_cmdline_mode(int cancelled);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
@@ -385,7 +385,7 @@ def_handler(wchar_t key)
 	p = reallocarray(input_stat.line, input_stat.len + 2, sizeof(wchar_t));
 	if(p == NULL)
 	{
-		leave_cmdline_mode();
+		leave_cmdline_mode(/*cancelled=*/1);
 		return 0;
 	}
 
@@ -868,7 +868,7 @@ is_line_edited(void)
 
 /* Leaves command-line mode. */
 static void
-leave_cmdline_mode(void)
+leave_cmdline_mode(int cancelled)
 {
 	free(input_stat.line);
 	free(input_stat.initial_line);
@@ -887,6 +887,12 @@ leave_cmdline_mode(void)
 			 * then. */
 			update_cmdline_text(&input_stat);
 			return;
+		}
+
+		if(cancelled && input_stat.sub_mode == CLS_PROMPT)
+		{
+			/* Invoke callback with NULL for a result to inform about cancellation. */
+			finish_prompt_submode(/*input=*/NULL, input_stat.sub_mode_ptr);
 		}
 
 		vle_mode_set(input_stat.prev_mode, VMT_PRIMARY);
@@ -949,7 +955,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	const line_stats_t old_input_stat = input_stat;
-	leave_cmdline_mode();
+	leave_cmdline_mode(/*cancelled=*/1);
 
 	if(old_input_stat.prev_mode == VISUAL_MODE)
 	{
@@ -989,7 +995,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		void *const sub_mode_ptr = input_stat.sub_mode_ptr;
 		const int index = input_stat.index;
 
-		leave_cmdline_mode();
+		leave_cmdline_mode(/*cancelled=*/0);
 
 		if(sub_mode == CLS_FILTER)
 		{
@@ -1041,7 +1047,6 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 	if(ext_cmd != NULL)
 	{
 		save_prompt_to_history(ext_cmd, is_expr_reg);
-		finish_prompt_submode(ext_cmd, cb);
 	}
 	else
 	{
@@ -1051,6 +1056,8 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 		curr_stats.save_msg = 1;
 	}
 
+	/* Invoking this will NULL in case of error to report it. */
+	finish_prompt_submode(ext_cmd, cb);
 	free(ext_cmd);
 }
 
@@ -1397,7 +1404,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	if(is_input_line_empty() && sub_mode == CLS_MENU_COMMAND)
 	{
-		leave_cmdline_mode();
+		leave_cmdline_mode(/*cancelled=*/0);
 		return;
 	}
 
@@ -1409,7 +1416,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	const int prev_mode = input_stat.prev_mode;
 	void *const sub_mode_ptr = input_stat.sub_mode_ptr;
 	const int search_mode = input_stat.search_mode;
-	leave_cmdline_mode();
+	leave_cmdline_mode(/*cancelled=*/0);
 
 	if(prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
 			sub_mode != CLS_VBSEARCH)

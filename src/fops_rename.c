@@ -109,17 +109,17 @@ fops_rename_current(view_t *view, int name_only)
 static void
 rename_file_cb(const char new_name[])
 {
+	if(is_null_or_empty(new_name))
+	{
+		return;
+	}
+
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[strlen(new_name) + 1 + strlen(rename_file_ext) + 1 + 1];
 	int mv_res;
 	dir_entry_t *const curr = get_current_entry(curr_view);
 	const char *const fname = curr->name;
 	const char *const forigin = curr->origin;
-
-	if(is_null_or_empty(new_name))
-	{
-		return;
-	}
 
 	if(contains_slash(new_name))
 	{
