@@ -22,7 +22,6 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/str.h"
-#include "../../src/builtin_functions.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
 
@@ -34,7 +33,6 @@ SETUP_ONCE()
 {
 	stats = get_line_stats();
 	try_enable_utf8_locale();
-	init_builtin_functions();
 }
 
 SETUP()
@@ -443,26 +441,6 @@ TEST(expr_reg_bad_expr)
 	(void)vle_keys_exec_timed_out(WK_C_r WK_EQUALS);
 	(void)vle_keys_exec_timed_out(L"bc" WK_CR);
 	assert_wstring_equal(L"ad", stats->line);
-}
-
-/* This tests requires some interactivity and full command-line mode similar to
- * editing, hence it's here. */
-TEST(expr_reg_completion)
-{
-	(void)vle_keys_exec_timed_out(L":" WK_C_r WK_EQUALS);
-	(void)vle_keys_exec_timed_out(L"ex" WK_C_i);
-	assert_wstring_equal(L"executable(", stats->line);
-	(void)vle_keys_exec_timed_out(WK_C_c);
-}
-
-/* This tests requires some interactivity and full command-line mode similar to
- * editing, hence it's here. */
-TEST(expr_reg_completion_ignores_pipe)
-{
-	(void)vle_keys_exec_timed_out(L":" WK_C_r WK_EQUALS);
-	(void)vle_keys_exec_timed_out(L"ab|ex" WK_C_i);
-	assert_wstring_equal(L"ab|ex", stats->line);
-	(void)vle_keys_exec_timed_out(WK_C_c);
 }
 
 TEST(ext_edited_prompt_is_saved_to_history, IF(not_windows))
