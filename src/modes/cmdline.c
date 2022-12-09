@@ -630,9 +630,9 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr)
+modcline_enter(CmdLineSubmode sub_mode, const char initial[], void *ptr)
 {
-	wchar_t *wcmd;
+	wchar_t *winitial;
 	const wchar_t *wprompt;
 	complete_cmd_func complete_func = NULL;
 
@@ -642,8 +642,8 @@ modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr)
 		return;
 	}
 
-	wcmd = to_wide_force(cmd);
-	if(wcmd == NULL)
+	winitial = to_wide_force(initial);
+	if(winitial == NULL)
 	{
 		show_error_msg("Error", "Not enough memory");
 		return;
@@ -672,29 +672,29 @@ modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr)
 		wprompt = L"E";
 	}
 
-	prepare_cmdline_mode(wprompt, wcmd, complete_func, sub_mode, /*allow_ee=*/0,
-			ptr);
-	free(wcmd);
+	prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
+			/*allow_ee=*/0, ptr);
+	free(winitial);
 }
 
 void
-modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
+modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee)
 {
 	wchar_t *wprompt = to_wide_force(prompt);
-	wchar_t *wcmd = to_wide_force(cmd);
+	wchar_t *winitial = to_wide_force(initial);
 
-	if(wprompt == NULL || wcmd == NULL)
+	if(wprompt == NULL || winitial == NULL)
 	{
 		show_error_msg("Error", "Not enough memory");
 	}
 	else
 	{
-		prepare_cmdline_mode(wprompt, wcmd, complete, CLS_PROMPT, allow_ee, cb);
+		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT, allow_ee, cb);
 	}
 
 	free(wprompt);
-	free(wcmd);
+	free(winitial);
 }
 
 void
@@ -742,7 +742,7 @@ modcline_redraw(void)
 /* Performs all necessary preparations for command-line mode to start
  * operating. */
 static void
-prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
+prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
 		void *sub_mode_ptr)
 {
@@ -764,9 +764,9 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 
 	ui_sb_lock();
 
-	input_stat.line = vifm_wcsdup(cmd);
+	input_stat.line = vifm_wcsdup(initial);
 	input_stat.initial_line = vifm_wcsdup(input_stat.line);
-	input_stat.index = wcslen(cmd);
+	input_stat.index = wcslen(initial);
 	input_stat.curs_pos = esc_wcswidth(input_stat.line, (size_t)-1);
 	input_stat.len = input_stat.index;
 	input_stat.cmd_pos = -1;

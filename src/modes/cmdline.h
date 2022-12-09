@@ -50,15 +50,15 @@ typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 /* Initializes command-line mode. */
 void modcline_init(void);
 
-/* Enters command-line editing mode with specified submode.  cmd specifies
- * initial value, ptr is submode-specific data to be passed back. */
-void modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr);
+/* Enters command-line editing mode with specified submode.  initial is the
+ * start value, ptr is submode-specific data to be passed back. */
+void modcline_enter(CmdLineSubmode sub_mode, const char initial[], void *ptr);
 
-/* Enters command-line editing mode with prompt submode activated.  cmd
- * specifies initial value, cb is callback called with the result on success and
+/* Enters command-line editing mode with prompt submode activated.  initial is
+ * the start value, cb is callback called with the result on success and
  * with NULL on cancellation, complete is completion function (can be NULL),
  * allow_ee specifies whether issuing external editor is allowed. */
-void modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
+void modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee);
 
 /* Redraws UI elements of the command-line mode. */
