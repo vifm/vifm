@@ -662,7 +662,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	cmds_vars_set_count(key_info.count);
-	modcline_enter(CLS_COMMAND, "", NULL);
+	modcline_enter(CLS_COMMAND, "");
 }
 
 /* Continues navigation to word which starts with specified character in initial
@@ -1059,7 +1059,7 @@ activate_search(int count, int back, int external)
 	else
 	{
 		const CmdLineSubmode submode = back ? CLS_VBSEARCH : CLS_VFSEARCH;
-		modcline_enter(submode, "", NULL);
+		modcline_enter(submode, "");
 	}
 }
 

@@ -162,6 +162,7 @@ static void handle_nonempty_input(void);
 static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
+static int enter_submode(CmdLineSubmode sub_mode, const char initial[]);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee);
 static void save_view_port(void);
@@ -629,7 +630,32 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-modcline_enter(CmdLineSubmode sub_mode, const char initial[], void *ptr)
+modcline_enter(CmdLineSubmode sub_mode, const char initial[])
+{
+	assert(sub_mode != CLS_MENU_COMMAND && sub_mode != CLS_MENU_FSEARCH &&
+			sub_mode != CLS_MENU_BSEARCH &&
+			"Use modcline_in_menu() for CLS_MENU_* submodes.");
+	assert(sub_mode != CLS_PROMPT &&
+			"Use modcline_prompt() for CLS_PROMPT submode.");
+	(void)enter_submode(sub_mode, initial);
+}
+
+void
+modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
+{
+	assert((sub_mode == CLS_MENU_COMMAND || sub_mode == CLS_MENU_FSEARCH ||
+			sub_mode == CLS_MENU_BSEARCH) &&
+			"modcline_in_menu() is only for CLS_MENU_* submodes.");
+
+	if(enter_submode(sub_mode, /*initial=*/"") == 0)
+	{
+		input_stat.sub_mode_ptr = m;
+	}
+}
+
+/* Enters command-line editing submode.  Returns zero on success. */
+static int
+enter_submode(CmdLineSubmode sub_mode, const char initial[])
 {
 	wchar_t *winitial;
 	const wchar_t *wprompt;
@@ -638,14 +664,14 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[], void *ptr)
 	if(sub_mode == CLS_FILTER && curr_view->custom.type == CV_DIFF)
 	{
 		show_error_msg("Filtering", "No local filter for diff views");
-		return;
+		return 1;
 	}
 
 	winitial = to_wide_force(initial);
 	if(winitial == NULL)
 	{
 		show_error_msg("Error", "Not enough memory");
-		return;
+		return 1;
 	}
 
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
@@ -673,9 +699,9 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[], void *ptr)
 
 	prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
 			/*allow_ee=*/0);
-	input_stat.sub_mode_ptr = ptr;
 
 	free(winitial);
+	return 0;
 }
 
 void

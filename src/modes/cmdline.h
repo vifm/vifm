@@ -40,6 +40,8 @@ typedef enum
 }
 CmdLineSubmode;
 
+struct menu_data_t;
+
 /* Callback for prompt input.  Invoked with NULL on cancellation. */
 typedef void (*prompt_cb)(const char response[]);
 
@@ -51,8 +53,11 @@ typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 void modcline_init(void);
 
 /* Enters command-line editing mode with specified submode.  initial is the
- * start value, ptr is submode-specific data to be passed back. */
-void modcline_enter(CmdLineSubmode sub_mode, const char initial[], void *ptr);
+ * start value. */
+void modcline_enter(CmdLineSubmode sub_mode, const char initial[]);
+
+/* Version of modcline_enter() specific to CLS_MENU_* submodes. */
+void modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m);
 
 /* Enters command-line editing mode with prompt submode activated.  initial is
  * the start value, cb is callback called with the result on success and
