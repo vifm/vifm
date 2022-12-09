@@ -2713,8 +2713,7 @@ line_completion(line_stats_t *stat)
 		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
-		if(input_stat.sub_mode == CLS_COMMAND ||
-				input_stat.sub_mode == CLS_MENU_COMMAND)
+		if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
 		{
 			line_mb_cmd = find_last_command(line_mb);
 
