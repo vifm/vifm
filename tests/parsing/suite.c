@@ -8,7 +8,7 @@ DEFINE_SUITE();
 
 SETUP()
 {
-	init_parser(NULL);
+	vle_parser_init(NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

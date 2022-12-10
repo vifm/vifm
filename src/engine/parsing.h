@@ -59,14 +59,14 @@ typedef const char * (*getenv_func)(const char *envname);
 typedef void (*print_error_func)(const char msg[]);
 
 /* Can be called several times.  getenv_f can be NULL. */
-void init_parser(getenv_func getenv_f);
+void vle_parser_init(getenv_func getenv_f);
 
 /* Performs parsing and evaluation.  Returns structure describing the outcome.
  * Field value of the result should be freed by the caller. */
-parsing_result_t parse(const char input[], int interactive);
+parsing_result_t vle_parser_eval(const char input[], int interactive);
 
 /* Appends error message with details to the error stream. */
-void report_parsing_error(const parsing_result_t *result);
+void vle_parser_report(const parsing_result_t *result);
 
 #endif /* VIFM__ENGINE__PARSING_H__ */
 

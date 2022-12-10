@@ -507,7 +507,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					memcpy(expr, *format, e - (*format));
 
 					/* Try to parse expr and convert the result to string on success. */
-					parsing_result_t result = parse(expr, /*interactive=*/0);
+					parsing_result_t result = vle_parser_eval(expr, /*interactive=*/0);
 					if(result.error == PE_NO_ERROR)
 					{
 						resstr = var_to_str(result.value);

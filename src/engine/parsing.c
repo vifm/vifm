@@ -195,14 +195,14 @@ static expr_t null_expr;
 /* Public interface --------------------------------------------------------- */
 
 void
-init_parser(getenv_func getenv_f)
+vle_parser_init(getenv_func getenv_f)
 {
 	getenv_fu = getenv_f;
 	initialized = 1;
 }
 
 parsing_result_t
-parse(const char input[], int interactive)
+vle_parser_eval(const char input[], int interactive)
 {
 	assert(initialized && "Parser must be initialized before use.");
 
@@ -1480,7 +1480,7 @@ get_next(parse_context_t *ctx, const char **in)
 }
 
 void
-report_parsing_error(const parsing_result_t *result)
+vle_parser_report(const parsing_result_t *result)
 {
 	switch(result->error)
 	{

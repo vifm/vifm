@@ -33,7 +33,7 @@ SETUP()
 	update_string(&cfg.shell_cmd_flag, "-c");
 
 	init_builtin_functions();
-	init_parser(NULL);
+	vle_parser_init(NULL);
 	init_variables();
 
 	view_setup(&lwin);

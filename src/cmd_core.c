@@ -1350,7 +1350,7 @@ eval_arglist(const char args[], const char **stop_ptr)
 		char *free_this = NULL;
 		const char *tmp_result = NULL;
 
-		parsing_result_t result = parse(args, /*interactive=*/1);
+		parsing_result_t result = vle_parser_eval(args, /*interactive=*/1);
 		if(result.error == PE_INVALID_EXPRESSION && result.ends_with_whitespace)
 		{
 			if(result.value.type != VTYPE_ERROR)
@@ -1366,7 +1366,7 @@ eval_arglist(const char args[], const char **stop_ptr)
 		}
 		else if(result.error != PE_INVALID_EXPRESSION)
 		{
-			report_parsing_error(&result);
+			vle_parser_report(&result);
 		}
 
 		if(tmp_result == NULL)

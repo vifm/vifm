@@ -142,7 +142,7 @@ init_variables(void)
 
 	free_string_array(env_lst, env_count);
 
-	init_parser(&local_getenv);
+	vle_parser_init(&local_getenv);
 
 	initialized = 1;
 }
@@ -258,10 +258,10 @@ let_variables(const char cmd[])
 
 	cmd = skip_whitespace(cmd);
 
-	parsing_result_t result = parse(cmd, /*interactive=*/1);
+	parsing_result_t result = vle_parser_eval(cmd, /*interactive=*/1);
 	if(result.error != PE_NO_ERROR)
 	{
-		report_parsing_error(&result);
+		vle_parser_report(&result);
 		goto fail;
 	}
 

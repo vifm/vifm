@@ -1869,7 +1869,7 @@ static void
 expr_reg_prompt_cb(const char expr[], void *arg)
 {
 	/* Try to parse expr and convert the result to string on success. */
-	parsing_result_t result = parse(expr, /*interactive=*/0);
+	parsing_result_t result = vle_parser_eval(expr, /*interactive=*/0);
 	if(result.error != PE_NO_ERROR)
 	{
 		/* TODO: maybe print error message on status bar. */

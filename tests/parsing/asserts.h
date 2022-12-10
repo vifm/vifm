@@ -7,7 +7,7 @@
 #define ASSERT_OK(str, expected) \
 	do \
 	{ \
-		parsing_result_t result = parse((str), /*interactive=*/0); \
+		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
 		assert_int_equal(PE_NO_ERROR, result.error); \
 		\
 		char *str_res = var_to_str(result.value); \
@@ -22,7 +22,7 @@
 #define ASSERT_INT_OK(str, expected) \
 	do \
 	{ \
-		parsing_result_t result = parse((str), /*interactive=*/0); \
+		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
 		assert_int_equal(PE_NO_ERROR, result.error); \
 		\
 		int int_res = var_to_int(result.value); \
@@ -35,7 +35,7 @@
 #define ASSERT_FAIL(str, error_code) \
 	do \
 	{ \
-		parsing_result_t result = parse((str), /*interactive=*/0); \
+		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
 		assert_int_equal((error_code), result.error); \
 		var_free(result.value); \
 	} \
@@ -45,7 +45,7 @@
 #define ASSERT_FAIL_AT(str, suffix, error_code) \
 	do \
 	{ \
-		parsing_result_t result = parse((str), /*interactive=*/0); \
+		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
 		assert_int_equal((error_code), result.error); \
 		var_free(result.value); \
 		\
@@ -56,7 +56,7 @@
 /* This should be a macro to see what test has failed. */
 #define ASSERT_FAIL_GET(str, error_code) \
 	({ \
-		parsing_result_t result = parse((str), /*interactive=*/0); \
+		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
 		assert_int_equal((error_code), result.error); \
 		var_free(result.value); \
 		\
