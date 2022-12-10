@@ -48,7 +48,7 @@ typedef enum
 }
 RenameAction;
 
-static void rename_file_cb(const char new_name[]);
+static void rename_file_cb(const char new_name[], void *arg);
 static int complete_filename_only(const char str[], void *arg);
 static char ** list_files_to_rename(view_t *view, int recursive, int *len);
 static int verify_list(char *files[], int nfiles, char *names[], int nnames,
@@ -66,12 +66,13 @@ static RenameAction check_rename(const char old_fname[], const char new_fname[],
 static int rename_marked(view_t *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 
-/* Temporary storage for extension of file being renamed in name-only mode. */
-static char rename_file_ext[NAME_MAX + 1];
-
 void
 fops_rename_current(view_t *view, int name_only)
 {
+	/* Temporary storage for extension of file being renamed in name-only mode.
+	 * There is no nesting of renames, so single static buffer is enough. */
+	static char rename_file_ext[NAME_MAX + 1];
+
 	const dir_entry_t *const curr = get_current_entry(view);
 	char filename[strlen(curr->name) + 1];
 
@@ -102,17 +103,19 @@ fops_rename_current(view_t *view, int name_only)
 
 	flist_sel_stash(view);
 	fops_line_prompt(name_only ? "New name root: " : "New full name: ", filename,
-			&rename_file_cb, &complete_filename_only, 1);
+			&rename_file_cb, rename_file_ext, &complete_filename_only, 1);
 }
 
 /* Callback for processing file rename query. */
 static void
-rename_file_cb(const char new_name[])
+rename_file_cb(const char new_name[], void *arg)
 {
 	if(is_null_or_empty(new_name))
 	{
 		return;
 	}
+
+	const char *rename_file_ext = arg;
 
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[strlen(new_name) + 1 + strlen(rename_file_ext) + 1 + 1];

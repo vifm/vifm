@@ -42,8 +42,9 @@ CmdLineSubmode;
 
 struct menu_data_t;
 
-/* Callback for prompt input.  Invoked with NULL on cancellation. */
-typedef void (*prompt_cb)(const char response[]);
+/* Callback for prompt input.  Invoked with NULL on cancellation.  arg is user
+ * supplied value, which is passed through. */
+typedef void (*prompt_cb)(const char response[], void *arg);
 
 /* Custom prompt line completion function.  arg is user supplied value, which is
  * passed through.  Should return completion offset. */
@@ -64,7 +65,7 @@ void modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m);
  * with NULL on cancellation, complete is completion function (can be NULL),
  * allow_ee specifies whether issuing external editor is allowed. */
 void modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
-		complete_cmd_func complete, int allow_ee);
+		void *cb_arg, complete_cmd_func complete, int allow_ee);
 
 /* Redraws UI elements of the command-line mode. */
 void modcline_redraw(void);
@@ -106,6 +107,7 @@ typedef struct
 	struct menu_data_t *menu;
 	/* CLS_PROMPT-specific data. */
 	prompt_cb prompt_callback;
+	void *prompt_callback_arg;
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */

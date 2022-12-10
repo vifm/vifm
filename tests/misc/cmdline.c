@@ -11,7 +11,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
 
-static void prompt_callback(const char response[]);
+static void prompt_callback(const char response[], void *arg);
 
 static line_stats_t *stats;
 
@@ -67,8 +67,8 @@ TEST(prompt_cb_is_called_on_success)
 	update_string(&prompt_response, NULL);
 	prompt_invocation_count = 0;
 
-	modcline_prompt("(prompt)", "initial", &prompt_callback, /*complete=*/NULL,
-			/*allow_ee=*/0);
+	modcline_prompt("(prompt)", "initial", &prompt_callback, /*cb_arg=*/NULL,
+			/*complete=*/NULL, /*allow_ee=*/0);
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_int_equal(CLS_PROMPT, stats->sub_mode);
 	(void)vle_keys_exec_timed_out(WK_CR);
@@ -82,8 +82,8 @@ TEST(prompt_cb_is_called_on_cancellation)
 	update_string(&prompt_response, NULL);
 	prompt_invocation_count = 0;
 
-	modcline_prompt("(prompt)", "initial", &prompt_callback, /*complete=*/NULL,
-			/*allow_ee=*/0);
+	modcline_prompt("(prompt)", "initial", &prompt_callback, /*cb_arg=*/NULL,
+			/*complete=*/NULL, /*allow_ee=*/0);
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_int_equal(CLS_PROMPT, stats->sub_mode);
 	(void)vle_keys_exec_timed_out(WK_C_c);
@@ -93,7 +93,7 @@ TEST(prompt_cb_is_called_on_cancellation)
 }
 
 static void
-prompt_callback(const char response[])
+prompt_callback(const char response[], void *arg)
 {
 	update_string(&prompt_response, response);
 	++prompt_invocation_count;

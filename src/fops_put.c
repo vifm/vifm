@@ -66,7 +66,7 @@ static void prompt_what_to_do(const char fname[], const char caused_by[]);
 static void handle_prompt_response(const char fname[], const char caused_by[],
 		char response);
 static void prompt_dst_name(const char src_name[]);
-static void prompt_dst_name_cb(const char dst_name[]);
+static void prompt_dst_name_cb(const char dst_name[], void *arg);
 static void put_continue(int force);
 static void show_difference(const char fname[], const char caused_by[]);
 static char * compare_files(const char dst_path[], const char src_path[],
@@ -1148,12 +1148,13 @@ prompt_dst_name(const char src_name[])
 	char prompt[128 + PATH_MAX];
 
 	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
-	fops_line_prompt(prompt, src_name, &prompt_dst_name_cb, NULL, 0);
+	fops_line_prompt(prompt, src_name, &prompt_dst_name_cb, /*cb_arg=*/NULL, NULL,
+			0);
 }
 
 /* Callback for line prompt result. */
 static void
-prompt_dst_name_cb(const char dst_name[])
+prompt_dst_name_cb(const char dst_name[], void *arg)
 {
 	if(is_null_or_empty(dst_name))
 	{

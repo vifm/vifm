@@ -107,6 +107,7 @@ typedef struct
 	struct menu_data_t *menu;
 	/* CLS_PROMPT-specific data. */
 	prompt_cb prompt_callback;
+	void *prompt_callback_arg;
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
@@ -175,7 +176,7 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
 static void extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
-		prompt_cb cb);
+		prompt_cb cb, void *cb_arg);
 static void cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
@@ -197,7 +198,8 @@ static void exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void save_prompt_to_history(const char input[], int is_expr_reg);
-static void finish_prompt_submode(const char input[], prompt_cb cb);
+static void finish_prompt_submode(const char input[], prompt_cb cb,
+		void *cb_arg);
 static CmdInputType search_cls_to_cit(CmdLineSubmode sub_mode);
 static int is_forward_search(CmdLineSubmode sub_mode);
 static int is_backward_search(CmdLineSubmode sub_mode);
@@ -208,7 +210,7 @@ static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void hist_next(line_stats_t *stat, const hist_t *hist, size_t len);
 static void cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info);
-static void expr_reg_prompt_cb(const char expr[]);
+static void expr_reg_prompt_cb(const char expr[], void *arg);
 static int expr_reg_prompt_completion(const char cmd[], void *arg);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
@@ -708,7 +710,7 @@ enter_submode(CmdLineSubmode sub_mode, const char initial[])
 
 void
 modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
-		complete_cmd_func complete, int allow_ee)
+		void *cb_arg, complete_cmd_func complete, int allow_ee)
 {
 	wchar_t *wprompt = to_wide_force(prompt);
 	wchar_t *winitial = to_wide_force(initial);
@@ -721,6 +723,7 @@ modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 	{
 		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT, allow_ee);
 		input_stat.prompt_callback = cb;
+		input_stat.prompt_callback_arg = cb_arg;
 	}
 
 	free(wprompt);
@@ -786,6 +789,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 	input_stat.sub_mode_allows_ee = allow_ee;
 	input_stat.menu = NULL;
 	input_stat.prompt_callback = NULL;
+	input_stat.prompt_callback_arg = NULL;
 
 	input_stat.prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
@@ -919,7 +923,8 @@ leave_cmdline_mode(int cancelled)
 		if(cancelled && input_stat.sub_mode == CLS_PROMPT)
 		{
 			/* Invoke callback with NULL for a result to inform about cancellation. */
-			finish_prompt_submode(/*input=*/NULL, input_stat.prompt_callback);
+			finish_prompt_submode(/*input=*/NULL, input_stat.prompt_callback,
+					input_stat.prompt_callback_arg);
 		}
 
 		vle_mode_set(input_stat.prev_mode, VMT_PRIMARY);
@@ -1017,6 +1022,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		const int prev_mode = input_stat.prev_mode;
 		const CmdLineSubmode sub_mode = input_stat.sub_mode;
 		const prompt_cb prompt_callback = input_stat.prompt_callback;
+		void *const prompt_callback_arg = input_stat.prompt_callback_arg;
 		const int index = input_stat.index;
 
 		leave_cmdline_mode(/*cancelled=*/0);
@@ -1029,7 +1035,8 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		if(prompt_ee)
 		{
 			int is_expr_reg = (prev_mode == CMDLINE_MODE);
-			extedit_prompt(mbstr, index + 1, is_expr_reg, prompt_callback);
+			extedit_prompt(mbstr, index + 1, is_expr_reg, prompt_callback,
+					prompt_callback_arg);
 		}
 		else
 		{
@@ -1063,7 +1070,7 @@ cls_to_editable_cit(CmdLineSubmode sub_mode)
 /* Queries prompt input using external editor. */
 static void
 extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
-		prompt_cb cb)
+		prompt_cb cb, void *cb_arg)
 {
 	CmdInputType type = (is_expr_reg ? CIT_EXPRREG_INPUT : CIT_PROMPT_INPUT);
 	char *const ext_cmd = get_ext_command(input, cursor_col, type);
@@ -1081,7 +1088,7 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 	}
 
 	/* Invoking this will NULL in case of error to report it. */
-	finish_prompt_submode(ext_cmd, cb);
+	finish_prompt_submode(ext_cmd, cb, cb_arg);
 	free(ext_cmd);
 }
 
@@ -1440,6 +1447,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	const int prev_mode = input_stat.prev_mode;
 	struct menu_data_t *const menu = input_stat.menu;
 	const prompt_cb prompt_callback = input_stat.prompt_callback;
+	void *const prompt_callback_arg = input_stat.prompt_callback_arg;
 	const int search_mode = input_stat.search_mode;
 	leave_cmdline_mode(/*cancelled=*/0);
 
@@ -1476,7 +1484,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		finish_prompt_submode(input, prompt_callback);
+		finish_prompt_submode(input, prompt_callback, prompt_callback_arg);
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -1675,12 +1683,12 @@ save_prompt_to_history(const char input[], int is_expr_reg)
 
 /* Performs final actions on successful querying of prompt input. */
 static void
-finish_prompt_submode(const char input[], prompt_cb cb)
+finish_prompt_submode(const char input[], prompt_cb cb, void *cb_arg)
 {
 	modes_post();
 	modes_pre();
 
-	cb(input);
+	cb(input, cb_arg);
 }
 
 /* Converts search command-line sub-mode to type of command input.  Returns
@@ -1851,14 +1859,14 @@ cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 
 	if(input_stat.prev_mode != CMDLINE_MODE)
 	{
-		modcline_prompt("(=)", "", &expr_reg_prompt_cb, &expr_reg_prompt_completion,
-				/*allow_ee=*/1);
+		modcline_prompt("(=)", "", &expr_reg_prompt_cb, /*cb_arg=*/NULL,
+				&expr_reg_prompt_completion, /*allow_ee=*/1);
 	}
 }
 
 /* Handles result of expression register prompt. */
 static void
-expr_reg_prompt_cb(const char expr[])
+expr_reg_prompt_cb(const char expr[], void *arg)
 {
 	/* Try to parse expr, and convert the res to string if succeed. */
 	var_t res;
