@@ -204,7 +204,7 @@ TEST(no_switch_into_view_mode_of_hidden_pane)
 	view_setup(&rwin);
 	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH, "", cwd);
 	populate_dir_list(&rwin, 1);
-	init_modes();
+	modes_init();
 
 	curr_stats.preview.on = 1;
 	curr_stats.number_of_windows = 1;

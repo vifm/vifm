@@ -15,7 +15,7 @@
 
 SETUP()
 {
-	init_modes();
+	modes_init();
 	init_commands();
 	conf_setup();
 	undo_setup();

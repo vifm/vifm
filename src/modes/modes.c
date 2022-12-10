@@ -95,7 +95,7 @@ static void print_compare_stats(void);
 static void update_vmode_input(void);
 
 void
-init_modes(void)
+modes_init(void)
 {
 	LOG_FUNC_ENTER;
 
@@ -124,7 +124,7 @@ modes_pre(void)
 	{
 		modview_pre();
 	}
-	else if(is_in_menu_like_mode())
+	else if(modes_is_menu_like())
 	{
 		modmenu_pre();
 	}
@@ -156,7 +156,7 @@ modes_post(void)
 		modview_post();
 		return;
 	}
-	else if(is_in_menu_like_mode())
+	else if(modes_is_menu_like())
 	{
 		modmenu_post();
 		return;
@@ -342,11 +342,11 @@ modes_update(void)
 }
 
 void
-modupd_input_bar(const wchar_t str[])
+modes_input_bar_update(const wchar_t str[])
 {
 	if(vle_mode_is(VISUAL_MODE))
 	{
-		clear_input_bar();
+		modes_input_bar_clear();
 	}
 
 	if(uses_input_bar[vle_mode_get()])
@@ -356,7 +356,7 @@ modupd_input_bar(const wchar_t str[])
 }
 
 void
-clear_input_bar(void)
+modes_input_bar_clear(void)
 {
 	if(uses_input_bar[vle_mode_get()] && !vle_mode_is(VISUAL_MODE))
 	{
@@ -365,7 +365,7 @@ clear_input_bar(void)
 }
 
 int
-is_in_menu_like_mode(void)
+modes_is_menu_like(void)
 {
 	return ANY(vle_primary_mode_is, MENU_MODE, FILE_INFO_MODE, MORE_MODE);
 }
@@ -377,7 +377,7 @@ modes_is_dialog_like(void)
 }
 
 void
-abort_menu_like_mode(void)
+modes_abort_menu_like(void)
 {
 	if(vle_primary_mode_is(MENU_MODE))
 	{

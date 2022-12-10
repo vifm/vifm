@@ -422,7 +422,7 @@ TEST(hist_next_and_prev)
 
 TEST(normal_command_does_not_reset_selection)
 {
-	init_modes();
+	modes_init();
 	opt_handlers_setup();
 
 	lwin.list_rows = 2;

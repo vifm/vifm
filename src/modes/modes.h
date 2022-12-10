@@ -38,7 +38,7 @@ enum
 	MODES_COUNT
 };
 
-void init_modes(void);
+void modes_init(void);
 
 void modes_pre(void);
 
@@ -52,18 +52,18 @@ void modes_redraw(void);
 void modes_update(void);
 
 /* Clears input bar or draws current input there depending on the mode. */
-void modupd_input_bar(const wchar_t str[]);
+void modes_input_bar_update(const wchar_t str[]);
 
-void clear_input_bar(void);
+void modes_input_bar_clear(void);
 
 /* Returns non-zero if current mode is a menu like one. */
-int is_in_menu_like_mode(void);
+int modes_is_menu_like(void);
 
 /* Checks if current mode is a dialog.  Returns non-zero if so. */
 int modes_is_dialog_like(void);
 
 /* Aborts one of menu-like modes if any of them is currently active. */
-void abort_menu_like_mode(void);
+void modes_abort_menu_like(void);
 
 /* Either prints appropriate message on the statusbar or clears it depending on
  * the mode and its state. */

@@ -21,7 +21,7 @@ SETUP_ONCE()
 
 SETUP()
 {
-	init_modes();
+	modes_init();
 	view_setup(&lwin);
 	opt_handlers_setup();
 

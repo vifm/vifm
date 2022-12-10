@@ -16,7 +16,7 @@
 SETUP()
 {
 	conf_setup();
-	init_modes();
+	modes_init();
 	init_commands();
 
 	curr_view = &lwin;
@@ -50,7 +50,7 @@ TEST(nop_rhs_is_displayed)
 	assert_string_equal("", menu_get_current()->items[2]);
 	assert_string_equal("Builtin mappings:", menu_get_current()->items[3]);
 
-	abort_menu_like_mode();
+	modes_abort_menu_like();
 }
 
 TEST(space_in_rhs_is_displayed_without_notation)
@@ -64,7 +64,7 @@ TEST(space_in_rhs_is_displayed_without_notation)
 	assert_string_equal("", menu_get_current()->items[2]);
 	assert_string_equal("Builtin mappings:", menu_get_current()->items[3]);
 
-	abort_menu_like_mode();
+	modes_abort_menu_like();
 }
 
 TEST(single_space_is_displayed_using_notation)
@@ -79,7 +79,7 @@ TEST(single_space_is_displayed_using_notation)
 	assert_string_equal("Builtin mappings:", menu_get_current()->items[3]);
 	assert_string_equal("<space>     switch pane", menu_get_current()->items[4]);
 
-	abort_menu_like_mode();
+	modes_abort_menu_like();
 }
 
 TEST(first_or_last_space_is_displayed_using_notation)
@@ -126,7 +126,7 @@ TEST(first_or_last_space_is_displayed_using_notation)
 	assert_string_equal("Builtin mappings:", menu_get_current()->items[4]);
 	assert_string_equal("<space>     switch pane", menu_get_current()->items[5]);
 
-	abort_menu_like_mode();
+	modes_abort_menu_like();
 }
 
 TEST(builtin_key_description_is_displayed)
@@ -140,7 +140,7 @@ TEST(builtin_key_description_is_displayed)
 	assert_string_equal("j           go to item below",
 			menu_get_current()->items[3]);
 
-	abort_menu_like_mode();
+	modes_abort_menu_like();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

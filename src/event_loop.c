@@ -224,7 +224,7 @@ event_loop(const int *quit, int manage_marking)
 			{
 				/* Recover from input buffer overflow by resetting its contents. */
 				reset_input_buf(input_buf, &input_buf_pos);
-				clear_input_bar();
+				modes_input_bar_clear();
 				continue;
 			}
 		}
@@ -282,7 +282,7 @@ event_loop(const int *quit, int manage_marking)
 
 				if(got_input)
 				{
-					modupd_input_bar(input_buf);
+					modes_input_bar_update(input_buf);
 				}
 
 				if(last_result == KEYS_WAIT_SHORT && wcscmp(input_buf, L"\033") == 0)
@@ -292,7 +292,7 @@ event_loop(const int *quit, int manage_marking)
 
 				if(counter > 0)
 				{
-					clear_input_bar();
+					modes_input_bar_clear();
 				}
 
 				modes_statusbar_update();
@@ -305,7 +305,7 @@ event_loop(const int *quit, int manage_marking)
 		process_scheduled_updates();
 
 		reset_input_buf(input_buf, &input_buf_pos);
-		clear_input_bar();
+		modes_input_bar_clear();
 
 		if(ui_sb_multiline())
 		{
@@ -572,7 +572,7 @@ static int
 should_check_views_for_changes(void)
 {
 	return !ui_sb_multiline()
-	    && !is_in_menu_like_mode()
+	    && !modes_is_menu_like()
 	    && !modes_is_dialog_like()
 	    && !vle_mode_is(CMDLINE_MODE)
 	    && !suggestions_are_visible;

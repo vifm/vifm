@@ -40,7 +40,7 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	init_modes();
+	modes_init();
 
 	conf_setup();
 }

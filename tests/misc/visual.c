@@ -32,7 +32,7 @@ SETUP_ONCE()
 SETUP()
 {
 	view_setup(&lwin);
-	init_modes();
+	modes_init();
 	opt_handlers_setup();
 }
 

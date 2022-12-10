@@ -128,7 +128,7 @@ TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
 
 TEST(cv_is_built_by_handler)
 {
-	init_modes();
+	modes_init();
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
 

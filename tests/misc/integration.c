@@ -215,7 +215,7 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 	fview_setup();
 	lwin.columns = columns_create();
 
-	init_modes();
+	modes_init();
 	opt_handlers_setup();
 
 	update_string(&cfg.shell, "/bin/sh");

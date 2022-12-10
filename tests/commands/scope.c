@@ -28,7 +28,7 @@ SETUP_ONCE()
 
 SETUP()
 {
-	init_modes();
+	modes_init();
 	modcline_enter(CLS_COMMAND, "");
 }
 

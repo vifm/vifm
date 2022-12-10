@@ -36,7 +36,7 @@ SETUP()
 	view_setup(&lwin);
 	view_setup(&rwin);
 
-	init_modes();
+	modes_init();
 	opt_handlers_setup();
 
 	cfg.use_system_calls = 1;

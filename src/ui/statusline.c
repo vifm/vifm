@@ -940,7 +940,7 @@ is_job_bar_visible(void)
 {
 	/* Pretend that bar isn't visible in tests. */
 	return curr_stats.load_stage >= 2
-	    && ui_stat_job_bar_height() != 0 && !is_in_menu_like_mode();
+	    && ui_stat_job_bar_height() != 0 && !modes_is_menu_like();
 }
 
 void

@@ -13,7 +13,7 @@ static view_t *const view = &lwin;
 
 SETUP()
 {
-	init_modes();
+	modes_init();
 	conf_setup();
 	columns_setup_column(SK_BY_NAME);
 

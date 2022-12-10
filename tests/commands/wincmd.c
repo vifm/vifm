@@ -14,7 +14,7 @@
 
 SETUP()
 {
-	init_modes();
+	modes_init();
 
 	view_setup(&lwin);
 	view_setup(&rwin);

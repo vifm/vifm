@@ -1096,7 +1096,7 @@ touch_all_windows(void)
 		return;
 	}
 
-	if(!is_in_menu_like_mode())
+	if(!modes_is_menu_like())
 	{
 		update_window_lazy(tab_line);
 

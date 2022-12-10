@@ -41,7 +41,7 @@ SETUP()
 	update_string(&lwin.dir_entry[0].name, "fake");
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", NULL);
 	conf_setup();
-	init_modes();
+	modes_init();
 	fops_init(&modcline_prompt, NULL);
 
 	stats.line = NULL;

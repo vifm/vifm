@@ -18,7 +18,7 @@ SETUP()
 	static int undo_levels = 10;
 	un_init(&exec_func, &op_avail, NULL, &undo_levels);
 
-	init_modes();
+	modes_init();
 
 	curr_stats.load_stage = -1;
 }

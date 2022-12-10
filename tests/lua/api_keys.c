@@ -43,7 +43,7 @@ SETUP()
 	lwin.dir_entry[1].name = strdup("file1");
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 
-	init_modes();
+	modes_init();
 	regs_init();
 }
 

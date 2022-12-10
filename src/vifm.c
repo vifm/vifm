@@ -292,7 +292,7 @@ vifm_main(int argc, char *argv[])
 		return -1;
 	}
 
-	init_modes();
+	modes_init();
 	un_init(&undo_perform_func, NULL, &ui_cancellation_requested,
 			&cfg.undo_levels);
 	load_view_options(curr_view);
@@ -408,7 +408,7 @@ parse_received_arguments(char *argv[])
 	args_process(&args, AS_IPC, curr_stats.ipc);
 	args_process(&args, AS_OTHER, curr_stats.ipc);
 
-	abort_menu_like_mode();
+	modes_abort_menu_like();
 	exec_startup_commands(&args);
 	update_screen(stats_update_fetch());
 
