@@ -101,7 +101,7 @@ int contains_slash(const char *path);
 char * find_slashr(const char *path);
 
 /* Removes extension part from the path and returns a pointer to the first
- * character of the extension part. */
+ * character of the extension part.  Considers .tar.* as an extension. */
 char * cut_extension(char path[]);
 
 /* Splits path into root and extension parts.  Sets *root_len to length of the
