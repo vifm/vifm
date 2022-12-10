@@ -656,6 +656,7 @@ const char *tags[] = {
 	"vifm-h",
 	"vifm-has()",
 	"vifm-i",
+	"vifm-input()",
 	"vifm-j",
 	"vifm-jobcount-variable",
 	"vifm-k",

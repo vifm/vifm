@@ -1,4 +1,4 @@
-.TH VIFM 1 "20 November 2022" "vifm 0.12.1"
+.TH VIFM 1 "10 December 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5875,6 +5875,10 @@ getpanetype()         String      Returns type of current pane.
 .br
 has({property})       Integer     Checks whether instance has {property}.
 .br
+input({prompt} [, {initial}])
+.br
+                      String      Prompts user for an input on command-line.
+.br
 layoutis({type})      Integer     Checks whether layout is of type {type}.
 .br
 paneisat({loc})       Integer     Checks whether current pane is at {loc}.
@@ -6015,6 +6019,24 @@ Usage example:
   endif
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
+.EE
+
+.BI "input({prompt} [, {initial}])"
+
+Creates a command-line prompt to obtain user's input.  Initial value can
+be supplied as an optional second parameter, otherwise empty string is used.
+
+Note that behaviour differs from Vim where executing a mapping like
+.EX
+  nnoremap j :echo input('text: ')<cr>input
+.EE
+leaves you in a prompt mode with "input" typed in.  Vifm will wait for leaving
+the prompt and then continue executing the mapping.
+
+Usage example:
+
+.EX
+  :echo input('text: ', 'hello')
 .EE
 
 .BI layoutis({type})

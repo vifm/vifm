@@ -110,7 +110,6 @@ Possible things to add:
 
 Questionable things:
   * Full client-server operation of vifm (separate core from TUI).
-  * %p/%I macro to prompt user for input.
   * Maybe re-position cursor after :!ls%u.
   * Remove items from :history command menu?
   * Maybe use @path syntax to load custom views.

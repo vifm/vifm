@@ -2,14 +2,17 @@
 
 #include <test-utils.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/event_loop.h"
 
 static void prompt_callback(const char response[], void *arg);
 
@@ -90,6 +93,58 @@ TEST(prompt_cb_is_called_on_cancellation)
 
 	assert_string_equal(NULL, prompt_response);
 	assert_int_equal(1, prompt_invocation_count);
+}
+
+TEST(user_prompt_accepts_input)
+{
+	cfg.timeout_len = 1;
+	ui_sb_msg("");
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(L"suffix" WK_CR);
+	(void)vle_keys_exec_timed_out(L":echo input('prompt', 'input')" WK_CR);
+
+	assert_string_equal("inputsuffix", ui_sb_last());
+}
+
+TEST(user_prompt_handles_cancellation)
+{
+	cfg.timeout_len = 1;
+	ui_sb_msg("old");
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(L"suffix" WK_C_c);
+	(void)vle_keys_exec_timed_out(L":echo input('prompt', 'input')" WK_CR);
+
+	assert_string_equal("", ui_sb_last());
+}
+
+TEST(user_prompt_nests)
+{
+	cfg.timeout_len = 1;
+	ui_sb_msg("");
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(L"-" WK_CR L"*" WK_CR);
+	(void)vle_keys_exec_timed_out(
+			L":echo input('p2', input('p1', '1').'2')" WK_CR);
+
+	assert_string_equal("1-2*", ui_sb_last());
+}
+
+TEST(user_prompt_and_expr_reg)
+{
+	cfg.timeout_len = 1;
+	ui_sb_msg("");
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(WK_C_r WK_EQUALS
+			"input('n')" WK_CR
+			L"nested" WK_CR
+			L"extra" WK_CR);
+	(void)vle_keys_exec_timed_out(L":echo input('p').'out'" WK_CR);
+
+	assert_string_equal("nestedextraout", ui_sb_last());
 }
 
 static void

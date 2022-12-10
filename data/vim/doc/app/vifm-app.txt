@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Nov 20
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Dec 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4907,6 +4907,8 @@ filetype({fnum} [, {resolve}])
 fnameescape({expr})   String      Escapes {expr} for use in a :command.
 getpanetype()         String      Returns type of current pane.
 has({property})       Integer     Checks whether instance has {property}.
+input({prompt} [, {initial}])
+                      String      Prompts user for an input on command-line.
 layoutis({type})      Integer     Checks whether layout is of type {type}.
 paneisat({loc})       Integer     Checks whether current pane is at {loc}.
 system({command})     String      Executes shell command and returns its output.
@@ -5031,6 +5033,19 @@ Usage example: >
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
 <
+
+input({prompt} [, {initial}])                  *vifm-input()*
+
+Creates a command-line prompt to obtain user's input.  Initial value can
+be supplied as an optional second parameter, otherwise empty string is used.
+
+Note that behaviour differs from Vim where executing a mapping like >
+  nnoremap j :echo input('text: ')<cr>input
+leaves you in a prompt mode with "input" typed in.  Vifm will wait for leaving
+the prompt and then continue executing the mapping.
+
+Usage example: >
+  :echo input('text: ', 'hello')
 
 layoutis({type})                               *vifm-layoutis()*
 

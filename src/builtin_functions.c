@@ -31,6 +31,7 @@
 #include "engine/text_buffer.h"
 #include "engine/var.h"
 #include "lua/vlua.h"
+#include "modes/cmdline.h"
 #include "ui/cancellation.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
@@ -44,6 +45,7 @@
 #include "utils/test_helpers.h"
 #include "utils/trie.h"
 #include "utils/utils.h"
+#include "event_loop.h"
 #include "filelist.h"
 #include "macros.h"
 #include "types.h"
@@ -56,6 +58,14 @@ typedef struct
 }
 extcache_t;
 
+/* Data passed to prompt callback in input(). */
+typedef struct
+{
+	int quit;       /* Exit flag for event loop. */
+	char *response; /* Result of the prompt. */
+}
+input_cb_data_t;
+
 static var_t chooseopt_builtin(const call_info_t *call_info);
 static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
@@ -67,6 +77,8 @@ static const char * type_of_link_target(const dir_entry_t *entry);
 static var_t fnameescape_builtin(const call_info_t *call_info);
 static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
+static var_t input_builtin(const call_info_t *call_info);
+static void input_builtin_cb(const char response[], void *arg);
 static var_t layoutis_builtin(const call_info_t *call_info);
 static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
@@ -85,6 +97,7 @@ static const function_t functions[] = {
 	{ "fnameescape", "escapes string for a :cmd",  {1,1}, &fnameescape_builtin },
 	{ "getpanetype", "retrieve type of file list", {0,0}, &getpanetype_builtin},
 	{ "has",         "check for specific ability", {1,1}, &has_builtin },
+	{ "input",       "prompt user for input",      {1,2}, &input_builtin },
 	{ "layoutis",    "query current layout",       {1,1}, &layoutis_builtin },
 	{ "paneisat",    "query pane location",        {1,1}, &paneisat_builtin },
 	{ "system",      "execute external command",   {1,1}, &system_builtin },
@@ -385,6 +398,50 @@ getpanetype_builtin(const call_info_t *call_info)
 			return var_from_str("compare");
 	}
 	return var_from_str("UNKNOWN");
+}
+
+/* Asks user for input and returns the result as a string. */
+static var_t
+input_builtin(const call_info_t *call_info)
+{
+	char *prompt = var_to_str(call_info->argv[0]);
+	char *initial = (call_info->argc > 1) ? var_to_str(call_info->argv[1])
+	                                      : strdup("");
+
+	if(prompt == NULL || initial == NULL)
+	{
+		free(prompt);
+		free(initial);
+		return var_error();
+	}
+
+	input_cb_data_t cb_data = { .quit = 0, .response = NULL };
+
+	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data,
+			/*complete=*/NULL, /*allow_ee=*/1);
+
+	free(prompt);
+	free(initial);
+
+	event_loop(&cb_data.quit, /*manage_marking=*/0);
+
+	/* Not returning var_error() on cancellation to allow handling of it by the
+	 * user. */
+	var_t result = var_from_str(cb_data.response == NULL ? "" : cb_data.response);
+
+	update_string(&cb_data.response, NULL);
+
+	return result;
+}
+
+/* Callback invoked after prompt has finished. */
+static void
+input_builtin_cb(const char response[], void *arg)
+{
+	input_cb_data_t *data = arg;
+
+	update_string(&data->response, response);
+	data->quit = 1;
 }
 
 /* Checks current layout configuration.  Returns boolean value that reflects
