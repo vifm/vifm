@@ -38,22 +38,30 @@ enum
 	MODES_COUNT
 };
 
+/* Registers modes. */
 void modes_init(void);
 
+/* A hook-like function that performs mode-specific actions at the start of an
+ * event loop iteration. */
 void modes_pre(void);
 
 /* Executes poll-based requests for any of the active modes. */
 void modes_periodic(void);
 
+/* A hook-like function that performs mode-specific actions at the end of an
+ * event loop iteration. */
 void modes_post(void);
 
+/* Redraws currently active mode. */
 void modes_redraw(void);
 
+/* A lighter version of modes_redraw(). */
 void modes_update(void);
 
 /* Clears input bar or draws current input there depending on the mode. */
 void modes_input_bar_update(const wchar_t str[]);
 
+/* Clears input bar if it's being used by the current mode. */
 void modes_input_bar_clear(void);
 
 /* Returns non-zero if current mode is a menu like one. */
