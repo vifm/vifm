@@ -3352,20 +3352,24 @@ if_cmd(const cmd_info_t *cmd_info)
 static int
 eval_if_condition(const cmd_info_t *cmd_info)
 {
-	var_t condition;
+	vle_tb_clear(vle_err);
+
 	int result;
 
-	vle_tb_clear(vle_err);
-	if(parse(cmd_info->args, 1, &condition) != PE_NO_ERROR)
+	parsing_result_t parsing_result = parse(cmd_info->args, /*interactive=*/1);
+	if(parsing_result.error != PE_NO_ERROR)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
 				cmd_info->args);
 		ui_sb_err(vle_tb_get_data(vle_err));
-		return -1;
+		result = -1;
+	}
+	else
+	{
+		result = var_to_bool(parsing_result.value);
 	}
 
-	result = var_to_bool(condition);
-	var_free(condition);
+	var_free(parsing_result.value);
 	return result;
 }
 

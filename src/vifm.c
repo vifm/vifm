@@ -510,16 +510,15 @@ need_to_switch_active_pane(const char lwin_path[], const char rwin_path[])
 static char *
 eval_received_expression(const char expr[])
 {
-	char *result_str;
-
-	var_t result;
-	if(parse(expr, 1, &result) != PE_NO_ERROR)
+	parsing_result_t result = parse(expr, /*interactive=*/1);
+	if(result.error != PE_NO_ERROR)
 	{
+		var_free(result.value);
 		return NULL;
 	}
 
-	result_str = var_to_str(result);
-	var_free(result);
+	char *result_str = var_to_str(result.value);
+	var_free(result.value);
 	return result_str;
 }
 

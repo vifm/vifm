@@ -1868,16 +1868,17 @@ cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 static void
 expr_reg_prompt_cb(const char expr[], void *arg)
 {
-	/* Try to parse expr, and convert the res to string if succeed. */
-	var_t res;
-	ParsingErrors parsing_error = parse(expr, 0, &res);
-	if(parsing_error != PE_NO_ERROR)
+	/* Try to parse expr and convert the result to string on success. */
+	parsing_result_t result = parse(expr, /*interactive=*/0);
+	if(result.error != PE_NO_ERROR)
 	{
+		/* TODO: maybe print error message on status bar. */
+		var_free(result.value);
 		return;
 	}
 
-	char *res_str = var_to_str(res);
-	var_free(res);
+	char *res_str = var_to_str(result.value);
+	var_free(result.value);
 
 	wchar_t *wide = to_wide_force(res_str);
 	free(res_str);

@@ -16,7 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-/* The parsing and evaluation are mostly separated.  Currently parsing evaluates
+/*
+ * The parsing and evaluation are mostly separated.  Currently parsing evaluates
  * values without side-effects, but this can be changed later.
  *
  * Output of parsing phase is an expression tree, which is made of nodes of type
@@ -33,12 +34,13 @@
  * Second type is for the rest of builtins and user-provided functions.
  *
  * parse_or_expr() is a root-level parser of expressions and it basically
- * performs parsing phase.  parse_or_expr() evaluates expression, which is the
+ * performs parsing phase.  eval_expr() evaluates expression, which is the
  * second phase.
  *
- * If parsing stops before the end of an expression, partial result is stored in
- * global variables to be queried by client code (this way expressions can
- * follow one another on a line and parsed sequentially). */
+ * If parsing stops before the end of an expression, partial result is still
+ * returned as a result for the API client (this way expressions can follow one
+ * another on a line and be parsed sequentially).
+ */
 
 #include "parsing.h"
 
@@ -186,9 +188,6 @@ static void get_next(parse_context_t *ctx, const char **in);
 
 static int initialized;
 static getenv_func getenv_fu;
-static const char *last_parsed_char, *last_position;
-static var_t res_val;
-static int ends_with_whitespace;
 
 /* Empty expression to be returned on errors. */
 static expr_t null_expr;
@@ -202,26 +201,12 @@ init_parser(getenv_func getenv_f)
 	initialized = 1;
 }
 
-const char *
-get_last_position(void)
+parsing_result_t
+parse(const char input[], int interactive)
 {
 	assert(initialized && "Parser must be initialized before use.");
-	return last_position;
-}
 
-const char *
-get_last_parsed_char(void)
-{
-	assert(initialized && "Parser must be initialized before use.");
-	return last_parsed_char;
-}
-
-ParsingErrors
-parse(const char input[], int interactive, var_t *result)
-{
-	expr_t expr_root;
-
-	assert(initialized && "Parser must be initialized before use.");
+	parsing_result_t result = {};
 
 	parse_context_t ctx = {
 		.interactive = interactive,
@@ -232,17 +217,16 @@ parse(const char input[], int interactive, var_t *result)
 	};
 
 	get_next(&ctx, &ctx.last_position);
-	expr_root = parse_or_expr(&ctx, &ctx.last_position);
-	last_parsed_char = ctx.last_position;
+	expr_t expr_root = parse_or_expr(&ctx, &ctx.last_position);
+	result.last_parsed_char = ctx.last_position;
 
-	var_free(res_val);
-	res_val = var_error();
+	result.value = var_error();
 
 	if(ctx.last_token.type != END)
 	{
-		if(last_parsed_char > input)
+		if(result.last_parsed_char > input)
 		{
-			last_parsed_char--;
+			--result.last_parsed_char;
 		}
 		if(ctx.last_error == PE_NO_ERROR)
 		{
@@ -253,7 +237,7 @@ parse(const char input[], int interactive, var_t *result)
 			}
 			else if(eval_expr(&ctx, &expr_root) == 0)
 			{
-				res_val = var_clone(expr_root.value);
+				result.value = var_clone(expr_root.value);
 				ctx.last_error = PE_INVALID_EXPRESSION;
 			}
 		}
@@ -263,8 +247,7 @@ parse(const char input[], int interactive, var_t *result)
 	{
 		if(eval_expr(&ctx, &expr_root) == 0)
 		{
-			res_val = var_clone(expr_root.value);
-			*result = var_clone(expr_root.value);
+			result.value = var_clone(expr_root.value);
 		}
 	}
 
@@ -273,25 +256,13 @@ parse(const char input[], int interactive, var_t *result)
 		ctx.last_position = skip_whitespace(input);
 	}
 
-	ends_with_whitespace = (ctx.prev_token.type == WHITESPACE);
-	last_position = ctx.last_position;
-
 	free_expr(&expr_root);
-	return ctx.last_error;
-}
 
-var_t
-get_parsing_result(void)
-{
-	assert(initialized && "Parser must be initialized before use.");
-	return var_clone(res_val);
-}
+	result.ends_with_whitespace = (ctx.prev_token.type == WHITESPACE);
+	result.last_position = ctx.last_position;
+	result.error = ctx.last_error;
 
-int
-is_prev_token_whitespace(void)
-{
-	assert(initialized && "Parser must be initialized before use.");
-	return ends_with_whitespace;
+	return result;
 }
 
 /* Expression evaluation ---------------------------------------------------- */
@@ -1509,28 +1480,28 @@ get_next(parse_context_t *ctx, const char **in)
 }
 
 void
-report_parsing_error(ParsingErrors error)
+report_parsing_error(const parsing_result_t *result)
 {
-	switch(error)
+	switch(result->error)
 	{
 		case PE_NO_ERROR:
 			/* Not an error. */
 			break;
 		case PE_INVALID_EXPRESSION:
 			vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
-					get_last_position());
+					result->last_position);
 			break;
 		case PE_INVALID_SUBEXPRESSION:
 			vle_tb_append_linef(vle_err, "%s: %s", "Invalid subexpression",
-					get_last_position());
+					result->last_position);
 			break;
 		case PE_MISSING_QUOTE:
 			vle_tb_append_linef(vle_err, "%s: %s",
-					"Expression is missing closing quote", get_last_position());
+					"Expression is missing closing quote", result->last_position);
 			break;
 		case PE_MISSING_PAREN:
 			vle_tb_append_linef(vle_err, "%s: %s",
-					"Expression is missing closing parenthesis", get_last_position());
+					"Expression is missing closing parenthesis", result->last_position);
 			break;
 		case PE_INTERNAL:
 			vle_tb_append_line(vle_err, "Internal error");

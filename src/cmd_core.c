@@ -1350,30 +1350,28 @@ eval_arglist(const char args[], const char **stop_ptr)
 		char *free_this = NULL;
 		const char *tmp_result = NULL;
 
-		var_t result = var_false();
-		const ParsingErrors parsing_error = parse(args, 1, &result);
-		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
+		parsing_result_t result = parse(args, /*interactive=*/1);
+		if(result.error == PE_INVALID_EXPRESSION && result.ends_with_whitespace)
 		{
-			result = get_parsing_result();
-			if(result.type != VTYPE_ERROR)
+			if(result.value.type != VTYPE_ERROR)
 			{
-				tmp_result = free_this = var_to_str(result);
-				args = get_last_parsed_char();
+				tmp_result = free_this = var_to_str(result.value);
+				args = result.last_parsed_char;
 			}
 		}
-		else if(parsing_error == PE_NO_ERROR)
+		else if(result.error == PE_NO_ERROR)
 		{
-			tmp_result = free_this = var_to_str(result);
-			args = get_last_position();
+			tmp_result = free_this = var_to_str(result.value);
+			args = result.last_position;
 		}
-		else if(parsing_error != PE_INVALID_EXPRESSION)
+		else if(result.error != PE_INVALID_EXPRESSION)
 		{
-			report_parsing_error(parsing_error);
+			report_parsing_error(&result);
 		}
 
 		if(tmp_result == NULL)
 		{
-			var_free(result);
+			var_free(result.value);
 			break;
 		}
 
@@ -1383,7 +1381,7 @@ eval_arglist(const char args[], const char **stop_ptr)
 		}
 		eval_result = extend_string(eval_result, tmp_result, &len);
 
-		var_free(result);
+		var_free(result.value);
 		free(free_this);
 
 		args = skip_whitespace(args);

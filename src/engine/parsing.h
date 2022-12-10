@@ -33,6 +33,23 @@ typedef enum
 }
 ParsingErrors;
 
+/* Describes result of parsing and evaluating an expression. */
+typedef struct
+{
+	/* Result of evaluation. */
+	var_t value;
+	/* Actual position in a string, where parser has stopped. */
+	const char *last_parsed_char;
+	/* Logical (e.g. beginning of wrong expression) position in a string,
+	 * where parser has stopped. */
+	const char *last_position;
+	/* Non-zero if the penultimate read token was whitespace. */
+	char ends_with_whitespace;
+	/* Error code. */
+	ParsingErrors error;
+}
+parsing_result_t;
+
 /* A type of function that will be used to resolve environment variable
  * value. If variable doesn't exist the function should return an empty
  * string. The function should not allocate new string. */
@@ -44,26 +61,12 @@ typedef void (*print_error_func)(const char msg[]);
 /* Can be called several times.  getenv_f can be NULL. */
 void init_parser(getenv_func getenv_f);
 
-/* Returns logical (e.g. beginning of wrong expression) position in a string,
- * where parser has stopped. */
-const char * get_last_position(void);
-
-/* Returns actual position in a string, where parser has stopped. */
-const char * get_last_parsed_char(void);
-
-/* Performs parsing.  After calling this function get_last_position() will
- * return useful information.  Returns error code and puts result of expression
- * evaluation in the result parameter. */
-ParsingErrors parse(const char input[], int interactive, var_t *result);
-
-/* Returns evaluation result, may be used to get value on error. */
-var_t get_parsing_result(void);
-
-/* Returns non-zero if previously read token was whitespace. */
-int is_prev_token_whitespace(void);
+/* Performs parsing and evaluation.  Returns structure describing the outcome.
+ * Field value of the result should be freed by the caller. */
+parsing_result_t parse(const char input[], int interactive);
 
 /* Appends error message with details to the error stream. */
-void report_parsing_error(ParsingErrors error);
+void report_parsing_error(const parsing_result_t *result);
 
 #endif /* VIFM__ENGINE__PARSING_H__ */
 

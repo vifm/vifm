@@ -238,9 +238,7 @@ let_variables(const char cmd[])
 {
 	char name[VAR_NAME_MAX + 1];
 	int error;
-	var_t res_var;
 	char *str_val;
-	ParsingErrors parsing_error;
 	VariableType type;
 	VariableOperation op;
 
@@ -260,34 +258,37 @@ let_variables(const char cmd[])
 
 	cmd = skip_whitespace(cmd);
 
-	parsing_error = parse(cmd, 1, &res_var);
-	if(parsing_error != PE_NO_ERROR)
+	parsing_result_t result = parse(cmd, /*interactive=*/1);
+	if(result.error != PE_NO_ERROR)
 	{
-		report_parsing_error(parsing_error);
-		return -1;
+		report_parsing_error(&result);
+		goto fail;
 	}
 
-	if(get_last_position() != NULL && *get_last_position() != '\0')
+	if(result.last_position != NULL && result.last_position[0] != '\0')
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Incorrect :let statement",
 				"trailing characters");
-		return -1;
+		goto fail;
 	}
 
 	if(!is_valid_op(name, type, op))
 	{
 		vle_tb_append_linef(vle_err, "Wrong variable type for this operation");
-		return -1;
+		goto fail;
 	}
 
-	str_val = var_to_str(res_var);
+	str_val = var_to_str(result.value);
 
 	error = perform_op(name, type, op, str_val);
 
 	free(str_val);
-	var_free(res_var);
-
+	var_free(result.value);
 	return error;
+
+fail:
+	var_free(result.value);
+	return -1;
 }
 
 /* Extracts name from the string.  Returns zero on success, otherwise non-zero

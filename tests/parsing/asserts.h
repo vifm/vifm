@@ -4,41 +4,64 @@
 #include <stdlib.h> /* free() */
 
 /* This should be a macro to see what test has failed. */
-#define ASSERT_OK(str, result) \
+#define ASSERT_OK(str, expected) \
 	do \
 	{ \
-		char *str_res; \
-		var_t res_var = var_false(); \
-		assert_int_equal(PE_NO_ERROR, parse((str), 0, &res_var)); \
-		str_res = var_to_str(res_var); \
-		assert_string_equal((result), str_res); \
+		parsing_result_t result = parse((str), /*interactive=*/0); \
+		assert_int_equal(PE_NO_ERROR, result.error); \
+		\
+		char *str_res = var_to_str(result.value); \
+		assert_string_equal((expected), str_res); \
 		free(str_res); \
-		var_free(res_var); \
+		\
+		var_free(result.value); \
 	} \
 	while(0)
 
 /* This should be a macro to see what test has failed. */
-#define ASSERT_INT_OK(str, result) \
+#define ASSERT_INT_OK(str, expected) \
 	do \
 	{ \
-		int int_res; \
-		var_t res_var = var_false(); \
-		assert_int_equal(PE_NO_ERROR, parse((str), 0, &res_var)); \
-		int_res = var_to_int(res_var); \
-		assert_int_equal((result), int_res); \
-		var_free(res_var); \
+		parsing_result_t result = parse((str), /*interactive=*/0); \
+		assert_int_equal(PE_NO_ERROR, result.error); \
+		\
+		int int_res = var_to_int(result.value); \
+		assert_int_equal((expected), int_res); \
+		var_free(result.value); \
 	} \
 	while(0)
 
 /* This should be a macro to see what test has failed. */
-#define ASSERT_FAIL(str, error) \
+#define ASSERT_FAIL(str, error_code) \
 	do \
 	{ \
-		var_t res_var = var_false(); \
-		assert_int_equal((error), parse((str), 0, &res_var)); \
-		var_free(res_var); \
+		parsing_result_t result = parse((str), /*interactive=*/0); \
+		assert_int_equal((error_code), result.error); \
+		var_free(result.value); \
 	} \
 	while(0)
+
+/* This should be a macro to see what test has failed. */
+#define ASSERT_FAIL_AT(str, suffix, error_code) \
+	do \
+	{ \
+		parsing_result_t result = parse((str), /*interactive=*/0); \
+		assert_int_equal((error_code), result.error); \
+		var_free(result.value); \
+		\
+		assert_string_equal((suffix), result.last_position); \
+	} \
+	while(0)
+
+/* This should be a macro to see what test has failed. */
+#define ASSERT_FAIL_GET(str, error_code) \
+	({ \
+		parsing_result_t result = parse((str), /*interactive=*/0); \
+		assert_int_equal((error_code), result.error); \
+		var_free(result.value); \
+		\
+		result; \
+	})
 
 #endif /* VIFM_TESTS__PARSING__ASSERTS_H__ */
 
