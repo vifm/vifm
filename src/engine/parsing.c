@@ -103,12 +103,27 @@ typedef enum
 }
 Ops;
 
-/* Evaluation context that's passed to all eval_*() functions. */
+/* Information about a single token. */
 typedef struct
 {
-	const int interactive; /* Whether call is being executed by the user. */
+	TOKENS_TYPE type; /* Type of the token. */
+	char c;           /* Last character of the token. */
+	char str[3];      /* Full token string. */
 }
-eval_context_t;
+parse_token_t;
+
+/* Context that's passed to almost all functions. */
+typedef struct
+{
+	int interactive; /* Whether parsing is being executed by the user. */
+
+	ParsingErrors last_error; /* Last error (whether in parsing or evaluation). */
+
+	parse_token_t last_token;  /* Current token. */
+	parse_token_t prev_token;  /* Previous token. */
+	const char *last_position; /* Last position in the input. */
+}
+parse_context_t;
 
 /* Defines expression and how to evaluate its value.  Value is stored here after
  * evaluation. */
@@ -131,56 +146,49 @@ typedef struct
 }
 sbuffer;
 
-static int eval_expr(eval_context_t *ctx, expr_t *expr);
-static int eval_or_op(eval_context_t *ctx, int nops, expr_t ops[],
+static int eval_expr(parse_context_t *ctx, expr_t *expr);
+static int eval_or_op(parse_context_t *ctx, int nops, expr_t ops[],
 		var_t *result);
-static int eval_and_op(eval_context_t *ctx, int nops, expr_t ops[],
+static int eval_and_op(parse_context_t *ctx, int nops, expr_t ops[],
 		var_t *result);
-static int eval_call_op(eval_context_t *ctx, const char name[], int nops,
+static int eval_call_op(parse_context_t *ctx, const char name[], int nops,
 		expr_t ops[], var_t *result);
 static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
-static var_t eval_concat(eval_context_t *ctx, int nops, expr_t ops[]);
+static var_t eval_concat(parse_context_t *ctx, int nops, expr_t ops[]);
 static int add_expr_op(expr_t *expr, const expr_t *arg);
 static void free_expr(const expr_t *expr);
-static expr_t parse_or_expr(const char **in);
-static expr_t parse_and_expr(const char **in);
-static expr_t parse_comp_expr(const char **in);
+static expr_t parse_or_expr(parse_context_t *ctx, const char **in);
+static expr_t parse_and_expr(parse_context_t *ctx, const char **in);
+static expr_t parse_comp_expr(parse_context_t *ctx, const char **in);
 static int is_comparison_operator(TOKENS_TYPE type);
-static expr_t parse_factor(const char **in);
-static expr_t parse_concat_expr(const char **in);
-static expr_t parse_term(const char **in);
-static expr_t parse_signed_number(const char **in);
-static var_t parse_number(const char **in);
-static var_t parse_singly_quoted_string(const char **in);
-static int parse_singly_quoted_char(const char **in, sbuffer *sbuf);
-static var_t parse_doubly_quoted_string(const char **in);
-static int parse_doubly_quoted_char(const char **in, sbuffer *sbuf);
-static var_t eval_envvar(const char **in);
-static var_t eval_builtinvar(const char **in);
-static var_t eval_opt(const char **in);
-static expr_t parse_logical_not(const char **in);
-static int parse_sequence(const char **in, const char first[],
-		const char other[], size_t buf_len, char buf[]);
-static expr_t parse_funccall(const char **in);
-static void parse_arglist(const char **in, expr_t *call_expr);
-static void skip_whitespace_tokens(const char **in);
-static void get_next(const char **in);
-
-/* This contains information about the last tokens read. */
-static struct
-{
-	TOKENS_TYPE type; /* Type of the token. */
-	char c;           /* Last character of the token. */
-	char str[3];      /* Full token string. */
-}
-prev_token, last_token;
+static expr_t parse_factor(parse_context_t *ctx, const char **in);
+static expr_t parse_concat_expr(parse_context_t *ctx, const char **in);
+static expr_t parse_term(parse_context_t *ctx, const char **in);
+static expr_t parse_signed_number(parse_context_t *ctx, const char **in);
+static var_t parse_number(parse_context_t *ctx, const char **in);
+static var_t parse_singly_quoted_string(parse_context_t *ctx, const char **in);
+static int parse_singly_quoted_char(parse_context_t *ctx, const char **in,
+		sbuffer *sbuf);
+static var_t parse_doubly_quoted_string(parse_context_t *ctx, const char **in);
+static int parse_doubly_quoted_char(parse_context_t *ctx, const char **in,
+		sbuffer *sbuf);
+static var_t eval_envvar(parse_context_t *ctx, const char **in);
+static var_t eval_builtinvar(parse_context_t *ctx, const char **in);
+static var_t eval_opt(parse_context_t *ctx, const char **in);
+static expr_t parse_logical_not(parse_context_t *ctx, const char **in);
+static int parse_sequence(parse_context_t *ctx, const char **in,
+		const char first[], const char other[], size_t buf_len, char buf[]);
+static expr_t parse_funccall(parse_context_t *ctx, const char **in);
+static void parse_arglist(parse_context_t *ctx, const char **in,
+		expr_t *call_expr);
+static void skip_whitespace_tokens(parse_context_t *ctx, const char **in);
+static void get_next(parse_context_t *ctx, const char **in);
 
 static int initialized;
 static getenv_func getenv_fu;
-static ParsingErrors last_error;
-static const char *last_position;
-static const char *last_parsed_char;
+static const char *last_parsed_char, *last_position;
 static var_t res_val;
+static int ends_with_whitespace;
 
 /* Empty expression to be returned on errors. */
 static expr_t null_expr;
@@ -215,41 +223,43 @@ parse(const char input[], int interactive, var_t *result)
 
 	assert(initialized && "Parser must be initialized before use.");
 
-	last_error = PE_NO_ERROR;
-	last_token.type = BEGIN;
+	parse_context_t ctx = {
+		.interactive = interactive,
 
-	last_position = input;
-	get_next(&last_position);
-	expr_root = parse_or_expr(&last_position);
-	last_parsed_char = last_position;
+		.last_error = PE_NO_ERROR,
+		.last_token.type = BEGIN,
+		.last_position = input,
+	};
+
+	get_next(&ctx, &ctx.last_position);
+	expr_root = parse_or_expr(&ctx, &ctx.last_position);
+	last_parsed_char = ctx.last_position;
 
 	var_free(res_val);
 	res_val = var_error();
 
-	eval_context_t ctx = { .interactive = interactive };
-
-	if(last_token.type != END)
+	if(ctx.last_token.type != END)
 	{
 		if(last_parsed_char > input)
 		{
 			last_parsed_char--;
 		}
-		if(last_error == PE_NO_ERROR)
+		if(ctx.last_error == PE_NO_ERROR)
 		{
-			if(last_token.type == DQ && strchr(last_position, '"') == NULL)
+			if(ctx.last_token.type == DQ && strchr(ctx.last_position, '"') == NULL)
 			{
 				/* This is a comment, just ignore it. */
-				last_position += strlen(last_position);
+				ctx.last_position += strlen(ctx.last_position);
 			}
 			else if(eval_expr(&ctx, &expr_root) == 0)
 			{
 				res_val = var_clone(expr_root.value);
-				last_error = PE_INVALID_EXPRESSION;
+				ctx.last_error = PE_INVALID_EXPRESSION;
 			}
 		}
 	}
 
-	if(last_error == PE_NO_ERROR)
+	if(ctx.last_error == PE_NO_ERROR)
 	{
 		if(eval_expr(&ctx, &expr_root) == 0)
 		{
@@ -258,13 +268,16 @@ parse(const char input[], int interactive, var_t *result)
 		}
 	}
 
-	if(last_error == PE_INVALID_EXPRESSION)
+	if(ctx.last_error == PE_INVALID_EXPRESSION)
 	{
-		last_position = skip_whitespace(input);
+		ctx.last_position = skip_whitespace(input);
 	}
 
+	ends_with_whitespace = (ctx.prev_token.type == WHITESPACE);
+	last_position = ctx.last_position;
+
 	free_expr(&expr_root);
-	return last_error;
+	return ctx.last_error;
 }
 
 var_t
@@ -278,7 +291,7 @@ int
 is_prev_token_whitespace(void)
 {
 	assert(initialized && "Parser must be initialized before use.");
-	return prev_token.type == WHITESPACE;
+	return ends_with_whitespace;
 }
 
 /* Expression evaluation ---------------------------------------------------- */
@@ -286,7 +299,7 @@ is_prev_token_whitespace(void)
 /* Evaluates values of an expression.  Returns zero on success, which means that
  * expr->value is now correct, otherwise non-zero is returned. */
 static int
-eval_expr(eval_context_t *ctx, expr_t *expr)
+eval_expr(parse_context_t *ctx, expr_t *expr)
 {
 	int result = 1;
 	switch(expr->op_type)
@@ -316,7 +329,7 @@ eval_expr(eval_context_t *ctx, expr_t *expr)
 /* Evaluates logical OR operation.  All operands are evaluated lazily from left
  * to right.  Returns zero on success, otherwise non-zero is returned. */
 static int
-eval_or_op(eval_context_t *ctx, int nops, expr_t ops[], var_t *result)
+eval_or_op(parse_context_t *ctx, int nops, expr_t ops[], var_t *result)
 {
 	int val;
 	int i;
@@ -358,7 +371,7 @@ eval_or_op(eval_context_t *ctx, int nops, expr_t ops[], var_t *result)
 /* Evaluates logical AND operation.  All operands are evaluated lazily from left
  * to right.  Returns zero on success, otherwise non-zero is returned. */
 static int
-eval_and_op(eval_context_t *ctx, int nops, expr_t ops[], var_t *result)
+eval_and_op(parse_context_t *ctx, int nops, expr_t ops[], var_t *result)
 {
 	int val;
 	int i;
@@ -400,7 +413,7 @@ eval_and_op(eval_context_t *ctx, int nops, expr_t ops[], var_t *result)
 /* Evaluates invocation operation.  All operands are evaluated beforehand.
  * Returns zero on success, otherwise non-zero is returned. */
 static int
-eval_call_op(eval_context_t *ctx, const char name[], int nops, expr_t ops[],
+eval_call_op(parse_context_t *ctx, const char name[], int nops, expr_t ops[],
 		var_t *result)
 {
 	int i;
@@ -481,14 +494,14 @@ eval_call_op(eval_context_t *ctx, const char name[], int nops, expr_t ops[],
 		*result = function_call(name, &call_info);
 		if(result->type == VTYPE_ERROR)
 		{
-			last_error = PE_INVALID_EXPRESSION;
+			ctx->last_error = PE_INVALID_EXPRESSION;
 			var_free(*result);
 			*result = var_false();
 		}
 		function_call_info_free(&call_info);
 	}
 
-	return (last_error != PE_NO_ERROR);
+	return (ctx->last_error != PE_NO_ERROR);
 }
 
 /* Compares lhs and rhs variables by comparison operator specified by a token.
@@ -537,7 +550,7 @@ compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
 /* Evaluates concatenation of expressions.  Returns resultant value or variable
  * of type VTYPE_ERROR. */
 static var_t
-eval_concat(eval_context_t *ctx, int nops, expr_t ops[])
+eval_concat(parse_context_t *ctx, int nops, expr_t ops[])
 {
 	char res[CMD_LINE_LENGTH_MAX + 1];
 	size_t res_len = 0U;
@@ -557,7 +570,7 @@ eval_concat(eval_context_t *ctx, int nops, expr_t ops[])
 		char *const str_val = var_to_str(ops[i].value);
 		if(str_val == NULL)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			break;
 		}
 
@@ -566,7 +579,7 @@ eval_concat(eval_context_t *ctx, int nops, expr_t ops[])
 		free(str_val);
 	}
 
-	return (last_error == PE_NO_ERROR ? var_from_str(res) : var_error());
+	return (ctx->last_error == PE_NO_ERROR ? var_from_str(res) : var_error());
 }
 
 /* Appends operand to an expression.  Returns zero on success, otherwise
@@ -606,14 +619,14 @@ free_expr(const expr_t *expr)
 
 /* or_expr ::= and_expr | and_expr '||' or_expr */
 static expr_t
-parse_or_expr(const char **in)
+parse_or_expr(parse_context_t *ctx, const char **in)
 {
 	expr_t result = { .op_type = OP_OR };
 
-	while(last_error == PE_NO_ERROR)
+	while(ctx->last_error == PE_NO_ERROR)
 	{
-		const expr_t op = parse_and_expr(in);
-		if(last_error != PE_NO_ERROR)
+		const expr_t op = parse_and_expr(ctx, in);
+		if(ctx->last_error != PE_NO_ERROR)
 		{
 			free_expr(&op);
 			break;
@@ -621,20 +634,20 @@ parse_or_expr(const char **in)
 
 		if(add_expr_op(&result, &op) != 0)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			break;
 		}
 
-		if(last_token.type != OR)
+		if(ctx->last_token.type != OR)
 		{
 			/* Return partial result. */
 			break;
 		}
 
-		get_next(in);
+		get_next(ctx, in);
 	}
 
-	if(last_error == PE_INTERNAL)
+	if(ctx->last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
 		return null_expr;
@@ -645,14 +658,14 @@ parse_or_expr(const char **in)
 
 /* and_expr ::= comp_expr | comp_expr '&&' and_expr */
 static expr_t
-parse_and_expr(const char **in)
+parse_and_expr(parse_context_t *ctx, const char **in)
 {
 	expr_t result = { .op_type = OP_AND };
 
-	while(last_error == PE_NO_ERROR)
+	while(ctx->last_error == PE_NO_ERROR)
 	{
-		const expr_t op = parse_comp_expr(in);
-		if(last_error != PE_NO_ERROR)
+		const expr_t op = parse_comp_expr(ctx, in);
+		if(ctx->last_error != PE_NO_ERROR)
 		{
 			free_expr(&op);
 			break;
@@ -660,20 +673,20 @@ parse_and_expr(const char **in)
 
 		if(add_expr_op(&result, &op) != 0)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			break;
 		}
 
-		if(last_token.type != AND)
+		if(ctx->last_token.type != AND)
 		{
 			/* Return partial result. */
 			break;
 		}
 
-		get_next(in);
+		get_next(ctx, in);
 	}
 
-	if(last_error == PE_INTERNAL)
+	if(ctx->last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
 		return null_expr;
@@ -685,37 +698,38 @@ parse_and_expr(const char **in)
 /* comp_expr ::= factor | factor op factor
  * op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
 static expr_t
-parse_comp_expr(const char **in)
+parse_comp_expr(parse_context_t *ctx, const char **in)
 {
 	expr_t lhs;
 	expr_t rhs;
 	expr_t result = { .op_type = OP_CALL };
 
-	lhs = parse_factor(in);
-	if(last_error != PE_NO_ERROR || !is_comparison_operator(last_token.type))
+	lhs = parse_factor(ctx, in);
+	if(ctx->last_error != PE_NO_ERROR ||
+			!is_comparison_operator(ctx->last_token.type))
 	{
 		return lhs;
 	}
 
-	result.func = strdup(last_token.str);
+	result.func = strdup(ctx->last_token.str);
 
 	if(add_expr_op(&result, &lhs) != 0 || result.func == NULL)
 	{
 		free_expr(&result);
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 		return null_expr;
 	}
 
-	get_next(in);
-	rhs = parse_factor(in);
+	get_next(ctx, in);
+	rhs = parse_factor(ctx, in);
 	if(add_expr_op(&result, &rhs) != 0)
 	{
 		free_expr(&result);
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 		return null_expr;
 	}
 
-	if(last_error != PE_NO_ERROR)
+	if(ctx->last_error != PE_NO_ERROR)
 	{
 		free_expr(&result);
 		return null_expr;
@@ -737,27 +751,27 @@ is_comparison_operator(TOKENS_TYPE type)
 /* factor ::= concat_expr { op concat_expr }
  * op ::= '+' | '-' */
 static expr_t
-parse_factor(const char **in)
+parse_factor(parse_context_t *ctx, const char **in)
 {
-	expr_t result = parse_concat_expr(in);
+	expr_t result = parse_concat_expr(ctx, in);
 
-	while(last_error == PE_NO_ERROR &&
-			(last_token.type == PLUS || last_token.type == MINUS))
+	while(ctx->last_error == PE_NO_ERROR &&
+			(ctx->last_token.type == PLUS || ctx->last_token.type == MINUS))
 	{
 		expr_t intermediate = { .op_type = OP_CALL };
 		expr_t next;
 
-		intermediate.func = strdup(last_token.str);
+		intermediate.func = strdup(ctx->last_token.str);
 		if(add_expr_op(&intermediate, &result) != 0 || intermediate.func == NULL)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			free_expr(&intermediate);
 			return null_expr;
 		}
 
-		get_next(in);
-		next = parse_concat_expr(in);
-		if(last_error != PE_NO_ERROR)
+		get_next(ctx, in);
+		next = parse_concat_expr(ctx, in);
+		if(ctx->last_error != PE_NO_ERROR)
 		{
 			free_expr(&next);
 			free_expr(&intermediate);
@@ -766,7 +780,7 @@ parse_factor(const char **in)
 
 		if(add_expr_op(&intermediate, &next) != 0)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			free_expr(&intermediate);
 			return null_expr;
 		}
@@ -774,7 +788,7 @@ parse_factor(const char **in)
 		result = intermediate;
 	}
 
-	if(last_error == PE_INTERNAL)
+	if(ctx->last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
 		return null_expr;
@@ -785,25 +799,25 @@ parse_factor(const char **in)
 
 /* concat_expr ::= term { '.' term } */
 static expr_t
-parse_concat_expr(const char **in)
+parse_concat_expr(parse_context_t *ctx, const char **in)
 {
 	expr_t result = { .op_type = OP_CALL };
 
 	result.func = strdup(".");
 	if(result.func == NULL)
 	{
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 	}
 
-	while(last_error == PE_NO_ERROR)
+	while(ctx->last_error == PE_NO_ERROR)
 	{
 		expr_t op;
 
-		skip_whitespace_tokens(in);
-		op = parse_term(in);
-		skip_whitespace_tokens(in);
+		skip_whitespace_tokens(ctx, in);
+		op = parse_term(ctx, in);
+		skip_whitespace_tokens(ctx, in);
 
-		if(last_error != PE_NO_ERROR)
+		if(ctx->last_error != PE_NO_ERROR)
 		{
 			free_expr(&op);
 			break;
@@ -811,20 +825,20 @@ parse_concat_expr(const char **in)
 
 		if(add_expr_op(&result, &op) != 0)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			break;
 		}
 
-		if(last_token.type != DOT)
+		if(ctx->last_token.type != DOT)
 		{
 			/* Return partial result. */
 			break;
 		}
 
-		get_next(in);
+		get_next(ctx, in);
 	}
 
-	if(last_error == PE_INTERNAL)
+	if(ctx->last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
 		return null_expr;
@@ -836,67 +850,68 @@ parse_concat_expr(const char **in)
 /* term ::= signed_number | number | sqstr | dqstr | envvar | builtinvar |
  *          funccall | opt | logical_not | '(' or_expr ')' */
 static expr_t
-parse_term(const char **in)
+parse_term(parse_context_t *ctx, const char **in)
 {
 	expr_t result = { .op_type = OP_NONE };
 	const char *old_in = *in - 1;
 
-	switch(last_token.type)
+	switch(ctx->last_token.type)
 	{
 		case MINUS:
 		case PLUS:
-			result = parse_signed_number(in);
+			result = parse_signed_number(ctx, in);
 			break;
 		case DIGIT:
-			result.value = parse_number(in);
+			result.value = parse_number(ctx, in);
 			break;
 		case SQ:
-			get_next(in);
-			result.value = parse_singly_quoted_string(in);
+			get_next(ctx, in);
+			result.value = parse_singly_quoted_string(ctx, in);
 			break;
 		case DQ:
-			get_next(in);
-			result.value = parse_doubly_quoted_string(in);
+			get_next(ctx, in);
+			result.value = parse_doubly_quoted_string(ctx, in);
 			break;
 		case DOLLAR:
-			get_next(in);
-			result.value = eval_envvar(in);
+			get_next(ctx, in);
+			result.value = eval_envvar(ctx, in);
 			break;
 		case AMPERSAND:
-			get_next(in);
-			result.value = eval_opt(in);
+			get_next(ctx, in);
+			result.value = eval_opt(ctx, in);
 			break;
 		case EMARK:
-			get_next(in);
-			result = parse_logical_not(in);
+			get_next(ctx, in);
+			result = parse_logical_not(ctx, in);
 			break;
 		case LPAREN:
-			get_next(in);
-			result = parse_or_expr(in);
-			if(last_token.type == RPAREN)
+			get_next(ctx, in);
+			result = parse_or_expr(ctx, in);
+			if(ctx->last_token.type == RPAREN)
 			{
-				get_next(in);
+				get_next(ctx, in);
 			}
 			else
 			{
 				free_expr(&result);
 				result = null_expr;
 				result.value = var_error();
-				last_error = PE_MISSING_PAREN;
-				last_position = old_in;
+				ctx->last_error = PE_MISSING_PAREN;
+				ctx->last_position = old_in;
 			}
 			break;
 
 		case SYM:
-			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
+			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_",
+						tolower(ctx->last_token.c)))
 			{
 				if(**in == ':')
 				{
-					result.value = eval_builtinvar(in);
+					result.value = eval_builtinvar(ctx, in);
 				}
 				else
 				{
-					result = parse_funccall(in);
+					result = parse_funccall(ctx, in);
 				}
 				break;
 			}
@@ -904,7 +919,7 @@ parse_term(const char **in)
 
 		default:
 			--*in;
-			last_error = PE_INVALID_EXPRESSION;
+			ctx->last_error = PE_INVALID_EXPRESSION;
 			result.value = var_error();
 			break;
 	}
@@ -913,17 +928,17 @@ parse_term(const char **in)
 
 /* signed_number ::= ( + | - ) { + | - } term */
 static expr_t
-parse_signed_number(const char **in)
+parse_signed_number(parse_context_t *ctx, const char **in)
 {
-	const int sign = (last_token.type == MINUS) ? -1 : 1;
+	const int sign = (ctx->last_token.type == MINUS) ? -1 : 1;
 	expr_t result = { .op_type = OP_CALL };
 	expr_t op;
 
-	get_next(in);
-	skip_whitespace_tokens(in);
+	get_next(ctx, in);
+	skip_whitespace_tokens(ctx, in);
 
-	op = parse_term(in);
-	if(last_error != PE_NO_ERROR)
+	op = parse_term(ctx, in);
+	if(ctx->last_error != PE_NO_ERROR)
 	{
 		free_expr(&op);
 		return null_expr;
@@ -933,7 +948,7 @@ parse_signed_number(const char **in)
 	if(add_expr_op(&result, &op) != 0 || result.func == NULL)
 	{
 		free_expr(&result);
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 		return null_expr;
 	}
 
@@ -942,7 +957,7 @@ parse_signed_number(const char **in)
 
 /* number ::= num { num } */
 static var_t
-parse_number(const char **in)
+parse_number(parse_context_t *ctx, const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX];
 	size_t len = 0U;
@@ -950,103 +965,103 @@ parse_number(const char **in)
 
 	do
 	{
-		if(sstrappendch(buffer, &len, sizeof(buffer), last_token.c) != 0)
+		if(sstrappendch(buffer, &len, sizeof(buffer), ctx->last_token.c) != 0)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			return var_false();
 		}
-		get_next(in);
+		get_next(ctx, in);
 	}
-	while(last_token.type == DIGIT);
+	while(ctx->last_token.type == DIGIT);
 
 	return var_from_int(str_to_int(buffer));
 }
 
 /* sqstr ::= ''' sqchar { sqchar } ''' */
 static var_t
-parse_singly_quoted_string(const char **in)
+parse_singly_quoted_string(parse_context_t *ctx, const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX + 1];
 	const char *old_in = *in - 2;
 	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
-	while(parse_singly_quoted_char(in, &sbuf));
+	while(parse_singly_quoted_char(ctx, in, &sbuf));
 
-	if(last_error != PE_NO_ERROR)
+	if(ctx->last_error != PE_NO_ERROR)
 	{
 		return var_false();
 	}
 
-	if(last_token.type == SQ)
+	if(ctx->last_token.type == SQ)
 	{
-		get_next(in);
+		get_next(ctx, in);
 		return var_from_str(buffer);
 	}
 
-	last_error = PE_MISSING_QUOTE;
-	last_position = old_in;
+	ctx->last_error = PE_MISSING_QUOTE;
+	ctx->last_position = old_in;
 	return var_false();
 }
 
 /* sqchar
  * Returns non-zero if there are more characters in the string. */
 static int
-parse_singly_quoted_char(const char **in, sbuffer *sbuf)
+parse_singly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 {
 	int double_sq;
 	int sq_char;
 
-	double_sq = (last_token.type == SQ && **in == '\'');
-	sq_char = last_token.type != SQ && last_token.type != END;
+	double_sq = (ctx->last_token.type == SQ && **in == '\'');
+	sq_char = ctx->last_token.type != SQ && ctx->last_token.type != END;
 	if(!sq_char && !double_sq)
 	{
 		return 0;
 	}
 
-	if(sstrappend(sbuf->data, &sbuf->len, sbuf->size, last_token.str) != 0)
+	if(sstrappend(sbuf->data, &sbuf->len, sbuf->size, ctx->last_token.str) != 0)
 	{
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 		return 0;
 	}
-	get_next(in);
+	get_next(ctx, in);
 
 	if(double_sq)
 	{
-		get_next(in);
+		get_next(ctx, in);
 	}
 	return 1;
 }
 
 /* dqstr ::= ''' dqchar { dqchar } ''' */
 static var_t
-parse_doubly_quoted_string(const char **in)
+parse_doubly_quoted_string(parse_context_t *ctx, const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX + 1];
 	const char *old_in = *in - 2;
 	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
-	while(parse_doubly_quoted_char(in, &sbuf));
+	while(parse_doubly_quoted_char(ctx, in, &sbuf));
 
-	if(last_error != PE_NO_ERROR)
+	if(ctx->last_error != PE_NO_ERROR)
 	{
 		return var_false();
 	}
 
-	if(last_token.type == DQ)
+	if(ctx->last_token.type == DQ)
 	{
-		get_next(in);
+		get_next(ctx, in);
 		return var_from_str(buffer);
 	}
 
-	last_error = PE_MISSING_QUOTE;
-	last_position = old_in;
+	ctx->last_error = PE_MISSING_QUOTE;
+	ctx->last_position = old_in;
 	return var_false();
 }
 
 /* dqchar
  * Returns non-zero if there are more characters in the string. */
 int
-parse_doubly_quoted_char(const char **in, sbuffer *sbuf)
+parse_doubly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 {
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
@@ -1069,46 +1084,46 @@ parse_doubly_quoted_char(const char **in, sbuffer *sbuf)
 
 	int ok;
 
-	if(last_token.type == DQ || last_token.type == END)
+	if(ctx->last_token.type == DQ || ctx->last_token.type == END)
 	{
 		return 0;
 	}
 
-	if(last_token.c == '\\')
+	if(ctx->last_token.c == '\\')
 	{
-		get_next(in);
-		if(last_token.type == END)
+		get_next(ctx, in);
+		if(ctx->last_token.type == END)
 		{
-			last_error = PE_INVALID_EXPRESSION;
+			ctx->last_error = PE_INVALID_EXPRESSION;
 			return 0;
 		}
 		ok = sstrappendch(sbuf->data, &sbuf->len, sbuf->size,
-				table[(int)last_token.c]);
+				table[(int)ctx->last_token.c]);
 	}
 	else
 	{
-		ok = sstrappend(sbuf->data, &sbuf->len, sbuf->size, last_token.str);
+		ok = sstrappend(sbuf->data, &sbuf->len, sbuf->size, ctx->last_token.str);
 	}
 
 	if(ok != 0)
 	{
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 		return 0;
 	}
 
-	get_next(in);
+	get_next(ctx, in);
 	return 1;
 }
 
 /* envvar ::= '$' envvarname */
 static var_t
-eval_envvar(const char **in)
+eval_envvar(parse_context_t *ctx, const char **in)
 {
 	char name[VAR_NAME_LENGTH_MAX + 1];
-	if(!parse_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
+	if(!parse_sequence(ctx, in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
 		sizeof(name), name))
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
 
@@ -1117,33 +1132,33 @@ eval_envvar(const char **in)
 
 /* builtinvar ::= 'v:' varname */
 static var_t
-eval_builtinvar(const char **in)
+eval_builtinvar(parse_context_t *ctx, const char **in)
 {
 	var_t var_value;
 	char name[VAR_NAME_LENGTH_MAX + 1];
 	strcpy(name, "v:");
 
-	if(last_token.c != 'v' || **in != ':')
+	if(ctx->last_token.c != 'v' || **in != ':')
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
 
-	get_next(in);
-	get_next(in);
+	get_next(ctx, in);
+	get_next(ctx, in);
 
 	/* XXX: re-using environment variable constants, but could make new ones. */
-	if(!parse_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
+	if(!parse_sequence(ctx, in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
 				sizeof(name) - 2U, &name[2]))
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
 
 	var_value = getvar(name);
 	if(var_value.type == VTYPE_ERROR)
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
 
@@ -1152,31 +1167,31 @@ eval_builtinvar(const char **in)
 
 /* envvar ::= '&' [ 'l:' | 'g:' ] optname */
 static var_t
-eval_opt(const char **in)
+eval_opt(parse_context_t *ctx, const char **in)
 {
 	OPT_SCOPE scope = OPT_ANY;
 	const opt_t *option;
 
 	char name[OPTION_NAME_MAX + 1];
 
-	if((last_token.c == 'l' || last_token.c == 'g') && **in == ':')
+	if((ctx->last_token.c == 'l' || ctx->last_token.c == 'g') && **in == ':')
 	{
-		scope = (last_token.c == 'l') ? OPT_LOCAL : OPT_GLOBAL;
-		get_next(in);
-		get_next(in);
+		scope = (ctx->last_token.c == 'l') ? OPT_LOCAL : OPT_GLOBAL;
+		get_next(ctx, in);
+		get_next(ctx, in);
 	}
 
-	if(!parse_sequence(in, OPT_NAME_FIRST_CHAR, OPT_NAME_CHARS, sizeof(name),
+	if(!parse_sequence(ctx, in, OPT_NAME_FIRST_CHAR, OPT_NAME_CHARS, sizeof(name),
 		name))
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
 
 	option = vle_opts_find(name, scope);
 	if(option == NULL)
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
 
@@ -1205,15 +1220,15 @@ eval_opt(const char **in)
 
 /* logical_not ::= '!' term */
 static expr_t
-parse_logical_not(const char **in)
+parse_logical_not(parse_context_t *ctx, const char **in)
 {
 	expr_t result = { .op_type = OP_CALL };
 	expr_t op;
 
-	skip_whitespace_tokens(in);
+	skip_whitespace_tokens(ctx, in);
 
-	op = parse_term(in);
-	if(last_error != PE_NO_ERROR)
+	op = parse_term(ctx, in);
+	if(ctx->last_error != PE_NO_ERROR)
 	{
 		free_expr(&op);
 		return null_expr;
@@ -1221,14 +1236,14 @@ parse_logical_not(const char **in)
 
 	if(add_expr_op(&result, &op) != 0)
 	{
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 		return null_expr;
 	}
 
 	result.func = strdup("!");
 	if(result.func == NULL)
 	{
-		last_error = PE_INTERNAL;
+		ctx->last_error = PE_INTERNAL;
 		free_expr(&result);
 		return null_expr;
 	}
@@ -1239,10 +1254,10 @@ parse_logical_not(const char **in)
 /* sequence ::= first { other }
  * Returns zero on failure, otherwise non-zero is returned. */
 static int
-parse_sequence(const char **in, const char first[], const char other[],
-		size_t buf_len, char buf[])
+parse_sequence(parse_context_t *ctx, const char **in, const char first[],
+		const char other[], size_t buf_len, char buf[])
 {
-	if(buf_len == 0UL || !char_is_one_of(first, last_token.c))
+	if(buf_len == 0UL || !char_is_one_of(first, ctx->last_token.c))
 	{
 		return 0;
 	}
@@ -1251,60 +1266,60 @@ parse_sequence(const char **in, const char first[], const char other[],
 
 	do
 	{
-		strcatch(buf, last_token.c);
-		get_next(in);
+		strcatch(buf, ctx->last_token.c);
+		get_next(ctx, in);
 	}
-	while(--buf_len > 1UL && char_is_one_of(other, last_token.c));
+	while(--buf_len > 1UL && char_is_one_of(other, ctx->last_token.c));
 
 	return 1;
 }
 
 /* funccall ::= varname '(' [arglist] ')' */
 static expr_t
-parse_funccall(const char **in)
+parse_funccall(parse_context_t *ctx, const char **in)
 {
 	char *name;
 	size_t name_len;
 	expr_t result = { .op_type = OP_CALL };
 
-	if(!isalpha(last_token.c))
+	if(!isalpha(ctx->last_token.c))
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return null_expr;
 	}
 
-	name = strdup(last_token.str);
+	name = strdup(ctx->last_token.str);
 	name_len = strlen(name);
-	get_next(in);
-	while(last_token.type == SYM && isalnum(last_token.c))
+	get_next(ctx, in);
+	while(ctx->last_token.type == SYM && isalnum(ctx->last_token.c))
 	{
-		if(strappendch(&name, &name_len, last_token.c) != 0)
+		if(strappendch(&name, &name_len, ctx->last_token.c) != 0)
 		{
 			free(name);
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			return null_expr;
 		}
-		get_next(in);
+		get_next(ctx, in);
 	}
 
-	if(last_token.type != LPAREN || !function_registered(name))
+	if(ctx->last_token.type != LPAREN || !function_registered(name))
 	{
 		free(name);
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 		return null_expr;
 	}
 
 	result.func = name;
 
-	get_next(in);
-	skip_whitespace_tokens(in);
+	get_next(ctx, in);
+	skip_whitespace_tokens(ctx, in);
 
 	/* If argument list is not empty. */
-	if(last_token.type != RPAREN)
+	if(ctx->last_token.type != RPAREN)
 	{
 		const char *old_in = *in - 1;
-		parse_arglist(in, &result);
-		if(last_error != PE_NO_ERROR)
+		parse_arglist(ctx, in, &result);
+		if(ctx->last_error != PE_NO_ERROR)
 		{
 			*in = old_in;
 			free_expr(&result);
@@ -1312,24 +1327,24 @@ parse_funccall(const char **in)
 		}
 	}
 
-	skip_whitespace_tokens(in);
-	if(last_token.type != RPAREN)
+	skip_whitespace_tokens(ctx, in);
+	if(ctx->last_token.type != RPAREN)
 	{
-		last_error = PE_INVALID_EXPRESSION;
+		ctx->last_error = PE_INVALID_EXPRESSION;
 	}
-	get_next(in);
+	get_next(ctx, in);
 
 	return result;
 }
 
 /* arglist ::= or_expr { ',' or_expr } */
 static void
-parse_arglist(const char **in, expr_t *call_expr)
+parse_arglist(parse_context_t *ctx, const char **in, expr_t *call_expr)
 {
 	do
 	{
-		const expr_t op = parse_or_expr(in);
-		if(last_error != PE_NO_ERROR)
+		const expr_t op = parse_or_expr(ctx, in);
+		if(ctx->last_error != PE_NO_ERROR)
 		{
 			free_expr(&op);
 			break;
@@ -1337,23 +1352,23 @@ parse_arglist(const char **in, expr_t *call_expr)
 
 		if(add_expr_op(call_expr, &op) != 0)
 		{
-			last_error = PE_INTERNAL;
+			ctx->last_error = PE_INTERNAL;
 			break;
 		}
 
-		skip_whitespace_tokens(in);
+		skip_whitespace_tokens(ctx, in);
 
-		if(last_token.type != COMMA)
+		if(ctx->last_token.type != COMMA)
 		{
 			break;
 		}
-		get_next(in);
+		get_next(ctx, in);
 	}
-	while(last_error == PE_NO_ERROR);
+	while(ctx->last_error == PE_NO_ERROR);
 
-	if(last_error == PE_INVALID_EXPRESSION)
+	if(ctx->last_error == PE_INVALID_EXPRESSION)
 	{
-		last_error = PE_INVALID_SUBEXPRESSION;
+		ctx->last_error = PE_INVALID_SUBEXPRESSION;
 	}
 }
 
@@ -1361,22 +1376,22 @@ parse_arglist(const char **in, expr_t *call_expr)
 
 /* Skips series of consecutive whitespace. */
 static void
-skip_whitespace_tokens(const char **in)
+skip_whitespace_tokens(parse_context_t *ctx, const char **in)
 {
-	while(last_token.type == WHITESPACE)
+	while(ctx->last_token.type == WHITESPACE)
 	{
-		get_next(in);
+		get_next(ctx, in);
 	}
 }
 
-/* Gets next token from input.  Configures last_token global variable. */
+/* Gets next token from input.  Configures last_token variable. */
 static void
-get_next(const char **in)
+get_next(parse_context_t *ctx, const char **in)
 {
 	const char *const start = *in;
 	TOKENS_TYPE tt;
 
-	if(last_token.type == END)
+	if(ctx->last_token.type == END)
 		return;
 
 	switch((*in)[0])
@@ -1482,15 +1497,15 @@ get_next(const char **in)
 			tt = SYM;
 			break;
 	}
-	prev_token = last_token;
-	last_token.c = **in;
-	last_token.type = tt;
+	ctx->prev_token = ctx->last_token;
+	ctx->last_token.c = **in;
+	ctx->last_token.type = tt;
 
 	if(tt != END)
 		++*in;
 
-	strncpy(last_token.str, start, *in - start);
-	last_token.str[*in - start] = '\0';
+	strncpy(ctx->last_token.str, start, *in - start);
+	ctx->last_token.str[*in - start] = '\0';
 }
 
 void
