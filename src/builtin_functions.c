@@ -45,6 +45,7 @@
 #include "utils/test_helpers.h"
 #include "utils/trie.h"
 #include "utils/utils.h"
+#include "cmd_completion.h"
 #include "event_loop.h"
 #include "filelist.h"
 #include "macros.h"
@@ -78,6 +79,9 @@ static var_t fnameescape_builtin(const call_info_t *call_info);
 static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
 static var_t input_builtin(const call_info_t *call_info);
+static complete_cmd_func pick_completer(const char type[], int *success);
+static int dir_completer(const char str[], void *arg);
+static int file_completer(const char str[], void *arg);
 static void input_builtin_cb(const char response[], void *arg);
 static var_t layoutis_builtin(const call_info_t *call_info);
 static var_t paneisat_builtin(const call_info_t *call_info);
@@ -97,7 +101,7 @@ static const function_t functions[] = {
 	{ "fnameescape", "escapes string for a :cmd",  {1,1}, &fnameescape_builtin },
 	{ "getpanetype", "retrieve type of file list", {0,0}, &getpanetype_builtin},
 	{ "has",         "check for specific ability", {1,1}, &has_builtin },
-	{ "input",       "prompt user for input",      {1,2}, &input_builtin },
+	{ "input",       "prompt user for input",      {1,3}, &input_builtin },
 	{ "layoutis",    "query current layout",       {1,1}, &layoutis_builtin },
 	{ "paneisat",    "query pane location",        {1,1}, &paneisat_builtin },
 	{ "system",      "execute external command",   {1,1}, &system_builtin },
@@ -407,21 +411,29 @@ input_builtin(const call_info_t *call_info)
 	char *prompt = var_to_str(call_info->argv[0]);
 	char *initial = (call_info->argc > 1) ? var_to_str(call_info->argv[1])
 	                                      : strdup("");
-
-	if(prompt == NULL || initial == NULL)
+	char *completion = (call_info->argc > 2) ? var_to_str(call_info->argv[2])
+	                                         : strdup("");
+	if(prompt == NULL || initial == NULL || completion == NULL)
 	{
-		free(prompt);
-		free(initial);
-		return var_error();
+		goto fail;
 	}
 
 	input_cb_data_t cb_data = { .quit = 0, .response = NULL };
 
-	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data,
-			/*complete=*/NULL, /*allow_ee=*/1);
+	int correct_completer;
+	complete_cmd_func complete = pick_completer(completion, &correct_completer);
+	if(!correct_completer)
+	{
+		vle_tb_append_linef(vle_err, "Invalid completion type: %s", completion);
+		goto fail;
+	}
+
+	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data, complete,
+			/*allow_ee=*/1);
 
 	free(prompt);
 	free(initial);
+	free(completion);
 
 	event_loop(&cb_data.quit, /*manage_marking=*/0);
 
@@ -429,9 +441,15 @@ input_builtin(const call_info_t *call_info)
 	 * user. */
 	var_t result = var_from_str(cb_data.response == NULL ? "" : cb_data.response);
 
-	update_string(&cb_data.response, NULL);
+	free(cb_data.response);
 
 	return result;
+
+fail:
+	free(prompt);
+	free(initial);
+	free(completion);
+	return var_error();
 }
 
 /* Callback invoked after prompt has finished. */
@@ -442,6 +460,50 @@ input_builtin_cb(const char response[], void *arg)
 
 	update_string(&data->response, response);
 	data->quit = 1;
+}
+
+/* Maps completer name onto a function that implements it.  Always sets *success
+ * to indicate whether parsing was successful (this tells apart empty string
+ * from an invalid one).  Returns function pointer or NULL. */
+static complete_cmd_func
+pick_completer(const char type[], int *success)
+{
+	*success = 1;
+
+	if(strcmp(type, "dir") == 0)
+	{
+		return &dir_completer;
+	}
+	else if(strcmp(type, "file") == 0)
+	{
+		return &file_completer;
+	}
+	else if(strcmp(type, "") == 0)
+	{
+		/* No completion. */
+		return NULL;
+	}
+
+	*success = 0;
+	return NULL;
+}
+
+/* Completes paths ignoring files.  Returns completion offset. */
+static int
+dir_completer(const char str[], void *arg)
+{
+	int name_offset = after_last(str, '/') - str;
+	return name_offset
+	     + filename_completion(str, CT_DIRONLY, /*skip_canonicalization=*/0);
+}
+
+/* Completes paths to both files and directories.  Returns completion offset. */
+static int
+file_completer(const char str[], void *arg)
+{
+	int name_offset = after_last(str, '/') - str;
+	return name_offset
+	     + filename_completion(str, CT_ALL, /*skip_canonicalization=*/0);
 }
 
 /* Checks current layout configuration.  Returns boolean value that reflects

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Dec 10
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Dec 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4907,7 +4907,7 @@ filetype({fnum} [, {resolve}])
 fnameescape({expr})   String      Escapes {expr} for use in a :command.
 getpanetype()         String      Returns type of current pane.
 has({property})       Integer     Checks whether instance has {property}.
-input({prompt} [, {initial}])
+input({prompt} [, {initial} [, {completion}]])
                       String      Prompts user for an input on command-line.
 layoutis({type})      Integer     Checks whether layout is of type {type}.
 paneisat({loc})       Integer     Checks whether current pane is at {loc}.
@@ -5034,10 +5034,15 @@ Usage example: >
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
 <
 
-input({prompt} [, {initial}])                  *vifm-input()*
+input({prompt} [, {initial} [, {completion}]]) *vifm-input()*
 
 Creates a command-line prompt to obtain user's input.  Initial value can
 be supplied as an optional second parameter, otherwise empty string is used.
+
+Optional third parameter specifies kind of completion, which can be one of:
+    dir   paths to directories
+    file  paths to files and directories
+    ""    (empty string, default) no completion
 
 Note that behaviour differs from Vim where executing a mapping like >
   nnoremap j :echo input('text: ')<cr>input
@@ -5045,7 +5050,10 @@ leaves you in a prompt mode with "input" typed in.  Vifm will wait for leaving
 the prompt and then continue executing the mapping.
 
 Usage example: >
-  :echo input('text: ', 'hello')
+  nnoremap ,m : let $DIR_NAME = input('mkdir: ', '', 'dir')
+             \| if $DIR_NAME != ''
+             \|     execute 'mkdir' fnameescape($DIR_NAME)
+             \| endif<cr>
 
 layoutis({type})                               *vifm-layoutis()*
 

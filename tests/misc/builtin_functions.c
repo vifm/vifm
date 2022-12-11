@@ -481,5 +481,10 @@ TEST(extcached)
 	set_extcached_monitor_type(FMT_CHANGED);
 }
 
+TEST(input_wrong_arg)
+{
+	ASSERT_FAIL("input('prompt', 'input', 'bla')", PE_INVALID_EXPRESSION);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

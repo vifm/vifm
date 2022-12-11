@@ -147,6 +147,25 @@ TEST(user_prompt_and_expr_reg)
 	assert_string_equal("nestedextraout", ui_sb_last());
 }
 
+TEST(user_prompt_completion)
+{
+	cfg.timeout_len = 1;
+	ui_sb_msg("");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "", NULL);
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(WK_C_i WK_CR);
+	(void)vle_keys_exec_timed_out(L":echo input('p', 'read/dos', 'dir')" WK_CR);
+	assert_string_equal("read/dos", ui_sb_last());
+
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(WK_C_i WK_CR);
+	(void)vle_keys_exec_timed_out(L":echo input('p', 'read/dos', 'file')" WK_CR);
+	assert_string_equal("read/dos-eof", ui_sb_last());
+}
+
 static void
 prompt_callback(const char response[], void *arg)
 {
