@@ -180,7 +180,7 @@ enter_attr_mode(view_t *active_view)
 
 	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
 	ui_hide_graphics();
-	clear_input_bar();
+	modes_input_bar_clear();
 	curr_stats.use_input_bar = 0;
 
 	/* Values:
@@ -270,7 +270,7 @@ redraw_attr_dialog(void)
 	free(title);
 
 	checked_wmove(change_win, curr, col);
-	curs_set(1);
+	ui_set_cursor(/*visibility=*/1);
 	ui_refresh_win(change_win);
 }
 
@@ -371,7 +371,7 @@ static void
 leave_attr_mode(void)
 {
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 	curr_stats.use_input_bar = 1;
 
 	flist_sel_stash(view);

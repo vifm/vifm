@@ -37,7 +37,7 @@ SETUP_ONCE()
 SETUP()
 {
 	conf_setup();
-	init_modes();
+	modes_init();
 	init_commands();
 	bmarks_clear();
 

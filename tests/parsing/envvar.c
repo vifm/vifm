@@ -10,7 +10,7 @@ static const char * getenv_value(const char name[]);
 
 SETUP()
 {
-	init_parser(&getenv_value);
+	vle_parser_init(&getenv_value);
 }
 
 static const char *

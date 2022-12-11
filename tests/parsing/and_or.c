@@ -80,28 +80,22 @@ TEST(strings_are_converted_to_integers)
 
 TEST(and_handles_errors_correctly)
 {
-	var_t res_var = var_false();
-
 	char expr[8192];
 	strcpy(expr, "1&&1==");
 	memset(expr + strlen(expr), '3', sizeof(expr) - strlen(expr));
 	expr[sizeof(expr) - 1U] = '\0';
 
-	assert_int_equal(PE_INTERNAL, parse(expr, 0, &res_var));
-	var_free(res_var);
+	ASSERT_FAIL(expr, PE_INTERNAL);
 }
 
 TEST(or_handles_errors_correctly)
 {
-	var_t res_var = var_false();
-
 	char expr[8192];
 	strcpy(expr, "1||1==");
 	memset(expr + strlen(expr), '3', sizeof(expr) - strlen(expr));
 	expr[sizeof(expr) - 1U] = '\0';
 
-	assert_int_equal(PE_INTERNAL, parse(expr, 0, &res_var));
-	var_free(res_var);
+	ASSERT_FAIL(expr, PE_INTERNAL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

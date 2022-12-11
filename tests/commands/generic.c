@@ -379,7 +379,7 @@ TEST(put_bg_cmd_is_parsed_correctly)
 TEST(conversion_failure_is_handled)
 {
 	assert_non_null(setlocale(LC_ALL, "C"));
-	init_modes();
+	modes_init();
 
 	/* Execution of the following commands just shouldn't crash. */
 	(void)exec_commands("nnoremap \xee\x85\x8b", &lwin, CIT_COMMAND);
@@ -400,7 +400,7 @@ TEST(conversion_failure_is_handled)
 
 TEST(selection_is_not_reset_in_visual_mode)
 {
-	init_modes();
+	modes_init();
 
 	init_view_list(&lwin);
 	update_string(&lwin.dir_entry[0].name, "name");
@@ -417,7 +417,7 @@ TEST(selection_is_not_reset_in_visual_mode)
 TEST(usercmd_range_is_as_good_as_selection)
 {
 	stats_init(&cfg);
-	init_modes();
+	modes_init();
 	regs_init();
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);

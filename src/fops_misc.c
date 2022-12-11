@@ -71,7 +71,7 @@ static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
 static char ** list_files_to_retarget(view_t *view, int *len);
 static int retarget_one(view_t *view);
-static void change_link_cb(const char new_target[]);
+static void change_link_cb(const char new_target[], void *arg);
 static int retarget_many(view_t *view, char *files[], int nfiles);
 static int verify_retarget_list(char *files[], int nfiles, char *names[],
 		int nnames, char **error, void *data);
@@ -92,9 +92,9 @@ static void dir_size(bg_op_t *bg_op, char path[], int force);
 static int bg_cancellation_hook(void *arg);
 static void redraw_after_path_change(view_t *view, const char path[]);
 #ifndef _WIN32
-static void change_owner_cb(const char new_owner[]);
+static void change_owner_cb(const char new_owner[], void *arg);
 static int complete_owner(const char str[], void *arg);
-static void change_group_cb(const char new_group[]);
+static void change_group_cb(const char new_group[], void *arg);
 static int complete_group(const char str[], void *arg);
 #endif
 
@@ -617,14 +617,14 @@ retarget_one(view_t *view)
 		return 0;
 	}
 
-	fops_line_prompt("Link target: ", linkto, &change_link_cb, &complete_filename,
-			0);
+	fops_line_prompt("Link target: ", linkto, &change_link_cb, /*cb_arg=*/NULL,
+			&complete_filename, 0);
 	return 0;
 }
 
 /* Handles users response for new link target prompt. */
 static void
-change_link_cb(const char new_target[])
+change_link_cb(const char new_target[], void *arg)
 {
 	char undo_msg[2*PATH_MAX + 32];
 	char full_path[PATH_MAX + 1];
@@ -1495,12 +1495,13 @@ fops_chuser(void)
 		show_error_msg("Change owner", "No files to process");
 		return;
 	}
-	fops_line_prompt("New owner: ", "", &change_owner_cb, &complete_owner, 0);
+	fops_line_prompt("New owner: ", "", &change_owner_cb, /*cb_arg=*/NULL,
+			&complete_owner, 0);
 }
 
 /* Handles users response for new file owner name prompt. */
 static void
-change_owner_cb(const char new_owner[])
+change_owner_cb(const char new_owner[], void *arg)
 {
 	uid_t uid;
 
@@ -1536,12 +1537,13 @@ fops_chgroup(void)
 		show_error_msg("Change group", "No files to process");
 		return;
 	}
-	fops_line_prompt("New group: ", "", &change_group_cb, &complete_group, 0);
+	fops_line_prompt("New group: ", "", &change_group_cb, /*cb_arg=*/NULL,
+			&complete_group, 0);
 }
 
 /* Handles users response for new file group name prompt. */
 static void
-change_group_cb(const char new_group[])
+change_group_cb(const char new_group[], void *arg)
 {
 	gid_t gid;
 

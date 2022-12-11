@@ -486,8 +486,6 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					 * closing brackets */
 					const char *e = strchr(*format, '}');
 					char *expr = NULL, *resstr = NULL;
-					var_t res = var_false();
-					ParsingErrors parsing_error;
 
 					/* If there's no matching closing bracket, just add the opening one
 					 * literally */
@@ -508,11 +506,11 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					}
 					memcpy(expr, *format, e - (*format));
 
-					/* Try to parse expr, and convert the res to string if succeed. */
-					parsing_error = parse(expr, 0, &res);
-					if(parsing_error == PE_NO_ERROR)
+					/* Try to parse expr and convert the result to string on success. */
+					parsing_result_t result = vle_parser_eval(expr, /*interactive=*/0);
+					if(result.error == PE_NO_ERROR)
 					{
-						resstr = var_to_str(res);
+						resstr = var_to_str(result.value);
 					}
 
 					if(resstr != NULL)
@@ -524,7 +522,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 						copy_str(buf, sizeof(buf), "<Invalid expr>");
 					}
 
-					var_free(res);
+					var_free(result.value);
 					free(resstr);
 					free(expr);
 
@@ -942,7 +940,7 @@ is_job_bar_visible(void)
 {
 	/* Pretend that bar isn't visible in tests. */
 	return curr_stats.load_stage >= 2
-	    && ui_stat_job_bar_height() != 0 && !is_in_menu_like_mode();
+	    && ui_stat_job_bar_height() != 0 && !modes_is_menu_like();
 }
 
 void

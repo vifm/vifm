@@ -292,7 +292,7 @@ vifm_main(int argc, char *argv[])
 		return -1;
 	}
 
-	init_modes();
+	modes_init();
 	un_init(&undo_perform_func, NULL, &ui_cancellation_requested,
 			&cfg.undo_levels);
 	load_view_options(curr_view);
@@ -408,7 +408,7 @@ parse_received_arguments(char *argv[])
 	args_process(&args, AS_IPC, curr_stats.ipc);
 	args_process(&args, AS_OTHER, curr_stats.ipc);
 
-	abort_menu_like_mode();
+	modes_abort_menu_like();
 	exec_startup_commands(&args);
 	update_screen(stats_update_fetch());
 
@@ -510,16 +510,15 @@ need_to_switch_active_pane(const char lwin_path[], const char rwin_path[])
 static char *
 eval_received_expression(const char expr[])
 {
-	char *result_str;
-
-	var_t result;
-	if(parse(expr, 1, &result) != PE_NO_ERROR)
+	parsing_result_t result = vle_parser_eval(expr, /*interactive=*/1);
+	if(result.error != PE_NO_ERROR)
 	{
+		var_free(result.value);
 		return NULL;
 	}
 
-	result_str = var_to_str(result);
-	var_free(result);
+	char *result_str = var_to_str(result.value);
+	var_free(result.value);
 	return result_str;
 }
 

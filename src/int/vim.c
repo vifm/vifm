@@ -18,8 +18,6 @@
 
 #include "vim.h"
 
-#include <curses.h> /* FALSE curs_set() */
-
 #include <ctype.h> /* isspace() */
 #include <errno.h> /* errno */
 #include <stdio.h> /* FILE fclose() fprintf() fputs() snprintf() */
@@ -208,11 +206,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 
 	result = run_vim(cmd, bg && allow_forking, allow_forking);
 
-	/* The check is for tests. */
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(0);
-	}
+	ui_set_cursor(/*visibility=*/0);
 
 	return result;
 }

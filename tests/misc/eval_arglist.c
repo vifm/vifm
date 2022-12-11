@@ -18,7 +18,7 @@ SETUP_ONCE()
 	};
 	assert_success(function_register(&echo_function));
 
-	init_parser(&env_get);
+	vle_parser_init(&env_get);
 }
 
 static var_t

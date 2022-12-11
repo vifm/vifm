@@ -660,6 +660,9 @@ void ui_view_reset_decor_cache(const view_t *view);
  * movement. */
 void checked_wmove(WINDOW *win, int y, int x);
 
+/* Changes visibility of hardware cursor. */
+void ui_set_cursor(int visibility);
+
 /* Displays "Terminal is too small" kind of message instead of UI. */
 void ui_display_too_small_term_msg(void);
 

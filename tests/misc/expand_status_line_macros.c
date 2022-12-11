@@ -54,7 +54,7 @@
 
 SETUP_ONCE()
 {
-	init_parser(&env_get);
+	vle_parser_init(&env_get);
 	try_enable_utf8_locale();
 }
 

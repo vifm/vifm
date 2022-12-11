@@ -30,7 +30,7 @@ SETUP()
 	setup_grid(&rwin, 1, 1, 1);
 	other_view = &rwin;
 
-	init_modes();
+	modes_init();
 
 	opt_handlers_setup();
 

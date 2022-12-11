@@ -27,7 +27,7 @@ SETUP()
 	view_setup(&lwin);
 	view_setup(&rwin);
 
-	init_modes();
+	modes_init();
 	init_commands();
 
 	cfg.timeout_len = 1;

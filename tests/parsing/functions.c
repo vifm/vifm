@@ -42,14 +42,12 @@ TEST(function_with_wrong_signature_is_not_added)
 
 TEST(wrong_number_of_arguments_fail)
 {
-	ASSERT_FAIL("a()", PE_INVALID_EXPRESSION);
-	assert_string_equal("a()", get_last_position());
+	ASSERT_FAIL_AT("a()", "a()", PE_INVALID_EXPRESSION);
 }
 
 TEST(wrong_arg_fail)
 {
-	ASSERT_FAIL("a(a)", PE_INVALID_SUBEXPRESSION);
-	assert_string_equal("a)", get_last_position());
+	ASSERT_FAIL_AT("a(a)", "a)", PE_INVALID_SUBEXPRESSION);
 }
 
 TEST(two_args_ok)

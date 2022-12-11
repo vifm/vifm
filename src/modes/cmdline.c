@@ -103,8 +103,11 @@ typedef struct
 	CmdLineSubmode sub_mode;
 	/* Whether current submode allows external editing. */
 	int sub_mode_allows_ee;
-	/* Extra parameter for submode-related calls. */
-	void *sub_mode_ptr;
+	/* CLS_MENU_*-specific data. */
+	struct menu_data_t *menu;
+	/* CLS_PROMPT-specific data. */
+	prompt_cb prompt_callback;
+	void *prompt_callback_arg;
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
@@ -162,18 +165,18 @@ static void handle_nonempty_input(void);
 static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
+static int enter_submode(CmdLineSubmode sub_mode, const char initial[]);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
-		void *sub_mode_ptr);
+		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee);
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
-static void leave_cmdline_mode(void);
+static void leave_cmdline_mode(int cancelled);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
 static void extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
-		prompt_cb cb);
+		prompt_cb cb, void *cb_arg);
 static void cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
@@ -195,7 +198,8 @@ static void exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void save_prompt_to_history(const char input[], int is_expr_reg);
-static void finish_prompt_submode(const char input[], prompt_cb cb);
+static void finish_prompt_submode(const char input[], prompt_cb cb,
+		void *cb_arg);
 static CmdInputType search_cls_to_cit(CmdLineSubmode sub_mode);
 static int is_forward_search(CmdLineSubmode sub_mode);
 static int is_backward_search(CmdLineSubmode sub_mode);
@@ -206,7 +210,7 @@ static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void hist_next(line_stats_t *stat, const hist_t *hist, size_t len);
 static void cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info);
-static void expr_reg_prompt_cb(const char expr[]);
+static void expr_reg_prompt_cb(const char expr[], void *arg);
 static int expr_reg_prompt_completion(const char cmd[], void *arg);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
@@ -385,7 +389,7 @@ def_handler(wchar_t key)
 	p = reallocarray(input_stat.line, input_stat.len + 2, sizeof(wchar_t));
 	if(p == NULL)
 	{
-		leave_cmdline_mode();
+		leave_cmdline_mode(/*cancelled=*/1);
 		return 0;
 	}
 
@@ -472,7 +476,7 @@ input_line_changed(void)
 
 	/* Hide cursor during view update, otherwise user might notice it blinking in
 	 * wrong places. */
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 
 	/* set_view_port() should not be called if none of the conditions are true. */
 
@@ -507,7 +511,7 @@ input_line_changed(void)
 	/* Hardware cursor is moved on the screen only on refresh, so refresh status
 	 * bar to force cursor moving there before it becomes visible again. */
 	ui_refresh_win(status_bar);
-	curs_set(1);
+	ui_set_cursor(/*visibility=*/1);
 }
 
 /* Provides reaction for empty input during interactive search/filtering. */
@@ -517,7 +521,7 @@ handle_empty_input(void)
 	/* Clear selection/highlight. */
 	if(input_stat.prev_mode == MENU_MODE)
 	{
-		(void)menus_search("", input_stat.sub_mode_ptr, 0);
+		(void)menus_search("", input_stat.menu, 0);
 	}
 	else if(cfg.hl_search)
 	{
@@ -558,8 +562,8 @@ handle_nonempty_input(void)
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = menus_search(mbinput, input_stat.sub_mode_ptr, 0);
-			update_state(result, menus_search_matched(input_stat.sub_mode_ptr));
+			result = menus_search(mbinput, input_stat.menu, 0);
+			update_state(result, menus_search_matched(input_stat.menu));
 			break;
 		case CLS_FILTER:
 			set_local_filter(mbinput);
@@ -630,23 +634,48 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr)
+modcline_enter(CmdLineSubmode sub_mode, const char initial[])
 {
-	wchar_t *wcmd;
+	assert(sub_mode != CLS_MENU_COMMAND && sub_mode != CLS_MENU_FSEARCH &&
+			sub_mode != CLS_MENU_BSEARCH &&
+			"Use modcline_in_menu() for CLS_MENU_* submodes.");
+	assert(sub_mode != CLS_PROMPT &&
+			"Use modcline_prompt() for CLS_PROMPT submode.");
+	(void)enter_submode(sub_mode, initial);
+}
+
+void
+modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
+{
+	assert((sub_mode == CLS_MENU_COMMAND || sub_mode == CLS_MENU_FSEARCH ||
+			sub_mode == CLS_MENU_BSEARCH) &&
+			"modcline_in_menu() is only for CLS_MENU_* submodes.");
+
+	if(enter_submode(sub_mode, /*initial=*/"") == 0)
+	{
+		input_stat.menu = m;
+	}
+}
+
+/* Enters command-line editing submode.  Returns zero on success. */
+static int
+enter_submode(CmdLineSubmode sub_mode, const char initial[])
+{
+	wchar_t *winitial;
 	const wchar_t *wprompt;
 	complete_cmd_func complete_func = NULL;
 
 	if(sub_mode == CLS_FILTER && curr_view->custom.type == CV_DIFF)
 	{
 		show_error_msg("Filtering", "No local filter for diff views");
-		return;
+		return 1;
 	}
 
-	wcmd = to_wide_force(cmd);
-	if(wcmd == NULL)
+	winitial = to_wide_force(initial);
+	if(winitial == NULL)
 	{
 		show_error_msg("Error", "Not enough memory");
-		return;
+		return 1;
 	}
 
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
@@ -672,29 +701,33 @@ modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr)
 		wprompt = L"E";
 	}
 
-	prepare_cmdline_mode(wprompt, wcmd, complete_func, sub_mode, /*allow_ee=*/0,
-			ptr);
-	free(wcmd);
+	prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
+			/*allow_ee=*/0);
+
+	free(winitial);
+	return 0;
 }
 
 void
-modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
-		complete_cmd_func complete, int allow_ee)
+modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
+		void *cb_arg, complete_cmd_func complete, int allow_ee)
 {
 	wchar_t *wprompt = to_wide_force(prompt);
-	wchar_t *wcmd = to_wide_force(cmd);
+	wchar_t *winitial = to_wide_force(initial);
 
-	if(wprompt == NULL || wcmd == NULL)
+	if(wprompt == NULL || winitial == NULL)
 	{
 		show_error_msg("Error", "Not enough memory");
 	}
 	else
 	{
-		prepare_cmdline_mode(wprompt, wcmd, complete, CLS_PROMPT, allow_ee, cb);
+		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT, allow_ee);
+		input_stat.prompt_callback = cb;
+		input_stat.prompt_callback_arg = cb_arg;
 	}
 
 	free(wprompt);
-	free(wcmd);
+	free(winitial);
 }
 
 void
@@ -702,7 +735,7 @@ modcline_redraw(void)
 {
 	/* Hide cursor during redraw, otherwise user might notice it blinking in wrong
 	 * places. */
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 
 	if(input_stat.prev_mode == MENU_MODE)
 	{
@@ -736,15 +769,14 @@ modcline_redraw(void)
 	}
 
 	/* Make cursor visible after all redraws. */
-	curs_set(1);
+	ui_set_cursor(/*visibility=*/1);
 }
 
 /* Performs all necessary preparations for command-line mode to start
  * operating. */
 static void
-prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
-		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee,
-		void *sub_mode_ptr)
+prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
+		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee)
 {
 	if(vle_mode_get() == CMDLINE_MODE)
 	{
@@ -755,7 +787,9 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 
 	input_stat.sub_mode = sub_mode;
 	input_stat.sub_mode_allows_ee = allow_ee;
-	input_stat.sub_mode_ptr = sub_mode_ptr;
+	input_stat.menu = NULL;
+	input_stat.prompt_callback = NULL;
+	input_stat.prompt_callback_arg = NULL;
 
 	input_stat.prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
@@ -764,9 +798,9 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 
 	ui_sb_lock();
 
-	input_stat.line = vifm_wcsdup(cmd);
+	input_stat.line = vifm_wcsdup(initial);
 	input_stat.initial_line = vifm_wcsdup(input_stat.line);
-	input_stat.index = wcslen(cmd);
+	input_stat.index = wcslen(initial);
 	input_stat.curs_pos = esc_wcswidth(input_stat.line, (size_t)-1);
 	input_stat.len = input_stat.index;
 	input_stat.cmd_pos = -1;
@@ -797,7 +831,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.curs_pos += input_stat.prompt_wid;
 
 	update_cmdline_size();
-	update_cmdline_text(&input_stat);
+	draw_cmdline_text(&input_stat);
 
 	curr_stats.save_msg = 1;
 
@@ -805,10 +839,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 		init_commands();
 
 	/* Make cursor visible only after all initial draws. */
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(1);
-	}
+	ui_set_cursor(/*visibility=*/1);
 }
 
 /* Stores view port parameters (top line, current position). */
@@ -868,7 +899,7 @@ is_line_edited(void)
 
 /* Leaves command-line mode. */
 static void
-leave_cmdline_mode(void)
+leave_cmdline_mode(int cancelled)
 {
 	free(input_stat.line);
 	free(input_stat.initial_line);
@@ -889,14 +920,18 @@ leave_cmdline_mode(void)
 			return;
 		}
 
+		if(cancelled && input_stat.sub_mode == CLS_PROMPT)
+		{
+			/* Invoke callback with NULL for a result to inform about cancellation. */
+			finish_prompt_submode(/*input=*/NULL, input_stat.prompt_callback,
+					input_stat.prompt_callback_arg);
+		}
+
 		vle_mode_set(input_stat.prev_mode, VMT_PRIMARY);
 	}
 
 	/* Hide the cursor first. */
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(0);
-	}
+	ui_set_cursor(/*visibility=*/0);
 
 	const int multiline_status_bar = (getmaxy(status_bar) > 1);
 
@@ -949,7 +984,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	const line_stats_t old_input_stat = input_stat;
-	leave_cmdline_mode();
+	leave_cmdline_mode(/*cancelled=*/1);
 
 	if(old_input_stat.prev_mode == VISUAL_MODE)
 	{
@@ -986,10 +1021,11 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		char *const mbstr = to_multibyte(input_stat.line);
 		const int prev_mode = input_stat.prev_mode;
 		const CmdLineSubmode sub_mode = input_stat.sub_mode;
-		void *const sub_mode_ptr = input_stat.sub_mode_ptr;
+		const prompt_cb prompt_callback = input_stat.prompt_callback;
+		void *const prompt_callback_arg = input_stat.prompt_callback_arg;
 		const int index = input_stat.index;
 
-		leave_cmdline_mode();
+		leave_cmdline_mode(/*cancelled=*/0);
 
 		if(sub_mode == CLS_FILTER)
 		{
@@ -999,7 +1035,8 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		if(prompt_ee)
 		{
 			int is_expr_reg = (prev_mode == CMDLINE_MODE);
-			extedit_prompt(mbstr, index + 1, is_expr_reg, sub_mode_ptr);
+			extedit_prompt(mbstr, index + 1, is_expr_reg, prompt_callback,
+					prompt_callback_arg);
 		}
 		else
 		{
@@ -1033,7 +1070,7 @@ cls_to_editable_cit(CmdLineSubmode sub_mode)
 /* Queries prompt input using external editor. */
 static void
 extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
-		prompt_cb cb)
+		prompt_cb cb, void *cb_arg)
 {
 	CmdInputType type = (is_expr_reg ? CIT_EXPRREG_INPUT : CIT_PROMPT_INPUT);
 	char *const ext_cmd = get_ext_command(input, cursor_col, type);
@@ -1041,7 +1078,6 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 	if(ext_cmd != NULL)
 	{
 		save_prompt_to_history(ext_cmd, is_expr_reg);
-		finish_prompt_submode(ext_cmd, cb);
 	}
 	else
 	{
@@ -1051,6 +1087,8 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 		curr_stats.save_msg = 1;
 	}
 
+	/* Invoking this will NULL in case of error to report it. */
+	finish_prompt_submode(ext_cmd, cb, cb_arg);
 	free(ext_cmd);
 }
 
@@ -1397,7 +1435,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	if(is_input_line_empty() && sub_mode == CLS_MENU_COMMAND)
 	{
-		leave_cmdline_mode();
+		leave_cmdline_mode(/*cancelled=*/0);
 		return;
 	}
 
@@ -1407,9 +1445,11 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	save_input_to_history(keys_info, input);
 
 	const int prev_mode = input_stat.prev_mode;
-	void *const sub_mode_ptr = input_stat.sub_mode_ptr;
+	struct menu_data_t *const menu = input_stat.menu;
+	const prompt_cb prompt_callback = input_stat.prompt_callback;
+	void *const prompt_callback_arg = input_stat.prompt_callback_arg;
 	const int search_mode = input_stat.search_mode;
-	leave_cmdline_mode();
+	leave_cmdline_mode(/*cancelled=*/0);
 
 	if(prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
 			sub_mode != CLS_VBSEARCH)
@@ -1444,7 +1484,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		finish_prompt_submode(input, sub_mode_ptr);
+		finish_prompt_submode(input, prompt_callback, prompt_callback_arg);
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -1479,7 +1519,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
 				stats_refresh_later();
-				curr_stats.save_msg = menus_search(pattern, sub_mode_ptr, 1);
+				curr_stats.save_msg = menus_search(pattern, menu, 1);
 				break;
 
 			default:
@@ -1492,7 +1532,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		if(prev_mode == MENU_MODE)
 		{
 			modmenu_partial_redraw();
-			menus_search_print_msg(sub_mode_ptr);
+			menus_search_print_msg(menu);
 			curr_stats.save_msg = 1;
 		}
 		else
@@ -1643,12 +1683,12 @@ save_prompt_to_history(const char input[], int is_expr_reg)
 
 /* Performs final actions on successful querying of prompt input. */
 static void
-finish_prompt_submode(const char input[], prompt_cb cb)
+finish_prompt_submode(const char input[], prompt_cb cb, void *cb_arg)
 {
 	modes_post();
 	modes_pre();
 
-	cb(input);
+	cb(input, cb_arg);
 }
 
 /* Converts search command-line sub-mode to type of command input.  Returns
@@ -1819,25 +1859,26 @@ cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 
 	if(input_stat.prev_mode != CMDLINE_MODE)
 	{
-		modcline_prompt("(=)", "", &expr_reg_prompt_cb, &expr_reg_prompt_completion,
-				/*allow_ee=*/1);
+		modcline_prompt("(=)", "", &expr_reg_prompt_cb, /*cb_arg=*/NULL,
+				&expr_reg_prompt_completion, /*allow_ee=*/1);
 	}
 }
 
 /* Handles result of expression register prompt. */
 static void
-expr_reg_prompt_cb(const char expr[])
+expr_reg_prompt_cb(const char expr[], void *arg)
 {
-	/* Try to parse expr, and convert the res to string if succeed. */
-	var_t res;
-	ParsingErrors parsing_error = parse(expr, 0, &res);
-	if(parsing_error != PE_NO_ERROR)
+	/* Try to parse expr and convert the result to string on success. */
+	parsing_result_t result = vle_parser_eval(expr, /*interactive=*/0);
+	if(result.error != PE_NO_ERROR)
 	{
+		/* TODO: maybe print error message on status bar. */
+		var_free(result.value);
 		return;
 	}
 
-	char *res_str = var_to_str(res);
-	var_free(res);
+	char *res_str = var_to_str(result.value);
+	var_free(result.value);
 
 	wchar_t *wide = to_wide_force(res_str);
 	free(res_str);
@@ -2713,8 +2754,7 @@ line_completion(line_stats_t *stat)
 		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
-		if(input_stat.sub_mode == CLS_COMMAND ||
-				input_stat.sub_mode == CLS_MENU_COMMAND)
+		if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
 		{
 			line_mb_cmd = find_last_command(line_mb);
 

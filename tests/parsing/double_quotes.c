@@ -53,15 +53,12 @@ TEST(dot_ok)
 
 TEST(very_long_string)
 {
-	var_t res_var = var_false();
-
 	char string[8192];
 	string[0] = '\"';
 	memset(string + 1, '0', sizeof(string) - 2U);
 	string[sizeof(string) - 1U] = '\0';
 
-	assert_int_equal(PE_INTERNAL, parse(string, 0, &res_var));
-	var_free(res_var);
+	ASSERT_FAIL(string, PE_INTERNAL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

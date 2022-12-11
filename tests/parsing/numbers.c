@@ -80,14 +80,11 @@ TEST(string_is_converted_for_signs)
 
 TEST(extremely_long_number)
 {
-	var_t res_var = var_false();
-
 	char zeroes[8192];
 	memset(zeroes, '0', sizeof(zeroes) - 1U);
 	zeroes[sizeof(zeroes) - 1U] = '\0';
 
-	assert_int_equal(PE_INTERNAL, parse(zeroes, 0, &res_var));
-	var_free(res_var);
+	ASSERT_FAIL(zeroes, PE_INTERNAL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -40,8 +40,11 @@ typedef enum
 }
 CmdLineSubmode;
 
-/* Callback for prompt input. */
-typedef void (*prompt_cb)(const char response[]);
+struct menu_data_t;
+
+/* Callback for prompt input.  Invoked with NULL on cancellation.  arg is user
+ * supplied value, which is passed through. */
+typedef void (*prompt_cb)(const char response[], void *arg);
 
 /* Custom prompt line completion function.  arg is user supplied value, which is
  * passed through.  Should return completion offset. */
@@ -50,16 +53,19 @@ typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 /* Initializes command-line mode. */
 void modcline_init(void);
 
-/* Enters command-line editing mode with specified submode.  cmd specifies
- * initial value, ptr is submode-specific data to be passed back. */
-void modcline_enter(CmdLineSubmode sub_mode, const char cmd[], void *ptr);
+/* Enters command-line editing mode with specified submode.  initial is the
+ * start value. */
+void modcline_enter(CmdLineSubmode sub_mode, const char initial[]);
 
-/* Enters command-line editing mode with prompt submode activated.  cmd
- * specifies initial value, cb is callback called on success, complete is
- * completion function, allow_ee specifies whether issuing external editor is
- * allowed. */
-void modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
-		complete_cmd_func complete, int allow_ee);
+/* Version of modcline_enter() specific to CLS_MENU_* submodes. */
+void modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m);
+
+/* Enters command-line editing mode with prompt submode activated.  initial is
+ * the start value, cb is callback called with the result on success and
+ * with NULL on cancellation, complete is completion function (can be NULL),
+ * allow_ee specifies whether issuing external editor is allowed. */
+void modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
+		void *cb_arg, complete_cmd_func complete, int allow_ee);
 
 /* Redraws UI elements of the command-line mode. */
 void modcline_redraw(void);
@@ -97,8 +103,11 @@ typedef struct
 	CmdLineSubmode sub_mode;
 	/* Whether current submode allows external editing. */
 	int sub_mode_allows_ee;
-	/* Extra parameter for submode-related calls. */
-	void *sub_mode_ptr;
+	/* CLS_MENU_*-specific data. */
+	struct menu_data_t *menu;
+	/* CLS_PROMPT-specific data. */
+	prompt_cb prompt_callback;
+	void *prompt_callback_arg;
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */

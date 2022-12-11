@@ -58,14 +58,14 @@ TEST(can_navigate_to_broken_symlink, IF(not_windows))
 TEST(nothing_is_searched_if_no_pattern)
 {
 	menus_search_repeat(m.state, 0);
-	assert_int_equal(0, menus_search_matched(m.state));
+	assert_int_equal(0, menus_search_matched(&m));
 }
 
 TEST(nothing_is_searched_for_wrong_pattern)
 {
 	menus_search_reset(m.state, 0, 1);
 	assert_true(menus_search("*a", &m, 1));
-	assert_int_equal(0, menus_search_matched(m.state));
+	assert_int_equal(0, menus_search_matched(&m));
 }
 
 TEST(search_via_menu_search)

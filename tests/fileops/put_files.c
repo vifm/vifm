@@ -21,9 +21,9 @@
 #include "../../src/trash.h"
 
 static void line_prompt(const char prompt[], const char filename[],
-		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
+		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
 static void line_prompt_rec(const char prompt[], const char filename[],
-		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
+		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
 static char options_prompt_rename(const char title[], const char message[],
 		const struct response_variant *variants);
 static char options_prompt_rename_rec(const char title[], const char message[],
@@ -76,14 +76,14 @@ TEARDOWN()
 
 static void
 line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
-		fo_complete_cmd_func complete, int allow_ee)
+		void *cb_arg, fo_complete_cmd_func complete, int allow_ee)
 {
-	cb("b");
+	cb("b", cb_arg);
 }
 
 static void
 line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
-		fo_complete_cmd_func complete, int allow_ee)
+		void *cb_arg, fo_complete_cmd_func complete, int allow_ee)
 {
 	rename_cb = cb;
 }
@@ -359,7 +359,7 @@ TEST(rename_on_put)
 	fops_init(&line_prompt_rec, &options_prompt_rename_rec);
 	(void)fops_put(&lwin, -1, 'a', 0);
 	/* Continue the operation. */
-	rename_cb("b");
+	rename_cb("b", /*arg=*/NULL);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();

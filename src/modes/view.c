@@ -1004,14 +1004,14 @@ static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	vi->search_repeat = key_info.count;
-	modcline_enter(CLS_VWFSEARCH, "", NULL);
+	modcline_enter(CLS_VWFSEARCH, "");
 }
 
 static void
 cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 {
 	vi->search_repeat = key_info.count;
-	modcline_enter(CLS_VWBSEARCH, "", NULL);
+	modcline_enter(CLS_VWBSEARCH, "");
 }
 
 /* Switches to the previous viewer. */

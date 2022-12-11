@@ -33,7 +33,7 @@ SETUP()
 	update_string(&cfg.shell_cmd_flag, "-c");
 
 	init_builtin_functions();
-	init_parser(NULL);
+	vle_parser_init(NULL);
 	init_variables();
 
 	view_setup(&lwin);
@@ -479,6 +479,11 @@ TEST(extcached)
 	assert_success(rmdir("dir"));
 
 	set_extcached_monitor_type(FMT_CHANGED);
+}
+
+TEST(input_wrong_arg)
+{
+	ASSERT_FAIL("input('prompt', 'input', 'bla')", PE_INVALID_EXPRESSION);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

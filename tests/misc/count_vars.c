@@ -19,7 +19,7 @@ SETUP()
 
 	view_setup(&lwin);
 	init_commands();
-	init_modes();
+	modes_init();
 	opt_handlers_setup();
 }
 

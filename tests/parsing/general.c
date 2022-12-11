@@ -37,20 +37,14 @@ TEST(ends_with_dot_fail)
 
 TEST(fail_position_correct)
 {
-	ASSERT_FAIL("'b' c", PE_INVALID_EXPRESSION);
-	assert_string_equal("'b' c", get_last_position());
-
-	ASSERT_FAIL("a b", PE_INVALID_EXPRESSION);
-	assert_string_equal("a b", get_last_position());
+	ASSERT_FAIL_AT("'b' c", "'b' c", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL_AT("a b", "a b", PE_INVALID_EXPRESSION);
 }
 
 TEST(spaces_and_fail_position_correct)
 {
-	ASSERT_FAIL("  'b' c", PE_INVALID_EXPRESSION);
-	assert_string_equal("'b' c", get_last_position());
-
-	ASSERT_FAIL("  a b", PE_INVALID_EXPRESSION);
-	assert_string_equal("a b", get_last_position());
+	ASSERT_FAIL_AT("  'b' c", "'b' c", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL_AT("  a b", "a b", PE_INVALID_EXPRESSION);
 }
 
 TEST(nothing_but_comment)
@@ -78,16 +72,19 @@ TEST(priority_of_operators)
 
 TEST(state_is_reset_on_each_parsing)
 {
-	ASSERT_FAIL("1 1", PE_INVALID_EXPRESSION);
-	assert_true(is_prev_token_whitespace());
-	ASSERT_FAIL("", PE_INVALID_EXPRESSION);
-	assert_false(is_prev_token_whitespace());
+	parsing_result_t result;
+
+	result = ASSERT_FAIL_GET("1 1", PE_INVALID_EXPRESSION);
+	assert_true(result.ends_with_whitespace);
+
+	result = ASSERT_FAIL_GET("", PE_INVALID_EXPRESSION);
+	assert_false(result.ends_with_whitespace);
 
 	static const function_t function_a = { "a", "adescr", {1,1}, &dummy };
 	assert_success(function_register(&function_a));
 
-	ASSERT_FAIL("a('a'", PE_INVALID_EXPRESSION);
-	assert_int_equal(VTYPE_ERROR, get_parsing_result().type);
+	result = ASSERT_FAIL_GET("a('a'", PE_INVALID_EXPRESSION);
+	assert_int_equal(VTYPE_ERROR, result.value.type);
 
 	function_reset_all();
 }

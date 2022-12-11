@@ -36,7 +36,7 @@ TEARDOWN_ONCE()
 SETUP()
 {
 	conf_setup();
-	init_modes();
+	modes_init();
 	init_commands();
 
 	curr_view = &lwin;

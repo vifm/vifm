@@ -170,7 +170,7 @@ void menus_search_repeat(menu_state_t *m, int backward);
 void menus_search_print_msg(const menu_data_t *m);
 
 /* Retrieves number of search matches in the menu.  Returns the number. */
-int menus_search_matched(menu_state_t *m);
+int menus_search_matched(const menu_data_t *m);
 
 /* Auxiliary functions related to menus. */
 

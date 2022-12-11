@@ -28,8 +28,8 @@ SETUP_ONCE()
 
 SETUP()
 {
-	init_modes();
-	modcline_enter(CLS_COMMAND, "", NULL);
+	modes_init();
+	modcline_enter(CLS_COMMAND, "");
 }
 
 TEARDOWN()

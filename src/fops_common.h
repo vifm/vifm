@@ -60,8 +60,9 @@ bg_args_t;
 struct dirent;
 struct response_variant;
 
-/* Callback for returning edited filename. */
-typedef void (*fo_prompt_cb)(const char new_filename[]);
+/* Callback for returning edited filename.  arg is user supplied value, which is
+ * passed through. */
+typedef void (*fo_prompt_cb)(const char new_filename[], void *arg);
 
 /* Line completion function.  arg is user supplied value, which is passed
  * through.  Should return completion offset. */
@@ -69,7 +70,7 @@ typedef int (*fo_complete_cmd_func)(const char cmd[], void *arg);
 
 /* Function to request filename editing. */
 typedef void (*line_prompt_func)(const char prompt[], const char filename[],
-		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
+		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
 
 /* Function to choose an option.  Returns choice. */
 typedef char (*options_prompt_func)(const char title[], const char message[],
