@@ -797,7 +797,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 	input_stat.curs_pos += input_stat.prompt_wid;
 
 	update_cmdline_size();
-	update_cmdline_text(&input_stat);
+	draw_cmdline_text(&input_stat);
 
 	curr_stats.save_msg = 1;
 
