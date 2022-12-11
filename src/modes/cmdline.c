@@ -472,7 +472,7 @@ input_line_changed(void)
 
 	/* Hide cursor during view update, otherwise user might notice it blinking in
 	 * wrong places. */
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 
 	/* set_view_port() should not be called if none of the conditions are true. */
 
@@ -507,7 +507,7 @@ input_line_changed(void)
 	/* Hardware cursor is moved on the screen only on refresh, so refresh status
 	 * bar to force cursor moving there before it becomes visible again. */
 	ui_refresh_win(status_bar);
-	curs_set(1);
+	ui_set_cursor(/*visibility=*/1);
 }
 
 /* Provides reaction for empty input during interactive search/filtering. */
@@ -702,7 +702,7 @@ modcline_redraw(void)
 {
 	/* Hide cursor during redraw, otherwise user might notice it blinking in wrong
 	 * places. */
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 
 	if(input_stat.prev_mode == MENU_MODE)
 	{
@@ -736,7 +736,7 @@ modcline_redraw(void)
 	}
 
 	/* Make cursor visible after all redraws. */
-	curs_set(1);
+	ui_set_cursor(/*visibility=*/1);
 }
 
 /* Performs all necessary preparations for command-line mode to start
@@ -805,10 +805,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 		init_commands();
 
 	/* Make cursor visible only after all initial draws. */
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(1);
-	}
+	ui_set_cursor(/*visibility=*/1);
 }
 
 /* Stores view port parameters (top line, current position). */
@@ -899,10 +896,7 @@ leave_cmdline_mode(int cancelled)
 	}
 
 	/* Hide the cursor first. */
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(0);
-	}
+	ui_set_cursor(/*visibility=*/0);
 
 	const int multiline_status_bar = (getmaxy(status_bar) > 1);
 

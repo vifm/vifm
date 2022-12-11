@@ -19,8 +19,6 @@
 
 #include "running.h"
 
-#include <curses.h> /* FALSE curs_set() */
-
 #include <sys/stat.h> /* stat */
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -927,10 +925,7 @@ run_shell_finish(const char cmd[], const char final_cmd[], ShellPause pause,
 		stats_redraw_later();
 	}
 
-	if(curr_stats.load_stage > 0)
-	{
-		curs_set(0);
-	}
+	ui_set_cursor(/*visibility=*/0);
 
 	if(cmd == NULL)
 	{

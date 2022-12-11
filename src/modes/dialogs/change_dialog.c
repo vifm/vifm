@@ -104,7 +104,7 @@ enter_change_mode(view_t *active_view)
 	vle_mode_set(CHANGE_MODE, VMT_SECONDARY);
 	ui_hide_graphics();
 
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 	update_all_windows();
 
 	top = 2;

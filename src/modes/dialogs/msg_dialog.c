@@ -522,7 +522,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		return;
 	}
 
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 
 	getmaxyx(stdscr, sh, sw);
 

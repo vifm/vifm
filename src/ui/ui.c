@@ -231,7 +231,7 @@ setup_ncurses_interface(void)
 	nonl();
 	raw();
 
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* Screen is too small to be useful. */
@@ -897,7 +897,7 @@ ui_resize_all(void)
 
 	update_statusbar_layout();
 
-	curs_set(0);
+	ui_set_cursor(/*visibility=*/0);
 }
 
 /* Adjusts splitter position after screen resize. */
@@ -1427,7 +1427,7 @@ ui_setup_for_menu_like(void)
 	if(curr_stats.load_stage > 0)
 	{
 		scrollok(menu_win, FALSE);
-		curs_set(0);
+		ui_set_cursor(/*visibility=*/0);
 		werase(menu_win);
 		werase(status_bar);
 		werase(ruler_win);
@@ -1890,6 +1890,16 @@ checked_wmove(WINDOW *win, int y, int x)
 	if(wmove(win, y, x) == ERR)
 	{
 		LOG_INFO_MSG("Error moving cursor on a window to (x=%d, y=%d).", x, y);
+	}
+}
+
+void
+ui_set_cursor(int visibility)
+{
+	/* PDCurses crashes if curs_set() is called for uninitialized library. */
+	if(!vifm_testing())
+	{
+		(void)curs_set(visibility);
 	}
 }
 
