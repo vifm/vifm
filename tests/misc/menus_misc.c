@@ -66,6 +66,23 @@ TEST(enter_loads_selected_colorscheme)
 	(void)vle_keys_exec(WK_ESC);
 }
 
+TEST(menu_can_be_searched_interactively)
+{
+	cfg.inc_search = 1;
+
+	assert_success(exec_commands("vifm", &lwin, CIT_COMMAND));
+	menu_data_t *menu = menu_get_current();
+
+	(void)vle_keys_exec_timed_out(L"/^Compiled at:");
+	assert_true(starts_with_lit(menu->items[menu->pos], "Compiled at:"));
+	(void)vle_keys_exec_timed_out(WK_C_u L"^Version:");
+	assert_true(starts_with_lit(menu->items[menu->pos], "Version:"));
+
+	(void)vle_keys_exec_timed_out(WK_ESC);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+	cfg.inc_search = 0;
+}
+
 TEST(menu_is_built_from_a_command)
 {
 	undo_setup();
