@@ -105,6 +105,7 @@ static void init_view_history(view_t *view);
 static int navigate_to_file_in_custom_view(view_t *view, const char dir[],
 		const char file[]);
 static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
+static void on_custom_view_leave(view_t *view);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const struct dirent *d);
@@ -715,32 +716,9 @@ change_directory(view_t *view, const char directory[])
 		flist_hist_setup(view, NULL, "", -1, -1);
 	}
 
-	/* Perform additional actions on leaving custom view. */
 	if(was_in_custom_view)
 	{
-		if(ui_view_unsorted(view))
-		{
-			enable_view_sorting(view);
-		}
-		if(cv_compare(view->custom.type))
-		{
-			view_t *const other = (view == curr_view) ? other_view : curr_view;
-
-			/* Indicate that this is not a compare view anymore. */
-			view->custom.type = CV_REGULAR;
-
-			/* Leave compare mode in both views at the same time. */
-			if(other->custom.type == CV_DIFF)
-			{
-				rn_leave(other, 1);
-			}
-		}
-
-		trie_free(view->custom.excluded_paths);
-		view->custom.excluded_paths = NULL;
-
-		trie_free(view->custom.folded_paths);
-		view->custom.folded_paths = NULL;
+		on_custom_view_leave(view);
 	}
 
 	if(location_changed || was_in_custom_view)
@@ -752,6 +730,36 @@ change_directory(view_t *view, const char directory[])
 		view->location_changed = 1;
 	}
 	return 0;
+}
+
+/* Performs additional actions on leaving custom view. */
+static void
+on_custom_view_leave(view_t *view)
+{
+	if(ui_view_unsorted(view))
+	{
+		enable_view_sorting(view);
+	}
+
+	if(cv_compare(view->custom.type))
+	{
+		view_t *const other = (view == curr_view) ? other_view : curr_view;
+
+		/* Indicate that this is not a compare view anymore. */
+		view->custom.type = CV_REGULAR;
+
+		/* Leave compare mode in both views at the same time. */
+		if(other->custom.type == CV_DIFF)
+		{
+			rn_leave(other, 1);
+		}
+	}
+
+	trie_free(view->custom.excluded_paths);
+	view->custom.excluded_paths = NULL;
+
+	trie_free(view->custom.folded_paths);
+	view->custom.folded_paths = NULL;
 }
 
 int
