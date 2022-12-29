@@ -14,6 +14,7 @@
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/running.h"
 #include "../../src/sort.h"
 
 #include "utils.h"
@@ -430,6 +431,22 @@ TEST(lazy_unfolding_and_filtering)
 	assert_string_equal("dir5", lwin.dir_entry[lwin.list_pos].name);
 	toggle_fold_and_update(&lwin);
 	assert_int_equal(2, lwin.list_rows);
+}
+
+TEST(folding_is_reset_on_leaving_tree)
+{
+	assert_success(load_limited_tree(&lwin, TEST_DATA_PATH "/tree", cwd,
+				/*depth=*/1));
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(7, lwin.list_rows);
+
+	lwin.list_pos = 0;
+	assert_string_equal("dir1", lwin.dir_entry[lwin.list_pos].name);
+	rn_open(&lwin, FHE_RUN);
+	assert_false(flist_custom_active(&lwin));
+
+	/* Should do nothing, specifically shouldn't crash. */
+	flist_toggle_fold(&lwin);
 }
 
 static void

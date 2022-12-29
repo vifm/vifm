@@ -57,6 +57,9 @@
 
 	Fixed trash directory being created at default location on :restart.
 
+	Fixed abort due to assertion failure on using zx normal mode key after
+	leaving tree in some cases.  Thanks to Mark S. (a.k.a. Markuzcha).
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
