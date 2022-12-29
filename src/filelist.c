@@ -735,6 +735,12 @@ change_directory(view_t *view, const char directory[])
 				rn_leave(other, 1);
 			}
 		}
+
+		trie_free(view->custom.excluded_paths);
+		view->custom.excluded_paths = NULL;
+
+		trie_free(view->custom.folded_paths);
+		view->custom.folded_paths = NULL;
 	}
 
 	if(location_changed || was_in_custom_view)
