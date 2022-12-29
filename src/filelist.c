@@ -2994,7 +2994,7 @@ flist_update_origins(view_t *view)
 void
 flist_toggle_fold(view_t *view)
 {
-	if(!cv_tree(view->custom.type))
+	if(!flist_custom_active(view) || !cv_tree(view->custom.type))
 	{
 		return;
 	}
