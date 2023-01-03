@@ -555,5 +555,23 @@ TEST(fview_previews_works)
 	assert_false(fview_previews(&lwin, "/unrelated/path"));
 }
 
+TEST(fentry_points_to_works, IF(symlinks_available))
+{
+	make_symlink(".", SANDBOX_PATH "/link");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(1, lwin.list_rows);
+
+	assert_true(fentry_points_to(&lwin.dir_entry[0], lwin.curr_dir));
+
+	char link_path[PATH_MAX + 1];
+	make_abs_path(link_path, sizeof(link_path), SANDBOX_PATH, "link", cwd);
+	assert_true(fentry_points_to(&lwin.dir_entry[0], link_path));
+
+	remove_file(SANDBOX_PATH "/link");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
