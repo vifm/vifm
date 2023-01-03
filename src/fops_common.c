@@ -300,8 +300,8 @@ update_io_stats(progress_data_t *pdata, const ioeta_estim_t *estim)
 	window_add(&pdata->speed_window, imm_rate);
 	float rate = window_average(&pdata->speed_window, &doubling_weight);
 
-  /* Second round of adjusting speed to not deviate from previous value too
-   * much. */
+	/* Second round of adjusting speed to not deviate from previous value too
+	 * much. */
 	if(rate >= 1 && pdata->last_rate >= 1)
 	{
 		float minV = MIN(rate, pdata->last_rate);
