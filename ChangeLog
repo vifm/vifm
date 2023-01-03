@@ -26,6 +26,9 @@
 	Added input() builtin function to prompt user for input.  Thanks to Artur
 	F. (a.k.a. arturfabriciohahaedgy).
 
+	Added ETA to detailed progress dialog.  Thanks to Jose Riha (a.k.a.
+	jose1711).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

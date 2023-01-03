@@ -33,6 +33,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
+#include <math.h> /* fabsf() sqrtf() */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
@@ -87,6 +88,21 @@
 /* Key used to switch to progress dialog. */
 #define IO_DETAILS_KEY 'i'
 
+/* Number of entries in history windows used to compute ETA. */
+#define ETA_HISTORY_SIZE 10
+
+/* A circular buffer for computing weighted average. */
+typedef struct
+{
+	/* We're only adding here, so no need to keep head index, because it's zero
+	 * until wrapping and `pos` after wrapping. */
+	int wrapped; /* Whether the buffer has been wrapped. */
+	int pos;     /* Next position for writing (tail). */
+
+	uint64_t entries[ETA_HISTORY_SIZE]; /* Buffer's data. */
+}
+history_window_t;
+
 /* Object for auxiliary information related to progress of operations in
  * io_progress_changed() handler. */
 typedef struct
@@ -107,10 +123,15 @@ typedef struct
 	int progress_bar_max;   /* Width of progress bar during previous call. */
 
 	/* State of rate calculation. */
+	long long start_time;     /* Time of starting the operation. */
 	long long last_calc_time; /* Time of last rate calculation. */
 	uint64_t last_seen_byte;  /* Position at the time of last call. */
-	uint64_t rate;            /* Rate in bytes per millisecond. */
+	float last_rate;          /* Rate in bytes per millisecond. */
+	int last_eta;             /* Last reported ETA. */
 	char *rate_str;           /* Rate formatted as a string. */
+	char *eta_str;            /* ETA formatted as a string. */
+	history_window_t speed_window; /* Smoothing of speed. */
+	history_window_t eta_window;   /* Smoothing of ETA. */
 
 	/* Whether progress is displayed in a dialog, rather than on status bar. */
 	int dialog;
@@ -119,9 +140,18 @@ typedef struct
 }
 progress_data_t;
 
+/* Type of function that returns next weight for weighted average. */
+typedef float (*weight_f)(int idx, float last_weight);
+
 static void io_progress_changed(const io_progress_t *state);
 static int calc_io_progress(const io_progress_t *state, int *skip);
-static void update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim);
+static void update_io_stats(progress_data_t *pdata, const ioeta_estim_t *estim);
+static void window_add(history_window_t *win, uint64_t value);
+static float window_average(const history_window_t *win, weight_f weight);
+static float linear_weight(int idx, float last_weight);
+static float doubling_weight(int idx, float last_weight);
+static void format_io_stats(progress_data_t *pdata, long long now_ms,
+		uint64_t imm_rate);
 static void update_progress_bar(progress_data_t *pdata,
 		const ioeta_estim_t *estim);
 static void io_progress_fg(const io_progress_t *state, int progress);
@@ -251,28 +281,165 @@ calc_io_progress(const io_progress_t *state, int *skip)
 
 /* Updates rate of operation. */
 static void
-update_io_rate(progress_data_t *pdata, const ioeta_estim_t *estim)
+update_io_stats(progress_data_t *pdata, const ioeta_estim_t *estim)
 {
 	long long current_time_ms = time_in_ms();
 	long long elapsed_time_ms = current_time_ms - pdata->last_calc_time;
 
 	if(elapsed_time_ms == 0 ||
-			(pdata->last_seen_byte != 0 && elapsed_time_ms < 3000))
+			(pdata->last_seen_byte != 0 && elapsed_time_ms < 1000))
 	{
-		/* Rate is updated initially and then once in 3000 milliseconds. */
+		/* Rate is updated initially and then once in 1000 milliseconds. */
 		return;
 	}
 
 	uint64_t bytes_difference = estim->current_byte - pdata->last_seen_byte;
-	pdata->rate = bytes_difference/elapsed_time_ms;
+	uint64_t imm_rate = bytes_difference/elapsed_time_ms;
+
+	/* Smooth immediate rate. */
+	window_add(&pdata->speed_window, imm_rate);
+	float rate = window_average(&pdata->speed_window, &doubling_weight);
+
+  /* Second round of adjusting speed to not deviate from previous value too
+   * much. */
+	if(rate >= 1 && pdata->last_rate >= 1)
+	{
+		float minV = MIN(rate, pdata->last_rate);
+		float maxV = MAX(rate, pdata->last_rate);
+		rate = pdata->last_rate + (rate - pdata->last_rate)*minV/maxV;
+	}
+
+	/* Acceleration. */
+	float a = (rate - pdata->last_rate)/elapsed_time_ms;
+	/* Remains this much. */
+	uint64_t r = estim->total_bytes - estim->current_byte;
+
+	int eta;
+	if(fabsf(a) >= 1 && rate*rate + 2*a*r >= 0)
+	{
+		eta = (sqrtf(rate*rate + 2*a*r) - rate)/a;
+	}
+	else if(fabsf(rate) >= 1)
+	{
+		eta = r/rate;
+	}
+	else
+	{
+		eta = pdata->last_eta;
+	}
+
+	/* Smooth ETA rate. */
+	window_add(&pdata->eta_window, eta);
+	float smooth_eta = window_average(&pdata->eta_window, &linear_weight);
+
 	pdata->last_calc_time = current_time_ms;
 	pdata->last_seen_byte = estim->current_byte;
+	pdata->last_rate = rate;
+	pdata->last_eta = smooth_eta;
 
+	format_io_stats(pdata, current_time_ms, imm_rate);
+}
+
+/* Adds an entry to window. */
+static void
+window_add(history_window_t *win, uint64_t value)
+{
+	win->entries[win->pos++] = value;
+	if(win->pos == ETA_HISTORY_SIZE)
+	{
+		win->pos = 0;
+		win->wrapped = 1;
+	}
+}
+
+/* Computes weighted average on entries of the passed in window.  Returns the
+ * average. */
+static float
+window_average(const history_window_t *win, weight_f weight)
+{
+	assert((win->pos != 0 || win->wrapped) && "Window must not be empty.");
+
+	float average = 0.0f;
+
+	/* Current weight. */
+	float w = 0.0f;
+	/* Total weight. */
+	float ws = 0.0f;
+
+	/* Start positions within circular buffer. */
+	int pos = (win->wrapped ? win->pos : 0);
+	/* Number of used positions. */
+	int count = (win->wrapped ? ETA_HISTORY_SIZE : win->pos);
+
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		w = weight(i, w);
+		ws += w;
+
+		average += w*win->entries[pos];
+		pos = (pos + 1)%ETA_HISTORY_SIZE;
+	}
+
+	average /= ws;
+	return average;
+}
+
+/* Linear weight function (1, 2, 3, ...).  Returns the next weight. */
+static float
+linear_weight(int idx, float last_weight)
+{
+	return 1 + idx;
+}
+
+/* Weight function with the factor of 2 (1, 2, 4, ...).  Returns the next
+ * weight. */
+static float
+doubling_weight(int idx, float last_weight)
+{
+	return (idx == 0 ? 1.0f : last_weight*2.0f);
+}
+
+/* Updates pdata->*_str fields. */
+static void
+format_io_stats(progress_data_t *pdata, long long now_ms, uint64_t imm_rate)
+{
 	char rate_str[64];
-	(void)friendly_size_notation(pdata->rate*1000, sizeof(rate_str) - 8,
-			rate_str);
+	(void)friendly_size_notation(imm_rate*1000, sizeof(rate_str) - 8, rate_str);
 	strcat(rate_str, "/s");
 	replace_string(&pdata->rate_str, rate_str);
+
+	/* Do not show ETA for the first 5 seconds.  Really short operations need no
+	 * ETA and long ones might have incorrect one at first. */
+	if(now_ms - pdata->start_time < 5000)
+	{
+		return;
+	}
+
+	enum
+	{
+		Minute = 60,
+		Hour = 60*Minute,
+		Day = 24*Hour,
+	};
+
+	int eta_s = ceil(pdata->last_eta/1000);
+	int d = eta_s/Day;
+	int h = eta_s%Day/Hour;
+	int m = eta_s%Hour/Minute;
+	int s = eta_s%Minute;
+
+	char *time_str;
+	if(d > 0)
+	{
+		time_str = format_str("%dd %02d:%02d:%02d", d, h, m, s);
+	}
+	else
+	{
+		time_str = format_str("%02d:%02d:%02d", h, m, s);
+	}
+	put_string(&pdata->eta_str, format_str("~%s left", time_str));
+	free(time_str);
 }
 
 /* Updates progress bar of operation. */
@@ -366,7 +533,7 @@ io_progress_fg(const io_progress_t *state, int progress)
 
 	item_num = MIN(estim->current_item + 1, estim->total_items);
 
-	update_io_rate(pdata, estim);
+	update_io_stats(pdata, estim);
 
 	if(progress < 0)
 	{
@@ -387,13 +554,14 @@ io_progress_fg(const io_progress_t *state, int progress)
 
 		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
-				"Overall:  %s/%s (%2d%%) %s\n"
+				"Overall:  %5s/%-5s (%d%%)  |  %s  %s  %s\n"
 				"%s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
 				replace_home_part(ops->target_dir), item_num,
 				(unsigned long long)estim->total_items, current_size_str,
 				total_size_str, progress/IO_PRECISION, pdata->rate_str,
+				pdata->eta_str[0] == '\0' ? "" : "|", pdata->eta_str,
 				pdata->progress_bar, item_name, src_path, as_part, file_progress);
 
 		free(file_progress);
@@ -982,10 +1150,17 @@ alloc_progress_data(int bg, void *info)
 	pdata->progress_bar_max = 0;
 
 	/* Time of starting the operation to have meaningful first rate. */
-	pdata->last_calc_time = time_in_ms();
+	pdata->start_time = time_in_ms();
+	pdata->last_calc_time = pdata->start_time;
 	pdata->last_seen_byte = 0;
-	pdata->rate = 0;
+	pdata->last_rate = 0.0f;
+	pdata->last_eta = 0;
 	pdata->rate_str = strdup("? B/s");
+	pdata->eta_str = strdup("");
+	pdata->eta_window.wrapped = 0;
+	pdata->eta_window.pos = 0;
+	pdata->speed_window.wrapped = 0;
+	pdata->speed_window.pos = 0;
 
 	pdata->dialog = 0;
 	pdata->width = 0;
@@ -1033,6 +1208,7 @@ fops_free_ops(ops_t *ops)
 		progress_data_t *pdata = ops->estim->param;
 		free(pdata->progress_bar);
 		free(pdata->rate_str);
+		free(pdata->eta_str);
 		free(pdata);
 	}
 	ops_free(ops);
