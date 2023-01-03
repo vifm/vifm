@@ -3899,13 +3899,24 @@ fentry_points_to(const dir_entry_t *entry, const char path[])
 	char previewed[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(previewed), previewed);
 
-	if(entry->type == FT_LINK)
+	if(paths_are_equal(path, previewed))
 	{
-		/* Failure won't change the buffer. */
-		(void)get_link_target_abs(previewed, entry->origin, previewed,
-				sizeof(previewed));
+		return 1;
 	}
 
+	/* Can also check resolved paths for symbolic links. */
+	if(entry->type != FT_LINK)
+	{
+		/* Nothing more to do for a non-link. */
+		return 0;
+	}
+
+	if(get_link_target_abs(previewed, entry->origin, previewed,
+				sizeof(previewed)) != 0)
+	{
+		/* We don't know. */
+		return 0;
+	}
 	return paths_are_equal(path, previewed);
 }
 
