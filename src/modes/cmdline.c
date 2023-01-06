@@ -165,7 +165,8 @@ static void handle_nonempty_input(void);
 static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
-static int enter_submode(CmdLineSubmode sub_mode, const char initial[]);
+static int enter_submode(CmdLineSubmode sub_mode, const char initial[],
+		int reenter);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee);
 static void init_line_stats(line_stats_t *stat, const wchar_t prompt[],
@@ -645,7 +646,7 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[])
 			"Use modcline_in_menu() for CLS_MENU_* submodes.");
 	assert(sub_mode != CLS_PROMPT &&
 			"Use modcline_prompt() for CLS_PROMPT submode.");
-	(void)enter_submode(sub_mode, initial);
+	(void)enter_submode(sub_mode, initial, /*reenter=*/0);
 }
 
 void
@@ -655,7 +656,7 @@ modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
 			sub_mode == CLS_MENU_BSEARCH) &&
 			"modcline_in_menu() is only for CLS_MENU_* submodes.");
 
-	if(enter_submode(sub_mode, /*initial=*/"") == 0)
+	if(enter_submode(sub_mode, /*initial=*/"", /*reenter=*/0) == 0)
 	{
 		input_stat.menu = m;
 	}
@@ -663,7 +664,7 @@ modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
 
 /* Enters command-line editing submode.  Returns zero on success. */
 static int
-enter_submode(CmdLineSubmode sub_mode, const char initial[])
+enter_submode(CmdLineSubmode sub_mode, const char initial[], int reenter)
 {
 	wchar_t *winitial;
 	const wchar_t *wprompt;
@@ -705,8 +706,23 @@ enter_submode(CmdLineSubmode sub_mode, const char initial[])
 		wprompt = L"E";
 	}
 
-	prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
-			/*allow_ee=*/0);
+	if(reenter)
+	{
+		int prev_mode = input_stat.prev_mode;
+		free_line_stats(&input_stat);
+		init_line_stats(&input_stat, wprompt, winitial, complete_func, sub_mode,
+				/*allow_ee=*/0, prev_mode);
+
+		/* Just in case. */
+		curr_stats.save_msg = 1;
+
+		stats_redraw_later();
+	}
+	else
+	{
+		prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
+				/*allow_ee=*/0);
+	}
 
 	free(winitial);
 	return 0;
