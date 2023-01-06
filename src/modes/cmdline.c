@@ -168,10 +168,14 @@ static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static int enter_submode(CmdLineSubmode sub_mode, const char initial[]);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee);
+static void init_line_stats(line_stats_t *stat, const wchar_t prompt[],
+		const wchar_t initial[], complete_cmd_func complete,
+		CmdLineSubmode sub_mode, int allow_ee, int prev_mode);
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
 static void leave_cmdline_mode(int cancelled);
+static void free_line_stats(line_stats_t *stat);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
@@ -785,50 +789,13 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 		prev_input_stat = input_stat;
 	}
 
-	input_stat.sub_mode = sub_mode;
-	input_stat.sub_mode_allows_ee = allow_ee;
-	input_stat.menu = NULL;
-	input_stat.prompt_callback = NULL;
-	input_stat.prompt_callback_arg = NULL;
-
-	input_stat.prev_mode = vle_mode_get();
-	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
-
 	line_width = getmaxx(stdscr);
-
 	ui_sb_lock();
 
-	input_stat.line = vifm_wcsdup(initial);
-	input_stat.initial_line = vifm_wcsdup(input_stat.line);
-	input_stat.index = wcslen(initial);
-	input_stat.curs_pos = esc_wcswidth(input_stat.line, (size_t)-1);
-	input_stat.len = input_stat.index;
-	input_stat.cmd_pos = -1;
-	input_stat.complete_continue = 0;
-	input_stat.history_search = HIST_NONE;
-	input_stat.line_buf = NULL;
-	input_stat.reverse_completion = 0;
-	input_stat.complete = complete;
-	input_stat.search_mode = 0;
-	input_stat.dot_pos = -1;
-	input_stat.line_edited = 0;
-	input_stat.enter_mapping_state = vle_keys_mapping_state();
-	input_stat.state = PS_NORMAL;
+	init_line_stats(&input_stat, prompt, initial, complete, sub_mode, allow_ee,
+			vle_mode_get());
 
-	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
-			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
-	{
-		input_stat.search_mode = 1;
-	}
-
-	if(input_stat.search_mode || sub_mode == CLS_FILTER)
-	{
-		save_view_port();
-	}
-
-	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
-	input_stat.prompt_wid = esc_wcswidth(input_stat.prompt, (size_t)-1);
-	input_stat.curs_pos += input_stat.prompt_wid;
+	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 
 	update_cmdline_size();
 	draw_cmdline_text(&input_stat);
@@ -840,6 +807,53 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 
 	/* Make cursor visible only after all initial draws. */
 	ui_set_cursor(/*visibility=*/1);
+}
+
+/* Initializes command-line status. */
+static void
+init_line_stats(line_stats_t *stat, const wchar_t prompt[],
+		const wchar_t initial[], complete_cmd_func complete,
+		CmdLineSubmode sub_mode, int allow_ee, int prev_mode)
+{
+	stat->sub_mode = sub_mode;
+	stat->sub_mode_allows_ee = allow_ee;
+	stat->menu = NULL;
+	stat->prompt_callback = NULL;
+	stat->prompt_callback_arg = NULL;
+
+	stat->prev_mode = prev_mode;
+
+	stat->line = vifm_wcsdup(initial);
+	stat->initial_line = vifm_wcsdup(stat->line);
+	stat->index = wcslen(initial);
+	stat->curs_pos = esc_wcswidth(stat->line, (size_t)-1);
+	stat->len = stat->index;
+	stat->cmd_pos = -1;
+	stat->complete_continue = 0;
+	stat->history_search = HIST_NONE;
+	stat->line_buf = NULL;
+	stat->reverse_completion = 0;
+	stat->complete = complete;
+	stat->search_mode = 0;
+	stat->dot_pos = -1;
+	stat->line_edited = 0;
+	stat->enter_mapping_state = vle_keys_mapping_state();
+	stat->state = PS_NORMAL;
+
+	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
+			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
+	{
+		stat->search_mode = 1;
+	}
+
+	if(stat->search_mode || sub_mode == CLS_FILTER)
+	{
+		save_view_port();
+	}
+
+	wcsncpy(stat->prompt, prompt, ARRAY_LEN(stat->prompt));
+	stat->prompt_wid = esc_wcswidth(stat->prompt, (size_t)-1);
+	stat->curs_pos += stat->prompt_wid;
 }
 
 /* Stores view port parameters (top line, current position). */
@@ -901,12 +915,7 @@ is_line_edited(void)
 static void
 leave_cmdline_mode(int cancelled)
 {
-	free(input_stat.line);
-	free(input_stat.initial_line);
-	free(input_stat.line_buf);
-	input_stat.line = NULL;
-	input_stat.initial_line = NULL;
-	input_stat.line_buf = NULL;
+	free_line_stats(&input_stat);
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{
@@ -960,6 +969,18 @@ leave_cmdline_mode(int cancelled)
 	{
 		redraw_current_view();
 	}
+}
+
+/* Frees resources allocated for command-line status. */
+static void
+free_line_stats(line_stats_t *stat)
+{
+	free(input_stat.line);
+	free(input_stat.initial_line);
+	free(input_stat.line_buf);
+	input_stat.line = NULL;
+	input_stat.initial_line = NULL;
+	input_stat.line_buf = NULL;
 }
 
 /* Initiates leaving of command-line mode and reverting related changes in other
