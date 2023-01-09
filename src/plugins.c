@@ -51,7 +51,8 @@ struct plugs_t
 
 static void load_plugs_dir(plugs_t *plugs, const char plugin_path[]);
 static void plug_free(plug_t *plug);
-static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
+static plug_t * plug_from_name(plugs_t *plugs, const char name[]);
+static plug_t * plug_from_real_path(plugs_t *plugs, const char real_path[]);
 static int should_be_loaded(plugs_t *plugs, const char name[]);
 static void plug_logf(plug_t *plug, const char format[], ...)
 	_gnuc_printf(2, 3);
@@ -172,16 +173,23 @@ load_plugs_dir(plugs_t *plugs, const char plugin_path[])
 			continue;
 		}
 
-		/* Perform the check before committing this plugin. */
-		plug_t *duplicate = find_plug(plugs, plug->real_path);
+		/* Perform the searches before committing this plugin. */
+		plug_t *name_duplicate = plug_from_name(plugs, plug->name);
+		plug_t *real_duplicate = plug_from_real_path(plugs, plug->real_path);
 
 		plug->status = PLS_FAILURE;
 		DA_COMMIT(plugs->plugs);
 
-		if(duplicate != NULL)
+		if(real_duplicate != NULL)
 		{
 			plug_logf(plug, "[vifm][error]: skipped as a duplicate of %s",
-					duplicate->path);
+					real_duplicate->path);
+			plug->status = PLS_SKIPPED;
+		}
+		else if(name_duplicate != NULL)
+		{
+			plug_logf(plug, "[vifm][error]: skipped as a conflicting with %s",
+					name_duplicate->path);
 			plug->status = PLS_SKIPPED;
 		}
 		else if(!should_be_loaded(plugs, plug->name))
@@ -214,10 +222,26 @@ plug_free(plug_t *plug)
 	free(plug);
 }
 
+/* Looks up a plugin specified by name among already loaded plugins.  Returns
+ * pointer to it or NULL. */
+static plug_t *
+plug_from_name(plugs_t *plugs, const char name[])
+{
+	size_t i;
+	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
+	{
+		if(strcasecmp(plugs->plugs[i]->name, name) == 0)
+		{
+			return plugs->plugs[i];
+		}
+	}
+	return NULL;
+}
+
 /* Looks up a plugin specified by real path among already loaded plugins.
  * Returns pointer to it or NULL. */
 static plug_t *
-find_plug(plugs_t *plugs, const char real_path[])
+plug_from_real_path(plugs_t *plugs, const char real_path[])
 {
 	size_t i;
 	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)

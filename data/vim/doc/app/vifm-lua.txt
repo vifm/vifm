@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2022 Nov 6
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Jan 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -186,7 +186,9 @@ All plugins are required to contain `init.lua` file at their root.  This file
 gets processed and its return value is interpreted as plugin data.  The return
 value must be a table.  The table is stored in a `vifm.plugins.all` dictionary
 with a key that corresponds to the plugin's name.  At the moment the name of a
-plugin is the name of its directory.
+plugin is the name of its directory.  Name of a plugin must be unique (names
+that differ by only by case are considered unique) or loading it will be
+skipped.
 
 Global variables created by one plugin are local to that plugin and won't
 affect or be visible to other plugins.

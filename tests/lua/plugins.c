@@ -4,6 +4,7 @@
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/string_array.h"
 #include "../../src/plugins.h"
 
 #include <test-utils.h>
@@ -323,6 +324,44 @@ TEST(print_without_arguments)
 	assert_string_equal("first line\n\nthird line", plug_dummy.log);
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
+TEST(can_not_plugin_with_the_same_name)
+{
+	create_dir(SANDBOX_PATH "/plugins2");
+	create_dir(SANDBOX_PATH "/plugins2/plug");
+
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
+	make_file(SANDBOX_PATH "/plugins2/plug/init.lua", "return {}");
+
+	strlist_t plugins_dirs = { };
+	plugins_dirs.nitems = add_to_string_array(&plugins_dirs.items,
+			plugins_dirs.nitems, SANDBOX_PATH "/plugins");
+	plugins_dirs.nitems = add_to_string_array(&plugins_dirs.items,
+			plugins_dirs.nitems, SANDBOX_PATH "/plugins2");
+
+	plugs_load(plugs, plugins_dirs);
+
+	free_string_array(plugins_dirs.items, plugins_dirs.nitems);
+
+	const plug_t *plug1, *plug2;
+	assert_true(plugs_get(plugs, 0, &plug1));
+	PluginLoadStatus status1 = plug1->status;
+	assert_true(plugs_get(plugs, 1, &plug2));
+	PluginLoadStatus status2 = plug2->status;
+
+	assert_int_equal(PLS_SUCCESS, status1);
+	assert_int_equal(PLS_SKIPPED, status2);
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+	remove_file(SANDBOX_PATH "/plugins2/plug/init.lua");
+	remove_dir(SANDBOX_PATH "/plugins2/plug");
+	remove_dir(SANDBOX_PATH "/plugins2");
+}
+
+TEST(plugin_dir_does_not_need_to_exist)
+{
+	load_plugins(plugs, SANDBOX_PATH "/no-such-path");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
