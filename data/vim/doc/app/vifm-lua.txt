@@ -169,9 +169,24 @@ The following standard libraries are enabled:
 --------------------------------------------------------------------------------
 *vifm-plugins*
 
-After processing contents of |vifm-vifmrc| $VIFM/plugins/ directory is
-enumerated in search of plugins.  Directories or symbolic links to directories
-are considered as candidates.  Those starting with a dot are ignored.
+Loading of plugins is performed after processing contents of |vifm-vifmrc|.
+Plugins are searched in the directories specified via |vifm---plugins-dir|
+command-line option and the last specified directory is searched first.  Then
+$VIFM/plugins/ is enumerated in search of plugins.  Directories or symbolic
+links to directories are considered as candidates.  Those starting with a dot
+are ignored.
+
+For example, running Vifm like >
+
+  vifm --plugins-dir dirA --plugins-dir ~/dirB
+
+results in search for plugins in this order of directories:
+ 1. $PWD/dirA
+ 2. ~/dirB
+ 3. $VIFM/plugins
+The order matters as it defines which of the conflicting plugins gets
+loaded (see below on name conflicts).  Such an ordering allows shadowing
+plugins from default location.
 
 Implications of the default order of initialization:
  * :commands defined in configuration have precedence over :commands defined by

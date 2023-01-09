@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2022 Dec 11
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -101,6 +101,9 @@ The other command line arguments are:
     sets command to be executed on selected files instead of opening them.
     The command may use any of |vifm-macros|.  The command is executed once for
     whole selection.
+--plugins-dir <path>                           *vifm---plugins-dir*
+    additional plugins directory (can appear multiple times).  The last one
+    added has the highest priority.
 --logging[=<startup log path>]                 *vifm---logging*
     log some operational details to $XDG_DATA_HOME/vifm/log or $VIFM/log.  If
     the optional startup log path is specified and permissions allow to open

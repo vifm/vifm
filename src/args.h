@@ -23,6 +23,7 @@
 #include <stddef.h> /* size_t */
 
 #include "compat/fs_limits.h"
+#include "utils/string_array.h"
 
 /* Set of arguments that are processed at the same time. */
 typedef enum
@@ -63,6 +64,9 @@ typedef struct
 
 	char **cmds;  /* List of startup commands. */
 	size_t ncmds; /* Number of startup commands. */
+
+	char **plugins_dirs;  /* List of additional plugin search paths. */
+	size_t nplugins_dirs; /* Their count. */
 }
 args_t;
 

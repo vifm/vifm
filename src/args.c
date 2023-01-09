@@ -61,6 +61,7 @@ static struct option long_opts[] = {
 	{ "choose-dir",   required_argument, .flag = NULL, .val = 'D' },
 	{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
 	{ "on-choose",    required_argument, .flag = NULL, .val = 'o' },
+	{ "plugins-dir",  required_argument, .flag = NULL, .val = 'p' },
 
 #ifdef ENABLE_REMOTE_CMDS
 	{ "server-list",  no_argument,       .flag = NULL, .val = 'L' },
@@ -88,6 +89,8 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 	{
 		switch(getopt_long(argc, argv, "-c:fhv", long_opts, NULL))
 		{
+			char path_buf[PATH_MAX + 1];
+
 			case 'f': /* -f */
 				args->file_picker = 1;
 				break;
@@ -136,6 +139,11 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 
 			case 'c': /* -c <cmd> */
 				args->ncmds = add_to_string_array(&args->cmds, args->ncmds, optarg);
+				break;
+			case 'p': /* --plugins-dir <path> */
+				parse_path(dir, optarg, path_buf);
+				args->nplugins_dirs = add_to_string_array(&args->plugins_dirs,
+						args->nplugins_dirs, path_buf);
 				break;
 			case 'l': /* --logging */
 				args->logging = 1;
@@ -412,6 +420,8 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm --on-choose <command>");
 	puts("    sets command to be executed on selected files instead of opening");
 	puts("    them.  Command can use any of command macros.\n");
+	puts("  vifm --plugins-dir <path>");
+	puts("    additional plugins directory (can appear multiple times).\n");
 	puts("  vifm --logging[=<startup log path>]");
 	puts("    log some operational details to $XDG_DATA_HOME/vifm/log or");
 	puts("    $VIFM/log.  If the optional startup log path is specified and");
@@ -523,6 +533,20 @@ process_other_args(args_t *args)
 	{
 		stats_set_on_choose(args->on_choose);
 	}
+
+	free_string_array(curr_stats.plugins_dirs.items,
+			curr_stats.plugins_dirs.nitems);
+	curr_stats.plugins_dirs.items = NULL;
+	curr_stats.plugins_dirs.nitems = 0;
+
+	/* Adding in reversed order. */
+	int i;
+	for(i = (int)args->nplugins_dirs - 1; i >= 0; --i)
+	{
+		curr_stats.plugins_dirs.nitems = add_to_string_array(
+				&curr_stats.plugins_dirs.items, curr_stats.plugins_dirs.nitems,
+				args->plugins_dirs[i]);
+	}
 }
 
 /* Quits during argument parsing when it's allowed (e.g. not for remote
@@ -544,6 +568,10 @@ args_free(args_t *args)
 		free_string_array(args->cmds, args->ncmds);
 		args->cmds = NULL;
 		args->ncmds = 0;
+
+		free_string_array(args->plugins_dirs, args->nplugins_dirs);
+		args->plugins_dirs = NULL;
+		args->nplugins_dirs = 0;
 
 		update_string(&args->startup_log_path, NULL);
 	}

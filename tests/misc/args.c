@@ -177,6 +177,27 @@ TEST(various_flags)
 	args_free(&args);
 }
 
+TEST(plugins_dir)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "--plugins-dir=a", "--plugins-dir", "/b/c", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+
+	assert_int_equal(2, args.nplugins_dirs);
+	assert_string_equal("/a", args.plugins_dirs[0]);
+	assert_string_equal("/b/c", args.plugins_dirs[1]);
+
+	args_process(&args, AS_OTHER, /*ipc=*/NULL);
+
+	/* Paths are stored in the order in which they will be processed. */
+	assert_int_equal(2, curr_stats.plugins_dirs.nitems);
+	assert_string_equal("/b/c", curr_stats.plugins_dirs.items[0]);
+	assert_string_equal("/a", curr_stats.plugins_dirs.items[1]);
+
+	args_free(&args);
+}
+
 TEST(remote_allows_no_arguments, IF(with_remote_cmds))
 {
 	args_t args = { };

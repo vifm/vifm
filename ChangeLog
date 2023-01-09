@@ -29,6 +29,10 @@
 	Added ETA to detailed progress dialog.  Thanks to Jose Riha (a.k.a.
 	jose1711).
 
+	Added `--plugins-dir` command-line option which allows specifying
+	additional places to look for plugins.  Thanks to 高浩亮 (a.k.a.
+	haolian9).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
