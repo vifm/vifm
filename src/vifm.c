@@ -257,6 +257,11 @@ vifm_main(int argc, char *argv[])
 
 	args_process(&vifm_args, AS_OTHER, curr_stats.ipc);
 
+	/* $VIFM/plugins is to be searched for plugins last. */
+	curr_stats.plugins_dirs.nitems = put_into_string_array(
+			&curr_stats.plugins_dirs.items, curr_stats.plugins_dirs.nitems,
+			format_str("%s/plugins", cfg.config_dir));
+
 	bg_init();
 
 	fops_init(&modcline_prompt, &prompt_msg_custom);
@@ -324,7 +329,7 @@ vifm_main(int argc, char *argv[])
 		(void)trash_set_specs(cfg.trash_dir);
 	}
 
-	plugs_load(curr_stats.plugs, cfg.config_dir);
+	plugs_load(curr_stats.plugs, curr_stats.plugins_dirs);
 
 	check_path_for_file(&lwin, vifm_args.lwin_path, vifm_args.lwin_handle);
 	check_path_for_file(&rwin, vifm_args.rwin_path, vifm_args.rwin_handle);
@@ -406,6 +411,7 @@ parse_received_arguments(char *argv[])
 	opterr = 0;
 	args_parse(&args, count_strings(argv), argv, argv[0]);
 	args_process(&args, AS_IPC, curr_stats.ipc);
+	/* XXX: why AS_OTHER invocation is used with IPC args, is this a mistake? */
 	args_process(&args, AS_OTHER, curr_stats.ipc);
 
 	modes_abort_menu_like();

@@ -3861,7 +3861,7 @@ plugin_cmd(const cmd_info_t *cmd_info)
 			return CMDS_ERR_TRAILING_CHARS;
 		}
 
-		plugs_load(curr_stats.plugs, cfg.config_dir);
+		plugs_load(curr_stats.plugs, curr_stats.plugins_dirs);
 		return 0;
 	}
 

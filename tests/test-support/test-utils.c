@@ -40,6 +40,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
+#include "../../src/plugins.h"
 #include "../../src/status.h"
 #include "../../src/undo.h"
 
@@ -790,6 +791,18 @@ reset_timestamp(const char path[])
 		CloseHandle(file);
 	}
 #endif
+}
+
+void
+load_plugins(struct plugs_t *plugs, const char cfg_dir[])
+{
+	strlist_t plugins_dirs = { };
+	plugins_dirs.nitems = put_into_string_array(&plugins_dirs.items,
+			plugins_dirs.nitems, format_str("%s/plugins", cfg_dir));
+
+	plugs_load(plugs, plugins_dirs);
+
+	free_string_array(plugins_dirs.items, plugins_dirs.nitems);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

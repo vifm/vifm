@@ -14,6 +14,7 @@ _arguments -C -s \
   '-f[makes vifm instead of opening files write selection to $VIFM/vimfiles and quit]' \
   '--choose-files[sets output file to write selection into on exit instead of opening files]:path or hyphen:_path_or_hyphen' \
   '--choose-dir[sets output file to write last visited directory into on exit]:path or hyphen:_path_or_hyphen' \
+  '--plugins-dir[adds additional plugins directory (can appear multiple times)]:dir:_directories' \
   '--delimiter[sets separator for list of file paths written out by vifm]:delimiter: ' \
   '--on-choose[sets command to be executed on selected files instead of opening them]:command:_cmdstring' \
   '--logging=-[log some operational details]::startup log path:_files' \

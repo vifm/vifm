@@ -49,8 +49,10 @@ struct plugs_t
 	int loaded; /* Whether plugins were loaded, shouldn't load them twice. */
 };
 
+static void load_plugs_dir(plugs_t *plugs, const char plugin_path[]);
 static void plug_free(plug_t *plug);
-static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
+static plug_t * plug_from_name(plugs_t *plugs, const char name[]);
+static plug_t * plug_from_real_path(plugs_t *plugs, const char real_path[]);
 static int should_be_loaded(plugs_t *plugs, const char name[]);
 static void plug_logf(plug_t *plug, const char format[], ...)
 	_gnuc_printf(2, 3);
@@ -94,29 +96,37 @@ plugs_free(plugs_t *plugs)
 }
 
 void
-plugs_load(plugs_t *plugs, const char base_dir[])
+plugs_load(plugs_t *plugs, strlist_t plugins_dirs)
 {
 	if(plugs->loaded)
 	{
 		return;
 	}
 
-	char full_path[PATH_MAX + 1];
-	snprintf(full_path, sizeof(full_path), "%s/plugins", base_dir);
+	plugs->loaded = 1;
 
-	DIR *dir = os_opendir(full_path);
+	int i;
+	for(i = 0; i < plugins_dirs.nitems; ++i)
+	{
+		load_plugs_dir(plugs, plugins_dirs.items[i]);
+	}
+}
+
+/* Loads all plugins from a directory if it can be listed. */
+static void
+load_plugs_dir(plugs_t *plugs, const char plugin_path[])
+{
+	DIR *dir = os_opendir(plugin_path);
 	if(dir == NULL)
 	{
 		return;
 	}
 
-	plugs->loaded = 1;
-
 	struct dirent *entry;
 	while((entry = os_readdir(dir)) != NULL)
 	{
 		char path[PATH_MAX + NAME_MAX + 4];
-		snprintf(path, sizeof(path), "%s/%s", full_path, entry->d_name);
+		snprintf(path, sizeof(path), "%s/%s", plugin_path, entry->d_name);
 
 		/* XXX: is_dirent_targets_dir() does slowfs checks, do they harm here? */
 		if(entry->d_name[0] == '.' || is_builtin_dir(entry->d_name) ||
@@ -163,16 +173,23 @@ plugs_load(plugs_t *plugs, const char base_dir[])
 			continue;
 		}
 
-		/* Perform the check before committing this plugin. */
-		plug_t *duplicate = find_plug(plugs, plug->real_path);
+		/* Perform the searches before committing this plugin. */
+		plug_t *name_duplicate = plug_from_name(plugs, plug->name);
+		plug_t *real_duplicate = plug_from_real_path(plugs, plug->real_path);
 
 		plug->status = PLS_FAILURE;
 		DA_COMMIT(plugs->plugs);
 
-		if(duplicate != NULL)
+		if(real_duplicate != NULL)
 		{
 			plug_logf(plug, "[vifm][error]: skipped as a duplicate of %s",
-					duplicate->path);
+					real_duplicate->path);
+			plug->status = PLS_SKIPPED;
+		}
+		else if(name_duplicate != NULL)
+		{
+			plug_logf(plug, "[vifm][error]: skipped as a conflicting with %s",
+					name_duplicate->path);
 			plug->status = PLS_SKIPPED;
 		}
 		else if(!should_be_loaded(plugs, plug->name))
@@ -205,10 +222,26 @@ plug_free(plug_t *plug)
 	free(plug);
 }
 
+/* Looks up a plugin specified by name among already loaded plugins.  Returns
+ * pointer to it or NULL. */
+static plug_t *
+plug_from_name(plugs_t *plugs, const char name[])
+{
+	size_t i;
+	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)
+	{
+		if(strcasecmp(plugs->plugs[i]->name, name) == 0)
+		{
+			return plugs->plugs[i];
+		}
+	}
+	return NULL;
+}
+
 /* Looks up a plugin specified by real path among already loaded plugins.
  * Returns pointer to it or NULL. */
 static plug_t *
-find_plug(plugs_t *plugs, const char real_path[])
+plug_from_real_path(plugs_t *plugs, const char real_path[])
 {
 	size_t i;
 	for(i = 0U; i < DA_SIZE(plugs->plugs); ++i)

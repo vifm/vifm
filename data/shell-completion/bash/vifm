@@ -33,6 +33,10 @@ _vifm() {
             _filedir
             return
             ;;
+        --plugins-dir)
+            _filedir -d
+            return
+            ;;
         --server-name)
             local -a servers
             mapfile -t servers < <(command vifm --server-list 2>/dev/null)
@@ -49,7 +53,8 @@ _vifm() {
     if [[ $cur == -* ]]; then
         COMPREPLY=( $( compgen -W '--select -f --choose-files --choose-dir
             --delimiter --on-choose --logging= --server-list --server-name
-            --remote --remote-expr -c -h --help -v --version --no-configs' \
+            --remote --remote-expr -c -h --help -v --version --no-configs
+            --plugins-dir' \
             -- "$cur" ) )
         [[ $COMPREPLY == *= ]] && compopt -o nospace
         return

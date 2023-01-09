@@ -171,6 +171,12 @@ void stub_colmgr(void);
 /* Changes time attributes of a file to something "long time ago". */
 void reset_timestamp(const char path[]);
 
+struct plugs_t;
+
+/* Appends "/plugins" to the passed in directory and loads plugins from
+ * there. */
+void load_plugins(struct plugs_t *plugs, const char cfg_dir[]);
+
 #endif /* VIFM_TESTS__TEST_SUPPORT__TEST_UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -27,6 +27,7 @@
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
 #include "utils/hist.h"
+#include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "filetype.h"
 
@@ -217,6 +218,9 @@ typedef struct
 	char *last_session; /* Name of the previously used session. */
 
 	const void *preview_hint; /* Hint on which view is used for preview. */
+
+	/* List of plugin search directories.  Processed first to last. */
+	strlist_t plugins_dirs;
 
 	int global_local_settings; /* Set local settings globally. */
 

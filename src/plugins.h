@@ -49,6 +49,7 @@ typedef struct plug_t
 }
 plug_t;
 
+struct strlist_t;
 struct vlua_t;
 
 /* Creates new instance of the unit.  Returns the instance or NULL. */
@@ -57,8 +58,9 @@ plugs_t * plugs_create(struct vlua_t *vlua);
 /* Frees resources of the unit. */
 void plugs_free(plugs_t *plugs);
 
-/* Loads plugins. */
-void plugs_load(plugs_t *plugs, const char base_dir[]);
+/* Loads plugins from each of the passed in directories that can be listed.
+ * Immediately returns on all but first invocation. */
+void plugs_load(plugs_t *plugs, struct strlist_t plugins_dirs);
 
 /* Assigns *plug to information structure about a plugin specified by its index.
  * Returns non-zero on success, otherwise zero is returned. */
