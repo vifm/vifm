@@ -70,7 +70,7 @@ TEST(plugins_are_listed)
 		assert_success(make_symlink("plug1", SANDBOX_PATH "/plugins/plug3"));
 	}
 
-	plugs_load(curr_stats.plugs, cfg.config_dir);
+	load_plugins(curr_stats.plugs, cfg.config_dir);
 	plugs_sort(curr_stats.plugs);
 	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 
@@ -90,7 +90,7 @@ TEST(plugins_are_listed)
 
 TEST(gf_press)
 {
-	plugs_load(curr_stats.plugs, cfg.config_dir);
+	load_plugins(curr_stats.plugs, cfg.config_dir);
 	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 
 	char *saved_cwd = save_cwd();
@@ -114,7 +114,7 @@ TEST(gf_press)
 
 TEST(e_press_without_errors)
 {
-	plugs_load(curr_stats.plugs, cfg.config_dir);
+	load_plugins(curr_stats.plugs, cfg.config_dir);
 	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_e);
@@ -129,7 +129,7 @@ TEST(e_press_with_errors)
 	                                                  "print 'err2'\n"
 	                                                  "return");
 
-	plugs_load(curr_stats.plugs, cfg.config_dir);
+	load_plugins(curr_stats.plugs, cfg.config_dir);
 	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_e);

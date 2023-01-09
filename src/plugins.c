@@ -49,6 +49,7 @@ struct plugs_t
 	int loaded; /* Whether plugins were loaded, shouldn't load them twice. */
 };
 
+static void load_plugs_dir(plugs_t *plugs, const char plugin_path[]);
 static void plug_free(plug_t *plug);
 static plug_t * find_plug(plugs_t *plugs, const char real_path[]);
 static int should_be_loaded(plugs_t *plugs, const char name[]);
@@ -94,29 +95,37 @@ plugs_free(plugs_t *plugs)
 }
 
 void
-plugs_load(plugs_t *plugs, const char base_dir[])
+plugs_load(plugs_t *plugs, strlist_t plugins_dirs)
 {
 	if(plugs->loaded)
 	{
 		return;
 	}
 
-	char full_path[PATH_MAX + 1];
-	snprintf(full_path, sizeof(full_path), "%s/plugins", base_dir);
+	plugs->loaded = 1;
 
-	DIR *dir = os_opendir(full_path);
+	int i;
+	for(i = 0; i < plugins_dirs.nitems; ++i)
+	{
+		load_plugs_dir(plugs, plugins_dirs.items[i]);
+	}
+}
+
+/* Loads all plugins from a directory if it can be listed. */
+static void
+load_plugs_dir(plugs_t *plugs, const char plugin_path[])
+{
+	DIR *dir = os_opendir(plugin_path);
 	if(dir == NULL)
 	{
 		return;
 	}
 
-	plugs->loaded = 1;
-
 	struct dirent *entry;
 	while((entry = os_readdir(dir)) != NULL)
 	{
 		char path[PATH_MAX + NAME_MAX + 4];
-		snprintf(path, sizeof(path), "%s/%s", full_path, entry->d_name);
+		snprintf(path, sizeof(path), "%s/%s", plugin_path, entry->d_name);
 
 		/* XXX: is_dirent_targets_dir() does slowfs checks, do they harm here? */
 		if(entry->d_name[0] == '.' || is_builtin_dir(entry->d_name) ||

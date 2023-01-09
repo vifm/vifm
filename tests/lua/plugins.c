@@ -89,7 +89,7 @@ TEST(hidden_dir_is_ignored)
 	create_dir(SANDBOX_PATH "/plugins/.git");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
 	remove_dir(SANDBOX_PATH "/plugins/.git");
@@ -103,7 +103,7 @@ TEST(multiple_plugins_loaded)
 	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return {}");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
 	assert_success(vlua_run_string(vlua,
@@ -122,7 +122,7 @@ TEST(can_load_plugins_only_once)
 	assert_false(plugs_loaded(plugs));
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
 	assert_true(plugs_loaded(plugs));
@@ -131,7 +131,7 @@ TEST(can_load_plugins_only_once)
 	assert_true(plugs_get(plugs, 0, &plug));
 	assert_false(plugs_get(plugs, 1, &plug));
 
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 	assert_true(plugs_loaded(plugs));
 
@@ -152,7 +152,7 @@ TEST(plugin_statuses_are_correct)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
 	make_file(SANDBOX_PATH "/plugins/plug2/init.lua", "return");
 
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 
 	const plug_t *plug;
 	PluginLoadStatus status;
@@ -178,7 +178,7 @@ TEST(plugins_can_be_blacklisted)
 	plugs_blacklist(plugs, "plug2");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
 	assert_success(vlua_run_string(vlua,
@@ -201,7 +201,7 @@ TEST(plugins_can_be_whitelisted)
 	plugs_blacklist(plugs, "plug2");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
 	assert_success(vlua_run_string(vlua,
@@ -220,7 +220,7 @@ TEST(plugin_metadata)
 			"return { name = vifm.plugin.name }");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.name)"));
 	assert_string_equal("plug", ui_sb_last());
 
@@ -237,7 +237,7 @@ TEST(good_plugin_module)
 			"return { source = 'subsub' }");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.source)"));
 	assert_string_equal("subsub", ui_sb_last());
 
@@ -252,7 +252,7 @@ TEST(missing_plugin_module)
 			"return vifm.plugin.require('sub')");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug)"));
 	assert_string_equal("nil", ui_sb_last());
 
@@ -267,7 +267,7 @@ TEST(plugins_can_add_handler)
 			"return {}");
 
 	ui_sb_msg("");
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
 	assert_true(vlua_handler_present(vlua, "#plug#handler"));
@@ -280,7 +280,7 @@ TEST(can_not_load_same_plugin_twice, IF(not_windows))
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
 	assert_success(make_symlink("plug", SANDBOX_PATH "/plugins/plug2"));
 
-	plugs_load(plugs, cfg.config_dir);
+	load_plugins(plugs, cfg.config_dir);
 
 	const plug_t *plug1, *plug2, *plug3;
 	assert_true(plugs_get(plugs, 0, &plug1));

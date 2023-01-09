@@ -132,7 +132,7 @@ instance_finish_restart(void)
 	cs_load_pairs();
 
 	cfg_load();
-	plugs_load(curr_stats.plugs, cfg.config_dir);
+	plugs_load(curr_stats.plugs, curr_stats.plugins_dirs);
 
 	vifm_reexec_startup_commands();
 

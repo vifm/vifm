@@ -544,7 +544,7 @@ TEST(plugin_is_completed)
 
 	curr_stats.vlua = vlua_init();
 	curr_stats.plugs = plugs_create(curr_stats.vlua);
-	plugs_load(curr_stats.plugs, cfg.config_dir);
+	load_plugins(curr_stats.plugs, cfg.config_dir);
 
 	ASSERT_COMPLETION(L"plugin whitelist ", L"plugin whitelist plug1");
 	ASSERT_NEXT_MATCH("plug2");

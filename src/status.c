@@ -228,6 +228,10 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->preview_hint = NULL;
 
+	free_string_array(stats->plugins_dirs.items, stats->plugins_dirs.nitems);
+	stats->plugins_dirs.items = NULL;
+	stats->plugins_dirs.nitems = 0;
+
 	stats->global_local_settings = 0;
 
 	stats->history_size = 0;
