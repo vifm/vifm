@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 9
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -6109,10 +6109,11 @@ event             position  change  action        ~
 <MiddleRelease>      no      yes
 <RightMouse>        yes      yes    |vifm-:file|
 <RightRelease>       no      yes
-<ScrollWheelUp>      no      yes    <c-y>
-<ScrollWheelDown>    no      yes    <c-e>
+<ScrollWheelUp>      no      yes    <c-y> or |vifm-:tabprevious|
+<ScrollWheelDown>    no      yes    <c-e> or |vifm-:tabnext|
 
-Clicking on inactive pane, makes it active and does nothing else.
+Clicking on or scrolling over an inactive pane (including its title), makes it
+active and does nothing else.  Tabs are scrolled when mouse hovers over them.
 
 Visual Mode:
 event             position  selection  action     ~

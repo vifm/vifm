@@ -2377,12 +2377,26 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
+	/* Positions after 222 can become negative due to a combination of protocol
+	 * limitations and implementation.  This workaround can extend the range at
+	 * least a bit when SGR 1006 isn't available. */
+	if(e.x < 0)
+	{
+		e.x = e.x&0xff;
+	}
+	if(e.y < 0)
+	{
+		e.y = e.y&0xff;
+	}
+
 	if((cfg.mouse & (M_ALL_MODES | M_NORMAL_MODE)) == 0)
 	{
 		return;
 	}
 
-	if(wenclose(lwin.win, e.y, e.x))
+	int on_tab_line = !cfg.pane_tabs && wenclose(tab_line, e.y, e.x);
+
+	if(wenclose(lwin.win, e.y, e.x) || wenclose(lwin.title, e.y, e.x))
 	{
 		if(curr_view != &lwin)
 		{
@@ -2390,7 +2404,7 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 			return;
 		}
 	}
-	else if(wenclose(rwin.win, e.y, e.x))
+	else if(wenclose(rwin.win, e.y, e.x) || wenclose(rwin.title, e.y, e.x))
 	{
 		if(curr_view != &rwin)
 		{
@@ -2398,12 +2412,28 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 			return;
 		}
 	}
-	else
+	else if(!on_tab_line)
 	{
 		return;
 	}
 
-	if(e.bstate & BUTTON1_PRESSED)
+	if(on_tab_line || wenclose(curr_view->title, e.y, e.x))
+	{
+		if(!on_tab_line && !cfg.pane_tabs)
+		{
+			/* Do nothing. */
+		}
+		else if(e.bstate & BUTTON4_PRESSED)
+		{
+			tabs_previous(1);
+		}
+		else if(e.bstate & (BUTTON2_PRESSED | BUTTON5_PRESSED))
+		{
+			tabs_next(1);
+		}
+		/* Other events are to handled in the future. */
+	}
+	else if(e.bstate & BUTTON1_PRESSED)
 	{
 		wmouse_trafo(curr_view->win, &e.y, &e.x, FALSE);
 
