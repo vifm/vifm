@@ -130,8 +130,7 @@ WINDOW *menu_win;
 WINDOW *sort_win;
 WINDOW *change_win;
 WINDOW *error_win;
-
-static WINDOW *tab_line;
+WINDOW *tab_line;
 
 static WINDOW *lborder;
 static WINDOW *mborder;

@@ -1,4 +1,4 @@
-.TH VIFM 1 "9 January 2022" "vifm 0.12.1"
+.TH VIFM 1 "10 January 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -7239,8 +7239,11 @@ Note: these are not available in mappings at the momemnt.
   <MiddleRelease>      no      yes
   <RightMouse>        yes      yes    :file
   <RightRelease>       no      yes
-  <ScrollWheelUp>      no      yes    <c-y>
-  <ScrollWheelDown>    no      yes    <c-e>
+  <ScrollWheelUp>      no      yes    <c-y> or :tabprevious
+  <ScrollWheelDown>    no      yes    <c-e> or :tabnext
+
+Clicking on or scrolling over an inactive pane (including its title), makes it
+active and does nothing else.  Tabs are scrolled when mouse hovers over them.
 
 .B "Visual Mode"
 

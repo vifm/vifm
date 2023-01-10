@@ -507,6 +507,7 @@ extern WINDOW *menu_win;
 extern WINDOW *sort_win;
 extern WINDOW *change_win;
 extern WINDOW *error_win;
+extern WINDOW *tab_line;
 
 /* Updates the ruler with information from the view (possibly lazily). */
 void ui_ruler_update(view_t *view, int lazy_redraw);
