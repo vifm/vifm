@@ -197,7 +197,7 @@ load_plugs_dir(plugs_t *plugs, const char plugin_path[])
 			plug_log(plug, "[vifm][info]: skipped due to blacklist/whitelist");
 			plug->status = PLS_SKIPPED;
 		}
-		else if(vlua_load_plugin(plugs->vlua, entry->d_name, plug) == 0)
+		else if(vlua_load_plugin(plugs->vlua, plug) == 0)
 		{
 			plug_log(plug, "[vifm][info]: plugin was loaded successfully");
 			plug->status = PLS_SUCCESS;

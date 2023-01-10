@@ -37,7 +37,7 @@ struct view_t;
 vlua_t * vlua_init(void);
 
 /* Loads a single plugin on request.  Returns zero on success. */
-int vlua_load_plugin(vlua_t *vlua, const char plugin[], struct plug_t *plug);
+int vlua_load_plugin(vlua_t *vlua, struct plug_t *plug);
 
 /* Frees resources of the unit.  The parameter can be NULL. */
 void vlua_finish(vlua_t *vlua);

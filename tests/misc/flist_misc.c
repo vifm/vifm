@@ -555,7 +555,7 @@ TEST(fview_previews_works)
 	assert_false(fview_previews(&lwin, "/unrelated/path"));
 }
 
-TEST(fentry_points_to_works, IF(symlinks_available))
+TEST(fentry_points_to_works, IF(not_windows))
 {
 	make_symlink(".", SANDBOX_PATH "/link");
 
