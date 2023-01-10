@@ -37,7 +37,11 @@ git clean --force -d ..
 git checkout --force stash@{0}^
 git stash pop
 
-find -name '*.gcda' -delete
+# need to remove *.gcda in tests as well, otherwise libgcov in tests that fork
+# can print "overwriting an existing profile data with a different timestamp" to
+# error stream and break tests
+find . ../tests -name '*.gcda' -delete
+
 make -C ../tests build
 make check
 
