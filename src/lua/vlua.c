@@ -23,7 +23,6 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
-#include "../cfg/config.h"
 #include "../cfg/info.h"
 #include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
@@ -80,7 +79,7 @@ static int VLUA_IMPL(require_plugin_module)(lua_State *lua);
 static int VLUA_API(sb_info)(lua_State *lua);
 static int VLUA_API(sb_error)(lua_State *lua);
 static int VLUA_API(sb_quick)(lua_State *lua);
-static int load_plugin(lua_State *lua, const char name[], plug_t *plug);
+static int load_plugin(lua_State *lua, plug_t *plug);
 static void setup_plugin_env(lua_State *lua, plug_t *plug);
 
 VLUA_DECLARE_SAFE(api_is_at_least);
@@ -521,15 +520,15 @@ VLUA_API(sb_quick)(lua_State *lua)
 }
 
 int
-vlua_load_plugin(vlua_t *vlua, const char plugin[], plug_t *plug)
+vlua_load_plugin(vlua_t *vlua, plug_t *plug)
 {
-	if(load_plugin(vlua->lua, plugin, plug) == 0)
+	if(load_plugin(vlua->lua, plug) == 0)
 	{
 		lua_getglobal(vlua->lua, "vifm");
 		lua_getfield(vlua->lua, -1, "plugins");
 		lua_getfield(vlua->lua, -1, "all");
 		lua_pushvalue(vlua->lua, -4);
-		lua_setfield(vlua->lua, -2, plugin);
+		lua_setfield(vlua->lua, -2, plug->name);
 		lua_pop(vlua->lua, 4);
 		return 0;
 	}
@@ -540,17 +539,16 @@ vlua_load_plugin(vlua_t *vlua, const char plugin[], plug_t *plug)
  * that corresponds to the module onto the stack, otherwise non-zero is
  * returned. */
 static int
-load_plugin(lua_State *lua, const char name[], plug_t *plug)
+load_plugin(lua_State *lua, plug_t *plug)
 {
 	char full_path[PATH_MAX + 32];
-	snprintf(full_path, sizeof(full_path), "%s/plugins/%s/init.lua",
-			cfg.config_dir, name);
+	snprintf(full_path, sizeof(full_path), "%s/init.lua", plug->path);
 
 	if(luaL_loadfile(lua, full_path) != LUA_OK)
 	{
 		const char *error = lua_tostring(lua, -1);
 		plug_log(plug, error);
-		ui_sb_errf("Failed to load '%s' plugin: %s", name, error);
+		ui_sb_errf("Failed to load '%s' plugin: %s", plug->name, error);
 		lua_pop(lua, 1);
 		return 1;
 	}
@@ -560,14 +558,14 @@ load_plugin(lua_State *lua, const char name[], plug_t *plug)
 	{
 		const char *error = lua_tostring(lua, -1);
 		plug_log(plug, error);
-		ui_sb_errf("Failed to start '%s' plugin: %s", name, error);
+		ui_sb_errf("Failed to start '%s' plugin: %s", plug->name, error);
 		lua_pop(lua, 1);
 		return 1;
 	}
 
 	if(lua_gettop(lua) == 0 || !lua_istable(lua, -1))
 	{
-		ui_sb_errf("Failed to load '%s' plugin: %s", name,
+		ui_sb_errf("Failed to load '%s' plugin: %s", plug->name,
 				"it didn't return a table");
 		if(lua_gettop(lua) > 0)
 		{

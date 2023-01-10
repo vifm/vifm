@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/str.h"
@@ -23,6 +24,13 @@ SETUP()
 
 	vlua = vlua_init();
 	plugs = plugs_create(vlua);
+
+	char plug_path[PATH_MAX + 1];
+	make_abs_path(plug_path, sizeof(plug_path), SANDBOX_PATH, "plugins/plug",
+			NULL);
+
+	update_string(&plug_dummy.name, "plug");
+	update_string(&plug_dummy.path, plug_path);
 }
 
 TEARDOWN()
@@ -35,6 +43,8 @@ TEARDOWN()
 	remove_dir(SANDBOX_PATH "/plugins/plug");
 	remove_dir(SANDBOX_PATH "/plugins");
 
+	update_string(&plug_dummy.name, NULL);
+	update_string(&plug_dummy.path, NULL);
 	update_string(&plug_dummy.log, NULL);
 	plug_dummy.log_len = 0;
 }
@@ -44,7 +54,7 @@ TEST(good_plugin_loaded)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
 
 	ui_sb_msg("");
-	assert_success(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_success(vlua_load_plugin(vlua, &plug_dummy));
 	assert_string_equal("", ui_sb_last());
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
@@ -55,7 +65,7 @@ TEST(bad_return_value)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return 123");
 
 	ui_sb_msg("");
-	assert_failure(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_failure(vlua_load_plugin(vlua, &plug_dummy));
 	assert_string_equal("Failed to load 'plug' plugin: it didn't return a table",
 			ui_sb_last());
 
@@ -67,7 +77,7 @@ TEST(syntax_error)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "-+");
 
 	ui_sb_msg("");
-	assert_failure(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_failure(vlua_load_plugin(vlua, &plug_dummy));
 	assert_true(starts_with_lit(ui_sb_last(), "Failed to load 'plug' plugin: "));
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
@@ -78,7 +88,7 @@ TEST(runtime_error)
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "badcall()");
 
 	ui_sb_msg("");
-	assert_failure(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_failure(vlua_load_plugin(vlua, &plug_dummy));
 	assert_true(starts_with_lit(ui_sb_last(), "Failed to start 'plug' plugin: "));
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
@@ -144,7 +154,7 @@ TEST(can_load_plugins_only_once)
 
 TEST(loading_missing_plugin_fails)
 {
-	assert_failure(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_failure(vlua_load_plugin(vlua, &plug_dummy));
 }
 
 TEST(plugin_statuses_are_correct)
@@ -307,7 +317,7 @@ TEST(print_outputs_to_plugin_log)
 			"print('arg1', 'arg2'); return {}");
 
 	ui_sb_msg("");
-	assert_success(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_success(vlua_load_plugin(vlua, &plug_dummy));
 	assert_string_equal("", ui_sb_last());
 	assert_string_equal("arg1\targ2", plug_dummy.log);
 
@@ -320,29 +330,34 @@ TEST(print_without_arguments)
 			"print('first line'); print(); print('third line'); return {}");
 
 	update_string(&plug_dummy.log, NULL);
-	assert_success(vlua_load_plugin(vlua, "plug", &plug_dummy));
+	assert_success(vlua_load_plugin(vlua, &plug_dummy));
 	assert_string_equal("first line\n\nthird line", plug_dummy.log);
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
 
-TEST(can_not_plugin_with_the_same_name)
+TEST(can_not_load_plugins_with_the_same_name)
 {
 	create_dir(SANDBOX_PATH "/plugins2");
 	create_dir(SANDBOX_PATH "/plugins2/plug");
 
-	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return {}");
-	make_file(SANDBOX_PATH "/plugins2/plug/init.lua", "return {}");
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"return { src = 'plugins' }");
+	make_file(SANDBOX_PATH "/plugins2/plug/init.lua",
+			"return { src = 'plugins2' }");
 
 	strlist_t plugins_dirs = { };
 	plugins_dirs.nitems = add_to_string_array(&plugins_dirs.items,
-			plugins_dirs.nitems, SANDBOX_PATH "/plugins");
-	plugins_dirs.nitems = add_to_string_array(&plugins_dirs.items,
 			plugins_dirs.nitems, SANDBOX_PATH "/plugins2");
+	plugins_dirs.nitems = add_to_string_array(&plugins_dirs.items,
+			plugins_dirs.nitems, SANDBOX_PATH "/plugins");
 
 	plugs_load(plugs, plugins_dirs);
 
 	free_string_array(plugins_dirs.items, plugins_dirs.nitems);
+
+	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.src)"));
+	assert_string_equal("plugins2", ui_sb_last());
 
 	const plug_t *plug1, *plug2;
 	assert_true(plugs_get(plugs, 0, &plug1));
