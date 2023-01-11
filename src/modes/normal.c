@@ -518,10 +518,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_up(curr_view))
-	{
-		fpos_scroll_page(curr_view, fpos_get_last_visible_cell(curr_view), -1);
-	}
+	fview_scroll_page_up(curr_view);
 }
 
 /* Resets selection and search highlight. */
@@ -558,10 +555,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_down(curr_view))
-	{
-		fpos_scroll_page(curr_view, curr_view->top_line, 1);
-	}
+	fview_scroll_page_down(curr_view);
 }
 
 static void

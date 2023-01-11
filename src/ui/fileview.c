@@ -1111,6 +1111,24 @@ update_scroll_bind_offset(void)
 	curr_stats.scroll_bind_off = rwin_pos - lwin_pos;
 }
 
+void
+fview_scroll_page_up(view_t *view)
+{
+	if(can_scroll_up(view))
+	{
+		fpos_scroll_page(view, fpos_get_last_visible_cell(view), -1);
+	}
+}
+
+void
+fview_scroll_page_down(view_t *view)
+{
+	if(can_scroll_down(view))
+	{
+		fpos_scroll_page(view, view->top_line, 1);
+	}
+}
+
 /* Print callback for column_view unit. */
 static void
 column_line_print(const char buf[], size_t offset, AlignType align,
