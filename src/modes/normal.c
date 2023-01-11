@@ -88,7 +88,6 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
-static void page_scroll(int base, int direction);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_space(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info);
@@ -521,7 +520,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
-		page_scroll(fpos_get_last_visible_cell(curr_view), -1);
+		fpos_scroll_page(curr_view, fpos_get_last_visible_cell(curr_view), -1);
 	}
 }
 
@@ -561,29 +560,8 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_down(curr_view))
 	{
-		page_scroll(curr_view->top_line, 1);
+		fpos_scroll_page(curr_view, curr_view->top_line, 1);
 	}
-}
-
-/* Scrolls pane by one view in both directions.  The direction should be 1 or
- * -1. */
-static void
-page_scroll(int base, int direction)
-{
-	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
-	int old_pos = curr_view->list_pos;
-	int offset = fview_is_transposed(curr_view)
-	    ? (MAX(1, curr_view->column_count - VER_GAP_SIZE))*curr_view->window_rows
-	    : (curr_view->window_rows - HOR_GAP_SIZE)*curr_view->column_count;
-	int new_pos = base + direction*offset
-	            + old_pos%curr_view->run_size - base%curr_view->run_size;
-	curr_view->list_pos = MAX(0, MIN(curr_view->list_rows - 1, new_pos));
-	scroll_by_files(curr_view, direction*offset);
-
-	/* Updating list_pos ourselves doesn't take into account
-	 * synchronization/updates of the other view, so trigger them. */
-	ui_view_schedule_redraw(curr_view);
-	fpos_set_pos(curr_view, curr_view->list_pos);
 }
 
 static void

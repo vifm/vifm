@@ -442,6 +442,7 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 page_scroll(int base, int direction)
 {
+	/* TODO: deduplicate with fpos_scroll_page(). */
 	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
 	int offset = fview_is_transposed(view)
 	           ? MAX(1, (view->column_count - VER_GAP_SIZE))*view->window_rows

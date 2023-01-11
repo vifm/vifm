@@ -29,6 +29,7 @@
 #include "ui/fileview.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/regexp.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -97,6 +98,25 @@ fpos_scroll_up(view_t *view, int lines_count)
 		return 1;
 	}
 	return 0;
+}
+
+void
+fpos_scroll_page(view_t *view, int base, int direction)
+{
+	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
+	int old_pos = view->list_pos;
+	int offset = fview_is_transposed(view)
+	    ? (MAX(1, view->column_count - VER_GAP_SIZE))*view->window_rows
+	    : (view->window_rows - HOR_GAP_SIZE)*view->column_count;
+	int new_pos = base + direction*offset
+	            + old_pos%view->run_size - base%view->run_size;
+	view->list_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
+	scroll_by_files(view, direction*offset);
+
+	/* Updating list_pos ourselves doesn't take into account
+	 * synchronization/updates of the other view, so trigger them. */
+	ui_view_schedule_redraw(view);
+	fpos_set_pos(view, view->list_pos);
 }
 
 void
