@@ -123,7 +123,7 @@ TEST(leafs_are_not_matched_by_local_filtering)
 	assert_int_equal(4, lwin.list_rows);
 
 	assert_int_equal(1, local_filter_set(&lwin, "\\."));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 
 	assert_int_equal(1, lwin.list_rows);
 	validate_tree(&lwin);
@@ -145,7 +145,7 @@ TEST(leafs_are_returned_if_local_filter_is_emptied)
 	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
 	assert_int_equal(4, lwin.list_rows);
 	assert_int_equal(0, local_filter_set(&lwin, "."));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
@@ -156,7 +156,7 @@ TEST(leafs_are_returned_if_local_filter_is_emptied)
 
 	/* ".." should appear after filter is emptied. */
 	assert_int_equal(0, local_filter_set(&lwin, ""));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 	assert_int_equal(4, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -218,7 +218,7 @@ TEST(nodes_are_reparented_on_filtering)
 	validate_tree(&lwin);
 
 	assert_int_equal(0, local_filter_set(&lwin, "2"));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
 }
@@ -230,7 +230,7 @@ TEST(sorting_of_filtered_list_accounts_for_tree)
 	validate_tree(&lwin);
 
 	assert_int_equal(0, local_filter_set(&lwin, "file|dir4"));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 	assert_int_equal(6, lwin.list_rows);
 	validate_tree(&lwin);
 

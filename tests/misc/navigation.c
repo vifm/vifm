@@ -67,7 +67,7 @@ TEST(local_filter_is_reset_in_cv_to_follow_mark)
 	assert_true(flist_custom_active(&lwin));
 
 	local_filter_set(&lwin, "b");
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 	assert_true(flist_custom_active(&lwin));
 
 	assert_success(marks_goto(&lwin, 'a'));

@@ -762,7 +762,7 @@ find_nearest_neighour(const view_t *view)
 }
 
 void
-local_filter_accept(view_t *view)
+local_filter_accept(view_t *view, int update_history)
 {
 	if(!view->local_filter.in_progress)
 	{
@@ -773,7 +773,10 @@ local_filter_accept(view_t *view)
 
 	local_filter_finish(view);
 
-	hists_filter_save(view->local_filter.filter.raw);
+	if(update_history)
+	{
+		hists_filter_save(view->local_filter.filter.raw);
+	}
 
 	/* Some of previously selected files could be filtered out, update number of
 	 * selected files. */

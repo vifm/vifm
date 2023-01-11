@@ -1527,7 +1527,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(cfg.inc_search)
 		{
-			local_filter_accept(curr_view);
+			local_filter_accept(curr_view, /*update_history=*/1);
 		}
 		else
 		{
