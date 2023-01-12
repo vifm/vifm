@@ -267,6 +267,7 @@ static int replace_input_line(line_stats_t *stat, const char new[]);
 static const hist_t * pick_hist(void);
 static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
+static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
@@ -297,6 +298,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_k,             {{&cmd_ctrl_k}, .descr = "remove line part to the right"}},
 	{WK_CR,              {{&cmd_return}, .descr = "execute/accept input"}},
 	{WK_C_n,             {{&cmd_ctrl_n}, .descr = "recall next history item"}},
+	{WK_C_o,             {{&cmd_ctrl_o}, .descr = "nav: go to parent directory"}},
 	{WK_C_p,             {{&cmd_ctrl_p}, .descr = "recall previous history item"}},
 	{WK_C_t,             {{&cmd_ctrl_t}, .descr = "swap adjacent characters"}},
 	{WK_ESC,             {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
@@ -2558,6 +2560,26 @@ replace_input_line(line_stats_t *stat, const char new[])
 	stat->line = wide_new;
 	stat->len = wcslen(wide_new);
 	return 0;
+}
+
+/* Goes to parent directory when in navigation. */
+static void
+cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!input_stat.navigating)
+	{
+		return;
+	}
+
+	CmdLineSubmode sub_mode = input_stat.sub_mode;
+	if(sub_mode == CLS_FILTER)
+	{
+		local_filter_cancel(curr_view);
+	}
+
+	rn_leave(curr_view, /*levels=*/1);
+	enter_submode(sub_mode, /*initial=*/"", /*reenter=*/1);
+	nav_start(&input_stat);
 }
 
 static void

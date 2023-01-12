@@ -1060,6 +1060,9 @@ Enter                                          *vifm-a_Enter*
     either enter a directory under the cursor without leaving the mode and
     clear the prompt or leave the mode and open a file under the cursor.
 
+Ctrl-O                                         *vifm-a_CTRL-O*
+    go to parent directory.
+
 Pasting special values~
 
 The shortcuts listed below insert specified values into current cursor

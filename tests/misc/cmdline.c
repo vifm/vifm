@@ -178,6 +178,9 @@ TEST(cmdline_navigation)
 
 	(void)vle_keys_exec_timed_out(WK_C_y);
 	assert_false(stats->navigating);
+
+	(void)vle_keys_exec_timed_out(WK_C_o);
+	assert_string_equal("tree", get_last_path_component(curr_view->curr_dir));
 }
 
 TEST(navigation_requires_interactivity)
@@ -208,7 +211,11 @@ TEST(search_navigation)
 
 	(void)vle_keys_exec_timed_out(L"/" WK_C_y);
 
-	/* Can enter directories. */
+	/* Can enter and leave directories. */
+	(void)vle_keys_exec_timed_out(L"5" WK_C_m);
+	assert_string_equal("dir5", get_last_path_component(curr_view->curr_dir));
+	(void)vle_keys_exec_timed_out(WK_C_o);
+	assert_string_equal("tree", get_last_path_component(curr_view->curr_dir));
 	(void)vle_keys_exec_timed_out(L"1" WK_C_m);
 	assert_string_equal("dir1", get_last_path_component(curr_view->curr_dir));
 	(void)vle_keys_exec_timed_out(L"2" WK_C_m);
@@ -236,7 +243,11 @@ TEST(filter_navigation)
 
 	(void)vle_keys_exec_timed_out(L"=" WK_C_y);
 
-	/* Can enter directories. */
+	/* Can enter and leave directories. */
+	(void)vle_keys_exec_timed_out(L"5" WK_C_m);
+	assert_string_equal("dir5", get_last_path_component(curr_view->curr_dir));
+	(void)vle_keys_exec_timed_out(WK_C_o);
+	assert_string_equal("tree", get_last_path_component(curr_view->curr_dir));
 	(void)vle_keys_exec_timed_out(L"1" WK_C_m);
 	assert_string_equal("dir1", get_last_path_component(curr_view->curr_dir));
 	(void)vle_keys_exec_timed_out(L"2" WK_C_m);

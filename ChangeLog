@@ -37,6 +37,8 @@
 	allows entering deep paths by a series of searches for individual path
 	components.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
 
+	Added Ctrl-O key to command-line navigation that goes to parent directory.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
