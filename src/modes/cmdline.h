@@ -101,6 +101,8 @@ typedef struct
 	int prev_mode;
 	/* Kind of command-line mode. */
 	CmdLineSubmode sub_mode;
+	/* Whether performing quick navigation. */
+	int navigating;
 	/* Whether current submode allows external editing. */
 	int sub_mode_allows_ee;
 	/* CLS_MENU_*-specific data. */

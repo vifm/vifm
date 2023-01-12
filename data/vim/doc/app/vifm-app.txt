@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 10
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -50,6 +50,7 @@ Tag name structure:
       Menu or dialog command   vifm-m_     :help vifm-m_zh
       Command-line command     vifm-:      :help vifm-:quit
       Command-line editing     vifm-c_     :help vifm-c_CTRL-H
+      Command-line navigation  vifm-a_     :help vifm-a_CTRL-Y
       Vifm command argument    vifm--      :help vifm--f
       Option                   vifm-'      :help vifm-'wrap'
 
@@ -1030,6 +1031,34 @@ Ctrl-R =                                       *vifm-c_CTRL-R_=*
     insert result of evaluating an expression.  Expression is to be entered
     via nested command-line prompt (where this key does nothing).  Expansion
     of an erroneous expression is empty.
+
+Fast navigation~
+
+In order to streamline navigation through directory tree, you can enter a
+special form of command-line mode from search or local filter prompt.  Once
+activated, pressing Enter opens currently selected directory and clears the
+prompt in anticipation of the next component of the path.  If entry under the
+cursor is a file, it is opened and the mode is finished.
+
+This behaviour is embedded in a command-line mode, but doesn't update input
+histories and redefines some of the mode's mappings for the purpose of faster
+navigation through the file system rather than command-line editing.  When on,
+prompt gets "nav" prefix.
+
+You can enable this behaviour on search by default via a mapping like: >
+    nnoremap / /<c-y>
+
+Ctrl-Y                                         *vifm-c_CTRL-Y*
+    enter navigation mode.  Works only for search and local filter started
+    from a normal mode and only when |vifm-'incsearch'| is set
+    (|vifm-'wrapscan'| is also nice to have set for search).
+
+Ctrl-Y                                         *vifm-a_CTRL-Y*
+    return to a regular command-line mode.
+
+Enter                                          *vifm-a_Enter*
+    either enter a directory under the cursor without leaving the mode and
+    clear the prompt or leave the mode and open a file under the cursor.
 
 Pasting special values~
 

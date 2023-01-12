@@ -33,6 +33,10 @@
 	additional places to look for plugins.  Thanks to 高浩亮 (a.k.a.
 	haolian9).
 
+	Added Ctrl-Y key to command-line mode.  It activates fast navigation that
+	allows entering deep paths by a series of searches for individual path
+	components.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

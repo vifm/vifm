@@ -64,6 +64,7 @@
 #include "../flist_pos.h"
 #include "../flist_sel.h"
 #include "../marks.h"
+#include "../running.h"
 #include "../search.h"
 #include "../status.h"
 #include "dialogs/attr_dialog.h"
@@ -73,6 +74,9 @@
 #include "normal.h"
 #include "visual.h"
 #include "wk.h"
+
+/* Prompt prefix when navigation is enabled. */
+#define NAV_PREFIX L"nav"
 
 /* History search mode. */
 typedef enum
@@ -101,6 +105,8 @@ typedef struct
 	int prev_mode;
 	/* Kind of command-line mode. */
 	CmdLineSubmode sub_mode;
+	/* Whether performing quick navigation. */
+	int navigating;
 	/* Whether current submode allows external editing. */
 	int sub_mode_allows_ee;
 	/* CLS_MENU_*-specific data. */
@@ -195,6 +201,7 @@ static int draw_wild_popup(int *last_pos, int *pos, int *len);
 static int compute_wild_menu_height(void);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
+static void nav_open(void);
 static int is_input_line_empty(void);
 static void expand_abbrev(void);
 TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
@@ -262,6 +269,9 @@ static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
+static void nav_start(line_stats_t *stat);
+static void nav_stop(line_stats_t *stat);
 #ifdef ENABLE_EXTENDED_KEYS
 static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
@@ -303,6 +313,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_r WK_EQUALS,   {{&cmd_ctrl_requals}, .descr = "invoke expression register prompt"}},
 	{WK_C_u,             {{&cmd_ctrl_u}, .descr = "remove line part to the left"}},
 	{WK_C_w,             {{&cmd_ctrl_w}, .descr = "remove word to the left"}},
+	{WK_C_y,             {{&cmd_ctrl_y}, .descr = "toggle navigation"}},
 	{WK_C_x WK_SLASH,    {{&cmd_ctrl_xslash}, .descr = "insert last search pattern"}},
 	{WK_C_x WK_a,        {{&cmd_ctrl_xa}, .descr = "insert implicit permanent filter value"}},
 	{WK_C_x WK_c,        {{&cmd_ctrl_xc}, .descr = "insert current file name"}},
@@ -832,6 +843,7 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 		CmdLineSubmode sub_mode, int allow_ee, int prev_mode)
 {
 	stat->sub_mode = sub_mode;
+	stat->navigating = 0;
 	stat->sub_mode_allows_ee = allow_ee;
 	stat->menu = NULL;
 	stat->prompt_callback = NULL;
@@ -1464,6 +1476,12 @@ static void
 cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	/* TODO: refactor this cmd_return() function. */
+	if(input_stat.navigating)
+	{
+		nav_open();
+		return;
+	}
+
 	stop_completion();
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -1585,6 +1603,39 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	free(input);
+}
+
+/* Opens current entry while navigating. */
+static void
+nav_open(void)
+{
+	dir_entry_t *curr = get_current_entry(curr_view);
+	if(fentry_is_fake(curr))
+	{
+		return;
+	}
+
+	int is_dir_like = (fentry_is_dir(curr) || is_unc_root(curr_view->curr_dir));
+
+	CmdLineSubmode sub_mode = input_stat.sub_mode;
+	if(sub_mode == CLS_FILTER)
+	{
+		/* Accepting filter changes list of files, but in case of error it might be
+		 * better. */
+		local_filter_accept(curr_view, /*update_history=*/0);
+	}
+
+	if(is_dir_like)
+	{
+		rn_enter_dir(curr_view);
+		enter_submode(sub_mode, /*initial=*/"", /*reenter=*/1);
+		nav_start(&input_stat);
+	}
+	else
+	{
+		leave_cmdline_mode(/*cancelled=*/0);
+		rn_open(curr_view, FHE_RUN);
+	}
 }
 
 /* Checks whether input line is empty.  Returns non-zero if so, otherwise
@@ -2552,6 +2603,61 @@ cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.line[index] = char_before_last;
 
 	update_cmdline_text(&input_stat);
+}
+
+/* Toggles navigation for search/filtering. */
+static void
+cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!input_stat.search_mode && input_stat.sub_mode != CLS_FILTER)
+	{
+		return;
+	}
+	if(!cfg.inc_search || input_stat.prev_mode != NORMAL_MODE)
+	{
+		return;
+	}
+
+	if(!input_stat.navigating)
+	{
+		nav_start(&input_stat);
+	}
+	else
+	{
+		nav_stop(&input_stat);
+	}
+	update_cmdline_text(&input_stat);
+}
+
+/* Enables navigation. */
+static void
+nav_start(line_stats_t *stat)
+{
+	stat->navigating = 1;
+
+	size_t nav_prefix_len = wcslen(NAV_PREFIX);
+
+	wchar_t new_prompt[NAME_MAX + 1] = NAV_PREFIX;
+	wcsncpy(new_prompt + nav_prefix_len, stat->prompt,
+			ARRAY_LEN(new_prompt) - nav_prefix_len - 1);
+
+	wcscpy(stat->prompt, new_prompt);
+	stat->prompt_wid += nav_prefix_len;
+	stat->curs_pos += nav_prefix_len;
+}
+
+/* Disables navigation. */
+static void
+nav_stop(line_stats_t *stat)
+{
+	stat->navigating = 0;
+
+	size_t nav_prefix_len = wcslen(NAV_PREFIX);
+
+	memmove(stat->prompt, &stat->prompt[nav_prefix_len],
+			sizeof(stat->prompt) - sizeof(wchar_t)*nav_prefix_len);
+	stat->prompt_wid -= nav_prefix_len;
+	stat->curs_pos -= nav_prefix_len;
 }
 
 #ifdef ENABLE_EXTENDED_KEYS

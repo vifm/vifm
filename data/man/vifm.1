@@ -1,4 +1,4 @@
-.TH VIFM 1 "10 January 2022" "vifm 0.12.1"
+.TH VIFM 1 "12 January 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1157,6 +1157,38 @@ trigger abbreviation expansion.
 insert result of evaluating an expression.  Expression is to be entered
 via nested command-line prompt (where this key does nothing).  Expansion of an
 erroneous expression is empty.
+.\" ---------------------------------------------------------------------------
+.SH Fast navigation
+.\" ---------------------------------------------------------------------------
+In order to streamline navigation through directory tree, you can enter a
+special form of command-line mode from search or local filter prompt.  Once
+activated, pressing Enter opens currently selected directory and clears the
+prompt in anticipation of the next component of the path.  If entry under the
+cursor is a file, it is opened and the mode is finished.
+
+This behaviour is embedded in a command-line mode, but doesn't update input
+histories and redefines some of the mode's mappings for the purpose of faster
+navigation through the file system rather than command-line editing.  When on,
+prompt gets "nav" prefix.
+
+You can enable this behaviour on search by default via a mapping like:
+.EX
+
+    nnoremap / /<c-y>
+
+.EE
+.TP
+.BI Ctrl-Y
+enter navigation mode.  Works only for search and local filter started
+from a normal mode and only when 'incsearch' is set ('wrapscan' is also nice to
+have set for search).
+.TP
+.BI Ctrl-Y
+return to a regular command-line mode.
+.TP
+.BI Enter
+either enter a directory under the cursor without leaving the mode and clear
+the prompt or leave the mode and open a file under the cursor.
 .\" ---------------------------------------------------------------------------
 .SH Pasting special values
 .\" ---------------------------------------------------------------------------
