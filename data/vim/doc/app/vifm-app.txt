@@ -1056,12 +1056,26 @@ Ctrl-Y                                         *vifm-c_CTRL-Y*
 Ctrl-Y                                         *vifm-a_CTRL-Y*
     return to a regular command-line mode.
 
-Enter                                          *vifm-a_Enter*
+Enter, Right                                   *vifm-a_Enter* *vifm-a_Right*
     either enter a directory under the cursor without leaving the mode and
     clear the prompt or leave the mode and open a file under the cursor.
-
-Ctrl-O                                         *vifm-a_CTRL-O*
+Ctrl-O, Left                                   *vifm-a_CTRL-O* *vifm-a_Left*
     go to parent directory.
+
+Ctrl-N, Down                                   *vifm-a_CTRL-N* *vifm-a_Down*
+    move view cursor down.
+Ctrl-P, Up                                     *vifm-a_CTRL-P* *vifm-a_Up*
+    move view cursor up.
+
+Page Down                                      *vifm-a_PageDown*
+    scroll view down.
+Page Up                                        *vifm-a_PageUp*
+    scroll view up.
+
+Home                                           *vifm-a_Home*
+    move view cursor to the first item.
+End                                            *vifm-a_End*
+    move view cursor to the last item.
 
 Pasting special values~
 

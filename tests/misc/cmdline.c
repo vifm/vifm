@@ -3,6 +3,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/curses.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
@@ -196,6 +197,76 @@ TEST(navigation_requires_interactivity)
 	assert_true(stats->navigating);
 	(void)vle_keys_exec_timed_out(WK_C_y);
 	assert_false(stats->navigating);
+}
+
+TEST(navigation_movement)
+{
+	conf_setup();
+	cfg.inc_search = 1;
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "read", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	(void)vle_keys_exec_timed_out(L"/");
+
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_string_equal("binary-data",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_string_equal("dos-eof",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_string_equal("dos-line-endings",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	(void)vle_keys_exec_timed_out(WK_C_p);
+	assert_string_equal("dos-eof",
+			curr_view->dir_entry[curr_view->list_pos].name);
+
+#ifdef ENABLE_EXTENDED_KEYS
+	wchar_t keys[2] = { };
+
+	keys[0] = K(KEY_UP);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("binary-data",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	keys[0] = K(KEY_DOWN);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("dos-eof",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	keys[0] = K(KEY_HOME);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("binary-data",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	keys[0] = K(KEY_END);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("very-long-line",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	keys[0] = K(KEY_LEFT);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("test-data",
+			get_last_path_component(curr_view->curr_dir));
+	keys[0] = K(KEY_RIGHT);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("read", get_last_path_component(curr_view->curr_dir));
+
+	/* Setup for scrolling. */
+	curr_view->window_rows = 5;
+	setup_grid(curr_view, /*column_count=*/1, curr_view->list_rows, /*init=*/0);
+	curr_view->top_line = 1;
+	curr_view->list_pos = curr_view->list_rows - 1;
+
+	keys[0] = K(KEY_PPAGE);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("dos-line-endings",
+			curr_view->dir_entry[curr_view->list_pos].name);
+	keys[0] = K(KEY_NPAGE);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_string_equal("two-lines",
+			curr_view->dir_entry[curr_view->list_pos].name);
+#endif
+
+	conf_teardown();
 }
 
 TEST(search_navigation)
