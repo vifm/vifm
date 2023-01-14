@@ -205,6 +205,62 @@ TEST(moving_cursor)
 #endif
 }
 
+TEST(word_operations)
+{
+	(void)vle_keys_exec_timed_out(L"aa bb cc");
+	assert_wstring_equal(L"aa bb cc", stats->line);
+
+	/* Fill cfg.word_chars as if it was initialized from isspace() function. */
+	memset(&cfg.word_chars, 1, sizeof(cfg.word_chars));
+	cfg.word_chars['\x00'] = 0; cfg.word_chars['\x09'] = 0;
+	cfg.word_chars['\x0a'] = 0; cfg.word_chars['\x0b'] = 0;
+	cfg.word_chars['\x0c'] = 0; cfg.word_chars['\x0d'] = 0;
+	cfg.word_chars['\x20'] = 0;
+
+#ifndef __PDCURSES__
+	(void)vle_keys_exec_timed_out(WK_ESC WK_b);
+	assert_int_equal(6, stats->index);
+	(void)vle_keys_exec_timed_out(WK_ESC WK_b);
+	assert_int_equal(3, stats->index);
+	(void)vle_keys_exec_timed_out(WK_ESC WK_b);
+	assert_int_equal(0, stats->index);
+	(void)vle_keys_exec_timed_out(WK_ESC WK_f);
+	assert_int_equal(2, stats->index);
+	(void)vle_keys_exec_timed_out(WK_ESC WK_f);
+	assert_int_equal(5, stats->index);
+	(void)vle_keys_exec_timed_out(WK_ESC WK_b);
+	assert_int_equal(3, stats->index);
+	(void)vle_keys_exec_timed_out(WK_ESC WK_d);
+	assert_int_equal(3, stats->index);
+	assert_wstring_equal(L"aa  cc", stats->line);
+#else
+	wchar_t keys[2] = { };
+
+	keys[0] = K(ALT_B);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(6, stats->index);
+	keys[0] = K(ALT_B);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(3, stats->index);
+	keys[0] = K(ALT_B);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(0, stats->index);
+	keys[0] = K(ALT_F);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(2, stats->index);
+	keys[0] = K(ALT_F);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(5, stats->index);
+	keys[0] = K(ALT_B);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(3, stats->index);
+	keys[0] = K(ALT_D);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(3, stats->index);
+	assert_wstring_equal(L"aa  cc", stats->line);
+#endif
+}
+
 TEST(history)
 {
 	cfg.history_len = 4;
