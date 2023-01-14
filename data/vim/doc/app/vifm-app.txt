@@ -4593,6 +4593,19 @@ Searches wrap around end of the list.
 --------------------------------------------------------------------------------
 *vifm-mappings*
 
+A user mapping like `nnoremap lhs rhs` defines a substitution of the
+left-hand-side (LHS) with the right-hand-side (RHS) in the input stream.  A
+regular mapping (without "nore" in :command's name) expands recognized
+sequences in the RHS, while "*noremap" mapping always interprets RHS as if no
+user mappings were defined and each key has its builtin meaning.  In most
+cases you want to use noremap variant and if your RHS includes LHS, only
+noremap variant will work because recursion in a mapping is not allowed.
+
+In order to define a mapping determine in which mode you want to activate it
+and use an appropriate "*noremap" :command (e.g., |vifm-:nnoremap| for a
+normal mode mapping).  RHS doesn't have to limit itself to the mode in which
+the mapping was started and can span multiple modes.
+
 Map arguments~
 
 LHS of mappings can be preceded by arguments which take the form of special
