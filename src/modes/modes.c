@@ -48,6 +48,7 @@
 static int mode_flags[] = {
 	MF_USES_COUNT | MF_USES_REGS, /* NORMAL_MODE */
 	MF_USES_INPUT,                /* CMDLINE_MODE */
+	MF_USES_INPUT,                /* NAV_MODE */
 	MF_USES_COUNT | MF_USES_REGS, /* VISUAL_MODE */
 	MF_USES_COUNT,                /* MENU_MODE */
 	MF_USES_COUNT,                /* SORT_MODE */
@@ -63,6 +64,7 @@ ARRAY_GUARD(mode_flags, MODES_COUNT);
 static char uses_input_bar[] = {
 	1, /* NORMAL_MODE */
 	0, /* CMDLINE_MODE */
+	0, /* NAV_MODE */
 	1, /* VISUAL_MODE */
 	1, /* MENU_MODE */
 	1, /* SORT_MODE */
@@ -79,6 +81,7 @@ typedef void (*mode_init_func)(void);
 static mode_init_func mode_init_funcs[] = {
 	&modnorm_init,            /* NORMAL_MODE */
 	&modcline_init,           /* CMDLINE_MODE */
+	&modnav_init,             /* NAV_MODE */
 	&modvis_init,             /* VISUAL_MODE */
 	&modmenu_init,            /* MENU_MODE */
 	&init_sort_dialog_mode,   /* SORT_MODE */
@@ -115,7 +118,7 @@ modes_pre(void)
 	{
 		/* Do nothing for these modes. */
 	}
-	else if(vle_mode_is(CMDLINE_MODE))
+	else if(ANY(vle_mode_is, CMDLINE_MODE, NAV_MODE))
 	{
 		touchwin(status_bar);
 		ui_refresh_win(status_bar);
@@ -146,7 +149,7 @@ void
 modes_post(void)
 {
 	if(ANY(vle_mode_is,
-				CMDLINE_MODE, SORT_MODE, CHANGE_MODE, ATTR_MODE, MORE_MODE))
+				CMDLINE_MODE, NAV_MODE, SORT_MODE, CHANGE_MODE, ATTR_MODE, MORE_MODE))
 	{
 		/* Do nothing for these modes. */
 		return;
@@ -184,7 +187,7 @@ modes_post(void)
 void
 modes_statusbar_update(void)
 {
-	if(vle_mode_is(MORE_MODE) || vle_mode_is(CMDLINE_MODE) ||
+	if(ANY(vle_mode_is, MORE_MODE, CMDLINE_MODE, NAV_MODE) ||
 			curr_stats.save_msg != 0)
 	{
 		return;
@@ -237,7 +240,7 @@ modes_redraw(void)
 		goto finish;
 	}
 
-	if(vle_mode_is(CMDLINE_MODE))
+	if(ANY(vle_mode_is, CMDLINE_MODE, NAV_MODE))
 	{
 		modcline_redraw();
 		goto finish;
@@ -308,7 +311,7 @@ finish:
 void
 modes_update(void)
 {
-	if(vle_mode_is(CMDLINE_MODE))
+	if(ANY(vle_mode_is, CMDLINE_MODE, NAV_MODE))
 	{
 		modcline_redraw();
 		return;

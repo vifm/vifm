@@ -117,11 +117,14 @@
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
+static int amap_cmd(const cmd_info_t *cmd_info);
+static int anoremap_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int autocmd_cmd(const cmd_info_t *cmd_info);
 static void aucmd_list_cb(const char event[], const char pattern[], int negated,
 		const char action[], void *arg);
 static void aucmd_action_handler(const char action[], void *arg);
+static int aunmap_cmd(const cmd_info_t *cmd_info);
 static int bmark_cmd(const cmd_info_t *cmd_info);
 static int bmarks_cmd(const cmd_info_t *cmd_info);
 static int bmgo_cmd(const cmd_info_t *cmd_info);
@@ -354,10 +357,22 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT
 	         | HAS_QMARK_NO_ARGS | HAS_SELECTION_SCOPE,
 	  .handler = &alink_cmd,       .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "amap",              .abbr = NULL,    .id = COM_AMAP,
+	  .descr = "map keys in navigation mode",
+	  .flags = HAS_RAW_ARGS,
+	  .handler = &amap_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "anoremap",          .abbr = NULL,    .id = COM_ANOREMAP,
+	  .descr = "noremap keys in navigation mode",
+	  .flags = HAS_RAW_ARGS,
+	  .handler = &anoremap_cmd,    .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "apropos",           .abbr = NULL,    .id = -1,
 	  .descr = "query apropos results",
 	  .flags = 0,
 	  .handler = &apropos_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "aunmap",            .abbr = NULL,    .id = -1,
+	  .descr = "unmap user keys in navigation mode",
+	  .flags = HAS_RAW_ARGS,
+	  .handler = &aunmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "autocmd",           .abbr = "au",    .id = COM_AUTOCMD,
 	  .descr = "manage autocommands",
 	  .flags = HAS_EMARK | HAS_QUOTED_ARGS,
@@ -1090,6 +1105,20 @@ alink_cmd(const cmd_info_t *cmd_info)
 	return link_cmd(cmd_info, 1);
 }
 
+/* Registers a navigation mapping that allows remapping. */
+static int
+amap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "Navigation", NAV_MODE, /*no_remap=*/0) != 0;
+}
+
+/* Registers a navigation mapping that doesn't allow remapping. */
+static int
+anoremap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "Navigation", NAV_MODE, /*no_remap=*/1) != 0;
+}
+
 static int
 apropos_cmd(const cmd_info_t *cmd_info)
 {
@@ -1213,6 +1242,13 @@ aucmd_list_cb(const char event[], const char pattern[], int negated,
 	                : "%-10s %s%-10s\n                      %s";
 
 	vle_tb_append_linef(msg, fmt, event, negated ? "!" : "", pattern, action);
+}
+
+/* Unregisters a navigation mapping. */
+static int
+aunmap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_unmap(cmd_info->argv[0], NAV_MODE);
 }
 
 /* Marks directory with set of tags. */

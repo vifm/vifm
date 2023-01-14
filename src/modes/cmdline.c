@@ -262,6 +262,7 @@ static void update_cursor(void);
 TSTATIC void hist_prev(line_stats_t *stat, const hist_t *hist, size_t len);
 static int replace_input_line(line_stats_t *stat, const char new[]);
 static const hist_t * pick_hist(void);
+static int is_cmdmode(int mode);
 static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
@@ -371,6 +372,16 @@ modcline_init(void)
 	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
 	assert(ret_code == 0);
 
+	(void)ret_code;
+}
+
+void
+modnav_init(void)
+{
+	vle_keys_set_def_handler(NAV_MODE, &def_handler);
+
+	int ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), NAV_MODE);
+	assert(ret_code == 0);
 	(void)ret_code;
 }
 
@@ -817,7 +828,7 @@ static void
 prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee)
 {
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(is_cmdmode(vle_mode_get()))
 	{
 		/* We're recursing into command-line mode. */
 		ui_sb_unlock();
@@ -953,9 +964,9 @@ leave_cmdline_mode(int cancelled)
 {
 	free_line_stats(&input_stat);
 
-	if(vle_mode_is(CMDLINE_MODE))
+	if(is_cmdmode(vle_mode_get()))
 	{
-		if(input_stat.prev_mode == CMDLINE_MODE)
+		if(is_cmdmode(input_stat.prev_mode))
 		{
 			/* We're restoring from a recursive command-line mode. */
 			input_stat = prev_input_stat;
@@ -1143,7 +1154,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 
 		if(prompt_ee)
 		{
-			int is_expr_reg = (prev_mode == CMDLINE_MODE);
+			int is_expr_reg = is_cmdmode(prev_mode);
 			extedit_prompt(mbstr, index + 1, is_expr_reg, prompt_callback,
 					prompt_callback_arg);
 		}
@@ -1715,8 +1726,9 @@ expand_abbrev(void)
 	const wchar_t *abbrev_rhs;
 	int no_remap;
 
-	/* No recursion on expanding abbreviations. */
-	if(input_stat.expanding_abbrev)
+	/* Don't expand command-line abbreviations in navigation and avoid recursion
+	 * on expanding abbreviations. */
+	if(input_stat.navigating || input_stat.expanding_abbrev)
 	{
 		return;
 	}
@@ -1810,7 +1822,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 	}
 	else if(input_stat.sub_mode == CLS_PROMPT)
 	{
-		const int is_expr_reg = (input_stat.prev_mode == CMDLINE_MODE);
+		const int is_expr_reg = is_cmdmode(input_stat.prev_mode);
 		save_prompt_to_history(input, is_expr_reg);
 	}
 }
@@ -1997,7 +2009,7 @@ cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
 
-	if(input_stat.prev_mode != CMDLINE_MODE)
+	if(!is_cmdmode(input_stat.prev_mode))
 	{
 		modcline_prompt("(=)", "", &expr_reg_prompt_cb, /*cb_arg=*/NULL,
 				&expr_reg_prompt_completion, /*allow_ee=*/1);
@@ -2678,6 +2690,8 @@ nav_start(line_stats_t *stat)
 	wcscpy(stat->prompt, new_prompt);
 	stat->prompt_wid += nav_prefix_len;
 	stat->curs_pos += nav_prefix_len;
+
+	vle_mode_set(NAV_MODE, VMT_SECONDARY);
 }
 
 /* Disables navigation. */
@@ -2907,7 +2921,7 @@ pick_hist(void)
 	}
 	if(input_stat.sub_mode == CLS_PROMPT)
 	{
-		if(input_stat.prev_mode == CMDLINE_MODE)
+		if(is_cmdmode(input_stat.prev_mode))
 		{
 			return &curr_stats.exprreg_hist;
 		}
@@ -2918,6 +2932,13 @@ pick_hist(void)
 		return &curr_stats.filter_hist;
 	}
 	return NULL;
+}
+
+/* Checks for a command-line-like mode. */
+static int
+is_cmdmode(int mode)
+{
+  return (mode == CMDLINE_MODE || mode == NAV_MODE);
 }
 
 /* Updates command-line properties and redraws it. */

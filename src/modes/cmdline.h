@@ -53,6 +53,9 @@ typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 /* Initializes command-line mode. */
 void modcline_init(void);
 
+/* Initializes navigation mode, which is nested into the command-line mode. */
+void modnav_init(void);
+
 /* Enters command-line editing mode with specified submode.  initial is the
  * start value. */
 void modcline_enter(CmdLineSubmode sub_mode, const char initial[]);

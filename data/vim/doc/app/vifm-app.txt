@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 12
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1041,9 +1041,9 @@ prompt in anticipation of the next component of the path.  If entry under the
 cursor is a file, it is opened and the mode is finished.
 
 This behaviour is embedded in a command-line mode, but doesn't update input
-histories and redefines some of the mode's mappings for the purpose of faster
-navigation through the file system rather than command-line editing.  When on,
-prompt gets "nav" prefix.
+histories nor expands abbreviations and redefines some of the mode's mappings
+for the purpose of faster navigation through the file system rather than
+command-line editing.  When on, prompt gets "nav" prefix.
 
 You can enable this behaviour on search by default via a mapping like: >
     nnoremap / /<c-y>
@@ -1234,6 +1234,8 @@ line.  If you want to use '|' in an argument, precede it with '\'.
 These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
+    :amap
+    :anoremap
     :autocmd
     :cabbrev
     :cmap
@@ -2715,12 +2717,14 @@ yet supported) and might be changed in future releases, or get an alias.
 :map! lhs rhs
     map lhs key sequence to rhs in command line mode.
 
+                                               *vifm-:amap*
                                                *vifm-:cmap* *vifm-:cm*
                                                *vifm-:dmap* *vifm-:dm*
                                                *vifm-:mmap* *vifm-:mm*
                                                *vifm-:nmap* *vifm-:nm*
                                                *vifm-:qmap* *vifm-:qm*
                                                *vifm-:vmap* *vifm-:vm*
+:amap   lhs rhs - map lhs to rhs in navigation mode.
 :cm[ap] lhs rhs - map lhs to rhs in command line mode.
 :dm[ap] lhs rhs - map lhs to rhs in dialog modes.
 :mm[ap] lhs rhs - map lhs to rhs in menu mode.
@@ -2728,6 +2732,7 @@ yet supported) and might be changed in future releases, or get an alias.
 :qm[ap] lhs rhs - map lhs to rhs in view mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
+:amap   - list all maps of navigation mode.
 :cm[ap] - list all maps of command line mode.
 :dm[ap] - list all maps of dialog modes.
 :mm[ap] - list all maps of menu mode.
@@ -2735,6 +2740,8 @@ yet supported) and might be changed in future releases, or get an alias.
 :qm[ap] - list all maps of view mode.
 :vm[ap] - list all maps of visual mode.
 
+:amap beginning
+    list all maps of navigation mode that start with the beginning.
 :cm[ap] beginning
     list all maps of command line mode that start with the beginning.
 :dm[ap] beginning
@@ -2756,12 +2763,16 @@ yet supported) and might be changed in future releases, or get an alias.
     map the key sequence lhs to rhs for command line mode, but don't expand
     user mappings in rhs.
 
+                                               *vifm-:anoremap*
                                                *vifm-:cnoremap* *vifm-:cno*
                                                *vifm-:dnoremap* *vifm-:dn*
                                                *vifm-:mnoremap* *vifm-:mn*
                                                *vifm-:nnoremap* *vifm-:nn*
                                                *vifm-:qnoremap* *vifm-:qn*
                                                *vifm-:vnoremap* *vifm-:vn*
+:anoremap lhs rhs
+    map the key sequence lhs to rhs for navigation mode, but don't expand
+    user mappings in rhs.
 :cno[remap] lhs rhs
     map the key sequence lhs to rhs for command line mode, but don't expand
     user mappings in rhs.
@@ -2787,12 +2798,14 @@ yet supported) and might be changed in future releases, or get an alias.
 :unm[ap]! lhs
     remove user mapping of lhs from command line mode.
 
+                                               *vifm-:aunmap*
                                                *vifm-:cunmap* *vifm-:cu*
                                                *vifm-:dunmap* *vifm-:du*
                                                *vifm-:munmap* *vifm-:mu*
                                                *vifm-:nunmap* *vifm-:nun*
                                                *vifm-:qunmap* *vifm-:qun*
                                                *vifm-:vunmap* *vifm-:vu*
+:aunmap   lhs - remove user mapping of lhs from navigation mode.
 :cu[nmap] lhs - remove user mapping of lhs from command line mode.
 :du[nmap] lhs - remove user mapping of lhs from dialog modes.
 :mu[nmap] lhs - remove user mapping of lhs from menu mode.
