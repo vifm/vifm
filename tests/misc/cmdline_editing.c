@@ -173,6 +173,38 @@ TEST(left_kill)
 	assert_wstring_equal(L"", stats->line);
 }
 
+TEST(moving_cursor)
+{
+	(void)vle_keys_exec_timed_out(L"abc");
+	assert_wstring_equal(L"abc", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_C_b);
+	assert_int_equal(2, stats->index);
+	(void)vle_keys_exec_timed_out(WK_C_f);
+	assert_int_equal(3, stats->index);
+	(void)vle_keys_exec_timed_out(WK_C_a);
+	assert_int_equal(0, stats->index);
+	(void)vle_keys_exec_timed_out(WK_C_e);
+	assert_int_equal(3, stats->index);
+
+#ifdef ENABLE_EXTENDED_KEYS
+	wchar_t keys[2] = { };
+
+	keys[0] = K(KEY_LEFT);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(2, stats->index);
+	keys[0] = K(KEY_RIGHT);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(3, stats->index);
+	keys[0] = K(KEY_HOME);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(0, stats->index);
+	keys[0] = K(KEY_END);
+	(void)vle_keys_exec_timed_out(keys);
+	assert_int_equal(3, stats->index);
+#endif
+}
+
 TEST(history)
 {
 	cfg.history_len = 4;
