@@ -64,6 +64,7 @@
 #include "../flist_pos.h"
 #include "../flist_sel.h"
 #include "../marks.h"
+#include "../running.h"
 #include "../search.h"
 #include "../status.h"
 #include "dialogs/attr_dialog.h"
@@ -73,6 +74,9 @@
 #include "normal.h"
 #include "visual.h"
 #include "wk.h"
+
+/* Prompt prefix when navigation is enabled. */
+#define NAV_PREFIX L"nav"
 
 /* History search mode. */
 typedef enum
@@ -101,6 +105,8 @@ typedef struct
 	int prev_mode;
 	/* Kind of command-line mode. */
 	CmdLineSubmode sub_mode;
+	/* Whether performing quick navigation. */
+	int navigating;
 	/* Whether current submode allows external editing. */
 	int sub_mode_allows_ee;
 	/* CLS_MENU_*-specific data. */
@@ -165,14 +171,23 @@ static void handle_nonempty_input(void);
 static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
-static int enter_submode(CmdLineSubmode sub_mode, const char initial[]);
+static int enter_submode(CmdLineSubmode sub_mode, const char initial[],
+		int reenter);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee);
+static void init_line_stats(line_stats_t *stat, const wchar_t prompt[],
+		const wchar_t initial[], complete_cmd_func complete,
+		CmdLineSubmode sub_mode, int allow_ee, int prev_mode);
 static void save_view_port(void);
 static void set_view_port(void);
 static int is_line_edited(void);
 static void leave_cmdline_mode(int cancelled);
+static void free_line_stats(line_stats_t *stat);
+static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
 static void extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
@@ -190,6 +205,7 @@ static int draw_wild_popup(int *last_pos, int *pos, int *len);
 static int compute_wild_menu_height(void);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
+static void nav_open(void);
 static int is_input_line_empty(void);
 static void expand_abbrev(void);
 TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
@@ -205,9 +221,6 @@ static int is_forward_search(CmdLineSubmode sub_mode);
 static int is_backward_search(CmdLineSubmode sub_mode);
 static int replace_wstring(wchar_t **str, const wchar_t with[]);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
-#ifdef ENABLE_EXTENDED_KEYS
-static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
-#endif /* ENABLE_EXTENDED_KEYS */
 static void hist_next(line_stats_t *stat, const hist_t *hist, size_t len);
 static void cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info);
 static void expr_reg_prompt_cb(const char expr[], void *arg);
@@ -244,21 +257,29 @@ static wchar_t * next_dot_completion(void);
 static int insert_dot_completion(const wchar_t completion[]);
 static int insert_str(const wchar_t str[]);
 static void find_next_word(void);
-static void cmd_left(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_home(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_delete(key_info_t key_info, keys_info_t *keys_info);
 static void update_cursor(void);
 TSTATIC void hist_prev(line_stats_t *stat, const hist_t *hist, size_t len);
 static int replace_input_line(line_stats_t *stat, const char new[]);
 static const hist_t * pick_hist(void);
+static int is_cmdmode(int mode);
 static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
+static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
+static void nav_start(line_stats_t *stat);
+static void nav_stop(line_stats_t *stat);
 #ifdef ENABLE_EXTENDED_KEYS
+static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_left(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_home(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_page_up(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_page_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void update_cmdline_size(void);
 TSTATIC int line_completion(line_stats_t *stat);
@@ -282,6 +303,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_k,             {{&cmd_ctrl_k}, .descr = "remove line part to the right"}},
 	{WK_CR,              {{&cmd_return}, .descr = "execute/accept input"}},
 	{WK_C_n,             {{&cmd_ctrl_n}, .descr = "recall next history item"}},
+	{WK_C_o,             {{&cmd_ctrl_o}, .descr = "nav: go to parent directory"}},
 	{WK_C_p,             {{&cmd_ctrl_p}, .descr = "recall previous history item"}},
 	{WK_C_t,             {{&cmd_ctrl_t}, .descr = "swap adjacent characters"}},
 	{WK_ESC,             {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
@@ -290,14 +312,15 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_USCORE,        {{&cmd_ctrl_underscore}, .descr = "reset completion"}},
 	{WK_DELETE,          {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
 	{WK_ESC L"[Z",       {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
-	{WK_C_b,             {{&cmd_left},   .descr = "move cursor to the left"}},
-	{WK_C_f,             {{&cmd_right},  .descr = "move cursor to the right"}},
-	{WK_C_a,             {{&cmd_home},   .descr = "move cursor to the beginning"}},
-	{WK_C_e,             {{&cmd_end},    .descr = "move cursor to the end"}},
+	{WK_C_b,             {{&cmd_ctrl_b}, .descr = "move cursor to the left"}},
+	{WK_C_f,             {{&cmd_ctrl_f}, .descr = "move cursor to the right"}},
+	{WK_C_a,             {{&cmd_ctrl_a}, .descr = "move cursor to the beginning"}},
+	{WK_C_e,             {{&cmd_ctrl_e}, .descr = "move cursor to the end"}},
 	{WK_C_d,             {{&cmd_delete}, .descr = "delete current character"}},
 	{WK_C_r WK_EQUALS,   {{&cmd_ctrl_requals}, .descr = "invoke expression register prompt"}},
 	{WK_C_u,             {{&cmd_ctrl_u}, .descr = "remove line part to the left"}},
 	{WK_C_w,             {{&cmd_ctrl_w}, .descr = "remove word to the left"}},
+	{WK_C_y,             {{&cmd_ctrl_y}, .descr = "toggle navigation"}},
 	{WK_C_x WK_SLASH,    {{&cmd_ctrl_xslash}, .descr = "insert last search pattern"}},
 	{WK_C_x WK_a,        {{&cmd_ctrl_xa}, .descr = "insert implicit permanent filter value"}},
 	{WK_C_x WK_c,        {{&cmd_ctrl_xc}, .descr = "insert current file name"}},
@@ -325,14 +348,16 @@ static keys_add_info_t builtin_cmds[] = {
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
 	{{K(KEY_BACKSPACE)}, {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
-	{{K(KEY_DOWN)},      {{&cmd_down},   .descr = "prefix-complete next history item"}},
-	{{K(KEY_UP)},        {{&cmd_up},     .descr = "prefix-complete previous history item"}},
-	{{K(KEY_LEFT)},      {{&cmd_left},   .descr = "move cursor to the left"}},
-	{{K(KEY_RIGHT)},     {{&cmd_right},  .descr = "move cursor to the right"}},
-	{{K(KEY_HOME)},      {{&cmd_home},   .descr = "move cursor to the beginning"}},
-	{{K(KEY_END)},       {{&cmd_end},    .descr = "move cursor to the end"}},
+	{{K(KEY_DOWN)},      {{&cmd_down},   .descr = "prefix-complete next history item/next item"}},
+	{{K(KEY_UP)},        {{&cmd_up},     .descr = "prefix-complete previous history item/prev item"}},
+	{{K(KEY_LEFT)},      {{&cmd_left},   .descr = "move cursor to the left/parent dir"}},
+	{{K(KEY_RIGHT)},     {{&cmd_right},  .descr = "move cursor to the right/enter entry"}},
+	{{K(KEY_HOME)},      {{&cmd_home},   .descr = "move cursor to the beginning/first item"}},
+	{{K(KEY_END)},       {{&cmd_end},    .descr = "move cursor to the end/last item"}},
 	{{K(KEY_DC)},        {{&cmd_delete}, .descr = "delete current character"}},
 	{{K(KEY_BTAB)},      {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
+	{{K(KEY_PPAGE)},     {{&cmd_page_up},   .descr = "nav: scroll page up"}},
+	{{K(KEY_NPAGE)},     {{&cmd_page_down}, .descr = "nav: scroll page down"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 	{{K(KEY_MOUSE)},     {{&handle_mouse_event}, FOLLOWED_BY_NONE}},
 };
@@ -347,6 +372,16 @@ modcline_init(void)
 	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
 	assert(ret_code == 0);
 
+	(void)ret_code;
+}
+
+void
+modnav_init(void)
+{
+	vle_keys_set_def_handler(NAV_MODE, &def_handler);
+
+	int ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), NAV_MODE);
+	assert(ret_code == 0);
 	(void)ret_code;
 }
 
@@ -641,7 +676,7 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[])
 			"Use modcline_in_menu() for CLS_MENU_* submodes.");
 	assert(sub_mode != CLS_PROMPT &&
 			"Use modcline_prompt() for CLS_PROMPT submode.");
-	(void)enter_submode(sub_mode, initial);
+	(void)enter_submode(sub_mode, initial, /*reenter=*/0);
 }
 
 void
@@ -651,7 +686,7 @@ modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
 			sub_mode == CLS_MENU_BSEARCH) &&
 			"modcline_in_menu() is only for CLS_MENU_* submodes.");
 
-	if(enter_submode(sub_mode, /*initial=*/"") == 0)
+	if(enter_submode(sub_mode, /*initial=*/"", /*reenter=*/0) == 0)
 	{
 		input_stat.menu = m;
 	}
@@ -659,7 +694,7 @@ modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
 
 /* Enters command-line editing submode.  Returns zero on success. */
 static int
-enter_submode(CmdLineSubmode sub_mode, const char initial[])
+enter_submode(CmdLineSubmode sub_mode, const char initial[], int reenter)
 {
 	wchar_t *winitial;
 	const wchar_t *wprompt;
@@ -701,8 +736,23 @@ enter_submode(CmdLineSubmode sub_mode, const char initial[])
 		wprompt = L"E";
 	}
 
-	prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
-			/*allow_ee=*/0);
+	if(reenter)
+	{
+		int prev_mode = input_stat.prev_mode;
+		free_line_stats(&input_stat);
+		init_line_stats(&input_stat, wprompt, winitial, complete_func, sub_mode,
+				/*allow_ee=*/0, prev_mode);
+
+		/* Just in case. */
+		curr_stats.save_msg = 1;
+
+		stats_redraw_later();
+	}
+	else
+	{
+		prepare_cmdline_mode(wprompt, winitial, complete_func, sub_mode,
+				/*allow_ee=*/0);
+	}
 
 	free(winitial);
 	return 0;
@@ -778,57 +828,20 @@ static void
 prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 		complete_cmd_func complete, CmdLineSubmode sub_mode, int allow_ee)
 {
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(is_cmdmode(vle_mode_get()))
 	{
 		/* We're recursing into command-line mode. */
 		ui_sb_unlock();
 		prev_input_stat = input_stat;
 	}
 
-	input_stat.sub_mode = sub_mode;
-	input_stat.sub_mode_allows_ee = allow_ee;
-	input_stat.menu = NULL;
-	input_stat.prompt_callback = NULL;
-	input_stat.prompt_callback_arg = NULL;
-
-	input_stat.prev_mode = vle_mode_get();
-	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
-
 	line_width = getmaxx(stdscr);
-
 	ui_sb_lock();
 
-	input_stat.line = vifm_wcsdup(initial);
-	input_stat.initial_line = vifm_wcsdup(input_stat.line);
-	input_stat.index = wcslen(initial);
-	input_stat.curs_pos = esc_wcswidth(input_stat.line, (size_t)-1);
-	input_stat.len = input_stat.index;
-	input_stat.cmd_pos = -1;
-	input_stat.complete_continue = 0;
-	input_stat.history_search = HIST_NONE;
-	input_stat.line_buf = NULL;
-	input_stat.reverse_completion = 0;
-	input_stat.complete = complete;
-	input_stat.search_mode = 0;
-	input_stat.dot_pos = -1;
-	input_stat.line_edited = 0;
-	input_stat.enter_mapping_state = vle_keys_mapping_state();
-	input_stat.state = PS_NORMAL;
+	init_line_stats(&input_stat, prompt, initial, complete, sub_mode, allow_ee,
+			vle_mode_get());
 
-	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
-			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
-	{
-		input_stat.search_mode = 1;
-	}
-
-	if(input_stat.search_mode || sub_mode == CLS_FILTER)
-	{
-		save_view_port();
-	}
-
-	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
-	input_stat.prompt_wid = esc_wcswidth(input_stat.prompt, (size_t)-1);
-	input_stat.curs_pos += input_stat.prompt_wid;
+	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 
 	update_cmdline_size();
 	draw_cmdline_text(&input_stat);
@@ -840,6 +853,54 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 
 	/* Make cursor visible only after all initial draws. */
 	ui_set_cursor(/*visibility=*/1);
+}
+
+/* Initializes command-line status. */
+static void
+init_line_stats(line_stats_t *stat, const wchar_t prompt[],
+		const wchar_t initial[], complete_cmd_func complete,
+		CmdLineSubmode sub_mode, int allow_ee, int prev_mode)
+{
+	stat->sub_mode = sub_mode;
+	stat->navigating = 0;
+	stat->sub_mode_allows_ee = allow_ee;
+	stat->menu = NULL;
+	stat->prompt_callback = NULL;
+	stat->prompt_callback_arg = NULL;
+
+	stat->prev_mode = prev_mode;
+
+	stat->line = vifm_wcsdup(initial);
+	stat->initial_line = vifm_wcsdup(stat->line);
+	stat->index = wcslen(initial);
+	stat->curs_pos = esc_wcswidth(stat->line, (size_t)-1);
+	stat->len = stat->index;
+	stat->cmd_pos = -1;
+	stat->complete_continue = 0;
+	stat->history_search = HIST_NONE;
+	stat->line_buf = NULL;
+	stat->reverse_completion = 0;
+	stat->complete = complete;
+	stat->search_mode = 0;
+	stat->dot_pos = -1;
+	stat->line_edited = 0;
+	stat->enter_mapping_state = vle_keys_mapping_state();
+	stat->state = PS_NORMAL;
+
+	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
+			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
+	{
+		stat->search_mode = 1;
+	}
+
+	if(stat->search_mode || sub_mode == CLS_FILTER)
+	{
+		save_view_port();
+	}
+
+	wcsncpy(stat->prompt, prompt, ARRAY_LEN(stat->prompt));
+	stat->prompt_wid = esc_wcswidth(stat->prompt, (size_t)-1);
+	stat->curs_pos += stat->prompt_wid;
 }
 
 /* Stores view port parameters (top line, current position). */
@@ -901,16 +962,11 @@ is_line_edited(void)
 static void
 leave_cmdline_mode(int cancelled)
 {
-	free(input_stat.line);
-	free(input_stat.initial_line);
-	free(input_stat.line_buf);
-	input_stat.line = NULL;
-	input_stat.initial_line = NULL;
-	input_stat.line_buf = NULL;
+	free_line_stats(&input_stat);
 
-	if(vle_mode_is(CMDLINE_MODE))
+	if(is_cmdmode(vle_mode_get()))
 	{
-		if(input_stat.prev_mode == CMDLINE_MODE)
+		if(is_cmdmode(input_stat.prev_mode))
 		{
 			/* We're restoring from a recursive command-line mode. */
 			input_stat = prev_input_stat;
@@ -962,6 +1018,42 @@ leave_cmdline_mode(int cancelled)
 	}
 }
 
+/* Frees resources allocated for command-line status. */
+static void
+free_line_stats(line_stats_t *stat)
+{
+	free(input_stat.line);
+	free(input_stat.initial_line);
+	free(input_stat.line_buf);
+	input_stat.line = NULL;
+	input_stat.initial_line = NULL;
+	input_stat.line_buf = NULL;
+}
+
+/* Moves command-line cursor to the beginning of command-line. */
+static void
+cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
+{
+	input_stat.index = 0;
+	input_stat.curs_pos = input_stat.prompt_wid;
+	update_cursor();
+}
+
+/* Moves command-line cursor to the left. */
+static void
+cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
+{
+	input_stat.history_search = HIST_NONE;
+	stop_completion();
+
+	if(input_stat.index > 0)
+	{
+		input_stat.index--;
+		input_stat.curs_pos -= esc_wcwidth(input_stat.line[input_stat.index]);
+		update_cursor();
+	}
+}
+
 /* Initiates leaving of command-line mode and reverting related changes in other
  * parts of the interface. */
 static void
@@ -1008,6 +1100,34 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
+/* Moves command-line cursor to the end of command-line. */
+static void
+cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.index == input_stat.len)
+		return;
+
+	input_stat.index = input_stat.len;
+	input_stat.curs_pos = input_stat.prompt_wid +
+			esc_wcswidth(input_stat.line, (size_t)-1);
+	update_cursor();
+}
+
+/* Moves command-line cursor to the right. */
+static void
+cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
+{
+	input_stat.history_search = HIST_NONE;
+	stop_completion();
+
+	if(input_stat.index < input_stat.len)
+	{
+		input_stat.curs_pos += esc_wcwidth(input_stat.line[input_stat.index]);
+		input_stat.index++;
+		update_cursor();
+	}
+}
+
 /* Opens the editor with already typed in characters, gets entered line and
  * executes it as if it was typed. */
 static void
@@ -1034,7 +1154,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 
 		if(prompt_ee)
 		{
-			int is_expr_reg = (prev_mode == CMDLINE_MODE);
+			int is_expr_reg = is_cmdmode(prev_mode);
 			extedit_prompt(mbstr, index + 1, is_expr_reg, prompt_callback,
 					prompt_callback_arg);
 		}
@@ -1427,6 +1547,12 @@ static void
 cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	/* TODO: refactor this cmd_return() function. */
+	if(input_stat.navigating)
+	{
+		nav_open();
+		return;
+	}
+
 	stop_completion();
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -1490,7 +1616,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(cfg.inc_search)
 		{
-			local_filter_accept(curr_view);
+			local_filter_accept(curr_view, /*update_history=*/1);
 		}
 		else
 		{
@@ -1550,6 +1676,39 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	free(input);
 }
 
+/* Opens current entry while navigating. */
+static void
+nav_open(void)
+{
+	dir_entry_t *curr = get_current_entry(curr_view);
+	if(fentry_is_fake(curr))
+	{
+		return;
+	}
+
+	int is_dir_like = (fentry_is_dir(curr) || is_unc_root(curr_view->curr_dir));
+
+	CmdLineSubmode sub_mode = input_stat.sub_mode;
+	if(sub_mode == CLS_FILTER)
+	{
+		/* Accepting filter changes list of files, but in case of error it might be
+		 * better. */
+		local_filter_accept(curr_view, /*update_history=*/0);
+	}
+
+	if(is_dir_like)
+	{
+		rn_enter_dir(curr_view);
+		enter_submode(sub_mode, /*initial=*/"", /*reenter=*/1);
+		nav_start(&input_stat);
+	}
+	else
+	{
+		leave_cmdline_mode(/*cancelled=*/0);
+		rn_open(curr_view, FHE_RUN);
+	}
+}
+
 /* Checks whether input line is empty.  Returns non-zero if so, otherwise
  * non-zero is returned. */
 static int
@@ -1567,8 +1726,9 @@ expand_abbrev(void)
 	const wchar_t *abbrev_rhs;
 	int no_remap;
 
-	/* No recursion on expanding abbreviations. */
-	if(input_stat.expanding_abbrev)
+	/* Don't expand command-line abbreviations in navigation and avoid recursion
+	 * on expanding abbreviations. */
+	if(input_stat.navigating || input_stat.expanding_abbrev)
 	{
 		return;
 	}
@@ -1662,7 +1822,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 	}
 	else if(input_stat.sub_mode == CLS_PROMPT)
 	{
-		const int is_expr_reg = (input_stat.prev_mode == CMDLINE_MODE);
+		const int is_expr_reg = is_cmdmode(input_stat.prev_mode);
 		save_prompt_to_history(input, is_expr_reg);
 	}
 }
@@ -1767,9 +1927,20 @@ replace_wstring(wchar_t **str, const wchar_t with[])
 	return 0;
 }
 
+/* Recalls a newer historical entry or moves view cursor if navigating. */
 static void
 cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(input_stat.navigating)
+	{
+		if(fpos_can_move_down(curr_view))
+		{
+			int new_pos = curr_view->list_pos + fpos_get_ver_step(curr_view);
+			fpos_set_pos(curr_view, new_pos);
+		}
+		return;
+	}
+
 	stop_completion();
 
 	if(input_stat.history_search == HIST_NONE)
@@ -1779,25 +1950,6 @@ cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 
 	hist_next(&input_stat, pick_hist(), cfg.history_len);
 }
-
-#ifdef ENABLE_EXTENDED_KEYS
-static void
-cmd_down(key_info_t key_info, keys_info_t *keys_info)
-{
-	stop_completion();
-
-	if(input_stat.history_search == HIST_NONE)
-		save_users_input();
-
-	if(input_stat.history_search != HIST_SEARCH)
-	{
-		input_stat.history_search = HIST_SEARCH;
-		input_stat.hist_search_len = input_stat.len;
-	}
-
-	hist_next(&input_stat, pick_hist(), cfg.history_len);
-}
-#endif /* ENABLE_EXTENDED_KEYS */
 
 /* Puts next element in the history or restores user input if end of history has
  * been reached.  hist can be NULL, in which case nothing happens. */
@@ -1857,7 +2009,7 @@ cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
 
-	if(input_stat.prev_mode != CMDLINE_MODE)
+	if(!is_cmdmode(input_stat.prev_mode))
 	{
 		modcline_prompt("(=)", "", &expr_reg_prompt_cb, /*cb_arg=*/NULL,
 				&expr_reg_prompt_completion, /*allow_ee=*/1);
@@ -2385,55 +2537,6 @@ find_next_word(void)
 }
 
 static void
-cmd_left(key_info_t key_info, keys_info_t *keys_info)
-{
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
-
-	if(input_stat.index > 0)
-	{
-		input_stat.index--;
-		input_stat.curs_pos -= esc_wcwidth(input_stat.line[input_stat.index]);
-		update_cursor();
-	}
-}
-
-static void
-cmd_right(key_info_t key_info, keys_info_t *keys_info)
-{
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
-
-	if(input_stat.index < input_stat.len)
-	{
-		input_stat.curs_pos += esc_wcwidth(input_stat.line[input_stat.index]);
-		input_stat.index++;
-		update_cursor();
-	}
-}
-
-static void
-cmd_home(key_info_t key_info, keys_info_t *keys_info)
-{
-	input_stat.index = 0;
-	input_stat.curs_pos = input_stat.prompt_wid;
-	update_cursor();
-}
-
-/* Moves cursor to the end of command-line on Ctrl+E and End. */
-static void
-cmd_end(key_info_t key_info, keys_info_t *keys_info)
-{
-	if(input_stat.index == input_stat.len)
-		return;
-
-	input_stat.index = input_stat.len;
-	input_stat.curs_pos = input_stat.prompt_wid +
-			esc_wcswidth(input_stat.line, (size_t)-1);
-	update_cursor();
-}
-
-static void
 cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
@@ -2472,9 +2575,40 @@ replace_input_line(line_stats_t *stat, const char new[])
 	return 0;
 }
 
+/* Goes to parent directory when in navigation. */
+static void
+cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!input_stat.navigating)
+	{
+		return;
+	}
+
+	CmdLineSubmode sub_mode = input_stat.sub_mode;
+	if(sub_mode == CLS_FILTER)
+	{
+		local_filter_cancel(curr_view);
+	}
+
+	rn_leave(curr_view, /*levels=*/1);
+	enter_submode(sub_mode, /*initial=*/"", /*reenter=*/1);
+	nav_start(&input_stat);
+}
+
+/* Recalls an older historical entry or moves view cursor if navigating. */
 static void
 cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(input_stat.navigating)
+	{
+		if(fpos_can_move_up(curr_view))
+		{
+			int new_pos = curr_view->list_pos - fpos_get_ver_step(curr_view);
+			fpos_set_pos(curr_view, new_pos);
+		}
+		return;
+	}
+
 	stop_completion();
 
 	if(input_stat.history_search == HIST_NONE)
@@ -2517,10 +2651,103 @@ cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 	update_cmdline_text(&input_stat);
 }
 
+/* Toggles navigation for search/filtering. */
+static void
+cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!input_stat.search_mode && input_stat.sub_mode != CLS_FILTER)
+	{
+		return;
+	}
+	if(!cfg.inc_search || input_stat.prev_mode != NORMAL_MODE)
+	{
+		return;
+	}
+
+	if(!input_stat.navigating)
+	{
+		nav_start(&input_stat);
+	}
+	else
+	{
+		nav_stop(&input_stat);
+	}
+	update_cmdline_text(&input_stat);
+}
+
+/* Enables navigation. */
+static void
+nav_start(line_stats_t *stat)
+{
+	stat->navigating = 1;
+
+	size_t nav_prefix_len = wcslen(NAV_PREFIX);
+
+	wchar_t new_prompt[NAME_MAX + 1] = NAV_PREFIX;
+	wcsncpy(new_prompt + nav_prefix_len, stat->prompt,
+			ARRAY_LEN(new_prompt) - nav_prefix_len - 1);
+
+	wcscpy(stat->prompt, new_prompt);
+	stat->prompt_wid += nav_prefix_len;
+	stat->curs_pos += nav_prefix_len;
+
+	vle_mode_set(NAV_MODE, VMT_SECONDARY);
+}
+
+/* Disables navigation. */
+static void
+nav_stop(line_stats_t *stat)
+{
+	stat->navigating = 0;
+
+	size_t nav_prefix_len = wcslen(NAV_PREFIX);
+
+	memmove(stat->prompt, &stat->prompt[nav_prefix_len],
+			sizeof(stat->prompt) - sizeof(wchar_t)*nav_prefix_len);
+	stat->prompt_wid -= nav_prefix_len;
+	stat->curs_pos -= nav_prefix_len;
+
+	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
+}
+
 #ifdef ENABLE_EXTENDED_KEYS
+
+/* Fetches a matching future historical entry or moves view cursor down in
+ * navigation. */
+static void
+cmd_down(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		cmd_ctrl_n(key_info, keys_info);
+		return;
+	}
+
+	stop_completion();
+
+	if(input_stat.history_search == HIST_NONE)
+		save_users_input();
+
+	if(input_stat.history_search != HIST_SEARCH)
+	{
+		input_stat.history_search = HIST_SEARCH;
+		input_stat.hist_search_len = input_stat.len;
+	}
+
+	hist_next(&input_stat, pick_hist(), cfg.history_len);
+}
+
+/* Fetches a matching past historical entry or moves view cursor up in
+ * navigation. */
 static void
 cmd_up(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(input_stat.navigating)
+	{
+		cmd_ctrl_p(key_info, keys_info);
+		return;
+	}
+
 	stop_completion();
 
 	if(input_stat.history_search == HIST_NONE)
@@ -2534,6 +2761,87 @@ cmd_up(key_info_t key_info, keys_info_t *keys_info)
 
 	hist_prev(&input_stat, pick_hist(), cfg.history_len);
 }
+
+/* Moves command-line cursor to the left or goes to parent directory in
+ * navigation. */
+static void
+cmd_left(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		cmd_ctrl_o(key_info, keys_info);
+	}
+	else
+	{
+		cmd_ctrl_b(key_info, keys_info);
+	}
+}
+
+/* Moves command-line cursor to the right or enter active entry in
+ * navigation. */
+static void
+cmd_right(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		cmd_return(key_info, keys_info);
+	}
+	else
+	{
+		cmd_ctrl_f(key_info, keys_info);
+	}
+}
+
+/* Moves command-line cursor to the beginning of command-line or moves
+ * view cursor to the first file in navigation. */
+static void
+cmd_home(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		fpos_set_pos(curr_view, 0);
+	}
+	else
+	{
+		cmd_ctrl_a(key_info, keys_info);
+	}
+}
+
+/* Moves command-line cursor to the end of command-line or moves view cursor to
+ * the last file in navigation. */
+static void
+cmd_end(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		fpos_set_pos(curr_view, curr_view->list_rows - 1);
+	}
+	else
+	{
+		cmd_ctrl_e(key_info, keys_info);
+	}
+}
+
+/* Scrolls view up in navigation. */
+static void
+cmd_page_up(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		fview_scroll_page_up(curr_view);
+	}
+}
+
+/* Scrolls view down in navigation. */
+static void
+cmd_page_down(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		fview_scroll_page_down(curr_view);
+	}
+}
+
 #endif /* ENABLE_EXTENDED_KEYS */
 
 /* Puts previous element in the history.  hist can be NULL, in which case
@@ -2613,7 +2921,7 @@ pick_hist(void)
 	}
 	if(input_stat.sub_mode == CLS_PROMPT)
 	{
-		if(input_stat.prev_mode == CMDLINE_MODE)
+		if(is_cmdmode(input_stat.prev_mode))
 		{
 			return &curr_stats.exprreg_hist;
 		}
@@ -2624,6 +2932,13 @@ pick_hist(void)
 		return &curr_stats.filter_hist;
 	}
 	return NULL;
+}
+
+/* Checks for a command-line-like mode. */
+static int
+is_cmdmode(int mode)
+{
+  return (mode == CMDLINE_MODE || mode == NAV_MODE);
 }
 
 /* Updates command-line properties and redraws it. */

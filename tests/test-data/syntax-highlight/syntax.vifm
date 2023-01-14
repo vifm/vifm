@@ -511,6 +511,9 @@ st
 sto
 stop
 keepsel
+amap
+anoremap
+aunmap
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session

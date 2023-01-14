@@ -210,7 +210,7 @@ TEST(folds_of_custom_tree_are_not_lost_on_filtering)
 
 	/* filter */
 	assert_int_equal(0, local_filter_set(&lwin, "[34]"));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 	assert_int_equal(2, lwin.list_rows);
 
 	/* unfold */

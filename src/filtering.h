@@ -101,7 +101,7 @@ int local_filter_set(struct view_t *view, const char filter[]);
 void local_filter_update_view(struct view_t *view, int rel_pos);
 
 /* Accepts current value of local filter. */
-void local_filter_accept(struct view_t *view);
+void local_filter_accept(struct view_t *view, int update_history);
 
 /* Sets local filter non-interactively.  List of entries doesn't get updated
  * immediately, an update is scheduled. */

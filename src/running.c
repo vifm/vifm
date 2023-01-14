@@ -104,7 +104,6 @@ static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
 		int force_bg);
 static void view_current_file(const view_t *view);
 static void follow_link(view_t *view, int follow_dirs, int ultimate);
-static void enter_dir(struct view_t *view);
 static int cd_to_parent_dir(view_t *view);
 static void extract_last_path_component(const char path[], char buf[]);
 static char * run_shell_prepare(const char command[], ShellPause pause,
@@ -184,7 +183,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 		int dir_like_entry = (is_dir(full_path) || is_unc_root(view->curr_dir));
 		if(dir_like_entry)
 		{
-			enter_dir(view);
+			rn_enter_dir(view);
 			return;
 		}
 	}
@@ -466,7 +465,7 @@ run_with_defaults(view_t *view)
 {
 	if(get_current_entry(view)->type == FT_DIR)
 	{
-		enter_dir(view);
+		rn_enter_dir(view);
 		return;
 	}
 
@@ -554,7 +553,7 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 	}
 	else if(strcmp(prog_spec, VIFM_PSEUDO_CMD) == 0)
 	{
-		enter_dir(view);
+		rn_enter_dir(view);
 	}
 	else if(strchr(prog_spec, '%') != NULL)
 	{
@@ -742,9 +741,8 @@ follow_link(view_t *view, int follow_dirs, int ultimate)
 	free(dir);
 }
 
-/* Handles opening of current entry of the view as a directory. */
-static void
-enter_dir(view_t *view)
+void
+rn_enter_dir(view_t *view)
 {
 	dir_entry_t *const curr = get_current_entry(view);
 
@@ -756,7 +754,6 @@ enter_dir(view_t *view)
 
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(curr, sizeof(full_path), full_path);
-
 	if(cd_is_possible(full_path))
 	{
 		curr_stats.ch_pos = (cfg_ch_pos_on(CHPOS_ENTER) ? 1 : 0);

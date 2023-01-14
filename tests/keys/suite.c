@@ -12,10 +12,11 @@ DEFINE_SUITE();
 
 SETUP()
 {
-	static int mode_flags[] = {
-		MF_USES_REGS | MF_USES_COUNT,
-		MF_USES_INPUT,
-		MF_USES_COUNT
+	static int mode_flags[MODES_COUNT] = {
+		MF_USES_REGS | MF_USES_COUNT, /* NORMAL_MODE */
+		MF_USES_INPUT,                /* CMDLINE_MODE */
+		MF_USES_INPUT,                /* NAV_MODE */
+		MF_USES_COUNT                 /* VISUAL_MODE */
 	};
 
 	vle_keys_init(MODES_COUNT, mode_flags, &silence);

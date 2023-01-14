@@ -128,6 +128,12 @@ void scroll_by_files(struct view_t *view, int by);
 /* Recalculates difference of two panes scroll positions. */
 void update_scroll_bind_offset(void);
 
+/* Scrolls the view one page up. */
+void fview_scroll_page_up(struct view_t *view);
+
+/* Scrolls the view one page down. */
+void fview_scroll_page_down(struct view_t *view);
+
 /* Layout related functions. */
 
 /* Enables/disables ls-like style of the view. */

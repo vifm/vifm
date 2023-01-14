@@ -1056,6 +1056,8 @@ get_cmd_args_type(const char cmd[])
 	switch(cmd_id)
 	{
 		case COMMAND_CMD_ID:
+		case COM_AMAP:
+		case COM_ANOREMAP:
 		case COM_AUTOCMD:
 		case COM_EXECUTE:
 		case COM_CABBR:

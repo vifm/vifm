@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: December 10, 2022
+" Last Change: January 14, 2023
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -43,9 +43,9 @@ syntax keyword vifmCommandCN contained
 syntax keyword vifmPrefixCommands contained windo winrun
 
 " Map commands
-syntax keyword vifmMap contained dm[ap] dn[oremap] du[nmap] map mm[ap]
-		\ mn[oremap] mu[nmap] nm[ap] nn[oremap] no[remap] nun[map] qm[ap] qn[oremap]
-		\ qun[map] unm[ap] vm[ap] vn[oremap] vu[nmap]
+syntax keyword vifmMap contained amap anoremap aunmap dm[ap] dn[oremap] du[nmap]
+		\ map mm[ap] mn[oremap] mu[nmap] nm[ap] nn[oremap] no[remap] nun[map] qm[ap]
+		\ qn[oremap] qun[map] unm[ap] vm[ap] vn[oremap] vu[nmap]
 		\ skipwhite nextgroup=vifmMapArgs
 syntax keyword vifmCMapAbbr contained ca[bbrev] cm[ap] cnorea[bbrev] cno[remap]
 		\ cuna[bbrev] cu[nmap]

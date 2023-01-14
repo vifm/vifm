@@ -1,4 +1,4 @@
-.TH VIFM 1 "10 January 2022" "vifm 0.12.1"
+.TH VIFM 1 "14 January 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1158,6 +1158,59 @@ insert result of evaluating an expression.  Expression is to be entered
 via nested command-line prompt (where this key does nothing).  Expansion of an
 erroneous expression is empty.
 .\" ---------------------------------------------------------------------------
+.SH Fast navigation
+.\" ---------------------------------------------------------------------------
+In order to streamline navigation through directory tree, you can enter a
+special form of command-line mode from search or local filter prompt.  Once
+activated, pressing Enter opens currently selected directory and clears the
+prompt in anticipation of the next component of the path.  If entry under the
+cursor is a file, it is opened and the mode is finished.
+
+This behaviour is embedded in a command-line mode, but doesn't update input
+histories nor expands abbreviations and redefines some of the mode's mappings
+for the purpose of faster navigation through the file system rather than
+command-line editing.  When on, prompt gets "nav" prefix.
+
+You can enable this behaviour on search by default via a mapping like:
+.EX
+
+    nnoremap / /<c-y>
+
+.EE
+.TP
+.BI Ctrl-Y
+enter navigation mode.  Works only for search and local filter started
+from a normal mode and only when 'incsearch' is set ('wrapscan' is also nice to
+have set for search).
+.TP
+.BI Ctrl-Y
+return to a regular command-line mode.
+.TP
+.BI "Enter, Right"
+either enter a directory under the cursor without leaving the mode and clear
+the prompt or leave the mode and open a file under the cursor.
+.TP
+.BI "Ctrl-O, Left"
+go to parent directory.
+.TP
+.BI "Ctrl-N, Down"
+move view cursor down.
+.TP
+.BI "Ctrl-P, Up"
+move view cursor up.
+.TP
+.BI "Page Down"
+scroll view down.
+.TP
+.BI "Page Up"
+scroll view up.
+.TP
+.BI Home
+move view cursor to the first item.
+.TP
+.BI End
+move view cursor to the last item.
+.\" ---------------------------------------------------------------------------
 .SH Pasting special values
 .\" ---------------------------------------------------------------------------
 The shortcuts listed below insert specified values into current cursor
@@ -1340,6 +1393,8 @@ line.  If you want to use '|' in an argument, precede it with '\\'.
 These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
+    :amap
+    :anoremap
     :autocmd
     :cabbrev
     :cmap
@@ -3196,7 +3251,10 @@ map lhs key sequence to rhs in normal and visual modes.
 map lhs key sequence to rhs in command line mode.
 
 .TP
-.BI "                                       :cmap :dmap :mmap :nmap :qmap :vmap"
+.BI "                                 :amap :cmap :dmap :mmap :nmap :qmap :vmap"
+.TP
+.BI ":amap lhs rhs"
+map lhs to rhs in navigation mode.
 .TP
 .BI ":cm[ap] lhs rhs"
 map lhs to rhs in command line mode.
@@ -3219,6 +3277,9 @@ map lhs to rhs in visual mode.
 .TP
 .BI "                                         :*map"
 .TP
+.BI :amap
+list all maps in navigation mode.
+.TP
 .BI :cm[ap]
 list all maps in command line mode.
 .TP
@@ -3238,6 +3299,9 @@ list all maps in view mode.
 list all maps in visual mode.
 .TP
 .BI "                                         :*map beginning"
+.TP
+.BI ":amap beginning"
+list all maps in navigation mode that start with the beginning.
 .TP
 .BI ":cm[ap] beginning"
 list all maps in command line mode that start with the beginning.
@@ -3267,7 +3331,11 @@ user mappings in rhs.
 map the key sequence lhs to rhs for command line mode, but don't expand user
 mappings in rhs.
 .TP
-.BI "               :cnoremap :dnoremap :mnoremap :nnoremap :qnoremap :vnoremap"
+.BI "     :anoremap :cnoremap :dnoremap :mnoremap :nnoremap :qnoremap :vnoremap"
+.TP
+.BI ":anoremap lhs rhs"
+map the key sequence lhs to rhs for navigation mode, but don't expand user
+mappings in rhs.
 .TP
 .BI ":cno[remap] lhs rhs"
 map the key sequence lhs to rhs for command line mode, but don't expand user
@@ -3301,7 +3369,10 @@ remove user mapping of lhs from normal and visual modes.
 .BI ":unm[ap]! lhs"
 remove user mapping of lhs from command line mode.
 .TP
-.BI "                           :cunmap :dunmap :munmap :nunmap :qunmap :vunmap"
+.BI "                   :aunmap :cunmap :dunmap :munmap :nunmap :qunmap :vunmap"
+.TP
+.BI ":aunmap lhs"
+remove user mapping of lhs from navigation mode.
 .TP
 .BI ":cu[nmap] lhs"
 remove user mapping of lhs from command line mode.
@@ -5366,6 +5437,19 @@ Searches wrap around end of the list.
 .\" ---------------------------------------------------------------------------
 .SH Mappings
 .\" ---------------------------------------------------------------------------
+A user mapping like `nnoremap lhs rhs` defines a substitution of the
+left-hand-side (LHS) with the right-hand-side (RHS) in the input stream.  A
+regular mapping (without "nore" in :command's name) expands recognized
+sequences in the RHS, while "*noremap" mapping always interprets RHS as if no
+user mappings were defined and each key has its builtin meaning.  In most cases
+you want to use noremap variant and if your RHS includes LHS, only noremap
+variant will work because recursion in a mapping is not allowed.
+
+In order to define a mapping determine in which mode you want to activate it
+and use an appropriate "*noremap" :command (e.g., :nnoremap for a
+normal mode mapping).  RHS doesn't have to limit itself to the mode in which
+the mapping was started and can span multiple modes.
+
 .B Map arguments
 
 LHS of mappings can be preceded by arguments which take the form of special

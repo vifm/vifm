@@ -43,6 +43,10 @@ int fpos_scroll_down(struct view_t *view, int lines_count);
  * position was updated. */
 int fpos_scroll_up(struct view_t *view, int lines_count);
 
+/* Scrolls the view by one view up or down.  The direction should be -1 (up)
+ * or 1 (down). */
+void fpos_scroll_page(struct view_t *view, int base, int direction);
+
 /* Moves cursor to specified position.  Normalizes it if needed, invokes fview
  * update function and can synchronize cursor position in the other view. */
 void fpos_set_pos(struct view_t *view, int pos);

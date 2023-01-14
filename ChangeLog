@@ -33,10 +33,28 @@
 	additional places to look for plugins.  Thanks to 高浩亮 (a.k.a.
 	haolian9).
 
+	Added Ctrl-Y key to command-line mode.  It activates fast navigation that
+	allows entering deep paths by a series of searches for individual path
+	components.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
+
+	Added Ctrl-O key to command-line navigation that goes to parent directory.
+
+	Added Ctrl-N/P keys to command-line navigation to move view cursor up/down.
+	Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
+
+	Added Arrows/Home/End/Page Up/Page Down keys to command-line navigation to
+	move view cursor.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
+
+	Added :amap, :anoremap and :aunmap commands to configure mappings in
+	navigation mode.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
 	unique size.
+
+	Provide basic instructions in the documentation on how mappings work.
+	Thanks to dmocek.
 
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.

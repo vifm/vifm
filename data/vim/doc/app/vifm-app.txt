@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 10
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -50,6 +50,7 @@ Tag name structure:
       Menu or dialog command   vifm-m_     :help vifm-m_zh
       Command-line command     vifm-:      :help vifm-:quit
       Command-line editing     vifm-c_     :help vifm-c_CTRL-H
+      Command-line navigation  vifm-a_     :help vifm-a_CTRL-Y
       Vifm command argument    vifm--      :help vifm--f
       Option                   vifm-'      :help vifm-'wrap'
 
@@ -1031,6 +1032,51 @@ Ctrl-R =                                       *vifm-c_CTRL-R_=*
     via nested command-line prompt (where this key does nothing).  Expansion
     of an erroneous expression is empty.
 
+Fast navigation~
+
+In order to streamline navigation through directory tree, you can enter a
+special form of command-line mode from search or local filter prompt.  Once
+activated, pressing Enter opens currently selected directory and clears the
+prompt in anticipation of the next component of the path.  If entry under the
+cursor is a file, it is opened and the mode is finished.
+
+This behaviour is embedded in a command-line mode, but doesn't update input
+histories nor expands abbreviations and redefines some of the mode's mappings
+for the purpose of faster navigation through the file system rather than
+command-line editing.  When on, prompt gets "nav" prefix.
+
+You can enable this behaviour on search by default via a mapping like: >
+    nnoremap / /<c-y>
+
+Ctrl-Y                                         *vifm-c_CTRL-Y*
+    enter navigation mode.  Works only for search and local filter started
+    from a normal mode and only when |vifm-'incsearch'| is set
+    (|vifm-'wrapscan'| is also nice to have set for search).
+
+Ctrl-Y                                         *vifm-a_CTRL-Y*
+    return to a regular command-line mode.
+
+Enter, Right                                   *vifm-a_Enter* *vifm-a_Right*
+    either enter a directory under the cursor without leaving the mode and
+    clear the prompt or leave the mode and open a file under the cursor.
+Ctrl-O, Left                                   *vifm-a_CTRL-O* *vifm-a_Left*
+    go to parent directory.
+
+Ctrl-N, Down                                   *vifm-a_CTRL-N* *vifm-a_Down*
+    move view cursor down.
+Ctrl-P, Up                                     *vifm-a_CTRL-P* *vifm-a_Up*
+    move view cursor up.
+
+Page Down                                      *vifm-a_PageDown*
+    scroll view down.
+Page Up                                        *vifm-a_PageUp*
+    scroll view up.
+
+Home                                           *vifm-a_Home*
+    move view cursor to the first item.
+End                                            *vifm-a_End*
+    move view cursor to the last item.
+
 Pasting special values~
 
 The shortcuts listed below insert specified values into current cursor
@@ -1188,6 +1234,8 @@ line.  If you want to use '|' in an argument, precede it with '\'.
 These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
+    :amap
+    :anoremap
     :autocmd
     :cabbrev
     :cmap
@@ -2669,12 +2717,14 @@ yet supported) and might be changed in future releases, or get an alias.
 :map! lhs rhs
     map lhs key sequence to rhs in command line mode.
 
+                                               *vifm-:amap*
                                                *vifm-:cmap* *vifm-:cm*
                                                *vifm-:dmap* *vifm-:dm*
                                                *vifm-:mmap* *vifm-:mm*
                                                *vifm-:nmap* *vifm-:nm*
                                                *vifm-:qmap* *vifm-:qm*
                                                *vifm-:vmap* *vifm-:vm*
+:amap   lhs rhs - map lhs to rhs in navigation mode.
 :cm[ap] lhs rhs - map lhs to rhs in command line mode.
 :dm[ap] lhs rhs - map lhs to rhs in dialog modes.
 :mm[ap] lhs rhs - map lhs to rhs in menu mode.
@@ -2682,6 +2732,7 @@ yet supported) and might be changed in future releases, or get an alias.
 :qm[ap] lhs rhs - map lhs to rhs in view mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
+:amap   - list all maps of navigation mode.
 :cm[ap] - list all maps of command line mode.
 :dm[ap] - list all maps of dialog modes.
 :mm[ap] - list all maps of menu mode.
@@ -2689,6 +2740,8 @@ yet supported) and might be changed in future releases, or get an alias.
 :qm[ap] - list all maps of view mode.
 :vm[ap] - list all maps of visual mode.
 
+:amap beginning
+    list all maps of navigation mode that start with the beginning.
 :cm[ap] beginning
     list all maps of command line mode that start with the beginning.
 :dm[ap] beginning
@@ -2710,12 +2763,16 @@ yet supported) and might be changed in future releases, or get an alias.
     map the key sequence lhs to rhs for command line mode, but don't expand
     user mappings in rhs.
 
+                                               *vifm-:anoremap*
                                                *vifm-:cnoremap* *vifm-:cno*
                                                *vifm-:dnoremap* *vifm-:dn*
                                                *vifm-:mnoremap* *vifm-:mn*
                                                *vifm-:nnoremap* *vifm-:nn*
                                                *vifm-:qnoremap* *vifm-:qn*
                                                *vifm-:vnoremap* *vifm-:vn*
+:anoremap lhs rhs
+    map the key sequence lhs to rhs for navigation mode, but don't expand
+    user mappings in rhs.
 :cno[remap] lhs rhs
     map the key sequence lhs to rhs for command line mode, but don't expand
     user mappings in rhs.
@@ -2741,12 +2798,14 @@ yet supported) and might be changed in future releases, or get an alias.
 :unm[ap]! lhs
     remove user mapping of lhs from command line mode.
 
+                                               *vifm-:aunmap*
                                                *vifm-:cunmap* *vifm-:cu*
                                                *vifm-:dunmap* *vifm-:du*
                                                *vifm-:munmap* *vifm-:mu*
                                                *vifm-:nunmap* *vifm-:nun*
                                                *vifm-:qunmap* *vifm-:qun*
                                                *vifm-:vunmap* *vifm-:vu*
+:aunmap   lhs - remove user mapping of lhs from navigation mode.
 :cu[nmap] lhs - remove user mapping of lhs from command line mode.
 :du[nmap] lhs - remove user mapping of lhs from dialog modes.
 :mu[nmap] lhs - remove user mapping of lhs from menu mode.
@@ -4533,6 +4592,19 @@ Searches wrap around end of the list.
 
 --------------------------------------------------------------------------------
 *vifm-mappings*
+
+A user mapping like `nnoremap lhs rhs` defines a substitution of the
+left-hand-side (LHS) with the right-hand-side (RHS) in the input stream.  A
+regular mapping (without "nore" in :command's name) expands recognized
+sequences in the RHS, while "*noremap" mapping always interprets RHS as if no
+user mappings were defined and each key has its builtin meaning.  In most
+cases you want to use noremap variant and if your RHS includes LHS, only
+noremap variant will work because recursion in a mapping is not allowed.
+
+In order to define a mapping determine in which mode you want to activate it
+and use an appropriate "*noremap" :command (e.g., |vifm-:nnoremap| for a
+normal mode mapping).  RHS doesn't have to limit itself to the mode in which
+the mapping was started and can span multiple modes.
 
 Map arguments~
 

@@ -441,11 +441,11 @@ TEST(custom_tree_can_restore_files_after_local_filter_interactive)
 	assert_int_equal(5, lwin.list_rows);
 
 	assert_int_equal(0, local_filter_set(&lwin, "t"));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 	assert_int_equal(2, lwin.list_rows);
 
 	assert_int_equal(0, local_filter_set(&lwin, ""));
-	local_filter_accept(&lwin);
+	local_filter_accept(&lwin, /*update_history=*/1);
 	assert_int_equal(5, lwin.list_rows);
 }
 
