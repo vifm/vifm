@@ -289,7 +289,10 @@ static char * read_file(const char * filename) {
     if (!fp) {
         return NULL;
     }
-    fseek(fp, 0L, SEEK_END);
+    if (fseek(fp, 0L, SEEK_END) != 0) {
+        fclose(fp);
+        return NULL;
+    }
     pos = ftell(fp);
     if (pos < 0) {
         fclose(fp);
