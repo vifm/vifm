@@ -189,10 +189,15 @@ bg_check(void)
 	{
 		job_check(p);
 
-		pthread_spin_lock(&p->status_lock);
+		if(pthread_spin_lock(&p->status_lock) != 0)
+		{
+			prev = p;
+			p = p->next;
+			continue;
+		}
 		int running = p->running;
 		int can_remove = (!p->running && p->use_count == 0);
-		pthread_spin_unlock(&p->status_lock);
+		(void)pthread_spin_unlock(&p->status_lock);
 
 		active_jobs += (running != 0 && p->in_menu);
 
@@ -261,11 +266,14 @@ job_check(bg_job_t *job)
 	/* Display portions of errors from the job while there are any. */
 	do
 	{
-		pthread_spin_lock(&job->errors_lock);
+		if(pthread_spin_lock(&job->errors_lock) != 0)
+		{
+			break;
+		}
 		new_errors = job->new_errors;
 		job->new_errors = NULL;
 		job->new_errors_len = 0U;
-		pthread_spin_unlock(&job->errors_lock);
+		(void)pthread_spin_unlock(&job->errors_lock);
 
 		if(new_errors != NULL && !job->skip_errors)
 		{
@@ -468,11 +476,10 @@ error_thread(void *p)
 				job = &j->err_next;
 			}
 
-			if(!need_update_list)
+			if(!need_update_list && pthread_mutex_lock(&new_err_jobs_lock) == 0)
 			{
-				pthread_mutex_lock(&new_err_jobs_lock);
 				need_update_list = (new_err_jobs != NULL);
-				pthread_mutex_unlock(&new_err_jobs_lock);
+				(void)pthread_mutex_unlock(&new_err_jobs_lock);
 			}
 			if(need_update_list)
 			{
@@ -502,18 +509,17 @@ free_drained_jobs(bg_job_t **jobs)
 	{
 		bg_job_t *const j = *job;
 
-		if(j->drained)
+		if(j->drained && pthread_spin_lock(&j->status_lock) == 0)
 		{
-			pthread_spin_lock(&j->status_lock);
 			/* If finished, decrement use_count and drop it from the list. */
 			if(!j->running)
 			{
 				--j->use_count;
 				*job = j->err_next;
-				pthread_spin_unlock(&j->status_lock);
+				(void)pthread_spin_unlock(&j->status_lock);
 				continue;
 			}
-			pthread_spin_unlock(&j->status_lock);
+			(void)pthread_spin_unlock(&j->status_lock);
 		}
 
 		job = &j->err_next;
@@ -527,14 +533,20 @@ import_error_jobs(bg_job_t **jobs)
 	bg_job_t *new_jobs;
 
 	/* Add new tasks to internal list, wait if there are no jobs. */
-	pthread_mutex_lock(&new_err_jobs_lock);
+	if(pthread_mutex_lock(&new_err_jobs_lock) != 0)
+	{
+		return;
+	}
 	while(*jobs == NULL && new_err_jobs == NULL)
 	{
-		pthread_cond_wait(&new_err_jobs_cond, &new_err_jobs_lock);
+		if(pthread_cond_wait(&new_err_jobs_cond, &new_err_jobs_lock) != 0)
+		{
+			break;
+		}
 	}
 	new_jobs = new_err_jobs;
 	new_err_jobs = NULL;
-	pthread_mutex_unlock(&new_err_jobs_lock);
+	(void)pthread_mutex_unlock(&new_err_jobs_lock);
 
 	/* Prepend new jobs to the list. */
 	while(new_jobs != NULL)
@@ -625,12 +637,11 @@ report_error_msg(const char title[], const char text[])
 static void
 append_error_msg(bg_job_t *job, const char err_msg[])
 {
-	if(err_msg[0] != '\0')
+	if(err_msg[0] != '\0' && pthread_spin_lock(&job->errors_lock) == 0)
 	{
-		pthread_spin_lock(&job->errors_lock);
 		(void)strappend(&job->errors, &job->errors_len, err_msg);
 		(void)strappend(&job->new_errors, &job->new_errors_len, err_msg);
-		pthread_spin_unlock(&job->errors_lock);
+		(void)pthread_spin_unlock(&job->errors_lock);
 	}
 }
 
@@ -1257,10 +1268,12 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	if(pthread_create(&id, NULL, &background_task_bootstrap, task_args) != 0)
 	{
 		/* Mark job as finished with error. */
-		pthread_spin_lock(&task_args->job->status_lock);
-		task_args->job->running = 0;
-		task_args->job->exit_code = 1;
-		pthread_spin_unlock(&task_args->job->status_lock);
+		if(pthread_spin_lock(&task_args->job->status_lock) == 0)
+		{
+			task_args->job->running = 0;
+			task_args->job->exit_code = 1;
+			(void)pthread_spin_unlock(&task_args->job->status_lock);
+		}
 
 		free(task_args);
 		ret = 1;
@@ -1298,12 +1311,15 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	bg_job_t *new = malloc(sizeof(*new));
 	if(new == NULL)
 	{
-		show_error_msg("Memory error", "Unable to allocate enough memory");
 		return NULL;
+	}
+	new->cmd = strdup(cmd);
+	if(new->cmd == NULL)
+	{
+		goto free_new;
 	}
 	new->type = type;
 	new->pid = pid;
-	new->cmd = strdup(cmd);
 	new->next = bg_jobs;
 	new->skip_errors = 0;
 	new->new_errors = NULL;
@@ -1312,8 +1328,20 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	new->errors_len = 0U;
 	new->cancelled = 0;
 
-	pthread_spin_init(&new->errors_lock, PTHREAD_PROCESS_PRIVATE);
-	pthread_spin_init(&new->status_lock, PTHREAD_PROCESS_PRIVATE);
+	if(pthread_spin_init(&new->errors_lock, PTHREAD_PROCESS_PRIVATE) != 0)
+	{
+		goto free_cmd;
+	}
+	if(pthread_spin_init(&new->status_lock, PTHREAD_PROCESS_PRIVATE) != 0)
+	{
+		goto free_errors_lock;
+	}
+	if(with_bg_op &&
+			pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE) != 0)
+	{
+		goto free_status_lock;
+	}
+
 	new->running = 1;
 	new->use_count = 0;
 	new->exit_code = -1;
@@ -1335,19 +1363,19 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	if(new->err_stream != NO_JOB_ID)
 	{
 		++new->use_count;
-		pthread_mutex_lock(&new_err_jobs_lock);
+
+		if(pthread_mutex_lock(&new_err_jobs_lock) != 0)
+		{
+			goto free_bg_op_lock;
+		}
 		new->err_next = new_err_jobs;
 		new_err_jobs = new;
-		pthread_mutex_unlock(&new_err_jobs_lock);
-		pthread_cond_signal(&new_err_jobs_cond);
+		(void)pthread_mutex_unlock(&new_err_jobs_lock);
+		(void)pthread_cond_signal(&new_err_jobs_cond);
 	}
 
 	new->with_bg_op = with_bg_op;
 	new->on_job_bar = 0;
-	if(new->with_bg_op)
-	{
-		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
-	}
 	new->bg_op.total = 0;
 	new->bg_op.done = 0;
 	new->bg_op.progress = -1;
@@ -1358,6 +1386,21 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 
 	bg_jobs = new;
 	return new;
+
+free_bg_op_lock:
+	if(with_bg_op)
+	{
+		(void)pthread_spin_destroy(&new->bg_op_lock);
+	}
+free_status_lock:
+	(void)pthread_spin_destroy(&new->status_lock);
+free_errors_lock:
+	(void)pthread_spin_destroy(&new->errors_lock);
+free_cmd:
+	free(new->cmd);
+free_new:
+	free(new);
+	return NULL;
 }
 
 /* pthreads entry point for a new background task.  Performs correct
@@ -1495,19 +1538,25 @@ bg_job_terminate(bg_job_t *job)
 int
 bg_job_is_running(bg_job_t *job)
 {
-	pthread_spin_lock(&job->status_lock);
+	if(pthread_spin_lock(&job->status_lock) != 0)
+	{
+		return 1;
+	}
 	int running = job->running;
-	pthread_spin_unlock(&job->status_lock);
+	(void)pthread_spin_unlock(&job->status_lock);
 	return (running && update_job_status(job));
 }
 
 int
 bg_job_was_killed(bg_job_t *job)
 {
-	pthread_spin_lock(&job->status_lock);
+	if(pthread_spin_lock(&job->status_lock) != 0)
+	{
+		return 0;
+	}
 	int running = job->running;
 	int exit_code = job->exit_code;
-	pthread_spin_unlock(&job->status_lock);
+	(void)pthread_spin_unlock(&job->status_lock);
 	return (!running && exit_code >= 0);
 }
 
@@ -1584,27 +1633,33 @@ update_job_status(bg_job_t *job)
 static void
 mark_job_finished(bg_job_t *job, int exit_code)
 {
-	pthread_spin_lock(&job->status_lock);
-	job->running = 0;
-	job->exit_code = exit_code;
-	pthread_spin_unlock(&job->status_lock);
+	if(pthread_spin_lock(&job->status_lock) == 0)
+	{
+		job->running = 0;
+		job->exit_code = exit_code;
+		(void)pthread_spin_unlock(&job->status_lock);
+	}
 }
 
 void
 bg_job_incref(bg_job_t *job)
 {
-	pthread_spin_lock(&job->status_lock);
-	++job->use_count;
-	pthread_spin_unlock(&job->status_lock);
+	if(pthread_spin_lock(&job->status_lock) == 0)
+	{
+		++job->use_count;
+		(void)pthread_spin_unlock(&job->status_lock);
+	}
 }
 
 void
 bg_job_decref(bg_job_t *job)
 {
-	pthread_spin_lock(&job->status_lock);
-	--job->use_count;
-	assert(job->use_count >= 0 && "Excessive bg_job_decref() call!");
-	pthread_spin_unlock(&job->status_lock);
+	if(pthread_spin_lock(&job->status_lock) == 0)
+	{
+		--job->use_count;
+		assert(job->use_count >= 0 && "Excessive bg_job_decref() call!");
+		(void)pthread_spin_unlock(&job->status_lock);
+	}
 }
 
 void
@@ -1612,7 +1667,10 @@ bg_op_lock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
 	assert(job->with_bg_op && "This function requires bg_op data.");
-	pthread_spin_lock(&job->bg_op_lock);
+
+	int error = pthread_spin_lock(&job->bg_op_lock);
+	assert(error == 0 && "Lock failure in bg_op_lock()");
+	(void)error;
 }
 
 void
@@ -1620,7 +1678,10 @@ bg_op_unlock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
 	assert(job->with_bg_op && "This function requires bg_op data.");
-	pthread_spin_unlock(&job->bg_op_lock);
+
+	int error = pthread_spin_unlock(&job->bg_op_lock);
+	assert(error == 0 && "Unlock failure in bg_op_lock()");
+	(void)error;
 }
 
 void
