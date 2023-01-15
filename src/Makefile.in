@@ -95,6 +95,7 @@ subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
 	$(top_srcdir)/build-aux/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/build-aux/m4/ax_pthread.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -658,7 +659,12 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL_PROG = @PERL_PROG@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_CXX = @PTHREAD_CXX@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 SANITIZERS_CFLAGS = @SANITIZERS_CFLAGS@
+SED = @SED_PROG@
 SED_PROG = @SED_PROG@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -676,6 +682,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_pthread_config = @ax_pthread_config@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -1070,7 +1077,6 @@ EXTRA_DIST = \
 MANGEN = @MANGEN_PROG@
 COL = @COL_PROG@
 PERL = @PERL_PROG@
-SED = @SED_PROG@
 VIM = @VIM_PROG@
 UNDER_VCS = @IN_GIT_REPO@
 CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) \

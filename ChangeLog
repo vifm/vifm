@@ -6,6 +6,9 @@
 	Changed use of `$(filter-out)` in src/Makefile.am to `$(var:from=to)`
 	substitution to get rid of a warning on configuration.
 
+	Changed how pthread support is detected by configure script to handle more
+	cases.  Thanks to Markus Elfring (a.k.a. elfring).
+
 	Added "withicase" and "withrcase" to :compare that force ignoring and
 	respecting case respectively on comparing file names and paths.  Thanks to
 	Jose Riha (a.k.a. jose1711).
