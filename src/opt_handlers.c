@@ -3330,7 +3330,12 @@ map_name(const char name[], void *arg)
 		return (pos + 1);
 	}
 
-	return vlua_viewcolumn_map(curr_stats.vlua, name);
+	int id = vlua_viewcolumn_map(curr_stats.vlua, name);
+	if(id == -1)
+	{
+		vle_tb_append_linef(vle_err, "Failed to find column: %s", name);
+	}
+	return id;
 }
 
 void
