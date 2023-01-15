@@ -3,6 +3,9 @@
 	Changed implementation of `:compare grouppaths` to juxtapose only files
 	with identical relative paths.  Patch by Alexandr Keyp (a.k.a. IAmKapuze).
 
+	Changed use of `$(filter-out)` in src/Makefile.am to `$(var:from=to)`
+	substitution to get rid of a warning on configuration.
+
 	Added "withicase" and "withrcase" to :compare that force ignoring and
 	respecting case respectively on comparing file names and paths.  Thanks to
 	Jose Riha (a.k.a. jose1711).
