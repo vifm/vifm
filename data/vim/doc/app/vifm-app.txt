@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 14
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3936,7 +3936,7 @@ type: boolean
 default: false
 
 Run executable file on Enter, l or Right Arrow key.  Behaviour of the last two
-depends on the value of the 'lsview' option.
+depends on the value of the |vifm-'lsview'| option.
 
                                                *vifm-'scrollbind'* *vifm-'scb'*
 scrollbind scb
