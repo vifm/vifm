@@ -289,7 +289,10 @@ static char * read_file(const char * filename) {
     if (!fp) {
         return NULL;
     }
-    fseek(fp, 0L, SEEK_END);
+    if (fseek(fp, 0L, SEEK_END) != 0) {
+        fclose(fp);
+        return NULL;
+    }
     pos = ftell(fp);
     if (pos < 0) {
         fclose(fp);
@@ -883,7 +886,7 @@ static JSON_Value * parse_null_value(const char **string) {
 
 static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int level, int is_pretty, char *num_buf)
 {
-    const char *key = NULL, *string = NULL;
+    const char *key = NULL;
     JSON_Value *temp_value = NULL;
     JSON_Array *array = NULL;
     JSON_Object *object = NULL;
@@ -891,10 +894,10 @@ static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int le
     double num = 0.0;
     int written = -1, written_total = 0;
 
-    switch (json_value_get_type(value)) {
+    switch (value->type) {
         case JSONArray:
-            array = json_value_get_array(value);
-            count = json_array_get_count(array);
+            array = value->value.array;
+            count = array->count;
             APPEND_STRING("[");
             if (count > 0 && is_pretty) {
                 APPEND_STRING("\n");
@@ -903,7 +906,7 @@ static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int le
                 if (is_pretty) {
                     APPEND_INDENT(level+1);
                 }
-                temp_value = json_array_get_value(array, i);
+                temp_value = array->items[i];
                 written = json_serialize_to_buffer_r(temp_value, buf, level+1, is_pretty, num_buf);
                 if (written < 0) {
                     return -1;
@@ -925,14 +928,14 @@ static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int le
             APPEND_STRING("]");
             return written_total;
         case JSONObject:
-            object = json_value_get_object(value);
-            count  = json_object_get_count(object);
+            object = value->value.object;
+            count  = object->count;
             APPEND_STRING("{");
             if (count > 0 && is_pretty) {
                 APPEND_STRING("\n");
             }
             for (i = 0; i < count; i++) {
-                key = json_object_get_name(object, i);
+                key = object->names[i];
                 if (key == NULL) {
                     return -1;
                 }
@@ -951,7 +954,7 @@ static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int le
                 if (is_pretty) {
                     APPEND_STRING(" ");
                 }
-                temp_value = json_object_get_value(object, key);
+                temp_value = object->values[i];
                 written = json_serialize_to_buffer_r(temp_value, buf, level+1, is_pretty, num_buf);
                 if (written < 0) {
                     return -1;
@@ -973,11 +976,7 @@ static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int le
             APPEND_STRING("}");
             return written_total;
         case JSONString:
-            string = json_value_get_string(value);
-            if (string == NULL) {
-                return -1;
-            }
-            written = json_serialize_string(string, buf);
+            written = json_serialize_string(value->value.string, buf);
             if (written < 0) {
                 return -1;
             }
@@ -987,7 +986,7 @@ static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int le
             written_total += written;
             return written_total;
         case JSONBoolean:
-            if (json_value_get_boolean(value)) {
+            if (value->value.boolean) {
                 APPEND_STRING("true");
             } else {
                 APPEND_STRING("false");

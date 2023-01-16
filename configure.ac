@@ -408,16 +408,14 @@ dnl Enable POSIX shared memory
 AC_CHECK_LIB(rt, shm_open, [LIBS="$LIBS -lrt"])
 
 dnl Use pthread library
-AX_CHECK_COMPILE_FLAG([-pthread], [
-    TESTS_CFLAGS="$CFLAGS -pthread"
-    CFLAGS="$CFLAGS -pthread"
-    ], [
-    AC_CHECK_LIB(pthread, pthread_create,
-      [LIBS="$LIBS -lpthread"
-      AC_CHECK_HEADER([pthread.h], [], [AC_MSG_ERROR([pthread.h header not found.])])
-      ],
-      [AC_MSG_ERROR([libpthread not found])])
-  ])
+AX_PTHREAD([
+             LIBS="$PTHREAD_LIBS $LIBS"
+             CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+             TESTS_CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+             CC="$PTHREAD_CC"
+           ], [
+             AC_MSG_ERROR([pthread not found])
+           ])
 
 dnl Check for all required elements in pthread.h.
 AC_CHECK_FUNC([pthread_create], [], [AC_MSG_ERROR([pthread_create() function not found.])])

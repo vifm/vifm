@@ -8,8 +8,10 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/options.h"
 #include "../../src/engine/text_buffer.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/gmux.h"
@@ -101,6 +103,21 @@ TEST(recovering_from_wrong_viewcolumns_value_works)
 	assert_int_equal(2, ncols);
 
 	assert_string_equal("", vle_opts_get("viewcolumns", OPT_LOCAL));
+}
+
+TEST(nice_error_on_wrong_viewcolumn_name)
+{
+	curr_stats.vlua = vlua_init();
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("set viewcolumns={bad}", curr_view,
+				CIT_COMMAND));
+	assert_string_equal("Failed to find column: bad\n"
+			"Invalid format of 'viewcolumns' option\n"
+			"Invalid argument for :set command", ui_sb_last());
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
 }
 
 TEST(set_local_sets_local_value)

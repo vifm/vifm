@@ -1165,3 +1165,4 @@ AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
 m4_include([build-aux/m4/ax_check_compile_flag.m4])
+m4_include([build-aux/m4/ax_pthread.m4])

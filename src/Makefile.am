@@ -400,7 +400,7 @@ distclean-local:
 	$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ clean
 	$(RM) -r cov-report/
 
-version.o: $(filter-out version.o, $(vifm_OBJECTS))
+version.o: $(vifm_OBJECTS:version.o=)
 compile_info.c: update_compile_info
 	@$(abs_srcdir)/update-compile-info $(UNDER_VCS)
 
