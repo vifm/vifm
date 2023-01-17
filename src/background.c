@@ -151,16 +151,18 @@ static pthread_cond_t new_err_jobs_cond = PTHREAD_COND_INITIALIZER;
 /* Thread local storage for bg_job_t associated with active thread. */
 static pthread_key_t current_job;
 
-void
+int
 bg_init(void)
 {
 	pthread_t id;
-	int err = pthread_create(&id, NULL, &error_thread, NULL);
-	assert(err == 0);
-	(void)err;
+	if(pthread_create(&id, NULL, &error_thread, NULL) != 0)
+	{
+		return 1;
+	}
 
 	/* Initialize state for the main thread. */
 	set_current_job(NULL);
+	return 0;
 }
 
 void

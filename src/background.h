@@ -134,8 +134,8 @@ typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 /* List of background jobs. */
 extern bg_job_t *bg_jobs;
 
-/* Prepare background unit for the work. */
-void bg_init(void);
+/* Prepare background unit for the work.  Returns zero on success. */
+int bg_init(void);
 
 /* Creates background job running external command.  Returns zero on success,
  * otherwise non-zero is returned.  If *input is not NULL, it's set to input

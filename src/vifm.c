@@ -262,7 +262,11 @@ vifm_main(int argc, char *argv[])
 			&curr_stats.plugins_dirs.items, curr_stats.plugins_dirs.nitems,
 			format_str("%s/plugins", cfg.config_dir));
 
-	bg_init();
+	if(bg_init() != 0)
+	{
+		fprintf(stderr, "Failed to initialize threads.\n");
+		return -1;
+	}
 
 	fops_init(&modcline_prompt, &prompt_msg_custom);
 
