@@ -133,8 +133,6 @@ static void get_off_job_bar(bg_job_t *job);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 		uintptr_t err, uintptr_t data, BgJobType type, int with_bg_op);
 static void * background_task_bootstrap(void *arg);
-static void set_current_job(bg_job_t *job);
-static void make_current_job_key(void);
 static int update_job_status(bg_job_t *job);
 static void mark_job_finished(bg_job_t *job, int exit_code);
 static int bg_op_cancel(bg_op_t *bg_op);
@@ -148,20 +146,24 @@ static pthread_mutex_t new_err_jobs_lock = PTHREAD_MUTEX_INITIALIZER;
 /* Conditional variable to signal availability of new jobs in new_err_jobs. */
 static pthread_cond_t new_err_jobs_cond = PTHREAD_COND_INITIALIZER;
 
-/* Thread local storage for bg_job_t associated with active thread. */
+/* Thread-local storage for bg_job_t associated with active thread. */
 static pthread_key_t current_job;
 
 int
 bg_init(void)
 {
+	/* Create thread-local storage before starting any background threads. */
+	if(pthread_key_create(&current_job, NULL) != 0)
+	{
+		return 1;
+	}
+
 	pthread_t id;
 	if(pthread_create(&id, NULL, &error_thread, NULL) != 0)
 	{
 		return 1;
 	}
 
-	/* Initialize state for the main thread. */
-	set_current_job(NULL);
 	return 0;
 }
 
@@ -1415,33 +1417,20 @@ background_task_bootstrap(void *arg)
 
 	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
-	set_current_job(task_args->job);
 
-	task_args->func(&task_args->job->bg_op, task_args->args);
-
-	/* Mark task as finished normally. */
-	mark_job_finished(task_args->job, 0);
+	if(pthread_setspecific(current_job, task_args->job) == 0)
+	{
+		task_args->func(&task_args->job->bg_op, task_args->args);
+		mark_job_finished(task_args->job, /*exit_code=*/0);
+	}
+	else
+	{
+		mark_job_finished(task_args->job, /*exit_code=*/1);
+	}
 
 	free(task_args);
 
 	return NULL;
-}
-
-/* Stores pointer to the job in a thread-local storage. */
-static void
-set_current_job(bg_job_t *job)
-{
-	static pthread_once_t once = PTHREAD_ONCE_INIT;
-	pthread_once(&once, &make_current_job_key);
-
-	(void)pthread_setspecific(current_job, job);
-}
-
-/* current_job initializer for pthread_once(). */
-static void
-make_current_job_key(void)
-{
-	(void)pthread_key_create(&current_job, NULL);
 }
 
 int
