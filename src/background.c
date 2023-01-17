@@ -193,17 +193,18 @@ bg_check(void)
 	{
 		job_check(p);
 
-		if(pthread_spin_lock(&p->status_lock) != 0)
-		{
-			prev = p;
-			p = p->next;
-			continue;
-		}
-		int running = p->running;
-		int can_remove = (!p->running && p->use_count == 0);
-		(void)pthread_spin_unlock(&p->status_lock);
+		/* In case of lock failure, assume the job is active. */
+		int running = 1;
+		int can_remove = 0;
 
-		active_jobs += (running != 0 && p->in_menu);
+		if(pthread_spin_lock(&p->status_lock) == 0)
+		{
+			running = p->running;
+			can_remove = (!running && p->use_count == 0);
+			(void)pthread_spin_unlock(&p->status_lock);
+		}
+
+		active_jobs += (running && p->in_menu);
 
 		if(!running)
 		{
