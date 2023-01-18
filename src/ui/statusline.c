@@ -1030,12 +1030,12 @@ take_job_descr_snapshot(void)
 	descrs = reallocarray(NULL, nbar_jobs, sizeof(*descrs));
 	for(i = 0U; i < nbar_jobs; ++i)
 	{
-		const char *descr;
-
-		bg_op_lock(bar_jobs[i]);
-		descr = bar_jobs[i]->descr;
-		descrs[i] = strdup((descr == NULL) ? "UNKNOWN" : descr);
-		bg_op_unlock(bar_jobs[i]);
+		if(bg_op_lock(bar_jobs[i]))
+		{
+			const char *descr = bar_jobs[i]->descr;
+			descrs[i] = strdup((descr == NULL) ? "UNKNOWN" : descr);
+			bg_op_unlock(bar_jobs[i]);
+		}
 	}
 
 	return descrs;

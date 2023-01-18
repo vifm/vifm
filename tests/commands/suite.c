@@ -25,7 +25,7 @@ SETUP_ONCE()
 	 * nothing will change the path before we try to save it. */
 	saved_cwd = save_cwd();
 
-	bg_init();
+	assert_success(bg_init());
 
 	tabs_init();
 }

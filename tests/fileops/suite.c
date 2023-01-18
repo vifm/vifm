@@ -7,6 +7,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
+#include "../../src/background.h"
 #include "../../src/undo.h"
 
 static OpsResult exec_func(OPS op, void *data, const char src[],
@@ -20,6 +21,7 @@ DEFINE_SUITE();
 SETUP_ONCE()
 {
 	stub_colmgr();
+	assert_success(bg_init());
 
 	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.base = 1024;

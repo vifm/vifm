@@ -133,8 +133,6 @@ static void get_off_job_bar(bg_job_t *job);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 		uintptr_t err, uintptr_t data, BgJobType type, int with_bg_op);
 static void * background_task_bootstrap(void *arg);
-static void set_current_job(bg_job_t *job);
-static void make_current_job_key(void);
 static int update_job_status(bg_job_t *job);
 static void mark_job_finished(bg_job_t *job, int exit_code);
 static int bg_op_cancel(bg_op_t *bg_op);
@@ -148,19 +146,25 @@ static pthread_mutex_t new_err_jobs_lock = PTHREAD_MUTEX_INITIALIZER;
 /* Conditional variable to signal availability of new jobs in new_err_jobs. */
 static pthread_cond_t new_err_jobs_cond = PTHREAD_COND_INITIALIZER;
 
-/* Thread local storage for bg_job_t associated with active thread. */
+/* Thread-local storage for bg_job_t associated with active thread. */
 static pthread_key_t current_job;
 
-void
+int
 bg_init(void)
 {
-	pthread_t id;
-	int err = pthread_create(&id, NULL, &error_thread, NULL);
-	assert(err == 0);
-	(void)err;
+	/* Create thread-local storage before starting any background threads. */
+	if(pthread_key_create(&current_job, NULL) != 0)
+	{
+		return 1;
+	}
 
-	/* Initialize state for the main thread. */
-	set_current_job(NULL);
+	pthread_t id;
+	if(pthread_create(&id, NULL, &error_thread, NULL) != 0)
+	{
+		return 1;
+	}
+
+	return 0;
 }
 
 void
@@ -189,17 +193,18 @@ bg_check(void)
 	{
 		job_check(p);
 
-		if(pthread_spin_lock(&p->status_lock) != 0)
-		{
-			prev = p;
-			p = p->next;
-			continue;
-		}
-		int running = p->running;
-		int can_remove = (!p->running && p->use_count == 0);
-		(void)pthread_spin_unlock(&p->status_lock);
+		/* In case of lock failure, assume the job is active. */
+		int running = 1;
+		int can_remove = 0;
 
-		active_jobs += (running != 0 && p->in_menu);
+		if(pthread_spin_lock(&p->status_lock) == 0)
+		{
+			running = p->running;
+			can_remove = (!running && p->use_count == 0);
+			(void)pthread_spin_unlock(&p->status_lock);
+		}
+
+		active_jobs += (running && p->in_menu);
 
 		if(!running)
 		{
@@ -266,14 +271,14 @@ job_check(bg_job_t *job)
 	/* Display portions of errors from the job while there are any. */
 	do
 	{
-		if(pthread_spin_lock(&job->errors_lock) != 0)
+		new_errors = NULL;
+		if(pthread_spin_lock(&job->errors_lock) == 0)
 		{
-			break;
+			new_errors = job->new_errors;
+			job->new_errors = NULL;
+			job->new_errors_len = 0U;
+			(void)pthread_spin_unlock(&job->errors_lock);
 		}
-		new_errors = job->new_errors;
-		job->new_errors = NULL;
-		job->new_errors_len = 0U;
-		(void)pthread_spin_unlock(&job->errors_lock);
 
 		if(new_errors != NULL && !job->skip_errors)
 		{
@@ -1413,33 +1418,20 @@ background_task_bootstrap(void *arg)
 
 	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
-	set_current_job(task_args->job);
 
-	task_args->func(&task_args->job->bg_op, task_args->args);
-
-	/* Mark task as finished normally. */
-	mark_job_finished(task_args->job, 0);
+	if(pthread_setspecific(current_job, task_args->job) == 0)
+	{
+		task_args->func(&task_args->job->bg_op, task_args->args);
+		mark_job_finished(task_args->job, /*exit_code=*/0);
+	}
+	else
+	{
+		mark_job_finished(task_args->job, /*exit_code=*/1);
+	}
 
 	free(task_args);
 
 	return NULL;
-}
-
-/* Stores pointer to the job in a thread-local storage. */
-static void
-set_current_job(bg_job_t *job)
-{
-	static pthread_once_t once = PTHREAD_ONCE_INIT;
-	pthread_once(&once, &make_current_job_key);
-
-	(void)pthread_setspecific(current_job, job);
-}
-
-/* current_job initializer for pthread_once(). */
-static void
-make_current_job_key(void)
-{
-	(void)pthread_key_create(&current_job, NULL);
 }
 
 int
@@ -1662,15 +1654,13 @@ bg_job_decref(bg_job_t *job)
 	}
 }
 
-void
+int
 bg_op_lock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
 	assert(job->with_bg_op && "This function requires bg_op data.");
 
-	int error = pthread_spin_lock(&job->bg_op_lock);
-	assert(error == 0 && "Lock failure in bg_op_lock()");
-	(void)error;
+	return (pthread_spin_lock(&job->bg_op_lock) == 0);
 }
 
 void
@@ -1693,11 +1683,13 @@ bg_op_changed(bg_op_t *bg_op)
 void
 bg_op_set_descr(bg_op_t *bg_op, const char descr[])
 {
-	bg_op_lock(bg_op);
-	replace_string(&bg_op->descr, descr);
-	bg_op_unlock(bg_op);
+	if(bg_op_lock(bg_op))
+	{
+		replace_string(&bg_op->descr, descr);
+		bg_op_unlock(bg_op);
 
-	bg_op_changed(bg_op);
+		bg_op_changed(bg_op);
+	}
 }
 
 /* Convenience method to cancel background job.  Returns previous version of the
@@ -1705,26 +1697,27 @@ bg_op_set_descr(bg_op_t *bg_op, const char descr[])
 static int
 bg_op_cancel(bg_op_t *bg_op)
 {
-	int was_cancelled;
+	int was_cancelled = 0;
+	if(bg_op_lock(bg_op))
+	{
+		was_cancelled = bg_op->cancelled;
+		bg_op->cancelled = 1;
+		bg_op_unlock(bg_op);
 
-	bg_op_lock(bg_op);
-	was_cancelled = bg_op->cancelled;
-	bg_op->cancelled = 1;
-	bg_op_unlock(bg_op);
-
-	bg_op_changed(bg_op);
+		bg_op_changed(bg_op);
+	}
 	return was_cancelled;
 }
 
 int
 bg_op_cancelled(bg_op_t *bg_op)
 {
-	int cancelled;
-
-	bg_op_lock(bg_op);
-	cancelled = bg_op->cancelled;
-	bg_op_unlock(bg_op);
-
+	int cancelled = 0;
+	if(bg_op_lock(bg_op))
+	{
+		cancelled = bg_op->cancelled;
+		bg_op_unlock(bg_op);
+	}
 	return cancelled;
 }
 

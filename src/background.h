@@ -134,8 +134,8 @@ typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 /* List of background jobs. */
 extern bg_job_t *bg_jobs;
 
-/* Prepare background unit for the work. */
-void bg_init(void);
+/* Prepare background unit for the work.  Returns zero on success. */
+int bg_init(void);
 
 /* Creates background job running external command.  Returns zero on success,
  * otherwise non-zero is returned.  If *input is not NULL, it's set to input
@@ -217,8 +217,8 @@ void bg_job_decref(bg_job_t *job);
 
 /* Temporary locks bg_op_t structure to ensure that it's not modified by
  * anyone during reading/updating its fields.  The structure must be part of
- * bg_job_t. */
-void bg_op_lock(bg_op_t *bg_op);
+ * bg_job_t.  Returns non-zero on success. */
+int bg_op_lock(bg_op_t *bg_op);
 
 /* Unlocks bg_op_t structure.  The structure must be part of bg_job_t. */
 void bg_op_unlock(bg_op_t *bg_op);
