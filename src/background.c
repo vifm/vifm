@@ -271,14 +271,14 @@ job_check(bg_job_t *job)
 	/* Display portions of errors from the job while there are any. */
 	do
 	{
-		if(pthread_spin_lock(&job->errors_lock) != 0)
+		new_errors = NULL;
+		if(pthread_spin_lock(&job->errors_lock) == 0)
 		{
-			break;
+			new_errors = job->new_errors;
+			job->new_errors = NULL;
+			job->new_errors_len = 0U;
+			(void)pthread_spin_unlock(&job->errors_lock);
 		}
-		new_errors = job->new_errors;
-		job->new_errors = NULL;
-		job->new_errors_len = 0U;
-		(void)pthread_spin_unlock(&job->errors_lock);
 
 		if(new_errors != NULL && !job->skip_errors)
 		{
