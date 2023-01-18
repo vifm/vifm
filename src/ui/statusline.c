@@ -977,10 +977,14 @@ format_job_bar(void)
 	size_t max_width;
 	char **descrs;
 
-	descrs = take_job_descr_snapshot();
-
 	bar_text[0] = '\0';
 	text_width = 0U;
+
+	descrs = take_job_descr_snapshot();
+	if(descrs == NULL)
+	{
+		return bar_text;
+	}
 
 	/* The check of stage is for tests. */
 	max_width = (curr_stats.load_stage < 2) ? 80 : getmaxx(job_bar);
@@ -1020,14 +1024,18 @@ format_job_bar(void)
 }
 
 /* Makes snapshot of current job descriptions.  Returns array of length
- * nbar_jobs which should be freed via free_string_array(). */
+ * nbar_jobs which should be freed via free_string_array() or NULL.  The array
+ * can contain NULLs. */
 static char **
 take_job_descr_snapshot(void)
 {
-	size_t i;
-	char **descrs;
+	char **descrs = reallocarray(NULL, nbar_jobs, sizeof(*descrs));
+	if(descrs == NULL)
+	{
+		return NULL;
+	}
 
-	descrs = reallocarray(NULL, nbar_jobs, sizeof(*descrs));
+	size_t i;
 	for(i = 0U; i < nbar_jobs; ++i)
 	{
 		if(bg_op_lock(bar_jobs[i]))
