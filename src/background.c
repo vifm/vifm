@@ -1654,15 +1654,13 @@ bg_job_decref(bg_job_t *job)
 	}
 }
 
-void
+int
 bg_op_lock(bg_op_t *bg_op)
 {
 	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
 	assert(job->with_bg_op && "This function requires bg_op data.");
 
-	int error = pthread_spin_lock(&job->bg_op_lock);
-	assert(error == 0 && "Lock failure in bg_op_lock()");
-	(void)error;
+	return (pthread_spin_lock(&job->bg_op_lock) == 0);
 }
 
 void
@@ -1685,11 +1683,13 @@ bg_op_changed(bg_op_t *bg_op)
 void
 bg_op_set_descr(bg_op_t *bg_op, const char descr[])
 {
-	bg_op_lock(bg_op);
-	replace_string(&bg_op->descr, descr);
-	bg_op_unlock(bg_op);
+	if(bg_op_lock(bg_op))
+	{
+		replace_string(&bg_op->descr, descr);
+		bg_op_unlock(bg_op);
 
-	bg_op_changed(bg_op);
+		bg_op_changed(bg_op);
+	}
 }
 
 /* Convenience method to cancel background job.  Returns previous version of the
@@ -1697,26 +1697,27 @@ bg_op_set_descr(bg_op_t *bg_op, const char descr[])
 static int
 bg_op_cancel(bg_op_t *bg_op)
 {
-	int was_cancelled;
+	int was_cancelled = 0;
+	if(bg_op_lock(bg_op))
+	{
+		was_cancelled = bg_op->cancelled;
+		bg_op->cancelled = 1;
+		bg_op_unlock(bg_op);
 
-	bg_op_lock(bg_op);
-	was_cancelled = bg_op->cancelled;
-	bg_op->cancelled = 1;
-	bg_op_unlock(bg_op);
-
-	bg_op_changed(bg_op);
+		bg_op_changed(bg_op);
+	}
 	return was_cancelled;
 }
 
 int
 bg_op_cancelled(bg_op_t *bg_op)
 {
-	int cancelled;
-
-	bg_op_lock(bg_op);
-	cancelled = bg_op->cancelled;
-	bg_op_unlock(bg_op);
-
+	int cancelled = 0;
+	if(bg_op_lock(bg_op))
+	{
+		cancelled = bg_op->cancelled;
+		bg_op_unlock(bg_op);
+	}
 	return cancelled;
 }
 
