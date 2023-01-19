@@ -46,6 +46,7 @@
 #include "fops_cpmv.h"
 #include "fops_misc.h"
 #include "running.h"
+#include "undo.h"
 
 /*
  * Optimization for content-based matching.
@@ -112,6 +113,7 @@ static int files_are_identical(const char a[], const char b[]);
 static void put_file_id(trie_t *trie, const char path[],
 		const char fingerprint[], int id, int is_partial, CompareType ct);
 static void free_compare_records(void *ptr);
+static int compare_move_entry(view_t *from, view_t *to);
 
 int
 compare_two_panes(CompareType ct, ListType lt, int flags)
@@ -1172,6 +1174,35 @@ free_compare_records(void *ptr)
 int
 compare_move(view_t *from, view_t *to)
 {
+	const CompareType flags = from->custom.diff_cmp_flags;
+	if(from->custom.type != CV_DIFF || !(flags & CF_GROUP_PATHS))
+	{
+		ui_sb_err("Not in diff mode with path grouping");
+		return 1;
+	}
+
+	/* We're going at least to try to update one of the views (which might refer
+	 * to the same directory), so schedule a reload. */
+	ui_view_schedule_reload(from);
+	ui_view_schedule_reload(to);
+
+	char undo_msg[2*PATH_MAX + 32];
+	snprintf(undo_msg, sizeof(undo_msg), "Diff apply %s -> %s",
+			replace_home_part(flist_get_dir(from)),
+			replace_home_part(flist_get_dir(to)));
+
+	un_group_open(undo_msg);
+	int save_msg = compare_move_entry(from, to);
+	un_group_close();
+
+	return save_msg;
+}
+
+/* Moves current file from one view to the other.  Returns non-zero if status
+ * bar message should be preserved. */
+static int
+compare_move_entry(view_t *from, view_t *to)
+{
 	char from_path[PATH_MAX + 1], to_path[PATH_MAX + 1];
 	char *from_fingerprint, *to_fingerprint;
 
@@ -1181,27 +1212,16 @@ compare_move(view_t *from, view_t *to)
 	dir_entry_t *const curr = &from->dir_entry[from->list_pos];
 	dir_entry_t *const other = &to->dir_entry[from->list_pos];
 
-	if(from->custom.type != CV_DIFF || !(flags & CF_GROUP_PATHS))
-	{
-		ui_sb_err("Not in diff mode with path grouping");
-		return 1;
-	}
-
 	if(curr->id == other->id && !fentry_is_fake(curr) && !fentry_is_fake(other))
 	{
 		/* Nothing to do if files are already equal. */
 		return 0;
 	}
 
-	/* We're going at least to try to update one of views (which might refer to
-	 * the same directory), so schedule a reload. */
-	ui_view_schedule_reload(from);
-	ui_view_schedule_reload(to);
-
 	if(fentry_is_fake(curr))
 	{
 		/* Just remove the other file (it can't be fake entry too). */
-		return fops_delete_current(to, 1, 0);
+		return fops_delete_current(to, /*use_trash=*/1, /*nested=*/0);
 	}
 
 	get_full_path_of(curr, sizeof(from_path), from_path);

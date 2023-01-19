@@ -202,7 +202,6 @@ fops_delete(view_t *view, int reg, int use_trash)
 int
 fops_delete_current(view_t *view, int use_trash, int nested)
 {
-	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	dir_entry_t *entry;
 	ops_t *ops;
 	const char *const top_dir = get_top_dir(view);
@@ -218,13 +217,6 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 		return 0;
 	}
 
-	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
-			replace_home_part(curr_dir));
-	if(!nested)
-	{
-		un_group_open(undo_msg);
-	}
-
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
 			curr_dir);
 
@@ -232,12 +224,6 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 
 	fops_progress_msg("Deleting files", 0, 1);
 	(void)delete_file(entry, ops, BLACKHOLE_REG_NAME, use_trash, nested);
-
-	if(!nested)
-	{
-		un_group_close();
-		ui_views_reload_filelists();
-	}
 
 	ui_sb_msgf("%d %s %celeted%s", ops->succeeded,
 			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',

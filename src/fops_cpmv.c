@@ -217,7 +217,6 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int flags)
 void
 fops_replace(view_t *view, const char dst[], int force)
 {
-	char undo_msg[2*PATH_MAX + 32];
 	dir_entry_t *entry;
 	char dst_dir[PATH_MAX + 1];
 	char src_full[PATH_MAX + 1];
@@ -240,14 +239,11 @@ fops_replace(view_t *view, const char dst[], int force)
 
 	ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), dst_dir);
 
-	snprintf(undo_msg, sizeof(undo_msg), "Copying %s to %s",
-			replace_home_part(src_full), dst_dir);
-
-	un_group_open(undo_msg);
-
+	/* Deleting it explicitly instead of letting cp_file() do it to move the file
+	 * to trash and make operation reversible. */
 	if(path_exists(dst, NODEREF) && force)
 	{
-		(void)fops_delete_current(other, 1, 1);
+		(void)fops_delete_current(other, /*use_trash=*/1, /*nested=*/1);
 	}
 
 	fops_progress_msg("Copying files", 0, 1);
@@ -260,11 +256,10 @@ fops_replace(view_t *view, const char dst[], int force)
 
 	if(!ui_cancellation_requested())
 	{
+		/* Not forcing as destination path shouldn't exist. */
 		(void)cp_file(entry->origin, dst_dir, entry->name, fname, CMLO_COPY, 1, ops,
-				1);
+				/*force=*/0);
 	}
-
-	un_group_close();
 
 	ui_view_schedule_reload(other);
 
