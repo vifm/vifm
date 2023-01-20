@@ -416,6 +416,29 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 	}
 }
 
+TEST(overwrite_removal_handles_errors, IF(regular_unix_user))
+{
+	io_args_t args = {
+		.arg1.src = TEST_DATA_PATH "/read/two-lines",
+		.arg2.dst = SANDBOX_PATH "/file",
+		.arg3.crs = IO_CRS_REPLACE_FILES,
+	};
+	ioe_errlst_init(&args.result.errors);
+
+	create_test_file(SANDBOX_PATH "/file");
+
+	assert_success(chmod(SANDBOX_PATH, 0000));
+	assert_int_equal(IO_RES_FAILED, iop_cp(&args));
+	assert_success(chmod(SANDBOX_PATH, 0777));
+
+	assert_int_equal(1, args.result.errors.error_count);
+	assert_string_equal("Failed to unlink file",
+			args.result.errors.errors[0].msg);
+	ioe_errlst_free(&args.result.errors);
+
+	remove_file(SANDBOX_PATH "/file");
+}
+
 /* Windows lacks definitions of some declarations. */
 #ifndef _WIN32
 
