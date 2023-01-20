@@ -113,7 +113,7 @@ static int files_are_identical(const char a[], const char b[]);
 static void put_file_id(trie_t *trie, const char path[],
 		const char fingerprint[], int id, int is_partial, CompareType ct);
 static void free_compare_records(void *ptr);
-static int compare_move_entry(view_t *from, view_t *to);
+static int compare_move_entry(view_t *from, view_t *to, int idx);
 
 int
 compare_two_panes(CompareType ct, ListType lt, int flags)
@@ -1192,16 +1192,16 @@ compare_move(view_t *from, view_t *to)
 			replace_home_part(flist_get_dir(to)));
 
 	un_group_open(undo_msg);
-	int save_msg = compare_move_entry(from, to);
+	int save_msg = compare_move_entry(from, to, from->list_pos);
 	un_group_close();
 
 	return save_msg;
 }
 
-/* Moves current file from one view to the other.  Returns non-zero if status
- * bar message should be preserved. */
+/* Moves a file identified by an entry from one view to the other.  Returns
+ * non-zero if status bar message should be preserved. */
 static int
-compare_move_entry(view_t *from, view_t *to)
+compare_move_entry(view_t *from, view_t *to, int idx)
 {
 	char from_path[PATH_MAX + 1], to_path[PATH_MAX + 1];
 	char *from_fingerprint, *to_fingerprint;
@@ -1209,8 +1209,8 @@ compare_move_entry(view_t *from, view_t *to)
 	const CompareType ct = from->custom.diff_cmp_type;
 	const CompareType flags = from->custom.diff_cmp_flags;
 
-	dir_entry_t *const curr = &from->dir_entry[from->list_pos];
-	dir_entry_t *const other = &to->dir_entry[from->list_pos];
+	dir_entry_t *const curr = &from->dir_entry[idx];
+	dir_entry_t *const other = &to->dir_entry[idx];
 
 	if(curr->id == other->id && !fentry_is_fake(curr) && !fentry_is_fake(other))
 	{
@@ -1221,35 +1221,15 @@ compare_move_entry(view_t *from, view_t *to)
 	if(fentry_is_fake(curr))
 	{
 		/* Just remove the other file (it can't be fake entry too). */
-		return fops_delete_current(to, /*use_trash=*/1, /*nested=*/0);
+		return fops_delete_entry(to, other, /*use_trash=*/1, /*nested=*/0);
 	}
 
 	get_full_path_of(curr, sizeof(from_path), from_path);
 	get_full_path_of(other, sizeof(to_path), to_path);
 
-	if(fentry_is_fake(other))
-	{
-		char to_path[PATH_MAX + 1];
-		char canonical[PATH_MAX + 1];
-		snprintf(to_path, sizeof(to_path), "%s/%s/%s", flist_get_dir(to),
-				curr->origin + strlen(flist_get_dir(from)), curr->name);
-		canonicalize_path(to_path, canonical, sizeof(canonical));
-
-		/* Copy current file to position of the other one using relative path with
-		 * different base. */
-		fops_replace(from, canonical, 0);
-
-		/* Update the other entry to not be fake. */
-		remove_last_path_component(canonical);
-		replace_string(&other->name, curr->name);
-		replace_string(&other->origin, canonical);
-	}
-	else
-	{
-		/* Overwrite file in the other pane with corresponding file from current
-		 * pane. */
-		fops_replace(from, to_path, 1);
-	}
+	/* Overwrite file in the other pane with corresponding file from current
+	 * pane. */
+	fops_replace_entry(from, curr, to, other);
 
 	/* Obtaining file fingerprint relies on size field of entries, so try to load
 	 * it and ignore if it fails. */

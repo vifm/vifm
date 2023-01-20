@@ -200,9 +200,8 @@ fops_delete(view_t *view, int reg, int use_trash)
 }
 
 int
-fops_delete_current(view_t *view, int use_trash, int nested)
+fops_delete_entry(view_t *view, dir_entry_t *entry, int use_trash, int nested)
 {
-	dir_entry_t *entry;
 	ops_t *ops;
 	const char *const top_dir = get_top_dir(view);
 	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
@@ -219,8 +218,6 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
 			curr_dir);
-
-	entry = &view->dir_entry[view->list_pos];
 
 	fops_progress_msg("Deleting files", 0, 1);
 	(void)delete_file(entry, ops, BLACKHOLE_REG_NAME, use_trash, nested);
