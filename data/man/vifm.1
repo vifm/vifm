@@ -1,4 +1,4 @@
-.TH VIFM 1 "14 January 2022" "vifm 0.12.1"
+.TH VIFM 1 "20 January 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -705,9 +705,12 @@ undo last change.
 redo last change.
 .TP
 .BI dp
-in compare view of "ofboth grouppaths" kind, makes corresponding entry of the
-other pane equal to the current one.  The semantics is as follows:
- \- nothing done for identical entries
+in compare view of "ofboth grouppaths" kind makes corresponding entries
+of the other pane equal to the current one.  If at least one file is
+selected, the command processes selection, otherwise current file.
+.br
+The semantics is as follows:
+ \- nothing is done for identical entries
  \- if file is missing in current view, its pair gets removed
  \- if file is missing or differs in other view, it's replaced
  \- file pairs are defined by matching relative paths

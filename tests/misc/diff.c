@@ -19,6 +19,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/compare.h"
 #include "../../src/event_loop.h"
+#include "../../src/flist_sel.h"
 #include "../../src/ops.h"
 #include "../../src/status.h"
 
@@ -187,7 +188,21 @@ TEST(moving_equal_does_nothing)
 	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
 }
 
-TEST(diff_stats_are_correct_and_stays_correct)
+TEST(can_move_selection)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
+	flist_sel_count(&lwin, 0, lwin.list_rows);
+	(void)compare_move(&lwin, &rwin);
+
+	remove_file(SANDBOX_PATH "/same-content-different-name-1");
+	remove_file(SANDBOX_PATH "/same-name-different-content");
+	remove_file(SANDBOX_PATH "/same-name-same-content");
+}
+
+TEST(diff_stats_are_correct_and_stay_correct)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");

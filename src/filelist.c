@@ -173,8 +173,8 @@ static entries_t flist_list_in(view_t *view, const char path[], int only_dirs,
 		int can_include_parent);
 static dir_entry_t * pick_sibling(view_t *view, entries_t parent_dirs,
 		int offset, int wrap, int *wrapped);
-static int iter_entries(view_t *view, dir_entry_t **entry,
-		entry_predicate pred);
+static int iter_entries(view_t *view, dir_entry_t **entry, entry_predicate pred,
+		int valid_only);
 static int mark_selected(view_t *view);
 static int set_position_by_path(view_t *view, const char path[]);
 static int flist_load_tree_internal(view_t *view, const char path[], int reload,
@@ -3509,27 +3509,28 @@ fentry_get_size(const view_t *view, const dir_entry_t *entry)
 int
 iter_selected_entries(view_t *view, dir_entry_t **entry)
 {
-	return iter_entries(view, entry, &is_entry_selected);
+	return iter_entries(view, entry, &is_entry_selected, /*valid_only=*/1);
 }
 
 int
 iter_marked_entries(view_t *view, dir_entry_t **entry)
 {
-	return iter_entries(view, entry, &is_entry_marked);
+	return iter_entries(view, entry, &is_entry_marked, /*valid_only=*/1);
 }
 
 /* Implements iteration over the entries which match specific predicate.
  * Returns non-zero if matching entry is found and is loaded to *entry,
  * otherwise it's set to NULL and zero is returned. */
 static int
-iter_entries(view_t *view, dir_entry_t **entry, entry_predicate pred)
+iter_entries(view_t *view, dir_entry_t **entry, entry_predicate pred,
+		int valid_only)
 {
 	int next = (*entry == NULL) ? 0 : (*entry - view->dir_entry + 1);
 
 	while(next < view->list_rows)
 	{
 		dir_entry_t *const e = &view->dir_entry[next];
-		if(fentry_is_valid(e) && pred(e))
+		if((!valid_only || fentry_is_valid(e)) && pred(e))
 		{
 			*entry = e;
 			return 1;
@@ -3563,6 +3564,18 @@ iter_selection_or_current(view_t *view, dir_entry_t **entry)
 		return *entry != NULL;
 	}
 	return iter_selected_entries(view, entry);
+}
+
+int
+iter_selection_or_current_any(view_t *view, dir_entry_t **entry)
+{
+	if(view->selected_files == 0)
+	{
+		dir_entry_t *const curr = get_current_entry(view);
+		*entry = (*entry == NULL ? curr : NULL);
+		return *entry != NULL;
+	}
+	return iter_entries(view, entry, &is_entry_selected, /*valid_only=*/0);
 }
 
 int

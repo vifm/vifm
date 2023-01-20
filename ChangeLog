@@ -62,6 +62,9 @@
 	Provide basic instructions in the documentation on how mappings work.
 	Thanks to dmocek.
 
+	Extended do and dp keys to process selection.  Thanks to Mark S. (a.k.a.
+	Markuzcha).
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 

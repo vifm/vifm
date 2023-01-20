@@ -1191,8 +1191,18 @@ compare_move(view_t *from, view_t *to)
 			replace_home_part(flist_get_dir(from)),
 			replace_home_part(flist_get_dir(to)));
 
+	int save_msg = 0;
 	un_group_open(undo_msg);
-	int save_msg = compare_move_entry(from, to, from->list_pos);
+
+	dir_entry_t *entry = NULL;
+	while(iter_selection_or_current_any(curr_view, &entry))
+	{
+		if(compare_move_entry(from, to, entry_to_pos(curr_view, entry)))
+		{
+			save_msg = 1;
+		}
+	}
+
 	un_group_close();
 
 	return save_msg;
