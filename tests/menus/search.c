@@ -1,19 +1,15 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() symlink() */
-
-#include <stdlib.h> /* remove() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strdup() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
-#include "../../src/compat/fs_limits.h"
 #include "../../src/menus/menus.h"
-#include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
+
+/* This tests search without activating the mode. */
 
 static menu_data_t m;
 
@@ -29,30 +25,6 @@ SETUP()
 TEARDOWN()
 {
 	menus_reset_data(&m);
-}
-
-TEST(can_navigate_to_broken_symlink, IF(not_windows))
-{
-	char *saved_cwd;
-	char buf[PATH_MAX + 1];
-
-	strcpy(lwin.curr_dir, ".");
-
-	saved_cwd = save_cwd();
-	assert_success(chdir(SANDBOX_PATH));
-
-	/* symlink() is not available on Windows, but other code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("/wrong/path", "broken-link"));
-#endif
-
-	make_abs_path(buf, sizeof(buf), SANDBOX_PATH , "broken-link:", saved_cwd);
-	/* Were trying to open broken link, which will fail, but the parsing part
-	 * should succeed. */
-	restore_cwd(saved_cwd);
-	assert_success(menus_goto_file(&m, &lwin, buf, 1));
-
-	assert_success(remove(SANDBOX_PATH "/broken-link"));
 }
 
 TEST(nothing_is_searched_if_no_pattern)

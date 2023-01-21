@@ -17,6 +17,8 @@
 #include "../../src/filelist.h"
 #include "../../src/status.h"
 
+/* This tests various menus and generic things that need mode activation. */
+
 SETUP()
 {
 	conf_setup();
