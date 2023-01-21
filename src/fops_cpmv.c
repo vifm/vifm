@@ -215,8 +215,8 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int flags)
 }
 
 void
-fops_replace_entry(view_t *src, const dir_entry_t *src_entry, view_t *dst,
-		dir_entry_t *dst_entry)
+fops_replace_entry(ops_t *ops, view_t *src, const dir_entry_t *src_entry,
+		view_t *dst, dir_entry_t *dst_entry)
 {
 	void *cp = (void *)(size_t)1;
 	int dst_exists = !fentry_is_fake(dst_entry);
@@ -244,24 +244,22 @@ fops_replace_entry(view_t *src, const dir_entry_t *src_entry, view_t *dst,
 		return;
 	}
 
-	ops_t *ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(src), dst_dir);
-
 	/* Deleting it explicitly instead of letting cp_file() do it to move the file
 	 * to trash and make operation reversible. */
 	if(dst_exists && path_exists(dst_full, NODEREF))
 	{
-		(void)fops_delete_entry(dst, dst_entry, /*use_trash=*/1, /*nested=*/1);
+		fops_delete_entry(ops, dst, dst_entry, /*use_trash=*/1, /*nested=*/1);
 	}
 
 	fops_progress_msg("Copying files", 0, 1);
 
-	if(!ui_cancellation_requested() && !is_valid_dir(dst_dir) &&
-			perform_operation(OP_MKDIR, NULL, cp, dst_dir, NULL) == OPS_SUCCEEDED)
+	if(fops_active(ops) && !is_valid_dir(dst_dir) &&
+			perform_operation(OP_MKDIR, ops, cp, dst_dir, NULL) == OPS_SUCCEEDED)
 	{
 		un_group_add_op(OP_MKDIR, cp, NULL, dst_dir, "");
 	}
 
-	if(!ui_cancellation_requested())
+	if(fops_active(ops))
 	{
 		/* Not forcing as destination path shouldn't exist. */
 		if(cp_file_f(src_full, dst_full, CMLO_COPY, /*bg=*/0, /*cancellable=*/1,
@@ -274,8 +272,6 @@ fops_replace_entry(view_t *src, const dir_entry_t *src_entry, view_t *dst,
 	}
 
 	ui_view_schedule_reload(dst);
-
-	fops_free_ops(ops);
 }
 
 /* Adapter for cp_file_f() that accepts paths broken into directory/file

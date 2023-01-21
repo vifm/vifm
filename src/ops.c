@@ -1057,7 +1057,8 @@ exec_io_op(ops_t *ops, IoRes (*func)(io_args_t *), io_args_t *args,
 
 	curr_ops = ops;
 	OpsResult result = OPS_FAILED;
-	switch(func(args))
+	IoRes io_res = func(args);
+	switch(io_res)
 	{
 		case IO_RES_SUCCEEDED: result = OPS_SUCCEEDED; break;
 		case IO_RES_SKIPPED:   result = OPS_SKIPPED; break;
@@ -1073,6 +1074,11 @@ exec_io_op(ops_t *ops, IoRes (*func)(io_args_t *), io_args_t *args,
 
 	if(ops != NULL)
 	{
+		if(io_res == IO_RES_ABORTED)
+		{
+			ops->aborted = 1;
+		}
+
 		size_t len = (ops->errors == NULL) ? 0U : strlen(ops->errors);
 		char *const suffix = ioe_errlst_to_str(&args->result.errors);
 

@@ -199,35 +199,25 @@ fops_delete(view_t *view, int reg, int use_trash)
 	return 1;
 }
 
-int
-fops_delete_entry(view_t *view, dir_entry_t *entry, int use_trash, int nested)
+void
+fops_delete_entry(ops_t *ops, view_t *view, dir_entry_t *entry, int use_trash,
+		int nested)
 {
-	ops_t *ops;
 	const char *const top_dir = get_top_dir(view);
-	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
 	use_trash = use_trash && cfg.use_trash;
 
 	/* This check for the case when we are for sure in the trash. */
 	if(use_trash && top_dir != NULL && trash_has_path(top_dir))
 	{
-		show_error_msg("Can't perform deletion",
-				"Current directory is under trash directory");
-		return 0;
+		show_error_msgf("Can't delete to trash",
+				"Current directory is under trash directory:\n%s",
+				replace_home_part(top_dir));
+		return;
 	}
-
-	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
-			curr_dir);
 
 	fops_progress_msg("Deleting files", 0, 1);
 	(void)delete_file(entry, ops, BLACKHOLE_REG_NAME, use_trash, nested);
-
-	ui_sb_msgf("%d %s %celeted%s", ops->succeeded,
-			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
-			fops_get_cancellation_suffix());
-
-	fops_free_ops(ops);
-	return 1;
 }
 
 /* Removes single file specified by its entry.  Returns zero on success,

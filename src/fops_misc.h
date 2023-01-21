@@ -27,6 +27,7 @@
 #include "utils/test_helpers.h"
 
 struct dir_entry_t;
+struct ops_t;
 struct view_t;
 
 /* Removes marked files (optionally into trash directory) of the view to
@@ -35,10 +36,9 @@ struct view_t;
 int fops_delete(struct view_t *view, int reg, int use_trash);
 
 /* Removes an entry of the view.  Non-zero nested flag means that this is not a
- * standalone operation and is surrounded by other file operations.  Returns new
- * value for save_msg flag. */
-int fops_delete_entry(struct view_t *view, struct dir_entry_t *entry,
-		int use_trash, int nested);
+ * standalone operation and is surrounded by other file operations. */
+void fops_delete_entry(struct ops_t *ops, struct view_t *view,
+		struct dir_entry_t *entry, int use_trash, int nested);
 
 /* Initiates removal of marked files (optionally into trash directory) of the
  * view to specified register.  Returns new value for save_msg flag. */

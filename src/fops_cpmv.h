@@ -21,6 +21,7 @@
 #define VIFM__FOPS_CPMV_H__
 
 struct dir_entry_t;
+struct ops_t;
 struct view_t;
 
 /* Type of copy/move-like operation. */
@@ -49,8 +50,9 @@ int fops_cpmv(struct view_t *view, char *list[], int nlines, CopyMoveLikeOp op,
 
 /* Replaces file entry of one view with another one.  Meant to be used for
  * applying diff changes. */
-void fops_replace_entry(struct view_t *src, const struct dir_entry_t *src_entry,
-		struct view_t *dst, struct dir_entry_t *dst_entry);
+void fops_replace_entry(struct ops_t *ops, struct view_t *src,
+		const struct dir_entry_t *src_entry, struct view_t *dst,
+		struct dir_entry_t *dst_entry);
 
 /* Copies or moves marked files to the other view in background.  Flags is a
  * combination of CMLF_* values.  Returns new value for save_msg flag. */

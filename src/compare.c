@@ -43,6 +43,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "filtering.h"
+#include "fops_common.h"
 #include "fops_cpmv.h"
 #include "fops_misc.h"
 #include "running.h"
@@ -113,7 +114,7 @@ static int files_are_identical(const char a[], const char b[]);
 static void put_file_id(trie_t *trie, const char path[],
 		const char fingerprint[], int id, int is_partial, CompareType ct);
 static void free_compare_records(void *ptr);
-static int compare_move_entry(view_t *from, view_t *to, int idx);
+static void compare_move_entry(ops_t *ops, view_t *from, view_t *to, int idx);
 
 int
 compare_two_panes(CompareType ct, ListType lt, int flags)
@@ -1181,37 +1182,50 @@ compare_move(view_t *from, view_t *to)
 		return 1;
 	}
 
+	char *from_dir = strdup(replace_home_part(flist_get_dir(from)));
+	char *to_dir = strdup(replace_home_part(flist_get_dir(to)));
+	if(from_dir == NULL || to_dir == NULL)
+	{
+		free(from_dir);
+		free(to_dir);
+		return 1;
+	}
+
+	char undo_msg[2*PATH_MAX + 32];
+	snprintf(undo_msg, sizeof(undo_msg), "Diff apply %s -> %s", from_dir, to_dir);
+
+	ops_t *ops = fops_get_ops(OP_COPY, "Applying", from_dir, to_dir);
+	free(from_dir);
+	free(to_dir);
+
+	if(ops == NULL)
+	{
+		show_error_msg("Comparison", "Failed to initialize apply operation");
+		return 1;
+	}
+
 	/* We're going at least to try to update one of the views (which might refer
 	 * to the same directory), so schedule a reload. */
 	ui_view_schedule_reload(from);
 	ui_view_schedule_reload(to);
 
-	char undo_msg[2*PATH_MAX + 32];
-	snprintf(undo_msg, sizeof(undo_msg), "Diff apply %s -> %s",
-			replace_home_part(flist_get_dir(from)),
-			replace_home_part(flist_get_dir(to)));
-
-	int save_msg = 0;
 	un_group_open(undo_msg);
 
 	dir_entry_t *entry = NULL;
-	while(iter_selection_or_current_any(curr_view, &entry))
+	while(iter_selection_or_current_any(curr_view, &entry) && fops_active(ops))
 	{
-		if(compare_move_entry(from, to, entry_to_pos(curr_view, entry)))
-		{
-			save_msg = 1;
-		}
+		compare_move_entry(ops, from, to, entry_to_pos(curr_view, entry));
 	}
 
 	un_group_close();
 
-	return save_msg;
+	fops_free_ops(ops);
+	return 0;
 }
 
-/* Moves a file identified by an entry from one view to the other.  Returns
- * non-zero if status bar message should be preserved. */
-static int
-compare_move_entry(view_t *from, view_t *to, int idx)
+/* Moves a file identified by an entry from one view to the other. */
+static void
+compare_move_entry(ops_t *ops, view_t *from, view_t *to, int idx)
 {
 	char from_path[PATH_MAX + 1], to_path[PATH_MAX + 1];
 	char *from_fingerprint, *to_fingerprint;
@@ -1225,13 +1239,14 @@ compare_move_entry(view_t *from, view_t *to, int idx)
 	if(curr->id == other->id && !fentry_is_fake(curr) && !fentry_is_fake(other))
 	{
 		/* Nothing to do if files are already equal. */
-		return 0;
+		return;
 	}
 
 	if(fentry_is_fake(curr))
 	{
 		/* Just remove the other file (it can't be fake entry too). */
-		return fops_delete_entry(to, other, /*use_trash=*/1, /*nested=*/0);
+		fops_delete_entry(ops, to, other, /*use_trash=*/1, /*nested=*/0);
+		return;
 	}
 
 	get_full_path_of(curr, sizeof(from_path), from_path);
@@ -1239,7 +1254,7 @@ compare_move_entry(view_t *from, view_t *to, int idx)
 
 	/* Overwrite file in the other pane with corresponding file from current
 	 * pane. */
-	fops_replace_entry(from, curr, to, other);
+	fops_replace_entry(ops, from, curr, to, other);
 
 	/* Obtaining file fingerprint relies on size field of entries, so try to load
 	 * it and ignore if it fails. */
@@ -1267,8 +1282,6 @@ compare_move_entry(view_t *from, view_t *to, int idx)
 
 	free(from_fingerprint);
 	free(to_fingerprint);
-
-	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
