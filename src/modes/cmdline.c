@@ -1933,10 +1933,9 @@ cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(input_stat.navigating)
 	{
-		if(fpos_can_move_down(curr_view))
+		if(curr_view->list_pos < curr_view->list_rows - 1)
 		{
-			int new_pos = curr_view->list_pos + fpos_get_ver_step(curr_view);
-			fpos_set_pos(curr_view, new_pos);
+			fpos_set_pos(curr_view, curr_view->list_pos + 1);
 		}
 		return;
 	}
@@ -2601,10 +2600,9 @@ cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(input_stat.navigating)
 	{
-		if(fpos_can_move_up(curr_view))
+		if(curr_view->list_pos > 0)
 		{
-			int new_pos = curr_view->list_pos - fpos_get_ver_step(curr_view);
-			fpos_set_pos(curr_view, new_pos);
+			fpos_set_pos(curr_view, curr_view->list_pos - 1);
 		}
 		return;
 	}
