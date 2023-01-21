@@ -864,6 +864,7 @@ retry_wrapper(iop_func func, io_args_t *args)
 				break;
 
 			case IO_ECR_BREAK:
+				result = IO_RES_ABORTED;
 				ioe_errlst_splice(&orig_errlist, &args->result.errors);
 				break;
 

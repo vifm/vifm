@@ -32,7 +32,7 @@ TEST(file_removal_error_is_reported_and_logged_once, IF(not_windows))
 		ioe_errlst_init(&args.result.errors);
 
 		ignore_count = 0;
-		assert_int_equal(IO_RES_FAILED, ior_rm(&args));
+		assert_int_equal(IO_RES_ABORTED, ior_rm(&args));
 		assert_int_equal(0, ignore_count);
 
 		/* Second error must be about failure to remove directory, first one is

@@ -26,7 +26,7 @@
 #include "../../utils/path.h"
 #include "../../utils/str.h"
 
-static int traverse_subtree(const char path[], subtree_visitor visitor,
+static VisitResult traverse_subtree(const char path[], subtree_visitor visitor,
 		void *param);
 
 IoRes
@@ -35,27 +35,33 @@ traverse(const char path[], subtree_visitor visitor, void *param)
 	/* Duplication with traverse_subtree(), but this way traverse_subtree() can
 	 * use information from dirent structure to save some operations. */
 
+	VisitResult visit_result;
+
 	/* Treat symbolic links to directories as files as well. */
 	if(is_symlink(path) || !is_dir(path))
 	{
-		return (visitor(path, VA_FILE, param) == VR_OK) ? IO_RES_SUCCEEDED
-		                                                : IO_RES_FAILED;
+		visit_result = visitor(path, VA_FILE, param);
 	}
 	else
 	{
-		return (traverse_subtree(path, visitor, param) == 0) ? IO_RES_SUCCEEDED
-		                                                     : IO_RES_FAILED;
+		visit_result = traverse_subtree(path, visitor, param);
+	}
+
+	switch(visit_result)
+	{
+		case VR_OK:        return IO_RES_SUCCEEDED;
+		case VR_CANCELLED: return IO_RES_ABORTED;
+
+		default:           return IO_RES_FAILED;
 	}
 }
 
-/* A generic subtree traversing.  Returns zero on success, otherwise non-zero is
- * returned. */
-static int
+/* A generic subtree traversing.  Returns status of visitation. */
+static VisitResult
 traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 {
 	DIR *dir;
 	struct dirent *d;
-	int result;
 	VisitResult enter_result;
 
 	dir = os_opendir(path);
@@ -71,7 +77,7 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 		return 1;
 	}
 
-	result = 0;
+	VisitResult result = VR_OK;
 	while((d = os_readdir(dir)) != NULL)
 	{
 		char *full_path;
@@ -85,7 +91,7 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 		if(entry_is_link(full_path, d))
 		{
 			/* Treat symbolic links to directories as files as well. */
-			result = (visitor(full_path, VA_FILE, param) != VR_OK);
+			result = visitor(full_path, VA_FILE, param);
 		}
 		else if(entry_is_dir(full_path, d))
 		{
@@ -93,21 +99,21 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 		}
 		else
 		{
-			result = (visitor(full_path, VA_FILE, param) != VR_OK);
+			result = visitor(full_path, VA_FILE, param);
 		}
 		free(full_path);
 
-		if(result != 0)
+		if(result != VR_OK)
 		{
 			break;
 		}
 	}
 	(void)os_closedir(dir);
 
-	if(result == 0 && enter_result != VR_SKIP_DIR_LEAVE &&
+	if(result == VR_OK && enter_result != VR_SKIP_DIR_LEAVE &&
 			enter_result != VR_CANCELLED)
 	{
-		result = (visitor(path, VA_DIR_LEAVE, param) != VR_OK);
+		result = visitor(path, VA_DIR_LEAVE, param);
 	}
 
 	return result;
