@@ -51,7 +51,7 @@ TEST(file_removal_error_is_reported_and_logged_once)
 	};
 
 	retry_count = 2;
-	assert_int_equal(IO_RES_FAILED, iop_rmfile(&args));
+	assert_int_equal(IO_RES_ABORTED, iop_rmfile(&args));
 	assert_int_equal(0, retry_count);
 
 	/* There are two retry requests, but only one error in the log. */
@@ -69,7 +69,7 @@ TEST(dir_removal_error_is_reported_and_logged_once)
 	};
 
 	retry_count = 2;
-	assert_int_equal(IO_RES_FAILED, iop_rmdir(&args));
+	assert_int_equal(IO_RES_ABORTED, iop_rmdir(&args));
 	assert_int_equal(0, retry_count);
 
 	/* There are two retry requests, but only one error in the log. */
@@ -139,7 +139,7 @@ TEST(retry_does_not_mess_up_estimations, IF(not_windows))
 	assert_int_equal(9, args.estim->total_bytes);
 
 	retry_count = 2;
-	assert_int_equal(IO_RES_FAILED, iop_rmfile(&args));
+	assert_int_equal(IO_RES_ABORTED, iop_rmfile(&args));
 
 	assert_int_equal(1, args.estim->total_items);
 	assert_int_equal(1, args.estim->current_item);

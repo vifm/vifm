@@ -498,6 +498,8 @@ vr_from_io_res(IoRes result)
 			return VR_OK;
 		case IO_RES_FAILED:
 			return VR_ERROR;
+		case IO_RES_ABORTED:
+			return VR_CANCELLED;
 	}
 
 	return VR_ERROR;

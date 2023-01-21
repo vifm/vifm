@@ -1181,6 +1181,12 @@ time_in_ms(void)
 	return current_time.tv_sec*1000 + current_time.tv_nsec/1000000;
 }
 
+int
+fops_active(const ops_t *ops)
+{
+	return !ops->aborted && !ui_cancellation_requested();
+}
+
 void
 fops_free_ops(ops_t *ops)
 {

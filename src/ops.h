@@ -94,7 +94,7 @@ typedef int (*ops_confirm_func)(const char title[], const char message[]);
 
 /* Description of file operation on a set of files.  Collects information and
  * helps to keep track of progress. */
-typedef struct
+typedef struct ops_t
 {
 	OPS main_op;           /* Primary operation performed on items. */
 	int total;             /* Total number of items to be processed. */
@@ -107,6 +107,7 @@ typedef struct
 	int bg;                /* Executed in background (no user interaction). */
 	struct bg_op_t *bg_op; /* Information for background operation. */
 	char *errors;          /* Multi-line string of errors. */
+	int aborted;           /* Processing should be stopped. */
 
 	/* It's unsafe to access global cfg object from threads performing background
 	 * operations, so copy them and use the copies. */

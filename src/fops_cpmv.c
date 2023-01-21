@@ -215,60 +215,63 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int flags)
 }
 
 void
-fops_replace(view_t *view, const char dst[], int force)
+fops_replace_entry(ops_t *ops, view_t *src, const dir_entry_t *src_entry,
+		view_t *dst, dir_entry_t *dst_entry)
 {
-	char undo_msg[2*PATH_MAX + 32];
-	dir_entry_t *entry;
-	char dst_dir[PATH_MAX + 1];
-	char src_full[PATH_MAX + 1];
-	const char *const fname = get_last_path_component(dst);
-	ops_t *ops;
 	void *cp = (void *)(size_t)1;
-	view_t *const other = (view == curr_view) ? other_view : curr_view;
+	int dst_exists = !fentry_is_fake(dst_entry);
 
-	copy_str(dst_dir, sizeof(dst_dir), dst);
-	remove_last_path_component(dst_dir);
+	char dst_dir[PATH_MAX + 1];
+	if(dst_exists)
+	{
+		copy_str(dst_dir, sizeof(dst_dir), dst_entry->origin);
+	}
+	else
+	{
+		const char *src_tail = src_entry->origin + strlen(flist_get_dir(src));
+		build_path(dst_dir, sizeof(dst_dir), flist_get_dir(dst), src_tail);
+	}
 
-	entry = &view->dir_entry[view->list_pos];
-	get_full_path_of(entry, sizeof(src_full), src_full);
+	char dst_full[PATH_MAX + 1];
+	build_path(dst_full, sizeof(dst_full), dst_dir, src_entry->name);
 
-	if(paths_are_same(src_full, dst))
+	char src_full[PATH_MAX + 1];
+	get_full_path_of(src_entry, sizeof(src_full), src_full);
+
+	if(paths_are_same(src_full, dst_full))
 	{
 		/* Nothing to do if destination and source are the same file. */
 		return;
 	}
 
-	ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), dst_dir);
-
-	snprintf(undo_msg, sizeof(undo_msg), "Copying %s to %s",
-			replace_home_part(src_full), dst_dir);
-
-	un_group_open(undo_msg);
-
-	if(path_exists(dst, NODEREF) && force)
+	/* Deleting it explicitly instead of letting cp_file() do it to move the file
+	 * to trash and make operation reversible. */
+	if(dst_exists && path_exists(dst_full, NODEREF))
 	{
-		(void)fops_delete_current(other, 1, 1);
+		fops_delete_entry(ops, dst, dst_entry, /*use_trash=*/1, /*nested=*/1);
 	}
 
 	fops_progress_msg("Copying files", 0, 1);
 
-	if(!ui_cancellation_requested() && !is_valid_dir(dst_dir) &&
-			perform_operation(OP_MKDIR, NULL, cp, dst_dir, NULL) == OPS_SUCCEEDED)
+	if(fops_active(ops) && !is_valid_dir(dst_dir) &&
+			perform_operation(OP_MKDIR, ops, cp, dst_dir, NULL) == OPS_SUCCEEDED)
 	{
 		un_group_add_op(OP_MKDIR, cp, NULL, dst_dir, "");
 	}
 
-	if(!ui_cancellation_requested())
+	if(fops_active(ops))
 	{
-		(void)cp_file(entry->origin, dst_dir, entry->name, fname, CMLO_COPY, 1, ops,
-				1);
+		/* Not forcing as destination path shouldn't exist. */
+		if(cp_file_f(src_full, dst_full, CMLO_COPY, /*bg=*/0, /*cancellable=*/1,
+					ops, /*force=*/0) == 0 && !dst_exists)
+		{
+			/* Update the destination entry to not be fake. */
+			replace_string(&dst_entry->name, src_entry->name);
+			replace_string(&dst_entry->origin, dst_dir);
+		}
 	}
 
-	un_group_close();
-
-	ui_view_schedule_reload(other);
-
-	fops_free_ops(ops);
+	ui_view_schedule_reload(dst);
 }
 
 /* Adapter for cp_file_f() that accepts paths broken into directory/file

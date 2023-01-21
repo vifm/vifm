@@ -167,6 +167,10 @@ void fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op);
  * newly allocated structure, which should be freed by fops_free_ops(). */
 ops_t * fops_get_bg_ops(OPS main_op, const char descr[], const char dir[]);
 
+/* Checks whether operation should be carried on.  Returns zero if it was
+ * cancelled (via Ctrl-C) or aborted (via error dialog option) by the user. */
+int fops_active(const ops_t *ops);
+
 /* Frees ops structure previously obtained by call to get_ops().  ops can be
  * NULL. */
 void fops_free_ops(ops_t *ops);

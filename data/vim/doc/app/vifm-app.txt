@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 15
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -615,14 +615,20 @@ u - undo last change.                          *vifm-u*
 Ctrl-R - redo last change.                     *vifm-CTRL-R*
 
 dp                                             *vifm-dp*
-    in compare view of "ofboth grouppaths" kind, makes corresponding entry
-    of the other pane equal to the current one.  The semantics is as follows:
-     - nothing done for identical entries
+    in compare view of "ofboth grouppaths" kind makes corresponding entries
+    of the other pane equal to the current one.  If at least one file is
+    selected, the command processes selection, otherwise current file.
+
+    The semantics is as follows:
+     - nothing is done for identical entries
      - if file is missing in current view, its pair gets removed
      - if file is missing or differs in other view, it is replaced
+     - file pairs are defined by matching relative paths
+
     File removal obeys |vifm-'trash'| option.  When the option is enabled, the
     operation can be undone/redone (although results won't be visible
     automatically).
+
     Unlike in Vim, this operation is performed on a single line rather than
     a set of adjacent changes.
 do                                             *vifm-do*

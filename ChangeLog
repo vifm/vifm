@@ -54,6 +54,8 @@
 	Added :amap, :anoremap and :aunmap commands to configure mappings in
 	navigation mode.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
 
+	Added do/dp keys to visual mode since they now work with selection.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
@@ -61,6 +63,9 @@
 
 	Provide basic instructions in the documentation on how mappings work.
 	Thanks to dmocek.
+
+	Extended do and dp keys to process selection.  Thanks to Mark S. (a.k.a.
+	Markuzcha).
 
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.

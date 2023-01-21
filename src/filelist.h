@@ -204,6 +204,8 @@ int iter_marked_entries(view_t *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but when selection is absent
  * current file is processed. */
 int iter_selection_or_current(view_t *view, dir_entry_t **entry);
+/* Version of iter_selected_entries() that doesn't exclude invalid entries. */
+int iter_selection_or_current_any(view_t *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const view_t *view, const dir_entry_t *entry);
