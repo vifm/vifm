@@ -2333,6 +2333,11 @@ order using the '.' operator.  Any whitespace is ignored.
 :redr[aw]                                      *vifm-:redraw* *vifm-:redr*
     redraw the screen immediately.
 
+                                               *vifm-:regedit* *vifm-:rege*
+:rege[dit] [{reg}]
+    edit register contents using external editor (see |vifm-'vicmd'|).
+    If {reg} is omitted, unnamed register will be edited by default.
+
                                                *vifm-:registers* *vifm-:reg*
 :reg[isters]
     display menu with registers content.

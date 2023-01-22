@@ -11,7 +11,6 @@ Basic things:
   * Responsive TUI during blocking operations.
   * Better failed operation messages. (partially done)
   * Make status bar able to display error and info messages at the same time.
-  * Editing registers in Vim.
   * Command to create multiple copies of selected file.
 
 Documentation:

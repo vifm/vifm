@@ -693,3 +693,6 @@ nnoremap j : execute 'normal! j'
 " "registers" should NOT be highlighted in the command below
 set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory "not a comment
            \,dirstack,registers,bookmarks "comment
+
+" :regedit should be highlighted as :command
+regedit _

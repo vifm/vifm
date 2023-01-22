@@ -1,5 +1,7 @@
 0.12.1 to current
 
+	Added :regedit command for external editing of register contents.
+
 	Changed implementation of `:compare grouppaths` to juxtapose only files
 	with identical relative paths.  Patch by Alexandr Keyp (a.k.a. IAmKapuze).
 
