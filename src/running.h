@@ -46,8 +46,9 @@ struct view_t;
 /* Handles opening of current file/selection of the view. */
 void rn_open(struct view_t *view, FileHandleExec exec);
 
-/* Handles opening of current entry of the view as a directory. */
-void rn_enter_dir(struct view_t *view);
+/* Handles opening of current entry of the view as a directory.  Returns zero on
+ * success. */
+int rn_enter_dir(struct view_t *view);
 
 /* Follows file to find its true location (e.g. target of symbolic link) or just
  * opens it. */

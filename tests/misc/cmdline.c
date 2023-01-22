@@ -4,6 +4,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/curses.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
@@ -328,6 +329,25 @@ TEST(filter_navigation)
 
 	cfg.wrap_scan = 0;
 	histories_init(0);
+	conf_teardown();
+}
+
+TEST(navigation_preserves_input_on_enter_failure, IF(regular_unix_user))
+{
+	conf_setup();
+	create_dir(SANDBOX_PATH "/dir");
+	assert_success(os_chmod(SANDBOX_PATH "/dir", 0000));
+
+	cfg.inc_search = 1;
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	(void)vle_keys_exec_timed_out(L"/" WK_C_y L"di" WK_C_m);
+	assert_wstring_equal(L"di", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	remove_dir(SANDBOX_PATH "/dir");
 	conf_teardown();
 }
 

@@ -1698,9 +1698,19 @@ nav_open(void)
 
 	if(is_dir_like)
 	{
-		rn_enter_dir(curr_view);
-		enter_submode(sub_mode, /*initial=*/"", /*reenter=*/1);
-		nav_start(&input_stat);
+		char *initial = to_multibyte(input_stat.line);
+		if(rn_enter_dir(curr_view) == 0)
+		{
+			replace_string(&initial, "");
+		}
+
+		if(initial != NULL)
+		{
+			enter_submode(sub_mode, initial, /*reenter=*/1);
+			nav_start(&input_stat);
+
+			free(initial);
+		}
 	}
 	else
 	{
