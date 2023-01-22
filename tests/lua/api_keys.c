@@ -297,9 +297,10 @@ TEST(keys_add_modes)
 
 	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
 	                                     "    shortcut = 'X',"
-	                                     "    modes = { 'cmdline', 'normal', "
-	                                     "              'visual', 'menus', "
-	                                     "              'dialogs', 'view' },"
+	                                     "    modes = { 'cmdline', 'nav',"
+	                                     "              'normal', 'visual',"
+	                                     "              'menus', 'dialogs',"
+	                                     "              'view' },"
 	                                     "    handler = function() end,"
 	                                     "})"));
 	assert_string_equal("true", ui_sb_last());
