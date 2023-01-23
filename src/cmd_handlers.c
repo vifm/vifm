@@ -3853,6 +3853,10 @@ normal_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
+	vle_mode_t old_primary_mode = vle_mode_get_primary();
+	vle_mode_t old_current_mode = vle_mode_get();
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
+
 	if(cmd_info->emark)
 	{
 		(void)vle_keys_exec_timed_out_no_remap(wide);
@@ -3867,6 +3871,15 @@ normal_cmd(const cmd_info_t *cmd_info)
 	if(modes_is_cmdline_like())
 	{
 		(void)vle_keys_exec_timed_out(WK_C_c);
+	}
+
+	/* Don't restore the mode if input sequence led to a mode change as it was
+	 * probably the intention of the user. */
+	if(vle_mode_is(NORMAL_MODE))
+	{
+		/* Relative order of the calls is important. */
+		vle_mode_set(old_primary_mode, VMT_PRIMARY);
+		vle_mode_set(old_current_mode, VMT_SECONDARY);
 	}
 
 	cmds_preserve_selection();

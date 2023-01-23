@@ -15,6 +15,7 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/cmd_core.h"
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
@@ -329,6 +330,28 @@ TEST(filter_navigation)
 
 	cfg.wrap_scan = 0;
 	histories_init(0);
+	conf_teardown();
+}
+
+TEST(normal_in_autocmd_does_not_break_filter_navigation)
+{
+	conf_setup();
+	assert_success(stats_init(&cfg));
+	cfg.inc_search = 1;
+
+	assert_success(exec_command("autocmd DirEnter * normal ga", curr_view,
+				CIT_COMMAND));
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "tree", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	(void)vle_keys_exec_timed_out(L"=" WK_C_y WK_C_m);
+	assert_string_equal("", curr_view->local_filter.filter.raw);
+
+	assert_success(exec_command("autocmd!", curr_view, CIT_COMMAND));
+	wait_for_bg();
+
 	conf_teardown();
 }
 

@@ -103,6 +103,7 @@ modes_init(void)
 	LOG_FUNC_ENTER;
 
 	vle_keys_init(MODES_COUNT, mode_flags, &stats_silence_ui);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	int i;
 	for(i = 0; i < MODES_COUNT; ++i)
