@@ -310,7 +310,7 @@ menus_set_pos(menu_state_t *ms, int pos)
 static void
 show_position_in_menu(const menu_data_t *m)
 {
-	if(vle_mode_is(CMDLINE_MODE))
+	if(modes_is_cmdline_like())
 	{
 		return;
 	}

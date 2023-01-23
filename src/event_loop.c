@@ -574,7 +574,7 @@ should_check_views_for_changes(void)
 	return !ui_sb_multiline()
 	    && !modes_is_menu_like()
 	    && !modes_is_dialog_like()
-	    && !vle_mode_is(CMDLINE_MODE)
+	    && !modes_is_cmdline_like()
 	    && !suggestions_are_visible;
 }
 

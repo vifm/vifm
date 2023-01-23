@@ -71,6 +71,9 @@ int modes_is_menu_like(void);
 /* Checks if current mode is a dialog.  Returns non-zero if so. */
 int modes_is_dialog_like(void);
 
+/* Returns non-zero if current mode is a command-line like one. */
+int modes_is_cmdline_like(void);
+
 /* Aborts one of menu-like modes if any of them is currently active. */
 void modes_abort_menu_like(void);
 

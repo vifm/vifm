@@ -109,7 +109,7 @@ ui_sb_quick_msg_clear(void)
 		ui_sb_quick_msgf("%s", "");
 	}
 
-	if(vle_mode_is(CMDLINE_MODE))
+	if(modes_is_cmdline_like())
 	{
 		/* Restore previous contents of the status bar. */
 		stats_redraw_later();

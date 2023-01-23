@@ -3861,14 +3861,14 @@ normal_cmd(const cmd_info_t *cmd_info)
 	{
 		(void)vle_keys_exec_timed_out(wide);
 	}
+	free(wide);
 
-	/* Force leaving command-line mode if the wide contains unfinished ":". */
-	if(vle_mode_is(CMDLINE_MODE))
+	/* Force leaving command-line mode if the input contains unfinished ":". */
+	if(modes_is_cmdline_like())
 	{
 		(void)vle_keys_exec_timed_out(WK_C_c);
 	}
 
-	free(wide);
 	cmds_preserve_selection();
 	return 0;
 }
