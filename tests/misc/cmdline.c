@@ -355,6 +355,68 @@ TEST(normal_in_autocmd_does_not_break_filter_navigation)
 	conf_teardown();
 }
 
+TEST(leaving_navigation_does_not_move_cursor)
+{
+	conf_setup();
+	cfg.inc_search = 1;
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "existing-files", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	/* Search. */
+	curr_view->list_pos = 0;
+	(void)vle_keys_exec_timed_out(L"/");
+	/* Empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(0, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(1, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(1, curr_view->list_pos);
+	/* Non-empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y L"a");
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(2, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	/* Filter. */
+	curr_view->list_pos = 0;
+	(void)vle_keys_exec_timed_out(L"=");
+	/* Empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(0, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(1, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(1, curr_view->list_pos);
+	/* Non-empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y L".");
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(2, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	conf_teardown();
+}
+
 TEST(navigation_preserves_input_on_enter_failure, IF(regular_unix_user))
 {
 	conf_setup();

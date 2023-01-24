@@ -685,6 +685,22 @@ ensure_filtered_list_not_empty(view_t *view, dir_entry_t *parent_entry)
 }
 
 void
+local_filter_update_pos(view_t *view)
+{
+	struct local_filter_t *lf = &view->local_filter;
+	if(lf->poshist_len > 0)
+	{
+		const int current_file_pos = lf->in_progress
+		                           ? get_unfiltered_pos(view, view->list_pos)
+		                           : load_unfiltered_list(view);
+		if(current_file_pos >= 0)
+		{
+			lf->poshist[lf->poshist_len - 1] = current_file_pos;
+		}
+	}
+}
+
+void
 local_filter_update_view(view_t *view, int rel_pos)
 {
 	int pos = extract_previously_selected_pos(view);
