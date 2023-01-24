@@ -378,7 +378,7 @@ UNDER_VCS = @IN_GIT_REPO@
 runtests:
 	$(AM_V_GEN)echo 'mkdir -p $(abs_builddir)/../tests/' > $@_ && \
 	echo \
-		'$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ CC="$(CC)"' \
+		'$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ CC="$(CC)" "$$@"' \
 		>> $@_ && \
 	chmod +x $@_ && \
 	mv $@_ $@
