@@ -88,9 +88,8 @@ static void go_to_first_file(view_t *view, char *names[], int count);
 static void update_dir_entry_size(dir_entry_t *entry, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(bg_op_t *bg_op, void *arg);
-static void dir_size(bg_op_t *bg_op, char path[], int force);
+static void dir_size(bg_op_t *bg_op, const char path[], int force);
 static int bg_cancellation_hook(void *arg);
-static void redraw_after_path_change(view_t *view, const char path[]);
 #ifndef _WIN32
 static void change_owner_cb(const char new_owner[], void *arg);
 static int complete_owner(const char str[], void *arg);
@@ -1293,7 +1292,7 @@ dir_size_bg(bg_op_t *bg_op, void *arg)
 /* Calculates directory size and triggers view updates if necessary.  Changes
  * path. */
 static void
-dir_size(bg_op_t *bg_op, char path[], int force)
+dir_size(bg_op_t *bg_op, const char path[], int force)
 {
 	const cancellation_t bg_cancellation_info = {
 		.arg = bg_op,
@@ -1302,10 +1301,10 @@ dir_size(bg_op_t *bg_op, char path[], int force)
 
 	(void)fops_dir_size(path, force, &bg_cancellation_info);
 
-	remove_last_path_component(path);
-
-	redraw_after_path_change(&lwin, path);
-	redraw_after_path_change(&rwin, path);
+	/* Redraw the views unconditionally, because checking their location from a
+	 * background thread will cause a data race. */
+	ui_view_schedule_redraw(&lwin);
+	ui_view_schedule_redraw(&rwin);
 }
 
 /* Implementation of cancellation hook for background tasks. */
@@ -1313,16 +1312,6 @@ static int
 bg_cancellation_hook(void *arg)
 {
 	return bg_op_cancelled(arg);
-}
-
-/* Schedules view redraw in case path change might have affected it. */
-static void
-redraw_after_path_change(view_t *view, const char path[])
-{
-	if(path_starts_with(view->curr_dir, path) || flist_custom_active(view))
-	{
-		ui_view_schedule_redraw(view);
-	}
 }
 
 uint64_t
