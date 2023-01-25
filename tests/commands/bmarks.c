@@ -45,6 +45,11 @@ TEST(tag_with_space_is_rejected)
 	assert_failure(exec_commands("bmark a\\ b", &lwin, CIT_COMMAND));
 }
 
+TEST(emark_with_bookmark_path_only)
+{
+	assert_failure(exec_commands("bmark! /fake/path", &lwin, CIT_COMMAND));
+}
+
 TEST(emark_allows_specifying_bookmark_path)
 {
 	assert_success(exec_commands("bmark! /fake/path tag", &lwin, CIT_COMMAND));
