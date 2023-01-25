@@ -2014,6 +2014,11 @@ delbmarks_cmd(const cmd_info_t *cmd_info)
 	{
 		/* Remove set of bookmarks that include all of the specified tags. */
 		char *const tags = make_tags_list(cmd_info);
+		if(tags == NULL)
+		{
+			return CMDS_ERR_CUSTOM;
+		}
+
 		bmarks_find(tags, &remove_bmark, NULL);
 		free(tags);
 	}

@@ -104,6 +104,8 @@
 
 	Fixed error of :cunabbrev not being visible to the user.
 
+	Fixed segfault on passing invalid tag to :delbmarks.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

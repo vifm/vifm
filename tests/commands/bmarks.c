@@ -88,6 +88,11 @@ TEST(delbmarks_with_args_removes_matching_bookmarks)
 	assert_int_equal(1, count_bmarks());
 }
 
+TEST(delbmarks_tag_with_comma_is_rejected)
+{
+	assert_failure(exec_commands("delbmarks a,b", &lwin, CIT_COMMAND));
+}
+
 TEST(arguments_are_unescaped)
 {
 	assert_success(exec_commands("bmark! /\\*stars\\* tag", &lwin, CIT_COMMAND));
