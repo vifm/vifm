@@ -5,6 +5,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/abbrevs.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
 
@@ -114,6 +115,16 @@ TEST(unabbrev_by_rhs)
 	assert_non_null(vle_abbr_expand(L"lhs", &no_remap));
 	assert_success(exec_commands("cunabbrev rhs", &lwin, CIT_COMMAND));
 	assert_null(vle_abbr_expand(L"lhs", &no_remap));
+}
+
+TEST(unabbrev_error)
+{
+	int no_remap;
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("cunabbrev rhs", &lwin, CIT_COMMAND));
+	assert_null(vle_abbr_expand(L"lhs", &no_remap));
+	assert_string_equal("No such abbreviation: rhs", ui_sb_last());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

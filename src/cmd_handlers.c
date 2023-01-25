@@ -1889,11 +1889,13 @@ cunabbrev_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	const int result = vle_abbr_remove(wargs);
+	const int err = vle_abbr_remove(wargs);
 	free(wargs);
-	if(result != 0)
+
+	if(err != 0)
 	{
-		ui_sb_err("No such abbreviation");
+		ui_sb_errf("No such abbreviation: %s", cmd_info->args);
+		return CMDS_ERR_CUSTOM;
 	}
 	return 0;
 }
