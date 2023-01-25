@@ -4,6 +4,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/curses.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
@@ -14,6 +15,7 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/cmd_core.h"
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
@@ -328,6 +330,109 @@ TEST(filter_navigation)
 
 	cfg.wrap_scan = 0;
 	histories_init(0);
+	conf_teardown();
+}
+
+TEST(normal_in_autocmd_does_not_break_filter_navigation)
+{
+	conf_setup();
+	assert_success(stats_init(&cfg));
+	cfg.inc_search = 1;
+
+	assert_success(exec_command("autocmd DirEnter * normal ga", curr_view,
+				CIT_COMMAND));
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "tree", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	(void)vle_keys_exec_timed_out(L"=" WK_C_y WK_C_m);
+	assert_string_equal("", curr_view->local_filter.filter.raw);
+
+	assert_success(exec_command("autocmd!", curr_view, CIT_COMMAND));
+	wait_for_bg();
+
+	conf_teardown();
+}
+
+TEST(leaving_navigation_does_not_move_cursor)
+{
+	conf_setup();
+	cfg.inc_search = 1;
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "existing-files", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	/* Search. */
+	curr_view->list_pos = 0;
+	(void)vle_keys_exec_timed_out(L"/");
+	/* Empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(0, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(1, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(1, curr_view->list_pos);
+	/* Non-empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y L"a");
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(2, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	/* Filter. */
+	curr_view->list_pos = 0;
+	(void)vle_keys_exec_timed_out(L"=");
+	/* Empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(0, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(1, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(1, curr_view->list_pos);
+	/* Non-empty input. */
+	(void)vle_keys_exec_timed_out(WK_C_y L".");
+	assert_int_equal(1, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_n);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(2, curr_view->list_pos);
+	/* This triggers view cursor update. */
+	(void)vle_keys_exec_timed_out(L"a" WK_C_h);
+	assert_int_equal(2, curr_view->list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	conf_teardown();
+}
+
+TEST(navigation_preserves_input_on_enter_failure, IF(regular_unix_user))
+{
+	conf_setup();
+	create_dir(SANDBOX_PATH "/dir");
+	assert_success(os_chmod(SANDBOX_PATH "/dir", 0000));
+
+	cfg.inc_search = 1;
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	(void)vle_keys_exec_timed_out(L"/" WK_C_y L"di" WK_C_m);
+	assert_wstring_equal(L"di", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	remove_dir(SANDBOX_PATH "/dir");
 	conf_teardown();
 }
 

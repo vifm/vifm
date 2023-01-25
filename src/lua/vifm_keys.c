@@ -169,6 +169,10 @@ parse_modes(vlua_t *vlua, char modes[MODES_COUNT])
 		{
 			modes[CMDLINE_MODE] = 1;
 		}
+		else if(strcmp(name, "nav") == 0)
+		{
+			modes[NAV_MODE] = 1;
+		}
 		else if(strcmp(name, "normal") == 0)
 		{
 			modes[NORMAL_MODE] = 1;

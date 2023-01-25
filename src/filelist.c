@@ -1721,12 +1721,9 @@ populate_dir_list_internal(view_t *view, int reload)
 		return populate_custom_view(view, reload);
 	}
 
-	if(!reload && is_dir_big(view->curr_dir))
+	if(!reload && is_dir_big(view->curr_dir) && !modes_is_cmdline_like())
 	{
-		if(!vle_mode_is(CMDLINE_MODE))
-		{
-			ui_sb_quick_msgf("%s", "Reading directory...");
-		}
+		ui_sb_quick_msgf("%s", "Reading directory...");
 	}
 
 	if(curr_stats.load_stage < 2)
@@ -1785,7 +1782,7 @@ populate_dir_list_internal(view_t *view, int reload)
 		add_parent_dir(view);
 	}
 
-	if(!reload && !vle_mode_is(CMDLINE_MODE))
+	if(!reload && !modes_is_cmdline_like())
 	{
 		ui_sb_clear();
 	}
@@ -2422,14 +2419,14 @@ resort_dir_list(int msg, view_t *view)
 static void
 sort_dir_list(int msg, view_t *view)
 {
-	if(msg && view->list_rows > 2048 && !vle_mode_is(CMDLINE_MODE))
+	if(msg && view->list_rows > 2048 && !modes_is_cmdline_like())
 	{
 		ui_sb_quick_msgf("%s", "Sorting directory...");
 	}
 
 	sort_view(view);
 
-	if(msg && !vle_mode_is(CMDLINE_MODE))
+	if(msg && !modes_is_cmdline_like())
 	{
 		ui_sb_clear();
 	}

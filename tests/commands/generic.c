@@ -13,6 +13,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -410,6 +411,7 @@ TEST(selection_is_not_reset_in_visual_mode)
 
 	assert_true(lwin.dir_entry[0].selected);
 	assert_int_equal(1, lwin.selected_files);
+	assert_true(vle_mode_is(VISUAL_MODE));
 
 	vle_keys_reset();
 }

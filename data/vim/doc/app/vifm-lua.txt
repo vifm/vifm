@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Jan 9
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Jan 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -759,9 +759,9 @@ Possible fields of {key}:
  - "description" (string) (default: "")
    Description of the key.
  - "modes" (array of strings)
-   List of modes to register the key in.  Supported values: cmdline, normal,
-   visual, menus, view and dialogs (sort, attributes, change and file info).
-   Unsupported values are ignored.
+   List of modes to register the key in.  Supported values: cmdline, nav,
+   normal, visual, menus, view and dialogs (sort, attributes, change and file
+   info).  Unsupported values are ignored.
  - "isselector" (boolean) (default: false)
    Whether this handler defines a selector rather than a regular key.
  - "followedby" (string) (default: "none")

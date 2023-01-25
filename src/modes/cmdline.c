@@ -178,7 +178,7 @@ static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 static void init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 		const wchar_t initial[], complete_cmd_func complete,
 		CmdLineSubmode sub_mode, int allow_ee, int prev_mode);
-static void save_view_port(void);
+static void save_view_port(line_stats_t *stat, view_t *view);
 static void set_view_port(void);
 static int is_line_edited(void);
 static void leave_cmdline_mode(int cancelled);
@@ -267,6 +267,7 @@ static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
+static void move_view_cursor(line_stats_t *stat, view_t *view, int new_pos);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void nav_start(line_stats_t *stat);
@@ -895,7 +896,7 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 
 	if(stat->search_mode || sub_mode == CLS_FILTER)
 	{
-		save_view_port();
+		save_view_port(stat, curr_view);
 	}
 
 	wcsncpy(stat->prompt, prompt, ARRAY_LEN(stat->prompt));
@@ -905,12 +906,12 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 
 /* Stores view port parameters (top line, current position). */
 static void
-save_view_port(void)
+save_view_port(line_stats_t *stat, view_t *view)
 {
-	if(input_stat.prev_mode != MENU_MODE)
+	if(stat->prev_mode != MENU_MODE)
 	{
-		input_stat.old_top = curr_view->top_line;
-		input_stat.old_pos = curr_view->list_pos;
+		stat->old_top = view->top_line;
+		stat->old_pos = view->list_pos;
 	}
 	else
 	{
@@ -1698,9 +1699,19 @@ nav_open(void)
 
 	if(is_dir_like)
 	{
-		rn_enter_dir(curr_view);
-		enter_submode(sub_mode, /*initial=*/"", /*reenter=*/1);
-		nav_start(&input_stat);
+		char *initial = to_multibyte(input_stat.line);
+		if(rn_enter_dir(curr_view) == 0)
+		{
+			replace_string(&initial, "");
+		}
+
+		if(initial != NULL)
+		{
+			enter_submode(sub_mode, initial, /*reenter=*/1);
+			nav_start(&input_stat);
+
+			free(initial);
+		}
 	}
 	else
 	{
@@ -1933,10 +1944,9 @@ cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(input_stat.navigating)
 	{
-		if(fpos_can_move_down(curr_view))
+		if(curr_view->list_pos < curr_view->list_rows - 1)
 		{
-			int new_pos = curr_view->list_pos + fpos_get_ver_step(curr_view);
-			fpos_set_pos(curr_view, new_pos);
+			move_view_cursor(&input_stat, curr_view, curr_view->list_pos + 1);
 		}
 		return;
 	}
@@ -2601,10 +2611,9 @@ cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(input_stat.navigating)
 	{
-		if(fpos_can_move_up(curr_view))
+		if(curr_view->list_pos > 0)
 		{
-			int new_pos = curr_view->list_pos - fpos_get_ver_step(curr_view);
-			fpos_set_pos(curr_view, new_pos);
+			move_view_cursor(&input_stat, curr_view, curr_view->list_pos - 1);
 		}
 		return;
 	}
@@ -2617,6 +2626,22 @@ cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.history_search = HIST_GO;
 
 	hist_prev(&input_stat, pick_hist(), cfg.history_len);
+}
+
+/* Moves cursor in the view and updates information related to its position. */
+static void
+move_view_cursor(line_stats_t *stat, view_t *view, int new_pos)
+{
+	fpos_set_pos(view, new_pos);
+
+	if(stat->sub_mode == CLS_FILTER)
+	{
+		local_filter_update_pos(view);
+	}
+	else
+	{
+		save_view_port(stat, view);
+	}
 }
 
 /* Swaps the order of two characters. */
@@ -2672,7 +2697,7 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 	{
 		nav_stop(&input_stat);
 	}
-	update_cmdline_text(&input_stat);
+	draw_cmdline_text(&input_stat);
 }
 
 /* Enables navigation. */

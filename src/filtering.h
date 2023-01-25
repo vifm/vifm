@@ -96,6 +96,9 @@ void name_filters_restore(struct view_t *view);
  * files were filtered out. */
 int local_filter_set(struct view_t *view, const char filter[]);
 
+/* Updates last recorded cursor position. */
+void local_filter_update_pos(struct view_t *view);
+
 /* Updates cursor position and top line of the view according to interactive
  * local filter in progress. */
 void local_filter_update_view(struct view_t *view, int rel_pos);

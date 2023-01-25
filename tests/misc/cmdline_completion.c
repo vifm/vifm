@@ -327,7 +327,7 @@ TEST(autocd_completion)
 	ASSERT_NEXT_MATCH("mydir3/");
 	ASSERT_NEXT_MATCH("myd");
 
-	ASSERT_COMPLETION(L"../m", L"../misc/");
+	ASSERT_COMPLETION(L"../m", L"../menus/");
 	ASSERT_COMPLETION(L"../misc/my", L"../misc/mydir1/");
 
 	cfg.auto_cd = 0;

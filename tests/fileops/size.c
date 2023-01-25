@@ -24,11 +24,13 @@ SETUP()
 {
 	stats_init(&cfg);
 	view_setup(&lwin);
+	view_setup(&rwin);
 }
 
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	stats_reset(&cfg);
 }

@@ -54,8 +54,6 @@
 	Added :amap, :anoremap and :aunmap commands to configure mappings in
 	navigation mode.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
 
-	Added do/dp keys to visual mode since they now work with selection.
-
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
@@ -101,6 +99,8 @@
 
 	Fixed fish completion not completing paths for `--choose-files` and
 	`--choose-dir` options.
+
+	Fixed a "benign" data race on ga/gA.
 
 0.12.1-beta to 0.12.1 (2022-09-21)
 

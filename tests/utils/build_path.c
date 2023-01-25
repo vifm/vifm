@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/compat/os.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/utils/path.h"
 
 TEST(non_empty_parts)

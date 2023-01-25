@@ -41,7 +41,6 @@
 #include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
-#include "../compare.h"
 #include "../filelist.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
@@ -107,8 +106,6 @@ static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void delete(key_info_t key_info, int use_trash);
-static void cmd_do(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_dp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_av(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
@@ -226,8 +223,6 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_Y,          {{&cmd_y},  .descr = "yank files"}},
 	{WK_a WK_v,     {{&cmd_av}, .descr = "leave/switch to amending visual mode"}},
 	{WK_d,          {{&cmd_d},  .descr = "remove files"}},
-	{WK_d WK_o,     {{&cmd_do}, .descr = "obtain files"}},
-	{WK_d WK_p,     {{&cmd_dp}, .descr = "put files"}},
 	{WK_f,          {{&cmd_f}, FOLLOWED_BY_MULTIKEY, .descr = "char-search forward"}},
 	{WK_c WK_l,     {{&cmd_cl}, .descr = "change symlink target"}},
 	{WK_c WK_p,     {{&cmd_cp}, .descr = "change file permissions/attributes"}},
@@ -727,22 +722,6 @@ delete(key_info_t key_info, int use_trash)
 	{
 		accept_and_leave(1);
 	}
-}
-
-/* Applies change from other compare to current one. */
-static void
-cmd_do(key_info_t key_info, keys_info_t *keys_info)
-{
-	int save_msg = (compare_move(other_view, curr_view) != 0);
-	accept_and_leave(save_msg);
-}
-
-/* Applies change from current compare to other one. */
-static void
-cmd_dp(key_info_t key_info, keys_info_t *keys_info)
-{
-	int save_msg = (compare_move(curr_view, other_view) != 0);
-	accept_and_leave(save_msg);
 }
 
 /* Navigates to next word which starts with specified character. */

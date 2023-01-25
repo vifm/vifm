@@ -103,6 +103,7 @@ modes_init(void)
 	LOG_FUNC_ENTER;
 
 	vle_keys_init(MODES_COUNT, mode_flags, &stats_silence_ui);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	int i;
 	for(i = 0; i < MODES_COUNT; ++i)
@@ -118,7 +119,7 @@ modes_pre(void)
 	{
 		/* Do nothing for these modes. */
 	}
-	else if(ANY(vle_mode_is, CMDLINE_MODE, NAV_MODE))
+	else if(modes_is_cmdline_like())
 	{
 		touchwin(status_bar);
 		ui_refresh_win(status_bar);
@@ -240,7 +241,7 @@ modes_redraw(void)
 		goto finish;
 	}
 
-	if(ANY(vle_mode_is, CMDLINE_MODE, NAV_MODE))
+	if(modes_is_cmdline_like())
 	{
 		modcline_redraw();
 		goto finish;
@@ -311,7 +312,7 @@ finish:
 void
 modes_update(void)
 {
-	if(ANY(vle_mode_is, CMDLINE_MODE, NAV_MODE))
+	if(modes_is_cmdline_like())
 	{
 		modcline_redraw();
 		return;
@@ -377,6 +378,12 @@ int
 modes_is_dialog_like(void)
 {
 	return ANY(vle_mode_is, SORT_MODE, ATTR_MODE, CHANGE_MODE, MSG_MODE);
+}
+
+int
+modes_is_cmdline_like(void)
+{
+	return ANY(vle_mode_is, CMDLINE_MODE, NAV_MODE);
 }
 
 void
