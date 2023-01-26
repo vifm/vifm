@@ -222,7 +222,7 @@ TEST(local_filter_is_not_set)
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 	compare_two_panes(CT_NAME, LT_ALL, CF_SHOW);
 
-	exec_command("f", &lwin, CIT_FILTER_PATTERN);
+	cmds_dispatch1("f", &lwin, CIT_FILTER_PATTERN);
 	assert_true(filter_is_empty(&lwin.local_filter.filter));
 
 	modcline_enter(CLS_FILTER, lwin.local_filter.filter.raw);
@@ -300,7 +300,7 @@ TEST(sorting_is_not_changed)
 	assert_int_equal(SK_NONE, lwin.sort[0]);
 
 	cmds_init();
-	assert_success(exec_commands("set sort=ext", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("set sort=ext", &lwin, CIT_COMMAND));
 	assert_int_equal(SK_NONE, lwin.sort[0]);
 	vle_cmds_reset();
 }
@@ -491,7 +491,7 @@ TEST(compare_considers_name_filters)
 	name_filters_add_active(&lwin);
 	assert_int_equal(2, lwin.list_rows);
 
-	exec_command("different-content", &rwin, CIT_FILTER_PATTERN);
+	cmds_dispatch1("different-content", &rwin, CIT_FILTER_PATTERN);
 	load_dir_list(&rwin, 1);
 	assert_int_equal(1, rwin.list_rows);
 

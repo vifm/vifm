@@ -99,7 +99,7 @@ TEST(cmds_add)
 	assert_string_equal("", ui_sb_last());
 
 	ui_sb_msg("");
-	assert_failure(exec_command("cmd arg", curr_view, CIT_COMMAND));
+	assert_failure(cmds_dispatch1("cmd arg", curr_view, CIT_COMMAND));
 	assert_string_equal("msg", ui_sb_last());
 	assert_int_equal(1, curr_stats.save_msg);
 
@@ -112,7 +112,7 @@ TEST(cmds_add)
 	assert_string_equal("", ui_sb_last());
 
 	ui_sb_msg("");
-	assert_failure(exec_command("bcmd", curr_view, CIT_COMMAND));
+	assert_failure(cmds_dispatch1("bcmd", curr_view, CIT_COMMAND));
 	assert_true(ends_with(ui_sb_last(),
 				": attempt to call a nil value (global 'adsf')"));
 
@@ -126,7 +126,7 @@ TEST(cmds_add)
 	assert_string_equal("", ui_sb_last());
 
 	ui_sb_msg("");
-	assert_failure(exec_command("cmdinf arg1 arg2", curr_view, CIT_COMMAND));
+	assert_failure(cmds_dispatch1("cmdinf arg1 arg2", curr_view, CIT_COMMAND));
 	assert_string_equal("msg", ui_sb_last());
 	assert_int_equal(1, curr_stats.save_msg);
 }

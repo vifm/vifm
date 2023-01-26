@@ -5615,7 +5615,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	else if(starts_with_lit(expanded_com, "filter") &&
 			char_is_one_of(" !/", expanded_com[6]))
 	{
-		save_msg = exec_command(expanded_com, curr_view, CIT_COMMAND);
+		save_msg = cmds_dispatch1(expanded_com, curr_view, CIT_COMMAND);
 		external = 0;
 	}
 	else if(expanded_com[0] == '!')
@@ -5642,13 +5642,13 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(expanded_com[0] == '/')
 	{
-		exec_command(expanded_com + 1, curr_view, CIT_FSEARCH_PATTERN);
+		cmds_dispatch1(expanded_com + 1, curr_view, CIT_FSEARCH_PATTERN);
 		cmds_preserve_selection();
 		external = 0;
 	}
 	else if(expanded_com[0] == '=')
 	{
-		exec_command(expanded_com + 1, curr_view, CIT_FILTER_PATTERN);
+		cmds_dispatch1(expanded_com + 1, curr_view, CIT_FILTER_PATTERN);
 		ui_view_schedule_reload(curr_view);
 		cmds_preserve_selection();
 		external = 0;

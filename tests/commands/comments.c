@@ -10,9 +10,9 @@
 
 TEST(whole_line_comments)
 {
-	assert_success(exec_command("\"", NULL, CIT_COMMAND));
-	assert_success(exec_command(" \"", NULL, CIT_COMMAND));
-	assert_success(exec_command("  \"", NULL, CIT_COMMAND));
+	assert_success(cmds_dispatch1("\"", NULL, CIT_COMMAND));
+	assert_success(cmds_dispatch1(" \"", NULL, CIT_COMMAND));
+	assert_success(cmds_dispatch1("  \"", NULL, CIT_COMMAND));
 }
 
 TEST(trailing_comments)
@@ -27,17 +27,17 @@ TEST(trailing_comments)
 
 	opt_handlers_setup();
 
-	assert_success(exec_command("let $a = 4 \"", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("let $a = 4 \"", &lwin, CIT_COMMAND));
 	assert_string_equal("4", env_get("a"));
-	assert_success(exec_command("let $a = \" 4 \"", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("let $a = \" 4 \"", &lwin, CIT_COMMAND));
 	assert_string_equal(" 4 ", env_get("a"));
-	assert_failure(exec_command("echo \" 4 \"", &lwin, CIT_COMMAND));
-	assert_success(exec_command("exe \" 4 \"", &lwin, CIT_COMMAND));
-	assert_success(exec_command("unlet $a \"comment", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch1("echo \" 4 \"", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("exe \" 4 \"", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("unlet $a \"comment", &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get("a"));
 
-	assert_success(exec_command("set statusline=\"  %t%= %A %15E %20d  \"", &lwin,
-				CIT_COMMAND));
+	assert_success(cmds_dispatch1("set statusline=\"  %t%= %A %15E %20d  \"",
+				&lwin, CIT_COMMAND));
 	assert_string_equal("  %t%= %A %15E %20d  ", cfg.status_line);
 
 	opt_handlers_teardown();

@@ -1640,7 +1640,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_VWBSEARCH:
 				{
 					const CmdInputType cit = search_cls_to_cit(sub_mode);
-					curr_stats.save_msg = exec_command(pattern, curr_view, cit);
+					curr_stats.save_msg = cmds_dispatch1(pattern, curr_view, cit);
 					break;
 				}
 			case CLS_MENU_FSEARCH:

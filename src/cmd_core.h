@@ -66,11 +66,11 @@ void cmds_init(void);
  * message. */
 int exec_commands(const char cmd[], struct view_t *view, CmdInputType type);
 
-/* Executes command of specified kind.  Returns zero on success if no message
- * should be saved in the status bar, positive value to save message on
+/* Executes single command of specified kind.  Returns zero on success if no
+ * message should be saved in the status bar, positive value to save message on
  * successful execution and negative value in case of error with error
  * message. */
-int exec_command(const char cmd[], struct view_t *view, CmdInputType type);
+int cmds_dispatch1(const char cmd[], struct view_t *view, CmdInputType type);
 
 /* Executes a single command-line command.  Returns negative value in case of
  * an error or value from command handler. */

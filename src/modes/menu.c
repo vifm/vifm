@@ -1088,7 +1088,7 @@ leave_menu_mode(int reset_selection)
 void
 modmenu_run_command(const char cmd[])
 {
-	if(exec_command(cmd, view, CIT_COMMAND) < 0)
+	if(cmds_dispatch1(cmd, view, CIT_COMMAND) < 0)
 	{
 		ui_sb_err("An error occurred while trying to execute command");
 	}

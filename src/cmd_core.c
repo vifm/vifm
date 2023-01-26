@@ -315,7 +315,7 @@ execute_extcmd(const char command[], CmdInputType type)
 	}
 	else
 	{
-		curr_stats.save_msg = exec_command(command, curr_view, type);
+		curr_stats.save_msg = cmds_dispatch1(command, curr_view, type);
 	}
 }
 
@@ -847,7 +847,7 @@ exec_commands(const char cmdline[], view_t *view, CmdInputType type)
 
 	while(*cmd != NULL)
 	{
-		const int ret = exec_command(*cmd, view, type);
+		const int ret = cmds_dispatch1(*cmd, view, type);
 		if(ret != 0)
 		{
 			save_msg = (ret < 0) ? -1 : 1;
@@ -1149,7 +1149,7 @@ skip_to_cmd_name(const char cmd[])
 }
 
 int
-exec_command(const char cmd[], view_t *view, CmdInputType type)
+cmds_dispatch1(const char cmd[], view_t *view, CmdInputType type)
 {
 	int menu;
 	int backward;

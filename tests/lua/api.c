@@ -221,13 +221,13 @@ TEST(vifm_currview)
 	assert_true(ends_with(ui_sb_last(),
 				"Invalid VifmView object (associated view is dead)"));
 
-	assert_success(exec_command("tabnew", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch1("tabnew", curr_view, CIT_COMMAND));
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "l:cd('/')"));
 	assert_string_equal("", ui_sb_last());
 
-	assert_success(exec_command("tabonly", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch1("tabonly", curr_view, CIT_COMMAND));
 
 	columns_teardown();
 	opt_handlers_teardown();

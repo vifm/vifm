@@ -48,25 +48,25 @@ TEARDOWN()
 
 TEST(existing_dir)
 {
-	assert_success(exec_command("read", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("read", &lwin, CIT_COMMAND));
 	assert_true(paths_are_equal(lwin.curr_dir, read_path));
 }
 
 TEST(parent_dir)
 {
-	assert_success(exec_command("read", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("read", &lwin, CIT_COMMAND));
 	assert_true(paths_are_equal(lwin.curr_dir, read_path));
 
-	assert_success(exec_command("..", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("..", &lwin, CIT_COMMAND));
 	assert_true(paths_are_equal(lwin.curr_dir, test_data));
 
-	assert_success(exec_command("read", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("read", &lwin, CIT_COMMAND));
 	assert_true(paths_are_equal(lwin.curr_dir, read_path));
 }
 
 TEST(ambiguity_and_error)
 {
-	assert_failure(exec_command("compare/a", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch1("compare/a", &lwin, CIT_COMMAND));
 	assert_true(paths_are_equal(lwin.curr_dir, test_data));
 }
 
