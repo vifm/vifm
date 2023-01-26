@@ -255,7 +255,7 @@ TEST(wrong_flag)
 {
 	const char *const COMMANDS = "highlight /^\\./x ctermfg=red";
 
-	assert_int_equal(1, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(-1, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 }
 
 TEST(negation)
