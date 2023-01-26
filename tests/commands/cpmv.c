@@ -45,7 +45,7 @@ SETUP()
 	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "right",
 			cwd);
 
-	init_commands();
+	cmds_init();
 
 	create_dir(SANDBOX_PATH "/left");
 	make_file(SANDBOX_PATH "/left/a", "1");

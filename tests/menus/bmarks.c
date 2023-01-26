@@ -38,7 +38,7 @@ SETUP()
 {
 	conf_setup();
 	modes_init();
-	init_commands();
+	cmds_init();
 	bmarks_clear();
 
 	curr_view = &lwin;

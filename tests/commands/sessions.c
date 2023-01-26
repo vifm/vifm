@@ -41,7 +41,7 @@ SETUP()
 	columns_setup_column(SK_BY_NAME);
 	columns_setup_column(SK_BY_SIZE);
 
-	init_commands();
+	cmds_init();
 	opt_handlers_setup();
 }
 

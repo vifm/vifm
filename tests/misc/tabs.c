@@ -570,7 +570,7 @@ TEST(global_local_dotfilter_and_tabs)
 {
 	curr_stats.global_local_settings = 1;
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	lwin.hide_dot_g = lwin.hide_dot = 1;
 	rwin.hide_dot_g = rwin.hide_dot = 1;
@@ -603,7 +603,7 @@ TEST(global_local_manualfilter_and_tabs)
 {
 	curr_stats.global_local_settings = 1;
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	tabs_new(NULL, NULL);
 	assert_success(exec_commands("filter /y/", &lwin, CIT_COMMAND));
@@ -646,7 +646,7 @@ TEST(direnter_is_called_for_new_tab)
 {
 	curr_stats.load_stage = -1;
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	assert_success(process_set_args("dotfiles", 1, 1));
 

@@ -17,7 +17,7 @@ static int has_mime_type_detection(void);
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 	conf_setup();
 
 	view_setup(&lwin);

@@ -35,7 +35,7 @@ SETUP()
 
 	stats_update_shell_type(cfg.shell);
 
-	init_commands();
+	cmds_init();
 
 	cfg_resize_histories(10);
 

@@ -850,7 +850,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 	curr_stats.save_msg = 1;
 
 	if(input_stat.prev_mode == NORMAL_MODE)
-		init_commands();
+		cmds_init();
 
 	/* Make cursor visible only after all initial draws. */
 	ui_set_cursor(/*visibility=*/1);

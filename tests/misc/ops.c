@@ -27,7 +27,7 @@ SETUP()
 {
 	assert_success(chdir(SANDBOX_PATH));
 
-	init_commands();
+	cmds_init();
 	lwin.selected_files = 0;
 	strcpy(lwin.curr_dir, ".");
 	path = NULL;

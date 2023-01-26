@@ -58,7 +58,7 @@ SETUP()
 
 	conf_setup();
 	undo_setup();
-	init_commands();
+	cmds_init();
 
 	saved_cwd = save_cwd();
 }

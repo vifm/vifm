@@ -22,7 +22,7 @@ SETUP()
 
 	curr_view = &lwin;
 
-	init_commands();
+	cmds_init();
 }
 
 TEARDOWN()

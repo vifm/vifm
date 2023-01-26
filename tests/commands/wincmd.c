@@ -24,7 +24,7 @@ SETUP()
 
 	opt_handlers_setup();
 
-	init_commands();
+	cmds_init();
 }
 
 TEARDOWN()

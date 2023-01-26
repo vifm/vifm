@@ -45,7 +45,7 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	init_commands();
+	cmds_init();
 
 	vle_cmds_add(commands, ARRAY_LEN(commands));
 

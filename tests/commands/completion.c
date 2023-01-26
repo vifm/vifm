@@ -77,7 +77,7 @@ SETUP()
 
 	curr_view = &lwin;
 
-	init_commands();
+	cmds_init();
 
 	vle_opts_init(&option_changed, NULL);
 	vle_opts_add("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,

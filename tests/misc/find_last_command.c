@@ -5,7 +5,7 @@
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 }
 
 TEARDOWN()

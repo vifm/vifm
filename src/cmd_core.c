@@ -424,7 +424,7 @@ skip_at_beginning(int id, const char args[])
 }
 
 void
-init_commands(void)
+cmds_init(void)
 {
 	if(cmds_conf.inner != NULL)
 	{
@@ -432,7 +432,7 @@ init_commands(void)
 		return;
 	}
 
-	/* We get here when init_commands() is called the first time. */
+	/* We get here when cmds_init() is called the first time. */
 
 	vle_cmds_init(1, &cmds_conf);
 	vle_cmds_add(cmds_list, cmds_list_size);

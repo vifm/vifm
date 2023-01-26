@@ -17,7 +17,7 @@
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 
 	view_setup(&lwin);
 	view_setup(&rwin);

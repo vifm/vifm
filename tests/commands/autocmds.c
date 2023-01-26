@@ -39,7 +39,7 @@ SETUP()
 
 	update_string(&cfg.slow_fs_list, "");
 
-	init_commands();
+	cmds_init();
 	opt_handlers_setup();
 
 	view_setup(&lwin);

@@ -26,7 +26,7 @@ SETUP()
 {
 	view_setup(&lwin);
 
-	init_commands();
+	cmds_init();
 
 	lwin.sort_g[0] = SK_BY_NAME;
 	memset(&lwin.sort_g[1], SK_NONE, sizeof(lwin.sort_g) - 1);

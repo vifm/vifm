@@ -299,7 +299,7 @@ TEST(sorting_is_not_changed)
 	change_sort_type(&lwin, SK_BY_SIZE, 0);
 	assert_int_equal(SK_NONE, lwin.sort[0]);
 
-	init_commands();
+	cmds_init();
 	assert_success(exec_commands("set sort=ext", &lwin, CIT_COMMAND));
 	assert_int_equal(SK_NONE, lwin.sort[0]);
 	vle_cmds_reset();

@@ -85,7 +85,7 @@ TEST(filetypes_are_deduplicated)
 	matchers_t *ms;
 
 	cfg.vifm_info = VINFO_FILETYPES;
-	init_commands();
+	cmds_init();
 
 	/* Add a filetype. */
 	ms = matchers_alloc("*.c", 0, 1, "", &error);

@@ -41,7 +41,7 @@ SETUP()
 
 	opt_handlers_setup();
 
-	init_commands();
+	cmds_init();
 
 	curr_stats.load_stage = -1;
 }

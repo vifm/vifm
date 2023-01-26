@@ -27,7 +27,7 @@ SETUP()
 	enum { HISTORY_SIZE = 10 };
 
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	curr_view = &lwin;
 	view_setup(&lwin);

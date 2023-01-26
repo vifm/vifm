@@ -15,7 +15,7 @@ static int silence;
 SETUP()
 {
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	curr_view = &lwin;
 	other_view = &rwin;

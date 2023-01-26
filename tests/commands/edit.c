@@ -31,7 +31,7 @@ SETUP()
 {
 	conf_setup();
 	view_setup(&lwin);
-	init_commands();
+	cmds_init();
 
 	curr_view = &lwin;
 }

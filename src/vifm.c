@@ -218,7 +218,7 @@ vifm_main(int argc, char *argv[])
 	reinit_logger(cfg.log_file);
 
 	/* Commands module also initializes bracket notation and variables. */
-	init_commands();
+	cmds_init();
 
 	init_builtin_functions();
 	update_path_env(1);

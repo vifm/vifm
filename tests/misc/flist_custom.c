@@ -65,7 +65,7 @@ SETUP()
 
 	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/..", test_data);
 
-	init_commands();
+	cmds_init();
 }
 
 TEARDOWN()

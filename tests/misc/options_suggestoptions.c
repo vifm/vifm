@@ -8,7 +8,7 @@
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 	curr_view = &lwin;
 	opt_handlers_setup();
 }

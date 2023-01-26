@@ -18,7 +18,7 @@ static int cb_called;
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 	lwin.selected_files = 0;
 	strcpy(lwin.curr_dir, "/a/path");
 	path = NULL;

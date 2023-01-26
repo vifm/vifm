@@ -29,7 +29,7 @@ static int ncols;
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 
 	view_setup(&lwin);
 

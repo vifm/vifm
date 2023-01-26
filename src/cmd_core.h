@@ -56,7 +56,9 @@ CmdLineLocation;
 
 struct view_t;
 
-void init_commands(void);
+/* Initializes use of :commands and its dependencies: bracket notation and
+ * variables. */
+void cmds_init(void);
 
 /* Executes one or more commands separated by a bar.  Returns zero on success if
  * no message should be saved in the status bar, positive value to save message

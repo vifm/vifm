@@ -23,7 +23,7 @@ remove_tmp_vars(void)
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 	lwin.selected_files = 0;
 	remove_tmp_vars();
 	curr_view = &lwin;

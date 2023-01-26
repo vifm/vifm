@@ -36,7 +36,7 @@ TEARDOWN()
 
 TEST(cmds_add)
 {
-	init_commands();
+	cmds_init();
 
 	ui_sb_msg("");
 

@@ -7,7 +7,7 @@
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 	lwin.selected_files = 0;
 	curr_view = &lwin;
 }

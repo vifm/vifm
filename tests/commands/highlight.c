@@ -16,7 +16,7 @@
 
 SETUP_ONCE()
 {
-	init_commands();
+	cmds_init();
 	cs_reset(&cfg.cs);
 	lwin.list_rows = 0;
 	rwin.list_rows = 0;

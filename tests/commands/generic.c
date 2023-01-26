@@ -66,7 +66,7 @@ SETUP()
 	conf_setup();
 	cfg.use_system_calls = 1;
 
-	init_commands();
+	cmds_init();
 
 	vle_cmds_add(commands, ARRAY_LEN(commands));
 

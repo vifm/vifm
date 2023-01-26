@@ -183,7 +183,7 @@ TEST(sb_quick_message_is_not_stored)
 
 TEST(vifm_currview)
 {
-	init_commands();
+	cmds_init();
 
 	conf_setup();
 	cfg.pane_tabs = 0;

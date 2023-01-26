@@ -28,7 +28,7 @@ SETUP()
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
 
-	init_commands();
+	cmds_init();
 
 	cfg.auto_cd = 1;
 }

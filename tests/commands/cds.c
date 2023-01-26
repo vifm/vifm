@@ -22,7 +22,7 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	init_commands();
+	cmds_init();
 
 	conf_setup();
 }

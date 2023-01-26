@@ -23,7 +23,7 @@ TEST(trailing_comments)
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	init_commands();
+	cmds_init();
 
 	opt_handlers_setup();
 

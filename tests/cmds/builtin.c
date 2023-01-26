@@ -13,7 +13,7 @@ extern struct cmds_conf cmds_conf;
 SETUP()
 {
 	vle_cmds_reset();
-	init_commands();
+	cmds_init();
 }
 
 TEST(empty_line_completion)

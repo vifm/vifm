@@ -21,7 +21,7 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	init_commands();
+	cmds_init();
 
 	saved_cwd = save_cwd();
 	cs_load_defaults();
