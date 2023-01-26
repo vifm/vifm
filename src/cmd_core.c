@@ -353,7 +353,7 @@ command_accepts_expr(int cmd_id)
 char *
 commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 {
-	const CmdLineLocation ipt = get_cmdline_location(cmd_line, cmd_line + pos);
+	const CmdLineLocation ipt = cmds_classify_pos(cmd_line, cmd_line + pos);
 	switch(ipt)
 	{
 		case CLL_R_QUOTING:
@@ -975,7 +975,7 @@ finish:
 static int
 is_out_of_arg(const char cmd[], const char pos[])
 {
-	const CmdLineLocation location = get_cmdline_location(cmd, pos);
+	const CmdLineLocation location = cmds_classify_pos(cmd, pos);
 
 	if(location == CLL_NO_QUOTING)
 	{
@@ -995,7 +995,7 @@ is_out_of_arg(const char cmd[], const char pos[])
 }
 
 CmdLineLocation
-get_cmdline_location(const char cmd[], const char pos[])
+cmds_classify_pos(const char cmd[], const char *pos)
 {
 	char separator;
 	int regex_quoting;

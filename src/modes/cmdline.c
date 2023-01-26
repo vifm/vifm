@@ -3098,7 +3098,7 @@ line_completion(line_stats_t *stat)
 		{
 			line_mb_cmd = find_last_command(line_mb);
 
-			const CmdLineLocation ipt = get_cmdline_location(line_mb,
+			const CmdLineLocation ipt = cmds_classify_pos(line_mb,
 					line_mb + strlen(line_mb));
 			switch(ipt)
 			{

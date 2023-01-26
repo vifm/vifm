@@ -124,7 +124,7 @@ char * commands_escape_for_insertion(const char cmd_line[], int pos,
 
 /* Analyzes position on the command-line.  pos should point to some position of
  * cmd.  Returns where current position in the command line is. */
-CmdLineLocation get_cmdline_location(const char cmd[], const char pos[]);
+CmdLineLocation cmds_classify_pos(const char cmd[], const char *pos);
 
 /* Evaluates a set of expressions and concatenates results with a space.  args
  * can not be empty string.  Returns pointer to newly allocated string, which
