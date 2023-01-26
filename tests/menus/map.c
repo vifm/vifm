@@ -41,8 +41,8 @@ TEARDOWN()
 
 TEST(nop_rhs_is_displayed)
 {
-	assert_success(exec_commands("nmap lhs <nop>", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nmap lhs", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap lhs <nop>", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap lhs", &lwin, CIT_COMMAND));
 
 	assert_int_equal(4, menu_get_current()->len);
 	assert_string_equal("User mappings:", menu_get_current()->items[0]);
@@ -55,8 +55,8 @@ TEST(nop_rhs_is_displayed)
 
 TEST(space_in_rhs_is_displayed_without_notation)
 {
-	assert_success(exec_commands("nmap lhs s p a c e", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nmap lhs", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap lhs s p a c e", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap lhs", &lwin, CIT_COMMAND));
 
 	assert_int_equal(4, menu_get_current()->len);
 	assert_string_equal("User mappings:", menu_get_current()->items[0]);
@@ -69,8 +69,8 @@ TEST(space_in_rhs_is_displayed_without_notation)
 
 TEST(single_space_is_displayed_using_notation)
 {
-	assert_success(exec_commands("nmap <space> <space>", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nmap <space>", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap <space> <space>", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap <space>", &lwin, CIT_COMMAND));
 
 	assert_int_equal(5, menu_get_current()->len);
 	assert_string_equal("User mappings:", menu_get_current()->items[0]);
@@ -84,10 +84,10 @@ TEST(single_space_is_displayed_using_notation)
 
 TEST(first_or_last_space_is_displayed_using_notation)
 {
-	assert_success(exec_commands("nmap <space>1 <space>1", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nmap <space>2 <space>2 x", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap <space>1 <space>1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap <space>2 <space>2 x", &lwin, CIT_COMMAND));
 
-	assert_success(exec_commands("nmap <space>", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap <space>", &lwin, CIT_COMMAND));
 	assert_int_equal(6, menu_get_current()->len);
 	assert_string_equal("User mappings:", menu_get_current()->items[0]);
 	assert_string_equal("<space>1    <space>1", menu_get_current()->items[1]);
@@ -96,13 +96,13 @@ TEST(first_or_last_space_is_displayed_using_notation)
 	assert_string_equal("Builtin mappings:", menu_get_current()->items[4]);
 	assert_string_equal("<space>     switch pane", menu_get_current()->items[5]);
 
-	assert_success(exec_commands("nunmap <space>1", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nunmap <space>2", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nunmap <space>1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nunmap <space>2", &lwin, CIT_COMMAND));
 
-	assert_success(exec_commands("nmap x1<space> 1<space>", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nmap x2<space> 2 x<space>", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap x1<space> 1<space>", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap x2<space> 2 x<space>", &lwin, CIT_COMMAND));
 
-	assert_success(exec_commands("nmap x", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap x", &lwin, CIT_COMMAND));
 	assert_int_equal(5, menu_get_current()->len);
 	assert_string_equal("User mappings:", menu_get_current()->items[0]);
 	assert_string_equal("x1<space>   1<space>", menu_get_current()->items[1]);
@@ -110,12 +110,12 @@ TEST(first_or_last_space_is_displayed_using_notation)
 	assert_string_equal("", menu_get_current()->items[3]);
 	assert_string_equal("Builtin mappings:", menu_get_current()->items[4]);
 
-	assert_success(exec_commands("nmap <space>1<space> <space>1<space>",
+	assert_success(cmds_dispatch("nmap <space>1<space> <space>1<space>",
 				&lwin, CIT_COMMAND));
-	assert_success(exec_commands("nmap <space>2<space>2<space> <space>2 x<space>",
+	assert_success(cmds_dispatch("nmap <space>2<space>2<space> <space>2 x<space>",
 				&lwin, CIT_COMMAND));
 
-	assert_success(exec_commands("nmap <space>", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap <space>", &lwin, CIT_COMMAND));
 	assert_int_equal(6, menu_get_current()->len);
 	assert_string_equal("User mappings:", menu_get_current()->items[0]);
 	assert_string_equal("<space>1<space> <space>1<space>",
@@ -131,7 +131,7 @@ TEST(first_or_last_space_is_displayed_using_notation)
 
 TEST(builtin_key_description_is_displayed)
 {
-	assert_success(exec_commands("nmap j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap j", &lwin, CIT_COMMAND));
 
 	assert_int_equal(4, menu_get_current()->len);
 	assert_string_equal("User mappings:", menu_get_current()->items[0]);

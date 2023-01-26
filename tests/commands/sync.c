@@ -63,7 +63,7 @@ TEST(sync_syncs_local_filter)
 	populate_dir_list(curr_view, 0);
 	local_filter_apply(curr_view, "a");
 
-	assert_success(exec_commands("sync! location filters", curr_view,
+	assert_success(cmds_dispatch("sync! location filters", curr_view,
 				CIT_COMMAND));
 	assert_string_equal("a", other_view->local_filter.filter.raw);
 }
@@ -92,7 +92,7 @@ TEST(sync_syncs_filelist)
 	assert_true(flist_custom_finish(curr_view, CV_VERY, 0) == 0);
 	curr_view->list_pos = 3;
 
-	assert_success(exec_commands("sync! filelist cursorpos", curr_view,
+	assert_success(cmds_dispatch("sync! filelist cursorpos", curr_view,
 				CIT_COMMAND));
 
 	assert_true(flist_custom_active(other_view));
@@ -114,7 +114,7 @@ TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 	assert_success(flist_load_tree(curr_view, SANDBOX_PATH, INT_MAX));
 	assert_int_equal(2, curr_view->list_rows);
 
-	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! filelist", curr_view, CIT_COMMAND));
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 
@@ -147,7 +147,7 @@ TEST(sync_syncs_trees)
 	flist_custom_exclude(curr_view, 1);
 	assert_int_equal(0, curr_view->selected_files);
 
-	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! tree", curr_view, CIT_COMMAND));
 	assert_true(flist_custom_active(other_view));
 	curr_stats.load_stage = 2;
 	load_saving_pos(other_view);
@@ -177,7 +177,7 @@ TEST(sync_all_does_not_turn_destination_into_tree)
 	populate_dir_list(curr_view, 0);
 	local_filter_apply(curr_view, "a");
 
-	assert_success(exec_commands("sync! all", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! all", curr_view, CIT_COMMAND));
 	assert_false(other_view->custom.type == CV_TREE);
 
 	columns_free(other_view->columns);
@@ -208,7 +208,7 @@ TEST(sync_localopts_clones_local_options)
 	populate_dir_list(curr_view, 0);
 	local_filter_apply(curr_view, "a");
 
-	assert_success(exec_commands("sync! localopts", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! localopts", curr_view, CIT_COMMAND));
 	assert_true(rwin.hide_dot_g);
 	assert_true(rwin.hide_dot);
 
@@ -246,7 +246,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 	 * is this a bug?). */
 	local_filter_apply(other_view, "d");
 
-	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! tree", curr_view, CIT_COMMAND));
 	assert_int_equal(2, other_view->list_rows);
 	assert_string_equal("", other_view->local_filter.filter.raw);
 
@@ -292,7 +292,7 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	to_canonic_path(buf, "/fake-root", curr_view->curr_dir,
 			sizeof(curr_view->curr_dir));
 
-	assert_success(exec_commands("sync ../dir-link/..", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync ../dir-link/..", curr_view, CIT_COMMAND));
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 
@@ -304,7 +304,7 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 
 TEST(incorrect_parameter_causes_error)
 {
-	assert_failure(exec_commands("sync! nosuchthing", curr_view, CIT_COMMAND));
+	assert_failure(cmds_dispatch("sync! nosuchthing", curr_view, CIT_COMMAND));
 }
 
 TEST(sync_syncs_custom_trees)
@@ -341,7 +341,7 @@ TEST(sync_syncs_custom_trees)
 
 	/* As custom trees. */
 
-	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! tree", curr_view, CIT_COMMAND));
 	assert_true(flist_custom_active(other_view));
 	curr_stats.load_stage = 2;
 	load_saving_pos(other_view);
@@ -352,7 +352,7 @@ TEST(sync_syncs_custom_trees)
 
 	/* As custom views. */
 
-	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! filelist", curr_view, CIT_COMMAND));
 	assert_true(flist_custom_active(other_view));
 	assert_int_equal(CV_VERY, other_view->custom.type);
 
@@ -374,11 +374,11 @@ TEST(sync_all_applies_filters_in_trees)
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", NULL);
 
-	assert_success(exec_commands("set cvoptions=localfilter", curr_view,
+	assert_success(cmds_dispatch("set cvoptions=localfilter", curr_view,
 				CIT_COMMAND));
-	assert_success(exec_commands("tree", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("tree", curr_view, CIT_COMMAND));
 	local_filter_apply(curr_view, "a");
-	assert_success(exec_commands("sync! all", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("sync! all", curr_view, CIT_COMMAND));
 
 	assert_string_equal("a", other_view->local_filter.filter.raw);
 

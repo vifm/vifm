@@ -564,7 +564,7 @@ exec_startup_commands(const args_t *args)
 		/* Make sure we're executing commands in correct directory. */
 		(void)vifm_chdir(flist_get_dir(curr_view));
 
-		(void)exec_commands(args->cmds[i], curr_view, CIT_COMMAND);
+		(void)cmds_dispatch(args->cmds[i], curr_view, CIT_COMMAND);
 	}
 }
 

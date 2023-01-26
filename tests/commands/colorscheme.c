@@ -43,7 +43,7 @@ TEST(current_colorscheme_is_printed)
 	strcpy(cfg.cs.name, "test-scheme");
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("colorscheme?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("colorscheme?", &lwin, CIT_COMMAND));
 	assert_string_equal("test-scheme", ui_sb_last());
 }
 
@@ -54,7 +54,7 @@ TEST(unknown_colorscheme_is_not_loaded)
 	cfg.cs.color[WIN_COLOR].bg = 2;
 	cfg.cs.color[WIN_COLOR].attr = 3;
 
-	assert_failure(exec_commands("colorscheme bad-cs-name", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("colorscheme bad-cs-name", &lwin, CIT_COMMAND));
 
 	assert_string_equal("test-scheme", cfg.cs.name);
 	assert_int_equal(1, cfg.cs.color[WIN_COLOR].fg);
@@ -76,7 +76,7 @@ TEST(good_colorscheme_is_loaded)
 	cfg.cs.color[WIN_COLOR].bg = 2;
 	cfg.cs.color[WIN_COLOR].attr = 3;
 
-	assert_success(exec_commands("colorscheme good", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("colorscheme good", &lwin, CIT_COMMAND));
 
 	assert_string_equal("good", cfg.cs.name);
 	assert_int_equal(-1, cfg.cs.color[WIN_COLOR].fg);
@@ -86,7 +86,7 @@ TEST(good_colorscheme_is_loaded)
 
 TEST(unknown_colorscheme_is_not_associated)
 {
-	assert_failure(exec_commands("colorscheme bad-name /", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("colorscheme bad-name /", &lwin, CIT_COMMAND));
 }
 
 TEST(colorscheme_is_not_associated_to_a_file)
@@ -98,17 +98,17 @@ TEST(colorscheme_is_not_associated_to_a_file)
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "colorscheme good %s", path);
 
-	assert_failure(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 }
 
 TEST(colorscheme_is_not_associated_to_relpath_on_startup)
 {
 	strcpy(lwin.curr_dir, saved_cwd);
 
-	assert_success(exec_commands("colorscheme good .", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("colorscheme good .", &lwin, CIT_COMMAND));
 	assert_false(cs_load_local(1, "."));
 
-	assert_success(exec_commands("colorscheme name1 name2", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("colorscheme name1 name2", &lwin, CIT_COMMAND));
 	assert_false(cs_load_local(1, "name2"));
 }
 
@@ -122,7 +122,7 @@ TEST(colorscheme_is_associated_to_tildepath_on_startup)
 	create_dir(SANDBOX_PATH "/colors");
 	create_file(SANDBOX_PATH "/colors/cs.vifm");
 
-	assert_success(exec_commands("colorscheme cs ~/colors", &lwin,
+	assert_success(cmds_dispatch("colorscheme cs ~/colors", &lwin,
 				CIT_COMMAND));
 	char *path = expand_tilde("~/colors");
 	assert_true(cs_load_local(1, path));
@@ -139,7 +139,7 @@ TEST(colorscheme_is_restored_on_bad_name)
 	cfg.cs.color[WIN_COLOR].bg = 2;
 	cfg.cs.color[WIN_COLOR].attr = 3;
 
-	assert_success(exec_commands("colorscheme bad-color", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("colorscheme bad-color", &lwin, CIT_COMMAND));
 
 	assert_string_equal("test-scheme", cfg.cs.name);
 	assert_int_equal(1, cfg.cs.color[WIN_COLOR].fg);
@@ -156,7 +156,7 @@ TEST(colorscheme_is_restored_on_sourcing_error)
 
 	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
 			"scripts/", saved_cwd);
-	assert_success(exec_commands("colorscheme wrong-cmd-name", &lwin,
+	assert_success(cmds_dispatch("colorscheme wrong-cmd-name", &lwin,
 				CIT_COMMAND));
 
 	assert_string_equal("test-scheme", cfg.cs.name);
@@ -172,7 +172,7 @@ TEST(colorscheme_is_restored_on_multiple_loading_failures)
 	cfg.cs.color[WIN_COLOR].bg = 2;
 	cfg.cs.color[WIN_COLOR].attr = 3;
 
-	assert_success(exec_commands("colorscheme bad-cs-name bad-cmd bad-color",
+	assert_success(cmds_dispatch("colorscheme bad-cs-name bad-cmd bad-color",
 				&lwin, CIT_COMMAND));
 
 	assert_string_equal("test-scheme", cfg.cs.name);
@@ -188,7 +188,7 @@ TEST(first_usable_colorscheme_is_loaded)
 	cfg.cs.color[WIN_COLOR].bg = 2;
 	cfg.cs.color[WIN_COLOR].attr = 3;
 
-	assert_success(exec_commands("colorscheme bad-color good", &lwin,
+	assert_success(cmds_dispatch("colorscheme bad-color good", &lwin,
 				CIT_COMMAND));
 
 	assert_string_equal("good", cfg.cs.name);

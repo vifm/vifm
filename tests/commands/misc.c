@@ -82,7 +82,7 @@ TEST(cd_in_root_works)
 	strcpy(lwin.curr_dir, test_data);
 
 	assert_false(is_root_dir(lwin.curr_dir));
-	assert_success(exec_commands("cd /", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cd /", &lwin, CIT_COMMAND));
 	assert_true(is_root_dir(lwin.curr_dir));
 }
 
@@ -95,7 +95,7 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	strcpy(lwin.curr_dir, test_data);
 	strcpy(rwin.curr_dir, "..");
 
-	assert_success(exec_commands("cd read rename", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cd read rename", &lwin, CIT_COMMAND));
 
 	snprintf(path, sizeof(path), "%s/read", test_data);
 	assert_true(paths_are_equal(lwin.curr_dir, path));
@@ -121,7 +121,7 @@ TEST(tr_extends_second_field)
 	lwin.dir_entry[0].name = strdup("a b");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
-	(void)exec_commands("tr/ ?<>\\\\:*|\"/_", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("tr/ ?<>\\\\:*|\"/_", &lwin, CIT_COMMAND);
 
 	snprintf(path, sizeof(path), "%s/a_b", sandbox);
 	assert_success(remove(path));
@@ -149,7 +149,7 @@ TEST(substitute_works)
 	lwin.dir_entry[1].name = strdup("B c");
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 
-	(void)exec_commands("%substitute/b/c/Iig", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("%substitute/b/c/Iig", &lwin, CIT_COMMAND);
 
 	snprintf(path, sizeof(path), "%s/a c c", sandbox);
 	assert_success(remove(path));
@@ -179,7 +179,7 @@ TEST(chmod_works, IF(not_windows))
 	lwin.dir_entry[1].name = strdup("file2");
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 
-	(void)exec_commands("1,2chmod +x", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("1,2chmod +x", &lwin, CIT_COMMAND);
 
 	populate_dir_list(&lwin, 1);
 	assert_int_equal(FT_EXEC, lwin.dir_entry[0].type);
@@ -204,7 +204,7 @@ TEST(putting_files_works)
 	assert_success(regs_append(DEFAULT_REG_NAME, path));
 	lwin.list_pos = 1;
 
-	assert_true(exec_commands("put", &lwin, CIT_COMMAND) != 0);
+	assert_true(cmds_dispatch("put", &lwin, CIT_COMMAND) != 0);
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 
@@ -230,7 +230,7 @@ TEST(yank_works_with_ranges)
 	assert_non_null(reg);
 
 	assert_int_equal(0, reg->nfiles);
-	(void)exec_commands("%yank", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("%yank", &lwin, CIT_COMMAND);
 	assert_int_equal(1, reg->nfiles);
 
 	regs_reset();
@@ -262,7 +262,7 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 			sizeof(canonic_path));
 
 	/* :mkdir */
-	(void)exec_commands("mkdir ../dir", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("mkdir ../dir", &lwin, CIT_COMMAND);
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
@@ -270,7 +270,7 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	/* :clone file name. */
 	create_file(SANDBOX_PATH "/dir-link/file");
 	populate_dir_list(&lwin, 1);
-	(void)exec_commands("clone ../file-clone", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("clone ../file-clone", &lwin, CIT_COMMAND);
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(remove(SANDBOX_PATH "/file-clone"));
@@ -281,11 +281,11 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 			"scripts/", saved_cwd);
 	snprintf(buf, sizeof(buf), "colorscheme set-env %s/../dir-link/..",
 			sandbox);
-	assert_success(exec_commands(buf, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(buf, &lwin, CIT_COMMAND));
 	cs_load_defaults();
 
 	/* :cd */
-	assert_success(exec_commands("cd ../dir-link/..", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cd ../dir-link/..", &lwin, CIT_COMMAND));
 	assert_string_equal(canonic_path, lwin.curr_dir);
 
 	restore_cwd(saved_cwd);
@@ -305,18 +305,18 @@ TEST(grep_command, IF(not_windows))
 	assert_success(chdir(TEST_DATA_PATH "/scripts"));
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 
-	assert_success(exec_commands("set grepprg='grep -n -H -r %i %a %s %u'", &lwin,
+	assert_success(cmds_dispatch("set grepprg='grep -n -H -r %i %a %s %u'", &lwin,
 				CIT_COMMAND));
 
 	/* Nothing to repeat. */
-	assert_failure(exec_commands("grep", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("grep", &lwin, CIT_COMMAND));
 
-	assert_success(exec_commands("grep command", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("grep command", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.list_rows);
 	assert_string_equal("Grep command", lwin.custom.title);
 
 	/* Repeat last grep, but add inversion. */
-	assert_success(exec_commands("grep!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("grep!", &lwin, CIT_COMMAND));
 	assert_int_equal(5, lwin.list_rows);
 	assert_string_equal("Grep command", lwin.custom.title);
 
@@ -326,7 +326,7 @@ TEST(grep_command, IF(not_windows))
 TEST(touch)
 {
 	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
-	(void)exec_commands("touch file", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("touch file", &lwin, CIT_COMMAND);
 
 	assert_success(remove(SANDBOX_PATH "/file"));
 }
@@ -339,23 +339,23 @@ TEST(compare)
 	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
 
 	/* The file is empty so nothing to do when "skipempty" is specified. */
-	assert_success(exec_commands("compare ofone skipempty", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("compare ofone skipempty", &lwin, CIT_COMMAND));
 	assert_false(flist_custom_active(&lwin));
 
 	/* Verify that later arguments override the former ones. */
-	(void)exec_commands("compare byname bysize bycontents listall listdups "
+	(void)cmds_dispatch("compare byname bysize bycontents listall listdups "
 			"listunique ofboth ofone groupids grouppaths", &lwin, CIT_COMMAND);
 	assert_true(flist_custom_active(&lwin));
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 
 	assert_int_equal(0, change_directory(&lwin, ".."));
 	/* No toggling. */
-	(void)exec_commands("compare! showdifferent", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("compare! showdifferent", &lwin, CIT_COMMAND);
 	assert_string_equal("Toggling requires active compare view", ui_sb_last());
 	/* Verify that two-pane compare gets correct arguments. */
 	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH, "rename",
 			cwd);
-	(void)exec_commands("compare byname withrcase withicase", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("compare byname withrcase withicase", &lwin, CIT_COMMAND);
 	assert_true(flist_custom_active(&lwin));
 	assert_true(flist_custom_active(&rwin));
 	assert_int_equal(CT_NAME, lwin.custom.diff_cmp_type);
@@ -363,7 +363,7 @@ TEST(compare)
 	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW,
 			lwin.custom.diff_cmp_flags);
 	/* Toggling. */
-	(void)exec_commands("compare! showidentical showdifferent", &lwin,
+	(void)cmds_dispatch("compare! showidentical showdifferent", &lwin,
 			CIT_COMMAND);
 	assert_true(flist_custom_active(&lwin));
 	assert_true(flist_custom_active(&rwin));
@@ -372,7 +372,7 @@ TEST(compare)
 	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW_UNIQUE_LEFT |
 			CF_SHOW_UNIQUE_RIGHT, lwin.custom.diff_cmp_flags);
 	/* Bad toggling. */
-	(void)exec_commands("compare! byname", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("compare! byname", &lwin, CIT_COMMAND);
 	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW_UNIQUE_LEFT |
 			CF_SHOW_UNIQUE_RIGHT, lwin.custom.diff_cmp_flags);
 	assert_string_equal("Unexpected property for toggling: byname", ui_sb_last());
@@ -387,15 +387,15 @@ TEST(screen)
 	assert_false(cfg.use_term_multiplexer);
 
 	/* :screen toggles the option. */
-	assert_success(exec_commands("screen", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("screen", &lwin, CIT_COMMAND));
 	assert_true(cfg.use_term_multiplexer);
-	assert_success(exec_commands("screen", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("screen", &lwin, CIT_COMMAND));
 	assert_false(cfg.use_term_multiplexer);
 
 	/* :screen! sets it to on. */
-	assert_success(exec_commands("screen!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("screen!", &lwin, CIT_COMMAND));
 	assert_true(cfg.use_term_multiplexer);
-	assert_success(exec_commands("screen!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("screen!", &lwin, CIT_COMMAND));
 	assert_true(cfg.use_term_multiplexer);
 
 	cfg.use_term_multiplexer = 0;
@@ -412,9 +412,9 @@ TEST(hist_next_and_prev)
 	flist_hist_setup(&lwin, sandbox, ".", 0, 1);
 	flist_hist_setup(&lwin, test_data, ".", 0, 1);
 
-	assert_success(exec_commands("histprev", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("histprev", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, sandbox));
-	assert_success(exec_commands("histnext", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("histnext", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
 
 	cfg_resize_histories(0);
@@ -437,17 +437,17 @@ TEST(normal_command_does_not_reset_selection)
 	lwin.dir_entry[1].selected = 0;
 	lwin.selected_files = 1;
 
-	assert_success(exec_commands(":normal! t", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(":normal! t", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	assert_success(exec_commands(":normal! vG\r", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(":normal! vG\r", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
-	assert_success(exec_commands(":normal! t", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(":normal! t", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -462,29 +462,29 @@ TEST(keepsel_preserves_selection)
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.selected_files = 1;
-	assert_failure(exec_commands("echo 'hi'", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("echo 'hi'", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.selected_files = 1;
-	assert_failure(exec_commands("keepsel echo 'hi'", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("keepsel echo 'hi'", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 }
 
 TEST(goto_command)
 {
-	assert_failure(exec_commands("goto /", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("goto /no-such-path", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("goto /", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("goto /no-such-path", &lwin, CIT_COMMAND));
 
 	char cmd[PATH_MAX*2];
 	snprintf(cmd, sizeof(cmd), "goto %s/compare", test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
 	assert_string_equal("compare", get_current_file_name(&lwin));
 
-	assert_success(exec_commands("goto tree", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("goto tree", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
 	assert_string_equal("tree", get_current_file_name(&lwin));
 }
@@ -493,7 +493,7 @@ TEST(goto_normalizes_slashes, IF(windows))
 {
 	char cmd[PATH_MAX*2];
 	snprintf(cmd, sizeof(cmd), "goto %s\\\\compare", test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
 	assert_string_equal("compare", get_current_file_name(&lwin));
 }
@@ -506,14 +506,14 @@ TEST(echo_reports_all_errors)
 	           "Invalid expression: \"hi";
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("echo \"hi", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("echo \"hi", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 
 	expected = "Expression is missing closing parenthesis: (1\n"
 	           "Invalid expression: (1";
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("echo (1", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("echo (1", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 
 	char zeroes[8192] = "echo ";
@@ -521,7 +521,7 @@ TEST(echo_reports_all_errors)
 	zeroes[sizeof(zeroes) - 1U] = '\0';
 
 	ui_sb_msg("");
-	assert_failure(exec_commands(zeroes, &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch(zeroes, &lwin, CIT_COMMAND));
 	assert_true(strchr(ui_sb_last(), '\n') != NULL);
 }
 
@@ -530,11 +530,11 @@ TEST(echo_without_arguments_prints_nothing)
 	ui_sb_msg("");
 
 	/* First, print some message to record it as the last one. */
-	assert_failure(exec_commands("echo 'previous'", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("echo 'previous'", &lwin, CIT_COMMAND));
 	assert_string_equal("previous", ui_sb_last());
 
 	/* Now, no message.  The last one could popup here. */
-	assert_failure(exec_commands("echo", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("echo", &lwin, CIT_COMMAND));
 	assert_string_equal("", ui_sb_last());
 }
 
@@ -543,11 +543,11 @@ TEST(zero_count_is_rejected)
 	const char *expected = "Count argument can't be zero";
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("delete a 0", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("delete a 0", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("yank a 0", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("yank a 0", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
 
@@ -556,29 +556,29 @@ TEST(tree_command)
 	strcpy(lwin.curr_dir, sandbox);
 
 	/* Invalid input. */
-	assert_failure(exec_commands("tree nesting=0", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("tree nesting=0", &lwin, CIT_COMMAND));
 	assert_false(flist_custom_active(&lwin));
 	assert_string_equal("Invalid argument: nesting=0", ui_sb_last());
-	assert_failure(exec_commands("tree depth=0", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("tree depth=0", &lwin, CIT_COMMAND));
 	assert_false(flist_custom_active(&lwin));
 	assert_string_equal("Invalid depth: 0", ui_sb_last());
 
 	/* :tree enters tree mode. */
-	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tree", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 	assert_true(cv_tree(lwin.custom.type));
 
 	/* Repeating :tree leaves view in tree mode. */
-	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tree", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 	assert_true(cv_tree(lwin.custom.type));
 
 	/* :tree! can leave tree mode. */
-	assert_success(exec_commands("tree!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tree!", &lwin, CIT_COMMAND));
 	assert_false(flist_custom_active(&lwin));
 
 	/* :tree! can enter tree mode. */
-	assert_success(exec_commands("tree!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tree!", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 	assert_true(cv_tree(lwin.custom.type));
 
@@ -592,7 +592,7 @@ TEST(tree_command)
 	snprintf(sub_sub_path, sizeof(sub_sub_path), "%s/sub/sub", sandbox);
 	create_dir(sub_sub_path);
 
-	assert_success(exec_commands("tree depth=1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tree depth=1", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 	assert_true(cv_tree(lwin.custom.type));
 	assert_int_equal(1, lwin.list_rows);
@@ -606,16 +606,16 @@ TEST(regular_command)
 	strcpy(lwin.curr_dir, sandbox);
 
 	/* :tree enters tree mode. */
-	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tree", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 	assert_true(cv_tree(lwin.custom.type));
 
 	/* :regular leaves tree mode. */
-	assert_success(exec_commands("regular", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("regular", &lwin, CIT_COMMAND));
 	assert_false(flist_custom_active(&lwin));
 
 	/* Repeated :regular does nothing. */
-	assert_success(exec_commands("regular", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("regular", &lwin, CIT_COMMAND));
 	assert_false(flist_custom_active(&lwin));
 }
 
@@ -625,29 +625,29 @@ TEST(plugin_command)
 	curr_stats.plugs = plugs_create(curr_stats.vlua);
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("plugin load all", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("plugin load all", &lwin, CIT_COMMAND));
 	assert_string_equal("Trailing characters", ui_sb_last());
-	assert_failure(exec_commands("plugin wrong arg", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("plugin wrong arg", &lwin, CIT_COMMAND));
 	assert_string_equal("Unknown subcommand: wrong", ui_sb_last());
-	assert_failure(exec_commands("plugin args-count", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("plugin args-count", &lwin, CIT_COMMAND));
 	assert_string_equal("Too few arguments", ui_sb_last());
 
-	assert_success(exec_commands("plugin load", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugin load", &lwin, CIT_COMMAND));
 
 	strlist_t empty_list = {};
 	char *plug_items[] = { "plug" };
 	strlist_t plug_list = { .items = plug_items, .nitems = 1 };
 
 	ui_sb_msg("");
-	assert_success(exec_commands("plugin blacklist plug", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugin blacklist plug", &lwin, CIT_COMMAND));
 	assert_string_equal("", ui_sb_last());
 
 	strings_list_is(plug_list, plugs_get_blacklist(curr_stats.plugs));
 	strings_list_is(empty_list, plugs_get_whitelist(curr_stats.plugs));
 
 	ui_sb_msg("");
-	assert_success(exec_commands("plugin whitelist plug", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("plugin whitelist plug", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugin whitelist plug", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugin whitelist plug", &lwin, CIT_COMMAND));
 	assert_string_equal("", ui_sb_last());
 
 	strings_list_is(plug_list, plugs_get_blacklist(curr_stats.plugs));
@@ -674,7 +674,7 @@ TEST(help_command)
 
 	cfg.use_vim_help = 0;
 
-	assert_success(exec_commands("help", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("help", &lwin, CIT_COMMAND));
 
 	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
 	assert_string_equal("edit-one", ui_sb_last());
@@ -689,7 +689,7 @@ TEST(help_command)
 
 	cfg.use_vim_help = 1;
 
-	assert_success(exec_commands("help", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("help", &lwin, CIT_COMMAND));
 
 	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
 	assert_string_equal("open-help", ui_sb_last());
@@ -710,19 +710,19 @@ TEST(view_command)
 
 	curr_stats.preview.on = 0;
 
-	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("view", &lwin, CIT_COMMAND));
 	assert_true(curr_stats.preview.on);
 
-	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("view", &lwin, CIT_COMMAND));
 	assert_false(curr_stats.preview.on);
 
-	assert_success(exec_commands("view!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("view!", &lwin, CIT_COMMAND));
 	assert_true(curr_stats.preview.on);
 
-	assert_success(exec_commands("view!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("view!", &lwin, CIT_COMMAND));
 	assert_true(curr_stats.preview.on);
 
-	assert_success(exec_commands("view", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("view", &lwin, CIT_COMMAND));
 	assert_false(curr_stats.preview.on);
 
 	opt_handlers_teardown();
@@ -733,13 +733,13 @@ TEST(invert_command)
 	opt_handlers_setup();
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("set sort? sortorder?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sort? sortorder?", &lwin, CIT_COMMAND));
 	assert_string_equal("  sort=+name\n  sortorder=ascending", ui_sb_last());
 
-	assert_success(exec_commands("invert o", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("invert o", &lwin, CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("set sort? sortorder?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sort? sortorder?", &lwin, CIT_COMMAND));
 	assert_string_equal("  sort=-name\n  sortorder=descending", ui_sb_last());
 
 	opt_handlers_teardown();
@@ -750,7 +750,7 @@ TEST(locate_command)
 	ui_sb_msg("");
 
 	/* Nothing to repeat. */
-	assert_failure(exec_commands("locate", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("locate", &lwin, CIT_COMMAND));
 	assert_string_equal("Nothing to repeat", ui_sb_last());
 }
 

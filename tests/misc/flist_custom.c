@@ -391,13 +391,13 @@ TEST(custom_view_does_not_reset_local_state)
 
 		lwin.columns = columns_create();
 
-		assert_success(exec_commands("set sort=+iname", &lwin, CIT_COMMAND));
+		assert_success(cmds_dispatch("set sort=+iname", &lwin, CIT_COMMAND));
 		assert_int_equal(SK_BY_INAME, lwin.sort[0]);
 
 		local_filter_apply(&lwin, "b");
 
 		/* Neither on entering it. */
-		assert_success(exec_commands("setl sort=-target", &lwin, CIT_COMMAND));
+		assert_success(cmds_dispatch("setl sort=-target", &lwin, CIT_COMMAND));
 		assert_int_equal(-SK_BY_TARGET, lwin.sort[0]);
 		setup_custom_view(&lwin, very);
 		assert_int_equal(very ? SK_NONE : -SK_BY_TARGET, lwin.sort[0]);
@@ -407,7 +407,7 @@ TEST(custom_view_does_not_reset_local_state)
 		cdt.line_hi_group = 1;
 		columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
 
-		assert_success(exec_commands("setl sort=-type", &lwin, CIT_COMMAND));
+		assert_success(cmds_dispatch("setl sort=-type", &lwin, CIT_COMMAND));
 		assert_int_equal(-SK_BY_TYPE, lwin.sort[0]);
 
 		curr_stats.load_stage = 1;

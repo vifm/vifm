@@ -46,7 +46,7 @@ TEST(classify_parsing_of_types)
 		[FT_REG][DECORATION_SUFFIX][0] = '/',
 	};
 
-	assert_success(exec_commands("set classify=*:reg:/,-:dir:1", &lwin,
+	assert_success(cmds_dispatch("set classify=*:reg:/,-:dir:1", &lwin,
 				CIT_COMMAND));
 
 	assert_int_equal(0,
@@ -61,7 +61,7 @@ TEST(classify_parsing_of_exprs)
 	const char type_decs[FT_COUNT][2][9] = {};
 
 	assert_success(
-			exec_commands(
+			cmds_dispatch(
 				"set classify=*::!{*.c}::/,123::*.c,,*.b::753,b::/.*-.*/i::q,-::*::1",
 				&lwin, CIT_COMMAND));
 
@@ -86,17 +86,17 @@ TEST(classify_suffix_prefix_lengths)
 	char type_decs[FT_COUNT][2][9];
 	memcpy(&type_decs, &cfg.type_decs, sizeof(cfg.type_decs));
 
-	assert_failure(exec_commands("set classify=123456789::{*.c}::/", &lwin,
+	assert_failure(cmds_dispatch("set classify=123456789::{*.c}::/", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(0,
 			memcmp(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs)));
 
-	assert_failure(exec_commands("set classify=::{*.c}::123456789", &lwin,
+	assert_failure(cmds_dispatch("set classify=::{*.c}::123456789", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(0,
 			memcmp(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs)));
 
-	assert_success(exec_commands("set classify=12345678::{*.c}::12345678", &lwin,
+	assert_success(cmds_dispatch("set classify=12345678::{*.c}::12345678", &lwin,
 				CIT_COMMAND));
 }
 
@@ -110,7 +110,7 @@ TEST(classify_pattern_list)
 
 	const char *prefix, *suffix;
 
-	assert_success(exec_commands("set classify=<::{*-data}{*-data}::>", &lwin,
+	assert_success(cmds_dispatch("set classify=<::{*-data}{*-data}::>", &lwin,
 				CIT_COMMAND));
 
 	ui_get_decors(&entry, &prefix, &suffix);
@@ -128,7 +128,7 @@ TEST(classify_can_be_set_to_empty_value)
 
 	const char *prefix, *suffix;
 
-	assert_success(exec_commands("set classify=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set classify=", &lwin, CIT_COMMAND));
 
 	ui_get_decors(&entry, &prefix, &suffix);
 	assert_string_equal("", prefix);
@@ -146,7 +146,7 @@ TEST(classify_account_assumes_trailing_slashes_for_dirs)
 
 	const char *prefix, *suffix;
 
-	assert_success(exec_commands("set classify=[:dir:],*::*ad::@", &lwin,
+	assert_success(cmds_dispatch("set classify=[:dir:],*::*ad::@", &lwin,
 				CIT_COMMAND));
 
 	ui_get_decors(&entry, &prefix, &suffix);
@@ -156,9 +156,9 @@ TEST(classify_account_assumes_trailing_slashes_for_dirs)
 
 TEST(classify_state_is_not_changed_if_format_is_wong)
 {
-	assert_success(exec_commands("set classify=*::*ad::@", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set classify=*::*ad::@", &lwin, CIT_COMMAND));
 	assert_int_equal(1, cfg.name_dec_count);
-	assert_failure(exec_commands("set classify=*:*ad:@", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set classify=*:*ad:@", &lwin, CIT_COMMAND));
 	assert_int_equal(1, cfg.name_dec_count);
 }
 
@@ -172,7 +172,7 @@ TEST(classify_does_not_stop_on_empty_prefix)
 
 	const char *prefix, *suffix;
 
-	assert_success(exec_commands("set classify=:dir:/,:link:@,:fifo:\\|", &lwin,
+	assert_success(cmds_dispatch("set classify=:dir:/,:link:@,:fifo:\\|", &lwin,
 				CIT_COMMAND));
 
 	entry.type = FT_DIR;
@@ -200,9 +200,9 @@ TEST(changing_classify_invalidates_decors_cache)
 	load_dir_list(&lwin, 1);
 	load_dir_list(&rwin, 1);
 
-	assert_success(exec_commands("set millerview milleroptions=lsize:1,rsize:1",
+	assert_success(cmds_dispatch("set millerview milleroptions=lsize:1,rsize:1",
 				&lwin, CIT_COMMAND));
-	assert_success(exec_commands("set classify=::*.vifm::*\\|,::read::<>", &lwin,
+	assert_success(cmds_dispatch("set classify=::*.vifm::*\\|,::read::<>", &lwin,
 				CIT_COMMAND));
 
 	cfg.columns = 10;
@@ -224,7 +224,7 @@ TEST(changing_classify_invalidates_decors_cache)
 	(void)stats_update_fetch();
 	curr_stats.load_stage = 2;
 	redraw_view(&lwin);
-	assert_success(exec_commands("set classify=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set classify=", &lwin, CIT_COMMAND));
 	curr_stats.load_stage = 0;
 
 	/* Check that dir_entry_t::name_dec_num of inactive tab are reset. */

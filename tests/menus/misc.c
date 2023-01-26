@@ -50,7 +50,7 @@ TEST(enter_loads_selected_colorscheme)
 	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
 			"color-schemes/", NULL);
 
-	assert_success(exec_commands("colorscheme", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("colorscheme", &lwin, CIT_COMMAND));
 
 	strcpy(cfg.cs.name, "test-scheme");
 	cfg.cs.color[WIN_COLOR].fg = 1;
@@ -72,7 +72,7 @@ TEST(menu_can_be_searched_interactively)
 {
 	cfg.inc_search = 1;
 
-	assert_success(exec_commands("vifm", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("vifm", &lwin, CIT_COMMAND));
 	menu_data_t *menu = menu_get_current();
 
 	(void)vle_keys_exec_timed_out(L"/^Compiled at:");
@@ -89,7 +89,7 @@ TEST(menu_is_built_from_a_command)
 {
 	undo_setup();
 
-	assert_success(exec_commands("!echo only-line %m", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("!echo only-line %m", &lwin, CIT_COMMAND));
 
 	assert_int_equal(1, menu_get_current()->len);
 	assert_string_equal("only-line", menu_get_current()->items[0]);
@@ -110,7 +110,7 @@ TEST(menu_is_built_from_a_command_with_input, IF(have_cat))
 	lwin.dir_entry[1].marked = 1;
 	lwin.pending_marking = 1;
 
-	assert_success(exec_commands("!cat %Pl%m", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("!cat %Pl%m", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, menu_get_current()->len);
 	assert_string_equal("/path/a", menu_get_current()->items[0]);
@@ -126,7 +126,7 @@ TEST(menu_is_turned_into_cv)
 	undo_setup();
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
-	assert_success(exec_commands("!echo existing-files/a%M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("!echo existing-files/a%M", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_b);
 	assert_true(flist_custom_active(&lwin));
@@ -149,11 +149,11 @@ TEST(locate_menu_can_escape_args, IF(not_windows))
 			"#!/bin/sh\n"
 			"for arg; do echo \"$arg\"; done\n");
 
-	assert_success(exec_commands("locate a  b", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("locate a  b", &lwin, CIT_COMMAND));
 	assert_int_equal(1, menu_get_current()->len);
 	assert_string_equal("a  b", menu_get_current()->items[0]);
 
-	assert_success(exec_commands("locate -a  b", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("locate -a  b", &lwin, CIT_COMMAND));
 	assert_int_equal(2, menu_get_current()->len);
 	assert_string_equal("-a", menu_get_current()->items[0]);
 	assert_string_equal("b", menu_get_current()->items[1]);

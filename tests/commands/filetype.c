@@ -40,7 +40,7 @@ TEST(filetype_accepts_negated_patterns)
 {
 	ft_init(&prog_exists);
 
-	assert_success(exec_commands("filetype !{*.tar} prog", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filetype !{*.tar} prog", &lwin, CIT_COMMAND));
 
 	check_filetype();
 
@@ -52,7 +52,7 @@ TEST(filextype_accepts_negated_patterns)
 	ft_init(&prog_exists);
 	curr_stats.exec_env_type = EET_EMULATOR_WITH_X;
 
-	assert_success(exec_commands("filextype !{*.tar} prog", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filextype !{*.tar} prog", &lwin, CIT_COMMAND));
 
 	check_filetype();
 
@@ -66,7 +66,7 @@ TEST(fileviewer_accepts_negated_patterns)
 {
 	ft_init(&prog_exists);
 
-	assert_success(exec_commands("fileviewer !{*.tar} view", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("fileviewer !{*.tar} view", &lwin, CIT_COMMAND));
 	assert_string_equal("view", ft_get_viewer("file.version.tar.bz2"));
 
 	ft_reset(0);
@@ -75,9 +75,9 @@ TEST(fileviewer_accepts_negated_patterns)
 TEST(pattern_anding_and_orring_failures)
 {
 	/* No matching is performed, so we can use application/octet-stream. */
-	assert_failure(exec_commands("filetype /*/,"
+	assert_failure(cmds_dispatch("filetype /*/,"
 				"<application/octet-stream>{binary-data} app", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("fileviewer /*/,"
+	assert_failure(cmds_dispatch("fileviewer /*/,"
 				"<application/octet-stream>{binary-data} viewer", &lwin, CIT_COMMAND));
 }
 
@@ -91,11 +91,11 @@ TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
 	snprintf(cmd, sizeof(cmd),
 			"filetype {two-lines}<text/plain>,<%s>{binary-data} app",
 			get_mimetype(TEST_DATA_PATH "/read/binary-data", 0));
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 	snprintf(cmd, sizeof(cmd),
 			"fileviewer {two-lines}<text/plain>,<%s>{binary-data} viewer",
 			get_mimetype(TEST_DATA_PATH "/read/binary-data", 0));
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	ft = ft_get_all_programs(TEST_DATA_PATH "/read/two-lines");
 	assert_int_equal(1, ft.count);
@@ -136,8 +136,8 @@ TEST(cv_is_built_by_handler)
 	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
 	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
 
-	assert_success(exec_commands("filetype a echo %c %u", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("normal l", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filetype a echo %c %u", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("normal l", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 
 	assert_string_equal("echo %c %u", lwin.custom.title);

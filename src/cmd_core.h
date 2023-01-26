@@ -64,7 +64,7 @@ void cmds_init(void);
  * no message should be saved in the status bar, positive value to save message
  * on successful execution and negative value in case of error with error
  * message. */
-int exec_commands(const char cmd[], struct view_t *view, CmdInputType type);
+int cmds_dispatch(const char cmd[], struct view_t *view, CmdInputType type);
 
 /* Executes single command of specified kind.  Returns zero on success if no
  * message should be saved in the status bar, positive value to save message on

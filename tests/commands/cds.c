@@ -54,7 +54,7 @@ TEST(cds_does_the_replacement)
 	assert_success(chdir(path));
 	strcpy(lwin.curr_dir, path);
 
-	assert_success(exec_commands("cds syntax-highlight rename", &lwin,
+	assert_success(cmds_dispatch("cds syntax-highlight rename", &lwin,
 				CIT_COMMAND));
 
 	snprintf(path, sizeof(path), "%s/rename", test_data);
@@ -70,7 +70,7 @@ TEST(cds_aborts_on_broken_)
 
 	strcpy(lwin.curr_dir, dst);
 
-	assert_failure(exec_commands("cds/rename/read/t", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("cds/rename/read/t", &lwin, CIT_COMMAND));
 
 	assert_string_equal(dst, lwin.curr_dir);
 }
@@ -82,7 +82,7 @@ TEST(cds_acts_like_substitute)
 	assert_success(chdir(path));
 	strcpy(lwin.curr_dir, path);
 
-	assert_success(exec_commands("cds/SYNtax-?hi[a-z]*/rename/i", &lwin,
+	assert_success(cmds_dispatch("cds/SYNtax-?hi[a-z]*/rename/i", &lwin,
 				CIT_COMMAND));
 
 	snprintf(path, sizeof(path), "%s/rename", test_data);
@@ -96,7 +96,7 @@ TEST(cds_can_change_path_of_both_panes)
 	assert_success(chdir(path));
 	strcpy(lwin.curr_dir, path);
 
-	assert_success(exec_commands("cds! syntax-highlight rename", &lwin,
+	assert_success(cmds_dispatch("cds! syntax-highlight rename", &lwin,
 				CIT_COMMAND));
 
 	snprintf(path, sizeof(path), "%s/rename", test_data);
@@ -111,7 +111,7 @@ TEST(cds_is_noop_when_pattern_not_found)
 	strcpy(lwin.curr_dir, test_data);
 	strcpy(rwin.curr_dir, sandbox);
 
-	assert_failure(exec_commands("cds asdlfkjasdlkfj rename", &lwin,
+	assert_failure(cmds_dispatch("cds asdlfkjasdlkfj rename", &lwin,
 				CIT_COMMAND));
 
 	assert_string_equal(test_data, lwin.curr_dir);

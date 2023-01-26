@@ -71,7 +71,7 @@ TEST(edit_handles_ranges, IF(not_windows))
 	lwin.dir_entry[1].name = strdup("file2");
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 
-	(void)exec_commands("%edit", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("%edit", &lwin, CIT_COMMAND);
 
 	const char *lines[] = { "file1", "file2" };
 	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
@@ -102,7 +102,7 @@ TEST(edit_command)
 	int i;
 	for(i = 0; i < 2; ++i)
 	{
-		assert_success(exec_commands("edit a b", &lwin, CIT_COMMAND));
+		assert_success(cmds_dispatch("edit a b", &lwin, CIT_COMMAND));
 
 		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
 		assert_string_equal("edit-many", ui_sb_last());
@@ -138,7 +138,7 @@ TEST(edit_broken_symlink, IF(not_windows))
 	lwin.dir_entry[0].name = strdup("broken");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
-	(void)exec_commands("edit", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("edit", &lwin, CIT_COMMAND);
 
 	restore_cwd(saved_cwd);
 	remove_file(SANDBOX_PATH "/broken");

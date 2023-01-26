@@ -821,7 +821,7 @@ source_file_internal(strlist_t lines, const char filename[])
 
 		ui_sb_clear();
 
-		if(exec_commands(line, curr_view, CIT_COMMAND) < 0)
+		if(cmds_dispatch(line, curr_view, CIT_COMMAND) < 0)
 		{
 			show_sourcing_error(filename, line_num);
 			encoutered_errors = 1;

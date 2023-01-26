@@ -31,30 +31,30 @@ TEST(map_commands_count_arguments_correctly)
 {
 	/* Each map command below should receive two arguments: "\\" and "j". */
 	/* Each unmap command below should receive single argument: "\\". */
-	assert_success(exec_commands("cmap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("cnoremap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("cunmap \\", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("dmap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("dnoremap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("dunmap \\", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("mmap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("mnoremap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("munmap \\", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nmap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nnoremap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("nunmap \\", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("map \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("noremap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("unmap \\", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("map! \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("noremap! \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("unmap! \\", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("qmap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("qnoremap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("qunmap \\", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("vmap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("vnoremap \\ j", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("vunmap \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cunmap \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("dmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("dnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("dunmap \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("mmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("mnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("munmap \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("nunmap \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("map \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("noremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unmap \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("map! \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("noremap! \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unmap! \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("qmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("qnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("qunmap \\", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("vmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("vnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("vunmap \\", &lwin, CIT_COMMAND));
 }
 
 TEST(map_parses_args)
@@ -73,10 +73,10 @@ TEST(map_parses_args)
 
 	/* <silent> */
 	assert_int_equal(0, silence);
-	assert_success(exec_commands("map a x", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("map <silent>b x", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("map <silent> c x", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("map <silent><silent>d x", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("map a x", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("map <silent>b x", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("map <silent> c x", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("map <silent><silent>d x", &lwin, CIT_COMMAND));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"a")));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"1b")));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"1c")));
@@ -84,14 +84,14 @@ TEST(map_parses_args)
 	assert_int_equal(0, silence);
 
 	/* <wait> */
-	assert_success(exec_commands("map <wait>xj j", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("map <wait>xj j", &lwin, CIT_COMMAND));
 	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"x"));
 }
 
 TEST(dialogs_exit_silent_mode)
 {
 	const char *cmd = "map <silent> b :cd /no-such-dir<cr>";
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	curr_stats.load_stage = -1;
 	stats_silence_ui(1);

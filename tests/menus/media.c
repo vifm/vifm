@@ -87,7 +87,7 @@ TEST(menu_not_created_if_no_devices)
 	      "nothing", fp);
 	fclose(fp);
 
-	assert_failure(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("media", &lwin, CIT_COMMAND));
 	assert_true(vle_mode_is(NORMAL_MODE));
 }
 
@@ -95,14 +95,14 @@ TEST(menu_aborts_if_mediaprg_is_not_set)
 {
 	update_string(&cfg.media_prg, "");
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 	assert_true(vle_mode_is(NORMAL_MODE));
 }
 
 TEST(script_failure_is_handled)
 {
 	update_string(&cfg.media_prg, "very/wrong/cmd/name");
-	assert_failure(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("media", &lwin, CIT_COMMAND));
 	assert_true(vle_mode_is(NORMAL_MODE));
 }
 
@@ -113,7 +113,7 @@ TEST(menu_is_loaded)
 	      "device=/dev/sdf", fp);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	assert_true(vle_mode_is(MENU_MODE));
 	(void)vle_keys_exec(WK_ESC);
@@ -138,7 +138,7 @@ TEST(entries_are_formatted_correctly)
 	      "label=ignored label\n", fp);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	assert_int_equal(10, menu_get_current()->len);
 
@@ -176,7 +176,7 @@ TEST(enter_navigates_to_mount_point)
 	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	lwin.curr_dir[0] = '\0';
 	(void)vle_keys_exec(WK_j);
@@ -192,7 +192,7 @@ TEST(enter_navigates_to_mount_point_on_device_line)
 	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	lwin.curr_dir[0] = '\0';
 	(void)vle_keys_exec(WK_CR);
@@ -209,7 +209,7 @@ TEST(enter_mounts_unmounted_device)
 	      "echo \"$@\" >> out\n", fp);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	(void)remove("out");
 
@@ -245,7 +245,7 @@ TEST(enter_does_nothing_on_device_lines_with_multiple_mounts)
 	      "mount-point=mount-point2\n", fp);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	lwin.curr_dir[0] = '\0';
 	(void)vle_keys_exec(WK_CR);
@@ -261,7 +261,7 @@ TEST(unhandled_key_is_ignored)
 	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_x);
 	(void)vle_keys_exec(WK_ESC);
@@ -276,7 +276,7 @@ TEST(r_reloads_list)
 	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	fp = fopen("script", "w");
 	fputs("#!/bin/sh\n"
@@ -314,7 +314,7 @@ TEST(m_toggles_mounts)
 	      "echo \"$@\" >> out\n", fp);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	(void)remove("out");
 
@@ -384,7 +384,7 @@ TEST(mounting_failure_is_handled)
 	      "mount-point=mount-point1\n", fp);
 	fclose(fp);
 
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	fp = fopen("script", "w");
 	fputs("#!/bin/sh\n"
@@ -422,7 +422,7 @@ TEST(mount_directory_is_left_before_unmounting)
 
 	strcpy(lwin.curr_dir, sandbox);
 	assert_success(chdir(sandbox));
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_j);
 	(void)vle_keys_exec(WK_m);
@@ -456,7 +456,7 @@ TEST(mount_matching_current_path_is_picked_by_default)
 	fclose(fp);
 
 	strcpy(lwin.curr_dir, sandbox);
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	assert_int_equal(4, menu_get_current()->pos);
 
@@ -480,7 +480,7 @@ TEST(barckets_navigates_between_devices)
 	fclose(fp);
 
 	strcpy(lwin.curr_dir, sandbox);
-	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("media", &lwin, CIT_COMMAND));
 
 	assert_int_equal(10, menu_get_current()->len);
 

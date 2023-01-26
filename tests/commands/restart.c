@@ -61,16 +61,16 @@ TEST(history_survives_in_tabs_on_restart_without_persistance)
 
 	setup_tabs();
 
-	assert_success(exec_commands("restart", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("restart", &lwin, CIT_COMMAND));
 
 	check_second_tab();
-	assert_success(exec_commands("tabprev", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tabprev", &lwin, CIT_COMMAND));
 	check_first_tab();
 }
 
 TEST(restart_checks_its_parameter)
 {
-	assert_failure(exec_commands("restart wrong", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("restart wrong", &lwin, CIT_COMMAND));
 }
 
 TEST(history_survives_in_tabs_on_restart_with_persistance)
@@ -81,10 +81,10 @@ TEST(history_survives_in_tabs_on_restart_with_persistance)
 
 	setup_tabs();
 
-	assert_success(exec_commands("write | restart", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("write | restart", &lwin, CIT_COMMAND));
 
 	check_second_tab();
-	assert_success(exec_commands("tabprev", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tabprev", &lwin, CIT_COMMAND));
 	check_first_tab();
 
 	remove_file(SANDBOX_PATH "/vifminfo.json");
@@ -97,7 +97,7 @@ TEST(partial_restart_preserves_tabs)
 	cfg.vifm_info = VINFO_DHISTORY | VINFO_TABS;
 
 	setup_tabs();
-	assert_success(exec_commands("restart", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("restart", &lwin, CIT_COMMAND));
 	assert_int_equal(2, tabs_count(&lwin));
 }
 
@@ -108,7 +108,7 @@ TEST(full_restart_drops_tabs)
 	cfg.vifm_info = VINFO_DHISTORY | VINFO_TABS;
 
 	setup_tabs();
-	assert_success(exec_commands("restart full", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("restart full", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_count(&lwin));
 }
 
@@ -122,7 +122,7 @@ setup_tabs(void)
 	flist_hist_setup(&rwin, "/t1rdir2", "t1rfile2", 2, 1);
 	flist_hist_setup(&rwin, "/path", "", 3, 1);
 
-	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("tabnew", &lwin, CIT_COMMAND));
 
 	flist_hist_setup(&lwin, "/t2ldir1", "t2lfile1", 1, 1);
 	flist_hist_setup(&lwin, "/t2ldir2", "t2lfile2", 2, 1);

@@ -64,9 +64,9 @@ TEARDOWN()
 
 TEST(list_of_bmarks_is_filtered)
 {
-	assert_success(exec_commands("bmark! /a taga", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmark! /b tagb", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmarks taga", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! /a taga", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! /b tagb", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmarks taga", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, count_bmarks());
 	assert_int_equal(1, menu_get_current()->len);
@@ -77,8 +77,8 @@ TEST(enter_navigates_to_selected_bmark)
 {
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "bmark! '%s/read' taga", test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmarks", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmarks", &lwin, CIT_COMMAND));
 
 	lwin.curr_dir[0] = '\0';
 	(void)vle_keys_exec(WK_CR);
@@ -90,8 +90,8 @@ TEST(gf_navigates_to_selected_bmark)
 {
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "bmark! '%s/' taga", test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmarks", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmarks", &lwin, CIT_COMMAND));
 
 	lwin.curr_dir[0] = '\0';
 	(void)vle_keys_exec(WK_g WK_f);
@@ -104,8 +104,8 @@ TEST(e_opens_selected_bmark)
 	char buf[PATH_MAX + 1];
 
 	snprintf(buf, sizeof(buf), "bmark! '%s/read' taga", test_data);
-	assert_success(exec_commands(buf, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmarks", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(buf, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmarks", &lwin, CIT_COMMAND));
 
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
@@ -138,9 +138,9 @@ TEST(e_opens_selected_bmark)
 
 TEST(bmark_is_deleted)
 {
-	assert_success(exec_commands("bmark! /a taga", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmark! /b tagb", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmarks", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! /a taga", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! /b tagb", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmarks", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, count_bmarks());
 	(void)vle_keys_exec(WK_d WK_d);
@@ -152,8 +152,8 @@ TEST(unhandled_key_is_ignored)
 {
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "bmark! '%s/read' taga", test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmarks", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmarks", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_x);
 	(void)vle_keys_exec(WK_ESC);
@@ -164,17 +164,17 @@ TEST(bmgo_navigates_to_single_match)
 	lwin.curr_dir[0] = '\0';
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "bmark! '%s/read' taga", test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmgo", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmgo", &lwin, CIT_COMMAND));
 	assert_true(paths_are_equal(lwin.curr_dir, test_data));
 }
 
 TEST(sorting_updates_associated_data)
 {
-	assert_success(exec_commands("bmark! /c tagb", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmark! /b tagb", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmark! /a taga", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("bmarks", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! /c tagb", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! /b tagb", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! /a taga", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmarks", &lwin, CIT_COMMAND));
 
 	assert_int_equal(3, menu_get_current()->len);
 	assert_string_equal("/a", menu_get_current()->data[0]);

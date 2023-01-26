@@ -67,22 +67,22 @@ TEST(find_command, IF(not_windows))
 	assert_success(chdir(TEST_DATA_PATH));
 	strcpy(lwin.curr_dir, test_data);
 
-	assert_success(exec_commands("set findprg='find %s %a %u'", &lwin,
+	assert_success(cmds_dispatch("set findprg='find %s %a %u'", &lwin,
 				CIT_COMMAND));
 
 	/* Nothing to repeat. */
 	cmds_drop_state();
-	assert_failure(exec_commands("find", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("find", &lwin, CIT_COMMAND));
 
-	assert_success(exec_commands("find a", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("find a", &lwin, CIT_COMMAND));
 	assert_int_equal(3, lwin.list_rows);
 	assert_string_equal("Find a", lwin.custom.title);
 
-	assert_success(exec_commands("find . -name aaa", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("find . -name aaa", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("Find . -name aaa", lwin.custom.title);
 
-	assert_success(exec_commands("find -name '*.vifm'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("find -name '*.vifm'", &lwin, CIT_COMMAND));
 	assert_int_equal(11, lwin.list_rows);
 	assert_string_equal("Find -name '*.vifm'", lwin.custom.title);
 
@@ -91,18 +91,18 @@ TEST(find_command, IF(not_windows))
 
 	/* Repeat last search. */
 	strcpy(lwin.curr_dir, test_data);
-	assert_success(exec_commands("find", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("find", &lwin, CIT_COMMAND));
 	assert_int_equal(11, lwin.list_rows);
 }
 
 TEST(enter_navigates_to_found_file, IF(not_windows))
 {
-	assert_success(exec_commands("set findprg='find %s %a'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set findprg='find %s %a'", &lwin, CIT_COMMAND));
 
 	assert_success(chdir(TEST_DATA_PATH));
 	strcpy(lwin.curr_dir, test_data);
 
-	assert_success(exec_commands("find dir1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("find dir1", &lwin, CIT_COMMAND));
 
 	char dst[PATH_MAX + 1];
 	snprintf(dst, sizeof(dst), "%s/tree", test_data);
@@ -114,13 +114,13 @@ TEST(enter_navigates_to_found_file, IF(not_windows))
 
 TEST(p_macro_works, IF(not_windows))
 {
-	assert_success(exec_commands("set findprg='find %s -name %p'", &lwin,
+	assert_success(cmds_dispatch("set findprg='find %s -name %p'", &lwin,
 				CIT_COMMAND));
 
 	assert_success(chdir(TEST_DATA_PATH));
 	strcpy(lwin.curr_dir, test_data);
 
-	assert_failure(exec_commands("find a$NO_SUCH_VAR", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("find a$NO_SUCH_VAR", &lwin, CIT_COMMAND));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

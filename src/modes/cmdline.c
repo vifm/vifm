@@ -1090,7 +1090,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 
 	if(old_input_stat.sub_mode == CLS_COMMAND)
 	{
-		curr_stats.save_msg = exec_commands("", curr_view, CIT_COMMAND);
+		curr_stats.save_msg = cmds_dispatch("", curr_view, CIT_COMMAND);
 	}
 	else if(old_input_stat.sub_mode == CLS_FILTER)
 	{
@@ -1600,7 +1600,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		{
 			cmds_scope_start();
 		}
-		curr_stats.save_msg = exec_commands(real_start, curr_view, cmd_type);
+		curr_stats.save_msg = cmds_dispatch(real_start, curr_view, cmd_type);
 		if(sub_mode == CLS_COMMAND)
 		{
 			if(cmds_scope_finish() != 0)

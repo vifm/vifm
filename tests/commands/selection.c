@@ -66,19 +66,19 @@ TEARDOWN()
 
 TEST(select_fails_for_wrong_pattern)
 {
-	assert_failure(exec_commands("select /**/", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("select /**/", &lwin, CIT_COMMAND));
 }
 
 TEST(select_fails_for_pattern_and_range)
 {
-	assert_failure(exec_commands("1,$select *.c", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("1,$select *.c", &lwin, CIT_COMMAND));
 }
 
 TEST(select_selects_matching_files)
 {
 	add_some_files_to_view(&lwin);
 
-	assert_success(exec_commands("select *.c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select *.c", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
@@ -92,7 +92,7 @@ TEST(select_appends_matching_files_to_selection)
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 2;
 
-	assert_success(exec_commands("select *.c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select *.c", &lwin, CIT_COMMAND));
 
 	assert_int_equal(3, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
@@ -107,7 +107,7 @@ TEST(select_bang_unselects_nonmatching_files)
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 2;
 
-	assert_success(exec_commands("select! *.c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select! *.c", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
@@ -123,19 +123,19 @@ TEST(select_noargs_selects_current_file)
 	lwin.selected_files = 2;
 	lwin.list_pos = 2;
 
-	assert_success(exec_commands("select", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select", &lwin, CIT_COMMAND));
 	assert_int_equal(3, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 
-	assert_success(exec_commands("select", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select", &lwin, CIT_COMMAND));
 	assert_int_equal(3, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 
-	assert_success(exec_commands("select!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select!", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -148,13 +148,13 @@ TEST(select_can_select_range)
 	lwin.dir_entry[0].selected = 1;
 	lwin.selected_files = 1;
 
-	assert_success(exec_commands("2,$select", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("2,$select", &lwin, CIT_COMMAND));
 	assert_int_equal(3, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 
-	assert_success(exec_commands("2,$select!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("2,$select!", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
@@ -163,12 +163,12 @@ TEST(select_can_select_range)
 
 TEST(unselect_fails_for_wrong_pattern)
 {
-	assert_failure(exec_commands("unselect /**/", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("unselect /**/", &lwin, CIT_COMMAND));
 }
 
 TEST(unselect_fails_for_pattern_and_range)
 {
-	assert_failure(exec_commands("1,$unselect *.c", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("1,$unselect *.c", &lwin, CIT_COMMAND));
 }
 
 TEST(unselect_unselects_matching_files)
@@ -178,7 +178,7 @@ TEST(unselect_unselects_matching_files)
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 2;
 
-	assert_success(exec_commands("unselect *.c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect *.c", &lwin, CIT_COMMAND));
 
 	assert_int_equal(1, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
@@ -194,14 +194,14 @@ TEST(unselect_noargs_unselects_current_file)
 	lwin.selected_files = 2;
 
 	lwin.list_pos = 2;
-	assert_success(exec_commands("unselect", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 
 	lwin.list_pos = 1;
-	assert_success(exec_commands("unselect", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -216,7 +216,7 @@ TEST(unselect_can_unselect_range)
 	lwin.dir_entry[2].selected = 1;
 	lwin.selected_files = 3;
 
-	assert_success(exec_commands("2,$unselect", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("2,$unselect", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -227,8 +227,8 @@ TEST(select_and_unselect_and_pattern_ambiguity)
 {
 	add_some_files_to_view(&lwin);
 
-	assert_success(exec_commands("select !{*.c}", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("unselect !/\\.c/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select !{*.c}", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect !/\\.c/", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
@@ -242,21 +242,21 @@ TEST(select_and_unselect_use_last_pattern)
 	cfg_resize_histories(5);
 
 	hists_search_save(".*\\.C");
-	assert_success(exec_commands("select! //I", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select! //I", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 
 	hists_search_save(".*\\.c$");
-	assert_success(exec_commands("select //", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select //", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 
 	hists_search_save("a.c");
-	assert_success(exec_commands("unselect ////", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect ////", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -269,19 +269,19 @@ TEST(select_and_unselect_accept_external_command)
 {
 	add_some_files_to_view(&lwin);
 
-	assert_success(exec_commands("select !echo a.c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select !echo a.c", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 
-	assert_success(exec_commands("select!!echo c.c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select!!echo c.c", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 
-	assert_success(exec_commands("unselect !echo c.c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect !echo c.c", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -292,7 +292,7 @@ TEST(select_expands_macros_in_external_command)
 {
 	add_some_files_to_view(&lwin);
 
-	assert_success(exec_commands("select !echo %c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select !echo %c", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -315,25 +315,25 @@ TEST(select_directory_supplied_by_external_command)
 	lwin.dir_entry[1].type = FT_REG;
 	lwin.selected_files = 0;
 
-	assert_success(exec_commands("select! !echo selection", &lwin,
+	assert_success(cmds_dispatch("select! !echo selection", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	assert_success(exec_commands("select! !echo selection/", &lwin,
+	assert_success(cmds_dispatch("select! !echo selection/", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	assert_success(exec_commands("select! !echo selection//////", &lwin,
+	assert_success(cmds_dispatch("select! !echo selection//////", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	assert_success(exec_commands("select! !echo a.c/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select! !echo a.c/", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -362,7 +362,7 @@ TEST(select_and_unselect_consider_trailing_slash)
 	lwin.selected_files = 0;
 
 	/* Select only directories. */
-	assert_success(exec_commands("select */", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select */", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
@@ -370,7 +370,7 @@ TEST(select_and_unselect_consider_trailing_slash)
 	assert_true(lwin.dir_entry[3].selected);
 
 	/* Select both file and directory. */
-	assert_success(exec_commands("select! a", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select! a", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
@@ -378,7 +378,7 @@ TEST(select_and_unselect_consider_trailing_slash)
 	assert_false(lwin.dir_entry[3].selected);
 
 	/* Select only files inside given directory. */
-	assert_success(exec_commands("select! {{*/a/**}}", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select! {{*/a/**}}", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -386,7 +386,7 @@ TEST(select_and_unselect_consider_trailing_slash)
 	assert_false(lwin.dir_entry[3].selected);
 
 	/* Select directories and files. */
-	assert_success(exec_commands("select! {{*/a}}", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select! {{*/a}}", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
@@ -394,7 +394,7 @@ TEST(select_and_unselect_consider_trailing_slash)
 	assert_false(lwin.dir_entry[3].selected);
 
 	/* Select only directories. */
-	assert_success(exec_commands("select! {{*/a/}}", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select! {{*/a/}}", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
@@ -419,7 +419,7 @@ TEST(symlinks_are_not_resolved_in_cwd, IF(not_windows))
 	lwin.selected_files = 0;
 
 	/* Select only directories. */
-	assert_success(exec_commands("select !echo a", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select !echo a", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 
@@ -430,13 +430,13 @@ TEST(select_and_unselect_can_take_location_list_as_input)
 {
 	add_some_files_to_view(&lwin);
 
-	assert_success(exec_commands("select !echo a.c:here", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select !echo a.c:here", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 
-	assert_success(exec_commands("unselect !echo a.c:here", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect !echo a.c:here", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -447,13 +447,13 @@ TEST(input_redirection, IF(have_cat))
 {
 	add_some_files_to_view(&lwin);
 
-	assert_success(exec_commands("select *", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select *", &lwin, CIT_COMMAND));
 	assert_int_equal(3, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 
-	assert_success(exec_commands("unselect !cat %Pl", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect !cat %Pl", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
@@ -462,8 +462,8 @@ TEST(input_redirection, IF(have_cat))
 
 TEST(pipe_in_pattern_does_not_separate_commands)
 {
-	assert_success(exec_commands("select /first|second/", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("unselect /first|second/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("select /first|second/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("unselect /first|second/", &lwin, CIT_COMMAND));
 }
 
 static void

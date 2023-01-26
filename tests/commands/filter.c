@@ -42,7 +42,7 @@ TEST(filter_prints_empty_filters_correctly)
 	                       "Implicit             ";
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
 
@@ -53,11 +53,11 @@ TEST(filter_prints_non_empty_filters)
 	                       "Explicit    ---->    abc\n"
 	                       "Implicit             ";
 
-	assert_success(exec_commands("filter abc", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter abc", &lwin, CIT_COMMAND));
 	local_filter_apply(&lwin, "local");
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
 
@@ -71,16 +71,16 @@ TEST(filter_with_empty_value_reuses_last_search)
 	cfg_resize_histories(5);
 	hists_search_save("pattern");
 
-	assert_success(exec_commands("filter //I", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter //I", &lwin, CIT_COMMAND));
 	ui_sb_msg("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
 
 TEST(filter_accepts_pipe_without_escaping)
 {
-	assert_success(exec_commands("filter /a|b/", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("filter a|b", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter /a|b/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter a|b", &lwin, CIT_COMMAND));
 }
 
 TEST(filter_prints_whole_manual_filter_expression)
@@ -90,10 +90,10 @@ TEST(filter_prints_whole_manual_filter_expression)
 	                       "Explicit    ---->    /abc/i\n"
 	                       "Implicit             ";
 
-	assert_success(exec_commands("filter /abc/i", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter /abc/i", &lwin, CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
 
@@ -104,11 +104,11 @@ TEST(filter_without_args_resets_manual_filter)
 	                       "Explicit             \n"
 	                       "Implicit             ";
 
-	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter this", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter", &lwin, CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
 
@@ -122,11 +122,11 @@ TEST(filter_reset_is_not_affected_by_search_history)
 	cfg_resize_histories(5);
 	hists_search_save("pattern");
 
-	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter this", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter", &lwin, CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
 
@@ -138,7 +138,7 @@ TEST(filter_can_affect_both_views)
 	other_view->invert = 1;
 
 	curr_stats.global_local_settings = 1;
-	assert_success(exec_commands("filter /x/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter /x/", &lwin, CIT_COMMAND));
 	curr_stats.global_local_settings = 0;
 
 	assert_string_equal("/x/", matcher_get_expr(curr_view->manual_filter));
@@ -152,7 +152,7 @@ TEST(filter_can_setup_inverted_filter)
 	assert_string_equal("", matcher_get_expr(curr_view->manual_filter));
 	curr_view->invert = 0;
 
-	assert_success(exec_commands("filter! /x/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter! /x/", &lwin, CIT_COMMAND));
 
 	assert_string_equal("/x/", matcher_get_expr(curr_view->manual_filter));
 	assert_true(curr_view->invert);
@@ -161,20 +161,20 @@ TEST(filter_can_setup_inverted_filter)
 TEST(filter_can_invert_manual_filter)
 {
 	curr_view->invert = 0;
-	assert_success(exec_commands("filter!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter!", &lwin, CIT_COMMAND));
 	assert_true(curr_view->invert);
-	assert_success(exec_commands("filter!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter!", &lwin, CIT_COMMAND));
 	assert_false(curr_view->invert);
 }
 
 TEST(filter_accepts_full_path_patterns)
 {
-	assert_success(exec_commands("filter ///some/path//", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter ///some/path//", &lwin, CIT_COMMAND));
 }
 
 TEST(filter_accepts_paths_with_many_spaces)
 {
-	assert_success(exec_commands("filter { a b c d e }", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter { a b c d e }", &lwin, CIT_COMMAND));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -256,7 +256,7 @@ TEST(bmark_tags_are_completed)
 {
 	bmarks_clear();
 
-	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
 
 	ASSERT_COMPLETION(L"bmark tag", L"bmark tag1");
 	ASSERT_COMPLETION(L"bmark! fake/path2 tag", L"bmark! fake/path2 tag1");
@@ -282,7 +282,7 @@ TEST(delbmark_tags_are_completed)
 {
 	bmarks_clear();
 
-	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
 
 	ASSERT_COMPLETION(L"delbmark ta", L"delbmark tag1");
 }
@@ -588,7 +588,7 @@ TEST(highlight_is_completed)
 	ASSERT_COMPLETION(L"hi WildMenu guibg=r", L"hi WildMenu guibg=red");
 	ASSERT_COMPLETION(L"hi WildMenu guibg=l", L"hi WildMenu guibg=l");
 
-	assert_success(exec_commands("hi {*.jpg} cterm=none", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("hi {*.jpg} cterm=none", &lwin, CIT_COMMAND));
 	ASSERT_COMPLETION(L"hi clear ", L"hi clear {*.jpg}");
 }
 

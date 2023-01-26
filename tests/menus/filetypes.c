@@ -64,7 +64,7 @@ TEARDOWN()
 
 TEST(opening_a_directory_works)
 {
-	assert_success(exec_commands("file", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("file", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_CR);
 
@@ -79,13 +79,13 @@ TEST(opening_a_directory_works)
 TEST(no_menu_for_fake_entry)
 {
 	get_current_entry(&lwin)->name[0] = '\0';
-	assert_success(exec_commands("file", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("file", &lwin, CIT_COMMAND));
 	assert_true(vle_mode_is(NORMAL_MODE));
 }
 
 TEST(c_key_is_handled)
 {
-	assert_success(exec_commands("file", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("file", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_c);
 	assert_true(vle_mode_is(CMDLINE_MODE));
@@ -97,7 +97,7 @@ TEST(c_key_is_handled)
 
 TEST(unknown_key_is_ignored)
 {
-	assert_success(exec_commands("file", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("file", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_t);
 	(void)vle_keys_exec(WK_CR);
@@ -118,7 +118,7 @@ TEST(pseudo_entry_is_always_present_for_directories)
 
 	ft_set_programs(ms, "abc-run %c", 0, 0);
 
-	assert_success(exec_commands("filetype bla-dir/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filetype bla-dir/", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, menu_get_current()->len);
 	assert_string_equal("[present] [Enter directory] " VIFM_PSEUDO_CMD,
@@ -131,7 +131,7 @@ TEST(pseudo_entry_is_always_present_for_directories)
 
 TEST(no_menu_if_no_handlers)
 {
-	assert_failure(exec_commands("filetype bla-file", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("filetype bla-file", &lwin, CIT_COMMAND));
 }
 
 TEST(filetypes_menu)
@@ -142,7 +142,7 @@ TEST(filetypes_menu)
 
 	ft_set_programs(ms, "abc-run %c", 0, 0);
 
-	assert_success(exec_commands("filetype b", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filetype b", &lwin, CIT_COMMAND));
 
 	assert_int_equal(1, menu_get_current()->len);
 	assert_string_equal("[present] abc-run %c", menu_get_current()->items[0]);
@@ -158,7 +158,7 @@ TEST(fileviewers_menu)
 
 	ft_set_viewers(ms, "abc-view %c");
 
-	assert_success(exec_commands("fileviewer c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("fileviewer c", &lwin, CIT_COMMAND));
 
 	assert_int_equal(1, menu_get_current()->len);
 	assert_string_equal("[present] abc-view %c", menu_get_current()->items[0]);

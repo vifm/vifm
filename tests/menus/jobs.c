@@ -48,7 +48,7 @@ SETUP()
 	assert_success(bg_execute("", "", 0, 0, &task, (void *)locks));
 	wait_until_locked(&locks[0]);
 
-	assert_success(exec_commands("jobs", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("jobs", &lwin, CIT_COMMAND));
 }
 
 TEARDOWN()
@@ -91,7 +91,7 @@ TEST(e_press_with_errors)
 	bg_job_t *job = bg_jobs;
 
 	(void)vle_keys_exec(WK_q);
-	assert_success(exec_commands("jobs", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("jobs", &lwin, CIT_COMMAND));
 
 	pthread_spin_lock(&job->errors_lock);
 	(void)strappend(&job->errors, &job->errors_len, "this\nis\nerror");

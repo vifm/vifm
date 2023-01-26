@@ -307,7 +307,7 @@ execute_extcmd(const char command[], CmdInputType type)
 	if(type == CIT_COMMAND)
 	{
 		cmds_scope_start();
-		curr_stats.save_msg = exec_commands(command, curr_view, type);
+		curr_stats.save_msg = cmds_dispatch(command, curr_view, type);
 		if(cmds_scope_finish() != 0)
 		{
 			curr_stats.save_msg = 1;
@@ -839,7 +839,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 }
 
 int
-exec_commands(const char cmdline[], view_t *view, CmdInputType type)
+cmds_dispatch(const char cmdline[], view_t *view, CmdInputType type)
 {
 	int save_msg = 0;
 	char **cmds = break_cmdline(cmdline, type == CIT_MENU_COMMAND);

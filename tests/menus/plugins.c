@@ -72,7 +72,7 @@ TEST(plugins_are_listed)
 
 	load_plugins(curr_stats.plugs, cfg.config_dir);
 	plugs_sort(curr_stats.plugs);
-	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugins", &lwin, CIT_COMMAND));
 
 	int first_loaded = starts_with(menu_get_current()->items[0], "[ loaded] ");
 
@@ -91,7 +91,7 @@ TEST(plugins_are_listed)
 TEST(gf_press)
 {
 	load_plugins(curr_stats.plugs, cfg.config_dir);
-	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugins", &lwin, CIT_COMMAND));
 
 	char *saved_cwd = save_cwd();
 
@@ -115,7 +115,7 @@ TEST(gf_press)
 TEST(e_press_without_errors)
 {
 	load_plugins(curr_stats.plugs, cfg.config_dir);
-	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugins", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_e);
 	assert_true(starts_with_lit(menu_get_current()->items[0], "["));
@@ -130,7 +130,7 @@ TEST(e_press_with_errors)
 	                                                  "return");
 
 	load_plugins(curr_stats.plugs, cfg.config_dir);
-	assert_success(exec_commands("plugins", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("plugins", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_e);
 	assert_string_equal("err1", menu_get_current()->items[0]);

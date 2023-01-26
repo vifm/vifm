@@ -121,7 +121,7 @@ execute_history_cb(view_t *view, menu_data_t *m)
 	{
 		case CMDHISTORY:
 			hists_commands_save(line);
-			exec_commands(line, view, CIT_COMMAND);
+			cmds_dispatch(line, view, CIT_COMMAND);
 			break;
 		case FSEARCHHISTORY:
 			hists_search_save(line);

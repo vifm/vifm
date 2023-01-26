@@ -69,26 +69,26 @@ builtin_cmd(const cmd_info_t* cmd_info)
 TEST(repeat_of_no_command_prints_a_message)
 {
 	called = 0;
-	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("builtin", &lwin, CIT_COMMAND);
 	assert_int_equal(1, called);
 
 	update_string(&curr_stats.last_cmdline_command, NULL);
 
 	called = 0;
-	assert_int_equal(1, exec_commands("!!", &lwin, CIT_COMMAND));
+	assert_int_equal(1, cmds_dispatch("!!", &lwin, CIT_COMMAND));
 	assert_int_equal(0, called);
 }
 
 TEST(double_emark_repeats_last_command)
 {
 	called = 0;
-	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
+	(void)cmds_dispatch("builtin", &lwin, CIT_COMMAND);
 	assert_int_equal(1, called);
 
 	update_string(&curr_stats.last_cmdline_command, "builtin");
 
 	called = 0;
-	assert_int_equal(0, exec_commands("!!", &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch("!!", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
 }
 
@@ -97,7 +97,7 @@ TEST(single_emark_without_args_fails)
 	update_string(&curr_stats.last_cmdline_command, "builtin");
 
 	called = 0;
-	assert_false(exec_commands("!", &lwin, CIT_COMMAND) == 0);
+	assert_false(cmds_dispatch("!", &lwin, CIT_COMMAND) == 0);
 	assert_int_equal(0, called);
 }
 
@@ -114,7 +114,7 @@ TEST(provide_input_to_fg_process, IF(have_cat))
 	lwin.dir_entry[1].marked = 1;
 	lwin.pending_marking = 1;
 
-	assert_int_equal(0, exec_commands("!cat > file %Pl", &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch("!cat > file %Pl", &lwin, CIT_COMMAND));
 
 	const char *lines[] = { "/path/a", "/path/b" };
 	file_is("file", lines, ARRAY_LEN(lines));
@@ -137,7 +137,7 @@ TEST(provide_input_to_bg_process, IF(have_cat))
 	lwin.dir_entry[1].marked = 1;
 	lwin.pending_marking = 1;
 
-	assert_int_equal(0, exec_commands("!cat > file %Pl &", &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch("!cat > file %Pl &", &lwin, CIT_COMMAND));
 
 	wait_for_all_bg();
 

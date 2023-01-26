@@ -41,24 +41,24 @@ TEARDOWN()
 TEST(wrong_gui_color_causes_error)
 {
 	ui_sb_msg("");
-	assert_failure(exec_commands("hi Win guifg=#1234", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("hi Win guifg=#1234", &lwin, CIT_COMMAND));
 	assert_string_equal("Unrecognized color value format: #1234", ui_sb_last());
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("hi Win guibg=#1234", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("hi Win guibg=#1234", &lwin, CIT_COMMAND));
 	assert_string_equal("Unrecognized color value format: #1234", ui_sb_last());
 }
 
 TEST(gui_colors_are_parsed)
 {
-	assert_success(exec_commands("hi Win guifg=#1234fe guibg=red gui=reverse",
+	assert_success(cmds_dispatch("hi Win guifg=#1234fe guibg=red gui=reverse",
 				&lwin, CIT_COMMAND));
 	assert_true(curr_stats.cs->color[WIN_COLOR].gui_set);
 	assert_int_equal(0x1234fe, curr_stats.cs->color[WIN_COLOR].gui_fg);
 	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].gui_bg);
 	assert_int_equal(A_REVERSE, curr_stats.cs->color[WIN_COLOR].gui_attr);
 
-	assert_success(exec_commands("hi Win guifg=default", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("hi Win guifg=default", &lwin, CIT_COMMAND));
 	assert_true(curr_stats.cs->color[WIN_COLOR].gui_set);
 	assert_int_equal(-1, curr_stats.cs->color[WIN_COLOR].gui_fg);
 	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].gui_bg);
@@ -68,9 +68,9 @@ TEST(gui_colors_are_parsed)
 TEST(gui_colors_are_printed)
 {
 	ui_sb_msg("");
-	assert_success(exec_commands("hi Win guifg=#1234fe guibg=red", &lwin,
+	assert_success(cmds_dispatch("hi Win guifg=#1234fe guibg=red", &lwin,
 				CIT_COMMAND));
-	assert_failure(exec_commands("hi Win", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("hi Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
 			"Win        cterm=none ctermfg=white   ctermbg=black  \n"
 			"           gui=none   guifg=#1234fe   guibg=red    ",
@@ -81,7 +81,7 @@ TEST(gui_colors_are_printed)
 
 TEST(wrong_attribute_causes_error)
 {
-	assert_failure(exec_commands("hi Win cterm=bad", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("hi Win cterm=bad", &lwin, CIT_COMMAND));
 }
 
 TEST(various_attributes_are_parsed)
@@ -95,15 +95,15 @@ TEST(various_attributes_are_parsed)
 
 	curr_stats.cs->color[WIN_COLOR].attr = 0;
 
-	assert_success(exec_commands("hi Win cterm=bold,italic", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("hi Win cterm=bold,italic", &lwin, CIT_COMMAND));
 	assert_int_equal(A_BOLD | italic_attr, curr_stats.cs->color[WIN_COLOR].attr);
 
-	assert_success(exec_commands("hi Win cterm=underline,reverse", &lwin,
+	assert_success(cmds_dispatch("hi Win cterm=underline,reverse", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(A_UNDERLINE | A_REVERSE,
 			curr_stats.cs->color[WIN_COLOR].attr);
 
-	assert_success(exec_commands("hi Win cterm=standout,combine", &lwin,
+	assert_success(cmds_dispatch("hi Win cterm=standout,combine", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(A_STANDOUT, curr_stats.cs->color[WIN_COLOR].attr);
 	assert_true(curr_stats.cs->color[WIN_COLOR].combine_attrs);
@@ -112,34 +112,34 @@ TEST(various_attributes_are_parsed)
 TEST(attributes_are_printed_back_correctly)
 {
 	ui_sb_msg("");
-	assert_failure(exec_commands("highlight AuxWin", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("highlight AuxWin", &lwin, CIT_COMMAND));
 	assert_string_equal("AuxWin     cterm=none ctermfg=default ctermbg=default",
 			ui_sb_last());
 
-	assert_success(exec_commands("highlight Win cterm=underline,inverse", &lwin,
+	assert_success(cmds_dispatch("highlight Win cterm=underline,inverse", &lwin,
 				CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_success(exec_commands("highlight AuxWin cterm=combine", &lwin,
+	assert_success(cmds_dispatch("highlight AuxWin cterm=combine", &lwin,
 				CIT_COMMAND));
-	assert_failure(exec_commands("highlight AuxWin", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("highlight AuxWin", &lwin, CIT_COMMAND));
 	assert_string_equal(
 			"AuxWin     cterm=combine ctermfg=default ctermbg=default", ui_sb_last());
 
-	assert_success(exec_commands("highlight Win cterm=underline,inverse", &lwin,
+	assert_success(cmds_dispatch("highlight Win cterm=underline,inverse", &lwin,
 				CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("highlight Win", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("highlight Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
 			"Win        cterm=underline,reverse ctermfg=white   ctermbg=black  ",
 			ui_sb_last());
 
-	assert_success(exec_commands("highlight Win cterm=italic,standout,bold",
+	assert_success(cmds_dispatch("highlight Win cterm=italic,standout,bold",
 				&lwin, CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("highlight Win", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("highlight Win", &lwin, CIT_COMMAND));
 #ifdef HAVE_A_ITALIC_DECL
 	assert_string_equal(
 			"Win        cterm=bold,standout,italic ctermfg=white   ctermbg=black  ",
@@ -160,7 +160,7 @@ TEST(color_is_set)
 	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
 	curr_stats.cs->color[WIN_COLOR].bg = COLOR_BLUE;
 	curr_stats.cs->color[WIN_COLOR].attr = 0;
-	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].fg);
 	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].bg);
 	assert_int_equal(A_BOLD, curr_stats.cs->color[WIN_COLOR].attr);
@@ -171,7 +171,7 @@ TEST(original_color_is_unchanged_on_parsing_error)
 	const char *const COMMANDS = "highlight Win ctermfg=red ctersmbg=red";
 
 	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
-	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_int_equal(COLOR_BLUE, curr_stats.cs->color[WIN_COLOR].fg);
 }
 
@@ -181,14 +181,14 @@ TEST(empty_curly_braces)
 {
 	const char *const COMMANDS = "highlight {} ctermfg=red";
 
-	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+	assert_false(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND) == 0);
 }
 
 TEST(curly_braces_pattern_transform)
 {
 	const char *const COMMANDS = "highlight {*.sh}<inode/directory> ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("{*.sh}<inode/directory>",
 			matchers_get_expr(cfg.cs.file_hi[0].matchers));
 }
@@ -197,28 +197,28 @@ TEST(curly_braces_no_flags_allowed)
 {
 	const char *const COMMANDS = "highlight {*.sh}i ctermfg=red";
 
-	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+	assert_false(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND) == 0);
 }
 
 TEST(empty_re_without_flags)
 {
 	const char *const COMMANDS = "highlight // ctermfg=red";
 
-	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+	assert_false(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND) == 0);
 }
 
 TEST(empty_re_with_flags)
 {
 	const char *const COMMANDS = "highlight //i ctermfg=red";
 
-	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+	assert_false(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND) == 0);
 }
 
 TEST(pattern_is_not_unescaped)
 {
 	const char *const COMMANDS = "highlight /^\\./ ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("/^\\./", matchers_get_expr(cfg.cs.file_hi[0].matchers));
 }
 
@@ -228,7 +228,7 @@ TEST(pattern_length_is_not_limited)
 		"|bz2|cab|cpio|deb|gz|jar|lha|lrz|lz|lzma|lzo|rar|rpm|rz|t7z|tZ|tar|tbz"
 		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$/ ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("/\\.(7z|Z|a|ace|alz|apkg|arc|arj|bz"
 		"|bz2|cab|cpio|deb|gz|jar|lha|lrz|lz|lzma|lzo|rar|rpm|rz|t7z|tZ|tar|tbz"
 		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$/",
@@ -239,7 +239,7 @@ TEST(i_flag)
 {
 	const char *const COMMANDS = "highlight /^\\./i ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("/^\\./i", matchers_get_expr(cfg.cs.file_hi[0].matchers));
 }
 
@@ -247,7 +247,7 @@ TEST(I_flag)
 {
 	const char *const COMMANDS = "highlight /^\\./I ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("/^\\./I", matchers_get_expr(cfg.cs.file_hi[0].matchers));
 }
 
@@ -255,14 +255,14 @@ TEST(wrong_flag)
 {
 	const char *const COMMANDS = "highlight /^\\./x ctermfg=red";
 
-	assert_int_equal(-1, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(-1, cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 }
 
 TEST(negation)
 {
 	const char *const COMMANDS = "highlight !/^\\./i ctermfg=red";
 
-	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("!/^\\./i",
 			matchers_get_expr(cfg.cs.file_hi[0].matchers));
 }
@@ -270,10 +270,10 @@ TEST(negation)
 TEST(highlighting_is_printed_back_correctly)
 {
 	const char *const COMMANDS = "highlight {*.jpg} ctermfg=red";
-	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("highlight {*.jpg}", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("highlight {*.jpg}", &lwin, CIT_COMMAND));
 	assert_string_equal("{*.jpg}    cterm=none ctermfg=red     ctermbg=default",
 			ui_sb_last());
 }
@@ -283,8 +283,8 @@ TEST(existing_records_are_updated)
 	const char *const COMMANDS1 = "highlight {*.jpg} ctermfg=red";
 	const char *const COMMANDS2 = "highlight {*.jpg} ctermfg=blue";
 
-	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
-	assert_success(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS2, &lwin, CIT_COMMAND));
 	assert_int_equal(1, cfg.cs.file_hi_count);
 
 	assert_int_equal(COLOR_BLUE, cfg.cs.file_hi[0].hi.fg);
@@ -296,10 +296,10 @@ TEST(all_records_can_be_removed)
 	const char *const COMMANDS2 = "highlight {*.avi} cterm=bold";
 	const char *const COMMANDS3 = "highlight clear";
 
-	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
-	assert_success(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS2, &lwin, CIT_COMMAND));
 	assert_int_equal(2, cfg.cs.file_hi_count);
-	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS3, &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.cs.file_hi_count);
 }
 
@@ -309,18 +309,18 @@ TEST(records_can_be_removed)
 	const char *const COMMANDS2 = "highlight clear {*.avi}";
 	const char *const COMMANDS3 = "highlight clear {*.jpg}";
 
-	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS1, &lwin, CIT_COMMAND));
 	assert_int_equal(1, cfg.cs.file_hi_count);
-	assert_failure(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch(COMMANDS2, &lwin, CIT_COMMAND));
 	assert_int_equal(1, cfg.cs.file_hi_count);
-	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS3, &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.cs.file_hi_count);
 }
 
 TEST(incorrect_highlight_groups_are_not_added)
 {
 	const char *const COMMANDS = "highlight {*.jpg} ctersmfg=red";
-	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.cs.file_hi_count);
 }
 
@@ -339,7 +339,7 @@ TEST(can_color_uncolored_file)
 				&lwin.dir_entry[0].hi_num));
 	assert_int_equal(INT_MAX, lwin.dir_entry[0].hi_num);
 
-	assert_success(exec_commands("highlight {*.vifm} cterm=bold", &lwin,
+	assert_success(cmds_dispatch("highlight {*.vifm} cterm=bold", &lwin,
 				CIT_COMMAND));
 	assert_non_null(cs_get_file_hi(curr_stats.cs, "some.vifm",
 				&lwin.dir_entry[0].hi_num));
@@ -355,11 +355,11 @@ TEST(tabs_are_allowed)
 	const char *const COMMANDS2 = "highlight {*.avi}\tctermfg=red";
 	const char *const COMMANDS3 = "highlight\t{*.mp3}\tctermfg=red";
 
-	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS1, &lwin, CIT_COMMAND));
 	assert_int_equal(1, cfg.cs.file_hi_count);
-	assert_success(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS2, &lwin, CIT_COMMAND));
 	assert_int_equal(2, cfg.cs.file_hi_count);
-	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(COMMANDS3, &lwin, CIT_COMMAND));
 	assert_int_equal(3, cfg.cs.file_hi_count);
 
 	if(cfg.cs.file_hi_count > 0)

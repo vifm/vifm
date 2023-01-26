@@ -1029,7 +1029,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 				ui_sb_msg("No previous command-line command");
 				return 1;
 			}
-			return exec_commands(last_cmd, curr_view, CIT_COMMAND) != 0;
+			return cmds_dispatch(last_cmd, curr_view, CIT_COMMAND) != 0;
 		}
 		return CMDS_ERR_TOO_FEW_ARGS;
 	}
@@ -1222,7 +1222,7 @@ aucmd_action_handler(const char action[], void *arg)
 	const int prev_global_local_settings = curr_stats.global_local_settings;
 	curr_stats.global_local_settings = 0;
 
-	(void)exec_commands(action, view, CIT_COMMAND);
+	(void)cmds_dispatch(action, view, CIT_COMMAND);
 
 	curr_stats.global_local_settings = prev_global_local_settings;
 
@@ -2375,7 +2375,7 @@ exe_cmd(const cmd_info_t *cmd_info)
 	char *const eval_result = try_eval_args(cmd_info);
 	if(eval_result != NULL)
 	{
-		result = exec_commands(eval_result, curr_view, CIT_COMMAND);
+		result = cmds_dispatch(eval_result, curr_view, CIT_COMMAND);
 		free(eval_result);
 	}
 	return result != 0;
@@ -5421,7 +5421,7 @@ winrun(view_t *view, const char cmd[])
 	/* :winrun and :windo should be able to set settings separately for each
 	 * window. */
 	curr_stats.global_local_settings = 0;
-	result = exec_commands(cmd, curr_view, CIT_COMMAND);
+	result = cmds_dispatch(cmd, curr_view, CIT_COMMAND);
 	curr_stats.global_local_settings = prev_global_local_settings;
 
 	ui_view_unpick(view, tmp_curr, tmp_other);
@@ -5579,7 +5579,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		cmds_scope_start();
 
-		int sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
+		int sm = cmds_dispatch(expanded_com, curr_view, CIT_COMMAND);
 		free(expanded_com);
 
 		if(cmds_scope_finish() != 0)

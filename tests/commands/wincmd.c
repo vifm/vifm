@@ -43,12 +43,12 @@ TEST(wincmd_can_switch_views)
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_success(exec_commands("wincmd h", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("wincmd h", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_success(exec_commands("execute 'wincmd h'", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("execute 'wincmd h'", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	init_builtin_functions();
@@ -56,14 +56,14 @@ TEST(wincmd_can_switch_views)
 	curr_view = &rwin;
 	other_view = &lwin;
 	assert_success(
-			exec_commands("if paneisat('left') == 0 | execute 'wincmd h' | endif",
+			cmds_dispatch("if paneisat('left') == 0 | execute 'wincmd h' | endif",
 				curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	curr_view = &rwin;
 	other_view = &lwin;
 	assert_success(
-			exec_commands("if paneisat('left') == 0 "
+			cmds_dispatch("if paneisat('left') == 0 "
 			             "|    execute 'wincmd h' "
 			             "|    let $a = paneisat('left') "
 			             "|endif",
@@ -80,8 +80,8 @@ TEST(wincmd_ignores_mappings)
 {
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_success(exec_commands("nnoremap <c-w> <nop>", curr_view, CIT_COMMAND));
-	assert_success(exec_commands("wincmd H", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("nnoremap <c-w> <nop>", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("wincmd H", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 }
 

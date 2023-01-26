@@ -78,9 +78,9 @@ print_func(const char buf[], size_t offset, AlignType align,
 
 TEST(lsview_block_columns_update_on_sort_change)
 {
-	assert_success(exec_commands("set viewcolumns=", curr_view, CIT_COMMAND));
-	assert_success(exec_commands("set lsview", curr_view, CIT_COMMAND));
-	assert_success(exec_commands("set sort=name", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("set viewcolumns=", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("set lsview", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("set sort=name", curr_view, CIT_COMMAND));
 	/* The check is implicit, an assert will fail if view columns are updated. */
 }
 
@@ -88,15 +88,15 @@ TEST(recovering_from_wrong_viewcolumns_value_works)
 {
 	/* Prepare state required for the test and ensure that it's correct (default
 	 * columns). */
-	assert_success(exec_commands("set viewcolumns={name}", curr_view,
+	assert_success(cmds_dispatch("set viewcolumns={name}", curr_view,
 				CIT_COMMAND));
-	assert_success(exec_commands("set viewcolumns=", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch("set viewcolumns=", curr_view, CIT_COMMAND));
 	ncols = 0;
 	columns_format_line(curr_view->columns, NULL, 100);
 	assert_int_equal(2, ncols);
 
 	/* Recovery after wrong string to default state should be done correctly. */
-	assert_failure(exec_commands("set viewcolumns=#4$^", curr_view, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set viewcolumns=#4$^", curr_view, CIT_COMMAND));
 
 	ncols = 0;
 	columns_format_line(curr_view->columns, NULL, 100);
@@ -110,7 +110,7 @@ TEST(nice_error_on_wrong_viewcolumn_name)
 	curr_stats.vlua = vlua_init();
 
 	ui_sb_msg("");
-	assert_failure(exec_commands("set viewcolumns={bad}", curr_view,
+	assert_failure(cmds_dispatch("set viewcolumns={bad}", curr_view,
 				CIT_COMMAND));
 	assert_string_equal("Failed to find column: bad\n"
 			"Invalid format of 'viewcolumns' option\n"
@@ -122,47 +122,47 @@ TEST(nice_error_on_wrong_viewcolumn_name)
 
 TEST(set_local_sets_local_value)
 {
-	assert_success(exec_commands("setlocal numberwidth=2", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setlocal numberwidth=2", &lwin, CIT_COMMAND));
 	assert_int_equal(4, lwin.num_width_g);
 	assert_int_equal(2, lwin.num_width);
 }
 
 TEST(set_global_sets_global_value)
 {
-	assert_success(exec_commands("setglobal numberwidth=2", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setglobal numberwidth=2", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.num_width_g);
 	assert_int_equal(4, lwin.num_width);
 }
 
 TEST(set_sets_local_and_global_values)
 {
-	assert_success(exec_commands("set numberwidth=2", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set numberwidth=2", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.num_width_g);
 	assert_int_equal(2, lwin.num_width);
 }
 
 TEST(fails_to_set_sort_group_with_wrong_regexp)
 {
-	assert_failure(exec_commands("set sortgroups=*", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("set sortgroups=.*,*", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sortgroups=*", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sortgroups=.*,*", &lwin, CIT_COMMAND));
 }
 
 TEST(dotfiles)
 {
-	assert_success(exec_commands("setlocal dotfiles", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setlocal dotfiles", &lwin, CIT_COMMAND));
 	assert_true(lwin.hide_dot_g);
 	assert_false(lwin.hide_dot);
 
-	assert_success(exec_commands("setglobal nodotfiles", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setglobal nodotfiles", &lwin, CIT_COMMAND));
 	assert_true(lwin.hide_dot_g);
 	assert_false(lwin.hide_dot);
 
-	assert_success(exec_commands("set dotfiles", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set dotfiles", &lwin, CIT_COMMAND));
 	assert_false(lwin.hide_dot_g);
 	assert_false(lwin.hide_dot);
 
 	curr_stats.global_local_settings = 1;
-	assert_success(exec_commands("set nodotfiles", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set nodotfiles", &lwin, CIT_COMMAND));
 	assert_true(lwin.hide_dot_g);
 	assert_true(lwin.hide_dot);
 	assert_true(rwin.hide_dot_g);
@@ -181,7 +181,7 @@ TEST(dotfiles)
 
 	rwin.sort_g[0] = SK_BY_NAME;
 
-	assert_success(exec_commands("setlocal dotfiles", &rwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setlocal dotfiles", &rwin, CIT_COMMAND));
 	reset_local_options(&rwin);
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("dotfiles?", OPT_LOCAL));
@@ -198,7 +198,7 @@ TEST(global_local_always_updates_two_views)
 	load_view_options(curr_view);
 
 	curr_stats.global_local_settings = 1;
-	assert_success(exec_commands("set nodotfiles lsview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set nodotfiles lsview", &lwin, CIT_COMMAND));
 	assert_true(lwin.ls_view_g);
 	assert_true(lwin.ls_view);
 	assert_true(rwin.ls_view_g);
@@ -215,14 +215,14 @@ TEST(global_local_updates_regular_options_only_once)
 	cfg.tab_stop = 0;
 
 	curr_stats.global_local_settings = 1;
-	assert_success(exec_commands("set tabstop+=10", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set tabstop+=10", &lwin, CIT_COMMAND));
 	assert_int_equal(10, cfg.tab_stop);
 	curr_stats.global_local_settings = 0;
 }
 
 TEST(caseoptions_are_normalized)
 {
-	assert_success(exec_commands("set caseoptions=pPGg", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set caseoptions=pPGg", &lwin, CIT_COMMAND));
 	assert_string_equal("Pg", vle_opts_get("caseoptions", OPT_GLOBAL));
 	assert_int_equal(CO_GOTO_FILE | CO_PATH_COMPL, cfg.case_override);
 	assert_int_equal(CO_GOTO_FILE, cfg.case_ignore);
@@ -235,7 +235,7 @@ TEST(range_in_wordchars_are_inclusive)
 {
 	int i;
 
-	assert_success(exec_commands("set wordchars=a-c,d", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set wordchars=a-c,d", &lwin, CIT_COMMAND));
 
 	for(i = 0; i < 255; ++i)
 	{
@@ -262,29 +262,29 @@ TEST(wrong_ranges_are_handled_properly)
 	}
 
 	/* Inversed range. */
-	assert_failure(exec_commands("set wordchars=c-a", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=c-a", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
 
 	/* Inversed range with negative beginning. */
-	assert_failure(exec_commands("set wordchars=\xff-10", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=\xff-10", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
 
 	/* Non single character range. */
-	assert_failure(exec_commands("set wordchars=a-bc", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=a-bc", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
 
 	/* Half-open ranges. */
-	assert_failure(exec_commands("set wordchars=a-", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=a-", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
-	assert_failure(exec_commands("set wordchars=-a", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=-a", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
 
 	/* Bad numerical values. */
-	assert_failure(exec_commands("set wordchars=-1", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=-1", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
-	assert_failure(exec_commands("set wordchars=666", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=666", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
-	assert_failure(exec_commands("set wordchars=40-1000", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set wordchars=40-1000", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
 }
 
@@ -296,7 +296,7 @@ TEST(sorting_is_set_correctly_on_restart)
 	ui_view_sort_list_ensure_well_formed(&lwin, lwin.sort_g);
 
 	curr_stats.restart_in_progress = 1;
-	assert_success(exec_commands("set sort=+iname", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set sort=+iname", &lwin, CIT_COMMAND));
 	curr_stats.restart_in_progress = 0;
 
 	assert_int_equal(SK_BY_INAME, lwin.sort[0]);
@@ -307,7 +307,7 @@ TEST(fillchars_is_set_on_correct_input)
 {
 	(void)replace_string(&cfg.vborder_filler, "x");
 	(void)replace_string(&cfg.hborder_filler, "y");
-	assert_success(exec_commands("set fillchars=vborder:a,hborder:b", &lwin,
+	assert_success(cmds_dispatch("set fillchars=vborder:a,hborder:b", &lwin,
 				CIT_COMMAND));
 	assert_string_equal("a", cfg.vborder_filler);
 	assert_string_equal("b", cfg.hborder_filler);
@@ -318,7 +318,7 @@ TEST(fillchars_is_set_on_correct_input)
 TEST(fillchars_not_changed_on_wrong_input)
 {
 	(void)replace_string(&cfg.vborder_filler, "x");
-	assert_failure(exec_commands("set fillchars=vorder:a", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set fillchars=vorder:a", &lwin, CIT_COMMAND));
 	assert_string_equal("x", cfg.vborder_filler);
 	update_string(&cfg.vborder_filler, NULL);
 }
@@ -327,8 +327,8 @@ TEST(values_in_fillchars_are_deduplicated)
 {
 	(void)replace_string(&cfg.vborder_filler, "x");
 
-	assert_success(exec_commands("set fillchars=vborder:a", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("set fillchars+=vborder:b", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set fillchars=vborder:a", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set fillchars+=vborder:b", &lwin, CIT_COMMAND));
 	assert_string_equal("b", cfg.vborder_filler);
 	update_string(&cfg.vborder_filler, NULL);
 
@@ -342,18 +342,18 @@ TEST(values_in_fillchars_are_deduplicated)
 
 TEST(fillchars_can_be_reset)
 {
-	assert_success(exec_commands("set fillchars=vborder:v,hborder:h", &lwin,
+	assert_success(cmds_dispatch("set fillchars=vborder:v,hborder:h", &lwin,
 				CIT_COMMAND));
 
-	assert_success(exec_commands("set fillchars=vborder:v", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set fillchars=vborder:v", &lwin, CIT_COMMAND));
 	assert_string_equal("v", cfg.vborder_filler);
 	assert_string_equal("", cfg.hborder_filler);
 
-	assert_success(exec_commands("set fillchars=hborder:h", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set fillchars=hborder:h", &lwin, CIT_COMMAND));
 	assert_string_equal(" ", cfg.vborder_filler);
 	assert_string_equal("h", cfg.hborder_filler);
 
-	assert_success(exec_commands("set fillchars=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set fillchars=", &lwin, CIT_COMMAND));
 	assert_string_equal(" ", cfg.vborder_filler);
 	assert_string_equal("", cfg.hborder_filler);
 
@@ -363,26 +363,26 @@ TEST(fillchars_can_be_reset)
 
 TEST(sizefmt_is_set_on_correct_input)
 {
-	assert_success(exec_commands("set sizefmt=units:si,precision:1", &lwin,
+	assert_success(cmds_dispatch("set sizefmt=units:si,precision:1", &lwin,
 				CIT_COMMAND));
 
 	cfg.sizefmt.base = -1;
 	cfg.sizefmt.precision = -1;
 
-	assert_success(exec_commands("set sizefmt=units:iec", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set sizefmt=units:iec", &lwin, CIT_COMMAND));
 
 	assert_int_equal(1024, cfg.sizefmt.base);
 	assert_int_equal(0, cfg.sizefmt.precision);
 	assert_int_equal(1, cfg.sizefmt.space);
 
-	assert_success(exec_commands("set sizefmt=units:si,precision:1,space", &lwin,
+	assert_success(cmds_dispatch("set sizefmt=units:si,precision:1,space", &lwin,
 				CIT_COMMAND));
 
 	assert_int_equal(1000, cfg.sizefmt.base);
 	assert_int_equal(1, cfg.sizefmt.precision);
 	assert_int_equal(1, cfg.sizefmt.space);
 
-	assert_success(exec_commands("set sizefmt=units:iec,precision:2,nospace",
+	assert_success(cmds_dispatch("set sizefmt=units:iec,precision:2,nospace",
 				&lwin, CIT_COMMAND));
 
 	assert_int_equal(1024, cfg.sizefmt.base);
@@ -396,12 +396,12 @@ TEST(sizefmt_not_changed_on_wrong_input)
 	cfg.sizefmt.precision = -1;
 	cfg.sizefmt.space = -1;
 
-	assert_failure(exec_commands("set sizefmt=wrong", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("set sizefmt=units:wrong", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("set sizefmt=precision:0", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("set sizefmt=precision:,units:si", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("set sizefmt=space", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("set sizefmt=nospace", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sizefmt=wrong", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sizefmt=units:wrong", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sizefmt=precision:0", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sizefmt=precision:,units:si", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sizefmt=space", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set sizefmt=nospace", &lwin, CIT_COMMAND));
 
 	assert_int_equal(-1, cfg.sizefmt.base);
 	assert_int_equal(-1, cfg.sizefmt.precision);
@@ -412,8 +412,8 @@ TEST(values_in_sizefmt_are_deduplicated)
 {
 	(void)replace_string(&cfg.vborder_filler, "x");
 
-	assert_success(exec_commands("set sizefmt=units:si,space", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("set sizefmt+=nospace,units:iec,precision:10", &lwin,
+	assert_success(cmds_dispatch("set sizefmt=units:si,space", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set sizefmt+=nospace,units:iec,precision:10", &lwin,
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
@@ -424,31 +424,31 @@ TEST(values_in_sizefmt_are_deduplicated)
 
 TEST(millerview)
 {
-	assert_success(exec_commands("se millerview", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("se invmillerview", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("setl millerview", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("setl invmillerview", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("setg millerview", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("setg invmillerview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("se millerview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("se invmillerview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setl millerview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setl invmillerview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setg millerview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setg invmillerview", &lwin, CIT_COMMAND));
 }
 
 TEST(milleroptions_handles_wrong_input)
 {
-	assert_failure(exec_commands("se milleroptions=msi:1", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("se milleroptions=msi:1", &lwin, CIT_COMMAND));
 
-	assert_failure(exec_commands("se milleroptions=lsize:a", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("se milleroptions=csize:a", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("se milleroptions=rsize:a", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("se milleroptions=lsize:a", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("se milleroptions=csize:a", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("se milleroptions=rsize:a", &lwin, CIT_COMMAND));
 
-	assert_failure(exec_commands("se milleroptions=csize:0", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("se milleroptions=csize:0", &lwin, CIT_COMMAND));
 
-	assert_failure(exec_commands("se milleroptions=rpreview:files", &lwin,
+	assert_failure(cmds_dispatch("se milleroptions=rpreview:files", &lwin,
 				CIT_COMMAND));
 }
 
 TEST(milleroptions_accepts_correct_input)
 {
-	assert_success(exec_commands("set milleroptions=csize:33,rsize:12,"
+	assert_success(cmds_dispatch("set milleroptions=csize:33,rsize:12,"
 				"rpreview:all", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
@@ -459,7 +459,7 @@ TEST(milleroptions_accepts_correct_input)
 
 TEST(milleroptions_normalizes_input)
 {
-	assert_success(exec_commands("set milleroptions=lsize:-10,csize:133,"
+	assert_success(cmds_dispatch("set milleroptions=lsize:-10,csize:133,"
 				"rpreview:dirs", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
@@ -470,7 +470,7 @@ TEST(milleroptions_normalizes_input)
 
 TEST(lsoptions_empty_input)
 {
-	assert_success(exec_commands("set lsoptions=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set lsoptions=", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("lsoptions?", OPT_GLOBAL));
@@ -479,18 +479,18 @@ TEST(lsoptions_empty_input)
 
 TEST(lsoptions_handles_wrong_input)
 {
-	assert_failure(exec_commands("se lsoptions=transposed:yes", &lwin,
+	assert_failure(cmds_dispatch("se lsoptions=transposed:yes", &lwin,
 				CIT_COMMAND));
-	assert_failure(exec_commands("se lsoptions=transpose", &lwin, CIT_COMMAND));
-	assert_failure(exec_commands("se lsoptions=columncount:-1", &lwin,
+	assert_failure(cmds_dispatch("se lsoptions=transpose", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("se lsoptions=columncount:-1", &lwin,
 				CIT_COMMAND));
-	assert_failure(exec_commands("se lsoptions=columncount:wrong", &lwin,
+	assert_failure(cmds_dispatch("se lsoptions=columncount:wrong", &lwin,
 				CIT_COMMAND));
 }
 
 TEST(lsoptions_accepts_correct_input)
 {
-	assert_success(exec_commands("set lsview lsoptions=transposed,columncount:2",
+	assert_success(cmds_dispatch("set lsview lsoptions=transposed,columncount:2",
 				&lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
@@ -501,7 +501,7 @@ TEST(lsoptions_accepts_correct_input)
 
 TEST(lsoptions_normalizes_input)
 {
-	assert_success(exec_commands("set lsoptions=transposed,transposed", &lwin,
+	assert_success(cmds_dispatch("set lsoptions=transposed,transposed", &lwin,
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
@@ -512,8 +512,8 @@ TEST(lsoptions_normalizes_input)
 
 TEST(previewprg_updates_state_of_view)
 {
-	assert_success(exec_commands("setg previewprg=gcmd", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("setl previewprg=lcmd", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setg previewprg=gcmd", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("setl previewprg=lcmd", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("previewprg?", OPT_GLOBAL));
@@ -559,28 +559,28 @@ TEST(tuioptions)
 
 TEST(setting_tabscope_works)
 {
-	assert_success(exec_commands("set tabscope=pane", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set tabscope=pane", &lwin, CIT_COMMAND));
 	assert_true(cfg.pane_tabs);
 
-	assert_success(exec_commands("set tabscope=global", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set tabscope=global", &lwin, CIT_COMMAND));
 	assert_false(cfg.pane_tabs);
 }
 
 TEST(setting_showtabline_works)
 {
-	assert_success(exec_commands("set showtabline=0", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set showtabline=0", &lwin, CIT_COMMAND));
 	assert_int_equal(STL_NEVER, cfg.show_tab_line);
-	assert_success(exec_commands("set showtabline=never", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set showtabline=never", &lwin, CIT_COMMAND));
 	assert_int_equal(STL_NEVER, cfg.show_tab_line);
 
-	assert_success(exec_commands("set showtabline=1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set showtabline=1", &lwin, CIT_COMMAND));
 	assert_int_equal(STL_MULTIPLE, cfg.show_tab_line);
-	assert_success(exec_commands("set showtabline=multiple", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set showtabline=multiple", &lwin, CIT_COMMAND));
 	assert_int_equal(STL_MULTIPLE, cfg.show_tab_line);
 
-	assert_success(exec_commands("set showtabline=2", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set showtabline=2", &lwin, CIT_COMMAND));
 	assert_int_equal(STL_ALWAYS, cfg.show_tab_line);
-	assert_success(exec_commands("set showtabline=always", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set showtabline=always", &lwin, CIT_COMMAND));
 	assert_int_equal(STL_ALWAYS, cfg.show_tab_line);
 }
 
@@ -591,13 +591,13 @@ TEST(shortmess)
 	cfg.shorten_title_paths = 0;
 	cfg.short_term_mux_titles = 0;
 
-	assert_success(exec_commands("set shortmess=Mp", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set shortmess=Mp", &lwin, CIT_COMMAND));
 	assert_false(cfg.tail_tab_line_paths);
 	assert_true(cfg.short_term_mux_titles);
 	assert_false(cfg.trunc_normal_sb_msgs);
 	assert_true(cfg.shorten_title_paths);
 
-	assert_success(exec_commands("set shortmess=TL", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set shortmess=TL", &lwin, CIT_COMMAND));
 	assert_true(cfg.tail_tab_line_paths);
 	assert_false(cfg.short_term_mux_titles);
 	assert_true(cfg.trunc_normal_sb_msgs);
@@ -608,19 +608,19 @@ TEST(histcursor)
 {
 	cfg.ch_pos_on = 0;
 
-	assert_success(exec_commands("set histcursor=startup", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set histcursor=startup", &lwin, CIT_COMMAND));
 	assert_int_equal(CHPOS_STARTUP, cfg.ch_pos_on);
 
-	assert_success(exec_commands("set histcursor=direnter,dirmark", &lwin,
+	assert_success(cmds_dispatch("set histcursor=direnter,dirmark", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(CHPOS_ENTER | CHPOS_DIRMARK, cfg.ch_pos_on);
 }
 
 TEST(quickview)
 {
-	assert_success(exec_commands("set quickview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set quickview", &lwin, CIT_COMMAND));
 	assert_true(curr_stats.preview.on);
-	assert_success(exec_commands("set invquickview", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set invquickview", &lwin, CIT_COMMAND));
 	assert_false(curr_stats.preview.on);
 }
 
@@ -633,13 +633,13 @@ TEST(syncregs)
 	char *tmpdir_value = mock_env("TMPDIR", sandbox);
 
 	assert_false(regs_sync_enabled());
-	assert_success(exec_commands("set syncregs=test1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set syncregs=test1", &lwin, CIT_COMMAND));
 	assert_true(regs_sync_enabled());
-	assert_success(exec_commands("set syncregs=test2", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set syncregs=test2", &lwin, CIT_COMMAND));
 	assert_true(regs_sync_enabled());
-	assert_success(exec_commands("set syncregs=test1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set syncregs=test1", &lwin, CIT_COMMAND));
 	assert_true(regs_sync_enabled());
-	assert_success(exec_commands("set syncregs=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set syncregs=", &lwin, CIT_COMMAND));
 	assert_false(regs_sync_enabled());
 
 	/* Make sure nothing is retained from the tests. */
@@ -653,34 +653,34 @@ TEST(syncregs)
 
 TEST(mediaprg, IF(not_windows))
 {
-	assert_success(exec_commands("set mediaprg=prg", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set mediaprg=prg", &lwin, CIT_COMMAND));
 	assert_string_equal("prg", cfg.media_prg);
-	assert_success(exec_commands("set mediaprg=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set mediaprg=", &lwin, CIT_COMMAND));
 	assert_string_equal("", cfg.media_prg);
 }
 
 TEST(shell)
 {
-	assert_success(exec_commands("set shell=/bin/bash", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set shell=/bin/bash", &lwin, CIT_COMMAND));
 	assert_string_equal("/bin/bash", cfg.shell);
-	assert_success(exec_commands("set sh=/bin/sh", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set sh=/bin/sh", &lwin, CIT_COMMAND));
 	assert_string_equal("/bin/sh", cfg.shell);
 }
 
 TEST(shellcmdflag)
 {
-	assert_success(exec_commands("set shellcmdflag=-ic", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set shellcmdflag=-ic", &lwin, CIT_COMMAND));
 	assert_string_equal("-ic", cfg.shell_cmd_flag);
-	assert_success(exec_commands("set shcf=-c", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set shcf=-c", &lwin, CIT_COMMAND));
 	assert_string_equal("-c", cfg.shell_cmd_flag);
 }
 
 TEST(tablabel)
 {
-	assert_success(exec_commands("set tabprefix={", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("set tablabel=%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t",
+	assert_success(cmds_dispatch("set tabprefix={", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set tablabel=%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t",
 				&lwin, CIT_COMMAND));
-	assert_success(exec_commands("set tabsuffix=}", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set tabsuffix=}", &lwin, CIT_COMMAND));
 
 	assert_string_equal("{", cfg.tab_prefix);
 	assert_string_equal("%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t", cfg.tab_label);
@@ -689,31 +689,31 @@ TEST(tablabel)
 
 TEST(sessionoptions)
 {
-	assert_success(exec_commands("set sessionoptions=dhistory", &lwin,
+	assert_success(cmds_dispatch("set sessionoptions=dhistory", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(VINFO_DHISTORY, cfg.session_options);
 
-	assert_success(exec_commands("set ssop=savedirs,tui", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set ssop=savedirs,tui", &lwin, CIT_COMMAND));
 	assert_int_equal(VINFO_SAVEDIRS | VINFO_TUI, cfg.session_options);
 
-	assert_success(exec_commands("set ssop=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set ssop=", &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.session_options);
 }
 
 TEST(previewoptions)
 {
-	assert_success(exec_commands("set previewoptions=graphicsdelay:12345", &lwin,
+	assert_success(cmds_dispatch("set previewoptions=graphicsdelay:12345", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(12345, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.top_tree_stats);
 
-	assert_failure(exec_commands("set previewoptions=graphicsdelay:inf", &lwin,
+	assert_failure(cmds_dispatch("set previewoptions=graphicsdelay:inf", &lwin,
 				CIT_COMMAND));
 	assert_string_equal("Failed to parse \"graphicsdelay\" value: inf",
 			vle_tb_get_data(vle_err));
-	assert_failure(exec_commands("set previewoptions=maxtreedepth:inf", &lwin,
+	assert_failure(cmds_dispatch("set previewoptions=maxtreedepth:inf", &lwin,
 				CIT_COMMAND));
 	assert_string_equal("Failed to parse \"maxtreedepth\" value: inf",
 			vle_tb_get_data(vle_err));
@@ -722,11 +722,11 @@ TEST(previewoptions)
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.top_tree_stats);
 
-	assert_failure(exec_commands("set previewoptions=graphicsdelay:-12345", &lwin,
+	assert_failure(cmds_dispatch("set previewoptions=graphicsdelay:-12345", &lwin,
 				CIT_COMMAND));
 	assert_string_equal("\"graphicsdelay\" can't be negative, got: -12345",
 			vle_tb_get_data(vle_err));
-	assert_failure(exec_commands("set previewoptions=maxtreedepth:-1", &lwin,
+	assert_failure(cmds_dispatch("set previewoptions=maxtreedepth:-1", &lwin,
 				CIT_COMMAND));
 	assert_string_equal("\"maxtreedepth\" can't be negative, got: -1",
 			vle_tb_get_data(vle_err));
@@ -735,7 +735,7 @@ TEST(previewoptions)
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.top_tree_stats);
 
-	assert_failure(exec_commands("set previewoptions=graphicsdelay:145,wtf",
+	assert_failure(cmds_dispatch("set previewoptions=graphicsdelay:145,wtf",
 				&lwin, CIT_COMMAND));
 	assert_int_equal(12345, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
@@ -744,28 +744,28 @@ TEST(previewoptions)
 	assert_string_equal("Unknown key for 'previewoptions' option: wtf",
 			vle_tb_get_data(vle_err));
 
-	assert_success(exec_commands("set previewoptions=hardgraphicsclear", &lwin,
+	assert_success(cmds_dispatch("set previewoptions=hardgraphicsclear", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_true(cfg.hard_graphics_clear);
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.top_tree_stats);
 
-	assert_success(exec_commands("set previewoptions=toptreestats", &lwin,
+	assert_success(cmds_dispatch("set previewoptions=toptreestats", &lwin,
 				CIT_COMMAND));
 	assert_true(cfg.top_tree_stats);
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.hard_graphics_clear);
 
-	assert_success(exec_commands("set previewoptions=maxtreedepth:10", &lwin,
+	assert_success(cmds_dispatch("set previewoptions=maxtreedepth:10", &lwin,
 				CIT_COMMAND));
 	assert_false(cfg.top_tree_stats);
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_int_equal(10, cfg.max_tree_depth);
 	assert_false(cfg.hard_graphics_clear);
 
-	assert_success(exec_commands("set previewoptions=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set previewoptions=", &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
 	assert_int_equal(0, cfg.max_tree_depth);
@@ -774,34 +774,34 @@ TEST(previewoptions)
 
 TEST(autocd)
 {
-	assert_success(exec_commands("set autocd", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set autocd", &lwin, CIT_COMMAND));
 	assert_true(cfg.auto_cd);
-	assert_success(exec_commands("set noautocd", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set noautocd", &lwin, CIT_COMMAND));
 	assert_false(cfg.auto_cd);
 }
 
 TEST(iooptions)
 {
-	assert_success(exec_commands("set iooptions=fastfilecloning", &lwin,
+	assert_success(cmds_dispatch("set iooptions=fastfilecloning", &lwin,
 				CIT_COMMAND));
 	assert_true(cfg.fast_file_cloning);
 	assert_false(cfg.data_sync);
 
-	assert_success(exec_commands("set iooptions=datasync", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set iooptions=datasync", &lwin, CIT_COMMAND));
 	assert_false(cfg.fast_file_cloning);
 	assert_true(cfg.data_sync);
 }
 
 TEST(mouse)
 {
-	assert_success(exec_commands("set mouse=acmnv", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set mouse=acmnv", &lwin, CIT_COMMAND));
 	assert_int_equal(M_ALL_MODES | M_NORMAL_MODE | M_VISUAL_MODE |
 			M_CMDLINE_MODE | M_MENU_MODE, cfg.mouse);
 
-	assert_success(exec_commands("set mouse=", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set mouse=", &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.mouse);
 
-	assert_success(exec_commands("set mouse=cn", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("set mouse=cn", &lwin, CIT_COMMAND));
 	assert_int_equal(M_CMDLINE_MODE | M_NORMAL_MODE, cfg.mouse);
 }
 

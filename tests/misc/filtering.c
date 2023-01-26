@@ -270,7 +270,7 @@ TEST(global_local_nature_of_normal_zo)
 
 	curr_stats.global_local_settings = 1;
 
-	assert_success(exec_commands("normal zo", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("normal zo", &lwin, CIT_COMMAND));
 	assert_false(lwin.hide_dot_g);
 	assert_false(lwin.hide_dot);
 	assert_false(rwin.hide_dot_g);

@@ -60,21 +60,21 @@ TEARDOWN()
 
 TEST(no_args_lists_elements)
 {
-	assert_failure(exec_commands("autocmd", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("autocmd", &lwin, CIT_COMMAND));
 }
 
 TEST(addition_start)
 {
 	snprintf(cmd, sizeof(cmd), "autocmd * '%s' let $a = 1", sandbox);
-	assert_failure(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 }
 
 TEST(addition_match)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "autocmd DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -83,11 +83,11 @@ TEST(addition_match)
 
 TEST(autocmd_is_whole_line_command)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "autocmd DirEnter '%s' let $a = 1 | let $a = 2",
 			sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -96,10 +96,10 @@ TEST(autocmd_is_whole_line_command)
 
 TEST(addition_no_match)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "autocmd DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, test_data) >= 0);
@@ -108,12 +108,12 @@ TEST(addition_no_match)
 
 TEST(remove_exact_match)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "autocmd DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 	snprintf(cmd, sizeof(cmd), "autocmd! DirEnter '%s'", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -122,11 +122,11 @@ TEST(remove_exact_match)
 
 TEST(remove_event_match)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "autocmd DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("autocmd! DirEnter", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("autocmd! DirEnter", &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -135,12 +135,12 @@ TEST(remove_event_match)
 
 TEST(remove_path_match)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "autocmd DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 	snprintf(cmd, sizeof(cmd), "autocmd! * '%s'", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -149,11 +149,11 @@ TEST(remove_path_match)
 
 TEST(remove_all)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "autocmd DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("autocmd!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("autocmd!", &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -162,15 +162,15 @@ TEST(remove_all)
 
 TEST(remove_too_many_args)
 {
-	assert_failure(exec_commands("autocmd! a b c", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("autocmd! a b c", &lwin, CIT_COMMAND));
 }
 
 TEST(extra_slash_is_fine)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s/' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -179,7 +179,7 @@ TEST(extra_slash_is_fine)
 
 TEST(error_on_wrong_event_name)
 {
-	assert_failure(exec_commands("autocmd some /path let $a = 1", &lwin,
+	assert_failure(cmds_dispatch("autocmd some /path let $a = 1", &lwin,
 				CIT_COMMAND));
 }
 
@@ -187,11 +187,11 @@ TEST(envvars_are_expanded)
 {
 	char cmd[PATH_MAX + 1];
 
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "let $dir = '%s'", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
-	assert_success(exec_commands("autocmd DirEnter $dir let $a = 1", &lwin,
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("autocmd DirEnter $dir let $a = 1", &lwin,
 				CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
@@ -201,10 +201,10 @@ TEST(envvars_are_expanded)
 
 TEST(pattern_negation)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '!%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -215,9 +215,9 @@ TEST(pattern_negation)
 
 TEST(tail_pattern)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
-	assert_success(exec_commands("auto DirEnter existing-files let $a = 1", &lwin,
+	assert_success(cmds_dispatch("auto DirEnter existing-files let $a = 1", &lwin,
 				CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
@@ -229,10 +229,10 @@ TEST(tail_pattern)
 
 TEST(multiple_patterns_addition)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s,ab' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -241,13 +241,13 @@ TEST(multiple_patterns_addition)
 
 TEST(multiple_patterns_removal)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s,%s' let $a = 1", sandbox,
 			test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 	snprintf(cmd, sizeof(cmd), "auto! DirEnter '%s,%s'", sandbox, test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -260,12 +260,12 @@ TEST(multiple_patterns_correct_expansion)
 	/* Each pattern should be expanded on its own, not all pattern string should
 	 * be expanded and then broken into patterns. */
 
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("let $c = ','", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $c = ','", &lwin, CIT_COMMAND));
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s$c%s' let $a = 1", sandbox,
 			test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -274,14 +274,14 @@ TEST(multiple_patterns_correct_expansion)
 
 TEST(direnter_is_not_triggered_on_leaving_custom_view_to_original_path)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	replace_string(&curr_view->custom.orig_dir, curr_view->curr_dir);
 	curr_view->curr_dir[0] = '\0';
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
@@ -293,11 +293,11 @@ TEST(direnter_can_be_triggered_on_entering_custom_view_to_different_path)
 	cfg.cvoptions = CVO_AUTOCMDS;
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s' let $a = 1", sandbox);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 	assert_string_equal("x", env_get("a"));
 
 	char path[PATH_MAX + 1];
@@ -315,14 +315,14 @@ TEST(direnter_can_be_triggered_on_entering_custom_view_to_different_path)
 
 TEST(direnter_is_triggered_on_leaving_custom_view_to_different_path)
 {
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	replace_string(&curr_view->custom.orig_dir, curr_view->curr_dir);
 	curr_view->curr_dir[0] = '\0';
 
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s' let $a = 1", test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
 	assert_true(change_view_directory(curr_view, test_data) >= 0);
@@ -333,7 +333,7 @@ TEST(autocmd_in_vifmrc_affects_only_current_view)
 {
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s' setlocal nodotfiles",
 			test_data);
-	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
 
 	lwin.hide_dot = 0;
 	rwin.hide_dot = 0;
@@ -352,11 +352,11 @@ TEST(tilde_is_expanded_after_negation, IF(not_windows))
 	char path[PATH_MAX + 1];
 	snprintf(path, sizeof(path), "%s/~", sandbox);
 
-	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(os_mkdir(path, 0700));
 
-	assert_success(exec_commands("auto DirEnter !~ let $a = 1", &lwin,
+	assert_success(cmds_dispatch("auto DirEnter !~ let $a = 1", &lwin,
 				CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));

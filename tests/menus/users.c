@@ -38,7 +38,7 @@ TEARDOWN()
 
 TEST(v_key)
 {
-	assert_success(exec_commands("!echo path %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("!echo path %M", &lwin, CIT_COMMAND));
 
 	curr_stats.vlua = vlua_init();
 

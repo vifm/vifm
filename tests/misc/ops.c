@@ -37,7 +37,7 @@ SETUP()
 
 TEARDOWN()
 {
-	assert_success(exec_commands("delbmarks!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("delbmarks!", &lwin, CIT_COMMAND));
 	free(path);
 }
 
@@ -49,7 +49,7 @@ TEST(rename_triggers_bmark_update)
 		fclose(f);
 	}
 
-	assert_success(exec_commands("bmark! old tag", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("bmark! old tag", &lwin, CIT_COMMAND));
 
 	bmarks_list(&bmarks_cb, NULL);
 	assert_string_equal("./old", path);
