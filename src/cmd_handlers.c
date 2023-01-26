@@ -2671,7 +2671,7 @@ finish_cmd(const cmd_info_t *cmd_info)
 	}
 
 	curr_stats.sourcing_state = SOURCING_FINISHING;
-	commands_scope_escape();
+	cmds_scope_escape();
 	return 0;
 }
 
@@ -5577,12 +5577,12 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	if(expanded_com[0] == ':')
 	{
-		commands_scope_start();
+		cmds_scope_start();
 
 		int sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
 		free(expanded_com);
 
-		if(commands_scope_finish() != 0)
+		if(cmds_scope_finish() != 0)
 		{
 			ui_sb_err("Unmatched if-else-endif");
 			return CMDS_ERR_CUSTOM;

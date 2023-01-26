@@ -789,7 +789,7 @@ source_file_internal(strlist_t lines, const char filename[])
 		return 0;
 	}
 
-	commands_scope_start();
+	cmds_scope_start();
 
 	int encoutered_errors = 0;
 
@@ -843,7 +843,7 @@ source_file_internal(strlist_t lines, const char filename[])
 
 	ui_sb_clear();
 
-	if(commands_scope_finish() != 0)
+	if(cmds_scope_finish() != 0)
 	{
 		show_sourcing_error(filename, line_num);
 		encoutered_errors = 1;

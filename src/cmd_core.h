@@ -77,16 +77,16 @@ int cmds_exec(struct view_t *view, const char command[], int menu,
 
 /* Should precede new command execution scope (e.g. before start of sourced
  * script). */
-void commands_scope_start(void);
+void cmds_scope_start(void);
 
 /* Marks active command execution scope as escaped meaning that there is no need
  * to check for endif. */
-void commands_scope_escape(void);
+void cmds_scope_escape(void);
 
 /* Should terminate command execution scope (e.g. end of sourced script).
  * Performs some of internal checks.  Returns non-zero when there were errors,
  * otherwise zero is returned. */
-int commands_scope_finish(void);
+int cmds_scope_finish(void);
 
 /* Find start of the last command in pipe-separated list of command-line
  * commands.  Accounts for pipe escaping.  Returns pointer to start of the last

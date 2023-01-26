@@ -306,9 +306,9 @@ execute_extcmd(const char command[], CmdInputType type)
 {
 	if(type == CIT_COMMAND)
 	{
-		commands_scope_start();
+		cmds_scope_start();
 		curr_stats.save_msg = exec_commands(command, curr_view, type);
-		if(commands_scope_finish() != 0)
+		if(cmds_scope_finish() != 0)
 		{
 			curr_stats.save_msg = 1;
 		}
@@ -1231,13 +1231,13 @@ repeat_command(view_t *view, CmdInputType type)
 }
 
 void
-commands_scope_start(void)
+cmds_scope_start(void)
 {
 	(void)int_stack_push(&if_levels, IF_SCOPE_GUARD);
 }
 
 void
-commands_scope_escape(void)
+cmds_scope_escape(void)
 {
 	while(!is_at_scope_bottom(&if_levels))
 	{
@@ -1246,7 +1246,7 @@ commands_scope_escape(void)
 }
 
 int
-commands_scope_finish(void)
+cmds_scope_finish(void)
 {
 	if(!is_at_scope_bottom(&if_levels))
 	{
