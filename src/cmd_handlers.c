@@ -179,7 +179,7 @@ static int elseif_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int endif_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
-static char * try_eval_arglist(const cmd_info_t *cmd_info);
+static char * try_eval_args(const cmd_info_t *cmd_info);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
@@ -2254,7 +2254,7 @@ dunmap_cmd(const cmd_info_t *cmd_info)
 static int
 echo_cmd(const cmd_info_t *cmd_info)
 {
-	char *const eval_result = try_eval_arglist(cmd_info);
+	char *const eval_result = try_eval_args(cmd_info);
 	if(eval_result == NULL)
 	{
 		return CMDS_ERR_CUSTOM;
@@ -2372,7 +2372,7 @@ static int
 exe_cmd(const cmd_info_t *cmd_info)
 {
 	int result = 1;
-	char *const eval_result = try_eval_arglist(cmd_info);
+	char *const eval_result = try_eval_args(cmd_info);
 	if(eval_result != NULL)
 	{
 		result = exec_commands(eval_result, curr_view, CIT_COMMAND);
@@ -2385,7 +2385,7 @@ exe_cmd(const cmd_info_t *cmd_info)
  * Returns pointer to newly allocated string, which should be freed by caller,
  * or NULL on error. */
 static char *
-try_eval_arglist(const cmd_info_t *cmd_info)
+try_eval_args(const cmd_info_t *cmd_info)
 {
 	char *eval_result;
 	const char *error_pos = NULL;
@@ -2396,7 +2396,7 @@ try_eval_arglist(const cmd_info_t *cmd_info)
 	}
 
 	vle_tb_clear(vle_err);
-	eval_result = eval_arglist(cmd_info->raw_args, &error_pos);
+	eval_result = cmds_eval_args(cmd_info->raw_args, &error_pos);
 
 	if(eval_result == NULL)
 	{

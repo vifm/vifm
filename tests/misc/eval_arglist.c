@@ -33,7 +33,7 @@ TEST(broken_syntax)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_string_equal(NULL, result);
 }
 
@@ -43,7 +43,7 @@ TEST(one_arg)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("a", result);
 	free(result);
@@ -55,7 +55,7 @@ TEST(two_space_separated_args)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("a b", result);
 	free(result);
@@ -67,7 +67,7 @@ TEST(two_dot_separated_args)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("ab", result);
 	free(result);
@@ -79,7 +79,7 @@ TEST(double_single_quote)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("a'b", result);
 	free(result);
@@ -91,7 +91,7 @@ TEST(wrong_expression_position)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result == NULL);
 	assert_true(args + 4 == stop_ptr);
 	free(result);
@@ -103,7 +103,7 @@ TEST(empty_parens_fail)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result == NULL);
 	free(result);
 }
@@ -114,7 +114,7 @@ TEST(chars_after_function_call_fail)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result == NULL);
 	free(result);
 }
@@ -125,7 +125,7 @@ TEST(expression)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("1", result);
 	free(result);
@@ -137,7 +137,7 @@ TEST(expression_and_literal)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("1 b", result);
 	free(result);
@@ -149,7 +149,7 @@ TEST(call_function)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("hello", result);
 	free(result);
@@ -161,7 +161,7 @@ TEST(broken_comparison_operator)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_true(result == NULL);
 	free(result);
 }
@@ -172,7 +172,7 @@ TEST(and_operator)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_arglist(args, &stop_ptr);
+	result = cmds_eval_args(args, &stop_ptr);
 	assert_string_equal("0", result);
 	free(result);
 }

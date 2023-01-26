@@ -130,7 +130,7 @@ CmdLineLocation get_cmdline_location(const char cmd[], const char pos[]);
  * can not be empty string.  Returns pointer to newly allocated string, which
  * should be freed by caller, or NULL on error.  stop_ptr will point to the
  * beginning of invalid expression in case of error. */
-char * eval_arglist(const char args[], const char **stop_ptr);
+char * cmds_eval_args(const char args[], const char **stop_ptr);
 
 /* Requests unit to do not reset selection after command execution.  Expected to
  * be called from command handlers, or it won't have any effect. */

@@ -125,7 +125,6 @@ static CmdArgsType get_cmd_args_type(const char cmd[]);
 static char * skip_to_cmd_name(const char cmd[]);
 static int repeat_command(view_t *view, CmdInputType type);
 static int is_at_scope_bottom(const int_stack_t *scope_stack);
-TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 
 /* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
@@ -1340,7 +1339,7 @@ is_at_scope_bottom(const int_stack_t *scope_stack)
 }
 
 char *
-eval_arglist(const char args[], const char **stop_ptr)
+cmds_eval_args(const char args[], const char **stop_ptr)
 {
 	size_t len = 0;
 	char *eval_result = NULL;
