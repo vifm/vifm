@@ -3506,7 +3506,7 @@ jobs_cmd(const cmd_info_t *cmd_info)
 static int
 keepsel_cmd(const cmd_info_t *cmd_info)
 {
-	return cmds_exec(curr_view, cmd_info->args, /*menu=*/0, /*keep_sel=*/1);
+	return cmds_exec(cmd_info->args, curr_view, /*menu=*/0, /*keep_sel=*/1);
 }
 
 static int

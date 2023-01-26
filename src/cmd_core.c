@@ -500,23 +500,23 @@ pattern_expand_hook(const char pattern[])
 }
 
 int
-cmds_exec(view_t *view, const char command[], int menu, int keep_sel)
+cmds_exec(const char cmd[], view_t *view, int menu, int keep_sel)
 {
 	int id;
 	int result;
 
-	if(command == NULL)
+	if(cmd == NULL)
 	{
 		flist_sel_stash_if_nonempty(view);
 		return 0;
 	}
 
-	command = skip_to_cmd_name(command);
+	cmd = skip_to_cmd_name(cmd);
 
-	if(command[0] == '"')
+	if(cmd[0] == '"')
 		return 0;
 
-	if(command[0] == '\0' && !menu)
+	if(cmd[0] == '\0' && !menu)
 	{
 		flist_sel_stash_if_nonempty(view);
 		return 0;
@@ -530,7 +530,7 @@ cmds_exec(view_t *view, const char command[], int menu, int keep_sel)
 		cmds_conf.end = view->list_rows - 1;
 	}
 
-	id = vle_cmds_identify(command);
+	id = vle_cmds_identify(cmd);
 
 	if(!cmd_should_be_processed(id))
 	{
@@ -542,21 +542,21 @@ cmds_exec(view_t *view, const char command[], int menu, int keep_sel)
 		char undo_msg[COMMAND_GROUP_INFO_LEN];
 
 		snprintf(undo_msg, sizeof(undo_msg), "in %s: %s",
-				replace_home_part(flist_get_dir(view)), command);
+				replace_home_part(flist_get_dir(view)), cmd);
 
 		un_group_open(undo_msg);
 		un_group_close();
 	}
 
 	keep_view_selection = keep_sel;
-	result = vle_cmds_run(command);
+	result = vle_cmds_run(cmd);
 
 	if(result >= 0)
 		return result;
 
-	if(is_implicit_cd(view, command, result))
+	if(is_implicit_cd(view, cmd, result))
 	{
-		return cd(view, flist_get_dir(view), command);
+		return cd(view, flist_get_dir(view), cmd);
 	}
 
 	switch(result)
@@ -1177,7 +1177,7 @@ cmds_dispatch1(const char cmd[], view_t *view, CmdInputType type)
 
 		case CIT_MENU_COMMAND: menu = 1; /* Fall through. */
 		case CIT_COMMAND:
-			return cmds_exec(view, cmd, menu, /*keep_sel=*/0);
+			return cmds_exec(cmd, view, menu, /*keep_sel=*/0);
 
 		case CIT_FILTER_PATTERN:
 			if(view->custom.type != CV_DIFF)
@@ -1218,7 +1218,7 @@ repeat_command(view_t *view, CmdInputType type)
 			return modview_find(NULL, backward);
 
 		case CIT_COMMAND:
-			return cmds_exec(view, NULL, /*menu=*/0, /*keep_sel=*/0);
+			return cmds_exec(/*cmd=*/NULL, view, /*menu=*/0, /*keep_sel=*/0);
 
 		case CIT_FILTER_PATTERN:
 			local_filter_apply(view, "");
