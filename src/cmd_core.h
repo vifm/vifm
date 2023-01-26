@@ -119,8 +119,7 @@ int command_accepts_expr(int cmd_id);
 
 /* Analyzes command line at given position and escapes str accordingly.  Returns
  * escaped string or NULL when no escaping is needed. */
-char * commands_escape_for_insertion(const char cmd_line[], int pos,
-		const char str[]);
+char * cmds_insertion_escape(const char cmd_line[], int pos, const char str[]);
 
 /* Analyzes position on the command-line.  pos should point to some position of
  * cmd.  Returns where current position in the command line is. */

@@ -2332,7 +2332,7 @@ escape_cmd_for_pasting(const char str[])
 	wide_input[input_stat.index] = L'\0';
 	mb_input = to_multibyte(wide_input);
 
-	escaped = commands_escape_for_insertion(mb_input, strlen(mb_input), str);
+	escaped = cmds_insertion_escape(mb_input, strlen(mb_input), str);
 
 	free(mb_input);
 	free(wide_input);

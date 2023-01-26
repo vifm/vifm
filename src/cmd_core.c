@@ -351,7 +351,7 @@ command_accepts_expr(int cmd_id)
 }
 
 char *
-commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
+cmds_insertion_escape(const char cmd_line[], int pos, const char str[])
 {
 	const CmdLineLocation ipt = cmds_classify_pos(cmd_line, cmd_line + pos);
 	switch(ipt)
