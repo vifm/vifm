@@ -341,7 +341,7 @@ is_history_command(const char command[])
 }
 
 int
-command_accepts_expr(int cmd_id)
+cmds_has_expr_args(int cmd_id)
 {
 	return cmd_id == COM_ECHO
 	    || cmd_id == COM_EXE
@@ -1086,7 +1086,7 @@ get_cmd_args_type(const char cmd[])
 			return CAT_UNTIL_THE_END;
 
 		default:
-			return command_accepts_expr(cmd_id) ? CAT_EXPR : CAT_REGULAR;
+			return cmds_has_expr_args(cmd_id) ? CAT_EXPR : CAT_REGULAR;
 	}
 }
 
