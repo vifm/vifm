@@ -334,7 +334,7 @@ save_extcmd(const char command[], CmdInputType type)
 }
 
 int
-is_history_command(const char command[])
+cmds_goes_to_history(const char command[])
 {
 	/* Don't add :!! or :! to history list. */
 	return strcmp(command, "!!") != 0 && strcmp(command, "!") != 0;

@@ -111,7 +111,7 @@ char * get_ext_command(const char beginning[], size_t line_pos,
 
 /* Checks whether command should be stored in command-line history.  Returns
  * non-zero if it should be stored, otherwise zero is returned. */
-int is_history_command(const char command[]);
+int cmds_goes_to_history(const char command[]);
 
 /* Checks whether command accepts exception as its argument(s).  Returns
  * non-zero if so, otherwise zero is returned. */
