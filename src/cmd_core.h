@@ -99,8 +99,7 @@ char * cmds_expand_envvars(const char str[]);
 
 /* Opens the editor with the line at given column, gets entered command and
  * executes it in the way dependent on the type of command. */
-void get_and_execute_command(const char line[], size_t line_pos,
-		CmdInputType type);
+void cmds_run_ext(const char line[], size_t line_pos, CmdInputType type);
 
 /* Opens the editor with the beginning at the line_pos column.  Type is used to
  * provide useful context.  On success returns entered command as a newly

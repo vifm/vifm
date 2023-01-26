@@ -1161,7 +1161,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		}
 		else
 		{
-			get_and_execute_command(mbstr, index + 1, type);
+			cmds_run_ext(mbstr, index + 1, type);
 		}
 
 		free(mbstr);

@@ -1763,7 +1763,7 @@ call_put_links(key_info_t key_info, int relative)
 static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
-	get_and_execute_command("", 0U, CIT_COMMAND);
+	cmds_run_ext("", 0U, CIT_COMMAND);
 }
 
 /* Runs external editor to get search pattern and then executes it. */
@@ -1791,7 +1791,7 @@ activate_search(int count, int back, int external)
 	if(external)
 	{
 		CmdInputType type = back ? CIT_BSEARCH_PATTERN : CIT_FSEARCH_PATTERN;
-		get_and_execute_command("", 0U, type);
+		cmds_run_ext("", 0U, type);
 	}
 	else
 	{
@@ -1804,7 +1804,7 @@ activate_search(int count, int back, int external)
 static void
 cmd_q_equals(key_info_t key_info, keys_info_t *keys_info)
 {
-	get_and_execute_command("", 0U, CIT_FILTER_PATTERN);
+	cmds_run_ext("", 0U, CIT_FILTER_PATTERN);
 }
 
 /* Toggles selection of the current file. */
