@@ -106,8 +106,7 @@ void get_and_execute_command(const char line[], size_t line_pos,
  * provide useful context.  On success returns entered command as a newly
  * allocated string, which should be freed by the caller, otherwise NULL is
  * returned. */
-char * get_ext_command(const char beginning[], size_t line_pos,
-		CmdInputType type);
+char * cmds_get_ext(const char beginning[], size_t line_pos, CmdInputType type);
 
 /* Checks whether command should be stored in command-line history.  Returns
  * non-zero if it should be stored, otherwise zero is returned. */

@@ -187,7 +187,7 @@ cmds_expand_envvars(const char str[])
 void
 get_and_execute_command(const char line[], size_t line_pos, CmdInputType type)
 {
-	char *const cmd = get_ext_command(line, line_pos, type);
+	char *const cmd = cmds_get_ext(line, line_pos, type);
 	if(cmd == NULL)
 	{
 		save_extcmd(line, type);
@@ -201,7 +201,7 @@ get_and_execute_command(const char line[], size_t line_pos, CmdInputType type)
 }
 
 char *
-get_ext_command(const char beginning[], size_t line_pos, CmdInputType type)
+cmds_get_ext(const char beginning[], size_t line_pos, CmdInputType type)
 {
 	char cmd_file[PATH_MAX + 1];
 	char *cmd = NULL;

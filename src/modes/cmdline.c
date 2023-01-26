@@ -1194,7 +1194,7 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 		prompt_cb cb, void *cb_arg)
 {
 	CmdInputType type = (is_expr_reg ? CIT_EXPRREG_INPUT : CIT_PROMPT_INPUT);
-	char *const ext_cmd = get_ext_command(input, cursor_col, type);
+	char *const ext_cmd = cmds_get_ext(input, cursor_col, type);
 
 	if(ext_cmd != NULL)
 	{
