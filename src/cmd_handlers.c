@@ -2255,6 +2255,11 @@ static int
 echo_cmd(const cmd_info_t *cmd_info)
 {
 	char *const eval_result = try_eval_arglist(cmd_info);
+	if(eval_result == NULL)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
 	ui_sb_msg(eval_result);
 	free(eval_result);
 	return 1;
@@ -2387,7 +2392,7 @@ try_eval_arglist(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
-		return NULL;
+		return strdup("");
 	}
 
 	vle_tb_clear(vle_err);

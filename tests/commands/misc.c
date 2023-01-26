@@ -525,6 +525,19 @@ TEST(echo_reports_all_errors)
 	assert_true(strchr(ui_sb_last(), '\n') != NULL);
 }
 
+TEST(echo_without_arguments_prints_nothing)
+{
+	ui_sb_msg("");
+
+	/* First, print some message to record it as the last one. */
+	assert_failure(exec_commands("echo 'previous'", &lwin, CIT_COMMAND));
+	assert_string_equal("previous", ui_sb_last());
+
+	/* Now, no message.  The last one could popup here. */
+	assert_failure(exec_commands("echo", &lwin, CIT_COMMAND));
+	assert_string_equal("", ui_sb_last());
+}
+
 TEST(zero_count_is_rejected)
 {
 	const char *expected = "Count argument can't be zero";
