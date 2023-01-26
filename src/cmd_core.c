@@ -1091,7 +1091,7 @@ get_cmd_args_type(const char cmd[])
 }
 
 const char *
-find_last_command(const char cmds[])
+cmds_find_last(const char cmds[])
 {
 	const char *p, *q;
 

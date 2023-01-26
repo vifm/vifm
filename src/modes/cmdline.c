@@ -3096,7 +3096,7 @@ line_completion(line_stats_t *stat)
 		compl_func_arg = CPP_NONE;
 		if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
 		{
-			line_mb_cmd = find_last_command(line_mb);
+			line_mb_cmd = cmds_find_last(line_mb);
 
 			const CmdLineLocation ipt = cmds_classify_pos(line_mb,
 					line_mb + strlen(line_mb));

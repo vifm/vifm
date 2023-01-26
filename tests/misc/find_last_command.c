@@ -15,22 +15,22 @@ TEARDOWN()
 
 TEST(empty_command)
 {
-	assert_string_equal("", find_last_command(""));
-	assert_string_equal("", find_last_command(":"));
-	assert_string_equal("", find_last_command("::"));
+	assert_string_equal("", cmds_find_last(""));
+	assert_string_equal("", cmds_find_last(":"));
+	assert_string_equal("", cmds_find_last("::"));
 }
 
 TEST(single_command)
 {
-	assert_string_equal("quit", find_last_command("quit"));
+	assert_string_equal("quit", cmds_find_last("quit"));
 }
 
 TEST(commands_with_regex)
 {
-	assert_string_equal("filter a|b", find_last_command("filter a|b"));
-	assert_string_equal("filter /a|b/", find_last_command("filter /a|b/"));
-	assert_string_equal("hi /a|b/", find_last_command("hi /a|b/"));
-	assert_string_equal("next", find_last_command("s/a|b/c/g|next"));
+	assert_string_equal("filter a|b", cmds_find_last("filter a|b"));
+	assert_string_equal("filter /a|b/", cmds_find_last("filter /a|b/"));
+	assert_string_equal("hi /a|b/", cmds_find_last("hi /a|b/"));
+	assert_string_equal("next", cmds_find_last("s/a|b/c/g|next"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
