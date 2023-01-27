@@ -90,7 +90,7 @@ static int
 execute_commands_cb(view_t *view, menu_data_t *m)
 {
 	break_at(m->items[m->pos], ' ');
-	exec_command(m->items[m->pos], view, CIT_COMMAND);
+	cmds_dispatch1(m->items[m->pos], view, CIT_COMMAND);
 	return 0;
 }
 

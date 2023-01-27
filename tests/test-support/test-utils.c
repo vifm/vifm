@@ -102,6 +102,11 @@ conf_setup(void)
 	update_string(&cfg.tab_suffix, "");
 	update_string(&cfg.delete_prg, "");
 
+	cfg.sizefmt.base = 1;
+	cfg.sizefmt.precision = 0;
+	cfg.sizefmt.ieci_prefixes = 0;
+	cfg.sizefmt.space = 0;
+
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
 	update_string(&cfg.shell_cmd_flag, "-c");
@@ -140,6 +145,11 @@ conf_teardown(void)
 	update_string(&cfg.shell_cmd_flag, NULL);
 
 	cfg.dot_dirs = 0;
+
+	cfg.sizefmt.base = 0;
+	cfg.sizefmt.precision = 0;
+	cfg.sizefmt.ieci_prefixes = 0;
+	cfg.sizefmt.space = 0;
 }
 
 void

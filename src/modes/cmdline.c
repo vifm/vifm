@@ -850,7 +850,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t initial[],
 	curr_stats.save_msg = 1;
 
 	if(input_stat.prev_mode == NORMAL_MODE)
-		init_commands();
+		cmds_init();
 
 	/* Make cursor visible only after all initial draws. */
 	ui_set_cursor(/*visibility=*/1);
@@ -1090,7 +1090,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 
 	if(old_input_stat.sub_mode == CLS_COMMAND)
 	{
-		curr_stats.save_msg = exec_commands("", curr_view, CIT_COMMAND);
+		curr_stats.save_msg = cmds_dispatch("", curr_view, CIT_COMMAND);
 	}
 	else if(old_input_stat.sub_mode == CLS_FILTER)
 	{
@@ -1161,7 +1161,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		}
 		else
 		{
-			get_and_execute_command(mbstr, index + 1, type);
+			cmds_run_ext(mbstr, index + 1, type);
 		}
 
 		free(mbstr);
@@ -1194,7 +1194,7 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 		prompt_cb cb, void *cb_arg)
 {
 	CmdInputType type = (is_expr_reg ? CIT_EXPRREG_INPUT : CIT_PROMPT_INPUT);
-	char *const ext_cmd = get_ext_command(input, cursor_col, type);
+	char *const ext_cmd = cmds_get_ext(input, cursor_col, type);
 
 	if(ext_cmd != NULL)
 	{
@@ -1598,12 +1598,12 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 		if(sub_mode == CLS_COMMAND)
 		{
-			commands_scope_start();
+			cmds_scope_start();
 		}
-		curr_stats.save_msg = exec_commands(real_start, curr_view, cmd_type);
+		curr_stats.save_msg = cmds_dispatch(real_start, curr_view, cmd_type);
 		if(sub_mode == CLS_COMMAND)
 		{
-			if(commands_scope_finish() != 0)
+			if(cmds_scope_finish() != 0)
 			{
 				curr_stats.save_msg = 1;
 			}
@@ -1640,7 +1640,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_VWBSEARCH:
 				{
 					const CmdInputType cit = search_cls_to_cit(sub_mode);
-					curr_stats.save_msg = exec_command(pattern, curr_view, cit);
+					curr_stats.save_msg = cmds_dispatch1(pattern, curr_view, cit);
 					break;
 				}
 			case CLS_MENU_FSEARCH:
@@ -2332,7 +2332,7 @@ escape_cmd_for_pasting(const char str[])
 	wide_input[input_stat.index] = L'\0';
 	mb_input = to_multibyte(wide_input);
 
-	escaped = commands_escape_for_insertion(mb_input, strlen(mb_input), str);
+	escaped = cmds_insertion_escape(mb_input, strlen(mb_input), str);
 
 	free(mb_input);
 	free(wide_input);
@@ -3096,9 +3096,9 @@ line_completion(line_stats_t *stat)
 		compl_func_arg = CPP_NONE;
 		if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
 		{
-			line_mb_cmd = find_last_command(line_mb);
+			line_mb_cmd = cmds_find_last(line_mb);
 
-			const CmdLineLocation ipt = get_cmdline_location(line_mb,
+			const CmdLineLocation ipt = cmds_classify_pos(line_mb,
 					line_mb + strlen(line_mb));
 			switch(ipt)
 			{

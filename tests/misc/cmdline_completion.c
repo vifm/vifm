@@ -55,7 +55,7 @@ SETUP()
 
 	curr_view = &lwin;
 
-	init_commands();
+	cmds_init();
 
 	vle_cmds_run("command bar a");
 	vle_cmds_run("command baz b");

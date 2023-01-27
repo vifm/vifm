@@ -125,7 +125,6 @@ static CmdArgsType get_cmd_args_type(const char cmd[]);
 static char * skip_to_cmd_name(const char cmd[]);
 static int repeat_command(view_t *view, CmdInputType type);
 static int is_at_scope_bottom(const int_stack_t *scope_stack);
-TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 
 /* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
@@ -186,9 +185,9 @@ cmds_expand_envvars(const char str[])
 }
 
 void
-get_and_execute_command(const char line[], size_t line_pos, CmdInputType type)
+cmds_run_ext(const char line[], size_t line_pos, CmdInputType type)
 {
-	char *const cmd = get_ext_command(line, line_pos, type);
+	char *const cmd = cmds_get_ext(line, line_pos, type);
 	if(cmd == NULL)
 	{
 		save_extcmd(line, type);
@@ -202,7 +201,7 @@ get_and_execute_command(const char line[], size_t line_pos, CmdInputType type)
 }
 
 char *
-get_ext_command(const char beginning[], size_t line_pos, CmdInputType type)
+cmds_get_ext(const char beginning[], size_t line_pos, CmdInputType type)
 {
 	char cmd_file[PATH_MAX + 1];
 	char *cmd = NULL;
@@ -307,16 +306,16 @@ execute_extcmd(const char command[], CmdInputType type)
 {
 	if(type == CIT_COMMAND)
 	{
-		commands_scope_start();
-		curr_stats.save_msg = exec_commands(command, curr_view, type);
-		if(commands_scope_finish() != 0)
+		cmds_scope_start();
+		curr_stats.save_msg = cmds_dispatch(command, curr_view, type);
+		if(cmds_scope_finish() != 0)
 		{
 			curr_stats.save_msg = 1;
 		}
 	}
 	else
 	{
-		curr_stats.save_msg = exec_command(command, curr_view, type);
+		curr_stats.save_msg = cmds_dispatch1(command, curr_view, type);
 	}
 }
 
@@ -335,14 +334,14 @@ save_extcmd(const char command[], CmdInputType type)
 }
 
 int
-is_history_command(const char command[])
+cmds_goes_to_history(const char command[])
 {
 	/* Don't add :!! or :! to history list. */
 	return strcmp(command, "!!") != 0 && strcmp(command, "!") != 0;
 }
 
 int
-command_accepts_expr(int cmd_id)
+cmds_has_expr_args(int cmd_id)
 {
 	return cmd_id == COM_ECHO
 	    || cmd_id == COM_EXE
@@ -352,9 +351,9 @@ command_accepts_expr(int cmd_id)
 }
 
 char *
-commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
+cmds_insertion_escape(const char cmd_line[], int pos, const char str[])
 {
-	const CmdLineLocation ipt = get_cmdline_location(cmd_line, cmd_line + pos);
+	const CmdLineLocation ipt = cmds_classify_pos(cmd_line, cmd_line + pos);
 	switch(ipt)
 	{
 		case CLL_R_QUOTING:
@@ -425,7 +424,7 @@ skip_at_beginning(int id, const char args[])
 }
 
 void
-init_commands(void)
+cmds_init(void)
 {
 	if(cmds_conf.inner != NULL)
 	{
@@ -433,7 +432,7 @@ init_commands(void)
 		return;
 	}
 
-	/* We get here when init_commands() is called the first time. */
+	/* We get here when cmds_init() is called the first time. */
 
 	vle_cmds_init(1, &cmds_conf);
 	vle_cmds_add(cmds_list, cmds_list_size);
@@ -501,23 +500,23 @@ pattern_expand_hook(const char pattern[])
 }
 
 int
-cmds_exec(view_t *view, const char command[], int menu, int keep_sel)
+cmds_exec(const char cmd[], view_t *view, int menu, int keep_sel)
 {
 	int id;
 	int result;
 
-	if(command == NULL)
+	if(cmd == NULL)
 	{
 		flist_sel_stash_if_nonempty(view);
 		return 0;
 	}
 
-	command = skip_to_cmd_name(command);
+	cmd = skip_to_cmd_name(cmd);
 
-	if(command[0] == '"')
+	if(cmd[0] == '"')
 		return 0;
 
-	if(command[0] == '\0' && !menu)
+	if(cmd[0] == '\0' && !menu)
 	{
 		flist_sel_stash_if_nonempty(view);
 		return 0;
@@ -531,7 +530,7 @@ cmds_exec(view_t *view, const char command[], int menu, int keep_sel)
 		cmds_conf.end = view->list_rows - 1;
 	}
 
-	id = vle_cmds_identify(command);
+	id = vle_cmds_identify(cmd);
 
 	if(!cmd_should_be_processed(id))
 	{
@@ -543,21 +542,21 @@ cmds_exec(view_t *view, const char command[], int menu, int keep_sel)
 		char undo_msg[COMMAND_GROUP_INFO_LEN];
 
 		snprintf(undo_msg, sizeof(undo_msg), "in %s: %s",
-				replace_home_part(flist_get_dir(view)), command);
+				replace_home_part(flist_get_dir(view)), cmd);
 
 		un_group_open(undo_msg);
 		un_group_close();
 	}
 
 	keep_view_selection = keep_sel;
-	result = vle_cmds_run(command);
+	result = vle_cmds_run(cmd);
 
 	if(result >= 0)
 		return result;
 
-	if(is_implicit_cd(view, command, result))
+	if(is_implicit_cd(view, cmd, result))
 	{
-		return cd(view, flist_get_dir(view), command);
+		return cd(view, flist_get_dir(view), cmd);
 	}
 
 	switch(result)
@@ -840,7 +839,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 }
 
 int
-exec_commands(const char cmdline[], view_t *view, CmdInputType type)
+cmds_dispatch(const char cmdline[], view_t *view, CmdInputType type)
 {
 	int save_msg = 0;
 	char **cmds = break_cmdline(cmdline, type == CIT_MENU_COMMAND);
@@ -848,7 +847,7 @@ exec_commands(const char cmdline[], view_t *view, CmdInputType type)
 
 	while(*cmd != NULL)
 	{
-		const int ret = exec_command(*cmd, view, type);
+		const int ret = cmds_dispatch1(*cmd, view, type);
 		if(ret != 0)
 		{
 			save_msg = (ret < 0) ? -1 : 1;
@@ -976,7 +975,7 @@ finish:
 static int
 is_out_of_arg(const char cmd[], const char pos[])
 {
-	const CmdLineLocation location = get_cmdline_location(cmd, pos);
+	const CmdLineLocation location = cmds_classify_pos(cmd, pos);
 
 	if(location == CLL_NO_QUOTING)
 	{
@@ -996,7 +995,7 @@ is_out_of_arg(const char cmd[], const char pos[])
 }
 
 CmdLineLocation
-get_cmdline_location(const char cmd[], const char pos[])
+cmds_classify_pos(const char cmd[], const char *pos)
 {
 	char separator;
 	int regex_quoting;
@@ -1087,12 +1086,12 @@ get_cmd_args_type(const char cmd[])
 			return CAT_UNTIL_THE_END;
 
 		default:
-			return command_accepts_expr(cmd_id) ? CAT_EXPR : CAT_REGULAR;
+			return cmds_has_expr_args(cmd_id) ? CAT_EXPR : CAT_REGULAR;
 	}
 }
 
 const char *
-find_last_command(const char cmds[])
+cmds_find_last(const char cmds[])
 {
 	const char *p, *q;
 
@@ -1150,7 +1149,7 @@ skip_to_cmd_name(const char cmd[])
 }
 
 int
-exec_command(const char cmd[], view_t *view, CmdInputType type)
+cmds_dispatch1(const char cmd[], view_t *view, CmdInputType type)
 {
 	int menu;
 	int backward;
@@ -1178,7 +1177,7 @@ exec_command(const char cmd[], view_t *view, CmdInputType type)
 
 		case CIT_MENU_COMMAND: menu = 1; /* Fall through. */
 		case CIT_COMMAND:
-			return cmds_exec(view, cmd, menu, /*keep_sel=*/0);
+			return cmds_exec(cmd, view, menu, /*keep_sel=*/0);
 
 		case CIT_FILTER_PATTERN:
 			if(view->custom.type != CV_DIFF)
@@ -1219,7 +1218,7 @@ repeat_command(view_t *view, CmdInputType type)
 			return modview_find(NULL, backward);
 
 		case CIT_COMMAND:
-			return cmds_exec(view, NULL, /*menu=*/0, /*keep_sel=*/0);
+			return cmds_exec(/*cmd=*/NULL, view, /*menu=*/0, /*keep_sel=*/0);
 
 		case CIT_FILTER_PATTERN:
 			local_filter_apply(view, "");
@@ -1232,13 +1231,13 @@ repeat_command(view_t *view, CmdInputType type)
 }
 
 void
-commands_scope_start(void)
+cmds_scope_start(void)
 {
 	(void)int_stack_push(&if_levels, IF_SCOPE_GUARD);
 }
 
 void
-commands_scope_escape(void)
+cmds_scope_escape(void)
 {
 	while(!is_at_scope_bottom(&if_levels))
 	{
@@ -1247,7 +1246,7 @@ commands_scope_escape(void)
 }
 
 int
-commands_scope_finish(void)
+cmds_scope_finish(void)
 {
 	if(!is_at_scope_bottom(&if_levels))
 	{
@@ -1340,7 +1339,7 @@ is_at_scope_bottom(const int_stack_t *scope_stack)
 }
 
 char *
-eval_arglist(const char args[], const char **stop_ptr)
+cmds_eval_args(const char args[], const char **stop_ptr)
 {
 	size_t len = 0;
 	char *eval_result = NULL;

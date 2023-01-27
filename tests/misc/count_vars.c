@@ -18,7 +18,7 @@ SETUP()
 	curr_view = &lwin;
 
 	view_setup(&lwin);
-	init_commands();
+	cmds_init();
 	modes_init();
 	opt_handlers_setup();
 }

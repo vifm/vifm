@@ -570,7 +570,7 @@ TEST(global_local_dotfilter_and_tabs)
 {
 	curr_stats.global_local_settings = 1;
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	lwin.hide_dot_g = lwin.hide_dot = 1;
 	rwin.hide_dot_g = rwin.hide_dot = 1;
@@ -580,14 +580,14 @@ TEST(global_local_dotfilter_and_tabs)
 	int i;
 	tab_info_t tab_info;
 
-	assert_success(exec_commands("normal zo", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("normal zo", &lwin, CIT_COMMAND));
 	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
 		assert_false(tab_info.view->hide_dot_g);
 		assert_false(tab_info.view->hide_dot);
 	}
 
-	assert_success(exec_commands("normal za", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("normal za", &lwin, CIT_COMMAND));
 	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
 		assert_true(tab_info.view->hide_dot_g);
@@ -603,10 +603,10 @@ TEST(global_local_manualfilter_and_tabs)
 {
 	curr_stats.global_local_settings = 1;
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	tabs_new(NULL, NULL);
-	assert_success(exec_commands("filter /y/", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filter /y/", &lwin, CIT_COMMAND));
 
 	int i;
 	tab_info_t tab_info;
@@ -646,11 +646,11 @@ TEST(direnter_is_called_for_new_tab)
 {
 	curr_stats.load_stage = -1;
 	modes_init();
-	init_commands();
+	cmds_init();
 
 	assert_success(process_set_args("dotfiles", 1, 1));
 
-	assert_success(exec_commands("autocmd DirEnter * setlocal nodotfiles", &lwin,
+	assert_success(cmds_dispatch("autocmd DirEnter * setlocal nodotfiles", &lwin,
 				CIT_COMMAND));
 
 	tabs_new(NULL, SANDBOX_PATH);
@@ -658,7 +658,7 @@ TEST(direnter_is_called_for_new_tab)
 	assert_false(lwin.hide_dot_g);
 	assert_true(lwin.hide_dot);
 
-	assert_success(exec_commands("autocmd!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("autocmd!", &lwin, CIT_COMMAND));
 
 	vle_keys_reset();
 	vle_cmds_reset();

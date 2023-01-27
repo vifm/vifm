@@ -195,7 +195,7 @@ non_path_completion(completion_data_t *data)
 		vle_abbr_complete(args);
 		data->start = args;
 	}
-	else if(command_accepts_expr(id))
+	else if(cmds_has_expr_args(id))
 	{
 		complete_expr(arg, &data->start);
 	}

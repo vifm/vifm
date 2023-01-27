@@ -121,19 +121,19 @@ execute_history_cb(view_t *view, menu_data_t *m)
 	{
 		case CMDHISTORY:
 			hists_commands_save(line);
-			exec_commands(line, view, CIT_COMMAND);
+			cmds_dispatch(line, view, CIT_COMMAND);
 			break;
 		case FSEARCHHISTORY:
 			hists_search_save(line);
-			exec_command(line, view, CIT_FSEARCH_PATTERN);
+			cmds_dispatch1(line, view, CIT_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
 			hists_search_save(line);
-			exec_command(line, view, CIT_BSEARCH_PATTERN);
+			cmds_dispatch1(line, view, CIT_BSEARCH_PATTERN);
 			break;
 		case FILTERHISTORY:
 			hists_filter_save(line);
-			exec_command(line, view, CIT_FILTER_PATTERN);
+			cmds_dispatch1(line, view, CIT_FILTER_PATTERN);
 			break;
 		case EXPRREGHISTORY:
 		case PROMPTHISTORY:

@@ -1033,7 +1033,7 @@ load_cmds(JSON_Object *root)
 			char *cmdadd_cmd = format_str("command %s %s", name, cmd);
 			if(cmdadd_cmd != NULL)
 			{
-				exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
+				cmds_dispatch(cmdadd_cmd, curr_view, CIT_COMMAND);
 				free(cmdadd_cmd);
 			}
 		}

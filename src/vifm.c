@@ -218,7 +218,7 @@ vifm_main(int argc, char *argv[])
 	reinit_logger(cfg.log_file);
 
 	/* Commands module also initializes bracket notation and variables. */
-	init_commands();
+	cmds_init();
 
 	init_builtin_functions();
 	update_path_env(1);
@@ -564,7 +564,7 @@ exec_startup_commands(const args_t *args)
 		/* Make sure we're executing commands in correct directory. */
 		(void)vifm_chdir(flist_get_dir(curr_view));
 
-		(void)exec_commands(args->cmds[i], curr_view, CIT_COMMAND);
+		(void)cmds_dispatch(args->cmds[i], curr_view, CIT_COMMAND);
 	}
 }
 

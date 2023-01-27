@@ -7,7 +7,7 @@
 
 SETUP()
 {
-	init_commands();
+	cmds_init();
 	lwin.selected_files = 0;
 	curr_view = &lwin;
 }
@@ -32,7 +32,7 @@ TEST(trailing_line_continuation_is_ok)
 
 TEST(command_is_executed_only_once)
 {
-	exec_command("let $ENV = 'old'", curr_view, CIT_COMMAND);
+	cmds_dispatch1("let $ENV = 'old'", curr_view, CIT_COMMAND);
 	assert_success(cfg_source_file(TEST_DATA_PATH "/scripts/append-env.vifm"));
 	assert_string_equal("oldvalue", env_get("ENV"));
 }

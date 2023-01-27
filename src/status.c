@@ -537,7 +537,7 @@ hists_resize(int new_size)
 void
 hists_commands_save(const char command[])
 {
-	if(is_history_command(command))
+	if(cmds_goes_to_history(command))
 	{
 		if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
 		{

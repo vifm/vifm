@@ -339,7 +339,7 @@ TEST(normal_in_autocmd_does_not_break_filter_navigation)
 	assert_success(stats_init(&cfg));
 	cfg.inc_search = 1;
 
-	assert_success(exec_command("autocmd DirEnter * normal ga", curr_view,
+	assert_success(cmds_dispatch1("autocmd DirEnter * normal ga", curr_view,
 				CIT_COMMAND));
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
@@ -349,7 +349,7 @@ TEST(normal_in_autocmd_does_not_break_filter_navigation)
 	(void)vle_keys_exec_timed_out(L"=" WK_C_y WK_C_m);
 	assert_string_equal("", curr_view->local_filter.filter.raw);
 
-	assert_success(exec_command("autocmd!", curr_view, CIT_COMMAND));
+	assert_success(cmds_dispatch1("autocmd!", curr_view, CIT_COMMAND));
 	wait_for_bg();
 
 	conf_teardown();

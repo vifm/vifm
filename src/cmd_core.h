@@ -56,42 +56,43 @@ CmdLineLocation;
 
 struct view_t;
 
-void init_commands(void);
+/* Initializes use of :commands and its dependencies: bracket notation and
+ * variables. */
+void cmds_init(void);
 
 /* Executes one or more commands separated by a bar.  Returns zero on success if
  * no message should be saved in the status bar, positive value to save message
  * on successful execution and negative value in case of error with error
  * message. */
-int exec_commands(const char cmd[], struct view_t *view, CmdInputType type);
+int cmds_dispatch(const char cmd[], struct view_t *view, CmdInputType type);
 
-/* Executes command of specified kind.  Returns zero on success if no message
- * should be saved in the status bar, positive value to save message on
+/* Executes single command of specified kind.  Returns zero on success if no
+ * message should be saved in the status bar, positive value to save message on
  * successful execution and negative value in case of error with error
  * message. */
-int exec_command(const char cmd[], struct view_t *view, CmdInputType type);
+int cmds_dispatch1(const char cmd[], struct view_t *view, CmdInputType type);
 
 /* Executes a single command-line command.  Returns negative value in case of
  * an error or value from command handler. */
-int cmds_exec(struct view_t *view, const char command[], int menu,
-		int keep_sel);
+int cmds_exec(const char cmd[], struct view_t *view, int menu, int keep_sel);
 
 /* Should precede new command execution scope (e.g. before start of sourced
  * script). */
-void commands_scope_start(void);
+void cmds_scope_start(void);
 
 /* Marks active command execution scope as escaped meaning that there is no need
  * to check for endif. */
-void commands_scope_escape(void);
+void cmds_scope_escape(void);
 
 /* Should terminate command execution scope (e.g. end of sourced script).
  * Performs some of internal checks.  Returns non-zero when there were errors,
  * otherwise zero is returned. */
-int commands_scope_finish(void);
+int cmds_scope_finish(void);
 
 /* Find start of the last command in pipe-separated list of command-line
  * commands.  Accounts for pipe escaping.  Returns pointer to start of the last
  * command. */
-const char * find_last_command(const char cmds[]);
+const char * cmds_find_last(const char cmds[]);
 
 /* Expands all environment variables in the str.  Allocates and returns memory
  * that should be freed by the caller. */
@@ -99,38 +100,35 @@ char * cmds_expand_envvars(const char str[]);
 
 /* Opens the editor with the line at given column, gets entered command and
  * executes it in the way dependent on the type of command. */
-void get_and_execute_command(const char line[], size_t line_pos,
-		CmdInputType type);
+void cmds_run_ext(const char line[], size_t line_pos, CmdInputType type);
 
 /* Opens the editor with the beginning at the line_pos column.  Type is used to
  * provide useful context.  On success returns entered command as a newly
  * allocated string, which should be freed by the caller, otherwise NULL is
  * returned. */
-char * get_ext_command(const char beginning[], size_t line_pos,
-		CmdInputType type);
+char * cmds_get_ext(const char beginning[], size_t line_pos, CmdInputType type);
 
 /* Checks whether command should be stored in command-line history.  Returns
  * non-zero if it should be stored, otherwise zero is returned. */
-int is_history_command(const char command[]);
+int cmds_goes_to_history(const char command[]);
 
 /* Checks whether command accepts exception as its argument(s).  Returns
  * non-zero if so, otherwise zero is returned. */
-int command_accepts_expr(int cmd_id);
+int cmds_has_expr_args(int cmd_id);
 
 /* Analyzes command line at given position and escapes str accordingly.  Returns
  * escaped string or NULL when no escaping is needed. */
-char * commands_escape_for_insertion(const char cmd_line[], int pos,
-		const char str[]);
+char * cmds_insertion_escape(const char cmd_line[], int pos, const char str[]);
 
 /* Analyzes position on the command-line.  pos should point to some position of
  * cmd.  Returns where current position in the command line is. */
-CmdLineLocation get_cmdline_location(const char cmd[], const char pos[]);
+CmdLineLocation cmds_classify_pos(const char cmd[], const char *pos);
 
 /* Evaluates a set of expressions and concatenates results with a space.  args
  * can not be empty string.  Returns pointer to newly allocated string, which
  * should be freed by caller, or NULL on error.  stop_ptr will point to the
  * beginning of invalid expression in case of error. */
-char * eval_arglist(const char args[], const char **stop_ptr);
+char * cmds_eval_args(const char args[], const char **stop_ptr);
 
 /* Requests unit to do not reset selection after command execution.  Expected to
  * be called from command handlers, or it won't have any effect. */
