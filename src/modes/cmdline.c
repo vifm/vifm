@@ -933,6 +933,7 @@ set_view_port(void)
 	{
 		curr_view->top_line = input_stat.old_top;
 		curr_view->list_pos = input_stat.old_pos;
+		fview_position_updated(curr_view);
 	}
 	else if(input_stat.sub_mode == CLS_FILTER)
 	{

@@ -18,6 +18,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
+#include "../../src/flist_hist.h"
 #include "../../src/status.h"
 
 static void prompt_callback(const char response[], void *arg);
@@ -353,6 +354,43 @@ TEST(normal_in_autocmd_does_not_break_filter_navigation)
 	wait_for_bg();
 
 	conf_teardown();
+}
+
+TEST(filter_in_autocmd_does_not_break_filter_navigation)
+{
+	conf_setup();
+	histories_init(5);
+	cfg.inc_search = 1;
+	cfg.auto_ch_pos = 1;
+	cfg.ch_pos_on = CHPOS_ENTER;
+
+	assert_success(cmds_dispatch1("autocmd DirEnter tree/ filter! dir", curr_view,
+				CIT_COMMAND));
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "tree", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+	assert_int_equal(3, curr_view->list_rows);
+	curr_view->list_pos = 2;
+	flist_hist_save(curr_view);
+
+	(void)vle_keys_exec_timed_out(L"h/" WK_C_y WK_C_m);
+	/* Reload to apply filter. */
+	populate_dir_list(curr_view, /*reload=*/1);
+	assert_int_equal(1, curr_view->list_rows);
+	/* This shouldn't lead to assertion/segfault caused by cursor position being
+	 * outside of file list. */
+	curr_stats.load_stage = 2;
+	(void)vle_keys_exec_timed_out(L"d");
+	curr_stats.load_stage = 0;
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+	assert_success(cmds_dispatch1("autocmd!", curr_view, CIT_COMMAND));
+
+	histories_init(0);
+	conf_teardown();
+	cfg.auto_ch_pos = 0;
+	cfg.ch_pos_on = 0;
 }
 
 TEST(leaving_navigation_does_not_move_cursor)
