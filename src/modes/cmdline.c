@@ -1706,6 +1706,23 @@ nav_open(void)
 			replace_string(&initial, "");
 		}
 
+		/* Auto-commands on entering a directory can do something that will require
+		 * a postponed view update.  Do it here, so that we don't work with file
+		 * list that's about to be changed.  In particular re-entering submode saves
+		 * top and cursor positions. */
+		switch(ui_view_query_scheduled_event(curr_view))
+		{
+			case UUE_NONE:
+				/* Nothing to do. */
+				break;
+			case UUE_REDRAW:
+				ui_view_schedule_redraw(curr_view);
+				break;
+			case UUE_RELOAD:
+				load_saving_pos(curr_view);
+				break;
+		}
+
 		if(initial != NULL)
 		{
 			enter_submode(sub_mode, initial, /*reenter=*/1);

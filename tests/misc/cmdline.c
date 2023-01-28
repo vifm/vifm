@@ -10,6 +10,7 @@
 #include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/path.h"
@@ -22,6 +23,8 @@
 #include "../../src/status.h"
 
 static void prompt_callback(const char response[], void *arg);
+static void column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info);
 
 static line_stats_t *stats;
 
@@ -364,6 +367,12 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	cfg.auto_ch_pos = 1;
 	cfg.ch_pos_on = CHPOS_ENTER;
 
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+	columns_set_line_print_func(&column_line_print);
+	curr_view->columns = columns_create();
+	opt_handlers_setup();
+
 	assert_success(cmds_dispatch1("autocmd DirEnter tree/ filter! dir", curr_view,
 				CIT_COMMAND));
 
@@ -374,18 +383,24 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	curr_view->list_pos = 2;
 	flist_hist_save(curr_view);
 
+	curr_stats.load_stage = 2;
 	(void)vle_keys_exec_timed_out(L"h/" WK_C_y WK_C_m);
-	/* Reload to apply filter. */
-	populate_dir_list(curr_view, /*reload=*/1);
-	assert_int_equal(1, curr_view->list_rows);
 	/* This shouldn't lead to assertion/segfault caused by cursor position being
 	 * outside of file list. */
-	curr_stats.load_stage = 2;
 	(void)vle_keys_exec_timed_out(L"d");
 	curr_stats.load_stage = 0;
+	assert_int_equal(1, curr_view->list_rows);
+	/* Position of the filtered list is the one being stored. */
+	assert_int_equal(0, stats->old_top);
+	assert_int_equal(0, stats->old_pos);
 
 	(void)vle_keys_exec_timed_out(WK_C_c);
 	assert_success(cmds_dispatch1("autocmd!", curr_view, CIT_COMMAND));
+
+	opt_handlers_teardown();
+	columns_free(lwin.columns);
+	curr_view->columns = NULL;
+	columns_teardown();
 
 	histories_init(0);
 	conf_teardown();
@@ -511,6 +526,13 @@ prompt_callback(const char response[], void *arg)
 {
 	update_string(&prompt_response, response);
 	++prompt_invocation_count;
+}
+
+static void
+column_line_print(const char buf[], size_t offset, AlignType align,
+		const char full_column[], const format_info_t *info)
+{
+	/* Do nothing. */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
