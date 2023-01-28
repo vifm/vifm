@@ -439,7 +439,7 @@
 	current file correspondingly.  Thanks to j-xella.
 
 	Added 'previewoptions' option to allow tweaking graphics preview a bit.
-	Thanks to Joshua Jensch (a.k.a., patroclos) and flux242.
+	Thanks to Joshua Jensch (a.k.a. patroclos) and flux242.
 
 	Added "toptreestats" value to 'previewoptions' option, which makes stats
 	appear before the tree.  Patch by qsmodo.
@@ -4043,7 +4043,7 @@
 	Added handling of paths with backward slashes for :find/:locate/:grep/%M
 	menus on Windows.  Thanks to Robert Sarkozi.
 
-	Added sample light color scheme (provided by Daniel R., a.k.a. reicheltd).
+	Added sample light color scheme.  Patch by Daniel R. (a.k.a. reicheltd).
 
 	Added :lstrash command-line command, which displays list of files in trash.
 	Thanks to Sergei Shilovsky.
@@ -4056,7 +4056,7 @@
 	Svoboda, a.k.a. tex.
 
 	Added "type" key to the 'sort' option to allow controlling grouping of
-	directories.  Thanks to Daniel R., a.k.a. reicheltd.
+	directories.  Thanks to Daniel R. (a.k.a. reicheltd).
 
 	Added &option syntax for expressions (returns value of an option).
 
@@ -4135,8 +4135,8 @@
 	Fixed displaying of search messages in menus.
 
 	Fixed check for whether temporary files with list of file names is
-	changed during bulk rename operation.  Thanks to Daniel R., a.k.a.
-	reicheltd.
+	changed during bulk rename operation.  Thanks to Daniel R (a.k.a.
+	reicheltd).
 
 	Fixed reset of charset options (like 'cpoptions'), which could result in
 	segmentation faults.
@@ -4588,8 +4588,8 @@
 	Changed the way title of the permissions dialog is composed.
 
 	Fixed configuration on OS X and FreeBSD because of unavailable mntent.h
-	header and strverscmp() function (reported by Daniel R., a.k.a. r1chelt,
-	and Daniel Dettlaff, a.k.a. dmilith).
+	header and strverscmp() function.  Thanks to Daniel R. (a.k.a. r1chelt)
+	and Daniel Dettlaff (a.k.a. dmilith).
 
 	Fixed configuration when libmagic is not available, but selected (tried
 	to check its symbols).
