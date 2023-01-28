@@ -76,7 +76,7 @@
 #include "wk.h"
 
 /* Prompt prefix when navigation is enabled. */
-#define NAV_PREFIX L"nav"
+#define NAV_PREFIX L"(nav)"
 
 /* History search mode. */
 typedef enum
