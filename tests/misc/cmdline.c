@@ -176,6 +176,27 @@ TEST(user_prompt_completion)
 	assert_string_equal("read/dos-eof", ui_sb_last());
 }
 
+TEST(each_filtering_prompt_gets_clean_state)
+{
+	conf_setup();
+	cfg.inc_search = 1;
+
+	/* In order to handle input change, old input must be stored somewhere and
+	 * compared against the new state.  Make sure the storage is cleared on every
+	 * prompt. */
+
+	(void)vle_keys_exec_timed_out(L"=a");
+	assert_string_equal("a", curr_view->local_filter.filter.raw);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+	assert_string_equal("", curr_view->local_filter.filter.raw);
+
+	(void)vle_keys_exec_timed_out(L"=a");
+	assert_string_equal("a", curr_view->local_filter.filter.raw);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+
+	conf_teardown();
+}
+
 TEST(cmdline_navigation)
 {
 	/* This doesn't work outside of search and local filter submodes. */

@@ -117,6 +117,7 @@ typedef struct
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
+	wchar_t *last_line;           /* Previous contents of the line. */
 	wchar_t *initial_line;        /* Initial state of the line. */
 	int index;                    /* Index of the current character in cmdline. */
 	int curs_pos;                 /* Position of the cursor in status bar. */
@@ -502,8 +503,6 @@ draw_cmdline_text(line_stats_t *stat)
 static void
 input_line_changed(void)
 {
-	static wchar_t *previous;
-
 	if(!cfg.inc_search ||
 			(!input_stat.search_mode && input_stat.sub_mode != CLS_FILTER))
 	{
@@ -519,15 +518,16 @@ input_line_changed(void)
 	input_stat.state = PS_NORMAL;
 	if(is_input_line_empty())
 	{
-		free(previous);
-		previous = NULL;
+		free(input_stat.last_line);
+		input_stat.last_line = NULL;
 
 		set_view_port();
 		handle_empty_input();
 	}
-	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
+	else if(input_stat.last_line == NULL ||
+			wcscmp(input_stat.last_line, input_stat.line) != 0)
 	{
-		(void)replace_wstring(&previous, input_stat.line);
+		(void)replace_wstring(&input_stat.last_line, input_stat.line);
 
 		set_view_port();
 		handle_nonempty_input();
@@ -872,6 +872,7 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 	stat->prev_mode = prev_mode;
 
 	stat->line = vifm_wcsdup(initial);
+	stat->last_line = NULL;
 	stat->initial_line = vifm_wcsdup(stat->line);
 	stat->index = wcslen(initial);
 	stat->curs_pos = esc_wcswidth(stat->line, (size_t)-1);
@@ -1025,9 +1026,11 @@ static void
 free_line_stats(line_stats_t *stat)
 {
 	free(input_stat.line);
+	free(input_stat.last_line);
 	free(input_stat.initial_line);
 	free(input_stat.line_buf);
 	input_stat.line = NULL;
+	input_stat.last_line = NULL;
 	input_stat.initial_line = NULL;
 	input_stat.line_buf = NULL;
 }
