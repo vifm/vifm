@@ -739,5 +739,33 @@ TEST(mouse)
 	assert_int_equal(M_CMDLINE_MODE | M_NORMAL_MODE, cfg.mouse);
 }
 
+TEST(navoptions)
+{
+	vle_tb_clear(vle_err);
+	assert_failure(cmds_dispatch("se navoptions=open:everything", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("Failed to parse \"open\" value: everything",
+			vle_tb_get_data(vle_err));
+
+	vle_tb_clear(vle_err);
+	assert_failure(cmds_dispatch("se navoptions=autoopen:dirs", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("Unknown key for 'navoptions' option: autoopen",
+			vle_tb_get_data(vle_err));
+
+	assert_success(cmds_dispatch("se navoptions=", &lwin, CIT_COMMAND));
+	assert_false(cfg.nav_open_files);
+	assert_success(cmds_dispatch("se navoptions=open:all", &lwin, CIT_COMMAND));
+	assert_true(cfg.nav_open_files);
+	assert_success(cmds_dispatch("se navoptions=open:dirs", &lwin, CIT_COMMAND));
+	assert_false(cfg.nav_open_files);
+
+	/* Failed parsing doesn't update value. */
+	assert_success(cmds_dispatch("se navoptions=open:all", &lwin, CIT_COMMAND));
+	assert_true(cfg.nav_open_files);
+	assert_failure(cmds_dispatch("se navoptions=open:aa", &lwin, CIT_COMMAND));
+	assert_true(cfg.nav_open_files);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

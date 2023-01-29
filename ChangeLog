@@ -54,6 +54,9 @@
 	Added :amap, :anoremap and :aunmap commands to configure mappings in
 	navigation mode.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
 
+	Added 'navoptions' option to allow tweaking navigation mode a bit.  Thanks
+	to filterfalse.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

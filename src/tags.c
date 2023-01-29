@@ -90,6 +90,7 @@ const char *tags[] = {
 	"vifm-'millerview'",
 	"vifm-'mintimeoutlen'",
 	"vifm-'mouse'",
+	"vifm-'navoptions'",
 	"vifm-'nu'",
 	"vifm-'number'",
 	"vifm-'numberwidth'",

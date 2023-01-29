@@ -2257,6 +2257,8 @@ store_global_options(JSON_Object *root)
 	append_dstr(options, format_str("rulerformat=%s",
 				escape_spaces(cfg.ruler_format)));
 	append_dstr(options, format_str("%srunexec", cfg.auto_execute ? "" : "no"));
+	append_dstr(options, format_str("navoptions=%s",
+				escape_spaces(vle_opts_get("navoptions", OPT_GLOBAL))));
 	append_dstr(options, format_str("previewoptions=%s",
 				escape_spaces(vle_opts_get("previewoptions", OPT_GLOBAL))));
 	append_dstr(options, format_str("%sscrollbind", cfg.scroll_bind ? "" : "no"));

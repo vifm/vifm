@@ -1737,7 +1737,10 @@ nav_open(void)
 	else
 	{
 		leave_cmdline_mode(/*cancelled=*/0);
-		rn_open(curr_view, FHE_RUN);
+		if(cfg.nav_open_files)
+		{
+			rn_open(curr_view, FHE_RUN);
+		}
 	}
 }
 

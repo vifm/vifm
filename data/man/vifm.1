@@ -1,4 +1,4 @@
-.TH VIFM 1 "20 January 2022" "vifm 0.12.1"
+.TH VIFM 1 "29 January 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1190,8 +1190,10 @@ have set for search).
 return to a regular command-line mode.
 .TP
 .BI "Enter, Right"
-either enter a directory under the cursor without leaving the mode and clear
-the prompt or leave the mode and open a file under the cursor.
+either enter a directory under the cursor without leaving the mode and
+clear the prompt or leave the mode for files.  If 'navoptions'
+specifies "open:all" a file under the cursor is opened after leaving the
+mode.
 .TP
 .BI "Ctrl-O, Left"
 go to parent directory.
@@ -4548,6 +4550,20 @@ Contains a sequence of single-character flags:
  - m - menu mode
  - n - normal mode
  - v - visual mode
+.TP
+.BI 'navoptions'
+type: string list
+.br
+default: "open:dirs"
+.br
+
+Configures behaviour of navigation mode.
+
+  item      default
+  open:str  dirs
+
+The "open" item specifies what file-system objects should be opened on
+Enter and can take two values: dirs (only directories) or all.
 .TP
 .BI "'number' 'nu'"
 type: boolean

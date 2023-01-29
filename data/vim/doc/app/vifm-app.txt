@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 20
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1064,7 +1064,9 @@ Ctrl-Y                                         *vifm-a_CTRL-Y*
 
 Enter, Right                                   *vifm-a_Enter* *vifm-a_Right*
     either enter a directory under the cursor without leaving the mode and
-    clear the prompt or leave the mode and open a file under the cursor.
+    clear the prompt or leave the mode for files.  If |vifm-'navoptions'|
+    specifies "open:all" a file under the cursor is opened after leaving the
+    mode.
 Ctrl-O, Left                                   *vifm-a_CTRL-O* *vifm-a_Left*
     go to parent directory.
 
@@ -3821,6 +3823,19 @@ Contains a sequence of single-character flags:
  - m - menu mode
  - n - normal mode
  - v - visual mode
+
+                                               *vifm-'navoptions'*
+navoptions
+type: string list
+default: "open:dirs"
+
+Configures behaviour of navigation mode.
+
+    item      default~
+    open:str  dirs
+
+The "open" item specifies what file-system objects should be opened on
+|vifm-a_Enter| and can take two values: dirs (only directories) or all.
 
                                                *vifm-'number'* *vifm-'nu'*
 number nu

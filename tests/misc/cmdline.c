@@ -512,6 +512,7 @@ TEST(navigation_opens_files, IF(not_windows))
 {
 	conf_setup();
 	cfg.inc_search = 1;
+	cfg.nav_open_files = 1;
 	stats_init(&cfg);
 
 	create_executable(SANDBOX_PATH "/script");
@@ -538,6 +539,7 @@ TEST(navigation_opens_files, IF(not_windows))
 	remove_file(SANDBOX_PATH "/script");
 
 	conf_teardown();
+	cfg.nav_open_files = 0;
 }
 
 static void
