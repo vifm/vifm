@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 29
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1069,6 +1069,8 @@ Enter, Right                                   *vifm-a_Enter* *vifm-a_Right*
     mode.
 Ctrl-O, Left                                   *vifm-a_CTRL-O* *vifm-a_Left*
     go to parent directory.
+Ctrl-J                                         *vifm-a_CTRL-J*
+    leave the mode without undoing cursor position or filter state.
 
 Ctrl-N, Down                                   *vifm-a_CTRL-N* *vifm-a_Down*
     move view cursor down.

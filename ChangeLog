@@ -43,6 +43,9 @@
 	allows entering deep paths by a series of searches for individual path
 	components.  Thanks to Henrik Holst (a.k.a. hholst80) and dmocek.
 
+	Added Ctrl-J key to command-line navigation.  It leaves the mode without
+	opening a file/directory.  Thanks to filterfalse.
+
 	Added Ctrl-O key to command-line navigation that goes to parent directory.
 
 	Added Ctrl-N/P keys to command-line navigation to move view cursor up/down.

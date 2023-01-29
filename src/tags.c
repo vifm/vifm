@@ -511,6 +511,7 @@ const char *tags[] = {
 	"vifm-]s",
 	"vifm-]z",
 	"vifm-^",
+	"vifm-a_CTRL-J",
 	"vifm-a_CTRL-N",
 	"vifm-a_CTRL-O",
 	"vifm-a_CTRL-P",
