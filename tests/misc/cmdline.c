@@ -419,8 +419,6 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	assert_success(cmds_dispatch1("autocmd!", curr_view, CIT_COMMAND));
 
 	opt_handlers_teardown();
-	columns_free(lwin.columns);
-	curr_view->columns = NULL;
 	columns_teardown();
 
 	histories_init(0);

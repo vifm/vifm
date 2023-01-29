@@ -61,11 +61,6 @@ TEARDOWN()
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
-	columns_free(rwin.columns);
-	rwin.columns = NULL;
-
 	columns_teardown();
 }
 

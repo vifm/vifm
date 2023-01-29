@@ -54,9 +54,6 @@ TEARDOWN()
 	view_teardown(&lwin);
 
 	columns_set_line_print_func(NULL);
-
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
 }
 
 TEST(tree_accounts_for_dot_filter)

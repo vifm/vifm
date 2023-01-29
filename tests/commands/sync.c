@@ -155,9 +155,6 @@ TEST(sync_syncs_trees)
 
 	assert_int_equal(curr_view->list_rows, other_view->list_rows);
 
-	columns_free(other_view->columns);
-	other_view->columns = NULL;
-
 	columns_teardown();
 }
 
@@ -180,8 +177,6 @@ TEST(sync_all_does_not_turn_destination_into_tree)
 	assert_success(cmds_dispatch("sync! all", curr_view, CIT_COMMAND));
 	assert_false(other_view->custom.type == CV_TREE);
 
-	columns_free(other_view->columns);
-	other_view->columns = NULL;
 	opt_handlers_teardown();
 
 	columns_teardown();
@@ -212,8 +207,6 @@ TEST(sync_localopts_clones_local_options)
 	assert_true(rwin.hide_dot_g);
 	assert_true(rwin.hide_dot);
 
-	columns_free(other_view->columns);
-	other_view->columns = NULL;
 	opt_handlers_teardown();
 	columns_teardown();
 }
@@ -257,9 +250,6 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 
 	assert_int_equal(2, other_view->list_rows);
 	assert_string_equal("", other_view->local_filter.filter.raw);
-
-	columns_free(other_view->columns);
-	other_view->columns = NULL;
 
 	columns_teardown();
 }
@@ -356,9 +346,6 @@ TEST(sync_syncs_custom_trees)
 	assert_true(flist_custom_active(other_view));
 	assert_int_equal(CV_VERY, other_view->custom.type);
 
-	columns_free(other_view->columns);
-	other_view->columns = NULL;
-
 	opt_handlers_teardown();
 	columns_teardown();
 }
@@ -382,8 +369,6 @@ TEST(sync_all_applies_filters_in_trees)
 
 	assert_string_equal("a", other_view->local_filter.filter.raw);
 
-	columns_free(other_view->columns);
-	other_view->columns = NULL;
 	columns_teardown();
 	opt_handlers_teardown();
 }

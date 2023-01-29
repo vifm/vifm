@@ -235,8 +235,6 @@ TEST(changing_classify_invalidates_decors_cache)
 	}
 
 	tabs_only(&lwin);
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
 	columns_teardown();
 	cfg.columns = INT_MIN;
 }

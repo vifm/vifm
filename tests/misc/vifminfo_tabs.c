@@ -199,11 +199,6 @@ TEST(layout_of_pane_tab_is_restored)
 	assert_true(curr_stats.preview.on);
 	tabs_goto(0);
 	assert_false(curr_stats.preview.on);
-
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
-	columns_free(rwin.columns);
-	rwin.columns = NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
