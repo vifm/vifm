@@ -1150,6 +1150,8 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 	                 || info->id == SK_BY_INAME
 	                 || info->id == SK_BY_ROOT
 	                 || info->id == SK_BY_FILEROOT
+	                 || info->id == SK_BY_EXTENSION
+	                 || info->id == SK_BY_FILEEXT
 	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, info->id);
 	const cchar_t line_attrs = prepare_col_color(view, primary, 0, cdt);
 

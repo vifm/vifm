@@ -71,6 +71,9 @@
 	Extended do and dp keys to process selection.  Thanks to Mark S. (a.k.a.
 	Markuzcha).
 
+	Apply file highlighting to "ext" and "fileext" view columns.  Thanks to
+	aleksejrs.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
