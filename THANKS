@@ -1,7 +1,13 @@
-People named in this file helped make vifm better, less buggy and more portable
-by providing their ideas, suggestions, bug reports and pieces of code.
-
+People named in this file helped make Vifm better, less buggy and more portable
+by providing their ideas, suggestions, bug reports and time for testing.
 Names (or nick names) are in alphabetical order.
+
+Special thanks go to these individuals who actively participated in development
+and testing of large number of features:
+ * Alexandre Viau
+ * Colin Cartade
+ * filterfalse
+ * Svyatoslav Mishyn (juef)
 
 45jqlakjrf87ayte7hy34ter4nguijauzl4eitk
 702b
@@ -36,7 +42,6 @@ Behrooz
 Ben Boeckel (mathstuf)
 Ben Lu (ayroblu)
 Bernhard Grotz
-Daniel J. Perry (BioBox)
 blurm
 Branislav Gerazov
 bratekarate
@@ -64,6 +69,7 @@ dalvand
 Damian Ariel Perticone
 dancread
 Daniel Dettlaff (dmilith)
+Daniel J. Perry (BioBox)
 Daniel Mueller (d-e-s-o)
 Daniel Polanco (dlpolanco)
 Daniel R. (r1chelt)
@@ -84,7 +90,6 @@ emarsk
 emorozov
 Factorial Prime
 Fang (peromage)
-filterfalse
 Flaviu Tamas (flaviut)
 Florian Baumann (derflob)
 flux242
@@ -226,7 +231,6 @@ piotryordanov
 PRESFIL
 qinghao (haobug)
 qsmodo
-Safal Piya (mrsafalpiya)
 r0ck
 r44083
 rafasc
@@ -249,6 +253,7 @@ RR0925
 Ruslan Osmanov (rosmanov)
 Russell Urquhart
 rwtallant13
+Safal Piya (mrsafalpiya)
 SanLe
 santhoshr
 Sassan Haradji (sassanh)
@@ -270,13 +275,12 @@ Stas Panteleev
 Stephano (cao)
 Stephen Horst (sjhorst)
 Stephen L. Holtz (stephenholtz)
-Stéphane (istib)
 StillSteal
+Stéphane (istib)
 sudo-nice
 Svadkos
 Svenn Are Bjerkem (svenn)
 svenn71
-Svyatoslav Mishyn (juef)
 tagwint
 Taras Halturin (halturin)
 tcftbl
@@ -304,8 +308,8 @@ Vlad Glagolev (Stealth)
 Von Welch
 vzel
 willemw12
-y2kbugger
 Xirui Zhao (xiruizhao)
+y2kbugger
 Yang Zou
 yanzhang0219
 Yuriy Artemyev (anuvyklack)
@@ -315,10 +319,3 @@ zsugabubus
 Евгений Жаров (ezharov)
 Сергей Соловьёв (Sergej Soloviov)
 高浩亮 (haolian9)
-
-Special thanks to Colin Cartade for a lot of useful ideas, alpha testing on
-Linux and his will to make vifm better.  Another big thanks to Alexandre Viau
-for alpha testing on Windows and useful suggestions.  Acknowledgments also to
-filterfalse for his valuable suggestions, plugin/documentation patches and
-constant feedback.  Another great user is Svyatoslav Mishyn (a.k.a. juef),
-who performs alpha testing and provides valuable feedback.

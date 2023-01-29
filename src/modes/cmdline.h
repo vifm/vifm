@@ -116,6 +116,7 @@ typedef struct
 
 	/* Line editing state. */
 	wchar_t *line;                /* The line reading. */
+	wchar_t *last_line;           /* Previous contents of the line. */
 	wchar_t *initial_line;        /* Initial state of the line. */
 	int index;                    /* Index of the current character in cmdline. */
 	int curs_pos;                 /* Position of the cursor in status bar. */
