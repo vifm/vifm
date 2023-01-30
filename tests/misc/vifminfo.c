@@ -353,10 +353,6 @@ TEST(view_sorting_round_trip)
 	assert_int_equal(-SK_BY_NAME, rwin.sort_g[5]);
 
 	opt_handlers_teardown();
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
-	columns_free(rwin.columns);
-	rwin.columns = NULL;
 	columns_teardown();
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));

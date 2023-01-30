@@ -114,10 +114,6 @@ TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
 	assert_true(process_scheduled_updates_of_view(&rwin));
 
 	curr_stats.load_stage = 0;
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
-	columns_free(rwin.columns);
-	rwin.columns = NULL;
 	columns_teardown();
 
 	assert_true(lwin.dir_entry[3].id == rwin.dir_entry[3].id);

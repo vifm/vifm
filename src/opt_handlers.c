@@ -95,6 +95,7 @@ static void init_lsview(optval_t *val);
 static void init_milleroptions(optval_t *val);
 static void init_millerview(optval_t *val);
 static void init_mouse(optval_t *val);
+static void init_navoptions(optval_t *val);
 static void init_previewoptions(optval_t *val);
 static void init_quickview(optval_t *val);
 static void init_shortmess(optval_t *val);
@@ -153,6 +154,7 @@ static void mediaprg_handler(OPT_OP op, optval_t val);
 static void mintimeoutlen_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(view_t *view);
 static void mouse_handler(OPT_OP op, optval_t val);
+static void navoptions_handler(OPT_OP op, optval_t val);
 static void previewoptions_handler(OPT_OP op, optval_t val);
 static void quickview_handler(OPT_OP op, optval_t val);
 static void rulerformat_handler(OPT_OP op, optval_t val);
@@ -347,6 +349,11 @@ static const char *mouse_vals[][2] = {
 	{ "v", "visual mode" },
 };
 ARRAY_GUARD(mouse_vals, 1 + NUM_M_OPTS);
+
+/* Possible values of 'navoptions'. */
+static const char *navoptions_vals[][2] = {
+	{ "open:", "what entries to open on enter: dirs or all" },
+};
 
 /* Possible values of 'previewoptions'. */
 static const char *previewoptions_vals[][2] = {
@@ -741,6 +748,11 @@ options[] = {
 	{ "mouse", "", "which modes handle mouse",
 	  OPT_CHARSET, ARRAY_LEN(mouse_vals), mouse_vals, &mouse_handler, NULL,
 	  { .init = &init_mouse },
+	},
+	{ "navoptions", "", "tweaks for navigation mode",
+	  OPT_STRLIST, ARRAY_LEN(navoptions_vals), navoptions_vals,
+	  &navoptions_handler, NULL,
+	  { .init = &init_navoptions },
 	},
 	{ "previewoptions", "", "tweaks for how preview is done",
 	  OPT_STRLIST, ARRAY_LEN(previewoptions_vals), previewoptions_vals,
@@ -1226,6 +1238,16 @@ init_mouse(optval_t *val)
 			cfg.mouse & M_MENU_MODE ? "m" : "",
 			cfg.mouse & M_NORMAL_MODE ? "n" : "",
 			cfg.mouse & M_VISUAL_MODE ? "v" : "");
+	val->str_val = buf;
+}
+
+/* Initializes 'navoptions' option from global state. */
+static void
+init_navoptions(optval_t *val)
+{
+	static char buf[16];
+	snprintf(buf, sizeof(buf), "open:%s", (cfg.nav_open_files ? "all" : "dirs"));
+
 	val->str_val = buf;
 }
 
@@ -2383,6 +2405,50 @@ mouse_handler(OPT_OP op, optval_t val)
 	}
 
 	cfg.mouse = mouse;
+}
+
+/* Handles updates of the 'navoptions' option. */
+static void
+navoptions_handler(OPT_OP op, optval_t val)
+{
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	int open_all = 0;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(starts_with_lit(part, "open:"))
+		{
+			const char *const str = after_first(part, ':');
+			if(strcmp(str, "all") == 0)
+			{
+				open_all = 1;
+			}
+			else if(strcmp(str, "dirs") == 0)
+			{
+				open_all = 0;
+			}
+			else
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"open\" value: %s", str);
+				break;
+			}
+		}
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err, "Unknown key for 'navoptions' option: %s",
+					part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		cfg.nav_open_files = open_all;
+	}
 }
 
 /* Handles updates of the 'previewoptions' option. */

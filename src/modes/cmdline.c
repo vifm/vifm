@@ -204,6 +204,7 @@ static void draw_wild_menu(int op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
 static int draw_wild_popup(int *last_pos, int *pos, int *len);
 static int compute_wild_menu_height(void);
+static void cmd_ctrl_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void nav_open(void);
@@ -302,6 +303,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_g,             {{&cmd_ctrl_g}, .descr = "edit cmdline in editor"}},
 	{WK_C_h,             {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
 	{WK_C_i,             {{&cmd_ctrl_i}, .descr = "start/continue completion"}},
+	{WK_C_j,             {{&cmd_ctrl_j}, .descr = "nav: leave without moving the cursor"}},
 	{WK_C_k,             {{&cmd_ctrl_k}, .descr = "remove line part to the right"}},
 	{WK_CR,              {{&cmd_return}, .descr = "execute/accept input"}},
 	{WK_C_n,             {{&cmd_ctrl_n}, .descr = "recall next history item"}},
@@ -1532,6 +1534,20 @@ compute_wild_menu_height(void)
 	return MIN(count, MIN(10, max_height));
 }
 
+/* Leaves navigation mode without undoing cursor position or filter state. */
+static void
+cmd_ctrl_j(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(input_stat.navigating)
+	{
+		if(input_stat.sub_mode == CLS_FILTER)
+		{
+			local_filter_accept(curr_view, /*update_history=*/0);
+		}
+		leave_cmdline_mode(/*cancelled=*/0);
+	}
+}
+
 static void
 cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1737,7 +1753,10 @@ nav_open(void)
 	else
 	{
 		leave_cmdline_mode(/*cancelled=*/0);
-		rn_open(curr_view, FHE_RUN);
+		if(cfg.nav_open_files)
+		{
+			rn_open(curr_view, FHE_RUN);
+		}
 	}
 }
 

@@ -249,8 +249,6 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 	update_string(&cfg.shell, NULL);
 	assert_success(unlink(path));
 
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
 	view_teardown(&lwin);
 
 	vle_keys_reset();

@@ -564,6 +564,7 @@ hi OddLine
 " "previewoptions" should be highlighted as 'option'
 " "autocd" should be highlighted as 'option'
 " "mouse" should be highlighted as 'option'
+" "navoptions" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -585,6 +586,7 @@ set tabsuffix
 set previewoptions
 set autocd noautocd invautocd autocd!
 set mouse
+set navoptions
 
 " "term" should be highlighted as a function()
 echo term('cmd')

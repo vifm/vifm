@@ -153,8 +153,6 @@ TEST(columns_are_used)
 	assert_string_equal("     ERROR   NOVALUE   NOVALUE    name10", print_buffer);
 
 	opt_handlers_teardown();
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
 	curr_stats.vlua = NULL;
 }
 
@@ -200,8 +198,6 @@ TEST(symlinks, IF(not_windows))
 	assert_string_equal("link -> something                       ", print_buffer);
 
 	opt_handlers_teardown();
-	columns_free(lwin.columns);
-	lwin.columns = NULL;
 	curr_stats.vlua = NULL;
 
 	remove_file(SANDBOX_PATH "/symlink");

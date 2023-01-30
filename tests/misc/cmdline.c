@@ -358,6 +358,23 @@ TEST(filter_navigation)
 	conf_teardown();
 }
 
+TEST(can_leave_navigation_without_running)
+{
+	conf_setup();
+	cfg.inc_search = 1;
+	cfg.wrap_scan = 1;
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "tree", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	(void)vle_keys_exec_timed_out(L"=" WK_C_y L"h" WK_C_j);
+	assert_int_equal(1, curr_view->list_rows);
+
+	cfg.wrap_scan = 0;
+	conf_teardown();
+}
+
 TEST(normal_in_autocmd_does_not_break_filter_navigation)
 {
 	conf_setup();
@@ -419,8 +436,6 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	assert_success(cmds_dispatch1("autocmd!", curr_view, CIT_COMMAND));
 
 	opt_handlers_teardown();
-	columns_free(lwin.columns);
-	curr_view->columns = NULL;
 	columns_teardown();
 
 	histories_init(0);
@@ -514,6 +529,7 @@ TEST(navigation_opens_files, IF(not_windows))
 {
 	conf_setup();
 	cfg.inc_search = 1;
+	cfg.nav_open_files = 1;
 	stats_init(&cfg);
 
 	create_executable(SANDBOX_PATH "/script");
@@ -540,6 +556,7 @@ TEST(navigation_opens_files, IF(not_windows))
 	remove_file(SANDBOX_PATH "/script");
 
 	conf_teardown();
+	cfg.nav_open_files = 0;
 }
 
 static void

@@ -268,7 +268,7 @@ typedef struct config_t
 	char *delete_prg;  /* File removal application. */
 	char *media_prg;   /* Helper for managing media devices. */
 
-
+	int nav_open_files; /* Open files on enter key in navigation. */
 
 	/* Message shortening controlled by 'shortmess'. */
 	int tail_tab_line_paths;   /* Display only last directory in tab line. */

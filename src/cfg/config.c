@@ -172,6 +172,8 @@ cfg_init(void)
 	cfg.delete_prg = strdup("");
 	cfg.media_prg = format_str("%s/" SAMPLE_MEDIAPRG, get_installed_data_dir());
 
+	cfg.nav_open_files = 0;
+
 	cfg.tail_tab_line_paths = 0;
 	cfg.trunc_normal_sb_msgs = 0;
 	cfg.shorten_title_paths = 1;
@@ -735,11 +737,18 @@ cfg_load(void)
 	 * views. */
 	curr_stats.global_local_settings = 1;
 
-	if(!vifm_testing())
+	/* Try to load global configuration(s). */
+	int i = 0;
+	while(!vifm_testing())
 	{
-		/* Try to load global configuration. */
+		const char *conf_dir = get_sys_conf_dir(i++);
+		if(conf_dir == NULL)
+		{
+			break;
+		}
+
 		char rc_path[PATH_MAX + 1];
-		snprintf(rc_path, sizeof(rc_path), "%s/%s", get_sys_conf_dir(), VIFMRC);
+		build_path(rc_path, sizeof(rc_path), conf_dir, VIFMRC);
 		(void)cfg_source_file(rc_path);
 	}
 

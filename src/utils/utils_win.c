@@ -939,9 +939,9 @@ get_installed_data_dir(void)
 }
 
 const char *
-get_sys_conf_dir(void)
+get_sys_conf_dir(int idx)
 {
-	return get_installed_data_dir();
+	return (idx == 0 ? get_installed_data_dir() : NULL);
 }
 
 FILE *
