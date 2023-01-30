@@ -502,7 +502,7 @@ static file_hi_t * clone_cs_highlights(const col_scheme_t *from);
 static void reset_cs_colors(col_scheme_t *cs);
 static int source_cs(const char name[]);
 static void get_cs_path(const char name[], char buf[], size_t buf_size);
-static const char * get_global_colors_dir(void);
+static int get_colors_dir(int idx, char buf[], size_t buf_len);
 static void check_cs(col_scheme_t *cs);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dir_map_exists(void);
@@ -617,8 +617,17 @@ list_cs_files(int *len)
 	char **list = NULL;
 	*len = 0;
 
-	list = list_regular_files(cfg.colors_dir, list, len);
-	list = list_regular_files(get_global_colors_dir(), list, len);
+	int i = 0;
+	while(1)
+	{
+		char colors_dir[PATH_MAX + 1];
+		if(!get_colors_dir(i++, colors_dir, sizeof(colors_dir)))
+		{
+			break;
+		}
+
+		list = list_regular_files(colors_dir, list, len);
+	}
 
 	return list;
 }
@@ -1014,39 +1023,47 @@ source_cs(const char name[])
 static void
 get_cs_path(const char name[], char buf[], size_t buf_size)
 {
-	snprintf(buf, buf_size, "%s/%s.vifm", cfg.colors_dir, name);
-	if(is_regular_file(buf))
+	int i = 0;
+	while(1)
 	{
-		return;
-	}
+		char colors_dir[PATH_MAX + 1];
+		if(!get_colors_dir(i++, colors_dir, sizeof(colors_dir)))
+		{
+			break;
+		}
 
-	(void)cut_suffix(buf, ".vifm");
-	if(is_regular_file(buf))
-	{
-		return;
-	}
+		snprintf(buf, buf_size, "%s/%s.vifm", colors_dir, name);
+		if(is_regular_file(buf))
+		{
+			break;
+		}
 
-	snprintf(buf, buf_size, "%s/%s.vifm", get_global_colors_dir(),
-			name);
-	if(is_regular_file(buf))
-	{
-		return;
+		(void)cut_suffix(buf, ".vifm");
+		if(is_regular_file(buf))
+		{
+			break;
+		}
 	}
-
-	(void)cut_suffix(buf, ".vifm");
 }
 
-/* Retrieves path to global directory containing color schemes.  Returns the
- * path. */
-static const char *
-get_global_colors_dir(void)
+/* Retrieves path to a directory containing color schemes.  Returns non-zero on
+ * success. */
+static int
+get_colors_dir(int idx, char buf[], size_t buf_len)
 {
-	static char dir_path[PATH_MAX + 1];
-	if(dir_path[0] == '\0')
+	if(idx == 0)
 	{
-		snprintf(dir_path, sizeof(dir_path), "%s/colors", get_sys_conf_dir());
+		return (copy_str(buf, buf_len, cfg.colors_dir) < buf_len);
 	}
-	return dir_path;
+
+	const char *conf_dir = get_sys_conf_dir(idx - 1);
+	if(conf_dir == NULL)
+	{
+		return 0;
+	}
+
+	int written = snprintf(buf, buf_len, "%s/colors", conf_dir);
+	return (written >= 0 && written < (int)buf_len);
 }
 
 /* Checks whether colorscheme is in unusable state and resets it to normal

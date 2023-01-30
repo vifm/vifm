@@ -1092,15 +1092,44 @@ get_installed_data_dir(void)
 }
 
 const char *
-get_sys_conf_dir(void)
+get_sys_conf_dir(int idx)
 {
 	static char conf_dir[PATH_MAX + 1];
+	static int init_done;
+
+	if(!init_done)
+	{
+		init_done = 1;
+
+		const char *prefix = env_get("VIFM_APPDIR_ROOT");
+		if(!is_null_or_empty(prefix))
+		{
+			int written = snprintf(conf_dir, sizeof(conf_dir), "%s%s", prefix,
+					PACKAGE_SYSCONF_DIR);
+			if(written < 0 || written >= (int)sizeof(conf_dir))
+			{
+				conf_dir[0] = '\0';
+			}
+		}
+	}
+
 	if(conf_dir[0] == '\0')
 	{
-		const char *prefix = env_get_def("VIFM_APPDIR_ROOT", "");
-		snprintf(conf_dir, sizeof(conf_dir), "%s%s", prefix, PACKAGE_SYSCONF_DIR);
+		/* Offset indices by one to skip AppImage configuration directory which
+		 * isn't present. */
+		++idx;
 	}
-	return conf_dir;
+
+	if(idx == 0)
+	{
+		return conf_dir;
+	}
+	if(idx == 1)
+	{
+		return PACKAGE_SYSCONF_DIR;
+	}
+
+	return NULL;
 }
 
 void
