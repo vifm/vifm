@@ -8,6 +8,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/color_scheme.h"
 #include "../../src/ui/colored_line.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/statusline.h"
 #include "../../src/ui/ui.h"
@@ -371,6 +372,50 @@ TEST(ui_stat_height_works)
 
 	update_string(&cfg.status_line, NULL);
 	cfg.display_statusline = 0;
+}
+
+TEST(mouse_map_millerview)
+{
+	/*         left|mid|right
+	 *      --------------------
+	 * 0 row:   012|345|678
+	 * 1 row:      | - |
+	 */
+
+	setup_grid(&lwin, /*column_count=*/1, /*list_rows=*/1, /*init=*/1);
+
+	lwin.ls_view = 0;
+	lwin.miller_view = 1;
+	lwin.miller_ratios[0] = 1;
+	lwin.miller_ratios[1] = 1;
+	lwin.miller_ratios[2] = 1;
+	lwin.top_line = 0;
+	lwin.window_cols = 9;
+	lwin.dir_entry[0].type = FT_DIR;
+
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 0, 1));
+
+	cfg.extra_padding = 1;
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 3, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 4, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 5, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 8, 0));
+
+	cfg.extra_padding = 0;
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 3, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 4, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 5, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 8, 0));
 }
 
 static void

@@ -1846,6 +1846,19 @@ calculate_column_width(view_t *view)
 int
 fview_map_coordinates(view_t *view, int x, int y)
 {
+	if(view->miller_view)
+	{
+		const int padding = (cfg.extra_padding ? 1 : 0);
+		const int lcol_end = ui_view_left_reserved(view);
+		const int rcol_start = lcol_end + padding
+		                     + ui_view_available_width(view) + padding;
+
+		if(x < lcol_end || x >= rcol_start)
+		{
+			return FVM_NONE;
+		}
+	}
+
 	int pos = view->top_line + y;
 	return (pos < view->list_rows ? pos : FVM_NONE);
 }
