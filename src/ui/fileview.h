@@ -27,6 +27,12 @@
 struct dir_entry_t;
 struct view_t;
 
+/* Specials value that can be returned by fview_map_coordinates(). */
+enum
+{
+	FVM_NONE = -1, /* No item under the cursor, empty space. */
+};
+
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
@@ -148,6 +154,10 @@ int fview_previews(struct view_t *view, const char path[]);
 
 /* Enables/disables cascading columns style of the view. */
 void fview_set_millerview(struct view_t *view, int enabled);
+
+/* Maps coordinate to file list position.  Returns position (>= 0) or FVM_*
+ * special value. */
+int fview_map_coordinates(struct view_t *view, int x, int y);
 
 /* Requests update of view geometry properties (stuff that depends on
  * dimensions; there is also an implicit dependency on file list, because grid

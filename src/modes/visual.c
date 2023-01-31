@@ -1588,12 +1588,11 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 	{
 		wmouse_trafo(view->win, &e.y, &e.x, FALSE);
 
-		/* Only handle clicks on non-blank lines. */
-		if(e.y < curr_view->list_rows)
+		int list_pos = fview_map_coordinates(curr_view, e.x, e.y);
+		if(list_pos >= 0)
 		{
 			int old_pos = curr_view->list_pos;
-
-			goto_pos(view->top_line + e.y);
+			goto_pos(list_pos);
 
 			if(curr_view->list_pos == old_pos)
 			{

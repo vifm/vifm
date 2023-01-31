@@ -1843,6 +1843,13 @@ calculate_column_width(view_t *view)
 	return MIN(column_width, max_width);
 }
 
+int
+fview_map_coordinates(view_t *view, int x, int y)
+{
+	int pos = view->top_line + y;
+	return (pos < view->list_rows ? pos : FVM_NONE);
+}
+
 void
 fview_update_geometry(view_t *view)
 {
