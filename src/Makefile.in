@@ -749,7 +749,7 @@ dist_sample_colors__DATA = ../data/colors/astrell-root.vifm \
 									 ../data/colors/Default-256.vifm
 
 dist_vim_doc__DATA = ../data/vim/doc/plugin/vifm-plugin.txt
-nodist_vim_doc__DATA = $(abs_srcdir)/../data/vim/doc/plugin/tags
+nodist_vim_doc__DATA = $(top_srcdir)/data/vim/doc/plugin/tags
 dist_vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim \
 										 ../data/vim/ftdetect/vifm-rename.vim
 
@@ -765,7 +765,7 @@ dist_global_colors__DATA = ../data/colors/Default-256.vifm
 dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt \
 												../data/vim/doc/app/vifm-lua.txt
 
-nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
+nodist_vimdoc_doc__DATA = $(top_srcdir)/data/vim/doc/app/tags
 dist_pkgdata_DATA = ../data/vifmrc@DATA_SUFFIX@
 dist_pkgdata_SCRIPTS = ../data/vifm-media@DATA_SUFFIX@
 nodist_pkgdata_DATA = ../data/vifm-help.txt
@@ -777,8 +777,8 @@ dist_man_MANS = ../data/man/vifm.1 \
 
 MOSTLYCLEANFILES = compile_info.c \
 									 ../data/vifm-help.txt \
-									 $(abs_srcdir)/../data/vim/doc/app/tags \
-									 $(abs_srcdir)/../data/vim/doc/plugin/tags
+									 $(top_srcdir)/data/vim/doc/app/tags \
+									 $(top_srcdir)/data/vim/doc/plugin/tags
 
 desktopappdir = $(datadir)/applications
 desktopappfile = ../data/vifm.desktop
@@ -3172,74 +3172,74 @@ uninstall-man: uninstall-man1
 
 .PHONY: update_compile_info
 clean-local:
-	if [ '$(abs_builddir)' != '$(abs_srcdir)' ]; then \
+	if [ '$(builddir)' != '$(srcdir)' ]; then \
 		$(RM) tags.c; \
 	fi
 
 runtests:
-	$(AM_V_GEN)echo 'mkdir -p $(abs_builddir)/../tests/' > $@_ && \
+	$(AM_V_GEN)echo 'mkdir -p "$(abs_top_builddir)/tests/"' > $@_ && \
 	echo \
-		'$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ CC="$(CC)" "$$@"' \
+		'$(MAKE) -C "$(abs_top_srcdir)/tests" B="$(abs_top_builddir)/tests/" CC="$(CC)" "$$@"' \
 		>> $@_ && \
 	chmod +x $@_ && \
 	mv $@_ $@
 
 coverage: check
-	lcov --directory $(abs_builddir)/ --base-directory . \
-	     --capture --output-file $(abs_builddir)/lcov-all.info --config-file \
-	     $(abs_srcdir)/lcovrc --test-name unit_tests --quiet
-	lcov --remove $(abs_builddir)/lcov-all.info -o $(abs_builddir)/lcov.info \
+	lcov --directory $(builddir)/ --base-directory . \
+	     --capture --output-file $(builddir)/lcov-all.info --config-file \
+	     $(srcdir)/lcovrc --test-name unit_tests --quiet
+	lcov --remove $(builddir)/lcov-all.info -o $(builddir)/lcov.info \
 	     '/usr/*'
-	genhtml --output-directory $(abs_builddir)/cov-report/ \
-	     $(abs_builddir)/lcov.info --config-file $(abs_srcdir)/lcovrc \
-	     --show-details --css-file $(abs_srcdir)/lcov.css
+	genhtml --output-directory $(builddir)/cov-report/ \
+	     $(builddir)/lcov.info --config-file $(srcdir)/lcovrc \
+	     --show-details --css-file $(srcdir)/lcov.css
 
 distclean-local:
-	$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ clean
+	$(MAKE) -C "$(abs_top_srcdir)/tests" B="$(abs_top_builddir)/tests/" clean
 	$(RM) -r cov-report/
 
 version.o: $(vifm_OBJECTS:version.o=)
 compile_info.c: update_compile_info
-	@$(abs_srcdir)/update-compile-info $(UNDER_VCS)
+	@$(srcdir)/update-compile-info $(UNDER_VCS)
 
 # No action needed for this target.
 update_compile_info:
 
-../data/vifm-help.txt: $(abs_srcdir)/../data/man/vifm.1
+../data/vifm-help.txt: $(top_srcdir)/data/man/vifm.1
 	$(AM_V_GEN)mkdir -p ../data/; \
 	if [ -n "$(MANGEN)" -a -n "$(SED)" ]; then \
 		if [ -n "$(COL)" ]; then \
-			$(MANGEN) -Tascii -man $(abs_srcdir)/../data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
+			$(MANGEN) -Tascii -man $(top_srcdir)/data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
 		else \
-			$(MANGEN) -Tascii -man $(abs_srcdir)/../data/man/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
+			$(MANGEN) -Tascii -man $(top_srcdir)/data/man/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
 		fi \
 	fi
 
-$(abs_srcdir)/../data/vim/doc/app/tags: \
-                                  $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt \
-                                  $(abs_srcdir)/../data/vim/doc/app/vifm-lua.txt
+$(top_srcdir)/data/vim/doc/app/tags: \
+                                   $(top_srcdir)/data/vim/doc/app/vifm-app.txt \
+                                   $(top_srcdir)/data/vim/doc/app/vifm-lua.txt
 	$(AM_V_GEN)mkdir -p ../data/vim/doc/app/; \
 	if [ -n "$(PERL)" ]; then \
-		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/app"; \
+		$(srcdir)/helpztags "$(top_srcdir)/data/vim/doc/app"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(abs_srcdir)/../data/vim/doc/app|q'; \
+		vim -e -s -c 'helptags $(top_srcdir)/data/vim/doc/app|q'; \
 	else \
 		touch $@; \
 	fi
 
-$(abs_srcdir)/../data/vim/doc/plugin/tags: \
-                            $(abs_srcdir)/../data/vim/doc/plugin/vifm-plugin.txt
+$(top_srcdir)/data/vim/doc/plugin/tags: \
+                               $(top_srcdir)/data/vim/doc/plugin/vifm-plugin.txt
 	$(AM_V_GEN)mkdir -p ../data/vim/doc/plugin/; \
 	if [ -n "$(PERL)" ]; then \
-		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/plugin"; \
+		$(srcdir)/helpztags "$(top_srcdir)/data/vim/doc/plugin"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(abs_srcdir)/../data/vim/doc/plugin|q'; \
+		vim -e -s -c 'helptags $(top_srcdir)/data/vim/doc/plugin|q'; \
 	else \
 		touch $@; \
 	fi
 
-tags.c: $(abs_srcdir)/../data/vim/doc/app/tags
-	$(AM_V_GEN)if [ -s $(abs_srcdir)/../data/vim/doc/app/tags -a -n "$(AWK)" ]; then \
+tags.c: $(top_srcdir)/data/vim/doc/app/tags
+	$(AM_V_GEN)if [ -s $(top_srcdir)/data/vim/doc/app/tags -a -n "$(AWK)" ]; then \
 		$(AWK) ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
@@ -3250,8 +3250,8 @@ tags.c: $(abs_srcdir)/../data/vim/doc/app/tags
 			END { \
 				print "\t0,\n};" \
 			} \
-		' $(abs_srcdir)/../data/vim/doc/app/tags > $@; \
-	elif [ '$(abs_builddir)' != '$(abs_srcdir)' ]; then \
+		' $(top_srcdir)/data/vim/doc/app/tags > $@; \
+	elif [ '$(builddir)' != '$(srcdir)' ]; then \
 		echo 'const char *tags[] = {};' > $@; \
 	fi
 
