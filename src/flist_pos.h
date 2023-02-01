@@ -102,13 +102,13 @@ int fpos_get_hor_step(const struct view_t *view);
  * step. */
 int fpos_get_ver_step(const struct view_t *view);
 
-/* Checks whether there are more elements to show above what can be seen
- * currently.  Returns non-zero if so, otherwise zero is returned. */
-int fpos_has_hidden_top(const struct view_t *view);
+/* Checks whether there are more elements to show above/on the left what can be
+ * seen currently.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_scroll_back(const struct view_t *view);
 
-/* Checks whether there are more elements to show below what can be seen
- * currently.  Returns non-zero if so, otherwise zero is returned. */
-int fpos_has_hidden_bottom(const struct view_t *view);
+/* Checks whether there are more elements to show below/on the right what can
+ * be seen currently.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_scroll_fwd(const struct view_t *view);
 
 /* Calculates position in list of files that corresponds to window top, which is
  * adjusted according to 'scrolloff' option.  Returns the position. */

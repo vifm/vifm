@@ -396,7 +396,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_up(view))
+	if(fpos_can_scroll_back(view))
 	{
 		page_scroll(fpos_get_last_visible_cell(view), -1);
 	}
@@ -420,7 +420,7 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(fpos_has_hidden_bottom(view))
+	if(fpos_can_scroll_fwd(view))
 	{
 		int new_pos = get_corrected_list_pos_down(view, view->run_size);
 		scroll_down(view, view->run_size);
@@ -431,7 +431,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_down(view))
+	if(fpos_can_scroll_fwd(view))
 	{
 		page_scroll(view->top_line, 1);
 	}
@@ -511,7 +511,7 @@ call_incdec(int count)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(fpos_has_hidden_top(view))
+	if(fpos_can_scroll_back(view))
 	{
 		int new_pos = get_corrected_list_pos_up(view, view->run_size);
 		scroll_up(view, view->run_size);

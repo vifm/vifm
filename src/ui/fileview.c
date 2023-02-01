@@ -799,11 +799,11 @@ consider_scroll_bind(view_t *view)
 		other->top_line *= other->column_count;
 		other->top_line = calculate_top_position(other, other->top_line);
 
-		if(can_scroll_up(other))
+		if(fpos_can_scroll_back(other))
 		{
 			(void)fpos_scroll_down(other, 0);
 		}
-		if(can_scroll_down(other))
+		if(fpos_can_scroll_fwd(other))
 		{
 			(void)fpos_scroll_up(other, 0);
 		}
@@ -998,18 +998,6 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 	cdt->prefix_len = NULL;
 }
 
-int
-can_scroll_up(const view_t *view)
-{
-	return view->top_line > 0;
-}
-
-int
-can_scroll_down(const view_t *view)
-{
-	return fpos_get_last_visible_cell(view) < view->list_rows - 1;
-}
-
 void
 scroll_up(view_t *view, int by)
 {
@@ -1071,13 +1059,13 @@ consider_scroll_offset(view_t *view)
 	{
 		const int s = fpos_get_offset(view);
 		/* Check scroll offset at the top. */
-		if(can_scroll_up(view) && pos - view->top_line < s)
+		if(fpos_can_scroll_back(view) && pos - view->top_line < s)
 		{
 			scroll_up(view, s - (pos - view->top_line));
 			need_redraw = 1;
 		}
 		/* Check scroll offset at the bottom. */
-		if(can_scroll_down(view))
+		if(fpos_can_scroll_fwd(view))
 		{
 			const int last = fpos_get_last_visible_cell(view);
 			if(pos > last - s)
@@ -1114,7 +1102,7 @@ update_scroll_bind_offset(void)
 void
 fview_scroll_page_up(view_t *view)
 {
-	if(can_scroll_up(view))
+	if(fpos_can_scroll_back(view))
 	{
 		fpos_scroll_page(view, fpos_get_last_visible_cell(view), -1);
 	}
@@ -1123,7 +1111,7 @@ fview_scroll_page_up(view_t *view)
 void
 fview_scroll_page_down(view_t *view)
 {
-	if(can_scroll_down(view))
+	if(fpos_can_scroll_fwd(view))
 	{
 		fpos_scroll_page(view, view->top_line, 1);
 	}

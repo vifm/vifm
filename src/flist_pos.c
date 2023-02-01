@@ -274,22 +274,22 @@ fpos_get_ver_step(const struct view_t *view)
 }
 
 int
-fpos_has_hidden_top(const view_t *view)
+fpos_can_scroll_back(const view_t *view)
 {
-	return can_scroll_up(view);
+	return (view->top_line > 0);
 }
 
 int
-fpos_has_hidden_bottom(const view_t *view)
+fpos_can_scroll_fwd(const view_t *view)
 {
-	return can_scroll_down(view);
+	return (fpos_get_last_visible_cell(view) < view->list_rows - 1);
 }
 
 int
 fpos_get_top_pos(const view_t *view)
 {
 	return get_column_top_pos(view)
-	     + (can_scroll_up(view) ? fpos_get_offset(view) : 0);
+	     + (fpos_can_scroll_back(view) ? fpos_get_offset(view) : 0);
 }
 
 int
@@ -305,7 +305,7 @@ int
 fpos_get_bottom_pos(const view_t *view)
 {
 	return get_column_bottom_pos(view)
-	     - (can_scroll_down(view) ? fpos_get_offset(view) : 0);
+	     - (fpos_can_scroll_fwd(view) ? fpos_get_offset(view) : 0);
 }
 
 int

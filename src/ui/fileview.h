@@ -98,14 +98,6 @@ void fview_cursor_redraw(struct view_t *view);
 
 /* Scrolling related functions. */
 
-/* Checks if view can be scrolled up (there are more files).  Returns non-zero
- * if so, and zero otherwise. */
-int can_scroll_up(const struct view_t *view);
-
-/* Checks if view can be scrolled down (there are more files).  Returns non-zero
- * if so, and zero otherwise. */
-int can_scroll_down(const struct view_t *view);
-
 /* Scrolls view up at least by specified number of files.  Updates both top and
  * cursor positions. */
 void scroll_up(struct view_t *view, int by);
