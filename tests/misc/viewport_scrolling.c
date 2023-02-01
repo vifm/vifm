@@ -104,6 +104,15 @@ TEST(scrolling_in_ls_visual)
 	assert_int_equal(4, view->top_line);
 	assert_int_equal(13, view->list_pos);
 
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(9, view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_C_e);
+	assert_int_equal(2, view->top_line);
+	assert_int_equal(9, view->list_pos);
+
 	modvis_leave(0, 1, 0);
 }
 

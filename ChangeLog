@@ -120,6 +120,9 @@
 
 	Fixed :echo printing previous message when invoked without arguments.
 
+	Fixed Ctrl-E in visual mode not doing anything when view is scrolled to
+	its top.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

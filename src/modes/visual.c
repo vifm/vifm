@@ -420,7 +420,7 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(fpos_has_hidden_top(view))
+	if(fpos_has_hidden_bottom(view))
 	{
 		int new_pos = get_corrected_list_pos_down(view, view->column_count);
 		scroll_down(view, view->column_count);
