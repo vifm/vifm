@@ -111,7 +111,7 @@ fpos_scroll_page(view_t *view, int base, int direction)
 	int new_pos = base + direction*offset
 	            + old_pos%view->run_size - base%view->run_size;
 	view->list_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
-	scroll_by_files(view, direction*offset);
+	fview_scroll_by(view, direction*offset);
 
 	/* Updating list_pos ourselves doesn't take into account
 	 * synchronization/updates of the other view, so trigger them. */
@@ -365,7 +365,7 @@ fpos_half_scroll(view_t *view, int down)
 		}
 	}
 
-	scroll_by_files(view, new_pos - view->list_pos);
+	fview_scroll_by(view, new_pos - view->list_pos);
 	return new_pos;
 }
 

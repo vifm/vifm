@@ -98,13 +98,18 @@ void fview_cursor_redraw(struct view_t *view);
 
 /* Scrolling related functions. */
 
-/* Scrolls view up at least by specified number of files.  Updates both top and
- * cursor positions. */
-void scroll_up(struct view_t *view, int by);
-
-/* Scrolls view down at least by specified number of files.  Updates both top
+/* Scrolls view up by at least the specified number of files.  Updates both top
  * and cursor positions. */
-void scroll_down(struct view_t *view, int by);
+void fview_scroll_back_by(struct view_t *view, int by);
+
+/* Scrolls view down by at least the specified number of files.  Updates both
+ * top and cursor positions. */
+void fview_scroll_fwd_by(struct view_t *view, int by);
+
+/* Scrolls view down or up by at least the specified number of files.  Updates
+ * both top and cursor positions.  A wrapper for fview_scroll_back_by() and
+ * fview_scroll_fwd_by() functions. */
+void fview_scroll_by(struct view_t *view, int by);
 
 /* Calculates list position corrected for scrolling down.  Returns adjusted
  * position. */
@@ -117,11 +122,6 @@ int get_corrected_list_pos_up(const struct view_t *view, int pos_delta);
 /* Updates current and top line of a view according to 'scrolloff' option value.
  * Returns non-zero if redraw is needed. */
 int consider_scroll_offset(struct view_t *view);
-
-/* Scrolls view down or up at least by specified number of files.  Updates both
- * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
- * functions. */
-void scroll_by_files(struct view_t *view, int by);
 
 /* Recalculates difference of two panes scroll positions. */
 void update_scroll_bind_offset(void);

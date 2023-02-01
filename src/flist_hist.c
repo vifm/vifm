@@ -303,11 +303,11 @@ flist_hist_lookup(view_t *view, const view_t *source)
 		const int last = fpos_get_last_visible_cell(view);
 		if(view->list_pos < view->window_cells)
 		{
-			scroll_up(view, view->top_line);
+			fview_scroll_back_by(view, view->top_line);
 		}
 		else if(view->list_pos > last)
 		{
-			scroll_down(view, view->list_pos - last);
+			fview_scroll_fwd_by(view, view->list_pos - last);
 		}
 	}
 	(void)consider_scroll_offset(view);

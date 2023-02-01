@@ -547,7 +547,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_scroll_fwd(curr_view) && fpos_scroll_down(curr_view, 1))
 	{
-		scroll_down(curr_view, 1);
+		fview_scroll_fwd_by(curr_view, 1);
 		redraw_current_view();
 	}
 }
@@ -907,7 +907,7 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_scroll_back(curr_view) && fpos_scroll_up(curr_view, 1))
 	{
-		scroll_up(curr_view, 1);
+		fview_scroll_back_by(curr_view, 1);
 		redraw_current_view();
 	}
 }
@@ -1991,7 +1991,7 @@ modnorm_zb(key_info_t key_info, keys_info_t *keys_info)
 	if(fpos_can_scroll_back(curr_view))
 	{
 		const int bottom = fpos_get_bottom_pos(curr_view);
-		scroll_up(curr_view, bottom - curr_view->list_pos);
+		fview_scroll_back_by(curr_view, bottom - curr_view->list_pos);
 		redraw_current_view();
 	}
 }
@@ -2185,7 +2185,7 @@ modnorm_zt(key_info_t key_info, keys_info_t *keys_info)
 	if(fpos_can_scroll_fwd(curr_view))
 	{
 		const int top = fpos_get_top_pos(curr_view);
-		scroll_down(curr_view, curr_view->list_pos - top);
+		fview_scroll_fwd_by(curr_view, curr_view->list_pos - top);
 		redraw_current_view();
 	}
 }
@@ -2196,7 +2196,7 @@ modnorm_zz(key_info_t key_info, keys_info_t *keys_info)
 	if(!fpos_are_all_files_visible(curr_view))
 	{
 		const int middle = fpos_get_middle_pos(curr_view);
-		scroll_by_files(curr_view, curr_view->list_pos - middle);
+		fview_scroll_by(curr_view, curr_view->list_pos - middle);
 		redraw_current_view();
 	}
 }

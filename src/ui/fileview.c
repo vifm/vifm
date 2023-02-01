@@ -999,7 +999,7 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 }
 
 void
-scroll_up(view_t *view, int by)
+fview_scroll_back_by(view_t *view, int by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
 	view->top_line -= view->run_size*DIV_ROUND_UP(by, view->run_size);
@@ -1013,13 +1013,26 @@ scroll_up(view_t *view, int by)
 }
 
 void
-scroll_down(view_t *view, int by)
+fview_scroll_fwd_by(view_t *view, int by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
 	view->top_line += view->run_size*DIV_ROUND_UP(by, view->run_size);
 	view->top_line = calculate_top_position(view, view->top_line);
 
 	view->curr_line = view->list_pos - view->top_line;
+}
+
+void
+fview_scroll_by(view_t *view, int by)
+{
+	if(by > 0)
+	{
+		fview_scroll_fwd_by(view, by);
+	}
+	else if(by < 0)
+	{
+		fview_scroll_back_by(view, -by);
+	}
 }
 
 int
@@ -1061,7 +1074,7 @@ consider_scroll_offset(view_t *view)
 		/* Check scroll offset at the top. */
 		if(fpos_can_scroll_back(view) && pos - view->top_line < s)
 		{
-			scroll_up(view, s - (pos - view->top_line));
+			fview_scroll_back_by(view, s - (pos - view->top_line));
 			need_redraw = 1;
 		}
 		/* Check scroll offset at the bottom. */
@@ -1070,25 +1083,12 @@ consider_scroll_offset(view_t *view)
 			const int last = fpos_get_last_visible_cell(view);
 			if(pos > last - s)
 			{
-				scroll_down(view, s + (pos - last));
+				fview_scroll_fwd_by(view, s + (pos - last));
 				need_redraw = 1;
 			}
 		}
 	}
 	return need_redraw;
-}
-
-void
-scroll_by_files(view_t *view, int by)
-{
-	if(by > 0)
-	{
-		scroll_down(view, by);
-	}
-	else if(by < 0)
-	{
-		scroll_up(view, -by);
-	}
 }
 
 void
@@ -2153,12 +2153,12 @@ move_curr_line(view_t *view)
 	}
 	else if(pos > last)
 	{
-		scroll_down(view, pos - last);
+		fview_scroll_fwd_by(view, pos - last);
 		redraw++;
 	}
 	else if(pos < view->top_line)
 	{
-		scroll_up(view, view->top_line - pos);
+		fview_scroll_back_by(view, view->top_line - pos);
 		redraw++;
 	}
 

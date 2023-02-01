@@ -423,7 +423,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 	if(fpos_can_scroll_fwd(view))
 	{
 		int new_pos = get_corrected_list_pos_down(view, view->run_size);
-		scroll_down(view, view->run_size);
+		fview_scroll_fwd_by(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}
 }
@@ -450,7 +450,7 @@ page_scroll(int base, int direction)
 	int new_pos = base + direction*offset
 	            + view->list_pos%view->run_size - base%view->run_size;
 	new_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
-	scroll_by_files(view, direction*offset);
+	fview_scroll_by(view, direction*offset);
 	goto_pos(new_pos);
 }
 
@@ -514,7 +514,7 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 	if(fpos_can_scroll_back(view))
 	{
 		int new_pos = get_corrected_list_pos_up(view, view->run_size);
-		scroll_up(view, view->run_size);
+		fview_scroll_back_by(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}
 }
