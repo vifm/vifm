@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Jan 30
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -233,8 +233,10 @@ zt - redraw pane with file in top of list.     *vifm-zt*
 zz - redraw pane with file in center of list.  *vifm-zz*
 zb - redraw pane with file in bottom of list.  *vifm-zb*
 
-Ctrl-E - scroll pane one line down.            *vifm-CTRL-E*
-Ctrl-Y - scroll pane one line up.              *vifm-CTRL-Y*
+Ctrl-E                                         *vifm-CTRL-E*
+    scroll pane one line down or column right (in transposed ls-like view).
+Ctrl-Y                                         *vifm-CTRL-Y*
+    scroll pane one line up or column left (in transposed ls-like view).
 
 Pane manipulation~
 

@@ -1040,7 +1040,7 @@ get_corrected_list_pos_down(const view_t *view, int pos_delta)
 	const int scroll_offset = fpos_get_offset(view);
 	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
 	{
-		const int column_correction = view->list_pos%view->column_count;
+		const int column_correction = view->list_pos%view->run_size;
 		const int offset = scroll_offset + pos_delta + column_correction;
 		return view->top_line + offset;
 	}
@@ -1054,8 +1054,8 @@ get_corrected_list_pos_up(const view_t *view, int pos_delta)
 	const int last = fpos_get_last_visible_cell(view);
 	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
 	{
-		const int column_correction = (view->column_count - 1)
-		                            - view->list_pos%view->column_count;
+		const int column_correction = (view->run_size - 1)
+		                            - view->list_pos%view->run_size;
 		const int offset = scroll_offset + pos_delta + column_correction;
 		return last - offset;
 	}

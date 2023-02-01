@@ -77,6 +77,9 @@
 	Made instances running inside AppImage consider contents of `/etc/vifm`.
 	Thanks to aleksejrs.
 
+	Made Ctrl-E/Ctrl-Y scroll transposed ls-like view horizontally by one
+	column.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 

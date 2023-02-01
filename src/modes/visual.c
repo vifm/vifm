@@ -422,8 +422,8 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_has_hidden_bottom(view))
 	{
-		int new_pos = get_corrected_list_pos_down(view, view->column_count);
-		scroll_down(view, view->column_count);
+		int new_pos = get_corrected_list_pos_down(view, view->run_size);
+		scroll_down(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}
 }
@@ -513,8 +513,8 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_has_hidden_top(view))
 	{
-		int new_pos = get_corrected_list_pos_up(view, view->column_count);
-		scroll_up(view, view->column_count);
+		int new_pos = get_corrected_list_pos_up(view, view->run_size);
+		scroll_up(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}
 }

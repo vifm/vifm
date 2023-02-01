@@ -152,8 +152,8 @@ TEST(scrolling_in_tls_normal)
 	assert_int_equal(10, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_C_y);
-	assert_int_equal(8, view->top_line);
-	assert_int_equal(10, view->list_pos);
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(2, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_C_e);
 	assert_int_equal(8, view->top_line);
@@ -186,8 +186,8 @@ TEST(scrolling_in_tls_visual)
 	assert_int_equal(10, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_C_y);
-	assert_int_equal(8, view->top_line);
-	assert_int_equal(10, view->list_pos);
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(2, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_C_e);
 	assert_int_equal(8, view->top_line);

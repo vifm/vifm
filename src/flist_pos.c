@@ -276,13 +276,13 @@ fpos_get_ver_step(const struct view_t *view)
 int
 fpos_has_hidden_top(const view_t *view)
 {
-	return (fview_is_transposed(view) ? 0 : can_scroll_up(view));
+	return can_scroll_up(view);
 }
 
 int
 fpos_has_hidden_bottom(const view_t *view)
 {
-	return (fview_is_transposed(view) ? 0 : can_scroll_down(view));
+	return can_scroll_down(view);
 }
 
 int
