@@ -1064,14 +1064,6 @@ fview_enforce_scroll_offset(view_t *view)
 }
 
 void
-update_scroll_bind_offset(void)
-{
-	const int rwin_pos = rwin.top_line/rwin.column_count;
-	const int lwin_pos = lwin.top_line/lwin.column_count;
-	curr_stats.scroll_bind_off = rwin_pos - lwin_pos;
-}
-
-void
 fview_scroll_page_up(view_t *view)
 {
 	if(fpos_can_scroll_back(view))

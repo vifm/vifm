@@ -115,9 +115,6 @@ void fview_scroll_by(struct view_t *view, int by);
  * Returns non-zero if redraw is needed. */
 int fview_enforce_scroll_offset(struct view_t *view);
 
-/* Recalculates difference of two panes scroll positions. */
-void update_scroll_bind_offset(void);
-
 /* Scrolls the view one page up. */
 void fview_scroll_page_up(struct view_t *view);
 

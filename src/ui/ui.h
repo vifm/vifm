@@ -641,6 +641,9 @@ void only(void);
  * given factor. */
 void move_splitter(int by, int fact);
 
+/* Recalculates difference of two panes scroll positions. */
+void ui_remember_scroll_offset(void);
+
 /* Sets size of the view to specified value. */
 void ui_view_resize(view_t *view, int to);
 

@@ -2561,7 +2561,7 @@ static void
 scrollbind_handler(OPT_OP op, optval_t val)
 {
 	cfg.scroll_bind = val.bool_val;
-	update_scroll_bind_offset();
+	ui_remember_scroll_offset();
 }
 
 static void

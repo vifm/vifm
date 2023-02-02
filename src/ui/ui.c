@@ -1730,6 +1730,14 @@ move_splitter(int by, int fact)
 }
 
 void
+ui_remember_scroll_offset(void)
+{
+	const int rwin_pos = rwin.top_line/rwin.column_count;
+	const int lwin_pos = lwin.top_line/lwin.column_count;
+	curr_stats.scroll_bind_off = rwin_pos - lwin_pos;
+}
+
+void
 ui_view_resize(view_t *view, int to)
 {
 	int pos;
