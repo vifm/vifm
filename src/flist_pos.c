@@ -82,7 +82,7 @@ fpos_scroll_down(view_t *view, int lines_count)
 	if(!fpos_are_all_files_visible(view))
 	{
 		view->list_pos =
-			get_corrected_list_pos_down(view, lines_count*view->run_size);
+			fpos_adjust_for_scroll_back(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -94,7 +94,7 @@ fpos_scroll_up(view_t *view, int lines_count)
 	if(!fpos_are_all_files_visible(view))
 	{
 		view->list_pos =
-			get_corrected_list_pos_up(view, lines_count*view->run_size);
+			fpos_adjust_for_scroll_fwd(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -286,6 +286,34 @@ fpos_can_scroll_fwd(const view_t *view)
 }
 
 int
+fpos_adjust_for_scroll_back(const view_t *view, int pos_delta)
+{
+	const int scroll_offset = fpos_get_offset(view);
+	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
+	{
+		const int column_correction = view->list_pos%view->run_size;
+		const int offset = scroll_offset + pos_delta + column_correction;
+		return view->top_line + offset;
+	}
+	return view->list_pos;
+}
+
+int
+fpos_adjust_for_scroll_fwd(const view_t *view, int pos_delta)
+{
+	const int scroll_offset = fpos_get_offset(view);
+	const int last = fpos_get_last_visible_cell(view);
+	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
+	{
+		const int column_correction = (view->run_size - 1)
+		                            - view->list_pos%view->run_size;
+		const int offset = scroll_offset + pos_delta + column_correction;
+		return last - offset;
+	}
+	return view->list_pos;
+}
+
+int
 fpos_get_top_pos(const view_t *view)
 {
 	return get_column_top_pos(view)
@@ -345,7 +373,7 @@ fpos_half_scroll(view_t *view, int down)
 
 	if(down)
 	{
-		new_pos = get_corrected_list_pos_down(view, offset);
+		new_pos = fpos_adjust_for_scroll_back(view, offset);
 		new_pos = MAX(new_pos, view->list_pos + offset);
 
 		if(new_pos >= view->list_rows)
@@ -356,7 +384,7 @@ fpos_half_scroll(view_t *view, int down)
 	}
 	else
 	{
-		new_pos = get_corrected_list_pos_up(view, offset);
+		new_pos = fpos_adjust_for_scroll_fwd(view, offset);
 		new_pos = MIN(new_pos, view->list_pos - offset);
 
 		if(new_pos < 0)

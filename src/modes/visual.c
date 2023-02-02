@@ -422,7 +422,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_scroll_fwd(view))
 	{
-		int new_pos = get_corrected_list_pos_down(view, view->run_size);
+		int new_pos = fpos_adjust_for_scroll_back(view, view->run_size);
 		fview_scroll_fwd_by(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}
@@ -513,7 +513,7 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_scroll_back(view))
 	{
-		int new_pos = get_corrected_list_pos_up(view, view->run_size);
+		int new_pos = fpos_adjust_for_scroll_fwd(view, view->run_size);
 		fview_scroll_back_by(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}

@@ -111,14 +111,6 @@ void fview_scroll_fwd_by(struct view_t *view, int by);
  * fview_scroll_fwd_by() functions. */
 void fview_scroll_by(struct view_t *view, int by);
 
-/* Calculates list position corrected for scrolling down.  Returns adjusted
- * position. */
-int get_corrected_list_pos_down(const struct view_t *view, int pos_delta);
-
-/* Calculates list position corrected for scrolling up.  Returns adjusted
- * position. */
-int get_corrected_list_pos_up(const struct view_t *view, int pos_delta);
-
 /* Updates current and top line of a view according to 'scrolloff' option value.
  * Returns non-zero if redraw is needed. */
 int consider_scroll_offset(struct view_t *view);

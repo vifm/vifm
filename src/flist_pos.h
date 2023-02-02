@@ -110,6 +110,14 @@ int fpos_can_scroll_back(const struct view_t *view);
  * be seen currently.  Returns non-zero if so, otherwise zero is returned. */
 int fpos_can_scroll_fwd(const struct view_t *view);
 
+/* Calculates list position corrected for scrolling down.  Returns adjusted
+ * position. */
+int fpos_adjust_for_scroll_back(const struct view_t *view, int pos_delta);
+
+/* Calculates list position corrected for scrolling up.  Returns adjusted
+ * position. */
+int fpos_adjust_for_scroll_fwd(const struct view_t *view, int pos_delta);
+
 /* Calculates position in list of files that corresponds to window top, which is
  * adjusted according to 'scrolloff' option.  Returns the position. */
 int fpos_get_top_pos(const struct view_t *view);
