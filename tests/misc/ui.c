@@ -418,6 +418,152 @@ TEST(mouse_map_millerview)
 	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 8, 0));
 }
 
+TEST(mouse_map_lsview)
+{
+	lwin.window_rows = 7;
+	setup_grid(&lwin, /*column_count=*/2, /*list_rows=*/11, /*init=*/1);
+
+	lwin.ls_view = 1;
+	lwin.ls_transposed = 0;
+	lwin.miller_view = 0;
+	lwin.top_line = 0;
+	lwin.max_filename_width = 2;
+
+	/*         |0123|4567|89
+	 *      -------------------
+	 * 0 row:  | 00 | 01 | --
+	 * 1 row:  | 02 | 03 | --
+	 * 2 row:  | 04 | 05 | --
+	 * 3 row:  | 06 | 07 | --
+	 * 4 row:  | 08 | 09 | --
+	 * 5 row:  | 10 | -- | --
+	 * 6 row:  | -- | -- | --
+	 */
+
+	cfg.extra_padding = 1;
+	lwin.window_cols = 10;
+	assert_int_equal(0, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 3, 0));
+	assert_int_equal(1, fview_map_coordinates(&lwin, 4, 0));
+	assert_int_equal(1, fview_map_coordinates(&lwin, 5, 0));
+	assert_int_equal(1, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(1, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 0, 3));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 1, 3));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 2, 3));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 3, 3));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 8, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 9, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 4, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 5, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 2, 6));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 6));
+
+	/*         |012|345|67
+	 *      ----------------
+	 * 0 row:  |00 |01 |--
+	 * 1 row:  |02 |03 |--
+	 * 2 row:  |04 |05 |--
+	 * 3 row:  |06 |07 |--
+	 * 4 row:  |08 |09 |--
+	 * 5 row:  |10 |-- |--
+	 * 6 row:  |-- |-- |--
+	 */
+
+	cfg.extra_padding = 0;
+	lwin.window_cols = 8;
+	assert_int_equal(0, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(1, fview_map_coordinates(&lwin, 3, 0));
+	assert_int_equal(1, fview_map_coordinates(&lwin, 4, 0));
+	assert_int_equal(1, fview_map_coordinates(&lwin, 5, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 0, 3));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 1, 3));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 2, 3));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 4, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 5, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 2, 6));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 6));
+}
+
+TEST(mouse_map_tlsview)
+{
+	lwin.window_rows = 6;
+	setup_grid(&lwin, /*column_count=*/2, /*list_rows=*/11, /*init=*/1);
+
+	lwin.ls_view = 1;
+	lwin.ls_transposed = 1;
+	lwin.miller_view = 0;
+	lwin.top_line = 0;
+	lwin.max_filename_width = 2;
+
+	/*         |0123|4567|89
+	 *      -------------------
+	 * 0 row:  | 00 | 06 | --
+	 * 1 row:  | 01 | 07 | --
+	 * 2 row:  | 02 | 08 | --
+	 * 3 row:  | 03 | 09 | --
+	 * 4 row:  | 04 | 10 | --
+	 * 5 row:  | 05 | -- | --
+	 */
+
+	cfg.extra_padding = 1;
+	lwin.window_cols = 10;
+	assert_int_equal(0, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 3, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 4, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 5, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(3, fview_map_coordinates(&lwin, 0, 3));
+	assert_int_equal(3, fview_map_coordinates(&lwin, 1, 3));
+	assert_int_equal(3, fview_map_coordinates(&lwin, 2, 3));
+	assert_int_equal(3, fview_map_coordinates(&lwin, 3, 3));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 8, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 9, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 4, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 5, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 5));
+
+	/*         |012|345|67
+	 *      ----------------
+	 * 0 row:  |00 |06 |--
+	 * 1 row:  |01 |07 |--
+	 * 2 row:  |02 |08 |--
+	 * 3 row:  |03 |09 |--
+	 * 4 row:  |04 |10 |--
+	 * 5 row:  |05 |-- |--
+	 */
+
+	cfg.extra_padding = 0;
+	lwin.window_cols = 8;
+	assert_int_equal(0, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(0, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 3, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 4, 0));
+	assert_int_equal(6, fview_map_coordinates(&lwin, 5, 0));
+	assert_int_equal(3, fview_map_coordinates(&lwin, 0, 3));
+	assert_int_equal(3, fview_map_coordinates(&lwin, 1, 3));
+	assert_int_equal(3, fview_map_coordinates(&lwin, 2, 3));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 4, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 5, 5));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 5));
+}
+
 static void
 check_tab_title(const tab_info_t *tab_info, const char text[])
 {

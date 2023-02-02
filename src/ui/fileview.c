@@ -134,6 +134,7 @@ static void format_id(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 static size_t calculate_column_width(view_t *view);
 static size_t calculate_columns_count(view_t *view);
+static int has_extra_tls_col(const view_t *view, int col_width);
 static preview_area_t get_miller_preview_area(view_t *view);
 static size_t get_max_filename_width(const view_t *view);
 static size_t get_filename_width(const view_t *view, int i);
@@ -297,11 +298,8 @@ draw_dir_list_only(view_t *view)
 	draw_left_column(view);
 
 	visible_cells = view->window_cells;
-	if(fview_is_transposed(view) && view->ls_cols == 0 &&
-			view->column_count*(int)col_width < ui_view_available_width(view))
+	if(has_extra_tls_col(view, col_width))
 	{
-		/* Add extra visual column to display more context, unless user requested
-		 * fixed number of columns. */
 		visible_cells += view->window_rows;
 	}
 
@@ -1811,8 +1809,44 @@ fview_map_coordinates(view_t *view, int x, int y)
 		}
 	}
 
-	int pos = view->top_line + y;
+	int pos;
+	if(ui_view_displays_columns(view))
+	{
+	  pos = view->top_line + y;
+	}
+	else
+	{
+		size_t col_count, col_width;
+		calculate_table_conf(view, &col_count, &col_width);
+
+		if(has_extra_tls_col(view, col_width))
+		{
+			++col_count;
+		}
+
+		size_t x_offset = x/col_width;
+		if(x_offset >= col_count)
+		{
+			return FVM_NONE;
+		}
+
+		pos = fview_is_transposed(view)
+		    ? view->top_line + view->run_size*x_offset + y
+		    : view->top_line + view->run_size*y + x_offset;
+	}
+
 	return (pos < view->list_rows ? pos : FVM_NONE);
+}
+
+/* Whether there is an extra visual column to transposed ls-like view to display
+ * more context (when available and unless user requested fixed number of
+ * columns).  Returns non-zero if so. */
+static int
+has_extra_tls_col(const view_t *view, int col_width)
+{
+	return fview_is_transposed(view)
+			&& view->ls_cols == 0
+			&& view->column_count*col_width < ui_view_available_width(view);
 }
 
 void
