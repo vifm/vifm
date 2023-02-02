@@ -54,7 +54,8 @@ typedef enum
 	M_VISUAL_MODE  = 1 << 2, /* In visual mode. */
 	M_CMDLINE_MODE = 1 << 3, /* In command-line mode. */
 	M_MENU_MODE    = 1 << 4, /* In menu mode. */
-	NUM_M_OPTS     =      5  /* Number of options for compile-time checks. */
+	M_VIEW_MODE    = 1 << 5, /* In view mode. */
+	NUM_M_OPTS     =      6  /* Number of options for compile-time checks. */
 }
 Mouse;
 

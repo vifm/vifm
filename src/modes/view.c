@@ -202,6 +202,7 @@ static int scroll_to_bottom(modview_info_t *vi);
 static void reload_view(modview_info_t *vi, int silent);
 static void cleanup(modview_info_t *vi);
 static modview_info_t * view_info_alloc(void);
+static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 TSTATIC int modview_is_raw(modview_info_t *vi);
 TSTATIC int modview_is_detached(modview_info_t *vi);
 TSTATIC const char * modview_current_viewer(modview_info_t *vi);
@@ -298,6 +299,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_y,             {{&cmd_k},       .descr = "scroll one line up"}},
 	{WK_w,             {{&cmd_w},       .descr = "scroll backward one window"}},
 	{WK_z,             {{&cmd_z},       .descr = "scroll forward one window"}},
+	{{K(KEY_MOUSE)},   {{&handle_mouse_event}, FOLLOWED_BY_NONE}},
 #ifndef __PDCURSES__
 	{WK_ALT WK_v,      {{&cmd_b}, .descr = "scroll page up"}},
 #else
@@ -1816,6 +1818,54 @@ const char *
 modview_detached_get_viewer(void)
 {
 	return (vi == NULL ? NULL : vi->ext_viewer);
+}
+
+/* Processes events from the mouse. */
+static void
+handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
+{
+	MEVENT e;
+	if(getmouse(&e) != OK)
+	{
+		return;
+	}
+
+	if((cfg.mouse & (M_ALL_MODES | M_VIEW_MODE)) == 0)
+	{
+		return;
+	}
+
+	view_t *selected_view;
+	if(wenclose(lwin.win, e.y, e.x) || wenclose(lwin.title, e.y, e.x))
+	{
+		selected_view = &lwin;
+	}
+	else if(wenclose(rwin.win, e.y, e.x) || wenclose(rwin.title, e.y, e.x))
+	{
+		selected_view = &rwin;
+	}
+	else
+	{
+		return;
+	}
+
+	if(selected_view != vi->view)
+	{
+		if(!vi->view->explore_mode && (e.bstate & BUTTON1_PRESSED))
+		{
+			cmd_ctrl_ww(key_info, keys_info);
+		}
+		return;
+	}
+
+	if(e.bstate & BUTTON4_PRESSED)
+	{
+		cmd_k(key_info, keys_info);
+	}
+	else if(e.bstate & (BUTTON2_PRESSED | BUTTON5_PRESSED))
+	{
+		cmd_j(key_info, keys_info);
+	}
 }
 
 /* Allocates and initializes view mode information.  Returns pointer to it. */

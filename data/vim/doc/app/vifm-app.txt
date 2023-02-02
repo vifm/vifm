@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 1
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3823,9 +3823,10 @@ default: ""
 
 Contains a sequence of single-character flags:
  - a - all supported modes (a shorthand for all the rest and future additions)
- - c - command-line mode
+ - c - command-line mode (includes navigation mode)
  - m - menu mode
  - n - normal mode
+ - q - view mode
  - v - visual mode
 
                                                *vifm-'navoptions'*
@@ -6247,6 +6248,15 @@ event             position  action                ~
 <RightRelease>       no
 <ScrollWheelUp>      no     <c-y>
 <ScrollWheelDown>    no     <c-e>
+
+View Mode:
+event               action                ~
+                                          ~
+<ScrollWheelUp>     k
+<ScrollWheelDown>   j
+
+Clicking on or scrolling over an inactive pane (including its title), detaches
+view mode if it wasn't activated for exploring a file.
 
 --------------------------------------------------------------------------------
 *vifm-plugin*

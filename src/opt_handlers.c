@@ -341,11 +341,12 @@ static const char *lsoptions_enum[][2] = {
 
 /* Possible values of 'mouse'. */
 static const char *mouse_vals[][2] = {
-	{ "acmnv", "all mouse values" },
+	{ "acmnqv", "all mouse values" },
 	{ "a", "all supported modes" },
 	{ "c", "command-line mode" },
 	{ "m", "menu mode" },
 	{ "n", "normal mode" },
+	{ "q", "view mode" },
 	{ "v", "visual mode" },
 };
 ARRAY_GUARD(mouse_vals, 1 + NUM_M_OPTS);
@@ -1232,11 +1233,12 @@ static void
 init_mouse(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s%s%s%s%s",
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s%s",
 			cfg.mouse & M_ALL_MODES ? "a" : "",
 			cfg.mouse & M_CMDLINE_MODE ? "c" : "",
 			cfg.mouse & M_MENU_MODE ? "m" : "",
 			cfg.mouse & M_NORMAL_MODE ? "n" : "",
+			cfg.mouse & M_VIEW_MODE ? "q" : "",
 			cfg.mouse & M_VISUAL_MODE ? "v" : "");
 	val->str_val = buf;
 }
@@ -2390,6 +2392,7 @@ mouse_handler(OPT_OP op, optval_t val)
 			case 'c': mouse |= M_CMDLINE_MODE; break;
 			case 'm': mouse |= M_MENU_MODE; break;
 			case 'n': mouse |= M_NORMAL_MODE; break;
+			case 'q': mouse |= M_VIEW_MODE; break;
 			case 'v': mouse |= M_VISUAL_MODE; break;
 
 			default:
