@@ -310,7 +310,7 @@ flist_hist_lookup(view_t *view, const view_t *source)
 			fview_scroll_fwd_by(view, view->list_pos - last);
 		}
 	}
-	(void)consider_scroll_offset(view);
+	(void)fview_enforce_scroll_offset(view);
 }
 
 int

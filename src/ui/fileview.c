@@ -1036,7 +1036,7 @@ fview_scroll_by(view_t *view, int by)
 }
 
 int
-consider_scroll_offset(view_t *view)
+fview_enforce_scroll_offset(view_t *view)
 {
 	int need_redraw = 0;
 	int pos = view->list_pos;
@@ -2134,7 +2134,7 @@ move_curr_line(view_t *view)
 		redraw++;
 	}
 
-	if(consider_scroll_offset(view))
+	if(fview_enforce_scroll_offset(view))
 	{
 		redraw++;
 	}

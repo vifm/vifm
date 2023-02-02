@@ -113,7 +113,7 @@ void fview_scroll_by(struct view_t *view, int by);
 
 /* Updates current and top line of a view according to 'scrolloff' option value.
  * Returns non-zero if redraw is needed. */
-int consider_scroll_offset(struct view_t *view);
+int fview_enforce_scroll_offset(struct view_t *view);
 
 /* Recalculates difference of two panes scroll positions. */
 void update_scroll_bind_offset(void);

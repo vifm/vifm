@@ -4758,7 +4758,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 					get_current_file_name(curr_view), 1);
 
 			other_view->top_line = MAX(0, curr_view->list_pos - shift);
-			(void)consider_scroll_offset(other_view);
+			(void)fview_enforce_scroll_offset(other_view);
 		}
 
 		flist_hist_save(other_view);
