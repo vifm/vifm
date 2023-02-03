@@ -2344,21 +2344,9 @@ static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 {
 	MEVENT e;
-	if(getmouse(&e) != OK)
+	if(ui_get_mouse(&e) != OK)
 	{
 		return;
-	}
-
-	/* Positions after 222 can become negative due to a combination of protocol
-	 * limitations and implementation.  This workaround can extend the range at
-	 * least a bit when SGR 1006 isn't available. */
-	if(e.x < 0)
-	{
-		e.x = e.x&0xff;
-	}
-	if(e.y < 0)
-	{
-		e.y = e.y&0xff;
 	}
 
 	if((cfg.mouse & (M_ALL_MODES | M_NORMAL_MODE)) == 0)

@@ -667,6 +667,10 @@ void checked_wmove(WINDOW *win, int y, int x);
 /* Changes visibility of hardware cursor. */
 void ui_set_cursor(int visibility);
 
+/* Retrieves mouse event.  Adjusts and filters events in the process.  Returns
+ * ERR or OK curses error codes. */
+int ui_get_mouse(MEVENT *event);
+
 /* Displays "Terminal is too small" kind of message instead of UI. */
 void ui_display_too_small_term_msg(void);
 

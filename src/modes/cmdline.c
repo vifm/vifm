@@ -3320,7 +3320,7 @@ static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 {
 	MEVENT e;
-	if(getmouse(&e) != OK)
+	if(ui_get_mouse(&e) != OK)
 	{
 		return;
 	}

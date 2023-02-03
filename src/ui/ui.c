@@ -1910,6 +1910,30 @@ ui_set_cursor(int visibility)
 	}
 }
 
+int
+ui_get_mouse(MEVENT *event)
+{
+	int ret = getmouse(event);
+	if(ret != OK)
+	{
+		return ret;
+	}
+
+	/* Positions after 222 can become negative due to a combination of protocol
+	 * limitations and implementation.  This workaround can extend the range at
+	 * least a bit when SGR 1006 isn't available. */
+	if(event->x < 0)
+	{
+		event->x &= 0xff;
+	}
+	if(event->y < 0)
+	{
+		event->y &= 0xff;
+	}
+
+	return OK;
+}
+
 void
 ui_display_too_small_term_msg(void)
 {
