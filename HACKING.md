@@ -3,20 +3,33 @@
 It's a good idea to describe what it is you would like to implement before
 starting it.  The are multiple reasons for this:
 
- - new feature might interact with other feature in ways you don't expect;
+ - new feature might interact with other features in unexpected ways;
  - not all ways of implementing a feature are equal, some might be preferred
    just for the sake of keeping things consistent;
  - the code base is quite large and stuff that's already there might save you
    some time.
 
-Changes can be sent as a pull request on [github][github] or as a patch via
-[email][email].
+Changes can be sent as a pull request on [github] or as a patch via [email].
 
-Some information on development is available on the [wiki][wiki].
+Some information on development is available on the [wiki].
 
 [github]: https://github.com/vifm/vifm/pulls
 [email]: mailto:xaizek@posteo.net
 [wiki]: https://wiki.vifm.info/index.php?title=Development#Code_repositories
+
+## Setup for development ##
+
+To avoid possible issues with `autoconf` caused by skewed timestamps after
+`git clone` or `git checkout` execute `scripts/fix-timestamps`.
+
+Configure the project with `--enable-developer` flag to compile in debug mode
+and with `-Werror` (there is also `--enable-werror` that doesn't enable debug
+mode).  Undo this if it breaks the build from `master` because of unexpected
+warnings.
+
+After making changes, don't forget to run tests (see below) to make sure they
+pass.  It might be a good idea to start by running tests as well to see that
+they succeed without any changes.
 
 ## Tests ##
 
