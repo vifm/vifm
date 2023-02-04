@@ -1931,7 +1931,20 @@ ui_get_mouse(MEVENT *event)
 		event->y &= 0xff;
 	}
 
-	return OK;
+	int mask = M_ALL_MODES;
+	switch(vle_mode_get())
+	{
+		case NORMAL_MODE:  mask |= M_NORMAL_MODE; break;
+		case NAV_MODE:
+		case CMDLINE_MODE: mask |= M_CMDLINE_MODE; break;
+		case VISUAL_MODE:  mask |= M_VISUAL_MODE; break;
+		case MENU_MODE:    mask |= M_MENU_MODE; break;
+		case VIEW_MODE:    mask |= M_VIEW_MODE; break;
+
+		default:           mask = 0; break;
+	}
+
+	return (cfg.mouse & mask ? OK : ERR);
 }
 
 void

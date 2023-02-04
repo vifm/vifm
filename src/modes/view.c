@@ -1830,11 +1830,6 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if((cfg.mouse & (M_ALL_MODES | M_VIEW_MODE)) == 0)
-	{
-		return;
-	}
-
 	view_t *selected_view;
 	if(wenclose(lwin.win, e.y, e.x) || wenclose(lwin.title, e.y, e.x))
 	{

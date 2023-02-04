@@ -3325,11 +3325,6 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if((cfg.mouse & (M_ALL_MODES | M_CMDLINE_MODE)) == 0)
-	{
-		return;
-	}
-
 	if(!wenclose(status_bar, e.y, e.x))
 	{
 		return;

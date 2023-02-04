@@ -52,7 +52,7 @@ typedef enum
 	M_ALL_MODES    = 1 << 0, /* In all supported modes. */
 	M_NORMAL_MODE  = 1 << 1, /* In normal mode. */
 	M_VISUAL_MODE  = 1 << 2, /* In visual mode. */
-	M_CMDLINE_MODE = 1 << 3, /* In command-line mode. */
+	M_CMDLINE_MODE = 1 << 3, /* In command-line mode (including navmode). */
 	M_MENU_MODE    = 1 << 4, /* In menu mode. */
 	M_VIEW_MODE    = 1 << 5, /* In view mode. */
 	NUM_M_OPTS     =      6  /* Number of options for compile-time checks. */

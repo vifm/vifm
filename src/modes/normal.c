@@ -2349,11 +2349,6 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if((cfg.mouse & (M_ALL_MODES | M_NORMAL_MODE)) == 0)
-	{
-		return;
-	}
-
 	int on_tab_line = !cfg.pane_tabs && wenclose(tab_line, e.y, e.x);
 
 	if(wenclose(lwin.win, e.y, e.x) || wenclose(lwin.title, e.y, e.x))
