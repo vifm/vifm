@@ -2179,6 +2179,10 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 		ui_set_attr(win, &col, -1);
 
+		cline_t tab_label = prefix;
+		cline_append(&tab_label, &title);
+		cline_append(&tab_label, &suffix);
+
 		int real_width = prefix.attrs_len + title.attrs_len + suffix.attrs_len;
 
 		if(width < real_width && max_width - width_used >= real_width)
@@ -2187,16 +2191,12 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		}
 		if(width >= real_width)
 		{
-			cline_print(&prefix, win, &col);
-			cline_print(&title, win, &col);
-			cline_print(&suffix, win, &col);
+			cline_print(&tab_label, win, &col);
 		}
 
 		width_used += real_width;
 
-		cline_dispose(&prefix);
-		cline_dispose(&title);
-		cline_dispose(&suffix);
+		cline_dispose(&tab_label);
 	}
 
 	wnoutrefresh(win);
