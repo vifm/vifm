@@ -52,6 +52,7 @@
 #include "../modes/modes.h"
 #include "../modes/view.h"
 #include "../modes/wk.h"
+#include "../utils/darray.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -2113,10 +2114,6 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 	int min_widths[tabs_count(view)];
 
-	ui_set_bg(win, &base_col, -1);
-	werase(win);
-	checked_wmove(win, 0, 0);
-
 	compute_avg_width(&avg_width, &spare_width, min_widths, max_width, view, pf);
 
 	int tab_count = tabs_count(view);
@@ -2126,16 +2123,18 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		min_width += min_widths[i];
 	}
 
-	int before_current = 1;
+	cline_t *tab_labels = NULL;
+	DA_INSTANCE(tab_labels);
 
+	int current_idx = -1;
 	for(i = 0; tabs_get(view, i, &tab_info) && width_used < max_width; ++i)
 	{
 		int current = (tab_info.view == view);
 		if(current)
 		{
-			before_current = 0;
+			current_idx = i;
 		}
-		else if(before_current && min_width > max_width)
+		else if(current_idx == -1 && min_width > max_width)
 		{
 			min_width -= min_widths[i];
 			spare_width = max_width - min_width;
@@ -2152,12 +2151,6 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		const int width_needed = title.attrs_len;
 		const int extra_width = prefix.attrs_len + suffix.attrs_len;
 		int width = max_width;
-
-		col_attr_t col = base_col;
-		if(current)
-		{
-			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
-		}
 
 		if(!current)
 		{
@@ -2177,12 +2170,6 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 					curr_stats.ellipsis);
 		}
 
-		ui_set_attr(win, &col, -1);
-
-		cline_t tab_label = prefix;
-		cline_append(&tab_label, &title);
-		cline_append(&tab_label, &suffix);
-
 		int real_width = prefix.attrs_len + title.attrs_len + suffix.attrs_len;
 
 		if(width < real_width && max_width - width_used >= real_width)
@@ -2191,13 +2178,36 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		}
 		if(width >= real_width)
 		{
-			cline_print(&tab_label, win, &col);
+			cline_t *tab_label = DA_EXTEND(tab_labels);
+			if(tab_label != NULL)
+			{
+				*tab_label = prefix;
+				cline_append(tab_label, &title);
+				cline_append(tab_label, &suffix);
+				DA_COMMIT(tab_labels);
+			}
 		}
 
 		width_used += real_width;
-
-		cline_dispose(&tab_label);
 	}
+
+	ui_set_bg(win, &base_col, -1);
+	werase(win);
+	checked_wmove(win, 0, 0);
+
+	int j;
+	for(j = 0; j < (int)DA_SIZE(tab_labels); ++j)
+	{
+		col_attr_t col = base_col;
+		if(j == current_idx)
+		{
+			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
+		}
+
+		cline_print(&tab_labels[j], win, &col);
+		cline_dispose(&tab_labels[j]);
+	}
+	DA_REMOVE_ALL(tab_labels);
 
 	wnoutrefresh(win);
 }
