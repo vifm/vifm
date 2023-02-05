@@ -76,8 +76,9 @@ endif
 
 # test for a bad directory path which breaks the Makefile
 ifndef win_env
-    ifneq (,$(findstring :,$(PWD))$(findstring #,$(PWD)))
-        $(error Paths with #/: break tests' Makefile)
+    # testing for # seems to work only for some versions of GNU Make
+    ifneq (,$(findstring :,$(PWD)))
+        $(error Paths with : break tests' Makefile)
     endif
 endif
 
