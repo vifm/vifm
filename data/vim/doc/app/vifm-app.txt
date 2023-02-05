@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 3
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -6212,6 +6212,9 @@ event             position  change  action        ~
 
 Clicking on or scrolling over an inactive pane (including its title), makes it
 active and does nothing else.  Tabs are scrolled when mouse hovers over them.
+
+Clicking on the left miller column goes to parent directory and clicking the
+right one opens current entry.
 
 Visual Mode:
 event             position  selection  action     ~

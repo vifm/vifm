@@ -2413,6 +2413,14 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 				cmd_return(key_info, keys_info);
 			}
 		}
+		else if(list_pos == FVM_LEAVE)
+		{
+			cmd_gh(key_info, keys_info);
+		}
+		else if(list_pos == FVM_OPEN)
+		{
+			cmd_i(key_info, keys_info);
+		}
 	}
 	else if(e.bstate & BUTTON3_PRESSED)
 	{

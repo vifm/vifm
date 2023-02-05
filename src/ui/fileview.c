@@ -1803,9 +1803,13 @@ fview_map_coordinates(view_t *view, int x, int y)
 		const int rcol_start = lcol_end + padding
 		                     + ui_view_available_width(view) + padding;
 
-		if(x < lcol_end || x >= rcol_start)
+		if(x < lcol_end)
 		{
-			return FVM_NONE;
+			return FVM_LEAVE;
+		}
+		if(x >= rcol_start)
+		{
+			return FVM_OPEN;
 		}
 	}
 

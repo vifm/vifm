@@ -393,29 +393,31 @@ TEST(mouse_map_millerview)
 	lwin.window_cols = 9;
 	lwin.dir_entry[0].type = FT_DIR;
 
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 0, 1));
+	assert_int_equal(FVM_LEAVE, fview_map_coordinates(&lwin, 1, 1));
+	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 4, 1));
+	assert_int_equal(FVM_OPEN, fview_map_coordinates(&lwin, 7, 1));
 
 	cfg.extra_padding = 1;
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 0, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 1, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(FVM_LEAVE, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(FVM_LEAVE, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(FVM_LEAVE, fview_map_coordinates(&lwin, 2, 0));
 	assert_int_equal(0, fview_map_coordinates(&lwin, 3, 0));
 	assert_int_equal(0, fview_map_coordinates(&lwin, 4, 0));
 	assert_int_equal(0, fview_map_coordinates(&lwin, 5, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 8, 0));
+	assert_int_equal(FVM_OPEN, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(FVM_OPEN, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(FVM_OPEN, fview_map_coordinates(&lwin, 8, 0));
 
 	cfg.extra_padding = 0;
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 0, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 1, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 2, 0));
+	assert_int_equal(FVM_LEAVE, fview_map_coordinates(&lwin, 0, 0));
+	assert_int_equal(FVM_LEAVE, fview_map_coordinates(&lwin, 1, 0));
+	assert_int_equal(FVM_LEAVE, fview_map_coordinates(&lwin, 2, 0));
 	assert_int_equal(0, fview_map_coordinates(&lwin, 3, 0));
 	assert_int_equal(0, fview_map_coordinates(&lwin, 4, 0));
 	assert_int_equal(0, fview_map_coordinates(&lwin, 5, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 7, 0));
-	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 8, 0));
+	assert_int_equal(FVM_OPEN, fview_map_coordinates(&lwin, 6, 0));
+	assert_int_equal(FVM_OPEN, fview_map_coordinates(&lwin, 7, 0));
+	assert_int_equal(FVM_OPEN, fview_map_coordinates(&lwin, 8, 0));
 }
 
 TEST(mouse_map_lsview)

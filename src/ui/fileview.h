@@ -30,7 +30,9 @@ struct view_t;
 /* Specials value that can be returned by fview_map_coordinates(). */
 enum
 {
-	FVM_NONE = -1, /* No item under the cursor, empty space. */
+	FVM_NONE  = -1, /* No item under the cursor, empty space. */
+	FVM_LEAVE = -2, /* Leave current directory. */
+	FVM_OPEN  = -3, /* Open current item. */
 };
 
 /* Packet set of parameters to pass as user data for processing columns. */
