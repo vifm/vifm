@@ -444,6 +444,35 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	cfg.ch_pos_on = 0;
 }
 
+TEST(filtering_does_not_result_in_invalid_position)
+{
+	conf_setup();
+	histories_init(5);
+	cfg.inc_search = 1;
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "tree", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+	assert_int_equal(3, curr_view->list_rows);
+	flist_hist_save(curr_view);
+
+	(void)vle_keys_exec_timed_out(L"=5" WK_C_m);
+	assert_int_equal(1, curr_view->list_rows);
+	(void)vle_keys_exec_timed_out(L"=" WK_C_u WK_C_y);
+	assert_int_equal(3, curr_view->list_rows);
+	/* This shouldn't cause a crash because of incorrect cursor position (outside
+	 * of file list). */
+	(void)vle_keys_exec_timed_out(WK_C_o);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	opt_handlers_teardown();
+	columns_teardown();
+
+	histories_init(0);
+	conf_teardown();
+}
+
 TEST(leaving_navigation_does_not_move_cursor)
 {
 	conf_setup();

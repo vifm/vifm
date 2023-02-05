@@ -2637,7 +2637,7 @@ cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
 	CmdLineSubmode sub_mode = input_stat.sub_mode;
 	if(sub_mode == CLS_FILTER)
 	{
-		local_filter_cancel(curr_view);
+		local_filter_accept(curr_view, /*update_history=*/0);
 	}
 
 	rn_leave(curr_view, /*levels=*/1);
