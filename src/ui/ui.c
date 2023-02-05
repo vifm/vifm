@@ -82,6 +82,17 @@
 #include "statusline.h"
 #include "tabs.h"
 
+/* List of formatted tab labels with some extra information. */
+typedef struct
+{
+	cline_t *labels; /* List of labels (might miss some tabs). */
+	int count;       /* Number of labels. */
+	int skipped;     /* Number of leading tabs skipped due to lack of space. */
+	int current;     /* Index of the current tab (does not take skipped count into
+	                    account). */
+}
+tab_line_info_t;
+
 /* Information for formatting tab title. */
 typedef struct
 {
@@ -167,6 +178,8 @@ static char * path_identity(const char path[]);
 static int view_shows_tabline(const view_t *view);
 static int get_tabline_height(void);
 static void print_tabline(WINDOW *win, view_t *view, col_attr_t base_col,
+		path_func pf);
+static tab_line_info_t format_tab_labels(view_t *view, int max_width,
 		path_func pf);
 static void compute_avg_width(int *avg_width, int *spare_width,
 		int min_widths[], int max_width, view_t *view, path_func pf);
@@ -2105,18 +2118,43 @@ get_tabline_height(void)
 static void
 print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 {
-	int i;
-	tab_info_t tab_info;
-
 	const int max_width = (vifm_testing() ? cfg.columns : getmaxx(win));
+	tab_line_info_t info = format_tab_labels(view, max_width, pf);
+
+	ui_set_bg(win, &base_col, -1);
+	werase(win);
+	checked_wmove(win, 0, 0);
+
+	int i;
+	for(i = 0; i < info.count; ++i)
+	{
+		col_attr_t col = base_col;
+		if(i == info.current - info.skipped)
+		{
+			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
+		}
+
+		cline_print(&info.labels[i], win, &col);
+		cline_dispose(&info.labels[i]);
+	}
+	free(info.labels);
+
+	wnoutrefresh(win);
+}
+
+/* Computes layout of the tab line and formats tab labels.  Returns list of tab
+ * labels along with supplementary information. */
+static tab_line_info_t
+format_tab_labels(view_t *view, int max_width, path_func pf)
+{
+	int i;
+	int tab_count = tabs_count(view);
 	int width_used = 0;
+
 	int avg_width, spare_width;
-
-	int min_widths[tabs_count(view)];
-
+	int min_widths[tab_count];
 	compute_avg_width(&avg_width, &spare_width, min_widths, max_width, view, pf);
 
-	int tab_count = tabs_count(view);
 	int min_width = 0;
 	for(i = 0; i < tab_count; ++i)
 	{
@@ -2126,18 +2164,22 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	cline_t *tab_labels = NULL;
 	DA_INSTANCE(tab_labels);
 
-	int current_idx = -1;
+	int current_tab = -1;
+	int skipped_tabs = 0;
+	tab_info_t tab_info;
 	for(i = 0; tabs_get(view, i, &tab_info) && width_used < max_width; ++i)
 	{
 		int current = (tab_info.view == view);
 		if(current)
 		{
-			current_idx = i;
+			current_tab = i;
 		}
-		else if(current_idx == -1 && min_width > max_width)
+		else if(current_tab == -1 && min_width > max_width)
 		{
+			/* Skip a tab that precedes the current one because it doesn't fit in. */
 			min_width -= min_widths[i];
 			spare_width = max_width - min_width;
+			++skipped_tabs;
 			continue;
 		}
 
@@ -2191,25 +2233,13 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		width_used += real_width;
 	}
 
-	ui_set_bg(win, &base_col, -1);
-	werase(win);
-	checked_wmove(win, 0, 0);
-
-	int j;
-	for(j = 0; j < (int)DA_SIZE(tab_labels); ++j)
-	{
-		col_attr_t col = base_col;
-		if(j == current_idx)
-		{
-			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
-		}
-
-		cline_print(&tab_labels[j], win, &col);
-		cline_dispose(&tab_labels[j]);
-	}
-	DA_REMOVE_ALL(tab_labels);
-
-	wnoutrefresh(win);
+	tab_line_info_t result = {
+		.labels = tab_labels,
+		.count = DA_SIZE(tab_labels),
+		.skipped = skipped_tabs,
+		.current = current_tab,
+	};
+	return result;
 }
 
 /* Computes average width of tab tips as well as number of spare character
