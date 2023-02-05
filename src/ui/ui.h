@@ -671,6 +671,14 @@ void ui_set_cursor(int visibility);
  * ERR or OK curses error codes. */
 int ui_get_mouse(MEVENT *event);
 
+/* Determines curses window that displays tabs for the view or global tabs if
+ * they are active.  Returns the window pointer. */
+WINDOW * ui_get_tab_line_win(const view_t *view);
+
+/* Determines index of a tab at the specified coordinate.  Returns tab number
+ * base zero or -1 if tab label is not present at that location. */
+int ui_map_tab_line(view_t *view, int x);
+
 /* Displays "Terminal is too small" kind of message instead of UI. */
 void ui_display_too_small_term_msg(void);
 

@@ -2378,6 +2378,16 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		{
 			/* Do nothing. */
 		}
+		else if(e.bstate & BUTTON1_PRESSED)
+		{
+			wmouse_trafo(ui_get_tab_line_win(curr_view), &e.y, &e.x, FALSE);
+
+			int tab_num = ui_map_tab_line(curr_view, e.x);
+			if(tab_num >= 0)
+			{
+				tabs_goto(tab_num);
+			}
+		}
 		else if(e.bstate & BUTTON4_PRESSED)
 		{
 			tabs_previous(1);
@@ -2386,7 +2396,6 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		{
 			tabs_next(1);
 		}
-		/* Other events are to handled in the future. */
 	}
 	else if(e.bstate & BUTTON1_PRESSED)
 	{

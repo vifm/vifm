@@ -1961,6 +1961,38 @@ ui_get_mouse(MEVENT *event)
 	return (cfg.mouse & mask ? OK : ERR);
 }
 
+WINDOW *
+ui_get_tab_line_win(const view_t *view)
+{
+	return (view_shows_tabline(view) ? view->title : tab_line);
+}
+
+int
+ui_map_tab_line(view_t *view, int x)
+{
+	path_func pf = cfg.shorten_title_paths ? &replace_home_part : &path_identity;
+
+	const int max_width = getmaxx(ui_get_tab_line_win(view));
+	tab_line_info_t info = format_tab_labels(view, max_width, pf);
+
+	int tab_idx = -1;
+
+	int i;
+	for(i = 0; i < info.count; ++i)
+	{
+		if(tab_idx == -1 && x < (int)info.labels[i].attrs_len)
+		{
+			tab_idx = info.skipped + i;
+		}
+		x -= info.labels[i].attrs_len;
+
+		cline_dispose(&info.labels[i]);
+	}
+	free(info.labels);
+
+	return tab_idx;
+}
+
 void
 ui_display_too_small_term_msg(void)
 {
