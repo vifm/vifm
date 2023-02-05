@@ -545,9 +545,9 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(fpos_has_hidden_bottom(curr_view) && fpos_scroll_down(curr_view, 1))
+	if(fpos_can_scroll_fwd(curr_view) && fpos_scroll_down(curr_view, 1))
 	{
-		scroll_down(curr_view, 1);
+		fview_scroll_fwd_by(curr_view, 1);
 		redraw_current_view();
 	}
 }
@@ -905,9 +905,9 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(fpos_has_hidden_top(curr_view) && fpos_scroll_up(curr_view, 1))
+	if(fpos_can_scroll_back(curr_view) && fpos_scroll_up(curr_view, 1))
 	{
-		scroll_up(curr_view, 1);
+		fview_scroll_back_by(curr_view, 1);
 		redraw_current_view();
 	}
 }
@@ -1988,10 +1988,10 @@ cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 void
 modnorm_zb(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_up(curr_view))
+	if(fpos_can_scroll_back(curr_view))
 	{
 		const int bottom = fpos_get_bottom_pos(curr_view);
-		scroll_up(curr_view, bottom - curr_view->list_pos);
+		fview_scroll_back_by(curr_view, bottom - curr_view->list_pos);
 		redraw_current_view();
 	}
 }
@@ -2182,10 +2182,10 @@ cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 void
 modnorm_zt(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_down(curr_view))
+	if(fpos_can_scroll_fwd(curr_view))
 	{
 		const int top = fpos_get_top_pos(curr_view);
-		scroll_down(curr_view, curr_view->list_pos - top);
+		fview_scroll_fwd_by(curr_view, curr_view->list_pos - top);
 		redraw_current_view();
 	}
 }
@@ -2196,7 +2196,7 @@ modnorm_zz(key_info_t key_info, keys_info_t *keys_info)
 	if(!fpos_are_all_files_visible(curr_view))
 	{
 		const int middle = fpos_get_middle_pos(curr_view);
-		scroll_by_files(curr_view, curr_view->list_pos - middle);
+		fview_scroll_by(curr_view, curr_view->list_pos - middle);
 		redraw_current_view();
 	}
 }
@@ -2344,24 +2344,7 @@ static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 {
 	MEVENT e;
-	if(getmouse(&e) != OK)
-	{
-		return;
-	}
-
-	/* Positions after 222 can become negative due to a combination of protocol
-	 * limitations and implementation.  This workaround can extend the range at
-	 * least a bit when SGR 1006 isn't available. */
-	if(e.x < 0)
-	{
-		e.x = e.x&0xff;
-	}
-	if(e.y < 0)
-	{
-		e.y = e.y&0xff;
-	}
-
-	if((cfg.mouse & (M_ALL_MODES | M_NORMAL_MODE)) == 0)
+	if(ui_get_mouse(&e) != OK)
 	{
 		return;
 	}
@@ -2395,6 +2378,16 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		{
 			/* Do nothing. */
 		}
+		else if(e.bstate & BUTTON1_PRESSED)
+		{
+			wmouse_trafo(ui_get_tab_line_win(curr_view), &e.y, &e.x, FALSE);
+
+			int tab_num = ui_map_tab_line(curr_view, e.x);
+			if(tab_num >= 0)
+			{
+				tabs_goto(tab_num);
+			}
+		}
 		else if(e.bstate & BUTTON4_PRESSED)
 		{
 			tabs_previous(1);
@@ -2403,30 +2396,43 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		{
 			tabs_next(1);
 		}
-		/* Other events are to handled in the future. */
 	}
 	else if(e.bstate & BUTTON1_PRESSED)
 	{
 		wmouse_trafo(curr_view->win, &e.y, &e.x, FALSE);
 
 		/* Only handle clicks on non-blank lines. */
-		if(e.y < curr_view->list_rows)
+		int list_pos = fview_map_coordinates(curr_view, e.x, e.y);
+		if(list_pos >= 0)
 		{
 			int old_pos = curr_view->list_pos;
-
-			fpos_set_pos(curr_view, curr_view->top_line + e.y);
+			fpos_set_pos(curr_view, list_pos);
 
 			if(curr_view->list_pos == old_pos)
 			{
 				cmd_return(key_info, keys_info);
 			}
 		}
+		else if(list_pos == FVM_LEAVE)
+		{
+			cmd_gh(key_info, keys_info);
+		}
+		else if(list_pos == FVM_OPEN)
+		{
+			cmd_i(key_info, keys_info);
+		}
 	}
 	else if(e.bstate & BUTTON3_PRESSED)
 	{
 		wmouse_trafo(curr_view->win, &e.y, &e.x, FALSE);
-		fpos_set_pos(curr_view, curr_view->top_line + e.y);
-		curr_stats.save_msg = show_file_menu(curr_view, 0);
+
+		/* Only handle clicks on non-blank lines. */
+		int list_pos = fview_map_coordinates(curr_view, e.x, e.y);
+		if(list_pos >= 0)
+		{
+			fpos_set_pos(curr_view, list_pos);
+			curr_stats.save_msg = show_file_menu(curr_view, 0);
+		}
 	}
 	else if(e.bstate & BUTTON4_PRESSED)
 	{

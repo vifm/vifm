@@ -3320,12 +3320,7 @@ static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 {
 	MEVENT e;
-	if(getmouse(&e) != OK)
-	{
-		return;
-	}
-
-	if((cfg.mouse & (M_ALL_MODES | M_CMDLINE_MODE)) == 0)
+	if(ui_get_mouse(&e) != OK)
 	{
 		return;
 	}
@@ -3339,13 +3334,18 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 	{
 		wmouse_trafo(status_bar, &e.y, &e.x, FALSE);
 
-		input_stat.index = e.y*getmaxx(status_bar) + e.x - 1;
-		if(input_stat.index > input_stat.len)
+		int idx = e.y*getmaxx(status_bar) + e.x - input_stat.prompt_wid;
+		if(idx < 0)
 		{
-			input_stat.index = input_stat.len;
+			idx = 0;
 		}
-		input_stat.curs_pos = input_stat.index + input_stat.prompt_wid;
+		else if(idx > input_stat.len)
+		{
+			idx = input_stat.len;
+		}
 
+		input_stat.index = idx;
+		input_stat.curs_pos = input_stat.index + input_stat.prompt_wid;
 		update_cmdline_text(&input_stat);
 	}
 	else if(e.bstate & BUTTON4_PRESSED)

@@ -78,6 +78,14 @@ cline_finish(cline_t *cline)
 }
 
 void
+cline_append(cline_t *cline, cline_t *admixture)
+{
+	cline_splice_attrs(cline, admixture);
+	strappend(&cline->line, &cline->line_len, admixture->line);
+	free(admixture->line);
+}
+
+void
 cline_splice_attrs(cline_t *cline, cline_t *admixture)
 {
 	char *attrs = admixture->attrs;

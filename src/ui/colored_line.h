@@ -57,6 +57,9 @@ void cline_clear(cline_t *cline);
  * attributes match each other. */
 void cline_finish(cline_t *cline);
 
+/* Appends line and attributes from admixture freeing them afterwards. */
+void cline_append(cline_t *cline, cline_t *admixture);
+
 /* Appends attributes from admixture freeing them (but not the line). */
 void cline_splice_attrs(cline_t *cline, cline_t *admixture);
 

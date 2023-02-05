@@ -82,7 +82,7 @@ fpos_scroll_down(view_t *view, int lines_count)
 	if(!fpos_are_all_files_visible(view))
 	{
 		view->list_pos =
-			get_corrected_list_pos_down(view, lines_count*view->run_size);
+			fpos_adjust_for_scroll_back(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -94,7 +94,7 @@ fpos_scroll_up(view_t *view, int lines_count)
 	if(!fpos_are_all_files_visible(view))
 	{
 		view->list_pos =
-			get_corrected_list_pos_up(view, lines_count*view->run_size);
+			fpos_adjust_for_scroll_fwd(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -111,7 +111,7 @@ fpos_scroll_page(view_t *view, int base, int direction)
 	int new_pos = base + direction*offset
 	            + old_pos%view->run_size - base%view->run_size;
 	view->list_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
-	scroll_by_files(view, direction*offset);
+	fview_scroll_by(view, direction*offset);
 
 	/* Updating list_pos ourselves doesn't take into account
 	 * synchronization/updates of the other view, so trigger them. */
@@ -274,22 +274,50 @@ fpos_get_ver_step(const struct view_t *view)
 }
 
 int
-fpos_has_hidden_top(const view_t *view)
+fpos_can_scroll_back(const view_t *view)
 {
-	return (fview_is_transposed(view) ? 0 : can_scroll_up(view));
+	return (view->top_line > 0);
 }
 
 int
-fpos_has_hidden_bottom(const view_t *view)
+fpos_can_scroll_fwd(const view_t *view)
 {
-	return (fview_is_transposed(view) ? 0 : can_scroll_down(view));
+	return (fpos_get_last_visible_cell(view) < view->list_rows - 1);
+}
+
+int
+fpos_adjust_for_scroll_back(const view_t *view, int pos_delta)
+{
+	const int scroll_offset = fpos_get_offset(view);
+	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
+	{
+		const int column_correction = view->list_pos%view->run_size;
+		const int offset = scroll_offset + pos_delta + column_correction;
+		return view->top_line + offset;
+	}
+	return view->list_pos;
+}
+
+int
+fpos_adjust_for_scroll_fwd(const view_t *view, int pos_delta)
+{
+	const int scroll_offset = fpos_get_offset(view);
+	const int last = fpos_get_last_visible_cell(view);
+	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
+	{
+		const int column_correction = (view->run_size - 1)
+		                            - view->list_pos%view->run_size;
+		const int offset = scroll_offset + pos_delta + column_correction;
+		return last - offset;
+	}
+	return view->list_pos;
 }
 
 int
 fpos_get_top_pos(const view_t *view)
 {
 	return get_column_top_pos(view)
-	     + (can_scroll_up(view) ? fpos_get_offset(view) : 0);
+	     + (fpos_can_scroll_back(view) ? fpos_get_offset(view) : 0);
 }
 
 int
@@ -305,7 +333,7 @@ int
 fpos_get_bottom_pos(const view_t *view)
 {
 	return get_column_bottom_pos(view)
-	     - (can_scroll_down(view) ? fpos_get_offset(view) : 0);
+	     - (fpos_can_scroll_fwd(view) ? fpos_get_offset(view) : 0);
 }
 
 int
@@ -345,7 +373,7 @@ fpos_half_scroll(view_t *view, int down)
 
 	if(down)
 	{
-		new_pos = get_corrected_list_pos_down(view, offset);
+		new_pos = fpos_adjust_for_scroll_back(view, offset);
 		new_pos = MAX(new_pos, view->list_pos + offset);
 
 		if(new_pos >= view->list_rows)
@@ -356,7 +384,7 @@ fpos_half_scroll(view_t *view, int down)
 	}
 	else
 	{
-		new_pos = get_corrected_list_pos_up(view, offset);
+		new_pos = fpos_adjust_for_scroll_fwd(view, offset);
 		new_pos = MIN(new_pos, view->list_pos - offset);
 
 		if(new_pos < 0)
@@ -365,7 +393,7 @@ fpos_half_scroll(view_t *view, int down)
 		}
 	}
 
-	scroll_by_files(view, new_pos - view->list_pos);
+	fview_scroll_by(view, new_pos - view->list_pos);
 	return new_pos;
 }
 

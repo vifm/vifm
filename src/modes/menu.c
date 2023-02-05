@@ -1107,12 +1107,7 @@ static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 {
 	MEVENT e;
-	if(getmouse(&e) != OK)
-	{
-		return;
-	}
-
-	if((cfg.mouse & (M_ALL_MODES | M_MENU_MODE)) == 0)
+	if(ui_get_mouse(&e) != OK)
 	{
 		return;
 	}

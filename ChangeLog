@@ -77,6 +77,9 @@
 	Made instances running inside AppImage consider contents of `/etc/vifm`.
 	Thanks to aleksejrs.
 
+	Made Ctrl-E/Ctrl-Y scroll transposed ls-like view horizontally by one
+	column.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
@@ -119,6 +122,9 @@
 	Fixed segfault on passing invalid tag to :delbmarks.
 
 	Fixed :echo printing previous message when invoked without arguments.
+
+	Fixed Ctrl-E in visual mode not doing anything when view is scrolled to
+	its top.
 
 0.12.1-beta to 0.12.1 (2022-09-21)
 

@@ -27,6 +27,14 @@
 struct dir_entry_t;
 struct view_t;
 
+/* Specials value that can be returned by fview_map_coordinates(). */
+enum
+{
+	FVM_NONE  = -1, /* No item under the cursor, empty space. */
+	FVM_LEAVE = -2, /* Leave current directory. */
+	FVM_OPEN  = -3, /* Open current item. */
+};
+
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
@@ -92,41 +100,22 @@ void fview_cursor_redraw(struct view_t *view);
 
 /* Scrolling related functions. */
 
-/* Checks if view can be scrolled up (there are more files).  Returns non-zero
- * if so, and zero otherwise. */
-int can_scroll_up(const struct view_t *view);
-
-/* Checks if view can be scrolled down (there are more files).  Returns non-zero
- * if so, and zero otherwise. */
-int can_scroll_down(const struct view_t *view);
-
-/* Scrolls view up at least by specified number of files.  Updates both top and
- * cursor positions. */
-void scroll_up(struct view_t *view, int by);
-
-/* Scrolls view down at least by specified number of files.  Updates both top
+/* Scrolls view up by at least the specified number of files.  Updates both top
  * and cursor positions. */
-void scroll_down(struct view_t *view, int by);
+void fview_scroll_back_by(struct view_t *view, int by);
 
-/* Calculates list position corrected for scrolling down.  Returns adjusted
- * position. */
-int get_corrected_list_pos_down(const struct view_t *view, int pos_delta);
+/* Scrolls view down by at least the specified number of files.  Updates both
+ * top and cursor positions. */
+void fview_scroll_fwd_by(struct view_t *view, int by);
 
-/* Calculates list position corrected for scrolling up.  Returns adjusted
- * position. */
-int get_corrected_list_pos_up(const struct view_t *view, int pos_delta);
+/* Scrolls view down or up by at least the specified number of files.  Updates
+ * both top and cursor positions.  A wrapper for fview_scroll_back_by() and
+ * fview_scroll_fwd_by() functions. */
+void fview_scroll_by(struct view_t *view, int by);
 
 /* Updates current and top line of a view according to 'scrolloff' option value.
  * Returns non-zero if redraw is needed. */
-int consider_scroll_offset(struct view_t *view);
-
-/* Scrolls view down or up at least by specified number of files.  Updates both
- * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
- * functions. */
-void scroll_by_files(struct view_t *view, int by);
-
-/* Recalculates difference of two panes scroll positions. */
-void update_scroll_bind_offset(void);
+int fview_enforce_scroll_offset(struct view_t *view);
 
 /* Scrolls the view one page up. */
 void fview_scroll_page_up(struct view_t *view);
@@ -148,6 +137,10 @@ int fview_previews(struct view_t *view, const char path[]);
 
 /* Enables/disables cascading columns style of the view. */
 void fview_set_millerview(struct view_t *view, int enabled);
+
+/* Maps coordinate to file list position.  Returns position (>= 0) or FVM_*
+ * special value. */
+int fview_map_coordinates(struct view_t *view, int x, int y);
 
 /* Requests update of view geometry properties (stuff that depends on
  * dimensions; there is also an implicit dependency on file list, because grid

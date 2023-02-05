@@ -797,14 +797,16 @@ if test "$use_libX11" = "yes"; then
         ])
 fi
 
+WERROR_TUNING="-Wno-error=deprecated-declarations -Werror=sign-compare -Wno-unused-parameter"
+
 if test "$developer" = "yes"; then
-    CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
-    TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
+    CFLAGS="$CFLAGS -g -O0 -Werror $WERROR_TUNING"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror $WERROR_TUNING"
 fi
 
 if test "$werror" = "yes"; then
-    CFLAGS="$CFLAGS -Werror"
-    TESTS_CFLAGS="$TESTS_CFLAGS -Werror"
+    CFLAGS="$CFLAGS -Werror $WERROR_TUNING"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror $WERROR_TUNING"
 fi
 
 if test "$coverage" = "yes"; then

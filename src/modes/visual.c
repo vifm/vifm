@@ -396,7 +396,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_up(view))
+	if(fpos_can_scroll_back(view))
 	{
 		page_scroll(fpos_get_last_visible_cell(view), -1);
 	}
@@ -420,10 +420,10 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(fpos_has_hidden_top(view))
+	if(fpos_can_scroll_fwd(view))
 	{
-		int new_pos = get_corrected_list_pos_down(view, view->column_count);
-		scroll_down(view, view->column_count);
+		int new_pos = fpos_adjust_for_scroll_back(view, view->run_size);
+		fview_scroll_fwd_by(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}
 }
@@ -431,7 +431,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_down(view))
+	if(fpos_can_scroll_fwd(view))
 	{
 		page_scroll(view->top_line, 1);
 	}
@@ -450,7 +450,7 @@ page_scroll(int base, int direction)
 	int new_pos = base + direction*offset
 	            + view->list_pos%view->run_size - base%view->run_size;
 	new_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
-	scroll_by_files(view, direction*offset);
+	fview_scroll_by(view, direction*offset);
 	goto_pos(new_pos);
 }
 
@@ -511,10 +511,10 @@ call_incdec(int count)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(fpos_has_hidden_top(view))
+	if(fpos_can_scroll_back(view))
 	{
-		int new_pos = get_corrected_list_pos_up(view, view->column_count);
-		scroll_up(view, view->column_count);
+		int new_pos = fpos_adjust_for_scroll_fwd(view, view->run_size);
+		fview_scroll_back_by(view, view->run_size);
 		goto_pos_force_update(new_pos);
 	}
 }
@@ -1569,12 +1569,7 @@ static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 {
 	MEVENT e;
-	if(getmouse(&e) != OK)
-	{
-		return;
-	}
-
-	if((cfg.mouse & (M_ALL_MODES | M_VISUAL_MODE)) == 0)
+	if(ui_get_mouse(&e) != OK)
 	{
 		return;
 	}
@@ -1588,12 +1583,11 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 	{
 		wmouse_trafo(view->win, &e.y, &e.x, FALSE);
 
-		/* Only handle clicks on non-blank lines. */
-		if(e.y < curr_view->list_rows)
+		int list_pos = fview_map_coordinates(curr_view, e.x, e.y);
+		if(list_pos >= 0)
 		{
 			int old_pos = curr_view->list_pos;
-
-			goto_pos(view->top_line + e.y);
+			goto_pos(list_pos);
 
 			if(curr_view->list_pos == old_pos)
 			{
