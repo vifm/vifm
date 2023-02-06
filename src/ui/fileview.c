@@ -665,26 +665,26 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 	}
 }
 
-/* Draws a full cell of the file list. */
+/* Draws a full cell of the file list.  col_width doesn't include extra padding!
+ * The total printed widths will be that plus two empty cells (one before and
+ * one after). */
 static void
 draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width)
 {
 	size_t width_left;
 	if(cdt->view->ls_view)
 	{
-		/* Ls-like view with fixed number of columns is special because padding is
-		 * part of column width for it to account for padding in between columns. */
 		width_left = cdt->view->window_cols
 		           - cdt->column_offset
 		           - ui_view_right_reserved(cdt->view)
-		           - (cdt->view->ls_cols == 0 && cfg.extra_padding ? 2 : 0);
+		           - (cfg.extra_padding ? 2 : 0);
 	}
 	else
 	{
 		width_left = cdt->is_main
-	             ? ui_view_available_width(cdt->view) -
-	               (cdt->column_offset - ui_view_left_reserved(cdt->view))
-	             : col_width + 1U;
+		           ? ui_view_available_width(cdt->view) -
+		             (cdt->column_offset - ui_view_left_reserved(cdt->view))
+		           : col_width + 1U;
 	}
 
 	const format_info_t info = {
@@ -699,7 +699,7 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width)
 
 	columns_format_line(columns, cdt, MIN(col_width, width_left));
 
-	if(cfg.extra_padding && width_left >= col_width)
+	if(cfg.extra_padding)
 	{
 		column_line_print(" ", col_width, AT_LEFT, " ", &info);
 	}
