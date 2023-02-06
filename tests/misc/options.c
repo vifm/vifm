@@ -391,6 +391,19 @@ TEST(milleroptions_accepts_correct_input)
 			vle_tb_get_data(vle_err));
 }
 
+TEST(milleroptions_recovers_after_wrong_input)
+{
+	assert_success(cmds_dispatch("set milleroptions=csize:33,rsize:12,"
+				"rpreview:all", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set milleroptions=rpreview:dirs,rsize:4,"
+				"csize:a", &lwin, CIT_COMMAND));
+
+	vle_tb_clear(vle_err);
+	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
+	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12,rpreview:all",
+			vle_tb_get_data(vle_err));
+}
+
 TEST(milleroptions_normalizes_input)
 {
 	assert_success(cmds_dispatch("set milleroptions=lsize:-10,csize:133,"

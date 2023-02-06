@@ -2975,7 +2975,7 @@ set_milleroptions(int ratios[3], int *preview_files, optval_t val,
 		}
 	}
 
-	fill_milleroptions(&val, ratios, preview_all);
+	fill_milleroptions(&val, ratios, *preview_files);
 	vle_opts_assign("milleroptions", val, scope);
 }
 
