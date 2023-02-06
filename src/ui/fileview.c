@@ -238,7 +238,7 @@ fview_reset(view_t *view)
 	view->miller_ratios_g[0] = view->miller_ratios[0] = 1;
 	view->miller_ratios_g[1] = view->miller_ratios[1] = 1;
 	view->miller_ratios_g[2] = view->miller_ratios[2] = 1;
-	view->miller_preview_files_g = view->miller_preview_files = 0;
+	view->miller_preview_g = view->miller_preview = MP_DIRS;
 
 	view->num_type_g = view->num_type = NT_NONE;
 	view->num_width_g = view->num_width = 4;
@@ -397,7 +397,7 @@ draw_right_column(view_t *view)
 	};
 
 	dir_entry_t *const entry = get_current_entry(view);
-	if(view->miller_preview_files && !fentry_is_dir(entry))
+	if(view->miller_preview != MP_DIRS && !fentry_is_dir(entry))
 	{
 		const char *clear_cmd = qv_draw_on(entry, &parea);
 		update_string(&view->file_preview_clear_cmd, clear_cmd);
@@ -1743,7 +1743,7 @@ fview_is_transposed(const view_t *view)
 int
 fview_previews(view_t *view, const char path[])
 {
-	if(!view->miller_view || !view->miller_preview_files)
+	if(!view->miller_view || view->miller_preview == MP_DIRS)
 	{
 		return 0;
 	}
@@ -1867,7 +1867,7 @@ fview_dir_updated(view_t *view)
 {
 	view->local_cs = cs_load_local(view == &lwin, view->curr_dir);
 
-	if(view->miller_view && view->miller_preview_files)
+	if(view->miller_view && view->miller_preview != MP_DIRS)
 	{
 		const int padding = (cfg.extra_padding ? 1 : 0);
 		const int rcol_width = ui_view_right_reserved(view) - padding - 1;

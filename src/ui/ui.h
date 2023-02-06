@@ -192,6 +192,14 @@ typedef enum
 }
 NameFormat;
 
+/* What kinds of entries should be previewed by miller views. */
+typedef enum
+{
+	MP_ALL,  /* All entries. */
+	MP_DIRS, /* Directories only. */
+}
+MillerPreview;
+
 /* Single entry of directory history. */
 typedef struct
 {
@@ -374,8 +382,8 @@ struct view_t
 	int miller_view, miller_view_g;
 	/* Proportions of columns. */
 	int miller_ratios[3], miller_ratios_g[3];
-	/* Whether right column should also preview files. */
-	int miller_preview_files, miller_preview_files_g;
+	/* What entries are to be previewed in the right column. */
+	MillerPreview miller_preview, miller_preview_g;
 	/* Caches of file lists for miller mode. */
 	cached_entries_t left_column;
 	cached_entries_t right_column;

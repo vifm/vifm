@@ -2679,7 +2679,7 @@ ui_view_right_reserved(const view_t *view)
 	                + view->miller_ratios[2];
 	return is_in_miller_view(view)
 	    && !is_parent_dir(entry->name)
-	    && (fentry_is_dir(entry) || view->miller_preview_files)
+	    && (fentry_is_dir(entry) || view->miller_preview != MP_DIRS)
 	     ? (view->window_cols*view->miller_ratios[2])/total
 	     : 0;
 }

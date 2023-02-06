@@ -534,6 +534,8 @@ TEST(fview_previews_works)
 	lwin.dir_entry[1].type = FT_DIR;
 	strcpy(lwin.curr_dir, "/tests/fake");
 
+	lwin.miller_preview = MP_DIRS;
+
 	lwin.list_pos = 0;
 	assert_false(fview_previews(&lwin, "/tests/fake/file"));
 	lwin.list_pos = 1;
@@ -547,7 +549,8 @@ TEST(fview_previews_works)
 	assert_false(fview_previews(&lwin, "/tests/fake/dir"));
 	assert_false(fview_previews(&lwin, "/unrelated/path"));
 
-	lwin.miller_preview_files = 1;
+	lwin.miller_preview = MP_ALL;
+
 	lwin.list_pos = 0;
 	assert_true(fview_previews(&lwin, "/tests/fake/file"));
 	lwin.list_pos = 1;

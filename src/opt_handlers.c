@@ -183,9 +183,10 @@ static void lsview_global(OPT_OP op, optval_t val);
 static void lsview_local(OPT_OP op, optval_t val);
 static void milleroptions_global(OPT_OP op, optval_t val);
 static void milleroptions_local(OPT_OP op, optval_t val);
-static void set_milleroptions(int ratios[3], int *preview_files, optval_t val,
-		OPT_SCOPE scope);
-static void fill_milleroptions(optval_t *val, int ratios[3], int preview_files);
+static void set_milleroptions(int ratios[3], MillerPreview *preview,
+		optval_t val, OPT_SCOPE scope);
+static void fill_milleroptions(optval_t *val, int ratios[3],
+		MillerPreview preview);
 static void millerview_global(OPT_OP op, optval_t val);
 static void millerview_local(OPT_OP op, optval_t val);
 static void number_global(OPT_OP op, optval_t val);
@@ -1218,7 +1219,7 @@ static void
 init_milleroptions(optval_t *val)
 {
 	fill_milleroptions(val, curr_view->miller_ratios_g,
-			curr_view->miller_preview_files_g);
+			curr_view->miller_preview_g);
 }
 
 /* Initializes 'millerview' option from global value. */
@@ -1488,7 +1489,7 @@ reset_local_options(view_t *view)
 
 	memcpy(view->miller_ratios, view->miller_ratios_g,
 			sizeof(view->miller_ratios));
-	fill_milleroptions(&val, view->miller_ratios_g, view->miller_preview_files_g);
+	fill_milleroptions(&val, view->miller_ratios_g, view->miller_preview_g);
 	vle_opts_assign("milleroptions", val, OPT_LOCAL);
 
 	fview_set_millerview(view, view->miller_view_g);
@@ -1551,9 +1552,9 @@ load_view_options(view_t *view)
 	val.bool_val = view->ls_view_g;
 	vle_opts_assign("lsview", val, OPT_GLOBAL);
 
-	fill_milleroptions(&val, view->miller_ratios, view->miller_preview_files);
+	fill_milleroptions(&val, view->miller_ratios, view->miller_preview);
 	vle_opts_assign("milleroptions", val, OPT_LOCAL);
-	fill_milleroptions(&val, view->miller_ratios_g, view->miller_preview_files_g);
+	fill_milleroptions(&val, view->miller_ratios_g, view->miller_preview_g);
 	vle_opts_assign("milleroptions", val, OPT_GLOBAL);
 
 	val.bool_val = view->miller_view;
@@ -2873,28 +2874,28 @@ lsview_local(OPT_OP op, optval_t val)
 static void
 milleroptions_global(OPT_OP op, optval_t val)
 {
-	set_milleroptions(curr_view->miller_ratios_g,
-			&curr_view->miller_preview_files_g, val, OPT_GLOBAL);
+	set_milleroptions(curr_view->miller_ratios_g, &curr_view->miller_preview_g,
+			val, OPT_GLOBAL);
 }
 
 /* Handles update of miller columns settings as a local option. */
 static void
 milleroptions_local(OPT_OP op, optval_t val)
 {
-	set_milleroptions(curr_view->miller_ratios, &curr_view->miller_preview_files,
-			val, OPT_LOCAL);
+	set_milleroptions(curr_view->miller_ratios, &curr_view->miller_preview, val,
+			OPT_LOCAL);
 }
 
 /* Handles update of miller columns settings. */
 static void
-set_milleroptions(int ratios[3], int *preview_files, optval_t val,
+set_milleroptions(int ratios[3], MillerPreview *preview, optval_t val,
 		OPT_SCOPE scope)
 {
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
 	int lsize = 0, csize = 1, rsize = 0;
-	int preview_all = 0;
+	MillerPreview preview_what = MP_DIRS;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -2939,11 +2940,11 @@ set_milleroptions(int ratios[3], int *preview_files, optval_t val,
 			const char *const str = after_first(part, ':');
 			if(strcmp(str, "all") == 0)
 			{
-				preview_all = 1;
+				preview_what = MP_ALL;
 			}
 			else if(strcmp(str, "dirs") == 0)
 			{
-				preview_all = 0;
+				preview_what = MP_DIRS;
 			}
 			else
 			{
@@ -2967,7 +2968,7 @@ set_milleroptions(int ratios[3], int *preview_files, optval_t val,
 		ratios[0] = MAX(0, MIN(100, lsize));
 		ratios[1] = MAX(0, MIN(100, csize));
 		ratios[2] = MAX(0, MIN(100, rsize));
-		*preview_files = preview_all;
+		*preview = preview_what;
 
 		if(ratios == curr_view->miller_ratios)
 		{
@@ -2975,18 +2976,24 @@ set_milleroptions(int ratios[3], int *preview_files, optval_t val,
 		}
 	}
 
-	fill_milleroptions(&val, ratios, *preview_files);
+	fill_milleroptions(&val, ratios, *preview);
 	vle_opts_assign("milleroptions", val, scope);
 }
 
 /* Loads value of milleroptions as a string. */
 static void
-fill_milleroptions(optval_t *val, int ratios[3], int preview_files)
+fill_milleroptions(optval_t *val, int ratios[3], MillerPreview preview)
 {
 	static char buf[64];
+
+	const char *rpreview = "all";
+	if(preview == MP_DIRS)
+	{
+		rpreview = "dirs";
+	}
+
 	snprintf(buf, sizeof(buf), "lsize:%d,csize:%d,rsize:%d,rpreview:%s",
-			ratios[0], ratios[1], ratios[2],
-			(preview_files ? "all" : "dirs"));
+			ratios[0], ratios[1], ratios[2], rpreview);
 	val->str_val = buf;
 }
 
