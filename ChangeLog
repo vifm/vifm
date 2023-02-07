@@ -60,6 +60,8 @@
 	Added 'navoptions' option to allow tweaking navigation mode a bit.  Thanks
 	to filterfalse.
 
+	Added "rpreview:files" to 'milleroptions'.  Thanks to aksr.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
@@ -125,6 +127,8 @@
 
 	Fixed Ctrl-E in visual mode not doing anything when view is scrolled to
 	its top.
+
+	Fixed 'milleroptions' not recovering value of "rpreview:" on error.
 
 0.12.1-beta to 0.12.1 (2022-09-21)
 
