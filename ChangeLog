@@ -60,6 +60,8 @@
 	Added 'navoptions' option to allow tweaking navigation mode a bit.  Thanks
 	to filterfalse.
 
+	Added "rpreview:files" to 'milleroptions'.  Thanks to aksr.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

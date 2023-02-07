@@ -2675,13 +2675,21 @@ int
 ui_view_right_reserved(const view_t *view)
 {
 	dir_entry_t *const entry = get_current_entry(view);
+
+	if(!is_in_miller_view(view) || is_parent_dir(entry->name))
+	{
+		return 0;
+	}
+
+	if(view->miller_preview != MP_ALL &&
+			fentry_is_dir(entry) != (view->miller_preview == MP_DIRS))
+	{
+		return 0;
+	}
+
 	const int total = view->miller_ratios[0] + view->miller_ratios[1]
 	                + view->miller_ratios[2];
-	return is_in_miller_view(view)
-	    && !is_parent_dir(entry->name)
-	    && (fentry_is_dir(entry) || view->miller_preview != MP_DIRS)
-	     ? (view->window_cols*view->miller_ratios[2])/total
-	     : 0;
+	return (view->window_cols*view->miller_ratios[2])/total;
 }
 
 /* Whether miller columns should be displayed.  Returns non-zero if so,

@@ -404,6 +404,11 @@ draw_right_column(view_t *view)
 		return;
 	}
 
+	if(view->miller_preview == MP_FILES && fentry_is_dir(entry))
+	{
+		return;
+	}
+
 	if(displayed_graphics)
 	{
 		/* Do this even if there is no clear command. */

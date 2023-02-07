@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 5
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3789,8 +3789,8 @@ Configures miller view.
 column, but central (main) column can't be disabled.
 
 rpreview specifies what file-system objects should be previewed in the right
-column and can take two values: dirs (only directories) or all.  Both options
-don't include parent directory ("..").
+column and takes three values: dirs (only directories), files (only files) or
+all.  Neither value enables preview of parent directory ("..").
 
 Example of two-column mode which is useful in combination with
 |vifm-:view| command: >

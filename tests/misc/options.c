@@ -376,7 +376,7 @@ TEST(milleroptions_handles_wrong_input)
 
 	assert_failure(cmds_dispatch("se milleroptions=csize:0", &lwin, CIT_COMMAND));
 
-	assert_failure(cmds_dispatch("se milleroptions=rpreview:files", &lwin,
+	assert_failure(cmds_dispatch("se milleroptions=rpreview:stuff", &lwin,
 				CIT_COMMAND));
 }
 
@@ -394,14 +394,14 @@ TEST(milleroptions_accepts_correct_input)
 TEST(milleroptions_recovers_after_wrong_input)
 {
 	assert_success(cmds_dispatch("set milleroptions=csize:33,rsize:12,"
-				"rpreview:all", &lwin, CIT_COMMAND));
+				"rpreview:files", &lwin, CIT_COMMAND));
 	assert_failure(cmds_dispatch("set milleroptions=rpreview:dirs,rsize:4,"
 				"csize:a", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
-	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12,rpreview:all",
-			vle_tb_get_data(vle_err));
+	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12,"
+			"rpreview:files", vle_tb_get_data(vle_err));
 }
 
 TEST(milleroptions_normalizes_input)

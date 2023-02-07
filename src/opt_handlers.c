@@ -444,7 +444,7 @@ static const char *milleroptions_enum[][2] = {
 	{ "lsize:",    "proportion of space given to the left column" },
 	{ "csize:",    "proportion of space given to the center column" },
 	{ "rsize:",    "proportion of space given to the right column" },
-	{ "rpreview:", "what should right pane preview: dirs or all" },
+	{ "rpreview:", "what should right pane preview: dirs, files or all" },
 };
 
 /* Possible keys of 'sizefmt' option. */
@@ -2946,6 +2946,10 @@ set_milleroptions(int ratios[3], MillerPreview *preview, optval_t val,
 			{
 				preview_what = MP_DIRS;
 			}
+			else if(strcmp(str, "files") == 0)
+			{
+				preview_what = MP_FILES;
+			}
 			else
 			{
 				vle_tb_append_linef(vle_err, "Failed to parse \"rpreview\" value: %s",
@@ -2986,11 +2990,8 @@ fill_milleroptions(optval_t *val, int ratios[3], MillerPreview preview)
 {
 	static char buf[64];
 
-	const char *rpreview = "all";
-	if(preview == MP_DIRS)
-	{
-		rpreview = "dirs";
-	}
+	const char *rpreview = (preview == MP_DIRS) ? "dirs"
+	                     : (preview == MP_FILES) ? "files" : "all";
 
 	snprintf(buf, sizeof(buf), "lsize:%d,csize:%d,rsize:%d,rpreview:%s",
 			ratios[0], ratios[1], ratios[2], rpreview);

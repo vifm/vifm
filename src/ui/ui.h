@@ -195,8 +195,9 @@ NameFormat;
 /* What kinds of entries should be previewed by miller views. */
 typedef enum
 {
-	MP_ALL,  /* All entries. */
-	MP_DIRS, /* Directories only. */
+	MP_ALL,   /* All entries. */
+	MP_DIRS,  /* Directories only. */
+	MP_FILES, /* Files only. */
 }
 MillerPreview;
 
