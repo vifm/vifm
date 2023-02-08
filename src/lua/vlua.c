@@ -585,6 +585,9 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_newtable(lua);
 	luaL_getmetatable(lua, "VifmPluginEnv");
 	lua_setmetatable(lua, -2);
+	/* Don't let a plugin access true global table by using _G explicitly. */
+	lua_pushvalue(lua, -1);
+	lua_setfield(lua, -2, "_G");
 
 	/* Plugin-specific `vifm` table. */
 	lua_newtable(lua);
