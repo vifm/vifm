@@ -103,7 +103,8 @@ DIST_COMMON = $(srcdir)/Makefile.am $(dist_bin_SCRIPTS) \
 	$(dist_pkgdata_SCRIPTS) $(dist_bashcompl_DATA) \
 	$(dist_desktopapp_DATA) $(dist_desktoppix_DATA) \
 	$(dist_docs_DATA) $(dist_fishcompl_DATA) \
-	$(dist_global_colors__DATA) $(dist_pkgdata_DATA) \
+	$(dist_global_colors__DATA) $(dist_hicolor128_DATA) \
+	$(dist_hicolorsvg_DATA) $(dist_pkgdata_DATA) \
 	$(dist_sample_colors__DATA) $(dist_vim_autoload_vifm__DATA) \
 	$(dist_vim_doc__DATA) $(dist_vim_ftdetect__DATA) \
 	$(dist_vim_ftplugin__DATA) $(dist_vim_plugin__DATA) \
@@ -118,6 +119,7 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(bashcompldir)" "$(DESTDIR)$(desktopappdir)" \
 	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" \
 	"$(DESTDIR)$(fishcompldir)" "$(DESTDIR)$(global_colors_dir)" \
+	"$(DESTDIR)$(hicolor128dir)" "$(DESTDIR)$(hicolorsvgdir)" \
 	"$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(sample_colors_dir)" \
 	"$(DESTDIR)$(vim_autoload_vifm_dir)" \
 	"$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" \
@@ -402,6 +404,7 @@ MANS = $(dist_man_MANS)
 DATA = $(dist_bashcompl_DATA) $(dist_desktopapp_DATA) \
 	$(dist_desktoppix_DATA) $(dist_docs_DATA) \
 	$(dist_fishcompl_DATA) $(dist_global_colors__DATA) \
+	$(dist_hicolor128_DATA) $(dist_hicolorsvg_DATA) \
 	$(dist_pkgdata_DATA) $(dist_sample_colors__DATA) \
 	$(dist_vim_autoload_vifm__DATA) $(dist_vim_doc__DATA) \
 	$(dist_vim_ftdetect__DATA) $(dist_vim_ftplugin__DATA) \
@@ -786,6 +789,12 @@ dist_desktopapp_DATA = $(desktopappfile)
 desktoppixdir = $(datadir)/pixmaps
 desktoppixfile = ../data/graphics/vifm.png
 dist_desktoppix_DATA = $(desktoppixfile)
+hicolor128dir = $(datadir)/icons/hicolor/128x128/apps
+hicolor128file = ../data/graphics/vifm.png
+dist_hicolor128_DATA = $(hicolor128file)
+hicolorsvgdir = $(datadir)/icons/hicolor/scalable/apps
+hicolorsvgfile = ../data/graphics/vifm.svg
+dist_hicolorsvg_DATA = $(hicolorsvgfile)
 bashcompldir = $(datadir)/bash-completion/completions
 bashcomplfile = ../data/shell-completion/bash/vifm
 dist_bashcompl_DATA = $(bashcomplfile)
@@ -2034,6 +2043,48 @@ uninstall-dist_global_colors_DATA:
 	@list='$(dist_global_colors__DATA)'; test -n "$(global_colors_dir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(global_colors_dir)'; $(am__uninstall_files_from_dir)
+install-dist_hicolor128DATA: $(dist_hicolor128_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_hicolor128_DATA)'; test -n "$(hicolor128dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(hicolor128dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(hicolor128dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(hicolor128dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(hicolor128dir)" || exit $$?; \
+	done
+
+uninstall-dist_hicolor128DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_hicolor128_DATA)'; test -n "$(hicolor128dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(hicolor128dir)'; $(am__uninstall_files_from_dir)
+install-dist_hicolorsvgDATA: $(dist_hicolorsvg_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_hicolorsvg_DATA)'; test -n "$(hicolorsvgdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(hicolorsvgdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(hicolorsvgdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(hicolorsvgdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(hicolorsvgdir)" || exit $$?; \
+	done
+
+uninstall-dist_hicolorsvgDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_hicolorsvg_DATA)'; test -n "$(hicolorsvgdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(hicolorsvgdir)'; $(am__uninstall_files_from_dir)
 install-dist_pkgdataDATA: $(dist_pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
@@ -2562,7 +2613,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompldir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" "$(DESTDIR)$(fishcompldir)" "$(DESTDIR)$(global_colors_dir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(sample_colors_dir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" "$(DESTDIR)$(zshcompldir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompldir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" "$(DESTDIR)$(fishcompldir)" "$(DESTDIR)$(global_colors_dir)" "$(DESTDIR)$(hicolor128dir)" "$(DESTDIR)$(hicolorsvgdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(sample_colors_dir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" "$(DESTDIR)$(zshcompldir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -2855,7 +2906,8 @@ info-am:
 install-data-am: install-dist_bashcomplDATA \
 	install-dist_desktopappDATA install-dist_desktoppixDATA \
 	install-dist_docsDATA install-dist_fishcomplDATA \
-	install-dist_global_colors_DATA install-dist_pkgdataDATA \
+	install-dist_global_colors_DATA install-dist_hicolor128DATA \
+	install-dist_hicolorsvgDATA install-dist_pkgdataDATA \
 	install-dist_pkgdataSCRIPTS install-dist_sample_colors_DATA \
 	install-dist_vim_autoload_vifm_DATA install-dist_vim_doc_DATA \
 	install-dist_vim_ftdetect_DATA install-dist_vim_ftplugin_DATA \
@@ -3115,6 +3167,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_bashcomplDATA \
 	uninstall-dist_binSCRIPTS uninstall-dist_desktopappDATA \
 	uninstall-dist_desktoppixDATA uninstall-dist_docsDATA \
 	uninstall-dist_fishcomplDATA uninstall-dist_global_colors_DATA \
+	uninstall-dist_hicolor128DATA uninstall-dist_hicolorsvgDATA \
 	uninstall-dist_pkgdataDATA uninstall-dist_pkgdataSCRIPTS \
 	uninstall-dist_sample_colors_DATA \
 	uninstall-dist_vim_autoload_vifm_DATA \
@@ -3138,7 +3191,8 @@ uninstall-man: uninstall-man1
 	install-dist_bashcomplDATA install-dist_binSCRIPTS \
 	install-dist_desktopappDATA install-dist_desktoppixDATA \
 	install-dist_docsDATA install-dist_fishcomplDATA \
-	install-dist_global_colors_DATA install-dist_pkgdataDATA \
+	install-dist_global_colors_DATA install-dist_hicolor128DATA \
+	install-dist_hicolorsvgDATA install-dist_pkgdataDATA \
 	install-dist_pkgdataSCRIPTS install-dist_sample_colors_DATA \
 	install-dist_vim_autoload_vifm_DATA install-dist_vim_doc_DATA \
 	install-dist_vim_ftdetect_DATA install-dist_vim_ftplugin_DATA \
@@ -3157,6 +3211,7 @@ uninstall-man: uninstall-man1
 	uninstall-dist_binSCRIPTS uninstall-dist_desktopappDATA \
 	uninstall-dist_desktoppixDATA uninstall-dist_docsDATA \
 	uninstall-dist_fishcomplDATA uninstall-dist_global_colors_DATA \
+	uninstall-dist_hicolor128DATA uninstall-dist_hicolorsvgDATA \
 	uninstall-dist_pkgdataDATA uninstall-dist_pkgdataSCRIPTS \
 	uninstall-dist_sample_colors_DATA \
 	uninstall-dist_vim_autoload_vifm_DATA \

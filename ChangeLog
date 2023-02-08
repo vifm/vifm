@@ -82,6 +82,10 @@
 	Made Ctrl-E/Ctrl-Y scroll transposed ls-like view horizontally by one
 	column.
 
+	Install icons also to ${prefix}/share/icons.  It's not clear that using
+	${prefix}/share/pixmaps will always be handled properly.  Thanks to
+	Szilárd Andai.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
