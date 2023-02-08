@@ -199,7 +199,7 @@ load_api(lua_State *lua)
 	vifmjob_init(lua);
 	vifmview_init(lua);
 
-	luaL_newmetatable(lua, "VifmPluginEnv");
+	make_metatable(lua, "VifmPluginEnv");
 	lua_pushglobaltable(lua);
 	lua_setfield(lua, -2, "__index");
 	lua_pop(lua, 1);

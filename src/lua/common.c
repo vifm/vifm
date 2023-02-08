@@ -174,5 +174,13 @@ push_str_array(lua_State *lua, char *array[], int len)
 	}
 }
 
+void
+make_metatable(lua_State *lua, const char name[])
+{
+	luaL_newmetatable(lua, name);
+	lua_pushvalue(lua, -1);
+	lua_setfield(lua, -2, "__index");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

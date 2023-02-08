@@ -29,6 +29,7 @@
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
 #include "api.h"
+#include "common.h"
 
 /* User data of view entry object. */
 typedef struct
@@ -55,9 +56,7 @@ static const luaL_Reg vifmentry_methods[] = {
 void
 vifmentry_init(lua_State *lua)
 {
-	luaL_newmetatable(lua, "VifmEntry");
-	lua_pushvalue(lua, -1);
-	lua_setfield(lua, -2, "__index");
+	make_metatable(lua, "VifmEntry");
 	luaL_setfuncs(lua, vifmentry_methods, 0);
 	lua_pop(lua, 1);
 }

@@ -87,9 +87,7 @@ static char jobs_key;
 void
 vifmjob_init(lua_State *lua)
 {
-	luaL_newmetatable(lua, "VifmJob");
-	lua_pushvalue(lua, -1);
-	lua_setfield(lua, -2, "__index");
+	make_metatable(lua, "VifmJob");
 	luaL_setfuncs(lua, vifmjob_methods, 0);
 	lua_pop(lua, 1);
 

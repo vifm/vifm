@@ -65,7 +65,7 @@ static const luaL_Reg vifmview_methods[] = {
 void
 vifmview_init(struct lua_State *lua)
 {
-	luaL_newmetatable(lua, "VifmView");
+	make_metatable(lua, "VifmView");
 	lua_pushcfunction(lua, VLUA_REF(vifmview_index));
 	lua_setfield(lua, -2, "__index");
 	luaL_setfuncs(lua, vifmview_methods, 0);
