@@ -118,8 +118,9 @@ there for instructions.
     |  |
     |  |-- lua/ - Lua interface
     |  |  |
-    |  |  |-- lua/ - Lua 5.4.2 sources
+    |  |  |-- lua/ - Lua 5.4.4 sources
     |  |  |-- common.c - common code for Lua API implementation
+    |  |  |-- vifm.c - implementation of `vifm`
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
     |  |  |-- vifm_events.c - implementation of `vifm.events`
     |  |  |-- vifm_handlers.c - implementation of `vifm.addhandler`
