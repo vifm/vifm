@@ -45,7 +45,6 @@
 #include "utils/test_helpers.h"
 #include "utils/trie.h"
 #include "utils/utils.h"
-#include "cmd_completion.h"
 #include "event_loop.h"
 #include "filelist.h"
 #include "macros.h"
@@ -80,8 +79,6 @@ static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
 static var_t input_builtin(const call_info_t *call_info);
 static complete_cmd_func pick_completer(const char type[], int *success);
-static int dir_completer(const char str[], void *arg);
-static int file_completer(const char str[], void *arg);
 static void input_builtin_cb(const char response[], void *arg);
 static var_t layoutis_builtin(const call_info_t *call_info);
 static var_t paneisat_builtin(const call_info_t *call_info);
@@ -472,11 +469,11 @@ pick_completer(const char type[], int *success)
 
 	if(strcmp(type, "dir") == 0)
 	{
-		return &dir_completer;
+		return &modcline_complete_dirs;
 	}
 	else if(strcmp(type, "file") == 0)
 	{
-		return &file_completer;
+		return &modcline_complete_files;
 	}
 	else if(strcmp(type, "") == 0)
 	{
@@ -486,24 +483,6 @@ pick_completer(const char type[], int *success)
 
 	*success = 0;
 	return NULL;
-}
-
-/* Completes paths ignoring files.  Returns completion offset. */
-static int
-dir_completer(const char str[], void *arg)
-{
-	int name_offset = after_last(str, '/') - str;
-	return name_offset
-	     + filename_completion(str, CT_DIRONLY, /*skip_canonicalization=*/0);
-}
-
-/* Completes paths to both files and directories.  Returns completion offset. */
-static int
-file_completer(const char str[], void *arg)
-{
-	int name_offset = after_last(str, '/') - str;
-	return name_offset
-	     + filename_completion(str, CT_ALL, /*skip_canonicalization=*/0);
 }
 
 /* Checks current layout configuration.  Returns boolean value that reflects

@@ -73,6 +73,12 @@ void modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 /* Redraws UI elements of the command-line mode. */
 void modcline_redraw(void);
 
+/* Completes paths ignoring files.  Returns completion offset. */
+int modcline_complete_dirs(const char str[], void *arg);
+
+/* Completes paths to both files and directories.  Returns completion offset. */
+int modcline_complete_files(const char str[], void *arg);
+
 #ifdef TEST
 #include <stddef.h> /* size_t wchar_t */
 
