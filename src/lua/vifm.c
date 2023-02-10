@@ -21,10 +21,13 @@
 #include "../cfg/info.h"
 #include "../engine/options.h"
 #include "../modes/dialogs/msg_dialog.h"
+#include "../modes/cmdline.h"
 #include "../ui/statusbar.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
+#include "../utils/str.h"
 #include "../utils/utils.h"
+#include "../event_loop.h"
 #include "../filelist.h"
 #include "../filename_modifiers.h"
 #include "../running.h"
@@ -50,11 +53,20 @@
  * or type-specific vifm* units and are only initialized here.
  */
 
+/* Data passed to prompt callback in vifm.input(). */
+typedef struct
+{
+	int quit;       /* Exit flag for event loop. */
+	char *response; /* Result of the prompt. */
+}
+input_cb_data_t;
+
 static int VLUA_API(vifm_errordialog)(lua_State *lua);
 static int VLUA_API(vifm_escape)(lua_State *lua);
 static int VLUA_API(vifm_exists)(lua_State *lua);
 static int VLUA_API(vifm_expand)(lua_State *lua);
 static int VLUA_API(vifm_fnamemodify)(lua_State *lua);
+static int VLUA_API(vifm_input)(lua_State *lua);
 static int VLUA_API(vifm_makepath)(lua_State *lua);
 static int VLUA_API(vifm_run)(lua_State *lua);
 static int VLUA_API(vifm_sessions_current)(lua_State *lua);
@@ -74,6 +86,7 @@ VLUA_DECLARE_SAFE(vifm_escape);
 VLUA_DECLARE_SAFE(vifm_exists);
 VLUA_DECLARE_SAFE(vifm_expand);
 VLUA_DECLARE_SAFE(vifm_fnamemodify);
+VLUA_DECLARE_SAFE(vifm_input);
 VLUA_DECLARE_SAFE(vifm_makepath);
 VLUA_DECLARE_SAFE(vifm_run);
 VLUA_DECLARE_SAFE(vifm_sessions_current);
@@ -95,6 +108,8 @@ VLUA_DECLARE_SAFE(vifmview_currview);
 VLUA_DECLARE_SAFE(vifmview_otherview);
 VLUA_DECLARE_SAFE(vifmjob_new);
 
+static void input_builtin_cb(const char response[], void *arg);
+
 /* Functions of `vifm` global table. */
 static const struct luaL_Reg vifm_methods[] = {
 	{ "errordialog",   VLUA_REF(vifm_errordialog)   },
@@ -102,6 +117,7 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "exists",        VLUA_REF(vifm_exists)        },
 	{ "expand",        VLUA_REF(vifm_expand)        },
 	{ "fnamemodify",   VLUA_REF(vifm_fnamemodify)   },
+	{ "input",         VLUA_REF(vifm_input)         },
 	{ "makepath",      VLUA_REF(vifm_makepath)      },
 	{ "run",           VLUA_REF(vifm_run)           },
 
@@ -256,6 +272,67 @@ VLUA_API(vifm_fnamemodify)(lua_State *lua)
 	const char *base = luaL_optstring(lua, 3, flist_get_dir(curr_view));
 	lua_pushstring(lua, mods_apply(path, base, modifiers, 0));
 	return 1;
+}
+
+/* Member of `vifm` that asks user for input via a prompt.  Returns a string on
+ * success and nil on failure. */
+static int
+VLUA_API(vifm_input)(lua_State *lua)
+{
+	luaL_checktype(lua, 1, LUA_TTABLE);
+
+	check_field(lua, 1, "prompt", LUA_TSTRING);
+	const char *prompt = lua_tostring(lua, -1);
+
+	const char *initial = "";
+	if(check_opt_field(lua, 1, "initial", LUA_TSTRING))
+	{
+		initial = lua_tostring(lua, -1);
+	}
+
+	complete_cmd_func complete = NULL;
+	if(check_opt_field(lua, 1, "complete", LUA_TSTRING))
+	{
+		const char *value = lua_tostring(lua, -1);
+		if(strcmp(value, "dir") == 0)
+		{
+			complete = &modcline_complete_dirs;
+		}
+		else if(strcmp(value, "file") == 0)
+		{
+			complete = &modcline_complete_files;
+		}
+		else if(strcmp(value, "") != 0)
+		{
+			return luaL_error(lua, "Unrecognized value for `complete`: %s", value);
+		}
+	}
+
+	input_cb_data_t cb_data = { .quit = 0, .response = NULL };
+	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data, complete,
+			/*allow_ee=*/1);
+	event_loop(&cb_data.quit, /*manage_marking=*/0);
+
+	if(cb_data.response == NULL)
+	{
+		lua_pushnil(lua);
+	}
+	else
+	{
+		lua_pushstring(lua, cb_data.response);
+		free(cb_data.response);
+	}
+	return 1;
+}
+
+/* Callback invoked after prompt has finished. */
+static void
+input_builtin_cb(const char response[], void *arg)
+{
+	input_cb_data_t *data = arg;
+
+	update_string(&data->response, response);
+	data->quit = 1;
 }
 
 /* Member of `vifm` that creates a directory and all of its missing parent

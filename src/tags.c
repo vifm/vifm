@@ -731,6 +731,7 @@ const char *tags[] = {
 	"vifm-l_vifm.exists()",
 	"vifm-l_vifm.expand()",
 	"vifm-l_vifm.fnamemodify()",
+	"vifm-l_vifm.input()",
 	"vifm-l_vifm.keys",
 	"vifm-l_vifm.keys.add()",
 	"vifm-l_vifm.makepath()",

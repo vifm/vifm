@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Jan 22
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Feb 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -623,6 +623,27 @@ Return:~
 
 Raises an error:~
   If "iomode" has incorrect value.
+
+vifm.input({info})                             *vifm-l_vifm.input()*
+Prompts user for input via command-line prompt.
+
+Possible fields of {info}:
+ - "prompt" (string)
+   Prompt invitation.
+ - "initial" (string) (default: "")
+   Initial input for the prompt.
+ - "complete" (string) (default: "")
+   How to complete input: "dir" (directories only), "file" (files and
+   directories), "" (no completion).
+
+Parameters:~
+  {info}  Table with information about the prompt.
+
+Return:~
+  String on success or nil if the prompt was cancelled.
+
+Raises an error:~
+  If {info}.complete has incorrect value.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.cmds*

@@ -1,13 +1,17 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/keys.h"
 #include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
+#include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
 #include "../../src/cmd_core.h"
+#include "../../src/event_loop.h"
 #include "../../src/status.h"
 
 #include <test-utils.h>
@@ -286,6 +290,50 @@ TEST(vifm_run)
 	assert_string_equal("2", ui_sb_last());
 
 	conf_teardown();
+}
+
+TEST(vifm_input)
+{
+	view_setup(&lwin);
+	view_setup(&rwin);
+
+	cfg.timeout_len = 1;
+
+	modes_init();
+
+	ui_sb_msg("");
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(L"def" WK_C_m);
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.input({ prompt = 'write: ',"
+				                  " initial = 'abc',"
+				                  " complete = 'dir' }))"));
+	assert_string_equal("abcdef", ui_sb_last());
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(L"xyz" WK_C_m);
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.input({ prompt = 'write: ',"
+				                  " complete = 'file' }))"));
+	assert_string_equal("xyz", ui_sb_last());
+
+	/* Preparing input beforehand, because input() runs nested event loop. */
+	feed_keys(WK_C_c);
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.input({ prompt = 'write:' }))"));
+	assert_string_equal("nil", ui_sb_last());
+
+	assert_failure(vlua_run_string(vlua,
+				"print(vifm.input({ prompt = 'write: ',"
+				                  " complete = 'bla' }))"));
+	assert_true(ends_with(ui_sb_last(),
+				": Unrecognized value for `complete`: bla"));
+
+	vle_keys_reset();
+
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
