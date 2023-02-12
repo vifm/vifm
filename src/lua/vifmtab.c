@@ -106,7 +106,7 @@ VLUA_API(vifmtab_getlayout)(lua_State *lua)
 	tab_info_t tab_info;
 	find_tab(lua, *id, &tab_info);
 
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushboolean(lua, tab_info.layout.only_mode);
 	lua_setfield(lua, -2, "only");
 	if(!tab_info.layout.only_mode)

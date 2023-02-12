@@ -64,7 +64,7 @@ vifmentry_init(lua_State *lua)
 void
 vifmentry_new(lua_State *lua, const dir_entry_t *entry)
 {
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/16); /* entry */
 
 	lua_pushstring(lua, entry->name);
 	lua_setfield(lua, -2, "name");
@@ -99,12 +99,12 @@ vifmentry_new(lua_State *lua, const dir_entry_t *entry)
 
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2); /* entry.classify */
 	lua_pushstring(lua, prefix);
-	lua_setfield(lua, -2, "prefix");
+	lua_setfield(lua, -2, "prefix");   /* entry.classify.prefix */
 	lua_pushstring(lua, suffix);
-	lua_setfield(lua, -2, "suffix");
-	lua_setfield(lua, -2, "classify");
+	lua_setfield(lua, -2, "suffix");   /* entry.classify.suffix */
+	lua_setfield(lua, -2, "classify"); /* entry.classify */
 
 	vifm_entry_t *vifm_entry = lua_newuserdatauv(lua, sizeof(*vifm_entry), 0);
 	luaL_getmetatable(lua, "VifmEntry");

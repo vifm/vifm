@@ -80,9 +80,9 @@ vlua_cbacks_process(vlua_t *vlua)
 void
 vlua_cbacks_schedule(vlua_t *vlua, int argc)
 {
-	lua_newtable(vlua->lua); /* scheduled table */
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/0); /* scheduled table */
 
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, argc, /*nrec=*/0);
 	int i;
 	for(i = 0; i < argc; ++i)
 	{

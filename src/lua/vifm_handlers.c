@@ -102,7 +102,7 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
 			"Handler must be a function here.");
 
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/6);
 	lua_pushstring(vlua->lua, viewer);
 	lua_setfield(vlua->lua, -2, "command");
 	lua_pushstring(vlua->lua, path);
@@ -178,7 +178,7 @@ vifm_handlers_open(vlua_t *vlua, const char prog[], const dir_entry_t *entry)
 	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
 			"Handler must be a function here.");
 
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushstring(vlua->lua, prog);
 	lua_setfield(vlua->lua, -2, "command");
 	vifmentry_new(vlua->lua, entry);
@@ -220,7 +220,7 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
 	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
 			"Handler must be a function here.");
 
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
 	vifmview_new(vlua->lua, view);
 	lua_setfield(vlua->lua, -2, "view");
 	lua_pushinteger(vlua->lua, width);
@@ -265,7 +265,8 @@ vifm_handlers_open_help(vlua_t *vlua, const char handler[], const char topic[])
 	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc",
 			get_installed_data_dir());
 
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/3);
+
 	lua_pushstring(vlua->lua, "open-help");
 	lua_setfield(vlua->lua, -2, "action");
 
@@ -287,7 +288,7 @@ int
 vifm_handlers_edit_one(vlua_t *vlua, const char handler[], const char path[],
 		int line, int column, int must_wait)
 {
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/5);
 	lua_pushstring(vlua->lua, "edit-one");
 	lua_setfield(vlua->lua, -2, "action");
 	lua_pushstring(vlua->lua, path);
@@ -314,7 +315,7 @@ int
 vifm_handlers_edit_many(struct vlua_t *vlua, const char handler[],
 		char *files[], int nfiles)
 {
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushstring(vlua->lua, "edit-many");
 	lua_setfield(vlua->lua, -2, "action");
 	push_str_array(vlua->lua, files, nfiles);
@@ -329,7 +330,7 @@ int
 vifm_handlers_edit_list(vlua_t *vlua, const char handler[], char *entries[],
 		int nentries, int current, int quickfix_format)
 {
-	lua_newtable(vlua->lua);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/4);
 	lua_pushstring(vlua->lua, "edit-list");
 	lua_setfield(vlua->lua, -2, "action");
 	push_str_array(vlua->lua, entries, nentries);
@@ -440,7 +441,7 @@ VLUA_API(vifm_addhandler)(lua_State *lua)
 
 	char *full_name = format_str("#%s#%s", namespace, name);
 
-	vlua_state_get_table(vlua, &handlers_key);
+	vlua_state_get_table(vlua, &handlers_key); /* handlers table */
 
 	/* Check if handler already exists. */
 	if(lua_getfield(vlua->lua, -1, full_name) != LUA_TNIL)
@@ -449,12 +450,12 @@ VLUA_API(vifm_addhandler)(lua_State *lua)
 		lua_pushboolean(lua, 0);
 		return 1;
 	}
-	lua_pop(vlua->lua, 1);
+	lua_pop(vlua->lua, 1); /* nil */
 
-	lua_newtable(lua);
-	lua_pushvalue(lua, -3);
-	lua_setfield(lua, -2, "handler");
-	lua_setfield(lua, -2, full_name);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1); /* handler table */
+	lua_pushvalue(lua, -3);                       /* info.handler function */
+	lua_setfield(lua, -2, "handler");             /* handler.handler */
+	lua_setfield(lua, -2, full_name);             /* add to handlers table */
 
 	free(full_name);
 

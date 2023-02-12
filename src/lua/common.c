@@ -166,7 +166,7 @@ void
 push_str_array(lua_State *lua, char *array[], int len)
 {
 	int i;
-	lua_newtable(lua);
+	lua_createtable(lua, len, /*nrec=*/0);
 	for(i = 0; i < len; ++i)
 	{
 		lua_pushstring(lua, array[i]);

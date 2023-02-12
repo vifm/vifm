@@ -121,7 +121,7 @@ VLUA_API(keys_add)(lua_State *lua)
 	check_field(lua, 1, "modes", LUA_TTABLE);
 	parse_modes(vlua, modes);
 
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 	check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_setfield(lua, -2, "handler");
 	lua_pushboolean(lua, is_selector);
@@ -256,7 +256,7 @@ static void
 build_handler_args(lua_State *lua, key_info_t key_info,
 		const keys_info_t *keys_info)
 {
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/3);
 
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
@@ -282,7 +282,7 @@ build_handler_args(lua_State *lua, key_info_t key_info,
 	if(keys_info->selector)
 	{
 		int i;
-		lua_newtable(lua);
+		lua_createtable(lua, keys_info->count, /*nrec=*/0);
 		for(i = 0; i < keys_info->count; ++i)
 		{
 			lua_pushinteger(lua, keys_info->indexes[i] + 1);

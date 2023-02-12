@@ -164,54 +164,52 @@ vifm_init(lua_State *lua)
 	lua_setfield(lua, -2, "tabs");
 
 	/* Setup vifm.opts. */
-	lua_newtable(lua);
-	lua_pushvalue(lua, -1);
-	lua_setfield(lua, -3, "opts");
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1); /* vifm.opts */
+	lua_newtable(lua);                  /* vifm.opts.global */
 	make_metatable(lua, /*name=*/NULL); /* metatable of vifm.opts.global */
 	lua_pushcfunction(lua, VLUA_REF(opts_global_index));
 	lua_setfield(lua, -2, "__index");
 	lua_pushcfunction(lua, VLUA_REF(opts_global_newindex));
 	lua_setfield(lua, -2, "__newindex");
-	lua_setmetatable(lua, -2);
-	lua_setfield(lua, -2, "global");
-	lua_pop(lua, 1);
+	lua_setmetatable(lua, -2);       /* vifm.opts.global */
+	lua_setfield(lua, -2, "global"); /* vifm.opts.global */
+	lua_setfield(lua, -2, "opts");   /* vifm.opts */
 
 	/* Setup vifm.plugins. */
-	lua_newtable(lua);
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1); /* vifm.plugins */
+	lua_newtable(lua);                            /* vifm.plugins.all */
 	lua_setfield(lua, -2, "all");
 	lua_setfield(lua, -2, "plugins");
 
 	/* Setup vifm.version. */
-	lua_newtable(lua);
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2); /* vifm.version */
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1); /* vifm.app */
 	lua_pushstring(lua, VERSION);
-	lua_setfield(lua, -2, "str");
-	lua_setfield(lua, -2, "app");
-	lua_newtable(lua);
+	lua_setfield(lua, -2, "str");                 /* vifm.app.str */
+	lua_setfield(lua, -2, "app");                 /* vifm.app */
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/5); /* vifm.api */
 	lua_pushinteger(lua, 0);
-	lua_setfield(lua, -2, "major");
+	lua_setfield(lua, -2, "major");               /* vifm.api.major */
 	lua_pushinteger(lua, 0);
-	lua_setfield(lua, -2, "minor");
+	lua_setfield(lua, -2, "minor");               /* vifm.api.minor */
 	lua_pushinteger(lua, 0);
-	lua_setfield(lua, -2, "patch");
+	lua_setfield(lua, -2, "patch");               /* vifm.api.patch */
 	lua_pushcfunction(lua, VLUA_REF(api_has));
-	lua_setfield(lua, -2, "has");
+	lua_setfield(lua, -2, "has");                 /* vifm.api.has */
 	lua_pushcfunction(lua, VLUA_REF(api_is_at_least));
-	lua_setfield(lua, -2, "atleast");
-	lua_setfield(lua, -2, "api");
-	lua_setfield(lua, -2, "version");
+	lua_setfield(lua, -2, "atleast");             /* vifm.api.atleast */
+	lua_setfield(lua, -2, "api");                 /* vifm.api */
+	lua_setfield(lua, -2, "version");             /* vifm.version */
 
 	/* Setup vifm.sb. */
 	luaL_newlib(lua, sb_methods);
 	lua_setfield(lua, -2, "sb");
 
 	/* Setup vifm.sessions. */
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1); /* vifm.sessions */
 	lua_pushcfunction(lua, VLUA_REF(vifm_sessions_current));
-	lua_setfield(lua, -2, "current");
-	lua_setfield(lua, -2, "sessions");
+	lua_setfield(lua, -2, "current");             /* vifm.sessions.current */
+	lua_setfield(lua, -2, "sessions");            /* vifm.sessions */
 }
 
 /* Member of `vifm` that displays an error dialog.  Doesn't return anything. */

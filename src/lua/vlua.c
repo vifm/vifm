@@ -106,7 +106,7 @@ patch_env(lua_State *lua)
 	lua_setglobal(lua, "print");
 
 	lua_getglobal(lua, "os");
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/6);
 	lua_getfield(lua, -2, "clock");
 	lua_setfield(lua, -2, "clock");
 	lua_getfield(lua, -2, "date");
@@ -244,7 +244,7 @@ static void
 setup_plugin_env(lua_State *lua, plug_t *plug)
 {
 	/* Global environment table. */
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1);
 	luaL_getmetatable(lua, "VifmPluginEnv");
 	lua_setmetatable(lua, -2);
 	/* Don't let a plugin access true global table by using _G explicitly. */
@@ -252,7 +252,7 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_setfield(lua, -2, "_G");
 
 	/* Plugin-specific `vifm` table. */
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 	/* Meta-table for it. */
 	make_metatable(lua, /*name=*/NULL);
 	lua_getglobal(lua, "vifm");
@@ -260,7 +260,7 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_setmetatable(lua, -2);
 
 	/* Plugin-specific `vifm.plugin` table. */
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/3);
 	lua_pushstring(lua, plug->name);
 	lua_setfield(lua, -2, "name");
 	lua_pushstring(lua, plug->path);
@@ -269,12 +269,12 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_pushlightuserdata(lua, plug);
 	lua_pushcclosure(lua, VLUA_REF(vifm_plugin_require), 1);
 	lua_setfield(lua, -2, "require");
-	lua_setfield(lua, -2, "plugin");
+	lua_setfield(lua, -2, "plugin");  /* vifm.plugin */
 
 	/* Plugin-specific `vifm.addhandler()`. */
 	lua_pushlightuserdata(lua, plug);
 	lua_pushcclosure(lua, VLUA_REF(vifm_addhandler), 1);
-	lua_setfield(lua, -2, "addhandler");
+	lua_setfield(lua, -2, "addhandler"); /* vifm.addhandler */
 
 	/* Assign `vifm` as a plugin-specific global. */
 	lua_setfield(lua, -2, "vifm");
