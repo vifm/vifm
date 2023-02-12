@@ -3,21 +3,16 @@ Installation
 
 On *nix you need:
 
-    A working version of ncursesw built as a shared library (*.so files,
-    enabled by the --with-shared switch of ncurses' configure script) and
-    an ascii compliant terminal.  ncurses can be static, but that will
-    require providing appropriate options for linker (thus might not work
-    out of the box).
+    A working version of ncursesw-compatible library.
 
     Hints for building on Debian-based systems (Debian/Ubuntu/Linux Mint):
      * ncurses package you need to build vifm is called "libncursesw5-dev"
+     * also install either perl interpreter or vim to generate tags (done
+       during build)
      * additional (optional) tools used in sample vifmrc:
        - sudo aptitude install sshfs curlftpfs fuse fuse-zip fusefat fuseiso
        - for a support of .rar-archive files see:
          https://gist.github.com/enberg/84710b619bdb0b10e945
-
-    For best user-experience with Vim plugins availability of either perl
-    interpreter or vim executable is needed to automatically generate tags.
 
 *nix Installation (Cygwin emulates *nix environment, so follow these steps
 when building with Cygwin):
@@ -82,13 +77,12 @@ when building with Cygwin):
     vifmrc files from the data/ directory to ~/.vifm/.
 
     After you start vifm for the first time, you can edit the configuration
-    file.  It will be at ~/.vifm/vifmrc.  See help for description of other
-    files in ~/.vifm directory.
+    file.  It will be at ~/.config/vifm/vifmrc unless ~/.vifm/ exists.  See
+    help for description of other files in configuration directory.
 
 On OS X you need:
 
-    Get and install libscursesw or libncursesw as shared libraries (*.so
-    files, enabled by the --with-shared switch of ncurses' configure script).
+    Get and install libscursesw or libncursesw.
 
     Proceed like in *nix Installation section.
 

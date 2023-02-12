@@ -9,6 +9,10 @@
 	Changed how pthread support is detected by configure script to handle more
 	cases.  Thanks to Markus Elfring (a.k.a. elfring).
 
+	Changed configure script to fail if neither perl nor vim is available
+	instead of failing to generate tags for Vim-style documentation.  Thanks
+	to Sergei Trofimovich (a.k.a. trofi).
+
 	Added "withicase" and "withrcase" to :compare that force ignoring and
 	respecting case respectively on comparing file names and paths.  Thanks to
 	Jose Riha (a.k.a. jose1711).
