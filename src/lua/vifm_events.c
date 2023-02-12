@@ -18,6 +18,7 @@
 
 #include "vifm_events.h"
 
+#include "../utils/macros.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
 #include "api.h"
@@ -37,6 +38,40 @@ static const luaL_Reg vifm_events_methods[] = {
 	{ NULL,     NULL                    }
 };
 
+/* Mapping of operations onto their names in the API.  NULL means that the
+ * event is not (yet) reported. */
+static const char *const fsop_names[] = {
+	[OP_NONE]     = NULL,
+	[OP_USR]      = NULL,
+	[OP_REMOVE]   = "remove",
+	[OP_REMOVESL] = "remove",
+	[OP_COPY]     = "copy",
+	[OP_COPYF]    = "copy",
+	[OP_COPYA]    = "copy",
+	[OP_MOVE]     = "move",
+	[OP_MOVEF]    = "move",
+	[OP_MOVEA]    = "move",
+	[OP_MOVETMP1] = "move",
+	[OP_MOVETMP2] = "move",
+	[OP_MOVETMP3] = "move",
+	[OP_MOVETMP4] = "move",
+	[OP_CHOWN]    = NULL,
+	[OP_CHGRP]    = NULL,
+#ifndef _WIN32
+	[OP_CHMOD]    = NULL,
+	[OP_CHMODR]   = NULL,
+#else
+	[OP_ADDATTR]  = NULL,
+	[OP_SUBATTR]  = NULL,
+#endif
+	[OP_SYMLINK]  = "symlink",
+	[OP_SYMLINK2] = "symlink",
+	[OP_MKDIR]    = "create",
+	[OP_RMDIR]    = "remove",
+	[OP_MKFILE]   = "create",
+};
+ARRAY_GUARD(fsop_names, OP_COUNT);
+
 /* Address of this variable serves as a key in Lua table.  The table maps event
  * name to set of its handlers (stored in keys, values are dummies). */
 static char events_key;
@@ -49,6 +84,7 @@ vifm_events_init(lua_State *lua)
 	vlua_t *vlua = get_state(lua);
 	vlua_state_make_table(vlua, &events_key);
 	vifm_events_add(vlua, "app.exit");
+	vifm_events_add(vlua, "app.fsop");
 }
 
 /* Registers a new event. */
@@ -102,6 +138,45 @@ vifm_events_app_exit(vlua_t *vlua)
 		lua_pop(vlua->lua, 1); /* values are dummies */
 		lua_pushvalue(vlua->lua, -1); /* key is a handler */
 		vlua_cbacks_schedule(vlua, /*argc=*/0);
+	}
+
+	lua_pop(vlua->lua, 1); /* event table */
+}
+
+void
+vifm_events_app_fsop(vlua_t *vlua, OPS op, const char path[],
+		const char target[], void *extra, int dir)
+{
+	const char *fsop_name = fsop_names[op];
+	if(fsop_name == NULL)
+	{
+		/* We're not reporting this event. */
+		return;
+	}
+
+	vlua_state_get_table(vlua, &events_key); /* events table */
+	lua_getfield(vlua->lua, -1, "app.fsop"); /* event table */
+	lua_remove(vlua->lua, -2); /* events table */
+
+	lua_pushnil(vlua->lua); /* key placeholder */
+	while(lua_next(vlua->lua, -2) != 0)
+	{
+		lua_pop(vlua->lua, 1); /* values are dummies */
+		lua_pushvalue(vlua->lua, -1); /* key is a handler */
+
+		/* Not reusing the same argument, to not let handlers affect each other.
+		 * Alternative is to pass read-only table. */
+		lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/4);
+		lua_pushstring(vlua->lua, fsop_name);
+		lua_setfield(vlua->lua, -2, "op");
+		lua_pushstring(vlua->lua, path);
+		lua_setfield(vlua->lua, -2, "path");
+		lua_pushstring(vlua->lua, target);
+		lua_setfield(vlua->lua, -2, "target");
+		lua_pushboolean(vlua->lua, dir);
+		lua_setfield(vlua->lua, -2, "isdir");
+
+		vlua_cbacks_schedule(vlua, /*argc=*/1);
 	}
 
 	lua_pop(vlua->lua, 1); /* event table */

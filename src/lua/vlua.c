@@ -476,7 +476,20 @@ vlua_process_callbacks(vlua_t *vlua)
 void
 vlua_events_app_exit(vlua_t *vlua)
 {
-	vifm_events_app_exit(vlua);
+	if(vlua != NULL)
+	{
+		vifm_events_app_exit(vlua);
+	}
+}
+
+void
+vlua_events_app_fsop(vlua_t *vlua, OPS op, const char path[],
+		const char target[], void *extra, int dir)
+{
+	if(vlua != NULL)
+	{
+		vifm_events_app_fsop(vlua, op, path, target, extra, dir);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

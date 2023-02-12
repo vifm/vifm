@@ -19,6 +19,8 @@
 #ifndef VIFM__LUA__VLUA_H__
 #define VIFM__LUA__VLUA_H__
 
+#include "../ops.h"
+
 /* This unit implements Lua interface.  It provides API for the rest of the
  * application and thus this is the only header that needs to be included from
  * the outside. */
@@ -116,8 +118,14 @@ void vlua_process_callbacks(struct vlua_t *vlua);
 
 /* Events. */
 
-/* Schedules all handlers for exit event as callbacks to process. */
+/* Schedules all handlers for exit event as callbacks to process.  The vlua
+ * parameter can be NULL. */
 void vlua_events_app_exit(struct vlua_t *vlua);
+
+/* Schedules all handlers for fsop event as callbacks.  The vlua, target and
+ * extra parameters can be NULL. */
+void vlua_events_app_fsop(struct vlua_t *vlua, OPS op, const char path[],
+		const char target[], void *extra, int dir);
 
 #endif /* VIFM__LUA__VLUA_H__ */
 

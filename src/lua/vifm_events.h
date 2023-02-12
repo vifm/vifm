@@ -19,6 +19,8 @@
 #ifndef VIFM__LUA__VIFM_EVENTS_H__
 #define VIFM__LUA__VIFM_EVENTS_H__
 
+#include "../ops.h"
+
 struct lua_State;
 struct vlua_t;
 
@@ -27,6 +29,11 @@ void vifm_events_init(struct lua_State *lua);
 
 /* Schedules processing of an event of app exit. */
 void vifm_events_app_exit(struct vlua_t *vlua);
+
+/* Schedules processing of an event of an FS operation.  Target and extra
+ * parameters can be NULL. */
+void vifm_events_app_fsop(struct vlua_t *vlua, OPS op, const char path[],
+		const char target[], void *extra, int dir);
 
 #endif /* VIFM__LUA__VIFM_EVENTS_H__ */
 

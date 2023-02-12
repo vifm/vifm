@@ -770,6 +770,7 @@ const char *tags[] = {
 	"vifm-lua-api",
 	"vifm-lua-caps",
 	"vifm-lua-design",
+	"vifm-lua-events",
 	"vifm-lua-evolution",
 	"vifm-lua-handlers",
 	"vifm-lua-libs",

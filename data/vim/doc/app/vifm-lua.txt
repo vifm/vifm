@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Feb 10
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Feb 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -13,6 +13,7 @@ complete removal of this interface (that's an unlikely scenario though).
 |vifm-lua-loading|     Which plugins get loaded.
 |vifm-lua-libs|        What Lua libraries are available.
 |vifm-lua-handlers|    Lua handlers concept.
+|vifm-lua-events|      Description of event types.
 |vifm-lua-caps|        What using Lua in Vifm buys you.
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
@@ -371,6 +372,49 @@ Fields of {info} argument:
    Whether input entries are of the form "path[:line[:column]][:text]".
    Because such lists come from external tools, this information is determined
    using a simple heuristic and might not always be correct.
+
+--------------------------------------------------------------------------------
+*vifm-lua-events*
+
+"app.exit" event~
+
+Occurs before Vifm exits normally.  Does not happen on |vifm-:restart|.
+
+"app.fsop" event~
+
+Occurs after a successful execution of a file-system operation.
+
+Fields of the only table parameter:
+ - "op" (string)
+   Type of an operation (see below for a list).
+ - "path" (string)
+   Source path or the only path affected by the operation.
+ - "target" (string) (optional)
+   Destination path or target of a symbolic link.
+ - "isdir" (boolean)
+
+Operation types:
+ - "copy"
+   Copying a file/directory from one location to another.
+ - "create"
+   Creation of a file/directory.
+ - "move"
+   Moving a file/directory from one location to another.  Includes renames and
+   moves across partition boundaries.
+ - "remove"
+   Removal of a file/directory.  This includes symbolic link removal on
+   changing its target.
+ - "symlink"
+   Creation of a symbolic link, which might be a second step of updating its
+   target.
+
+The list of operations isn't complete, to be extended as needed.
+
+Operations performed in background aren't reported.
+
+Note: a bulk rename that contains a cycle ("a" -> "b" -> "a" being the
+shortest one) will be reported the way it's performed, that is including
+temporary renames (e.g., "a -> a_", "b -> a", "a_ -> b").
 
 --------------------------------------------------------------------------------
 *vifm-lua-caps*
@@ -745,13 +789,9 @@ Registers a handler for an event.
 
 Possible fields of {event}:
  - "event" (string)
-   Name of event to listen for.  See below.
+   Name of event to listen for.  See |vifm-lua-events| for event descriptions.
  - "handler" (function)
    Handler to invoke when the event happens.
-
-Events:
- - "app.exit"
-   Occurs before Vifm exits normally.  Does not happen on |vifm-:restart|.
 
 Registering the same handler more than once for the same event has no effect.
 
