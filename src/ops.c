@@ -40,6 +40,7 @@
 #include "io/ioeta.h"
 #include "io/iop.h"
 #include "io/ior.h"
+#include "lua/vlua.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "utils/cancellation.h"
@@ -297,7 +298,28 @@ OpsResult
 perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 		const char dst[])
 {
-	return op_funcs[op](ops, data, src, dst);
+	if(ops == NULL || !ops->bg)
+	{
+		/* Not reporting events from background jobs. */
+		return op_funcs[op](ops, data, src, dst);
+	}
+
+	int dir = 0;
+	if(ONE_OF(op, OP_MKDIR, OP_RMDIR))
+	{
+		dir = 1;
+	}
+	else if(!ONE_OF(op, OP_NONE, OP_USR, OP_MKFILE, OP_SYMLINK, OP_SYMLINK2))
+	{
+		dir = is_dir(src);
+	}
+
+	OpsResult status = op_funcs[op](ops, data, src, dst);
+	if(status == OPS_SUCCEEDED)
+	{
+		vlua_events_app_fsop(curr_stats.vlua, op, src, dst, data, dir);
+	}
+	return status;
 }
 
 static OpsResult

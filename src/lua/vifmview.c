@@ -65,7 +65,7 @@ static const luaL_Reg vifmview_methods[] = {
 void
 vifmview_init(struct lua_State *lua)
 {
-	luaL_newmetatable(lua, "VifmView");
+	make_metatable(lua, "VifmView");
 	lua_pushcfunction(lua, VLUA_REF(vifmview_index));
 	lua_setfield(lua, -2, "__index");
 	luaL_setfuncs(lua, vifmview_methods, 0);
@@ -124,7 +124,7 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	unsigned int *id_copy = lua_newuserdatauv(lua, sizeof(*id_copy), 0);
 	*id_copy = *id;
 
-	lua_newtable(lua);
+	make_metatable(lua, /*name=*/NULL);
 	lua_pushvalue(lua, -1);
 	lua_setmetatable(lua, -2);
 	lua_pushcfunction(lua,

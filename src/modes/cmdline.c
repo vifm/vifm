@@ -3309,6 +3309,22 @@ stop_regular_completion(void)
 	}
 }
 
+int
+modcline_complete_dirs(const char str[], void *arg)
+{
+	int name_offset = after_last(str, '/') - str;
+	return name_offset
+	     + filename_completion(str, CT_DIRONLY, /*skip_canonicalization=*/0);
+}
+
+int
+modcline_complete_files(const char str[], void *arg)
+{
+	int name_offset = after_last(str, '/') - str;
+	return name_offset
+	     + filename_completion(str, CT_ALL, /*skip_canonicalization=*/0);
+}
+
 line_stats_t *
 get_line_stats(void)
 {

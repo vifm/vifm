@@ -125,15 +125,15 @@ VLUA_API(vifm_addcolumntype)(lua_State *lua)
 	}
 
 	int column_id = viewcolumn_next_id++;
-	vlua_state_get_table(vlua, &viewcolumns_key);
-	lua_newtable(lua);
+	vlua_state_get_table(vlua, &viewcolumns_key); /* viewcolumns table */
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2); /* viewcolumn table */
 	lua_pushinteger(lua, column_id);
 	lua_setfield(lua, -2, "id");
 	lua_pushboolean(lua, is_primary);
 	lua_setfield(lua, -2, "isprimary");
-	lua_pushvalue(lua, -1);
-	lua_setfield(lua, -3, name);
-	lua_seti(lua, -2, column_id);
+	lua_pushvalue(lua, -1);                       /* viewcolumn table */
+	lua_setfield(lua, -3, name);                  /* viewcolumns[name] */
+	lua_seti(lua, -2, column_id);                 /* viewcolumns[id] */
 
 	int error = columns_add_column_desc(column_id, &lua_viewcolumn_handler, data);
 	if(error)
@@ -187,7 +187,7 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 
 	from_pointer(lua, p->ptr);
 
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 
 	lua_pushinteger(lua, info->width);
 	lua_setfield(lua, -2, "width");

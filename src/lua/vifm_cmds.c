@@ -71,7 +71,7 @@ VLUA_API(cmds_add)(lua_State *lua)
 
 	int id = -1;
 
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1);
 	check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_setfield(lua, -2, "handler");
 	if(check_opt_field(lua, 1, "complete", LUA_TFUNCTION))
@@ -190,7 +190,7 @@ lua_cmd_handler(const cmd_info_t *cmd_info)
 	from_pointer(lua, p->ptr);
 	lua_getfield(lua, -1, "handler");
 
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushstring(lua, cmd_info->args);
 	lua_setfield(lua, -2, "args");
 	push_str_array(lua, cmd_info->argv, cmd_info->argc);
@@ -221,7 +221,7 @@ vifm_cmds_complete(lua_State *lua, const cmd_info_t *cmd_info, int arg_pos)
 		return 0;
 	}
 
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/3);
 	lua_pushstring(lua, cmd_info->args);
 	lua_setfield(lua, -2, "args");
 	push_str_array(lua, cmd_info->argv, cmd_info->argc);

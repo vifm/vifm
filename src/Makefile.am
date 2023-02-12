@@ -76,6 +76,14 @@ desktoppixdir = $(datadir)/pixmaps
 desktoppixfile = ../data/graphics/vifm.png
 dist_desktoppix_DATA = $(desktoppixfile)
 
+hicolor128dir = $(datadir)/icons/hicolor/128x128/apps
+hicolor128file = ../data/graphics/vifm.png
+dist_hicolor128_DATA = $(hicolor128file)
+
+hicolorsvgdir = $(datadir)/icons/hicolor/scalable/apps
+hicolorsvgfile = ../data/graphics/vifm.svg
+dist_hicolorsvg_DATA = $(hicolorsvgfile)
+
 bashcompldir = $(datadir)/bash-completion/completions
 bashcomplfile = ../data/shell-completion/bash/vifm
 dist_bashcompl_DATA = $(bashcomplfile)
@@ -184,6 +192,7 @@ vifm_SOURCES = \
 	\
 	lua/api.h \
 	lua/common.c lua/common.h \
+	lua/vifm.c lua/vifm.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
 	lua/vifm_events.c lua/vifm_events.h \
 	lua/vifm_handlers.c lua/vifm_handlers.h \

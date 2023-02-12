@@ -107,7 +107,7 @@ vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
 vifm_src := $(filter-out %/tags.c %/xxhash.c, $(vifm_src))
 
 # filter out generally non-testable or sources for another platform
-vifm_src := $(filter-out %/vifm.c %/win_helper.c, $(vifm_src))
+vifm_src := $(filter-out %/src/./vifm.c %/win_helper.c, $(vifm_src))
 ifndef unix_env
     vifm_src := $(filter-out %/desktop.c %/media_menu.c %/mntent.c %_nix.c, \
                              $(vifm_src))

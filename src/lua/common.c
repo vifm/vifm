@@ -166,12 +166,30 @@ void
 push_str_array(lua_State *lua, char *array[], int len)
 {
 	int i;
-	lua_newtable(lua);
+	lua_createtable(lua, len, /*nrec=*/0);
 	for(i = 0; i < len; ++i)
 	{
 		lua_pushstring(lua, array[i]);
 		lua_seti(lua, -2, i + 1);
 	}
+}
+
+void
+make_metatable(lua_State *lua, const char name[])
+{
+	if(name == NULL)
+	{
+		lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
+	}
+	else
+	{
+		luaL_newmetatable(lua, name);
+	}
+
+	lua_pushvalue(lua, -1);
+	lua_setfield(lua, -2, "__index");
+	lua_pushboolean(lua, 0);
+	lua_setfield(lua, -2, "__metatable");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

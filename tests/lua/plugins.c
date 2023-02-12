@@ -379,5 +379,45 @@ TEST(plugin_dir_does_not_need_to_exist)
 	load_plugins(plugs, SANDBOX_PATH "/no-such-path");
 }
 
+TEST(global_table_is_mocked)
+{
+	create_dir(SANDBOX_PATH "/plugins/plug2");
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
+			"_G.data = 'plug1' "
+			"return {}");
+	make_file(SANDBOX_PATH "/plugins/plug2/init.lua",
+			"function _G.func()"
+			"  return data "
+			"end "
+			"return {}");
+
+	ui_sb_msg("");
+	load_plugins(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+
+	assert_failure(vlua_run_string(vlua, "print(func())"));
+	assert_true(ends_with(ui_sb_last(),
+				": attempt to call a nil value (global 'func')"));
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
+	remove_dir(SANDBOX_PATH "/plugins/plug2");
+}
+
+TEST(metatables_are_protected)
+{
+	make_file(SANDBOX_PATH "/plugins/plug/init.lua", "return { _G = _G }");
+
+	ui_sb_msg("");
+	load_plugins(plugs, cfg.config_dir);
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua,
+				"print(getmetatable(vifm.plugins.all.plug._G))"));
+	assert_string_equal("false", ui_sb_last());
+
+	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

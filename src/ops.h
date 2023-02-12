@@ -26,8 +26,8 @@ typedef enum
 {
 	OP_NONE,
 	OP_USR,
-	OP_REMOVE,   /* rm -rf */
-	OP_REMOVESL, /* cl */
+	OP_REMOVE,   /* rm -rf (after confirmation if necessary) */
+	OP_REMOVESL, /* rm -rf (unconditional; was added along with OP_SYMLINK2) */
 	OP_COPY,     /* copy and clone */
 	OP_COPYF,    /* copy with file overwrite */
 	OP_COPYA,    /* copy with appending to existing contents of destination */

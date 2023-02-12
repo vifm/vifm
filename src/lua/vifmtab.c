@@ -50,9 +50,7 @@ static const luaL_Reg vifmtab_methods[] = {
 void
 vifmtab_init(lua_State *lua)
 {
-	luaL_newmetatable(lua, "VifmTab");
-	lua_pushvalue(lua, -1);
-	lua_setfield(lua, -2, "__index");
+	make_metatable(lua, "VifmTab");
 	luaL_setfuncs(lua, vifmtab_methods, 0);
 	lua_pop(lua, 1);
 }
@@ -108,7 +106,7 @@ VLUA_API(vifmtab_getlayout)(lua_State *lua)
 	tab_info_t tab_info;
 	find_tab(lua, *id, &tab_info);
 
-	lua_newtable(lua);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushboolean(lua, tab_info.layout.only_mode);
 	lua_setfield(lua, -2, "only");
 	if(!tab_info.layout.only_mode)

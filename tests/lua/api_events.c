@@ -46,6 +46,36 @@ TEST(app_exit_is_called)
 	assert_string_equal("1", ui_sb_last());
 }
 
+TEST(app_fsop_is_called)
+{
+	assert_success(vlua_run_string(vlua,
+	      "data = {}\n"
+	      "vifm.events.listen {"
+	      "  event = 'app.fsop',"
+	      "  handler = function(info) data[#data + 1] = info end"
+	      "}"));
+
+	vlua_events_app_fsop(vlua, OP_REMOVE, "path", NULL, /*extra=*/NULL,
+			/*dir=*/1);
+	vlua_events_app_fsop(vlua, OP_MOVE, "from", "to", /*extra=*/NULL, /*dir=*/0);
+	vlua_events_app_fsop(vlua, OP_USR, "echo", NULL, /*extra=*/NULL, /*dir=*/0);
+	vlua_process_callbacks(vlua);
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "print(#data)"));
+	assert_string_equal("2", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(data[1].op,"
+	                                           "data[1].path,"
+	                                           "data[1].target,"
+	                                           "data[1].isdir)"));
+	assert_string_equal("remove\tpath\tnil\ttrue", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(data[2].op,"
+	                                           "data[2].path,"
+	                                           "data[2].target,"
+	                                           "data[2].isdir)"));
+	assert_string_equal("move\tfrom\tto\tfalse", ui_sb_last());
+}
+
 TEST(same_handler_is_called_once)
 {
 	ui_sb_msg("");
