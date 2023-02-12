@@ -124,7 +124,7 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	unsigned int *id_copy = lua_newuserdatauv(lua, sizeof(*id_copy), 0);
 	*id_copy = *id;
 
-	lua_newtable(lua);
+	make_metatable(lua, /*name=*/NULL);
 	lua_pushvalue(lua, -1);
 	lua_setmetatable(lua, -2);
 	lua_pushcfunction(lua,

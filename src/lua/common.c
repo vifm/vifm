@@ -177,7 +177,15 @@ push_str_array(lua_State *lua, char *array[], int len)
 void
 make_metatable(lua_State *lua, const char name[])
 {
-	luaL_newmetatable(lua, name);
+	if(name == NULL)
+	{
+		lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
+	}
+	else
+	{
+		luaL_newmetatable(lua, name);
+	}
+
 	lua_pushvalue(lua, -1);
 	lua_setfield(lua, -2, "__index");
 	lua_pushboolean(lua, 0);

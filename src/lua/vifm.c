@@ -168,7 +168,7 @@ vifm_init(lua_State *lua)
 	lua_pushvalue(lua, -1);
 	lua_setfield(lua, -3, "opts");
 	lua_newtable(lua);
-	lua_newtable(lua);
+	make_metatable(lua, /*name=*/NULL); /* metatable of vifm.opts.global */
 	lua_pushcfunction(lua, VLUA_REF(opts_global_index));
 	lua_setfield(lua, -2, "__index");
 	lua_pushcfunction(lua, VLUA_REF(opts_global_newindex));

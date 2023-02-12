@@ -254,7 +254,7 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	/* Plugin-specific `vifm` table. */
 	lua_newtable(lua);
 	/* Meta-table for it. */
-	lua_newtable(lua);
+	make_metatable(lua, /*name=*/NULL);
 	lua_getglobal(lua, "vifm");
 	lua_setfield(lua, -2, "__index");
 	lua_setmetatable(lua, -2);

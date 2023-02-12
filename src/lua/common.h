@@ -60,8 +60,8 @@ int set_opt(struct lua_State *lua, struct opt_t *opt);
 void push_str_array(struct lua_State *lua, char *array[], int len);
 
 /* Creates a metatable whose __index points to itself and which is opaque for
- * Lua code (can't be read or set).  The metatable is left on the top of the
- * stack. */
+ * Lua code (can't be read or set).  If name is NULL, the metatable isn't stored
+ * in the registry.  The metatable is left on the top of the stack. */
 void make_metatable(struct lua_State *lua, const char name[]);
 
 #endif /* VIFM__LUA__COMMON_H__ */
