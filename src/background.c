@@ -691,15 +691,18 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 		char *sh_flag;
 
 		close(out_pipe[0]);
-		close(error_pipe[0]);
 		if(dup2(out_pipe[1], STDOUT_FILENO) == -1)
 		{
 			_Exit(EXIT_FAILURE);
 		}
+		close(out_pipe[1]);
+
+		close(error_pipe[0]);
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 		{
 			_Exit(EXIT_FAILURE);
 		}
+		close(error_pipe[1]);
 
 		if(in != NULL)
 		{
@@ -1000,10 +1003,12 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 		}
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
-		/* Close read end of pipe. */
+
+		/* Close original error pipe descriptors. */
 		if(error_pipe[0] != -1)
 		{
 			close(error_pipe[0]);
+			close(error_pipe[1]);
 		}
 
 		if(supply_input)
@@ -1013,7 +1018,8 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 				perror("dup2");
 				_Exit(EXIT_FAILURE);
 			}
-			/* Close write end of pipe. */
+			/* Close original input pipe descriptors. */
+			close(input_pipe[0]);
 			close(input_pipe[1]);
 		}
 
@@ -1024,8 +1030,9 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 				perror("dup2");
 				_Exit(EXIT_FAILURE);
 			}
-			/* Close read end of pipe. */
+			/* Close original output pipe descriptors. */
 			close(output_pipe[0]);
+			close(output_pipe[1]);
 		}
 
 		/* Attach stdin and optionally stdout to /dev/null. */
@@ -1041,6 +1048,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 			{
 				perror("dup2 for stdout");
 				_Exit(EXIT_FAILURE);
+			}
+			if(nullfd != STDIN_FILENO && nullfd != STDOUT_FILENO)
+			{
+				close(nullfd);
 			}
 		}
 
