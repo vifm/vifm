@@ -658,7 +658,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 	int out_pipe[2];
 	int error_pipe[2];
 
-	if(pipe(out_pipe) != 0)
+	if(out != NULL && pipe(out_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
 		return (pid_t)-1;
@@ -667,8 +667,11 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 	if(pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		close(out_pipe[0]);
-		close(out_pipe[1]);
+		if(out != NULL)
+		{
+			close(out_pipe[0]);
+			close(out_pipe[1]);
+		}
 		return (pid_t)-1;
 	}
 
@@ -679,8 +682,11 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 
 	if((pid = fork()) == -1)
 	{
-		close(out_pipe[0]);
-		close(out_pipe[1]);
+		if(out != NULL)
+		{
+			close(out_pipe[0]);
+			close(out_pipe[1]);
+		}
 		close(error_pipe[0]);
 		close(error_pipe[1]);
 		return (pid_t)-1;
@@ -688,7 +694,10 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 
 	if(pid == 0)
 	{
-		bind_pipe_or_die(STDOUT_FILENO, out_pipe[1], out_pipe[0]);
+		if(out != NULL)
+		{
+			bind_pipe_or_die(STDOUT_FILENO, out_pipe[1], out_pipe[0]);
+		}
 
 		bind_pipe_or_die(STDERR_FILENO, error_pipe[1], error_pipe[0]);
 
@@ -711,18 +720,22 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 		_Exit(127);
 	}
 
-	close(out_pipe[1]);
+	if(out != NULL)
+	{
+		close(out_pipe[1]);
+		*out = fdopen(out_pipe[0], "r");
+	}
+
 	close(error_pipe[1]);
-	*out = fdopen(out_pipe[0], "r");
 	*err = fdopen(error_pipe[0], "r");
 
 	return pid;
 }
 #else
 /* Runs command in a background and redirects its stdout and stderr streams to
- * file streams which are set.  Input is redirected only if in parameter isn't
- * NULL.  Don't pass pipe for input, it can cause deadlock.  Returns (pid_t)0 or
- * (pid_t)-1 on error. */
+ * file streams which are set.  Input and output are redirected only if the
+ * corresponding parameter isn't NULL.  Don't pass pipe for input, it can cause
+ * deadlock.  Returns (pid_t)0 or (pid_t)-1 on error. */
 static pid_t
 background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 		FILE **err, int out_pipe[2], int err_pipe[2])
@@ -744,7 +757,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 			return (pid_t)-1;
 	}
 
-	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
+	if(out != NULL && _dup2(out_pipe[1], _fileno(stdout)) != 0)
 		return (pid_t)-1;
 	if(_dup2(err_pipe[1], _fileno(stderr)) != 0)
 		return (pid_t)-1;
@@ -795,11 +808,17 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 		return (pid_t)-1;
 	}
 
-	if((*out = _fdopen(out_pipe[0], "r")) == NULL)
+	if(out != NULL && (*out = _fdopen(out_pipe[0], "r")) == NULL)
+	{
 		return (pid_t)-1;
+	}
+
 	if((*err = _fdopen(err_pipe[0], "r")) == NULL)
 	{
-		fclose(*out);
+		if(out != NULL)
+		{
+			fclose(*out);
+		}
 		return (pid_t)-1;
 	}
 
@@ -814,7 +833,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 	int err_fd, err_pipe[2];
 	pid_t pid;
 
-	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
+	if(out != NULL && _pipe(out_pipe, 512, O_NOINHERIT) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
 		return (pid_t)-1;
@@ -823,8 +842,11 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 	if(_pipe(err_pipe, 512, O_NOINHERIT) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		close(out_pipe[0]);
-		close(out_pipe[1]);
+		if(out != NULL)
+		{
+			close(out_pipe[0]);
+			close(out_pipe[1]);
+		}
 		return (pid_t)-1;
 	}
 
@@ -835,7 +857,10 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 	pid = background_and_capture_internal(cmd, user_sh, in, out, err, out_pipe,
 			err_pipe);
 
-	_close(out_pipe[1]);
+	if(out != NULL)
+	{
+		_close(out_pipe[1]);
+	}
 	_close(err_pipe[1]);
 
 	_dup2(in_fd, _fileno(stdin));
@@ -844,7 +869,10 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 
 	if(pid == (pid_t)-1)
 	{
-		_close(out_pipe[0]);
+		if(out != NULL)
+		{
+			_close(out_pipe[0]);
+		}
 		_close(err_pipe[0]);
 	}
 
