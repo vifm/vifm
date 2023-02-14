@@ -740,6 +740,12 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
 				path);
+		if(entry == NULL)
+		{
+			/* Maybe the file doesn't exist anymore, maybe we've lost access to it or
+			 * we're just out of memory. */
+			continue;
+		}
 
 		if(skip_empty && entry->size == 0)
 		{
