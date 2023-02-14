@@ -168,7 +168,7 @@ run_with_input(char command[], FILE *input, ShellRequester by)
 		_Exit(127);
 	}
 
-	result = get_proc_exit_status(pid);
+	result = get_proc_exit_status(pid, &no_cancellation);
 
 	sigaction(SIGTSTP, &old, NULL);
 
@@ -231,7 +231,7 @@ process_cancel_request(pid_t pid, const cancellation_t *cancellation)
 }
 
 int
-get_proc_exit_status(pid_t pid)
+get_proc_exit_status(pid_t pid, const cancellation_t *cancellation)
 {
 	while(1)
 	{
@@ -240,9 +240,11 @@ get_proc_exit_status(pid_t pid)
 		{
 			if(errno == EINTR)
 			{
+				process_cancel_request(pid, cancellation);
 				continue;
 			}
-			LOG_SERROR_MSG(errno, "waitpid()");
+			LOG_SERROR_MSG(errno, "waitpid(%" PRINTF_ULL ") has failed",
+					(unsigned long long)pid);
 			break;
 		}
 

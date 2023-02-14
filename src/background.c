@@ -398,7 +398,7 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 		}
 		else
 		{
-			result = status_to_exit_code(get_proc_exit_status(pid));
+			result = status_to_exit_code(get_proc_exit_status(pid, cancellation));
 		}
 	}
 
@@ -1563,7 +1563,7 @@ bg_job_wait(bg_job_t *job)
 	}
 
 #ifndef _WIN32
-	int status = get_proc_exit_status(job->pid);
+	int status = get_proc_exit_status(job->pid, &no_cancellation);
 	if(status == -1)
 	{
 		return 1;
