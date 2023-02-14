@@ -93,6 +93,8 @@ typedef struct
 get_mount_point_traverser_state;
 
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
+static void process_cancel_request(pid_t pid,
+		const cancellation_t *cancellation);
 static void free_mnt_entries(struct mntent *entries, unsigned int nentries);
 static struct mntent * read_mnt_entries(unsigned int *nentries);
 static int clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs);
@@ -168,7 +170,7 @@ run_with_input(char command[], FILE *input, ShellRequester by)
 		_Exit(127);
 	}
 
-	result = get_proc_exit_status(pid);
+	result = get_proc_exit_status(pid, &no_cancellation);
 
 	sigaction(SIGTSTP, &old, NULL);
 
@@ -187,7 +189,7 @@ recover_after_shellout(void)
 
 void
 wait_for_data_from(pid_t pid, FILE *f, int fd,
-		const struct cancellation_t *cancellation)
+		const cancellation_t *cancellation)
 {
 	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
 	struct timeval ts;
@@ -217,8 +219,10 @@ block_all_thread_signals(void)
 	pthread_sigmask(SIG_SETMASK, &set, NULL);
 }
 
-void
-process_cancel_request(pid_t pid, const struct cancellation_t *cancellation)
+/* Checks whether cancelling of current operation is requested and sends SIGINT
+ * to process specified by its process id to request cancellation. */
+static void
+process_cancel_request(pid_t pid, const cancellation_t *cancellation)
 {
 	if(cancellation_requested(cancellation))
 	{
@@ -231,7 +235,7 @@ process_cancel_request(pid_t pid, const struct cancellation_t *cancellation)
 }
 
 int
-get_proc_exit_status(pid_t pid)
+get_proc_exit_status(pid_t pid, const cancellation_t *cancellation)
 {
 	while(1)
 	{
@@ -240,9 +244,11 @@ get_proc_exit_status(pid_t pid)
 		{
 			if(errno == EINTR)
 			{
+				process_cancel_request(pid, cancellation);
 				continue;
 			}
-			LOG_SERROR_MSG(errno, "waitpid()");
+			LOG_SERROR_MSG(errno, "waitpid(%" PRINTF_ULL ") has failed",
+					(unsigned long long)pid);
 			break;
 		}
 
@@ -1252,7 +1258,7 @@ get_drive_info(const char at[], uint64_t *total_bytes, uint64_t *free_bytes)
 }
 
 uint64_t
-get_true_inode(const struct dir_entry_t *entry)
+get_true_inode(const dir_entry_t *entry)
 {
 	if(entry->type != FT_LINK)
 	{
@@ -1268,6 +1274,23 @@ get_true_inode(const struct dir_entry_t *entry)
 		return s.st_ino;
 	}
 	return entry->inode;
+}
+
+void
+bind_pipe_or_die(int fd, int pipe_end, int pipe_other)
+{
+	if(dup2(pipe_end, fd) == -1)
+	{
+		perror("dup2");
+		_Exit(EXIT_FAILURE);
+	}
+
+	/* Close original input pipe descriptors. */
+	if(pipe_end != fd)
+	{
+		close(pipe_end);
+	}
+	close(pipe_other);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

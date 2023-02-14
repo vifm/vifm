@@ -159,10 +159,10 @@ int bg_and_wait_for_errors(char cmd[],
 		const struct cancellation_t *cancellation);
 
 /* Runs command in a background and redirects its stdout and stderr streams to
- * file streams which are set.  Input is redirected only if in parameter isn't
- * NULL.  Don't pass pipe for input, it can cause deadlock.  Returns id of
- * background process ((pid_t)0 for non-*nix like systems) or (pid_t)-1 on
- * error. */
+ * file streams which are set.  Input and output are redirected only if the
+ * corresponding parameter isn't NULL.  Don't pass pipe for input, it can cause
+ * deadlock.  Returns id of background process ((pid_t)0 for non-*nix like
+ * systems) or (pid_t)-1 on error. */
 pid_t bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out,
 		FILE **err);
 

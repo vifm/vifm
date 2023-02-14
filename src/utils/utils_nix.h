@@ -31,14 +31,10 @@
 
 struct cancellation_t;
 
-/* Checks whether cancelling of current operation is requested and sends SIGINT
- * to process specified by its process id to request cancellation. */
-void process_cancel_request(pid_t pid,
-		const struct cancellation_t *cancellation);
-
-/* Waits for a process to finish and queries for its exit status.  Returns exit
- * status of the process specified by its identifier. */
-int get_proc_exit_status(pid_t pid);
+/* Waits for a process to finish and queries its exit status.  Cancellation
+ * allows for killing the process by Ctrl+C.  Returns exit status of the
+ * process specified by its identifier or -1 on error. */
+int get_proc_exit_status(pid_t pid, const struct cancellation_t *cancellation);
 
 /* If err_only then use stderr and close stdin and stdout, otherwise both stdout
  * and stderr are redirected to the pipe.  Non-zero preserve_stdin prevents
@@ -77,6 +73,10 @@ int get_gid(const char group[], gid_t *gid);
 int status_to_exit_code(int status);
 
 int S_ISEXE(mode_t mode);
+
+/* Duplicates pipe_end file descriptor to fd and closes pipe_other.  Exists with
+ * an error message on issues. */
+void bind_pipe_or_die(int fd, int pipe_end, int pipe_other);
 
 #endif /* VIFM__UTILS__UTILS_NIX_H__ */
 

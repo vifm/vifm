@@ -140,6 +140,7 @@ process_cmd_output(const char descr[], const char cmd[], FILE *input,
 		show_progress("", 0);
 	}
 
+	/* XXX: reading can potentially never end if error pipe gets filled. */
 	wait_for_data_from(pid, file, 0, &ui_cancellation_info);
 	lines = read_stream_lines(file, &nlines, 1,
 			interactive ? NULL : &show_progress_cb, descr);

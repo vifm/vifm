@@ -40,10 +40,6 @@ extern const cancellation_t no_cancellation;
  * non-zero if so, otherwise zero is returned.  */
 int cancellation_requested(const cancellation_t *info);
 
-/* Checks whether cancellation is enabled (i.e. hook is provided).  Returns
- * non-zero if so, otherwise zero is returned. */
-int cancellation_possible(const cancellation_t *info);
-
 #endif /* VIFM__UTILS__CANCELLATION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

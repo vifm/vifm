@@ -320,14 +320,18 @@ AC_CHECK_PROG(COL_PROG, col, col)
 dnl awk is used to generate source with list of documentation tags
 AC_CHECK_PROG(AWK_PROG, awk, awk)
 
-dnl perl is used to generate tags from documentation
-AC_CHECK_PROG(PERL_PROG, perl, perl)
-
 dnl sed is used to make plain text documentation
 AC_CHECK_PROG(SED_PROG, sed, sed)
 
+dnl perl is used to generate tags from documentation
+AC_CHECK_PROG(PERL_PROG, perl, perl)
+
 dnl vim is a fallback for generating documentation tags when perl isn't there
 AC_CHECK_PROG(VIM_PROG, vim, vim)
+
+if test "x${PERL_PROG}${VIM_PROG}" == 'x'; then
+    AC_MSG_ERROR([Either perl or Vim is necessary to generate tags for documentation in Vim's format.])
+fi
 
 dnl check if we're building inside git repository
 AC_CHECK_PROG(GIT_PROG, git, git)
