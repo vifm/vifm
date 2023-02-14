@@ -25,13 +25,7 @@ const cancellation_t no_cancellation = {};
 int
 cancellation_requested(const cancellation_t *info)
 {
-	return cancellation_possible(info) && info->hook(info->arg);
-}
-
-int
-cancellation_possible(const cancellation_t *info)
-{
-	return info->hook != NULL;
+	return (info->hook != NULL && info->hook(info->arg));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
