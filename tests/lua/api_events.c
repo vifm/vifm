@@ -1,8 +1,12 @@
 #include <stic.h>
 
+#include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/str.h"
+#include "../../src/ops.h"
+#include "../../src/status.h"
 
 #include <test-utils.h>
 
@@ -55,25 +59,39 @@ TEST(app_fsop_is_called)
 	      "  handler = function(info) data[#data + 1] = info end"
 	      "}"));
 
-	vlua_events_app_fsop(vlua, OP_REMOVE, "path", NULL, /*extra=*/NULL,
-			/*dir=*/1);
-	vlua_events_app_fsop(vlua, OP_MOVE, "from", "to", /*extra=*/NULL, /*dir=*/0);
-	vlua_events_app_fsop(vlua, OP_USR, "echo", NULL, /*extra=*/NULL, /*dir=*/0);
+	conf_setup();
+	cfg.use_system_calls = 1;
+	curr_stats.vlua = vlua;
+	assert_success(os_chdir(SANDBOX_PATH));
+	assert_int_equal(OPS_SUCCEEDED, perform_operation(OP_MKFILE, NULL, NULL,
+				"from", NULL));
+	assert_int_equal(OPS_SUCCEEDED, perform_operation(OP_MOVE, NULL, NULL,
+				"from", "to"));
+	assert_int_equal(OPS_SUCCEEDED, perform_operation(OP_REMOVESL, NULL, NULL,
+				"to", NULL));
 	vlua_process_callbacks(vlua);
+	curr_stats.vlua = NULL;
+	cfg.use_system_calls = 0;
+	conf_teardown();
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "print(#data)"));
-	assert_string_equal("2", ui_sb_last());
+	assert_string_equal("3", ui_sb_last());
 	assert_success(vlua_run_string(vlua, "print(data[1].op,"
 	                                           "data[1].path,"
 	                                           "data[1].target,"
 	                                           "data[1].isdir)"));
-	assert_string_equal("remove\tpath\tnil\ttrue", ui_sb_last());
+	assert_string_equal("create\tfrom\tnil\tfalse", ui_sb_last());
 	assert_success(vlua_run_string(vlua, "print(data[2].op,"
 	                                           "data[2].path,"
 	                                           "data[2].target,"
 	                                           "data[2].isdir)"));
 	assert_string_equal("move\tfrom\tto\tfalse", ui_sb_last());
+	assert_success(vlua_run_string(vlua, "print(data[3].op,"
+	                                           "data[3].path,"
+	                                           "data[3].target,"
+	                                           "data[3].isdir)"));
+	assert_string_equal("remove\tto\tnil\tfalse", ui_sb_last());
 }
 
 TEST(same_handler_is_called_once)
