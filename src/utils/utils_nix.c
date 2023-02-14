@@ -187,7 +187,7 @@ recover_after_shellout(void)
 
 void
 wait_for_data_from(pid_t pid, FILE *f, int fd,
-		const struct cancellation_t *cancellation)
+		const cancellation_t *cancellation)
 {
 	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
 	struct timeval ts;
@@ -218,7 +218,7 @@ block_all_thread_signals(void)
 }
 
 void
-process_cancel_request(pid_t pid, const struct cancellation_t *cancellation)
+process_cancel_request(pid_t pid, const cancellation_t *cancellation)
 {
 	if(cancellation_requested(cancellation))
 	{
@@ -1252,7 +1252,7 @@ get_drive_info(const char at[], uint64_t *total_bytes, uint64_t *free_bytes)
 }
 
 uint64_t
-get_true_inode(const struct dir_entry_t *entry)
+get_true_inode(const dir_entry_t *entry)
 {
 	if(entry->type != FT_LINK)
 	{
