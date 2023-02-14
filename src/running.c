@@ -1330,6 +1330,9 @@ output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 
 	lines = NULL;
 	len = 0;
+	/* XXX: the loop can potentially never end if error pipe gets filled, might
+	 *      need to redirect stderr to /dev/null instead of opening and not using
+	 *      it. */
 	while(fgets(buf, sizeof(buf), file) == buf)
 	{
 		char *p;
