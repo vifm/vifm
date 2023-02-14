@@ -21,18 +21,18 @@
 
 #include <curses.h> /* werase() */
 
-#include <sys/types.h> /* pid_t ssize_t */
+#include <sys/types.h> /* pid_t */
 #include <sys/stat.h> /* S_IRWXU */
 #ifndef _WIN32
-#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 #endif
-#include <unistd.h> /* execve() fork() unlink() */
+#include <unistd.h> /* unlink() */
 
 #include <errno.h> /* errno ENOTDIR */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() fclose() */
 #include <stdlib.h> /* EXIT_SUCCESS free() malloc() */
-#include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
+#include <string.h> /* memmove() strcpy() strlen() strcmp() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -43,6 +43,7 @@
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/cancellation.h"
+#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -78,8 +79,9 @@ TSTATIC void format_mount_command(const char mount_point[],
 static fuse_mount_t * get_mount_by_source(const char source[]);
 static fuse_mount_t * get_mount_by_mount_point(const char dir[]);
 static fuse_mount_t * get_mount_by_path(const char path[]);
-static int run_fuse_command(char cmd[], const cancellation_t *cancellation,
-		int *cancelled);
+static int run_fuse_command(char cmd[], int *cancelled, char **errors);
+static char * read_proc_stream(pid_t pid, FILE *fp,
+		const cancellation_t *cancellation);
 static void kill_mount_point(const char mount_point[]);
 static void updir_from_mount(view_t *view, fuse_mount_t *runner);
 
@@ -179,9 +181,6 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	int id;
 	int mount_point_id;
 	int foreground;
-	char errors_file[PATH_MAX + 1];
-	int status;
-	int cancelled;
 
 	id = get_last_mount_point_id(fuse_mounts);
 	mount_point_id = id;
@@ -230,30 +229,17 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 		ui_shutdown();
 	}
 
-	generate_tmp_file_name("vifm.errors", errors_file, sizeof(errors_file));
-
-	strcat(mount_cmd, " 2> ");
-	strcat(mount_cmd, errors_file);
 	LOG_INFO_MSG("FUSE mount command: `%s`", mount_cmd);
-	if(foreground)
-	{
-		cancelled = 0;
-		status = run_fuse_command(mount_cmd, &no_cancellation, NULL);
-	}
-	else
-	{
-		ui_cancellation_push_on();
-		status = run_fuse_command(mount_cmd, &ui_cancellation_info, &cancelled);
-		ui_cancellation_pop();
-	}
+	int cancelled = 0;
+	char *mounter_errors = NULL;
+	int status = run_fuse_command(mount_cmd, foreground ? NULL : &cancelled,
+			&mounter_errors);
 
 	ui_sb_clear();
 
 	/* Check child process exit status. */
 	if(!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS)
 	{
-		FILE *ef;
-
 		if(!WIFEXITED(status))
 		{
 			LOG_ERROR_MSG("FUSE mounter didn't exit!");
@@ -263,13 +249,11 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 			LOG_ERROR_MSG("FUSE mount command exit status: %d", WEXITSTATUS(status));
 		}
 
-		ef = os_fopen(errors_file, "r");
-		if(ef == NULL)
+		if(!is_null_or_empty(mounter_errors))
 		{
-			LOG_SERROR_MSG(errno, "Failed to open temporary stderr file: %s",
-					errors_file);
+			show_error_msg("FUSE Mounter Errors", mounter_errors);
 		}
-		show_errors_from_file(ef, "FUSE mounter error");
+		free(mounter_errors);
 
 		werase(status_bar);
 
@@ -280,12 +264,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 		}
 		else
 		{
-			show_error_msg("FUSE MOUNT ERROR", file_full_path);
-		}
-
-		if(unlink(errors_file) != 0)
-		{
-			LOG_SERROR_MSG(errno, "Error file deletion failure: %s", errors_file);
+			show_error_msgf("FUSE", "Failed to mount file: %s", file_full_path);
 		}
 
 		/* Remove the directory we created for the mount. */
@@ -294,7 +273,6 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 		(void)vifm_chdir(flist_get_dir(view));
 		return -1;
 	}
-	unlink(errors_file);
 	ui_sb_msg("FUSE mount success");
 
 	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id,
@@ -560,9 +538,8 @@ fuse_try_unmount(view_t *view)
 			shell_arg_escape(runner->mount_point, curr_stats.shell_type);
 
 		char unmount_cmd[14 + PATH_MAX + 1];
-		snprintf(unmount_cmd, sizeof(unmount_cmd), "%s %s 2> /dev/null",
-				curr_stats.fuse_umount_cmd,
-				escaped_mount_point);
+		snprintf(unmount_cmd, sizeof(unmount_cmd), "%s %s",
+				curr_stats.fuse_umount_cmd, escaped_mount_point);
 		LOG_INFO_MSG("FUSE unmount command: `%s`", unmount_cmd);
 		free(escaped_mount_point);
 
@@ -575,7 +552,8 @@ fuse_try_unmount(view_t *view)
 		}
 
 		ui_sb_msg("FUSE unmounting selected file, please stand by...");
-		int status = run_fuse_command(unmount_cmd, &no_cancellation, NULL);
+		int status = run_fuse_command(unmount_cmd, /*cancelled=*/NULL,
+				/*errors=*/NULL);
 		ui_sb_clear();
 		/* Check child status. */
 		if(!WIFEXITED(status) || WEXITSTATUS(status))
@@ -603,65 +581,82 @@ fuse_try_unmount(view_t *view)
 	return 1;
 }
 
-/* Runs command in background not redirecting its streams.  To determine an
- * error uses exit status only.  cancelled can be NULL when operations is not
- * cancellable.  Returns status on success, otherwise -1 is returned.  Sets
- * correct value of *cancelled even on error. */
+/* Runs command in background keeping its stdin and stdout connected to the
+ * terminal.  NULL in the cancelled parameter means that the operations is not
+ * cancellable, otherwise *cancelled is set to the correct value even on error.
+ * If the errors parameter isn't NULL, stderr output is returned, otherwise
+ * it's captured and discarded.  Returns status on success, otherwise -1 is
+ * returned. */
 static int
-run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
+run_fuse_command(char cmd[], int *cancelled, char **errors)
 {
-#ifndef _WIN32
-	pid_t pid;
-	int status;
-
-	if(cancellation_possible(cancellation))
+	const cancellation_t *cancellation = &no_cancellation;
+	if(cancelled != NULL)
 	{
+		cancellation = &ui_cancellation_info;
 		*cancelled = 0;
 	}
 
-	if(cmd == NULL)
-	{
-		return 1;
-	}
-
-	pid = fork();
+	FILE *err;
+	pid_t pid =
+		bg_run_and_capture(cmd, /*user_sh=*/0, /*in=*/NULL, /*out=*/NULL, &err);
 	if(pid == (pid_t)-1)
 	{
-		LOG_SERROR_MSG(errno, "Forking has failed.");
 		return -1;
 	}
 
-	if(pid == (pid_t)0)
+	if(cancelled != NULL)
 	{
-		extern char **environ;
-
-		prepare_for_exec();
-		(void)execve(get_execv_path(cfg.shell),
-				make_execv_array(cfg.shell, "-c", cmd), environ);
-		_Exit(127);
+		ui_cancellation_push_on();
 	}
 
-	while(waitpid(pid, &status, 0) == -1)
-	{
-		if(errno != EINTR)
-		{
-			LOG_SERROR_MSG(errno, "Failed waiting for process: %" PRINTF_ULL,
-					(unsigned long long)pid);
-			status = -1;
-			break;
-		}
-		process_cancel_request(pid, cancellation);
-	}
+	/* We're always reading the error stream, but dropping all that we've read
+	 * unless errors parameter is non-NULL. */
+	char *errors_buf = read_proc_stream(pid, err, cancellation);
+	fclose(err);
 
-	if(cancellation_requested(cancellation))
+	if(errors != NULL)
 	{
-		*cancelled = 1;
+		*errors = errors_buf;
+		errors_buf = NULL;
+	}
+	free(errors_buf);
+
+	/* The only bit that can't compile on Windows.  Also mind that
+	 * bg_run_and_capture() doesn't actually return PID on Windows. */
+#ifndef _WIN32
+	int status = get_proc_exit_status(pid, cancellation);
+#else
+	int status = -1;
+#endif
+
+	if(cancelled != NULL)
+	{
+		*cancelled = cancellation_requested(cancellation);
+		ui_cancellation_pop();
 	}
 
 	return status;
-#else
-	return -1;
-#endif
+}
+
+/* Reads redirected stream from the process while handling cancellation.
+ * Returns read data */
+static char *
+read_proc_stream(pid_t pid, FILE *fp, const cancellation_t *cancellation)
+{
+	char *buf = NULL;
+	size_t buf_len = 0;
+
+	char *line = NULL;
+	wait_for_data_from(pid, fp, /*fd=*/-1, cancellation);
+	while((line = read_line(fp, line)) != NULL)
+	{
+		(void)strappend(&buf, &buf_len, line);
+		wait_for_data_from(pid, fp, /*fd=*/-1, cancellation);
+	}
+	free(line);
+
+	return buf;
 }
 
 /* Deletes mount point by its path. */

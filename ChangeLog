@@ -138,6 +138,10 @@
 
 	Fixed 'milleroptions' not recovering value of "rpreview:" on error.
 
+	Fixed FUSE mounting assuming `2>` redirection is supported by the shell,
+	which isn't true at least for csh and tcsh.  Thanks to Evgeniy (a.k.a.
+	iron-udjin).
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
