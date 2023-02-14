@@ -178,7 +178,6 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 
 	int id;
 	int mount_point_id;
-	char buf[2*PATH_MAX];
 	int foreground;
 	char errors_file[PATH_MAX + 1];
 	int status;
@@ -220,8 +219,9 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 		return -1;
 	}
 
-	format_mount_command(mount_point, file_full_path, param, program, sizeof(buf),
-			buf, &foreground);
+	char mount_cmd[2*PATH_MAX];
+	format_mount_command(mount_point, file_full_path, param, program,
+			sizeof(mount_cmd), mount_cmd, &foreground);
 
 	ui_sb_msg("FUSE mounting selected file, please stand by..");
 
@@ -232,18 +232,18 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 
 	generate_tmp_file_name("vifm.errors", errors_file, sizeof(errors_file));
 
-	strcat(buf, " 2> ");
-	strcat(buf, errors_file);
-	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
+	strcat(mount_cmd, " 2> ");
+	strcat(mount_cmd, errors_file);
+	LOG_INFO_MSG("FUSE mount command: `%s`", mount_cmd);
 	if(foreground)
 	{
 		cancelled = 0;
-		status = run_fuse_command(buf, &no_cancellation, NULL);
+		status = run_fuse_command(mount_cmd, &no_cancellation, NULL);
 	}
 	else
 	{
 		ui_cancellation_push_on();
-		status = run_fuse_command(buf, &ui_cancellation_info, &cancelled);
+		status = run_fuse_command(mount_cmd, &ui_cancellation_info, &cancelled);
 		ui_cancellation_pop();
 	}
 
@@ -559,10 +559,11 @@ fuse_try_unmount(view_t *view)
 		char *escaped_mount_point =
 			shell_arg_escape(runner->mount_point, curr_stats.shell_type);
 
-		char buf[14 + PATH_MAX + 1];
-		snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
+		char unmount_cmd[14 + PATH_MAX + 1];
+		snprintf(unmount_cmd, sizeof(unmount_cmd), "%s %s 2> /dev/null",
+				curr_stats.fuse_umount_cmd,
 				escaped_mount_point);
-		LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
+		LOG_INFO_MSG("FUSE unmount command: `%s`", unmount_cmd);
 		free(escaped_mount_point);
 
 		/* Have to chdir to parent temporarily, so that this DIR can be
@@ -574,7 +575,7 @@ fuse_try_unmount(view_t *view)
 		}
 
 		ui_sb_msg("FUSE unmounting selected file, please stand by..");
-		int status = run_fuse_command(buf, &no_cancellation, NULL);
+		int status = run_fuse_command(unmount_cmd, &no_cancellation, NULL);
 		ui_sb_clear();
 		/* Check child status. */
 		if(!WIFEXITED(status) || WEXITSTATUS(status))
