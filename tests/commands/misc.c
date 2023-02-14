@@ -28,6 +28,7 @@
 #include "../../src/flist_hist.h"
 #include "../../src/plugins.h"
 #include "../../src/registers.h"
+#include "../../src/running.h"
 #include "../../src/status.h"
 
 static char *saved_cwd;
@@ -347,8 +348,8 @@ TEST(compare)
 			"listunique ofboth ofone groupids grouppaths", &lwin, CIT_COMMAND);
 	assert_true(flist_custom_active(&lwin));
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	rn_leave(&lwin, /*levels=*/1);
 
-	assert_int_equal(0, change_directory(&lwin, ".."));
 	/* No toggling. */
 	(void)cmds_dispatch("compare! showdifferent", &lwin, CIT_COMMAND);
 	assert_string_equal("Toggling requires active compare view", ui_sb_last());
@@ -376,8 +377,8 @@ TEST(compare)
 	assert_int_equal(CF_GROUP_PATHS | CF_IGNORE_CASE | CF_SHOW_UNIQUE_LEFT |
 			CF_SHOW_UNIQUE_RIGHT, lwin.custom.diff_cmp_flags);
 	assert_string_equal("Unexpected property for toggling: byname", ui_sb_last());
-	assert_success(chdir(cwd));
 
+	assert_success(chdir(cwd));
 	assert_success(remove(SANDBOX_PATH "/file"));
 	opt_handlers_teardown();
 }
