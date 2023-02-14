@@ -31,11 +31,6 @@
 
 struct cancellation_t;
 
-/* Checks whether cancelling of current operation is requested and sends SIGINT
- * to process specified by its process id to request cancellation. */
-void process_cancel_request(pid_t pid,
-		const struct cancellation_t *cancellation);
-
 /* Waits for a process to finish and queries its exit status.  Cancellation
  * allows for killing the process by Ctrl+C.  Returns exit status of the
  * process specified by its identifier or -1 on error. */

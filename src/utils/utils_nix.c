@@ -93,6 +93,8 @@ typedef struct
 get_mount_point_traverser_state;
 
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
+static void process_cancel_request(pid_t pid,
+		const cancellation_t *cancellation);
 static void free_mnt_entries(struct mntent *entries, unsigned int nentries);
 static struct mntent * read_mnt_entries(unsigned int *nentries);
 static int clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs);
@@ -217,7 +219,9 @@ block_all_thread_signals(void)
 	pthread_sigmask(SIG_SETMASK, &set, NULL);
 }
 
-void
+/* Checks whether cancelling of current operation is requested and sends SIGINT
+ * to process specified by its process id to request cancellation. */
+static void
 process_cancel_request(pid_t pid, const cancellation_t *cancellation)
 {
 	if(cancellation_requested(cancellation))
