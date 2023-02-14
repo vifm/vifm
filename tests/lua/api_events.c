@@ -85,8 +85,10 @@ TEST(app_fsop_is_called)
 	assert_success(vlua_run_string(vlua, "print(data[2].op,"
 	                                           "data[2].path,"
 	                                           "data[2].target,"
+	                                           "data[2].fromtrash,"
+	                                           "data[2].totrash,"
 	                                           "data[2].isdir)"));
-	assert_string_equal("move\tfrom\tto\tfalse", ui_sb_last());
+	assert_string_equal("move\tfrom\tto\tfalse\tfalse\tfalse", ui_sb_last());
 	assert_success(vlua_run_string(vlua, "print(data[3].op,"
 	                                           "data[3].path,"
 	                                           "data[3].target,"

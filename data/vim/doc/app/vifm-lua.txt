@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Feb 12
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Feb 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -392,6 +392,13 @@ Fields of the only table parameter:
  - "target" (string) (optional)
    Destination path or target of a symbolic link.
  - "isdir" (boolean)
+   Whether operation is performed on a directory.
+ - "fromtrash" (boolean) (optional)
+   "move" operation sets the flag if "path" points inside a trash directory,
+   meaning that file was restored or otherwise moved from trash.
+ - "totrash" (boolean) (optional)
+   "move" operation sets the flag if "target" points inside a trash directory,
+   meaning that file was deleted to trash.
 
 Operation types:
  - "copy"
@@ -399,8 +406,9 @@ Operation types:
  - "create"
    Creation of a file/directory.
  - "move"
-   Moving a file/directory from one location to another.  Includes renames and
-   moves across partition boundaries.
+   Moving a file/directory from one location to another.  Includes renames,
+   moves across partition boundaries, deletion to trash and moving out of
+   trash.
  - "remove"
    Removal of a file/directory.  This includes symbolic link removal on
    changing its target.
