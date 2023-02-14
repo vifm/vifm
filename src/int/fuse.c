@@ -574,7 +574,7 @@ fuse_try_unmount(view_t *view)
 			return -1;
 		}
 
-		ui_sb_msg("FUSE unmounting selected file, please stand by..");
+		ui_sb_msg("FUSE unmounting selected file, please stand by...");
 		int status = run_fuse_command(unmount_cmd, &no_cancellation, NULL);
 		ui_sb_clear();
 		/* Check child status. */
