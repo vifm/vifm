@@ -1270,5 +1270,22 @@ get_true_inode(const struct dir_entry_t *entry)
 	return entry->inode;
 }
 
+void
+bind_pipe_or_die(int fd, int pipe_end, int pipe_other)
+{
+	if(dup2(pipe_end, fd) == -1)
+	{
+		perror("dup2");
+		_Exit(EXIT_FAILURE);
+	}
+
+	/* Close original input pipe descriptors. */
+	if(pipe_end != fd)
+	{
+		close(pipe_end);
+	}
+	close(pipe_other);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

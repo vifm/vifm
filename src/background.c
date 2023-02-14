@@ -688,21 +688,9 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 
 	if(pid == 0)
 	{
-		char *sh_flag;
+		bind_pipe_or_die(STDOUT_FILENO, out_pipe[1], out_pipe[0]);
 
-		close(out_pipe[0]);
-		if(dup2(out_pipe[1], STDOUT_FILENO) == -1)
-		{
-			_Exit(EXIT_FAILURE);
-		}
-		close(out_pipe[1]);
-
-		close(error_pipe[0]);
-		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
-		{
-			_Exit(EXIT_FAILURE);
-		}
-		close(error_pipe[1]);
+		bind_pipe_or_die(STDERR_FILENO, error_pipe[1], error_pipe[0]);
 
 		if(in != NULL)
 		{
@@ -716,7 +704,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 			fclose(in);
 		}
 
-		sh_flag = user_sh ? cfg.shell_cmd_flag : "-c";
+		char *sh_flag = user_sh ? cfg.shell_cmd_flag : "-c";
 		prepare_for_exec();
 		execvp(get_execv_path(cfg.shell),
 				make_execv_array(cfg.shell, sh_flag, cmd));
@@ -1013,26 +1001,12 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 
 		if(supply_input)
 		{
-			if(dup2(input_pipe[0], STDIN_FILENO) == -1)
-			{
-				perror("dup2");
-				_Exit(EXIT_FAILURE);
-			}
-			/* Close original input pipe descriptors. */
-			close(input_pipe[0]);
-			close(input_pipe[1]);
+			bind_pipe_or_die(STDIN_FILENO, input_pipe[0], input_pipe[1]);
 		}
 
 		if(capture_output)
 		{
-			if(dup2(output_pipe[1], STDOUT_FILENO) == -1)
-			{
-				perror("dup2");
-				_Exit(EXIT_FAILURE);
-			}
-			/* Close original output pipe descriptors. */
-			close(output_pipe[0]);
-			close(output_pipe[1]);
+			bind_pipe_or_die(STDOUT_FILENO, output_pipe[1], output_pipe[0]);
 		}
 
 		/* Attach stdin and optionally stdout to /dev/null. */

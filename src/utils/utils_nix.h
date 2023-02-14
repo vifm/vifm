@@ -78,6 +78,10 @@ int status_to_exit_code(int status);
 
 int S_ISEXE(mode_t mode);
 
+/* Duplicates pipe_end file descriptor to fd and closes pipe_other.  Exists with
+ * an error message on issues. */
+void bind_pipe_or_die(int fd, int pipe_end, int pipe_other);
+
 #endif /* VIFM__UTILS__UTILS_NIX_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
