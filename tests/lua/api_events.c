@@ -63,6 +63,8 @@ TEST(app_fsop_is_called)
 	cfg.use_system_calls = 1;
 	curr_stats.vlua = vlua;
 	assert_success(os_chdir(SANDBOX_PATH));
+	assert_int_equal(OPS_SUCCEEDED, perform_operation(OP_USR, NULL, NULL,
+				"echo", NULL));
 	assert_int_equal(OPS_SUCCEEDED, perform_operation(OP_MKFILE, NULL, NULL,
 				"from", NULL));
 	assert_int_equal(OPS_SUCCEEDED, perform_operation(OP_MOVE, NULL, NULL,

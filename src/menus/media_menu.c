@@ -138,6 +138,8 @@ media_khandler(struct view_t *view, menu_data_t *m, const wchar_t keys[])
 	if(wcscmp(keys, L"r") == 0)
 	{
 		reload_list(m);
+		menus_set_pos(m->state, m->pos);
+		menus_partial_redraw(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"[") == 0)

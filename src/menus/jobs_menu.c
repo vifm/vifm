@@ -36,6 +36,8 @@ static int execute_jobs_cb(view_t *view, menu_data_t *m);
 static KHandlerResponse jobs_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 static int cancel_job(menu_data_t *m, bg_job_t *job);
+static void reload_jobs_list(menu_data_t *m);
+static char * format_job_item(bg_job_t *job);
 static void show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job);
 static KHandlerResponse errs_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
@@ -46,53 +48,12 @@ static menu_data_t jobs_m;
 int
 show_jobs_menu(view_t *view)
 {
-	bg_job_t *p;
-	int i;
-
 	menus_init_data(&jobs_m, view, strdup("Pid --- Command"),
 			strdup("No jobs currently running"));
 	jobs_m.execute_handler = &execute_jobs_cb;
 	jobs_m.key_handler = &jobs_khandler;
 
-	bg_check();
-
-	p = bg_jobs;
-
-	i = 0;
-	while(p != NULL)
-	{
-		if(bg_job_is_running(p))
-		{
-			char info_buf[24];
-			char item_buf[sizeof(info_buf) + strlen(p->cmd) + 1024];
-
-			if(p->type == BJT_COMMAND)
-			{
-				snprintf(info_buf, sizeof(info_buf), "%" PRINTF_ULL,
-						(unsigned long long)p->pid);
-			}
-			else if(p->bg_op.total == BG_UNDEFINED_TOTAL)
-			{
-				snprintf(info_buf, sizeof(info_buf), "n/a");
-			}
-			else
-			{
-				snprintf(info_buf, sizeof(info_buf), "%d/%d", p->bg_op.done + 1,
-						p->bg_op.total);
-			}
-
-			snprintf(item_buf, sizeof(item_buf), "%-8s  %s%s", info_buf, p->cmd,
-					bg_job_cancelled(p) ? " (cancelling...)" : "");
-			i = add_to_string_array(&jobs_m.items, i, item_buf);
-			jobs_m.void_data = reallocarray(jobs_m.void_data, i,
-					sizeof(*jobs_m.void_data));
-			jobs_m.void_data[i - 1] = p;
-		}
-
-		p = p->next;
-	}
-
-	jobs_m.len = i;
+	reload_jobs_list(&jobs_m);
 
 	return menus_enter(jobs_m.state, view);
 }
@@ -127,6 +88,13 @@ jobs_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		show_job_errors(view, m, m->void_data[m->pos]);
 		return KHR_REFRESH_WINDOW;
 	}
+	else if(wcscmp(keys, L"r") == 0)
+	{
+		reload_jobs_list(m);
+		menus_set_pos(m->state, m->pos);
+		menus_partial_redraw(m->state);
+		return KHR_REFRESH_WINDOW;
+	}
 	/* TODO: maybe use DD for forced termination? */
 	return KHR_UNHANDLED;
 }
@@ -146,15 +114,89 @@ cancel_job(menu_data_t *m, bg_job_t *job)
 		{
 			if(bg_job_cancel(job))
 			{
-				char *new_line = format_str("%s (cancelling...)", m->items[m->pos]);
-				free(m->items[m->pos]);
-				m->items[m->pos] = new_line;
+				put_string(&m->items[m->pos], format_job_item(job));
 			}
 			break;
 		}
 	}
 
 	return (p != NULL);
+}
+
+/* (Re)loads list of jobs into the menu. */
+static void
+reload_jobs_list(menu_data_t *m)
+{
+	free(m->void_data);
+	free_string_array(m->items, m->len);
+
+	m->void_data = NULL;
+	m->items = NULL;
+	m->len = 0;
+
+	bg_check();
+
+	int len = 0;
+	bg_job_t *p;
+	for(p = bg_jobs; p != NULL; p = p->next)
+	{
+		if(!bg_job_is_running(p))
+		{
+			continue;
+		}
+
+		char *item = format_job_item(p);
+		if(item == NULL)
+		{
+			continue;
+		}
+
+		int new_i = put_into_string_array(&m->items, len, item);
+		if(new_i != len + 1)
+		{
+			free(item);
+			continue;
+		}
+
+		void **new_data = reallocarray(m->void_data, new_i, sizeof(*m->void_data));
+		if(new_data == NULL)
+		{
+			free(item);
+			continue;
+		}
+
+		m->void_data = new_data;
+		m->void_data[len] = p;
+
+		++len;
+	}
+
+	m->len = len;
+}
+
+/* Formats single menu line that describes state of the job.  Returns formatted
+ * string or NULL on error. */
+static char *
+format_job_item(bg_job_t *job)
+{
+	char info_buf[24];
+	if(job->type == BJT_COMMAND)
+	{
+		snprintf(info_buf, sizeof(info_buf), "%" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+	else if(job->bg_op.total == BG_UNDEFINED_TOTAL)
+	{
+		snprintf(info_buf, sizeof(info_buf), "n/a");
+	}
+	else
+	{
+		snprintf(info_buf, sizeof(info_buf), "%d/%d", job->bg_op.done + 1,
+				job->bg_op.total);
+	}
+
+	const char *cancelled = (bg_job_cancelled(job) ? "(cancelling...) " : "");
+	return format_str("%-8s  %s%s", info_buf, cancelled, job->cmd);
 }
 
 /* Shows job errors if there is something and the job is still running.

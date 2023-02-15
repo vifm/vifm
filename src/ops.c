@@ -144,6 +144,7 @@ static int ui_cancellation_hook(void *arg);
 #ifndef _WIN32
 static OpsResult run_operation_command(ops_t *ops, char cmd[], int cancellable);
 #endif
+static int ops_runs_in_bg(const ops_t *ops);
 static int bg_cancellation_hook(void *arg);
 static OpsResult result_from_code(int exit_code);
 
@@ -298,7 +299,7 @@ OpsResult
 perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 		const char dst[])
 {
-	if(ops != NULL && ops->bg)
+	if(ops_runs_in_bg(ops))
 	{
 		/* Not reporting events from background jobs. */
 		return op_funcs[op](ops, data, src, dst);
@@ -693,7 +694,9 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		result = exec_io_op(ops, &ior_mv, &args, data == NULL);
 	}
 
-	if(result == OPS_SUCCEEDED)
+	/* Accounting for background jobs might take some kind of a queue of events
+	 * to handle both internal updates and app.fsop Lua event. */
+	if(result == OPS_SUCCEEDED && !ops_runs_in_bg(ops))
 	{
 		trash_file_moved(src, dst);
 		bmarks_file_moved(src, dst);
@@ -1063,7 +1066,7 @@ exec_io_op(ops_t *ops, IoRes (*func)(io_args_t *), io_args_t *args,
 
 	if(cancellable)
 	{
-		if(ops != NULL && ops->bg)
+		if(ops_runs_in_bg(ops))
 		{
 			args->cancellation.arg = ops->bg_op;
 			args->cancellation.hook = &bg_cancellation_hook;
@@ -1270,7 +1273,7 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 		return result_from_code(bg_and_wait_for_errors(cmd, &no_cancellation));
 	}
 
-	if(ops != NULL && ops->bg)
+	if(ops_runs_in_bg(ops))
 	{
 		const cancellation_t bg_cancellation_info = {
 			.arg = ops->bg_op,
@@ -1291,6 +1294,14 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 }
 
 #endif
+
+/* Checks whether operation is a background one.  The parameter can be NULL.
+ * Returns non-zero for background operations. */
+static int
+ops_runs_in_bg(const ops_t *ops)
+{
+	return (ops != NULL && ops->bg);
+}
 
 /* Implementation of cancellation hook for background tasks. */
 static int
