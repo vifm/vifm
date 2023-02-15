@@ -36,6 +36,7 @@ static int execute_jobs_cb(view_t *view, menu_data_t *m);
 static KHandlerResponse jobs_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 static int cancel_job(menu_data_t *m, bg_job_t *job);
+static void reload_jobs_list(menu_data_t *m);
 static char * format_job_item(bg_job_t *job);
 static void show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job);
 static KHandlerResponse errs_khandler(view_t *view, menu_data_t *m,
@@ -47,52 +48,12 @@ static menu_data_t jobs_m;
 int
 show_jobs_menu(view_t *view)
 {
-	bg_job_t *p;
-	int i;
-
 	menus_init_data(&jobs_m, view, strdup("Pid --- Command"),
 			strdup("No jobs currently running"));
 	jobs_m.execute_handler = &execute_jobs_cb;
 	jobs_m.key_handler = &jobs_khandler;
 
-	bg_check();
-
-	i = 0;
-	for(p = bg_jobs; p != NULL; p = p->next)
-	{
-		if(!bg_job_is_running(p))
-		{
-			continue;
-		}
-
-		char *item = format_job_item(p);
-		if(item == NULL)
-		{
-			continue;
-		}
-
-		int new_i = put_into_string_array(&jobs_m.items, i, item);
-		if(new_i != i + 1)
-		{
-			free(item);
-			continue;
-		}
-
-		void **new_data =
-			reallocarray(jobs_m.void_data, new_i, sizeof(*jobs_m.void_data));
-		if(new_data == NULL)
-		{
-			free(item);
-			continue;
-		}
-
-		jobs_m.void_data = new_data;
-		jobs_m.void_data[i] = p;
-
-		++i;
-	}
-
-	jobs_m.len = i;
+	reload_jobs_list(&jobs_m);
 
 	return menus_enter(jobs_m.state, view);
 }
@@ -153,6 +114,57 @@ cancel_job(menu_data_t *m, bg_job_t *job)
 	}
 
 	return (p != NULL);
+}
+
+/* (Re)loads list of jobs into the menu. */
+static void
+reload_jobs_list(menu_data_t *m)
+{
+	free(m->void_data);
+	free_string_array(m->items, m->len);
+
+	m->void_data = NULL;
+	m->items = NULL;
+	m->len = 0;
+
+	bg_check();
+
+	int len = 0;
+	bg_job_t *p;
+	for(p = bg_jobs; p != NULL; p = p->next)
+	{
+		if(!bg_job_is_running(p))
+		{
+			continue;
+		}
+
+		char *item = format_job_item(p);
+		if(item == NULL)
+		{
+			continue;
+		}
+
+		int new_i = put_into_string_array(&m->items, len, item);
+		if(new_i != len + 1)
+		{
+			free(item);
+			continue;
+		}
+
+		void **new_data = reallocarray(m->void_data, new_i, sizeof(*m->void_data));
+		if(new_data == NULL)
+		{
+			free(item);
+			continue;
+		}
+
+		m->void_data = new_data;
+		m->void_data[len] = p;
+
+		++len;
+	}
+
+	m->len = len;
 }
 
 /* Formats single menu line that describes state of the job.  Returns formatted
