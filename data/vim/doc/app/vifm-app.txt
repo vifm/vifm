@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 7
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5436,16 +5436,18 @@ d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
     bit from all files, but preserve it for directories, set all execute flags
     to 'd' and check 'Set Recursively' flag.
 
-Jobs menu~
+Jobs menu (:jobs)~
 
-dd requests cancellation of job under cursor.  The job won't be removed from
+dd - request cancellation of job under cursor.  The job won't be removed from
 the list, but marked as being cancelled (if cancellation was successfully
 requested).  A message will pop up if the job has already stopped.
 Note that on Windows cancelling external programs like this might not work,
 because their parent shell doesn't have any windows.
 
-e key displays errors of selected job if any were collected.  They are
+e - display errors of selected job if any were collected.  They are
 displayed in a new menu, but you can get back to jobs menu by pressing h.
+
+r - reload the list of jobs.
 
 Undolist menu~
 

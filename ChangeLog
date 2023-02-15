@@ -66,6 +66,9 @@
 
 	Added "rpreview:files" to 'milleroptions'.  Thanks to aksr.
 
+	Added r key to :jobs menu, which reloads the list of jobs.  Thanks to
+	Sylwia Ptasinska (a.k.a. SylEleuth).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

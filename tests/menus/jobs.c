@@ -80,6 +80,14 @@ TEST(dd_press)
 			menu_get_current()->items[0]);
 }
 
+TEST(r_press)
+{
+	bg_job_t *job = bg_jobs;
+	replace_string(&job->cmd, "job_updated");
+	(void)vle_keys_exec(WK_r);
+	assert_string_equal("1/0       job_updated", menu_get_current()->items[0]);
+}
+
 TEST(e_press_without_errors)
 {
 	(void)vle_keys_exec(WK_e);

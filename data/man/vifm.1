@@ -1,4 +1,4 @@
-.TH VIFM 1 "7 February 2022" "vifm 0.12.1"
+.TH VIFM 1 "15 February 2022" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6440,16 +6440,18 @@ argument for the chmod program.  If you're not on OS X and want to remove \
 execute permission bit from all files, but preserve it for directories, set \
 all execute flags to 'd' and check \(aqSet Recursively\(aq flag.
 .LP
-.B Jobs menu
+.B Jobs menu (:jobs)
 
-dd requests cancellation of job under cursor.  The job won't be removed from
+dd - request cancellation of job under cursor.  The job won't be removed from
 the list, but marked as being cancelled (if cancellation was successfully
 requested).  A message will pop up if the job has already stopped.
 Note that on Windows cancelling external programs like this might not work,
 because their parent shell doesn't have any windows.
 
-e key displays errors of selected job if any were collected.  They are
+e - display errors of selected job if any were collected.  They are
 displayed in a new menu, but you can get back to jobs menu by pressing h.
+
+r - reload the list of jobs.
 
 .LP
 .B Undolist menu

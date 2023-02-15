@@ -88,6 +88,13 @@ jobs_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		show_job_errors(view, m, m->void_data[m->pos]);
 		return KHR_REFRESH_WINDOW;
 	}
+	else if(wcscmp(keys, L"r") == 0)
+	{
+		reload_jobs_list(m);
+		menus_set_pos(m->state, m->pos);
+		menus_partial_redraw(m->state);
+		return KHR_REFRESH_WINDOW;
+	}
 	/* TODO: maybe use DD for forced termination? */
 	return KHR_UNHANDLED;
 }
