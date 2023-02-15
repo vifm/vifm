@@ -36,6 +36,7 @@ static int execute_jobs_cb(view_t *view, menu_data_t *m);
 static KHandlerResponse jobs_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 static int cancel_job(menu_data_t *m, bg_job_t *job);
+static char * format_job_item(bg_job_t *job);
 static void show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job);
 static KHandlerResponse errs_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
@@ -56,40 +57,39 @@ show_jobs_menu(view_t *view)
 
 	bg_check();
 
-	p = bg_jobs;
-
 	i = 0;
-	while(p != NULL)
+	for(p = bg_jobs; p != NULL; p = p->next)
 	{
-		if(bg_job_is_running(p))
+		if(!bg_job_is_running(p))
 		{
-			char info_buf[24];
-			char item_buf[sizeof(info_buf) + strlen(p->cmd) + 1024];
-
-			if(p->type == BJT_COMMAND)
-			{
-				snprintf(info_buf, sizeof(info_buf), "%" PRINTF_ULL,
-						(unsigned long long)p->pid);
-			}
-			else if(p->bg_op.total == BG_UNDEFINED_TOTAL)
-			{
-				snprintf(info_buf, sizeof(info_buf), "n/a");
-			}
-			else
-			{
-				snprintf(info_buf, sizeof(info_buf), "%d/%d", p->bg_op.done + 1,
-						p->bg_op.total);
-			}
-
-			snprintf(item_buf, sizeof(item_buf), "%-8s  %s%s", info_buf, p->cmd,
-					bg_job_cancelled(p) ? " (cancelling...)" : "");
-			i = add_to_string_array(&jobs_m.items, i, item_buf);
-			jobs_m.void_data = reallocarray(jobs_m.void_data, i,
-					sizeof(*jobs_m.void_data));
-			jobs_m.void_data[i - 1] = p;
+			continue;
 		}
 
-		p = p->next;
+		char *item = format_job_item(p);
+		if(item == NULL)
+		{
+			continue;
+		}
+
+		int new_i = put_into_string_array(&jobs_m.items, i, item);
+		if(new_i != i + 1)
+		{
+			free(item);
+			continue;
+		}
+
+		void **new_data =
+			reallocarray(jobs_m.void_data, new_i, sizeof(*jobs_m.void_data));
+		if(new_data == NULL)
+		{
+			free(item);
+			continue;
+		}
+
+		jobs_m.void_data = new_data;
+		jobs_m.void_data[i] = p;
+
+		++i;
 	}
 
 	jobs_m.len = i;
@@ -155,6 +155,31 @@ cancel_job(menu_data_t *m, bg_job_t *job)
 	}
 
 	return (p != NULL);
+}
+
+/* Formats single menu line that describes state of the job.  Returns formatted
+ * string or NULL on error. */
+static char *
+format_job_item(bg_job_t *job)
+{
+	char info_buf[24];
+	if(job->type == BJT_COMMAND)
+	{
+		snprintf(info_buf, sizeof(info_buf), "%" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+	else if(job->bg_op.total == BG_UNDEFINED_TOTAL)
+	{
+		snprintf(info_buf, sizeof(info_buf), "n/a");
+	}
+	else
+	{
+		snprintf(info_buf, sizeof(info_buf), "%d/%d", job->bg_op.done + 1,
+				job->bg_op.total);
+	}
+
+	const char *cancelled = (bg_job_cancelled(job) ? " (cancelling...)" : "");
+	return format_str("%-8s  %s%s", info_buf, job->cmd, cancelled);
 }
 
 /* Shows job errors if there is something and the job is still running.
