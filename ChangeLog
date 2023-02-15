@@ -145,6 +145,10 @@
 	which isn't true at least for csh and tcsh.  Thanks to Evgeniy (a.k.a.
 	iron-udjin).
 
+	Fixed :media not redrawing on reloading ("r" key) and also wasn't
+	repositioning cursor properly when menu length shrinks as a result of a
+	reload.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
