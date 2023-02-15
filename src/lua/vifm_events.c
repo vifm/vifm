@@ -18,7 +18,10 @@
 
 #include "vifm_events.h"
 
+#include <string.h> /* strcmp() */
+
 #include "../utils/macros.h"
+#include "../trash.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
 #include "api.h"
@@ -158,6 +161,14 @@ vifm_events_app_fsop(vlua_t *vlua, OPS op, const char path[],
 	lua_getfield(vlua->lua, -1, "app.fsop"); /* event table */
 	lua_remove(vlua->lua, -2); /* events table */
 
+	int with_trash_flags = (strcmp(fsop_name, "move") == 0);
+	int from_trash = 0, to_trash = 0;
+	if(with_trash_flags)
+	{
+		from_trash = trash_has_path(path);
+		to_trash = trash_has_path(target);
+	}
+
 	lua_pushnil(vlua->lua); /* key placeholder */
 	while(lua_next(vlua->lua, -2) != 0)
 	{
@@ -166,7 +177,7 @@ vifm_events_app_fsop(vlua_t *vlua, OPS op, const char path[],
 
 		/* Not reusing the same argument, to not let handlers affect each other.
 		 * Alternative is to pass read-only table. */
-		lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/4);
+		lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/(with_trash_flags ? 6 : 4));
 		lua_pushstring(vlua->lua, fsop_name);
 		lua_setfield(vlua->lua, -2, "op");
 		lua_pushstring(vlua->lua, path);
@@ -175,6 +186,13 @@ vifm_events_app_fsop(vlua_t *vlua, OPS op, const char path[],
 		lua_setfield(vlua->lua, -2, "target");
 		lua_pushboolean(vlua->lua, dir);
 		lua_setfield(vlua->lua, -2, "isdir");
+		if(with_trash_flags)
+		{
+			lua_pushboolean(vlua->lua, from_trash);
+			lua_setfield(vlua->lua, -2, "fromtrash");
+			lua_pushboolean(vlua->lua, to_trash);
+			lua_setfield(vlua->lua, -2, "totrash");
+		}
 
 		vlua_cbacks_schedule(vlua, /*argc=*/1);
 	}

@@ -298,7 +298,7 @@ OpsResult
 perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 		const char dst[])
 {
-	if(ops == NULL || !ops->bg)
+	if(ops != NULL && ops->bg)
 	{
 		/* Not reporting events from background jobs. */
 		return op_funcs[op](ops, data, src, dst);
