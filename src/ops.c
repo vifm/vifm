@@ -694,7 +694,9 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		result = exec_io_op(ops, &ior_mv, &args, data == NULL);
 	}
 
-	if(result == OPS_SUCCEEDED)
+	/* Accounting for background jobs might take some kind of a queue of events
+	 * to handle both internal updates and app.fsop Lua event. */
+	if(result == OPS_SUCCEEDED && !ops_runs_in_bg(ops))
 	{
 		trash_file_moved(src, dst);
 		bmarks_file_moved(src, dst);
