@@ -146,9 +146,7 @@ cancel_job(menu_data_t *m, bg_job_t *job)
 		{
 			if(bg_job_cancel(job))
 			{
-				char *new_line = format_str("%s (cancelling...)", m->items[m->pos]);
-				free(m->items[m->pos]);
-				m->items[m->pos] = new_line;
+				put_string(&m->items[m->pos], format_job_item(job));
 			}
 			break;
 		}
@@ -178,8 +176,8 @@ format_job_item(bg_job_t *job)
 				job->bg_op.total);
 	}
 
-	const char *cancelled = (bg_job_cancelled(job) ? " (cancelling...)" : "");
-	return format_str("%-8s  %s%s", info_buf, job->cmd, cancelled);
+	const char *cancelled = (bg_job_cancelled(job) ? "(cancelling...) " : "");
+	return format_str("%-8s  %s%s", info_buf, cancelled, job->cmd);
 }
 
 /* Shows job errors if there is something and the job is still running.

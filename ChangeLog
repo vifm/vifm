@@ -90,6 +90,9 @@
 	${prefix}/share/pixmaps will always be handled properly.  Thanks to
 	Szilárd Andai.
 
+	Made feedback after pressing dd in :jobs more prominent.  Thanks to Sylwia
+	Ptasinska (a.k.a. SylEleuth).
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 

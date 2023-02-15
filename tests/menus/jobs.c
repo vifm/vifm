@@ -45,7 +45,7 @@ SETUP()
 
 	curr_stats.load_stage = -1;
 
-	assert_success(bg_execute("", "", 0, 0, &task, (void *)locks));
+	assert_success(bg_execute("job", "", 0, 0, &task, (void *)locks));
 	wait_until_locked(&locks[0]);
 
 	assert_success(cmds_dispatch("jobs", &lwin, CIT_COMMAND));
@@ -70,20 +70,20 @@ TEARDOWN()
 TEST(jobs_are_listed)
 {
 	assert_int_equal(1, menu_get_current()->len);
-	assert_string_equal("1/0       ", menu_get_current()->items[0]);
+	assert_string_equal("1/0       job", menu_get_current()->items[0]);
 }
 
 TEST(dd_press)
 {
 	(void)vle_keys_exec(WK_d WK_d);
-	assert_string_equal("1/0        (cancelling...)",
+	assert_string_equal("1/0       (cancelling...) job",
 			menu_get_current()->items[0]);
 }
 
 TEST(e_press_without_errors)
 {
 	(void)vle_keys_exec(WK_e);
-	assert_string_equal("1/0       ", menu_get_current()->items[0]);
+	assert_string_equal("1/0       job", menu_get_current()->items[0]);
 }
 
 TEST(e_press_with_errors)
