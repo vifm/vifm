@@ -11,12 +11,14 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
+#include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
+#include "../../src/flist_pos.h"
 
 #include "utils.h"
 
@@ -89,6 +91,53 @@ TEST(v_after_av_drops_selection_and_doesnt_stash_it)
 	/* Stashed selection hasn't been changed by visual mode. */
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(modvis_update_after_av_and_cursor_movements)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+
+	assert_int_equal(3, lwin.list_rows);
+
+	/* Select first file. */
+	(void)vle_keys_exec_timed_out(WK_t);
+
+	/* Enter visual mode with amend at the last file. */
+	(void)vle_keys_exec_timed_out(WK_j WK_j WK_a WK_v);
+
+	modvis_update();
+
+	/* Initially selected (tagged) file is not dropped. */
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	/* Interaction with selected files doesn't change visual selection. */
+
+	fpos_set_pos(&lwin, 0);
+	modvis_update();
+
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	fpos_set_pos(&lwin, 2);
+	modvis_update();
+
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	/* Leave visual mode rejecting visual selection. */
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	/* Selection of initially selected (tagged) files hasn't been changed by
+	 * visual mode. */
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 }
 

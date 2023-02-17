@@ -40,8 +40,9 @@ void modvis_enter(VisualSubmodes sub_mode);
 /* Leaves visual mode in various ways. */
 void modvis_leave(int save_msg, int goto_top, int clear_selection);
 
-/* Should be used to ask visual mode to redraw file list correctly.
- * Intended to be used after setting list position from side. */
+/* Reselects files and updates UI.  Should be used to ask visual mode to redraw
+ * file list correctly.  Intended to be used after setting list position or
+ * after changing amending type from side. */
 void modvis_update(void);
 
 /* Kind of callback to allow starting searches from the module and rely on other
