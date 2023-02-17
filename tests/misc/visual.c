@@ -44,7 +44,7 @@ TEARDOWN()
 	opt_handlers_teardown();
 }
 
-TEST(v_after_av_drops_selection)
+TEST(v_after_av_drops_selection_and_doesnt_stash_it)
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
 			"existing-files", cwd);
@@ -75,6 +75,21 @@ TEST(v_after_av_drops_selection)
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
+
+	/* Leave visual mode rejecting visual selection. */
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	/* Re-select initially selected (tagged) files. */
+	(void)vle_keys_exec_timed_out(WK_g WK_s);
+
+	/* Stashed selection hasn't been changed by visual mode. */
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
 }
 
 TEST(cl, IF(not_windows))
