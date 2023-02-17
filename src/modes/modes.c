@@ -188,9 +188,16 @@ modes_post(void)
 void
 modes_statusbar_update(void)
 {
-	if(ANY(vle_mode_is, MORE_MODE, CMDLINE_MODE, NAV_MODE) ||
-			curr_stats.save_msg != 0)
+	if(ANY(vle_mode_is, MORE_MODE, CMDLINE_MODE, NAV_MODE))
 	{
+		return;
+	}
+	else if(curr_stats.save_msg != 0)
+	{
+		if(vle_mode_is(VISUAL_MODE))
+		{
+			update_vmode_input();
+		}
 		return;
 	}
 
