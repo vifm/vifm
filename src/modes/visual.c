@@ -1435,17 +1435,18 @@ modvis_update(void)
 	const int cursor_pos = view->list_pos;
 	view->list_pos = start_pos;
 
+	/* Regardless of the mode we've switched to, start with the original state
+	 * of selection to have consistent behaviour on `av` and `vav`. */
+	restore_selection_flags(view);
+
 	if(amend_type == AT_NONE)
 	{
-		restore_selection_flags(view);
+		/* When not amending, original selection doesn't affect visual selection. */
 		flist_sel_stash(view);
+
 		/* All selection flags are reset, so this call actually clears the
 		 * backup. */
 		backup_selection_flags(view);
-	}
-	else
-	{
-		restore_selection_flags(view);
 	}
 
 	select_first_one();

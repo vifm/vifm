@@ -42,7 +42,7 @@ void modvis_leave(int save_msg, int goto_top, int clear_selection);
 
 /* Reselects files and updates UI.  Should be used to ask visual mode to redraw
  * file list correctly.  Intended to be used after setting list position or
- * after changing amending type from side. */
+ * after changing amending type from the outside. */
 void modvis_update(void);
 
 /* Kind of callback to allow starting searches from the module and rely on other
