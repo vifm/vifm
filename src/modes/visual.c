@@ -1079,30 +1079,12 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
-/* Changes amend type and smartly reselects files. */
+/* Changes amend type and updates selected files. */
 static void
 change_amend_type(AmendType new_amend_type)
 {
-	const int cursor_pos = view->list_pos;
 	amend_type = new_amend_type;
-	view->list_pos = start_pos;
-
-	if(new_amend_type == AT_NONE)
-	{
-		flist_sel_stash(view);
-		/* All selection flags are reset, so this call actually clears the
-		 * backup. */
-		backup_selection_flags(view);
-	}
-	else
-	{
-		restore_selection_flags(view);
-	}
-
-	select_first_one();
-	move_pos(cursor_pos);
-
-	update_ui();
+	modvis_update();
 }
 
 /* Yanks files. */
@@ -1450,14 +1432,25 @@ revert_selection(int pos)
 void
 modvis_update(void)
 {
-	const int pos = view->list_pos;
-
-	flist_sel_stash(view);
-	view->dir_entry[start_pos].selected = 1;
-	view->selected_files = 1;
-
+	const int cursor_pos = view->list_pos;
 	view->list_pos = start_pos;
-	goto_pos(pos);
+
+	/* Regardless of the mode we've switched to, start with the original state
+	 * of selection to have consistent behaviour on `av` and `vav`. */
+	restore_selection_flags(view);
+
+	if(amend_type == AT_NONE)
+	{
+		/* When not amending, original selection doesn't affect visual selection. */
+		flist_sel_stash(view);
+
+		/* All selection flags are reset, so this call actually clears the
+		 * backup. */
+		backup_selection_flags(view);
+	}
+
+	select_first_one();
+	move_pos(cursor_pos);
 
 	update_ui();
 }
