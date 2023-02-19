@@ -74,7 +74,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[], int with_list);
+		const response_variant variants[], Dialog kind);
 static void enter(const char title[], const char message[], int prompt_skip,
 		int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
@@ -316,7 +316,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 int
 prompt_msg(const char title[], const char message[])
 {
-	prompt_msg_internal(title, message, NULL, 0);
+	prompt_msg_internal(title, message, /*variants=*/NULL, D_QUERY_CENTER_EACH);
 	return (dialog_result == DR_YES);
 }
 
@@ -339,17 +339,17 @@ prompt_msg_custom(const char title[], const char message[],
 		const response_variant variants[])
 {
 	assert(variants[0].key != '\0' && "Variants should have at least one item.");
-	prompt_msg_internal(title, message, variants, 0);
+	prompt_msg_internal(title, message, variants, D_QUERY_CENTER_EACH);
 	return custom_result;
 }
 
 /* Common implementation of prompt message.  The variants can be NULL. */
 static void
 prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[], int with_list)
+		const response_variant variants[], Dialog kind)
 {
 	responses = variants;
-	msg_kind = (with_list ? D_QUERY_CENTER_FIRST : D_QUERY_CENTER_EACH);
+	msg_kind = kind;
 
 	enter(title, message, /*prompt_skip=*/0,
 			variants == NULL ? MASK(DR_YES, DR_NO) : 0);
@@ -709,7 +709,7 @@ confirm_deletion(char *files[], int nfiles, int use_trash)
 		}
 	}
 
-	prompt_msg_internal(title, msg, NULL, 1);
+	prompt_msg_internal(title, msg, /*variants=*/NULL, D_QUERY_CENTER_FIRST);
 	free(msg);
 
 	if(dialog_result != DR_YES)
