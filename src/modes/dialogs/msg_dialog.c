@@ -44,10 +44,9 @@
 /* Kinds of dialogs. */
 typedef enum
 {
-	D_ERROR,              /* Error message. */
-	D_QUERY_WITHOUT_LIST, /* User query with all lines centered. */
-	D_QUERY_WITH_LIST,    /* User query with left aligned list and one line
-	                         centered at the top. */
+	D_ERROR,              /* Error message.  All lines are left-aligned. */
+	D_QUERY_CENTER_EACH,  /* Query with each line centered on its own. */
+	D_QUERY_CENTER_FIRST, /* Query with the first line centered. */
 }
 Dialog;
 
@@ -350,7 +349,7 @@ prompt_msg_internal(const char title[], const char message[],
 		const response_variant variants[], int with_list)
 {
 	responses = variants;
-	msg_kind = (with_list ? D_QUERY_WITH_LIST : D_QUERY_WITHOUT_LIST);
+	msg_kind = (with_list ? D_QUERY_CENTER_FIRST : D_QUERY_CENTER_EACH);
 
 	enter(title, message, /*prompt_skip=*/0,
 			variants == NULL ? MASK(DR_YES, DR_NO) : 0);
@@ -404,8 +403,8 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	static int ctrl_c;
 
 	const char *ctrl_msg;
-	const int lines_to_center = msg_kind == D_QUERY_WITHOUT_LIST ? INT_MAX
-	                          : msg_kind == D_QUERY_WITH_LIST ? 1 : 0;
+	const int lines_to_center = msg_kind == D_QUERY_CENTER_EACH ? INT_MAX
+	                          : msg_kind == D_QUERY_CENTER_FIRST ? 1 : 0;
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -439,7 +438,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char *
 get_control_msg(Dialog msg_kind, int global_skip)
 {
-	if(msg_kind == D_QUERY_WITHOUT_LIST || msg_kind == D_QUERY_WITH_LIST)
+	if(msg_kind == D_QUERY_CENTER_EACH || msg_kind == D_QUERY_CENTER_FIRST)
 	{
 		if(responses == NULL)
 		{
