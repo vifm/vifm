@@ -471,10 +471,6 @@ get_custom_control_msg(const response_variant responses[])
 		if(response->descr[0] != '\0')
 		{
 			(void)sstrappend(msg_buf, &len, sizeof(msg_buf), response->descr);
-			if(response[1].key != '\0')
-			{
-				(void)sstrappendch(msg_buf, &len, sizeof(msg_buf), '/');
-			}
 		}
 
 		++response;
@@ -615,7 +611,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			break;
 		}
 
-		ctrl_msg = skip_char(ctrl_msg + len + 1U, '/');
+		ctrl_msg += len + (ctrl_msg[len] == '\n' ? 1 : 0);
 	}
 
 	checked_wmove(error_win, first_line_y, first_line_x);

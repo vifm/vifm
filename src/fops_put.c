@@ -918,7 +918,7 @@ handle_clashing(int move, const char src[], const char dst[])
 		int i;
 		char msg[PATH_MAX + 1];
 		response_variant responses[] = {
-			{ .key = 'y', .descr = "[y]es " },
+			{ .key = 'y', .descr = "[y]es /" },
 			{ .key = 'n', .descr = " [n]o\n" },
 			{ .key = NC_C_c, .descr = "\nEsc or Ctrl-C to abort" },
 			{}
@@ -991,12 +991,12 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		compare        = { .key = 'c', .descr = "[c]ompare files              \n" },
 		rename         = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
 		enter          = { .key = '\r', .descr = "" },
-		skip           = { .key = 's', .descr = "[s]kip " },
+		skip           = { .key = 's', .descr = "[s]kip /" },
 		skip_all       = { .key = 'S', .descr = " [S]kip all          \n" },
 		append         = { .key = 'a', .descr = "[a]ppend the tail            \n" },
-		overwrite      = { .key = 'o', .descr = "[o]verwrite " },
+		overwrite      = { .key = 'o', .descr = "[o]verwrite /" },
 		overwrite_all  = { .key = 'O', .descr = " [O]verwrite all\n" },
-		merge          = { .key = 'm', .descr = "[m]erge " },
+		merge          = { .key = 'm', .descr = "[m]erge /" },
 		merge_all      = { .key = 'M', .descr = " [M]erge all        \n" },
 		merge_all_only = { .key = 'M', .descr = "[M]erge all                  \n" },
 		escape         = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };

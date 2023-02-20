@@ -1127,10 +1127,10 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 {
 	/* TODO: think about adding "append" and "rename" options here. */
 	static const response_variant responses[] = {
-		{ .key = 'y', .descr = "[y]es", },
-		{ .key = 'Y', .descr = "[Y]es for all", },
-		{ .key = 'n', .descr = "[n]o", },
-		{ .key = 'N', .descr = "[N]o for all", },
+		{ .key = 'y', .descr = "[y]es/", },
+		{ .key = 'Y', .descr = "[Y]es for all/", },
+		{ .key = 'n', .descr = "[n]o/", },
+		{ .key = 'N', .descr = "[N]o for all/", },
 		{ },
 	};
 
@@ -1195,9 +1195,9 @@ static IoErrCbResult
 dispatch_error(io_args_t *args, const ioe_err_t *err)
 {
 	static const response_variant responses[] = {
-		{ .key = 'r', .descr = "[r]etry", },
-		{ .key = 'i', .descr = "[i]gnore", },
-		{ .key = 'I', .descr = "[I]gnore for all", },
+		{ .key = 'r', .descr = "[r]etry/", },
+		{ .key = 'i', .descr = "[i]gnore/", },
+		{ .key = 'I', .descr = "[I]gnore for all/", },
 		{ .key = 'a', .descr = "[a]bort", },
 		{ },
 	};
