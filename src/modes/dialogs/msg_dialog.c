@@ -527,7 +527,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 
 	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, &wctrl_msg), 1U);
 
-	max_h = sh - 2 - ctrl_msg_n - ui_stat_height();
+	max_h = sh - 2 - ui_stat_height();
 	h = max_h;
 	/* The outermost condition is for VLA below (to calm static analyzers). */
 	w = MAX(2 + 2*margin, MIN(sw - 2,

@@ -161,6 +161,8 @@
 	Fixed input bar not being updated in visual mode if any status bar message
 	has been shown.  Patch by filterfalse.
 
+	Fixed error/prompt dialogs not reaching maximum allowed height.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.
