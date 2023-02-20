@@ -163,6 +163,9 @@
 
 	Fixed error/prompt dialogs not reaching maximum allowed height.
 
+	Fixed "<<N more lines not shown>>" message in dialogs reporting wrong
+	number of lines and sometimes hiding a single line.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

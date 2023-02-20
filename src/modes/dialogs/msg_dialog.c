@@ -83,7 +83,8 @@ static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
 		const char ctrl_msg[], int lines_to_center, int recommended_width);
-static size_t measure_sub_lines(const char msg[], size_t *max_len);
+static size_t measure_sub_lines(const char msg[], int skip_empty,
+		size_t *max_len);
 static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
@@ -521,7 +522,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 
 	getmaxyx(stdscr, sh, sw);
 
-	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, &wctrl_msg), 1U);
+	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, /*skip_empty=*/0, &wctrl_msg),
+	                 1U);
 
 	max_h = sh - 2 - ui_stat_height();
 	h = max_h;
@@ -569,14 +571,23 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 
 			if(cy >= max_h - (int)ctrl_msg_n - 3)
 			{
+				int next = i;
+				if(msg[next] == '\n')
+				{
+					++next;
+				}
+
 				/* Skip trailing part of the message if it's too long, just print how
 				 * many lines we're omitting. */
 				size_t max_len;
-				const int more_lines = 1U + measure_sub_lines(msg + i, &max_len);
-				snprintf(buf, sizeof(buf), "<<%d more line%s not shown>>", more_lines,
-						(more_lines == 1) ? "" : "s");
-				/* Make sure this is the last iteration of the loop. */
-				i = len;
+				const int more_lines =
+					1U + measure_sub_lines(msg + next, /*skip_empty=*/1, &max_len);
+				if(more_lines > 1)
+				{
+					snprintf(buf, sizeof(buf), "<<%d more lines not shown>>", more_lines);
+					/* Make sure this is the last iteration of the loop. */
+					i = len;
+				}
 			}
 
 			h = 1 + cy + 1 + ctrl_msg_n + 1;
@@ -621,7 +632,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
  * *max_len to the length of the longest sub-line.  Returns total number of
  * sub-lines, which can be zero is msg is an empty line. */
 static size_t
-measure_sub_lines(const char msg[], size_t *max_len)
+measure_sub_lines(const char msg[], int skip_empty, size_t *max_len)
 {
 	size_t nlines = 0U;
 	*max_len = 0U;
@@ -632,7 +643,11 @@ measure_sub_lines(const char msg[], size_t *max_len)
 		{
 			*max_len = len;
 		}
-		++nlines;
+		/* Empty lines are not displayed. */
+		if(len != 0 || !skip_empty)
+		{
+			++nlines;
+		}
 		msg += len + (msg[len] == '\n' ? 1U : 0U);
 	}
 	return nlines;
