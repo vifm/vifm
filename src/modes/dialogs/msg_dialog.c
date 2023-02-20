@@ -85,6 +85,7 @@ static void draw_msg(const char title[], const char msg[],
 		const char ctrl_msg[], int lines_to_center, int recommended_width);
 static size_t measure_sub_lines(const char msg[], int skip_empty,
 		size_t *max_len);
+static size_t measure_text_width(const char msg[]);
 static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
@@ -610,12 +611,15 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		mvwprintw(error_win, 0, (w - strlen(title) - 2)/2, " %s ", title);
 	}
 
+	int ctrl_msg_width = measure_text_width(ctrl_msg);
+	int block_margin = MAX(w - ctrl_msg_width, 2 + 2*margin)/2;
+
 	/* Print control message line by line. */
 	size_t i = ctrl_msg_n;
 	while(1)
 	{
 		const size_t len = strcspn(ctrl_msg, "\n");
-		mvwaddnstr(error_win, h - i - 1, MAX(0, (w - (int)len)/2), ctrl_msg, len);
+		mvwaddnstr(error_win, h - i - 1, block_margin, ctrl_msg, len);
 
 		if(--i == 0)
 		{
@@ -651,6 +655,25 @@ measure_sub_lines(const char msg[], int skip_empty, size_t *max_len)
 		msg += len + (msg[len] == '\n' ? 1U : 0U);
 	}
 	return nlines;
+}
+
+/* Measures maximum on-screen width of a line in a message.  Returns the
+ * width. */
+static size_t
+measure_text_width(const char msg[])
+{
+	size_t max_width = 0U;
+	while(*msg != '\0')
+	{
+		const size_t len = strcspn(msg, "\n");
+		const size_t width = utf8_nstrsw(msg, len);
+		if(width > max_width)
+		{
+			max_width = width;
+		}
+		msg += len + (msg[len] == '\n' ? 1U : 0U);
+	}
+	return max_width;
 }
 
 /* Determines maximum width of line in the message.  Returns the width. */

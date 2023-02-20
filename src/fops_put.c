@@ -989,17 +989,17 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	 * problematic to get such alignment otherwise. */
 	static const response_variant
 		compare        = { .key = 'c', .descr = "[c]ompare files              \n" },
-		rename         = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
+		rename         = { .key = 'r', .descr = "[r]ename (also Enter)\n" },
 		enter          = { .key = '\r', .descr = "" },
 		skip           = { .key = 's', .descr = "[s]kip /" },
-		skip_all       = { .key = 'S', .descr = " [S]kip all          \n" },
-		append         = { .key = 'a', .descr = "[a]ppend the tail            \n" },
+		skip_all       = { .key = 'S', .descr = " [S]kip all\n" },
+		append         = { .key = 'a', .descr = "[a]ppend the tail\n" },
 		overwrite      = { .key = 'o', .descr = "[o]verwrite /" },
 		overwrite_all  = { .key = 'O', .descr = " [O]verwrite all\n" },
 		merge          = { .key = 'm', .descr = "[m]erge /" },
-		merge_all      = { .key = 'M', .descr = " [M]erge all        \n" },
-		merge_all_only = { .key = 'M', .descr = "[M]erge all                  \n" },
-		escape         = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
+		merge_all      = { .key = 'M', .descr = " [M]erge all\n" },
+		merge_all_only = { .key = 'M', .descr = "[M]erge all\n" },
+		escape         = { .key = NC_C_c, .descr = "\n   Esc or Ctrl-C to abort" };
 
 	char response;
 	/* Last element is a terminator. */
