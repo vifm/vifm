@@ -930,7 +930,8 @@ handle_clashing(int move, const char src[], const char dst[])
 		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
 				"in loss of the following files.  Are you sure?\n%s",
 				replace_home_part(dst), replace_home_part(src), vle_tb_get_data(lost));
-		switch(fops_options_prompt("Possible data loss", msg, responses))
+		switch(fops_options_prompt("Possible data loss", msg, responses,
+					/*block_center=*/0))
 		{
 			case 'y':
 				/* Do nothing. */
@@ -1066,7 +1067,8 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 
 	free(escaped_cause);
 
-	response = fops_options_prompt("File Conflict", msg, responses);
+	response =
+		fops_options_prompt("File Conflict", msg, responses, /*block_center=*/0);
 	handle_prompt_response(fname, caused_by, response);
 }
 
@@ -1219,7 +1221,8 @@ show_difference(const char fname[], const char caused_by[])
 		{ .key = '\r', .descr = "Press Enter to continue", },
 		{ },
 	};
-	(void)prompt_msg_custom("File difference", diff, responses);
+	(void)prompt_msg_custom("File difference", diff, responses,
+			/*block_center=*/0);
 
 	free(diff);
 }

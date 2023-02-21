@@ -70,7 +70,7 @@ int prompt_msgf(const char title[], const char format[], ...)
  * Escape).  variants elements with empty lines instead of descriptions are not
  * displayed. */
 char prompt_msg_custom(const char title[], const char message[],
-		const response_variant variants[]);
+		const response_variant variants[], int block_center);
 
 /* Draws centered formatted message with specified title and control message on
  * error_win. */

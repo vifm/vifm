@@ -74,7 +74,7 @@ typedef void (*line_prompt_func)(const char prompt[], const char filename[],
 
 /* Function to choose an option.  Returns choice. */
 typedef char (*options_prompt_func)(const char title[], const char message[],
-		const struct response_variant *variants);
+		const struct response_variant *variants, int block_center);
 
 /* Function invoked to check whether edited list is OK.  Should return non-zero
  * if so and zero otherwise.  Should reallocate *error on error.  *data is the

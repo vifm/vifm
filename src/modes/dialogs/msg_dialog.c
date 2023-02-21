@@ -47,6 +47,7 @@ typedef enum
 	D_ERROR,              /* Error message.  All lines are left-aligned. */
 	D_QUERY_CENTER_EACH,  /* Query with each line centered on its own. */
 	D_QUERY_CENTER_FIRST, /* Query with the first line centered. */
+	D_QUERY_CENTER_BLOCK, /* Query with all lines centered as a block. */
 }
 Dialog;
 
@@ -82,7 +83,8 @@ static void redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
-		const char ctrl_msg[], int lines_to_center, int recommended_width);
+		const char ctrl_msg[], int lines_to_center, int block_center,
+		int recommended_width);
 static size_t measure_sub_lines(const char msg[], int skip_empty,
 		size_t *max_len);
 static size_t measure_text_width(const char msg[]);
@@ -338,10 +340,12 @@ prompt_msgf(const char title[], const char format[], ...)
 
 char
 prompt_msg_custom(const char title[], const char message[],
-		const response_variant variants[])
+		const response_variant variants[], int block_center)
 {
 	assert(variants[0].key != '\0' && "Variants should have at least one item.");
-	prompt_msg_internal(title, message, variants, D_QUERY_CENTER_EACH);
+
+	Dialog kind = (block_center ? D_QUERY_CENTER_BLOCK : D_QUERY_CENTER_EACH);
+	prompt_msg_internal(title, message, variants, kind);
 	return custom_result;
 }
 
@@ -398,15 +402,9 @@ static void
 redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip, int lazy)
 {
-	/* TODO: refactor this function redraw_error_msg() */
-
 	static const char *title;
 	static const char *message;
 	static int ctrl_c;
-
-	const char *ctrl_msg;
-	const int lines_to_center = msg_kind == D_QUERY_CENTER_EACH ? INT_MAX
-	                          : msg_kind == D_QUERY_CENTER_FIRST ? 1 : 0;
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -422,8 +420,14 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 		return;
 	}
 
-	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
-	draw_msg(title, message, ctrl_msg, lines_to_center, 0);
+	const char *ctrl_msg = get_control_msg(msg_kind, ctrl_c);
+	int lines_to_center = (msg_kind == D_QUERY_CENTER_EACH) ? INT_MAX
+	                    : (msg_kind == D_QUERY_CENTER_BLOCK) ? INT_MAX
+	                    : (msg_kind == D_QUERY_CENTER_FIRST) ? 1
+	                    : 0;
+	int block_center = (msg_kind == D_QUERY_CENTER_BLOCK);
+	draw_msg(title, message, ctrl_msg, lines_to_center, block_center,
+			/*recommended_width=*/0);
 
 	if(lazy)
 	{
@@ -440,7 +444,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char *
 get_control_msg(Dialog msg_kind, int global_skip)
 {
-	if(msg_kind == D_QUERY_CENTER_EACH || msg_kind == D_QUERY_CENTER_FIRST)
+	if(msg_kind != D_ERROR)
 	{
 		if(responses == NULL)
 		{
@@ -492,7 +496,8 @@ draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
 	vsnprintf(msg, sizeof(msg), format, pa);
 	va_end(pa);
 
-	draw_msg(title, msg, ctrl_msg, 0, recommended_width);
+	draw_msg(title, msg, ctrl_msg, /*lines_to_center=*/0, /*block_center=*/0,
+			recommended_width);
 	touch_all_windows();
 	ui_refresh_win(error_win);
 }
@@ -501,8 +506,10 @@ draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
  * specified title and control message on error_win. */
 static void
 draw_msg(const char title[], const char msg[], const char ctrl_msg[],
-		int lines_to_center, int recommended_width)
+		int lines_to_center, int block_center, int recommended_width)
 {
+	/* TODO: refactor this function draw_msg() */
+
 	enum { margin = 1 };
 
 	int sw, sh;
@@ -513,6 +520,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	size_t wctrl_msg;
 	int first_line_x = 1;
 	const int first_line_y = 2;
+	int block_margin;
 
 	if(curr_stats.load_stage < 1)
 	{
@@ -535,6 +543,13 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	wresize(error_win, h, w);
 
 	werase(error_win);
+
+	block_margin = 0;
+	if(block_center)
+	{
+		int text_width = measure_text_width(msg);
+		block_margin = MAX(w - text_width, 2 + 2*margin)/2;
+	}
 
 	len = strlen(msg);
 	if(len <= w - 2 && strchr(msg, '\n') == NULL)
@@ -595,7 +610,19 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			wresize(error_win, h, w);
 			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
-			cx = lines_to_center-- > 0 ? (w - utf8_strsw(buf))/2 : (1 + margin);
+			cx = 1 + margin;
+			if(lines_to_center-- > 0)
+			{
+				if(block_center)
+				{
+					cx = block_margin;
+				}
+				else
+				{
+					cx = (w - utf8_strsw(buf))/2;
+				}
+			}
+
 			if(cy == first_line_y)
 			{
 				first_line_x = cx;
@@ -612,7 +639,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	}
 
 	int ctrl_msg_width = measure_text_width(ctrl_msg);
-	int block_margin = MAX(w - ctrl_msg_width, 2 + 2*margin)/2;
+	block_margin = MAX(w - ctrl_msg_width, 2 + 2*margin)/2;
 
 	/* Print control message line by line. */
 	size_t i = ctrl_msg_n;

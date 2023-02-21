@@ -86,7 +86,7 @@ struct response_variant;
 
 /* Function to choose an option.  Returns choice. */
 typedef char (*ops_choice_func)(const char title[], const char message[],
-		const struct response_variant *variants);
+		const struct response_variant *variants, int block_center);
 
 /* Asks user to confirm some action by answering "Yes" or "No".  Returns
  * non-zero when user answers yes, otherwise zero is returned. */

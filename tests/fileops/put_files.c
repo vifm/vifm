@@ -20,28 +20,22 @@
 #include "../../src/registers.h"
 #include "../../src/trash.h"
 
+typedef char options_prompt_f(const char title[], const char message[],
+		const struct response_variant *variants, int block_center);
+
 static void line_prompt(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
 static void line_prompt_rec(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
-static char options_prompt_rename(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_rename_rec(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_overwrite(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_abort(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_skip_all(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_compare(const char title[], const char message[],
-		const struct response_variant *variants);
-static char cm_overwrite(const char title[], const char message[],
-		const struct response_variant *variants);
-static char cm_no(const char title[], const char message[],
-		const struct response_variant *variants);
-static char cm_skip(const char title[], const char message[],
-		const struct response_variant *variants);
+static options_prompt_f options_prompt_rename;
+static options_prompt_f options_prompt_rename_rec;
+static options_prompt_f options_prompt_overwrite;
+static options_prompt_f options_prompt_abort;
+static options_prompt_f options_prompt_skip_all;
+static options_prompt_f options_prompt_compare;
+static options_prompt_f cm_overwrite;
+static options_prompt_f cm_no;
+static options_prompt_f cm_skip;
 static void parent_overwrite_with_put(int move);
 static void double_clash_with_put(int move);
 
@@ -90,7 +84,7 @@ line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
 
 static char
 options_prompt_rename(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	fops_init(&line_prompt, &options_prompt_overwrite);
 	return 'r';
@@ -98,7 +92,7 @@ options_prompt_rename(const char title[], const char message[],
 
 static char
 options_prompt_rename_rec(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	fops_init(&line_prompt_rec, &options_prompt_overwrite);
 	return 'r';
@@ -106,14 +100,14 @@ options_prompt_rename_rec(const char title[], const char message[],
 
 static char
 options_prompt_overwrite(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	return 'o';
 }
 
 static char
 options_prompt_abort(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	options_count = 0;
 	while(variants->key != '\0')
@@ -127,14 +121,14 @@ options_prompt_abort(const char title[], const char message[],
 
 static char
 options_prompt_skip_all(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	return 'S';
 }
 
 static char
 options_prompt_compare(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	fops_init(NULL, &options_prompt_abort);
 	return 'c';
@@ -142,7 +136,7 @@ options_prompt_compare(const char title[], const char message[],
 
 static char
 cm_overwrite(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	fops_init(&line_prompt, &cm_no);
 	return 'o';
@@ -150,7 +144,7 @@ cm_overwrite(const char title[], const char message[],
 
 static char
 cm_no(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	fops_init(&line_prompt, &cm_skip);
 	return 'n';
@@ -158,7 +152,7 @@ cm_no(const char title[], const char message[],
 
 static char
 cm_skip(const char title[], const char message[],
-		const struct response_variant *variants)
+		const struct response_variant *variants, int block_center)
 {
 	fops_init(&line_prompt, &options_prompt_overwrite);
 	return 's';
