@@ -413,7 +413,7 @@ is_dir_clash(const char src_path[], const char dst_dir[])
 {
 	char dst_path[PATH_MAX + 1];
 
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
+	build_path(dst_path, sizeof(dst_path), dst_dir,
 			fops_get_dst_name(src_path, trash_has_path(src_path)));
 	chosp(dst_path);
 
@@ -1008,7 +1008,7 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	size_t i = 0;
 
 	char dst_buf[PATH_MAX + 1];
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.dst_dir, fname);
+	build_path(dst_buf, sizeof(dst_buf), put_confirm.dst_dir, fname);
 	const int same_file = paths_are_equal(dst_buf, caused_by);
 
 	if(!same_file)
@@ -1078,7 +1078,7 @@ handle_prompt_response(const char fname[], const char caused_by[],
 		char response)
 {
 	char dst_path[PATH_MAX + 1];
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, fname);
+	build_path(dst_path, sizeof(dst_path), put_confirm.dst_dir, fname);
 
 	/* Record last conflict to position cursor at it later. */
 	update_string(&put_confirm.last_conflict, dst_path);
@@ -1165,7 +1165,7 @@ prompt_dst_name_cb(const char dst_name[], void *arg)
 
 	/* Record new destination path. */
 	char dst_path[PATH_MAX + 1];
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, dst_name);
+	build_path(dst_path, sizeof(dst_path), put_confirm.dst_dir, dst_name);
 	update_string(&put_confirm.last_conflict, dst_path);
 
 	if(replace_string(&put_confirm.dst_name, dst_name) != 0)
