@@ -32,7 +32,6 @@ static options_prompt_f options_prompt_rename_rec;
 static options_prompt_f options_prompt_overwrite;
 static options_prompt_f options_prompt_abort;
 static options_prompt_f options_prompt_skip_all;
-static options_prompt_f options_prompt_compare;
 static options_prompt_f cm_overwrite;
 static options_prompt_f cm_no;
 static options_prompt_f cm_skip;
@@ -124,14 +123,6 @@ options_prompt_skip_all(const char title[], const char message[],
 		const struct response_variant *variants, int block_center)
 {
 	return 'S';
-}
-
-static char
-options_prompt_compare(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
-{
-	fops_init(NULL, &options_prompt_abort);
-	return 'c';
 }
 
 static char
@@ -668,24 +659,6 @@ TEST(cursor_is_moved_even_if_no_file_was_processed)
 	assert_success(unlink(SANDBOX_PATH "/a"));
 }
 
-TEST(files_can_be_diffed)
-{
-	create_file(SANDBOX_PATH "/a");
-	create_dir(SANDBOX_PATH "/dir");
-	create_file(SANDBOX_PATH "/dir/a");
-
-	assert_success(regs_append('a', SANDBOX_PATH "/dir/a"));
-
-	fops_init(&line_prompt, &options_prompt_compare);
-	(void)fops_put(&lwin, -1, 'a', 0);
-	restore_cwd(saved_cwd);
-	saved_cwd = save_cwd();
-
-	assert_success(unlink(SANDBOX_PATH "/a"));
-	assert_success(unlink(SANDBOX_PATH "/dir/a"));
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
-}
-
 TEST(show_merge_all_option_if_paths_include_dir)
 {
 	char path[PATH_MAX + 1];
@@ -705,7 +678,7 @@ TEST(show_merge_all_option_if_paths_include_dir)
 
 	options_count = 0;
 	(void)fops_put(&lwin, -1, 'a', 0);
-	assert_int_equal(9, options_count);
+	assert_int_equal(8, options_count);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -715,7 +688,7 @@ TEST(show_merge_all_option_if_paths_include_dir)
 
 	options_count = 0;
 	(void)fops_put(&lwin, -1, 'a', 0);
-	assert_int_equal(10, options_count);
+	assert_int_equal(9, options_count);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -744,7 +717,7 @@ TEST(no_merge_options_on_putting_links)
 
 	options_count = 0;
 	(void)fops_put_links(&lwin, 'a', 0);
-	assert_int_equal(8, options_count);
+	assert_int_equal(7, options_count);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
