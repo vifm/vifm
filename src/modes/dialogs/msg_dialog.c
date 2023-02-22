@@ -515,7 +515,6 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	int sw, sh;
 	int w, h;
 	int max_h;
-	int len;
 	size_t ctrl_msg_n;
 	size_t wctrl_msg;
 	int first_line_x = 1;
@@ -551,85 +550,73 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		block_margin = MAX(w - text_width, 2 + 2*margin)/2;
 	}
 
-	len = strlen(msg);
-	if(len <= w - 2 && strchr(msg, '\n') == NULL)
+	int i = 0;
+	int cy = first_line_y;
+	int len = strlen(msg);
+	while(i < len)
 	{
-		first_line_x = (w - len)/2;
-		h = 5 + ctrl_msg_n;
+		int j;
+		char buf[w - 2 - 2*margin + 1];
+		int cx;
+
+		copy_str(buf, sizeof(buf), msg + i);
+
+		for(j = 0; buf[j] != '\0'; j++)
+			if(buf[j] == '\n')
+				break;
+
+		if(buf[j] != '\0')
+			i++;
+		buf[j] = '\0';
+		i += j;
+
+		if(buf[0] == '\0')
+			continue;
+
+		if(cy >= max_h - (int)ctrl_msg_n - 3)
+		{
+			int next = i;
+			if(msg[next] == '\n')
+			{
+				++next;
+			}
+
+			/* Skip trailing part of the message if it's too long, just print how
+			 * many lines we're omitting. */
+			size_t max_len;
+			const int more_lines =
+				1U + measure_sub_lines(msg + next, /*skip_empty=*/1, &max_len);
+			if(more_lines > 1)
+			{
+				snprintf(buf, sizeof(buf), "<<%d more lines not shown>>", more_lines);
+				/* Make sure this is the last iteration of the loop. */
+				i = len;
+			}
+		}
+
+		h = 1 + cy + 1 + ctrl_msg_n + 1;
 		wresize(error_win, h, w);
 		mvwin(error_win, (sh - h)/2, (sw - w)/2);
-		checked_wmove(error_win, first_line_y, first_line_x);
-		wprint(error_win, msg);
-	}
-	else
-	{
-		int i = 0;
-		int cy = first_line_y;
-		while(i < len)
+
+		cx = 1 + margin;
+		if(lines_to_center-- > 0)
 		{
-			int j;
-			char buf[w - 2 - 2*margin + 1];
-			int cx;
-
-			copy_str(buf, sizeof(buf), msg + i);
-
-			for(j = 0; buf[j] != '\0'; j++)
-				if(buf[j] == '\n')
-					break;
-
-			if(buf[j] != '\0')
-				i++;
-			buf[j] = '\0';
-			i += j;
-
-			if(buf[0] == '\0')
-				continue;
-
-			if(cy >= max_h - (int)ctrl_msg_n - 3)
+			if(block_center)
 			{
-				int next = i;
-				if(msg[next] == '\n')
-				{
-					++next;
-				}
-
-				/* Skip trailing part of the message if it's too long, just print how
-				 * many lines we're omitting. */
-				size_t max_len;
-				const int more_lines =
-					1U + measure_sub_lines(msg + next, /*skip_empty=*/1, &max_len);
-				if(more_lines > 1)
-				{
-					snprintf(buf, sizeof(buf), "<<%d more lines not shown>>", more_lines);
-					/* Make sure this is the last iteration of the loop. */
-					i = len;
-				}
+				cx = block_margin;
 			}
-
-			h = 1 + cy + 1 + ctrl_msg_n + 1;
-			wresize(error_win, h, w);
-			mvwin(error_win, (sh - h)/2, (sw - w)/2);
-
-			cx = 1 + margin;
-			if(lines_to_center-- > 0)
+			else
 			{
-				if(block_center)
-				{
-					cx = block_margin;
-				}
-				else
-				{
-					cx = (w - utf8_strsw(buf))/2;
-				}
+				cx = (w - utf8_strsw(buf))/2;
 			}
-
-			if(cy == first_line_y)
-			{
-				first_line_x = cx;
-			}
-			checked_wmove(error_win, cy++, cx);
-			wprint(error_win, buf);
 		}
+
+		if(cy == first_line_y)
+		{
+			first_line_x = cx;
+		}
+		checked_wmove(error_win, cy++, cx);
+		wprint(error_win, buf);
 	}
 
 	box(error_win, 0, 0);
@@ -642,13 +629,13 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	block_margin = MAX(w - ctrl_msg_width, 2 + 2*margin)/2;
 
 	/* Print control message line by line. */
-	size_t i = ctrl_msg_n;
+	size_t ctrl_i = ctrl_msg_n;
 	while(1)
 	{
 		const size_t len = strcspn(ctrl_msg, "\n");
-		mvwaddnstr(error_win, h - i - 1, block_margin, ctrl_msg, len);
+		mvwaddnstr(error_win, h - ctrl_i - 1, block_margin, ctrl_msg, len);
 
-		if(--i == 0)
+		if(--ctrl_i == 0)
 		{
 			break;
 		}
