@@ -513,8 +513,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	enum { margin = 1 };
 
 	int sw, sh;
-	int w, h;
-	int max_h;
+	int w;
 	size_t ctrl_msg_n;
 	size_t wctrl_msg;
 	int first_line_x = 1;
@@ -533,13 +532,13 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, /*skip_empty=*/0, &wctrl_msg),
 	                 1U);
 
-	max_h = sh - 2 - ui_stat_height();
-	h = max_h;
+	/* We start with maximum height and reduce is later. */
+	int max_h = sh - 2 - ui_stat_height();
 	/* The outermost condition is for VLA below (to calm static analyzers). */
 	w = MAX(2 + 2*margin, MIN(sw - 2,
 	        MAX(MAX(recommended_width, sw/3),
 	            (int)MAX(wctrl_msg, determine_width(msg)) + 4)));
-	wresize(error_win, h, w);
+	wresize(error_win, max_h, w);
 
 	werase(error_win);
 
@@ -594,10 +593,6 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			}
 		}
 
-		h = 1 + cy + 1 + ctrl_msg_n + 1;
-		wresize(error_win, h, w);
-		mvwin(error_win, (sh - h)/2, (sw - w)/2);
-
 		cx = 1 + margin;
 		if(lines_to_center-- > 0)
 		{
@@ -618,6 +613,10 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		checked_wmove(error_win, cy++, cx);
 		wprint(error_win, buf);
 	}
+
+	int h = 1 + cy + ctrl_msg_n + 1;
+	wresize(error_win, h, w);
+	mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
 	box(error_win, 0, 0);
 	if(title[0] != '\0')
