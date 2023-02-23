@@ -88,7 +88,6 @@ static void draw_msg(const char title[], const char msg[],
 static size_t measure_sub_lines(const char msg[], int skip_empty,
 		size_t *max_len);
 static size_t measure_text_width(const char msg[]);
-static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
@@ -532,12 +531,13 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, /*skip_empty=*/0, &wctrl_msg),
 	                 1U);
 
+	int wmsg = measure_text_width(msg);
+
 	/* We start with maximum height and reduce is later. */
 	int max_h = sh - 2 - ui_stat_height();
 	/* The outermost condition is for VLA below (to calm static analyzers). */
 	w = MAX(2 + 2*margin, MIN(sw - 2,
-	        MAX(MAX(recommended_width, sw/3),
-	            (int)MAX(wctrl_msg, determine_width(msg)) + 4)));
+	        MAX(MAX(recommended_width, sw/3), MAX((int)wctrl_msg, wmsg) + 4)));
 	wresize(error_win, max_h, w);
 
 	werase(error_win);
@@ -545,55 +545,41 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	block_margin = 0;
 	if(block_center)
 	{
-		int text_width = measure_text_width(msg);
-		block_margin = MAX(w - text_width, 2 + 2*margin)/2;
+		block_margin = MAX(w - wmsg, 2 + 2*margin)/2;
 	}
 
-	int i = 0;
+	const char *curr = msg;
 	int cy = first_line_y;
-	int len = strlen(msg);
-	while(i < len)
+	while(*curr != '\0')
 	{
-		int j;
-		char buf[w - 2 - 2*margin + 1];
-		int cx;
+		int max_width = w - 2 - 2*margin;
 
-		copy_str(buf, sizeof(buf), msg + i);
+		/* Screen line stops at new line or when there is no more space. */
+		const char *nl = until_first(curr, '\n');
+		const char *sl = curr + utf8_strsnlen(curr, max_width);
+		const char *end = (nl < sl ? nl : sl);
 
-		for(j = 0; buf[j] != '\0'; j++)
-			if(buf[j] == '\n')
-				break;
-
-		if(buf[j] != '\0')
-			i++;
-		buf[j] = '\0';
-		i += j;
-
+		char buf[max_width*10 + 1];
+		copy_str(buf, MIN((int)sizeof(buf), end - curr + 1), curr);
+		curr = (end[0] == '\n' ? end + 1 : end);
 		if(buf[0] == '\0')
 			continue;
 
 		if(cy >= max_h - (int)ctrl_msg_n - 3)
 		{
-			int next = i;
-			if(msg[next] == '\n')
-			{
-				++next;
-			}
-
 			/* Skip trailing part of the message if it's too long, just print how
 			 * many lines we're omitting. */
 			size_t max_len;
-			const int more_lines =
-				1U + measure_sub_lines(msg + next, /*skip_empty=*/1, &max_len);
+			int more_lines = 1U + measure_sub_lines(curr, /*skip_empty=*/1, &max_len);
 			if(more_lines > 1)
 			{
 				snprintf(buf, sizeof(buf), "<<%d more lines not shown>>", more_lines);
 				/* Make sure this is the last iteration of the loop. */
-				i = len;
+				curr += strlen(curr);
 			}
 		}
 
-		cx = 1 + margin;
+		int cx = 1 + margin;
 		if(lines_to_center-- > 0)
 		{
 			if(block_center)
@@ -686,35 +672,6 @@ measure_text_width(const char msg[])
 		}
 		msg += len + (msg[len] == '\n' ? 1U : 0U);
 	}
-	return max_width;
-}
-
-/* Determines maximum width of line in the message.  Returns the width. */
-static size_t
-determine_width(const char msg[])
-{
-	size_t max_width = 0U;
-
-	while(*msg != '\0')
-	{
-		size_t width = 0U;
-		while(*msg != '\n' && *msg != '\0')
-		{
-			++width;
-			++msg;
-		}
-
-		if(width > max_width)
-		{
-			max_width = width;
-		}
-
-		if(*msg == '\n')
-		{
-			++msg;
-		}
-	}
-
 	return max_width;
 }
 
