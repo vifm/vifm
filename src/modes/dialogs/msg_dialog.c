@@ -25,7 +25,7 @@
 #include <limits.h> /* CHAR_MAX CHAR_MIN */
 #include <stdarg.h> /* va_list va_start() va_end() vsnprintf() */
 #include <stddef.h> /* NULL */
-#include <string.h> /* strchr() strlen() */
+#include <string.h> /* strlen() */
 
 #include "../../cfg/config.h"
 #include "../../engine/keys.h"
@@ -62,6 +62,16 @@ typedef enum
 }
 DialogResult;
 
+/* Internal information about a prompt. */
+typedef struct
+{
+	custom_prompt_t details; /* Essential parts of prompt description. */
+
+	Dialog kind;     /* Internal dialog kind. */
+	int prompt_skip; /* Whether to allow skipping future errors. */
+}
+dialog_data_t;
+
 static int def_handler(wchar_t key);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
@@ -74,12 +84,9 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
-static void prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[], Dialog kind);
-static void enter(const char title[], const char message[], int prompt_skip,
-		int result_mask);
-static void redraw_error_msg(const char title_arg[], const char message_arg[],
-		int prompt_skip, int lazy);
+static void prompt_msg_internal(const dialog_data_t *data);
+static void enter(const dialog_data_t *data, int result_mask);
+static void redraw_error_msg(const dialog_data_t *data, int lazy);
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
@@ -220,7 +227,7 @@ leave(DialogResult dr)
 void
 redraw_msg_dialog(int lazy)
 {
-	redraw_error_msg(NULL, NULL, 0, lazy);
+	redraw_error_msg(/*data=*/NULL, lazy);
 }
 
 void
@@ -301,10 +308,15 @@ prompt_error_msg_internal(const char title[], const char message[],
 		return 0;
 	}
 
-	msg_kind = D_ERROR;
-
-	enter(title, message, prompt_skip,
-			MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0));
+	dialog_data_t data = {
+		.details = {
+			.title = title,
+			.message = message,
+		},
+		.kind = D_ERROR,
+		.prompt_skip = prompt_skip,
+	};
+	enter(&data, MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0));
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -319,7 +331,14 @@ prompt_error_msg_internal(const char title[], const char message[],
 int
 prompt_msg(const char title[], const char message[])
 {
-	prompt_msg_internal(title, message, /*variants=*/NULL, D_QUERY_CENTER_EACH);
+	dialog_data_t data = {
+		.details = {
+			.title = title,
+			.message = message,
+		},
+		.kind = D_QUERY_CENTER_EACH,
+	};
+	prompt_msg_internal(&data);
 	return (dialog_result == DR_YES);
 }
 
@@ -343,23 +362,24 @@ prompt_msg_custom(const custom_prompt_t *details)
 	assert(details->variants[0].key != '\0' &&
 			"Variants should have at least one item.");
 
-	Dialog kind = details->block_center ? D_QUERY_CENTER_BLOCK
-	                                    : D_QUERY_CENTER_EACH;
-	prompt_msg_internal(details->title, details->message, details->variants,
-			kind);
+	dialog_data_t data = {
+		.details = *details,
+		.kind = details->block_center ? D_QUERY_CENTER_BLOCK : D_QUERY_CENTER_EACH,
+	};
+
+	prompt_msg_internal(&data);
 	return custom_result;
 }
 
-/* Common implementation of prompt message.  The variants can be NULL. */
+/* Common implementation of prompt message. */
 static void
-prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[], Dialog kind)
+prompt_msg_internal(const dialog_data_t *data)
 {
-	responses = variants;
-	msg_kind = kind;
+	responses = data->details.variants;
+	msg_kind = data->kind;
 
-	enter(title, message, /*prompt_skip=*/0,
-			variants == NULL ? MASK(DR_YES, DR_NO) : 0);
+	int result_mask = (data->details.variants == NULL ? MASK(DR_YES, DR_NO) : 0);
+	enter(data, result_mask);
 
 	modes_redraw();
 }
@@ -367,8 +387,7 @@ prompt_msg_internal(const char title[], const char message[],
 /* Enters the mode, which won't be left until one of expected results specified
  * by the mask is picked by the user. */
 static void
-enter(const char title[], const char message[], int prompt_skip,
-		int result_mask)
+enter(const dialog_data_t *data, int result_mask)
 {
 	const int prev_use_input_bar = curr_stats.use_input_bar;
 	const vle_mode_t prev_mode = vle_mode_get();
@@ -384,7 +403,7 @@ enter(const char title[], const char message[], int prompt_skip,
 	curr_stats.use_input_bar = 0;
 	vle_mode_set(MSG_MODE, VMT_SECONDARY);
 
-	redraw_error_msg(title, message, prompt_skip, /*lazy=*/0);
+	redraw_error_msg(data, /*lazy=*/0);
 
 	quit = 0;
 	/* Avoid starting nested loop in tests. */
@@ -400,35 +419,28 @@ enter(const char title[], const char message[], int prompt_skip,
 /* Draws error message on the screen or redraws the last message when both
  * title_arg and message_arg are NULL. */
 static void
-redraw_error_msg(const char title_arg[], const char message_arg[],
-		int prompt_skip, int lazy)
+redraw_error_msg(const dialog_data_t *data, int lazy)
 {
-	static const char *title;
-	static const char *message;
-	static int ctrl_c;
+	static const dialog_data_t *last_data;
 
-	if(title_arg != NULL && message_arg != NULL)
+	if(data == NULL)
 	{
-		title = title_arg;
-		message = message_arg;
-		ctrl_c = prompt_skip;
+		data = last_data;
 	}
-
-	if(title == NULL || message == NULL)
+	else
 	{
-		assert(title != NULL && "Asked to redraw dialog, but no title is set.");
-		assert(message != NULL && "Asked to redraw dialog, but no message is set.");
-		return;
+		last_data = data;
 	}
+	assert(data != NULL && "Invalid dialog redraw request!");
 
-	const char *ctrl_msg = get_control_msg(msg_kind, ctrl_c);
-	int lines_to_center = (msg_kind == D_QUERY_CENTER_EACH) ? INT_MAX
-	                    : (msg_kind == D_QUERY_CENTER_BLOCK) ? INT_MAX
-	                    : (msg_kind == D_QUERY_CENTER_FIRST) ? 1
+	const char *message = data->details.message;
+	const char *ctrl_msg = get_control_msg(data->kind, data->prompt_skip);
+	int lines_to_center = (data->kind == D_QUERY_CENTER_EACH) ? INT_MAX
+	                    : (data->kind == D_QUERY_CENTER_BLOCK) ? INT_MAX
+	                    : (data->kind == D_QUERY_CENTER_FIRST) ? 1
 	                    : 0;
-	int block_center = (msg_kind == D_QUERY_CENTER_BLOCK);
-	draw_msg(title, message, ctrl_msg, lines_to_center, block_center,
-			/*recommended_width=*/0);
+	draw_msg(data->details.title, message, ctrl_msg, lines_to_center,
+			data->details.block_center, /*recommended_width=*/0);
 
 	if(lazy)
 	{
@@ -715,7 +727,14 @@ confirm_deletion(char *files[], int nfiles, int use_trash)
 		}
 	}
 
-	prompt_msg_internal(title, msg, /*variants=*/NULL, D_QUERY_CENTER_FIRST);
+	dialog_data_t data = {
+		.details = {
+			.title = title,
+			.message = msg,
+		},
+		.kind = D_QUERY_CENTER_FIRST,
+	};
+	prompt_msg_internal(&data);
 	free(msg);
 
 	if(dialog_result != DR_YES)
