@@ -65,10 +65,17 @@ DialogResult;
 /* Internal information about a prompt. */
 typedef struct
 {
-	custom_prompt_t details; /* Essential parts of prompt description. */
+	const custom_prompt_t details; /* Essential parts of prompt description. */
 
-	Dialog kind;     /* Internal dialog kind. */
-	int prompt_skip; /* Whether to allow skipping future errors. */
+	/* Configuration. */
+	const Dialog kind;     /* Internal dialog kind. */
+	const int prompt_skip; /* Whether to allow skipping future errors. */
+	const int accept_mask; /* Mask of allowed DR_* results. */
+
+	/* State. */
+	int exit_requested;  /* Main loop quit flag. */
+	DialogResult result; /* Dialog result. */
+	char custom_result;  /* One of user-defined input keys. */
 }
 dialog_data_t;
 
@@ -78,16 +85,16 @@ static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
-static void handle_response(DialogResult dr);
-static void leave(DialogResult dr);
+static void handle_response(dialog_data_t *data, DialogResult dr);
+static void leave(dialog_data_t *data, DialogResult dr, char custom_result);
 static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
-static void prompt_msg_internal(const dialog_data_t *data);
-static void enter(const dialog_data_t *data, int result_mask);
+static void prompt_msg_internal(dialog_data_t *data);
+static void enter(dialog_data_t *data);
 static void redraw_error_msg(const dialog_data_t *data, int lazy);
-static const char * get_control_msg(Dialog msg_kind, int global_skip);
+static const char * get_control_msg(const dialog_data_t *data);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
 		const char ctrl_msg[], int lines_to_center, int block_center,
@@ -106,19 +113,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_y,   {{&cmd_y},      .descr = "confirm the query"}},
 };
 
-/* Main loop quit flag. */
-static int quit;
-/* Dialog result. */
-static DialogResult dialog_result;
-/* Bit mask of R_* kinds of results that are allowed. */
-static int accept_mask;
-/* Type of active dialog message. */
-static Dialog msg_kind;
-
-/* Possible responses for custom prompt message. */
-static const response_variant *responses;
-/* One of user-defined input keys. */
-static char custom_result;
+/* Currently active dialog or NULL. */
+static dialog_data_t *current_dialog;
 
 void
 init_msg_dialog_mode(void)
@@ -143,13 +139,12 @@ def_handler(wchar_t key)
 		return 0;
 	}
 
-	const response_variant *response = responses;
+	const response_variant *response = current_dialog->details.variants;
 	while(response != NULL && response->key != '\0')
 	{
 		if(response->key == (char)key)
 		{
-			custom_result = key;
-			leave(DR_CUSTOM);
+			leave(current_dialog, DR_CUSTOM, key);
 			break;
 		}
 		++response;
@@ -161,7 +156,7 @@ def_handler(wchar_t key)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(DR_CANCEL);
+	handle_response(current_dialog, DR_CANCEL);
 }
 
 /* Redraws the screen. */
@@ -175,27 +170,27 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(DR_OK);
+	handle_response(current_dialog, DR_OK);
 }
 
 /* Denies the query. */
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(DR_NO);
+	handle_response(current_dialog, DR_NO);
 }
 
 /* Confirms the query. */
 static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_response(DR_YES);
+	handle_response(current_dialog, DR_YES);
 }
 
 /* Processes users choice.  Leaves the mode if the result is found among the
  * list of expected results. */
 static void
-handle_response(DialogResult dr)
+handle_response(dialog_data_t *data, DialogResult dr)
 {
 	/* Map result to corresponding input key to omit branching per handler. */
 	static const char r_to_c[] = {
@@ -207,21 +202,22 @@ handle_response(DialogResult dr)
 
 	(void)def_handler(r_to_c[dr]);
 	/* Default handler might have already requested quitting. */
-	if(!quit)
+	if(!data->exit_requested)
 	{
-		if(accept_mask & MASK(dr))
+		if(data->accept_mask & MASK(dr))
 		{
-			leave(dr);
+			leave(data, dr, /*custom_result=*/'?');
 		}
 	}
 }
 
 /* Leaves the mode with given result. */
 static void
-leave(DialogResult dr)
+leave(dialog_data_t *data, DialogResult dr, char custom_result)
 {
-	dialog_result = dr;
-	quit = 1;
+	data->result = dr;
+	data->custom_result = custom_result;
+	data->exit_requested = 1;
 }
 
 void
@@ -315,17 +311,18 @@ prompt_error_msg_internal(const char title[], const char message[],
 		},
 		.kind = D_ERROR,
 		.prompt_skip = prompt_skip,
+		.accept_mask = MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0),
 	};
-	enter(&data, MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0));
+	enter(&data);
 
 	if(curr_stats.load_stage < 2)
 	{
-		skip_until_started = (dialog_result == DR_CANCEL);
+		skip_until_started = (data.result == DR_CANCEL);
 	}
 
 	modes_redraw();
 
-	return (dialog_result == DR_CANCEL);
+	return (data.result == DR_CANCEL);
 }
 
 int
@@ -337,9 +334,10 @@ prompt_msg(const char title[], const char message[])
 			.message = message,
 		},
 		.kind = D_QUERY_CENTER_EACH,
+		.accept_mask = MASK(DR_YES, DR_NO),
 	};
 	prompt_msg_internal(&data);
-	return (dialog_result == DR_YES);
+	return (data.result == DR_YES);
 }
 
 int
@@ -368,27 +366,23 @@ prompt_msg_custom(const custom_prompt_t *details)
 	};
 
 	prompt_msg_internal(&data);
-	return custom_result;
+	return data.custom_result;
 }
 
 /* Common implementation of prompt message. */
 static void
-prompt_msg_internal(const dialog_data_t *data)
+prompt_msg_internal(dialog_data_t *data)
 {
-	responses = data->details.variants;
-	msg_kind = data->kind;
-
-	int result_mask = (data->details.variants == NULL ? MASK(DR_YES, DR_NO) : 0);
-	enter(data, result_mask);
-
+	enter(data);
 	modes_redraw();
 }
 
 /* Enters the mode, which won't be left until one of expected results specified
  * by the mask is picked by the user. */
 static void
-enter(const dialog_data_t *data, int result_mask)
+enter(dialog_data_t *data)
 {
+	dialog_data_t *prev_dialog = current_dialog;
 	const int prev_use_input_bar = curr_stats.use_input_bar;
 	const vle_mode_t prev_mode = vle_mode_get();
 
@@ -399,21 +393,22 @@ enter(const dialog_data_t *data, int result_mask)
 
 	ui_hide_graphics();
 
-	accept_mask = result_mask;
+	current_dialog = data;
 	curr_stats.use_input_bar = 0;
 	vle_mode_set(MSG_MODE, VMT_SECONDARY);
 
 	redraw_error_msg(data, /*lazy=*/0);
 
-	quit = 0;
+	data->exit_requested = 0;
 	/* Avoid starting nested loop in tests. */
 	if(curr_stats.load_stage > 0)
 	{
-		event_loop(&quit, /*manage_marking=*/0);
+		event_loop(&data->exit_requested, /*manage_marking=*/0);
 	}
 
 	vle_mode_set(prev_mode, VMT_SECONDARY);
 	curr_stats.use_input_bar = prev_use_input_bar;
+	current_dialog = prev_dialog;
 }
 
 /* Draws error message on the screen or redraws the last message when both
@@ -434,7 +429,7 @@ redraw_error_msg(const dialog_data_t *data, int lazy)
 	assert(data != NULL && "Invalid dialog redraw request!");
 
 	const char *message = data->details.message;
-	const char *ctrl_msg = get_control_msg(data->kind, data->prompt_skip);
+	const char *ctrl_msg = get_control_msg(data);
 	int lines_to_center = (data->kind == D_QUERY_CENTER_EACH) ? INT_MAX
 	                    : (data->kind == D_QUERY_CENTER_BLOCK) ? INT_MAX
 	                    : (data->kind == D_QUERY_CENTER_FIRST) ? 1
@@ -453,20 +448,21 @@ redraw_error_msg(const dialog_data_t *data, int lazy)
 }
 
 /* Picks control message (information on available actions) basing on dialog
- * kind and previous actions.  Returns the message. */
+ * kind.  Returns the message. */
 static const char *
-get_control_msg(Dialog msg_kind, int global_skip)
+get_control_msg(const dialog_data_t *data)
 {
-	if(msg_kind != D_ERROR)
+	if(data->kind != D_ERROR)
 	{
-		if(responses == NULL)
+		if(data->details.variants == NULL)
 		{
 			return "Enter [y]es or [n]o";
 		}
 
-		return get_custom_control_msg(responses);
+		return get_custom_control_msg(data->details.variants);
 	}
-	else if(global_skip)
+
+	if(data->prompt_skip)
 	{
 		return "Press Return to continue or "
 		       "Ctrl-C to skip its future error messages";
@@ -733,11 +729,12 @@ confirm_deletion(char *files[], int nfiles, int use_trash)
 			.message = msg,
 		},
 		.kind = D_QUERY_CENTER_FIRST,
+		.accept_mask = MASK(DR_YES, DR_NO),
 	};
 	prompt_msg_internal(&data);
 	free(msg);
 
-	if(dialog_result != DR_YES)
+	if(data.result != DR_YES)
 	{
 		return 0;
 	}
