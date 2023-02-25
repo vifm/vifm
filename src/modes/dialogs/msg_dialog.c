@@ -338,13 +338,15 @@ prompt_msgf(const char title[], const char format[], ...)
 }
 
 char
-prompt_msg_custom(const char title[], const char message[],
-		const response_variant variants[], int block_center)
+prompt_msg_custom(const custom_prompt_t *details)
 {
-	assert(variants[0].key != '\0' && "Variants should have at least one item.");
+	assert(details->variants[0].key != '\0' &&
+			"Variants should have at least one item.");
 
-	Dialog kind = (block_center ? D_QUERY_CENTER_BLOCK : D_QUERY_CENTER_EACH);
-	prompt_msg_internal(title, message, variants, kind);
+	Dialog kind = details->block_center ? D_QUERY_CENTER_BLOCK
+	                                    : D_QUERY_CENTER_EACH;
+	prompt_msg_internal(details->title, details->message, details->variants,
+			kind);
 	return custom_result;
 }
 

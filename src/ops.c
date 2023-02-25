@@ -1248,7 +1248,14 @@ prompt_user(const io_args_t *args, const char title[], const char msg[],
 	/* Active cancellation conflicts with input processing by putting terminal in
 	 * a cooked mode. */
 	ui_cancellation_push_off();
-	char response = curr_ops->choose(title, msg, variants, /*block_center=*/0);
+
+	const custom_prompt_t prompt = {
+		.title = title,
+		.message = msg,
+		.variants = variants,
+	};
+	char response = curr_ops->choose(&prompt);
+
 	ui_cancellation_pop();
 
 	return response;

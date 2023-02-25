@@ -931,8 +931,13 @@ handle_clashing(int move, const char src[], const char dst[])
 		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
 				"in loss of the following files.  Are you sure?\n%s",
 				replace_home_part(dst), replace_home_part(src), vle_tb_get_data(lost));
-		switch(fops_options_prompt("Possible data loss", msg, responses,
-					/*block_center=*/0))
+
+		const custom_prompt_t prompt = {
+			.title = "Possible data loss",
+			.message = msg,
+			.variants = responses,
+		};
+		switch(fops_options_prompt(&prompt))
 		{
 			case 'y':
 				/* Do nothing. */
@@ -1048,8 +1053,13 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	char response = NC_C_c;
 	if(msg != NULL)
 	{
-		response =
-			fops_options_prompt("File Conflict", msg, responses, block_center);
+		const custom_prompt_t prompt = {
+			.title = "File Conflict",
+			.message = msg,
+			.variants = responses,
+			.block_center = block_center,
+		};
+		response = fops_options_prompt(&prompt);
 	}
 	free(msg);
 

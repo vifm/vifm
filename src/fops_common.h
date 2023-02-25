@@ -57,8 +57,8 @@ typedef struct
 }
 bg_args_t;
 
+struct custom_prompt_t;
 struct dirent;
-struct response_variant;
 
 /* Callback for returning edited filename.  arg is user supplied value, which is
  * passed through. */
@@ -72,9 +72,8 @@ typedef int (*fo_complete_cmd_func)(const char cmd[], void *arg);
 typedef void (*line_prompt_func)(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
 
-/* Function to choose an option.  Returns choice. */
-typedef char (*options_prompt_func)(const char title[], const char message[],
-		const struct response_variant *variants, int block_center);
+/* Function to choose an option.  Returns the choice. */
+typedef char (*options_prompt_func)(const struct custom_prompt_t *details);
 
 /* Function invoked to check whether edited list is OK.  Should return non-zero
  * if so and zero otherwise.  Should reallocate *error on error.  *data is the

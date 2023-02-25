@@ -20,21 +20,18 @@
 #include "../../src/registers.h"
 #include "../../src/trash.h"
 
-typedef char options_prompt_f(const char title[], const char message[],
-		const struct response_variant *variants, int block_center);
-
 static void line_prompt(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
 static void line_prompt_rec(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
-static options_prompt_f options_prompt_rename;
-static options_prompt_f options_prompt_rename_rec;
-static options_prompt_f options_prompt_overwrite;
-static options_prompt_f options_prompt_abort;
-static options_prompt_f options_prompt_skip_all;
-static options_prompt_f cm_overwrite;
-static options_prompt_f cm_no;
-static options_prompt_f cm_skip;
+static char options_prompt_rename(const custom_prompt_t *details);
+static char options_prompt_rename_rec(const custom_prompt_t *details);
+static char options_prompt_overwrite(const custom_prompt_t *details);
+static char options_prompt_abort(const custom_prompt_t *details);
+static char options_prompt_skip_all(const custom_prompt_t *details);
+static char cm_overwrite(const custom_prompt_t *details);
+static char cm_no(const custom_prompt_t *details);
+static char cm_skip(const custom_prompt_t *details);
 static void parent_overwrite_with_put(int move);
 static void double_clash_with_put(int move);
 
@@ -82,32 +79,30 @@ line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
 }
 
 static char
-options_prompt_rename(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+options_prompt_rename(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &options_prompt_overwrite);
 	return 'r';
 }
 
 static char
-options_prompt_rename_rec(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+options_prompt_rename_rec(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt_rec, &options_prompt_overwrite);
 	return 'r';
 }
 
 static char
-options_prompt_overwrite(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+options_prompt_overwrite(const custom_prompt_t *details)
 {
 	return 'o';
 }
 
 static char
-options_prompt_abort(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+options_prompt_abort(const custom_prompt_t *details)
 {
+	const response_variant *variants = details->variants;
+
 	options_count = 0;
 	while(variants->key != '\0')
 	{
@@ -119,31 +114,27 @@ options_prompt_abort(const char title[], const char message[],
 }
 
 static char
-options_prompt_skip_all(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+options_prompt_skip_all(const custom_prompt_t *details)
 {
 	return 'S';
 }
 
 static char
-cm_overwrite(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+cm_overwrite(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &cm_no);
 	return 'o';
 }
 
 static char
-cm_no(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+cm_no(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &cm_skip);
 	return 'n';
 }
 
 static char
-cm_skip(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+cm_skip(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &options_prompt_overwrite);
 	return 's';

@@ -19,8 +19,7 @@
 #include "../../src/fops_common.h"
 #include "../../src/fops_misc.h"
 
-static char choice_func(const char title[], const char message[],
-		const struct response_variant *variants, int block_center);
+static char choice_func(const struct custom_prompt_t *details);
 
 static char *saved_cwd;
 static int choice_called = 0;
@@ -200,8 +199,7 @@ TEST(make_dirs_errors_are_handled)
 }
 
 static char
-choice_func(const char title[], const char message[],
-		const struct response_variant *variants, int block_center)
+choice_func(const struct custom_prompt_t *details)
 {
 	++choice_called;
 	return 'a';
