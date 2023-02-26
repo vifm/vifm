@@ -13,6 +13,9 @@
 	instead of failing to generate tags for Vim-style documentation.  Thanks
 	to Sergei Trofimovich (a.k.a. trofi).
 
+	Changed %N macro to also not start a process group for a command.  Thanks
+	to Oskar Grunning (sQVe).
+
 	Added "withicase" and "withrcase" to :compare that force ignoring and
 	respecting case respectively on comparing file names and paths.  Thanks to
 	Jose Riha (a.k.a. jose1711).

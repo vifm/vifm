@@ -295,8 +295,9 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 			case 'n': /* Forbid using of terminal multiplexer, even if active. */
 				ma_flags_set(flags, MF_NO_TERM_MUX);
 				break;
-			case 'N': /* Do not run command in a separate terminal session. */
-				ma_flags_set(flags, MF_KEEP_SESSION);
+			case 'N': /* Do not run the command in a separate terminal session or
+			             process group. */
+				ma_flags_set(flags, MF_KEEP_IN_FG);
 				break;
 			case 'm': /* Use menu. */
 				ma_flags_set(flags, MF_MENU_OUTPUT);
@@ -929,7 +930,7 @@ ma_flags_to_str(MacroFlags flags)
 		case MF_IGNORE: return "%i";
 		case MF_NO_TERM_MUX: return "%n";
 
-		case MF_KEEP_SESSION: return "%N";
+		case MF_KEEP_IN_FG: return "%N";
 
 		case MF_PIPE_FILE_LIST: return "%Pl";
 		case MF_PIPE_FILE_LIST_Z: return "%Pz";
