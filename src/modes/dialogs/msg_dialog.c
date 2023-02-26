@@ -41,6 +41,9 @@
 #include "../../status.h"
 #include "../wk.h"
 
+/* Both vertical and horizontal margin for the dialog. */
+#define MARGIN 1
+
 /* Kinds of dialogs. */
 typedef enum
 {
@@ -429,6 +432,23 @@ redraw_error_msg(const dialog_data_t *data, int lazy)
 	assert(data != NULL && "Invalid dialog redraw request!");
 
 	const char *message = data->details.message;
+	char *free_me = NULL;
+	if(data->details.make_message != NULL)
+	{
+		int sw, sh;
+		getmaxyx(stdscr, sh, sw);
+		int max_w = sw - 2 - 2 - MARGIN*2;
+		int max_h = sh - 2 - ui_stat_height() - 2 - MARGIN*2;
+
+		free_me = data->details.make_message(max_w, max_h, data->details.user_data);
+		if(free_me == NULL)
+		{
+			return;
+		}
+
+		message = free_me;
+	}
+
 	const char *ctrl_msg = get_control_msg(data);
 	int lines_to_center = (data->kind == D_QUERY_CENTER_EACH) ? INT_MAX
 	                    : (data->kind == D_QUERY_CENTER_BLOCK) ? INT_MAX
@@ -436,6 +456,8 @@ redraw_error_msg(const dialog_data_t *data, int lazy)
 	                    : 0;
 	draw_msg(data->details.title, message, ctrl_msg, lines_to_center,
 			data->details.block_center, /*recommended_width=*/0);
+
+	free(free_me);
 
 	if(lazy)
 	{
@@ -519,8 +541,6 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 {
 	/* TODO: refactor this function draw_msg() */
 
-	enum { margin = 1 };
-
 	int sw, sh;
 	int w;
 	size_t ctrl_msg_n;
@@ -546,7 +566,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	/* We start with maximum height and reduce is later. */
 	int max_h = sh - 2 - ui_stat_height();
 	/* The outermost condition is for VLA below (to calm static analyzers). */
-	w = MAX(2 + 2*margin, MIN(sw - 2,
+	w = MAX(2 + 2*MARGIN, MIN(sw - 2,
 	        MAX(MAX(recommended_width, sw/3), MAX((int)wctrl_msg, wmsg) + 4)));
 	wresize(error_win, max_h, w);
 
@@ -555,14 +575,14 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	block_margin = 0;
 	if(block_center)
 	{
-		block_margin = MAX(w - wmsg, 2 + 2*margin)/2;
+		block_margin = MAX(w - wmsg, 2 + 2*MARGIN)/2;
 	}
 
 	const char *curr = msg;
 	int cy = first_line_y;
 	while(*curr != '\0')
 	{
-		int max_width = w - 2 - 2*margin;
+		int max_width = w - 2 - 2*MARGIN;
 
 		/* Screen line stops at new line or when there is no more space. */
 		const char *nl = until_first(curr, '\n');
@@ -589,7 +609,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			}
 		}
 
-		int cx = 1 + margin;
+		int cx = 1 + MARGIN;
 		if(lines_to_center-- > 0)
 		{
 			if(block_center)
@@ -621,7 +641,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	}
 
 	int ctrl_msg_width = measure_text_width(ctrl_msg);
-	block_margin = MAX(w - ctrl_msg_width, 2 + 2*margin)/2;
+	block_margin = MAX(w - ctrl_msg_width, 2 + 2*MARGIN)/2;
 
 	/* Print control message line by line. */
 	size_t ctrl_i = ctrl_msg_n;

@@ -30,6 +30,13 @@ typedef struct custom_prompt_t
 	const char *title;   /* Dialog's title. */
 	const char *message; /* Dialog's body, can be NULL if make_message isn't. */
 
+	/* If non-NULL, used to generate dialog's body dynamically.  Should return a
+	 * newly allocated string or NULL on error in which case the prompt is
+	 * aborted. */
+	char * (*make_message)(int max_w, int max_h, void *data);
+	/* Extra argument for make_message(). */
+	void *user_data;
+
 	/* Should be terminated with a record filled with zeroes.  The array must
 	 * contain at least one item.  Use '\r' key to handle Enter and '\x03' to
 	 * handle cancellation (both Ctrl-C and Escape).  Elements with empty lines
