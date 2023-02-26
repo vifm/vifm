@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 8 August, 2022)
+" Sample configuration file for vifm on OSX (last updated: 26 February, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -12,6 +12,10 @@
 " Command used to edit files in various contexts.  The default is vim.
 " If you would like to use another vi clone such as Elvis or Vile
 " you will need to change this setting.
+"
+" Mind that due to `filetype * open` below by default the editor won't be used
+" for opening files via l/Enter keys.  Comment that line out to change the
+" behaviour.
 if executable('vim')
     set vicmd=vim
 elseif executable('nvim')
@@ -335,10 +339,8 @@ fileviewer {*.docx},
 
 " Open all other files with default system programs (you can also remove all
 " :file[x]type commands above to ensure they don't interfere with system-wide
-" settings).  By default all unknown files are opened with 'vi[x]cmd'
-" uncommenting one of lines below will result in ignoring 'vi[x]cmd' option
-" for unknown file types.
-" For OS X:
+" settings).  Use of the line below results in ignoring 'vi[x]cmd' option for
+" unknown file types on l/Enter keys.
 filetype * open
 
 " ------------------------------------------------------------------------------
