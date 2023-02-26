@@ -96,6 +96,11 @@
 	Made feedback after pressing dd in :jobs more prominent.  Thanks to Sylwia
 	Ptasinska (a.k.a. SylEleuth).
 
+	Merged file conflict comparison dialog into the main conflict dialog.
+	Thanks to aleksejrs.
+
+	Made file conflict more concise.  Thanks to aleksejrs.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
@@ -160,6 +165,13 @@
 
 	Fixed input bar not being updated in visual mode if any status bar message
 	has been shown.  Patch by filterfalse.
+
+	Fixed error/prompt dialogs not reaching maximum allowed height.
+
+	Fixed "<<N more lines not shown>>" message in dialogs reporting wrong
+	number of lines and sometimes hiding a single line.
+
+	Fixed dialogs not handling non-latin characters well.
 
 0.12.1-beta to 0.12.1 (2022-09-21)
 

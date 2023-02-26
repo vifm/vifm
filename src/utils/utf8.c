@@ -180,6 +180,21 @@ utf8_strsw(const char str[])
 }
 
 size_t
+utf8_nstrsw(const char str[], int len)
+{
+	size_t sw = 0;
+	const char *p = str;
+	while(*p != '\0' && p - str < len)
+	{
+		const size_t char_width = utf8_chrw(p);
+		const size_t char_screen_width = chrsw(p, char_width);
+		p += char_width;
+		sw += char_screen_width;
+	}
+	return sw;
+}
+
+size_t
 utf8_strsw_with_tabs(const char str[], int tab_stops)
 {
 	size_t length = 0U;

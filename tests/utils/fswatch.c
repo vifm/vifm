@@ -91,9 +91,11 @@ TEST(target_replacement_is_detected, IF(using_inotify))
 
 	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
 
+	/* Creating a new directory before removing watched one and later doing a
+	 * rename to guarantee that inode number won't match. */
+	assert_success(os_mkdir(SANDBOX_PATH "/newinode", 0700));
 	assert_success(remove(SANDBOX_PATH "/testdir"));
-	assert_success(os_mkdir(SANDBOX_PATH "/eatinode", 0700));
-	assert_success(os_mkdir(SANDBOX_PATH "/testdir", 0700));
+	assert_success(os_rename(SANDBOX_PATH "/newinode", SANDBOX_PATH "/testdir"));
 
 	assert_int_equal(FSWS_REPLACED, fswatch_poll(watch));
 	assert_int_equal(FSWS_UNCHANGED, fswatch_poll(watch));
@@ -101,7 +103,6 @@ TEST(target_replacement_is_detected, IF(using_inotify))
 	fswatch_free(watch);
 
 	assert_success(remove(SANDBOX_PATH "/testdir"));
-	assert_success(remove(SANDBOX_PATH "/eatinode"));
 }
 
 TEST(target_mount_is_detected, IF(using_inotify))

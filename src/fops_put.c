@@ -21,6 +21,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* tolower() */
+#include <limits.h> /* INT_MAX */
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "cfg/config.h"
@@ -37,6 +38,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
@@ -47,6 +49,14 @@
 #include "registers.h"
 #include "trash.h"
 #include "undo.h"
+
+/* Information necessary for composing conflict message's body. */
+typedef struct
+{
+	const char *src; /* Full path of the source file. */
+	const char *dst; /* Full path of the destination file. */
+}
+conflict_prompt_data_t;
 
 static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 static int initiate_put_files(view_t *view, int at, CopyMoveLikeOp op,
@@ -68,9 +78,12 @@ static void handle_prompt_response(const char fname[], const char caused_by[],
 static void prompt_dst_name(const char src_name[]);
 static void prompt_dst_name_cb(const char dst_name[], void *arg);
 static void put_continue(int force);
-static void show_difference(const char fname[], const char caused_by[]);
-static char * compare_files(const char dst_path[], const char src_path[],
-		struct stat *dst, struct stat *src);
+static char * make_conflict_title(CopyMoveLikeOp op);
+static char * make_conflict_message(int max_w, int max_h, void *data);
+static char * make_conflict_prompt(const conflict_prompt_data_t *data,
+		int max_w, int *block_center);
+static char * prettify_fname(const char full_path[], const struct stat *stat);
+static char cmp_mark(int cmp);
 
 /* Global state for file putting and name conflicts resolution that happen in
  * the process. */
@@ -413,7 +426,7 @@ is_dir_clash(const char src_path[], const char dst_dir[])
 {
 	char dst_path[PATH_MAX + 1];
 
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
+	build_path(dst_path, sizeof(dst_path), dst_dir,
 			fops_get_dst_name(src_path, trash_has_path(src_path)));
 	chosp(dst_path);
 
@@ -587,7 +600,7 @@ put_next(int force)
 		dst_name = fops_get_dst_name(src_buf, from_trash);
 	}
 
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dst_name);
+	build_path(dst_buf, sizeof(dst_buf), dst_dir, dst_name);
 	chosp(dst_buf);
 
 	if(!put_confirm.append && path_exists(dst_buf, NODEREF))
@@ -697,7 +710,7 @@ put_next(int force)
 
 		un_group_reopen_last();
 
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dst_name);
+		build_path(dst_path, sizeof(dst_path), dst_dir, dst_name);
 
 		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
 		{
@@ -779,7 +792,7 @@ put_next(int force)
 		}
 
 		char dst_path[PATH_MAX + 1];
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dst_name);
+		build_path(dst_path, sizeof(dst_path), dst_dir, dst_name);
 		put_confirm.put.nitems = add_to_string_array(&put_confirm.put.items,
 				put_confirm.put.nitems, dst_path);
 	}
@@ -846,8 +859,8 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 			continue;
 		}
 
-		snprintf(src_path, sizeof(src_path), "%s/%s", src, d->d_name);
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst, d->d_name);
+		build_path(src_path, sizeof(src_path), src, d->d_name);
+		build_path(dst_path, sizeof(dst_path), dst, d->d_name);
 
 		if(fops_is_dir_entry(dst_path, d))
 		{
@@ -918,7 +931,7 @@ handle_clashing(int move, const char src[], const char dst[])
 		int i;
 		char msg[PATH_MAX + 1];
 		response_variant responses[] = {
-			{ .key = 'y', .descr = "[y]es " },
+			{ .key = 'y', .descr = "[y]es /" },
 			{ .key = 'n', .descr = " [n]o\n" },
 			{ .key = NC_C_c, .descr = "\nEsc or Ctrl-C to abort" },
 			{}
@@ -930,7 +943,13 @@ handle_clashing(int move, const char src[], const char dst[])
 		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
 				"in loss of the following files.  Are you sure?\n%s",
 				replace_home_part(dst), replace_home_part(src), vle_tb_get_data(lost));
-		switch(fops_options_prompt("Possible data loss", msg, responses))
+
+		const custom_prompt_t prompt = {
+			.title = "Possible data loss",
+			.message = msg,
+			.variants = responses,
+		};
+		switch(fops_options_prompt(&prompt))
 		{
 			case 'y':
 				/* Do nothing. */
@@ -988,32 +1007,25 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	/* Strange spacing is for left alignment.  Doesn't look nice here, but it is
 	 * problematic to get such alignment otherwise. */
 	static const response_variant
-		compare        = { .key = 'c', .descr = "[c]ompare files              \n" },
-		rename         = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
+		rename         = { .key = 'r', .descr = "[r]ename (also Enter)\n" },
 		enter          = { .key = '\r', .descr = "" },
-		skip           = { .key = 's', .descr = "[s]kip " },
-		skip_all       = { .key = 'S', .descr = " [S]kip all          \n" },
-		append         = { .key = 'a', .descr = "[a]ppend the tail            \n" },
-		overwrite      = { .key = 'o', .descr = "[o]verwrite " },
+		skip           = { .key = 's', .descr = "[s]kip /" },
+		skip_all       = { .key = 'S', .descr = " [S]kip all\n" },
+		append         = { .key = 'a', .descr = "[a]ppend the tail\n" },
+		overwrite      = { .key = 'o', .descr = "[o]verwrite /" },
 		overwrite_all  = { .key = 'O', .descr = " [O]verwrite all\n" },
-		merge          = { .key = 'm', .descr = "[m]erge " },
-		merge_all      = { .key = 'M', .descr = " [M]erge all        \n" },
-		merge_all_only = { .key = 'M', .descr = "[M]erge all                  \n" },
-		escape         = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
+		merge          = { .key = 'm', .descr = "[m]erge /" },
+		merge_all      = { .key = 'M', .descr = " [M]erge all\n" },
+		merge_all_only = { .key = 'M', .descr = "[M]erge all\n" },
+		escape         = { .key = NC_C_c, .descr = "\n   Esc or Ctrl-C to abort" };
 
-	char response;
 	/* Last element is a terminator. */
 	response_variant responses[12] = {};
 	size_t i = 0;
 
 	char dst_buf[PATH_MAX + 1];
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.dst_dir, fname);
+	build_path(dst_buf, sizeof(dst_buf), put_confirm.dst_dir, fname);
 	const int same_file = paths_are_equal(dst_buf, caused_by);
-
-	if(!same_file)
-	{
-		responses[i++] = compare;
-	}
 
 	responses[i++] = rename;
 	responses[i++] = enter;
@@ -1023,7 +1035,7 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 
 	if(!same_file)
 	{
-		if(cfg.use_system_calls && is_regular_file_noderef(fname) &&
+		if(cfg.use_system_calls && is_regular_file_noderef(dst_buf) &&
 				is_regular_file_noderef(caused_by))
 		{
 			responses[i++] = append;
@@ -1046,27 +1058,32 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
-	char *escaped_cause = escape_unreadable(replace_home_part(caused_by));
+	/* Invoking make_conflict_prompt() to get block_center flag and validate the
+	 * operation (we're not showing the prompt if NULL is returned). */
+	conflict_prompt_data_t prompt_data = {
+		.src = caused_by,
+		.dst = dst_buf,
+	};
+	int block_center;
+	char *msg =
+		make_conflict_prompt(&prompt_data, /*max_w=*/INT_MAX, &block_center);
+	free(msg);
 
-	char msg[PATH_MAX*3];
-	if(same_file)
+	char response = NC_C_c;
+	char *title = make_conflict_title(put_confirm.op);
+	if(title != NULL && msg != NULL)
 	{
-		snprintf(msg, sizeof(msg),
-				"Same file is both source and destination:\n%s\nWhat to do?",
-				escaped_cause);
+		const custom_prompt_t prompt = {
+			.title = title,
+			.make_message = &make_conflict_message,
+			.user_data = &prompt_data,
+			.variants = responses,
+			.block_center = block_center,
+		};
+		response = fops_options_prompt(&prompt);
 	}
-	else
-	{
-		char *escaped_fname = escape_unreadable(fname);
-		snprintf(msg, sizeof(msg),
-				"Name conflict for %s.  Caused by:\n%s\nWhat to do?", escaped_fname,
-				escaped_cause);
-		free(escaped_fname);
-	}
+	free(title);
 
-	free(escaped_cause);
-
-	response = fops_options_prompt("File Conflict", msg, responses);
 	handle_prompt_response(fname, caused_by, response);
 }
 
@@ -1076,7 +1093,7 @@ handle_prompt_response(const char fname[], const char caused_by[],
 		char response)
 {
 	char dst_path[PATH_MAX + 1];
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, fname);
+	build_path(dst_path, sizeof(dst_path), put_confirm.dst_dir, fname);
 
 	/* Record last conflict to position cursor at it later. */
 	update_string(&put_confirm.last_conflict, dst_path);
@@ -1084,11 +1101,6 @@ handle_prompt_response(const char fname[], const char caused_by[],
 	if(response == '\r' || response == 'r')
 	{
 		prompt_dst_name(fname);
-	}
-	else if(response == 'c')
-	{
-		show_difference(fname, caused_by);
-		prompt_what_to_do(fname, caused_by);
 	}
 	else if(response == 's' || response == 'S')
 	{
@@ -1163,7 +1175,7 @@ prompt_dst_name_cb(const char dst_name[], void *arg)
 
 	/* Record new destination path. */
 	char dst_path[PATH_MAX + 1];
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, dst_name);
+	build_path(dst_path, sizeof(dst_path), put_confirm.dst_dir, dst_name);
 	update_string(&put_confirm.last_conflict, dst_path);
 
 	if(replace_string(&put_confirm.dst_name, dst_name) != 0)
@@ -1190,87 +1202,155 @@ put_continue(int force)
 	}
 }
 
-/* Displays differences in metadata among two conflicting files in a dialog. */
-static void
-show_difference(const char fname[], const char caused_by[])
+/* Formats a title for conflict message.  Returns newly allocated string. */
+static char *
+make_conflict_title(CopyMoveLikeOp op)
 {
-	char dst_path[PATH_MAX + 1];
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, fname);
-
-	struct stat dst;
-	if(os_stat(dst_path, &dst) != 0)
+	const char *action = "?";
+	switch(op)
 	{
-		show_error_msgf("Comparison error", "Unable to query metadata of %s",
-				dst_path);
-		return;
+		case CMLO_COPY:
+			action = "Copying";
+			break;
+		case CMLO_MOVE:
+			action = "Moving";
+			break;
+		case CMLO_LINK_REL:
+		case CMLO_LINK_ABS:
+			action = "Symlinking";
+			break;
 	}
 
-	struct stat src;
-	if(os_stat(caused_by, &src) != 0)
-	{
-		show_error_msgf("Comparison error", "Unable to query metadata of %s",
-				caused_by);
-		return;
-	}
-
-	char *diff = compare_files(dst_path, caused_by, &dst, &src);
-
-	static const response_variant responses[] = {
-		{ .key = '\r', .descr = "Press Enter to continue", },
-		{ },
-	};
-	(void)prompt_msg_custom("File difference", diff, responses);
-
-	free(diff);
+	return format_str("File Conflict on %s", action);
 }
 
-/* Produces textual description of metadata difference between two files.
- * Returns newly allocated string. */
+/* Adapts make_conflict_prompt() for use with fops_options_prompt().  Returns
+ * newly allocated string. */
 static char *
-compare_files(const char dst_path[], const char src_path[], struct stat *dst,
-		struct stat *src)
+make_conflict_message(int max_w, int max_h, void *data)
 {
+	int block_center;
+	return make_conflict_prompt(data, max_w, &block_center);
+}
+
+/* Produces text for a conflict prompt.  Returns newly allocated string. */
+static char *
+make_conflict_prompt(const conflict_prompt_data_t *data, int max_w,
+		int *block_center)
+{
+	*block_center = 1;
+
+	struct stat src;
+	if(os_lstat(data->src, &src) != 0)
+	{
+		show_error_msgf("Conflict handling error", "Unable to query metadata of %s",
+				data->src);
+		return NULL;
+	}
+
+	char *pretty_src = prettify_fname(data->src, &src);
+	if(pretty_src == NULL)
+	{
+		return NULL;
+	}
+
+	if(paths_are_equal(data->src, data->dst))
+	{
+		*block_center = 0;
+		char *text =
+			format_str("Same file is both source and destination:\n%s", pretty_src);
+		free(pretty_src);
+		return text;
+	}
+
+	struct stat dst;
+	if(os_lstat(data->dst, &dst) != 0)
+	{
+		show_error_msgf("Conflict handling error", "Unable to query metadata of %s",
+				data->dst);
+		free(pretty_src);
+		return NULL;
+	}
+
+	char *pretty_dst = prettify_fname(data->dst, &dst);
+	if(pretty_dst == NULL)
+	{
+		free(pretty_src);
+		return NULL;
+	}
+
+	char src_size[64], dst_size[64];
+	(void)friendly_size_notation(src.st_size, sizeof(src_size), src_size);
+	(void)friendly_size_notation(dst.st_size, sizeof(dst_size), dst_size);
+
+	char src_bsize[64], dst_bsize[64];
+	snprintf(src_bsize, sizeof(src_bsize), " (%" PRINTF_ULL ")",
+			(unsigned long long)src.st_size);
+	snprintf(dst_bsize, sizeof(dst_bsize), " (%" PRINTF_ULL ")",
+			(unsigned long long)dst.st_size);
+
+	char src_mtime[64], dst_mtime[64];
+	format_iso_time(src.st_mtime, src_mtime, sizeof(src_mtime));
+	format_iso_time(dst.st_mtime, dst_mtime, sizeof(dst_mtime));
+
+	int fields[3] = { };
+	fields[0] = MAX(strlen(src_size), strlen(dst_size));
+	fields[1] = MAX(strlen(src_bsize), strlen(dst_bsize));
+	fields[2] = MAX(utf8_strsw(src_mtime), utf8_strsw(dst_mtime));
+
+	const char *info_fmt = "      %c %*s%*s   %c %*s";
+	int l = snprintf(NULL, 0, info_fmt,
+			'x', fields[0], "", fields[1], "",
+			'y', fields[2], "");
+	if(l > max_w)
+	{
+		info_fmt = "      %c %*s%*s\n      %c %*s";
+	}
+
+#define CMP(a, b) ((a) == (b) ? 0 : (a) < (b) ? -1 : 1)
+	int size_cmp = CMP(src.st_size, dst.st_size);
+	int mtime_cmp = CMP(src.st_mtime, dst.st_mtime);
+#undef CMP
+
 	vle_textbuf *text = vle_tb_create();
 
-	vle_tb_append_linef(text, "Target file: %s", replace_home_part(dst_path));
-	vle_tb_append_linef(text, "Source file: %s", replace_home_part(src_path));
-
-	char buf[64];
-
-	vle_tb_append_line(text, " ");
-	format_iso_time(dst->st_mtime, buf, sizeof(buf));
-	if(dst->st_mtime == src->st_mtime)
-	{
-		vle_tb_append_linef(text, "Same modification date: %s", buf);
-	}
-	else
-	{
-		vle_tb_append_line(text, "Modification dates:");
-		vle_tb_append_linef(text, "%s", buf);
-
-		format_iso_time(src->st_mtime, buf, sizeof(buf));
-		vle_tb_append_linef(text, "%s", buf);
-	}
+	vle_tb_append_linef(text, "From: %s", pretty_src);
+	vle_tb_append_linef(text, info_fmt,
+			cmp_mark(size_cmp), fields[0], src_size, fields[1], src_bsize,
+			cmp_mark(mtime_cmp), fields[2], src_mtime);
 
 	vle_tb_append_line(text, " ");
-	(void)friendly_size_notation(dst->st_size, sizeof(buf), buf);
-	if(dst->st_size == src->st_size)
-	{
-		vle_tb_append_linef(text, "Same size: %s (%llu)", buf,
-				(unsigned long long)dst->st_size);
-	}
-	else
-	{
-		vle_tb_append_line(text, "Sizes:");
-		vle_tb_append_linef(text, "%s (%llu)", buf,
-				(unsigned long long)dst->st_size);
 
-		(void)friendly_size_notation(src->st_size, sizeof(buf), buf);
-		vle_tb_append_linef(text, "%s (%llu)", buf,
-				(unsigned long long)src->st_size);
-	}
+	vle_tb_append_linef(text, "  To: %s", pretty_dst);
+	vle_tb_append_linef(text, info_fmt,
+			cmp_mark(-size_cmp), fields[0], dst_size, fields[1], dst_bsize,
+			cmp_mark(-mtime_cmp), fields[2], dst_mtime);
+
+	free(pretty_src);
+	free(pretty_dst);
 
 	return vle_tb_release(text);
+}
+
+/* Prepares file name for being displayed in a dialog.  Returns newly allocated
+ * string. */
+static char *
+prettify_fname(const char full_path[], const struct stat *stat)
+{
+	char *pretty = escape_unreadable(replace_home_part(full_path));
+	if(pretty != NULL && S_ISDIR(stat->st_mode))
+	{
+		put_string(&pretty, format_str("%s/", pretty));
+	}
+	return pretty;
+}
+
+/* Translates comparison result to one of three marks: <, =, >.  Returns the
+ * mark. */
+static char
+cmp_mark(int cmp)
+{
+	return (cmp == 0 ? '=' : cmp < 0 ? '<' : '>');
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

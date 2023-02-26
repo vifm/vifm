@@ -24,24 +24,14 @@ static void line_prompt(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
 static void line_prompt_rec(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
-static char options_prompt_rename(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_rename_rec(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_overwrite(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_abort(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_skip_all(const char title[], const char message[],
-		const struct response_variant *variants);
-static char options_prompt_compare(const char title[], const char message[],
-		const struct response_variant *variants);
-static char cm_overwrite(const char title[], const char message[],
-		const struct response_variant *variants);
-static char cm_no(const char title[], const char message[],
-		const struct response_variant *variants);
-static char cm_skip(const char title[], const char message[],
-		const struct response_variant *variants);
+static char options_prompt_rename(const custom_prompt_t *details);
+static char options_prompt_rename_rec(const custom_prompt_t *details);
+static char options_prompt_overwrite(const custom_prompt_t *details);
+static char options_prompt_abort(const custom_prompt_t *details);
+static char options_prompt_skip_all(const custom_prompt_t *details);
+static char cm_overwrite(const custom_prompt_t *details);
+static char cm_no(const custom_prompt_t *details);
+static char cm_skip(const custom_prompt_t *details);
 static void parent_overwrite_with_put(int move);
 static void double_clash_with_put(int move);
 
@@ -89,32 +79,30 @@ line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
 }
 
 static char
-options_prompt_rename(const char title[], const char message[],
-		const struct response_variant *variants)
+options_prompt_rename(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &options_prompt_overwrite);
 	return 'r';
 }
 
 static char
-options_prompt_rename_rec(const char title[], const char message[],
-		const struct response_variant *variants)
+options_prompt_rename_rec(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt_rec, &options_prompt_overwrite);
 	return 'r';
 }
 
 static char
-options_prompt_overwrite(const char title[], const char message[],
-		const struct response_variant *variants)
+options_prompt_overwrite(const custom_prompt_t *details)
 {
 	return 'o';
 }
 
 static char
-options_prompt_abort(const char title[], const char message[],
-		const struct response_variant *variants)
+options_prompt_abort(const custom_prompt_t *details)
 {
+	const response_variant *variants = details->variants;
+
 	options_count = 0;
 	while(variants->key != '\0')
 	{
@@ -126,39 +114,27 @@ options_prompt_abort(const char title[], const char message[],
 }
 
 static char
-options_prompt_skip_all(const char title[], const char message[],
-		const struct response_variant *variants)
+options_prompt_skip_all(const custom_prompt_t *details)
 {
 	return 'S';
 }
 
 static char
-options_prompt_compare(const char title[], const char message[],
-		const struct response_variant *variants)
-{
-	fops_init(NULL, &options_prompt_abort);
-	return 'c';
-}
-
-static char
-cm_overwrite(const char title[], const char message[],
-		const struct response_variant *variants)
+cm_overwrite(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &cm_no);
 	return 'o';
 }
 
 static char
-cm_no(const char title[], const char message[],
-		const struct response_variant *variants)
+cm_no(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &cm_skip);
 	return 'n';
 }
 
 static char
-cm_skip(const char title[], const char message[],
-		const struct response_variant *variants)
+cm_skip(const custom_prompt_t *details)
 {
 	fops_init(&line_prompt, &options_prompt_overwrite);
 	return 's';
@@ -674,24 +650,6 @@ TEST(cursor_is_moved_even_if_no_file_was_processed)
 	assert_success(unlink(SANDBOX_PATH "/a"));
 }
 
-TEST(files_can_be_diffed)
-{
-	create_file(SANDBOX_PATH "/a");
-	create_dir(SANDBOX_PATH "/dir");
-	create_file(SANDBOX_PATH "/dir/a");
-
-	assert_success(regs_append('a', SANDBOX_PATH "/dir/a"));
-
-	fops_init(&line_prompt, &options_prompt_compare);
-	(void)fops_put(&lwin, -1, 'a', 0);
-	restore_cwd(saved_cwd);
-	saved_cwd = save_cwd();
-
-	assert_success(unlink(SANDBOX_PATH "/a"));
-	assert_success(unlink(SANDBOX_PATH "/dir/a"));
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
-}
-
 TEST(show_merge_all_option_if_paths_include_dir)
 {
 	char path[PATH_MAX + 1];
@@ -711,7 +669,7 @@ TEST(show_merge_all_option_if_paths_include_dir)
 
 	options_count = 0;
 	(void)fops_put(&lwin, -1, 'a', 0);
-	assert_int_equal(9, options_count);
+	assert_int_equal(8, options_count);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -721,7 +679,7 @@ TEST(show_merge_all_option_if_paths_include_dir)
 
 	options_count = 0;
 	(void)fops_put(&lwin, -1, 'a', 0);
-	assert_int_equal(10, options_count);
+	assert_int_equal(9, options_count);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -750,7 +708,7 @@ TEST(no_merge_options_on_putting_links)
 
 	options_count = 0;
 	(void)fops_put_links(&lwin, 'a', 0);
-	assert_int_equal(8, options_count);
+	assert_int_equal(7, options_count);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();

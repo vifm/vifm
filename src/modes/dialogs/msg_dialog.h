@@ -24,6 +24,29 @@
 
 #include <stdio.h> /* FILE */
 
+/* Input data for prompt_msg_custom() that describes prompt. */
+typedef struct custom_prompt_t
+{
+	const char *title;   /* Dialog's title. */
+	const char *message; /* Dialog's body, can be NULL if make_message isn't. */
+
+	/* If non-NULL, used to generate dialog's body dynamically.  Should return a
+	 * newly allocated string or NULL on error in which case the prompt is
+	 * aborted. */
+	char * (*make_message)(int max_w, int max_h, void *data);
+	/* Extra argument for make_message(). */
+	void *user_data;
+
+	/* Should be terminated with a record filled with zeroes.  The array must
+	 * contain at least one item.  Use '\r' key to handle Enter and '\x03' to
+	 * handle cancellation (both Ctrl-C and Escape).  Elements with empty lines
+	 * instead of descriptions are not displayed. */
+	const struct response_variant *variants;
+	/* Whether message lines should be centered as a block. */
+	int block_center;
+}
+custom_prompt_t;
+
 /* Definition of a dialog option. */
 typedef struct response_variant
 {
@@ -63,14 +86,9 @@ int prompt_msg(const char title[], const char message[]);
 int prompt_msgf(const char title[], const char format[], ...)
 	_gnuc_printf(2, 3);
 
-/* Same as prompt_msg() but with custom list of options.  The responses array
- * should be terminated with a record filled with zeroes.  Returns one of keys
- * defined in the array.  The array has to contain at least one element.  Use
- * '\r' key to handle Enter and '\x03' to handle cancellation (both Ctrl-C and
- * Escape).  variants elements with empty lines instead of descriptions are not
- * displayed. */
-char prompt_msg_custom(const char title[], const char message[],
-		const response_variant variants[]);
+/* Same as prompt_msg() but with custom list of options.  Returns one of the
+ * keys defined in the array of details->variants. */
+char prompt_msg_custom(const custom_prompt_t *details);
 
 /* Draws centered formatted message with specified title and control message on
  * error_win. */

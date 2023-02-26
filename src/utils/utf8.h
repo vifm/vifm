@@ -50,6 +50,12 @@ size_t utf8_nstrsnlen(const char str[], size_t max_screen_width);
  * number. */
 size_t utf8_strsw(const char str[]);
 
+/* Counts number of screen characters in a utf-8 encoded str of the specified
+ * length (or less if NUL byte is found earlier).  If length ends in the middle
+ * of a utf-8 character, the character's screen width is counted as well.
+ * Returns the number. */
+size_t utf8_nstrsw(const char str[], int len);
+
 /* Counts number of screen characters in a utf-8 encoded str expanding
  * tabulation according to specified tab stops.  tab_stops must be positive.
  * Returns the number. */

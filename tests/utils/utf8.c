@@ -67,6 +67,29 @@ TEST(length_is_less_or_equal_to_string_length, IF(utf8_locale))
 	}
 }
 
+TEST(utf8_nstrsw_works, IF(utf8_locale))
+{
+	const char str[] = "师从abаб";
+
+	/* Full chars. */
+	assert_int_equal(0, utf8_nstrsw(str, strlen("")));
+	assert_int_equal(2, utf8_nstrsw(str, strlen("师")));
+	assert_int_equal(4, utf8_nstrsw(str, strlen("师从")));
+	assert_int_equal(5, utf8_nstrsw(str, strlen("师从a")));
+	assert_int_equal(6, utf8_nstrsw(str, strlen("师从ab")));
+	assert_int_equal(7, utf8_nstrsw(str, strlen("师从abа")));
+	assert_int_equal(8, utf8_nstrsw(str, strlen("师从abаб")));
+	assert_int_equal(8, utf8_nstrsw(str, strlen("师从abаб   ")));
+
+	/* Cut char in half. */
+	int max = strlen("师");
+	int i;
+	for(i = 1; i < max; ++i)
+	{
+		assert_int_equal(2, utf8_nstrsw(str, i));
+	}
+}
+
 #ifdef _WIN32
 
 TEST(utf16_roundtrip, IF(utf8_locale))
