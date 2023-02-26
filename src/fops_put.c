@@ -21,6 +21,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* tolower() */
+#include <limits.h> /* INT_MAX */
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "cfg/config.h"
@@ -37,6 +38,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
@@ -47,6 +49,14 @@
 #include "registers.h"
 #include "trash.h"
 #include "undo.h"
+
+/* Information necessary for composing conflict message's body. */
+typedef struct
+{
+	const char *src; /* Full path of the source file. */
+	const char *dst; /* Full path of the destination file. */
+}
+conflict_prompt_data_t;
 
 static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 static int initiate_put_files(view_t *view, int at, CopyMoveLikeOp op,
@@ -69,8 +79,9 @@ static void prompt_dst_name(const char src_name[]);
 static void prompt_dst_name_cb(const char dst_name[], void *arg);
 static void put_continue(int force);
 static char * make_conflict_title(CopyMoveLikeOp op);
-static char * make_conflict_prompt(const char src_path[], const char dst_path[],
-		CopyMoveLikeOp op, int *block_center);
+static char * make_conflict_message(int max_w, int max_h, void *data);
+static char * make_conflict_prompt(const conflict_prompt_data_t *data,
+		int max_w, int *block_center);
 static char * prettify_fname(const char full_path[], const struct stat *stat);
 static char cmp_mark(int cmp);
 
@@ -1047,24 +1058,31 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
+	/* Invoking make_conflict_prompt() to get block_center flag and validate the
+	 * operation (we're not showing the prompt if NULL is returned). */
+	conflict_prompt_data_t prompt_data = {
+		.src = caused_by,
+		.dst = dst_buf,
+	};
 	int block_center;
 	char *msg =
-		make_conflict_prompt(caused_by, dst_buf, put_confirm.op, &block_center);
+		make_conflict_prompt(&prompt_data, /*max_w=*/INT_MAX, &block_center);
+	free(msg);
 
 	char response = NC_C_c;
 	char *title = make_conflict_title(put_confirm.op);
-	if(msg != NULL)
+	if(title != NULL && msg != NULL)
 	{
 		const custom_prompt_t prompt = {
 			.title = title,
-			.message = msg,
+			.make_message = &make_conflict_message,
+			.user_data = &prompt_data,
 			.variants = responses,
 			.block_center = block_center,
 		};
 		response = fops_options_prompt(&prompt);
 	}
 	free(title);
-	free(msg);
 
 	handle_prompt_response(fname, caused_by, response);
 }
@@ -1206,24 +1224,37 @@ make_conflict_title(CopyMoveLikeOp op)
 	return format_str("File Conflict on %s", action);
 }
 
+/* Adapts make_conflict_prompt() for use with fops_options_prompt().  Returns
+ * newly allocated string. */
+static char *
+make_conflict_message(int max_w, int max_h, void *data)
+{
+	int block_center;
+	return make_conflict_prompt(data, max_w, &block_center);
+}
+
 /* Produces text for a conflict prompt.  Returns newly allocated string. */
 static char *
-make_conflict_prompt(const char src_path[], const char dst_path[],
-		CopyMoveLikeOp op, int *block_center)
+make_conflict_prompt(const conflict_prompt_data_t *data, int max_w,
+		int *block_center)
 {
 	*block_center = 1;
 
 	struct stat src;
-	if(os_lstat(src_path, &src) != 0)
+	if(os_lstat(data->src, &src) != 0)
 	{
 		show_error_msgf("Conflict handling error", "Unable to query metadata of %s",
-				src_path);
+				data->src);
 		return NULL;
 	}
 
-	char *pretty_src = prettify_fname(src_path, &src);
+	char *pretty_src = prettify_fname(data->src, &src);
+	if(pretty_src == NULL)
+	{
+		return NULL;
+	}
 
-	if(paths_are_equal(src_path, dst_path))
+	if(paths_are_equal(data->src, data->dst))
 	{
 		*block_center = 0;
 		char *text =
@@ -1233,15 +1264,48 @@ make_conflict_prompt(const char src_path[], const char dst_path[],
 	}
 
 	struct stat dst;
-	if(os_lstat(dst_path, &dst) != 0)
+	if(os_lstat(data->dst, &dst) != 0)
 	{
 		show_error_msgf("Conflict handling error", "Unable to query metadata of %s",
-				dst_path);
+				data->dst);
 		free(pretty_src);
 		return NULL;
 	}
 
-	char *pretty_dst = prettify_fname(dst_path, &dst);
+	char *pretty_dst = prettify_fname(data->dst, &dst);
+	if(pretty_dst == NULL)
+	{
+		free(pretty_src);
+		return NULL;
+	}
+
+	char src_size[64], dst_size[64];
+	(void)friendly_size_notation(src.st_size, sizeof(src_size), src_size);
+	(void)friendly_size_notation(dst.st_size, sizeof(dst_size), dst_size);
+
+	char src_bsize[64], dst_bsize[64];
+	snprintf(src_bsize, sizeof(src_bsize), " (%" PRINTF_ULL ")",
+			(unsigned long long)src.st_size);
+	snprintf(dst_bsize, sizeof(dst_bsize), " (%" PRINTF_ULL ")",
+			(unsigned long long)dst.st_size);
+
+	char src_mtime[64], dst_mtime[64];
+	format_iso_time(src.st_mtime, src_mtime, sizeof(src_mtime));
+	format_iso_time(dst.st_mtime, dst_mtime, sizeof(dst_mtime));
+
+	int fields[3] = { };
+	fields[0] = MAX(strlen(src_size), strlen(dst_size));
+	fields[1] = MAX(strlen(src_bsize), strlen(dst_bsize));
+	fields[2] = MAX(utf8_strsw(src_mtime), utf8_strsw(dst_mtime));
+
+	const char *info_fmt = "      %c %*s%*s   %c %*s";
+	int l = snprintf(NULL, 0, info_fmt,
+			'x', fields[0], "", fields[1], "",
+			'y', fields[2], "");
+	if(l > max_w)
+	{
+		info_fmt = "      %c %*s%*s\n      %c %*s";
+	}
 
 #define CMP(a, b) ((a) == (b) ? 0 : (a) < (b) ? -1 : 1)
 	int size_cmp = CMP(src.st_size, dst.st_size);
@@ -1251,25 +1315,16 @@ make_conflict_prompt(const char src_path[], const char dst_path[],
 	vle_textbuf *text = vle_tb_create();
 
 	vle_tb_append_linef(text, "From: %s", pretty_src);
-
-	char size[64];
-	char mtime[64];
-
-	(void)friendly_size_notation(src.st_size, sizeof(size), size);
-	format_iso_time(src.st_mtime, mtime, sizeof(mtime));
-	vle_tb_append_linef(text, "      %c %s (%" PRINTF_ULL ")\n      %c %s",
-			cmp_mark(size_cmp), size, (unsigned long long)src.st_size,
-			cmp_mark(mtime_cmp), mtime);
+	vle_tb_append_linef(text, info_fmt,
+			cmp_mark(size_cmp), fields[0], src_size, fields[1], src_bsize,
+			cmp_mark(mtime_cmp), fields[2], src_mtime);
 
 	vle_tb_append_line(text, " ");
 
 	vle_tb_append_linef(text, "  To: %s", pretty_dst);
-
-	(void)friendly_size_notation(dst.st_size, sizeof(size), size);
-	format_iso_time(dst.st_mtime, mtime, sizeof(mtime));
-	vle_tb_append_linef(text, "      %c %s (%" PRINTF_ULL ")\n      %c %s",
-			cmp_mark(-size_cmp), size, (unsigned long long)dst.st_size,
-			cmp_mark(-mtime_cmp), mtime);
+	vle_tb_append_linef(text, info_fmt,
+			cmp_mark(-size_cmp), fields[0], dst_size, fields[1], dst_bsize,
+			cmp_mark(-mtime_cmp), fields[2], dst_mtime);
 
 	free(pretty_src);
 	free(pretty_dst);
