@@ -1250,8 +1250,7 @@ make_conflict_prompt(const char src_path[], const char dst_path[],
 
 	vle_textbuf *text = vle_tb_create();
 
-	vle_tb_append_linef(text, "Source:");
-	vle_tb_append_linef(text, "   %s", pretty_src);
+	vle_tb_append_linef(text, "From: %s", pretty_src);
 
 	char size[64];
 	char mtime[64];
@@ -1262,8 +1261,9 @@ make_conflict_prompt(const char src_path[], const char dst_path[],
 			cmp_mark(size_cmp), size, (unsigned long long)src.st_size,
 			cmp_mark(mtime_cmp), mtime);
 
-	vle_tb_append_line(text, "Target:");
-	vle_tb_append_linef(text, "   %s", pretty_dst);
+	vle_tb_append_line(text, " ");
+
+	vle_tb_append_linef(text, "  To: %s", pretty_dst);
 
 	(void)friendly_size_notation(dst.st_size, sizeof(size), size);
 	format_iso_time(dst.st_mtime, mtime, sizeof(mtime));
