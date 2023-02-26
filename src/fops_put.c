@@ -68,6 +68,7 @@ static void handle_prompt_response(const char fname[], const char caused_by[],
 static void prompt_dst_name(const char src_name[]);
 static void prompt_dst_name_cb(const char dst_name[], void *arg);
 static void put_continue(int force);
+static char * make_conflict_title(CopyMoveLikeOp op);
 static char * make_conflict_prompt(const char src_path[], const char dst_path[],
 		CopyMoveLikeOp op, int *block_center);
 static char * prettify_fname(const char full_path[], const struct stat *stat);
@@ -1051,16 +1052,18 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		make_conflict_prompt(caused_by, dst_buf, put_confirm.op, &block_center);
 
 	char response = NC_C_c;
+	char *title = make_conflict_title(put_confirm.op);
 	if(msg != NULL)
 	{
 		const custom_prompt_t prompt = {
-			.title = "File Conflict",
+			.title = title,
 			.message = msg,
 			.variants = responses,
 			.block_center = block_center,
 		};
 		response = fops_options_prompt(&prompt);
 	}
+	free(title);
 	free(msg);
 
 	handle_prompt_response(fname, caused_by, response);
@@ -1181,6 +1184,28 @@ put_continue(int force)
 	}
 }
 
+/* Formats a title for conflict message.  Returns newly allocated string. */
+static char *
+make_conflict_title(CopyMoveLikeOp op)
+{
+	const char *action = "?";
+	switch(op)
+	{
+		case CMLO_COPY:
+			action = "Copying";
+			break;
+		case CMLO_MOVE:
+			action = "Moving";
+			break;
+		case CMLO_LINK_REL:
+		case CMLO_LINK_ABS:
+			action = "Symlinking";
+			break;
+	}
+
+	return format_str("File Conflict on %s", action);
+}
+
 /* Produces text for a conflict prompt.  Returns newly allocated string. */
 static char *
 make_conflict_prompt(const char src_path[], const char dst_path[],
@@ -1218,41 +1243,26 @@ make_conflict_prompt(const char src_path[], const char dst_path[],
 
 	char *pretty_dst = prettify_fname(dst_path, &dst);
 
-	const char *action = "?";
-	switch(op)
-	{
-		case CMLO_COPY:
-			action = "copy";
-			break;
-		case CMLO_MOVE:
-			action = "move";
-			break;
-		case CMLO_LINK_REL:
-		case CMLO_LINK_ABS:
-			action = "symlink";
-			break;
-	}
-
-	vle_textbuf *text = vle_tb_create();
-
-	vle_tb_append_linef(text, "Trying to %s:\n ", action);
-	vle_tb_append_linef(text, "   %s", pretty_src);
-
 #define CMP(a, b) ((a) == (b) ? 0 : (a) < (b) ? -1 : 1)
 	int size_cmp = CMP(src.st_size, dst.st_size);
 	int mtime_cmp = CMP(src.st_mtime, dst.st_mtime);
 #undef CMP
+
+	vle_textbuf *text = vle_tb_create();
+
+	vle_tb_append_linef(text, "Source:");
+	vle_tb_append_linef(text, "   %s", pretty_src);
 
 	char size[64];
 	char mtime[64];
 
 	(void)friendly_size_notation(src.st_size, sizeof(size), size);
 	format_iso_time(src.st_mtime, mtime, sizeof(mtime));
-	vle_tb_append_linef(text, "      %c %s (%" PRINTF_ULL ")\n      %c %s\n \n",
+	vle_tb_append_linef(text, "      %c %s (%" PRINTF_ULL ")\n      %c %s",
 			cmp_mark(size_cmp), size, (unsigned long long)src.st_size,
 			cmp_mark(mtime_cmp), mtime);
 
-	vle_tb_append_line(text, "but destination already exists:\n ");
+	vle_tb_append_line(text, "Target:");
 	vle_tb_append_linef(text, "   %s", pretty_dst);
 
 	(void)friendly_size_notation(dst.st_size, sizeof(size), size);
