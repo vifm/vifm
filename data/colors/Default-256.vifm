@@ -61,13 +61,19 @@ highlight {*.7z,*.ace,*.arj,*.bz2,*.cpio,*.deb,*.dz,*.gz,*.jar,*.lzh,*.lzma,
           \*.rar,*.rpm,*.rz,*.tar,*.taz,*.tb2,*.tbz,*.tbz2,*.tgz,*.tlz,*.trz,
           \*.txz,*.tz,*.tz2,*.xz,*.z,*.zip,*.zoo,*.apk,*.gzip,*.lz}
         \ cterm=none ctermfg=215 ctermbg=default
-" documents, configuration, text-based formats
-highlight {*.djvu,*.htm,*.html,*.shtml,*.css,*.markdown,*.md,*[^0-9].[1-9],
-          \*.mkd,*.org,*.pandoc,*.pdc,*.pdf,*.epub,*.fb2,*.tex,*.txt,*.xhtml,
-          \*.xml,*.pptx,*.ppt,*.doc,*.docx,*.xls,*.xlsm,*.xlsx,*.mobi,*.rtf,
-          \*.less,*.scss,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.desktop,*.csv,
-          \*.plist,*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc,*.odg,*.odt,*.djv}
+" configuration and other readable textual formats
+highlight {*.css,*.less,*.scss,*.markdown,*.md,*.mkd,*.org,*.pandoc,*.pdc,*.tex,
+          \*.txt,*.xml,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.csv,*.plist,
+          \*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc}
         \ cterm=none ctermfg=217 ctermbg=default
+" still text files, but keeping this unoptimizable glob separately
+highlight {*[^0-9].[1-9]}
+        \ cterm=none ctermfg=217 ctermbg=default
+" documents and text-based formats that need special handling
+highlight {*.doc,*.docx,*.xls,*.xlsm,*.xlsx,*.mobi,*.rtf,*.ppt,*.pptx,*.pdf,
+          \*.epub,*.fb2,*.djvu,*.djv,*.htm,*.html,*.shtml,*.xhtml,*.desktop,
+          \*.odg,*.odt}
+        \ cterm=none ctermfg=210 ctermbg=default
 " audio
 highlight {*.aac,*.ac3,*.anx,*.ape,*.asf,*.au,*.axa,*.cue,*.flac,*.m2a,*.m4a,
           \*.mid,*.midi,*.mka,*.mp3,*.mpc,*.oga,*.ogg,*.ogx,*.ra,*.ram,*.spx,
