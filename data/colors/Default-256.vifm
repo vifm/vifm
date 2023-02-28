@@ -64,7 +64,9 @@ highlight {*.7z,*.ace,*.arj,*.bz2,*.cpio,*.deb,*.dz,*.gz,*.jar,*.lzh,*.lzma,
 " configuration and other readable textual formats
 highlight {*.css,*.less,*.scss,*.markdown,*.md,*.mkd,*.org,*.pandoc,*.pdc,*.tex,
           \*.txt,*.xml,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.csv,*.plist,
-          \*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc}
+          \*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc,*.description,*.list,*.log.old,
+          \*.log.1,*.log.2,*.log.3,*.log.4,*.log.5,*.log.6,*.log.7,*.log.8,
+          \syslog,syslog.1}
         \ cterm=none ctermfg=217 ctermbg=default
 " still text files, but keeping this unoptimizable glob separately
 highlight {*[^0-9].[1-9]}
