@@ -39,11 +39,11 @@ hi ErrorMsg     cterm=bold                    ctermfg=white    ctermbg=red
 hi Directory    cterm=bold                    ctermfg=123      ctermbg=default
 hi Executable   cterm=bold                    ctermfg=119      ctermbg=default
 hi Socket       cterm=bold,reverse            ctermfg=182      ctermbg=default
-hi Device       cterm=bold,reverse            ctermfg=red      ctermbg=default
-hi Fifo         cterm=bold,reverse            ctermfg=cyan     ctermbg=default
+hi Device       cterm=bold,reverse            ctermfg=204      ctermbg=default
+hi Fifo         cterm=bold,reverse            ctermfg=50       ctermbg=default
 hi Link         cterm=bold                    ctermfg=229      ctermbg=default
-hi BrokenLink   cterm=bold                    ctermfg=red      ctermbg=default
-hi HardLink     cterm=bold                    ctermfg=yellow   ctermbg=default
+hi BrokenLink   cterm=bold                    ctermfg=209      ctermbg=default
+hi HardLink     cterm=bold                    ctermfg=221      ctermbg=default
 
 " for powerline-like look of statusline
 highlight User1 ctermbg=white
