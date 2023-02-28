@@ -38,7 +38,7 @@ hi ErrorMsg     cterm=bold                    ctermfg=white    ctermbg=red
 
 hi Directory    cterm=bold                    ctermfg=123      ctermbg=default
 hi Executable   cterm=bold                    ctermfg=119      ctermbg=default
-hi Socket       cterm=bold                    ctermfg=magenta  ctermbg=default
+hi Socket       cterm=bold,reverse            ctermfg=magenta  ctermbg=default
 hi Device       cterm=bold,reverse            ctermfg=red      ctermbg=default
 hi Fifo         cterm=bold,reverse            ctermfg=cyan     ctermbg=default
 hi Link         cterm=bold                    ctermfg=229      ctermbg=default
