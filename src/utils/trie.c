@@ -97,6 +97,10 @@ trie_t *
 trie_create(trie_free_func free_func)
 {
 	trie_t *trie = calloc(1U, sizeof(*trie));
+	if(trie == NULL)
+	{
+		return NULL;
+	}
 	trie->free_func = free_func;
 	return trie;
 }
@@ -318,6 +322,10 @@ make_node(trie_t *trie)
 
 		trie->nodes = nodes;
 		trie->nodes[bank] = calloc(NODES_PER_BANK, sizeof(**trie->nodes));
+		if(trie->nodes[bank] == NULL)
+		{
+			return NULL;
+		}
 	}
 
 	return &trie->nodes[bank][bank_index];
