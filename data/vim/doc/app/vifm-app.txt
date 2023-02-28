@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 15
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2923,8 +2923,9 @@ The command macros may be used in user commands.
                                                                *vifm-%n*
   %n        forbid use of terminal multiplexer to run the command.
                                                                *vifm-%N*
-  %N        do not detach viewer from terminal session (leaves `/dev/tty`
-            available).
+  %N        do not detach viewer from terminal session (keeps `/dev/tty`
+            available) or process group (keeps the command in the set of
+            foreground clients of the terminal).
                                                                *vifm-%i*
   %i        completely ignore command output.  For background jobs this
             suppresses error dialogs, while still storing errors

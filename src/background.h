@@ -59,7 +59,8 @@ typedef enum
 	BJF_SUPPLY_INPUT    = 1 << 2, /* Open a pipe for standard input stream. */
 	BJF_CAPTURE_OUT     = 1 << 3, /* Capture output stream(s). */
 	BJF_MERGE_STREAMS   = 1 << 4, /* Merge error stream into output stream. */
-	BJF_KEEP_SESSION    = 1 << 5, /* Do not detach from terminal session. */
+	BJF_KEEP_IN_FG      = 1 << 5, /* Do not detach from terminal session or
+	                                 process group. */
 }
 BgJobFlags;
 

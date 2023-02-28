@@ -724,9 +724,9 @@ view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 		bg_flags |= BJF_SUPPLY_INPUT;
 	}
 
-	if(ma_flags_present(flags, MF_KEEP_SESSION))
+	if(ma_flags_present(flags, MF_KEEP_IN_FG))
 	{
-		bg_flags |= BJF_KEEP_SESSION;
+		bg_flags |= BJF_KEEP_IN_FG;
 	}
 
 	centry->job = bg_run_external_job(centry->viewer, bg_flags);

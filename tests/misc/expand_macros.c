@@ -308,7 +308,7 @@ TEST(good_flag_macros)
 
 	expanded = ma_expand("%N echo log", "", &flags, MER_OP);
 	assert_string_equal(" echo log", expanded);
-	assert_int_equal(MF_KEEP_SESSION, flags);
+	assert_int_equal(MF_KEEP_IN_FG, flags);
 	free(expanded);
 
 	expanded = ma_expand("%Pl echo log", "", &flags, MER_OP);
@@ -749,7 +749,7 @@ TEST(flags_to_str)
 	assert_string_equal("%i", ma_flags_to_str(MF_IGNORE));
 	assert_string_equal("%n", ma_flags_to_str(MF_NO_TERM_MUX));
 
-	assert_string_equal("%N", ma_flags_to_str(MF_KEEP_SESSION));
+	assert_string_equal("%N", ma_flags_to_str(MF_KEEP_IN_FG));
 
 	assert_string_equal("%Pl", ma_flags_to_str(MF_PIPE_FILE_LIST));
 	assert_string_equal("%Pz", ma_flags_to_str(MF_PIPE_FILE_LIST_Z));

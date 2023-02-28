@@ -154,7 +154,7 @@ TEST(can_run_viewer_in_current_session)
 	/* Not sure how to test that session hasn't changed without writing a test
 	 * program. */
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/", "echo text",
-			MF_KEEP_SESSION, VK_TEXTUAL, 1, VC_SYNC, &error);
+			MF_KEEP_IN_FG, VK_TEXTUAL, 1, VC_SYNC, &error);
 	assert_string_equal(NULL, error);
 	assert_int_equal(1, lines.nitems);
 	assert_string_equal("text", lines.items[0]);
