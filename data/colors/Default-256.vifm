@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 18 January, 2023
+" This file last updated: 28 February, 2023
 
 highlight clear
 
@@ -53,7 +53,8 @@ highlight User4 ctermbg=white ctermfg=240
 
 " build system files
 highlight {Makefile,Makefile.am,Makefile.in,Makefile.win,*.mak,*.mk,*.m4,*.ac,
-          \configure,CMakeLists.txt,*.cmake,*.pro,*.pri,*.sln}
+          \configure,CMakeLists.txt,*.cmake,*.pro,*.pri,*.sln,meson.build,
+          \meson_options.txt}
         \ cterm=none ctermfg=121 ctermbg=default
 " archives
 highlight {*.7z,*.ace,*.arj,*.bz2,*.cpio,*.deb,*.dz,*.gz,*.jar,*.lzh,*.lzma,
