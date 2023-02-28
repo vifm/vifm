@@ -310,7 +310,6 @@ make_node(trie_t *trie)
 {
 	const int bank = trie->node_count/NODES_PER_BANK;
 	const int bank_index = trie->node_count%NODES_PER_BANK;
-	++trie->node_count;
 
 	if(bank_index == 0)
 	{
@@ -328,6 +327,7 @@ make_node(trie_t *trie)
 		}
 	}
 
+	++trie->node_count;
 	return &trie->nodes[bank][bank_index];
 }
 
