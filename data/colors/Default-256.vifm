@@ -83,7 +83,7 @@ highlight {*.bmp,*.gif,*.jpeg,*.jpg,*.ico,*.png,*.ppm,*.svg,*.svgz,*.tga,*.tif,
         \ cterm=none ctermfg=117 ctermbg=default
 " executables
 highlight {*.sh,*.bash,*.zsh,*.bat,*.btm,*.cmd,*.com,*.dll,*.exe,*.run,*.msu,
-          \*.msi,*.fish}
+          \*.msi,*.fish,*.AppImage}
         \ cterm=none ctermfg=77 ctermbg=default
 " source code
 highlight {*.patch,*.diff,*.py,*.cpp,*.hpp,*.c,*.h,*.cpp,*.hpp,*.cc,*.hh,*.ld,
