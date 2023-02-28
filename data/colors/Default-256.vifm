@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 18 January, 2023
+" This file last updated: 1 March, 2023
 
 highlight clear
 
@@ -38,12 +38,12 @@ hi ErrorMsg     cterm=bold                    ctermfg=white    ctermbg=red
 
 hi Directory    cterm=bold                    ctermfg=123      ctermbg=default
 hi Executable   cterm=bold                    ctermfg=119      ctermbg=default
-hi Socket       cterm=bold                    ctermfg=magenta  ctermbg=default
-hi Device       cterm=bold,reverse            ctermfg=red      ctermbg=default
-hi Fifo         cterm=bold,reverse            ctermfg=cyan     ctermbg=default
+hi Socket       cterm=bold,reverse            ctermfg=182      ctermbg=default
+hi Device       cterm=bold,reverse            ctermfg=204      ctermbg=default
+hi Fifo         cterm=bold,reverse            ctermfg=50       ctermbg=default
 hi Link         cterm=bold                    ctermfg=229      ctermbg=default
-hi BrokenLink   cterm=bold                    ctermfg=red      ctermbg=default
-hi HardLink     cterm=bold                    ctermfg=yellow   ctermbg=default
+hi BrokenLink   cterm=bold                    ctermfg=209      ctermbg=default
+hi HardLink     cterm=bold                    ctermfg=221      ctermbg=default
 
 " for powerline-like look of statusline
 highlight User1 ctermbg=white
@@ -53,41 +53,51 @@ highlight User4 ctermbg=white ctermfg=240
 
 " build system files
 highlight {Makefile,Makefile.am,Makefile.in,Makefile.win,*.mak,*.mk,*.m4,*.ac,
-          \configure,CMakeLists.txt,*.cmake,*.pro,*.pri,*.sln}
+          \configure,CMakeLists.txt,*.cmake,*.pro,*.pri,*.sln,meson.build,
+          \meson_options.txt}
         \ cterm=none ctermfg=121 ctermbg=default
 " archives
 highlight {*.7z,*.ace,*.arj,*.bz2,*.cpio,*.deb,*.dz,*.gz,*.jar,*.lzh,*.lzma,
           \*.rar,*.rpm,*.rz,*.tar,*.taz,*.tb2,*.tbz,*.tbz2,*.tgz,*.tlz,*.trz,
           \*.txz,*.tz,*.tz2,*.xz,*.z,*.zip,*.zoo,*.apk,*.gzip,*.lz}
         \ cterm=none ctermfg=215 ctermbg=default
-" documents, configuration, text-based formats
-highlight {*.djvu,*.htm,*.html,*.shtml,*.css,*.markdown,*.md,*[^0-9].[1-9],
-          \*.mkd,*.org,*.pandoc,*.pdc,*.pdf,*.epub,*.fb2,*.tex,*.txt,*.xhtml,
-          \*.xml,*.pptx,*.ppt,*.doc,*.docx,*.xls,*.xlsm,*.xlsx,*.mobi,*.rtf,
-          \*.less,*.scss,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.desktop,*.csv,
-          \*.plist,*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc,*.odg,*.odt}
+" configuration and other readable textual formats
+highlight {*.css,*.less,*.scss,*.markdown,*.md,*.mkd,*.org,*.pandoc,*.pdc,*.tex,
+          \*.txt,*.xml,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.csv,*.plist,
+          \*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc,*.description,*.list,*.log.old,
+          \*.log.1,*.log.2,*.log.3,*.log.4,*.log.5,*.log.6,*.log.7,*.log.8,
+          \syslog,syslog.1}
         \ cterm=none ctermfg=217 ctermbg=default
-" media
-highlight {*.aac,*.anx,*.asf,*.au,*.avi,*.ts,*.axa,*.axv,*.divx,*.flac,*.m2a,
-          \*.m2v,*.m4a,*.m4p,*.m4v,*.mid,*.midi,*.mka,*.mkv,*.mov,*.mp3,*.mp4,
-          \*.flv,*.mp4v,*.mpc,*.mpeg,*.mpg,*.nuv,*.oga,*.ogg,*.ogv,*.ogx,*.pbm,
-          \*.pgm,*.qt,*.ra,*.ram,*.rm,*.spx,*.vob,*.wav,*.wma,*.wmv,*.xvid,
-          \*.ac3,*.webm,*.cue,*.ape}
+" still text files, but keeping this unoptimizable glob separately
+highlight {*[^0-9].[1-9]}
+        \ cterm=none ctermfg=217 ctermbg=default
+" documents and text-based formats that need special handling
+highlight {*.doc,*.docx,*.xls,*.xlsm,*.xlsx,*.mobi,*.rtf,*.ppt,*.pptx,*.pdf,
+          \*.epub,*.fb2,*.djvu,*.djv,*.htm,*.html,*.shtml,*.xhtml,*.desktop,
+          \*.odg,*.odt,*.ods}
+        \ cterm=none ctermfg=210 ctermbg=default
+" audio
+highlight {*.aac,*.ac3,*.anx,*.ape,*.asf,*.au,*.axa,*.cue,*.flac,*.m2a,*.m4a,
+          \*.mid,*.midi,*.mka,*.mp3,*.mpc,*.oga,*.ogg,*.ogx,*.ra,*.ram,*.spx,
+          \*.wav,*.wma}
+        \ cterm=none ctermfg=79 ctermbg=default
+" multimedia
+highlight {*.avi,*.axv,*.divx,*.flv,*.m2v,*.m4v,*.mp4,*.m4p,*.mp4v,*.mpeg,*.mpg,
+          \*.mkv,*.mov,*.nuv,*.ogv,*.qt,*.rm,*.ts,*.vob,*.webm,*.wmv,*.xvid}
         \ cterm=none ctermfg=49 ctermbg=default
 " images
 highlight {*.bmp,*.gif,*.jpeg,*.jpg,*.ico,*.png,*.ppm,*.svg,*.svgz,*.tga,*.tif,
-          \*.tiff,*.xbm,*.xcf,*.xpm,*.xspf,*.xwd,*.ai}
+          \*.tiff,*.xbm,*.xcf,*.xpm,*.xspf,*.xwd,*.ai,*.pbm,*.pgm,*.webp}
         \ cterm=none ctermfg=117 ctermbg=default
 " executables
 highlight {*.sh,*.bash,*.zsh,*.bat,*.btm,*.cmd,*.com,*.dll,*.exe,*.run,*.msu,
-          \*.msi,*.fish}
+          \*.msi,*.fish,*.AppImage}
         \ cterm=none ctermfg=77 ctermbg=default
 " source code
-highlight {*.patch,*.diff,*.py,*.cpp,*.hpp,*.mk,*.c,*.h,*.cpp,*.hpp,*.cc,*.hh,
+highlight {*.patch,*.diff,*.py,*.cpp,*.hpp,*.c,*.h,*.cpp,*.hpp,*.cc,*.hh,*.ld,
           \*.hs,*.php,*.lua,*.vim,*.vifm,*.asm,*.s,*.java,*.cxx,*.c++,*.go,
           \*.pl,*.pm,*.t,*.cs,*.asp,*.dart,*.js,*.rb,*.scala,*.ts,*.coffee,
-          \*.ml,*.mli,*.rs,*.sql,*.qml,vifmrc,vimrc,.vimrc,*.flex,*.ypp,*.S,
-          \*.ld}
+          \*.ml,*.mli,*.rs,*.sql,*.qml,vifmrc,vimrc,.vimrc,*.flex,*.ypp,*.S}
         \ cterm=none ctermfg=193 ctermbg=default
 " software documentation
 highlight {COPYRIGHT,COPYING*,BUGS,ChangeLog*,FAQ,INSTALL*,LICENCE,LICENSE,NEWS,
