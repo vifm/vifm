@@ -108,6 +108,9 @@
 
 	Made file conflict more concise.  Thanks to aleksejrs.
 
+	Update Default-256 to fix differentiate between more file types.  Thanks
+	to aleksejrs.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
