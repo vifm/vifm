@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Feb 26
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Mar 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4330,7 +4330,7 @@ In global tabs the view in bullets above refers to currently active view of that
 tab.
 
 Flag macros are a special kind of macros that always expand to an empty value
-and are ment to be used inside optional blocks to control their visibility.
+and are meant to be used inside optional blocks to control their visibility.
 
 Optional blocks are ignored unless at least one macro inside of them is
 expanded to a non-empty value or is a set flag macro.
