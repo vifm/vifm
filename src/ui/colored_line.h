@@ -47,8 +47,9 @@ cline_t cline_make(void);
  * non-zero if cline->attrs has extra characters compared to cline->line. */
 int cline_sync(cline_t *cline, int extra_width);
 
-/* Sets attribute to be used for text appended later on. */
-void cline_set_attr(cline_t *cline, char attr);
+/* Sets user group attribute to be used for text appended later on.  Zero means
+ * no group.  Out of range values are not applied. */
+void cline_set_attr(cline_t *cline, int user_color);
 
 /* Makes cline empty. */
 void cline_clear(cline_t *cline);

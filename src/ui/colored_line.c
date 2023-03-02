@@ -28,6 +28,9 @@
 #include "color_scheme.h"
 #include "ui.h"
 
+/* First character used for an attribute. */
+#define FIRST_ATTR '0'
+
 static size_t effective_chrw(const char line[]);
 
 cline_t
@@ -53,10 +56,13 @@ cline_sync(cline_t *cline, int extra_width)
 }
 
 void
-cline_set_attr(cline_t *cline, char attr)
+cline_set_attr(cline_t *cline, int user_color)
 {
 	(void)cline_sync(cline, 1);
-	cline->attrs[cline->attrs_len - 1] = attr;
+	if(user_color >= 0 && user_color <= LAST_USER_COLOR)
+	{
+		cline->attrs[cline->attrs_len - 1] = FIRST_ATTR + user_color;
+	}
 }
 
 void
@@ -112,13 +118,13 @@ cline_print(const cline_t *cline, WINDOW *win, const col_attr_t *def_col)
 	cchar_t attr = def_attr;
 	while(*line != '\0')
 	{
-		if(*attrs == '0')
+		if(*attrs == FIRST_ATTR)
 		{
 			attr = def_attr;
 		}
 		else if(*attrs != ' ')
 		{
-			const int color = (USER1_COLOR + (*attrs - '1'));
+			const int color = USER1_COLOR + (*attrs - (FIRST_ATTR + 1));
 			col_attr_t col = *def_col;
 			cs_mix_colors(&col, &cfg.cs.color[color]);
 			attr = cs_color_to_cchar(&col, -1);

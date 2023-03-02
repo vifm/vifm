@@ -536,7 +536,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					width = 0;
 					break;
 				}
-				cline_set_attr(&result, '0' + width);
+				cline_set_attr(&result, /*user_color=*/width);
 				width = 0;
 				break;
 

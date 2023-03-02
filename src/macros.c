@@ -764,12 +764,13 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		}
 		else if(pat[1] == '*')
 		{
-			cline_set_attr(&result, '0');
+			cline_set_attr(&result, /*user_color=*/0);
 			++*pattern;
 		}
 		else if(isdigit(pat[1]) && pat[2] == '*')
 		{
-			cline_set_attr(&result, pat[1]);
+			int user_color = pat[1] - '0';
+			cline_set_attr(&result, user_color);
 			*pattern += 2;
 		}
 		else if(with_opt && pat[1] == '[')
