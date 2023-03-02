@@ -773,6 +773,12 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 			cline_set_attr(&result, user_color);
 			*pattern += 2;
 		}
+		else if(isdigit(pat[1]) && isdigit(pat[2]) && pat[3] == '*')
+		{
+			int user_color = (pat[1] - '0')*10 + (pat[2] - '0');
+			cline_set_attr(&result, user_color);
+			*pattern += 3;
+		}
 		else if(with_opt && pat[1] == '[')
 		{
 			++*pattern;

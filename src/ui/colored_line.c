@@ -29,7 +29,7 @@
 #include "ui.h"
 
 /* First character used for an attribute. */
-#define FIRST_ATTR '0'
+#define FIRST_ATTR 'a'
 
 static size_t effective_chrw(const char line[]);
 

@@ -25,7 +25,7 @@
 
 /* This unit provides a type that bundles line with attributes.  Attributes are
  * stored in a parallel array of characters.  It contains a character in the
- * set [0-9 ] (space included) per screen position of the UTF-8 line.  Each
+ * set [a-u ] (space included) per screen position of the UTF-8 line.  Each
  * attribute character specifies which user highlight group should be used
  * starting with that offset on the screen. */
 

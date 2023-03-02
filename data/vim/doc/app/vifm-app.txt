@@ -1944,7 +1944,8 @@ Available group-name values:
  - CmpMismatch - color of mismatched files in side-by-side comparison by paths
  - CmpUnmatched - comparison file entry that has no pair in the other pane
  - CmpBlank - entry placeholder in a compare view, paired with CmpUnmatched
- - User1..User9 - 9 colors which can be used via %* |vifm-'statusline'| macro
+ - User1..User20 - 20 colors which can be used via %* |vifm-'statusline'|
+   macro
 
 Available colors:
  - -1 or default or none - transparent
@@ -2090,7 +2091,7 @@ transparency:
   SuggestBox
   StatusLine
     WildMenu
-    User1..User9
+    User1..User20
   Border
   CmdLine
     ErrorMsg
@@ -2118,10 +2119,10 @@ transparency:
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
-        User1..User9
+        User1..User20
   TabLine
     TabLineSel
-      User1..User9
+      User1..User20
 
 "none" means default terminal color for highlight groups at the first level
 of the hierarchy and transparency for all others.
@@ -4234,9 +4235,9 @@ are supported:
     %c - size of current FS
     %z - short tips/tricks/hints that chosen randomly after one minute period
     `%{<expr>}` - evaluate arbitrary vifm expression `<expr>`, e.g. `&sort`
-    %* - resets or applies one of User1..User9 highlight groups; reset happens
-         when width field is 0 or not specified, one of groups gets picked
-         when width field is in the range from 1 to 9
+    %* - resets or applies one of User1..User20 highlight groups; reset happens
+         when width field is 0 or not specified, one of the groups gets picked
+         when width field is in the range from 1 to 20
     all |vifm-'rulerformat'| macros
 Percent sign can be followed by optional minimum field width.  Add '-' before
 minimum field width if you want field to be right aligned.
@@ -4313,18 +4314,18 @@ When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
 
 The following macros can appear in the format (see below for what a flag is):
-    %C      - flag of a current tab
-    %N      - number of the tab
-    %T      - flag of a tree mode
-    %c      - description of a custom view
-    %n      - name of the tab
-    %p      - path of the view (handles |vifm-filename-modifiers|)
-    %t      - title of the view (affected by |vifm-'shortmess'| flags)
-    %%      - literal percent sign
-    %[      - designates beginning of an optional block
-    %]      - designates end of an optional block
-    %*, %0* - resets highlighting
-    %1-%9   - applies one of User1..User9 highlight groups
+    %C         - flag of a current tab
+    %N         - number of the tab
+    %T         - flag of a tree mode
+    %c         - description of a custom view
+    %n         - name of the tab
+    %p         - path of the view (handles |vifm-filename-modifiers|)
+    %t         - title of the view (affected by |vifm-'shortmess'| flags)
+    %%         - literal percent sign
+    %[         - designates beginning of an optional block
+    %]         - designates end of an optional block
+    %*, %0*    - resets highlighting
+    %1* - %20* - applies one of User1..User20 highlight groups
 
 In global tabs the view in bullets above refers to currently active view of that
 tab.

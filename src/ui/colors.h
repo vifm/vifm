@@ -81,6 +81,17 @@ enum
 	USER7_COLOR,        /* User color #7. */
 	USER8_COLOR,        /* User color #8. */
 	USER9_COLOR,        /* User color #9. */
+	USER10_COLOR,       /* User color #10. */
+	USER11_COLOR,       /* User color #11. */
+	USER12_COLOR,       /* User color #12. */
+	USER13_COLOR,       /* User color #13. */
+	USER14_COLOR,       /* User color #14. */
+	USER15_COLOR,       /* User color #15. */
+	USER16_COLOR,       /* User color #16. */
+	USER17_COLOR,       /* User color #17. */
+	USER18_COLOR,       /* User color #18. */
+	USER19_COLOR,       /* User color #19. */
+	USER20_COLOR,       /* User color #20. */
 	OTHER_WIN_COLOR,    /* Background and highlighting for inactive pane. */
 	LINE_NUM_COLOR,     /* Color of line number column of panes. */
 	ODD_LINE_COLOR,     /* Color of every second entry line in a pane. */
@@ -88,7 +99,7 @@ enum
 };
 
 /* The last of USER*_COLOR groups. */
-#define LAST_USER_COLOR 9
+#define LAST_USER_COLOR 20
 
 #endif /* VIFM__UI__COLORS_H__ */
 

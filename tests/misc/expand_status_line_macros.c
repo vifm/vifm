@@ -14,6 +14,13 @@
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
 
+/*
+ * Cheatsheet for user-color attributes:
+ *           11111111112
+ * 012345678901234567890
+ * abcdefghijklmnopqrstu
+ */
+
 /* Checks that expanded string isn't equal to format string. */
 #define ASSERT_EXPANDED(format) \
 	do \
@@ -310,41 +317,48 @@ TEST(highlighting_is_set_correctly)
 {
 	ASSERT_EXPANDED_TO_WITH_HI("[%1*%t%*]",
 	                           "[file]",
-	                           " 1   0");
+	                           " b   a");
 }
 
 TEST(highlighting_is_set_correctly_for_optional)
 {
 	ASSERT_EXPANDED_TO_WITH_HI("%[%1*a",
 	                           "%[a",
-	                           "  1");
+	                           "  b");
 }
 
 TEST(highlighting_has_equals_macro_preserved)
 {
 	ASSERT_EXPANDED_TO_WITH_HI("%9*%t %= %t%7*",
 	                           "file %= file",
-	                           "9    =      ");
+	                           "j    =      ");
 	ASSERT_EXPANDED_TO_WITH_HI("%9*%t%=%t%7*",
 	                           "file%=file",
-	                           "9   =     ");
+	                           "j   =     ");
 	ASSERT_EXPANDED_TO_WITH_HI("%t%9*%=%7*%t",
 	                           "file%=file",
-	                           "    9=7   ");
+	                           "    j=h   ");
 	ASSERT_EXPANDED_TO_WITH_HI("%t%9*%=%7*%t%0*",
 	                           "file%=file",
-	                           "    9=7   ");
+	                           "    j=h   ");
 	ASSERT_EXPANDED_TO_WITH_HI("%=%1*%t%0*",
 	                           "%=file",
-	                           "= 1   ");
+	                           "= b   ");
 	ASSERT_EXPANDED_TO_WITH_HI("%t%1*%=%2*%t%0*",
 	                           "file%=file",
-	                           "    1=2   ");
+	                           "    b=c   ");
+}
+
+TEST(two_digit_user_colors)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%10*[%11*%t%20*]",
+	                           "[file]",
+	                           "kl   u");
 }
 
 TEST(bad_user_group_remains_in_line)
 {
-	ASSERT_EXPANDED_TO_WITH_HI("%10*", "%10*", "    ");
+	ASSERT_EXPANDED_TO_WITH_HI("%21*", "%21*", "    ");
 }
 
 TEST(empty_optional_drops_attrs)
@@ -358,20 +372,20 @@ TEST(non_empty_optional_preserves_attrs)
 {
 	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%t%2*%t%]%3*",
 	                           "filefile",
-	                           "1   2   ");
+	                           "b   c   ");
 	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%2*%t%3*%t%]%4*",
 	                           "filefile",
-	                           "2   3   ");
+	                           "c   d   ");
 	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%2*%t%3*%]%4*",
 	                           "file",
-	                           "2   ");
+	                           "c   ");
 }
 
 TEST(wide_characters_do_not_break_highlighting, IF(utf8_locale))
 {
 	ASSERT_EXPANDED_TO_WITH_HI("%1*螺丝 %= 螺%2*丝",
 	                           "螺丝 %= 螺丝",
-	                           "1    =    2 ");
+	                           "b    =    c ");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

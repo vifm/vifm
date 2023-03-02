@@ -76,6 +76,9 @@
 	to Daniel J. Perry (BioBox).  Patch by Rostislav Tolushkin (a.k.a.
 	nullptr-deref).
 
+	Added additional User10..User20 highlight groups and corresponding
+	%10*-%20* macros.  Thanks to Sylwia Ptasinska (a.k.a. SylEleuth).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
