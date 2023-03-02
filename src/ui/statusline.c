@@ -530,7 +530,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				}
 				break;
 			case '*':
-				if(width > 9)
+				if(width > LAST_USER_COLOR)
 				{
 					snprintf(buf, sizeof(buf), "%%%d*", (int)width);
 					width = 0;

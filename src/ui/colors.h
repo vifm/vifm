@@ -87,6 +87,9 @@ enum
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 
+/* The last of USER*_COLOR groups. */
+#define LAST_USER_COLOR 9
+
 #endif /* VIFM__UI__COLORS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
