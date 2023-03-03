@@ -72,6 +72,10 @@
 	Added r key to :jobs menu, which reloads the list of jobs.  Thanks to
 	Sylwia Ptasinska (a.k.a. SylEleuth).
 
+	Added :regedit command for external editing of register contents.  Thanks
+	to Daniel J. Perry (BioBox).  Patch by Rostislav Tolushkin (a.k.a.
+	nullptr-deref).
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have

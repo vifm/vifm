@@ -466,7 +466,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_non_null(flist_custom_add(&lwin, "existing-files/b"));
 	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
 
-	reg_t *reg = regs_find('"');
+	const reg_t *reg = regs_find('"');
 
 	assert_success(cmds_dispatch("command! myyank :yank", &lwin, CIT_COMMAND));
 	assert_failure(cmds_dispatch("%myyank", &lwin, CIT_COMMAND));

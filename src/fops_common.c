@@ -1086,11 +1086,12 @@ edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[], int *edited_len,
 
 	int result_len;
 	char **result = read_file_of_lines(rename_file, &result_len);
+	int error = errno;
 	unlink(rename_file);
 	if(result == NULL)
 	{
 		show_error_msgf("Error Getting List Of Renames",
-				"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
+				"Can't open temporary file \"%s\": %s", rename_file, strerror(error));
 		return NULL;
 	}
 

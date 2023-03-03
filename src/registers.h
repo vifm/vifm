@@ -31,11 +31,12 @@
 #define BLACKHOLE_REG_NAME '_'
 
 /* Holds register data. */
-typedef struct
+typedef struct reg_t
 {
 	int name;     /* Name of the register. */
 	int nfiles;   /* Number of files in the register. */
-	char **files; /* List of full paths of files. */
+	char **files; /* List of full canonicalized paths that is sorted and
+	                 deduplicated according to case-sensitivity of the system. */
 }
 reg_t;
 
@@ -55,12 +56,15 @@ int regs_exists(int reg_name);
 
 /* Retrieves register structure by register name.  Returns the structure or NULL
  * if register name is incorrect. */
-reg_t * regs_find(int reg_name);
+const reg_t * regs_find(int reg_name);
 
 /* Appends path to the file to register specified by name.  Might fail for
  * duplicate, non-existing path or wrong register name.  Returns zero when file
  * is added, otherwise non-zero is returned. */
 int regs_append(int reg_name, const char file[]);
+
+/* Replaces contents of a register. */
+void regs_set(int reg_name, char **files, int nfiles);
 
 /* Clears all registers.  Pair of regs_init(). */
 void regs_reset(void);

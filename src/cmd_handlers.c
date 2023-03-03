@@ -27,14 +27,14 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
-#include <errno.h>
+#include <errno.h> /* errno */
 #include <limits.h> /* INT_MAX */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strchr() strcmp() strcspn() strcasecmp() strcpy()
-                       strdup() strlen() strrchr() strspn() */
+                       strdup() strerror() strlen() strrchr() strspn() */
 #include <wctype.h> /* iswspace() */
 #include <wchar.h> /* wcslen() wcsncmp() */
 
@@ -262,6 +262,7 @@ static int qmap_cmd(const cmd_info_t *cmd_info);
 static int qnoremap_cmd(const cmd_info_t *cmd_info);
 static int qunmap_cmd(const cmd_info_t *cmd_info);
 static int redraw_cmd(const cmd_info_t *cmd_info);
+static int regedit_cmd(const cmd_info_t *cmd_info);
 static int registers_cmd(const cmd_info_t *cmd_info);
 static int regular_cmd(const cmd_info_t *cmd_info);
 static int rename_cmd(const cmd_info_t *cmd_info);
@@ -757,6 +758,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "force screen redraw",
 	  .flags = HAS_COMMENT,
 	  .handler = &redraw_cmd,      .min_args = 0,   .max_args = 0, },
+	{ .name = "regedit",           .abbr = "rege",  .id = -1,
+	  .descr = "edit register contents",
+	  .flags = HAS_COMMENT | HAS_RAW_ARGS,
+	  .handler = &regedit_cmd,     .min_args = 0,   .max_args = 1 },
 	{ .name = "registers",         .abbr = "reg",   .id = -1,
 	  .descr = "display registers",
 	  .flags = 0,
@@ -4039,6 +4044,83 @@ static int
 redraw_cmd(const cmd_info_t *cmd_info)
 {
 	update_screen(UT_FULL);
+	return 0;
+}
+
+/* Opens external editor to edit specified register contents. */
+static int
+regedit_cmd(const cmd_info_t *cmd_info)
+{
+	int reg_name = DEFAULT_REG_NAME;
+	if(cmd_info->argc > 0)
+	{
+		if(strlen(cmd_info->argv[0]) != 1)
+		{
+			ui_sb_errf("Invalid argument: %s", cmd_info->argv[0]);
+			return CMDS_ERR_CUSTOM;
+		}
+		reg_name = tolower(cmd_info->argv[0][0]);
+	}
+	if(reg_name == BLACKHOLE_REG_NAME)
+	{
+		ui_sb_err("Cannot modify blackhole register.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	regs_sync_from_shared_memory();
+	const reg_t *reg = regs_find(reg_name);
+	if(reg == NULL)
+	{
+		ui_sb_err("Register with given name does not exist.");
+		return CMDS_ERR_CUSTOM;
+	}
+	char tmp_fname[PATH_MAX + 1];
+	generate_tmp_file_name("vifm.regedit", tmp_fname, sizeof(tmp_fname));
+
+	mode_t saved_umask = umask(~0600);
+	const int write_result =
+		write_file_of_lines(tmp_fname, reg->files, reg->nfiles);
+	(void)umask(saved_umask);
+	if(write_result != 0)
+	{
+		ui_sb_err("Couldn't write register content into external file.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	/* Forking is disabled because in some cases process can return value
+	 * before any changes will be written and editor will be closed. */
+	const int edit_result = vim_view_file(tmp_fname, 1, 1, /*allow_forking=*/0);
+	if(edit_result != 0)
+	{
+		ui_sb_err("Register content edition went unsuccessful.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	int read_lines;
+	char **edited_content = read_file_of_lines(tmp_fname, &read_lines);
+	int error = errno;
+	unlink(tmp_fname);
+	if(edited_content == NULL)
+	{
+		ui_sb_errf("Couldn't read edited register's content: %s", strerror(error));
+		return CMDS_ERR_CUSTOM;
+	}
+
+	/* Normalize paths.  Not done in regs_set() as it doesn't need to know about
+	 * current directory. */
+	int i;
+	const char *base_dir = flist_get_dir(curr_view);
+	for(i = 0; i < read_lines; ++i)
+	{
+		char canonic[PATH_MAX + 1];
+		to_canonic_path(edited_content[i], base_dir, canonic, sizeof(canonic));
+		replace_string(&edited_content[i], canonic);
+	}
+
+	regs_set(reg_name, edited_content, read_lines);
+	free_string_array(edited_content, read_lines);
+
+	regs_sync_to_shared_memory();
 	return 0;
 }
 

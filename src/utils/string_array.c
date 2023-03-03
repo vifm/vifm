@@ -205,9 +205,12 @@ read_file_of_lines(const char filepath[], int *nlines)
 {
 	size_t text_len;
 	char *const text = read_whole_file(filepath, &text_len);
-	char **list = (text == NULL)
-	            ? NULL
-	            : text_to_lines(text, text_len, nlines, 0);
+	if(text == NULL)
+	{
+		return NULL;
+	}
+
+	char **list = text_to_lines(text, text_len, nlines, 0);
 	if(list == NULL)
 	{
 		list = malloc(sizeof(*list));

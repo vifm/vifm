@@ -514,6 +514,10 @@ keepsel
 amap
 anoremap
 aunmap
+rege
+reged
+regedi
+regedit
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session

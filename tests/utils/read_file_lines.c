@@ -7,8 +7,18 @@
 
 TEST(non_existing_file)
 {
-	int nlines;
+	int nlines = -1;
 	char **lines = read_file_of_lines(TEST_DATA_PATH "/read/wrong-path", &nlines);
+	assert_null(lines);
+	assert_int_equal(-1, nlines);
+	free(lines);
+}
+
+TEST(empty_file)
+{
+	int nlines = -1;
+	char **lines =
+		read_file_of_lines(TEST_DATA_PATH "/existing-files/a", &nlines);
 	assert_non_null(lines);
 	assert_int_equal(0, nlines);
 	free(lines);
