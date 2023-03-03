@@ -4067,6 +4067,7 @@ regedit_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 
+	regs_sync_from_shared_memory();
 	reg_t *reg = regs_find(reg_name);
 	if(reg == NULL)
 	{
@@ -4106,6 +4107,7 @@ regedit_cmd(const cmd_info_t *cmd_info)
 	regs_set(reg_name, edited_content, read_lines);
 	free_string_array(edited_content, read_lines);
 
+	regs_sync_to_shared_memory();
 	return 0;
 }
 
