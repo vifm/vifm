@@ -27,14 +27,14 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
-#include <errno.h>
+#include <errno.h> /* errno */
 #include <limits.h> /* INT_MAX */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strchr() strcmp() strcspn() strcasecmp() strcpy()
-                       strdup() strlen() strrchr() strspn() */
+                       strdup() strerror() strlen() strrchr() strspn() */
 #include <wctype.h> /* iswspace() */
 #include <wchar.h> /* wcslen() wcsncmp() */
 
@@ -4096,12 +4096,13 @@ regedit_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 
-	int read_lines = 0;
+	int read_lines;
 	char **edited_content = read_file_of_lines(tmp_fname, &read_lines);
+	int error = errno;
 	unlink(tmp_fname);
 	if(edited_content == NULL)
 	{
-		ui_sb_err("Couldn't read register editions from the external file.");
+		ui_sb_errf("Couldn't read edited register's content: %s", strerror(error));
 		return CMDS_ERR_CUSTOM;
 	}
 	regs_set(reg_name, edited_content, read_lines);
