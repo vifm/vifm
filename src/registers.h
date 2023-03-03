@@ -31,7 +31,7 @@
 #define BLACKHOLE_REG_NAME '_'
 
 /* Holds register data. */
-typedef struct
+typedef struct reg_t
 {
 	int name;     /* Name of the register. */
 	int nfiles;   /* Number of files in the register. */

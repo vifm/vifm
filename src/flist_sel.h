@@ -22,8 +22,7 @@
 
 /* This unit provides functions related to selecting items in file lists. */
 
-#include "registers.h"
-
+struct reg_t;
 struct view_t;
 
 /* Clears selection saving it for later use. */
@@ -46,7 +45,7 @@ void flist_sel_stash_if_nonempty(struct view_t *view);
 
 /* Reselects previously selected entries.  When reg is NULL, saved selection is
  * restored, otherwise list of files to restore is taken from the register. */
-void flist_sel_restore(struct view_t *view, const reg_t *reg);
+void flist_sel_restore(struct view_t *view, const struct reg_t *reg);
 
 /* Counts number of selected files and writes saves the number in
  * view->selected_files. */

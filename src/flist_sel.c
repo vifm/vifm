@@ -37,6 +37,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "flist_pos.h"
+#include "registers.h"
 #include "running.h"
 
 static void save_selection(view_t *view);
