@@ -794,6 +794,37 @@ TEST(regedit, IF(not_windows))
 	remove_file(SANDBOX_PATH "/script");
 }
 
+TEST(regedit_normalizes_paths, IF(not_windows))
+{
+	create_executable(SANDBOX_PATH "/script");
+	make_file(SANDBOX_PATH "/script",
+			"#!/bin/sh\n"
+			"sed 's/from/to/' < \"$3\" > \"$3_out\"\n"
+			"mv \"$3_out\" \"$3\"\n");
+
+	char vi_cmd[PATH_MAX + 1];
+	make_abs_path(vi_cmd, sizeof(vi_cmd), SANDBOX_PATH, "script", NULL);
+	update_string(&cfg.vi_command, vi_cmd);
+
+	strcpy(lwin.curr_dir, sandbox);
+
+	regs_append(DEFAULT_REG_NAME, "/abs/path/from-1");
+	regs_append(DEFAULT_REG_NAME, "from-2");
+
+	assert_success(cmds_dispatch("regedit", &lwin, CIT_COMMAND));
+
+	/* Result should contain only absolute paths. */
+	reg_t *reg = regs_find(DEFAULT_REG_NAME);
+	assert_int_equal(2, reg->nfiles);
+	int rel_idx = (ends_with(reg->files[0], "/to-2") ? 0 : 1);
+	assert_string_equal("/abs/path/to-1", reg->files[1 - rel_idx]);
+	assert_true(ends_with(reg->files[rel_idx], "/to-2"));
+	assert_true(is_path_absolute(reg->files[0]));
+	assert_true(is_path_absolute(reg->files[1]));
+
+	remove_file(SANDBOX_PATH "/script");
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {

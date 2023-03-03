@@ -4105,6 +4105,18 @@ regedit_cmd(const cmd_info_t *cmd_info)
 		ui_sb_errf("Couldn't read edited register's content: %s", strerror(error));
 		return CMDS_ERR_CUSTOM;
 	}
+
+	/* Normalize paths.  Not done in regs_set() as it doesn't need to know about
+	 * current directory. */
+	int i;
+	const char *base_dir = flist_get_dir(curr_view);
+	for(i = 0; i < read_lines; ++i)
+	{
+		char canonic[PATH_MAX + 1];
+		to_canonic_path(edited_content[i], base_dir, canonic, sizeof(canonic));
+		replace_string(&edited_content[i], canonic);
+	}
+
 	regs_set(reg_name, edited_content, read_lines);
 	free_string_array(edited_content, read_lines);
 

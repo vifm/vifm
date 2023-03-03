@@ -2738,6 +2738,9 @@ redraw the screen immediately.
 .BI ":rege[dit] [{reg}]"
 edit register contents using external editor. If {reg} is
 omitted, unnamed register will be edited by default.
+Edited paths are normalized (no extra `.`, `..`, `/`, etc.) and all
+relative paths are treated as starting in the directory of the current
+view.
 .TP
 .BI "                                         :registers"
 .TP

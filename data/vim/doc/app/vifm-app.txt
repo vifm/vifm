@@ -2337,6 +2337,9 @@ order using the '.' operator.  Any whitespace is ignored.
 :rege[dit] [{reg}]
     edit register contents using external editor (see |vifm-'vicmd'|).
     If {reg} is omitted, unnamed register will be edited by default.
+    Edited paths are normalized (no extra `.`, `..`, `/`, etc.) and all
+    relative paths are treated as starting in the directory of the current
+    view.
 
                                                *vifm-:registers* *vifm-:reg*
 :reg[isters]
