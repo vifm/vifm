@@ -1067,8 +1067,6 @@ cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 {
-	reg_t *reg;
-
 	if(key_info.reg == NO_REG_GIVEN)
 	{
 		flist_sel_restore(curr_view, NULL);
@@ -1076,7 +1074,7 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	regs_sync_from_shared_memory();
-	reg = regs_find(tolower(key_info.reg));
+	const reg_t *reg = regs_find(tolower(key_info.reg));
 	if(reg == NULL || reg->nfiles < 1)
 	{
 		ui_sb_err(reg == NULL ? "No such register" : "Register is empty");

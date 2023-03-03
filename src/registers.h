@@ -55,7 +55,7 @@ int regs_exists(int reg_name);
 
 /* Retrieves register structure by register name.  Returns the structure or NULL
  * if register name is incorrect. */
-reg_t * regs_find(int reg_name);
+const reg_t * regs_find(int reg_name);
 
 /* Appends path to the file to register specified by name.  Might fail for
  * duplicate, non-existing path or wrong register name.  Returns zero when file

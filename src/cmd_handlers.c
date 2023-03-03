@@ -4068,7 +4068,7 @@ regedit_cmd(const cmd_info_t *cmd_info)
 	}
 
 	regs_sync_from_shared_memory();
-	reg_t *reg = regs_find(reg_name);
+	const reg_t *reg = regs_find(reg_name);
 	if(reg == NULL)
 	{
 		ui_sb_err("Register with given name does not exist.");

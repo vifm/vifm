@@ -149,7 +149,7 @@ filter_single(int *quoted, char c, char data, int ncurr, int nother)
 
 	if(c == 'r')
 	{
-		reg_t *reg = regs_find(tolower(data));
+		const reg_t *reg = regs_find(tolower(data));
 		if(reg != NULL && reg->nfiles == 1)
 		{
 			return c;
@@ -561,11 +561,8 @@ static char *
 expand_register(const char curr_dir[], char expanded[], int quotes,
 		const char mod[], int key, int *well_formed, int for_shell)
 {
-	int i;
-	reg_t *reg;
-
 	*well_formed = 1;
-	reg = regs_find(tolower(key));
+	const reg_t *reg = regs_find(tolower(key));
 	if(reg == NULL)
 	{
 		*well_formed = 0;
@@ -574,6 +571,7 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 		mod--;
 	}
 
+	int i;
 	for(i = 0; i < reg->nfiles; ++i)
 	{
 		const char *const modified = mods_apply(reg->files[i], curr_dir, mod,

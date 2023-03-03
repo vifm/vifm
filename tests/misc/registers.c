@@ -26,7 +26,7 @@ TEARDOWN()
 
 TEST(regs_set_can_clear)
 {
-	reg_t *reg = regs_find('a');
+	const reg_t *reg = regs_find('a');
 
 	regs_append('a', "a");
 	assert_int_equal(1, reg->nfiles);

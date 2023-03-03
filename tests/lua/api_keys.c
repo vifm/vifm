@@ -284,7 +284,7 @@ TEST(keys_add_selector)
 	assert_int_equal(1, curr_stats.save_msg);
 	assert_string_equal("2 files yanked", ui_sb_last());
 
-	reg_t *reg = regs_find(DEFAULT_REG_NAME);
+	const reg_t *reg = regs_find(DEFAULT_REG_NAME);
 	assert_non_null(reg);
 	assert_int_equal(2, reg->nfiles);
 	assert_string_equal("/lwin/file0", reg->files[0]);

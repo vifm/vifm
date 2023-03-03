@@ -162,7 +162,7 @@ flist_sel_stash_if_nonempty(view_t *view)
 }
 
 void
-flist_sel_restore(view_t *view, reg_t *reg)
+flist_sel_restore(view_t *view, const reg_t *reg)
 {
 	int i;
 	trie_t *const selection_trie = trie_create(/*free_func=*/NULL);

@@ -89,7 +89,7 @@ static char cmp_mark(int cmp);
  * the process. */
 static struct
 {
-	reg_t *reg;          /* Register used for the operation. */
+	const reg_t *reg;    /* Register used for the operation. */
 	int *file_order;     /* Defines custom ordering of files in register. */
 	view_t *view;        /* View in which operation takes place. */
 	CopyMoveLikeOp op;   /* Type of current operation. */
@@ -125,7 +125,6 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 	size_t task_desc_len;
 	int i;
 	bg_args_t *args;
-	reg_t *reg;
 	const char *const dst_dir = fops_get_dst_dir(view, at);
 
 	/* Check that operation generally makes sense given our input. */
@@ -136,7 +135,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 	}
 
 	regs_sync_from_shared_memory();
-	reg = regs_find(tolower(reg_name));
+	const reg_t *reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
 		ui_sb_err(reg == NULL ? "No such register" : "Register is empty");
@@ -285,7 +284,6 @@ static int
 initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 		int reg_name)
 {
-	reg_t *reg;
 	int i;
 	const char *const dst_dir = fops_get_dst_dir(view, at);
 
@@ -295,7 +293,7 @@ initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 	}
 
 	regs_sync_from_shared_memory();
-	reg = regs_find(tolower(reg_name));
+	const reg_t *reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
 		ui_sb_err("Register is empty");

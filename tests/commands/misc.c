@@ -218,7 +218,7 @@ TEST(putting_files_works)
 TEST(yank_works_with_ranges)
 {
 	char path[PATH_MAX + 1];
-	reg_t *reg;
+	const reg_t *reg;
 
 	regs_init();
 
@@ -784,7 +784,7 @@ TEST(regedit, IF(not_windows))
 	assert_success(cmds_dispatch("regedit a", &lwin, CIT_COMMAND));
 
 	/* Result should be sorted and without duplicates. */
-	reg_t *reg = regs_find('a');
+	const reg_t *reg = regs_find('a');
 	assert_int_equal(4, reg->nfiles);
 	assert_string_equal("/path/before", reg->files[0]);
 	assert_string_equal("/path/this-was-after", reg->files[1]);
@@ -814,7 +814,7 @@ TEST(regedit_normalizes_paths, IF(not_windows))
 	assert_success(cmds_dispatch("regedit", &lwin, CIT_COMMAND));
 
 	/* Result should contain only absolute paths. */
-	reg_t *reg = regs_find(DEFAULT_REG_NAME);
+	const reg_t *reg = regs_find(DEFAULT_REG_NAME);
 	assert_int_equal(2, reg->nfiles);
 	int rel_idx = (ends_with(reg->files[0], "/to-2") ? 0 : 1);
 	assert_string_equal("/abs/path/to-1", reg->files[1 - rel_idx]);

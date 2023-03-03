@@ -163,6 +163,7 @@ static unsigned int seen_generation;
 static int debug_print_to_stdout;
 
 static int find_in_reg(const reg_t *reg, const char file[]);
+static reg_t * reg_from_name(int reg_name);
 static void regs_sync_error(const char msg[]);
 static int regs_sync_to_shared_memory_critical(void);
 static int regs_sync_enter_critical_section(void);
@@ -196,18 +197,10 @@ regs_exists(int reg_name)
 	return char_is_one_of(valid_registers, reg_name);
 }
 
-reg_t *
+const reg_t *
 regs_find(int reg_name)
 {
-	int i;
-	for(i = 0; i < NUM_REGISTERS; ++i)
-	{
-		if(registers[i].name == reg_name)
-		{
-			return &registers[i];
-		}
-	}
-	return NULL;
+	return reg_from_name(reg_name);
 }
 
 int
@@ -218,7 +211,7 @@ regs_append(int reg_name, const char file[])
 		return 0;
 	}
 
-	reg_t *reg = regs_find(reg_name);
+	reg_t *reg = reg_from_name(reg_name);
 	if(reg == NULL)
 	{
 		return 1;
@@ -254,7 +247,7 @@ regs_set(int reg_name, char **files, int nfiles)
 		return;
 	}
 
-	reg_t *const reg = regs_find(reg_name);
+	reg_t *const reg = reg_from_name(reg_name);
 	if(reg == NULL)
 	{
 		return;
@@ -303,7 +296,7 @@ regs_reset(void)
 void
 regs_clear(int reg_name)
 {
-	reg_t *const reg = regs_find(reg_name);
+	reg_t *const reg = reg_from_name(reg_name);
 	if(reg == NULL)
 	{
 		return;
@@ -318,7 +311,7 @@ void
 regs_pack(int reg_name)
 {
 	int j, i;
-	reg_t *const reg = regs_find(reg_name);
+	reg_t *const reg = reg_from_name(reg_name);
 	if(reg == NULL)
 	{
 		return;
@@ -343,7 +336,7 @@ regs_list(const char registers[])
 
 	while(*registers != '\0')
 	{
-		reg_t *reg = regs_find(*registers++);
+		reg_t *reg = reg_from_name(*registers++);
 		char reg_str[16];
 		int i;
 
@@ -410,6 +403,22 @@ find_in_reg(const reg_t *reg, const char file[])
 	return -l - 1;
 }
 
+/* Retrieves register structure by register name.  Returns the structure or NULL
+ * if register name is incorrect. */
+static reg_t *
+reg_from_name(int reg_name)
+{
+	int i;
+	for(i = 0; i < NUM_REGISTERS; ++i)
+	{
+		if(registers[i].name == reg_name)
+		{
+			return &registers[i];
+		}
+	}
+	return NULL;
+}
+
 void
 regs_remove_trashed_files(const char trash_dir[])
 {
@@ -444,10 +453,10 @@ regs_update_unnamed(int reg_name)
 	if(reg_name == UNNAMED_REG_NAME)
 		return;
 
-	if((reg = regs_find(reg_name)) == NULL)
+	if((reg = reg_from_name(reg_name)) == NULL)
 		return;
 
-	if((unnamed = regs_find(UNNAMED_REG_NAME)) == NULL)
+	if((unnamed = reg_from_name(UNNAMED_REG_NAME)) == NULL)
 		return;
 
 	regs_clear(UNNAMED_REG_NAME);
@@ -469,7 +478,7 @@ regs_suggest(regs_suggest_cb cb, int max_entries_per_reg)
 
 	while(*registers != '\0')
 	{
-		reg_t *const reg = regs_find(*registers++);
+		reg_t *const reg = reg_from_name(*registers++);
 		int i, max = max_entries_per_reg;
 
 		if(reg == NULL || reg->nfiles <= 0)
