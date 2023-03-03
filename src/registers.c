@@ -246,6 +246,51 @@ regs_append(int reg_name, const char file[])
 }
 
 void
+regs_set(int reg_name, char **files, int nfiles)
+{
+	if(nfiles == 0)
+	{
+		regs_clear(reg_name);
+		return;
+	}
+
+	reg_t *const reg = regs_find(reg_name);
+	if(reg == NULL)
+	{
+		return;
+	}
+
+	files = copy_string_array(files, nfiles);
+	if(files == NULL)
+	{
+		return;
+	}
+
+	/* Registers are sorted. */
+	safe_qsort(files, nfiles, sizeof(*files), &strossorter);
+
+	/* And don't contain duplicates. */
+	int i;
+	int j = 1;
+	for(i = 1; i < nfiles; ++i)
+	{
+		if(stroscmp(files[i - 1], files[i]) == 0)
+		{
+			free(files[i]);
+		}
+		else
+		{
+			files[j++] = files[i];
+		}
+	}
+	nfiles = j;
+
+	free_string_array(reg->files, reg->nfiles);
+	reg->files = files;
+	reg->nfiles = nfiles;
+}
+
+void
 regs_reset(void)
 {
 	const char *p = valid_registers;

@@ -4051,15 +4051,23 @@ redraw_cmd(const cmd_info_t *cmd_info)
 static int
 regedit_cmd(const cmd_info_t *cmd_info)
 {
-	const int regname =
-		cmd_info->argc > 0 ? tolower(cmd_info->argv[0][0]) : DEFAULT_REG_NAME;
-	if(regname == BLACKHOLE_REG_NAME)
+	int reg_name = DEFAULT_REG_NAME;
+	if(cmd_info->argc > 0)
+	{
+		if(strlen(cmd_info->argv[0]) != 1)
+		{
+			ui_sb_errf("Invalid argument: %s", cmd_info->argv[0]);
+			return CMDS_ERR_CUSTOM;
+		}
+		reg_name = tolower(cmd_info->argv[0][0]);
+	}
+	if(reg_name == BLACKHOLE_REG_NAME)
 	{
 		ui_sb_err("Cannot modify blackhole register.");
 		return CMDS_ERR_CUSTOM;
 	}
 
-	reg_t *reg = regs_find(regname);
+	reg_t *reg = regs_find(reg_name);
 	if(reg == NULL)
 	{
 		ui_sb_err("Register with given name does not exist.");
@@ -4095,8 +4103,8 @@ regedit_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Couldn't read register editions from the external file.");
 		return CMDS_ERR_CUSTOM;
 	}
-	reg->files = edited_content;
-	reg->nfiles = read_lines;
+	regs_set(reg_name, edited_content, read_lines);
+	free_string_array(edited_content, read_lines);
 
 	return 0;
 }

@@ -24,6 +24,23 @@ TEARDOWN()
 	regs_reset();
 }
 
+TEST(regs_set_can_clear)
+{
+	reg_t *reg = regs_find('a');
+
+	regs_append('a', "a");
+	assert_int_equal(1, reg->nfiles);
+	regs_set('a', /*files=*/NULL, /*nfiles=*/0);
+	assert_int_equal(0, reg->nfiles);
+}
+
+TEST(regs_set_handles_invalid_reg_name)
+{
+	char file[] = "file";
+	char *files[] = { file };
+	regs_set('#', files, /*nfiles=*/1);
+}
+
 TEST(suggestion_does_not_print_empty_lines)
 {
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));

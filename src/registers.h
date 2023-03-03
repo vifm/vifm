@@ -62,6 +62,9 @@ reg_t * regs_find(int reg_name);
  * is added, otherwise non-zero is returned. */
 int regs_append(int reg_name, const char file[]);
 
+/* Replaces contents of a register. */
+void regs_set(int reg_name, char **files, int nfiles);
+
 /* Clears all registers.  Pair of regs_init(). */
 void regs_reset(void);
 
