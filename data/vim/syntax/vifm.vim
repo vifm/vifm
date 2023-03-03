@@ -33,10 +33,10 @@ syntax keyword vifmCommandCN contained
 		\ h[elp] hideui histnext his[tory] histprev jobs locate ls lstrash marks
 		\ media mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t] pw[d]
 		\ qa[ll] q[uit] redr[aw] rege[dit] reg[isters] regular rename restart restore
-		\ rlink screen sh[ell] siblnext siblprev sor[t] sp[lit] s[ubstitute] tabc[lose]
-		\ tabm[ove] tabname tabnew tabn[ext] tabo[nly] tabp[revious] touch tr
-		\ trashes tree session sync undol[ist] ve[rsion] vie[w] vifm vs[plit]
-		\ winc[md] w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
+		\ rlink screen sh[ell] siblnext siblprev sor[t] sp[lit] s[ubstitute]
+		\ tabc[lose] tabm[ove] tabname tabnew tabn[ext] tabo[nly] tabp[revious]
+		\ touch tr trashes tree session sync undol[ist] ve[rsion] vie[w] vifm
+		\ vs[plit] winc[md] w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
 		\ nextgroup=vifmArgsCN
 
 " commands that might be prepended to a command without changing everything else

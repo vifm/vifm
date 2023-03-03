@@ -114,7 +114,6 @@
 #include "undo.h"
 #include "vifm.h"
 
-static int regedit_cmd(const cmd_info_t *cmd_info);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
@@ -263,6 +262,7 @@ static int qmap_cmd(const cmd_info_t *cmd_info);
 static int qnoremap_cmd(const cmd_info_t *cmd_info);
 static int qunmap_cmd(const cmd_info_t *cmd_info);
 static int redraw_cmd(const cmd_info_t *cmd_info);
+static int regedit_cmd(const cmd_info_t *cmd_info);
 static int registers_cmd(const cmd_info_t *cmd_info);
 static int regular_cmd(const cmd_info_t *cmd_info);
 static int rename_cmd(const cmd_info_t *cmd_info);
@@ -1013,57 +1013,6 @@ goto_cmd(const cmd_info_t *cmd_info)
 {
 	cmds_preserve_selection();
 	fpos_set_pos(curr_view, cmd_info->end);
-	return 0;
-}
-
-/* Opens external editor to edit specified register contents. */
-static int
-regedit_cmd(const cmd_info_t *cmd_info)
-{
-	const int regname = cmd_info->argc > 0 ? tolower(cmd_info->argv[0][0]) : DEFAULT_REG_NAME;
-	if(regname == BLACKHOLE_REG_NAME)
-	{
-		ui_sb_err("Cannot modify blackhole register.");
-		return CMDS_ERR_CUSTOM;
-	}
-
-	reg_t *reg = regs_find(regname);
-	if(reg == NULL)
-	{
-		ui_sb_err("Register with given name does not exist.");
-		return CMDS_ERR_CUSTOM;
-	}
-	char tmp_fname[PATH_MAX + 1];
-	generate_tmp_file_name("vifm.regedit", tmp_fname, sizeof(tmp_fname));
-
-	mode_t saved_umask = umask(~0600);
-	const int write_result = write_file_of_lines(tmp_fname, reg->files, reg->nfiles);
-	(void)umask(saved_umask);
-	if(write_result != 0)
-	{
-		ui_sb_err("Couldn't write register content into external file.");
-		return CMDS_ERR_CUSTOM;
-	}
-	// Forking is disabled because in some cases process can return value
-	// before any changes will be written and editor will be closed.
-	const int edit_result = vim_view_file(tmp_fname, 1, 1, /*allow_forking=*/0);
-	if(edit_result != 0)
-	{
-		ui_sb_err("Register content edition went unsuccessful.");
-		return CMDS_ERR_CUSTOM;
-	}
-
-	int read_lines = 0;
-	char **edited_content = read_file_of_lines(tmp_fname, &read_lines);
-	unlink(tmp_fname);
-	if(edited_content == NULL)
-	{
-		ui_sb_err("Couldn't read register editions from the external file.");
-		return CMDS_ERR_CUSTOM;
-	}
-	reg->files = edited_content;
-	reg->nfiles = read_lines;
-
 	return 0;
 }
 
@@ -4095,6 +4044,60 @@ static int
 redraw_cmd(const cmd_info_t *cmd_info)
 {
 	update_screen(UT_FULL);
+	return 0;
+}
+
+/* Opens external editor to edit specified register contents. */
+static int
+regedit_cmd(const cmd_info_t *cmd_info)
+{
+	const int regname =
+		cmd_info->argc > 0 ? tolower(cmd_info->argv[0][0]) : DEFAULT_REG_NAME;
+	if(regname == BLACKHOLE_REG_NAME)
+	{
+		ui_sb_err("Cannot modify blackhole register.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	reg_t *reg = regs_find(regname);
+	if(reg == NULL)
+	{
+		ui_sb_err("Register with given name does not exist.");
+		return CMDS_ERR_CUSTOM;
+	}
+	char tmp_fname[PATH_MAX + 1];
+	generate_tmp_file_name("vifm.regedit", tmp_fname, sizeof(tmp_fname));
+
+	mode_t saved_umask = umask(~0600);
+	const int write_result =
+		write_file_of_lines(tmp_fname, reg->files, reg->nfiles);
+	(void)umask(saved_umask);
+	if(write_result != 0)
+	{
+		ui_sb_err("Couldn't write register content into external file.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	/* Forking is disabled because in some cases process can return value
+	 * before any changes will be written and editor will be closed. */
+	const int edit_result = vim_view_file(tmp_fname, 1, 1, /*allow_forking=*/0);
+	if(edit_result != 0)
+	{
+		ui_sb_err("Register content edition went unsuccessful.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	int read_lines = 0;
+	char **edited_content = read_file_of_lines(tmp_fname, &read_lines);
+	unlink(tmp_fname);
+	if(edited_content == NULL)
+	{
+		ui_sb_err("Couldn't read register editions from the external file.");
+		return CMDS_ERR_CUSTOM;
+	}
+	reg->files = edited_content;
+	reg->nfiles = read_lines;
+
 	return 0;
 }
 

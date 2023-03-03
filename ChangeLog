@@ -1,7 +1,5 @@
 0.12.1 to current
 
-	Added :regedit command for external editing of register contents.
-
 	Changed implementation of `:compare grouppaths` to juxtapose only files
 	with identical relative paths.  Patch by Alexandr Keyp (a.k.a. IAmKapuze).
 
@@ -73,6 +71,10 @@
 
 	Added r key to :jobs menu, which reloads the list of jobs.  Thanks to
 	Sylwia Ptasinska (a.k.a. SylEleuth).
+
+	Added :regedit command for external editing of register contents.  Thanks
+	to Daniel J. Perry (BioBox).  Patch by Rostislav Tolushkin (a.k.a.
+	nullptr-deref).
 
 	Reduced amount of memory consumed by `:compare groupids`.
 
