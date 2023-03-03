@@ -35,7 +35,8 @@ typedef struct reg_t
 {
 	int name;     /* Name of the register. */
 	int nfiles;   /* Number of files in the register. */
-	char **files; /* List of full paths of files. */
+	char **files; /* List of full canonicalized paths that is sorted and
+	                 deduplicated according to case-sensitivity of the system. */
 }
 reg_t;
 
