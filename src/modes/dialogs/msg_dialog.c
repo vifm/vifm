@@ -25,7 +25,7 @@
 #include <limits.h> /* CHAR_MAX CHAR_MIN */
 #include <stdarg.h> /* va_list va_start() va_end() vsnprintf() */
 #include <stddef.h> /* NULL */
-#include <string.h> /* strlen() */
+#include <string.h> /* strchr() strlen() */
 
 #include "../../cfg/config.h"
 #include "../../engine/keys.h"
@@ -47,7 +47,9 @@
 /* Kinds of dialogs. */
 typedef enum
 {
-	D_ERROR,              /* Error message.  All lines are left-aligned. */
+	D_ERROR,              /* Error message.  All lines are left-aligned unless
+	                         message is a single line that doesn't wrap, in which
+	                         case it's centered. */
 	D_QUERY_CENTER_EACH,  /* Query with each line centered on its own. */
 	D_QUERY_CENTER_FIRST, /* Query with the first line centered. */
 	D_QUERY_CENTER_BLOCK, /* Query with all lines centered as a block. */
@@ -576,6 +578,11 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	if(block_center)
 	{
 		block_margin = MAX(w - wmsg, 2 + 2*MARGIN)/2;
+	}
+
+	if(strchr(msg, '\n') == NULL && wmsg <= w - 2 - 2*MARGIN)
+	{
+		lines_to_center = 1;
 	}
 
 	const char *curr = msg;
