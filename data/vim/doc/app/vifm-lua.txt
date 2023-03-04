@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Feb 15
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1193,7 +1193,7 @@ Return:~
 VifmTab:getview([{query}])                     *vifm-l_VifmTab:getview()*
 
 Possible fields of {query}:
- - "pane" (integer) (default: 1)
+ - "pane" (integer) (default: index of active pane)
    Which view to get from a global tab.  1 is left/top pane, 2 is right/bottom
    one.  Ignored for a pane tab.
 

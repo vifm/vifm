@@ -27,13 +27,16 @@
 #include "common.h"
 #include "vifmview.h"
 
+/* Pointer to a function used to traverse tabs. */
+typedef int (*tab_search_f)(struct view_t *side, int idx, tab_info_t *tab_info);
+
 static int VLUA_API(vifmtab_getlayout)(lua_State *lua);
 static int VLUA_API(vifmtab_getname)(lua_State *lua);
 static int VLUA_API(vifmtab_getview)(lua_State *lua);
 
 static void find_tab(lua_State *lua, unsigned int id, tab_info_t *tab_info);
 static void find_side_tab(lua_State *lua, unsigned int id, tab_info_t *tab_info,
-		view_t *side);
+		view_t *side, tab_search_f tab_search);
 
 VLUA_DECLARE_SAFE(vifmtab_getlayout);
 VLUA_DECLARE_SAFE(vifmtab_getname);
@@ -137,7 +140,9 @@ VLUA_API(vifmtab_getview)(lua_State *lua)
 {
 	const unsigned int *id = luaL_checkudata(lua, 1, "VifmTab");
 
-	int second_pane = 0;
+	/* Querying active pane of a global tab by default. */
+	view_t *side = curr_view;
+	tab_search_f tab_search = tabs_get;
 	if(check_opt_arg(lua, 2, LUA_TTABLE) &&
 			check_opt_field(lua, 2, "pane", LUA_TNUMBER))
 	{
@@ -146,7 +151,10 @@ VLUA_API(vifmtab_getview)(lua_State *lua)
 		{
 			return luaL_error(lua, "%s", "pane field is not in the range [1; 2]");
 		}
-		second_pane = (pane == 2);
+
+		/* Querying specific side of a global tab. */
+		side = (pane == 1 ? &lwin : &rwin);
+		tab_search = tabs_enum;
 	}
 
 	tab_info_t tab_info;
@@ -156,7 +164,7 @@ VLUA_API(vifmtab_getview)(lua_State *lua)
 	}
 	else
 	{
-		find_side_tab(lua, *id, &tab_info, second_pane ? &rwin : &lwin);
+		find_side_tab(lua, *id, &tab_info, side, tab_search);
 	}
 
 	vifmview_new(lua, tab_info.view);
@@ -184,10 +192,10 @@ find_tab(lua_State *lua, unsigned int id, tab_info_t *tab_info)
  * pointer or aborts (Lua does longjmp()) if the tab doesn't exist anymore. */
 static void
 find_side_tab(lua_State *lua, unsigned int id, tab_info_t *tab_info,
-		view_t *side)
+		view_t *side, tab_search_f tab_search)
 {
 	int i;
-	for(i = 0; tabs_enum(side, i, tab_info); ++i)
+	for(i = 0; tab_search(side, i, tab_info); ++i)
 	{
 		if(tab_info->id == id)
 		{

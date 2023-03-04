@@ -272,6 +272,10 @@ TEST(getview_global_tabs)
 				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 2 }).cwd)"));
 	assert_string_equal("t1vr", ui_sb_last());
 
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.tabs.get{}:getview{}.cwd)"));
+	assert_string_equal("t2vr", ui_sb_last());
+
 	/* Accessing dead tab should fail. */
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "tab = vifm.tabs.get({ index = 2 })"));
