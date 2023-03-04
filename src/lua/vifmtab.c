@@ -137,7 +137,7 @@ VLUA_API(vifmtab_getview)(lua_State *lua)
 {
 	const unsigned int *id = luaL_checkudata(lua, 1, "VifmTab");
 
-	int other_side = 0;
+	int second_pane = 0;
 	if(check_opt_arg(lua, 2, LUA_TTABLE) &&
 			check_opt_field(lua, 2, "pane", LUA_TNUMBER))
 	{
@@ -146,7 +146,7 @@ VLUA_API(vifmtab_getview)(lua_State *lua)
 		{
 			return luaL_error(lua, "%s", "pane field is not in the range [1; 2]");
 		}
-		other_side = (pane == 2);
+		second_pane = (pane == 2);
 	}
 
 	tab_info_t tab_info;
@@ -156,7 +156,7 @@ VLUA_API(vifmtab_getview)(lua_State *lua)
 	}
 	else
 	{
-		find_side_tab(lua, *id, &tab_info, other_side ? other_view : curr_view);
+		find_side_tab(lua, *id, &tab_info, second_pane ? &rwin : &lwin);
 	}
 
 	vifmview_new(lua, tab_info.view);

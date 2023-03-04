@@ -264,12 +264,15 @@ TEST(getview_global_tabs)
 				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 1 }).cwd)"));
 	assert_string_equal("t1vl", ui_sb_last());
 
+	/* Changing active pane should have no affect on operation of getview(). */
+	swap_view_roles();
+
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 2 }).cwd)"));
 	assert_string_equal("t1vr", ui_sb_last());
 
-	/* Accessing dead tab */
+	/* Accessing dead tab should fail. */
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "tab = vifm.tabs.get({ index = 2 })"));
 	tabs_close();
