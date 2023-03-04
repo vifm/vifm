@@ -1,4 +1,4 @@
-.TH VIFM 1 "2 March 2023" "vifm 0.12.1"
+.TH VIFM 1 "5 March 2023" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5130,7 +5130,8 @@ type: string
 .br
 default: ""
 .br
-When non-empty, determines format of the main part of a single tab's label.
+When non-empty and 'tabline' isn't set, determines format of the main
+part of a single tab's label.
 
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
@@ -5183,6 +5184,22 @@ expanded to a non-empty value or is a set flag macro.
   " %p:t            -- tail part of view's location
   set tablabel=%[(%n)%]%[%[%T{tree}%]%[{%c}%]@%]%p:t
 .EE
+.RE
+.TP
+.BI "'tabline' 'tal'"
+type: string
+.br
+default: ""
+.br
+When non-empty, determines format of the tab line.  Note that mouse clicks
+won't be handled when this option is non-empty.
+
+The following macros can appear in the format:
+.RS
+.IP \- 2
+%*, %0*  \- resets highlighting
+.IP \- 2
+%1*-%20* \- applies one of User1..User20 highlight groups
 .RE
 .TP
 .BI 'tabprefix'

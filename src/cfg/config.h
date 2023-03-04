@@ -246,7 +246,8 @@ typedef struct config_t
 	int use_system_calls; /* Prefer performing operations with system calls. */
 	int tab_stop;
 	char *ruler_format;
-	char *status_line;
+	char *status_line; /* Format string for status line. */
+	char *tab_line;    /* Nothing or lua handler for status line. */
 	int lines; /* Terminal height in lines. */
 	int columns; /* Terminal width in characters. */
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */

@@ -1970,6 +1970,12 @@ ui_get_tab_line_win(const view_t *view)
 int
 ui_map_tab_line(view_t *view, int x)
 {
+	if(!is_null_or_empty(cfg.tab_line))
+	{
+		/* No mouse mapping for custom tabline. */
+		return -1;
+	}
+
 	path_func pf = cfg.shorten_title_paths ? &replace_home_part : &path_identity;
 
 	const int max_width = getmaxx(ui_get_tab_line_win(view));
@@ -2151,25 +2157,36 @@ static void
 print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 {
 	const int max_width = (vifm_testing() ? cfg.columns : getmaxx(win));
-	tab_line_info_t info = format_tab_labels(view, max_width, pf);
 
 	ui_set_bg(win, &base_col, -1);
 	werase(win);
 	checked_wmove(win, 0, 0);
 
-	int i;
-	for(i = 0; i < info.count; ++i)
+	if(is_null_or_empty(cfg.tab_line))
 	{
-		col_attr_t col = base_col;
-		if(i == info.current - info.skipped)
-		{
-			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
-		}
+		tab_line_info_t info = format_tab_labels(view, max_width, pf);
 
-		cline_print(&info.labels[i], win, &col);
-		cline_dispose(&info.labels[i]);
+		int i;
+		for(i = 0; i < info.count; ++i)
+		{
+			col_attr_t col = base_col;
+			if(i == info.current - info.skipped)
+			{
+				cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
+			}
+
+			cline_print(&info.labels[i], win, &col);
+			cline_dispose(&info.labels[i]);
+		}
+		free(info.labels);
 	}
-	free(info.labels);
+	else
+	{
+		cline_t title = ma_expand_colored_custom(cfg.tab_line, /*nmacros=*/0,
+				/*macros=*/NULL, MA_OPT);
+		cline_print(&title, win, &base_col);
+		cline_dispose(&title);
+	}
 
 	wnoutrefresh(win);
 }

@@ -780,5 +780,11 @@ TEST(navoptions)
 	assert_true(cfg.nav_open_files);
 }
 
+TEST(tabline)
+{
+	assert_success(cmds_dispatch("set tabline=asdf", &lwin, CIT_COMMAND));
+	assert_string_equal("asdf", cfg.tab_line);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

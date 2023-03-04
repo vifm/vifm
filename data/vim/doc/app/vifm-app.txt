@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Mar 2
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Mar 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4308,7 +4308,8 @@ tablabel
 type: string
 default: ""
 
-When non-empty, determines format of the main part of a single tab's label.
+When non-empty and |vifm-'tabline'| isn't set, determines format of the main
+part of a single tab's label.
 
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
@@ -4346,6 +4347,18 @@ Example: >
  " %p:t            -- tail part of view's location
  set tablabel=%[(%n)%]%[%[%T{tree}%]%[{%c}%]@%]%p:t
 <
+                                               *vifm-'tabline'* *vifm-'tal'*
+tabline tal
+type: string
+default: ""
+
+When non-empty, determines format of the tab line.  Note that mouse clicks
+won't be handled when this option is non-empty.
+
+The following macros can appear in the format:
+    %*, %0*    - resets highlighting
+    %1* - %20* - applies one of User1..User20 highlight groups
+
                                                *vifm-'tabprefix'*
 tabprefix
 type: string

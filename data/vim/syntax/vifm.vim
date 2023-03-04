@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: March 2, 2023
+" Last Change: March 5, 2023
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -148,10 +148,10 @@ syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ relativenumber rnu rulerformat ruf runexec scrollbind scb scrolloff
 		\ sessionoptions ssop so sort sortgroups sortorder sortnumbers shell sh
 		\ shellflagcmd shcf shortmess shm showtabline stal sizefmt slowfs smartcase
-		\ scs statusline stl suggestoptions syncregs syscalls tablabel tabprefix
-		\ tabscope tabstop tabsuffix timefmt timeoutlen title tm trash trashdir ts
-		\ tuioptions to undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd
-		\ wildmenu wmnu wildstyle wordchars wrap wrapscan ws
+		\ scs statusline stl suggestoptions syncregs syscalls tablabel tabline
+		\ tabprefix tabscope tabstop tabsuffix tal timefmt timeoutlen title tm trash
+		\ trashdir ts tuioptions to undolevels ul vicmd viewcolumns vifminfo vimhelp
+		\ vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks
