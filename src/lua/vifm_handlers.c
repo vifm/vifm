@@ -41,6 +41,7 @@
 #include "vlua_state.h"
 
 static char * extract_handler_name(const char viewer[]);
+static char * run_format_handler(vlua_t *vlua, const char handler[]);
 static int run_editor_handler(vlua_t *vlua, const char handler[]);
 static int check_handler_name(vlua_t *vlua, const char name[]);
 
@@ -203,7 +204,23 @@ char *
 vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
 		int width)
 {
-	char *name = extract_handler_name(format);
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
+	vifmview_new(vlua->lua, view);
+	lua_setfield(vlua->lua, -2, "view");
+	lua_pushinteger(vlua->lua, width);
+	lua_setfield(vlua->lua, -2, "width");
+
+	char *result = run_format_handler(vlua, format);
+	lua_pop(vlua->lua, 1);
+	return result;
+}
+
+/* Invokes a format handler.  Expects a table argument to it at the top of Lua
+ * stack.  Returns format string on success, otherwise NULL is returned. */
+static char *
+run_format_handler(vlua_t *vlua, const char handler[])
+{
+	char *name = extract_handler_name(handler);
 
 	/* Don't need lua_pcall() to handle errors, because no one should be able to
 	 * mess with internal tables. */
@@ -220,11 +237,7 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
 	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
 			"Handler must be a function here.");
 
-	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
-	vifmview_new(vlua->lua, view);
-	lua_setfield(vlua->lua, -2, "view");
-	lua_pushinteger(vlua->lua, width);
-	lua_setfield(vlua->lua, -2, "width");
+	lua_pushvalue(vlua->lua, -4);
 
 	const int sm_cookie = vlua_state_safe_mode_on(vlua->lua);
 	if(lua_pcall(vlua->lua, 1, 1, 0) != LUA_OK)
@@ -251,11 +264,11 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
 	}
 
 	const char *result = lua_tostring(vlua->lua, -1);
-	char *status_line = strdup(result == NULL ? "" : result);
+	char *format = strdup(result == NULL ? "" : result);
 
 	lua_pop(vlua->lua, 4);
 
-	return status_line;
+	return format;
 }
 
 int
