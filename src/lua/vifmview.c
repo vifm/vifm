@@ -87,6 +87,22 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	{
 		viewopts = 0;
 	}
+	else if(strcmp(key, "custom") == 0)
+	{
+		view_t *view = check_view(lua);
+		if(!flist_custom_active(view))
+		{
+			lua_pushnil(lua);
+			return 1;
+		}
+
+		lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
+		lua_pushstring(lua, view->custom.title);
+		lua_setfield(lua, -2, "title");
+		lua_pushstring(lua, cv_describe(view->custom.type));
+		lua_setfield(lua, -2, "type");
+		return 1;
+	}
 	else if(strcmp(key, "cwd") == 0)
 	{
 		view_t *view = check_view(lua);

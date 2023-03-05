@@ -1250,6 +1250,16 @@ Location of the current view.
 VifmView.entrycount (integer)                  *vifm-l_VifmView.entrycount*
 Number of entries in the view.
 
+VifmView.custom (table)                        *vifm-l_VifmView.custom*
+Table with information about custom file list.  The value is `nil` if custom
+view isn't active.
+
+Fields:
+ - "title" (string)
+   Title of a custom view which usually describes how it was created.
+ - "type" (string)
+   Values returned by |vifm-getpanetype()| except for "regular".
+
 VifmView:cd({path})                            *vifm-l_VifmView:cd()*
 Changes location of the view.  {path} isn't expanded in any way.
 

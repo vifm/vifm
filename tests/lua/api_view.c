@@ -8,6 +8,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/filelist.h"
 
 #include <test-utils.h>
 
@@ -86,6 +87,25 @@ TEST(vifmview_entry)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "print(vifm.currview():entry(3))"));
 	assert_string_equal("nil", ui_sb_last());
+}
+
+TEST(vifmview_custom)
+{
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "print(vifm.currview().custom)"));
+	assert_string_equal("nil", ui_sb_last());
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), "", "", NULL);
+	flist_custom_start(&lwin, "vifmview_custom");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, /*allow_empty=*/0));
+
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.currview().custom.title)"));
+	assert_string_equal("vifmview_custom", ui_sb_last());
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.currview().custom.type)"));
+	assert_string_equal("custom", ui_sb_last());
 }
 
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))
