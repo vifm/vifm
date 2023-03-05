@@ -382,23 +382,7 @@ getpanetype_builtin(const call_info_t *call_info)
 		return var_from_str("regular");
 	}
 
-	switch(curr_view->custom.type)
-	{
-		case CV_REGULAR:
-			return var_from_str("custom");
-
-		case CV_VERY:
-			return var_from_str("very-custom");
-
-		case CV_CUSTOM_TREE:
-		case CV_TREE:
-			return var_from_str("tree");
-
-		case CV_DIFF:
-		case CV_COMPARE:
-			return var_from_str("compare");
-	}
-	return var_from_str("UNKNOWN");
+	return var_from_str(cv_describe(curr_view->custom.type));
 }
 
 /* Asks user for input and returns the result as a string. */

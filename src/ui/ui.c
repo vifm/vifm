@@ -748,6 +748,29 @@ cv_tree(CVType type)
 	return type == CV_TREE || type == CV_CUSTOM_TREE;
 }
 
+const char *
+cv_describe(CVType type)
+{
+	switch(type)
+	{
+		case CV_REGULAR:
+			return "custom";
+
+		case CV_VERY:
+			return "very-custom";
+
+		case CV_CUSTOM_TREE:
+		case CV_TREE:
+			return "tree";
+
+		case CV_DIFF:
+		case CV_COMPARE:
+			return "compare";
+	}
+
+	return "UNKNOWN";
+}
+
 void
 update_screen(UpdateType update_kind)
 {

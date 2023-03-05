@@ -556,6 +556,10 @@ int cv_compare(CVType type);
  * non-zero if so, otherwise zero is returned. */
 int cv_tree(CVType type);
 
+/* Retrieves textual description of the specified custom view type.  Returns the
+ * description. */
+const char * cv_describe(CVType type);
+
 /* Resizes all windows according to current screen size and TUI
  * configuration. */
 void ui_resize_all(void);
