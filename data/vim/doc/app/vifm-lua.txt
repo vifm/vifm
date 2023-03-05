@@ -225,6 +225,9 @@ relevant information on each invocation.  Things like keys or commands can't
 be handled this way because they need to communicate metadata about how to
 call them.
 
+Handlers are executed in a safe environment and can't call API marked as
+{unsafe}.
+
 A handler can be used in place of an external program in |vifm-:filetype| or
 |vifm-:filextype| commands like this: >
   filetype {*.png} #pluginname#open
