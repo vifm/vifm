@@ -423,7 +423,7 @@ format_io_stats(progress_data_t *pdata, long long now_ms, uint64_t imm_rate)
 		Day = 24*Hour,
 	};
 
-	int eta_s = ceil(pdata->last_eta/1000);
+	int eta_s = ceil(pdata->last_eta/1000.0);
 	int d = eta_s/Day;
 	int h = eta_s%Day/Hour;
 	int m = eta_s%Hour/Minute;
