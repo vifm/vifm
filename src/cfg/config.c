@@ -154,6 +154,7 @@ cfg_init(void)
 	cfg.tab_stop = 8;
 	cfg.ruler_format = strdup("%l/%S ");
 	cfg.status_line = strdup("");
+	cfg.tab_line = strdup("");
 
 	cfg.lines = INT_MIN;
 	cfg.columns = INT_MIN;

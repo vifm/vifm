@@ -530,13 +530,13 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				}
 				break;
 			case '*':
-				if(width > 9)
+				if(width > LAST_USER_COLOR)
 				{
 					snprintf(buf, sizeof(buf), "%%%d*", (int)width);
 					width = 0;
 					break;
 				}
-				cline_set_attr(&result, '0' + width);
+				cline_set_attr(&result, /*user_color=*/width);
 				width = 0;
 				break;
 

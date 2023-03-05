@@ -2281,6 +2281,8 @@ store_global_options(JSON_Object *root)
 				cfg.sort_numbers ? "" : "no"));
 	append_dstr(options, format_str("statusline=%s",
 				escape_spaces(cfg.status_line)));
+	append_dstr(options, format_str("tabline=%s",
+				escape_spaces(vle_opts_get("tabline", OPT_GLOBAL))));
 	append_dstr(options, format_str("syncregs=%s",
 			escape_spaces(vle_opts_get("syncregs", OPT_GLOBAL))));
 	append_dstr(options, format_str("tablabel=%s",

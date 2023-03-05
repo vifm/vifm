@@ -92,6 +92,7 @@ conf_setup(void)
 	update_string(&cfg.vi_x_command, "");
 	update_string(&cfg.ruler_format, "");
 	update_string(&cfg.status_line, "");
+	update_string(&cfg.tab_line, "");
 	update_string(&cfg.grep_prg, "");
 	update_string(&cfg.locate_prg, "");
 	update_string(&cfg.media_prg, "");
@@ -132,6 +133,7 @@ conf_teardown(void)
 	update_string(&cfg.vi_x_command, NULL);
 	update_string(&cfg.ruler_format, NULL);
 	update_string(&cfg.status_line, NULL);
+	update_string(&cfg.tab_line, NULL);
 	update_string(&cfg.grep_prg, NULL);
 	update_string(&cfg.locate_prg, NULL);
 	update_string(&cfg.media_prg, NULL);

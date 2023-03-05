@@ -440,6 +440,12 @@ vlua_make_status_line(vlua_t *vlua, const char format[], struct view_t *view,
 	return vifm_handlers_make_status_line(vlua, format, view, width);
 }
 
+char *
+vlua_make_tab_line(vlua_t *vlua, const char format[], int other, int width)
+{
+	return vifm_handlers_make_tab_line(vlua, format, other, width);
+}
+
 int
 vlua_open_help(vlua_t *vlua, const char handler[], const char topic[])
 {

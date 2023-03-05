@@ -87,6 +87,11 @@ void vlua_open_file(vlua_t *vlua, const char prog[],
 char * vlua_make_status_line(struct vlua_t *vlua, const char format[],
 		struct view_t *view, int width);
 
+/* Invokes tab line formatting handler.  Returns newly allocated string with
+ * tab line format. */
+char * vlua_make_tab_line(vlua_t *vlua, const char format[], int other,
+		int width);
+
 /* Operations with editor. */
 
 /* Invokes an editor handler to view Vim-style documentation.  Returns zero on

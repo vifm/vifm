@@ -1,4 +1,4 @@
-.TH VIFM 1 "26 February 2022" "vifm 0.12.1"
+.TH VIFM 1 "5 March 2023" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2260,7 +2260,7 @@ their content (e.g. regular files in views)
  \- CmpMismatch \- color of mismatched files in side-by-side comparison by path
  \- CmpUnmatched \- comparison file entry that has no pair in the other pane
  \- CmpBlank \- entry placeholder in a compare view, paired with CmpUnmatched
- \- User1..User9 \- 9 colors which can be used via %* 'statusline' macro
+ \- User1..User20 \- 20 colors which can be used via %* 'statusline' macro
 
 Available colors:
  \- \-1 or default or none \- default or transparent
@@ -2406,7 +2406,7 @@ transparency:
   SuggestBox
   StatusLine
     WildMenu
-    User1..User9
+    User1..User20
   Border
   CmdLine
     ErrorMsg
@@ -2434,10 +2434,10 @@ transparency:
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
-        User1..User9
+        User1..User20
   TabLine
     TabLineSel
-      User1..User9
+      User1..User20
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.
@@ -5034,9 +5034,9 @@ since it cannot be selected
 .IP \- 2
 %{<expr>} - evaluate arbitrary vifm expression '<expr>', e.g. '&sort'
 .IP \- 2
-%* - resets or applies one of User1..User9 highlight groups; reset happens
-when width field is 0 or not specified, one of groups gets picked
-when width field is in the range from 1 to 9
+%* - resets or applies one of User1..User20 highlight groups; reset happens
+when width field is 0 or not specified, one of the groups gets picked
+when width field is in the range from 1 to 20
 .IP \- 2
 all 'rulerformat' macros
 .RE
@@ -5130,7 +5130,8 @@ type: string
 .br
 default: ""
 .br
-When non-empty, determines format of the main part of a single tab's label.
+When non-empty and 'tabline' isn't set, determines format of the main
+part of a single tab's label.
 
 When empty, tab label is set to either tab name for named tabs or to view
 title (usually current path) for unnamed tabs.
@@ -5138,29 +5139,29 @@ title (usually current path) for unnamed tabs.
 The following macros can appear in the format (see below for what a flag is):
 .RS
 .IP \- 2
-%C      \- flag of a current tab
+%C       \- flag of a current tab
 .IP \- 2
-%N      \- number of the tab
+%N       \- number of the tab
 .IP \- 2
-%T      \- flag of a tree mode
+%T       \- flag of a tree mode
 .IP \- 2
-%c      \- description of a custom view
+%c       \- description of a custom view
 .IP \- 2
-%n      \- name of the tab
+%n       \- name of the tab
 .IP \- 2
-%p      \- path of the view (handles filename modifiers)
+%p       \- path of the view (handles filename modifiers)
 .IP \- 2
-%t      \- title of the view (affected by 'shortmess' flags)
+%t       \- title of the view (affected by 'shortmess' flags)
 .IP \- 2
-%%      \- literal percent sign
+%%       \- literal percent sign
 .IP \- 2
-%[      \- designates beginning of an optional block
+%[       \- designates beginning of an optional block
 .IP \- 2
-%]      \- designates end of an optional block
+%]       \- designates end of an optional block
 .IP \- 2
-%*, %0* \- resets highlighting
+%*, %0*  \- resets highlighting
 .IP \- 2
-%1-%9   \- applies one of User1..User9 highlight groups
+%1*-%20* \- applies one of User1..User20 highlight groups
 .RE
 
 .RS
@@ -5168,7 +5169,7 @@ In global tabs the view in bullets above refers to currently active view of that
 tab.
 
 Flag macros are a special kind of macros that always expand to an empty value
-and are ment to be used inside optional blocks to control their visibility.
+and are meant to be used inside optional blocks to control their visibility.
 
 Optional blocks are ignored unless at least one macro inside of them is
 expanded to a non-empty value or is a set flag macro.
@@ -5183,6 +5184,22 @@ expanded to a non-empty value or is a set flag macro.
   " %p:t            -- tail part of view's location
   set tablabel=%[(%n)%]%[%[%T{tree}%]%[{%c}%]@%]%p:t
 .EE
+.RE
+.TP
+.BI "'tabline' 'tal'"
+type: string
+.br
+default: ""
+.br
+When non-empty, determines format of the tab line.  Note that mouse clicks
+won't be handled when this option is non-empty.
+
+The following macros can appear in the format:
+.RS
+.IP \- 2
+%*, %0*  \- resets highlighting
+.IP \- 2
+%1*-%20* \- applies one of User1..User20 highlight groups
 .RE
 .TP
 .BI 'tabprefix'

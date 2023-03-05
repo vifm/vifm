@@ -225,6 +225,7 @@ static void reset_suggestoptions(void);
 static void syncregs_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tablabel_handler(OPT_OP op, optval_t val);
+static void tabline_handler(OPT_OP op, optval_t val);
 static void tabprefix_handler(OPT_OP op, optval_t val);
 static void tabscope_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
@@ -841,6 +842,10 @@ options[] = {
 	{ "tablabel", "", "format of main part of a single tab's label",
 	  OPT_STR, 0, NULL, &tablabel_handler, NULL,
 	  { .ref.str_val = &cfg.tab_label },
+	},
+	{ "tabline", "tal", "format of the tab line",
+	  OPT_STR, 0, NULL, &tabline_handler, NULL,
+	  { .ref.str_val = &cfg.tab_line },
 	},
 	{ "tabprefix", "", "format of prefix of a tab's label",
 	  OPT_STR, 0, NULL, &tabprefix_handler, NULL,
@@ -3615,6 +3620,14 @@ static void
 tablabel_handler(OPT_OP op, optval_t val)
 {
 	replace_string(&cfg.tab_label, val.str_val);
+	stats_redraw_later();
+}
+
+/* Sets format string for the whole tab line. */
+static void
+tabline_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.tab_line, val.str_val);
 	stats_redraw_later();
 }
 

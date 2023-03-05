@@ -289,7 +289,7 @@ TEST(make_tab_expands_current_flag)
 	dispose_tab_title_info(&title_info);
 
 	assert_string_equal("3", title.line);
-	assert_string_equal("2", title.attrs);
+	assert_string_equal("c", title.attrs);
 	cline_dispose(&title);
 
 	title_info = make_tab_title_info(&tab_info, &identity, 1, 0);
@@ -297,7 +297,7 @@ TEST(make_tab_expands_current_flag)
 	dispose_tab_title_info(&title_info);
 
 	assert_string_equal("2", title.line);
-	assert_string_equal("1", title.attrs);
+	assert_string_equal("b", title.attrs);
 	cline_dispose(&title);
 }
 

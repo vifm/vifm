@@ -48,6 +48,7 @@
 #include "../compat/pthread.h"
 #include "../engine/mode.h"
 #include "../int/term_title.h"
+#include "../lua/vlua.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
@@ -745,6 +746,29 @@ int
 cv_tree(CVType type)
 {
 	return type == CV_TREE || type == CV_CUSTOM_TREE;
+}
+
+const char *
+cv_describe(CVType type)
+{
+	switch(type)
+	{
+		case CV_REGULAR:
+			return "custom";
+
+		case CV_VERY:
+			return "very-custom";
+
+		case CV_CUSTOM_TREE:
+		case CV_TREE:
+			return "tree";
+
+		case CV_DIFF:
+		case CV_COMPARE:
+			return "compare";
+	}
+
+	return "UNKNOWN";
 }
 
 void
@@ -1970,6 +1994,12 @@ ui_get_tab_line_win(const view_t *view)
 int
 ui_map_tab_line(view_t *view, int x)
 {
+	if(!is_null_or_empty(cfg.tab_line))
+	{
+		/* No mouse mapping for custom tabline. */
+		return -1;
+	}
+
 	path_func pf = cfg.shorten_title_paths ? &replace_home_part : &path_identity;
 
 	const int max_width = getmaxx(ui_get_tab_line_win(view));
@@ -2151,25 +2181,52 @@ static void
 print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 {
 	const int max_width = (vifm_testing() ? cfg.columns : getmaxx(win));
-	tab_line_info_t info = format_tab_labels(view, max_width, pf);
 
 	ui_set_bg(win, &base_col, -1);
 	werase(win);
 	checked_wmove(win, 0, 0);
 
-	int i;
-	for(i = 0; i < info.count; ++i)
+	if(is_null_or_empty(cfg.tab_line))
 	{
-		col_attr_t col = base_col;
-		if(i == info.current - info.skipped)
+		tab_line_info_t info = format_tab_labels(view, max_width, pf);
+
+		int i;
+		for(i = 0; i < info.count; ++i)
 		{
-			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
+			col_attr_t col = base_col;
+			if(i == info.current - info.skipped)
+			{
+				cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
+			}
+
+			cline_print(&info.labels[i], win, &col);
+			cline_dispose(&info.labels[i]);
+		}
+		free(info.labels);
+	}
+	else
+	{
+		char *fmt;
+		if(vlua_handler_cmd(curr_stats.vlua, cfg.tab_line))
+		{
+			int other = (view == other_view);
+			fmt = vlua_make_tab_line(curr_stats.vlua, cfg.tab_line, other, max_width);
+		}
+		else
+		{
+			fmt = strdup(cfg.tab_line);
 		}
 
-		cline_print(&info.labels[i], win, &col);
-		cline_dispose(&info.labels[i]);
+		if(fmt != NULL)
+		{
+			cline_t title = ma_expand_colored_custom(fmt, /*nmacros=*/0,
+					/*macros=*/NULL, MA_OPT);
+			free(fmt);
+
+			cline_print(&title, win, &base_col);
+			cline_dispose(&title);
+		}
 	}
-	free(info.labels);
 
 	wnoutrefresh(win);
 }

@@ -76,6 +76,11 @@
 	to Daniel J. Perry (BioBox).  Patch by Rostislav Tolushkin (a.k.a.
 	nullptr-deref).
 
+	Added additional User10..User20 highlight groups and corresponding
+	%10*-%20* macros.  Thanks to Sylwia Ptasinska (a.k.a. SylEleuth).
+
+	Added 'tabline' option to specify format of the tab line.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
@@ -107,6 +112,9 @@
 	Thanks to aleksejrs.
 
 	Made file conflict more concise.  Thanks to aleksejrs.
+
+	Update Default-256 to fix differentiate between more file types.  Thanks
+	to aleksejrs.
 
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.

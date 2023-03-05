@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Feb 15
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -225,6 +225,9 @@ relevant information on each invocation.  Things like keys or commands can't
 be handled this way because they need to communicate metadata about how to
 call them.
 
+Handlers are executed in a safe environment and can't call API marked as
+{unsafe}.
+
 A handler can be used in place of an external program in |vifm-:filetype| or
 |vifm-:filextype| commands like this: >
   filetype {*.png} #pluginname#open
@@ -236,8 +239,10 @@ command like this: >
 A viewer can also be called through |vifm-%q|: >
   :!#pluginname#something %q
 
-A handler can be used to generate |vifm-:'statusline'| value like this: >
+A handler can be used to generate |vifm-'statusline'| or |vifm-'tabline'|
+value like this: >
   set statusline=#pluginname#statusline
+  set tabline=#pluginname#tabline
 
 Below is a specification of input and output for different kinds of handlers.
 
@@ -282,6 +287,18 @@ Fields of {info} argument:
 Fields of returned table:
  - "format" (string)
    Value for |vifm-'statusline'|.
+
+'tabline' handler~
+
+Fields of {info} argument:
+ - "other" (boolean)
+   Whether this is for the tabline of inactive pane in case of pane tabs.
+ - "width" (integer)
+   Width of the tab line.
+
+Fields of returned table:
+ - "format" (string)
+   Value for |vifm-'tabline'|.
 
 'vicmd' or 'vixcmd' handler~
 
@@ -432,7 +449,7 @@ This is what one can do by using Lua at the moment:
  * save and reset options (e.g., some kind of presets) (|vifm-l_vifm.opts|)
  * custom columns (|vifm-l_vifm.addcolumntype()|)
  * :filetype/:filextype/:fileviewer/%q handlers in Lua (|vifm-lua-handlers|)
- * 'statusline' generator in Lua (|vifm-lua-handlers|)
+ * 'statusline' and 'tabline' generators in Lua (|vifm-lua-handlers|)
  * fully integrate an arbitrary editor by changing |vifm-'vicmd'| or |vifm-'vixcmd'|
    (|vifm-lua-handlers|), while builtin logic assumes compatibility with Vim
  * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)
@@ -1193,7 +1210,7 @@ Return:~
 VifmTab:getview([{query}])                     *vifm-l_VifmTab:getview()*
 
 Possible fields of {query}:
- - "pane" (integer) (default: 1)
+ - "pane" (integer) (default: index of active pane)
    Which view to get from a global tab.  1 is left/top pane, 2 is right/bottom
    one.  Ignored for a pane tab.
 
@@ -1232,6 +1249,16 @@ Location of the current view.
 
 VifmView.entrycount (integer)                  *vifm-l_VifmView.entrycount*
 Number of entries in the view.
+
+VifmView.custom (table)                        *vifm-l_VifmView.custom*
+Table with information about custom file list.  The value is `nil` if custom
+view isn't active.
+
+Fields:
+ - "title" (string)
+   Title of a custom view which usually describes how it was created.
+ - "type" (string)
+   Values returned by |vifm-getpanetype()| except for "regular".
 
 VifmView:cd({path})                            *vifm-l_VifmView:cd()*
 Changes location of the view.  {path} isn't expanded in any way.

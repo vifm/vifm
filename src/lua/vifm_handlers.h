@@ -53,6 +53,11 @@ void vifm_handlers_open(struct vlua_t *vlua, const char prog[],
 char * vifm_handlers_make_status_line(struct vlua_t *vlua, const char format[],
 		struct view_t *view, int width);
 
+/* Invokes tab line formatting handler.  Returns newly allocated string with
+ * tab line format. */
+char * vifm_handlers_make_tab_line(struct vlua_t *vlua, const char format[],
+		int other, int width);
+
 /* Invokes an editor handler to view Vim-style documentation.  Returns zero on
  * success and non-zero otherwise. */
 int vifm_handlers_open_help(struct vlua_t *vlua, const char handler[],

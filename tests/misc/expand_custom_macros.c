@@ -240,7 +240,7 @@ TEST(optional_unmatched)
 {
 	check_hi("%[%1*a", /*nmacros=*/0, /*macros=*/NULL, MA_OPT,
 			"%[a",
-			"  1");
+			"  b");
 }
 
 TEST(optional_with_empty_value)
@@ -371,9 +371,9 @@ TEST(highlighting_is_set_correctly)
 	custom_macro_t macros[] = {
 		{ .letter = 'i', .value = "xyz", .uses_left = 0, .group = -1, },
 	};
-	check_hi("prefix %1*%i%* suffix", ARRAY_LEN(macros), macros, MA_NOOPT,
+	check_hi("prefix%1* %10*%i%* %20*suffix", ARRAY_LEN(macros), macros, MA_NOOPT,
 			"prefix xyz suffix",
-			"       1  0      ");
+			"      bk  au     ");
 }
 
 TEST(opt_can_alter_highlighting_only)
@@ -383,20 +383,20 @@ TEST(opt_can_alter_highlighting_only)
 	};
 	check_hi("%1*%[%2*%C%]!", ARRAY_LEN(macros), macros, MA_OPT,
 			"!",
-			"1");
+			"b");
 
 	macros[0].value = "*";
 	check_hi("%1*%[%2*%C%]!", ARRAY_LEN(macros), macros, MA_OPT,
 			"!",
-			"2");
+			"c");
 }
 
 TEST(bad_user_group_remains_in_line_partially)
 {
 	custom_macro_t macros[1];
-	check_hi("%10*", 0, macros, MA_NOOPT,
-			"0*",
-			"  ");
+	check_hi("%100*", 0, macros, MA_NOOPT,
+			"00*",
+			"   ");
 }
 
 TEST(empty_optional_drops_attrs)
@@ -415,15 +415,15 @@ TEST(non_empty_optional_preserves_attrs)
 
 	check_hi("%1*%[%t%2*%t%]%3*", ARRAY_LEN(macros), macros, MA_OPT,
 			"filefile",
-			"1   2   ");
+			"b   c   ");
 
 	check_hi("%1*%[%2*%t%3*%t%]%4*", ARRAY_LEN(macros), macros, MA_OPT,
 			"filefile",
-			"2   3   ");
+			"c   d   ");
 
 	check_hi("%1*%[%2*%t%3*%]%4*", ARRAY_LEN(macros), macros, MA_OPT,
 			"file",
-			"2   ");
+			"c   ");
 }
 
 TEST(wide_characters_do_not_break_highlighting, IF(utf8_locale))
@@ -431,7 +431,7 @@ TEST(wide_characters_do_not_break_highlighting, IF(utf8_locale))
 	custom_macro_t macros[1];
 	check_hi("%1*螺丝 %= 螺%2*丝", 0, macros, MA_NOOPT,
 			"螺丝  螺丝",
-			"1       2 ");
+			"b       c ");
 }
 
 static void
