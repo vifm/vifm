@@ -215,6 +215,21 @@ vifm_handlers_make_status_line(vlua_t *vlua, const char format[], view_t *view,
 	return result;
 }
 
+char *
+vifm_handlers_make_tab_line(vlua_t *vlua, const char format[], int other,
+		int width)
+{
+	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
+	lua_pushboolean(vlua->lua, other);
+	lua_setfield(vlua->lua, -2, "other");
+	lua_pushinteger(vlua->lua, width);
+	lua_setfield(vlua->lua, -2, "width");
+
+	char *result = run_format_handler(vlua, format);
+	lua_pop(vlua->lua, 1);
+	return result;
+}
+
 /* Invokes a format handler.  Expects a table argument to it at the top of Lua
  * stack.  Returns format string on success, otherwise NULL is returned. */
 static char *

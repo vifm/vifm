@@ -261,6 +261,26 @@ TEST(good_statusline_formatter)
 	free(format);
 }
 
+TEST(good_tabline_formatter)
+{
+	assert_success(vlua_run_string(vlua,
+				"function handle(info)"
+				"  return { format = 'width='..info.width"
+				"                  ..',other='..tostring(info.other) }"
+				"end"));
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.addhandler{ name = 'handle',"
+				                      " handler = handle })"));
+	assert_string_equal("true", ui_sb_last());
+
+	char *format =
+		vlua_make_tab_line(vlua, "#vifmtest#handle", /*other=*/1, /*width=*/11);
+	assert_string_equal("width=11,other=true", format);
+	free(format);
+}
+
 TEST(handlers_run_in_safe_mode)
 {
 	assert_success(vlua_run_string(vlua,

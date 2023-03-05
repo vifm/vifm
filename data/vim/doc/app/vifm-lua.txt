@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 4
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -236,8 +236,10 @@ command like this: >
 A viewer can also be called through |vifm-%q|: >
   :!#pluginname#something %q
 
-A handler can be used to generate |vifm-:'statusline'| value like this: >
+A handler can be used to generate |vifm-'statusline'| or |vifm-'tabline'|
+value like this: >
   set statusline=#pluginname#statusline
+  set tabline=#pluginname#tabline
 
 Below is a specification of input and output for different kinds of handlers.
 
@@ -282,6 +284,18 @@ Fields of {info} argument:
 Fields of returned table:
  - "format" (string)
    Value for |vifm-'statusline'|.
+
+'tabline' handler~
+
+Fields of {info} argument:
+ - "other" (boolean)
+   Whether this is for the tabline of inactive pane in case of pane tabs.
+ - "width" (integer)
+   Width of the tab line.
+
+Fields of returned table:
+ - "format" (string)
+   Value for |vifm-'tabline'|.
 
 'vicmd' or 'vixcmd' handler~
 
@@ -432,7 +446,7 @@ This is what one can do by using Lua at the moment:
  * save and reset options (e.g., some kind of presets) (|vifm-l_vifm.opts|)
  * custom columns (|vifm-l_vifm.addcolumntype()|)
  * :filetype/:filextype/:fileviewer/%q handlers in Lua (|vifm-lua-handlers|)
- * 'statusline' generator in Lua (|vifm-lua-handlers|)
+ * 'statusline' and 'tabline' generators in Lua (|vifm-lua-handlers|)
  * fully integrate an arbitrary editor by changing |vifm-'vicmd'| or |vifm-'vixcmd'|
    (|vifm-lua-handlers|), while builtin logic assumes compatibility with Vim
  * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)

@@ -48,6 +48,7 @@
 #include "../compat/pthread.h"
 #include "../engine/mode.h"
 #include "../int/term_title.h"
+#include "../lua/vlua.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
@@ -2182,10 +2183,26 @@ print_tabline(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	}
 	else
 	{
-		cline_t title = ma_expand_colored_custom(cfg.tab_line, /*nmacros=*/0,
-				/*macros=*/NULL, MA_OPT);
-		cline_print(&title, win, &base_col);
-		cline_dispose(&title);
+		char *fmt;
+		if(vlua_handler_cmd(curr_stats.vlua, cfg.tab_line))
+		{
+			int other = (view == other_view);
+			fmt = vlua_make_tab_line(curr_stats.vlua, cfg.tab_line, other, max_width);
+		}
+		else
+		{
+			fmt = strdup(cfg.tab_line);
+		}
+
+		if(fmt != NULL)
+		{
+			cline_t title = ma_expand_colored_custom(fmt, /*nmacros=*/0,
+					/*macros=*/NULL, MA_OPT);
+			free(fmt);
+
+			cline_print(&title, win, &base_col);
+			cline_dispose(&title);
+		}
 	}
 
 	wnoutrefresh(win);
