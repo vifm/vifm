@@ -136,7 +136,7 @@ static void cmd_q_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
 static void activate_search(int count, int back, int external);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
-static void search(key_info_t key_info, int backward, int interactive);
+static void search(key_info_t key_info, int backward);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void change_amend_type(AmendType new_amend_type);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
@@ -579,7 +579,7 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
-	search(key_info, !curr_stats.last_search_backward, 0);
+	search(key_info, !curr_stats.last_search_backward);
 }
 
 static void
@@ -983,11 +983,11 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	search(key_info, curr_stats.last_search_backward, 0);
+	search(key_info, curr_stats.last_search_backward);
 }
 
 static void
-search(key_info_t key_info, int backward, int interactive)
+search(key_info_t key_info, int backward)
 {
 	/* TODO: extract common part of this function and normal.c:search(). */
 
@@ -1006,7 +1006,8 @@ search(key_info_t key_info, int backward, int interactive)
 		search_repeat = key_info.count;
 		const int old_pos = view->list_pos;
 		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = modvis_find(view, pattern, backward, interactive);
+		curr_stats.save_msg = modvis_find(view, pattern, backward,
+				/*print_errors=*/0);
 		found = view->matches > 0
 		     && (view->list_pos != old_pos
 		     || (cfg.wrap_scan && key_info.count == view->matches));
