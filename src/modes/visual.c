@@ -1475,6 +1475,8 @@ modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 
 	cfg.hl_search = 0;
 	result = find_pattern(view, pattern, backward, 0, &found, print_errors);
+	cfg.hl_search = hls;
+
 	if(!print_errors && result < 0)
 	{
 		/* If we're not printing messages, we might be interested in broken
@@ -1482,7 +1484,6 @@ modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 		return -1;
 	}
 
-	cfg.hl_search = hls;
 	for(i = 0; i < search_repeat; ++i)
 	{
 		find_update(view, backward);

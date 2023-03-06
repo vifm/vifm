@@ -2323,6 +2323,7 @@ modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 	search_repeat = 1;
 
 	save_msg = find_pattern(view, pattern, backward, 1, &found, print_errors);
+
 	if(!print_errors && save_msg < 0)
 	{
 		/* If we're not printing messages, we might be interested in broken

@@ -48,6 +48,9 @@ SETUP()
 
 	assert_int_equal(6, lwin.list_rows);
 	assert_int_equal(0, lwin.list_pos);
+
+	cfg.hl_search = 0;
+	cfg.inc_search = 0;
 }
 
 TEARDOWN()
@@ -85,6 +88,17 @@ TEST(n_works_without_prior_search_in_visual_mode)
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(hlsearch_is_not_reset_for_invalid_pattern_during_incsearch_in_visual_mode)
+{
+	cfg.hl_search = 1;
+	cfg.inc_search = 1;
+
+	(void)vle_keys_exec_timed_out(WK_v WK_SLASH L"*");
+	assert_true(cfg.hl_search);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
