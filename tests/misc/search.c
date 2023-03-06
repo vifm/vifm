@@ -42,7 +42,8 @@ TEST(matches_can_be_highlighted)
 {
 	cfg.hl_search = 1;
 
-	find_pattern(&lwin, "dos", /*print_errors=*/0);
+	find_pattern(&lwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 	assert_string_equal("dos-eof", lwin.dir_entry[1].name);
 	assert_true(lwin.dir_entry[1].selected);
@@ -54,22 +55,26 @@ TEST(matches_can_be_highlighted)
 
 TEST(nothing_happens_for_empty_pattern)
 {
-	find_pattern(&lwin, "", /*print_errors=*/0);
+	find_pattern(&lwin, "", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(0, lwin.matches);
 }
 
 TEST(wrong_pattern_results_in_no_matches)
 {
-	find_pattern(&lwin, "asdfasdfasdf", /*print_errors=*/0);
+	find_pattern(&lwin, "asdfasdfasdf", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(0, lwin.matches);
 
-	find_pattern(&lwin, "*", /*print_errors=*/0);
+	find_pattern(&lwin, "*", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(0, lwin.matches);
 }
 
 TEST(search_finds_matching_files_and_numbers_them)
 {
-	find_pattern(&lwin, "dos", /*print_errors=*/0);
+	find_pattern(&lwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 	assert_string_equal("dos-eof", lwin.dir_entry[1].name);
 	assert_int_equal(1, lwin.dir_entry[1].search_match);
@@ -80,7 +85,8 @@ TEST(search_finds_matching_files_and_numbers_them)
 TEST(cursor_can_be_positioned_on_first_match)
 {
 	lwin.list_pos = 0;
-	find_pattern(&lwin, "dos", /*print_errors=*/0);
+	find_pattern(&lwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_string_equal("dos-eof", lwin.dir_entry[1].name);
 	lwin.list_pos = 1;
 }
@@ -89,7 +95,8 @@ TEST(reset_clears_counter_and_match_numbers)
 {
 	int i;
 
-	find_pattern(&lwin, "dos", /*print_errors=*/0);
+	find_pattern(&lwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 
 	reset_search_results(&lwin);
@@ -116,7 +123,8 @@ TEST(match_navigation_with_wrapping)
 {
 	cfg.wrap_scan = 1;
 
-	find_pattern(&lwin, "dos", /*print_errors=*/0);
+	find_pattern(&lwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 
 	lwin.list_pos = 0;
@@ -142,7 +150,8 @@ TEST(match_navigation_without_wrapping)
 {
 	cfg.wrap_scan = 0;
 
-	find_pattern(&lwin, "dos", /*print_errors=*/0);
+	find_pattern(&lwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 
 	lwin.list_pos = 0;
@@ -167,15 +176,18 @@ TEST(view_patterns_are_synchronized)
 	strcpy(rwin.curr_dir, lwin.curr_dir);
 	populate_dir_list(&rwin, 0);
 
-	find_pattern(&rwin, "do", /*print_errors=*/0);
+	find_pattern(&rwin, "do", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, rwin.matches);
 
-	find_pattern(&lwin, "dos", /*print_errors=*/0);
+	find_pattern(&lwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 	/* Different patterns cause reset. */
 	assert_int_equal(0, rwin.matches);
 
-	find_pattern(&rwin, "dos", /*print_errors=*/0);
+	find_pattern(&rwin, "dos", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_int_equal(2, rwin.matches);
 	/* Same patterns don't cause reset. */
 	assert_int_equal(2, lwin.matches);
@@ -204,7 +216,8 @@ TEST(matching_directories)
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 	populate_dir_list(&lwin, 0);
 
-	find_pattern(&lwin, "1/", /*print_errors=*/0);
+	find_pattern(&lwin, "1/", /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, /*print_errors=*/0);
 	assert_string_equal("dir1", lwin.dir_entry[0].name);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_string_equal("dir5", lwin.dir_entry[1].name);

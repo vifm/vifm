@@ -1689,6 +1689,7 @@ static void
 search(key_info_t key_info, int backward)
 {
 	curr_stats.save_msg = search_next(curr_view, backward,
+			/*stash_selection=*/cfg.hl_search, /*select_matches=*/cfg.hl_search,
 			def_count(key_info.count), &goto_search_match);
 }
 
@@ -2279,8 +2280,9 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 int
 modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
-	return search_find(view, pattern, backward, search_repeat,
-			&goto_search_match, print_errors);
+	return search_find(view, pattern, backward, /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, search_repeat, &goto_search_match,
+			print_errors);
 }
 
 void

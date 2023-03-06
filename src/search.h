@@ -28,26 +28,30 @@ struct view_t;
 typedef int (*goto_search_match_cb)(struct view_t *view, int backward);
 
 /* Searches pattern in view, moves cursor to count's match using cb and
- * optionally (if print_errors is set) shows a message.  Returns non-zero when
- * a message was printed (or would have been printed with print_errors set) to
- * a user, otherwise zero is returned.  Returned value is negative for
- * invalid pattern. */
+ * optionally (if print_errors is set) shows a message.  stash_selection and
+ * select_matches are passed to find_pattern().  Returns non-zero when a
+ * message was printed (or would have been printed with print_errors set) to a
+ * user, otherwise zero is returned.  Returned value is negative for invalid
+ * pattern. */
 int search_find(struct view_t *view, const char pattern[], int backward,
-		int count, goto_search_match_cb cb, int print_errors);
+		int stash_selection, int select_matches, int count, goto_search_match_cb cb,
+		int print_errors);
 
 /* Moves cursor to count's match using cb and shows a message.  Searches for
  * the last pattern from the search history, if there are no matches in view.
- * Returns non-zero when a message was printed to a user, otherwise zero is
- * returned. */
-int search_next(struct view_t *view, int backward, int count,
-		goto_search_match_cb cb);
+ * stash_selection and select_matches are passed to find_pattern().  Returns
+ * non-zero when a message was printed to a user, otherwise zero is returned. */
+int search_next(struct view_t *view, int backward, int stash_selection,
+		int select_matches, int count, goto_search_match_cb cb);
 
 /* print_errors means user needs feedback, otherwise it can be provided later
- * using one of print_*_msg() functions.  Returns non-zero when a message was
- * printed (or would have been printed with print_errors set) to a user,
- * otherwise zero is returned.  Returned value is negative for incorrect
- * pattern. */
-int find_pattern(struct view_t *view, const char pattern[], int print_errors);
+ * using one of print_*_msg() functions.  stash_selection stashes selection
+ * before the search.  select_matches selects found matches.  Returns non-zero
+ * when a message was printed (or would have been printed with print_errors
+ * set) to a user, otherwise zero is returned.  Returned value is negative for
+ * incorrect pattern. */
+int find_pattern(struct view_t *view, const char pattern[], int stash_selection,
+		int select_matches, int print_errors);
 
 /* Looks for a search match in specified direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was

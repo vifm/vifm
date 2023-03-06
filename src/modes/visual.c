@@ -989,11 +989,8 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 search(key_info_t key_info, int backward)
 {
-	const int hls = cfg.hl_search;
-	cfg.hl_search = 0;
-	curr_stats.save_msg = search_next(curr_view, backward,
-			def_count(key_info.count), &find_update);
-	cfg.hl_search = hls;
+	curr_stats.save_msg = search_next(curr_view, backward, /*stash_selection=*/0,
+			/*select_matches=*/0, def_count(key_info.count), &find_update);
 }
 
 /* Runs external editor to get command-line command and then executes it. */
@@ -1432,13 +1429,8 @@ modvis_update(void)
 int
 modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
-	int save_msg;
-	const int hls = cfg.hl_search;
-	cfg.hl_search = 0;
-	save_msg = search_find(view, pattern, backward, search_repeat,
-			&find_update, print_errors);
-	cfg.hl_search = hls;
-	return save_msg;
+	return search_find(view, pattern, backward, /*stash_selection=*/0,
+			/*select_matches=*/0, search_repeat, &find_update, print_errors);
 }
 
 /* returns non-zero when it finds something */

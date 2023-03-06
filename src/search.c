@@ -42,13 +42,15 @@ static int find_and_goto_match(view_t *view, int start, int backward);
 
 int
 search_find(view_t *view, const char pattern[], int backward,
-		int count, goto_search_match_cb cb, int print_errors)
+		int stash_selection, int select_matches, int count, goto_search_match_cb cb,
+		int print_errors)
 {
 	int i;
 	int save_msg;
 	int found;
 
-	save_msg = find_pattern(view, pattern, /*print_errors=*/0);
+	save_msg = find_pattern(view, pattern, stash_selection, select_matches,
+			/*print_errors=*/0);
 
 	if(!print_errors && save_msg < 0)
 	{
@@ -79,7 +81,8 @@ search_find(view_t *view, const char pattern[], int backward,
 }
 
 int
-search_next(view_t *view, int backward, int count, goto_search_match_cb cb)
+search_next(view_t *view, int backward, int stash_selection, int select_matches,
+		int count, goto_search_match_cb cb)
 {
 	int save_msg = 0;
 	int found;
@@ -92,7 +95,8 @@ search_next(view_t *view, int backward, int count, goto_search_match_cb cb)
 	if(view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		save_msg = find_pattern(view, pattern, /*print_errors=*/0);
+		save_msg = find_pattern(view, pattern, stash_selection, select_matches,
+				/*print_errors=*/0);
 	}
 
 	if(save_msg == -1)
@@ -186,7 +190,8 @@ find_and_goto_match(view_t *view, int start, int backward)
 }
 
 int
-find_pattern(view_t *view, const char pattern[], int print_errors)
+find_pattern(view_t *view, const char pattern[], int stash_selection,
+		int select_matches, int print_errors)
 {
 	int cflags;
 	int nmatches = 0;
@@ -194,7 +199,7 @@ find_pattern(view_t *view, const char pattern[], int print_errors)
 	int err;
 	view_t *other;
 
-	if(cfg.hl_search)
+	if(stash_selection)
 	{
 		flist_sel_stash(view);
 	}
@@ -243,7 +248,7 @@ find_pattern(view_t *view, const char pattern[], int print_errors)
 			entry->match_left += escape_unreadableo(name, matches[0].rm_so);
 			entry->match_right = matches[0].rm_eo;
 			entry->match_right += escape_unreadableo(name, matches[0].rm_eo);
-			if(cfg.hl_search)
+			if(select_matches)
 			{
 				entry->selected = 1;
 				++view->selected_files;
