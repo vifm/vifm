@@ -79,6 +79,11 @@ find_and_goto_match(view_t *view, int start, int backward)
 	}
 	else
 	{
+		if(view->list_rows == 0)
+		{
+			return 0;
+		}
+
 		begin = start + 1;
 		end = view->list_rows;
 		step = 1;

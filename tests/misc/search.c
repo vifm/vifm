@@ -102,6 +102,16 @@ TEST(reset_clears_counter_and_match_numbers)
 	}
 }
 
+TEST(match_navigation_in_empty_view)
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	assert_int_equal(0, lwin.list_rows);
+	assert_false(goto_search_match(&lwin, /*backward=*/1));
+	assert_false(goto_search_match(&lwin, /*backward=*/0));
+}
+
 TEST(match_navigation_with_wrapping)
 {
 	cfg.wrap_scan = 1;
