@@ -41,6 +41,12 @@ int goto_search_match(struct view_t *view, int backward);
 
 /* Auxiliary functions. */
 
+/* Prints success or error message, determined by the found argument.  Supposed
+ * to be called after find_pattern() and the cursor positioned over a match.
+ * Takes search highlighting into account.  Returns non-zero if something was
+ * printed, otherwise zero is returned. */
+int print_search_result(const struct view_t *view, int found, int backward);
+
 /* Prints results or error message about search operation to the user. */
 void print_search_msg(const struct view_t *view, int backward);
 

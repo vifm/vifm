@@ -217,6 +217,32 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	}
 }
 
+int
+print_search_result(const view_t *view, int found, int backward)
+{
+	if(view->matches > 0)
+	{
+		if(!cfg.hl_search)
+		{
+			if(found)
+			{
+				print_result(view, found, backward);
+			}
+			else
+			{
+				print_search_fail_msg(view, backward);
+			}
+			return 1;
+		}
+		return 0;
+	}
+	else
+	{
+		print_search_fail_msg(view, backward);
+		return 1;
+	}
+}
+
 /* Prints success or error message, determined by the found argument, about
  * search results to a user. */
 static void
