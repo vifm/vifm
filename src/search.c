@@ -67,7 +67,7 @@ search_find(view_t *view, const char pattern[], int backward,
 
 	if(print_errors)
 	{
-		save_msg = print_search_result(view, found, backward);
+		save_msg = print_search_result(view, found, backward, &print_search_msg);
 	}
 
 	return save_msg;
@@ -98,15 +98,7 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 
 	found = goto_search_match(view, backward, count, cb);
 
-	if(found)
-	{
-		print_search_next_msg(view, backward);
-	}
-	else
-	{
-		print_search_fail_msg(view, backward);
-	}
-	save_msg = 1;
+	save_msg = print_search_result(view, found, backward, &print_search_next_msg);
 
 	return save_msg;
 }
@@ -285,7 +277,8 @@ search_pattern(view_t *view, const char pattern[], int stash_selection,
 }
 
 int
-print_search_result(const view_t *view, int found, int backward)
+print_search_result(const view_t *view, int found, int backward,
+		print_search_msg_cb cb)
 {
 	if(view->matches > 0)
 	{
@@ -295,7 +288,7 @@ print_search_result(const view_t *view, int found, int backward)
 		 * automatically). */
 		if(found)
 		{
-			print_search_msg(view, backward);
+			cb(view, backward);
 			return 1;
 		}
 		else if(!cfg.hl_search || cfg.wrap_scan || vle_mode_is(VISUAL_MODE) ||

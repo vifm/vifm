@@ -130,6 +130,9 @@
 	highlighting turned on: if found a match, if wrapping is turned on, and in
 	visual mode.  Patch by filterfalse.
 
+	A regular search logic showing messages is applied to n/N.  Patch by
+	filterfalse.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 

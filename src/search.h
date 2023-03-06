@@ -65,11 +65,17 @@ int find_search_match(struct view_t *view, int backward, int count);
 
 /* Auxiliary functions. */
 
+/* Callback for showing a message about search operation. */
+typedef void (*print_search_msg_cb)(const struct view_t *view,
+		int backward);
+
 /* Prints success or error message, determined by the found argument.  Supposed
  * to be called after search_pattern() and the cursor positioned over a match.
- * Takes search highlighting, wrapping and visual mode into account.  Returns
- * non-zero if something was printed, otherwise zero is returned. */
-int print_search_result(const struct view_t *view, int found, int backward);
+ * The success message is prtined by cb.  Takes search highlighting, wrapping
+ * and visual mode into account.  Returns non-zero if something was printed,
+ * otherwise zero is returned. */
+int print_search_result(const struct view_t *view, int found, int backward,
+		print_search_msg_cb cb);
 
 /* Prints results or error message about search operation to the user. */
 void print_search_msg(const struct view_t *view, int backward);
