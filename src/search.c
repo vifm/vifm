@@ -47,34 +47,29 @@ search_find(view_t *view, const char pattern[], int backward,
 {
 	int i;
 	int save_msg = 0;
-	int err;
 	int found;
 
-	err = search_pattern(view, pattern, stash_selection, select_matches);
-
-	if(!print_errors && err)
+	if(search_pattern(view, pattern, stash_selection, select_matches) != 0)
 	{
+		if(print_errors)
+		{
+			print_search_fail_msg(view, backward);
+			save_msg = 1;
+			return save_msg;
+		}
 		/* If we're not printing messages, we might be interested in broken
 		 * pattern. */
 		return -1;
 	}
 
-	if(!err)
+	found = 0;
+	for(i = 0; i < count; ++i)
 	{
-		found = 0;
-		for(i = 0; i < count; ++i)
-		{
-			found += cb(view, backward);
-		}
-		if(print_errors)
-		{
-			save_msg = print_search_result(view, found, backward);
-		}
+		found += cb(view, backward);
 	}
-	else
+	if(print_errors)
 	{
-		assert(print_errors && "A fail message shouldn't have been printed.");
-		print_search_fail_msg(view, backward);
+		save_msg = print_search_result(view, found, backward);
 	}
 
 	return save_msg;
@@ -85,7 +80,6 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 		int count, goto_search_match_cb cb)
 {
 	int save_msg = 0;
-	int err = 0;
 	int found;
 
 	if(hist_is_empty(&curr_stats.search_hist))
@@ -96,14 +90,12 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 	if(view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		err = search_pattern(view, pattern, stash_selection, select_matches);
-	}
-
-	if(err)
-	{
-		print_search_fail_msg(view, backward);
-		save_msg = 1;
-		return save_msg;
+		if(search_pattern(view, pattern, stash_selection, select_matches) != 0)
+		{
+			print_search_fail_msg(view, backward);
+			save_msg = 1;
+			return save_msg;
+		}
 	}
 
 	found = 0;
