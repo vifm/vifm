@@ -56,6 +56,11 @@ int search_pattern(struct view_t *view, const char pattern[],
  * found, otherwise zero is returned. */
 int goto_search_match(struct view_t *view, int backward);
 
+/* Looks for a search match in specified direction from current cursor position
+ * taking search wrapping into account.  Returns index of a match, or -1 if no
+ * matches were found. */
+int find_search_match(struct view_t *view, int backward);
+
 /* Auxiliary functions. */
 
 /* Prints success or error message, determined by the found argument.  Supposed

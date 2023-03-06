@@ -38,7 +38,7 @@
 #include "flist_sel.h"
 #include "status.h"
 
-static int find_and_goto_match(view_t *view, int start, int backward);
+static int find_match(view_t *view, int start, int backward);
 
 int
 search_find(view_t *view, const char pattern[], int backward,
@@ -120,14 +120,13 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 int
 goto_search_match(view_t *view, int backward)
 {
-	const int wrap_start = backward ? view->list_rows : -1;
-	if(!find_and_goto_match(view, view->list_pos, backward))
+	const int i = find_search_match(view, backward);
+	if(i == -1)
 	{
-		if(!cfg.wrap_scan || !find_and_goto_match(view, wrap_start, backward))
-		{
-			return 0;
-		}
+		return 0;
 	}
+
+	view->list_pos = i;
 
 	/* Redraw the cursor which also might synchronize cursors of two views. */
 	fview_cursor_redraw(view);
@@ -137,14 +136,25 @@ goto_search_match(view_t *view, int backward)
 	return 1;
 }
 
-/* Looks for a search match in specified direction from given start position and
- * navigates to it if match is found.  Starting position is not included in
- * searched range.  Returns non-zero if something was found, otherwise zero is
- * returned. */
-static int
-find_and_goto_match(view_t *view, int start, int backward)
+int
+find_search_match(view_t *view, int backward)
 {
-	int i;
+	int i = find_match(view, view->list_pos, backward);
+	if(i == -1 && cfg.wrap_scan)
+	{
+		const int wrap_start = backward ? view->list_rows : -1;
+		i = find_match(view, wrap_start, backward);
+	}
+	return i;
+}
+
+/* Looks for a search match in specified direction from given start position.
+ * Starting position is not included in searched range.  Returns index of a
+ * match, or -1 if no matches were found. */
+static int
+find_match(view_t *view, int start, int backward)
+{
+	int i = -1;
 	int begin, end, step;
 
 	if(backward)
@@ -159,7 +169,7 @@ find_and_goto_match(view_t *view, int start, int backward)
 	{
 		if(view->list_rows == 0)
 		{
-			return 0;
+			return -1;
 		}
 
 		begin = start + 1;
@@ -173,12 +183,11 @@ find_and_goto_match(view_t *view, int start, int backward)
 	{
 		if(view->dir_entry[i].search_match)
 		{
-			view->list_pos = i;
-			break;
+			return i;
 		}
 	}
 
-	return i != end;
+	return -1;
 }
 
 int
