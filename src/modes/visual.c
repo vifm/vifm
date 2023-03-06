@@ -1006,8 +1006,7 @@ search(key_info_t key_info, int backward)
 		const int hls = cfg.hl_search;
 		cfg.hl_search = 0;
 		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = find_pattern(curr_view, pattern, backward,
-				/*move=*/0, &found, /*print_errors=*/0);
+		curr_stats.save_msg = find_pattern(curr_view, pattern, /*print_errors=*/0);
 		cfg.hl_search = hls;
 	}
 
@@ -1478,8 +1477,7 @@ modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 	int found;
 
 	cfg.hl_search = 0;
-	result = find_pattern(view, pattern, backward, /*move=*/0, &found,
-			/*print_errors=*/0);
+	result = find_pattern(view, pattern, /*print_errors=*/0);
 	cfg.hl_search = hls;
 
 	if(!print_errors && result < 0)

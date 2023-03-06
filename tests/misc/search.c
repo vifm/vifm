@@ -40,12 +40,9 @@ TEARDOWN()
 
 TEST(matches_can_be_highlighted)
 {
-	int found;
-
 	cfg.hl_search = 1;
 
-	find_pattern(&lwin, "dos", 0, 0, &found, 0);
-	assert_true(found);
+	find_pattern(&lwin, "dos", /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 	assert_string_equal("dos-eof", lwin.dir_entry[1].name);
 	assert_true(lwin.dir_entry[1].selected);
@@ -57,32 +54,22 @@ TEST(matches_can_be_highlighted)
 
 TEST(nothing_happens_for_empty_pattern)
 {
-	int found;
-
-	find_pattern(&lwin, "", 0, 0, &found, 0);
-	assert_true(found);
+	find_pattern(&lwin, "", /*print_errors=*/0);
 	assert_int_equal(0, lwin.matches);
 }
 
 TEST(wrong_pattern_results_in_no_matches)
 {
-	int found;
-
-	find_pattern(&lwin, "asdfasdfasdf", 0, 0, &found, 0);
-	assert_false(found);
+	find_pattern(&lwin, "asdfasdfasdf", /*print_errors=*/0);
 	assert_int_equal(0, lwin.matches);
 
-	find_pattern(&lwin, "*", 0, 0, &found, 0);
-	assert_false(found);
+	find_pattern(&lwin, "*", /*print_errors=*/0);
 	assert_int_equal(0, lwin.matches);
 }
 
 TEST(search_finds_matching_files_and_numbers_them)
 {
-	int found;
-
-	find_pattern(&lwin, "dos", 0, 0, &found, 0);
-	assert_true(found);
+	find_pattern(&lwin, "dos", /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 	assert_string_equal("dos-eof", lwin.dir_entry[1].name);
 	assert_int_equal(1, lwin.dir_entry[1].search_match);
@@ -92,21 +79,17 @@ TEST(search_finds_matching_files_and_numbers_them)
 
 TEST(cursor_can_be_positioned_on_first_match)
 {
-	int found;
-
 	lwin.list_pos = 0;
-	find_pattern(&lwin, "dos", 0, 1, &found, 0);
+	find_pattern(&lwin, "dos", /*print_errors=*/0);
 	assert_string_equal("dos-eof", lwin.dir_entry[1].name);
 	lwin.list_pos = 1;
 }
 
 TEST(reset_clears_counter_and_match_numbers)
 {
-	int found;
 	int i;
 
-	find_pattern(&lwin, "dos", 0, 0, &found, 0);
-	assert_true(found);
+	find_pattern(&lwin, "dos", /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 
 	reset_search_results(&lwin);
@@ -121,12 +104,9 @@ TEST(reset_clears_counter_and_match_numbers)
 
 TEST(match_navigation_with_wrapping)
 {
-	int found;
-
 	cfg.wrap_scan = 1;
 
-	find_pattern(&lwin, "dos", 0, 0, &found, 0);
-	assert_true(found);
+	find_pattern(&lwin, "dos", /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 
 	lwin.list_pos = 0;
@@ -150,12 +130,9 @@ TEST(match_navigation_with_wrapping)
 
 TEST(match_navigation_without_wrapping)
 {
-	int found;
-
 	cfg.wrap_scan = 0;
 
-	find_pattern(&lwin, "dos", 0, 0, &found, 0);
-	assert_true(found);
+	find_pattern(&lwin, "dos", /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 
 	lwin.list_pos = 0;
@@ -177,20 +154,18 @@ TEST(match_navigation_without_wrapping)
 
 TEST(view_patterns_are_synchronized)
 {
-	int found;
-
 	strcpy(rwin.curr_dir, lwin.curr_dir);
 	populate_dir_list(&rwin, 0);
 
-	find_pattern(&rwin, "do", 0, 0, &found, 0);
+	find_pattern(&rwin, "do", /*print_errors=*/0);
 	assert_int_equal(2, rwin.matches);
 
-	find_pattern(&lwin, "dos", 0, 0, &found, 0);
+	find_pattern(&lwin, "dos", /*print_errors=*/0);
 	assert_int_equal(2, lwin.matches);
 	/* Different patterns cause reset. */
 	assert_int_equal(0, rwin.matches);
 
-	find_pattern(&rwin, "dos", 0, 0, &found, 0);
+	find_pattern(&rwin, "dos", /*print_errors=*/0);
 	assert_int_equal(2, rwin.matches);
 	/* Same patterns don't cause reset. */
 	assert_int_equal(2, lwin.matches);
@@ -208,8 +183,6 @@ TEST(find_npattern_returns_zero_if_msg_is_not_printed)
 
 TEST(matching_directories)
 {
-	int found;
-
 	cfg.hl_search = 1;
 
 	restore_cwd(saved_cwd);
@@ -219,8 +192,7 @@ TEST(matching_directories)
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 	populate_dir_list(&lwin, 0);
 
-	find_pattern(&lwin, "1/", 0, 0, &found, 0);
-	assert_true(found);
+	find_pattern(&lwin, "1/", /*print_errors=*/0);
 	assert_string_equal("dir1", lwin.dir_entry[0].name);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_string_equal("dir5", lwin.dir_entry[1].name);

@@ -100,8 +100,7 @@ find_and_goto_match(view_t *view, int start, int backward)
 }
 
 int
-find_pattern(view_t *view, const char pattern[], int backward, int move,
-		int *found, int print_errors)
+find_pattern(view_t *view, const char pattern[], int print_errors)
 {
 	int cflags;
 	int nmatches = 0;
@@ -109,7 +108,7 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	int err;
 	view_t *other;
 
-	if(move && cfg.hl_search)
+	if(cfg.hl_search)
 	{
 		flist_sel_stash(view);
 	}
@@ -122,11 +121,8 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 
 	if(pattern[0] == '\0')
 	{
-		*found = 1;
 		return 0;
 	}
-
-	*found = 0;
 
 	cflags = get_regexp_cflags(pattern);
 	if((err = regexp_compile(&re, pattern, cflags)) == 0)
@@ -191,30 +187,7 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	view->matches = nmatches;
 	copy_str(view->last_search, sizeof(view->last_search), pattern);
 
-	view->matches = nmatches;
-	if(nmatches > 0)
-	{
-		const int was_found = move ? goto_search_match(view, backward) : 1;
-		*found = was_found;
-
-		if(!cfg.hl_search)
-		{
-			if(print_errors)
-			{
-				print_result(view, was_found, backward);
-			}
-			return 1;
-		}
-		return 0;
-	}
-	else
-	{
-		if(print_errors)
-		{
-			print_search_fail_msg(view, backward);
-		}
-		return 1;
-	}
+	return 0;
 }
 
 int

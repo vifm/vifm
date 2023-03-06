@@ -1703,12 +1703,7 @@ search(key_info_t key_info, int backward)
 	if(curr_view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		if(cfg.hl_search)
-		{
-			flist_sel_stash(curr_view);
-		}
-		curr_stats.save_msg = find_pattern(curr_view, pattern, backward,
-				/*move=*/0, &found, /*print_errors=*/0);
+		curr_stats.save_msg = find_pattern(curr_view, pattern, /*print_errors=*/0);
 	}
 
 	if(curr_stats.save_msg == -1)
@@ -2332,12 +2327,7 @@ modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 	 * previous ones. */
 	search_repeat = 1;
 
-	if(cfg.hl_search)
-	{
-		flist_sel_stash(view);
-	}
-	save_msg = find_pattern(view, pattern, backward, /*move=*/0, &found,
-			/*print_errors=*/0);
+	save_msg = find_pattern(view, pattern, /*print_errors=*/0);
 
 	if(!print_errors && save_msg < 0)
 	{
