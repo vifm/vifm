@@ -176,7 +176,7 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	{
 		if(print_errors)
 		{
-			ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
+			ui_sb_errf("Regexp (%s) error: %s", pattern, get_regexp_error(err, &re));
 		}
 		regfree(&re);
 		return -1;
