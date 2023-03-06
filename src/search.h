@@ -29,7 +29,7 @@ typedef int (*goto_search_match_cb)(struct view_t *view, int backward);
 
 /* Searches pattern in view, moves cursor to count's match using cb and
  * optionally (if print_errors is set) shows a message.  stash_selection and
- * select_matches are passed to find_pattern().  Returns non-zero when a
+ * select_matches are passed to search_pattern().  Returns non-zero when a
  * message was printed (or would have been printed with print_errors set) to a
  * user, otherwise zero is returned.  Returned value is negative for invalid
  * pattern. */
@@ -39,7 +39,7 @@ int search_find(struct view_t *view, const char pattern[], int backward,
 
 /* Moves cursor to count's match using cb and shows a message.  Searches for
  * the last pattern from the search history, if there are no matches in view.
- * stash_selection and select_matches are passed to find_pattern().  Returns
+ * stash_selection and select_matches are passed to search_pattern().  Returns
  * non-zero when a message was printed to a user, otherwise zero is returned. */
 int search_next(struct view_t *view, int backward, int stash_selection,
 		int select_matches, int count, goto_search_match_cb cb);
@@ -48,8 +48,8 @@ int search_next(struct view_t *view, int backward, int stash_selection,
  * stash_selection stashes selection before the search.  select_matches selects
  * found matches.  Returns non-zero for invalid pattern, otherwise zero is
  * returned. */
-int find_pattern(struct view_t *view, const char pattern[], int stash_selection,
-		int select_matches);
+int search_pattern(struct view_t *view, const char pattern[],
+		int stash_selection, int select_matches);
 
 /* Looks for a search match in specified direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was
@@ -59,7 +59,7 @@ int goto_search_match(struct view_t *view, int backward);
 /* Auxiliary functions. */
 
 /* Prints success or error message, determined by the found argument.  Supposed
- * to be called after find_pattern() and the cursor positioned over a match.
+ * to be called after search_pattern() and the cursor positioned over a match.
  * Takes search highlighting into account.  Returns non-zero if something was
  * printed, otherwise zero is returned. */
 int print_search_result(const struct view_t *view, int found, int backward);

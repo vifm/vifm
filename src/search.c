@@ -50,7 +50,7 @@ search_find(view_t *view, const char pattern[], int backward,
 	int err;
 	int found;
 
-	err = find_pattern(view, pattern, stash_selection, select_matches);
+	err = search_pattern(view, pattern, stash_selection, select_matches);
 
 	if(!print_errors && err)
 	{
@@ -96,7 +96,7 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 	if(view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		err = find_pattern(view, pattern, stash_selection, select_matches);
+		err = search_pattern(view, pattern, stash_selection, select_matches);
 	}
 
 	if(err)
@@ -190,7 +190,7 @@ find_and_goto_match(view_t *view, int start, int backward)
 }
 
 int
-find_pattern(view_t *view, const char pattern[], int stash_selection,
+search_pattern(view_t *view, const char pattern[], int stash_selection,
 		int select_matches)
 {
 	int cflags;
