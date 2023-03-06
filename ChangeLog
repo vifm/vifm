@@ -206,6 +206,9 @@
 	Fixed resetting 'hlsearch' during incremental search in visual mode.  Patch
 	by filterfalse.
 
+	Fixed resetting count to 1 during incremental search in normal mode.  Patch
+	by filterfalse.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

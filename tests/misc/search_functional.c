@@ -193,5 +193,13 @@ TEST(correct_match_number_is_shown_for_search_in_visual_mode)
 	assert_string_starts_with("1 of 2 matching files", ui_sb_last());
 }
 
+TEST(correct_cursor_position_for_incsearch_with_a_count)
+{
+	cfg.inc_search = 1;
+
+	(void)vle_keys_exec_timed_out(L"3" WK_SLASH L"." WK_CR);
+	assert_int_equal(3, lwin.list_pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -2318,14 +2318,9 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 int
 modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
-	const int nrepeats = search_repeat - 1;
 	int i;
 	int save_msg;
 	int found;
-
-	/* Reset number of repeats so that future calls are not affected by the
-	 * previous ones. */
-	search_repeat = 1;
 
 	save_msg = find_pattern(view, pattern, /*print_errors=*/0);
 
@@ -2339,7 +2334,7 @@ modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 	if(save_msg != -1)
 	{
 		found = 0;
-		for(i = 0; i <= nrepeats; ++i)
+		for(i = 0; i < search_repeat; ++i)
 		{
 			found += goto_search_match(view, backward);
 		}
