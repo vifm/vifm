@@ -46,20 +46,20 @@ search_find(view_t *view, const char pattern[], int backward,
 		int print_errors)
 {
 	int i;
-	int save_msg;
+	int save_msg = 0;
+	int err;
 	int found;
 
-	save_msg = find_pattern(view, pattern, stash_selection, select_matches,
-			/*print_errors=*/0);
+	err = find_pattern(view, pattern, stash_selection, select_matches);
 
-	if(!print_errors && save_msg < 0)
+	if(!print_errors && err)
 	{
 		/* If we're not printing messages, we might be interested in broken
 		 * pattern. */
 		return -1;
 	}
 
-	if(save_msg != -1)
+	if(!err)
 	{
 		found = 0;
 		for(i = 0; i < count; ++i)
@@ -85,6 +85,7 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 		int count, goto_search_match_cb cb)
 {
 	int save_msg = 0;
+	int err = 0;
 	int found;
 
 	if(hist_is_empty(&curr_stats.search_hist))
@@ -95,11 +96,10 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 	if(view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		save_msg = find_pattern(view, pattern, stash_selection, select_matches,
-				/*print_errors=*/0);
+		err = find_pattern(view, pattern, stash_selection, select_matches);
 	}
 
-	if(save_msg == -1)
+	if(err)
 	{
 		print_search_fail_msg(view, backward);
 		save_msg = 1;
@@ -191,12 +191,12 @@ find_and_goto_match(view_t *view, int start, int backward)
 
 int
 find_pattern(view_t *view, const char pattern[], int stash_selection,
-		int select_matches, int print_errors)
+		int select_matches)
 {
 	int cflags;
 	int nmatches = 0;
 	regex_t re;
-	int err;
+	int err = 0;
 	view_t *other;
 
 	if(stash_selection)
@@ -212,7 +212,7 @@ find_pattern(view_t *view, const char pattern[], int stash_selection,
 
 	if(pattern[0] == '\0')
 	{
-		return 0;
+		return err;
 	}
 
 	cflags = get_regexp_cflags(pattern);
@@ -261,12 +261,8 @@ find_pattern(view_t *view, const char pattern[], int stash_selection,
 	}
 	else
 	{
-		if(print_errors)
-		{
-			ui_sb_errf("Regexp (%s) error: %s", pattern, get_regexp_error(err, &re));
-		}
 		regfree(&re);
-		return -1;
+		return err;
 	}
 
 	other = (view == &lwin) ? &rwin : &lwin;
@@ -278,7 +274,7 @@ find_pattern(view_t *view, const char pattern[], int stash_selection,
 	view->matches = nmatches;
 	copy_str(view->last_search, sizeof(view->last_search), pattern);
 
-	return 0;
+	return err;
 }
 
 int

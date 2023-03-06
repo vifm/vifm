@@ -44,14 +44,12 @@ int search_find(struct view_t *view, const char pattern[], int backward,
 int search_next(struct view_t *view, int backward, int stash_selection,
 		int select_matches, int count, goto_search_match_cb cb);
 
-/* print_errors means user needs feedback, otherwise it can be provided later
- * using one of print_*_msg() functions.  stash_selection stashes selection
- * before the search.  select_matches selects found matches.  Returns non-zero
- * when a message was printed (or would have been printed with print_errors
- * set) to a user, otherwise zero is returned.  Returned value is negative for
- * incorrect pattern. */
+/* Searches pattern in view.  Does nothing in case pattern is empty.
+ * stash_selection stashes selection before the search.  select_matches selects
+ * found matches.  Returns non-zero for invalid pattern, otherwise zero is
+ * returned. */
 int find_pattern(struct view_t *view, const char pattern[], int stash_selection,
-		int select_matches, int print_errors);
+		int select_matches);
 
 /* Looks for a search match in specified direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was
