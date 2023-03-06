@@ -45,7 +45,6 @@ search_find(view_t *view, const char pattern[], int backward,
 		int stash_selection, int select_matches, int count, goto_search_match_cb cb,
 		int print_errors)
 {
-	int i;
 	int save_msg = 0;
 	int found;
 
@@ -62,11 +61,8 @@ search_find(view_t *view, const char pattern[], int backward,
 		return -1;
 	}
 
-	found = 0;
-	for(i = 0; i < count; ++i)
-	{
-		found += cb(view, backward);
-	}
+	found = cb(view, backward, count);
+
 	if(print_errors)
 	{
 		save_msg = print_search_result(view, found, backward);
@@ -98,11 +94,7 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 		}
 	}
 
-	found = 0;
-	while(count-- > 0)
-	{
-		found += cb(view, backward);
-	}
+	found = cb(view, backward, count);
 
 	if(found)
 	{
@@ -118,9 +110,9 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 }
 
 int
-goto_search_match(view_t *view, int backward)
+goto_search_match(view_t *view, int backward, int count)
 {
-	const int i = find_search_match(view, backward);
+	const int i = find_search_match(view, backward, count);
 	if(i == -1)
 	{
 		return 0;
@@ -137,14 +129,30 @@ goto_search_match(view_t *view, int backward)
 }
 
 int
-find_search_match(view_t *view, int backward)
+find_search_match(view_t *view, int backward, int count)
 {
-	int i = find_match(view, view->list_pos, backward);
-	if(i == -1 && cfg.wrap_scan)
-	{
-		const int wrap_start = backward ? view->list_rows : -1;
-		i = find_match(view, wrap_start, backward);
-	}
+	int c, i = view->list_pos;
+	assert(count > 0 && "Zero searches.");
+	for(c = 0; c < count; ++c)
+ 	{
+		i = find_match(view, i, backward);
+		if(i == -1)
+		{
+			if(cfg.wrap_scan)
+			{
+				const int wrap_start = backward ? view->list_rows : -1;
+				i = find_match(view, wrap_start, backward);
+				if(i == -1)
+				{
+					return -1;
+				}
+			}
+			else
+			{
+				return -1;
+			}
+		}
+ 	}
 	return i;
 }
 

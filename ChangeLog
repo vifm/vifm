@@ -123,6 +123,9 @@
 	Update Default-256 to fix differentiate between more file types.  Thanks
 	to aleksejrs.
 
+	Don't move cursor on search failure during search with a count.  Patch by
+	filterfalse.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 

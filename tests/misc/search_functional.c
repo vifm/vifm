@@ -201,5 +201,13 @@ TEST(correct_cursor_position_for_incsearch_with_a_count)
 	assert_int_equal(3, lwin.list_pos);
 }
 
+TEST(failed_search_with_a_count_does_not_move_cursor)
+{
+	cfg.wrap_scan = 0;
+
+	(void)vle_keys_exec_timed_out(L"333" WK_SLASH L"." WK_CR);
+	assert_int_equal(0, lwin.list_pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

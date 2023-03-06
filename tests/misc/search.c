@@ -115,8 +115,8 @@ TEST(match_navigation_in_empty_view)
 	view_setup(&lwin);
 
 	assert_int_equal(0, lwin.list_rows);
-	assert_false(goto_search_match(&lwin, /*backward=*/1));
-	assert_false(goto_search_match(&lwin, /*backward=*/0));
+	assert_false(goto_search_match(&lwin, /*backward=*/1, /*count=*/1));
+	assert_false(goto_search_match(&lwin, /*backward=*/0, /*count=*/1));
 }
 
 TEST(match_navigation_with_wrapping)
@@ -130,19 +130,19 @@ TEST(match_navigation_with_wrapping)
 	lwin.list_pos = 0;
 
 	/* Forward. */
-	goto_search_match(&lwin, 0);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, 0);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
 	assert_int_equal(2, lwin.list_pos);
-	goto_search_match(&lwin, 0);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
 	assert_int_equal(1, lwin.list_pos);
 
 	/* Backward. */
-	goto_search_match(&lwin, 1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
 	assert_int_equal(2, lwin.list_pos);
-	goto_search_match(&lwin, 1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, 1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
 	assert_int_equal(2, lwin.list_pos);
 }
 
@@ -157,17 +157,17 @@ TEST(match_navigation_without_wrapping)
 	lwin.list_pos = 0;
 
 	/* Forward. */
-	goto_search_match(&lwin, 0);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, 0);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
 	assert_int_equal(2, lwin.list_pos);
-	goto_search_match(&lwin, 0);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
 	assert_int_equal(2, lwin.list_pos);
 
 	/* Backward. */
-	goto_search_match(&lwin, 1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, 1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
 	assert_int_equal(1, lwin.list_pos);
 }
 

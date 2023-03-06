@@ -32,7 +32,6 @@ Vi(m) specific features:
   * nrformats option as in Vim.
   * Better ranges (add support for search patterns).
   * :map without arguments.
-  * Don't move cursor on search failure.
   * Consider adding support for sequences like \<cr>.
   * Completion of first argument for :map commands.
   * Make gU2U and similar commands work as in Vim.

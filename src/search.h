@@ -24,8 +24,9 @@ struct view_t;
 
 /* Search and navigation functions. */
 
-/* Callback for moving cursor to a search match and redrawing view. */
-typedef int (*goto_search_match_cb)(struct view_t *view, int backward);
+/* Callback for moving cursor to count's search match and redrawing view. */
+typedef int (*goto_search_match_cb)(struct view_t *view, int backward,
+		int count);
 
 /* Searches pattern in view, moves cursor to count's match using cb and
  * optionally (if print_errors is set) shows a message.  stash_selection and
@@ -51,15 +52,15 @@ int search_next(struct view_t *view, int backward, int stash_selection,
 int search_pattern(struct view_t *view, const char pattern[],
 		int stash_selection, int select_matches);
 
-/* Looks for a search match in specified direction from current cursor position
- * taking search wrapping into account.  Returns non-zero if something was
- * found, otherwise zero is returned. */
-int goto_search_match(struct view_t *view, int backward);
+/* Looks for a count's search match in specified direction from current cursor
+ * position taking search wrapping into account.  Returns non-zero if something
+ * was found, otherwise zero is returned. */
+int goto_search_match(struct view_t *view, int backward, int count);
 
-/* Looks for a search match in specified direction from current cursor position
- * taking search wrapping into account.  Returns index of a match, or -1 if no
- * matches were found. */
-int find_search_match(struct view_t *view, int backward);
+/* Looks for a count's search match in specified direction from current cursor
+ * position taking search wrapping into account.  Returns index of a match, or
+ * -1 if no matches were found. */
+int find_search_match(struct view_t *view, int backward, int count);
 
 /* Auxiliary functions. */
 
