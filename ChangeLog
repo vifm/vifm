@@ -200,6 +200,9 @@
 	Fixed n/N not moving the cursor without prior search in visual mode.  Patch
 	by filterfalse.
 
+	Fixed showing wrong match number instead of error message on search in
+	visual mode.  Patch by filterfalse.
+
 	Fixed resetting 'hlsearch' during incremental search in visual mode.  Patch
 	by filterfalse.
 

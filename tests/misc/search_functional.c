@@ -177,5 +177,21 @@ TEST(selection_on_n_with_hlsearch)
 	assert_true(lwin.dir_entry[2].selected);
 }
 
+TEST(correct_match_number_is_shown_for_search_in_visual_mode)
+{
+	assert_false(lwin.dir_entry[0].selected);
+
+	ui_sb_msg("");
+
+	(void)vle_keys_exec_timed_out(WK_v WK_SLASH L"dos" WK_CR);
+
+	assert_int_equal(2, lwin.matches);
+	assert_int_equal(1, lwin.list_pos);
+	assert_int_equal(0, lwin.dir_entry[0].search_match);
+	assert_int_equal(1, lwin.dir_entry[1].search_match);
+	assert_int_equal(2, lwin.dir_entry[2].search_match);
+	assert_string_starts_with("1 of 2 matching files", ui_sb_last());
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

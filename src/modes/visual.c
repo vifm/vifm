@@ -1003,21 +1003,25 @@ search(key_info_t key_info, int backward)
 
 	if(view->matches == 0)
 	{
-		search_repeat = key_info.count;
-		const int old_pos = view->list_pos;
+		const int hls = cfg.hl_search;
+		cfg.hl_search = 0;
 		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = modvis_find(view, pattern, backward,
-				/*print_errors=*/0);
-		found = view->matches > 0
-		     && (view->list_pos != old_pos
-		     || (cfg.wrap_scan && key_info.count == view->matches));
-		key_info.count = search_repeat;
+		curr_stats.save_msg = find_pattern(curr_view, pattern, backward,
+				/*move=*/0, &found, /*print_errors=*/0);
+		cfg.hl_search = hls;
 	}
-	else
+
+	if(curr_stats.save_msg == -1)
 	{
-		found = 0;
-		while(key_info.count-- > 0)
-			found += find_update(view, backward) != 0;
+		print_search_fail_msg(curr_view, backward);
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	found = 0;
+	while(key_info.count-- > 0)
+	{
+		found += find_update(view, backward);
 	}
 
 	if(found)
@@ -1474,7 +1478,8 @@ modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 	int found;
 
 	cfg.hl_search = 0;
-	result = find_pattern(view, pattern, backward, 0, &found, print_errors);
+	result = find_pattern(view, pattern, backward, /*move=*/0, &found,
+			/*print_errors=*/0);
 	cfg.hl_search = hls;
 
 	if(!print_errors && result < 0)
@@ -1484,10 +1489,24 @@ modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 		return -1;
 	}
 
-	for(i = 0; i < search_repeat; ++i)
+	if(result != -1)
 	{
-		find_update(view, backward);
+		found = 0;
+		for(i = 0; i < search_repeat; ++i)
+		{
+			found += find_update(view, backward);
+		}
+		if(print_errors)
+		{
+			result = print_search_result(view, found, backward);
+		}
 	}
+	else
+	{
+		assert(print_errors && "A fail message shouldn't have been printed.");
+		print_search_fail_msg(view, backward);
+	}
+
 	return result;
 }
 

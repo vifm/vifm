@@ -1700,18 +1700,28 @@ search(key_info_t key_info, int backward)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	found = 0;
 	if(curr_view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = (find_pattern(curr_view, pattern, backward, 1, &found,
-				0) != 0);
-		--key_info.count;
+		if(cfg.hl_search)
+		{
+			flist_sel_stash(curr_view);
+		}
+		curr_stats.save_msg = find_pattern(curr_view, pattern, backward,
+				/*move=*/0, &found, /*print_errors=*/0);
 	}
 
+	if(curr_stats.save_msg == -1)
+	{
+		print_search_fail_msg(curr_view, backward);
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	found = 0;
 	while(key_info.count-- > 0)
 	{
-		found += goto_search_match(curr_view, backward) != 0;
+		found += goto_search_match(curr_view, backward);
 	}
 
 	if(found)
@@ -2322,7 +2332,12 @@ modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 	 * previous ones. */
 	search_repeat = 1;
 
-	save_msg = find_pattern(view, pattern, backward, 1, &found, print_errors);
+	if(cfg.hl_search)
+	{
+		flist_sel_stash(view);
+	}
+	save_msg = find_pattern(view, pattern, backward, /*move=*/0, &found,
+			/*print_errors=*/0);
 
 	if(!print_errors && save_msg < 0)
 	{
@@ -2331,10 +2346,24 @@ modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 		return -1;
 	}
 
-	for(i = 0; i < nrepeats; ++i)
+	if(save_msg != -1)
 	{
-		save_msg += (goto_search_match(view, backward) != 0);
+		found = 0;
+		for(i = 0; i <= nrepeats; ++i)
+		{
+			found += goto_search_match(view, backward);
+		}
+		if(print_errors)
+		{
+			save_msg = print_search_result(view, found, backward);
+		}
 	}
+	else
+	{
+		assert(print_errors && "A fail message shouldn't have been printed.");
+		print_search_fail_msg(view, backward);
+	}
+
 	return save_msg;
 }
 
