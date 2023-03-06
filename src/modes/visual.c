@@ -166,7 +166,6 @@ static void select_up_one(view_t *view, int start_pos);
 static void select_down_one(view_t *view, int start_pos);
 static void apply_selection(int pos);
 static void revert_selection(int pos);
-static int find_update(view_t *view, int backward, int count);
 static void goto_pos_force_update(int pos);
 static void goto_pos(int pos);
 static void update_ui(void);
@@ -990,7 +989,7 @@ static void
 search(key_info_t key_info, int backward)
 {
 	curr_stats.save_msg = search_next(curr_view, backward, /*stash_selection=*/0,
-			/*select_matches=*/0, def_count(key_info.count), &find_update);
+			/*select_matches=*/0, def_count(key_info.count), &goto_pos);
 }
 
 /* Runs external editor to get command-line command and then executes it. */
@@ -1430,19 +1429,7 @@ int
 modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
 	return search_find(view, pattern, backward, /*stash_selection=*/0,
-			/*select_matches=*/0, search_repeat, &find_update, print_errors);
-}
-
-/* returns non-zero when it finds something */
-static int
-find_update(view_t *view, int backward, int count)
-{
-	const int old_pos = view->list_pos;
-	const int found = goto_search_match(view, backward, count);
-	const int new_pos = view->list_pos;
-	view->list_pos = old_pos;
-	goto_pos(new_pos);
-	return found;
+			/*select_matches=*/0, search_repeat, &goto_pos, print_errors);
 }
 
 /* Moves cursor from its current position to specified pos selecting or

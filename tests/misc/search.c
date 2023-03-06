@@ -12,7 +12,21 @@
 #include "../../src/filelist.h"
 #include "../../src/search.h"
 
+static void set_pos_in_curr_view(int pos);
+
 static char *saved_cwd;
+
+SETUP_ONCE()
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+}
+
+TEARDOWN_ONCE()
+{
+	curr_view = NULL;
+	other_view = NULL;
+}
 
 SETUP()
 {
@@ -115,8 +129,10 @@ TEST(match_navigation_in_empty_view)
 	view_setup(&lwin);
 
 	assert_int_equal(0, lwin.list_rows);
-	assert_false(goto_search_match(&lwin, /*backward=*/1, /*count=*/1));
-	assert_false(goto_search_match(&lwin, /*backward=*/0, /*count=*/1));
+	assert_false(goto_search_match(&lwin, /*backward=*/1, /*count=*/1,
+				&set_pos_in_curr_view));
+	assert_false(goto_search_match(&lwin, /*backward=*/0, /*count=*/1,
+				&set_pos_in_curr_view));
 }
 
 TEST(match_navigation_with_wrapping)
@@ -130,19 +146,19 @@ TEST(match_navigation_with_wrapping)
 	lwin.list_pos = 0;
 
 	/* Forward. */
-	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(2, lwin.list_pos);
-	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(1, lwin.list_pos);
 
 	/* Backward. */
-	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(2, lwin.list_pos);
-	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(2, lwin.list_pos);
 }
 
@@ -157,17 +173,17 @@ TEST(match_navigation_without_wrapping)
 	lwin.list_pos = 0;
 
 	/* Forward. */
-	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(2, lwin.list_pos);
-	goto_search_match(&lwin, /*backward=*/0, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/0, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(2, lwin.list_pos);
 
 	/* Backward. */
-	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(1, lwin.list_pos);
-	goto_search_match(&lwin, /*backward=*/1, /*count=*/1);
+	goto_search_match(&lwin, /*backward=*/1, /*count=*/1, &set_pos_in_curr_view);
 	assert_int_equal(1, lwin.list_pos);
 }
 
@@ -224,6 +240,12 @@ TEST(matching_directories)
 	assert_false(lwin.dir_entry[1].selected);
 
 	cfg.hl_search = 0;
+}
+
+static void
+set_pos_in_curr_view(int pos)
+{
+	curr_view->list_pos = pos;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

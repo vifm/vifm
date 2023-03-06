@@ -42,8 +42,8 @@ static int find_match(view_t *view, int start, int backward);
 
 int
 search_find(view_t *view, const char pattern[], int backward,
-		int stash_selection, int select_matches, int count, goto_search_match_cb cb,
-		int print_errors)
+		int stash_selection, int select_matches, int count,
+		move_cursor_and_redraw_cb cb, int print_errors)
 {
 	int save_msg = 0;
 	int found;
@@ -61,7 +61,7 @@ search_find(view_t *view, const char pattern[], int backward,
 		return -1;
 	}
 
-	found = cb(view, backward, count);
+	found = goto_search_match(view, backward, count, cb);
 
 	if(print_errors)
 	{
@@ -73,7 +73,7 @@ search_find(view_t *view, const char pattern[], int backward,
 
 int
 search_next(view_t *view, int backward, int stash_selection, int select_matches,
-		int count, goto_search_match_cb cb)
+		int count, move_cursor_and_redraw_cb cb)
 {
 	int save_msg = 0;
 	int found;
@@ -94,7 +94,7 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 		}
 	}
 
-	found = cb(view, backward, count);
+	found = goto_search_match(view, backward, count, cb);
 
 	if(found)
 	{
@@ -110,7 +110,8 @@ search_next(view_t *view, int backward, int stash_selection, int select_matches,
 }
 
 int
-goto_search_match(view_t *view, int backward, int count)
+goto_search_match(view_t *view, int backward, int count,
+		move_cursor_and_redraw_cb cb)
 {
 	const int i = find_search_match(view, backward, count);
 	if(i == -1)
@@ -118,12 +119,7 @@ goto_search_match(view_t *view, int backward, int count)
 		return 0;
 	}
 
-	view->list_pos = i;
-
-	/* Redraw the cursor which also might synchronize cursors of two views. */
-	fview_cursor_redraw(view);
-	/* Schedule redraw of the view to highlight search matches. */
-	ui_view_schedule_redraw(view);
+	cb(i);
 
 	return 1;
 }

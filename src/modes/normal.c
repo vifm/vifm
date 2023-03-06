@@ -247,6 +247,7 @@ static void pick_files(view_t *view, int end, keys_info_t *keys_info);
 static void selector_S(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
 static void selector_s(key_info_t key_info, keys_info_t *keys_info);
+static void move_cursor_and_redraw(int pos);
 static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 
 static int last_fast_search_char;
@@ -1690,7 +1691,7 @@ search(key_info_t key_info, int backward)
 {
 	curr_stats.save_msg = search_next(curr_view, backward,
 			/*stash_selection=*/cfg.hl_search, /*select_matches=*/cfg.hl_search,
-			def_count(key_info.count), &goto_search_match);
+			def_count(key_info.count), &move_cursor_and_redraw);
 }
 
 /* Put files. */
@@ -2281,8 +2282,20 @@ int
 modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
 	return search_find(view, pattern, backward, /*stash_selection=*/cfg.hl_search,
-			/*select_matches=*/cfg.hl_search, search_repeat, &goto_search_match,
+			/*select_matches=*/cfg.hl_search, search_repeat, &move_cursor_and_redraw,
 			print_errors);
+}
+
+/* Moves cursor to pos, redraws cursor and schedules redraw of curr_view. */
+static void
+move_cursor_and_redraw(int pos)
+{
+	curr_view->list_pos = pos;
+
+	/* Redraw the cursor which also might synchronize cursors of two views. */
+	fview_cursor_redraw(curr_view);
+	/* Schedule redraw of the view to highlight search matches. */
+	ui_view_schedule_redraw(curr_view);
 }
 
 void
