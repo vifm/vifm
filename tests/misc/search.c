@@ -212,11 +212,13 @@ TEST(view_patterns_are_synchronized)
 TEST(modnorm_find_returns_zero_if_msg_is_not_printed)
 {
 	cfg.hl_search = 1;
-	cfg.inc_search = 0;
+	cfg.wrap_scan = 0;
 
+	lwin.list_pos = 2;
 	modnorm_set_search_count(/*count=*/1);
 	assert_int_equal(0, modnorm_find(&lwin, "dos", /*backward=*/0,
 				/*print_errors=*/1));
+	assert_int_equal(2, lwin.list_pos);
 
 	cfg.hl_search = 0;
 }

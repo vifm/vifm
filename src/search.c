@@ -27,6 +27,8 @@
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
+#include "engine/mode.h"
+#include "modes/modes.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -287,16 +289,19 @@ print_search_result(const view_t *view, int found, int backward)
 {
 	if(view->matches > 0)
 	{
-		if(!cfg.hl_search)
+		/* Print a message in all cases except for 'hlsearch nowrapscan' with no
+		 * matches in non-visual mode to not supersede the "n files selected"
+		 * message for possibly hidden selected files (the message is printed
+		 * automatically). */
+		if(found)
 		{
-			if(found)
-			{
-				print_search_msg(view, backward);
-			}
-			else
-			{
-				print_search_fail_msg(view, backward);
-			}
+			print_search_msg(view, backward);
+			return 1;
+		}
+		else if(!cfg.hl_search || cfg.wrap_scan || vle_mode_is(VISUAL_MODE) ||
+				vle_primary_mode_is(VISUAL_MODE))
+		{
+			print_search_fail_msg(view, backward);
 			return 1;
 		}
 		return 0;

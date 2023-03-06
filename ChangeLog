@@ -126,6 +126,10 @@
 	Don't move cursor on search failure during search with a count.  Patch by
 	filterfalse.
 
+	Specified a few more cases when to show a search message with search
+	highlighting turned on: if found a match, if wrapping is turned on, and in
+	visual mode.  Patch by filterfalse.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
