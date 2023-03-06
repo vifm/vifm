@@ -101,5 +101,81 @@ TEST(hlsearch_is_not_reset_for_invalid_pattern_during_incsearch_in_visual_mode)
 	(void)vle_keys_exec_timed_out(WK_C_c);
 }
 
+TEST(message_for_invalid_pattern)
+{
+	ui_sb_msg("");
+
+	(void)vle_keys_exec_timed_out(WK_SLASH L"*" WK_CR);
+
+	assert_string_equal("Regexp (*) error: Invalid preceding regular expression",
+			ui_sb_last());
+}
+
+TEST(selection_is_dropped_for_hlsearch)
+{
+	cfg.hl_search = 1;
+
+	lwin.dir_entry[0].selected = 1;
+
+	(void)vle_keys_exec_timed_out(WK_SLASH L"dos" WK_CR);
+	assert_false(lwin.dir_entry[0].selected);
+}
+
+TEST(selection_is_not_dropped_for_nohlsearch)
+{
+	cfg.hl_search = 0;
+
+	lwin.dir_entry[0].selected = 1;
+
+	(void)vle_keys_exec_timed_out(WK_SLASH L"dos" WK_CR);
+	assert_true(lwin.dir_entry[0].selected);
+}
+
+TEST(selection_is_not_dropped_in_visual_mode_regardless_of_hlsearch)
+{
+	cfg.hl_search = 1;
+
+	lwin.dir_entry[0].selected = 1;
+
+	(void)vle_keys_exec_timed_out(WK_a WK_v WK_SLASH L"dos" WK_CR);
+	assert_true(lwin.dir_entry[0].selected);
+
+	cfg.hl_search = 0;
+
+	lwin.dir_entry[0].selected = 1;
+
+	(void)vle_keys_exec_timed_out(WK_a WK_v WK_SLASH L"dos" WK_CR);
+	assert_true(lwin.dir_entry[0].selected);
+}
+
+TEST(selection_on_n_with_hlsearch)
+{
+	cfg.hl_search = 1;
+
+	hists_search_save("dos");
+
+	/* Selection IS dropped on the first "n". */
+
+	lwin.dir_entry[0].selected = 1;
+
+	(void)vle_keys_exec_timed_out(WK_n);
+
+	assert_int_equal(1, lwin.list_pos);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	/* Selection IS NOT dropped on the second "n". */
+
+	lwin.dir_entry[0].selected = 1;
+
+	(void)vle_keys_exec_timed_out(WK_n);
+
+	assert_int_equal(2, lwin.list_pos);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
