@@ -2352,6 +2352,12 @@ modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 	return save_msg;
 }
 
+void
+modnorm_set_search_count(int count)
+{
+	search_repeat = count;
+}
+
 /* Processes events from the mouse. */
 static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)

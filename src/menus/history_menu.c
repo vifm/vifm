@@ -24,6 +24,7 @@
 #include "../cfg/config.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
+#include "../modes/normal.h"
 #include "../ui/ui.h"
 #include "../utils/hist.h"
 #include "../utils/string_array.h"
@@ -125,10 +126,12 @@ execute_history_cb(view_t *view, menu_data_t *m)
 			break;
 		case FSEARCHHISTORY:
 			hists_search_save(line);
+			modnorm_set_search_count(/*count=*/1);
 			cmds_dispatch1(line, view, CIT_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
 			hists_search_save(line);
+			modnorm_set_search_count(/*count=*/1);
 			cmds_dispatch1(line, view, CIT_BSEARCH_PATTERN);
 			break;
 		case FILTERHISTORY:
@@ -155,10 +158,20 @@ history_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		CmdLineSubmode submode = CLS_COMMAND;
 		switch((HistoryType)m->extra_data)
 		{
-			case CMDHISTORY:     submode = CLS_COMMAND; break;
-			case FSEARCHHISTORY: submode = CLS_FSEARCH; break;
-			case BSEARCHHISTORY: submode = CLS_BSEARCH; break;
-			case FILTERHISTORY:  submode = CLS_FILTER; break;
+			case CMDHISTORY:
+				submode = CLS_COMMAND;
+				break;
+			case FSEARCHHISTORY:
+				submode = CLS_FSEARCH;
+				modnorm_set_search_count(/*count=*/1);
+				break;
+			case BSEARCHHISTORY:
+				submode = CLS_BSEARCH;
+				modnorm_set_search_count(/*count=*/1);
+				break;
+			case FILTERHISTORY:
+				submode = CLS_FILTER;
+				break;
 
 			case EXPRREGHISTORY:
 			case PROMPTHISTORY:

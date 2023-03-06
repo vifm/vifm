@@ -55,6 +55,7 @@
 #include "int/path_env.h"
 #include "int/vim.h"
 #include "lua/vlua.h"
+#include "modes/normal.h"
 #include "modes/dialogs/attr_dialog.h"
 #include "modes/dialogs/change_dialog.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -5726,6 +5727,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(expanded_com[0] == '/')
 	{
+		modnorm_set_search_count(/*count=*/1);
 		cmds_dispatch1(expanded_com + 1, curr_view, CIT_FSEARCH_PATTERN);
 		cmds_preserve_selection();
 		external = 0;
