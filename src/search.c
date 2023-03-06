@@ -38,7 +38,6 @@
 #include "flist_sel.h"
 
 static int find_and_goto_match(view_t *view, int start, int backward);
-static void print_result(const view_t *view, int found, int backward);
 
 int
 goto_search_match(view_t *view, int backward)
@@ -199,7 +198,7 @@ print_search_result(const view_t *view, int found, int backward)
 		{
 			if(found)
 			{
-				print_result(view, found, backward);
+				print_search_msg(view, backward);
 			}
 			else
 			{
@@ -213,21 +212,6 @@ print_search_result(const view_t *view, int found, int backward)
 	{
 		print_search_fail_msg(view, backward);
 		return 1;
-	}
-}
-
-/* Prints success or error message, determined by the found argument, about
- * search results to a user. */
-static void
-print_result(const view_t *view, int found, int backward)
-{
-	if(found)
-	{
-		print_search_msg(view, backward);
-	}
-	else
-	{
-		print_search_fail_msg(view, backward);
 	}
 }
 
