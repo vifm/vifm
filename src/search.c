@@ -36,6 +36,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "flist_sel.h"
+#include "status.h"
 
 static int find_and_goto_match(view_t *view, int start, int backward);
 
@@ -73,6 +74,49 @@ search_find(view_t *view, const char pattern[], int backward,
 		assert(print_errors && "A fail message shouldn't have been printed.");
 		print_search_fail_msg(view, backward);
 	}
+
+	return save_msg;
+}
+
+int
+search_next(view_t *view, int backward, int count, goto_search_match_cb cb)
+{
+	int save_msg = 0;
+	int found;
+
+	if(hist_is_empty(&curr_stats.search_hist))
+	{
+		return save_msg;
+	}
+
+	if(view->matches == 0)
+	{
+		const char *const pattern = hists_search_last();
+		save_msg = find_pattern(view, pattern, /*print_errors=*/0);
+	}
+
+	if(save_msg == -1)
+	{
+		print_search_fail_msg(view, backward);
+		save_msg = 1;
+		return save_msg;
+	}
+
+	found = 0;
+	while(count-- > 0)
+	{
+		found += cb(view, backward);
+	}
+
+	if(found)
+	{
+		print_search_next_msg(view, backward);
+	}
+	else
+	{
+		print_search_fail_msg(view, backward);
+	}
+	save_msg = 1;
 
 	return save_msg;
 }

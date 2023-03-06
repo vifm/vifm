@@ -989,50 +989,11 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 search(key_info_t key_info, int backward)
 {
-	/* TODO: extract common part of this function and normal.c:search(). */
-
-	int found;
-
-	if(hist_is_empty(&curr_stats.search_hist))
-	{
-		return;
-	}
-
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	if(view->matches == 0)
-	{
-		const int hls = cfg.hl_search;
-		cfg.hl_search = 0;
-		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = find_pattern(curr_view, pattern, /*print_errors=*/0);
-		cfg.hl_search = hls;
-	}
-
-	if(curr_stats.save_msg == -1)
-	{
-		print_search_fail_msg(curr_view, backward);
-		curr_stats.save_msg = 1;
-		return;
-	}
-
-	found = 0;
-	while(key_info.count-- > 0)
-	{
-		found += find_update(view, backward);
-	}
-
-	if(found)
-	{
-		print_search_next_msg(view, backward);
-	}
-	else
-	{
-		print_search_fail_msg(view, backward);
-	}
-
-	curr_stats.save_msg = 1;
+	const int hls = cfg.hl_search;
+	cfg.hl_search = 0;
+	curr_stats.save_msg = search_next(curr_view, backward,
+			def_count(key_info.count), &find_update);
+	cfg.hl_search = hls;
 }
 
 /* Runs external editor to get command-line command and then executes it. */

@@ -35,6 +35,13 @@ typedef int (*goto_search_match_cb)(struct view_t *view, int backward);
 int search_find(struct view_t *view, const char pattern[], int backward,
 		int count, goto_search_match_cb cb, int print_errors);
 
+/* Moves cursor to count's match using cb and shows a message.  Searches for
+ * the last pattern from the search history, if there are no matches in view.
+ * Returns non-zero when a message was printed to a user, otherwise zero is
+ * returned. */
+int search_next(struct view_t *view, int backward, int count,
+		goto_search_match_cb cb);
+
 /* print_errors means user needs feedback, otherwise it can be provided later
  * using one of print_*_msg() functions.  Returns non-zero when a message was
  * printed (or would have been printed with print_errors set) to a user,
