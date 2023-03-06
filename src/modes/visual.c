@@ -998,27 +998,36 @@ search(key_info_t key_info, int backward, int interactive)
 		return;
 	}
 
-	if(view->matches == 0)
-	{
-		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = modvis_find(view, pattern, backward, interactive);
-		return;
-	}
-
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
-	found = 0;
-	while(key_info.count-- > 0)
-		found += find_update(view, backward) != 0;
 
-	if(!found)
+	if(view->matches == 0)
 	{
-		print_search_fail_msg(view, backward);
-		curr_stats.save_msg = 1;
-		return;
+		search_repeat = key_info.count;
+		const int old_pos = view->list_pos;
+		const char *const pattern = hists_search_last();
+		curr_stats.save_msg = modvis_find(view, pattern, backward, interactive);
+		found = view->matches > 0
+		     && (view->list_pos != old_pos
+		     || (cfg.wrap_scan && key_info.count == view->matches));
+		key_info.count = search_repeat;
+	}
+	else
+	{
+		found = 0;
+		while(key_info.count-- > 0)
+			found += find_update(view, backward) != 0;
 	}
 
-	print_search_next_msg(view, backward);
+	if(found)
+	{
+		print_search_next_msg(view, backward);
+	}
+	else
+	{
+		print_search_fail_msg(view, backward);
+	}
+
 	curr_stats.save_msg = 1;
 }
 
