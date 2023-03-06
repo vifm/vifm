@@ -234,5 +234,25 @@ TEST(message_is_shown_after_incsearch_with_hlsearch_in_visual_mode)
 	assert_string_starts_with("2 of 6 matching files", ui_sb_last());
 }
 
+TEST(selection_isnt_dropped_on_empty_input_during_incsearch_with_hls_in_vismode)
+{
+	cfg.hl_search = 1;
+	cfg.inc_search = 1;
+
+	(void)vle_keys_exec_timed_out(WK_v WK_SLASH);
+
+	assert_int_equal(0, lwin.list_pos);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	(void)vle_keys_exec_timed_out(L"." WK_C_u);
+
+	assert_int_equal(0, lwin.list_pos);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

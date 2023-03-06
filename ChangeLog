@@ -216,6 +216,9 @@
 	Fixed resetting 'hlsearch' during incremental search in visual mode.  Patch
 	by filterfalse.
 
+	Fixed dropping selected files on empty input during incremental search in
+	visual mode.  Patch by filterfalse.
+
 	Fixed resetting count to 1 during incremental search in normal mode.  Patch
 	by filterfalse.
 

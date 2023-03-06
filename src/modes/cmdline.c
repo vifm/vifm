@@ -562,7 +562,7 @@ handle_empty_input(void)
 	{
 		(void)menus_search("", input_stat.menu, 0);
 	}
-	else if(cfg.hl_search)
+	else if(cfg.hl_search && input_stat.prev_mode != VISUAL_MODE)
 	{
 		flist_sel_stash(curr_view);
 	}
