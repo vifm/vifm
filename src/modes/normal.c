@@ -2318,38 +2318,8 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 int
 modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
-	int i;
-	int save_msg;
-	int found;
-
-	save_msg = find_pattern(view, pattern, /*print_errors=*/0);
-
-	if(!print_errors && save_msg < 0)
-	{
-		/* If we're not printing messages, we might be interested in broken
-		 * pattern. */
-		return -1;
-	}
-
-	if(save_msg != -1)
-	{
-		found = 0;
-		for(i = 0; i < search_repeat; ++i)
-		{
-			found += goto_search_match(view, backward);
-		}
-		if(print_errors)
-		{
-			save_msg = print_search_result(view, found, backward);
-		}
-	}
-	else
-	{
-		assert(print_errors && "A fail message shouldn't have been printed.");
-		print_search_fail_msg(view, backward);
-	}
-
-	return save_msg;
+	return search_find(view, pattern, backward, search_repeat,
+			&goto_search_match, print_errors);
 }
 
 void

@@ -1471,41 +1471,13 @@ modvis_update(void)
 int
 modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
-	int i;
-	int result;
+	int save_msg;
 	const int hls = cfg.hl_search;
-	int found;
-
 	cfg.hl_search = 0;
-	result = find_pattern(view, pattern, /*print_errors=*/0);
+	save_msg = search_find(view, pattern, backward, search_repeat,
+			&find_update, print_errors);
 	cfg.hl_search = hls;
-
-	if(!print_errors && result < 0)
-	{
-		/* If we're not printing messages, we might be interested in broken
-		 * pattern. */
-		return -1;
-	}
-
-	if(result != -1)
-	{
-		found = 0;
-		for(i = 0; i < search_repeat; ++i)
-		{
-			found += find_update(view, backward);
-		}
-		if(print_errors)
-		{
-			result = print_search_result(view, found, backward);
-		}
-	}
-	else
-	{
-		assert(print_errors && "A fail message shouldn't have been printed.");
-		print_search_fail_msg(view, backward);
-	}
-
-	return result;
+	return save_msg;
 }
 
 /* returns non-zero when it finds something */

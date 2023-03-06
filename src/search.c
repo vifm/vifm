@@ -40,6 +40,44 @@
 static int find_and_goto_match(view_t *view, int start, int backward);
 
 int
+search_find(view_t *view, const char pattern[], int backward,
+		int count, goto_search_match_cb cb, int print_errors)
+{
+	int i;
+	int save_msg;
+	int found;
+
+	save_msg = find_pattern(view, pattern, /*print_errors=*/0);
+
+	if(!print_errors && save_msg < 0)
+	{
+		/* If we're not printing messages, we might be interested in broken
+		 * pattern. */
+		return -1;
+	}
+
+	if(save_msg != -1)
+	{
+		found = 0;
+		for(i = 0; i < count; ++i)
+		{
+			found += cb(view, backward);
+		}
+		if(print_errors)
+		{
+			save_msg = print_search_result(view, found, backward);
+		}
+	}
+	else
+	{
+		assert(print_errors && "A fail message shouldn't have been printed.");
+		print_search_fail_msg(view, backward);
+	}
+
+	return save_msg;
+}
+
+int
 goto_search_match(view_t *view, int backward)
 {
 	const int wrap_start = backward ? view->list_rows : -1;

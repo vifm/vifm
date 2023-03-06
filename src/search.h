@@ -24,6 +24,17 @@ struct view_t;
 
 /* Search and navigation functions. */
 
+/* Callback for moving cursor to a search match and redrawing view. */
+typedef int (*goto_search_match_cb)(struct view_t *view, int backward);
+
+/* Searches pattern in view, moves cursor to count's match using cb and
+ * optionally (if print_errors is set) shows a message.  Returns non-zero when
+ * a message was printed (or would have been printed with print_errors set) to
+ * a user, otherwise zero is returned.  Returned value is negative for
+ * invalid pattern. */
+int search_find(struct view_t *view, const char pattern[], int backward,
+		int count, goto_search_match_cb cb, int print_errors);
+
 /* print_errors means user needs feedback, otherwise it can be provided later
  * using one of print_*_msg() functions.  Returns non-zero when a message was
  * printed (or would have been printed with print_errors set) to a user,
