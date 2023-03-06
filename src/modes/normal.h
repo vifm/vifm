@@ -57,7 +57,7 @@ void modnorm_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
  * print_errors isn't requested can return -1 to indicate issues with the
  * pattern. */
 int modnorm_find(struct view_t *view, const char pattern[], int backward,
-		int print_errors);
+		int print_errors, int *found);
 
 /* Sets count for a search. */
 void modnorm_set_search_count(int count);

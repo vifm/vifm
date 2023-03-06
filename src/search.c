@@ -45,13 +45,13 @@ static int find_match(view_t *view, int start, int backward);
 int
 search_find(view_t *view, const char pattern[], int backward,
 		int stash_selection, int select_matches, int count,
-		move_cursor_and_redraw_cb cb, int print_errors)
+		move_cursor_and_redraw_cb cb, int print_errors, int *found)
 {
 	int save_msg = 0;
-	int found;
 
 	if(search_pattern(view, pattern, stash_selection, select_matches) != 0)
 	{
+		*found = 0;
 		if(print_errors)
 		{
 			print_search_fail_msg(view, backward);
@@ -63,11 +63,11 @@ search_find(view_t *view, const char pattern[], int backward,
 		return -1;
 	}
 
-	found = goto_search_match(view, backward, count, cb);
+	*found = goto_search_match(view, backward, count, cb);
 
 	if(print_errors)
 	{
-		save_msg = print_search_result(view, found, backward, &print_search_msg);
+		save_msg = print_search_result(view, *found, backward, &print_search_msg);
 	}
 
 	return save_msg;

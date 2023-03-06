@@ -2279,11 +2279,12 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 int
-modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
+modnorm_find(view_t *view, const char pattern[], int backward, int print_errors,
+		int *found)
 {
 	return search_find(view, pattern, backward, /*stash_selection=*/cfg.hl_search,
 			/*select_matches=*/cfg.hl_search, search_repeat, &set_pos_in_curr_view,
-			print_errors);
+			print_errors, found);
 }
 
 /* Moves cursor to pos, redraws cursor and schedules redraw of curr_view. */

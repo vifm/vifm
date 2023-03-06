@@ -50,7 +50,7 @@ void modvis_update(void);
  * print_errors isn't requested can return -1 to indicate issues with the
  * pattern. */
 int modvis_find(struct view_t *view, const char pattern[], int backward,
-		int print_errors);
+		int print_errors, int *found);
 
 /* Formats concise description of current visual mode state.  Returns pointer
  * to a statically allocated buffer. */

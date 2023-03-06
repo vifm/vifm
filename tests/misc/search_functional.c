@@ -209,5 +209,30 @@ TEST(failed_search_with_a_count_does_not_move_cursor)
 	assert_int_equal(0, lwin.list_pos);
 }
 
+TEST(correct_message_and_cursor_position_after_failed_incsearch_with_a_count)
+{
+	cfg.wrap_scan = 0;
+	cfg.inc_search = 1;
+
+	ui_sb_msg("");
+
+	(void)vle_keys_exec_timed_out(L"333" WK_SLASH L"." WK_CR);
+
+	assert_string_equal("Search hit BOTTOM without match for: .", ui_sb_last());
+	assert_int_equal(0, lwin.list_pos);
+}
+
+TEST(message_is_shown_after_incsearch_with_hlsearch_in_visual_mode)
+{
+	cfg.hl_search = 1;
+	cfg.inc_search = 1;
+
+	ui_sb_msg("");
+
+	(void)vle_keys_exec_timed_out(WK_v WK_SLASH L"." WK_CR);
+
+	assert_string_starts_with("2 of 6 matching files", ui_sb_last());
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

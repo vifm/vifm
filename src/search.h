@@ -30,13 +30,14 @@ typedef void (*move_cursor_and_redraw_cb)(int pos);
 
 /* Searches pattern in view, moves cursor to count's match using cb and
  * optionally (if print_errors is set) shows a message.  stash_selection and
- * select_matches are passed to search_pattern().  Returns non-zero when a
+ * select_matches are passed to search_pattern().  Sets *found to non-zero if
+ * pattern was found, otherwise it's assigned zero.  Returns non-zero when a
  * message was printed (or would have been printed with print_errors set) to a
  * user, otherwise zero is returned.  Returned value is negative for invalid
  * pattern. */
 int search_find(struct view_t *view, const char pattern[], int backward,
 		int stash_selection, int select_matches, int count,
-		move_cursor_and_redraw_cb cb, int print_errors);
+		move_cursor_and_redraw_cb cb, int print_errors, int *found);
 
 /* Moves cursor to count's match using cb and shows a message.  Searches for
  * the last pattern from the search history, if there are no matches in view.

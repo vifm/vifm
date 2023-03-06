@@ -143,9 +143,10 @@ typedef struct
 	wchar_t *line_buf;   /* Content of line before using history. */
 
 	/* For search prompt. */
-	int search_mode; /* If it's a search prompt. */
-	int old_top;     /* Saved top for interactive searching. */
-	int old_pos;     /* Saved position for interactive searching. */
+	int search_mode;        /* If it's a search prompt. */
+	int search_match_found; /* Reflects interactive search success/failure. */
+	int old_top;            /* Saved top for interactive searching. */
+	int old_pos;            /* Saved position for interactive searching. */
 
 	/* Other state. */
 	int line_edited;         /* Cache for whether input line changed flag. */
@@ -590,17 +591,19 @@ handle_nonempty_input(void)
 
 		case CLS_BSEARCH: backward = 1; /* Fall through. */
 		case CLS_FSEARCH:
-			result = modnorm_find(curr_view, mbinput, backward, 0);
+			result = modnorm_find(curr_view, mbinput, backward, /*print_errors=*/0,
+					&input_stat.search_match_found);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_VBSEARCH: backward = 1; /* Fall through. */
 		case CLS_VFSEARCH:
-			result = modvis_find(curr_view, mbinput, backward, 0);
+			result = modvis_find(curr_view, mbinput, backward, /*print_errors=*/0,
+					&input_stat.search_match_found);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = menus_search(mbinput, input_stat.menu, 0);
+			result = menus_search(mbinput, input_stat.menu, /*print_errors=*/0);
 			update_state(result, menus_search_matched(input_stat.menu));
 			break;
 		case CLS_FILTER:
@@ -886,6 +889,7 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 	stat->reverse_completion = 0;
 	stat->complete = complete;
 	stat->search_mode = 0;
+	stat->search_match_found = 0;
 	stat->dot_pos = -1;
 	stat->line_edited = 0;
 	stat->enter_mapping_state = vle_keys_mapping_state();
@@ -1683,13 +1687,9 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		}
 		else
 		{
-			/* In case of successful search and 'hlsearch' option set, a message like
-			* "n files selected" is printed automatically. */
-			if(curr_view->matches == 0 || !cfg.hl_search)
-			{
-				print_search_msg(curr_view, is_backward_search(sub_mode));
-				curr_stats.save_msg = 1;
-			}
+			curr_stats.save_msg = print_search_result(curr_view,
+					input_stat.search_match_found, is_backward_search(sub_mode),
+					&print_search_msg);
 		}
 	}
 
