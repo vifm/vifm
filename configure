@@ -7004,6 +7004,13 @@ else
   as_fn_error $? "mkdir() function not found." "$LINENO" 5
 fi
 
+ac_fn_c_check_func "$LINENO" "mkstemp" "ac_cv_func_mkstemp"
+if test "x$ac_cv_func_mkstemp" = xyes; then :
+
+else
+  as_fn_error $? "mkstemp() function not found." "$LINENO" 5
+fi
+
 ac_fn_c_check_func "$LINENO" "opendir" "ac_cv_func_opendir"
 if test "x$ac_cv_func_opendir" = xyes; then :
 
