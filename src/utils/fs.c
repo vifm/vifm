@@ -799,6 +799,26 @@ restore_cwd(char saved_cwd[])
 	}
 }
 
+FILE *
+make_tmp_file(char path[], mode_t mode, int auto_delete)
+{
+	int fd = create_unique_file(path, mode, auto_delete);
+	if(fd == -1)
+	{
+		return NULL;
+	}
+
+	FILE *file = fdopen(fd, "w+b");
+	if(file == NULL)
+	{
+		int error = errno;
+		(void)close(fd);
+		errno = error;
+	}
+
+	return file;
+}
+
 #ifndef _WIN32
 
 /* Checks if path (dereferenced for a symbolic link) is an existing directory.

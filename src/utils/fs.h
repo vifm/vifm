@@ -24,6 +24,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint32_t uint64_t */
+#include <stdio.h> /* FILE */
 
 /* Functions to deal with file system objects */
 
@@ -211,6 +212,12 @@ char * save_cwd(void);
 /* Restores previously remembered working directory via save_cwd().  If nothing
  * was remembered, does nothing. */
 void restore_cwd(char saved_cwd[]);
+
+/* Creates a unique file by replacing trailing "XXXXXX" in the path with some
+ * unique sequence.  Updates the path in place.  Returns file descriptor on
+ * success or -1 on failure (including when there is no trailing "XXXXXX").
+ * errno is meaningful on failure. */
+FILE * make_tmp_file(char path[], mode_t mode, int auto_delete);
 
 #ifdef _WIN32
 

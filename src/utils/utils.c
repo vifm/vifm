@@ -33,7 +33,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isalnum() isalpha() iscntrl() */
-#include <errno.h> /* errno */
+#include <errno.h> /* EEXIST EINVAL errno */
 #include <math.h> /* modf() pow() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
@@ -679,6 +679,43 @@ unichar_isprint(wchar_t ucs)
 	};
 
 	return !unichar_bisearch(ucs, non_printing, ARRAY_LEN(non_printing) - 1);
+}
+
+int
+create_unique_file(char path[], mode_t mode, int auto_delete)
+{
+	/* Probably way too many, but glibc does this much. */
+	enum { MAX_ATTEMPTS = 62*62*62 };
+
+	if(!ends_with(path, "XXXXXX"))
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	const char *char_set =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	char *suffix = &path[strlen(path) - 6];
+
+	int attempt;
+	for(attempt = 0; attempt < MAX_ATTEMPTS; ++attempt)
+	{
+		int i;
+		for(i = 0; i < 6; ++i)
+		{
+			suffix[i] = char_set[vifm_rand(0, 61)];
+		}
+
+		int fd = create_new_file(path, mode, auto_delete);
+		if(fd != -1 || errno != EEXIST)
+		{
+			return fd;
+		}
+	}
+
+	/* That's what glibc returns in this case. */
+	errno = EEXIST;
+	return -1;
 }
 
 void

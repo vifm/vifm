@@ -349,6 +349,11 @@ int unichar_bisearch(wchar_t ucs, const interval_t table[], int max);
  * otherwise zero is returned. */
 int unichar_isprint(wchar_t ucs);
 
+/* Creates a temporary file by replacing trailing "XXXXXX" in the path with some
+ * unique sequence.  Updates the path in place.  Returns file descriptor on
+ * success or -1 on failure.  errno is meaningful on failure. */
+int create_unique_file(char path[], mode_t mode, int auto_delete);
+
 /* Initializes random number generator with the seed. */
 void vifm_srand(unsigned int seed);
 

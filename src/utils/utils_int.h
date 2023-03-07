@@ -29,6 +29,10 @@ int run_in_shell_no_cls(char command[], ShellRequester by);
  * Don't pass pipe for input, it can cause deadlock. */
 int run_with_input(char command[], FILE *input, ShellRequester by);
 
+/* Creates a file only if it doesn't exist yet.  Returns file descriptor on
+ * success or -1 on failure.  errno is meaningful on failure. */
+int create_new_file(const char path[], mode_t mode, int auto_delete);
+
 #endif /* VIFM__UTILS__UTILS_INT_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

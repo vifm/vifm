@@ -49,7 +49,6 @@
 #define os_rmdir rmdir
 #define os_stat stat
 #define os_system system
-#define os_tmpfile tmpfile
 #define os_getcwd getcwd
 
 int os_fdatasync(int fd);
@@ -61,10 +60,6 @@ int os_fdatasync(int fd);
 
 /* Not straight forward for Windows and not very important. */
 #define os_lstat os_stat
-
-/* Windows has tmpfile(), but (prepare yourself) it requires administrative
- * privileges... */
-#define os_tmpfile win_tmpfile
 
 struct stat;
 
@@ -102,6 +97,18 @@ int os_system(const char command[]);
 char * os_getcwd(char buf[], size_t size);
 
 #endif
+
+/* *nix systems generate predictable names and can open an already existing
+ * file, which can be abused to trick the application into opening an existing
+ * file and bypass security measures.  mkstemp() isn't very helpful because of
+ * umask() which doesn't play nice with threads...
+ *
+ * Windows has tmpfile(), but (prepare yourself) it requires administrative
+ * privileges on modern versions...
+ *
+ * Hence reimplementation which should be reasonably safe and uniform across
+ * supported platforms. */
+FILE * os_tmpfile(void);
 
 #endif /* VIFM__COMPAT__OS_H__ */
 
