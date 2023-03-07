@@ -130,9 +130,6 @@ AC_CHECK_FUNC([close], [], [AC_MSG_ERROR([close() function not found.])])
 AC_CHECK_FUNC([closedir], [], [AC_MSG_ERROR([closedir() function not found.])])
 AC_CHECK_FUNC([dup], [], [AC_MSG_ERROR([dup() function not found.])])
 AC_CHECK_FUNC([dup2], [], [AC_MSG_ERROR([dup2() function not found.])])
-if test -n "$HAVE_MNTENT_H" ; then
-    AC_CHECK_FUNC([endmntent], [], [AC_MSG_ERROR([endmntent() function not found.])])
-fi
 AC_CHECK_FUNC([execve], [], [AC_MSG_ERROR([execve() function not found.])])
 AC_CHECK_FUNC([execvp], [], [AC_MSG_ERROR([execvp() function not found.])])
 AC_CHECK_FUNC([exit], [], [AC_MSG_ERROR([exit() function not found.])])
@@ -147,7 +144,6 @@ AC_CHECK_FUNC([fprintf], [], [AC_MSG_ERROR([fprintf() function not found.])])
 AC_CHECK_FUNC([fputc], [], [AC_MSG_ERROR([fputc() function not found.])])
 AC_CHECK_FUNC([fputs], [], [AC_MSG_ERROR([fputs() function not found.])])
 AC_CHECK_FUNC([free], [], [AC_MSG_ERROR([free() function not found.])])
-AC_CHECK_FUNCS([futimens])
 AC_CHECK_FUNC([fwrite], [], [AC_MSG_ERROR([fwrite() function not found.])])
 AC_CHECK_FUNC([getcwd], [], [AC_MSG_ERROR([getcwd() function not found.])])
 AC_CHECK_FUNC([getenv], [], [AC_MSG_ERROR([getenv() function not found.])])
@@ -156,9 +152,6 @@ AC_CHECK_FUNC([getgrent], [], [AC_MSG_ERROR([getgrent() function not found.])])
 AC_CHECK_FUNC([getgrgid], [], [AC_MSG_ERROR([getgrgid() function not found.])])
 AC_CHECK_FUNC([getgrgid_r], [], [AC_MSG_ERROR([getgrgid_r() function not found.])])
 AC_CHECK_FUNC([getgrnam], [], [AC_MSG_ERROR([getgrnam() function not found.])])
-if test -n "$HAVE_MNTENT_H" ; then
-    AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
-fi
 AC_CHECK_FUNC([getpid], [], [AC_MSG_ERROR([getpid() function not found.])])
 AC_CHECK_FUNC([getppid], [], [AC_MSG_ERROR([getppid() function not found.])])
 AC_CHECK_FUNC([getpwent], [], [AC_MSG_ERROR([getpwent() function not found.])])
@@ -194,7 +187,6 @@ AC_CHECK_FUNC([qsort], [], [AC_MSG_ERROR([qsort() function not found.])])
 AC_CHECK_FUNC([read], [], [AC_MSG_ERROR([read() function not found.])])
 AC_CHECK_FUNC([readlink], [], [AC_MSG_ERROR([readlink() function not found.])])
 AC_CHECK_FUNC([realloc], [], [AC_MSG_ERROR([realloc() function not found.])])
-AC_CHECK_FUNCS([reallocarray])
 AC_CHECK_FUNC([realpath], [], [AC_MSG_ERROR([realpath() function not found.])])
 AC_CHECK_FUNC([rename], [], [AC_MSG_ERROR([rename() function not found.])])
 AC_CHECK_FUNC([rmdir], [], [AC_MSG_ERROR([rmdir() function not found.])])
@@ -202,9 +194,6 @@ AC_CHECK_FUNC([select], [], [AC_MSG_ERROR([select() function not found.])])
 AC_CHECK_FUNC([setenv], [], [AC_MSG_ERROR([setenv() function not found.])])
 AC_CHECK_FUNC([setgrent], [], [AC_MSG_ERROR([setgrent() function not found.])])
 AC_CHECK_FUNC([setlocale], [], [AC_MSG_ERROR([setlocale() function not found.])])
-if test -n "$HAVE_MNTENT_H" ; then
-    AC_CHECK_FUNC([setmntent], [], [AC_MSG_ERROR([setmntent() function not found.])])
-fi
 AC_CHECK_FUNC([setpgid], [], [AC_MSG_ERROR([setpgid() function not found.])])
 AC_CHECK_FUNC([setpwent], [], [AC_MSG_ERROR([setpwent() function not found.])])
 AC_CHECK_FUNC([setsid], [], [AC_MSG_ERROR([setsid() function not found.])])
@@ -261,6 +250,15 @@ AC_CHECK_FUNC([wcstol], [], [AC_MSG_ERROR([wcstol() function not found.])])
 AC_CHECK_FUNC([wcstombs], [], [AC_MSG_ERROR([wcstombs() function not found.])])
 AC_CHECK_FUNC([wcswidth], [], [AC_MSG_ERROR([wcswidth() function not found.])])
 AC_CHECK_FUNC([wcwidth], [], [AC_MSG_ERROR([wcwidth() function not found.])])
+
+AC_CHECK_FUNCS([futimens])
+AC_CHECK_FUNCS([reallocarray])
+
+if test -n "$HAVE_MNTENT_H" ; then
+    AC_CHECK_FUNC([endmntent], [], [AC_MSG_ERROR([endmntent() function not found.])])
+    AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
+    AC_CHECK_FUNC([setmntent], [], [AC_MSG_ERROR([setmntent() function not found.])])
+fi
 
 AC_CHECK_DECLS([_PC_CASE_SENSITIVE], [], [], [[#include <unistd.h>]])
 

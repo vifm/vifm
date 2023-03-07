@@ -6696,15 +6696,6 @@ else
   as_fn_error $? "dup2() function not found." "$LINENO" 5
 fi
 
-if test -n "$HAVE_MNTENT_H" ; then
-    ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
-if test "x$ac_cv_func_endmntent" = xyes; then :
-
-else
-  as_fn_error $? "endmntent() function not found." "$LINENO" 5
-fi
-
-fi
 ac_fn_c_check_func "$LINENO" "execve" "ac_cv_func_execve"
 if test "x$ac_cv_func_execve" = xyes; then :
 
@@ -6803,17 +6794,6 @@ else
   as_fn_error $? "free() function not found." "$LINENO" 5
 fi
 
-for ac_func in futimens
-do :
-  ac_fn_c_check_func "$LINENO" "futimens" "ac_cv_func_futimens"
-if test "x$ac_cv_func_futimens" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_FUTIMENS 1
-_ACEOF
-
-fi
-done
-
 ac_fn_c_check_func "$LINENO" "fwrite" "ac_cv_func_fwrite"
 if test "x$ac_cv_func_fwrite" = xyes; then :
 
@@ -6870,15 +6850,6 @@ else
   as_fn_error $? "getgrnam() function not found." "$LINENO" 5
 fi
 
-if test -n "$HAVE_MNTENT_H" ; then
-    ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
-if test "x$ac_cv_func_getmntent" = xyes; then :
-
-else
-  as_fn_error $? "getmntent() function not found." "$LINENO" 5
-fi
-
-fi
 ac_fn_c_check_func "$LINENO" "getpid" "ac_cv_func_getpid"
 if test "x$ac_cv_func_getpid" = xyes; then :
 
@@ -7124,17 +7095,6 @@ else
   as_fn_error $? "realloc() function not found." "$LINENO" 5
 fi
 
-for ac_func in reallocarray
-do :
-  ac_fn_c_check_func "$LINENO" "reallocarray" "ac_cv_func_reallocarray"
-if test "x$ac_cv_func_reallocarray" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_REALLOCARRAY 1
-_ACEOF
-
-fi
-done
-
 ac_fn_c_check_func "$LINENO" "realpath" "ac_cv_func_realpath"
 if test "x$ac_cv_func_realpath" = xyes; then :
 
@@ -7184,15 +7144,6 @@ else
   as_fn_error $? "setlocale() function not found." "$LINENO" 5
 fi
 
-if test -n "$HAVE_MNTENT_H" ; then
-    ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
-if test "x$ac_cv_func_setmntent" = xyes; then :
-
-else
-  as_fn_error $? "setmntent() function not found." "$LINENO" 5
-fi
-
-fi
 ac_fn_c_check_func "$LINENO" "setpgid" "ac_cv_func_setpgid"
 if test "x$ac_cv_func_setpgid" = xyes; then :
 
@@ -7585,6 +7536,53 @@ else
   as_fn_error $? "wcwidth() function not found." "$LINENO" 5
 fi
 
+
+for ac_func in futimens
+do :
+  ac_fn_c_check_func "$LINENO" "futimens" "ac_cv_func_futimens"
+if test "x$ac_cv_func_futimens" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FUTIMENS 1
+_ACEOF
+
+fi
+done
+
+for ac_func in reallocarray
+do :
+  ac_fn_c_check_func "$LINENO" "reallocarray" "ac_cv_func_reallocarray"
+if test "x$ac_cv_func_reallocarray" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_REALLOCARRAY 1
+_ACEOF
+
+fi
+done
+
+
+if test -n "$HAVE_MNTENT_H" ; then
+    ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
+if test "x$ac_cv_func_endmntent" = xyes; then :
+
+else
+  as_fn_error $? "endmntent() function not found." "$LINENO" 5
+fi
+
+    ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
+if test "x$ac_cv_func_getmntent" = xyes; then :
+
+else
+  as_fn_error $? "getmntent() function not found." "$LINENO" 5
+fi
+
+    ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
+if test "x$ac_cv_func_setmntent" = xyes; then :
+
+else
+  as_fn_error $? "setmntent() function not found." "$LINENO" 5
+fi
+
+fi
 
 ac_fn_c_check_decl "$LINENO" "_PC_CASE_SENSITIVE" "ac_cv_have_decl__PC_CASE_SENSITIVE" "#include <unistd.h>
 "
