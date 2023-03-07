@@ -185,6 +185,7 @@ AC_CHECK_FUNC([popen], [], [AC_MSG_ERROR([popen() function not found.])])
 AC_CHECK_FUNC([printf], [], [AC_MSG_ERROR([printf() function not found.])])
 AC_CHECK_FUNC([puts], [], [AC_MSG_ERROR([puts() function not found.])])
 AC_CHECK_FUNC([qsort], [], [AC_MSG_ERROR([qsort() function not found.])])
+AC_CHECK_FUNC([rand], [], [AC_MSG_ERROR([rand() function not found.])])
 AC_CHECK_FUNC([read], [], [AC_MSG_ERROR([read() function not found.])])
 AC_CHECK_FUNC([readlink], [], [AC_MSG_ERROR([readlink() function not found.])])
 AC_CHECK_FUNC([realloc], [], [AC_MSG_ERROR([realloc() function not found.])])
@@ -205,6 +206,7 @@ AC_CHECK_FUNC([sigemptyset], [], [AC_MSG_ERROR([sigemptyset() function not found
 AC_CHECK_FUNC([signal], [], [AC_MSG_ERROR([signal() function not found.])])
 AC_CHECK_FUNC([snprintf], [], [AC_MSG_ERROR([snprintf() function not found.])])
 AC_CHECK_FUNC([sprintf], [], [AC_MSG_ERROR([sprintf() function not found.])])
+AC_CHECK_FUNC([srand], [], [AC_MSG_ERROR([srand() function not found.])])
 AC_CHECK_FUNC([strcasecmp], [], [AC_MSG_ERROR([strcasecmp() function not found.])])
 AC_CHECK_FUNC([strcasestr], [AC_DEFINE([HAVE_STRCASESTR], [1], [strcasestr() is available.])], [])
 AC_CHECK_FUNC([strcat], [], [AC_MSG_ERROR([strcat() function not found.])])
@@ -253,6 +255,7 @@ AC_CHECK_FUNC([wcswidth], [], [AC_MSG_ERROR([wcswidth() function not found.])])
 AC_CHECK_FUNC([wcwidth], [], [AC_MSG_ERROR([wcwidth() function not found.])])
 
 AC_CHECK_FUNCS([futimens])
+AC_CHECK_FUNCS([random srandom])
 AC_CHECK_FUNCS([reallocarray])
 
 if test -n "$HAVE_MNTENT_H" ; then

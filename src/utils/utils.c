@@ -31,12 +31,14 @@
 #include <sys/types.h> /* pid_t */
 #include <unistd.h>
 
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isalnum() isalpha() iscntrl() */
 #include <errno.h> /* errno */
 #include <math.h> /* modf() pow() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() malloc() qsort() */
+#include <stdlib.h> /* RAND_MAX free() malloc() qsort() rand() random() srand()
+                       srandom() */
 #include <string.h> /* memcpy() strdup() strchr() strlen() strpbrk() strtol() */
 #include <time.h> /* tm localtime() strftime() */
 #include <wchar.h> /* wcwidth() */
@@ -64,6 +66,11 @@
 #include "str.h"
 #include "string_array.h"
 #include "utf8.h"
+
+/* Prefer random() over rand() because the former is non-linear. */
+#if defined(HAVE_RANDOM) && defined(HAVE_SRANDOM)
+# define USE_POSIX_RANDOM
+#endif
 
 static void show_progress_cb(const void *descr);
 static const char ** get_size_suffixes(void);
@@ -1061,6 +1068,29 @@ posix_like_escape(const char string[], int type)
 	}
 	*dup = '\0';
 	return ret;
+}
+
+void
+vifm_srand(unsigned int seed)
+{
+#ifdef USE_POSIX_RANDOM
+	srandom(seed);
+#else
+	srand(seed);
+#endif
+}
+
+int
+vifm_rand(int min, int max)
+{
+	assert(min >= 0 && max >= 0 && min <= max && "Invalid vifm_rand() range.");
+
+#ifdef USE_POSIX_RANDOM
+	double value = random()/(0x7FFFFFFF + 1.0);
+#else
+	double value = rand()/(RAND_MAX + 1.0);
+#endif
+	return min + value*(max - min + 1);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

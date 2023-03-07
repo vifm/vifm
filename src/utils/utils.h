@@ -349,6 +349,12 @@ int unichar_bisearch(wchar_t ucs, const interval_t table[], int max);
  * otherwise zero is returned. */
 int unichar_isprint(wchar_t ucs);
 
+/* Initializes random number generator with the seed. */
+void vifm_srand(unsigned int seed);
+
+/* Produces a random number in the ranage [min; max].  Returns the number. */
+int vifm_rand(int min, int max);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

@@ -7081,6 +7081,13 @@ else
   as_fn_error $? "qsort() function not found." "$LINENO" 5
 fi
 
+ac_fn_c_check_func "$LINENO" "rand" "ac_cv_func_rand"
+if test "x$ac_cv_func_rand" = xyes; then :
+
+else
+  as_fn_error $? "rand() function not found." "$LINENO" 5
+fi
+
 ac_fn_c_check_func "$LINENO" "read" "ac_cv_func_read"
 if test "x$ac_cv_func_read" = xyes; then :
 
@@ -7219,6 +7226,13 @@ if test "x$ac_cv_func_sprintf" = xyes; then :
 
 else
   as_fn_error $? "sprintf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "srand" "ac_cv_func_srand"
+if test "x$ac_cv_func_srand" = xyes; then :
+
+else
+  as_fn_error $? "srand() function not found." "$LINENO" 5
 fi
 
 ac_fn_c_check_func "$LINENO" "strcasecmp" "ac_cv_func_strcasecmp"
@@ -7550,6 +7564,18 @@ do :
 if test "x$ac_cv_func_futimens" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_FUTIMENS 1
+_ACEOF
+
+fi
+done
+
+for ac_func in random srandom
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi

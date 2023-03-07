@@ -24,7 +24,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* RAND_MAX free() rand() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <time.h> /* time() */
 #include <unistd.h>
@@ -628,8 +628,7 @@ get_tip(void)
 		unsigned int i;
 		for(i = 0U; i < ARRAY_LEN(tips) - 1U; ++i)
 		{
-			const unsigned int j =
-				i + (rand()/(RAND_MAX + 1.0))*(ARRAY_LEN(tips) - i);
+			const unsigned int j = vifm_rand(i, ARRAY_LEN(tips) - 1);
 			const char *const t = tips[i];
 			tips[i] = tips[j];
 			tips[j] = t;
