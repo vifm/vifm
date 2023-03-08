@@ -561,7 +561,7 @@ put_next(int force)
 	int move;
 	int success;
 	int merge;
-	int safe_operation = 0;
+	int clashing_op = 0;
 
 	/* TODO: refactor this function (put_next()) */
 
@@ -626,12 +626,12 @@ put_next(int force)
 					if(is_in_subtree(src_buf, dst_buf, 0))
 					{
 						/* Don't delete /a/b before moving /a/b/c to /a/b. */
-						safe_operation = 1;
+						clashing_op = 1;
 					}
 				}
 
-				if(!safe_operation && perform_operation(OP_REMOVESL, put_confirm.ops,
-							NULL, dst_buf, NULL) != OPS_SUCCEEDED)
+				if(!clashing_op && perform_operation(OP_REMOVESL, put_confirm.ops, NULL,
+							dst_buf, NULL) != OPS_SUCCEEDED)
 				{
 					show_error_msgf("Can't replace a file",
 							"Failed to remove a file:\n%s", dst_buf);
@@ -717,8 +717,11 @@ put_next(int force)
 
 		un_group_close();
 	}
-	else if(safe_operation)
+	else if(clashing_op)
 	{
+		/* We're replacing parent with its child.  To make this possible use a
+		 * temporary path next to the parent first, remove the parent, then move
+		 * data to where the parent was. */
 		const char *const unique_dst = make_name_unique(dst_buf);
 
 		/* An optimization: if we're going to remove original anyway, don't bother
