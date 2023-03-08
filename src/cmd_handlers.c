@@ -4074,18 +4074,18 @@ regedit_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Register with given name does not exist.");
 		return CMDS_ERR_CUSTOM;
 	}
-	char tmp_fname[PATH_MAX + 1];
-	generate_tmp_file_name("vifm.regedit", tmp_fname, sizeof(tmp_fname));
 
-	mode_t saved_umask = umask(~0600);
-	const int write_result =
-		write_file_of_lines(tmp_fname, reg->files, reg->nfiles);
-	(void)umask(saved_umask);
-	if(write_result != 0)
+	char tmp_fname[PATH_MAX + 1];
+	FILE *file = make_file_in_tmp("vifm.regedit", 0600, /*auto_delete=*/0,
+			tmp_fname, sizeof(tmp_fname));
+	if(file == NULL)
 	{
 		ui_sb_err("Couldn't write register content into external file.");
 		return CMDS_ERR_CUSTOM;
 	}
+
+	write_lines_to_file(file, reg->files, reg->nfiles);
+	fclose(file);
 
 	/* Forking is disabled because in some cases process can return value
 	 * before any changes will be written and editor will be closed. */

@@ -21,8 +21,7 @@
 
 #include <regex.h>
 
-#include <sys/stat.h> /* stat umask() */
-#include <sys/types.h> /* mode_t */
+#include <sys/stat.h> /* stat */
 #include <fcntl.h>
 #include <unistd.h> /* unlink() */
 
@@ -36,7 +35,7 @@
 #include <math.h> /* fabsf() sqrtf() */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* FILE snprintf() */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcat() strcmp() strdup() strlen() */
 #include <time.h> /* clock_gettime() */
@@ -1057,24 +1056,21 @@ edit_list(ext_edit_t *ext_edit, size_t orig_len, char *orig[], int *edited_len,
 	*edited_len = 0;
 
 	char rename_file[PATH_MAX + 1];
-	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
-
-	strlist_t prepared = ext_edit_prepare(ext_edit, orig, orig_len);
-
-	/* Allow temporary file to be only readable and writable by current user. */
-	mode_t saved_umask = umask(~0600);
-	const int write_error = (write_file_of_lines(rename_file, prepared.items,
-				prepared.nitems) != 0);
-	(void)umask(saved_umask);
-
-	free_string_array(prepared.items, prepared.nitems);
-
-	if(write_error)
+	FILE *file = make_file_in_tmp("vifm.rename", 0600, /*auto_delete=*/0,
+			rename_file, sizeof(rename_file));
+	if(file == NULL)
 	{
 		show_error_msgf("Error Getting List Of Renames",
 				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
 		return NULL;
 	}
+
+	strlist_t prepared = ext_edit_prepare(ext_edit, orig, orig_len);
+
+	write_lines_to_file(file, prepared.items, prepared.nitems);
+	fclose(file);
+
+	free_string_array(prepared.items, prepared.nitems);
 
 	if(vim_view_file(rename_file, -1, -1, 0) != 0)
 	{
