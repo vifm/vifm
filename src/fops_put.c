@@ -721,9 +721,9 @@ put_next(int force)
 	{
 		const char *const unique_dst = make_name_unique(dst_buf);
 
-		/* An optimization: if we're going to remove destination anyway, don't
-		 * bother copying it, just move. */
-		if(op == OP_COPY)
+		/* An optimization: if we're going to remove original anyway, don't bother
+		 * copying it, just move. */
+		if(op == OP_COPY || op == OP_COPYF)
 		{
 			op = OP_MOVE;
 		}
