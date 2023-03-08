@@ -219,6 +219,11 @@ void restore_cwd(char saved_cwd[]);
  * errno is meaningful on failure. */
 FILE * make_tmp_file(char path[], mode_t mode, int auto_delete);
 
+/* Same as make_tmp_file(), but always creates a file in a temporary directory.
+ * The prefix must not contain slashes.  errno is meaningful on failure. */
+FILE * make_file_in_tmp(const char prefix[], mode_t mode, int auto_delete,
+		char full_path[], size_t full_path_len);
+
 #ifdef _WIN32
 
 int S_ISLNK(mode_t mode);

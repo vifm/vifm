@@ -41,6 +41,22 @@ TEST(make_tmp_file_bad_pattern)
 	assert_int_equal(EINVAL, errno);
 }
 
+TEST(make_file_in_tmp_slash_prefix)
+{
+	char buf[PATH_MAX + 1];
+	assert_null(make_file_in_tmp("b/a/d", 0000, /*auto_delete=*/0, buf,
+				sizeof(buf)));
+	assert_int_equal(EINVAL, errno);
+}
+
+TEST(make_file_in_tmp_tiny_buffer)
+{
+	char buf[5];
+	assert_null(make_file_in_tmp("prefix", 0000, /*auto_delete=*/0, buf,
+				sizeof(buf)));
+	assert_int_equal(ERANGE, errno);
+}
+
 TEST(bad_location, IF(regular_unix_user))
 {
 	create_dir(SANDBOX_PATH "/ro-dir");

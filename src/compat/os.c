@@ -376,9 +376,8 @@ FILE *
 os_tmpfile(void)
 {
 	char tmp_path[PATH_MAX + 1];
-	build_path(tmp_path, sizeof(tmp_path), get_tmpdir(), "vifm.tmp-XXXXXX");
-
-	return make_tmp_file(tmp_path, 0600, /*auto_delete=*/1);
+	return make_file_in_tmp("vifm.tmp", 0600, /*auto_delete=*/1, tmp_path,
+			sizeof(tmp_path));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
