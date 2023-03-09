@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Mar 5
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Mar 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5065,7 +5065,6 @@ Example: >
           fileview * defviewer %c
       endif
   endif
-<
 
 expand({expr})                                 *vifm-expand()*
 
