@@ -101,8 +101,6 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char str[], int for_shell, int *usr1,
 		int *usr2);
-static int setup_extcmd_file(const char path[], const char beginning[],
-		CmdInputType type);
 static void prepare_extcmd_file(FILE *fp, const char beginning[],
 		CmdInputType type);
 static hist_t * history_by_type(CmdInputType type);
@@ -204,40 +202,26 @@ char *
 cmds_get_ext(const char beginning[], size_t line_pos, CmdInputType type)
 {
 	char cmd_file[PATH_MAX + 1];
-	char *cmd = NULL;
-
-	generate_tmp_file_name("vifm.cmdline", cmd_file, sizeof(cmd_file));
-
-	if(setup_extcmd_file(cmd_file, beginning, type) == 0)
+	FILE *file = make_file_in_tmp("vifm.cmdline", 0600, /*auto_delete=*/0,
+			cmd_file, sizeof(cmd_file));
+	if(file == NULL)
 	{
-		if(vim_view_file(cmd_file, 1, line_pos, 0) == 0)
-		{
-			cmd = get_file_first_line(cmd_file);
-		}
+		show_error_msgf("External Editing", "Failed to create a temporary file: %s",
+				strerror(errno));
+		return NULL;
 	}
-	else
+
+	prepare_extcmd_file(file, beginning, type);
+	fclose(file);
+
+	char *cmd = NULL;
+	if(vim_view_file(cmd_file, 1, line_pos, 0) == 0)
 	{
-		show_error_msgf("Error Creating Temporary File",
-				"Could not create file %s: %s", cmd_file, strerror(errno));
+		cmd = get_file_first_line(cmd_file);
 	}
 
 	unlink(cmd_file);
 	return cmd;
-}
-
-/* Create and fill file for external command prompt.  Returns zero on success,
- * otherwise non-zero is returned and errno contains valid value. */
-static int
-setup_extcmd_file(const char path[], const char beginning[], CmdInputType type)
-{
-	FILE *const fp = os_fopen(path, "wt");
-	if(fp == NULL)
-	{
-		return 1;
-	}
-	prepare_extcmd_file(fp, beginning, type);
-	fclose(fp);
-	return 0;
 }
 
 /* Fills the file with history (more recent goes first). */

@@ -435,6 +435,10 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 		return;
 	}
 
+	/* XXX: dealing with the trash unit from *background* thread here and in
+	 *      delete_files_in_bg() is likely to cause a race!
+	 *
+	 *      What to do?  Forbid bg trashing?  Do a snapshot to apply later? */
 	if(!trash_is_at_path(path))
 	{
 		const char *const fname = get_last_path_component(path);

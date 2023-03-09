@@ -2,7 +2,7 @@
 
 ![Vifm logo](data/graphics/vifm-96px.png)
 
-[![][AA]][A]  [![][FF]][F]  [![][UU]][U]
+[![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
 _Latest release is 0.12.1.  This file last updated on 21 September 2022._
 
@@ -87,3 +87,5 @@ GNU General Public License, version 2 or later.
 [F]: http://ci.vifm.info/
 [UU]: http://cov.vifm.info/badges/svg/master
 [U]: http://cov.vifm.info/branches/master
+[SS]: https://scan.coverity.com/projects/699/badge.svg
+[S]: https://scan.coverity.com/projects/vifm-vifm

@@ -72,12 +72,6 @@ const char * attr_str_long(uint32_t attr);
 /* Returns pointer to a statically allocated buffer. */
 const char * escape_for_cd(const char str[]);
 
-/* tmpfile() for Windows, the way it should have been implemented.  Returns file
- * handler opened for read and write that is automatically removed on
- * application close.  Don't use tmpfile(), they utterly failed to implement
- * it. */
-FILE * win_tmpfile(void);
-
 /* Tries to cancel process gracefully.  Returns zero if cancellation was
  * requested, otherwise non-zero is returned. */
 int win_cancel_process(DWORD pid);

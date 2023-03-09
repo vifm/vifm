@@ -32,7 +32,7 @@
 #include <unistd.h> /* pathconf() readlink() */
 
 #include <ctype.h> /* isalpha() */
-#include <errno.h> /* errno */
+#include <errno.h> /* EINVAL ERANGE errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() */
 #include <stdlib.h> /* free() */
@@ -797,6 +797,48 @@ restore_cwd(char saved_cwd[])
 		(void)vifm_chdir(saved_cwd);
 		free(saved_cwd);
 	}
+}
+
+FILE *
+make_tmp_file(char path[], mode_t mode, int auto_delete)
+{
+	int fd = create_unique_file(path, mode, auto_delete);
+	if(fd == -1)
+	{
+		return NULL;
+	}
+
+	FILE *file = fdopen(fd, "w+b");
+	if(file == NULL)
+	{
+		int error = errno;
+		(void)close(fd);
+		errno = error;
+	}
+
+	return file;
+}
+
+FILE *
+make_file_in_tmp(const char prefix[], mode_t mode, int auto_delete,
+		char full_path[], size_t full_path_len)
+{
+	if(contains_slash(prefix))
+	{
+		errno = EINVAL;
+		return NULL;
+	}
+
+	int len = snprintf(full_path, full_path_len, "%s/%s-XXXXXX", get_tmpdir(),
+			prefix);
+	if(len < 0 || (size_t)len >= full_path_len)
+	{
+		errno = ERANGE;
+		return NULL;
+	}
+
+	system_to_internal_slashes(full_path);
+	return make_tmp_file(full_path, mode, auto_delete);
 }
 
 #ifndef _WIN32

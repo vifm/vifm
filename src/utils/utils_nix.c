@@ -39,8 +39,8 @@
 #include <grp.h> /* getgrnam() getgrgid_r() */
 #include <pthread.h> /* pthread_sigmask() */
 #include <pwd.h> /* getpwnam() getpwuid_r() */
-#include <unistd.h> /* X_OK chown() dup() dup2() getpid() isatty() pause()
-                       sysconf() ttyname() */
+#include <unistd.h> /* X_OK chown() close() dup() dup2() getpid() isatty()
+                       pause() sysconf() ttyname() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -1291,6 +1291,27 @@ bind_pipe_or_die(int fd, int pipe_end, int pipe_other)
 		close(pipe_end);
 	}
 	close(pipe_other);
+}
+
+int
+create_new_file(const char path[], mode_t mode, int auto_delete)
+{
+	int fd = open(path, O_RDWR | O_CREAT | O_EXCL, mode);
+	if(fd == -1)
+	{
+		return -1;
+	}
+
+	if(auto_delete && unlink(path) != 0)
+	{
+		/* Something weird has happened. */
+		int error = errno;
+		(void)close(fd);
+		errno = error;
+		return -1;
+	}
+
+	return fd;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

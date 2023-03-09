@@ -441,22 +441,26 @@ break_into_lines(char text[], size_t text_len, int *nlines, int null_sep)
 int
 write_file_of_lines(const char filepath[], char *strs[], size_t nstrs)
 {
-	size_t i;
-
 	FILE *const fp = os_fopen(filepath, "w");
 	if(fp == NULL)
 	{
 		return 1;
 	}
 
+	write_lines_to_file(fp, strs, nstrs);
+	fclose(fp);
+	return 0;
+}
+
+void
+write_lines_to_file(FILE *fp, char *strs[], size_t nstrs)
+{
+	size_t i;
 	for(i = 0U; i < nstrs; ++i)
 	{
 		fputs(strs[i], fp);
 		putc('\n', fp);
 	}
-
-	fclose(fp);
-	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

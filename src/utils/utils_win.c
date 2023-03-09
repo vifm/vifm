@@ -32,6 +32,7 @@
 #include <unistd.h> /* _dup2() _pipe() _spawnvp() close() dup() pipe() */
 
 #include <ctype.h> /* toupper() */
+#include <errno.h> /* EEXIST ENOMEM errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint32_t */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
@@ -944,48 +945,6 @@ get_sys_conf_dir(int idx)
 	return (idx == 0 ? get_installed_data_dir() : NULL);
 }
 
-FILE *
-win_tmpfile(void)
-{
-	char dir[PATH_MAX + 1];
-	char file[PATH_MAX + 1];
-	HANDLE h;
-	int fd;
-	FILE *f;
-
-	if(GetTempPathA(sizeof(dir), dir) == 0)
-	{
-		return NULL;
-	}
-
-	if(GetTempFileNameA(dir, "dir-view", 0U, file) == 0)
-	{
-		return NULL;
-	}
-
-	h = CreateFileA(file, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-			FILE_FLAG_DELETE_ON_CLOSE, NULL);
-	if(h == INVALID_HANDLE_VALUE)
-	{
-		return NULL;
-	}
-
-	fd = _open_osfhandle((intptr_t)h, _O_RDWR);
-	if(fd == -1)
-	{
-		CloseHandle(h);
-		return NULL;
-	}
-
-	f = fdopen(fd, "r+");
-	if(f == NULL)
-	{
-		close(fd);
-	}
-
-	return f;
-}
-
 void
 clone_attribs(const char path[], const char from[], const struct stat *st)
 {
@@ -1359,6 +1318,28 @@ uint64_t
 get_true_inode(const struct dir_entry_t *entry)
 {
 	return 0;
+}
+
+int
+create_new_file(const char path[], mode_t mode, int auto_delete)
+{
+	DWORD attrs = auto_delete ? FILE_FLAG_DELETE_ON_CLOSE : FILE_ATTRIBUTE_NORMAL;
+	HANDLE h = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+			CREATE_NEW, attrs, NULL);
+	if(h == INVALID_HANDLE_VALUE)
+	{
+		errno = EEXIST;
+		return -1;
+	}
+
+	int fd = _open_osfhandle((intptr_t)h, _O_RDWR);
+	if(fd == -1)
+	{
+		CloseHandle(h);
+		errno = ENOMEM;
+	}
+
+	return fd;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

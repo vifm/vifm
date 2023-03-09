@@ -709,14 +709,6 @@ find_cmd_in_path(const char cmd[], size_t path_len, char path[])
 	return 1;
 }
 
-void
-generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len)
-{
-	snprintf(buf, buf_len, "%s/%s", get_tmpdir(), prefix);
-	system_to_internal_slashes(buf);
-	copy_str(buf, buf_len, make_name_unique(buf));
-}
-
 const char *
 get_tmpdir(void)
 {

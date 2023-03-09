@@ -366,5 +366,19 @@ os_fdatasync(int fd)
 
 #endif
 
+#include <stdio.h> /* FILE */
+
+#include "../utils/fs.h"
+#include "../utils/path.h"
+#include "fs_limits.h"
+
+FILE *
+os_tmpfile(void)
+{
+	char tmp_path[PATH_MAX + 1];
+	return make_file_in_tmp("vifm.tmp", 0600, /*auto_delete=*/1, tmp_path,
+			sizeof(tmp_path));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

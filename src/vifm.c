@@ -31,7 +31,7 @@
 #include <locale.h> /* setlocale() LC_ALL */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fprintf() fputs() puts() snprintf() */
-#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() srand() system() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() system() */
 #include <string.h>
 #include <time.h> /* time() */
 
@@ -191,7 +191,7 @@ vifm_main(int argc, char *argv[])
 	}
 
 	(void)setlocale(LC_ALL, "");
-	srand(time(NULL));
+	vifm_srand((unsigned int)time(NULL));
 
 	if(vifm_args.logging)
 	{
