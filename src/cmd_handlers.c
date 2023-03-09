@@ -4553,12 +4553,12 @@ source_cmd(const cmd_info_t *cmd_info)
 
 	if(!path_exists(path, DEREF))
 	{
-		ui_sb_errf("File doesn't exist: %s", cmd_info->argv[0]);
+		ui_sb_errf("Sourced file doesn't exist: %s", cmd_info->argv[0]);
 		ret = CMDS_ERR_CUSTOM;
 	}
 	else if(os_access(path, R_OK) != 0)
 	{
-		ui_sb_errf("File isn't readable: %s", cmd_info->argv[0]);
+		ui_sb_errf("Sourced file isn't readable: %s", cmd_info->argv[0]);
 		ret = CMDS_ERR_CUSTOM;
 	}
 	else if(cfg_source_file(path) != 0)
