@@ -188,6 +188,8 @@
 
 	Fixed dialogs not handling non-latin characters well.
 
+	Fixed :source producing too many errors when specified path doesn't exist.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

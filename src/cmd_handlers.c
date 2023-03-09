@@ -4550,21 +4550,23 @@ source_cmd(const cmd_info_t *cmd_info)
 {
 	int ret = 0;
 	char *path = expand_tilde(cmd_info->argv[0]);
+
 	if(!path_exists(path, DEREF))
 	{
 		ui_sb_errf("File doesn't exist: %s", cmd_info->argv[0]);
 		ret = CMDS_ERR_CUSTOM;
 	}
-	if(os_access(path, R_OK) != 0)
+	else if(os_access(path, R_OK) != 0)
 	{
 		ui_sb_errf("File isn't readable: %s", cmd_info->argv[0]);
 		ret = CMDS_ERR_CUSTOM;
 	}
-	if(cfg_source_file(path) != 0)
+	else if(cfg_source_file(path) != 0)
 	{
 		ui_sb_errf("Error sourcing file: %s", cmd_info->argv[0]);
 		ret = CMDS_ERR_CUSTOM;
 	}
+
 	free(path);
 	return ret;
 }
