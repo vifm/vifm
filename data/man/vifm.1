@@ -1,4 +1,4 @@
-.TH VIFM 1 "5 March 2023" "vifm 0.12.1"
+.TH VIFM 1 "10 March 2023" "vifm 0.12.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6005,6 +6005,9 @@ extcached({cache}, {path}, {extcmd})
                       String      Caches output of {extcmd} per {cache} and
                                   {path} combination.
 .br
+filereadable({path})  Integer     Checks whether {expr} points to a
+                                  non-directory that can be read.
+.br
 filetype({fnum} [, {resolve}])
                       String      Returns file type from position.
 .br
@@ -6093,6 +6096,12 @@ Example:
                                      \ expand('%c'),
                                      \ expand('stat \-\-format=%%bx%%B %c')) }"
 .EE
+
+.BI filereadable({path})
+
+Checks whether {path} exists and refers to a non-directory entry and its
+permissions allow reading.  Returns boolean value describing result of the
+check.
 
 .BI "filetype({fnum} [, {resolve}])"
 

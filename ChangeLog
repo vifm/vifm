@@ -16,6 +16,10 @@
 	Changed %N macro to also not start a process group for a command.  Thanks
 	to Oskar Grunning (sQVe).
 
+	Changed error reporting for some of the :commands such that now their
+	failures cause a dialog to appear of sourcing of vifmrc, previously those
+	errors were printed only to status bar.
+
 	Added "withicase" and "withrcase" to :compare that force ignoring and
 	respecting case respectively on comparing file names and paths.  Thanks to
 	Jose Riha (a.k.a. jose1711).
@@ -80,6 +84,9 @@
 	%10*-%20* macros.  Thanks to Sylwia Ptasinska (a.k.a. SylEleuth).
 
 	Added 'tabline' option to specify format of the tab line.
+
+	Added filereadable() builtin function mainly as a way to check file's
+	presence.
 
 	Reduced amount of memory consumed by `:compare groupids`.
 
@@ -187,6 +194,8 @@
 	number of lines and sometimes hiding a single line.
 
 	Fixed dialogs not handling non-latin characters well.
+
+	Fixed :source producing too many errors when specified path doesn't exist.
 
 0.12.1-beta to 0.12.1 (2022-09-21)
 

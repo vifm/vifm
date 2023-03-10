@@ -97,7 +97,8 @@ set trashdir=$HOME/.vifm/trash trash
 set vifminfo=dhistory,save,dirstack,registers,bookmarks "comment
 
 " "$VIFM" should be highlighted as environment variable name
-source $VIFM/vifmrc_local
+" `" comment` should be highlighted as a comment
+source $VIFM/vifmrc_local " comment
 unlet $VIFM
 
 " не подсвечены строки
@@ -427,11 +428,6 @@ unselect! /*/
 unselect ! cmd
 unselect pat
 
-" "echo" should be highlighted as :command
-" "chooseopt" should be highlighted as builtin function
-" "'file'" should be highlighted as a string
-echo chooseopt('file')
-
 " the following should be highlighted as :commands
 dm
 dma
@@ -605,6 +601,11 @@ set mouse
 set navoptions
 set tabline tal
 
+" "echo" should be highlighted as :command
+" "chooseopt" should be highlighted as builtin function
+" "'file'" should be highlighted as a string
+echo chooseopt('file')
+
 " "term" should be highlighted as a function()
 echo term('cmd')
 
@@ -622,6 +623,9 @@ echo extcached('uses', expand('%c'), expand('stat --format=%%bx%%B %c'))
 " "input" should be highlighted as a function()
 " "'prompt: ' should be highlight as a string literal
 echo input('prompt: ')
+
+" "filereadable" should be highlighted as a function()
+echo filereadable('path')
 
 " "let" should be highlighted as a :command
 " "unlet" should be highlighted as a :command

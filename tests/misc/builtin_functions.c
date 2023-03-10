@@ -73,6 +73,13 @@ TEST(executable_false_for_dir)
 	ASSERT_INT_OK("executable('.')", 0);
 }
 
+TEST(filereadable)
+{
+	ASSERT_INT_OK("filereadable('" TEST_DATA_PATH "/read/two-lines')", 1);
+	ASSERT_INT_OK("filereadable('" TEST_DATA_PATH "/read')", 0);
+	ASSERT_INT_OK("filereadable('no-such-path')", 0);
+}
+
 TEST(expand_expands_environment_variables)
 {
 	let_variables("$OPEN_ME = 'Found something interesting?'");
