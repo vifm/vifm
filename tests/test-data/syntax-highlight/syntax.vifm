@@ -97,7 +97,8 @@ set trashdir=$HOME/.vifm/trash trash
 set vifminfo=dhistory,save,dirstack,registers,bookmarks "comment
 
 " "$VIFM" should be highlighted as environment variable name
-source $VIFM/vifmrc_local
+" `" comment` should be highlighted as a comment
+source $VIFM/vifmrc_local " comment
 unlet $VIFM
 
 " не подсвечены строки

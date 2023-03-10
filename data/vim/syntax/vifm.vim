@@ -213,10 +213,13 @@ syntax region vifmInvertCommandSt start='\(\s\|:\)*invert\>' end='$\||'
 syntax region vifmInvertCommandStN start='\(\s\|:\)*invert\>' end='$\||'
 		\ contained keepend oneline contains=vifmInvertCommand,vifmNotation
 syntax region vifmSoCommandSt start='\(\s\|:\)*so\%[urce]\>' end='$\||'
-		\ keepend oneline contains=vifmSoCommand,vifmEnvVar,vifmStringInExpr
+		\ keepend oneline
+		\ contains=vifmSoCommand,vifmEnvVar,vifmStringInExpr,vifmComment
+		\,vifmInlineComment
 syntax region vifmSoCommandStN start='\(\s\|:\)*so\%[urce]\>' end='$\||'
 		\ contained keepend oneline
 		\ contains=vifmSoCommand,vifmEnvVar,vifmNotation,vifmStringInExpr
+		\,vifmComment,vifmInlineComment
 syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend
 		\ oneline contains=vifmMarkCommand
 syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
