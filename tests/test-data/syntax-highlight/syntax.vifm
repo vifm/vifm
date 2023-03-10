@@ -623,6 +623,9 @@ echo extcached('uses', expand('%c'), expand('stat --format=%%bx%%B %c'))
 " "'prompt: ' should be highlight as a string literal
 echo input('prompt: ')
 
+" "filereadable" should be highlighted as a function()
+echo filereadable('path')
+
 " "let" should be highlighted as a :command
 " "unlet" should be highlighted as a :command
 " "term" should be highlighted as a function()

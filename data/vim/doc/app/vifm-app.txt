@@ -5026,6 +5026,8 @@ expand({expr})        String      Expands special keywords in {expr}.
 extcached({cache}, {path}, {extcmd})
                       String      Caches output of {extcmd} per {cache} and
                                   {path} combination.
+filereadable({path})  Integer     Checks whether {expr} points to a
+                                  non-directory that can be read.
 filetype({fnum} [, {resolve}])
                       String      Returns file type from position.
 fnameescape({expr})   String      Escapes {expr} for use in a :command.
@@ -5095,6 +5097,12 @@ Example: >
   set statusline+=" Uses: %{ extcached('uses',
                                      \ expand('%c'),
                                      \ expand('stat --format=%%bx%%B %c')) }"
+
+filereadable({path})                           *vifm-filereadable()*
+
+Checks whether {path} exists and refers to a non-directory entry and its
+permissions allow reading.  Returns boolean value describing result of the
+check.
 
 filetype({fnum} [, {resolve}])                 *vifm-filetype()*
 

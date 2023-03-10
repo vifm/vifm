@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: March 5, 2023
+" Last Change: March 10, 2023
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -77,7 +77,7 @@ syntax case match
 
 " Builtin functions
 syntax match vifmBuiltinFunction
-		\ '\(chooseopt\|expand\|executable\|extcached\|filetype\|fnameescape\|getpanetype\|has\|input\|layoutis\|paneisat\|system\|tabpagenr\|term\)\ze('
+		\ '\(chooseopt\|expand\|executable\|extcached\|filereadable\|filetype\|fnameescape\|getpanetype\|has\|input\|layoutis\|paneisat\|system\|tabpagenr\|term\)\ze('
 
 " Operators
 syntax match vifmOperator "\(==\|!=\|>=\?\|<=\?\|\.\|-\|+\|&&\|||\)" skipwhite

@@ -71,6 +71,7 @@ static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t extcached_builtin(const call_info_t *call_info);
 TSTATIC void set_extcached_monitor_type(FileMonType type);
+static var_t filereadable_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(var_t fnum);
 static const char * type_of_link_target(const dir_entry_t *entry);
@@ -89,21 +90,22 @@ static var_t execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin);
 
 /* Function descriptions. */
 static const function_t functions[] = {
-	/* Name          Description                    Args   Handler  */
-	{ "chooseopt",   "query choose options",       {1,1}, &chooseopt_builtin },
-	{ "executable",  "check for executable file",  {1,1}, &executable_builtin },
-	{ "expand",      "expand macros in a string",  {1,1}, &expand_builtin },
-	{ "extcached",   "caches result of a command", {3,3}, &extcached_builtin },
-	{ "filetype",    "retrieve type of a file",    {1,2}, &filetype_builtin },
-	{ "fnameescape", "escapes string for a :cmd",  {1,1}, &fnameescape_builtin },
-	{ "getpanetype", "retrieve type of file list", {0,0}, &getpanetype_builtin},
-	{ "has",         "check for specific ability", {1,1}, &has_builtin },
-	{ "input",       "prompt user for input",      {1,3}, &input_builtin },
-	{ "layoutis",    "query current layout",       {1,1}, &layoutis_builtin },
-	{ "paneisat",    "query pane location",        {1,1}, &paneisat_builtin },
-	{ "system",      "execute external command",   {1,1}, &system_builtin },
-	{ "tabpagenr",   "number of current/last tab", {0,1}, &tabpagenr_builtin },
-	{ "term",        "run interactive command",    {1,1}, &term_builtin },
+	/* Name           Description                   Args   Handler  */
+	{ "chooseopt",    "query choose options",      {1,1}, &chooseopt_builtin },
+	{ "executable",   "check for executable file", {1,1}, &executable_builtin },
+	{ "expand",       "expand macros in a string", {1,1}, &expand_builtin },
+	{ "extcached",    "caches result of a command",{3,3}, &extcached_builtin },
+	{ "filereadable", "checks for a readable file",{1,1}, &filereadable_builtin },
+	{ "filetype",     "retrieve type of a file",   {1,2}, &filetype_builtin },
+	{ "fnameescape",  "escapes string for a :cmd", {1,1}, &fnameescape_builtin },
+	{ "getpanetype",  "retrieve type of file list",{0,0}, &getpanetype_builtin},
+	{ "has",          "check for specific ability",{1,1}, &has_builtin },
+	{ "input",        "prompt user for input",     {1,3}, &input_builtin },
+	{ "layoutis",     "query current layout",      {1,1}, &layoutis_builtin },
+	{ "paneisat",     "query pane location",       {1,1}, &paneisat_builtin },
+	{ "system",       "execute external command",  {1,1}, &system_builtin },
+	{ "tabpagenr",    "number of current/last tab",{0,1}, &tabpagenr_builtin },
+	{ "term",         "run interactive command",   {1,1}, &term_builtin },
 };
 
 /* Kind of monitor used by the extcached(). */
@@ -291,6 +293,23 @@ TSTATIC void
 set_extcached_monitor_type(FileMonType type)
 {
 	extcached_mon_type = type;
+}
+
+/* Checks whether path is a non-directory entry and its permissions allow
+ * reading.  Returns boolean value describing result of the check. */
+static var_t
+filereadable_builtin(const call_info_t *call_info)
+{
+	int is_readable = 0;
+
+	char *path = var_to_str(call_info->argv[0]);
+	if(path != NULL)
+	{
+		is_readable = (os_access(path, R_OK) == 0 && !is_dir(path));
+		free(path);
+	}
+
+	return var_from_bool(is_readable);
 }
 
 /* Gets string representation of file type.  Returns the string. */

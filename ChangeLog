@@ -85,6 +85,9 @@
 
 	Added 'tabline' option to specify format of the tab line.
 
+	Added filereadable() builtin function mainly as a way to check file's
+	presence.
+
 	Reduced amount of memory consumed by `:compare groupids`.
 
 	Made `:compare bycontents` not bother reading content of files which have
