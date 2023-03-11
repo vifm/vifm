@@ -31,6 +31,7 @@
 #include "../../ui/colors.h"
 #include "../../ui/ui.h"
 #include "../../utils/macros.h"
+#include "../../utils/utils.h"
 #include "../../filelist.h"
 #include "../../status.h"
 #include "../modes.h"
@@ -330,11 +331,8 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
 	clear_at_pos();
-	curr += key_info.count;
+	curr += def_count(key_info.count);
 	if(curr > bottom)
 		curr = bottom;
 
@@ -345,11 +343,8 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
 	clear_at_pos();
-	curr -= key_info.count;
+	curr -= def_count(key_info.count);
 	if(curr < top)
 		curr = top;
 

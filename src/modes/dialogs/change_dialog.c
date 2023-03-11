@@ -31,6 +31,7 @@
 #include "../../ui/colors.h"
 #include "../../ui/ui.h"
 #include "../../utils/macros.h"
+#include "../../utils/utils.h"
 #include "../../fops_misc.h"
 #include "../../fops_rename.h"
 #include "../../status.h"
@@ -198,20 +199,14 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		goto_line(1);
-	else
-		goto_line(key_info.count);
+	goto_line(def_count(key_info.count));
 }
 
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
 	clear_at_pos();
-	curr += key_info.count*step;
+	curr += def_count(key_info.count)*step;
 	if(curr > bottom)
 		curr = bottom;
 
@@ -222,11 +217,8 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
 	clear_at_pos();
-	curr -= key_info.count*step;
+	curr -= def_count(key_info.count)*step;
 	if(curr < top)
 		curr = top;
 

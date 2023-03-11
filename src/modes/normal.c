@@ -1752,7 +1752,7 @@ activate_search(int count, int back, int external)
 {
 	/* TODO: generalize with visual.c:activate_search(). */
 
-	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
+	search_repeat = def_count(count);
 	curr_stats.last_search_backward = back;
 	if(external)
 	{

@@ -1359,11 +1359,8 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 	if(vi->linev == 0)
 		return;
 
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	key_info.count = MIN(key_info.count, vi->linev);
-
-	while(key_info.count-- > 0)
+	int repeat_count = MIN(def_count(key_info.count), vi->linev);
+	while(repeat_count-- > 0)
 	{
 		if(vi->linev - 1 < vi->widths[vi->line][0])
 			--vi->line;
