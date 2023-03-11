@@ -24,22 +24,59 @@ struct view_t;
 
 /* Search and navigation functions. */
 
-/* The move argument specifies whether cursor in the view should be adjusted to
- * point to just found file in case of successful search.  Sets *found to
- * non-zero if pattern was found, otherwise it's assigned zero.  print_errors
- * means user needs feedback, otherwise it can be provided later using one of
- * print_*_msg() functions.  Returns non-zero when a message was printed (or
- * would have been printed with print_errors set) to a user, otherwise zero is
- * returned.  Returned value is negative for incorrect pattern. */
-int find_pattern(struct view_t *view, const char pattern[], int backward,
-		int move, int *found, int print_errors);
+/* Callback for moving cursor to pos and redrawing both the cursor and a
+ * view. */
+typedef void (*move_cursor_and_redraw_cb)(int pos);
 
-/* Looks for a search match in specified direction from current cursor position
- * taking search wrapping into account.  Returns non-zero if something was
- * found, otherwise zero is returned. */
-int goto_search_match(struct view_t *view, int backward);
+/* Searches pattern in view, moves cursor to count's match using cb and
+ * optionally (if print_errors is set) shows a message.  stash_selection and
+ * select_matches are passed to search_pattern().  Sets *found to non-zero if
+ * pattern was found, otherwise it's assigned zero.  Returns non-zero when a
+ * message was printed (or would have been printed with print_errors set) to a
+ * user, otherwise zero is returned.  Returned value is negative for invalid
+ * pattern. */
+int search_find(struct view_t *view, const char pattern[], int backward,
+		int stash_selection, int select_matches, int count,
+		move_cursor_and_redraw_cb cb, int print_errors, int *found);
+
+/* Moves cursor to count's match using cb and shows a message.  Searches for
+ * the last pattern from the search history, if there are no matches in view.
+ * stash_selection and select_matches are passed to search_pattern().  Returns
+ * non-zero when a message was printed to a user, otherwise zero is returned. */
+int search_next(struct view_t *view, int backward, int stash_selection,
+		int select_matches, int count, move_cursor_and_redraw_cb cb);
+
+/* Searches pattern in view.  Does nothing in case pattern is empty.
+ * stash_selection stashes selection before the search.  select_matches selects
+ * found matches.  Returns non-zero for invalid pattern, otherwise zero is
+ * returned. */
+int search_pattern(struct view_t *view, const char pattern[],
+		int stash_selection, int select_matches);
+
+/* Looks for a count's search match in specified direction from current cursor
+ * position taking search wrapping into account.  Returns non-zero if something
+ * was found, otherwise zero is returned. */
+int goto_search_match(struct view_t *view, int backward, int count,
+		move_cursor_and_redraw_cb cb);
+
+/* Looks for a count's search match in specified direction from current cursor
+ * position taking search wrapping into account.  Returns index of a match, or
+ * -1 if no matches were found. */
+int find_search_match(struct view_t *view, int backward, int count);
 
 /* Auxiliary functions. */
+
+/* Callback for showing a message about search operation. */
+typedef void (*print_search_msg_cb)(const struct view_t *view,
+		int backward);
+
+/* Prints success or error message, determined by the found argument.  Supposed
+ * to be called after search_pattern() and the cursor positioned over a match.
+ * The success message is prtined by cb.  Takes search highlighting, wrapping
+ * and visual mode into account.  Returns non-zero if something was printed,
+ * otherwise zero is returned. */
+int print_search_result(const struct view_t *view, int found, int backward,
+		print_search_msg_cb cb);
 
 /* Prints results or error message about search operation to the user. */
 void print_search_msg(const struct view_t *view, int backward);

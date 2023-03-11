@@ -123,6 +123,16 @@
 	Update Default-256 to fix differentiate between more file types.  Thanks
 	to aleksejrs.
 
+	Don't move cursor on search failure during search with a count.  Patch by
+	filterfalse.
+
+	Specified a few more cases when to show a search message with search
+	highlighting turned on: if found a match, if wrapping is turned on, and in
+	visual mode.  Patch by filterfalse.
+
+	A regular search logic showing messages is applied to n/N.  Patch by
+	filterfalse.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
@@ -196,6 +206,21 @@
 	Fixed dialogs not handling non-latin characters well.
 
 	Fixed :source producing too many errors when specified path doesn't exist.
+
+	Fixed n/N not moving the cursor without prior search in visual mode.  Patch
+	by filterfalse.
+
+	Fixed showing wrong match number instead of error message on search in
+	visual mode.  Patch by filterfalse.
+
+	Fixed resetting 'hlsearch' during incremental search in visual mode.  Patch
+	by filterfalse.
+
+	Fixed dropping selected files on empty input during incremental search in
+	visual mode.  Patch by filterfalse.
+
+	Fixed resetting count to 1 during incremental search in normal mode.  Patch
+	by filterfalse.
 
 0.12.1-beta to 0.12.1 (2022-09-21)
 

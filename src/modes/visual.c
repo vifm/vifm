@@ -136,7 +136,7 @@ static void cmd_q_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
 static void activate_search(int count, int back, int external);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
-static void search(key_info_t key_info, int backward, int interactive);
+static void search(key_info_t key_info, int backward);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void change_amend_type(AmendType new_amend_type);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
@@ -166,7 +166,6 @@ static void select_up_one(view_t *view, int start_pos);
 static void select_down_one(view_t *view, int start_pos);
 static void apply_selection(int pos);
 static void revert_selection(int pos);
-static int find_update(view_t *view, int backward);
 static void goto_pos_force_update(int pos);
 static void goto_pos(int pos);
 static void update_ui(void);
@@ -579,7 +578,7 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
-	search(key_info, !curr_stats.last_search_backward, 0);
+	search(key_info, !curr_stats.last_search_backward);
 }
 
 static void
@@ -983,43 +982,14 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	search(key_info, curr_stats.last_search_backward, 0);
+	search(key_info, curr_stats.last_search_backward);
 }
 
 static void
-search(key_info_t key_info, int backward, int interactive)
+search(key_info_t key_info, int backward)
 {
-	/* TODO: extract common part of this function and normal.c:search(). */
-
-	int found;
-
-	if(hist_is_empty(&curr_stats.search_hist))
-	{
-		return;
-	}
-
-	if(view->matches == 0)
-	{
-		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = modvis_find(view, pattern, backward, interactive);
-		return;
-	}
-
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	found = 0;
-	while(key_info.count-- > 0)
-		found += find_update(view, backward) != 0;
-
-	if(!found)
-	{
-		print_search_fail_msg(view, backward);
-		curr_stats.save_msg = 1;
-		return;
-	}
-
-	print_search_next_msg(view, backward);
-	curr_stats.save_msg = 1;
+	curr_stats.save_msg = search_next(curr_view, backward, /*stash_selection=*/0,
+			/*select_matches=*/0, def_count(key_info.count), &goto_pos);
 }
 
 /* Runs external editor to get command-line command and then executes it. */
@@ -1050,7 +1020,7 @@ activate_search(int count, int back, int external)
 {
 	/* TODO: generalize with normal.c:activate_search(). */
 
-	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
+	search_repeat = def_count(count);
 	curr_stats.last_search_backward = back;
 	if(external)
 	{
@@ -1456,40 +1426,11 @@ modvis_update(void)
 }
 
 int
-modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
+modvis_find(view_t *view, const char pattern[], int backward, int print_errors,
+		int *found)
 {
-	int i;
-	int result;
-	const int hls = cfg.hl_search;
-	int found;
-
-	cfg.hl_search = 0;
-	result = find_pattern(view, pattern, backward, 0, &found, print_errors);
-	if(!print_errors && result < 0)
-	{
-		/* If we're not printing messages, we might be interested in broken
-		 * pattern. */
-		return -1;
-	}
-
-	cfg.hl_search = hls;
-	for(i = 0; i < search_repeat; ++i)
-	{
-		find_update(view, backward);
-	}
-	return result;
-}
-
-/* returns non-zero when it finds something */
-static int
-find_update(view_t *view, int backward)
-{
-	const int old_pos = view->list_pos;
-	const int found = goto_search_match(view, backward);
-	const int new_pos = view->list_pos;
-	view->list_pos = old_pos;
-	goto_pos(new_pos);
-	return found;
+	return search_find(view, pattern, backward, /*stash_selection=*/0,
+			/*select_matches=*/0, search_repeat, &goto_pos, print_errors, found);
 }
 
 /* Moves cursor from its current position to specified pos selecting or

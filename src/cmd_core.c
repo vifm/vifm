@@ -1137,6 +1137,7 @@ cmds_dispatch1(const char cmd[], view_t *view, CmdInputType type)
 {
 	int menu;
 	int backward;
+	int found;
 
 	if(cmd == NULL)
 	{
@@ -1149,11 +1150,11 @@ cmds_dispatch1(const char cmd[], view_t *view, CmdInputType type)
 	{
 		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_FSEARCH_PATTERN:
-			return modnorm_find(view, cmd, backward, 1);
+			return modnorm_find(view, cmd, backward, /*print_errors=*/1, &found);
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:
-			return modvis_find(view, cmd, backward, 1);
+			return modvis_find(view, cmd, backward, /*print_errors=*/1, &found);
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:
@@ -1187,15 +1188,18 @@ static int
 repeat_command(view_t *view, CmdInputType type)
 {
 	int backward = 0;
+	int found;
 	switch(type)
 	{
 		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_FSEARCH_PATTERN:
-			return modnorm_find(view, hists_search_last(), backward, 1);
+			return modnorm_find(view, hists_search_last(), backward,
+					/*print_errors=*/1, &found);
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:
-			return modvis_find(view, hists_search_last(), backward, 1);
+			return modvis_find(view, hists_search_last(), backward,
+					/*print_errors=*/1, &found);
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:

@@ -247,6 +247,7 @@ static void pick_files(view_t *view, int end, keys_info_t *keys_info);
 static void selector_S(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
 static void selector_s(key_info_t key_info, keys_info_t *keys_info);
+static void set_pos_in_curr_view(int pos);
 static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 
 static int last_fast_search_char;
@@ -1688,42 +1689,9 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 search(key_info_t key_info, int backward)
 {
-	/* TODO: extract common part of this function and visual.c:search(). */
-
-	int found;
-
-	if(hist_is_empty(&curr_stats.search_hist))
-	{
-		return;
-	}
-
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	found = 0;
-	if(curr_view->matches == 0)
-	{
-		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = (find_pattern(curr_view, pattern, backward, 1, &found,
-				0) != 0);
-		--key_info.count;
-	}
-
-	while(key_info.count-- > 0)
-	{
-		found += goto_search_match(curr_view, backward) != 0;
-	}
-
-	if(found)
-	{
-		print_search_next_msg(curr_view, backward);
-	}
-	else
-	{
-		print_search_fail_msg(curr_view, backward);
-	}
-
-	curr_stats.save_msg = 1;
+	curr_stats.save_msg = search_next(curr_view, backward,
+			/*stash_selection=*/cfg.hl_search, /*select_matches=*/cfg.hl_search,
+			def_count(key_info.count), &set_pos_in_curr_view);
 }
 
 /* Put files. */
@@ -1784,7 +1752,7 @@ activate_search(int count, int back, int external)
 {
 	/* TODO: generalize with visual.c:activate_search(). */
 
-	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
+	search_repeat = def_count(count);
 	curr_stats.last_search_backward = back;
 	if(external)
 	{
@@ -2311,30 +2279,25 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 int
-modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
+modnorm_find(view_t *view, const char pattern[], int backward, int print_errors,
+		int *found)
 {
-	const int nrepeats = search_repeat - 1;
-	int i;
-	int save_msg;
-	int found;
+	return search_find(view, pattern, backward, /*stash_selection=*/cfg.hl_search,
+			/*select_matches=*/cfg.hl_search, search_repeat, &set_pos_in_curr_view,
+			print_errors, found);
+}
 
-	/* Reset number of repeats so that future calls are not affected by the
-	 * previous ones. */
-	search_repeat = 1;
+/* Moves cursor to pos, redraws cursor and schedules redraw of curr_view. */
+static void
+set_pos_in_curr_view(int pos)
+{
+	fpos_set_pos(curr_view, pos);
+}
 
-	save_msg = find_pattern(view, pattern, backward, 1, &found, print_errors);
-	if(!print_errors && save_msg < 0)
-	{
-		/* If we're not printing messages, we might be interested in broken
-		 * pattern. */
-		return -1;
-	}
-
-	for(i = 0; i < nrepeats; ++i)
-	{
-		save_msg += (goto_search_match(view, backward) != 0);
-	}
-	return save_msg;
+void
+modnorm_set_search_count(int count)
+{
+	search_repeat = count;
 }
 
 /* Processes events from the mouse. */

@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#define CMDLINE_IMPL
 #include "cmdline.h"
 
 #include <curses.h>
@@ -77,83 +78,6 @@
 
 /* Prompt prefix when navigation is enabled. */
 #define NAV_PREFIX L"(nav)"
-
-/* History search mode. */
-typedef enum
-{
-	HIST_NONE,   /* No search in history is active. */
-	HIST_GO,     /* Retrieving items from history one by one. */
-	HIST_SEARCH  /* Retrieving items that match entered prefix skipping others. */
-}
-HIST;
-
-/* Describes possible states of a prompt used for interactive search. */
-typedef enum
-{
-	PS_NORMAL,        /* Normal state (empty input or input is OK). */
-	PS_WRONG_PATTERN, /* Pattern contains a mistake. */
-	PS_NO_MATCH,      /* Pattern is OK, but no matches found. */
-}
-PromptState;
-
-/* Holds state of the command-line editing mode. */
-typedef struct
-{
-	/* Mode management. */
-
-	/* Mode that entered command-line mode. */
-	int prev_mode;
-	/* Kind of command-line mode. */
-	CmdLineSubmode sub_mode;
-	/* Whether performing quick navigation. */
-	int navigating;
-	/* Whether current submode allows external editing. */
-	int sub_mode_allows_ee;
-	/* CLS_MENU_*-specific data. */
-	struct menu_data_t *menu;
-	/* CLS_PROMPT-specific data. */
-	prompt_cb prompt_callback;
-	void *prompt_callback_arg;
-
-	/* Line editing state. */
-	wchar_t *line;                /* The line reading. */
-	wchar_t *last_line;           /* Previous contents of the line. */
-	wchar_t *initial_line;        /* Initial state of the line. */
-	int index;                    /* Index of the current character in cmdline. */
-	int curs_pos;                 /* Position of the cursor in status bar. */
-	int len;                      /* Length of the string. */
-	int cmd_pos;                  /* Position in the history. */
-	wchar_t prompt[NAME_MAX + 1]; /* Prompt message. */
-	int prompt_wid;               /* Width of the prompt. */
-
-	/* Dot completion. */
-	int dot_pos;      /* History position or < 0 if it's not active. */
-	size_t dot_index; /* Line index. */
-	size_t dot_len;   /* Previous completion length. */
-
-	/* Command completion. */
-	size_t prefix_len;          /* Prefix length for the active completion. */
-	int complete_continue;      /* If non-zero, continue previous completion. */
-	int reverse_completion;     /* Completion in the opposite direction. */
-	complete_cmd_func complete; /* Completion function. */
-
-	/* History completion. */
-	HIST history_search; /* One of the HIST_* constants. */
-	int hist_search_len; /* Length of history search pattern. */
-	wchar_t *line_buf;   /* Content of line before using history. */
-
-	/* For search prompt. */
-	int search_mode; /* If it's a search prompt. */
-	int old_top;     /* Saved top for interactive searching. */
-	int old_pos;     /* Saved position for interactive searching. */
-
-	/* Other state. */
-	int line_edited;         /* Cache for whether input line changed flag. */
-	int enter_mapping_state; /* The mapping state at entering the mode. */
-	int expanding_abbrev;    /* Abbreviation expansion is in progress. */
-	PromptState state;       /* Prompt state with regard to current input. */
-}
-line_stats_t;
 
 /* Stashed store of the state to support limited recursion. */
 static line_stats_t prev_input_stat;
@@ -561,7 +485,7 @@ handle_empty_input(void)
 	{
 		(void)menus_search("", input_stat.menu, 0);
 	}
-	else if(cfg.hl_search)
+	else if(cfg.hl_search && input_stat.prev_mode != VISUAL_MODE)
 	{
 		flist_sel_stash(curr_view);
 	}
@@ -590,17 +514,19 @@ handle_nonempty_input(void)
 
 		case CLS_BSEARCH: backward = 1; /* Fall through. */
 		case CLS_FSEARCH:
-			result = modnorm_find(curr_view, mbinput, backward, 0);
+			result = modnorm_find(curr_view, mbinput, backward, /*print_errors=*/0,
+					&input_stat.search_match_found);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_VBSEARCH: backward = 1; /* Fall through. */
 		case CLS_VFSEARCH:
-			result = modvis_find(curr_view, mbinput, backward, 0);
+			result = modvis_find(curr_view, mbinput, backward, /*print_errors=*/0,
+					&input_stat.search_match_found);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = menus_search(mbinput, input_stat.menu, 0);
+			result = menus_search(mbinput, input_stat.menu, /*print_errors=*/0);
 			update_state(result, menus_search_matched(input_stat.menu));
 			break;
 		case CLS_FILTER:
@@ -886,6 +812,7 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 	stat->reverse_completion = 0;
 	stat->complete = complete;
 	stat->search_mode = 0;
+	stat->search_match_found = 0;
 	stat->dot_pos = -1;
 	stat->line_edited = 0;
 	stat->enter_mapping_state = vle_keys_mapping_state();
@@ -1683,13 +1610,9 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		}
 		else
 		{
-			/* In case of successful search and 'hlsearch' option set, a message like
-			* "n files selected" is printed automatically. */
-			if(curr_view->matches == 0 || !cfg.hl_search)
-			{
-				print_search_msg(curr_view, is_backward_search(sub_mode));
-				curr_stats.save_msg = 1;
-			}
+			curr_stats.save_msg = print_search_result(curr_view,
+					input_stat.search_match_found, is_backward_search(sub_mode),
+					&print_search_msg);
 		}
 	}
 

@@ -27,6 +27,8 @@
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
+#include "engine/mode.h"
+#include "modes/modes.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -36,38 +38,121 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "flist_sel.h"
+#include "status.h"
 
-static int find_and_goto_match(view_t *view, int start, int backward);
-static void print_result(const view_t *view, int found, int backward);
+static int find_match(view_t *view, int start, int backward);
 
 int
-goto_search_match(view_t *view, int backward)
+search_find(view_t *view, const char pattern[], int backward,
+		int stash_selection, int select_matches, int count,
+		move_cursor_and_redraw_cb cb, int print_errors, int *found)
 {
-	const int wrap_start = backward ? view->list_rows : -1;
-	if(!find_and_goto_match(view, view->list_pos, backward))
+	int save_msg = 0;
+
+	if(search_pattern(view, pattern, stash_selection, select_matches) != 0)
 	{
-		if(!cfg.wrap_scan || !find_and_goto_match(view, wrap_start, backward))
+		*found = 0;
+		if(print_errors)
 		{
-			return 0;
+			print_search_fail_msg(view, backward);
+			save_msg = 1;
+			return save_msg;
+		}
+		/* If we're not printing messages, we might be interested in broken
+		 * pattern. */
+		return -1;
+	}
+
+	*found = goto_search_match(view, backward, count, cb);
+
+	if(print_errors)
+	{
+		save_msg = print_search_result(view, *found, backward, &print_search_msg);
+	}
+
+	return save_msg;
+}
+
+int
+search_next(view_t *view, int backward, int stash_selection, int select_matches,
+		int count, move_cursor_and_redraw_cb cb)
+{
+	int save_msg = 0;
+	int found;
+
+	if(hist_is_empty(&curr_stats.search_hist))
+	{
+		return save_msg;
+	}
+
+	if(view->matches == 0)
+	{
+		const char *const pattern = hists_search_last();
+		if(search_pattern(view, pattern, stash_selection, select_matches) != 0)
+		{
+			print_search_fail_msg(view, backward);
+			save_msg = 1;
+			return save_msg;
 		}
 	}
 
-	/* Redraw the cursor which also might synchronize cursors of two views. */
-	fview_cursor_redraw(view);
-	/* Schedule redraw of the view to highlight search matches. */
-	ui_view_schedule_redraw(view);
+	found = goto_search_match(view, backward, count, cb);
+
+	save_msg = print_search_result(view, found, backward, &print_search_next_msg);
+
+	return save_msg;
+}
+
+int
+goto_search_match(view_t *view, int backward, int count,
+		move_cursor_and_redraw_cb cb)
+{
+	const int i = find_search_match(view, backward, count);
+	if(i == -1)
+	{
+		return 0;
+	}
+
+	cb(i);
 
 	return 1;
 }
 
-/* Looks for a search match in specified direction from given start position and
- * navigates to it if match is found.  Starting position is not included in
- * searched range.  Returns non-zero if something was found, otherwise zero is
- * returned. */
-static int
-find_and_goto_match(view_t *view, int start, int backward)
+int
+find_search_match(view_t *view, int backward, int count)
 {
-	int i;
+	int c, i = view->list_pos;
+	assert(count > 0 && "Zero searches.");
+	for(c = 0; c < count; ++c)
+ 	{
+		i = find_match(view, i, backward);
+		if(i == -1)
+		{
+			if(cfg.wrap_scan)
+			{
+				const int wrap_start = backward ? view->list_rows : -1;
+				i = find_match(view, wrap_start, backward);
+				if(i == -1)
+				{
+					return -1;
+				}
+			}
+			else
+			{
+				return -1;
+			}
+		}
+ 	}
+	return i;
+}
+
+/* Looks for a search match in specified direction from given start position.
+ * Starting position is not included in searched range.  Returns index of a
+ * match, or -1 if no matches were found. */
+static int
+find_match(view_t *view, int start, int backward)
+{
+	int i = -1;
 	int begin, end, step;
 
 	if(backward)
@@ -80,6 +165,11 @@ find_and_goto_match(view_t *view, int start, int backward)
 	}
 	else
 	{
+		if(view->list_rows == 0)
+		{
+			return -1;
+		}
+
 		begin = start + 1;
 		end = view->list_rows;
 		step = 1;
@@ -91,25 +181,24 @@ find_and_goto_match(view_t *view, int start, int backward)
 	{
 		if(view->dir_entry[i].search_match)
 		{
-			view->list_pos = i;
-			break;
+			return i;
 		}
 	}
 
-	return i != end;
+	return -1;
 }
 
 int
-find_pattern(view_t *view, const char pattern[], int backward, int move,
-		int *found, int print_errors)
+search_pattern(view_t *view, const char pattern[], int stash_selection,
+		int select_matches)
 {
 	int cflags;
 	int nmatches = 0;
 	regex_t re;
-	int err;
+	int err = 0;
 	view_t *other;
 
-	if(move && cfg.hl_search)
+	if(stash_selection)
 	{
 		flist_sel_stash(view);
 	}
@@ -122,11 +211,8 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 
 	if(pattern[0] == '\0')
 	{
-		*found = 1;
-		return 0;
+		return err;
 	}
-
-	*found = 0;
 
 	cflags = get_regexp_cflags(pattern);
 	if((err = regexp_compile(&re, pattern, cflags)) == 0)
@@ -161,7 +247,7 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 			entry->match_left += escape_unreadableo(name, matches[0].rm_so);
 			entry->match_right = matches[0].rm_eo;
 			entry->match_right += escape_unreadableo(name, matches[0].rm_eo);
-			if(cfg.hl_search)
+			if(select_matches)
 			{
 				entry->selected = 1;
 				++view->selected_files;
@@ -174,12 +260,8 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	}
 	else
 	{
-		if(print_errors)
-		{
-			ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
-		}
 		regfree(&re);
-		return -1;
+		return err;
 	}
 
 	other = (view == &lwin) ? &rwin : &lwin;
@@ -191,44 +273,36 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	view->matches = nmatches;
 	copy_str(view->last_search, sizeof(view->last_search), pattern);
 
-	view->matches = nmatches;
-	if(nmatches > 0)
-	{
-		const int was_found = move ? goto_search_match(view, backward) : 1;
-		*found = was_found;
+	return err;
+}
 
-		if(!cfg.hl_search)
+int
+print_search_result(const view_t *view, int found, int backward,
+		print_search_msg_cb cb)
+{
+	if(view->matches > 0)
+	{
+		/* Print a message in all cases except for 'hlsearch nowrapscan' with no
+		 * matches in non-visual mode to not supersede the "n files selected"
+		 * message for possibly hidden selected files (the message is printed
+		 * automatically). */
+		if(found)
 		{
-			if(print_errors)
-			{
-				print_result(view, was_found, backward);
-			}
+			cb(view, backward);
+			return 1;
+		}
+		else if(!cfg.hl_search || cfg.wrap_scan || vle_mode_is(VISUAL_MODE) ||
+				vle_primary_mode_is(VISUAL_MODE))
+		{
+			print_search_fail_msg(view, backward);
 			return 1;
 		}
 		return 0;
 	}
 	else
 	{
-		if(print_errors)
-		{
-			print_search_fail_msg(view, backward);
-		}
-		return 1;
-	}
-}
-
-/* Prints success or error message, determined by the found argument, about
- * search results to a user. */
-static void
-print_result(const view_t *view, int found, int backward)
-{
-	if(found)
-	{
-		print_search_msg(view, backward);
-	}
-	else
-	{
 		print_search_fail_msg(view, backward);
+		return 1;
 	}
 }
 
