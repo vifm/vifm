@@ -79,25 +79,28 @@ int modcline_complete_dirs(const char str[], void *arg);
 /* Completes paths to both files and directories.  Returns completion offset. */
 int modcline_complete_files(const char str[], void *arg);
 
-#ifdef TEST
+#if defined(TEST) || defined(CMDLINE_IMPL)
+
 #include <stddef.h> /* size_t wchar_t */
 
 #include "../compat/fs_limits.h"
 #include "../utils/hist.h"
 
+/* History search mode. */
 typedef enum
 {
-	HIST_NONE,
-	HIST_GO,
-	HIST_SEARCH
+	HIST_NONE,   /* No search in history is active. */
+	HIST_GO,     /* Retrieving items from history one by one. */
+	HIST_SEARCH, /* Retrieving items that match entered prefix skipping others. */
 }
 HIST;
 
+/* Describes possible states of a prompt used for interactive search. */
 typedef enum
 {
-	PS_NORMAL,
-	PS_WRONG_PATTERN,
-	PS_NO_MATCH,
+	PS_NORMAL,        /* Normal state (empty input or input is OK). */
+	PS_WRONG_PATTERN, /* Pattern contains a mistake. */
+	PS_NO_MATCH,      /* Pattern is OK, but no matches found. */
 }
 PromptState;
 
@@ -160,7 +163,9 @@ typedef struct
 	PromptState state;       /* Prompt state with regard to current input. */
 }
 line_stats_t;
+
 #endif
+
 TSTATIC_DEFS(
 	int line_completion(line_stats_t *stat);
 	const wchar_t * extract_abbrev(line_stats_t *stat, int *pos, int *no_remap);

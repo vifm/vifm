@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#define CMDLINE_IMPL
 #include "cmdline.h"
 
 #include <curses.h>
@@ -77,84 +78,6 @@
 
 /* Prompt prefix when navigation is enabled. */
 #define NAV_PREFIX L"(nav)"
-
-/* History search mode. */
-typedef enum
-{
-	HIST_NONE,   /* No search in history is active. */
-	HIST_GO,     /* Retrieving items from history one by one. */
-	HIST_SEARCH  /* Retrieving items that match entered prefix skipping others. */
-}
-HIST;
-
-/* Describes possible states of a prompt used for interactive search. */
-typedef enum
-{
-	PS_NORMAL,        /* Normal state (empty input or input is OK). */
-	PS_WRONG_PATTERN, /* Pattern contains a mistake. */
-	PS_NO_MATCH,      /* Pattern is OK, but no matches found. */
-}
-PromptState;
-
-/* Holds state of the command-line editing mode. */
-typedef struct
-{
-	/* Mode management. */
-
-	/* Mode that entered command-line mode. */
-	int prev_mode;
-	/* Kind of command-line mode. */
-	CmdLineSubmode sub_mode;
-	/* Whether performing quick navigation. */
-	int navigating;
-	/* Whether current submode allows external editing. */
-	int sub_mode_allows_ee;
-	/* CLS_MENU_*-specific data. */
-	struct menu_data_t *menu;
-	/* CLS_PROMPT-specific data. */
-	prompt_cb prompt_callback;
-	void *prompt_callback_arg;
-
-	/* Line editing state. */
-	wchar_t *line;                /* The line reading. */
-	wchar_t *last_line;           /* Previous contents of the line. */
-	wchar_t *initial_line;        /* Initial state of the line. */
-	int index;                    /* Index of the current character in cmdline. */
-	int curs_pos;                 /* Position of the cursor in status bar. */
-	int len;                      /* Length of the string. */
-	int cmd_pos;                  /* Position in the history. */
-	wchar_t prompt[NAME_MAX + 1]; /* Prompt message. */
-	int prompt_wid;               /* Width of the prompt. */
-
-	/* Dot completion. */
-	int dot_pos;      /* History position or < 0 if it's not active. */
-	size_t dot_index; /* Line index. */
-	size_t dot_len;   /* Previous completion length. */
-
-	/* Command completion. */
-	size_t prefix_len;          /* Prefix length for the active completion. */
-	int complete_continue;      /* If non-zero, continue previous completion. */
-	int reverse_completion;     /* Completion in the opposite direction. */
-	complete_cmd_func complete; /* Completion function. */
-
-	/* History completion. */
-	HIST history_search; /* One of the HIST_* constants. */
-	int hist_search_len; /* Length of history search pattern. */
-	wchar_t *line_buf;   /* Content of line before using history. */
-
-	/* For search prompt. */
-	int search_mode;        /* If it's a search prompt. */
-	int search_match_found; /* Reflects interactive search success/failure. */
-	int old_top;            /* Saved top for interactive searching. */
-	int old_pos;            /* Saved position for interactive searching. */
-
-	/* Other state. */
-	int line_edited;         /* Cache for whether input line changed flag. */
-	int enter_mapping_state; /* The mapping state at entering the mode. */
-	int expanding_abbrev;    /* Abbreviation expansion is in progress. */
-	PromptState state;       /* Prompt state with regard to current input. */
-}
-line_stats_t;
 
 /* Stashed store of the state to support limited recursion. */
 static line_stats_t prev_input_stat;
