@@ -222,8 +222,8 @@ TEST(vifm_currview)
 	++curr_view->id;
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua, "r:cd('bla')"));
-	assert_true(ends_with(ui_sb_last(),
-				"Invalid VifmView object (associated view is dead)"));
+	assert_string_ends_with("Invalid VifmView object (associated view is dead)",
+			ui_sb_last());
 
 	assert_success(cmds_dispatch1("tabnew", curr_view, CIT_COMMAND));
 
@@ -262,8 +262,8 @@ TEST(vifm_run)
 				"print(vifm.run({ cmd = 'exit 3',"
 				                " usetermmux = false,"
 				                " pause = 'unknown' }))"));
-	assert_true(ends_with(ui_sb_last(),
-				": Unrecognized value for `pause`: unknown"));
+	assert_string_ends_with(": Unrecognized value for `pause`: unknown",
+			ui_sb_last());
 
 	/* This waits for user input on Windows. */
 #ifndef _WIN32
@@ -327,8 +327,8 @@ TEST(vifm_input)
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.input({ prompt = 'write: ',"
 				                  " complete = 'bla' }))"));
-	assert_true(ends_with(ui_sb_last(),
-				": Unrecognized value for `complete`: bla"));
+	assert_string_ends_with(": Unrecognized value for `complete`: bla",
+			ui_sb_last());
 
 	vle_keys_reset();
 

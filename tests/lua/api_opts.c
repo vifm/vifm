@@ -3,7 +3,6 @@
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/str.h"
 
 #include <test-utils.h>
 
@@ -49,8 +48,9 @@ TEST(bad_option_value)
 {
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua, "vifm.opts.global.caseoptions = 'yes'"));
-	assert_true(ends_with(ui_sb_last(), "Illegal character: <y>\n"
-				"Failed to set value of option caseoptions"));
+	assert_string_ends_with(
+			"Illegal character: <y>\n" "Failed to set value of option caseoptions",
+			ui_sb_last());
 }
 
 TEST(local_option)
@@ -171,8 +171,8 @@ TEST(view_option)
 
 	assert_true(curr_view == &rwin);
 	assert_failure(vlua_run_string(vlua, "v.locopts.dotfiles = 'asdf'"));
-	assert_true(ends_with(ui_sb_last(),
-				"bad argument #3 to '?' (boolean expected, got string)"));
+	assert_string_ends_with(
+			"bad argument #3 to '?' (boolean expected, got string)", ui_sb_last());
 	assert_true(curr_view == &rwin);
 }
 

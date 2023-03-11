@@ -7,7 +7,6 @@
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/str.h"
 #include "../../src/opt_handlers.h"
 
 #include <test-utils.h>
@@ -48,13 +47,13 @@ TEST(bad_args)
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addcolumntype{ name = nil,"
 				                         " handler = nil })"));
-	assert_true(ends_with(ui_sb_last(), ": `name` key is mandatory"));
+	assert_string_ends_with(": `name` key is mandatory", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addcolumntype{ name = 'NAME',"
 				                         " handler = nil })"));
-	assert_true(ends_with(ui_sb_last(), ": `handler` key is mandatory"));
+	assert_string_ends_with(": `handler` key is mandatory", ui_sb_last());
 }
 
 TEST(bad_name)
@@ -65,21 +64,22 @@ TEST(bad_name)
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addcolumntype{ name = '',"
 				                         " handler = handler })"));
-	assert_true(ends_with(ui_sb_last(), ": View column name can't be empty"));
+	assert_string_ends_with(": View column name can't be empty", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addcolumntype{ name = 'name',"
 				                         " handler = handler })"));
-	assert_true(ends_with(ui_sb_last(),
-				": View column name must not start with a lower case Latin letter"));
+	assert_string_ends_with(
+			": View column name must not start with a lower case Latin letter",
+			ui_sb_last());
 
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addcolumntype{ name = 'A-A',"
 				                         " handler = handler })"));
-	assert_true(ends_with(ui_sb_last(),
-				": View column name must not contain non-Latin characters"));
+	assert_string_ends_with(
+			": View column name must not contain non-Latin characters", ui_sb_last());
 }
 
 TEST(column_is_registered)
@@ -108,8 +108,8 @@ TEST(duplicate_name)
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addcolumntype{ name = 'Test',"
 				                         " handler = handler })"));
-	assert_true(ends_with(ui_sb_last(),
-				": View column with such name already exists: Test"));
+	assert_string_ends_with(": View column with such name already exists: Test",
+			ui_sb_last());
 }
 
 TEST(columns_are_used)

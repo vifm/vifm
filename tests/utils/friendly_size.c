@@ -123,7 +123,7 @@ TEST(huge_precision)
 	cfg.sizefmt.precision = 25;
 	friendly_size_notation(231093, sizeof(buf), buf);
 	assert_true(starts_with_lit(buf, "225.676757812"));
-	assert_true(ends_with(buf, " K"));
+	assert_string_ends_with(" K", buf);
 }
 
 TEST(nospace)

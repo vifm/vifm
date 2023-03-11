@@ -33,7 +33,7 @@ TEST(vifmjob_bad_arg)
 	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
 	                                     "         iomode = 'u' }\n"
 	                                     "job = vifm.startjob(info)"));
-	assert_true(ends_with(ui_sb_last(), "Unknown 'iomode' value: u"));
+	assert_string_ends_with("Unknown 'iomode' value: u", ui_sb_last());
 }
 
 /* This test comes before other good startjob tests to make it pass faster.
@@ -124,7 +124,7 @@ TEST(vifmjob_stdin_broken_pipe, IF(not_windows))
 	assert_string_equal("true", ui_sb_last());
 	bg_check();
 	assert_failure(vlua_run_string(vlua, "print(stdin:write('text') == stdin)"));
-	assert_true(ends_with(ui_sb_last(), ": attempt to use a closed file"));
+	assert_string_ends_with(": attempt to use a closed file", ui_sb_last());
 }
 
 TEST(vifmjob_stdout)
@@ -161,7 +161,7 @@ TEST(vifmjob_no_out)
 	                                     "         iomode = '' }\n"
 	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:stdout() and 'FAIL')"));
-	assert_true(ends_with(ui_sb_last(), "The job has no output stream"));
+	assert_string_ends_with("The job has no output stream", ui_sb_last());
 }
 
 TEST(vifmjob_no_in)
@@ -171,7 +171,7 @@ TEST(vifmjob_no_in)
 	                                     "         iomode = '' }\n"
 	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:stdin() and 'FAIL')"));
-	assert_true(ends_with(ui_sb_last(), "The job has no input stream"));
+	assert_string_ends_with("The job has no input stream", ui_sb_last());
 }
 
 TEST(vifmjob_onexit_good)
@@ -209,8 +209,8 @@ TEST(vifmjob_onexit_bad)
 	wait_for_job();
 	vlua_process_callbacks(vlua);
 
-	assert_true(ends_with(ui_sb_last(),
-				": attempt to call a nil value (global 'fail_here')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'fail_here')",
+			ui_sb_last());
 }
 
 static void

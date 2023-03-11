@@ -697,7 +697,7 @@ TEST(help_command)
 	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.topic)"));
 	assert_string_equal("vifm-app.txt", ui_sb_last());
 	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.vimdocdir)"));
-	assert_true(ends_with(ui_sb_last(), "/vim-doc"));
+	assert_string_ends_with("/vim-doc", ui_sb_last());
 
 	cfg.use_vim_help = 0;
 
@@ -818,7 +818,7 @@ TEST(regedit_normalizes_paths, IF(not_windows))
 	assert_int_equal(2, reg->nfiles);
 	int rel_idx = (ends_with(reg->files[0], "/to-2") ? 0 : 1);
 	assert_string_equal("/abs/path/to-1", reg->files[1 - rel_idx]);
-	assert_true(ends_with(reg->files[rel_idx], "/to-2"));
+	assert_string_ends_with("/to-2", reg->files[rel_idx]);
 	assert_true(is_path_absolute(reg->files[0]));
 	assert_true(is_path_absolute(reg->files[1]));
 

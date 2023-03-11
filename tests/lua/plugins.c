@@ -396,8 +396,8 @@ TEST(global_table_is_mocked)
 	assert_string_equal("", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "print(func())"));
-	assert_true(ends_with(ui_sb_last(),
-				": attempt to call a nil value (global 'func')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'func')",
+			ui_sb_last());
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");

@@ -9,7 +9,6 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
-#include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/dir_stack.h"
 #include "../../src/filelist.h"
@@ -75,13 +74,13 @@ TEST(swap_swaps_current_locations_and_stack_top)
 
 	assert_success(dir_stack_swap());
 
-	assert_true(ends_with(lwin.curr_dir, "/read"));
-	assert_true(ends_with(rwin.curr_dir, "/rename"));
+	assert_string_ends_with("/read", lwin.curr_dir);
+	assert_string_ends_with("/rename", rwin.curr_dir);
 
 	assert_success(dir_stack_swap());
 
-	assert_true(ends_with(lwin.curr_dir, "/rename"));
-	assert_true(ends_with(rwin.curr_dir, "/read"));
+	assert_string_ends_with("/rename", lwin.curr_dir);
+	assert_string_ends_with("/read", rwin.curr_dir);
 }
 
 TEST(empty_stack_is_described_via_current_directories)
@@ -109,11 +108,11 @@ TEST(non_empty_stack_is_described_correctly)
 	assert_string_equal("/new-left", list[0]);
 	assert_string_equal("/new-right", list[1]);
 	assert_string_equal("-----", list[2]);
-	assert_true(ends_with(list[3], "/rename"));
-	assert_true(ends_with(list[4], "/read"));
+	assert_string_ends_with("/rename", list[3]);
+	assert_string_ends_with("/read", list[4]);
 	assert_string_equal("-----", list[5]);
-	assert_true(ends_with(list[6], "/read"));
-	assert_true(ends_with(list[7], "/rename"));
+	assert_string_ends_with("/read", list[6]);
+	assert_string_ends_with("/rename", list[7]);
 	assert_string_equal(NULL, list[8]);
 	free_string_array(list, 9);
 }
@@ -154,8 +153,8 @@ TEST(rotate_does_nothing_for_zero_argument)
 
 	assert_success(dir_stack_rotate(0));
 
-	assert_true(ends_with(lwin.curr_dir, "/rename"));
-	assert_true(ends_with(rwin.curr_dir, "/read"));
+	assert_string_ends_with("/rename", lwin.curr_dir);
+	assert_string_ends_with("/read", rwin.curr_dir);
 }
 
 TEST(rotate_rotates_the_stack)
@@ -167,20 +166,20 @@ TEST(rotate_rotates_the_stack)
 	load_view_pair(TEST_DATA_PATH "/rename", TEST_DATA_PATH "/read");
 
 	assert_success(dir_stack_rotate(2));
-	assert_true(ends_with(lwin.curr_dir, "/read"));
-	assert_true(ends_with(rwin.curr_dir, "/rename"));
+	assert_string_ends_with("/read", lwin.curr_dir);
+	assert_string_ends_with("/rename", rwin.curr_dir);
 
 	assert_success(dir_stack_rotate(2));
-	assert_true(ends_with(lwin.curr_dir, "/tree"));
-	assert_true(ends_with(rwin.curr_dir, "/various-sizes"));
+	assert_string_ends_with("/tree", lwin.curr_dir);
+	assert_string_ends_with("/various-sizes", rwin.curr_dir);
 
 	assert_success(dir_stack_rotate(2));
-	assert_true(ends_with(lwin.curr_dir, "/rename"));
-	assert_true(ends_with(rwin.curr_dir, "/read"));
+	assert_string_ends_with("/rename", lwin.curr_dir);
+	assert_string_ends_with("/read", rwin.curr_dir);
 
 	assert_success(dir_stack_rotate(1));
-	assert_true(ends_with(lwin.curr_dir, "/tree"));
-	assert_true(ends_with(rwin.curr_dir, "/various-sizes"));
+	assert_string_ends_with("/tree", lwin.curr_dir);
+	assert_string_ends_with("/various-sizes", rwin.curr_dir);
 }
 
 static void
