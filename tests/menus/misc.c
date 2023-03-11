@@ -76,9 +76,9 @@ TEST(menu_can_be_searched_interactively)
 	menu_data_t *menu = menu_get_current();
 
 	(void)vle_keys_exec_timed_out(L"/^Compiled at:");
-	assert_true(starts_with_lit(menu->items[menu->pos], "Compiled at:"));
+	assert_string_starts_with("Compiled at:", menu->items[menu->pos]);
 	(void)vle_keys_exec_timed_out(WK_C_u L"^Version:");
-	assert_true(starts_with_lit(menu->items[menu->pos], "Version:"));
+	assert_string_starts_with("Version:", menu->items[menu->pos]);
 
 	(void)vle_keys_exec_timed_out(WK_ESC);
 	(void)vle_keys_exec_timed_out(WK_ESC);

@@ -78,7 +78,7 @@ TEST(syntax_error)
 
 	ui_sb_msg("");
 	assert_failure(vlua_load_plugin(vlua, &plug_dummy));
-	assert_true(starts_with_lit(ui_sb_last(), "Failed to load 'plug' plugin: "));
+	assert_string_starts_with("Failed to load 'plug' plugin: ", ui_sb_last());
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
@@ -89,7 +89,7 @@ TEST(runtime_error)
 
 	ui_sb_msg("");
 	assert_failure(vlua_load_plugin(vlua, &plug_dummy));
-	assert_true(starts_with_lit(ui_sb_last(), "Failed to start 'plug' plugin: "));
+	assert_string_starts_with("Failed to start 'plug' plugin: ", ui_sb_last());
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
@@ -304,8 +304,8 @@ TEST(can_not_load_same_plugin_twice, IF(not_windows))
 	            (status2 == PLS_SUCCESS && status1 == PLS_SKIPPED));
 
 	const plug_t *skipped = (status1 == PLS_SKIPPED ? plug1 : plug2);
-	assert_true(starts_with_lit(skipped->log,
-				"[vifm][error]: skipped as a duplicate of"));
+	assert_string_starts_with("[vifm][error]: skipped as a duplicate of",
+			skipped->log);
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug2");

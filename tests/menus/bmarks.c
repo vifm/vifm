@@ -180,9 +180,9 @@ TEST(sorting_updates_associated_data)
 	assert_string_equal("/a", menu_get_current()->data[0]);
 	assert_string_equal("/b", menu_get_current()->data[1]);
 	assert_string_equal("/c", menu_get_current()->data[2]);
-	assert_true(starts_with_lit(menu_get_current()->items[0], "/a"));
-	assert_true(starts_with_lit(menu_get_current()->items[1], "/b"));
-	assert_true(starts_with_lit(menu_get_current()->items[2], "/c"));
+	assert_string_starts_with("/a", menu_get_current()->items[0]);
+	assert_string_starts_with("/b", menu_get_current()->items[1]);
+	assert_string_starts_with("/c", menu_get_current()->items[2]);
 	(void)vle_keys_exec(WK_ESC);
 }
 

@@ -6,7 +6,6 @@
 #include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
-#include "../../src/utils/str.h"
 #include "../../src/background.h"
 
 #include <test-utils.h>
@@ -48,7 +47,7 @@ TEST(vifmjob_errors)
 	                                     "job:wait()\n"
 	                                     "while #job:errors() == 0 do end\n"
 	                                     "print(job:errors())"));
-	assert_true(starts_with_lit(ui_sb_last(), "err"));
+	assert_string_starts_with("err", ui_sb_last());
 
 	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo out' }\n"
 	                                     "job = vifm.startjob(info)\n"
@@ -137,7 +136,7 @@ TEST(vifmjob_stdout)
 	                                     "else\n"
 	                                     "  print(job:stdout():read('a'))\n"
 	                                     "end"));
-	assert_true(starts_with_lit(ui_sb_last(), "out"));
+	assert_string_starts_with("out", ui_sb_last());
 }
 
 TEST(vifmjob_stderr)
@@ -151,7 +150,7 @@ TEST(vifmjob_stderr)
 	                                     "         mergestreams = true }\n"
 	                                     "job = vifm.startjob(info)\n"
 	                                     "print(job:stdout():read('a'))"));
-	assert_true(starts_with_lit(ui_sb_last(), "err"));
+	assert_string_starts_with("err", ui_sb_last());
 }
 
 TEST(vifmjob_no_out)

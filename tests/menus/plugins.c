@@ -77,13 +77,13 @@ TEST(plugins_are_listed)
 	int first_loaded = starts_with(menu_get_current()->items[0], "[ loaded] ");
 
 	assert_int_equal(not_windows() ? 3 : 2, menu_get_current()->len);
-	assert_true(starts_with(menu_get_current()->items[0],
-				first_loaded ? "[ loaded] " : "[skipped] "));
-	assert_true(starts_with(menu_get_current()->items[1], "[ failed] "));
+	assert_string_starts_with(first_loaded ? "[ loaded] " : "[skipped] ",
+			menu_get_current()->items[0]);
+	assert_string_starts_with("[ failed] ", menu_get_current()->items[1]);
 	if(not_windows())
 	{
-		assert_true(starts_with(menu_get_current()->items[2],
-				first_loaded ? "[skipped] " : "[ loaded] "));
+		assert_string_starts_with(first_loaded ? "[skipped] " : "[ loaded] ",
+				menu_get_current()->items[2]);
 		remove_file(SANDBOX_PATH "/plugins/plug3");
 	}
 }
@@ -118,7 +118,7 @@ TEST(e_press_without_errors)
 	assert_success(cmds_dispatch("plugins", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec(WK_e);
-	assert_true(starts_with_lit(menu_get_current()->items[0], "["));
+	assert_string_starts_with("[", menu_get_current()->items[0]);
 }
 
 TEST(e_press_with_errors)
@@ -140,7 +140,7 @@ TEST(e_press_with_errors)
 	(void)vle_keys_exec(WK_x);
 
 	(void)vle_keys_exec(WK_h);
-	assert_true(starts_with_lit(menu_get_current()->items[0], "["));
+	assert_string_starts_with("[", menu_get_current()->items[0]);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

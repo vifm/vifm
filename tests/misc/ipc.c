@@ -57,7 +57,7 @@ TEST(name_can_be_null, IF(ipc_enabled))
 TEST(name_is_taken_into_account, IF(ipc_enabled))
 {
 	ipc_t *const ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
-	assert_true(starts_with_lit(ipc_get_name(ipc), NAME));
+	assert_string_starts_with(NAME, ipc_get_name(ipc));
 	ipc_free(ipc);
 }
 
