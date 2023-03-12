@@ -107,6 +107,34 @@ TEST(vifm_exists)
 	assert_string_equal("y", ui_sb_last());
 }
 
+TEST(vifm_executable)
+{
+	const char *const exec_file = SANDBOX_PATH "/exec" EXE_SUFFIX;
+	create_executable(exec_file);
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.executable('.') and 'y' or 'n')"));
+	assert_string_equal("n", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.executable('" SANDBOX_PATH "') and 'y' or 'n')"));
+	assert_string_equal("n", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.executable('" SANDBOX_PATH "/exec" EXE_SUFFIX "') "
+				      "and 'y' or 'n')"));
+	assert_string_equal("y", ui_sb_last());
+
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.executable('" TEST_DATA_PATH "/read/two-lines') "
+				      "and 'y' or 'n')"));
+	assert_string_equal("n", ui_sb_last());
+
+	assert_success(remove(exec_file));
+}
+
 TEST(vifm_makepath)
 {
 	assert_success(vlua_run_string(vlua, "sandbox = '" SANDBOX_PATH "'"));

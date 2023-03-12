@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 5
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -612,6 +612,18 @@ Parameters:~
 
 Return:~
   Modified path.
+
+vifm.executable({what})                        *vifm-l_vifm.executable()*
+If {what} is absolute or relative path, checks whether it exists and refers to
+an executable, otherwise checks whether command named {what} is present in
+directories listed in $PATH.  Checks for various executable extensions on
+Windows.
+
+Parameters:~
+  {what}  Path or command name to check.
+
+Return:~
+  `true` if an executable was found.
 
 vifm.exists({path})                            *vifm-l_vifm.exists()*
 Checks existence of a path without resolving symbolic links.

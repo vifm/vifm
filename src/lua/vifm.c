@@ -63,6 +63,7 @@ input_cb_data_t;
 
 static int VLUA_API(vifm_errordialog)(lua_State *lua);
 static int VLUA_API(vifm_escape)(lua_State *lua);
+static int VLUA_API(vifm_executable)(lua_State *lua);
 static int VLUA_API(vifm_exists)(lua_State *lua);
 static int VLUA_API(vifm_expand)(lua_State *lua);
 static int VLUA_API(vifm_fnamemodify)(lua_State *lua);
@@ -83,6 +84,7 @@ static int VLUA_API(sb_quick)(lua_State *lua);
 
 VLUA_DECLARE_SAFE(vifm_errordialog);
 VLUA_DECLARE_SAFE(vifm_escape);
+VLUA_DECLARE_SAFE(vifm_executable);
 VLUA_DECLARE_SAFE(vifm_exists);
 VLUA_DECLARE_SAFE(vifm_expand);
 VLUA_DECLARE_SAFE(vifm_fnamemodify);
@@ -114,6 +116,7 @@ static void input_builtin_cb(const char response[], void *arg);
 static const struct luaL_Reg vifm_methods[] = {
 	{ "errordialog",   VLUA_REF(vifm_errordialog)   },
 	{ "escape",        VLUA_REF(vifm_escape)        },
+	{ "executable",    VLUA_REF(vifm_executable)    },
 	{ "exists",        VLUA_REF(vifm_exists)        },
 	{ "expand",        VLUA_REF(vifm_expand)        },
 	{ "fnamemodify",   VLUA_REF(vifm_fnamemodify)   },
@@ -230,6 +233,28 @@ VLUA_API(vifm_escape)(lua_State *lua)
 	char *escaped = shell_arg_escape(what, curr_stats.shell_type);
 	lua_pushstring(lua, escaped);
 	free(escaped);
+	return 1;
+}
+
+/* Member of `vifm` that checks whether executable exists at absolute path or
+ * in directories listed in $PATH when path isn't absolute.  Checks for various
+ * executable extensions on Windows.  Returns a boolean. */
+static int
+VLUA_API(vifm_executable)(lua_State *lua)
+{
+	const char *path = luaL_checkstring(lua, 1);
+
+	int executable;
+	if(contains_slash(path))
+	{
+		executable = executable_exists(path);
+	}
+	else
+	{
+		executable = (find_cmd_in_path(path, 0UL, NULL) == 0);
+	}
+
+	lua_pushboolean(lua, executable);
 	return 1;
 }
 
