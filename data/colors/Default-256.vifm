@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 1 March, 2023
+" This file last updated: 12 March, 2023
 
 highlight clear
 
@@ -75,7 +75,7 @@ highlight {*[^0-9].[1-9]}
 highlight {*.doc,*.docx,*.xls,*.xlsm,*.xlsx,*.mobi,*.rtf,*.ppt,*.pptx,*.pdf,
           \*.epub,*.fb2,*.djvu,*.djv,*.htm,*.html,*.shtml,*.xhtml,*.desktop,
           \*.odg,*.odt,*.ods}
-        \ cterm=none ctermfg=211 ctermbg=default
+        \ cterm=none ctermfg=218 ctermbg=default
 " audio
 highlight {*.aac,*.ac3,*.anx,*.ape,*.asf,*.au,*.axa,*.cue,*.flac,*.m2a,*.m4a,
           \*.mid,*.midi,*.mka,*.mp3,*.mpc,*.oga,*.ogg,*.ogx,*.ra,*.ram,*.spx,
