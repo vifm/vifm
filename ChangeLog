@@ -17,8 +17,8 @@
 	to Oskar Grunning (sQVe).
 
 	Changed error reporting for some of the :commands such that now their
-	failures cause a dialog to appear of sourcing of vifmrc, previously those
-	errors were printed only to status bar.
+	failures cause a dialog to appear on sourcing, previously those errors
+	were printed only to status bar.
 
 	Added "withicase" and "withrcase" to :compare that force ignoring and
 	respecting case respectively on comparing file names and paths.  Thanks to
