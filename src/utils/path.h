@@ -86,8 +86,9 @@ void ensure_path_well_formed(char *path);
 void to_canonic_path(const char path[], const char base[], char buf[],
 		size_t buf_len);
 
-/* Checks if path contains slash (also checks for backward slash on Windows). */
-int contains_slash(const char *path);
+/* Checks if path contains slash (also checks for backward slash on Windows).
+ * Returns non-zero if so. */
+int contains_slash(const char path[]);
 
 /* Returns position of the last slash (including backward slash on Windows) in
  * the path. */
