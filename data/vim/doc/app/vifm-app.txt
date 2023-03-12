@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Mar 10
+*vifm-app.txt*    For Vifm version 0.12.1  Last change: 2023 Mar 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2936,9 +2936,8 @@ The command macros may be used in user commands.
             available) or process group (keeps the command in the set of
             foreground clients of the terminal).
                                                                *vifm-%i*
-  %i        completely ignore command output.  For background jobs this
-            suppresses error dialogs, while still storing errors
-            internally for viewing via |vifm-:jobs| menu.
+  %i        run in background and suppress error dialogs, but collect
+            errors internally for viewing via |vifm-:jobs| menu.
 
                                                                *vifm-%Pl*
   %Pl       pipe list of files to standard input of a command.
