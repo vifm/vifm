@@ -196,7 +196,7 @@ TEST(correct_cursor_position_for_incsearch_with_a_count)
 {
 	cfg.inc_search = 1;
 
-	(void)vle_keys_exec_timed_out(L"3" WK_SLASH L"." WK_CR);
+	(void)vle_keys_exec_timed_out(L"3" WK_SLASH L".." WK_CR);
 	assert_int_equal(3, lwin.list_pos);
 }
 
