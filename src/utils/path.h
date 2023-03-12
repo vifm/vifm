@@ -22,13 +22,6 @@
 
 #include <stddef.h> /* size_t */
 
-/* String with path items separator supported by the system. */
-#ifndef _WIN32
-#define PATH_SEPARATORS "/"
-#else
-#define PATH_SEPARATORS "/\\"
-#endif
-
 /* Various functions to work with paths */
 
 /* Like chomp() but removes trailing slashes. */
