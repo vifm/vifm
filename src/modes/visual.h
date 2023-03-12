@@ -46,11 +46,10 @@ void modvis_leave(int save_msg, int goto_top, int clear_selection);
 void modvis_update(void);
 
 /* Kind of callback to allow starting searches from the module and rely on other
- * modules.  Returns new value for status bar message flag, but when
- * print_errors isn't requested can return -1 to indicate issues with the
- * pattern. */
+ * modules.  Returns new value for status bar message flag, but when print_msg
+ * isn't requested can return -1 to indicate issues with the pattern. */
 int modvis_find(struct view_t *view, const char pattern[], int backward,
-		int print_errors, int *found);
+		int print_msg, int *found);
 
 /* Formats concise description of current visual mode state.  Returns pointer
  * to a statically allocated buffer. */

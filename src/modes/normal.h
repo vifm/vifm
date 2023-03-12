@@ -53,11 +53,10 @@ void modnorm_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info);
 void modnorm_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 
 /* Kind of callback to allow starting searches from the module and rely on other
- * modules.  Returns new value for status bar message flag, but when
- * print_errors isn't requested can return -1 to indicate issues with the
- * pattern. */
+ * modules.  Returns new value for status bar message flag, but when print_msg
+ * isn't requested can return -1 to indicate issues with the pattern. */
 int modnorm_find(struct view_t *view, const char pattern[], int backward,
-		int print_errors, int *found);
+		int print_msg, int *found);
 
 /* Sets search attributes necessary for a modnorm_find() call without prior
  * normal.c:activate_search() call. */

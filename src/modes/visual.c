@@ -1426,11 +1426,11 @@ modvis_update(void)
 }
 
 int
-modvis_find(view_t *view, const char pattern[], int backward, int print_errors,
+modvis_find(view_t *view, const char pattern[], int backward, int print_msg,
 		int *found)
 {
 	return search_find(view, pattern, backward, /*stash_selection=*/0,
-			/*select_matches=*/0, search_repeat, &goto_pos, print_errors, found);
+			/*select_matches=*/0, search_repeat, &goto_pos, print_msg, found);
 }
 
 /* Moves cursor from its current position to specified pos selecting or
