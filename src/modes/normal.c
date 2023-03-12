@@ -2295,9 +2295,10 @@ set_pos_in_curr_view(int pos)
 }
 
 void
-modnorm_set_search_count(int count)
+modnorm_set_search_attrs(int count, int last_search_backward)
 {
 	search_repeat = count;
+	curr_stats.last_search_backward = last_search_backward;
 }
 
 /* Processes events from the mouse. */

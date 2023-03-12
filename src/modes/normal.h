@@ -59,8 +59,9 @@ void modnorm_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 int modnorm_find(struct view_t *view, const char pattern[], int backward,
 		int print_errors, int *found);
 
-/* Sets count for a search. */
-void modnorm_set_search_count(int count);
+/* Sets search attributes necessary for a modnorm_find() call without prior
+ * normal.c:activate_search() call. */
+void modnorm_set_search_attrs(int count, int last_search_backward);
 
 #endif /* VIFM__MODES__NORMAL_H__ */
 

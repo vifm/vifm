@@ -225,6 +225,9 @@
 	Fixed description of %i macro in the documentation to mention that it runs
 	command in background.
 
+	Fixed the last search direction not being saved on search performed from
+	non-normal mode.  Patch by filterfalse.
+
 0.12.1-beta to 0.12.1 (2022-09-21)
 
 	Added shell completion for fish shell.  Patch by Hoang Nguyen (a.k.a.

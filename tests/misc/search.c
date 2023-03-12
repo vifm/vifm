@@ -217,7 +217,7 @@ TEST(modnorm_find_returns_zero_if_msg_is_not_printed)
 	cfg.wrap_scan = 0;
 
 	lwin.list_pos = 2;
-	modnorm_set_search_count(/*count=*/1);
+	modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/0);
 	assert_int_equal(0, modnorm_find(&lwin, "dos", /*backward=*/0,
 				/*print_errors=*/1, &found));
 	assert_int_equal(2, lwin.list_pos);
