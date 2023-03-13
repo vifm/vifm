@@ -24,20 +24,13 @@ SETUP_ONCE()
 
 SETUP()
 {
-	enum { HISTORY_SIZE = 10 };
-
 	modes_init();
 	cmds_init();
 
 	curr_view = &lwin;
 	view_setup(&lwin);
 
-	/* Emulate proper history initialization (must happen after view
-	 * initialization). */
-	cfg_resize_histories(HISTORY_SIZE);
-	cfg_resize_histories(0);
-
-	cfg_resize_histories(HISTORY_SIZE);
+	histories_init(/*size=*/10);
 
 	curr_stats.load_stage = -1;
 }
