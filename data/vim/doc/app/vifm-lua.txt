@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 12
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -564,13 +564,13 @@ Raises an error:~
   If {handler}.name has incorrect value.
 
 vifm.currview()                                *vifm-l_vifm.currview()*
-Retrieves a reference to current view.
+Retrieves a reference to active view.
 
 Return:~
   Returns an instance of |vifm-l_VifmView|.
 
 vifm.otherview()                               *vifm-l_vifm.otherview()*
-Retrieves a reference to current view.
+Retrieves a reference to inactive view.
 
 Return:~
   Returns an instance of |vifm-l_VifmView|.
@@ -1152,7 +1152,7 @@ Raises an error:~
   If waiting has failed.
 
 VifmJob:exitcode()                             *vifm-l_VifmJob:exitcode()*
-Retrieves exit code of the application.
+Retrieves exit code of the command.
 
 Waits for the job to finish.
 
@@ -1165,7 +1165,7 @@ Raises an error:~
   If waiting has failed.
 
 VifmJob:stdin()                                *vifm-l_VifmJob:stdin()*
-Retrieves stream associated with standard input of a job.
+Retrieves stream associated with standard input of the job.
 
 Return:~
   Returns file stream from standard I/O library of Lua.
@@ -1175,7 +1175,7 @@ Raises an error:~
   If input stream object is already closed.
 
 VifmJob:stdout()                               *vifm-l_VifmJob:stdout()*
-Retrieves stream associated with standard output of a job.  Includes error
+Retrieves stream associated with standard output of the job.  Includes error
 stream if `mergestreams` was set to `true`.
 
 Return:~
