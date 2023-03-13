@@ -558,5 +558,37 @@ TEST(usercmd_range_is_as_good_as_selection)
 	stats_reset(&cfg);
 }
 
+TEST(search_usercmd_perform_search)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+	assert_int_equal(0, lwin.list_pos);
+
+	assert_string_equal("", lwin.last_search);
+
+	assert_success(cmds_dispatch("command cmd /var", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cmd", &lwin, CIT_COMMAND));
+
+	assert_int_equal(9, lwin.list_pos);
+	assert_string_equal("var", lwin.last_search);
+}
+
+TEST(search_usercmd_sets_search_direction_on_editing)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+	assert_int_equal(0, lwin.list_pos);
+
+	assert_string_equal("", lwin.last_search);
+	curr_stats.last_search_backward = 1;
+
+	assert_success(cmds_dispatch("command cmd /var", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cmd", &lwin, CIT_COMMAND));
+
+	assert_int_equal(9, lwin.list_pos);
+	assert_string_equal("var", lwin.last_search);
+	assert_false(curr_stats.last_search_backward);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

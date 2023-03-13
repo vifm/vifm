@@ -514,19 +514,19 @@ handle_nonempty_input(void)
 
 		case CLS_BSEARCH: backward = 1; /* Fall through. */
 		case CLS_FSEARCH:
-			result = modnorm_find(curr_view, mbinput, backward, /*print_errors=*/0,
+			result = modnorm_find(curr_view, mbinput, backward, /*print_msg=*/0,
 					&input_stat.search_match_found);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_VBSEARCH: backward = 1; /* Fall through. */
 		case CLS_VFSEARCH:
-			result = modvis_find(curr_view, mbinput, backward, /*print_errors=*/0,
+			result = modvis_find(curr_view, mbinput, backward, /*print_msg=*/0,
 					&input_stat.search_match_found);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = menus_search(mbinput, input_stat.menu, /*print_errors=*/0);
+			result = menus_search(mbinput, input_stat.menu, /*print_erros=*/0);
 			update_state(result, menus_search_matched(input_stat.menu));
 			break;
 		case CLS_FILTER:
@@ -605,7 +605,12 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[])
 			"Use modcline_in_menu() for CLS_MENU_* submodes.");
 	assert(sub_mode != CLS_PROMPT &&
 			"Use modcline_prompt() for CLS_PROMPT submode.");
-	(void)enter_submode(sub_mode, initial, /*reenter=*/0);
+	if(enter_submode(sub_mode, initial, /*reenter=*/0) == 0 &&
+			!is_null_or_empty(initial))
+	{
+		/* Trigger handling of input if its initial value isn't empty. */
+		update_cmdline_text(&input_stat);
+	}
 }
 
 void

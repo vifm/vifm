@@ -13,6 +13,7 @@
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
+#include "../../src/filelist.h"
 #include "../../src/status.h"
 
 static line_stats_t *stats;
@@ -24,20 +25,13 @@ SETUP_ONCE()
 
 SETUP()
 {
-	enum { HISTORY_SIZE = 10 };
-
 	modes_init();
 	cmds_init();
 
 	curr_view = &lwin;
 	view_setup(&lwin);
 
-	/* Emulate proper history initialization (must happen after view
-	 * initialization). */
-	cfg_resize_histories(HISTORY_SIZE);
-	cfg_resize_histories(0);
-
-	cfg_resize_histories(HISTORY_SIZE);
+	histories_init(/*size=*/10);
 
 	curr_stats.load_stage = -1;
 }
@@ -183,6 +177,65 @@ TEST(unknown_key_is_ignored)
 
 	(void)vle_keys_exec(WK_t);
 	assert_true(vle_mode_is(MENU_MODE));
+}
+
+TEST(fsearch_hist_sets_search_direction_on_pick)
+{
+	hists_search_save("a");
+	assert_success(show_fsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+	assert_false(curr_stats.last_search_backward);
+}
+
+TEST(bsearch_hist_sets_search_direction_on_pick)
+{
+	hists_search_save("a");
+	assert_success(show_bsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+	assert_true(curr_stats.last_search_backward);
+}
+
+TEST(fsearch_hist_sets_search_direction_on_editing)
+{
+	hists_search_save("a");
+	assert_success(show_fsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_c);
+	assert_false(curr_stats.last_search_backward);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+}
+
+TEST(bsearch_hist_sets_search_direction_on_editing)
+{
+	hists_search_save("a");
+	assert_success(show_bsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_c);
+	assert_true(curr_stats.last_search_backward);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+}
+
+TEST(editing_search_performs_interactive_search)
+{
+	cfg.inc_search = 1;
+	opt_handlers_setup();
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+	populate_dir_list(&lwin, 0);
+	assert_int_equal(0, lwin.list_pos);
+
+	hists_search_save("var");
+	assert_success(show_fsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_c);
+	assert_int_equal(9, lwin.list_pos);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+	assert_int_equal(0, lwin.list_pos);
+
+	opt_handlers_teardown();
+	cfg.inc_search = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

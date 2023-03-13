@@ -126,12 +126,12 @@ execute_history_cb(view_t *view, menu_data_t *m)
 			break;
 		case FSEARCHHISTORY:
 			hists_search_save(line);
-			modnorm_set_search_count(/*count=*/1);
+			modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/0);
 			cmds_dispatch1(line, view, CIT_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
 			hists_search_save(line);
-			modnorm_set_search_count(/*count=*/1);
+			modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/1);
 			cmds_dispatch1(line, view, CIT_BSEARCH_PATTERN);
 			break;
 		case FILTERHISTORY:
@@ -163,11 +163,11 @@ history_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 				break;
 			case FSEARCHHISTORY:
 				submode = CLS_FSEARCH;
-				modnorm_set_search_count(/*count=*/1);
+				modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/0);
 				break;
 			case BSEARCHHISTORY:
 				submode = CLS_BSEARCH;
-				modnorm_set_search_count(/*count=*/1);
+				modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/1);
 				break;
 			case FILTERHISTORY:
 				submode = CLS_FILTER;
