@@ -605,7 +605,12 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[])
 			"Use modcline_in_menu() for CLS_MENU_* submodes.");
 	assert(sub_mode != CLS_PROMPT &&
 			"Use modcline_prompt() for CLS_PROMPT submode.");
-	(void)enter_submode(sub_mode, initial, /*reenter=*/0);
+	if(enter_submode(sub_mode, initial, /*reenter=*/0) == 0 &&
+			!is_null_or_empty(initial))
+	{
+		/* Trigger handling of input if its initial value isn't empty. */
+		update_cmdline_text(&input_stat);
+	}
 }
 
 void
