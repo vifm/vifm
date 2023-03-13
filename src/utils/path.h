@@ -22,13 +22,6 @@
 
 #include <stddef.h> /* size_t */
 
-/* String with path items separator supported by the system. */
-#ifndef _WIN32
-#define PATH_SEPARATORS "/"
-#else
-#define PATH_SEPARATORS "/\\"
-#endif
-
 /* Various functions to work with paths */
 
 /* Like chomp() but removes trailing slashes. */
@@ -93,8 +86,9 @@ void ensure_path_well_formed(char *path);
 void to_canonic_path(const char path[], const char base[], char buf[],
 		size_t buf_len);
 
-/* Checks if path contains slash (also checks for backward slash on Windows). */
-int contains_slash(const char *path);
+/* Checks if path contains slash (also checks for backward slash on Windows).
+ * Returns non-zero if so. */
+int contains_slash(const char path[]);
 
 /* Returns position of the last slash (including backward slash on Windows) in
  * the path. */

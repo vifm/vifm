@@ -277,7 +277,7 @@ TEST(cmd_v)
 		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
 		assert_string_equal("edit-one", ui_sb_last());
 		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.path)"));
-		assert_true(ends_with(ui_sb_last(), "scripts/append-env.vifm"));
+		assert_string_ends_with("scripts/append-env.vifm", ui_sb_last());
 		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.mustwait)"));
 		assert_string_equal("false", ui_sb_last());
 		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.line)"));

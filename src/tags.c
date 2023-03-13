@@ -734,6 +734,7 @@ const char *tags[] = {
 	"vifm-l_vifm.escape()",
 	"vifm-l_vifm.events",
 	"vifm-l_vifm.events.listen()",
+	"vifm-l_vifm.executable()",
 	"vifm-l_vifm.exists()",
 	"vifm-l_vifm.expand()",
 	"vifm-l_vifm.fnamemodify()",

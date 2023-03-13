@@ -23,7 +23,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcmp() strdup() strpbrk() */
+#include <string.h> /* strcmp() strdup() */
 
 #include "compat/fs_limits.h"
 #include "compat/os.h"
@@ -164,7 +164,7 @@ executable_builtin(const call_info_t *call_info)
 
 	str_val = var_to_str(call_info->argv[0]);
 
-	if(strpbrk(str_val, PATH_SEPARATORS) != NULL)
+	if(contains_slash(str_val))
 	{
 		exists = executable_exists(str_val);
 	}

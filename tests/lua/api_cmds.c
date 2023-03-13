@@ -5,7 +5,6 @@
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
@@ -62,32 +61,32 @@ TEST(cmds_add)
 	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd'"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), "`handler` key is mandatory"));
+	assert_string_ends_with("`handler` key is mandatory", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  handler = handler"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), "`name` key is mandatory"));
+	assert_string_ends_with("`name` key is mandatory", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd',"
 	                                     "  handler = 10"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), "`handler` value must be a function"));
+	assert_string_ends_with("`handler` value must be a function", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd',"
 	                                     "  handler = handler,"
 	                                     "  minargs = 'min'"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), "`minargs` value must be a number"));
+	assert_string_ends_with("`minargs` value must be a number", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
 	                                     "  name = 'cmd',"
 	                                     "  handler = handler,"
 	                                     "  maxargs = 'max'"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), "`maxargs` value must be a number"));
+	assert_string_ends_with("`maxargs` value must be a number", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
@@ -113,8 +112,8 @@ TEST(cmds_add)
 
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch1("bcmd", curr_view, CIT_COMMAND));
-	assert_true(ends_with(ui_sb_last(),
-				": attempt to call a nil value (global 'adsf')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'adsf')",
+			ui_sb_last());
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
@@ -138,7 +137,7 @@ TEST(cmds_command)
 	                                     "  name = 'name',"
 	                                     "  action = ''"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), "Action can't be empty"));
+	assert_string_ends_with("Action can't be empty", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command({"

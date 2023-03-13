@@ -10,7 +10,6 @@
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/utils/cancellation.h"
-#include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/ui/ui.h"
 #include "../../src/background.h"
@@ -64,7 +63,7 @@ TEST(capture_error_of_external_command)
 			usleep(5000);
 			continue;
 		}
-		assert_true(starts_with_lit(job->errors, "there"));
+		assert_string_starts_with("there", job->errors);
 		pthread_spin_unlock(&job->errors_lock);
 		break;
 	}

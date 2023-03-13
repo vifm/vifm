@@ -179,7 +179,8 @@ TEST(getname_global_tabs)
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 0 }):getname())"));
-	assert_true(ends_with(ui_sb_last(), ": No tab with index -1 on active side"));
+	assert_string_ends_with(": No tab with index -1 on active side",
+			ui_sb_last());
 }
 
 TEST(getname_pane_tabs)
@@ -236,14 +237,13 @@ TEST(getview_errors)
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 0 }).cwd)"));
-	assert_true(ends_with(ui_sb_last(),
-				": pane field is not in the range [1; 2]"));
+	assert_string_ends_with(": pane field is not in the range [1; 2]",
+			ui_sb_last());
 
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.tabs.get({ index = 1 }):getview(0))"));
-	assert_true(ends_with(ui_sb_last(),
-				": Parameter #2 value must be a table"));
+	assert_string_ends_with(": Parameter #2 value must be a table", ui_sb_last());
 }
 
 TEST(getview_global_tabs)
@@ -281,8 +281,8 @@ TEST(getview_global_tabs)
 	assert_success(vlua_run_string(vlua, "tab = vifm.tabs.get({ index = 2 })"));
 	tabs_close();
 	assert_failure(vlua_run_string(vlua, "tab:getview()"));
-	assert_true(ends_with(ui_sb_last(),
-				": Invalid VifmTab object (associated tab is dead)"));
+	assert_string_ends_with(": Invalid VifmTab object (associated tab is dead)",
+			ui_sb_last());
 }
 
 TEST(getview_pane_tabs)
@@ -313,8 +313,8 @@ TEST(getview_pane_tabs)
 	assert_success(vlua_run_string(vlua, "tab = vifm.tabs.get({ index = 2 })"));
 	tabs_close();
 	assert_failure(vlua_run_string(vlua, "tab:getview()"));
-	assert_true(ends_with(ui_sb_last(),
-				": Invalid VifmTab object (associated tab is dead)"));
+	assert_string_ends_with(": Invalid VifmTab object (associated tab is dead)",
+			ui_sb_last());
 }
 
 TEST(getlayout_global_tabs)

@@ -805,8 +805,8 @@ dist_zshcompl_DATA = $(zshcomplfile)
 fishcompldir = $(datadir)/fish/vendor_completions.d
 fishcomplfile = ../data/shell-completion/fish/vifm.fish
 dist_fishcompl_DATA = $(fishcomplfile)
-docsfile = ../AUTHORS ../BUGS ../COPYING ../ChangeLog ../FAQ ../INSTALL \
-					 ../NEWS ../README ../TODO
+docsfile = ../AUTHORS ../BUGS ../COPYING ../ChangeLog ../ChangeLog.LuaAPI \
+					 ../FAQ ../INSTALL ../NEWS ../README ../TODO
 
 docsdir = $(docdir)
 dist_docs_DATA = $(docsfile)

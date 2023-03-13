@@ -5,7 +5,6 @@
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/utils/utils.h"
 #include "../../src/cmd_completion.h"
@@ -55,13 +54,13 @@ TEST(bad_args)
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addhandler{ name = nil,"
 				                      " handler = nil })"));
-	assert_true(ends_with(ui_sb_last(), ": `name` key is mandatory"));
+	assert_string_ends_with(": `name` key is mandatory", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addhandler{ name = 'NAME',"
 				                      " handler = nil })"));
-	assert_true(ends_with(ui_sb_last(), ": `handler` key is mandatory"));
+	assert_string_ends_with(": `handler` key is mandatory", ui_sb_last());
 }
 
 TEST(bad_name)
@@ -72,14 +71,14 @@ TEST(bad_name)
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addhandler{ name = '',"
 				                      " handler = handler })"));
-	assert_true(ends_with(ui_sb_last(), ": Handler's name can't be empty"));
+	assert_string_ends_with(": Handler's name can't be empty", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_failure(vlua_run_string(vlua,
 				"print(vifm.addhandler{ name = 'name with white\tspace',"
 				                      " handler = handler })"));
-	assert_true(ends_with(ui_sb_last(),
-				": Handler's name can't contain whitespace"));
+	assert_string_ends_with(": Handler's name can't contain whitespace",
+			ui_sb_last());
 }
 
 TEST(registered)
@@ -203,8 +202,8 @@ TEST(error_open_invocation)
 
 	ui_sb_msg("");
 	vlua_open_file(vlua, "#vifmtest#handle", &entry);
-	assert_true(ends_with(ui_sb_last(),
-				": attempt to call a nil value (global 'asdf')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'asdf')",
+			ui_sb_last());
 }
 
 TEST(invalid_statusline_formatter)
@@ -225,8 +224,8 @@ TEST(error_statusline_formatter)
 	assert_string_equal("true", ui_sb_last());
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
-	assert_true(ends_with(format,
-				": attempt to call a nil value (global 'asdf')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'asdf')",
+			format);
 	free(format);
 }
 
@@ -293,8 +292,8 @@ TEST(handlers_run_in_safe_mode)
 	assert_string_equal("true", ui_sb_last());
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
-	assert_true(ends_with(format,
-				": Unsafe functions can't be called in this environment!"));
+	assert_string_ends_with(
+			": Unsafe functions can't be called in this environment!", format);
 	free(format);
 }
 
@@ -314,8 +313,8 @@ TEST(error_editor_handler)
 	assert_string_equal("true", ui_sb_last());
 
 	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
-	assert_true(ends_with(ui_sb_last(),
-				": attempt to call a nil value (global 'asdf')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'asdf')",
+				ui_sb_last());
 }
 
 TEST(error_editor_handler_return)

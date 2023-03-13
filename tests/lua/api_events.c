@@ -4,7 +4,6 @@
 #include "../../src/compat/os.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
-#include "../../src/utils/str.h"
 #include "../../src/ops.h"
 #include "../../src/status.h"
 
@@ -30,7 +29,7 @@ TEST(bad_event_name)
 	      "  event = 'random',"
 	      "  handler = function() end"
 	      "}"));
-	assert_true(ends_with(ui_sb_last(), ": No such event: random"));
+	assert_string_ends_with(": No such event: random", ui_sb_last());
 }
 
 TEST(app_exit_is_called)

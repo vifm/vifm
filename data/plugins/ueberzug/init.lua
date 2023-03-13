@@ -1,6 +1,9 @@
 --[[
 
-Enables use of Ueberzug for viewing images.
+Enables use of Ueberzug for viewing images:
+ - starts Ueberzug on the first use
+ - prints an error message to preview area if command isn't found
+ - restarts Ueberzug if it exits (you also get an error message about it)
 
 Usage example:
 
@@ -16,7 +19,8 @@ Ueberzug:
 
 --]]
 
--- TODO: check that `ueberzug` is available
+-- TODO: maybe don't register handlers if executable isn't present to allow
+--       other viewers to kick in
 -- TODO: generate JSON properly
 -- TODO: handle other types of files
 -- TODO: stop Ueberzug after some period of inactivity (needs timer API?)
@@ -27,9 +31,19 @@ local layer_id = "vifm-preview"
 local pipe_storage
 local function get_pipe()
     if pipe_storage == nil then
+        if not vifm.executable('ueberzug') then
+            return nil, "ueberzug executable isn't found"
+        end
+
         local uberzug = vifm.startjob {
-            cmd = 'ueberzug layer --silent',
-            iomode = 'w'
+            cmd = 'ueberzug layer',
+            iomode = 'w',
+            onexit = function()
+                pipe_storage = nil
+                vifm.errordialog('ueberzug plugin',
+                                 'ueberzug has exited unexpectedly.\n'..
+                                 'It will be restarted on the next use.')
+            end
         }
         pipe_storage = uberzug:stdin()
     end
@@ -37,7 +51,10 @@ local function get_pipe()
 end
 
 local function view(info)
-    local pipe = get_pipe()
+    local pipe, err = get_pipe()
+    if pipe == nil then
+        return { lines = { err } }
+    end
 
     local format = '{ "action":"add", "identifier":"%s",'
                  ..'  "x":%d, "y":%d, "width":%d, "height":%d,'
@@ -54,7 +71,11 @@ local function view(info)
 end
 
 local function clear(info)
-    local pipe = get_pipe()
+    local pipe, err = get_pipe()
+    if pipe == nil then
+        return { lines = { err } }
+    end
+
     local format = '{"action":"remove", "identifier":"%s"}\n'
 
     local message = format:format(layer_id)

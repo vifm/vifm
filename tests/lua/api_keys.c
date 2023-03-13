@@ -7,7 +7,6 @@
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
-#include "../../src/utils/str.h"
 #include "../../src/bracket_notation.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
@@ -64,27 +63,27 @@ TEST(keys_add_errors)
 	                                     "  modes = { 'cmdline', 'normal' },"
 	                                     "  handler = handler,"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), ": `shortcut` key is mandatory"));
+	assert_string_ends_with(": `shortcut` key is mandatory", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
 	                                     "  shortcut = 'X',"
 	                                     "  handler = handler,"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), ": `modes` key is mandatory"));
+	assert_string_ends_with(": `modes` key is mandatory", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
 	                                     "  shortcut = 'X',"
 	                                     "  modes = { 'cmdline', 'normal' },"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(), ": `handler` key is mandatory"));
+	assert_string_ends_with(": `handler` key is mandatory", ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
 	                                     "  shortcut = '',"
 	                                     "  modes = { 'cmdline', 'normal' },"
 	                                     "  handler = handler,"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(),
-				": Shortcut can't be empty or longer than 15"));
+	assert_string_ends_with(": Shortcut can't be empty or longer than 15",
+			ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
 	                                     "  shortcut = 'X',"
@@ -92,15 +91,15 @@ TEST(keys_add_errors)
 	                                     "  handler = handler,"
 	                                     "  followedby = 'something',"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(),
-				": Unrecognized value for `followedby`: something"));
+	assert_string_ends_with(": Unrecognized value for `followedby`: something",
+			ui_sb_last());
 
 	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
 	                                     "  shortcut = 'X',"
 	                                     "  isselector = 10,"
 	                                     "}"));
-	assert_true(ends_with(ui_sb_last(),
-				": `isselector` value must be a boolean"));
+	assert_string_ends_with(": `isselector` value must be a boolean",
+			ui_sb_last());
 }
 
 TEST(keys_bad_key_handler)
@@ -117,8 +116,8 @@ TEST(keys_bad_key_handler)
 	assert_string_equal("true", ui_sb_last());
 
 	(void)vle_keys_exec_timed_out(WK_X);
-	assert_true(ends_with(ui_sb_last(),
-				": attempt to call a nil value (global 'adsf')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'adsf')",
+			ui_sb_last());
 }
 
 TEST(keys_bad_selector_handler)
@@ -136,8 +135,8 @@ TEST(keys_bad_selector_handler)
 	assert_string_equal("true", ui_sb_last());
 
 	(void)vle_keys_exec_timed_out(L"yX");
-	assert_true(ends_with(ui_sb_last(),
-				": attempt to call a nil value (global 'adsf')"));
+	assert_string_ends_with(": attempt to call a nil value (global 'adsf')",
+			ui_sb_last());
 }
 
 TEST(keys_bad_selector_return)

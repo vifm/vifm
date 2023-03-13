@@ -33,7 +33,7 @@
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcat() strcmp() strdup() strncmp() strncat()
-                       strchr() strcpy() strlen() strrchr() */
+                       strchr() strcpy() strlen() strpbrk() strrchr() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -569,14 +569,13 @@ to_canonic_path(const char path[], const char base[], char buf[],
 }
 
 int
-contains_slash(const char *path)
+contains_slash(const char path[])
 {
-	char *slash_pos = strchr(path, '/');
-#ifdef _WIN32
-	if(slash_pos == NULL)
-		slash_pos = strchr(path, '\\');
+#ifndef _WIN32
+	return (strchr(path, '/') != NULL);
+#else
+	return (strpbrk(path, "/\\") != NULL);
 #endif
-	return slash_pos != NULL;
 }
 
 char *
