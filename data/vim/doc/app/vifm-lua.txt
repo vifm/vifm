@@ -453,7 +453,10 @@ This is what one can do by using Lua at the moment:
  * fully integrate an arbitrary editor by changing |vifm-'vicmd'| or |vifm-'vixcmd'|
    (|vifm-lua-handlers|), while builtin logic assumes compatibility with Vim
  * starting background jobs that appear on a job bar (|vifm-l_vifm.startjob()|)
+ * starting background jobs to do something when they're over (see "onexit" of
+   |vifm-l_vifm.startjob()|)
  * defining custom keys and selectors (|vifm-l_vifm.keys.add()|)
+ * running code before exit and when a file operation is done (|vifm-lua-events|)
 
 --------------------------------------------------------------------------------
 *vifm-lua-api*
