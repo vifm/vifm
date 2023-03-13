@@ -1,0 +1,239 @@
+The API is experimental and having a change log is useful to have for
+adjusting plugins as the implementation changes.  During development of the
+API things should stay fairly stable to not cause breakage too often, but
+while stabilizing for v1.0 a bunch of breaking changes can happen at once.
+After that all changes will be documented in the regular ChangeLog.
+
+0.12.1 to current
+
+	Additions to enabled standard libraries:
+	 * os.getenv()
+
+	New things Lua can be used for:
+	 * write a 'tabline' generator
+	 * running code before exit and when a file operation is done
+	 * starting background jobs to do something when they're over
+
+	Changed VifmTab:getview() without arguments to return active pane of gtab.
+
+	Added vifm.executable() that check for an executable file or command in
+	$PATH.
+
+	Added "onexit" callback for VifmJob.
+
+	Added vifm.input() that prompts user for input via command-line prompt.
+
+	Added events.listen() that registers a handler for an event.
+
+	Added "app.exit" event that occurs before Vifm exits normally.
+
+	Added "app.fsop" event that occurs after a successful execution of a
+	file-system operation.
+
+	Added VifmEntry.isdir field which is true if an entry is either a
+	directory or a symbolic link to a directory.
+
+	Added VifmView.custom table with information about custom file list.
+
+	Close Lua job streams when job is done.
+
+	Closed _G loophole a plugin could use to mess environment for other
+	plugins.
+
+	Protected against metatable manipulations in Lua.
+
+	Fixed incorrect path in Lua's editor handler on Windows.
+
+	Fixed VifmTab:getview() mistreating "pane" input field.
+
+0.12 to 0.12.1 (2022-09-21)
+
+	Upgraded Lua from 5.4.3 to 5.4.4.
+
+	Additions to enabled standard libraries:
+	 * os.tmpname()
+
+	New things Lua can be used for:
+	 * fully integrate an arbitrary editor by using a handler in 'vicmd' or
+	   'vixcmd'
+	 * defining custom keys and selectors
+
+	Added vifm.escape() that escapes input to make it suitable for use in an
+	external command for current value of the 'shell' option.
+
+	Added vifm.run() that runs an external command similar to :!.
+
+	Added vifm.keys.add() that registers a user-defined key or selector.
+
+	Added vifm.sessions.current() that retrieves name of the current session.
+
+	Added vifm.tabs.get() that retrieves a tab.
+
+	Added vifm.tabs.getcount() that retrieves number of open tabs.
+
+	Added vifm.tabs.getcurrent() that retrieves index of current tab.
+
+	Added VifmEntry:mimetype() that gets a MIME type.
+
+	Added VifmTab:getlayout() that retrieves layout of a global tab or shared
+	TUI state for a pane tab.
+
+	Added VifmTab:getname() that retrieves name of the tab if it was set.
+
+	Added VifmTab:getview() that returns view managed by the tab.
+
+	Completors of a Lua-defined :command can now provide descriptions of
+	completion items.
+
+0.11 to 0.12 (2021-09-29)
+
+	The following standard libraries are enabled:
+	 * basic (core global functions)
+	 * table manipulation (`tbl` table)
+	 * package library (`require` global and `package` table)
+	 * string manipulation (`string` table)
+	 * input and output (`io` table)
+	 * mathematical functions (`math` table)
+	 * time subset of OS facilities (`clock`, `date`, `difftime` and `time`
+	   elements of `os` table)
+
+	 This is what one can do by using Lua at the moment:
+	  * commands with completion
+	  * save and reset options (e.g., some kind of presets)
+	  * custom columns
+	  * filetype/filextype/fileviewer/%q handlers
+	  * 'statusline' generator
+	  * starting background jobs that appear on a job bar
+
+	Added vifm.addcolumntype() that registers a new view column type to be
+	used in 'viewcolumns' option.
+
+	Added vifm.addhandler() that registers a new handler that will be
+	accessible in viewers.
+
+	Added vifm.currview() that retrieves a reference to current view.
+
+	Added vifm.otherview() that retrieves a reference to other view.
+
+	Added vifm.errordialog() that displays error dialog.
+
+	Added vifm.expand() that expands environment variables and macros in a
+	string.
+
+	Added vifm.fnamemodify() that changes path according to modifiers.
+
+	Added vifm.exists() that checks existence of a path without resolving
+	symbolic links.
+
+	Added vifm.makepath() that creates target path and missing intermediate
+	directories.
+
+	Added vifm.startjob() that launches an external command.
+
+	Added vifm.cmds.add() that registers a new :command of a kind that's
+	equivalent to builtin commands.
+
+	Added vifm.cmds.command() that registers a new :command that works exactly
+	as those registered using :command builtin command.
+
+	Added vifm.cmds.delcommand() that removes :command added by
+	vifm.cmds.command(), basically being an equivalent of :delcommand builtin
+	command.
+
+	Added vifm.opts.global table that provides access to global options.
+
+	Added vifm.plugin.name field that provides name of the plugin.
+
+	Added vifm.plugin.path field that provides full path to plugin's root
+	directory.
+
+	Added vifm.plugin.require() that serves as plugin-specific `require`,
+	which loads Lua modules relative to plugin's root.
+
+	Added vifm.plugins.all table that contains all plugins indexed by their
+	names.
+
+	Added vifm.sb.info() that displays a regular message on statusbar.
+
+	Added vifm.sb.error() that displays an error message on statusbar.
+
+	Added vifm.sb.quick() that displays a quick message on statusbar.
+
+	Added vifm.version.app.str field that provides version of Vifm as a
+	string.
+
+	Added vifm.version.api.major field that provides major version of Lua API.
+
+	Added vifm.version.api.minor field that provides minor version of Lua API.
+
+	Added vifm.version.api.patch field that provides patch version of Lua API.
+
+	Added vifm.version.api.has() that will check presence of features some
+	day.
+
+	Added vifm.version.api.atleast() that checks version of Lua API.
+
+	Added VifmEntry.classify table that describes name decorations.
+
+	Added VifmEntry.name field that provides name of the file.
+
+	Added VifmEntry.location field that provides location of the file.
+
+	Added VifmEntry.size field that provides size of the file in bytes.
+
+	Added VifmEntry.atime field that provides file access time (e.g., read,
+	executed).
+
+	Added VifmEntry.ctime field that provides file change time (changes in
+	metadata, like mode).
+
+	Added VifmEntry.mtime field that provides file modification time (when
+	file contents is changed).
+
+	Added VifmEntry.type field that provides type of the entry.
+
+	Added VifmEntry.folded field that shows whether this entry is folded.
+
+	Added VifmEntry.selected field that shows whether this entry is selected.
+
+	Added VifmEntry.match field that shows whether this entry is a search
+	match.
+
+	Added VifmEntry.matchstart field that provides start position of a
+	substring found in file's name.
+
+	Added VifmEntry.matchend field that provides end position of a substring
+	found in file's name.
+
+	Added VifmEntry:gettarget() that gets target of a symbolic link (not to be
+	confused with real path resolution).
+
+	Added VifmJob:wait() that waits for the job to finish.
+
+	Added VifmJob:exitcode() that retrieves exit code of the job.
+
+	Added VifmJob:stdin() that retrieves stream associated with standard input
+	of the job.
+
+	Added VifmJob:stdout() that retrieves stream associated with standard
+	output of the job.
+
+	Added VifmJob:errors() that retrieves data collected from error stream of
+	the job.
+
+	Added VifmView.locopts table of location-specific values of view-specific
+	options.
+
+	Added VifmView.viewopts table of "global" values of view-specific options.
+
+	Added VifmView.currententry field that provides index of the current
+	entry.
+
+	Added VifmView.cwd field that provides location of the current view.
+
+	Added VifmView.entrycount field that provides number of entries in the
+	view.
+
+	Added VifmView:cd() that changes location of the view.
+
+	Added VifmView:entry() that retrieves an entry by index.

@@ -49,8 +49,9 @@ fi
 if [ "$target" = all ] || [ "$target" = update ]; then
     echo "Updating version number..."
 
-    # update version in ChangeLog
-    sed -i "1s/current/$ver ($(date '+%Y-%m-%d'))/" ChangeLog
+    # update version in ChangeLogs
+    sed -i "s/to current\$/$ver ($(date '+%Y-%m-%d'))/" \
+           ChangeLog ChangeLog.LuaAPI
 
     # update version in configure script
     sed -i "/AC_INIT(/s/, [^,]\\+/, $ver/" configure.ac
@@ -152,7 +153,7 @@ if [ "$target" = all ] || [ "$target" = archive ]; then
         rmdir "$dir/data/vim/doc/plugin"
         mkdir "$dir/data/vim-doc"
         mv "$dir/data/vim/doc/app" "$dir/data/vim-doc/doc"
-        pkgfiles='AUTHORS BUGS ChangeLog COPYING COPYING.3party FAQ INSTALL NEWS README THANKS TODO'
+        pkgfiles='AUTHORS BUGS ChangeLog ChangeLog.LuaAPI COPYING COPYING.3party FAQ INSTALL NEWS README THANKS TODO'
         for i in $pkgfiles; do
             dest="$dir/$i.txt"
             cp "$i" "$dest"
