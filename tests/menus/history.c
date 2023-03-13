@@ -185,5 +185,43 @@ TEST(unknown_key_is_ignored)
 	assert_true(vle_mode_is(MENU_MODE));
 }
 
+TEST(fsearch_hist_sets_search_direction_on_pick)
+{
+	hists_search_save("a");
+	assert_success(show_fsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+	assert_false(curr_stats.last_search_backward);
+}
+
+TEST(bsearch_hist_sets_search_direction_on_pick)
+{
+	hists_search_save("a");
+	assert_success(show_bsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+	assert_true(curr_stats.last_search_backward);
+}
+
+TEST(fsearch_hist_sets_search_direction_on_editing)
+{
+	hists_search_save("a");
+	assert_success(show_fsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_c);
+	assert_false(curr_stats.last_search_backward);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+}
+
+TEST(bsearch_hist_sets_search_direction_on_editing)
+{
+	hists_search_save("a");
+	assert_success(show_bsearchhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_c);
+	assert_true(curr_stats.last_search_backward);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
