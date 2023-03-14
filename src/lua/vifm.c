@@ -45,6 +45,11 @@
 #include "vifmview.h"
 #include "vlua_state.h"
 
+/* Lua API version. */
+#define API_VER_MAJOR 0
+#define API_VER_MINOR 0
+#define API_VER_PATCH 0
+
 /*
  * This unit contains generic part of `vifm` global table.  Plugin-specific
  * things are in vlua unit.
@@ -191,11 +196,11 @@ vifm_init(lua_State *lua)
 	lua_setfield(lua, -2, "str");                 /* vifm.app.str */
 	lua_setfield(lua, -2, "app");                 /* vifm.app */
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/5); /* vifm.api */
-	lua_pushinteger(lua, 0);
+	lua_pushinteger(lua, API_VER_MAJOR);
 	lua_setfield(lua, -2, "major");               /* vifm.api.major */
-	lua_pushinteger(lua, 0);
+	lua_pushinteger(lua, API_VER_MINOR);
 	lua_setfield(lua, -2, "minor");               /* vifm.api.minor */
-	lua_pushinteger(lua, 0);
+	lua_pushinteger(lua, API_VER_PATCH);
 	lua_setfield(lua, -2, "patch");               /* vifm.api.patch */
 	lua_pushcfunction(lua, VLUA_REF(api_has));
 	lua_setfield(lua, -2, "has");                 /* vifm.api.has */
@@ -432,7 +437,22 @@ VLUA_API(api_is_at_least)(lua_State *lua)
 	const int major = luaL_checkinteger(lua, 1);
 	const int minor = luaL_optinteger(lua, 2, 0);
 	const int patch = luaL_optinteger(lua, 3, 0);
-	lua_pushboolean(lua, (major == 0 && minor == 0 && patch == 0));
+
+	int result = 0;
+	if(major != API_VER_MAJOR)
+	{
+		result = (API_VER_MAJOR > major);
+	}
+	else if(minor != API_VER_MINOR)
+	{
+		result = (API_VER_MINOR > minor);
+	}
+	else
+	{
+		result = (API_VER_PATCH >= patch);
+	}
+
+	lua_pushboolean(lua, result);
 	return 1;
 }
 
