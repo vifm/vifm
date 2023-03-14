@@ -164,7 +164,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 
 	entry = NULL;
 	i = 0;
-	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && fops_active(ops))
 	{
 		int result;
 

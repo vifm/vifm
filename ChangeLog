@@ -133,6 +133,9 @@
 	A regular search logic showing messages is applied to n/N.  Patch by
 	filterfalse.
 
+	Made aborting deletion abort the operation on the reset of files when
+	deleting multiple files.
+
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
 	object was garbage-collected.  Thanks to PRESFIL.
 
