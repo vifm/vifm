@@ -6,6 +6,8 @@ After that all changes will be documented in the regular ChangeLog.
 
 0.12.1 to current
 
+	Bumped API version to v0.1.0 due to bug fixes and various additions.
+
 	Additions to enabled standard libraries:
 	 * os.getenv()
 
@@ -14,7 +16,8 @@ After that all changes will be documented in the regular ChangeLog.
 	 * running code before exit and when a file operation is done
 	 * starting background jobs to do something when they're over
 
-	Changed VifmTab:getview() without arguments to return active pane of gtab.
+	Changed description of VifmTab:getview() without arguments to return
+	active pane of a global tab, which is what it was actually doing.
 
 	Added vifm.executable() that check for an executable file or command in
 	$PATH.

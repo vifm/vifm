@@ -1,9 +1,11 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 13
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
 Note: this is very much work in progress.  Everything can change up to
 complete removal of this interface (that's an unlikely scenario though).
+
+Current API version: v0.1.0
 
 |vifm-lua-status|      Status of plugins.
 |vifm-lua-plugins|     Sample plugins.
@@ -1036,14 +1038,14 @@ version.app.str (string)                       *vifm-l_vifm.version.app.str*
 Version of Vifm as a string.
 
 version.api.major (integer)                    *vifm-l_vifm.version.api.major*
-Major version of Lua API.  0 now, should become 1 when API design settles and
+Major version of Lua API.  Should become 1 when API design settles and then
 remain at 1.
 
 version.api.minor (integer)                    *vifm-l_vifm.version.api.minor*
-Minor version of Lua API.  0 now.
+Minor version of Lua API.
 
 version.api.patch (integer)                    *vifm-l_vifm.version.api.patch*
-Patch version of Lua API.  0 now.
+Patch version of Lua API.
 
 version.api.has({feature})                     *vifm-l_vifm.version.api.has()*
 Checks presence of a feature.  There are no features to test yet.

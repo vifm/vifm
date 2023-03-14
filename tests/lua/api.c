@@ -280,7 +280,7 @@ TEST(vifm_version)
 				"print(vifm.version.api.major,"
 				"      vifm.version.api.minor,"
 				"      vifm.version.api.patch)"));
-	assert_string_equal("0\t0\t0", ui_sb_last());
+	assert_string_equal("0\t1\t0", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
@@ -290,11 +290,21 @@ TEST(vifm_version)
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.version.api.atleast(0, 0, 1))"));
-	assert_string_equal("false", ui_sb_last());
+	assert_string_equal("true", ui_sb_last());
 
 	ui_sb_msg("");
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.version.api.atleast(0, 1))"));
+	assert_string_equal("true", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.version.api.atleast(0, 1, 1))"));
+	assert_string_equal("false", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.version.api.atleast(0, 2))"));
 	assert_string_equal("false", ui_sb_last());
 
 	ui_sb_msg("");
