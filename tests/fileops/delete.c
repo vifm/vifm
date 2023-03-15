@@ -8,6 +8,7 @@
 #include <test-utils.h>
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
@@ -18,7 +19,10 @@
 #include "../../src/registers.h"
 #include "../../src/trash.h"
 
+static char options_prompt_abort(const struct custom_prompt_t *details);
+
 static char *saved_cwd;
+static int prompt_invocations;
 
 SETUP()
 {
@@ -293,6 +297,41 @@ TEST(empty_directory_is_removed)
 			assert_failure(rmdir("dir"));
 		}
 	}
+}
+
+TEST(aborting_file_deletion_aborts_remaining_files, IF(regular_unix_user))
+{
+	create_dir("ro");
+	create_file("ro/a");
+	create_file("ro/b");
+	assert_success(os_chmod("ro", 0555));
+
+	prompt_invocations = 0;
+	fops_init(/*line_func=*/NULL, &options_prompt_abort);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "ro/a");
+	flist_custom_add(&lwin, "ro/b");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	(void)fops_delete(&lwin, /*reg=*/'\0', /*use_trash=*/0);
+
+	assert_int_equal(1, prompt_invocations);
+
+	assert_success(os_chmod("ro", 0777));
+	remove_file("ro/a");
+	remove_file("ro/b");
+	remove_dir("ro");
+}
+
+static char
+options_prompt_abort(const struct custom_prompt_t *details)
+{
+	++prompt_invocations;
+	return 'a';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
