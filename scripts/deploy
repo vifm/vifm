@@ -50,7 +50,7 @@ if [ "$target" = all ] || [ "$target" = update ]; then
     echo "Updating version number..."
 
     # update version in ChangeLogs
-    sed -i "s/to current\$/$ver ($(date '+%Y-%m-%d'))/" \
+    sed -i "s/to current\$/to $ver ($(date '+%Y-%m-%d'))/" \
            ChangeLog ChangeLog.LuaAPI
 
     # update version in configure script
