@@ -350,6 +350,13 @@ TEST(compare)
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	rn_leave(&lwin, /*levels=*/1);
 
+	/* Can't toggle without !. */
+	(void)cmds_dispatch("compare byname", &lwin, CIT_COMMAND);
+	assert_int_equal(CF_GROUP_PATHS | CF_SHOW, lwin.custom.diff_cmp_flags);
+	(void)cmds_dispatch("compare showdifferent", &lwin, CIT_COMMAND);
+	assert_int_equal(CF_GROUP_PATHS | CF_SHOW, lwin.custom.diff_cmp_flags);
+	rn_leave(&lwin, /*levels=*/1);
+
 	/* No toggling. */
 	(void)cmds_dispatch("compare! showdifferent", &lwin, CIT_COMMAND);
 	assert_string_equal("Toggling requires active compare view", ui_sb_last());

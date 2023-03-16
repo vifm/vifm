@@ -2077,9 +2077,8 @@ make_bmark_path(const char path[])
 static int
 compare_cmd(const cmd_info_t *cmd_info)
 {
-	int in_compare = cv_compare(curr_view->custom.type);
-
-	if(cmd_info->emark && !in_compare)
+	int is_toggling = cmd_info->emark;
+	if(is_toggling && !cv_compare(curr_view->custom.type))
 	{
 		ui_sb_err("Toggling requires active compare view");
 		return CMDS_ERR_CUSTOM;
@@ -2087,13 +2086,13 @@ compare_cmd(const cmd_info_t *cmd_info)
 
 	CompareType ct = CT_CONTENTS;
 	ListType lt = LT_ALL;
-	int flags = (in_compare ? CF_NONE : CF_GROUP_PATHS);
+	int flags = (is_toggling ? CF_NONE : CF_GROUP_PATHS);
 	if(parse_compare_properties(cmd_info, &ct, &lt, &flags) != 0)
 	{
 		return CMDS_ERR_CUSTOM;
 	}
 
-	if(in_compare)
+	if(is_toggling)
 	{
 		struct cv_data_t *cv = &curr_view->custom;
 		return (compare_two_panes(cv->diff_cmp_type, cv->diff_list_type,
