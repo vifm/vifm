@@ -14,7 +14,7 @@
 	to Sergei Trofimovich (a.k.a. trofi).
 
 	Changed %N macro to also not start a process group for a command.  Thanks
-	to Oskar Grunning (sQVe).
+	to Oskar Grunning (a.k.a. sQVe).
 
 	Changed error reporting for some of the :commands such that now their
 	failures cause a dialog to appear on sourcing, previously those errors
@@ -120,8 +120,8 @@
 
 	Made file conflict more concise.  Thanks to aleksejrs.
 
-	Update Default-256 to fix differentiate between more file types.  Thanks
-	to aleksejrs.
+	Update Default-256 to differentiate between more file types.  Thanks to
+	aleksejrs.
 
 	Don't move cursor on search failure during search with a count.  Patch by
 	filterfalse.
@@ -133,7 +133,7 @@
 	A regular search logic showing messages is applied to n/N.  Patch by
 	filterfalse.
 
-	Made aborting deletion abort the operation on the reset of files when
+	Made aborting deletion abort the operation on the rest of files when
 	deleting multiple files.
 
 	Fixed segfault on trying to use pipe from Lua after its parent VifmJob
