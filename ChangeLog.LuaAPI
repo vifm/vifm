@@ -49,6 +49,8 @@ After that all changes will be documented in the regular ChangeLog.
 
 	Fixed VifmTab:getview() mistreating "pane" input field.
 
+	Fixed modules loaded via vifm.plugin.require() not having `vifm` defined.
+
 0.12 to 0.12.1 (2022-09-21)
 
 	Upgraded Lua from 5.4.3 to 5.4.4.

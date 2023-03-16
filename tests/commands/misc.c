@@ -350,6 +350,13 @@ TEST(compare)
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	rn_leave(&lwin, /*levels=*/1);
 
+	/* Can't toggle without !. */
+	(void)cmds_dispatch("compare byname", &lwin, CIT_COMMAND);
+	assert_int_equal(CF_GROUP_PATHS | CF_SHOW, lwin.custom.diff_cmp_flags);
+	(void)cmds_dispatch("compare showdifferent", &lwin, CIT_COMMAND);
+	assert_int_equal(CF_GROUP_PATHS | CF_SHOW, lwin.custom.diff_cmp_flags);
+	rn_leave(&lwin, /*levels=*/1);
+
 	/* No toggling. */
 	(void)cmds_dispatch("compare! showdifferent", &lwin, CIT_COMMAND);
 	assert_string_equal("Toggling requires active compare view", ui_sb_last());
@@ -753,76 +760,6 @@ TEST(locate_command)
 	/* Nothing to repeat. */
 	assert_failure(cmds_dispatch("locate", &lwin, CIT_COMMAND));
 	assert_string_equal("Nothing to repeat", ui_sb_last());
-}
-
-TEST(regedit, IF(not_windows))
-{
-	create_executable(SANDBOX_PATH "/script");
-	make_file(SANDBOX_PATH "/script",
-			"#!/bin/sh\n"
-			"sed 's/from/to/' < \"$3\" > \"$3_out\"\n"
-			"mv \"$3_out\" \"$3\"\n");
-
-	char vi_cmd[PATH_MAX + 1];
-	make_abs_path(vi_cmd, sizeof(vi_cmd), SANDBOX_PATH, "script", NULL);
-	update_string(&cfg.vi_command, vi_cmd);
-
-	ui_sb_msg("");
-	assert_failure(cmds_dispatch("regedit abc", &lwin, CIT_COMMAND));
-	assert_string_equal("Invalid argument: abc", ui_sb_last());
-	assert_failure(cmds_dispatch("regedit _", &lwin, CIT_COMMAND));
-	assert_string_equal("Cannot modify blackhole register.", ui_sb_last());
-	assert_failure(cmds_dispatch("regedit %", &lwin, CIT_COMMAND));
-	assert_string_equal("Register with given name does not exist.", ui_sb_last());
-
-	regs_append('a', "/path/before");
-	regs_append('a', "/path/from-1");
-	regs_append('a', "/path/from-2");
-	regs_append('a', "/path/to-2");
-	regs_append('a', "/path/this-was-after");
-
-	assert_success(cmds_dispatch("regedit a", &lwin, CIT_COMMAND));
-
-	/* Result should be sorted and without duplicates. */
-	const reg_t *reg = regs_find('a');
-	assert_int_equal(4, reg->nfiles);
-	assert_string_equal("/path/before", reg->files[0]);
-	assert_string_equal("/path/this-was-after", reg->files[1]);
-	assert_string_equal("/path/to-1", reg->files[2]);
-	assert_string_equal("/path/to-2", reg->files[3]);
-
-	remove_file(SANDBOX_PATH "/script");
-}
-
-TEST(regedit_normalizes_paths, IF(not_windows))
-{
-	create_executable(SANDBOX_PATH "/script");
-	make_file(SANDBOX_PATH "/script",
-			"#!/bin/sh\n"
-			"sed 's/from/to/' < \"$3\" > \"$3_out\"\n"
-			"mv \"$3_out\" \"$3\"\n");
-
-	char vi_cmd[PATH_MAX + 1];
-	make_abs_path(vi_cmd, sizeof(vi_cmd), SANDBOX_PATH, "script", NULL);
-	update_string(&cfg.vi_command, vi_cmd);
-
-	strcpy(lwin.curr_dir, sandbox);
-
-	regs_append(DEFAULT_REG_NAME, "/abs/path/from-1");
-	regs_append(DEFAULT_REG_NAME, "from-2");
-
-	assert_success(cmds_dispatch("regedit", &lwin, CIT_COMMAND));
-
-	/* Result should contain only absolute paths. */
-	const reg_t *reg = regs_find(DEFAULT_REG_NAME);
-	assert_int_equal(2, reg->nfiles);
-	int rel_idx = (ends_with(reg->files[0], "/to-2") ? 0 : 1);
-	assert_string_equal("/abs/path/to-1", reg->files[1 - rel_idx]);
-	assert_string_ends_with("/to-2", reg->files[rel_idx]);
-	assert_true(is_path_absolute(reg->files[0]));
-	assert_true(is_path_absolute(reg->files[1]));
-
-	remove_file(SANDBOX_PATH "/script");
 }
 
 static void
