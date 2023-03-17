@@ -3106,14 +3106,16 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 		{
 			if(try_parse_cterm_color(equal + 1, 0, color) != 0)
 			{
-				return CMDS_ERR_CUSTOM;
+				/* Color not supported by the current terminal is not a hard error. */
+				return 1;
 			}
 		}
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
 			if(try_parse_cterm_color(equal + 1, 1, color) != 0)
 			{
-				return CMDS_ERR_CUSTOM;
+				/* Color not supported by the current terminal is not a hard error. */
+				return 1;
 			}
 		}
 		else if(strcmp(arg_name, "guibg") == 0)
@@ -3121,7 +3123,8 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 			int value;
 			if(try_parse_gui_color(equal + 1, &value) != 0)
 			{
-				return CMDS_ERR_CUSTOM;
+				/* Color not supported by the current terminal is not a hard error. */
+				return 1;
 			}
 
 			cs_color_enable_gui(color);
@@ -3132,7 +3135,8 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 			int value;
 			if(try_parse_gui_color(equal + 1, &value) != 0)
 			{
-				return CMDS_ERR_CUSTOM;
+				/* Color not supported by the current terminal is not a hard error. */
+				return 1;
 			}
 
 			cs_color_enable_gui(color);
@@ -3192,7 +3196,7 @@ try_parse_cterm_color(const char str[], int is_fg, col_attr_t *color)
 			cs->state = CSS_BROKEN;
 		}
 
-		return CMDS_ERR_CUSTOM;
+		return 1;
 	}
 
 	if(is_fg)
