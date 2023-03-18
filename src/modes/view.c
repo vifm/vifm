@@ -1499,11 +1499,13 @@ find_next(void)
 			vi->line = l;
 			break;
 		}
-		if(l < vi->nlines && (l == vi->nlines - 1 ||
-				vl + 1 >= vi->widths[l + 1][0]))
+		if(l == vi->nlines - 1)
 		{
-			if(l == vi->nlines - 1)
-				break;
+			break;
+		}
+
+		if(vl + 1 >= vi->widths[l + 1][0])
+		{
 			++l;
 			offset = 0;
 		}
