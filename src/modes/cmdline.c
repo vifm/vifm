@@ -220,6 +220,7 @@ static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
 static void stop_dot_completion(void);
 static void stop_regular_completion(void);
+TSTATIC line_stats_t * get_line_stats(void);
 static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 
 static keys_add_info_t builtin_cmds[] = {
@@ -3252,7 +3253,7 @@ modcline_complete_files(const char str[], void *arg)
 	     + filename_completion(str, CT_ALL, /*skip_canonicalization=*/0);
 }
 
-line_stats_t *
+TSTATIC line_stats_t *
 get_line_stats(void)
 {
 	return &input_stat;
