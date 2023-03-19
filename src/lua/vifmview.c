@@ -331,8 +331,8 @@ VLUA_API(vifmview_otherview)(lua_State *lua)
 	return 1;
 }
 
-/* Method of `VifmView` that changes directory of current view.  Returns
- * boolean, which is true if location change was successful. */
+/* Method of `VifmView` that changes directory of a view.  Returns boolean,
+ * which is true if location change was successful. */
 static int
 VLUA_API(vifmview_cd)(lua_State *lua)
 {
