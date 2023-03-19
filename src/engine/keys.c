@@ -145,6 +145,7 @@ static void remove_chunk(key_chunk_t *chunk);
 static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
 		size_t len);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
+static void init_chunk_data(key_chunk_t *chunk, wchar_t key, KeyType type);
 static void list_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
 		void *arg);
 static void inc_counter(const keys_info_t *keys_info, size_t by);
@@ -1010,11 +1011,6 @@ vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 		return -1;
 	}
 
-	if(curr->type == USER_CMD)
-	{
-		free(curr->conf.data.cmd);
-	}
-
 	curr->type = (info->followed == FOLLOWED_BY_NONE) ? BUILTIN_KEYS
 	                                                  : BUILTIN_WAIT_POINT;
 	curr->foreign = 1;
@@ -1030,11 +1026,6 @@ vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
 	if(curr == NULL)
 	{
 		return -1;
-	}
-
-	if(curr->type == USER_CMD)
-	{
-		free(curr->conf.data.cmd);
 	}
 
 	curr->type = USER_CMD;
@@ -1187,16 +1178,13 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 		{
 			key_chunk_t *c = malloc(sizeof(*c));
 			if(c == NULL)
+			{
 				return NULL;
-			c->key = *keys;
-			c->type = (keys[1] == L'\0') ? BUILTIN_KEYS : BUILTIN_WAIT_POINT;
-			c->conf.data.handler = NULL;
-			c->conf.data.cmd = NULL;
-			c->conf.followed = FOLLOWED_BY_NONE;
-			c->conf.suggest = NULL;
-			c->conf.descr = NULL;
-			c->conf.nim = 0;
-			c->conf.skip_suggestion = 0;
+			}
+
+			KeyType type = (keys[1] == L'\0' ? BUILTIN_KEYS : BUILTIN_WAIT_POINT);
+			init_chunk_data(c, *keys, type);
+
 			c->prev = prev;
 			c->next = p;
 			c->child = NULL;
@@ -1204,10 +1192,6 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->children_count = 0;
 			c->enters = 0;
 			c->deleted = 0;
-			c->foreign = 0;
-			c->no_remap = 1;
-			c->silent = 0;
-			c->wait = 0;
 			if(prev == NULL)
 				curr->child = c;
 			else
@@ -1229,7 +1213,37 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 		keys++;
 		curr = p;
 	}
+
+	/* Reset most of the fields of a previously existing key before returning
+	 * it. */
+	if(curr->type == USER_CMD)
+	{
+		free(curr->conf.data.cmd);
+	}
+	init_chunk_data(curr, curr->key, BUILTIN_KEYS);
+
 	return curr;
+}
+
+/* Initializes key metadata and its configuration fields, but not lifetime/tree
+ * structure management parts of the structure. */
+static void
+init_chunk_data(key_chunk_t *chunk, wchar_t key, KeyType type)
+{
+	chunk->key = key;
+	chunk->type = type;
+	chunk->foreign = 0;
+	chunk->no_remap = 1;
+	chunk->silent = 0;
+	chunk->wait = 0;
+
+	chunk->conf.data.cmd = NULL;
+	chunk->conf.followed = FOLLOWED_BY_NONE;
+	chunk->conf.nim = 0;
+	chunk->conf.skip_suggestion = 0;
+	chunk->conf.suggest = NULL;
+	chunk->conf.descr = NULL;
+	chunk->conf.user_data = NULL;
 }
 
 void

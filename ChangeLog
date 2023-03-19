@@ -3,6 +3,9 @@
 	Fixed segfault on trying to expand "~username" path prefix with a huge
 	length of the user name.
 
+	Fixed user mappings replacing a mapping from Lua in an incomplete way
+	which could lead to assertion or some unpredictable behaviour.
+
 0.12.1 to 0.13-beta (2023-03-17)
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files
