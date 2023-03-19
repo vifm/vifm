@@ -1273,7 +1273,8 @@ vle_keys_list(int mode, vle_keys_list_cb cb, int user_only)
 static void
 list_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 {
-	if(chunk->children_count == 0 || chunk->type == USER_CMD)
+	if(chunk->children_count == 0 || chunk->type == USER_CMD ||
+			chunk->conf.followed == FOLLOWED_BY_SELECTOR)
 	{
 		const wchar_t *rhs = (chunk->type == USER_CMD) ? chunk->conf.data.cmd : L"";
 		const char *descr = (chunk->conf.descr == NULL) ? "" : chunk->conf.descr;
