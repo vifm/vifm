@@ -893,7 +893,7 @@ Fields of table returned by {key}.handler for selectors:
    indexes are silently ignored.  Indexes are sorted before processing.
 
 Parameters:~
-  {cmd}  Table with information about a key.
+  {key}  Table with information about a key.
 
 Return:~
   `true` on success.
