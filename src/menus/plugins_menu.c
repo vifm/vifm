@@ -107,13 +107,14 @@ show_plugin_log(view_t *view, menu_data_t *m, plug_t *plug)
 	}
 	else
 	{
-		static menu_data_t m;
+		static menu_data_t log_m;
 
-		menus_init_data(&m, view, format_str("Plugin log (%s)", plug->name), NULL);
-		m.key_handler = &log_khandler;
-		m.items = break_into_lines(plug->log, plug->log_len, &m.len, 0);
+		menus_init_data(&log_m, view, format_str("Plugin log (%s)", plug->name),
+				NULL);
+		log_m.key_handler = &log_khandler;
+		log_m.items = break_into_lines(plug->log, plug->log_len, &log_m.len, 0);
 
-		modmenu_reenter(&m);
+		modmenu_reenter(&log_m);
 	}
 }
 

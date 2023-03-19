@@ -412,13 +412,6 @@ replace_tilde(char path[])
 static char *
 try_replace_tilde(const char path[])
 {
-#ifndef _WIN32
-	char name[NAME_MAX + 1];
-	const char *p;
-	char *result;
-	struct passwd *pw;
-#endif
-
 	if(path[0] != '~')
 	{
 		return (char *)path;
@@ -432,26 +425,24 @@ try_replace_tilde(const char path[])
 	}
 
 #ifndef _WIN32
-	if((p = strchr(path, '/')) == NULL)
-	{
-		p = path + strlen(path);
-		copy_str(name, sizeof(name), path + 1);
-	}
-	else
-	{
-		copy_str(name, p - (path + 1) + 1, path + 1);
-		p++;
-	}
+	char user_name[NAME_MAX + 1];
 
-	if((pw = getpwnam(name)) == NULL)
+	const char *p = until_first(path + 1, '/');
+	int user_name_len = p - (path + 1);
+	if(user_name_len + 1 > (int)sizeof(user_name))
 	{
 		return (char *)path;
 	}
 
-	chosp(pw->pw_dir);
-	result = join_paths(pw->pw_dir, p);
+	copy_str(user_name, user_name_len + 1, path + 1);
 
-	return result;
+	struct passwd *pw = getpwnam(user_name);
+	if(pw == NULL)
+	{
+		return (char *)path;
+	}
+
+	return join_paths(pw->pw_dir, p);
 #else
 	return (char *)path;
 #endif
