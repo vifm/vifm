@@ -20,6 +20,7 @@
 #define VIFM__LUA__COMMON_H__
 
 struct lua_State;
+struct view_t;
 
 /* Retrieves optional argument while checking its type and aborting (Lua does
  * longjmp()) if it doesn't match.  Returns non-zero if the argument is present
@@ -63,6 +64,13 @@ void push_str_array(struct lua_State *lua, char *array[], int len);
  * Lua code (can't be read or set).  If name is NULL, the metatable isn't stored
  * in the registry.  The metatable is left on the top of the stack. */
 void make_metatable(struct lua_State *lua, const char name[]);
+
+/* Extracts selected indexes from "indexes" field of the table at the top of Lua
+ * stack.  For valid "indexes" field, allocates an array, which should be freed
+ * by the caller.  Indexes are sorted and deduplicated.  Returns zero on success
+ * (valid "indexes" field) and non-zero on error. */
+int extract_indexes(struct lua_State *lua, struct view_t *view, int *count,
+		int *indexes[]);
 
 #endif /* VIFM__LUA__COMMON_H__ */
 

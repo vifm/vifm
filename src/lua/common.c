@@ -18,10 +18,16 @@
 
 #include "common.h"
 
+#include "../compat/reallocarray.h"
 #include "../engine/options.h"
 #include "../engine/text_buffer.h"
+#include "../ui/ui.h"
+#include "../utils/utils.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
+
+static int deduplicate_ints(int array[], int count);
+static int int_sorter(const void *first, const void *second);
 
 int
 check_opt_arg(lua_State *lua, int arg_idx, int expected_type)
@@ -190,6 +196,90 @@ make_metatable(lua_State *lua, const char name[])
 	lua_setfield(lua, -2, "__index");
 	lua_pushboolean(lua, 0);
 	lua_setfield(lua, -2, "__metatable");
+}
+
+int
+extract_indexes(lua_State *lua, view_t *view, int *count, int *indexes[])
+{
+	if(!lua_istable(lua, -1))
+	{
+		return 1;
+	}
+
+	if(lua_getfield(lua, -1, "indexes") != LUA_TTABLE)
+	{
+		lua_pop(lua, 1);
+		return 1;
+	}
+
+	lua_len(lua, -1);
+	*count = lua_tointeger(lua, -1);
+
+	*indexes = reallocarray(NULL, *count, sizeof((*indexes)[0]));
+	if(*indexes == NULL)
+	{
+		*count = 0;
+		lua_pop(lua, 2);
+		return 1;
+	}
+
+	int i = 0;
+	lua_pushnil(lua);
+	while(lua_next(lua, -3) != 0)
+	{
+		int idx = lua_tointeger(lua, -1) - 1;
+		/* XXX: Non-convertable to integer indexes are converted to (0 - 1) and
+		 *      thrown away by the next line. */
+		if(idx >= 0 && idx < view->list_rows)
+		{
+			(*indexes)[i++] = idx;
+		}
+		lua_pop(lua, 1);
+	}
+	*count = i;
+
+	*count = deduplicate_ints(*indexes, *count);
+
+	lua_pop(lua, 2);
+	return 0;
+}
+
+/* Removes duplicates from array of ints while sorting it.  Returns new array
+ * size. */
+static int
+deduplicate_ints(int array[], int count)
+{
+	if(count == 0)
+	{
+		return 0;
+	}
+
+	/* Sort list of indexes to simplify finding duplicates. */
+	safe_qsort(array, count, sizeof(array[0]), &int_sorter);
+
+	/* Drop duplicates from the list of indexes. */
+	int i;
+	int j = 1;
+	for(i = 1; i < count; ++i)
+	{
+		if(array[i] != array[j - 1])
+		{
+			array[j++] = array[i];
+		}
+	}
+
+	return j;
+}
+
+/* qsort() comparer that sorts ints.  Returns standard -1, 0, 1 for
+ * comparisons. */
+static int
+int_sorter(const void *first, const void *second)
+{
+	const int *a = first;
+	const int *b = second;
+
+	return (*a - *b);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
