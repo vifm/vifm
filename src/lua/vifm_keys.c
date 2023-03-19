@@ -45,7 +45,8 @@ static void parse_modes(vlua_t *vlua, char modes[MODES_COUNT]);
 static void lua_key_handler(key_info_t key_info, keys_info_t *keys_info);
 static void build_handler_args(lua_State *lua, key_info_t key_info,
 		const keys_info_t *keys_info);
-static int extract_indexes(lua_State *lua, keys_info_t *keys_info);
+static int extract_indexes(lua_State *lua, view_t *view, int *count,
+		int *indexes[]);
 static int deduplicate_ints(int array[], int count);
 static int int_sorter(const void *first, const void *second);
 
@@ -246,7 +247,15 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 
 	if(is_selector)
 	{
-		extract_indexes(lua, keys_info);
+		if(extract_indexes(lua, curr_view, &keys_info->count,
+					&keys_info->indexes) == 0)
+		{
+			if(keys_info->count == 0)
+			{
+				free(keys_info->indexes);
+				keys_info->indexes = NULL;
+			}
+		}
 	}
 
 	lua_pop(lua, 3);
@@ -300,10 +309,11 @@ build_handler_args(lua_State *lua, key_info_t key_info,
 }
 
 /* Extracts selected indexes from "indexes" field of the table at the top of Lua
- * stack.  Indexes are sorted and deduplicated.  Returns zero on success and
- * non-zero on error. */
+ * stack.  For valid "indexes" field, allocates an array, which should be freed
+ * by the caller.  Indexes are sorted and deduplicated.  Returns zero on success
+ * (valid "indexes" field) and non-zero on error. */
 static int
-extract_indexes(lua_State *lua, keys_info_t *keys_info)
+extract_indexes(lua_State *lua, view_t *view, int *count, int *indexes[])
 {
 	if(!lua_istable(lua, -1))
 	{
@@ -317,13 +327,12 @@ extract_indexes(lua_State *lua, keys_info_t *keys_info)
 	}
 
 	lua_len(lua, -1);
-	keys_info->count = lua_tointeger(lua, -1);
+	*count = lua_tointeger(lua, -1);
 
-	keys_info->indexes = reallocarray(NULL, keys_info->count,
-			sizeof(keys_info->indexes[0]));
-	if(keys_info->indexes == NULL)
+	*indexes = reallocarray(NULL, *count, sizeof((*indexes)[0]));
+	if(*indexes == NULL)
 	{
-		keys_info->count = 0;
+		*count = 0;
 		lua_pop(lua, 2);
 		return 1;
 	}
@@ -335,21 +344,15 @@ extract_indexes(lua_State *lua, keys_info_t *keys_info)
 		int idx = lua_tointeger(lua, -1) - 1;
 		/* XXX: Non-convertable to integer indexes are converted to (0 - 1) and
 		 *      thrown away by the next line. */
-		if(idx >= 0 && idx < curr_view->list_rows)
+		if(idx >= 0 && idx < view->list_rows)
 		{
-			keys_info->indexes[i++] = idx;
+			(*indexes)[i++] = idx;
 		}
 		lua_pop(lua, 1);
 	}
-	keys_info->count = i;
+	*count = i;
 
-	if(keys_info->count == 0)
-	{
-		free(keys_info->indexes);
-		keys_info->indexes = NULL;
-	}
-
-	keys_info->count = deduplicate_ints(keys_info->indexes, keys_info->count);
+	*count = deduplicate_ints(*indexes, *count);
 
 	lua_pop(lua, 2);
 	return 0;
