@@ -426,17 +426,15 @@ try_replace_tilde(const char path[])
 
 #ifndef _WIN32
 	char user_name[NAME_MAX + 1];
+
 	const char *p = until_first(path + 1, '/');
-	if(*p == '\0')
+	int user_name_len = p - (path + 1);
+	if(user_name_len + 1 > (int)sizeof(user_name))
 	{
-		/* "~user" case. */
-		copy_str(user_name, sizeof(user_name), path + 1);
+		return (char *)path;
 	}
-	else
-	{
-		/* "~user/[path]" case. */
-		copy_str(user_name, p - (path + 1) + 1, path + 1);
-	}
+
+	copy_str(user_name, user_name_len + 1, path + 1);
 
 	struct passwd *pw = getpwnam(user_name);
 	if(pw == NULL)
