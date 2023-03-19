@@ -246,6 +246,20 @@ flist_sel_by_range(view_t *view, int begin, int end, int select)
 	ui_view_schedule_redraw(view);
 }
 
+void
+flist_sel_by_indexes(view_t *view, int count, const int indexes[], int select)
+{
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		int idx = indexes[i];
+		dir_entry_t *const entry = &view->dir_entry[idx];
+		select_unselect_entry(view, entry, select);
+	}
+
+	ui_view_schedule_redraw(view);
+}
+
 /* Selects or unselects the entry. */
 static void
 select_unselect_entry(view_t *view, dir_entry_t *entry, int select)

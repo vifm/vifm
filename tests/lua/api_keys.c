@@ -180,7 +180,9 @@ TEST(keys_bad_selector_return_table)
 TEST(keys_bad_selector_index)
 {
 	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  return { indexes = { 0 } }\n"
+	                                     "  return {"
+	                                     "    indexes = { 0, 'notint', 1.5 }"
+	                                     "  }\n"
 	                                     "end"));
 
 	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"

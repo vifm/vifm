@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 15
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -887,13 +887,13 @@ Fields of {info} argument for {key}.handler:
    Key argument (e.g., "x" in "mx" sequence).
 
 Fields of table returned by {key}.handler for selectors:
- - "indexes" (table)
+ - "indexes" (array of integers)
    Table of indexes of entries of the current view (|vifm-l_vifm.currview()|)
-   that were selected for the operation.  Out of range values and duplicates
-   are silently ignored.  Indexes are sorted before processing.
+   that were selected for the operation.  Invalid, nonexistent and duplicate
+   indexes are silently ignored.  Indexes are sorted before processing.
 
 Parameters:~
-  {cmd}  Table with information about a key.
+  {key}  Table with information about a key.
 
 Return:~
   `true` on success.
@@ -1296,6 +1296,34 @@ Parameters:~
 
 Return:~
   |vifm-l_VifmEntry| on success and `nil` on wrong index.
+
+VifmView:select({entries})                     *vifm-l_VifmView:select()*
+Selects entries.  Does nothing in visual non-amend mode.  See
+|vifm-l_VifmView:unselect()| to unselect entries.
+
+This function is {unsafe}.
+
+Possible fields of {entries}:
+ - "indexes" (array of integers)
+   Indexes of entries to select.  Invalid and nonexistent indexes are
+   silently ignored.
+
+Return:~
+  Number of new selected entries.
+
+VifmView:unselect({entries})                   *vifm-l_VifmView:unselect()*
+Unselects entries.  Does nothing in visual non-amend mode.  See
+|vifm-l_VifmView:select()| to select entries.
+
+This function is {unsafe}.
+
+Possible fields of {entries}:
+ - "indexes" (array of integers)
+   Indexes of entries to unselect.  Invalid and nonexistent indexes are
+   silently ignored.
+
+Return:~
+  Number of new unselected entries.
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:

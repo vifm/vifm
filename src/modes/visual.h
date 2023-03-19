@@ -55,6 +55,10 @@ int modvis_find(struct view_t *view, const char pattern[], int backward,
  * to a statically allocated buffer. */
 const char * modvis_describe(void);
 
+/* Checks whether visual amend mode is active.  Returns non-zero if it is,
+ * otherwise zero is returned. */
+int modvis_is_amending(void);
+
 #endif /* VIFM__MODES__VISUAL_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
