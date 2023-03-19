@@ -18,6 +18,7 @@
 
 #include "vifm_keys.h"
 
+#include <stdlib.h> /* free() */
 #include <wchar.h>
 
 #include "../compat/reallocarray.h"
