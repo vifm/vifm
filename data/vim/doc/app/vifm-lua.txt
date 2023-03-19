@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 15
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -887,10 +887,10 @@ Fields of {info} argument for {key}.handler:
    Key argument (e.g., "x" in "mx" sequence).
 
 Fields of table returned by {key}.handler for selectors:
- - "indexes" (table)
+ - "indexes" (array of integers)
    Table of indexes of entries of the current view (|vifm-l_vifm.currview()|)
-   that were selected for the operation.  Out of range values and duplicates
-   are silently ignored.  Indexes are sorted before processing.
+   that were selected for the operation.  Invalid, nonexistent and duplicate
+   indexes are silently ignored.  Indexes are sorted before processing.
 
 Parameters:~
   {cmd}  Table with information about a key.

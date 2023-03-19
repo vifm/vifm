@@ -332,6 +332,8 @@ extract_indexes(lua_State *lua, keys_info_t *keys_info)
 	while(lua_next(lua, -3) != 0)
 	{
 		int idx = lua_tointeger(lua, -1) - 1;
+		/* XXX: Non-convertable to integer indexes are converted to (0 - 1) and
+		 *      thrown away by the next line. */
 		if(idx >= 0 && idx < curr_view->list_rows)
 		{
 			keys_info->indexes[i++] = idx;
