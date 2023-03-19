@@ -1297,5 +1297,33 @@ Parameters:~
 Return:~
   |vifm-l_VifmEntry| on success and `nil` on wrong index.
 
+VifmView:select({entries})                     *vifm-l_VifmView:select()*
+Selects entries.  Does nothing in visual non-amend mode.  See
+|vifm-l_VifmView:unselect()| to unselect entries.
+
+This function is {unsafe}.
+
+Possible fields of {entries}:
+ - "indexes" (array of integers)
+   Indexes of entries to select.  Invalid and nonexistent indexes are
+   silently ignored.
+
+Return:~
+  Number of new selected entries.
+
+VifmView:unselect({entries})                   *vifm-l_VifmView:unselect()*
+Unselects entries.  Does nothing in visual non-amend mode.  See
+|vifm-l_VifmView:select()| to select entries.
+
+This function is {unsafe}.
+
+Possible fields of {entries}:
+ - "indexes" (array of integers)
+   Indexes of entries to unselect.  Invalid and nonexistent indexes are
+   silently ignored.
+
+Return:~
+  Number of new unselected entries.
+
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:

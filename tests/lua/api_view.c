@@ -2,8 +2,12 @@
 
 #include <string.h> /* strdup() */
 
+#include "../../src/engine/keys.h"
 #include "../../src/int/file_magic.h"
 #include "../../src/lua/vlua.h"
+#include "../../src/modes/modes.h"
+#include "../../src/modes/visual.h"
+#include "../../src/modes/wk.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -106,6 +110,120 @@ TEST(vifmview_custom)
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.currview().custom.type)"));
 	assert_string_equal("custom", ui_sb_last());
+}
+
+TEST(vifmview_select)
+{
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
+	                                     "  indexes = { 0, 1.5, 10 }"
+	                                     "}))"));
+
+	assert_string_equal("0", ui_sb_last());
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
+	                                     "  indexes = { 2 }"
+	                                     "}))"));
+
+	assert_string_equal("1", ui_sb_last());
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
+	                                     "  indexes = { 1, 2 }"
+	                                     "}))"));
+
+	assert_string_equal("1", ui_sb_last());
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+}
+
+TEST(vifmview_select_in_visual_mode)
+{
+	modes_init();
+	opt_handlers_setup();
+
+	/* Does nothing in visual non-amend mode. */
+
+	modvis_enter(VS_NORMAL);
+
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
+	                                     "  indexes = { 1 }"
+	                                     "}))"));
+
+	assert_string_equal("0", ui_sb_last());
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	/* Selects in visual amend mode. */
+
+	modvis_enter(VS_AMEND);
+
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
+	                                     "  indexes = { 1 }"
+	                                     "}))"));
+
+	assert_string_equal("1", ui_sb_last());
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	modvis_leave(/*save_msg=*/0, /*goto_top=*/1, /*clear_selection=*/1);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+	vle_keys_reset();
+	opt_handlers_teardown();
+}
+
+TEST(vifmview_unselect)
+{
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
+	                                     "  indexes = { 0, 1.5, 10 }"
+	                                     "}))"));
+
+	assert_string_equal("0", ui_sb_last());
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	ui_sb_msg("");
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
+	                                     "  indexes = { 2 }"
+	                                     "}))"));
+
+	assert_string_equal("1", ui_sb_last());
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
+	                                     "  indexes = { 1, 2 }"
+	                                     "}))"));
+
+	assert_string_equal("1", ui_sb_last());
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
 }
 
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))

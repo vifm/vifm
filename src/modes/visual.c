@@ -1498,6 +1498,12 @@ modvis_describe(void)
 	return descriptions[amend_type];
 }
 
+int
+modvis_is_amending(void)
+{
+	return vle_mode_is(VISUAL_MODE) && amend_type != AT_NONE;
+}
+
 /* Processes events from the mouse. */
 static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)

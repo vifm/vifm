@@ -18,12 +18,17 @@
 
 #include "vifmview.h"
 
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() */
 
+#include "../engine/mode.h"
 #include "../engine/options.h"
+#include "../modes/modes.h"
+#include "../modes/visual.h"
 #include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../filelist.h"
+#include "../flist_sel.h"
 #include "../opt_handlers.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
@@ -44,6 +49,9 @@ static int VLUA_IMPL(get_opt_wrapper)(lua_State *lua);
 static int VLUA_IMPL(set_opt_wrapper)(lua_State *lua);
 static int VLUA_API(vifmview_cd)(lua_State *lua);
 static int VLUA_API(vifmview_entry)(lua_State *lua);
+static int VLUA_API(vifmview_select)(lua_State *lua);
+static int VLUA_API(vifmview_unselect)(lua_State *lua);
+static int select_unselect(lua_State *lua, int select);
 static view_t * check_view(lua_State *lua);
 static view_t * find_view(lua_State *lua, unsigned int id);
 
@@ -54,12 +62,16 @@ VLUA_DECLARE_SAFE(locopts_index);
 VLUA_DECLARE_UNSAFE(locopts_newindex);
 VLUA_DECLARE_UNSAFE(vifmview_cd);
 VLUA_DECLARE_SAFE(vifmview_entry);
+VLUA_DECLARE_UNSAFE(vifmview_select);
+VLUA_DECLARE_UNSAFE(vifmview_unselect);
 
 /* Methods of VifmView type. */
 static const luaL_Reg vifmview_methods[] = {
-	{ "cd",    VLUA_REF(vifmview_cd)    },
-	{ "entry", VLUA_REF(vifmview_entry) },
-	{ NULL,    NULL                     }
+	{ "cd",       VLUA_REF(vifmview_cd)       },
+	{ "entry",    VLUA_REF(vifmview_entry)    },
+	{ "select",   VLUA_REF(vifmview_select)   },
+	{ "unselect", VLUA_REF(vifmview_unselect) },
+	{ NULL,       NULL                        }
 };
 
 void
@@ -347,6 +359,54 @@ VLUA_API(vifmview_entry)(lua_State *lua)
 	}
 
 	vifmentry_new(lua, &view->dir_entry[idx]);
+	return 1;
+}
+
+/* Method of `VifmView` that selects entries a view.  Returns number of new
+ * selected entries. */
+static int
+VLUA_API(vifmview_select)(lua_State *lua)
+{
+	return select_unselect(lua, /*select=*/1);
+}
+
+/* Method of `VifmView` that unselects entries in a view.  Returns number of new
+ * unselected entries. */
+static int
+VLUA_API(vifmview_unselect)(lua_State *lua)
+{
+	return select_unselect(lua, /*select=*/0);
+}
+
+/* Selects or unselects entries in a view.  Returns number of entries that
+ * changed selection state. */
+static int
+select_unselect(lua_State *lua, int select)
+{
+	view_t *view = check_view(lua);
+
+	if(vle_mode_is(VISUAL_MODE) && !modvis_is_amending())
+	{
+		lua_pushinteger(lua, 0);
+		return 1;
+	}
+
+	int count = 0;
+	int *indexes = NULL;
+	if(extract_indexes(lua, view, &count, &indexes) != 0)
+	{
+		lua_pushinteger(lua, 0);
+		return 1;
+	}
+
+	const int was_selected = view->selected_files;
+
+	flist_sel_by_indexes(view, count, indexes, select);
+	free(indexes);
+
+	int num = select ? (view->selected_files - was_selected)
+	                 : (was_selected - view->selected_files);
+	lua_pushinteger(lua, num);
 	return 1;
 }
 

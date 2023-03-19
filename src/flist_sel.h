@@ -54,6 +54,11 @@ void flist_sel_recount(struct view_t *view);
 /* Selects or unselects entries in the given range. */
 void flist_sel_by_range(struct view_t *view, int begin, int end, int select);
 
+/* Selects or unselects entries at positions specified in the indexes array of
+ * size count. */
+void flist_sel_by_indexes(struct view_t *view, int count, const int indexes[],
+		int select);
+
 /* Selects or unselects entries that match list of files supplied by external
  * utility.  Returns zero on success, otherwise non-zero is returned and error
  * message is printed on status bar. */
