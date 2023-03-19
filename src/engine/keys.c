@@ -1281,9 +1281,9 @@ inc_counter(const keys_info_t *keys_info, size_t by)
 {
 	assert(enters_counter > 0);
 
-	if(!is_recursive())
+	if(!is_recursive() && !keys_info->mapped)
 	{
-		counter += keys_info->mapped ? 0 : by;
+		counter += by;
 	}
 }
 
