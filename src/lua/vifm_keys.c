@@ -244,9 +244,9 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if(is_selector && extract_indexes(lua, keys_info) == 0)
+	if(is_selector)
 	{
-		keys_info->count = deduplicate_ints(keys_info->indexes, keys_info->count);
+		extract_indexes(lua, keys_info);
 	}
 
 	lua_pop(lua, 3);
@@ -299,8 +299,9 @@ build_handler_args(lua_State *lua, key_info_t key_info,
 	}
 }
 
-/* Extracts selected indexes from "indexes" field of the table at the top of
- * Lua stack.  Returns zero on success and non-zero on error. */
+/* Extracts selected indexes from "indexes" field of the table at the top of Lua
+ * stack.  Indexes are sorted and deduplicated.  Returns zero on success and
+ * non-zero on error. */
 static int
 extract_indexes(lua_State *lua, keys_info_t *keys_info)
 {
@@ -347,6 +348,8 @@ extract_indexes(lua_State *lua, keys_info_t *keys_info)
 		free(keys_info->indexes);
 		keys_info->indexes = NULL;
 	}
+
+	keys_info->count = deduplicate_ints(keys_info->indexes, keys_info->count);
 
 	lua_pop(lua, 2);
 	return 0;
