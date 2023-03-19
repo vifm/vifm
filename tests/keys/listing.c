@@ -24,17 +24,17 @@ SETUP()
 TEST(normal_mode_keys)
 {
 	vle_keys_list(NORMAL_MODE, &process_listing, 0);
-	assert_int_equal(24, nitems);
+	assert_int_equal(1 + /*user=*/4 + 2 + /*builtin=*/19, nitems);
 
 	nitems = 0;
 	vle_keys_list(NORMAL_MODE, &process_listing, 1);
-	assert_int_equal(7, nitems);
+	assert_int_equal(1 + /*user=*/4 + 2, nitems);
 }
 
 TEST(visual_mode_keys)
 {
 	vle_keys_list(VISUAL_MODE, &process_listing, 0);
-	assert_int_equal(7, nitems);
+	assert_int_equal(1 + 2 + /*builtin=*/4, nitems);
 }
 
 static void

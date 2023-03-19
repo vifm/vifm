@@ -105,6 +105,20 @@ TEST(add_foreign_key_with_multikey)
 	assert_int_equal(L'4', multikey);
 }
 
+TEST(foreign_key_with_selector_can_be_redefined)
+{
+	key_conf_t key = { { &key_X }, .followed = FOLLOWED_BY_SELECTOR };
+	assert_success(vle_keys_foreign_add(L"X", &key, /*is_selector=*/0,
+				NORMAL_MODE));
+	assert_true(vle_keys_user_exists(L"X", NORMAL_MODE));
+
+	vle_keys_user_add(L"X", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+
+	last = 0;
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"X")));
+	assert_int_equal(2, last);
+}
+
 static void
 key_X(key_info_t key_info, keys_info_t *keys_info)
 {
