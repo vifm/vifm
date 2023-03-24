@@ -3100,7 +3100,7 @@ load_saving_pos(view_t *view)
 
 	fview_cursor_redraw(view);
 
-	if(curr_stats.number_of_windows != 1 || view == curr_view)
+	if(ui_view_is_visible(view))
 	{
 		refresh_view_win(view);
 	}
@@ -3109,7 +3109,7 @@ load_saving_pos(view_t *view)
 int
 window_shows_dirlist(const view_t *view)
 {
-	if(curr_stats.number_of_windows == 1 && view == other_view)
+	if(!ui_view_is_visible(view))
 	{
 		return 0;
 	}
