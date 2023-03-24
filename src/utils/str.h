@@ -134,6 +134,9 @@ int strnoscmp(const char *s, const char *t, size_t n);
 /* Wraps strcmp() for use with qsort(). */
 int strsorter(const void *s, const void *t);
 
+/* Wraps strcasecmp() for use with qsort(). */
+int strcasesorter(const void *s, const void *t);
+
 /* Wraps stroscmp() for use with qsort(). */
 int strossorter(const void *s, const void *t);
 

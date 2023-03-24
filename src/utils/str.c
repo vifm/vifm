@@ -391,6 +391,12 @@ strsorter(const void *s, const void *t)
 }
 
 int
+strcasesorter(const void *s, const void *t)
+{
+	return strcasecmp(*(const char **)s, *(const char **)t);
+}
+
+int
 strossorter(const void *s, const void *t)
 {
 	return stroscmp(*(const char **)s, *(const char **)t);
