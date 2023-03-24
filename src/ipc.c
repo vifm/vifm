@@ -146,7 +146,6 @@ static char * get_the_only_target(const ipc_t *ipc);
 static char ** list_servers(const ipc_t *ipc, int *len);
 static int add_to_list(const char name[], const void *data, void *param);
 static const char * get_ipc_dir(void);
-static int sorter(const void *first, const void *second);
 #ifndef WIN32_PIPE_READ
 static int pipe_is_in_use(const char path[]);
 #endif
@@ -811,7 +810,7 @@ list_servers(const ipc_t *ipc, int *len)
 	}
 #endif
 
-	safe_qsort(data.lst, data.len, sizeof(*data.lst), &sorter);
+	safe_qsort(data.lst, data.len, sizeof(*data.lst), &strsorter);
 
 	*len = data.len;
 	return data.lst;
@@ -865,15 +864,6 @@ get_ipc_dir(void)
 #else
 	return "//./pipe";
 #endif
-}
-
-/* Wraps strcmp() for use with qsort(). */
-static int
-sorter(const void *first, const void *second)
-{
-	const char *const *const a = first;
-	const char *const *const b = second;
-	return strcmp(*a, *b);
 }
 
 #ifndef WIN32_PIPE_READ

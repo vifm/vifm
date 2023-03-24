@@ -385,6 +385,12 @@ strnoscmp(const char *s, const char *t, size_t n)
 }
 
 int
+strsorter(const void *s, const void *t)
+{
+	return strcmp(*(const char **)s, *(const char **)t);
+}
+
+int
 strossorter(const void *s, const void *t)
 {
 	return stroscmp(*(const char **)s, *(const char **)t);

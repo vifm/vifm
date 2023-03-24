@@ -131,6 +131,9 @@ int stroscmp(const char *s, const char *t);
 /* Compares part of strings in OS dependent way. */
 int strnoscmp(const char *s, const char *t, size_t n);
 
+/* Wraps strcmp() for use with qsort(). */
+int strsorter(const void *s, const void *t);
+
 /* Wraps stroscmp() for use with qsort(). */
 int strossorter(const void *s, const void *t);
 
