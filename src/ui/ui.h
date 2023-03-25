@@ -692,6 +692,10 @@ WINDOW * ui_get_tab_line_win(const view_t *view);
  * base zero or -1 if tab label is not present at that location. */
 int ui_map_tab_line(view_t *view, int x);
 
+/* Determines whether coordinates are with the window which is part of the view.
+ * Returns non-zero if so, otherwise zero is returned. */
+int ui_wenclose(const view_t *view, WINDOW *win, int x, int y);
+
 /* Displays "Terminal is too small" kind of message instead of UI. */
 void ui_display_too_small_term_msg(void);
 

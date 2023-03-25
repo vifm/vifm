@@ -1830,11 +1830,13 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	view_t *selected_view;
-	if(wenclose(lwin.win, e.y, e.x) || wenclose(lwin.title, e.y, e.x))
+	if(ui_wenclose(&lwin, lwin.win, e.x, e.y) ||
+			ui_wenclose(&lwin, lwin.title, e.x, e.y))
 	{
 		selected_view = &lwin;
 	}
-	else if(wenclose(rwin.win, e.y, e.x) || wenclose(rwin.title, e.y, e.x))
+	else if(ui_wenclose(&rwin, rwin.win, e.x, e.y) ||
+			ui_wenclose(&rwin, rwin.title, e.x, e.y))
 	{
 		selected_view = &rwin;
 	}

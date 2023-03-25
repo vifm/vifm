@@ -2023,6 +2023,12 @@ ui_map_tab_line(view_t *view, int x)
 	return tab_idx;
 }
 
+int
+ui_wenclose(const view_t *view, WINDOW *win, int x, int y)
+{
+	return (ui_view_is_visible(view) && wenclose(win, y, x));
+}
+
 void
 ui_display_too_small_term_msg(void)
 {
