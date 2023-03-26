@@ -103,7 +103,7 @@ static void list_view_entries(const view_t *view, strlist_t *list);
 static int append_valid_nodes(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 static void list_files_recursively(const view_t *view, const char path[],
-		int skip_dot_files, strlist_t *list);
+		int skip_dot_files, int flags, strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct, int flags, int lazy);
 static char * get_contents_fingerprint(const char path[],
@@ -730,7 +730,8 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 	}
 	else
 	{
-		list_files_recursively(view, flist_get_dir(view), view->hide_dot, &files);
+		list_files_recursively(view, flist_get_dir(view), view->hide_dot, flags,
+				&files);
 	}
 
 	show_progress("Querying...", 0);
@@ -826,16 +827,29 @@ append_valid_nodes(const char name[], int valid, const void *parent_data,
 /* Collects files under specified file system tree. */
 static void
 list_files_recursively(const view_t *view, const char path[],
-		int skip_dot_files, strlist_t *list)
+		int skip_dot_files, int flags, strlist_t *list)
 {
 	int i;
 
 	/* Obtain sorted list of files. */
 	int len;
-	char **lst = list_sorted_files(path, &len);
+	char **lst = list_all_files(path, &len);
 	if(len < 0)
 	{
 		return;
+	}
+
+	if(flags & CF_IGNORE_CASE)
+	{
+		safe_qsort(lst, len, sizeof(*lst), &strcasesorter);
+	}
+	else if(flags & CF_RESPECT_CASE)
+	{
+		safe_qsort(lst, len, sizeof(*lst), &strsorter);
+	}
+	else
+	{
+		safe_qsort(lst, len, sizeof(*lst), &strossorter);
 	}
 
 	/* Visit all subdirectories ignoring symbolic links to directories. */
@@ -860,7 +874,7 @@ list_files_recursively(const view_t *view, const char path[],
 		{
 			if(!is_symlink(full_path))
 			{
-				list_files_recursively(view, full_path, skip_dot_files, list);
+				list_files_recursively(view, full_path, skip_dot_files, flags, list);
 			}
 			free(full_path);
 			update_string(&lst[i], NULL);

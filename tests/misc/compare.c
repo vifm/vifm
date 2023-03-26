@@ -104,6 +104,38 @@ TEST(two_panes_by_name_ignore_case)
 	remove_file(SANDBOX_PATH "/aAa");
 }
 
+TEST(two_panes_by_name_ignore_case_sorts_with_isort)
+{
+	create_dir(SANDBOX_PATH "/l");
+	create_file(SANDBOX_PATH "/l/a");
+	create_file(SANDBOX_PATH "/l/b");
+	create_dir(SANDBOX_PATH "/r");
+	create_file(SANDBOX_PATH "/r/a");
+	create_file(SANDBOX_PATH "/r/B");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/l");
+	strcpy(rwin.curr_dir, SANDBOX_PATH "/r");
+
+	compare_two_panes(CT_NAME, LT_ALL, CF_SHOW | CF_GROUP_PATHS | CF_IGNORE_CASE);
+
+	check_compare_invariants(2);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("a", rwin.dir_entry[0].name);
+	assert_string_equal("b", lwin.dir_entry[1].name);
+	assert_string_equal("B", rwin.dir_entry[1].name);
+
+	remove_file(SANDBOX_PATH "/l/a");
+	remove_file(SANDBOX_PATH "/l/b");
+	remove_dir(SANDBOX_PATH "/l");
+	remove_file(SANDBOX_PATH "/r/a");
+	remove_file(SANDBOX_PATH "/r/B");
+	remove_dir(SANDBOX_PATH "/r");
+}
+
 TEST(two_panes_by_name_respect_case)
 {
 	create_file(SANDBOX_PATH "/A");
@@ -121,6 +153,42 @@ TEST(two_panes_by_name_respect_case)
 	remove_file(SANDBOX_PATH "/A");
 	remove_file(SANDBOX_PATH "/Aa");
 	remove_file(SANDBOX_PATH "/aAa");
+}
+
+TEST(two_panes_by_name_respace_case_sorts_with_sort)
+{
+	create_dir(SANDBOX_PATH "/l");
+	create_file(SANDBOX_PATH "/l/a");
+	create_file(SANDBOX_PATH "/l/b");
+	create_dir(SANDBOX_PATH "/r");
+	create_file(SANDBOX_PATH "/r/a");
+	create_file(SANDBOX_PATH "/r/B");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/l");
+	strcpy(rwin.curr_dir, SANDBOX_PATH "/r");
+
+	compare_two_panes(CT_NAME, LT_ALL,
+			CF_SHOW | CF_GROUP_PATHS | CF_RESPECT_CASE);
+
+	check_compare_invariants(3);
+
+	assert_int_equal(3, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+	assert_int_equal(2, lwin.dir_entry[2].id);
+
+	assert_string_equal("", lwin.dir_entry[0].name);
+	assert_string_equal("B", rwin.dir_entry[0].name);
+	assert_string_equal("a", lwin.dir_entry[1].name);
+	assert_string_equal("a", rwin.dir_entry[1].name);
+	assert_string_equal("b", lwin.dir_entry[2].name);
+	assert_string_equal("", rwin.dir_entry[2].name);
+
+	remove_file(SANDBOX_PATH "/l/a");
+	remove_file(SANDBOX_PATH "/l/b");
+	remove_dir(SANDBOX_PATH "/l");
+	remove_file(SANDBOX_PATH "/r/a");
+	remove_file(SANDBOX_PATH "/r/B");
+	remove_dir(SANDBOX_PATH "/r");
 }
 
 TEST(two_panes_all_group_ids)

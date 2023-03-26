@@ -2023,6 +2023,12 @@ ui_map_tab_line(view_t *view, int x)
 	return tab_idx;
 }
 
+int
+ui_wenclose(const view_t *view, WINDOW *win, int x, int y)
+{
+	return (ui_view_is_visible(view) && wenclose(win, y, x));
+}
+
 void
 ui_display_too_small_term_msg(void)
 {
@@ -2872,13 +2878,22 @@ ui_shutdown(void)
 void
 ui_pause(void)
 {
+#ifdef _WIN32
+	/* Refresh the window, because otherwise curses redraws the screen on call to
+	 * `compat_wget_wch()` (why does it do this?). */
+	use_wrefresh(inf_delay_window);
+#endif
+
 	/* Show previous screen state. */
 	ui_shutdown();
+
+#ifndef _WIN32
 	/* Yet restore program mode to read input without waiting for Enter. */
 	reset_prog_mode();
 	/* Refresh the window, because otherwise curses redraws the screen on call to
 	 * `compat_wget_wch()` (why does it do this?). */
 	wnoutrefresh(inf_delay_window);
+#endif
 
 	/* Ignore window resize. */
 	wint_t pressed;
