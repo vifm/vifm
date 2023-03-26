@@ -13,6 +13,8 @@
 
 	Fixed handling mouse events in normal and view modes in single pane mode.
 
+	Fixed :hideui not hiding anything on Windows.  Thanks to Ed Pavlov.
+
 0.12.1 to 0.13-beta (2023-03-17)
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files
