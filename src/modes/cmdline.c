@@ -822,6 +822,7 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 	stat->dot_pos = -1;
 	stat->line_edited = 0;
 	stat->enter_mapping_state = vle_keys_mapping_state();
+	stat->expanding_abbrev = 0;
 	stat->state = PS_NORMAL;
 
 	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
