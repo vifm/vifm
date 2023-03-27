@@ -228,8 +228,6 @@ sort_by_groups(dir_entry_t *entries, signed char key, size_t nentries)
 {
 	char **groups = NULL;
 	int ngroups = 0;
-	const int optimize = (view_sort_groups != view->sort_groups_g);
-	int i;
 
 	char *const copy = strdup(view_sort_groups);
 	char *group = copy, *state = NULL;
@@ -239,14 +237,19 @@ sort_by_groups(dir_entry_t *entries, signed char key, size_t nentries)
 	}
 	free(copy);
 
-	for(i = ngroups - (optimize ? 1 : 0); i >= 1; --i)
+	/* Whether view->primary_group can be used to skip compiling regexp of the
+	 * first group. */
+	const int optimized = (view_sort_groups == view->sort_groups);
+
+	int i;
+	for(i = ngroups - 1; i >= (optimized ? 1 : 0); --i)
 	{
 		regex_t regex;
 		(void)regexp_compile(&regex, groups[i], REG_EXTENDED | REG_ICASE);
 		sort_by_key(entries, nentries, key, &regex);
 		regfree(&regex);
 	}
-	if(optimize && ngroups != 0)
+	if(optimized && ngroups != 0)
 	{
 		sort_by_key(entries, nentries, key, &view->primary_group);
 	}

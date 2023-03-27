@@ -463,6 +463,25 @@ TEST(groups_sorting_works)
 	update_string(&lwin.sort_groups, NULL);
 }
 
+TEST(global_groups_sorts_entries_list)
+{
+	update_string(&lwin.sort_groups_g, "([0-9])");
+	(void)regcomp(&lwin.primary_group, "([a-z])", REG_EXTENDED | REG_ICASE);
+
+	lwin.sort_g[0] = SK_BY_GROUPS;
+	lwin.sort_g[1] = SK_BY_NAME;
+	memset(&lwin.sort_g[2], SK_NONE, sizeof(lwin.sort_g) - 2);
+
+	dir_entry_t entry_list[] = { { .name = "a1" }, { .name = "b0" } };
+	entries_t entries = { entry_list, 2 };
+
+	sort_entries(&lwin, entries);
+
+	assert_int_equal(2, entries.nentries);
+	assert_string_equal("b0", entries.entries[0].name);
+	assert_string_equal("a1", entries.entries[1].name);
+}
+
 #ifndef _WIN32
 
 TEST(inode_sorting_works)
