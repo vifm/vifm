@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13-beta  Last change: 2023 Mar 17
+*vifm-app.txt*    For Vifm version 0.13-beta  Last change: 2023 Mar 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5143,6 +5143,7 @@ Retrieves string describing type of current pane.  Possible return values:
     custom       custom file list (%u)
     very-custom  very custom file list (%U)
     tree         tree view
+    compare      compare view
 
 
 has({property})                                *vifm-has()*
