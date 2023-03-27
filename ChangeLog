@@ -3,6 +3,9 @@
 	Made "withicase" and "withrcase" affect how files are sorted before
 	comparison, otherwise they might not produce the intended effect.
 
+	Reduced cursor flickering during incremental search in visual mode.  Patch
+	by filterfalse.
+
 	Fixed segfault on trying to expand "~username" path prefix with a huge
 	length of the user name.
 
