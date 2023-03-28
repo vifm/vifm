@@ -166,6 +166,7 @@ static void select_up_one(view_t *view, int start_pos);
 static void select_down_one(view_t *view, int start_pos);
 static void apply_selection(int pos);
 static void revert_selection(int pos);
+static void set_pos(int pos);
 static void goto_pos_force_update(int pos);
 static void goto_pos(int pos);
 static void update_ui(void);
@@ -1431,6 +1432,22 @@ modvis_find(view_t *view, const char pattern[], int backward, int print_msg,
 {
 	return search_find(view, pattern, backward, /*stash_selection=*/0,
 			/*select_matches=*/0, search_repeat, &goto_pos, print_msg, found);
+}
+
+int
+modvis_find_interactive(view_t *view, const char pattern[], int backward,
+		int *found)
+{
+	int save_msg = search_find(view, pattern, backward, /*stash_selection=*/0,
+			/*select_matches=*/0, search_repeat, &set_pos, /*print_msg=*/0, found);
+	modvis_update();
+	return save_msg;
+}
+
+static void
+set_pos(int pos)
+{
+	view->list_pos = pos;
 }
 
 /* Moves cursor from its current position to specified pos selecting or

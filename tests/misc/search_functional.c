@@ -253,5 +253,24 @@ TEST(selection_isnt_dropped_on_empty_input_during_incsearch_with_hls_in_vismode)
 	(void)vle_keys_exec_timed_out(WK_C_c);
 }
 
+TEST(selection_is_not_leaved_on_cursor_backtracking_during_incsearch_in_vismode)
+{
+	cfg.inc_search = 1;
+
+	(void)vle_keys_exec_timed_out(WK_v WK_SLASH L"dos");
+
+	assert_int_equal(1, lwin.list_pos);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	(void)vle_keys_exec_timed_out(L"asdfasdfasdf");
+
+	assert_int_equal(0, lwin.list_pos);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

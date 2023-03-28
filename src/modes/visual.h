@@ -51,6 +51,10 @@ void modvis_update(void);
 int modvis_find(struct view_t *view, const char pattern[], int backward,
 		int print_msg, int *found);
 
+/* Same as modvis_find() but specifically for interactive search. */
+int modvis_find_interactive(struct view_t *view, const char pattern[],
+		int backward, int *found);
+
 /* Formats concise description of current visual mode state.  Returns pointer
  * to a statically allocated buffer. */
 const char * modvis_describe(void);

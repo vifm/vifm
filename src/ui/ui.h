@@ -446,7 +446,7 @@ struct view_t
 	signed char sort[SK_COUNT], sort_g[SK_COUNT];
 	/* Sorting groups (comma-separated list of regular expressions). */
 	char *sort_groups, *sort_groups_g;
-	/* Primary group in compiled form. */
+	/* Primary group of sort_groups (not sort_groups_g) in compiled form. */
 	regex_t primary_group;
 
 	int history_num;    /* Number of used history elements. */
