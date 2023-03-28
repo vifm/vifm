@@ -38,6 +38,21 @@ Tests are available and can be run with `make check` in the root, `src/` or
 specific tests in several different modes, see comment inside the `Makefile`
 there for instructions.
 
+## ChangeLog format ##
+
+Releases are listed in newest to oldest order.  Beta versions are considered to
+be separate releases, otherwise one would have to edit entries rather than add
+new ones on recording changes done since beta.
+
+Within each release entries are organized in groups of 4 kinds in this order:
+ 1. Changed ...
+ 2. Added ...
+ 3. Everything else
+ 4. Fixed ...
+
+A new entry is added at the end of a group, resulting in a chronological order
+of changes of each kind.
+
 ## Package contents ##
 
     .
