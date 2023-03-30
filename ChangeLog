@@ -21,6 +21,9 @@
 	Fixed segfaults on changing sibling directory or previewing directories in
 	miller view while global sorting by groups is active.  Patch by filterfalse.
 
+	Fixed cl processing selection it was used previously on instead of file
+	under cursor when you run it twice in succession.
+
 0.12.1 to 0.13-beta (2023-03-17)
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files
