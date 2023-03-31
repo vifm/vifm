@@ -6,6 +6,7 @@
 #include "../../src/engine/text_buffer.h"
 #include "../../src/cmd_core.h"
 #include "../../src/ui/column_view.h"
+#include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 
 static void print_func(const char buf[], size_t offset, AlignType align,
@@ -18,6 +19,10 @@ SETUP()
 	view_setup(&lwin);
 	lwin.columns = columns_create();
 	curr_view = &lwin;
+
+	view_setup(&rwin);
+	rwin.columns = columns_create();
+	other_view = &rwin;
 
 	/* Name+size matches default column view setting ("-{name},{}"). */
 	columns_setup_column(SK_BY_NAME);
@@ -34,6 +39,7 @@ TEARDOWN()
 	vle_cmds_reset();
 
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	columns_teardown();
 }
@@ -94,6 +100,22 @@ TEST(milleroptions_normalizes_input)
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
 	assert_string_equal("  milleroptions=lsize:0,csize:100,rsize:0,rpreview:dirs",
+			vle_tb_get_data(vle_err));
+}
+
+TEST(milleroptions_are_cloned_to_new_tabs)
+{
+	init_view_list(&lwin);
+	init_view_list(&rwin);
+
+	assert_success(cmds_dispatch("set milleroptions=lsize:5,rpreview:all", &lwin,
+				CIT_COMMAND));
+
+	tabs_new(NULL, NULL);
+
+	vle_tb_clear(vle_err);
+	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
+	assert_string_equal("  milleroptions=lsize:5,csize:1,rsize:0,rpreview:all",
 			vle_tb_get_data(vle_err));
 }
 

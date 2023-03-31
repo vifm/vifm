@@ -28,6 +28,8 @@
 	dialogs, entering menus, switching tabs, activating more or file info
 	modes.
 
+	Fixed "rpreview:" of 'milleroptions' not being copied to new tabs.
+
 0.12.1 to 0.13-beta (2023-03-17)
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files
