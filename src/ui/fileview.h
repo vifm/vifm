@@ -98,6 +98,9 @@ void fview_draw_inactive_cursor(struct view_t *view);
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(struct view_t *view);
 
+/* Clears miller-view preview if it's currently visible. */
+void fview_clear_miller_preview(struct view_t *view);
+
 /* Scrolling related functions. */
 
 /* Scrolls view up by at least the specified number of files.  Updates both top
