@@ -24,6 +24,10 @@
 	Fixed cl processing selection it was used previously on instead of file
 	under cursor when you run it twice in succession.
 
+	Fixed graphics from miller view preview remaining visible when displaying
+	dialogs, entering menus, switching tabs, activating more or file info
+	modes.
+
 0.12.1 to 0.13-beta (2023-03-17)
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files

@@ -2808,6 +2808,15 @@ ui_qv_cleanup_if_needed(void)
 	{
 		qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 	}
+
+	if(ui_view_is_visible(&lwin))
+	{
+		fview_clear_miller_preview(&lwin);
+	}
+	if(ui_view_is_visible(&rwin))
+	{
+		fview_clear_miller_preview(&rwin);
+	}
 }
 
 void
