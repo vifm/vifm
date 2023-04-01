@@ -32,6 +32,9 @@
 
 	Fixed selection not being stashed by do and dp.
 
+	Fixed memory issues inside ncurses when dialog is displayed in menu mode
+	after resizing the terminal.
+
 0.12.1 to 0.13-beta (2023-03-17)
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files

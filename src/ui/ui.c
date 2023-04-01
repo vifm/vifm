@@ -1433,7 +1433,10 @@ resize_for_menu_like(void)
 {
 	int screen_x, screen_y;
 
-	ui_update_term_state();
+	/* Resizing everything to avoid a situation when windows that are not visible
+	 * are of wrong size and using redrawwin() on them causes a memory corruption.
+	 * I'm pretty sure it's a bug in ncurses. */
+	ui_resize_all();
 	if(curr_stats.term_state == TS_TOO_SMALL)
 	{
 		return 1;

@@ -39,13 +39,14 @@ SETUP_ONCE()
 
 SETUP()
 {
-	conf_setup();
-	modes_init();
-	cmds_init();
-
 	curr_view = &lwin;
 	other_view = &rwin;
 	view_setup(&lwin);
+
+	/* The redraw code updates 'columns' and 'lines'. */
+	opt_handlers_setup();
+	modes_init();
+	cmds_init();
 
 	curr_stats.load_stage = -1;
 	curr_stats.save_msg = 0;
@@ -70,7 +71,7 @@ TEARDOWN()
 	restore_cwd(saved_cwd);
 
 	vle_keys_reset();
-	conf_teardown();
+	opt_handlers_teardown();
 
 	view_teardown(&lwin);
 	curr_view = NULL;
