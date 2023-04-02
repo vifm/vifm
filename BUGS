@@ -20,3 +20,5 @@
   doesn't work.
 * Access time of directories might not be preserved on OpenBSD on copying when
   'syscalls' is on, this is some subtle issue, because the code looks fine.
+* Search match highlighting has issues with handling hidden matched parts,
+  especially if 'tuioptions' contains "u".
