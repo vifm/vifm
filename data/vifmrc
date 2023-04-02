@@ -198,12 +198,12 @@ filextype {*.djvu},<image/vnd.djvu>
 " Audio
 filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
         \<audio/*>
+       \ {Play using MPlayer}
+       \ mplayer %f,
+       \ {Play using mpv}
+       \ mpv --no-video %f %s,
        \ {Play using ffplay}
        \ ffplay -nodisp -hide_banner -autoexit %c,
-       \ {Play using MPlayer}
-       \ mplayer %c,
-       \ {Play using mpv}
-       \ mpv --no-video %c %s,
 fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
            \*.aac}
          \ ffprobe -hide_banner -pretty %c 2>&1
