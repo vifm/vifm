@@ -290,7 +290,9 @@ filetype {*.asc},<application/pgp-signature>
 
 " Torrent
 filetype {*.torrent},<application/x-bittorrent> ktorrent %f &
-fileviewer {*.torrent},<application/x-bittorrent> dumptorrent -v %c
+fileviewer {*.torrent},<application/x-bittorrent>
+         \ dumptorrent -v %c,
+         \ transmission-show %c
 
 " FuseZipMount
 filetype {*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg},

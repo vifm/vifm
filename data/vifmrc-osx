@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 26 February, 2023)
+" Sample configuration file for vifm on OSX (last updated: 2 April, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -270,7 +270,9 @@ filetype *.sha512
 
 " Torrent
 filetype {*.torrent},<application/x-bittorrent> open -a Transmission.app
-fileviewer {*.torrent},<application/x-bittorrent> dumptorrent -v %c
+fileviewer {*.torrent},<application/x-bittorrent>
+         \ dumptorrent -v %c,
+         \ transmission-show %c
 
 " Extract zip files
 filetype {*.zip},<application/zip,application/java-archive>
