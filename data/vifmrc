@@ -195,6 +195,11 @@ filextype {*.djvu},<image/vnd.djvu>
         \ {View in apvlv}
         \ apvlv %f,
 
+" Midi
+filetype {*.mid,*.kar}
+       \ {Play using TiMidity++}
+       \ timidity %f,
+
 " Audio
 filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
          \*.aac,*.mpga},
@@ -245,6 +250,25 @@ filetype {*.[1-8]},<text/troff> man ./%c
 fileviewer {*.[1-8]},<text/troff> man ./%c | col -b
 
 " Images
+filextype {*.svg,*.svgz},<image/svg+xml>
+        \ {Edit in Inkscape}
+        \ inkscape %f,
+        \ {View in Inkview}
+        \ inkview %f,
+filextype {*.cr2}
+        \ {Open in Darktable}
+        \ darktable %f,
+        \ {Open in RawTherapee}
+        \ rawtherapee %f,
+filextype {*.xfc}
+        \ {Open in GIMP}
+        \ gimp %f,
+filextype {.kra}
+        \ {Open in Krita}
+        \ krita %f,
+filextype {.blend}
+        \ {Open in Blender}
+        \ blender %c,
 filextype {*.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm},<image/*>
         \ {View in sxiv}
         \ sxiv %f,
