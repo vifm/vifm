@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 26 February, 2023)
+" Sample configuration file for vifm on OSX (last updated: 2 April, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -194,7 +194,7 @@ filetype {*.djvu},<image/vnd.djvu> open -a MacDjView.app
 
 " Audio
 filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
-         \*.aac},
+         \*.aac,*.mpga},
         \<audio/*>
        \ {Open in Music}
        \ open -a Music.app,
@@ -203,13 +203,14 @@ filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
        \ {Open in IINA}
        \ open -a IINA.app,
 fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
-           \*.aac}
+           \*.aac,*.mpga},
+          \<audio/*>
          \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Video
 filetype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
          \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-         \*.as[fx]},
+         \*.as[fx],*.unknown_video},
         \<video/*>
        \ {Open in QuickTime Player}
        \ open -a QuickTime\ Player.app,
@@ -219,7 +220,7 @@ filetype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
        \ open -a VLC.app,
 fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
            \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-           \*.as[fx]},
+           \*.as[fx],*.unknown_video},
           \<video/*>
          \ ffprobe -hide_banner -pretty %c 2>&1
 
@@ -270,7 +271,9 @@ filetype *.sha512
 
 " Torrent
 filetype {*.torrent},<application/x-bittorrent> open -a Transmission.app
-fileviewer {*.torrent},<application/x-bittorrent> dumptorrent -v %c
+fileviewer {*.torrent},<application/x-bittorrent>
+         \ dumptorrent -v %c,
+         \ transmission-show %c
 
 " Extract zip files
 filetype {*.zip},<application/zip,application/java-archive>

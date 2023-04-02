@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 8 August, 2022)
+" Sample configuration file for vifm (last updated: 2 April, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -178,7 +178,7 @@ command! reload :write | restart full
 " program.  There is also %FOREGROUND, which is useful for entering passwords.
 
 " Pdf
-filextype {*.pdf},<application/pdf> zathura %c %i &, apvlv %c, xpdf %c
+filextype {*.pdf},<application/pdf> zathura %c %i, apvlv %c, xpdf %c
 fileviewer {*.pdf},<application/pdf> pdftotext -nopgbrk %c -
 
 " PostScript
@@ -186,7 +186,7 @@ filextype {*.ps,*.eps,*.ps.gz},<application/postscript>
         \ {View in zathura}
         \ zathura %f,
         \ {View in gv}
-        \ gv %c %i &,
+        \ gv %c %i,
 
 " Djvu
 filextype {*.djvu},<image/vnd.djvu>
@@ -195,23 +195,30 @@ filextype {*.djvu},<image/vnd.djvu>
         \ {View in apvlv}
         \ apvlv %f,
 
+" Midi
+filetype {*.mid,*.kar}
+       \ {Play using TiMidity++}
+       \ timidity %f,
+
 " Audio
-filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
+filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
+         \*.aac,*.mpga},
         \<audio/*>
+       \ {Play using MPlayer}
+       \ mplayer %f,
+       \ {Play using mpv}
+       \ mpv --no-video %f %s,
        \ {Play using ffplay}
        \ ffplay -nodisp -hide_banner -autoexit %c,
-       \ {Play using MPlayer}
-       \ mplayer %c,
-       \ {Play using mpv}
-       \ mpv --no-video %c %s,
 fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
-           \*.aac}
+           \*.aac,*.mpga},
+          \<audio/*>
          \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Video
 filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
           \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-          \*.as[fx]},
+          \*.as[fx],*.unknown_video},
          \<video/*>
         \ {View using ffplay}
         \ ffplay -fs -hide_banner -autoexit %f,
@@ -220,17 +227,17 @@ filextype {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
         \ {View using mplayer}
         \ mplayer %f,
         \ {Play using mpv}
-        \ mpv --no-video %c %s,
+        \ mpv --no-video %f,
 fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
            \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-           \*.as[fx]},
+           \*.as[fx],*.unknown_video},
           \<video/*>
          \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Web
 filextype {*.xhtml,*.html,*.htm},<text/html>
         \ {Open with qutebrowser}
-        \ qutebrowser %f %i &,
+        \ qutebrowser %f %i,
         \ {Open with firefox}
         \ firefox %f &,
 filetype {*.xhtml,*.html,*.htm},<text/html> links, lynx
@@ -243,6 +250,25 @@ filetype {*.[1-8]},<text/troff> man ./%c
 fileviewer {*.[1-8]},<text/troff> man ./%c | col -b
 
 " Images
+filextype {*.svg,*.svgz},<image/svg+xml>
+        \ {Edit in Inkscape}
+        \ inkscape %f,
+        \ {View in Inkview}
+        \ inkview %f,
+filextype {*.cr2}
+        \ {Open in Darktable}
+        \ darktable %f,
+        \ {Open in RawTherapee}
+        \ rawtherapee %f,
+filextype {*.xfc}
+        \ {Open in GIMP}
+        \ gimp %f,
+filextype {.kra}
+        \ {Open in Krita}
+        \ krita %f,
+filextype {.blend}
+        \ {Open in Blender}
+        \ blender %c,
 filextype {*.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm},<image/*>
         \ {View in sxiv}
         \ sxiv %f,
@@ -290,7 +316,9 @@ filetype {*.asc},<application/pgp-signature>
 
 " Torrent
 filetype {*.torrent},<application/x-bittorrent> ktorrent %f &
-fileviewer {*.torrent},<application/x-bittorrent> dumptorrent -v %c
+fileviewer {*.torrent},<application/x-bittorrent>
+         \ dumptorrent -v %c,
+         \ transmission-show %c
 
 " FuseZipMount
 filetype {*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg},
