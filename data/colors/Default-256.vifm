@@ -83,7 +83,8 @@ highlight {*.aac,*.ac3,*.anx,*.ape,*.asf,*.au,*.axa,*.cue,*.flac,*.m2a,*.m4a,
         \ cterm=none ctermfg=79 ctermbg=default
 " multimedia
 highlight {*.avi,*.axv,*.divx,*.flv,*.m2v,*.m4v,*.mp4,*.m4p,*.mp4v,*.mpeg,*.mpg,
-          \*.mkv,*.mov,*.nuv,*.ogv,*.qt,*.rm,*.ts,*.vob,*.webm,*.wmv,*.xvid}
+          \*.mkv,*.mov,*.nuv,*.ogv,*.qt,*.rm,*.ts,*.vob,*.webm,*.wmv,*.xvid,
+          \*.unknown_video}
         \ cterm=none ctermfg=49 ctermbg=default
 " images
 highlight {*.bmp,*.gif,*.jpeg,*.jpg,*.ico,*.png,*.ppm,*.svg,*.svgz,*.tga,*.tif,
