@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 8 August, 2022)
+" Sample configuration file for vifm (last updated: 2 April, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -178,7 +178,7 @@ command! reload :write | restart full
 " program.  There is also %FOREGROUND, which is useful for entering passwords.
 
 " Pdf
-filextype {*.pdf},<application/pdf> zathura %c %i &, apvlv %c, xpdf %c
+filextype {*.pdf},<application/pdf> zathura %c %i, apvlv %c, xpdf %c
 fileviewer {*.pdf},<application/pdf> pdftotext -nopgbrk %c -
 
 " PostScript
@@ -186,7 +186,7 @@ filextype {*.ps,*.eps,*.ps.gz},<application/postscript>
         \ {View in zathura}
         \ zathura %f,
         \ {View in gv}
-        \ gv %c %i &,
+        \ gv %c %i,
 
 " Djvu
 filextype {*.djvu},<image/vnd.djvu>
@@ -230,7 +230,7 @@ fileviewer {*.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
 " Web
 filextype {*.xhtml,*.html,*.htm},<text/html>
         \ {Open with qutebrowser}
-        \ qutebrowser %f %i &,
+        \ qutebrowser %f %i,
         \ {Open with firefox}
         \ firefox %f &,
 filetype {*.xhtml,*.html,*.htm},<text/html> links, lynx
