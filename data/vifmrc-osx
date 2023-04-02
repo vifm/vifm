@@ -194,7 +194,7 @@ filetype {*.djvu},<image/vnd.djvu> open -a MacDjView.app
 
 " Audio
 filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
-         \*.aac},
+         \*.aac,*.mpga},
         \<audio/*>
        \ {Open in Music}
        \ open -a Music.app,
@@ -203,7 +203,8 @@ filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
        \ {Open in IINA}
        \ open -a IINA.app,
 fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
-           \*.aac}
+           \*.aac,*.mpga},
+          \<audio/*>
          \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Video

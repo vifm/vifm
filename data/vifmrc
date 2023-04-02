@@ -196,7 +196,8 @@ filextype {*.djvu},<image/vnd.djvu>
         \ apvlv %f,
 
 " Audio
-filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
+filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
+         \*.aac,*.mpga},
         \<audio/*>
        \ {Play using MPlayer}
        \ mplayer %f,
@@ -205,7 +206,8 @@ filetype {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus},
        \ {Play using ffplay}
        \ ffplay -nodisp -hide_banner -autoexit %c,
 fileviewer {*.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,
-           \*.aac}
+           \*.aac,*.mpga},
+          \<audio/*>
          \ ffprobe -hide_banner -pretty %c 2>&1
 
 " Video
