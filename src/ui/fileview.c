@@ -875,6 +875,23 @@ fview_cursor_redraw(view_t *view)
 }
 
 void
+fview_clear_miller_preview(view_t *view)
+{
+	if(!view->miller_view || view->miller_preview == MP_DIRS)
+	{
+		return;
+	}
+
+	const int padding = (cfg.extra_padding ? 1 : 0);
+	const int rcol_width = ui_view_right_reserved(view) - padding - 1;
+	if(rcol_width > 0)
+	{
+		const preview_area_t parea = get_miller_preview_area(view);
+		qv_cleanup_area(&parea, view->file_preview_clear_cmd);
+	}
+}
+
+void
 fview_draw_inactive_cursor(view_t *view)
 {
 	size_t col_width, col_count;
@@ -1871,17 +1888,7 @@ void
 fview_dir_updated(view_t *view)
 {
 	view->local_cs = cs_load_local(view == &lwin, view->curr_dir);
-
-	if(view->miller_view && view->miller_preview != MP_DIRS)
-	{
-		const int padding = (cfg.extra_padding ? 1 : 0);
-		const int rcol_width = ui_view_right_reserved(view) - padding - 1;
-		if(rcol_width > 0)
-		{
-			const preview_area_t parea = get_miller_preview_area(view);
-			qv_cleanup_area(&parea, view->file_preview_clear_cmd);
-		}
-	}
+	fview_clear_miller_preview(view);
 }
 
 /* Computes area description for miller preview.  Returns the area. */

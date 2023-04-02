@@ -192,6 +192,7 @@ TEST(can_move_selection)
 	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
 	flist_sel_count(&lwin, 0, lwin.list_rows);
 	(void)compare_move(&lwin, &rwin);
+	assert_int_equal(0, lwin.selected_files);
 
 	remove_file(SANDBOX_PATH "/same-content-different-name-1");
 	remove_file(SANDBOX_PATH "/same-name-different-content");

@@ -15,6 +15,7 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_sel.h"
 #include "../../src/fops_common.h"
@@ -226,7 +227,7 @@ TEST(gF, IF(not_windows))
 	remove_dir(SANDBOX_PATH "/dir");
 }
 
-TEST(cl, IF(not_windows))
+TEST(cl_on_file, IF(not_windows))
 {
 	conf_setup();
 	undo_setup();
@@ -252,6 +253,60 @@ TEST(cl, IF(not_windows))
 	assert_string_equal("targetpath", target);
 
 	remove_file(SANDBOX_PATH "/symlink");
+
+	fops_init(NULL, NULL);
+	undo_teardown();
+	conf_teardown();
+}
+
+TEST(cl_multiple_files, IF(not_windows))
+{
+	conf_setup();
+	undo_setup();
+	fops_init(&modcline_prompt, NULL);
+
+	create_dir(SANDBOX_PATH "/links");
+	assert_success(make_symlink("froma", SANDBOX_PATH "/links/a"));
+	assert_success(make_symlink("fromb", SANDBOX_PATH "/links/b"));
+
+	create_executable(SANDBOX_PATH "/script");
+	make_file(SANDBOX_PATH "/script",
+			"#!/bin/sh\n"
+			"sed 's/from/to/' < \"$2\" > \"$2_out\"\n"
+			"mv \"$2_out\" \"$2\"\n");
+
+	char vi_cmd[PATH_MAX + 1];
+	make_abs_path(vi_cmd, sizeof(vi_cmd), SANDBOX_PATH, "script", NULL);
+	update_string(&cfg.vi_command, vi_cmd);
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "links",
+			cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+
+	/* Selection should open editor. */
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+	(void)vle_keys_exec_timed_out(WK_c WK_l);
+
+	char target[PATH_MAX + 1];
+	assert_success(get_link_target(SANDBOX_PATH "/links/a", target,
+				sizeof(target)));
+	assert_string_equal("toa", target);
+	assert_success(get_link_target(SANDBOX_PATH "/links/b", target,
+				sizeof(target)));
+	assert_string_equal("tob", target);
+
+	/* Running cl again should not open editor as there is no selection. */
+	(void)vle_keys_exec_timed_out(WK_c WK_l L"suffix" WK_CR);
+	assert_success(get_link_target(SANDBOX_PATH "/links/a", target,
+				sizeof(target)));
+	assert_string_equal("toasuffix", target);
+
+	remove_file(SANDBOX_PATH "/script");
+	remove_file(SANDBOX_PATH "/links/a");
+	remove_file(SANDBOX_PATH "/links/b");
+	remove_dir(SANDBOX_PATH "/links");
 
 	fops_init(NULL, NULL);
 	undo_teardown();

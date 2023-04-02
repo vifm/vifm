@@ -32,7 +32,6 @@ SETUP()
 	cmds_init();
 
 	view_setup(&lwin);
-
 	lwin.columns = columns_create();
 	lwin.hide_dot_g = lwin.hide_dot = 1;
 	curr_view = &lwin;
@@ -353,65 +352,6 @@ TEST(values_in_sizefmt_are_deduplicated)
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("sizefmt?", OPT_GLOBAL));
 	assert_string_equal("  sizefmt=units:iec,precision:10,nospace",
-			vle_tb_get_data(vle_err));
-}
-
-TEST(millerview)
-{
-	assert_success(cmds_dispatch("se millerview", &lwin, CIT_COMMAND));
-	assert_success(cmds_dispatch("se invmillerview", &lwin, CIT_COMMAND));
-	assert_success(cmds_dispatch("setl millerview", &lwin, CIT_COMMAND));
-	assert_success(cmds_dispatch("setl invmillerview", &lwin, CIT_COMMAND));
-	assert_success(cmds_dispatch("setg millerview", &lwin, CIT_COMMAND));
-	assert_success(cmds_dispatch("setg invmillerview", &lwin, CIT_COMMAND));
-}
-
-TEST(milleroptions_handles_wrong_input)
-{
-	assert_failure(cmds_dispatch("se milleroptions=msi:1", &lwin, CIT_COMMAND));
-
-	assert_failure(cmds_dispatch("se milleroptions=lsize:a", &lwin, CIT_COMMAND));
-	assert_failure(cmds_dispatch("se milleroptions=csize:a", &lwin, CIT_COMMAND));
-	assert_failure(cmds_dispatch("se milleroptions=rsize:a", &lwin, CIT_COMMAND));
-
-	assert_failure(cmds_dispatch("se milleroptions=csize:0", &lwin, CIT_COMMAND));
-
-	assert_failure(cmds_dispatch("se milleroptions=rpreview:stuff", &lwin,
-				CIT_COMMAND));
-}
-
-TEST(milleroptions_accepts_correct_input)
-{
-	assert_success(cmds_dispatch("set milleroptions=csize:33,rsize:12,"
-				"rpreview:all", &lwin, CIT_COMMAND));
-
-	vle_tb_clear(vle_err);
-	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
-	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12,rpreview:all",
-			vle_tb_get_data(vle_err));
-}
-
-TEST(milleroptions_recovers_after_wrong_input)
-{
-	assert_success(cmds_dispatch("set milleroptions=csize:33,rsize:12,"
-				"rpreview:files", &lwin, CIT_COMMAND));
-	assert_failure(cmds_dispatch("set milleroptions=rpreview:dirs,rsize:4,"
-				"csize:a", &lwin, CIT_COMMAND));
-
-	vle_tb_clear(vle_err);
-	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
-	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12,"
-			"rpreview:files", vle_tb_get_data(vle_err));
-}
-
-TEST(milleroptions_normalizes_input)
-{
-	assert_success(cmds_dispatch("set milleroptions=lsize:-10,csize:133,"
-				"rpreview:dirs", &lwin, CIT_COMMAND));
-
-	vle_tb_clear(vle_err);
-	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
-	assert_string_equal("  milleroptions=lsize:0,csize:100,rsize:0,rpreview:dirs",
 			vle_tb_get_data(vle_err));
 }
 

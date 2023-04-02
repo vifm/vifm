@@ -43,6 +43,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "filtering.h"
+#include "flist_sel.h"
 #include "fops_common.h"
 #include "fops_cpmv.h"
 #include "fops_misc.h"
@@ -1240,6 +1241,7 @@ compare_move(view_t *from, view_t *to)
 	un_group_close();
 
 	fops_free_ops(ops);
+	flist_sel_stash(curr_view);
 	return 0;
 }
 

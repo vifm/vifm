@@ -21,6 +21,20 @@
 	Fixed segfaults on changing sibling directory or previewing directories in
 	miller view while global sorting by groups is active.  Patch by filterfalse.
 
+	Fixed cl processing selection it was used previously on instead of file
+	under cursor when you run it twice in succession.
+
+	Fixed graphics from miller view preview remaining visible when displaying
+	dialogs, entering menus, switching tabs, activating more or file info
+	modes.
+
+	Fixed "rpreview:" of 'milleroptions' not being copied to new tabs.
+
+	Fixed selection not being stashed by do and dp.
+
+	Fixed memory issues inside ncurses when dialog is displayed in menu mode
+	after resizing the terminal.
+
 0.12.1 to 0.13-beta (2023-03-17)
 
 	Changed implementation of `:compare grouppaths` to juxtapose only files
