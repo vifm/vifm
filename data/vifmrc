@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 2 April, 2023)
+" Sample configuration file for vifm (last updated: 3 April, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -260,7 +260,7 @@ filextype {*.cr2}
         \ darktable %f,
         \ {Open in RawTherapee}
         \ rawtherapee %f,
-filextype {*.xfc}
+filextype {*.xcf}
         \ {Open in GIMP}
         \ gimp %f,
 filextype {.kra}
