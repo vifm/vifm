@@ -1,3 +1,208 @@
+4 April 2023
+============
+
+Vifm v0.13
+----------
+
+Thanks to everyone who tried out the beta.
+
+Highlights:
+
+ - Faster file-system navigation with a new searching/filtering submode.
+
+   Hitting `<c-y>` after `/` or `=` allows finding and opening consecutive path
+   components without leaving command-line mode.  In this mode keys like
+   `<c-o>`/`<c-n>`/`<c-p>`/`<left>`/`<home>`/etc. help to refine cursor
+   position or go to parent directory if necessary.
+
+ - More interactive :compare.
+
+   You can now see stats about file comparison on the status bar and have an
+   option to easily re-run the comparison while toggling visibility of some of
+   the groups.
+
+   Also, default file alignment is more natural now.  `do` and `dp` handle
+   selection.  You can force ignoring or respecting case in paths.  Performance
+   and memory consumption have been improved in various cases.
+
+ - Mouse support and TUI improvements.
+
+   Once mouse support is enabled, you should be able to perform simple browsing
+   with just your mouse for those cases when it's more convenient.
+
+   Conflict dialog now always presents basic file metadata for comparison.
+   Detailed progress dialog has ETA.  Ls-like view can now have a fixed number
+   of columns.
+
+ - Other.
+
+   Formatting of tabs and entry selection in Lua.  Changing register's content
+   via an editor.  Explicitly prompting user for input via input() function.
+
+ - Fixes.
+
+   v0.12.1 was supposed to improve escaping on Windows, but it simultaneously
+   made one old bug more prominent, effectively making things much worse in
+   some cases.  This release remedies that.
+
+   %N macro has been adjusted to fix integration with image preview of Kitty
+   v0.27+.
+
+   Lots of fixes related to search and various combinations of 'hlsearch',
+   'incsearch' in different modes.
+
+Normal and visual modes:
+ - made Ctrl-E/Ctrl-Y scroll transposed ls-like view horizontally by one column;
+ - extended do and dp keys to process selection (thanks to Mark S., a.k.a.
+   Markuzcha).
+
+:set command and options:
+ - added 'mouse' option to control when mouse input is handled (not handled by
+   default);
+ - added 'navoptions' option to allow tweaking navigation mode a bit (thanks to
+   filterfalse);
+ - added 'tabline' option to specify format of the tab line;
+ - added "columncount:" value to 'lsoptions' to always display fixed number of
+   columns (thanks to Aleksandr Vysotskiy, a.k.a. loki1368);
+ - added "rpreview:files" to 'milleroptions' (thanks to aksr).
+
+Command-line mode:
+ - changed error reporting for some of the :commands such that now their
+   failures cause a dialog to appear on sourcing, previously those errors were
+   printed only to status bar;
+ - changed implementation of `:compare grouppaths` to juxtapose only files with
+   identical relative paths (patch by Alexandr Keyp, a.k.a. IAmKapuze);
+ - added "withicase" and "withrcase" to :compare that force ignoring and
+   respecting case respectively on comparing file names and paths (thanks to
+   Jose Riha, a.k.a. jose1711);
+ - added show* arguments to :compare command to control/switch which sets of
+   files are displayed (toggling is done by :compare!) (patch by Alexandr Keyp,
+   a.k.a. IAmKapuze);
+ - added :amap, :anoremap and :aunmap commands to configure mappings in
+   navigation mode (thanks to Henrik Holst, a.k.a. hholst80, and dmocek);
+ - added :regedit command for external editing of register contents (thanks to
+   Daniel J. Perry, a.k.a. BioBox; patch by Rostislav Tolushkin, a.k.a.
+   nullptr-deref);
+ - added Ctrl-Y key to command-line mode.  It activates fast navigation that
+   allows entering deep paths by a series of searches for individual path
+   components (thanks to Henrik Holst, a.k.a. hholst80, and dmocek);
+ - added Ctrl-J key to command-line navigation.  It leaves the mode without
+   opening a file/directory (thanks to filterfalse);
+ - added Ctrl-O key to command-line navigation that goes to parent directory;
+ - added Ctrl-N/P keys to command-line navigation to move view cursor up/down
+   (thanks to Henrik Holst, a.k.a. hholst80, and dmocek);
+ - added Arrows/Home/End/Page Up/Page Down keys to command-line navigation to
+   move view cursor (thanks to Henrik Holst, a.k.a. hholst80, and dmocek).
+
+Core:
+ - added printing stats while in :compare mode (patch by Alexandr Keyp, a.k.a.
+   IAmKapuze);
+ - don't move cursor on search failure during search with a count (patch by
+   filterfalse);
+ - specified a few more cases when to show a search message with search
+   highlighting turned on: if found a match, if wrapping is turned on, and in
+   visual mode (patch by filterfalse);
+ - a regular search logic showing messages is applied to n/N (patch by
+   filterfalse).
+
+File operations:
+ - made aborting deletion abort the operation on the rest of files when
+   deleting multiple files.
+
+Macros:
+ - changed %N macro to also not start a process group for a command (thanks to
+   Oskar Grunning, a.k.a. sQVe).
+
+Scripting:
+ - added input() builtin function to prompt user for input (thanks to Artur F.,
+   a.k.a. arturfabriciohahaedgy);
+ - added filereadable() builtin function mainly as a way to check file's
+   presence.
+
+Menus and dialogs:
+ - added r key to :jobs menu, which reloads the list of jobs (thanks to Sylwia
+   Ptasinska, a.k.a. SylEleuth);
+ - made feedback after pressing dd in :jobs more prominent (thanks to Sylwia
+   Ptasinska, a.k.a. SylEleuth).
+
+TUI (Text User Interface):
+ - added builtin handling of mouse events (thanks to ranousse, Sergei Shilovsky
+   and user451421541757324; patch by 高浩亮, a.k.a. haolian9);
+ - added ETA to detailed progress dialog (thanks to Jose Riha, a.k.a.
+   jose1711);
+ - apply file highlighting to "ext" and "fileext" view columns (thanks to
+   aleksejrs);
+ - merged file conflict comparison dialog into the main conflict dialog (thanks
+   to aleksejrs);
+ - made file conflict more concise (thanks to aleksejrs).
+
+Color schemes:
+ - added additional User10..User20 highlight groups and corresponding %10*-%20*
+   macros (thanks to Sylwia Ptasinska, a.k.a. SylEleuth);
+ - update Default-256 to differentiate between more file types (thanks to
+   aleksejrs).
+
+Invocation:
+ - added `--plugins-dir` command-line option which allows specifying additional
+   places to look for plugins (thanks to 高浩亮, a.k.a. haolian9).
+
+Performance:
+ - reduced amount of memory consumed by `:compare groupids`;
+ - made `:compare bycontents` not bother reading content of files which have
+   unique size.
+
+Documentation:
+ - provide basic instructions in the documentation on how mappings work (thanks
+   to dmocek);
+ - fixed description of %i macro in the documentation to mention that it runs
+   command in background.
+
+Packaging:
+ - changed use of `$(filter-out)` in src/Makefile.am to `$(var:from=to)`
+   substitution to get rid of a warning on configuration;
+ - changed how pthread support is detected by configure script to handle more
+   cases (thanks to Markus Elfring, a.k.a. elfring);
+ - changed configure script to fail if neither perl nor vim is available
+   instead of failing to generate tags for Vim-style documentation (thanks to
+   Sergei Trofimovich, a.k.a. trofi);
+ - install icons also to ${prefix}/share/icons.  It's not clear that using
+   ${prefix}/share/pixmaps will always be handled properly (thanks to Szilárd
+   Andai).
+
+Integration:
+ - made instances running inside AppImage consider contents of `/etc/vifm`
+   (thanks to aleksejrs);
+ - fixed $VIFM_APPDIR_ROOT being ignored by :help command, which made it not
+   work properly from AppImage (thanks to infinitewhileloop).
+
+Only on Windows:
+ - fixed escaping of file paths when using 'vicmd' or 'vixcmd' to open a file
+   on Windows (thanks to Phil Runninger).
+
+Noteworthy fixes:
+ - fixed abort due to assertion failure on using zx normal mode key after
+   leaving tree in some cases (thanks to Mark S., a.k.a. Markuzcha);
+ - fixed asynchronous previewing of symbolic links, which required manual
+   redraw (thanks to Alexandre Viau);
+ - fixed FUSE mounting assuming `2>` redirection is supported by the shell,
+   which isn't true at least for csh and tcsh (thanks to Evgeniy, a.k.a.
+   iron-udjin);
+ - fixed dialogs not handling non-latin characters well;
+ - fixed :locate never escaping its arguments (should be done unless the first
+   one starts with a dash).  This is a regression in 0.7.6;
+ - fixed n/N not moving the cursor without prior search (patch by filterfalse);
+ - fixed resetting 'hlsearch' during incremental search in visual mode (patch
+   by filterfalse);
+ - fixed dropping selected files on empty input during incremental search in
+   visual mode when 'hlsearch' is set (patch by filterfalse);
+ - fixed segfault on trying to use a pipe from Lua after its parent VifmJob
+   object was garbage-collected (thanks to PRESFIL);
+ - fixed 'previewprg' not being respected on switching to view mode (regression
+   in 0.12-beta) (thanks to Sitaram Chamarty).
+
+See change log for the full list of changes and by whom they were suggested or
+implemented.
+
 17 March 2023
 =============
 
