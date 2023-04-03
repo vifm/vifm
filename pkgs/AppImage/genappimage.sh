@@ -43,7 +43,7 @@ NCURSES_DIR="$PWD/ncurses-6.4"
 pushd "$NCURSES_DIR"
 ./configure --without-shared --enable-widec --prefix=/ \
     --without-normal --without-debug --without-cxx --without-cxx-binding \
-    --without-ada --without-manpages --without-tests --without-gpm
+    --without-ada --without-manpages --without-tests
 make -j4
 make DESTDIR="$PWD/build" install
 popd
