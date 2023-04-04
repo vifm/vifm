@@ -138,7 +138,7 @@ vifmres.o: vifm.res
 ../build-aux/config.h: Makefile.win
 	@echo Creating sample $@
 	mkdir -p ../build-aux
-	echo '#define VERSION "0.13-beta"' > $@; \
+	echo '#define VERSION "0.13"' > $@; \
 	echo '#define ENABLE_EXTENDED_KEYS' >> $@; \
 	echo '#define _GNU_SOURCE 1' >> $@; \
 	echo '#define _XOPEN_SOURCE 1' >> $@; \

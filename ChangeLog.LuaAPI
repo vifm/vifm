@@ -4,7 +4,7 @@ API things should stay fairly stable to not cause breakage too often, but
 while stabilizing for v1.0 a bunch of breaking changes can happen at once.
 After that all changes will be documented in the regular ChangeLog.
 
-0.13-beta to current
+0.13-beta to 0.13 (2023-04-04)
 
 	Added VifmView:select() and VifmView:unselect() that select and unselect
 	entries by indexes.

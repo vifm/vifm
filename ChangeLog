@@ -1,4 +1,4 @@
-0.13-beta to current
+0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
 	comparison, otherwise they might not produce the intended effect.
