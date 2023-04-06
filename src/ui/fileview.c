@@ -382,19 +382,7 @@ draw_right_column(view_t *view)
 		return;
 	}
 
-	const col_scheme_t *const cs = ui_view_get_cs(view);
-	col_attr_t def_col = ui_get_win_color(view, cs);
-	cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
-
-	const preview_area_t parea = {
-		.source = view,
-		.view = view,
-		.def_col = def_col,
-		.x = offset,
-		.y = 0,
-		.w = ui_view_right_reserved(view) - 1,
-		.h = view->window_rows,
-	};
+	const preview_area_t parea = get_miller_preview_area(view);
 
 	dir_entry_t *const entry = get_current_entry(view);
 	if(view->miller_preview != MP_DIRS && !fentry_is_dir(entry))
