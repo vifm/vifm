@@ -371,8 +371,8 @@ draw_right_column(view_t *view)
 	view->displays_graphics = 0;
 
 	const int padding = (cfg.extra_padding ? 1 : 0);
-	const int offset = ui_view_left_reserved(view) + padding
-	                 + ui_view_available_width(view) + padding
+	const int offset = ui_view_left_reserved(view)
+	                 + padding + ui_view_available_width(view) + padding
 	                 + 1;
 
 	const int rcol_width = ui_view_right_reserved(view) - padding - 1;
@@ -496,7 +496,9 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 static void
 fill_column(view_t *view, int start_line, int top, int width, int offset)
 {
-	char filler[width + (cfg.extra_padding ? 1 : 0) + 1];
+	const int padding = (cfg.extra_padding ? 1 : 0);
+
+	char filler[width + padding + 1];
 	memset(filler, ' ', sizeof(filler) - 1U);
 	filler[sizeof(filler) - 1U] = '\0';
 
@@ -527,8 +529,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.id = FILL_COLUMN_ID
 		};
 
-		column_line_print(filler, cfg.extra_padding ? -1 : 0, AT_LEFT, filler,
-				&info);
+		column_line_print(filler, -padding, AT_LEFT, filler, &info);
 	}
 }
 
@@ -1164,7 +1165,7 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 	{
 		strcpy(print_buf, buf);
 	}
-	reserved_width = cfg.extra_padding ? (info->id != FILL_COLUMN_ID) : 0;
+	reserved_width = (cfg.extra_padding && info->id != FILL_COLUMN_ID ? 1 : 0);
 	width_left = padding + cdt->total_width - reserved_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
 	if(trim_pos < sizeof(print_buf))
@@ -1888,8 +1889,8 @@ get_miller_preview_area(view_t *view)
 	cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
 
 	const int padding = (cfg.extra_padding ? 1 : 0);
-	const int offset = ui_view_left_reserved(view) + padding
-	                 + ui_view_available_width(view) + padding
+	const int offset = ui_view_left_reserved(view)
+	                 + padding + ui_view_available_width(view) + padding
 	                 + 1;
 
 	const preview_area_t parea = {
@@ -1898,6 +1899,8 @@ get_miller_preview_area(view_t *view)
 		.def_col = def_col,
 		.x = offset,
 		.y = 0,
+		/* Lack of `- padding` here is intentional, the preview should fill the view
+		 * until the right border. */
 		.w = ui_view_right_reserved(view) - 1,
 		.h = view->window_rows,
 	};
