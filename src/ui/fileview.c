@@ -479,7 +479,7 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 			.line_pos = i,
 			.line_hi_group = get_line_color(view, &entries.entries[i]),
 			.current_pos = pos,
-			.total_width = number_width + width,
+			.total_width = number_width + width + padding,
 			.number_width = number_width,
 			.current_line = i - top,
 			.column_offset = offset,
@@ -517,7 +517,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.view = view,
 			.entry = &non_entry,
 			.line_pos = -1,
-			.total_width = width,
+			.total_width = width + padding,
 			.current_pos = -1,
 			.current_line = i - top,
 			.column_offset = offset,
@@ -975,13 +975,14 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 {
 	size_t prefix_len = 0U;
 
-	int col = fpos_get_col(cdt->view, cell);
+	const int col = fpos_get_col(cdt->view, cell);
+	const int padding = (cfg.extra_padding ? 1 : 0);
 
 	cdt->current_line = fpos_get_line(cdt->view, cell);
 	cdt->column_offset = ui_view_left_reserved(cdt->view) + col*col_width;
 	cdt->line_hi_group = get_line_color(cdt->view, cdt->entry);
 	cdt->number_width = cdt->view->real_num_width;
-	cdt->total_width = ui_view_available_width(cdt->view);
+	cdt->total_width = ui_view_available_width(cdt->view) + padding;
 	cdt->prefix_len = &prefix_len;
 	cdt->is_main = 1;
 
@@ -1166,7 +1167,7 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 		strcpy(print_buf, buf);
 	}
 	reserved_width = (cfg.extra_padding && info->id != FILL_COLUMN_ID ? 1 : 0);
-	width_left = padding + cdt->total_width - reserved_width - offset;
+	width_left = cdt->total_width - reserved_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
 	if(trim_pos < sizeof(print_buf))
 	{
