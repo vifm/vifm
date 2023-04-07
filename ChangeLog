@@ -1,3 +1,7 @@
+0.13 to current
+
+	Fixed line number column not including padding to the left of it.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

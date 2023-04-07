@@ -1138,7 +1138,7 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 
 	if(numbers_visible)
 	{
-		const int column = final_offset - extra_prefix - cdt->number_width;
+		int column = final_offset - extra_prefix - cdt->number_width - padding;
 		draw_line_number(cdt, column);
 	}
 
@@ -1205,9 +1205,11 @@ draw_line_number(const column_data_t *cdt, int column)
 	const int num = (view->num_type & NT_REL) && !mixed
 	              ? abs(cdt->line_pos - cdt->current_pos)
 	              : cdt->line_pos + 1;
+	const int padding = (cfg.extra_padding != 0);
 
 	char num_str[cdt->number_width + 1];
-	snprintf(num_str, sizeof(num_str), format, cdt->number_width - 1, num);
+	snprintf(num_str, sizeof(num_str), format, padding + cdt->number_width - 1,
+			num);
 
 	checked_wmove(view->win, cdt->current_line, column);
 	cchar_t cch = prepare_col_color(view, 0, 1, cdt);
