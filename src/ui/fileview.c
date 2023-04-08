@@ -1440,7 +1440,6 @@ mix_in_file_name_hi(const view_t *view, dir_entry_t *entry, col_attr_t *col)
 TSTATIC void
 format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	size_t len, i;
 	dir_entry_t *child, *parent;
 
 	const column_data_t *cdt = info->data;
@@ -1468,7 +1467,7 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 	}
 
 	/* File name possibly with path and tree prefixes. */
-	len = 0U;
+	size_t prefix_len = 0U;
 	child = cdt->entry;
 	parent = child - child->child_pos;
 	while(parent != child)
@@ -1486,7 +1485,7 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 		{
 			prefix = (child == cdt->entry ? (folded ? " ++|" : " --|") : "   |");
 		}
-		(void)sstrappend(buf, &len, buf_len + 1U, prefix);
+		(void)sstrappend(buf, &prefix_len, buf_len + 1U, prefix);
 
 		child = parent;
 		parent -= parent->child_pos;
@@ -1495,18 +1494,20 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 	if(cdt->entry->child_pos == 0 && cdt->entry->folded)
 	{
 		/* Mark root node as folded. */
-		(void)sstrappend(buf, &len, buf_len + 1U, " ++");
+		(void)sstrappend(buf, &prefix_len, buf_len + 1U, " ++");
 	}
 
-	for(i = 0U; i < len/2U; ++i)
+	size_t i;
+	for(i = 0U; i < prefix_len/2U; ++i)
 	{
 		const char t = buf[i];
-		buf[i] = buf[len - 1U - i];
-		buf[len - 1U - i] = t;
+		buf[i] = buf[prefix_len - 1U - i];
+		buf[prefix_len - 1U - i] = t;
 	}
 
-	get_short_path_of(view, cdt->entry, fmt, 1, buf_len + 1U - len, buf + len);
-	*cdt->prefix_len = len;
+	get_short_path_of(view, cdt->entry, fmt, 1, buf_len + 1U - prefix_len,
+			buf + prefix_len);
+	*cdt->prefix_len = prefix_len;
 }
 
 /* Primary name group format (first value of 'sortgroups' option) callback for
