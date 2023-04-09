@@ -305,8 +305,6 @@ columns_format_line(columns_t *cols, void *format_data, size_t max_line_width)
 		 * aligned fields. */
 		char col_buffer[sizeof(prev_col_buf)];
 		char full_column[sizeof(prev_col_buf)];
-		size_t cur_col_start;
-		AlignType align;
 		const column_t *const col = &cols->list[i];
 		const format_info_t info = {
 			.data = format_data,
@@ -324,9 +322,9 @@ columns_format_line(columns_t *cols, void *format_data, size_t max_line_width)
 		}
 
 		strcpy(full_column, col_buffer);
-		align = decorate_output(col, col_buffer, sizeof(col_buffer),
+		AlignType align = decorate_output(col, col_buffer, sizeof(col_buffer),
 				max_line_width);
-		cur_col_start = calculate_start_pos(col, col_buffer, align);
+		size_t cur_col_start = calculate_start_pos(col, col_buffer, align);
 
 		/* Ensure that we are not trying to draw current column in the middle of a
 		 * character inside previous column. */
@@ -399,16 +397,14 @@ decorate_output(const column_t *col, char buf[], size_t buf_len,
 static size_t
 calculate_max_width(const column_t *col, size_t len, size_t max_line_width)
 {
-	if(col->info.cropping == CT_NONE)
-	{
-		const size_t left_bound = (col->info.align == AT_LEFT) ? col->start : 0;
-		const size_t max_col_width = max_line_width - left_bound;
-		return MIN(len, max_col_width);
-	}
-	else
+	if(col->info.cropping != CT_NONE)
 	{
 		return col->print_width;
 	}
+
+	const size_t left_bound = (col->info.align == AT_LEFT) ? col->start : 0;
+	const size_t max_col_width = max_line_width - left_bound;
+	return MIN(len, max_col_width);
 }
 
 /* Calculates start position for outputting content of the col. */
@@ -419,12 +415,10 @@ calculate_start_pos(const column_t *col, const char buf[], AlignType align)
 	{
 		return col->start;
 	}
-	else
-	{
-		const size_t end = col->start + col->width;
-		const size_t len = get_width_on_screen(buf);
-		return (end > len && align == AT_RIGHT) ? (end - len) : 0;
-	}
+
+	const size_t end = col->start + col->width;
+	const size_t len = get_width_on_screen(buf);
+	return (end > len && align == AT_RIGHT) ? (end - len) : 0;
 }
 
 /* Prints gap filler (GAP_FILL_CHAR) in place of gaps.  Does nothing if to less
@@ -453,12 +447,14 @@ static size_t
 get_width_on_screen(const char str[])
 {
 	size_t length = (size_t)-1;
+
 	wchar_t *const wide = to_wide(str);
 	if(wide != NULL)
 	{
 		length = vifm_wcswidth(wide, (size_t)-1);
 		free(wide);
 	}
+
 	if(length == (size_t)-1)
 	{
 		length = utf8_nstrlen(str);
