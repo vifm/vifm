@@ -32,7 +32,7 @@
 #include "../../src/running.h"
 #include "../../src/sort.h"
 
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void setup_custom_view(view_t *view, int very);
 static int filenames_can_include_newline(void);
@@ -800,7 +800,7 @@ TEST(last_directory_is_correctly_recorded_in_cv)
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	const column_data_t *const cdt = info->data;

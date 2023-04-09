@@ -70,7 +70,7 @@ typedef void (*column_func)(void *data, size_t buf_len, char buf[],
 
 /* A callback function, for displaying column contents.  Alignment specifies
  * actual alignment of current column (AT_DYN won't appear here). */
-typedef void (*column_line_print_func)(const char buf[], size_t offset,
+typedef void (*column_line_print_func)(const char buf[], int offset,
 		AlignType align, const char full_column[], const format_info_t *info);
 
 /* Structure containing various column display properties. */

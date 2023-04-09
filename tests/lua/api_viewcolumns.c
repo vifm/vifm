@@ -11,7 +11,7 @@
 
 #include <test-utils.h>
 
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 
 enum { MAX_WIDTH = 40 };
@@ -204,7 +204,7 @@ TEST(symlinks, IF(not_windows))
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	memcpy(print_buffer + offset, buf, strlen(buf));

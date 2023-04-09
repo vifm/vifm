@@ -23,7 +23,7 @@
 #include "../../src/ops.h"
 #include "../../src/status.h"
 
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static int files_are_identical(const char a[], const char b[]);
 
@@ -124,7 +124,7 @@ TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */

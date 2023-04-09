@@ -22,7 +22,7 @@
 #include "../../src/opt_handlers.h"
 #include "../../src/registers.h"
 
-static void print_func(const char buf[], size_t offset, AlignType align,
+static void print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 
 static int ncols;
@@ -62,7 +62,7 @@ TEARDOWN()
 }
 
 static void
-print_func(const char buf[], size_t offset, AlignType align,
+print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	ncols += (info->id != FILL_COLUMN_ID);

@@ -80,7 +80,7 @@ static cchar_t prepare_inactive_color(view_t *view, dir_entry_t *entry,
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
 static void compute_and_draw_cell(column_data_t *cdt, int cell,
 		size_t col_count, size_t col_width);
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void draw_line_number(const column_data_t *cdt, int column);
 static void get_match_range(dir_entry_t *entry, const char full_column[],
@@ -1093,7 +1093,7 @@ fview_scroll_page_down(view_t *view)
 
 /* Print callback for column_view unit. */
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	char print_buf[strlen(buf) + 1];

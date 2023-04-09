@@ -10,7 +10,7 @@
  * Omitted those which are provide additional information and do not very
  * valuable in tests. */
 typedef void (*print_func)(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align);
+		int offset, AlignType align);
 
 print_func print_next;
 
