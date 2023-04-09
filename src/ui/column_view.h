@@ -78,8 +78,8 @@ typedef struct
 {
 	char *literal;     /* Fixed contents of the column. */
 	int column_id;     /* Unique id of existing column. */
-	size_t full_width; /* Full width of the column, units depend on size type. */
-	size_t text_width; /* Text width, ignored unless size type is ST_ABSOLUTE. */
+	int full_width;    /* Full width of the column, units depend on size type. */
+	int text_width;    /* Text width, ignored unless size type is ST_ABSOLUTE. */
 	AlignType align;   /* Specifies type of text alignment. */
 	SizingType sizing; /* Specifies type of sizing. */
 	CropType cropping; /* Specifies type of text cropping. */
@@ -115,11 +115,11 @@ void columns_clear(columns_t *cols);
 
 /* Performs actual formatting of columns. */
 void columns_format_line(columns_t *cols, void *format_data,
-		size_t max_line_width);
+		int max_line_width);
 
 /* Checks if recalculation is needed.  Returns non-zero if so, otherwise zero is
  * returned. */
-int columns_matches_width(const columns_t *cols, size_t max_width);
+int columns_matches_width(const columns_t *cols, int max_width);
 
 #endif /* VIFM__UI__COLUMN_VIEW_H__ */
 
