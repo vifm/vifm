@@ -340,8 +340,7 @@ draw_left_column(view_t *view)
 	const char *const dir = flist_get_dir(view);
 
 	int number_width = 0;
-	int lcol_width = ui_view_left_reserved(view)
-	               - (cfg.extra_padding ? 1 : 0) - 1;
+	int lcol_width = ui_view_left_reserved(view) - 1;
 	if(lcol_width <= 0)
 	{
 		flist_free_cache(&view->left_column);
@@ -353,7 +352,8 @@ draw_left_column(view_t *view)
 	(void)flist_update_cache(view, &view->left_column, path);
 
 	number_width = calculate_number_width(view,
-			view->left_column.entries.nentries, lcol_width);
+			view->left_column.entries.nentries,
+			lcol_width - (cfg.extra_padding ? 2 : 0));
 	lcol_width -= number_width;
 
 	if(view->left_column.entries.nentries >= 0)
@@ -375,7 +375,7 @@ draw_right_column(view_t *view)
 	                 + padding + ui_view_available_width(view) + padding
 	                 + 1;
 
-	const int rcol_width = ui_view_right_reserved(view) - padding - 1;
+	const int rcol_width = ui_view_right_reserved(view) - 1;
 	if(rcol_width <= 0)
 	{
 		flist_free_cache(&view->right_column);
@@ -479,26 +479,24 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 			.line_pos = i,
 			.line_hi_group = get_line_color(view, &entries.entries[i]),
 			.current_pos = pos,
-			.total_width = number_width + width + padding,
+			.total_width = number_width + width,
 			.number_width = number_width,
 			.current_line = i - top,
 			.column_offset = offset,
 			.prefix_len = &prefix_len,
 		};
 
-		draw_cell(columns, &cdt, width - padding);
+		draw_cell(columns, &cdt, width - 2*padding);
 	}
 
-	fill_column(view, i, top, number_width + width, offset);
+	fill_column(view, i, top, number_width + width, offset - padding);
 }
 
 /* Fills column to the bottom to clear it from previous content. */
 static void
 fill_column(view_t *view, int start_line, int top, int width, int offset)
 {
-	const int padding = (cfg.extra_padding ? 1 : 0);
-
-	char filler[width + padding + 1];
+	char filler[width + 1];
 	memset(filler, ' ', sizeof(filler) - 1U);
 	filler[sizeof(filler) - 1U] = '\0';
 
@@ -517,7 +515,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.view = view,
 			.entry = &non_entry,
 			.line_pos = -1,
-			.total_width = width + padding,
+			.total_width = width,
 			.current_pos = -1,
 			.current_line = i - top,
 			.column_offset = offset,
@@ -529,7 +527,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.id = FILL_COLUMN_ID
 		};
 
-		column_line_print(filler, -padding, AT_LEFT, filler, &info);
+		column_line_print(filler, 0, AT_LEFT, filler, &info);
 	}
 }
 
