@@ -997,7 +997,7 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 	cdt->column_offset = ui_view_left_reserved(cdt->view) + col*col_width;
 	cdt->line_hi_group = get_line_color(cdt->view, cdt->entry);
 	cdt->number_width = cdt->view->real_num_width;
-	cdt->total_width = ui_view_available_width(cdt->view) + padding;
+	cdt->total_width = ui_view_available_width(cdt->view) + 2*padding;
 	cdt->prefix_len = &prefix_len;
 	cdt->is_main = 1;
 
