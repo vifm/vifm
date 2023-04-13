@@ -1,5 +1,8 @@
 0.13 to current
 
+	Don't draw right padding on a truncated rightmost column of a transposed
+	ls-like view.
+
 	Fixed line number column not including padding to the left of it.
 
 0.13-beta to 0.13 (2023-04-04)
