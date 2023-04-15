@@ -353,8 +353,7 @@ draw_left_column(view_t *view)
 	(void)flist_update_cache(view, &view->left_column, path);
 
 	number_width = calculate_number_width(view,
-			view->left_column.entries.nentries,
-			lcol_width - (cfg.extra_padding ? 2 : 0));
+			view->left_column.entries.nentries, lcol_width);
 	lcol_width -= number_width;
 
 	if(view->left_column.entries.nentries >= 0)
@@ -536,7 +535,7 @@ static void
 calculate_table_conf(view_t *view, size_t *count, size_t *width)
 {
 	view->real_num_width = calculate_number_width(view, view->list_rows,
-			ui_view_main_area(view));
+			ui_view_main_padded(view));
 
 	if(ui_view_displays_columns(view))
 	{
@@ -564,7 +563,8 @@ calculate_number_width(const view_t *view, int list_length, int width)
 	{
 		const int digit_count = count_digits(list_length);
 		const int min = view->num_width;
-		return MIN(MAX(1 + digit_count, min), width);
+		const int useable_width = width - (cfg.extra_padding ? 2 : 0);
+		return MIN(MAX(1 + digit_count, min), useable_width);
 	}
 
 	return 0;
