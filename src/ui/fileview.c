@@ -371,9 +371,8 @@ draw_right_column(view_t *view)
 	const int displayed_graphics = view->displays_graphics;
 	view->displays_graphics = 0;
 
-	const int padding = (cfg.extra_padding ? 1 : 0);
 	const int offset = ui_view_left_reserved(view)
-	                 + padding + ui_view_available_width(view) + padding
+	                 + ui_view_main_padded(view)
 	                 + 1;
 
 	const int rcol_width = ui_view_right_reserved(view) - 1;
@@ -537,12 +536,12 @@ static void
 calculate_table_conf(view_t *view, size_t *count, size_t *width)
 {
 	view->real_num_width = calculate_number_width(view, view->list_rows,
-			ui_view_available_width(view));
+			ui_view_main_area(view));
 
 	if(ui_view_displays_columns(view))
 	{
 		*count = 1;
-		*width = MAX(0, ui_view_available_width(view) - view->real_num_width);
+		*width = MAX(0, ui_view_main_area(view) - view->real_num_width);
 	}
 	else
 	{
@@ -691,7 +690,7 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 	else
 	{
 		width_left = cdt->is_main
-		           ? ui_view_available_width(cdt->view) -
+		           ? ui_view_main_area(cdt->view) -
 		             (cdt->column_offset - ui_view_left_reserved(cdt->view))
 		           : col_width + 1U;
 	}
@@ -991,13 +990,12 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 	size_t prefix_len = 0U;
 
 	const int col = fpos_get_col(cdt->view, cell);
-	const int padding = (cfg.extra_padding ? 1 : 0);
 
 	cdt->current_line = fpos_get_line(cdt->view, cell);
 	cdt->column_offset = ui_view_left_reserved(cdt->view) + col*col_width;
 	cdt->line_hi_group = get_line_color(cdt->view, cdt->entry);
 	cdt->number_width = cdt->view->real_num_width;
-	cdt->total_width = ui_view_available_width(cdt->view) + 2*padding;
+	cdt->total_width = ui_view_main_padded(cdt->view);
 	cdt->prefix_len = &prefix_len;
 	cdt->is_main = 1;
 
@@ -1801,8 +1799,7 @@ fview_set_millerview(view_t *view, int enabled)
 static size_t
 calculate_column_width(view_t *view)
 {
-	size_t max_width = view->window_cols
-	                 - ui_view_left_reserved(view) - ui_view_right_reserved(view);
+	size_t max_width = ui_view_main_padded(view);
 
 	size_t column_width;
 	if(view->ls_cols == 0)
@@ -1828,10 +1825,8 @@ fview_map_coordinates(view_t *view, int x, int y)
 {
 	if(view->miller_view)
 	{
-		const int padding = (cfg.extra_padding ? 1 : 0);
 		const int lcol_end = ui_view_left_reserved(view);
-		const int rcol_start = lcol_end + padding
-		                     + ui_view_available_width(view) + padding;
+		const int rcol_start = lcol_end + ui_view_main_padded(view);
 
 		if(x < lcol_end)
 		{
@@ -1880,7 +1875,7 @@ has_extra_tls_col(const view_t *view, int col_width)
 {
 	return fview_is_transposed(view)
 			&& view->ls_cols == 0
-			&& view->column_count*col_width < ui_view_available_width(view);
+			&& view->column_count*col_width < ui_view_main_area(view);
 }
 
 void
@@ -1907,9 +1902,8 @@ get_miller_preview_area(view_t *view)
 	col_attr_t def_col = ui_get_win_color(view, cs);
 	cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
 
-	const int padding = (cfg.extra_padding ? 1 : 0);
 	const int offset = ui_view_left_reserved(view)
-	                 + padding + ui_view_available_width(view) + padding
+	                 + ui_view_main_padded(view)
 	                 + 1;
 
 	const preview_area_t parea = {
@@ -1949,8 +1943,7 @@ calculate_columns_count(view_t *view)
 	if(!ui_view_displays_columns(view))
 	{
 		const size_t column_width = calculate_column_width(view);
-		size_t max_width = view->window_cols - ui_view_left_reserved(view)
-		                 - ui_view_right_reserved(view);
+		size_t max_width = ui_view_main_padded(view);
 		return max_width/column_width;
 	}
 	return 1U;
