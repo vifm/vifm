@@ -1148,7 +1148,6 @@ column_line_print(const char buf[], int offset, AlignType align,
 	char print_buf[strlen(buf) + 1];
 	size_t prefix_len, final_offset;
 	size_t width_left, trim_pos;
-	int reserved_width;
 
 	const column_data_t *const cdt = info->data;
 	view_t *view = cdt->view;
@@ -1216,8 +1215,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	{
 		strcpy(print_buf, buf);
 	}
-	reserved_width = (cfg.extra_padding && info->id != FILL_COLUMN_ID ? 1 : 0);
-	width_left = cdt->total_width - reserved_width - offset;
+	width_left = cdt->total_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
 	if(trim_pos < sizeof(print_buf))
 	{
