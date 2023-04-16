@@ -58,6 +58,42 @@
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"
 
+/**
+ * View layouts
+ * ------------
+ *
+ * View either shows columns (includes miller and custom views) or it doesn't
+ * (ls-like view).
+ *
+ * Tree view is a "live" custom view, unless it was built from another custom
+ * view.  Tree pseudo-graphics is drawn as a prefix of a name column.
+ *
+ * When columns are shown, there are three areas:
+ *  1. Left reserved area.
+ *  2. Main area.
+ *  3. Right reserved area.
+ * Left and right areas are currently visible only in miller view, but can be
+ * easily enabled in other cases (to display file info of something).
+ *
+ * Padding
+ * -------
+ *
+ * Miller view:
+ *  - padding of the left column is part of it
+ *  - padding of the right column is part of it
+ *
+ * Line numbers:
+ *  - empty column between numbers and file list is not optional (not padding)
+ *  - this makes padding on the left to be included into number area when
+ *    padding is present
+ *
+ * Column_line_print() accounts for the padding (adjusts offset), but it's
+ * really drawn by draw_cell().
+ *
+ * Padding should be included in widths unless it's explicitly specified
+ * separately.
+ */
+
 static void draw_left_column(view_t *view);
 static void draw_right_column(view_t *view);
 static void print_side_column(view_t *view, entries_t entries,
@@ -1130,6 +1166,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, info->id);
 	const cchar_t line_attrs = prepare_col_color(view, primary, 0, cdt);
 
+	/* Non-empty prefix contains tree pseudo-graphics. */
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
 
 	if(extra_prefix != 0U && align == AT_RIGHT)
