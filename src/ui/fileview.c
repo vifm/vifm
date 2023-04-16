@@ -540,7 +540,7 @@ calculate_table_conf(view_t *view, size_t *count, size_t *width)
 	if(ui_view_displays_columns(view))
 	{
 		*count = 1;
-		*width = MAX(0, ui_view_main_area(view) - view->real_num_width);
+		*width = MAX(0, ui_view_main_padded(view) - view->real_num_width);
 	}
 	else
 	{
@@ -999,9 +999,10 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 	cdt->prefix_len = &prefix_len;
 	cdt->is_main = 1;
 
-	if(cfg.extra_padding && !ui_view_displays_columns(cdt->view))
+	if(cfg.extra_padding)
 	{
-		if(cdt->view->ls_cols != 0 && col_count > 1 && col == (int)col_count - 1)
+		if(!ui_view_displays_columns(cdt->view) &&
+				cdt->view->ls_cols != 0 && col_count > 1 && col == (int)col_count - 1)
 		{
 			/* Reserve one character column after the last ls column. */
 			col_width -= 1;
