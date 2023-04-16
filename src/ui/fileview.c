@@ -58,6 +58,42 @@
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"
 
+/**
+ * View layouts
+ * ------------
+ *
+ * View either shows columns (includes miller and custom views) or it doesn't
+ * (ls-like view).
+ *
+ * Tree view is a "live" custom view, unless it was built from another custom
+ * view.  Tree pseudo-graphics is drawn as a prefix of a name column.
+ *
+ * When columns are shown, there are three areas:
+ *  1. Left reserved area.
+ *  2. Main area.
+ *  3. Right reserved area.
+ * Left and right areas are currently visible only in miller view, but can be
+ * easily enabled in other cases (to display file info of something).
+ *
+ * Padding
+ * -------
+ *
+ * Miller view:
+ *  - padding of the left column is part of it
+ *  - padding of the right column is part of it
+ *
+ * Line numbers:
+ *  - empty column between numbers and file list is not optional (not padding)
+ *  - this makes padding on the left to be included into number area when
+ *    padding is present
+ *
+ * Column_line_print() accounts for the padding (adjusts offset), but it's
+ * really drawn by draw_cell().
+ *
+ * Padding should be included in widths unless it's explicitly specified
+ * separately.
+ */
+
 static void draw_left_column(view_t *view);
 static void draw_right_column(view_t *view);
 static void print_side_column(view_t *view, entries_t entries,
@@ -71,7 +107,8 @@ static int calculate_number_width(const view_t *view, int list_length,
 static int count_digits(int num);
 static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
-static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width);
+static void draw_cell(columns_t *columns, column_data_t *cdt, int lpadding,
+		size_t print_width, int rpadding);
 static columns_t * get_view_columns(const view_t *view, int truncated);
 static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
@@ -80,7 +117,7 @@ static cchar_t prepare_inactive_color(view_t *view, dir_entry_t *entry,
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
 static void compute_and_draw_cell(column_data_t *cdt, int cell,
 		size_t col_count, size_t col_width);
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void draw_line_number(const column_data_t *cdt, int column);
 static void get_match_range(dir_entry_t *entry, const char full_column[],
@@ -340,8 +377,7 @@ draw_left_column(view_t *view)
 	const char *const dir = flist_get_dir(view);
 
 	int number_width = 0;
-	int lcol_width = ui_view_left_reserved(view)
-	               - (cfg.extra_padding ? 1 : 0) - 1;
+	int lcol_width = ui_view_left_reserved(view) - 1;
 	if(lcol_width <= 0)
 	{
 		flist_free_cache(&view->left_column);
@@ -370,31 +406,18 @@ draw_right_column(view_t *view)
 	const int displayed_graphics = view->displays_graphics;
 	view->displays_graphics = 0;
 
-	const int padding = (cfg.extra_padding ? 1 : 0);
-	const int offset = ui_view_left_reserved(view) + padding
-	                 + ui_view_available_width(view) + padding
+	const int offset = ui_view_left_reserved(view)
+	                 + ui_view_main_padded(view)
 	                 + 1;
 
-	const int rcol_width = ui_view_right_reserved(view) - padding - 1;
+	const int rcol_width = ui_view_right_reserved(view) - 1;
 	if(rcol_width <= 0)
 	{
 		flist_free_cache(&view->right_column);
 		return;
 	}
 
-	const col_scheme_t *const cs = ui_view_get_cs(view);
-	col_attr_t def_col = ui_get_win_color(view, cs);
-	cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
-
-	const preview_area_t parea = {
-		.source = view,
-		.view = view,
-		.def_col = def_col,
-		.x = offset,
-		.y = 0,
-		.w = ui_view_right_reserved(view) - 1,
-		.h = view->window_rows,
-	};
+	const preview_area_t parea = get_miller_preview_area(view);
 
 	dir_entry_t *const entry = get_current_entry(view);
 	if(view->miller_preview != MP_DIRS && !fentry_is_dir(entry))
@@ -498,7 +521,8 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 			.prefix_len = &prefix_len,
 		};
 
-		draw_cell(columns, &cdt, width - padding);
+		draw_cell(columns, &cdt, /*lpadding=*/padding, width - 2*padding,
+				/*rpadding=*/padding);
 	}
 
 	fill_column(view, i, top, number_width + width, offset);
@@ -508,7 +532,7 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 static void
 fill_column(view_t *view, int start_line, int top, int width, int offset)
 {
-	char filler[width + (cfg.extra_padding ? 1 : 0) + 1];
+	char filler[width + 1];
 	memset(filler, ' ', sizeof(filler) - 1U);
 	filler[sizeof(filler) - 1U] = '\0';
 
@@ -518,6 +542,8 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 		.origin = a_space,
 		.type = FT_UNK,
 	};
+
+	const int padding = (cfg.extra_padding ? 1 : 0);
 
 	int i;
 	for(i = start_line; i - top < view->window_rows; ++i)
@@ -539,8 +565,10 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.id = FILL_COLUMN_ID
 		};
 
-		column_line_print(filler, cfg.extra_padding ? -1 : 0, AT_LEFT, filler,
-				&info);
+		/* Width includes the padding and column_line_print() adjusts offset for
+		 * padding, but doesn't draw it.  We want to clear padded bits as well so
+		 * offset to the left when padding is present. */
+		column_line_print(filler, -padding, AT_LEFT, filler, &info);
 	}
 }
 
@@ -549,12 +577,12 @@ static void
 calculate_table_conf(view_t *view, size_t *count, size_t *width)
 {
 	view->real_num_width = calculate_number_width(view, view->list_rows,
-			ui_view_available_width(view));
+			ui_view_main_padded(view));
 
 	if(ui_view_displays_columns(view))
 	{
 		*count = 1;
-		*width = MAX(0, ui_view_available_width(view) - view->real_num_width);
+		*width = MAX(0, ui_view_main_padded(view) - view->real_num_width);
 	}
 	else
 	{
@@ -577,7 +605,8 @@ calculate_number_width(const view_t *view, int list_length, int width)
 	{
 		const int digit_count = count_digits(list_length);
 		const int min = view->num_width;
-		return MIN(MAX(1 + digit_count, min), width);
+		const int useable_width = width - (cfg.extra_padding ? 2 : 0);
+		return MIN(MAX(1 + digit_count, min), useable_width);
 	}
 
 	return 0;
@@ -670,26 +699,27 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 	}
 }
 
-/* Draws a full cell of the file list.  col_width doesn't include extra padding!
- * The total printed widths will be that plus two empty cells (one before and
- * one after). */
+/* Draws a full cell of the file list.  lpadding and rpadding are flags (0/1).
+ * print_width doesn't include padding.  The total printed width is the sum of
+ * these three parameters. */
 static void
-draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width)
+draw_cell(columns_t *columns, column_data_t *cdt, int lpadding,
+		size_t print_width, int rpadding)
 {
 	size_t width_left;
-	if(cdt->view->ls_view)
+	if(!ui_view_displays_columns(cdt->view))
 	{
 		width_left = cdt->view->window_cols
 		           - cdt->column_offset
 		           - ui_view_right_reserved(cdt->view)
-		           - (cfg.extra_padding ? 2 : 0);
+		           - (lpadding + rpadding);
 	}
 	else
 	{
 		width_left = cdt->is_main
-		           ? ui_view_available_width(cdt->view) -
+		           ? ui_view_main_area(cdt->view) -
 		             (cdt->column_offset - ui_view_left_reserved(cdt->view))
-		           : col_width + 1U;
+		           : print_width;
 	}
 
 	const format_info_t info = {
@@ -697,16 +727,16 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width)
 		.id = FILL_COLUMN_ID
 	};
 
-	if(cfg.extra_padding)
+	if(lpadding)
 	{
 		column_line_print(" ", -1, AT_LEFT, " ", &info);
 	}
 
-	columns_format_line(columns, cdt, MIN(col_width, width_left));
+	columns_format_line(columns, cdt, MIN(print_width, width_left));
 
-	if(cfg.extra_padding)
+	if(rpadding)
 	{
-		column_line_print(" ", col_width, AT_LEFT, " ", &info);
+		column_line_print(" ", print_width, AT_LEFT, " ", &info);
 	}
 }
 
@@ -986,34 +1016,43 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 {
 	size_t prefix_len = 0U;
 
-	int col = fpos_get_col(cdt->view, cell);
+	const int col = fpos_get_col(cdt->view, cell);
 
 	cdt->current_line = fpos_get_line(cdt->view, cell);
 	cdt->column_offset = ui_view_left_reserved(cdt->view) + col*col_width;
 	cdt->line_hi_group = get_line_color(cdt->view, cdt->entry);
 	cdt->number_width = cdt->view->real_num_width;
-	cdt->total_width = ui_view_available_width(cdt->view);
+	cdt->total_width = ui_view_main_padded(cdt->view);
 	cdt->prefix_len = &prefix_len;
 	cdt->is_main = 1;
 
-	if(cfg.extra_padding && !ui_view_displays_columns(cdt->view))
+	int lpadding = 0, rpadding = 0;
+	if(cfg.extra_padding)
 	{
-		if(cdt->view->ls_cols != 0 && col_count > 1 && col == (int)col_count - 1)
+		lpadding = 1;
+		rpadding = 1;
+
+		if(!ui_view_displays_columns(cdt->view) &&
+				cdt->view->ls_cols != 0 && col_count > 1 && col == (int)col_count - 1)
 		{
-			/* Reserve one character column after the last ls column. */
-			col_width -= 1;
-		}
-		else
-		{
-			/* Reserve two character columns between two ls columns to draw padding or
-			 * before and after single column if it's the only one. */
-			col_width -= 2;
+			/* Last ls column doesn't need right padding. */
+			rpadding = 0;
 		}
 	}
 
-	int truncated = (cell >= cdt->view->window_cells);
+	const int truncated = (cell >= cdt->view->window_cells);
+
+	/* When the rightmost column of a transposed ls-like view is partially
+	 * visible, make sure it's truncated by the window border rather than by the
+	 * padding because the padding makes it look like the column was displayed in
+	 * full. */
+	if(truncated)
+	{
+		rpadding = 0;
+	}
+
 	columns_t *columns = get_view_columns(cdt->view, truncated);
-	draw_cell(columns, cdt, col_width);
+	draw_cell(columns, cdt, lpadding, col_width - lpadding - rpadding, rpadding);
 
 	cdt->prefix_len = NULL;
 }
@@ -1103,13 +1142,12 @@ fview_scroll_page_down(view_t *view)
 
 /* Print callback for column_view unit. */
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	char print_buf[strlen(buf) + 1];
 	size_t prefix_len, final_offset;
 	size_t width_left, trim_pos;
-	int reserved_width;
 
 	const column_data_t *const cdt = info->data;
 	view_t *view = cdt->view;
@@ -1127,6 +1165,7 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, info->id);
 	const cchar_t line_attrs = prepare_col_color(view, primary, 0, cdt);
 
+	/* Non-empty prefix contains tree pseudo-graphics. */
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
 
 	if(extra_prefix != 0U && align == AT_RIGHT)
@@ -1148,7 +1187,7 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 
 	if(numbers_visible)
 	{
-		const int column = final_offset - extra_prefix - cdt->number_width;
+		int column = final_offset - extra_prefix - cdt->number_width - padding;
 		draw_line_number(cdt, column);
 	}
 
@@ -1176,8 +1215,7 @@ column_line_print(const char buf[], size_t offset, AlignType align,
 	{
 		strcpy(print_buf, buf);
 	}
-	reserved_width = cfg.extra_padding ? (info->id != FILL_COLUMN_ID) : 0;
-	width_left = padding + cdt->total_width - reserved_width - offset;
+	width_left = cdt->total_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
 	if(trim_pos < sizeof(print_buf))
 	{
@@ -1215,9 +1253,11 @@ draw_line_number(const column_data_t *cdt, int column)
 	const int num = (view->num_type & NT_REL) && !mixed
 	              ? abs(cdt->line_pos - cdt->current_pos)
 	              : cdt->line_pos + 1;
+	const int padding = (cfg.extra_padding != 0);
 
 	char num_str[cdt->number_width + 1];
-	snprintf(num_str, sizeof(num_str), format, cdt->number_width - 1, num);
+	snprintf(num_str, sizeof(num_str), format, padding + cdt->number_width - 1,
+			num);
 
 	checked_wmove(view->win, cdt->current_line, column);
 	cchar_t cch = prepare_col_color(view, 0, 1, cdt);
@@ -1448,7 +1488,6 @@ mix_in_file_name_hi(const view_t *view, dir_entry_t *entry, col_attr_t *col)
 TSTATIC void
 format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	size_t len, i;
 	dir_entry_t *child, *parent;
 
 	const column_data_t *cdt = info->data;
@@ -1476,7 +1515,7 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 	}
 
 	/* File name possibly with path and tree prefixes. */
-	len = 0U;
+	size_t prefix_len = 0U;
 	child = cdt->entry;
 	parent = child - child->child_pos;
 	while(parent != child)
@@ -1494,7 +1533,7 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 		{
 			prefix = (child == cdt->entry ? (folded ? " ++|" : " --|") : "   |");
 		}
-		(void)sstrappend(buf, &len, buf_len + 1U, prefix);
+		(void)sstrappend(buf, &prefix_len, buf_len + 1U, prefix);
 
 		child = parent;
 		parent -= parent->child_pos;
@@ -1503,18 +1542,20 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 	if(cdt->entry->child_pos == 0 && cdt->entry->folded)
 	{
 		/* Mark root node as folded. */
-		(void)sstrappend(buf, &len, buf_len + 1U, " ++");
+		(void)sstrappend(buf, &prefix_len, buf_len + 1U, " ++");
 	}
 
-	for(i = 0U; i < len/2U; ++i)
+	size_t i;
+	for(i = 0U; i < prefix_len/2U; ++i)
 	{
 		const char t = buf[i];
-		buf[i] = buf[len - 1U - i];
-		buf[len - 1U - i] = t;
+		buf[i] = buf[prefix_len - 1U - i];
+		buf[prefix_len - 1U - i] = t;
 	}
 
-	get_short_path_of(view, cdt->entry, fmt, 1, buf_len + 1U - len, buf + len);
-	*cdt->prefix_len = len;
+	get_short_path_of(view, cdt->entry, fmt, 1, buf_len + 1U - prefix_len,
+			buf + prefix_len);
+	*cdt->prefix_len = prefix_len;
 }
 
 /* Primary name group format (first value of 'sortgroups' option) callback for
@@ -1793,8 +1834,7 @@ fview_set_millerview(view_t *view, int enabled)
 static size_t
 calculate_column_width(view_t *view)
 {
-	size_t max_width = view->window_cols
-	                 - ui_view_left_reserved(view) - ui_view_right_reserved(view);
+	size_t max_width = ui_view_main_padded(view);
 
 	size_t column_width;
 	if(view->ls_cols == 0)
@@ -1820,10 +1860,8 @@ fview_map_coordinates(view_t *view, int x, int y)
 {
 	if(view->miller_view)
 	{
-		const int padding = (cfg.extra_padding ? 1 : 0);
 		const int lcol_end = ui_view_left_reserved(view);
-		const int rcol_start = lcol_end + padding
-		                     + ui_view_available_width(view) + padding;
+		const int rcol_start = lcol_end + ui_view_main_padded(view);
 
 		if(x < lcol_end)
 		{
@@ -1872,7 +1910,7 @@ has_extra_tls_col(const view_t *view, int col_width)
 {
 	return fview_is_transposed(view)
 			&& view->ls_cols == 0
-			&& view->column_count*col_width < ui_view_available_width(view);
+			&& view->column_count*col_width < ui_view_main_area(view);
 }
 
 void
@@ -1899,9 +1937,8 @@ get_miller_preview_area(view_t *view)
 	col_attr_t def_col = ui_get_win_color(view, cs);
 	cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
 
-	const int padding = (cfg.extra_padding ? 1 : 0);
-	const int offset = ui_view_left_reserved(view) + padding
-	                 + ui_view_available_width(view) + padding
+	const int offset = ui_view_left_reserved(view)
+	                 + ui_view_main_padded(view)
 	                 + 1;
 
 	const preview_area_t parea = {
@@ -1910,6 +1947,8 @@ get_miller_preview_area(view_t *view)
 		.def_col = def_col,
 		.x = offset,
 		.y = 0,
+		/* Lack of `- padding` here is intentional, the preview should fill the view
+		 * until the right border. */
 		.w = ui_view_right_reserved(view) - 1,
 		.h = view->window_rows,
 	};
@@ -1939,8 +1978,7 @@ calculate_columns_count(view_t *view)
 	if(!ui_view_displays_columns(view))
 	{
 		const size_t column_width = calculate_column_width(view);
-		size_t max_width = view->window_cols - ui_view_left_reserved(view)
-		                 - ui_view_right_reserved(view);
+		size_t max_width = ui_view_main_padded(view);
 		return max_width/column_width;
 	}
 	return 1U;

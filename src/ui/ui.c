@@ -2721,11 +2721,17 @@ ui_view_displays_columns(const view_t *view)
 }
 
 int
-ui_view_available_width(const view_t *view)
+ui_view_main_area(const view_t *view)
 {
-	const int correction = cfg.extra_padding ? -2 : 0;
-	return view->window_cols + correction
-	     - ui_view_left_reserved(view) - ui_view_right_reserved(view);
+	return ui_view_main_padded(view) - (cfg.extra_padding ? 2 : 0);
+}
+
+int
+ui_view_main_padded(const view_t *view)
+{
+	return view->window_cols
+	     - ui_view_left_reserved(view)
+	     - ui_view_right_reserved(view);
 }
 
 int

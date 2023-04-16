@@ -9,7 +9,7 @@
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 
-static void print_func(const char buf[], size_t offset, AlignType align,
+static void print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 
 SETUP()
@@ -120,7 +120,7 @@ TEST(milleroptions_are_cloned_to_new_tabs)
 }
 
 static void
-print_func(const char buf[], size_t offset, AlignType align,
+print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 }

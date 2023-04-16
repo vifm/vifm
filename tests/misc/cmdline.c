@@ -23,7 +23,7 @@
 #include "../../src/status.h"
 
 static void prompt_callback(const char response[], void *arg);
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 
 static line_stats_t *stats;
@@ -596,7 +596,7 @@ prompt_callback(const char response[], void *arg)
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */

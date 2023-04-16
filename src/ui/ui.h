@@ -747,9 +747,12 @@ int ui_view_is_visible(const view_t *view);
  * zero is returned. */
 int ui_view_displays_columns(const view_t *view);
 
-/* Gets width of part of the view that is available for file list.  Returns the
- * width. */
-int ui_view_available_width(const view_t *view);
+/* Gets width of part of the view that is available for the main file list.
+ * Returns the width. */
+int ui_view_main_area(const view_t *view);
+
+/* The same as ui_view_main_area(), but includes padding around the area. */
+int ui_view_main_padded(const view_t *view);
 
 /* Retrieves width reserved for something to the left of file list.  Returns the
  * width. */

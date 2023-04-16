@@ -8,7 +8,7 @@
 #include "test.h"
 
 static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align);
+		int offset, AlignType align);
 
 static const size_t MAX_WIDTH = 80;
 
@@ -27,8 +27,8 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align)
+column_line_print(const void *data, int column_id, const char buf[], int offset,
+		AlignType align)
 {
 	print_offset = offset;
 	memcpy(print_buffer + offset, buf, strlen(buf));

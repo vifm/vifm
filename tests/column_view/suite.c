@@ -6,7 +6,7 @@
 
 #include "test.h"
 
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void column1_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
@@ -29,7 +29,7 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	assert_non_null(print_next);

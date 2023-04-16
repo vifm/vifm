@@ -70,7 +70,7 @@ typedef void (*column_func)(void *data, size_t buf_len, char buf[],
 
 /* A callback function, for displaying column contents.  Alignment specifies
  * actual alignment of current column (AT_DYN won't appear here). */
-typedef void (*column_line_print_func)(const char buf[], size_t offset,
+typedef void (*column_line_print_func)(const char buf[], int offset,
 		AlignType align, const char full_column[], const format_info_t *info);
 
 /* Structure containing various column display properties. */
@@ -78,8 +78,8 @@ typedef struct
 {
 	char *literal;     /* Fixed contents of the column. */
 	int column_id;     /* Unique id of existing column. */
-	size_t full_width; /* Full width of the column, units depend on size type. */
-	size_t text_width; /* Text width, ignored unless size type is ST_ABSOLUTE. */
+	int full_width;    /* Full width of the column, units depend on size type. */
+	int text_width;    /* Text width, ignored unless size type is ST_ABSOLUTE. */
 	AlignType align;   /* Specifies type of text alignment. */
 	SizingType sizing; /* Specifies type of sizing. */
 	CropType cropping; /* Specifies type of text cropping. */
@@ -115,11 +115,11 @@ void columns_clear(columns_t *cols);
 
 /* Performs actual formatting of columns. */
 void columns_format_line(columns_t *cols, void *format_data,
-		size_t max_line_width);
+		int max_line_width);
 
 /* Checks if recalculation is needed.  Returns non-zero if so, otherwise zero is
  * returned. */
-int columns_matches_width(const columns_t *cols, size_t max_width);
+int columns_matches_width(const columns_t *cols, int max_width);
 
 #endif /* VIFM__UI__COLUMN_VIEW_H__ */
 

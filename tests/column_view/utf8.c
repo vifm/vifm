@@ -11,7 +11,7 @@
 #include "test.h"
 
 static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align);
+		int offset, AlignType align);
 static void column1_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 static void column2_func(void *data, size_t buf_len, char buf[],
@@ -49,8 +49,8 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset, AlignType align)
+column_line_print(const void *data, int column_id, const char buf[], int offset,
+		AlignType align)
 {
 	memcpy(print_buffer + utf8_nstrsnlen(print_buffer, offset), buf, strlen(buf));
 }

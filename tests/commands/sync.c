@@ -20,7 +20,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 
 static char *saved_cwd;
@@ -255,7 +255,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */

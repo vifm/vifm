@@ -19,7 +19,7 @@
 
 #include "utils.h"
 
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static int build_custom_view(view_t *view, ...);
 static void toggle_fold_and_update(view_t *view);
@@ -450,7 +450,7 @@ TEST(folding_is_reset_on_leaving_tree)
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */

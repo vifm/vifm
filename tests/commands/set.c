@@ -8,7 +8,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/opt_handlers.h"
 
-static void print_func(const char buf[], size_t offset, AlignType align,
+static void print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 
 SETUP()
@@ -107,7 +107,7 @@ TEST(global_local_updates_regular_options_only_once)
 }
 
 static void
-print_func(const char buf[], size_t offset, AlignType align,
+print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 }

@@ -29,7 +29,7 @@
 
 static void verify_tree_node(column_data_t *cdt, int idx,
 		const char expected[]);
-static void column_line_print(const char buf[], size_t offset, AlignType align,
+static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static int remove_selected(view_t *view, const dir_entry_t *entry, void *arg);
 
@@ -667,7 +667,7 @@ verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 }
 
 static void
-column_line_print(const char buf[], size_t offset, AlignType align,
+column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	/* Do nothing. */
