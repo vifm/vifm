@@ -680,7 +680,7 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 	}
 
 	size_t width_left;
-	if(cdt->view->ls_view)
+	if(!ui_view_displays_columns(cdt->view))
 	{
 		width_left = cdt->view->window_cols
 		           - cdt->column_offset
