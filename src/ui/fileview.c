@@ -488,7 +488,7 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 		draw_cell(columns, &cdt, width - 2*padding, /*truncated=*/0);
 	}
 
-	fill_column(view, i, top, number_width + width, offset - padding);
+	fill_column(view, i, top, number_width + width, offset);
 }
 
 /* Fills column to the bottom to clear it from previous content. */
@@ -505,6 +505,8 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 		.origin = a_space,
 		.type = FT_UNK,
 	};
+
+	const int padding = (cfg.extra_padding ? 1 : 0);
 
 	int i;
 	for(i = start_line; i - top < view->window_rows; ++i)
@@ -526,7 +528,10 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.id = FILL_COLUMN_ID
 		};
 
-		column_line_print(filler, 0, AT_LEFT, filler, &info);
+		/* Width includes the padding and column_line_print() adjusts offset for
+		 * padding, but doesn't draw it.  We want to clear padded bits as well so
+		 * offset to the left when padding is present. */
+		column_line_print(filler, -padding, AT_LEFT, filler, &info);
 	}
 }
 
