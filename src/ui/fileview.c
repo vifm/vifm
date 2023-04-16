@@ -71,8 +71,8 @@ static int calculate_number_width(const view_t *view, int list_length,
 static int count_digits(int num);
 static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
-static void draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
-		int truncated);
+static void draw_cell(columns_t *columns, column_data_t *cdt, int lpadding,
+		size_t print_width, int rpadding);
 static columns_t * get_view_columns(const view_t *view, int truncated);
 static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
@@ -485,7 +485,8 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 			.prefix_len = &prefix_len,
 		};
 
-		draw_cell(columns, &cdt, width - 2*padding, /*truncated=*/0);
+		draw_cell(columns, &cdt, /*lpadding=*/padding, width - 2*padding,
+				/*rpadding=*/padding);
 	}
 
 	fill_column(view, i, top, number_width + width, offset);
@@ -662,42 +663,27 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 	}
 }
 
-/* Draws a full cell of the file list.  col_width doesn't include extra padding!
- * The total printed widths will be that plus two empty cells (one before and
- * one after). */
+/* Draws a full cell of the file list.  lpadding and rpadding are flags (0/1).
+ * print_width doesn't include padding.  The total printed width is the sum of
+ * these three parameters. */
 static void
-draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
-		int truncated)
+draw_cell(columns_t *columns, column_data_t *cdt, int lpadding,
+		size_t print_width, int rpadding)
 {
-	int drop_right_padding = 0;
-
-	/* When rightmost column of a transposed ls-like view is partially visible,
-	 * make sure it's truncated by the window border rather than by the padding
-	 * because the padding makes it look like the column was displayed in full. */
-	if(truncated && cfg.extra_padding)
-	{
-		drop_right_padding = 1;
-	}
-
 	size_t width_left;
 	if(!ui_view_displays_columns(cdt->view))
 	{
 		width_left = cdt->view->window_cols
 		           - cdt->column_offset
 		           - ui_view_right_reserved(cdt->view)
-		           - (cfg.extra_padding ? 2 : 0);
-
-		if(drop_right_padding)
-		{
-			width_left += 1;
-		}
+		           - (lpadding + rpadding);
 	}
 	else
 	{
 		width_left = cdt->is_main
 		           ? ui_view_main_area(cdt->view) -
 		             (cdt->column_offset - ui_view_left_reserved(cdt->view))
-		           : col_width;
+		           : print_width;
 	}
 
 	const format_info_t info = {
@@ -705,16 +691,16 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 		.id = FILL_COLUMN_ID
 	};
 
-	if(cfg.extra_padding)
+	if(lpadding)
 	{
 		column_line_print(" ", -1, AT_LEFT, " ", &info);
 	}
 
-	columns_format_line(columns, cdt, MIN(col_width, width_left));
+	columns_format_line(columns, cdt, MIN(print_width, width_left));
 
-	if(cfg.extra_padding && !drop_right_padding)
+	if(rpadding)
 	{
-		column_line_print(" ", col_width, AT_LEFT, " ", &info);
+		column_line_print(" ", print_width, AT_LEFT, " ", &info);
 	}
 }
 
@@ -1004,25 +990,33 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 	cdt->prefix_len = &prefix_len;
 	cdt->is_main = 1;
 
+	int lpadding = 0, rpadding = 0;
 	if(cfg.extra_padding)
 	{
+		lpadding = 1;
+		rpadding = 1;
+
 		if(!ui_view_displays_columns(cdt->view) &&
 				cdt->view->ls_cols != 0 && col_count > 1 && col == (int)col_count - 1)
 		{
-			/* Reserve one character column after the last ls column. */
-			col_width -= 1;
-		}
-		else
-		{
-			/* Reserve two character columns between two ls columns to draw padding or
-			 * before and after single column if it's the only one. */
-			col_width -= 2;
+			/* Last ls column doesn't need right padding. */
+			rpadding = 0;
 		}
 	}
 
-	int truncated = (cell >= cdt->view->window_cells);
+	const int truncated = (cell >= cdt->view->window_cells);
+
+	/* When the rightmost column of a transposed ls-like view is partially
+	 * visible, make sure it's truncated by the window border rather than by the
+	 * padding because the padding makes it look like the column was displayed in
+	 * full. */
+	if(truncated)
+	{
+		rpadding = 0;
+	}
+
 	columns_t *columns = get_view_columns(cdt->view, truncated);
-	draw_cell(columns, cdt, col_width, truncated);
+	draw_cell(columns, cdt, lpadding, col_width - lpadding - rpadding, rpadding);
 
 	cdt->prefix_len = NULL;
 }
