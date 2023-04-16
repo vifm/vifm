@@ -697,7 +697,7 @@ draw_cell(columns_t *columns, column_data_t *cdt, size_t col_width,
 		width_left = cdt->is_main
 		           ? ui_view_main_area(cdt->view) -
 		             (cdt->column_offset - ui_view_left_reserved(cdt->view))
-		           : col_width + 1U;
+		           : col_width;
 	}
 
 	const format_info_t info = {
