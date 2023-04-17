@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* symlink() */
-
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() */
 
@@ -107,11 +105,7 @@ TEST(trash_specs_are_expanded_correctly)
 TEST(trash_dir_can_be_a_symlink, IF(not_windows))
 {
 	create_dir("dir");
-
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("dir", "dir-link"));
-#endif
+	assert_success(make_symlink("dir", "dir-link"));
 
 	char trash[PATH_MAX + 1];
 	make_abs_path(trash, sizeof(trash), SANDBOX_PATH, "dir-link", saved_cwd);

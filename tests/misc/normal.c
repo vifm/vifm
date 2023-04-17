@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() symlink() */
+#include <unistd.h> /* chdir() */
 
 #include <limits.h> /* INT_MIN */
 #include <string.h> /* memset() */
@@ -175,11 +175,8 @@ TEST(gf, IF(not_windows))
 	make_abs_path(dir_path, sizeof(dir_path), SANDBOX_PATH, "dir", cwd);
 
 	create_dir(SANDBOX_PATH "/dir");
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("dir", SANDBOX_PATH "/link1"));
-	assert_success(symlink("link1", SANDBOX_PATH "/link2"));
-#endif
+	assert_success(make_symlink("dir", SANDBOX_PATH "/link1"));
+	assert_success(make_symlink("link1", SANDBOX_PATH "/link2"));
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
 	load_dir_list(&lwin, 0);
@@ -205,11 +202,8 @@ TEST(gF, IF(not_windows))
 	make_abs_path(dir_path, sizeof(dir_path), SANDBOX_PATH, "dir", cwd);
 
 	create_dir(SANDBOX_PATH "/dir");
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("dir", SANDBOX_PATH "/link1"));
-	assert_success(symlink("link1", SANDBOX_PATH "/link2"));
-#endif
+	assert_success(make_symlink("dir", SANDBOX_PATH "/link1"));
+	assert_success(make_symlink("link1", SANDBOX_PATH "/link2"));
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
 	load_dir_list(&lwin, 0);

@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() symlink() */
+#include <unistd.h> /* chdir() */
 
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
@@ -404,10 +404,8 @@ TEST(select_and_unselect_consider_trailing_slash)
 
 TEST(symlinks_are_not_resolved_in_cwd, IF(not_windows))
 {
-#ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH "/existing-files",
+	assert_success(make_symlink(TEST_DATA_PATH "/existing-files",
 				SANDBOX_PATH "/link"));
-#endif
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;

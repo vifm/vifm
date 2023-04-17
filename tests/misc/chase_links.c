@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() rmdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() */
 
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
@@ -87,14 +87,10 @@ free_view(view_t *view)
 
 TEST(link_is_not_resolved_by_default, IF(not_windows))
 {
-	assert_success(os_mkdir("dir", 0700));
-
 	cfg.chase_links = 0;
 
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("dir", "dir-link"));
-#endif
+	assert_success(os_mkdir("dir", 0700));
+	assert_success(make_symlink("dir", "dir-link"));
 
 	assert_non_null(get_cwd(curr_view->curr_dir, sizeof(curr_view->curr_dir)));
 	assert_true(change_directory(curr_view, "dir-link") >= 0);
@@ -110,11 +106,7 @@ TEST(link_is_not_resolved_by_default, IF(not_windows))
 TEST(chase_links_causes_link_to_be_resolved, IF(not_windows))
 {
 	assert_success(os_mkdir("dir", 0700));
-
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("dir", "dir-link"));
-#endif
+	assert_success(make_symlink("dir", "dir-link"));
 
 	assert_non_null(get_cwd(curr_view->curr_dir, sizeof(curr_view->curr_dir)));
 	assert_true(change_directory(curr_view, "dir-link") >= 0);
@@ -132,11 +124,7 @@ TEST(chase_links_is_not_affected_by_chdir, IF(not_windows))
 	char pwd[PATH_MAX + 1];
 
 	assert_success(os_mkdir("dir", 0700));
-
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("dir", "dir-link"));
-#endif
+	assert_success(make_symlink("dir", "dir-link"));
 
 	assert_non_null(get_cwd(pwd, sizeof(pwd)));
 	strcpy(curr_view->curr_dir, pwd);

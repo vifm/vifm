@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* symlink() */
-
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 

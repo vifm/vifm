@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* symlink() unlink() */
+#include <unistd.h> /* unlink() */
 
 #include <stdio.h> /* fclose() fopen() */
 
@@ -96,11 +96,8 @@ TEST(windows_specific, IF(windows))
 
 TEST(relative_links_are_built_for_real_paths, IF(not_windows))
 {
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink(".", SANDBOX_PATH "/a"));
-	assert_success(symlink(".", SANDBOX_PATH "/b"));
-#endif
+	assert_success(make_symlink(".", SANDBOX_PATH "/a"));
+	assert_success(make_symlink(".", SANDBOX_PATH "/b"));
 
 	fclose(fopen(SANDBOX_PATH "/target", "w"));
 

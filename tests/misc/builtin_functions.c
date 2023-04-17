@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/time.h> /* timeval utimes() */
-#include <unistd.h> /* chdir() rmdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() */
 
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL */
@@ -350,7 +350,7 @@ TEST(filetype)
 {
 	opt_handlers_setup();
 
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
+	/* Not dealing with symlinks on Windows. */
 #ifndef _WIN32
 	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
@@ -359,11 +359,11 @@ TEST(filetype)
 
 	char path[PATH_MAX + 1];
 	snprintf(path, sizeof(path), "%s/existing-files", test_data);
-	assert_success(symlink(path, SANDBOX_PATH "/dir-link"));
+	assert_success(make_symlink(path, SANDBOX_PATH "/dir-link"));
 	snprintf(path, sizeof(path), "%s/existing-files/b", test_data);
-	assert_success(symlink(path, SANDBOX_PATH "/file-link"));
+	assert_success(make_symlink(path, SANDBOX_PATH "/file-link"));
 	snprintf(path, sizeof(path), "%s/no-such-file", test_data);
-	assert_success(symlink(path, SANDBOX_PATH "/broken-link"));
+	assert_success(make_symlink(path, SANDBOX_PATH "/broken-link"));
 #endif
 
 	flist_custom_start(&lwin, "test");

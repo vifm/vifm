@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() rmdir() symlink() usleep() */
+#include <unistd.h> /* chdir() rmdir() usleep() */
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() snprintf() */
@@ -166,11 +166,8 @@ TEST(following_resolves_links_in_origin, IF(not_windows))
 	assert_success(os_mkdir(SANDBOX_PATH "/A", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/A/B", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/A/C", 0700));
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("../C", SANDBOX_PATH "/A/B/c"));
-	assert_success(symlink("A/B", SANDBOX_PATH "/B"));
-#endif
+	assert_success(make_symlink("../C", SANDBOX_PATH "/A/B/c"));
+	assert_success(make_symlink("A/B", SANDBOX_PATH "/B"));
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "B", cwd);
 	populate_dir_list(&lwin, 0);
@@ -195,11 +192,8 @@ TEST(following_resolves_links_in_origin, IF(not_windows))
 
 TEST(following_to_a_broken_symlink_is_possible, IF(not_windows))
 {
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("no-file", SANDBOX_PATH "/bad"));
-	assert_success(symlink("bad", SANDBOX_PATH "/to-bad"));
-#endif
+	assert_success(make_symlink("no-file", SANDBOX_PATH "/bad"));
+	assert_success(make_symlink("bad", SANDBOX_PATH "/to-bad"));
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
 	populate_dir_list(&lwin, 0);

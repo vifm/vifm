@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* stat */
-#include <unistd.h> /* stat() rmdir() symlink() unlink() */
+#include <unistd.h> /* stat() rmdir() unlink() */
 
 #include <limits.h> /* INT_MAX */
 #include <string.h> /* strcpy() */

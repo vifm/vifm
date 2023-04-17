@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* F_OK access() chdir() rmdir() symlink() unlink() */
+#include <unistd.h> /* F_OK access() chdir() rmdir() unlink() */
 
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */

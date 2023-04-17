@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() symlink() */
+#include <unistd.h> /* rmdir() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* remove() */
@@ -93,10 +93,7 @@ TEST(complex_tree_is_built_correctly)
 
 TEST(symlinks_are_loaded_as_files, IF(not_windows))
 {
-	/* symlink() is not available on Windows, but other code is fine. */
-#ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
-#endif
+	assert_success(make_symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH, cwd));
 	assert_int_equal(1, lwin.list_rows);
