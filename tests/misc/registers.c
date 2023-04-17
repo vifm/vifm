@@ -4,6 +4,7 @@
 
 #include <stddef.h> /* wchar_t */
 
+#include "../../src/utils/string_array.h"
 #include "../../src/registers.h"
 
 static void suggest_cb(const wchar_t text[], const wchar_t value[],
@@ -85,6 +86,48 @@ TEST(suggestion_trims_extra_lines_multiple_regs)
 
 	assert_int_equal(4, nlines);
 	assert_string_equal("b", descr);
+}
+
+TEST(empty_list_of_registers_is_not_listed)
+{
+	char **list = regs_list("");
+	int len = count_strings(list);
+	assert_int_equal(0, len);
+	free_string_array(list, len);
+}
+
+TEST(wrong_registers_are_not_listed)
+{
+	char **list = regs_list("!@");
+	int len = count_strings(list);
+	assert_int_equal(0, len);
+	free_string_array(list, len);
+}
+
+TEST(empty_registers_are_not_listed)
+{
+	char **list = regs_list("abc");
+	int len = count_strings(list);
+	assert_int_equal(0, len);
+	free_string_array(list, len);
+}
+
+TEST(registers_are_listed)
+{
+	regs_append('a', "a1");
+	regs_append('a', "a2");
+
+	regs_append('b', "b1");
+
+	char **list = regs_list("ba");
+	int len = count_strings(list);
+	assert_int_equal(5, len);
+	assert_string_equal("\"b", list[0]);
+	assert_string_equal("b1", list[1]);
+	assert_string_equal("\"a", list[2]);
+	assert_string_equal("a2", list[3]);
+	assert_string_equal("a1", list[4]);
+	free_string_array(list, len);
 }
 
 static void
