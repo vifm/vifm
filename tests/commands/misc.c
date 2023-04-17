@@ -13,6 +13,7 @@
 #include "../../src/compat/os.h"
 #include "../../src/engine/keys.h"
 #include "../../src/lua/vlua.h"
+#include "../../src/modes/menu.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
@@ -755,6 +756,27 @@ TEST(locate_command)
 	/* Nothing to repeat. */
 	assert_failure(cmds_dispatch("locate", &lwin, CIT_COMMAND));
 	assert_string_equal("Nothing to repeat", ui_sb_last());
+}
+
+TEST(registers_command)
+{
+	regs_init();
+	curr_stats.load_stage = -1;
+
+	regs_append(DEFAULT_REG_NAME, "def");
+
+	assert_success(cmds_dispatch1("registers", &lwin, CIT_COMMAND));
+	assert_int_equal(2, menu_get_current()->len);
+
+	regs_append('a', "a");
+	regs_append('b', "b1");
+	regs_append('b', "b2");
+
+	assert_success(cmds_dispatch1("registers aababaa", &lwin, CIT_COMMAND));
+	assert_int_equal(5, menu_get_current()->len);
+
+	curr_stats.load_stage = 0;
+	regs_reset();
 }
 
 static void
