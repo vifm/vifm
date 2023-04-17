@@ -10,6 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
+#include "../../src/engine/options.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
@@ -35,6 +36,7 @@ SETUP_ONCE()
 SETUP()
 {
 	view_setup(&lwin);
+	view_setup(&rwin);
 	modes_init();
 	opt_handlers_setup();
 
@@ -45,6 +47,7 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 	vle_keys_reset();
 	opt_handlers_teardown();
 }
@@ -167,6 +170,18 @@ TEST(gs_memory_implicit_stash)
 
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(swapping_views_loads_options)
+{
+	assert_success(vle_opts_set("numberwidth=3", OPT_GLOBAL));
+	assert_success(vle_opts_set("numberwidth=7", OPT_LOCAL));
+	(void)vle_keys_exec_timed_out(WK_C_w WK_x);
+	assert_string_equal("0", vle_opts_get("numberwidth", OPT_GLOBAL));
+	assert_string_equal("0", vle_opts_get("numberwidth", OPT_LOCAL));
+	(void)vle_keys_exec_timed_out(WK_C_w WK_x);
+	assert_string_equal("3", vle_opts_get("numberwidth", OPT_GLOBAL));
+	assert_string_equal("7", vle_opts_get("numberwidth", OPT_LOCAL));
 }
 
 TEST(gf, IF(not_windows))
