@@ -3,6 +3,9 @@
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
+	Made register's content being listed in normal rather then reversed order
+	in :registers/:display menu.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

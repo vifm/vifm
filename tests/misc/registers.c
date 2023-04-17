@@ -125,8 +125,8 @@ TEST(registers_are_listed)
 	assert_string_equal("\"b", list[0]);
 	assert_string_equal("b1", list[1]);
 	assert_string_equal("\"a", list[2]);
-	assert_string_equal("a2", list[3]);
-	assert_string_equal("a1", list[4]);
+	assert_string_equal("a1", list[3]);
+	assert_string_equal("a2", list[4]);
 	free_string_array(list, len);
 }
 

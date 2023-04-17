@@ -44,8 +44,8 @@ TEST(registers_menu)
 
 	assert_int_equal(3, menu_get_current()->len);
 	assert_string_equal("\"a", menu_get_current()->items[0]);
-	assert_string_equal("2", menu_get_current()->items[1]);
-	assert_string_equal("1", menu_get_current()->items[2]);
+	assert_string_equal("1", menu_get_current()->items[1]);
+	assert_string_equal("2", menu_get_current()->items[2]);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
