@@ -10,6 +10,9 @@
 
 	Fixed local options not being loaded on Ctrl-W x.
 
+	Fixed graphics of view mode not being hidden on activating menu, more or
+	file info modes.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
