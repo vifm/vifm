@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() symlink() */
+#include <unistd.h> /* rmdir() */
 
 #include <limits.h> /* INT_MAX */
 #include <stdio.h> /* remove() */
@@ -205,11 +205,7 @@ TEST(symlinks_are_not_resolved_in_tree_preview, IF(not_windows))
 	saved_cwd = save_cwd();
 
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0777));
-
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink(".", SANDBOX_PATH "/dir/link"));
-#endif
+	assert_success(make_symlink(".", SANDBOX_PATH "/dir/link"));
 
 	fp = qv_view_dir(SANDBOX_PATH "/dir", INT_MAX);
 	lines = read_file_lines(fp, &nlines);

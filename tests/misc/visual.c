@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() symlink() */
+#include <unistd.h> /* chdir() */
 
 #include <limits.h> /* INT_MIN */
 #include <string.h> /* memset() */

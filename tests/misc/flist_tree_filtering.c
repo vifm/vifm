@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() symlink() */
+#include <unistd.h> /* rmdir() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* remove() */

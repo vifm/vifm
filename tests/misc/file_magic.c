@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* symlink() unlink() */
+#include <unistd.h> /* unlink() */
 
 #include <stdio.h> /* fopen() fclose() */
 #include <string.h> /* strcmp() */
@@ -57,12 +57,7 @@ TEST(relatively_large_file_name_does_not_crash,
 	assert_success(os_mkdir(SANDBOX_PATH "/B", 0700));
 
 	create_file(long_name);
-
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink(long_name, SANDBOX_PATH "/B/123.mp3"));
-#endif
-
+	assert_success(make_symlink(long_name, SANDBOX_PATH "/B/123.mp3"));
 	assert_success(get_link_target_abs(SANDBOX_PATH "/B/123.mp3",
 				SANDBOX_PATH "/B", path, sizeof(path)));
 

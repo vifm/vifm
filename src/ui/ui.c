@@ -1618,6 +1618,7 @@ void
 switch_panes(void)
 {
 	switch_panes_content();
+	load_view_options(curr_view);
 	modview_try_activate();
 }
 

@@ -115,10 +115,7 @@ TEST(files_are_found_recursively)
 
 TEST(compare_skips_dir_symlinks, IF(not_windows))
 {
-	/* symlink() is not available on Windows, but other code is fine. */
-#ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
-#endif
+	assert_success(make_symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, CF_NONE);

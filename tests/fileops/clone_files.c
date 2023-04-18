@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() symlink() unlink() */
+#include <unistd.h> /* chdir() unlink() */
 
 #include <limits.h> /* INT_MAX */
 
@@ -253,10 +253,7 @@ TEST(cloning_dir_clones_child_folds)
 
 TEST(cloning_of_broken_symlink, IF(not_windows))
 {
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("no-such-file", "broken-link"));
-#endif
+	assert_success(make_symlink("no-such-file", "broken-link"));
 
 	flist_load_tree(&lwin, ".", INT_MAX);
 

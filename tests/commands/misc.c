@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() rmdir() symlink() unlink() */
+#include <unistd.h> /* chdir() rmdir() unlink() */
 
 #include <limits.h> /* INT_MAX */
 #include <stdio.h> /* remove() */
@@ -13,6 +13,7 @@
 #include "../../src/compat/os.h"
 #include "../../src/engine/keys.h"
 #include "../../src/lua/vlua.h"
+#include "../../src/modes/menu.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
@@ -245,15 +246,10 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	assert_success(os_mkdir(SANDBOX_PATH "/dir1", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/dir1/dir2", 0700));
 
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	{
-		char src[PATH_MAX + 1], dst[PATH_MAX + 1];
-		make_abs_path(src, sizeof(src), SANDBOX_PATH, "dir1/dir2", saved_cwd);
-		make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "dir-link", saved_cwd);
-		assert_success(symlink(src, dst));
-	}
-#endif
+	char src[PATH_MAX + 1], dst[PATH_MAX + 1];
+	make_abs_path(src, sizeof(src), SANDBOX_PATH, "dir1/dir2", saved_cwd);
+	make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "dir-link", saved_cwd);
+	assert_success(make_symlink(src, dst));
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));
 	make_abs_path(buf, sizeof(buf), SANDBOX_PATH, "dir-link", saved_cwd);
@@ -760,6 +756,27 @@ TEST(locate_command)
 	/* Nothing to repeat. */
 	assert_failure(cmds_dispatch("locate", &lwin, CIT_COMMAND));
 	assert_string_equal("Nothing to repeat", ui_sb_last());
+}
+
+TEST(registers_command)
+{
+	regs_init();
+	curr_stats.load_stage = -1;
+
+	regs_append(DEFAULT_REG_NAME, "def");
+
+	assert_success(cmds_dispatch1("registers", &lwin, CIT_COMMAND));
+	assert_int_equal(2, menu_get_current()->len);
+
+	regs_append('a', "a");
+	regs_append('b', "b1");
+	regs_append('b', "b2");
+
+	assert_success(cmds_dispatch1("registers aababaa", &lwin, CIT_COMMAND));
+	assert_int_equal(5, menu_get_current()->len);
+
+	curr_stats.load_stage = 0;
+	regs_reset();
 }
 
 static void

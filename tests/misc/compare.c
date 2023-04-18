@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* rmdir() symlink() */
+#include <unistd.h> /* rmdir() */
 
 #include <stdio.h> /* FILE fopen() fwrite() fclose() remove() */
 #include <string.h> /* strcpy() */

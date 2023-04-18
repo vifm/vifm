@@ -338,7 +338,6 @@ regs_list(const char registers[])
 	{
 		reg_t *reg = reg_from_name(*registers++);
 		char reg_str[16];
-		int i;
 
 		if(reg == NULL || reg->nfiles <= 0)
 		{
@@ -348,8 +347,8 @@ regs_list(const char registers[])
 		snprintf(reg_str, sizeof(reg_str), "\"%c", reg->name);
 		len = add_to_string_array(&list, len, reg_str);
 
-		i = reg->nfiles;
-		while(i-- > 0)
+		int i;
+		for(i = 0; i < reg->nfiles; ++i)
 		{
 			len = add_to_string_array(&list, len, reg->files[i]);
 		}

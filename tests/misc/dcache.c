@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* symlink() */
-
 #include <stddef.h> /* NULL */
 #include <string.h> /* memset() strcpy() */
 #include <time.h> /* time() */
@@ -92,8 +90,6 @@ TEST(can_query_one_parameter_at_a_time)
 	assert_ulong_equal(11, data.value);
 }
 
-#ifndef _WIN32
-
 TEST(symlink_inode_resolution, IF(not_windows))
 {
 	dir_entry_t link_entry = {
@@ -105,7 +101,7 @@ TEST(symlink_inode_resolution, IF(not_windows))
 	struct stat s;
 	assert_success(os_stat(SANDBOX_PATH "/dir", &s));
 
-	assert_success(symlink("dir", SANDBOX_PATH "/link"));
+	assert_success(make_symlink("dir", SANDBOX_PATH "/link"));
 
 	dcache_set_at(SANDBOX_PATH "/dir", s.st_ino, 10, DCACHE_UNKNOWN);
 
@@ -117,6 +113,9 @@ TEST(symlink_inode_resolution, IF(not_windows))
 	remove_file(SANDBOX_PATH "/link");
 	remove_dir(SANDBOX_PATH "/dir");
 }
+
+/* dir_entry_t::inode doesn't exist on Windows. */
+#ifndef _WIN32
 
 TEST(inode_is_taken_into_account)
 {

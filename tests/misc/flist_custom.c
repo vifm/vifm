@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() rmdir() symlink() unlink() */
+#include <unistd.h> /* chdir() rmdir() unlink() */
 
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
@@ -133,11 +133,7 @@ TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 	assert_non_null(os_realpath(TEST_DATA_PATH "/existing-files/a", test_file));
 
 	assert_success(chdir(SANDBOX_PATH));
-
-	/* symlink() is not available on Windows, but other code is fine. */
-#ifndef _WIN32
-	assert_success(symlink("/wrong/path", "broken-link"));
-#endif
+	assert_success(make_symlink("/wrong/path", "broken-link"));
 
 	assert_false(flist_custom_active(&lwin));
 
@@ -157,16 +153,10 @@ TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 {
 	char test_dir[PATH_MAX + 1];
-
 	assert_non_null(os_realpath(TEST_DATA_PATH "/existing-files", test_dir));
 
 	assert_success(chdir(SANDBOX_PATH));
-
-	/* symlink() is not available on Windows, but other code is fine. */
-#ifndef _WIN32
-	assert_success(symlink(test_dir, "dir-link"));
-#endif
-	(void)test_dir;
+	assert_success(make_symlink(test_dir, "dir-link"));
 
 	assert_false(flist_custom_active(&lwin));
 
@@ -589,15 +579,10 @@ TEST(symlinks_are_not_resolved_in_origins, IF(not_windows))
 {
 	char path[PATH_MAX + 1];
 
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	{
-		char src[PATH_MAX + 1], dst[PATH_MAX + 1];
-		make_abs_path(src, sizeof(src), TEST_DATA_PATH, "existing-files", cwd);
-		make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "link", cwd);
-		assert_success(symlink(src, dst));
-	}
-#endif
+	char src[PATH_MAX + 1], dst[PATH_MAX + 1];
+	make_abs_path(src, sizeof(src), TEST_DATA_PATH, "existing-files", cwd);
+	make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "link", cwd);
+	assert_success(make_symlink(src, dst));
 
 	assert_success(chdir(SANDBOX_PATH "/link"));
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "link",

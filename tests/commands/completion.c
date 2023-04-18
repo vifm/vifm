@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() rmdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* fclose() fopen() free() */
@@ -437,15 +437,10 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	{
-		char src[PATH_MAX + 1], dst[PATH_MAX + 1];
-		make_abs_path(src, sizeof(src), TEST_DATA_PATH, "compare", saved_cwd);
-		make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "dir-link", saved_cwd);
-		assert_success(symlink(src, dst));
-	}
-#endif
+	char src[PATH_MAX + 1], dst[PATH_MAX + 1];
+	make_abs_path(src, sizeof(src), TEST_DATA_PATH, "compare", saved_cwd);
+	make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "dir-link", saved_cwd);
+	assert_success(make_symlink(src, dst));
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,

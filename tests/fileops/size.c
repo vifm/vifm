@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* stat */
-#include <unistd.h> /* rmdir() symlink() unlink() */
+#include <unistd.h> /* rmdir() unlink() */
 
 #include <string.h> /* strcpy() strdup() */
 #include <time.h> /* time() time_t */
@@ -112,10 +112,7 @@ TEST(symlinks_to_dirs, IF(not_windows))
 	get_cwd(cwd, sizeof(cwd));
 	char dir[PATH_MAX + 1];
 	make_abs_path(dir, sizeof(dir), TEST_DATA_PATH, "various-sizes", cwd);
-	/* symlink() is not available on Windows, but the rest of the code is fine. */
-#ifndef _WIN32
-	assert_success(symlink(dir, SANDBOX_PATH "/link"));
-#endif
+	assert_success(make_symlink(dir, SANDBOX_PATH "/link"));
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
 	populate_dir_list(&lwin, 0);
