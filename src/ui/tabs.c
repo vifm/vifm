@@ -402,8 +402,7 @@ tabs_goto_global(int idx)
 		return;
 	}
 
-	ui_qv_cleanup_if_needed();
-	modview_hide_graphics();
+	ui_hide_graphics();
 
 	global_tab_t *old_gtab = &gtabs[current_gtab];
 	global_tab_t *new_gtab = &gtabs[idx];

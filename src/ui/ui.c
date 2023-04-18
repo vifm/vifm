@@ -2887,8 +2887,7 @@ ui_shutdown(void)
 {
 	if(curr_stats.load_stage >= 0 && !vifm_testing() && !isendwin())
 	{
-		ui_qv_cleanup_if_needed();
-		modview_hide_graphics();
+		ui_hide_graphics();
 		def_prog_mode();
 		endwin();
 	}
