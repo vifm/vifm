@@ -2832,8 +2832,11 @@ ui_qv_cleanup_if_needed(void)
 void
 ui_hide_graphics(void)
 {
-	ui_qv_cleanup_if_needed();
-	modview_hide_graphics();
+	if(!modes_is_menu_like())
+	{
+		ui_qv_cleanup_if_needed();
+		modview_hide_graphics();
+	}
 }
 
 void

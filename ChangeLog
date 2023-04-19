@@ -6,6 +6,9 @@
 	Made register's content being listed in normal rather then reversed order
 	in :registers/:display menu.
 
+	Don't even try to clear graphics when menu-like mode is active.  The
+	graphics should have been hidden on entering the mode.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
