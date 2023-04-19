@@ -115,9 +115,10 @@ modfinfo_enter(view_t *v)
 		return;
 	}
 
+	ui_hide_graphics();
+
 	term_title_update("File Information");
 	vle_mode_set(FILE_INFO_MODE, VMT_PRIMARY);
-	ui_hide_graphics();
 	view = v;
 	ui_setup_for_menu_like();
 	modfinfo_redraw();

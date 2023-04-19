@@ -101,9 +101,10 @@ enter_change_mode(view_t *active_view)
 	if(curr_stats.load_stage < 2)
 		return;
 
+	ui_hide_graphics();
+
 	view = active_view;
 	vle_mode_set(CHANGE_MODE, VMT_SECONDARY);
-	ui_hide_graphics();
 
 	ui_set_cursor(/*visibility=*/0);
 	update_all_windows();

@@ -313,12 +313,12 @@ modmenu_enter(menu_data_t *m, view_t *active_view)
 
 	assert(m->len > 0 && "Menu cannot be empty.");
 
+	ui_hide_graphics();
 	werase(status_bar);
 
 	view = active_view;
 	menu = m;
 	vle_mode_set(MENU_MODE, VMT_PRIMARY);
-	ui_hide_graphics();
 	stats_refresh_later();
 	was_redraw = 0;
 

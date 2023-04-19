@@ -160,9 +160,10 @@ enter_attr_mode(view_t *active_view)
 	if(curr_stats.load_stage < 2)
 		return;
 
+	ui_hide_graphics();
+
 	view = active_view;
 	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
-	ui_hide_graphics();
 	modes_input_bar_clear();
 	curr_stats.use_input_bar = 0;
 

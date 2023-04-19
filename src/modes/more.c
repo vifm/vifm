@@ -128,9 +128,8 @@ modmore_enter(const char txt[])
 	curr_line = 0;
 	curr_vline = 0;
 
-	vle_mode_set(MORE_MODE, VMT_PRIMARY);
 	ui_hide_graphics();
-
+	vle_mode_set(MORE_MODE, VMT_PRIMARY);
 	modmore_redraw();
 }
 
