@@ -68,13 +68,10 @@ TEST(special_chars_ignore_case_sort)
 	assert_string_equal("_", lwin.dir_entry[0].name);
 }
 
-/* Windows is really bad at handling links. */
-#ifndef _WIN32
-
-TEST(symlink_to_dir)
+TEST(symlink_to_dir, IF(not_windows))
 {
 	assert_success(chdir(SANDBOX_PATH));
-	assert_success(symlink(".", "self"));
+	assert_success(make_symlink(".", "self"));
 
 	lwin.sort[0] = SK_BY_INAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
@@ -97,8 +94,6 @@ TEST(symlink_to_dir)
 	assert_int_equal(0, unlink("self"));
 	assert_int_equal(0, chdir("../.."));
 }
-
-#endif
 
 TEST(versort_without_numbers)
 {
