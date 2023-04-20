@@ -3,7 +3,7 @@
 #include <unistd.h> /* chdir() unlink() */
 
 #include <locale.h> /* LC_ALL setlocale() */
-#include <string.h> /* memset() strcpy() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
@@ -60,9 +60,7 @@ TEARDOWN()
 
 TEST(special_chars_ignore_case_sort)
 {
-	lwin.sort[0] = SK_BY_INAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
 	sort_view(&lwin);
 
 	assert_string_equal("_", lwin.dir_entry[0].name);
@@ -73,8 +71,7 @@ TEST(symlink_to_dir, IF(not_windows))
 	assert_success(chdir(SANDBOX_PATH));
 	assert_success(make_symlink(".", "self"));
 
-	lwin.sort[0] = SK_BY_INAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	replace_string(&lwin.dir_entry[2].name, "self");
@@ -278,9 +275,7 @@ TEST(ignore_case_name_sort_breaks_ties_deterministically)
 	/* If normalized names are equal, byte-by-byte comparison should be used to
 	 * break ties. */
 
-	rwin.sort[0] = SK_BY_INAME;
-	memset(&rwin.sort[1], SK_NONE, sizeof(rwin.sort) - 1);
-
+	view_set_sort(rwin.sort, SK_BY_INAME, SK_NONE);
 	sort_view(&rwin);
 
 	assert_string_equal("АААААААААА", rwin.dir_entry[0].name);
@@ -302,9 +297,7 @@ TEST(extensions_of_dot_files_are_sorted_correctly)
 	lwin.dir_entry[2].name = strdup(".tmux.conf");
 	lwin.dir_entry[2].type = FT_REG;
 
-	lwin.sort[0] = SK_BY_EXTENSION;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
+	view_set_sort(lwin.sort, SK_BY_EXTENSION, SK_NONE);
 	sort_view(&lwin);
 
 	assert_string_equal(".cdargsresult", lwin.dir_entry[0].name);
@@ -334,8 +327,7 @@ TEST(sorting_uses_dcache_for_dirs)
 	lwin.dir_entry[1].inode = 2;
 #endif
 
-	lwin.sort[0] = SK_BY_SIZE;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+	view_set_sort(lwin.sort, SK_BY_SIZE, SK_NONE);
 
 	assert_success(dcache_set_at(TEST_DATA_PATH "/read", 1, 10, DCACHE_UNKNOWN));
 	assert_success(dcache_set_at(TEST_DATA_PATH "/rename", 2, 100,
@@ -376,9 +368,7 @@ TEST(nitems_sorting_works)
 	lwin.dir_entry[2].type = FT_DIR;
 	lwin.dir_entry[2].origin = lwin.curr_dir;
 
-	lwin.sort[0] = SK_BY_NITEMS;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
+	view_set_sort(lwin.sort, SK_BY_NITEMS, SK_NONE);
 	sort_view(&lwin);
 
 	assert_string_equal("rename", lwin.dir_entry[0].name);
@@ -424,10 +414,7 @@ TEST(groups_sorting_works)
 
 	/* Ascending sorting. */
 
-	lwin.sort[0] = SK_BY_GROUPS;
-	lwin.sort[1] = SK_BY_NAME;
-	memset(&lwin.sort[2], SK_NONE, sizeof(lwin.sort) - 2);
-
+	view_set_sort(lwin.sort, SK_BY_GROUPS, SK_BY_NAME);
 	sort_view(&lwin);
 
 	assert_string_equal("1-done", lwin.dir_entry[0].name);
@@ -440,10 +427,7 @@ TEST(groups_sorting_works)
 
 	/* Descending sorting. */
 
-	lwin.sort[0] = -SK_BY_GROUPS;
-	lwin.sort[1] = SK_BY_NAME;
-	memset(&lwin.sort[2], SK_NONE, sizeof(lwin.sort) - 2);
-
+	view_set_sort(lwin.sort, -SK_BY_GROUPS, SK_BY_NAME);
 	sort_view(&lwin);
 
 	assert_string_equal("2-todo-replace", lwin.dir_entry[0].name);
@@ -463,13 +447,10 @@ TEST(global_groups_sorts_entries_list)
 	update_string(&lwin.sort_groups_g, "([0-9])");
 	(void)regcomp(&lwin.primary_group, "([a-z])", REG_EXTENDED | REG_ICASE);
 
-	lwin.sort_g[0] = SK_BY_GROUPS;
-	lwin.sort_g[1] = SK_BY_NAME;
-	memset(&lwin.sort_g[2], SK_NONE, sizeof(lwin.sort_g) - 2);
-
 	dir_entry_t entry_list[] = { { .name = "a1" }, { .name = "b0" } };
 	entries_t entries = { entry_list, 2 };
 
+	view_set_sort(lwin.sort_g, SK_BY_GROUPS, SK_BY_NAME);
 	sort_entries(&lwin, entries);
 
 	assert_int_equal(2, entries.nentries);
@@ -499,9 +480,7 @@ TEST(inode_sorting_works)
 	lwin.dir_entry[2].inode = 7;
 	lwin.dir_entry[2].origin = lwin.curr_dir;
 
-	lwin.sort[0] = SK_BY_INODE;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
+	view_set_sort(lwin.sort, SK_BY_INODE, SK_NONE);
 	sort_view(&lwin);
 
 	assert_string_equal("rename", lwin.dir_entry[0].name);

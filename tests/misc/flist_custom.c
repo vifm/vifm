@@ -5,7 +5,7 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memcpy() memset() */
+#include <string.h> /* memcpy() */
 
 #include <test-utils.h>
 
@@ -537,8 +537,7 @@ TEST(can_set_very_cv_twice_in_a_row)
 
 	lwin.columns = columns_create();
 
-	lwin.sort[0] = SK_BY_NAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+	view_set_sort(lwin.sort, SK_BY_NAME, SK_NONE);
 
 	setup_custom_view(&lwin, 1);
 	flist_custom_start(&lwin, "test");
