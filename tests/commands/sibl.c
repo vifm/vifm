@@ -2,7 +2,7 @@
 
 #include <unistd.h> /* chdir() rmdir() unlink() */
 
-#include <string.h> /* memset() strcpy() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
@@ -27,9 +27,6 @@ SETUP()
 	view_setup(&lwin);
 
 	cmds_init();
-
-	lwin.sort_g[0] = SK_BY_NAME;
-	memset(&lwin.sort_g[1], SK_NONE, sizeof(lwin.sort_g) - 1);
 
 	opt_handlers_setup();
 }

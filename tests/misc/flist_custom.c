@@ -214,9 +214,6 @@ TEST(files_are_sorted_undecorated)
 	cfg.type_decs[FT_DIR][DECORATION_SUFFIX][0] = '/';
 	cfg.type_decs[FT_DIR][DECORATION_SUFFIX][1] = '\0';
 
-	lwin.sort[0] = SK_BY_NAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
 	assert_success(os_mkdir("foo", 0700));
 	assert_success(os_mkdir("foo-", 0700));
 	assert_success(os_mkdir("foo0", 0700));
@@ -257,9 +254,6 @@ TEST(unsorted_custom_view_does_not_change_order_of_files)
 TEST(sorted_custom_view_after_unsorted)
 {
 	opt_handlers_setup();
-
-	lwin.sort[0] = SK_BY_NAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
 	assert_false(flist_custom_active(&lwin));
 
