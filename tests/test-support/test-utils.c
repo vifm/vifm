@@ -249,9 +249,8 @@ view_setup(view_t *view)
 	strcpy(view->curr_dir, "/path");
 	update_string(&view->custom.orig_dir, NULL);
 
-	view->sort[0] = SK_BY_NAME;
-	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
-	memcpy(view->sort_g, view->sort, sizeof(view->sort_g));
+	view_set_sort(view->sort, SK_BY_NAME, SK_NONE);
+	view_set_sort(view->sort_g, SK_BY_NAME, SK_NONE);
 
 	view->custom.entry_count = 0;
 	view->custom.entries = NULL;
@@ -268,6 +267,15 @@ view_teardown(view_t *view)
 {
 	flist_free_view(view);
 	view->last_search[0] = '\0';
+}
+
+void
+view_set_sort(signed char sort_keys[], signed char primary_key,
+		signed char secondary_key)
+{
+	memset(sort_keys, SK_NONE, SK_COUNT);
+	sort_keys[0] = primary_key;
+	sort_keys[1] = secondary_key;
 }
 
 void

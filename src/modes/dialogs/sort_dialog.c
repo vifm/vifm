@@ -198,10 +198,11 @@ enter_sort_mode(view_t *active_view)
 		return;
 	}
 
+	ui_hide_graphics();
+
 	view = active_view;
 	descending = (view->sort[0] < 0);
 	vle_mode_set(SORT_MODE, VMT_SECONDARY);
-	ui_hide_graphics();
 
 	top = 4;
 	bottom = top + SK_COUNT - 1;

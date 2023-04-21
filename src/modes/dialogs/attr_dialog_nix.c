@@ -178,8 +178,8 @@ enter_attr_mode(view_t *active_view)
 		return;
 	}
 
-	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
 	ui_hide_graphics();
+	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
 	modes_input_bar_clear();
 	curr_stats.use_input_bar = 0;
 

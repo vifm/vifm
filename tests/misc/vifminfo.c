@@ -5,7 +5,6 @@
 
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memset() */
 
 #include <test-utils.h>
 
@@ -314,8 +313,8 @@ TEST(view_sorting_round_trip)
 	columns_setup_column(SK_BY_TIME_CHANGED);
 
 	write_info_file();
-	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
-	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
+	view_set_sort(lwin.sort_g, SK_NONE, SK_NONE);
+	view_set_sort(rwin.sort_g, SK_NONE, SK_NONE);
 	state_load(0);
 
 	assert_int_equal(SK_BY_NAME, lwin.sort_g[0]);
@@ -335,8 +334,8 @@ TEST(view_sorting_round_trip)
 	rwin.sort_g[5] = -SK_BY_NAME;
 
 	write_info_file();
-	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
-	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
+	view_set_sort(lwin.sort_g, SK_NONE, SK_NONE);
+	view_set_sort(rwin.sort_g, SK_NONE, SK_NONE);
 	state_load(0);
 
 	assert_int_equal(SK_BY_NITEMS, lwin.sort_g[0]);

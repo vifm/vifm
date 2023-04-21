@@ -48,6 +48,10 @@ void view_setup(struct view_t *view);
 /* Frees resources of the view. */
 void view_teardown(struct view_t *view);
 
+/* Sets up sorting with up to 2 sorting keys (use SK_NONE for unused ones). */
+void view_set_sort(signed char sort_keys[], signed char primary_key,
+		signed char secondary_key);
+
 /* Registers a column with specified id that prints empty string. */
 void columns_setup_column(int id);
 

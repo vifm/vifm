@@ -3,7 +3,6 @@
 #include <unistd.h> /* chdir() */
 
 #include <limits.h> /* INT_MIN */
-#include <string.h> /* memset() */
 
 #include <test-utils.h>
 
@@ -39,9 +38,6 @@ SETUP()
 	view_setup(&rwin);
 	modes_init();
 	opt_handlers_setup();
-
-	lwin.sort_g[0] = SK_BY_NAME;
-	memset(&lwin.sort_g[1], SK_NONE, sizeof(lwin.sort_g) - 1);
 }
 
 TEARDOWN()

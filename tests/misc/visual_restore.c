@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <string.h> /* memset() strcpy() strdup() */
+#include <string.h> /* strcpy() strdup() */
 
 #include <test-utils.h>
 
@@ -41,9 +41,7 @@ SETUP()
 	lwin.dir_entry[2].selected = 0;
 	lwin.selected_files = 0;
 
-	lwin.sort[0] = SK_BY_INAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
 	sort_view(&lwin);
 
 	(void)vle_keys_exec_timed_out(WK_v);
@@ -97,9 +95,7 @@ TEST(gv_works_after_inverting_the_order_of_files)
 {
 	const mark_t *mark;
 
-	lwin.sort[0] = -SK_BY_INAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
+	view_set_sort(lwin.sort, -SK_BY_INAME, SK_NONE);
 	sort_view(&lwin);
 
 	modvis_enter(VS_RESTORE);
@@ -119,9 +115,7 @@ TEST(gv_works_after_inverting_the_order_of_files)
 
 	modvis_leave(/*save_msg=*/0, /*goto_top=*/1, /*clear_selection=*/0);
 
-	lwin.sort[0] = SK_BY_INAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
-
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
 	sort_view(&lwin);
 
 	modvis_enter(VS_RESTORE);

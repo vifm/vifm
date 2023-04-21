@@ -400,8 +400,7 @@ TEST(tree_sorting_considers_structure)
 {
 	lwin.hide_dot = 1;
 
-	lwin.sort[0] = SK_BY_NAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+	view_set_sort(lwin.sort, SK_BY_NAME, SK_NONE);
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", cwd));
 	assert_int_equal(10, lwin.list_rows);
@@ -418,20 +417,23 @@ TEST(tree_sorting_considers_structure)
 	assert_string_equal("dir5", lwin.dir_entry[8].name);
 	assert_string_equal("file5", lwin.dir_entry[9].name);
 
-	lwin.sort[0] = SK_BY_NAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+	stats_init(&cfg);
+
+	view_set_sort(lwin.sort, SK_BY_NITEMS, SK_NONE);
 	sort_view(&lwin);
 
 	assert_string_equal("dir1", lwin.dir_entry[0].name);
 	assert_string_equal("dir2", lwin.dir_entry[1].name);
-	assert_string_equal("dir4", lwin.dir_entry[5].name);
-	assert_string_equal("file3", lwin.dir_entry[6].name);
-	assert_string_equal("dir3", lwin.dir_entry[2].name);
-	assert_string_equal("file1", lwin.dir_entry[3].name);
-	assert_string_equal("file2", lwin.dir_entry[4].name);
+	assert_string_equal("dir4", lwin.dir_entry[2].name);
+	assert_string_equal("file3", lwin.dir_entry[3].name);
+	assert_string_equal("dir3", lwin.dir_entry[4].name);
+	assert_string_equal("file1", lwin.dir_entry[5].name);
+	assert_string_equal("file2", lwin.dir_entry[6].name);
 	assert_string_equal("file4", lwin.dir_entry[7].name);
 	assert_string_equal("dir5", lwin.dir_entry[8].name);
 	assert_string_equal("file5", lwin.dir_entry[9].name);
+
+	stats_reset(&cfg);
 }
 
 TEST(short_paths_consider_tree_structure)

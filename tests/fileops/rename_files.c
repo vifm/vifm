@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* pathconf() rmdir() symlink() unlink() */
+#include <unistd.h> /* pathconf() rmdir() unlink() */
 
 #include <string.h> /* memset() */
 

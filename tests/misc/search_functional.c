@@ -1,7 +1,6 @@
 #include <stic.h>
 
 #include <unistd.h> /* chdir() */
-#include <string.h> /* memset() */
 
 #include <test-utils.h>
 
@@ -38,9 +37,6 @@ SETUP()
 
 	assert_success(chdir(TEST_DATA_PATH "/read"));
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
-
-	lwin.sort[0] = SK_BY_NAME;
-	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
 	cfg_resize_histories(10);
 
