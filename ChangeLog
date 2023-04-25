@@ -9,6 +9,8 @@
 	Don't even try to clear graphics when menu-like mode is active.  The
 	graphics should have been hidden on entering the mode.
 
+	Allowed wild menu popup to take up up to 40% of the screen.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
