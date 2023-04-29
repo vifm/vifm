@@ -664,7 +664,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 		return (pid_t)-1;
 	}
 
-	if(pipe(error_pipe) != 0)
+	if(err != NULL && pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
 		if(out != NULL)
@@ -687,8 +687,11 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 			close(out_pipe[0]);
 			close(out_pipe[1]);
 		}
-		close(error_pipe[0]);
-		close(error_pipe[1]);
+		if(err != NULL)
+		{
+			close(error_pipe[0]);
+			close(error_pipe[1]);
+		}
 		return (pid_t)-1;
 	}
 
@@ -699,7 +702,10 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 			bind_pipe_or_die(STDOUT_FILENO, out_pipe[1], out_pipe[0]);
 		}
 
-		bind_pipe_or_die(STDERR_FILENO, error_pipe[1], error_pipe[0]);
+		if(err != NULL)
+		{
+			bind_pipe_or_die(STDERR_FILENO, error_pipe[1], error_pipe[0]);
+		}
 
 		if(in != NULL)
 		{
@@ -726,8 +732,11 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 		*out = fdopen(out_pipe[0], "r");
 	}
 
-	close(error_pipe[1]);
-	*err = fdopen(error_pipe[0], "r");
+	if(err != NULL)
+	{
+		close(error_pipe[1]);
+		*err = fdopen(error_pipe[0], "r");
+	}
 
 	return pid;
 }
@@ -759,7 +768,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 
 	if(out != NULL && _dup2(out_pipe[1], _fileno(stdout)) != 0)
 		return (pid_t)-1;
-	if(_dup2(err_pipe[1], _fileno(stderr)) != 0)
+	if(err != NULL && _dup2(err_pipe[1], _fileno(stderr)) != 0)
 		return (pid_t)-1;
 
 	/* At least cmd.exe is incapable of handling UNC paths. */
@@ -813,7 +822,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 		return (pid_t)-1;
 	}
 
-	if((*err = _fdopen(err_pipe[0], "r")) == NULL)
+	if(err != NULL && (*err = _fdopen(err_pipe[0], "r")) == NULL)
 	{
 		if(out != NULL)
 		{
@@ -839,7 +848,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 		return (pid_t)-1;
 	}
 
-	if(_pipe(err_pipe, 512, O_NOINHERIT) != 0)
+	if(err != NULL && _pipe(err_pipe, 512, O_NOINHERIT) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
 		if(out != NULL)
@@ -861,7 +870,10 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 	{
 		_close(out_pipe[1]);
 	}
-	_close(err_pipe[1]);
+	if(err != NULL)
+	{
+		_close(err_pipe[1]);
+	}
 
 	_dup2(in_fd, _fileno(stdin));
 	_dup2(out_fd, _fileno(stdout));
@@ -873,7 +885,10 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 		{
 			_close(out_pipe[0]);
 		}
-		_close(err_pipe[0]);
+		if(err != NULL)
+		{
+			_close(err_pipe[0]);
+		}
 	}
 
 	return pid;
