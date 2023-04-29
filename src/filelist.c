@@ -3346,8 +3346,9 @@ list_sibling_dirs(view_t *view)
 	{
 		/* If we couldn't find our current directory in the list (because it got
 		 * filtered-out), add it to be able to determine where it would go if it
-		 * were visible. */
-		entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
+		 * were visible.  Failure to add it is implicitly handled on checking
+		 * result of pick_sibling(). */
+		(void)entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
 				flist_get_dir(view));
 	}
 
@@ -3404,8 +3405,13 @@ flist_list_in(view_t *view, const char path[], int only_dirs,
 	if(can_include_parent && cfg_parent_dir_is_visible(is_root_dir(path)))
 	{
 		char *const full_path = format_str("%s/..", path);
-		entry_list_add(view, &siblings.entries, &siblings.nentries, full_path);
-		free(full_path);
+		if(full_path != NULL)
+		{
+			/* Failure to add parent directory entry is by no means critical. */
+			(void)entry_list_add(view, &siblings.entries, &siblings.nentries,
+					full_path);
+			free(full_path);
+		}
 	}
 
 	return siblings;

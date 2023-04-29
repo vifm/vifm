@@ -1303,7 +1303,7 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 static void
 output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 {
-	FILE *file, *err;
+	FILE *file;
 	char buf[2048];
 	char *lines;
 	size_t len;
@@ -1311,7 +1311,8 @@ output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 
 	setup_shellout_env();
 	int error = 0;
-	if(bg_run_and_capture((char *)cmd, 1, input_tmp, &file, &err) == (pid_t)-1)
+	if(bg_run_and_capture((char *)cmd, 1, input_tmp, &file, /*err=*/NULL) ==
+			(pid_t)-1)
 	{
 		error = 1;
 	}
@@ -1347,7 +1348,6 @@ output_to_statusbar(const char cmd[], view_t *view, MacroFlags flags)
 	}
 
 	fclose(file);
-	fclose(err);
 
 	ui_sb_msg((lines == NULL) ? "" : lines);
 	free(lines);

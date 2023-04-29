@@ -1461,10 +1461,13 @@ compute_wild_menu_height(void)
 		return 1;
 	}
 
+	const int term_height = getmaxy(stdscr);
 	const int count = vle_compl_get_count() - 1;
-	const int max_height = getmaxy(stdscr) - getmaxy(status_bar)
+
+	const int height_limit = MAX(10, term_height*2/5);
+	const int max_height = term_height - getmaxy(status_bar)
 	                     - ui_stat_job_bar_height() - 1;
-	return MIN(count, MIN(10, max_height));
+	return MIN(count, MIN(height_limit, max_height));
 }
 
 /* Leaves navigation mode without undoing cursor position or filter state. */
