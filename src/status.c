@@ -47,6 +47,7 @@
 #include "utils/fsdata.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/mem.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -96,7 +97,6 @@ static void dcache_get(const char path[], time_t mtime, uint64_t inode,
 static void size_updater(void *data, void *arg);
 TSTATIC time_t dcache_get_size_timestamp(const char path[]);
 TSTATIC void dcache_set_size_timestamp(const char path[], time_t ts);
-static void rotate_right(void *ptr, size_t count, size_t item_len);
 
 status_t curr_stats;
 
@@ -783,28 +783,7 @@ selhist_put(const char location[], char *paths[], int path_count)
 	sel_hist[i].paths = paths;
 	sel_hist[i].length = path_count;
 
-	rotate_right(sel_hist, i + 1, sizeof(sel_hist[0]));
-}
-
-/* Rotates array's elements to the right once: 0 -> 1, ..., (n - 1) -> 0. */
-static void
-rotate_right(void *ptr, size_t count, size_t item_len)
-{
-	assert(count > 0 && "Can't rotate if item count is 0!");
-	assert(item_len > 0 && "Can't rotate if item size is 0!");
-
-	size_t slice_size = item_len*(count - 1);
-	char *p = ptr;
-
-	/* Stash last item. */
-	uint8_t buf[item_len];
-	memcpy(buf, p + slice_size, item_len);
-
-	/* Move all but the last item. */
-	memmove(p + item_len, p, slice_size);
-
-	/* Put last item in front. */
-	memcpy(p, buf, item_len);
+	mem_ror(sel_hist, i + 1, sizeof(sel_hist[0]));
 }
 
 int

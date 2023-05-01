@@ -83,9 +83,9 @@ ui := $(addprefix ui/, $(ui))
 
 utilities := cancellation.c dynarray.c env.c file_streams.c \
              filemon.c filter.c fs.c fsdata.c fsddata.c fswatch_win.c globs.c \
-             gmux_win.c hist.c int_stack.c log.c matcher.c matchers.c parson.c \
-             path.c regexp.c selector_win.c shmem_win.c str.c string_array.c \
-             trie.c utf8.c utils.c utils_win.c
+             gmux_win.c hist.c int_stack.c log.c matcher.c matchers.c mem.c \
+             parson.c path.c regexp.c selector_win.c shmem_win.c str.c \
+             string_array.c trie.c utf8.c utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(lua) $(menus) \
