@@ -64,6 +64,7 @@
 #include "../search.h"
 #include "../status.h"
 
+static void deinit_menu_data(menu_data_t *m);
 static void reset_menu_state(menu_state_t *ms);
 static void show_position_in_menu(const menu_data_t *m);
 static void open_selected_file(const char path[], int line_num);
@@ -200,6 +201,20 @@ menus_reset_data(menu_data_t *m)
 		return;
 	}
 
+	deinit_menu_data(m);
+	reset_menu_state(m->state);
+}
+
+/* Frees resources taken up by data at most once.  Accepts zero-initialized
+ * input as well. */
+static void
+deinit_menu_data(menu_data_t *m)
+{
+	if(!m->initialized)
+	{
+		return;
+	}
+
 	/* Menu elements don't always have data associated with them, but len isn't
 	 * zero.  That's why we need this check. */
 	if(m->data != NULL)
@@ -213,8 +228,6 @@ menus_reset_data(menu_data_t *m)
 	free(m->empty_msg);
 	free(m->cwd);
 	m->initialized = 0;
-
-	reset_menu_state(m->state);
 }
 
 /* Frees resources associated with menu mode.  ms can be NULL. */
@@ -716,8 +729,8 @@ menus_get_targets(view_t *view)
 static int
 can_stash_menu(const menu_data_t *m)
 {
-	/* Interested only in non-empty stashable menus which are not in the stash. */
-	return (m->stashable && m->len > 0 && m != &menu_data_stash);
+	/* Interested only in non-empty stashable menus. */
+	return (m->stashable && m->len > 0);
 }
 
 /* Stores menu data for restoring it later. */
@@ -725,11 +738,7 @@ static void
 stash_menu(menu_data_t *m)
 {
 	/* Release previously stashed menu, if any. */
-	if(menu_data_stash.initialized)
-	{
-		menu_data_stash.state = NULL;
-		menus_reset_data(&menu_data_stash);
-	}
+	deinit_menu_data(&menu_data_stash);
 
 	menu_data_stash = *m;
 	m->initialized = 0;
@@ -747,7 +756,7 @@ menus_unstash(view_t *view)
 		return 1;
 	}
 
-	menus_reset_data(&menu_data_storage);
+	deinit_menu_data(&menu_data_storage);
 	menu_data_storage = menu_data_stash;
 	menu_data_stash.initialized = 0;
 	menu_state.d = &menu_data_storage;
