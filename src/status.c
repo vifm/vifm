@@ -527,9 +527,9 @@ hists_resize(int new_size)
 {
 	curr_stats.history_size = new_size;
 
+	hist_resize(&curr_stats.cmd_hist, new_size);
 	hist_resize(&curr_stats.exprreg_hist, new_size);
 	hist_resize(&curr_stats.search_hist, new_size);
-	hist_resize(&curr_stats.cmd_hist, new_size);
 	hist_resize(&curr_stats.prompt_hist, new_size);
 	hist_resize(&curr_stats.filter_hist, new_size);
 }
