@@ -16,6 +16,8 @@
 
 	Allowed wild menu popup to take up up to 40% of the screen.
 
+	Made documentation of 'vifminfo' more readable.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

@@ -4554,27 +4554,29 @@ default: bookmarks,bmarks
 Controls what will be saved in the $VIFM/vifminfo file:
 
    bmarks    - named bookmarks (see |vifm-:bmark|)
-   bookmarks - marks, except special ones like '< and '>
-   tui       - state of the user interface (sorting, number of windows, quick
-               view state, active view)
-   dhistory  - directory history
+   bookmarks - marks, except for special ones like '< and '>
+   cs        - primary color scheme
+   dirstack  - directory stack (overwrites previous stack, unless stack of
+               current instance is empty)
+   registers - registers content
+   savedirs  - last visited directory
    state     - file name and dot filters and terminal multiplexers integration
                state
-   cs        - primary color scheme
-   savedirs  - save last visited directory
+   tabs      - global or pane tabs
+   tui       - state of the user interface (sorting, number of windows, quick
+               view state, active view)
+
    chistory  - command line history
+   dhistory  - directory history
    ehistory  - expression register history (see |vifm-c_Ctrl-R_=|)
-   shistory  - search history (/ and ? commands)
-   phistory  - prompt history
    fhistory  - history of local filter (see |vifm-=|)
    mchistory - command line history of menus
-   dirstack  - directory stack overwrites previous stack, unless stack of
-               current instance is empty
-   registers - registers content
-   tabs      - global or pane tabs
-   options   - all options that can be set with the :set command (obsolete)
-   filetypes - associated programs and viewers (obsolete)
+   phistory  - prompt history
+   shistory  - search history (/ and ? commands)
+
    commands  - user defined commands (see :command description) (obsolete)
+   filetypes - associated programs and viewers (obsolete)
+   options   - all options that can be set with the :set command (obsolete)
 
                                                *vifm-'vimhelp'*
 vimhelp
