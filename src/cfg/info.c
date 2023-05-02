@@ -167,6 +167,10 @@
  *      text = "item1"
  *      ts = 1440801895 # timestamp (optional)
  *  } ]
+ *  menu-cmd-hist = [ {
+ *      text = "item1"
+ *      ts = 1440801895 # timestamp (optional)
+ *  } ]
  *  active-gtab = 0
  *  use-term-multiplexer = true
  *  color-scheme = "almost-default"
@@ -681,6 +685,7 @@ load_state(JSON_Object *root, int reread)
 	load_history(root, "search-hist", &curr_stats.search_hist);
 	load_history(root, "prompt-hist", &curr_stats.prompt_hist);
 	load_history(root, "lfilt-hist", &curr_stats.filter_hist);
+	load_history(root, "menu-cmd-hist", &curr_stats.menucmd_hist);
 }
 
 /* Loads global tabs from JSON. */
@@ -1429,6 +1434,11 @@ serialize_state(int vinfo)
 		store_history(root, "lfilt-hist", &curr_stats.filter_hist);
 	}
 
+	if(vinfo & VINFO_MCHISTORY)
+	{
+		store_history(root, "menu-cmd-hist", &curr_stats.menucmd_hist);
+	}
+
 	if(vinfo & VINFO_REGISTERS)
 	{
 		store_regs(root);
@@ -1505,6 +1515,11 @@ merge_states(int vinfo, int session_load, JSON_Object *current,
 	if(vinfo & VINFO_FHISTORY)
 	{
 		merge_history(session_load, current, admixture, "lfilt-hist");
+	}
+
+	if(vinfo & VINFO_MCHISTORY)
+	{
+		merge_history(session_load, current, admixture, "menu-cmd-hist");
 	}
 
 	if(vinfo & VINFO_REGISTERS)

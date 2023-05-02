@@ -223,7 +223,7 @@ TEST(empty_vifminfo_option_produces_empty_state)
 TEST(histories_are_merged_correctly)
 {
 	cfg.vifm_info = VINFO_CHISTORY | VINFO_SHISTORY | VINFO_PHISTORY
-	              | VINFO_FHISTORY | VINFO_EHISTORY;
+	              | VINFO_FHISTORY | VINFO_EHISTORY | VINFO_MCHISTORY;
 
 	hist_add(&curr_stats.cmd_hist, "command0", 0);
 	hist_add(&curr_stats.cmd_hist, "command2", 2);
@@ -235,6 +235,8 @@ TEST(histories_are_merged_correctly)
 	hist_add(&curr_stats.filter_hist, "lfilter2", 2);
 	hist_add(&curr_stats.exprreg_hist, "exprreg0", 0);
 	hist_add(&curr_stats.exprreg_hist, "exprreg2", 2);
+	hist_add(&curr_stats.menucmd_hist, "menucmd0", 0);
+	hist_add(&curr_stats.menucmd_hist, "menucmd2", 2);
 
 	/* First time, no merging is necessary. */
 	write_info_file();
@@ -244,6 +246,7 @@ TEST(histories_are_merged_correctly)
 	hist_add(&curr_stats.prompt_hist, "prompt1", 1);
 	hist_add(&curr_stats.filter_hist, "lfilter1", 1);
 	hist_add(&curr_stats.exprreg_hist, "exprreg1", 1);
+	hist_add(&curr_stats.menucmd_hist, "menucmd1", 1);
 
 	/* Second time, touched vifminfo.json file, merging is necessary. */
 	reset_timestamp(SANDBOX_PATH "/vifminfo.json");
@@ -260,6 +263,7 @@ TEST(histories_are_merged_correctly)
 	assert_int_equal(3, curr_stats.prompt_hist.size);
 	assert_int_equal(3, curr_stats.filter_hist.size);
 	assert_int_equal(3, curr_stats.exprreg_hist.size);
+	assert_int_equal(3, curr_stats.menucmd_hist.size);
 	assert_string_equal("command2", curr_stats.cmd_hist.items[0].text);
 	assert_int_equal(2, curr_stats.cmd_hist.items[0].timestamp);
 	assert_string_equal("command1", curr_stats.cmd_hist.items[1].text);
@@ -290,6 +294,12 @@ TEST(histories_are_merged_correctly)
 	assert_int_equal(1, curr_stats.exprreg_hist.items[1].timestamp);
 	assert_string_equal("exprreg0", curr_stats.exprreg_hist.items[2].text);
 	assert_int_equal(0, curr_stats.exprreg_hist.items[2].timestamp);
+	assert_string_equal("menucmd2", curr_stats.menucmd_hist.items[0].text);
+	assert_int_equal(2, curr_stats.menucmd_hist.items[0].timestamp);
+	assert_string_equal("menucmd1", curr_stats.menucmd_hist.items[1].text);
+	assert_int_equal(1, curr_stats.menucmd_hist.items[1].timestamp);
+	assert_string_equal("menucmd0", curr_stats.menucmd_hist.items[2].text);
+	assert_int_equal(0, curr_stats.menucmd_hist.items[2].timestamp);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }

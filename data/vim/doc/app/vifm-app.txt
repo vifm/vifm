@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Apr 04
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 02
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4567,6 +4567,7 @@ Controls what will be saved in the $VIFM/vifminfo file:
    shistory  - search history (/ and ? commands)
    phistory  - prompt history
    fhistory  - history of local filter (see |vifm-=|)
+   mchistory - command line history of menus
    dirstack  - directory stack overwrites previous stack, unless stack of
                current instance is empty
    registers - registers content
