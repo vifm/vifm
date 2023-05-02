@@ -1,5 +1,7 @@
 0.13 to current
 
+	Added command-line history to menu mode.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

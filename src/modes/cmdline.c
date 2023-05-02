@@ -1792,7 +1792,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 	{
 		hists_search_save(input);
 	}
-	else if(input_stat.sub_mode == CLS_COMMAND)
+	else if(ONE_OF(input_stat.sub_mode, CLS_COMMAND, CLS_MENU_COMMAND))
 	{
 		/* XXX: skipping should probably work for all histories. */
 		const int mapped_input = input_stat.enter_mapping_state != 0 &&
@@ -1800,7 +1800,14 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 		const int ignore_input = mapped_input || keys_info->recursive;
 		if(!ignore_input)
 		{
-			hists_commands_save(input);
+			if(input_stat.sub_mode == CLS_COMMAND)
+			{
+				hists_commands_save(input);
+			}
+			else
+			{
+				hists_menucmd_save(input);
+			}
 		}
 	}
 	else if(input_stat.sub_mode == CLS_PROMPT)
@@ -2911,6 +2918,10 @@ pick_hist(void)
 	if(input_stat.sub_mode == CLS_COMMAND)
 	{
 		return &curr_stats.cmd_hist;
+	}
+	if(input_stat.sub_mode == CLS_MENU_COMMAND)
+	{
+		return &curr_stats.menucmd_hist;
 	}
 	if(input_stat.search_mode)
 	{
