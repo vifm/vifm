@@ -85,7 +85,7 @@ show_filterhistory_menu(view_t *view)
 }
 
 int
-show_exprreghistory_menu(struct view_t *view)
+show_exprreghistory_menu(view_t *view)
 {
 	return show_history(view, EXPRREGHISTORY, &curr_stats.exprreg_hist,
 			"Expression Register History");
