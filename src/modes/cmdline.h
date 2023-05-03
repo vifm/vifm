@@ -61,7 +61,8 @@ void modnav_init(void);
 void modcline_enter(CmdLineSubmode sub_mode, const char initial[]);
 
 /* Version of modcline_enter() specific to CLS_MENU_* submodes. */
-void modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m);
+void modcline_in_menu(CmdLineSubmode sub_mode, const char initial[],
+		struct menu_data_t *m);
 
 /* Enters command-line editing mode with prompt submode activated.  initial is
  * the start value, cb is callback called with the result on success and

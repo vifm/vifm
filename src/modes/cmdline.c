@@ -620,13 +620,14 @@ modcline_enter(CmdLineSubmode sub_mode, const char initial[])
 }
 
 void
-modcline_in_menu(CmdLineSubmode sub_mode, struct menu_data_t *m)
+modcline_in_menu(CmdLineSubmode sub_mode, const char initial[],
+		struct menu_data_t *m)
 {
 	assert((sub_mode == CLS_MENU_COMMAND || sub_mode == CLS_MENU_FSEARCH ||
 			sub_mode == CLS_MENU_BSEARCH) &&
 			"modcline_in_menu() is only for CLS_MENU_* submodes.");
 
-	if(enter_submode(sub_mode, /*initial=*/"", /*reenter=*/0) == 0)
+	if(enter_submode(sub_mode, initial, /*reenter=*/0) == 0)
 	{
 		input_stat.menu = m;
 	}
