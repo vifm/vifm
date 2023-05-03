@@ -5,6 +5,8 @@
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It
 	manages storing of command-line history of menus.
 
+	Added ":history mcmd" menu for displaying command-line history of menus.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

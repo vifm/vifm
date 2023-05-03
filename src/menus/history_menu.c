@@ -35,6 +35,7 @@
 typedef enum
 {
 	CMDHISTORY,     /* Command history. */
+	MENUCMDHISTORY, /* Command history of menus. */
 	FSEARCHHISTORY, /* Forward search history. */
 	BSEARCHHISTORY, /* Backward search history. */
 	PROMPTHISTORY,  /* Prompt input history. */
@@ -54,6 +55,13 @@ show_cmdhistory_menu(view_t *view)
 {
 	return show_history(view, CMDHISTORY, &curr_stats.cmd_hist,
 			"Command Line History");
+}
+
+int
+show_menucmdhistory_menu(view_t *view)
+{
+	return show_history(view, MENUCMDHISTORY, &curr_stats.menucmd_hist,
+			"Menu Command History");
 }
 
 int
@@ -120,6 +128,11 @@ execute_history_cb(view_t *view, menu_data_t *m)
 
 	switch((HistoryType)m->extra_data)
 	{
+		case MENUCMDHISTORY:
+			hists_menucmd_save(line);
+			curr_stats.save_msg = cmds_dispatch(line, view, CIT_MENU_COMMAND);
+			return 1;
+
 		case CMDHISTORY:
 			hists_commands_save(line);
 			cmds_dispatch(line, view, CIT_COMMAND);
@@ -138,6 +151,7 @@ execute_history_cb(view_t *view, menu_data_t *m)
 			hists_filter_save(line);
 			cmds_dispatch1(line, view, CIT_FILTER_PATTERN);
 			break;
+
 		case EXPRREGHISTORY:
 		case PROMPTHISTORY:
 			/* Can't replay prompt input. */
@@ -158,6 +172,10 @@ history_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		CmdLineSubmode submode = CLS_COMMAND;
 		switch((HistoryType)m->extra_data)
 		{
+			case MENUCMDHISTORY:
+				submode = CLS_MENU_COMMAND;
+				break;
+
 			case CMDHISTORY:
 				submode = CLS_COMMAND;
 				break;

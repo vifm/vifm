@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 02
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 03
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2154,6 +2154,7 @@ important in certain cases.
       i[nput]   or @  show prompt history (e.g. on one file renaming).
       fi[lter]  or =  show local filter history (see |vifm-=|).
       e[xprreg]       show expression register history (see |vifm-c_Ctrl-R_=|).
+      mc[md]          show command-line history of menus.
     See |vifm-menus-and-dialogs| for controls.
 
 :histprev                                      *vifm-:histprev*
@@ -5434,6 +5435,11 @@ filter.
 
 c leaves menu preserving file selection and inserts line into command-line of
 appropriate kind.
+
+Menus' command-line history menu~
+
+Enter - execute command without leaving the menu.
+c     - insert line into command-line for editing.
 
 Volumes menu~
 

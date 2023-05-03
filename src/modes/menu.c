@@ -1055,11 +1055,15 @@ modmenu_morph_into_cline(CmdLineSubmode submode, const char input[],
 		return;
 	}
 
-	if(submode != CLS_MENU_COMMAND)
+	if(submode == CLS_MENU_COMMAND)
+	{
+		modcline_in_menu(submode, input_copy, menu);
+	}
+	else
 	{
 		leave_menu_mode(0);
+		modcline_enter(submode, input_copy);
 	}
-	modcline_enter(submode, input_copy);
 
 	free(input_copy);
 }

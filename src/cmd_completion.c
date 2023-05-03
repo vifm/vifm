@@ -662,6 +662,7 @@ complete_history(const char str[])
 		{ "filter",  "local filter patterns" },
 
 		{ "exprreg", "expression register input" },
+		{ "mcmd",    "command-line commands of menus" },
 	};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }

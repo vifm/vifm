@@ -25,6 +25,8 @@ struct view_t;
 /* Returns non-zero if status bar message should be saved. */
 int show_cmdhistory_menu(struct view_t *view);
 /* Returns non-zero if status bar message should be saved. */
+int show_menucmdhistory_menu(struct view_t *view);
+/* Returns non-zero if status bar message should be saved. */
 int show_fsearchhistory_menu(struct view_t *view);
 /* Returns non-zero if status bar message should be saved. */
 int show_bsearchhistory_menu(struct view_t *view);

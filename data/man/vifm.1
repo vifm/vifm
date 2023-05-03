@@ -1,4 +1,4 @@
-.TH VIFM 1 "02 May 2023" "vifm 0.13"
+.TH VIFM 1 "03 May 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2473,6 +2473,8 @@ mode command).
 .br
   e[xprreg]      show expression register history (see description of Ctrl+R =
 in command-line mode).
+.br
+  mc[md]         show command-line history of menus.
 .br
 See "Menus and dialogs" section for controls.
 .TP
@@ -6437,6 +6439,12 @@ filter.
 
 c leaves menu preserving file selection and inserts line into command-line of
 appropriate kind.
+
+.B Menus' command-line history menu
+
+Enter - execute command without leaving the menu.
+
+c     - insert line into command-line for editing.
 
 .B Volumes menu
 
