@@ -16,6 +16,7 @@
 /* This should be a macro to see what test have failed. */
 #define VALIDATE_HISTORY(i, str) \
 	assert_string_equal(str, curr_stats.cmd_hist.items[i].text); \
+	assert_string_equal(str, curr_stats.menucmd_hist.items[i].text); \
 	assert_string_equal(str, curr_stats.search_hist.items[i].text); \
 	assert_string_equal(str, curr_stats.prompt_hist.items[i].text); \
 	assert_string_equal(str, curr_stats.filter_hist.items[i].text); \
@@ -83,6 +84,7 @@ static void
 save_to_history(const char str[])
 {
 	hists_commands_save(str);
+	hists_menucmd_save(str);
 	hists_search_save(str);
 	hists_prompt_save(str);
 	hists_filter_save(str);

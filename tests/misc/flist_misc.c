@@ -5,6 +5,7 @@
 #include <limits.h> /* INT_MAX */
 #include <string.h> /* memset() strcpy() */
 #include <time.h> /* time() */
+#include <unistd.h> /* usleep() */
 
 #include <test-utils.h>
 
@@ -23,6 +24,22 @@
 #include "../../src/flist_pos.h"
 #include "../../src/fops_misc.h"
 #include "../../src/status.h"
+
+#define WAIT_FOR(expr, duration_ms) \
+	do \
+	{ \
+		int duration; \
+		for(duration = 0; duration < duration_ms; ++duration) \
+		{ \
+			int predicate = (expr);\
+			if(predicate) \
+			{ \
+				break; \
+			} \
+			usleep(1000/*us*/); \
+		} \
+	} \
+	while(0)
 
 static char cwd[PATH_MAX + 1];
 
@@ -344,20 +361,27 @@ TEST(fentry_get_recalculates_size)
 	assert_ulong_equal(0, fentry_get_size(&lwin, &dir));
 	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
 
+	/* WAIT_FOR() is used to wait for file system changes to be visible, they seem
+	 * to be postponed on Windows (at least in Wine, but Windows can do that
+	 * too). */
+
 	copy_file(TEST_DATA_PATH "/various-sizes/block-size-file",
 			SANDBOX_PATH "/dir/file");
-	dir.mtime += 1000;
+	WAIT_FOR((dir.mtime += 1000, fentry_get_size(&lwin, &dir) == 8192),
+			10/*ms*/);
 	assert_ulong_equal(8192, fentry_get_size(&lwin, &dir));
 	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
 
 	copy_file(TEST_DATA_PATH "/various-sizes/block-size-file",
 			SANDBOX_PATH "/dir/subdir/file");
-	subdir.mtime += 1000;
+	WAIT_FOR((subdir.mtime += 1000, fentry_get_size(&lwin, &subdir) == 8192),
+			10/*ms*/);
 	assert_ulong_equal(8192, fentry_get_size(&lwin, &subdir));
 	assert_ulong_equal(16384, fentry_get_size(&lwin, &dir));
 
 	assert_success(remove(SANDBOX_PATH "/dir/subdir/file"));
-	subdir.mtime += 1000;
+	WAIT_FOR((subdir.mtime += 1000, fentry_get_size(&lwin, &subdir) == 0),
+			10/*ms*/);
 	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
 	assert_ulong_equal(8192, fentry_get_size(&lwin, &dir));
 

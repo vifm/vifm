@@ -121,6 +121,27 @@ TEST(menu_is_built_from_a_command_with_input, IF(have_cat))
 	undo_teardown();
 }
 
+TEST(menu_cmds_have_a_history)
+{
+	histories_init(5);
+	undo_setup();
+
+	assert_success(cmds_dispatch1("!echo only-line %m", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec_timed_out(L":bad1" WK_CR);
+	(void)vle_keys_exec_timed_out(L":bad2" WK_CR);
+
+	(void)vle_keys_exec_timed_out(L":");
+	line_stats_t *stats = get_line_stats();
+	(void)vle_keys_exec_timed_out(WK_C_p);
+	assert_wstring_equal(L"bad2", stats->line);
+	(void)vle_keys_exec_timed_out(WK_C_p);
+	assert_wstring_equal(L"bad1", stats->line);
+	(void)vle_keys_exec(WK_ESC);
+
+	(void)vle_keys_exec(WK_ESC);
+	undo_teardown();
+}
+
 TEST(menu_is_turned_into_cv)
 {
 	undo_setup();

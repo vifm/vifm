@@ -22,8 +22,10 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../engine/mode.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
+#include "../modes/modes.h"
 #include "../modes/normal.h"
 #include "../ui/ui.h"
 #include "../utils/hist.h"
@@ -35,6 +37,7 @@
 typedef enum
 {
 	CMDHISTORY,     /* Command history. */
+	MENUCMDHISTORY, /* Command history of menus. */
 	FSEARCHHISTORY, /* Forward search history. */
 	BSEARCHHISTORY, /* Backward search history. */
 	PROMPTHISTORY,  /* Prompt input history. */
@@ -54,6 +57,13 @@ show_cmdhistory_menu(view_t *view)
 {
 	return show_history(view, CMDHISTORY, &curr_stats.cmd_hist,
 			"Command Line History");
+}
+
+int
+show_menucmdhistory_menu(view_t *view)
+{
+	return show_history(view, MENUCMDHISTORY, &curr_stats.menucmd_hist,
+			"Menu Command History");
 }
 
 int
@@ -85,7 +95,7 @@ show_filterhistory_menu(view_t *view)
 }
 
 int
-show_exprreghistory_menu(struct view_t *view)
+show_exprreghistory_menu(view_t *view)
 {
 	return show_history(view, EXPRREGHISTORY, &curr_stats.exprreg_hist,
 			"Expression Register History");
@@ -120,24 +130,36 @@ execute_history_cb(view_t *view, menu_data_t *m)
 
 	switch((HistoryType)m->extra_data)
 	{
+		case MENUCMDHISTORY:
+			hists_menucmd_save(line);
+			/* This callback is called with mode set to "normal". */
+			vle_mode_set(MENU_MODE, VMT_PRIMARY);
+			curr_stats.save_msg = (cmds_dispatch(line, view, CIT_MENU_COMMAND) != 0);
+			/* Request staying in the menu only if the command hasn't left it. */
+			return vle_mode_is(MENU_MODE);
+
 		case CMDHISTORY:
 			hists_commands_save(line);
-			cmds_dispatch(line, view, CIT_COMMAND);
+			curr_stats.save_msg = (cmds_dispatch(line, view, CIT_COMMAND) != 0);
 			break;
 		case FSEARCHHISTORY:
 			hists_search_save(line);
 			modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/0);
-			cmds_dispatch1(line, view, CIT_FSEARCH_PATTERN);
+			curr_stats.save_msg =
+				(cmds_dispatch1(line, view, CIT_FSEARCH_PATTERN) != 0);
 			break;
 		case BSEARCHHISTORY:
 			hists_search_save(line);
 			modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/1);
-			cmds_dispatch1(line, view, CIT_BSEARCH_PATTERN);
+			curr_stats.save_msg =
+				(cmds_dispatch1(line, view, CIT_BSEARCH_PATTERN) != 0);
 			break;
 		case FILTERHISTORY:
 			hists_filter_save(line);
-			cmds_dispatch1(line, view, CIT_FILTER_PATTERN);
+			curr_stats.save_msg =
+				(cmds_dispatch1(line, view, CIT_FILTER_PATTERN) != 0);
 			break;
+
 		case EXPRREGHISTORY:
 		case PROMPTHISTORY:
 			/* Can't replay prompt input. */
@@ -158,6 +180,10 @@ history_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		CmdLineSubmode submode = CLS_COMMAND;
 		switch((HistoryType)m->extra_data)
 		{
+			case MENUCMDHISTORY:
+				submode = CLS_MENU_COMMAND;
+				break;
+
 			case CMDHISTORY:
 				submode = CLS_COMMAND;
 				break;

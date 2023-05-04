@@ -284,6 +284,7 @@ vifm_SOURCES = \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
 	utils/matchers.c utils/matchers.h \
+	utils/mem.c utils/mem.h \
 	utils/parson.c utils/parson.h \
 	utils/path.c utils/path.h \
 	utils/regexp.c utils/regexp.h \

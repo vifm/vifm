@@ -256,6 +256,8 @@ history_by_type(CmdInputType type)
 	{
 		case CIT_COMMAND:
 			return &curr_stats.cmd_hist;
+		case CIT_MENU_COMMAND:
+			return &curr_stats.menucmd_hist;
 		case CIT_PROMPT_INPUT:
 			return &curr_stats.prompt_hist;
 		case CIT_EXPRREG_INPUT:
@@ -263,9 +265,17 @@ history_by_type(CmdInputType type)
 		case CIT_FILTER_PATTERN:
 			return &curr_stats.filter_hist;
 
-		default:
+		case CIT_FSEARCH_PATTERN:
+		case CIT_BSEARCH_PATTERN:
+		case CIT_VFSEARCH_PATTERN:
+		case CIT_VBSEARCH_PATTERN:
+		case CIT_VWFSEARCH_PATTERN:
+		case CIT_VWBSEARCH_PATTERN:
 			return &curr_stats.search_hist;
 	}
+
+	/* Should never happen. */
+	return NULL;
 }
 
 /* Reads the first line of the file specified by the path.  Returns NULL on

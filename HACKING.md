@@ -237,6 +237,7 @@ of changes of each kind.
     |  |  |-- log.c - primitive logging
     |  |  |-- matcher.c - file path/name matcher (glob/regexp/mime-type)
     |  |  |-- matchers.c - list of matchers (which are ANDed together)
+    |  |  |-- mem.c - simple memory/array manipulation utilities
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- regexp.c - regexp related
     |  |  |-- selector_nix.c - waiting for file descriptors to become readable

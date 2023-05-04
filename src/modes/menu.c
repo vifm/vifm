@@ -186,7 +186,7 @@ static const cmd_add_t commands[] = {
 	  .flags = HAS_RANGE,
 	  .handler = &goto_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "exit",              .abbr = "exi",   .id = -1,
-	  .descr = "exit the application",
+	  .descr = "exit the menu",
 	  .flags = 0,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "nohlsearch",        .abbr = "noh",   .id = -1,
@@ -194,7 +194,7 @@ static const cmd_add_t commands[] = {
 	  .flags = 0,
 	  .handler = &nohlsearch_cmd,  .min_args = 0,   .max_args = 0, },
 	{ .name = "quit",              .abbr = "q",     .id = -1,
-	  .descr = "exit the application",
+	  .descr = "exit the menu",
 	  .flags = 0,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "write",             .abbr = "w",     .id = COM_MENU_WRITE,
@@ -202,7 +202,7 @@ static const cmd_add_t commands[] = {
 	  .flags = HAS_QUOTED_ARGS,
 	  .handler = &write_cmd,       .min_args = 1,   .max_args = 1, },
 	{ .name = "xit",               .abbr = "x",     .id = -1,
-	  .descr = "exit the application",
+	  .descr = "exit the menu",
 	  .flags = 0,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 };
@@ -567,7 +567,7 @@ cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 	last_search_backward = 0;
 	menus_search_reset(menu->state, last_search_backward,
 			def_count(key_info.count));
-	modcline_in_menu(CLS_MENU_FSEARCH, menu);
+	modcline_in_menu(CLS_MENU_FSEARCH, /*initial=*/"", menu);
 }
 
 /* Jump to percent of list. */
@@ -590,7 +590,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	cmds_conf.begin = 1;
 	cmds_conf.current = menu->pos;
 	cmds_conf.end = menu->len;
-	modcline_in_menu(CLS_MENU_COMMAND, menu);
+	modcline_in_menu(CLS_MENU_COMMAND, /*initial=*/"", menu);
 }
 
 static void
@@ -599,7 +599,7 @@ cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 	last_search_backward = 1;
 	menus_search_reset(menu->state, last_search_backward,
 			def_count(key_info.count));
-	modcline_in_menu(CLS_MENU_BSEARCH, menu);
+	modcline_in_menu(CLS_MENU_BSEARCH, /*initial=*/"", menu);
 }
 
 /* Populates very custom (unsorted) view with list of files. */
@@ -1055,8 +1055,15 @@ modmenu_morph_into_cline(CmdLineSubmode submode, const char input[],
 		return;
 	}
 
-	leave_menu_mode(0);
-	modcline_enter(submode, input_copy);
+	if(submode == CLS_MENU_COMMAND)
+	{
+		modcline_in_menu(submode, input_copy, menu);
+	}
+	else
+	{
+		leave_menu_mode(0);
+		modcline_enter(submode, input_copy);
+	}
 
 	free(input_copy);
 }

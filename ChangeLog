@@ -1,5 +1,12 @@
 0.13 to current
 
+	Added command-line history to menu mode.
+
+	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It
+	manages storing of command-line history of menus.
+
+	Added ":history mcmd" menu for displaying command-line history of menus.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
@@ -11,12 +18,20 @@
 
 	Allowed wild menu popup to take up up to 40% of the screen.
 
+	Made documentation of 'vifminfo' more readable.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
 
 	Fixed graphics of view mode not being hidden on activating menu, more or
 	file info modes.
+
+	Fixed descriptions of exit :commands in menus (visible during popup
+	completion).
+
+	Fixed statusbar output not being preserved on running commands from
+	:history menus.
 
 0.13-beta to 0.13 (2023-04-04)
 

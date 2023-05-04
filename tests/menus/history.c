@@ -3,6 +3,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
@@ -88,6 +89,34 @@ TEST(lfilter_hist_does_not_split_at_bar)
 	assert_string_equal("a|b", lwin.local_filter.filter.raw);
 }
 
+TEST(menu_commands_hist_runs_on_enter)
+{
+	opt_handlers_setup();
+	assert_success(os_chdir(SANDBOX_PATH));
+
+	hists_menucmd_save("write log");
+	assert_success(show_menucmdhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+	assert_true(vle_mode_is(MENU_MODE));
+
+	remove_file("log");
+	opt_handlers_teardown();
+}
+
+TEST(menu_commands_hist_runs_quit_command)
+{
+	opt_handlers_setup();
+
+	hists_menucmd_save("quit");
+	assert_success(show_menucmdhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+	assert_false(vle_mode_is(MENU_MODE));
+
+	opt_handlers_teardown();
+}
+
 TEST(prompt_hist_does_nothing_on_enter)
 {
 	hists_prompt_save("abc");
@@ -113,6 +142,21 @@ TEST(commands_hist_allows_editing)
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_false(stats->search_mode);
 	assert_wstring_equal(L"echo 'a'", stats->line);
+	(void)vle_keys_exec_timed_out(WK_ESC);
+}
+
+TEST(menu_commands_hist_allows_editing)
+{
+	hists_menucmd_save("write log");
+	assert_success(show_menucmdhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_c);
+	assert_true(vle_mode_is(CMDLINE_MODE));
+	assert_int_equal(MENU_MODE, vle_mode_get_primary());
+	assert_wstring_equal(L"write log", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_ESC);
+	assert_true(vle_mode_is(MENU_MODE));
 	(void)vle_keys_exec_timed_out(WK_ESC);
 }
 
@@ -236,6 +280,47 @@ TEST(editing_search_performs_interactive_search)
 
 	opt_handlers_teardown();
 	cfg.inc_search = 0;
+}
+
+TEST(status_bar_messages_are_preserved)
+{
+	opt_handlers_setup();
+
+	hists_commands_save("echo 'a'");
+	assert_success(show_cmdhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+
+	hists_search_save("*");
+	/* Forward. */
+	assert_success(show_fsearchhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_starts_with("Regexp (*) error: ", ui_sb_last());
+	/* Backward. */
+	assert_success(show_bsearchhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_starts_with("Regexp (*) error: ", ui_sb_last());
+
+	hists_menucmd_save("bad");
+	assert_success(show_menucmdhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_equal("Invalid command name", ui_sb_last());
+
+	hists_filter_save("*");
+	assert_success(show_filterhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	/* Because local filter doesn't print error on bad regular expression. */
+	assert_int_equal(0, curr_stats.save_msg);
+
+	opt_handlers_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

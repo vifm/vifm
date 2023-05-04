@@ -226,6 +226,7 @@ typedef struct
 
 	int history_size;    /* Number of elements in histories. */
 	hist_t cmd_hist;     /* History of command-line commands. */
+	hist_t menucmd_hist; /* History of command-line commands in menus. */
 	hist_t exprreg_hist; /* History of expression register. */
 	hist_t search_hist;  /* History of search patterns. */
 	hist_t prompt_hist;  /* History of prompt input. */
@@ -334,6 +335,9 @@ void hists_resize(int new_size);
 
 /* Saves command to command history. */
 void hists_commands_save(const char command[]);
+
+/* Saves command to menu command history. */
+void hists_menucmd_save(const char cmd[]);
 
 /* Saves pattern to expression register history. */
 void hists_exprreg_save(const char pattern[]);
