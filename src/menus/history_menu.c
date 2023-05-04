@@ -134,27 +134,30 @@ execute_history_cb(view_t *view, menu_data_t *m)
 			hists_menucmd_save(line);
 			/* This callback is called with mode set to "normal". */
 			vle_mode_set(MENU_MODE, VMT_PRIMARY);
-			curr_stats.save_msg = cmds_dispatch(line, view, CIT_MENU_COMMAND);
+			curr_stats.save_msg = (cmds_dispatch(line, view, CIT_MENU_COMMAND) != 0);
 			/* Request staying in the menu only if the command hasn't left it. */
 			return vle_mode_is(MENU_MODE);
 
 		case CMDHISTORY:
 			hists_commands_save(line);
-			cmds_dispatch(line, view, CIT_COMMAND);
+			curr_stats.save_msg = (cmds_dispatch(line, view, CIT_COMMAND) != 0);
 			break;
 		case FSEARCHHISTORY:
 			hists_search_save(line);
 			modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/0);
-			cmds_dispatch1(line, view, CIT_FSEARCH_PATTERN);
+			curr_stats.save_msg =
+				(cmds_dispatch1(line, view, CIT_FSEARCH_PATTERN) != 0);
 			break;
 		case BSEARCHHISTORY:
 			hists_search_save(line);
 			modnorm_set_search_attrs(/*count=*/1, /*last_search_backward=*/1);
-			cmds_dispatch1(line, view, CIT_BSEARCH_PATTERN);
+			curr_stats.save_msg =
+				(cmds_dispatch1(line, view, CIT_BSEARCH_PATTERN) != 0);
 			break;
 		case FILTERHISTORY:
 			hists_filter_save(line);
-			cmds_dispatch1(line, view, CIT_FILTER_PATTERN);
+			curr_stats.save_msg =
+				(cmds_dispatch1(line, view, CIT_FILTER_PATTERN) != 0);
 			break;
 
 		case EXPRREGHISTORY:

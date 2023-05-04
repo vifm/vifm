@@ -282,5 +282,46 @@ TEST(editing_search_performs_interactive_search)
 	cfg.inc_search = 0;
 }
 
+TEST(status_bar_messages_are_preserved)
+{
+	opt_handlers_setup();
+
+	hists_commands_save("echo 'a'");
+	assert_success(show_cmdhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+
+	hists_search_save("*");
+	/* Forward. */
+	assert_success(show_fsearchhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_starts_with("Regexp (*) error: ", ui_sb_last());
+	/* Backward. */
+	assert_success(show_bsearchhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_starts_with("Regexp (*) error: ", ui_sb_last());
+
+	hists_menucmd_save("bad");
+	assert_success(show_menucmdhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	assert_int_equal(1, curr_stats.save_msg);
+	assert_string_equal("Invalid command name", ui_sb_last());
+
+	hists_filter_save("*");
+	assert_success(show_filterhistory_menu(&lwin));
+	curr_stats.save_msg = 0;
+	(void)vle_keys_exec(WK_CR);
+	/* Because local filter doesn't print error on bad regular expression. */
+	assert_int_equal(0, curr_stats.save_msg);
+
+	opt_handlers_teardown();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
