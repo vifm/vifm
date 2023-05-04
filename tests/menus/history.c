@@ -98,8 +98,22 @@ TEST(menu_commands_hist_runs_on_enter)
 	assert_success(show_menucmdhistory_menu(&lwin));
 
 	(void)vle_keys_exec(WK_CR);
+	assert_true(vle_mode_is(MENU_MODE));
 
 	remove_file("log");
+	opt_handlers_teardown();
+}
+
+TEST(menu_commands_hist_runs_quit_command)
+{
+	opt_handlers_setup();
+
+	hists_menucmd_save("quit");
+	assert_success(show_menucmdhistory_menu(&lwin));
+
+	(void)vle_keys_exec(WK_CR);
+	assert_false(vle_mode_is(MENU_MODE));
+
 	opt_handlers_teardown();
 }
 

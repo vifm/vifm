@@ -22,8 +22,10 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../engine/mode.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
+#include "../modes/modes.h"
 #include "../modes/normal.h"
 #include "../ui/ui.h"
 #include "../utils/hist.h"
@@ -130,8 +132,11 @@ execute_history_cb(view_t *view, menu_data_t *m)
 	{
 		case MENUCMDHISTORY:
 			hists_menucmd_save(line);
+			/* This callback is called with mode set to "normal". */
+			vle_mode_set(MENU_MODE, VMT_PRIMARY);
 			curr_stats.save_msg = cmds_dispatch(line, view, CIT_MENU_COMMAND);
-			return 1;
+			/* Request staying in the menu only if the command hasn't left it. */
+			return vle_mode_is(MENU_MODE);
 
 		case CMDHISTORY:
 			hists_commands_save(line);
