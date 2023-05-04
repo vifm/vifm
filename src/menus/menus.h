@@ -22,6 +22,7 @@
 
 #include <stddef.h> /* wchar_t */
 
+#include "../utils/test_helpers.h"
 #include "../macros.h"
 
 struct view_t;
@@ -185,6 +186,10 @@ char * menus_get_targets(struct view_t *view);
  * next. */
 KHandlerResponse menus_def_khandler(struct view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
+
+TSTATIC_DEFS(
+	void menus_drop_stash(void);
+)
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

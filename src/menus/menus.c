@@ -52,6 +52,7 @@
 #include "../utils/regexp.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../background.h"
@@ -88,6 +89,7 @@ static int search_menu_forwards(menu_state_t *m, int start_pos);
 static int search_menu_backwards(menu_state_t *m, int start_pos);
 static int navigate_to_match(menu_state_t *m, int pos);
 static int get_match_index(const menu_state_t *m);
+TSTATIC void menus_drop_stash(void);
 
 struct menu_state_t
 {
@@ -1229,6 +1231,13 @@ menus_replace_data(menu_data_t *m)
 	}
 	menu_state.d = m;
 	m->state = &menu_state;
+}
+
+/* Clears stashed navigation menus. */
+TSTATIC void
+menus_drop_stash(void)
+{
+	deinit_menu_data(&menu_data_stash);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

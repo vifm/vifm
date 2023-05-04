@@ -11,6 +11,7 @@
 #include "../../src/modes/menu.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -152,6 +153,35 @@ TEST(menu_is_turned_into_cv)
 	(void)vle_keys_exec(WK_b);
 	assert_true(flist_custom_active(&lwin));
 	assert_string_equal("!echo existing-files/a%M", lwin.custom.title);
+
+	undo_teardown();
+}
+
+TEST(can_not_unstash_a_menu_when_there_is_none)
+{
+	menus_drop_stash();
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_string_equal("No saved menu to display", ui_sb_last());
+}
+
+TEST(can_unstash_a_menu)
+{
+	menus_drop_stash();
+	undo_setup();
+
+	assert_success(cmds_dispatch1("!echo only-line %M", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1, menu_get_current()->len);
+	assert_string_equal("only-line", menu_get_current()->items[0]);
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1, menu_get_current()->len);
+	assert_string_equal("only-line", menu_get_current()->items[0]);
+	(void)vle_keys_exec(WK_ESC);
 
 	undo_teardown();
 }
