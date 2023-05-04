@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 03
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 05
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5262,6 +5262,13 @@ Commands~
 
 :range                                         *vifm-m_:range*
     navigate to a menu line.
+
+:col[der]                                      *vifm-m_:colder* *vifm-m_:col*
+    load an older navigation menu if there is one.  Works only after
+    |vifm-:copen|.
+:cnew[er]                                      *vifm-m_:cnewer* *vifm-m_:cnew*
+    load a newer navigation menu if there is one.  Works only after
+    |vifm-:copen|.
 
 :exi[t][!]                                     *vifm-m_:exit* *vifm-m_:exi*
 :q[uit][!]                                     *vifm-m_:quit* *vifm-m_:q*

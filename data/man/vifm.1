@@ -1,4 +1,4 @@
-.TH VIFM 1 "03 May 2023" "vifm 0.13"
+.TH VIFM 1 "05 May 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6278,6 +6278,12 @@ one is used on paths like "dir" and the second one for "dir/".
 
 .BI :range
 navigate to a menu line.
+.TP
+.BI :col[der]
+load an older navigation menu if there is one.  Works only after :copen.
+.TP
+.BI :cnew[er]
+load a newer navigation menu if there is one.  Works only after :copen.
 .TP
 .BI ":exi[t][!] :q[uit][!] :x[it][!]"
 leave menu mode.

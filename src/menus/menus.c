@@ -48,6 +48,7 @@
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../utils/mem.h"
 #include "../utils/path.h"
 #include "../utils/regexp.h"
 #include "../utils/str.h"
@@ -81,6 +82,7 @@ static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static void init_menu_state(menu_state_t *ms, view_t *view);
 static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
+static void unstash_menu_at(menu_state_t *m, int index);
 static const char * get_relative_path_base(const menu_data_t *m,
 		const view_t *view);
 static int menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view);
@@ -112,8 +114,13 @@ struct menu_state_t
 }
 menu_state;
 
-/* Temporary storage for data of the last stashable menu. */
-static menu_data_t menu_data_stash;
+/* Storage for data of stashable menus in chronological order (newest to
+ * oldest). */
+static menu_data_t menu_data_stash[10];
+/* Index of the last viewed stashed menu. */
+static int menu_stash_index;
+/* Number of stashed menus. */
+static int menu_stash_depth;
 
 void
 menus_remove_current(menu_state_t *ms)
@@ -599,12 +606,25 @@ normalize_top(menu_state_t *m)
 static void
 draw_menu_frame(const menu_state_t *m)
 {
+	char *prefix;
+	if(menus_showing_stash(m))
+	{
+		prefix = format_str("[%d/%d] ", menu_stash_depth - menu_stash_index,
+				menu_stash_depth);
+	}
+	else
+	{
+		prefix = strdup("");
+	}
+
 	const size_t title_len = getmaxx(menu_win) - 2*4;
 	const char *const suffix = menu_and_view_are_in_sync(m->d, m->view)
 	                         ? ""
 	                         : replace_home_part(m->d->cwd);
 	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
-	char *const title = format_str("%s%s%s", m->d->title, at, suffix);
+	char *const title = format_str("%s%s%s%s", prefix, m->d->title, at, suffix);
+	free(prefix);
+
 	char *const ellipsed = right_ellipsis(title, title_len, curr_stats.ellipsis);
 	free(title);
 
@@ -739,12 +759,49 @@ can_stash_menu(const menu_data_t *m)
 static void
 stash_menu(menu_data_t *m)
 {
-	/* Release previously stashed menu, if any. */
-	deinit_menu_data(&menu_data_stash);
+	if(menus_showing_stash(m->state))
+	{
+		/* Re-use the same stash and do not drop newer menus until another one is
+		 * added. */
+	}
+	else if(menu_stash_index > 0)
+	{
+		/* Release previously stashed menus from the head of the stack, if any. */
+		int i;
+		for(i = 0; i < menu_stash_index; ++i)
+		{
+			deinit_menu_data(&menu_data_stash[i]);
+		}
 
-	menu_data_stash = *m;
+		/* Drop the head. */
+		mem_shl(menu_data_stash, ARRAY_LEN(menu_data_stash),
+				sizeof(menu_data_stash[0]), /*offset=*/(menu_stash_index - 1));
+		menu_stash_depth -= menu_stash_index - 1;
+		menu_stash_index = 0;
+	}
+	else
+	{
+		if(++menu_stash_depth > (int)ARRAY_LEN(menu_data_stash))
+		{
+			deinit_menu_data(&menu_data_stash[ARRAY_LEN(menu_data_stash) - 1]);
+			menu_stash_depth = ARRAY_LEN(menu_data_stash);
+		}
+		mem_shr(menu_data_stash, ARRAY_LEN(menu_data_stash),
+				sizeof(menu_data_stash[0]), /*offset=*/1);
+	}
+
+	/* Latest menu is always the first one. */
+	menu_data_stash[menu_stash_index] = *m;
 	m->initialized = 0;
+
 	reset_menu_state(m->state);
+}
+
+int
+menus_showing_stash(const menu_state_t *m)
+{
+	return menu_stash_index < menu_stash_depth
+	    && !menu_data_stash[menu_stash_index].initialized;
 }
 
 int
@@ -752,18 +809,60 @@ menus_unstash(view_t *view)
 {
 	static menu_data_t menu_data_storage;
 
-	if(!menu_data_stash.initialized)
+	if(menu_stash_depth == 0)
 	{
 		ui_sb_msg("No saved menu to display");
 		return 1;
 	}
 
 	deinit_menu_data(&menu_data_storage);
-	menu_data_storage = menu_data_stash;
-	menu_data_stash.initialized = 0;
+	menu_data_storage = menu_data_stash[menu_stash_index];
+	menu_data_stash[menu_stash_index].initialized = 0;
 	menu_state.d = &menu_data_storage;
 
 	return menus_enter(menu_data_storage.state, view);
+}
+
+int
+menus_unstash_older(menu_state_t *m)
+{
+	if(menu_stash_index >= menu_stash_depth - 1)
+	{
+		return 1;
+	}
+
+	unstash_menu_at(m, menu_stash_index + 1);
+	return 0;
+}
+
+int
+menus_unstash_newer(menu_state_t *m)
+{
+	if(menu_stash_index == 0)
+	{
+		return 1;
+	}
+
+	unstash_menu_at(m, menu_stash_index - 1);
+	return 0;
+}
+
+/* Assuming stashed menu is active, saves current menu back to the stash and
+ * loads a new one specified by its index. */
+static void
+unstash_menu_at(menu_state_t *m, int index)
+{
+	static menu_data_t menu_data_storage;
+
+	menu_data_stash[menu_stash_index] = *m->d;
+	m->d->initialized = 0;
+	menu_stash_index = index;
+
+	deinit_menu_data(&menu_data_storage);
+	menu_data_storage = menu_data_stash[index];
+	menu_data_stash[index].initialized = 0;
+
+	modmenu_reenter(&menu_data_storage);
 }
 
 KHandlerResponse
@@ -1237,7 +1336,14 @@ menus_replace_data(menu_data_t *m)
 TSTATIC void
 menus_drop_stash(void)
 {
-	deinit_menu_data(&menu_data_stash);
+	int i;
+	for(i = 0; i < menu_stash_depth; ++i)
+	{
+		deinit_menu_data(&menu_data_stash[i]);
+	}
+
+	menu_stash_depth = 0;
+	menu_stash_index = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -112,6 +112,8 @@ static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 static int all_lines_visible(const menu_data_t *menu);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
+static int cnewer_cmd(const cmd_info_t *cmd_info);
+static int colder_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static int write_cmd(const cmd_info_t *cmd_info);
@@ -185,6 +187,14 @@ static const cmd_add_t commands[] = {
 	  .descr = "navigate to specific line",
 	  .flags = HAS_RANGE,
 	  .handler = &goto_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "cnewer",            .abbr = "cnew",  .id = -1,
+	  .descr = "load a newer navigation menu",
+	  .flags = 0,
+	  .handler = &cnewer_cmd,      .min_args = 0,   .max_args = 0, },
+	{ .name = "colder",            .abbr = "col",   .id = -1,
+	  .descr = "load an older navigation menu",
+	  .flags = 0,
+	  .handler = &colder_cmd,      .min_args = 0,   .max_args = 0, },
 	{ .name = "exit",              .abbr = "exi",   .id = -1,
 	  .descr = "exit the menu",
 	  .flags = 0,
@@ -989,6 +999,40 @@ goto_cmd(const cmd_info_t *cmd_info)
 		menus_erase_current(menu->state);
 		menus_set_pos(menu->state, cmd_info->end);
 		ui_refresh_win(menu_win);
+	}
+	return 0;
+}
+
+/* Loads a newer navigation menu if there is one. */
+static int
+cnewer_cmd(const cmd_info_t *cmd_info)
+{
+	if(!menus_showing_stash(menu->state))
+	{
+		ui_sb_err("Current menu wasn't opened via :copen");
+		return CMDS_ERR_CUSTOM;
+	}
+	if(menus_unstash_newer(menu->state) != 0)
+	{
+		ui_sb_err("There is no newer menu");
+		return CMDS_ERR_CUSTOM;
+	}
+	return 0;
+}
+
+/* Loads an older navigation menu if there is one. */
+static int
+colder_cmd(const cmd_info_t *cmd_info)
+{
+	if(!menus_showing_stash(menu->state))
+	{
+		ui_sb_err("Current menu wasn't opened via :copen");
+		return CMDS_ERR_CUSTOM;
+	}
+	if(menus_unstash_older(menu->state) != 0)
+	{
+		ui_sb_err("There is no older menu");
+		return CMDS_ERR_CUSTOM;
 	}
 	return 0;
 }

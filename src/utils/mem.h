@@ -24,6 +24,14 @@
 /* Rotates array's elements to the right once: 0 -> 1, ..., (n - 1) -> 0. */
 void mem_ror(void *ptr, size_t count, size_t item_len);
 
+/* Shifts array's elements to the left by n positions (offset):
+ *   0 <- (n), 1 <- (n + 1), ... */
+void mem_shl(void *ptr, size_t count, size_t item_len, int offset);
+
+/* Shifts array's elements to the right by n positions (offset):
+ *   0 -> 1, 1 -> 2, ... */
+void mem_shr(void *ptr, size_t count, size_t item_len, int offset);
+
 #endif /* VIFM__UTILS__MEM_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -7,6 +7,9 @@
 
 	Added ":history mcmd" menu for displaying command-line history of menus.
 
+	Added :col[der] and :cnew[er] commands to menu mode to traverse history of
+	navigation menus.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
