@@ -414,7 +414,7 @@ const char *tags[] = {
 	"vifm-:vmap",
 	"vifm-:vn",
 	"vifm-:vnoremap",
-	"vifm-:volume",
+	"vifm-:volumes",
 	"vifm-:vs",
 	"vifm-:vsplit",
 	"vifm-:vu",

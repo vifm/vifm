@@ -2682,7 +2682,7 @@ yet supported) and might be changed in future releases, or get an alias.
 :vie[w]!
     turn on quick file view if it's off.
 
-                                               *vifm-:volume*
+                                               *vifm-:volumes*
 :volumes                                       {only for MS-Windows}
     display menu with volume list.  Hitting l (or Enter) key opens
     appropriate volume in the current pane.  See |vifm-menus-and-dialogs| for
