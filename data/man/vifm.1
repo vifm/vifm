@@ -1,4 +1,4 @@
-.TH VIFM 1 "06 May 2023" "vifm 0.13"
+.TH VIFM 1 "07 May 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1823,6 +1823,7 @@ options.
 .TP
 .BI ":cope[n]"
 reopens the last visible menu that has navigation to files by default, if any.
+See also "Menus history" section.
 .TP
 .BI "                                         :copy"
 .TP
@@ -6278,11 +6279,17 @@ use cases, the first action is taken for "dir" and the second one for "dir/".
 .BI :range
 navigate to a menu line.
 .TP
+.BI "                                         :colder"
+.TP
 .BI :col[der]
 load an older navigation menu if there is one.  Works only after :copen.
+See also "Menus history" section.
+.TP
+.BI "                                         :cnewer"
 .TP
 .BI :cnew[er]
 load a newer navigation menu if there is one.  Works only after :copen.
+See also "Menus history" section.
 .LP
 .B :exi[t][!]
 .br
@@ -6666,6 +6673,58 @@ close the dialog.
 .LP
 There is also a shortcut per sorting key (drawn on the dialog).
 
+.\" ---------------------------------------------------------------------------
+.SH Menus history
+.\" ---------------------------------------------------------------------------
+Menus are often used to present results of operations (like finding or grepping
+files).  Once closed they can be recreated by repeating a command, but it
+might be inconvenient (require changing directory, finding the command and
+possibly finding position in a menu) and time consuming to re-run the
+operation.  To make referring to older menus possible, vifm stores up to 10
+last such menus and provides means for recalling them using familiar set of
+Vim commands.
+
+As already hinted above, this doesn't apply to every menu because things like
+:version or :commands rely solely on internal data and don't
+need to be saved.  Only menus that are derived from external sources and
+support navigation (like via gf) are remembered.
+
+Re-opening the last viewed menu of relevant type is done by running
+:copen command.  Once opened :colder can be used to view older
+menus and :cnewer to view newer ones.
+
+Closing a menu after moving through the history remembers the position such
+that running :copen again will open the last viewed menu and allow to
+continue exploring history in both directions.
+
+The history always contains menus sorted from oldest to newest.  After opening
+more than 10 menus the oldest one is likely to be forgotten.  It's not
+guaranteed to happen because after viewing an older menu new entry replaces
+all more recent ones.  As an example, assume the history looks like this:
+
+.EX
+ 1. :find 1
+ 2. :find 2
+    ...
+ 8. :find 8 (current element)
+ 9. :find 9
+10. :find 10
+.EE
+
+Running `:find 11` results in:
+
+.EX
+ 1. :find 1
+ 2. :find 2
+    ...
+ 8. :find 8
+ 9. :find 11 (current element)
+10. None
+.EE
+
+.B Related topics
+
+Commands: :copen, :colder (in menus), :cnewer (in menus)
 .\" ---------------------------------------------------------------------------
 .SH Custom views
 .\" ---------------------------------------------------------------------------
