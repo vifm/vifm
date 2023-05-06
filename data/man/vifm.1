@@ -6267,14 +6267,13 @@ Usage example:
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs
 .\" ---------------------------------------------------------------------------
-When navigating to some path from a menu there is a difference in end location
-depending on whether path has trailing slash or not.  Files normally don't
-have trailing slashes so "file/" won't work and one can only navigate to
-a file anyway.  On the other hand with directories there are two options:
-navigate to a directory or inside of it.  To allow both use cases, the first
-one is used on paths like "dir" and the second one for "dir/".
+When navigating to some path from a menu there is a difference in the end
+location depending on whether the path has a trailing slash.  Files normally
+don't have trailing slashes so "file/" won't work.  In case of directories
+there are two options: navigate to a directory or inside of it.  To allow both
+use cases, the first action is taken for "dir" and the second one for "dir/".
 
-.B Commands
+.B Menu commands
 
 .BI :range
 navigate to a menu line.
@@ -6284,264 +6283,388 @@ load an older navigation menu if there is one.  Works only after :copen.
 .TP
 .BI :cnew[er]
 load a newer navigation menu if there is one.  Works only after :copen.
-.TP
-.BI ":exi[t][!] :q[uit][!] :x[it][!]"
-leave menu mode.
+.LP
+.B :exi[t][!]
+.br
+.B :q[uit][!]
+.br
+.B :x[it][!]
+.RS
+leave the menu mode.
+.RE
 .TP
 .BI :noh[lsearch]
 reset search match highlighting.
 .TP
-.BI ":w[rite] {dest}"
-write all menu lines into file specified by {dest}.
+.BI ":w[rite] {path}"
+write all menu lines into the file specified by {path}.
 .LP
-.B General
+.B Common keys of all menus and dialogs
 
-j, Ctrl-N \- move down.
+.TP
+.B "j, Ctrl-N"
+move the cursor down.
+.TP
+.B "k, Ctrl-P"
+move the cursor up.
+.TP
+.B "Enter"
+select and usually close menu/dialog.
+.TP
+.B "Ctrl-L"
+redraw menu/dialog.
 .br
-k, Ctrl-P \- move up.
+.LP
+.B Escape, Ctrl-C
 .br
-Enter, l \- select and exit the menu.
+.B ZZ, ZQ
 .br
-Ctrl-L \- redraw the menu.
+.B q
+.RS
+close menu/dialog.
+.RE
 
-Escape, Ctrl-C, ZZ, ZQ, q \- quit.
-
-.B In all menus
-
-The following set of keys has the same meaning as in normal mode.
-
-Ctrl-B, Ctrl-F
+.TP
+.B Common keys of all menus
+.LP
+.B "Ctrl-B, Ctrl-F"
 .br
-Ctrl-D, Ctrl-U
+.B "Ctrl-D, Ctrl-U"
 .br
-Ctrl-E, Ctrl-Y
+.B "Ctrl-E, Ctrl-Y"
 .br
-/, ?
+.B "/, ?"
 .br
-n, N
+.B "n, N"
 .br
-[count]G, [count]gg
+.B "[count]G, [count]gg"
 .br
-H, M, L
+.B "H, M, L"
 .br
-zb, zt, zz
+.B "zb, zt, zz"
+.RS
+these keys have the same meaning as in normal mode.
+.RE
 
-zh \- scroll menu items [count] characters to the right.
+.TP
+.B zh
+scroll menu items [count] characters to the right.
+.TP
+.B zl
+scroll menu items [count] characters to the left.
+.TP
+.B zH
+scroll menu items half the screen width to the right.
+.TP
+.B zL
+scroll menu items half the screen width to the left.
+.LP
+
+.TP
+.B :
+enter command line mode for menus.
+.TP
+.B b
+interpret content of the menu as a list of paths and use it to create custom
+view in place of the previously active pane.  See "Custom views" section below.
+.TP
+.B B
+same as above, but create an unsorted view.
+.TP
+.B v
+load menu content into quickfix list of an editor (Vim compatible by
+assumption) or, if the list doesn't have separators after file names (colons),
+open each line as a file name.
+
+.LP
+.B Navigation menus
+
 .br
-zl \- scroll menu items [count] characters to the left.
+This applies to the following menus:
+ - :bmarks, :bmgo
+ - :find
+ - :grep
+ - :locate
+ - user menu with navigation (%M macro)
+
+.TP
+.B gf
+navigate previously active view to currently selected item.  Leaves menu
+mode except for :grep menu.  Pressing Enter or l has the same effect.
+.TP
+.B e
+open selected path in an editor, stays in menu mode.
+.TP
+.B c
+leave menu preserving file selection and insert file name after :! in
+command-line mode.  Does nothing in :bmarks and :bmgo.
+.LP
+Note that each of these menus can have additional keys, see below.
+
+.B History menus (:history *)
 .br
-zH \- scroll menu items half of screen width characters to the right.
-.br
-zL \- scroll menu items half of screen width characters to the left.
+.B ==========================
 
-: \- enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
-and :{range} are supported).
-
-b \- interpret content of the menu as list of paths and use it to create custom
-view in place of previously active pane.  See "Custom views" section below.
-.br
-B \- same as above, but creates unsorted view.
-
-v \- load menu content into quickfix list of the editor (Vim compatible by
-assumption) or if list doesn't have separators after file names (colons) open
-each line as a file name.
-
-
-Below is description of additional commands and reaction on selection in some
-menus and dialogs.
-
-.B Apropos menu
-
-Selecting menu item runs man on a given topic.  Menu won't be closed
-automatically to allow view several pages one by one.
-
-.B Command-line mode abbreviations menu
-
-Type dd on an abbreviation to remove it.
-
-c leaves menu preserving file selection and inserts right-hand side of
-selected command into command-line.
-
-.B Color scheme menu
-
-Selecting name of a color scheme applies it the same way as if
-":colorscheme <name>" was executed on the command-line.
-
-.B Commands menu
-
-Selecting command executes it with empty arguments (%a).
-
-dd on a command to remove.
-
-.B Marks menu
-
-Selecting mark navigates to it.
-
-dd on a mark to remove it.
-
-.B Bookmarks menu
-
-Selecting a bookmark navigates to it.
-
-Type dd on a bookmark to remove it.
-
-gf and e also work to make it more convenient to bookmark files.
-
-.B Trash (:lstrash) menu
-
-r on a file name to restore it from trash.
-
-dd deletes file under the cursor.
-
-.B Trashes (:trashes) menu
-
-dd empties selected trash in background.
-
-.B Directory history and Trashes menus
-
-Selecting directory name will change directory of the current view as if :cd
-command was used.
-
-.B Directory stack menu
-
-Selecting directory name will rotate stack to put selected directory pair at the
-top of the stack.
-
-.B File (:file) menu
-
-Commands from vifmrc or typed in command-line are displayed above empty line.
-All commands below empty line are from .desktop files.
-
-c leaves menu preserving file selection and inserts command after :! in
-command-line mode.
-
-.B Grep, find, locate, bookmarks and user menu with navigation (%M macro)
-
-gf \- navigate previously active view to currently selected item.  Leaves menu
-mode except for grep menu.  Pressing Enter key has the same effect.
-
-e \- open selected path in the editor, stays in menu mode.
-
-c \- leave menu preserving file selection and insert file name after :! in
-command-line mode.
-
-.B User menu without navigation (%m macro)
-
-c leaves menu preserving file selection and inserts whole line after :! in
-command-line mode.
-
-.B Grep menu
-
-Selecting file (via Enter or l key) opens it in editor set by 'vicmd' at given
-line number.  Menu won't be closed automatically to allow viewing more than one
-result.
-
-See above for "gf" and "e" keys description.
-
+.TP
 .B Command-line history menu
+.TP
+.B "Enter, l"
+execute the item as a command-line command, search query or local filter.
+.TP
+.B c
+leave the menu preserving file selection and insert the item into the
+command-line of appropriate kind.
 
-Selecting an item executes it as command-line command, search query or local
-filter.
+.LP
+.B Directory history menu
+.TP
+.B "Enter, l"
+navigate into the selected directory.
 
-c leaves menu preserving file selection and inserts line into command-line of
-appropriate kind.
+.TP
+.B Menu commands history menu
+.TP
+.B "Enter, l"
+execute command without leaving the menu.
+.TP
+.B c
+insert menu item into command-line for editing.
 
-.B Menus' command-line history menu
-
-Enter - execute command without leaving the menu.
-
-c     - insert line into command-line for editing.
-
-.B Volumes menu
-
-Selecting a drive navigates previously active pane to the root of that drive.
-
-.B Fileinfo dialog
-
-Enter, q \- close dialog
-
-.B Sort dialog
-
-h, Space \- switch ascending/descending.
+.LP
+.B Other menus
 .br
-q \- close dialog
+.B ===========
 
-One shortcut per sorting key (see the dialog).
+.B Apropos (:apropos) menu
+.TP
+.B "Enter, l"
+run man on a given topic.  Menu won't be closed automatically to allow
+viewing several pages one by one.
+
+.LP
+.B Bookmarks (:bmarks, :bmgo) menu
+.TP
+.B "Enter, l"
+navigate to the selected bookmark.
+.TP
+.B dd
+remove bookmark under the cursor.
+.LP
+See above for "gf" and "e" keys.
+
+.B Command-line mode abbreviations (:cabbrev) menu
+.TP
+.B dd
+remove abbreviation under the cursor.
+
+.LP
+.B Color scheme (:colorscheme) menu
+.TP
+.B "Enter, l"
+apply selected colorscheme as if ":colorscheme <name>" was executed on the
+command-line.
+
+.LP
+.B Commands (:command) menu
+.TP
+.B "Enter, l"
+execute the command with empty arguments (%a macro).
+.TP
+.B dd
+remove command under the cursor.
+.TP
+.B c
+leave menu preserving file selection and insert right-hand side of selected
+command into the command-line.
+
+.LP
+.B Directory stack (:dirs) menu
+.TP
+.B "Enter, l"
+rotate the stack to put selected directory pair at the top.
+
+.LP
+.B File (:file) menu
+.LP
+Commands from vifmrc or typed on the command-line are displayed above an empty
+line if it's present.  All commands below the empty line come from .desktop
+files.
+
+Commands detected as available have "[present]" to the left of them.
+
+.TP
+.B "Enter, l"
+run selected command (regardless whether it was detected to be present or not).
+.TP
+.B c
+leave menu preserving file selection and insert command after :! in the
+command-line mode.
+
+.LP
+.B Grep (:grep) menu
+.TP
+.B "Enter, l"
+open file in an editor set by 'vicmd' at given line number.  Menu won't be
+closed automatically to allow viewing more than one result.
+
+.LP
+See above for "gf", "e" and "c" keys.
+
+.B Jobs (:jobs) menu
+.TP
+.B dd
+request cancellation of job under the cursor.  The job won't be removed
+from the list, but marked as being cancelled (if cancellation was
+successfully requested).  A message will pop up if the job has already
+stopped.  Note that on Windows cancelling external programs like this might
+not work, because their parent shell doesn't have any windows.
+.TP
+.B e
+display errors of selected job if any were collected.  They are
+displayed in a new menu, but you can return to jobs menu by pressing h.
+.TP
+.B r
+reload the list of jobs.
+
+.LP
+.B Marks (:marks) menu
+.TP
+.B "Enter, l"
+navigate to selected mark.
+.TP
+.B dd
+remove mark under the cursor.
+
+.LP
+.B Media (:media) menu
+.TP
+.B "Enter, l"
+behaviour is different for different kinds of lines:
+ - mount an unmounted device
+ - navigate to the first mount point of a mounted device
+ - navigate to a mount point
+ - do nothing for "not mounted" or an empty line
+.TP
+.B r
+reload the list.
+.TP
+.B m
+mount/unmount device (cursor should be positioned on lines under device
+information).
+.TP
+.B [
+put cursor on the previous device.
+.TP
+.B ]
+put cursor on the next device.
+
+.LP
+.B Plugins (:plugins) menu
+.TP
+.B e
+display log messages of selected plugin if any were collected.  They are
+displayed in a new menu, but you can return to plugins menu by pressing h.
+.TP
+.B gf
+navigate previously active view to the location of selected plugin.
+Leaves the menu mode.
+
+.LP
+.B Trash (:lstrash) menu
+.TP
+.B r
+restore a file from the trash to its original location.
+.TP
+.B dd
+delete file under the cursor.
+
+.LP
+.B Trashes (:trashes) menu
+.TP
+.B "Enter, l"
+navigate into current trash directory.
+.TP
+.B dd
+start emptying selected trash in background.
+
+.LP
+.B Undolist (:undolist) menu
+.TP
+.B r
+reset undo position to group under the cursor.
+
+.LP
+.B User menu without navigation (%m macro)
+.TP
+.B c
+leave menu preserving file selection and insert whole line after :! in
+command-line mode.
+
+.LP
+.B Volumes (:volumes) menu
+.br
+only for MS-Windows
+.TP
+.B "Enter, l"
+navigate into the root of the selected drive.
+
+.LP
+.B Dialog-specific operations
+.br
+.B ==========================
 
 .B Attributes (permissions or properties) dialog
+.TP
+.B "h, Space"
+check/uncheck.
+.TP
+.B q
+close the dialog.
+.TP
+.B r
+(*nix only) (un)set all read bits.
+.TP
+.B w
+(*nix only) (un)set all write bits.
+.TP
+.B x
+(*nix only) (un)set all execute bits.
+.TP
+.B s
+(*nix only) (un)set all special (SetUID, SetGID, Sticky) bits.
+.TP
+.B e
+(*nix only) (un)set recursion (for directories only).
 
-h, Space \- check/uncheck.
-.br
-q \- close dialog
-.br
-r \- (*nix only) (un)set all read bits
-.br
-w \- (*nix only) (un)set all write bits
-.br
-x \- (*nix only) (un)set all execute bits
-.br
-s \- (*nix only) (un)set all special (SetUID, SetGID, Sticky) bits
-.br
-e \- (*nix only) (un)set recursion (for directories only)
-
-Item states:
+.LP
+Possible item states:
 .IP \- 2
 * \- checked flag.
 .IP \- 2
-X \- means that it has different value for files in selection.
+X \- selected files have inconsistent value of this flag.
 .IP \- 2
 d (*nix only) \- (only for execute flags) means u\-x+X, g\-x+X or o\-x+X \
 argument for the chmod program.  If you're not on OS X and want to remove \
 execute permission bit from all files, but preserve it for directories, set \
 all execute flags to 'd' and check \(aqSet Recursively\(aq flag.
 .LP
-.B Jobs menu (:jobs)
 
-dd - request cancellation of job under cursor.  The job won't be removed from
-the list, but marked as being cancelled (if cancellation was successfully
-requested).  A message will pop up if the job has already stopped.
-Note that on Windows cancelling external programs like this might not work,
-because their parent shell doesn't have any windows.
-
-e - display errors of selected job if any were collected.  They are
-displayed in a new menu, but you can get back to jobs menu by pressing h.
-
-r - reload the list of jobs.
+.B Fileinfo (Ctrl-G) dialog
+.TP
+.B "Enter, q"
+close the dialog.
 
 .LP
-.B Undolist menu
-
-r \- reset undo position to group under the cursor.
-
-.LP
-.B Media menu
-
-Selecting a device either mounts (if it wasn't mounted yet) or navigates to
-its first mount point.
-
-Selecting a mount point navigates to it.
-
-Selecting "not mounted" line causes mounting.
-
-Selecting any other line does nothing.
-
-r \- reload the list.
-
-m \- mount/unmount device (cursor should be positioned on lines under device
-information).
-
-[ \- put cursor on the previous device.
-
-] \- put cursor on the next device.
+.B Sort (:sort) dialog
+.TP
+.B "h, Space"
+switch ascending/descending order.
+.TP
+.B q
+close the dialog.
 
 .LP
-.B Plugins menu
-
-e -\ display log messages of selected plugin if any were collected.  They are
-displayed in a new menu, but you can get back to plugins menu by pressing h.
-
-gf \- navigate previously active view to the location of selected plugin.
-Leaves menu mode.
+There is also a shortcut per sorting key (drawn on the dialog).
 
 .\" ---------------------------------------------------------------------------
 .SH Custom views

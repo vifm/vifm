@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 05
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 06
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5251,14 +5251,13 @@ Usage example: >
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
 
-When navigating to some path from a menu there is a difference in end location
-depending on whether path has trailing slash or not.  Files normally don't
-have trailing slashes so "file/" won't work and one can only navigate to
-a file anyway.  On the other hand with directories there are two options:
-navigate to a directory or inside of it.  To allow both use cases, the first
-one is used on paths like "dir" and the second one for "dir/".
+When navigating to some path from a menu there is a difference in the end
+location depending on whether the path has a trailing slash.  Files normally
+don't have trailing slashes so "file/" won't work.  In case of directories
+there are two options: navigate to a directory or inside of it.  To allow both
+use cases, the first action is taken for "dir" and the second one for "dir/".
 
-Commands~
+Menu commands~
 
 :range                                         *vifm-m_:range*
     navigate to a menu line.
@@ -5273,32 +5272,33 @@ Commands~
 :exi[t][!]                                     *vifm-m_:exit* *vifm-m_:exi*
 :q[uit][!]                                     *vifm-m_:quit* *vifm-m_:q*
 :x[it][!]                                      *vifm-m_:xit*  *vifm-m_:x*
-    leave menu mode.
+    leave the menu mode.
 
 :noh[lsearch]                                  *vifm-m_:nohlsearch*
                                                *vifm-m_:noh*
     reset search match highlighting.
 
-:w[rite] {dest}                                *vifm-m_:write* *vifm-m_:w*
-    write all menu lines into file specified by {dest}.
+:w[rite] {path}                                *vifm-m_:write* *vifm-m_:w*
+    write all menu lines into the file specified by {path}.
 
-General~
+Common keys of all menus and dialogs~
 
-j, Ctrl-N - move down.                         *vifm-m_j* *vifm-m_CTRL-N*
-k, Ctrl-P - move up.                           *vifm-m_k* *vifm-m_CTRL-P*
+j, Ctrl-N                                      *vifm-m_j* *vifm-m_CTRL-N*
+    move the cursor down.
+k, Ctrl-P                                      *vifm-m_k* *vifm-m_CTRL-P*
+    move the cursor up.
 
-Enter, l - select and exit the menu.           *vifm-m_Enter* *vifm-m_l*
-
-Ctrl-L - redraw the menu.                      *vifm-m_CTRL-L*
+Enter                                          *vifm-m_Enter*
+    select and usually close menu/dialog.
+Ctrl-L                                         *vifm-m_CTRL-L*
+    redraw menu/dialog.
 
 Escape, Ctrl-C                                 *vifm-m_Escape* *vifm-m_CTRL-C*
-ZZ, ZQ                                         *vifm-m_ZQ* *vifm-m_ZZ*
+ZZ, ZQ                                         *vifm-m_ZZ* *vifm-m_ZQ*
 q                                              *vifm-m_q*
-    quit.
+    close menu/dialog.
 
-In all menus~
-
-The following set of keys has the same meaning as in normal mode.
+Common keys of all menus~
 
 Ctrl-B, Ctrl-F                                 *vifm-m_CTRL-B* *vifm-m_CTRL-F*
 Ctrl-D, Ctrl-U                                 *vifm-m_CTRL-D* *vifm-m_CTRL-U*
@@ -5307,9 +5307,9 @@ Ctrl-E, Ctrl-Y                                 *vifm-m_CTRL-E* *vifm-m_CTRL-Y*
 n, N                                           *vifm-m_n* *vifm-m_N*
 [count]G, [count]gg                            *vifm-m_G* *vifm-m_gg*
 H, M, L                                        *vifm-m_H* *vifm-m_M* *vifm-m_L*
-
-zb, zt                                         *vifm-m_zb* *vifm-m_zt*
-zz                                             *vifm-m_zz*
+zb, zt, zz                                     *vifm-m_zb* *vifm-m_zt*
+                                               *vifm-m_zz*
+    these keys have the same meaning as in normal mode.
 
 zh                                             *vifm-m_zh*
     scroll menu items [count] characters to the right.
@@ -5317,212 +5317,261 @@ zl                                             *vifm-m_zl*
     scroll menu items [count] characters to the left.
 
 zH                                             *vifm-m_zH*
-    scroll menu items half of screen width characters to the right.
+    scroll menu items half the screen width to the right.
 zL                                             *vifm-m_zL*
-    scroll menu items half of screen width characters to the left.
+    scroll menu items half the screen width to the left.
 
 
-:                                              *vifm-m_:*
-    enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
-    and :{range} are supported).
+:   enter command line mode for menus.         *vifm-m_:*
 
 
 b                                              *vifm-m_b*
-    interpret content of the menu as list of paths and use it to create
-    custom view in place of previously active pane.  See |vifm-custom-views|.
+    interpret content of the menu as a list of paths and use it to create
+    custom view in place of the previously active pane.  See
+    |vifm-custom-views|.
 B                                              *vifm-m_B*
-    same as above, but creates unsorted view.
+    same as above, but create an unsorted view.
 
 
 v                                              *vifm-m_v*
-    load menu content into quickfix list of the editor (Vim compatible by
-    assumption) or if list doesn't have separators after file names (colons)
-    open each line as a file name.
+    load menu content into quickfix list of an editor (Vim compatible by
+    assumption) or, if the list doesn't have separators after file
+    names (colons), open each line as a file name.
 
+Navigation menus~
 
-Below is description of additional commands and reaction on selection in some
-menus and dialogs.
-
-Apropos menu~
-
-Selecting menu item runs man on a given topic.  Menu won't be closed
-automatically to allow view several pages one by one.
-
-Command-line mode abbreviations menu~
-
-Type dd on an abbreviation to remove it.
-
-Color scheme menu~
-
-Selecting name of a color scheme applies it the same way as if ":colorscheme
-<name>" was executed on the command-line.
-
-Commands menu~
-
-Selecting command executes it with empty arguments (|vifm-%a|).
-
-Type dd on a command to remove.
-
-c leaves menu preserving file selection and inserts right-hand side of
-selected command into command-line.
-
-Marks menu~
-
-Selecting a mark navigates to it.
-
-Type dd on a mark to remove it.
-
-Bookmarks menu~
-
-Selecting a bookmark navigates to it.
-
-Type dd on a bookmark to remove it.
-
-|vifm-m_gf| and |vifm-m_e| also work to make it more convenient to bookmark
-files.
-
-Trash (:lstrash) menu~
-
-r on a file name to restore it from trash.
-
-dd deletes file under the cursor.
-
-Trashes (:trashes) menu~
-
-dd empties selected trash in background.
-
-Directory history and Trashes menus~
-
-Selecting directory name will change directory of the current view as if
-|vifm-:cd| command was used.
-
-Directory stack menu~
-
-Selecting directory name will rotate stack to put selected directory pair at
-the top of the stack.
-
-File (:file) menu~
-
-Commands from vifmrc or typed in command-line are displayed above empty line.
-All commands below empty line are from .desktop files.
-
-c leaves menu preserving file selection and inserts command after :! in
-command-line mode.
-
-Grep, find, locate, bookmarks and user menu with navigation (%M macro)~
+This applies to the following menus:
+ - |vifm-:bmarks|, |vifm-:bmgo|
+ - |vifm-:find|
+ - |vifm-:grep|
+ - |vifm-:locate|
+ - user menu with navigation (|vifm-%M|)
 
 gf                                             *vifm-m_gf*
     navigate previously active view to currently selected item.  Leaves menu
-    mode except for grep menu.  Pressing Enter key has the same effect.
+    mode except for |vifm-:grep| menu.  Pressing Enter or l has the same
+    effect.
 
 e                                              *vifm-m_e*
-    open selected path in the editor, stays in menu mode.
+    open selected path in an editor, stays in menu mode.
 
 c                                              *vifm-m_c*
     leave menu preserving file selection and insert file name after :! in
-    command-line mode.
+    command-line mode.  Does nothing in |vifm-:bmarks| and |vifm-:bmgo|.
 
-User menu without navigation (%m macro)~
+Note that each of these menus can have additional keys, see below.
 
-c leaves menu preserving file selection and inserts whole line after :! in
-command-line mode.
-
-Grep menu~
-
-Selecting file (via Enter or l key) opens it in editor set by |vifm-'vicmd'|
-at given line number.  Menu won't be closed automatically to allow viewing
-more than one result.
-
-See above for "gf" and "e" keys description.
+History menus (:history *)~
+==========================
 
 Command-line history menu~
 
-Selecting an item executes it as command-line command, search query or local
-filter.
+Enter, l
+    execute the item as a command-line command, search query or local filter.
+c
+    leave the menu preserving file selection and insert the item into
+    the command-line of appropriate kind.
 
-c leaves menu preserving file selection and inserts line into command-line of
-appropriate kind.
+Directory history menu~
 
-Menus' command-line history menu~
+Enter, l
+    navigate into the selected directory.
 
-Enter - execute command without leaving the menu.
-c     - insert line into command-line for editing.
+Menu commands history menu~
 
-Volumes menu~
+Enter, l
+    execute command without leaving the menu.
+c
+    insert menu item into the command-line for editing.
 
-Selecting a drive navigates previously active pane to the root of that drive.
+Other menus~
+===========
 
-Fileinfo dialog~
+Apropos (:apropos) menu~
 
-Enter, q - close dialog
+Enter, l
+    run man on a given topic.  Menu won't be closed automatically to allow
+    viewing several pages one by one.
 
-Sort dialog ~
+Bookmarks (:bmarks, :bmgo) menu~
 
-h, Space - switch ascending/descending.
-q - close dialog
+Enter, l
+    navigate to the selected bookmark.
+dd
+    remove bookmark under the cursor.
 
-One shortcut per sorting key (see the dialog).
+See above for "gf" and "e" keys.
+
+Command-line mode abbreviations (:cabbrev) menu~
+
+dd
+    remove abbreviation under the cursor.
+
+Color scheme (:colorscheme) menu~
+
+Enter, l
+    apply selected colorscheme as if ":colorscheme <name>" was executed on the
+    command-line.
+
+Commands (:command) menu~
+
+Enter, l
+    execute the command with empty arguments (|vifm-%a|).
+dd
+    remove command under the cursor.
+c
+    leave menu preserving file selection and insert right-hand side of selected
+    command into the command-line.
+
+Directory stack (:dirs) menu~
+
+Enter, l
+    rotate the stack to put selected directory pair at the top.
+
+File (:file) menu~
+
+Commands from vifmrc or typed on the command-line are displayed above an empty
+line if it's present.  All commands below the empty line come from .desktop
+files.
+
+Commands detected as available have "[present]" to the left of them.
+
+Enter, l
+    run selected command (regardless whether it was detected to be present or
+    not).
+c
+    leave menu preserving file selection and insert command after :! in the
+    command-line mode.
+
+Grep (:grep) menu~
+
+Enter, l
+    open file in an editor set by |vifm-'vicmd'| at given line number.  Menu
+    won't be closed automatically to allow viewing more than one result.
+
+See above for "gf", "e" and "c" keys.
+
+Jobs (:jobs) menu~
+
+dd
+    request cancellation of job under the cursor.  The job won't be removed
+    from the list, but marked as being cancelled (if cancellation was
+    successfully requested).  A message will pop up if the job has already
+    stopped.  Note that on Windows cancelling external programs like this might
+    not work, because their parent shell doesn't have any windows.
+e
+    display errors of selected job if any were collected.  They are
+    displayed in a new menu, but you can return to jobs menu by pressing h.
+r
+    reload the list of jobs.
+
+Marks (:marks) menu~
+
+Enter, l
+    navigate to selected mark.
+dd
+    remove mark under the cursor.
+
+Media (:media) menu~
+
+Enter, l
+    behaviour is different for different kinds of lines:
+     - mount an unmounted device
+     - navigate to the first mount point of a mounted device
+     - navigate to a mount point
+     - do nothing for "not mounted" or an empty line
+
+r
+    reload the list.
+m
+    mount/unmount device (cursor should be positioned on lines under device
+    information).
+[
+    put cursor on the previous device.
+]
+    put cursor on the next device.
+
+Plugins (:plugins) menu~
+
+e
+    display log messages of selected plugin if any were collected.  They are
+    displayed in a new menu, but you can return to plugins menu by pressing h.
+gf
+    navigate previously active view to the location of selected plugin.
+    Leaves menu mode.
+
+Trash (:lstrash) menu~
+
+r
+    restore a file from the trash to its original location.
+dd
+    delete file under the cursor.
+
+Trashes (:trashes) menu~
+
+Enter, l
+    navigate into current trash directory.
+dd
+    start emptying selected trash in background.
+
+Undolist (:undolist) menu~
+
+r
+    reset undo position to group under the cursor.
+
+User menu without navigation (%m macro)~
+
+c
+    leave menu preserving file selection and insert whole line after :! in
+    command-line mode.
+
+Volumes (:volumes) menu~
+                                               {only for MS-Windows}
+Enter, l
+    navigate into the root of selected drive.
+
+Dialog-specific operations~
+==========================
 
 Attributes (permissions or properties) dialog~
 
-h, Space - check/uncheck.
-q - close dialog
-r - (*nix only) (un)set all read bits
-w - (*nix only) (un)set all write bits
-x - (*nix only) (un)set all execute bits
-s - (*nix only) (un)set all special (SetUID, SetGID, Sticky) bits
-e - (*nix only) (un)set recursion (for directories only)
+h, Space
+    check/uncheck.
+q
+    close the dialog.
+r
+    (*nix only) (un)set all read bits.
+w
+    (*nix only) (un)set all write bits.
+x
+    (*nix only) (un)set all execute bits.
+s
+    (*nix only) (un)set all special (SetUID, SetGID, Sticky) bits.
+e
+    (*nix only) (un)set recursion (for directories only).
 
-Item states:
-* - checked flag.
-X - means that it has different value for files in selection.
-                                               {only for *nix}
-d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
-    chmod program.  If you're not on OS X and want to remove execute permission
-    bit from all files, but preserve it for directories, set all execute flags
-    to 'd' and check 'Set Recursively' flag.
+Possible item states:
+ * - checked flag.
+ X - selected files have inconsistent value of this flag.
+                                                {only for *nix}
+ d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
+     chmod program.  If you're not on OS X and want to remove execute permission
+     bit from all files, but preserve it for directories, set all execute flags
+     to 'd' and check 'Set Recursively' flag.
 
-Jobs menu (:jobs)~
+Fileinfo (Ctrl-G) dialog~
 
-dd - request cancellation of job under cursor.  The job won't be removed from
-the list, but marked as being cancelled (if cancellation was successfully
-requested).  A message will pop up if the job has already stopped.
-Note that on Windows cancelling external programs like this might not work,
-because their parent shell doesn't have any windows.
+Enter, q
+    close the dialog.
 
-e - display errors of selected job if any were collected.  They are
-displayed in a new menu, but you can get back to jobs menu by pressing h.
+Sort (:sort) dialog ~
 
-r - reload the list of jobs.
+h, Space
+    switch ascending/descending order.
+q
+    close the dialog.
 
-Undolist menu~
-
-r - reset undo position to group under the cursor.
-
-Media menu~
-
-Selecting a device either mounts (if it wasn't mounted yet) or navigates to
-its first mount point.
-
-Selecting a mount point navigates to it.
-
-Selecting "not mounted" line causes mounting.
-
-Selecting any other line does nothing.
-
-r - reload the list.
-m - mount/unmount device (cursor should be positioned on lines under device
-    information).
-[ - put cursor on the previous device.
-] - put cursor on the next device.
-
-Plugins menu~
-
-e - display log messages of selected plugin if any were collected.  They are
-displayed in a new menu, but you can get back to plugins menu by pressing h.
-
-gf - navigate previously active view to the location of selected plugin.
-Leaves menu mode.
+There is also a shortcut per sorting key (drawn on the dialog).
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*

@@ -23,6 +23,8 @@
 
 	Made documentation of 'vifminfo' more readable.
 
+	Rewrote "Menus and dialogs" part of the documentation.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
