@@ -1,4 +1,4 @@
-.TH VIFM 1 "05 May 2023" "vifm 0.13"
+.TH VIFM 1 "06 May 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6098,8 +6098,8 @@ Example:
 .EX
   " display number and size of blocks actually used by a file or directory
   set statusline+=" Uses: %{ extcached('uses',
-                                     \ expand('%c'),
-                                     \ expand('stat \-\-format=%%bx%%B %c')) }"
+                                     \\ expand('%c'),
+                                     \\ expand('stat \-\-format=%%bx%%B %c')) }"
 .EE
 
 .BI filereadable({path})
@@ -6262,7 +6262,7 @@ Usage example:
 .EX
   " command to change directory by picking it via fzf
   command! fzfcd :execute 'cd'
-                        \ fnameescape(term('find \-type d | fzf 2> /dev/tty'))
+                        \\ fnameescape(term('find \-type d | fzf 2> /dev/tty'))
 .EE
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs
