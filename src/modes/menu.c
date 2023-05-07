@@ -342,13 +342,10 @@ modmenu_abort(void)
 }
 
 void
-modmenu_reenter(menu_data_t *m)
+modmenu_set_data(menu_data_t *m)
 {
 	assert(vle_mode_is(MENU_MODE) && "Can't reenter if not in menu mode.");
 	assert(m->len > 0 && "Menu cannot be empty.");
-
-	menus_replace_data(m);
-	menus_full_redraw(m->state);
 	menu = m;
 }
 

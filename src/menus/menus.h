@@ -98,9 +98,6 @@ menu_data_t;
 void menus_init_data(menu_data_t *m, struct view_t *view, char title[],
 		char empty_msg[]);
 
-/* Changes active menu data. */
-void menus_replace_data(menu_data_t *m);
-
 /* Frees resources associated with the menu and clears menu window. */
 void menus_reset_data(menu_data_t *m);
 
@@ -109,6 +106,9 @@ void menus_reset_data(menu_data_t *m);
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */
 int menus_enter(menu_state_t *ms, struct view_t *view);
+
+/* Replaces menu of the menu mode. */
+void menus_switch_to(menu_data_t *m);
 
 /* Restore previously saved menu.  Returns non-zero if status bar message should
  * be saved. */

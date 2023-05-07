@@ -80,6 +80,7 @@ static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static void init_menu_state(menu_state_t *ms, view_t *view);
+static void replace_menu_data(menu_data_t *m);
 static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
 static int stash_is_displayed(void);
@@ -734,6 +735,32 @@ init_menu_state(menu_state_t *ms, view_t *view)
 	ms->view = view;
 }
 
+void
+menus_switch_to(menu_data_t *m)
+{
+	modmenu_set_data(m);
+
+	replace_menu_data(m);
+	menus_full_redraw(m->state);
+}
+
+/* Changes active menu data. */
+static void
+replace_menu_data(menu_data_t *m)
+{
+	menu_state.current = 1;
+	menu_state.matching_entries = 0;
+	free(menu_state.matches);
+	menu_state.matches = NULL;
+
+	if(menu_state.d != NULL)
+	{
+		menu_state.d->state = NULL;
+	}
+	menu_state.d = m;
+	m->state = &menu_state;
+}
+
 char *
 menus_get_targets(view_t *view)
 {
@@ -896,7 +923,7 @@ unstash_menu_at(menu_state_t *ms, int index)
 	menu_data_stash[index].initialized = 0;
 
 	menu_stash_index = index;
-	modmenu_reenter(&menu_data_storage);
+	menus_switch_to(&menu_data_storage);
 }
 
 const menu_data_t *
@@ -1361,22 +1388,6 @@ menus_search_reset(menu_state_t *ms, int backward, int new_repeat_count)
 	ms->search_repeat = new_repeat_count;
 	ms->backward_search = backward;
 	update_string(&ms->regexp, NULL);
-}
-
-void
-menus_replace_data(menu_data_t *m)
-{
-	menu_state.current = 1;
-	menu_state.matching_entries = 0;
-	free(menu_state.matches);
-	menu_state.matches = NULL;
-
-	if(menu_state.d != NULL)
-	{
-		menu_state.d->state = NULL;
-	}
-	menu_state.d = m;
-	m->state = &menu_state;
 }
 
 /* Clears stashed navigation menus. */
