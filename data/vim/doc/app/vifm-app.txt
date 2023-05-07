@@ -6484,4 +6484,4 @@ Esperanto translation of the documentation by Sebastian Cyprych:
 http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
 
 --------------------------------------------------------------------------------
- vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:
+ vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:sw=4:ft=help:norl:
