@@ -5264,11 +5264,11 @@ Menu commands~
     navigate to a menu line.
 
 :col[der]                                      *vifm-m_:colder* *vifm-m_:col*
-    load an older navigation menu if there is one.  Works only after
-    |vifm-:copen|.  See |vifm-menus-history|.
+    load an older navigation menu if there is one.
+    See |vifm-menus-history|.
 :cnew[er]                                      *vifm-m_:cnewer* *vifm-m_:cnew*
-    load a newer navigation menu if there is one.  Works only after
-    |vifm-:copen|.  See |vifm-menus-history|.
+    load a newer navigation menu if there is one.
+    See |vifm-menus-history|.
 
 :exi[t][!]                                     *vifm-m_:exit* *vifm-m_:exi*
 :q[uit][!]                                     *vifm-m_:quit* *vifm-m_:q*
@@ -5618,6 +5618,13 @@ Running `:find 11` results in:
  8. `:find 8`
  9. `:find 11` (current element)
 10. None
+
+For convenience, |vifm-m_:colder| and |vifm-m_:cnewer| can be used any time
+you're in a menu, not just after |vifm-:copen|.  :cnewer won't do anything in
+this situation, but :colder will:
+ - if current menu can be stashed, behave as |vifm-m_:quit|, :copen, :colder
+   sequence (current menu is stashed the same way as described above)
+ - if current menu can't be stashed, behave as |vifm-m_:quit|, :copen sequence
 
 Related topics~
 

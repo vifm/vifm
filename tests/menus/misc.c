@@ -186,21 +186,44 @@ TEST(can_unstash_a_menu)
 	undo_teardown();
 }
 
-TEST(can_not_switch_between_stashed_menus_outside_of_copen)
+TEST(can_switch_between_stashed_menus_outside_of_copen)
 {
 	menus_drop_stash();
 	undo_setup();
+	opt_handlers_setup();
 
-	assert_success(cmds_dispatch1("!echo only-line %M", &lwin, CIT_COMMAND));
-
+	/* No older stashes yet. */
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
-	assert_string_equal("Current menu wasn't opened via :copen", ui_sb_last());
+	assert_string_equal("There is no older menu", ui_sb_last());
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
 
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+
+	/* Not stashable. */
+	assert_success(cmds_dispatch1("!echo 3 %m", &lwin, CIT_COMMAND));
+
+	/* There can't be a newer menu. */
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
-	assert_string_equal("Current menu wasn't opened via :copen", ui_sb_last());
+	assert_string_equal("There is no newer menu", ui_sb_last());
 
+	/* :colder initiates :copen. */
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+
+	/* More recent menus are dropped, but the current one is stashed. */
+	assert_success(cmds_dispatch1("!echo 4 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+	assert_success(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 4 %M", menu_get_current()->title);
+
+	opt_handlers_teardown();
 	undo_teardown();
 }
 

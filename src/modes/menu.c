@@ -1007,11 +1007,6 @@ goto_cmd(const cmd_info_t *cmd_info)
 static int
 cnewer_cmd(const cmd_info_t *cmd_info)
 {
-	if(!menus_showing_stash(menu->state))
-	{
-		ui_sb_err("Current menu wasn't opened via :copen");
-		return CMDS_ERR_CUSTOM;
-	}
 	if(menus_unstash_newer(menu->state) != 0)
 	{
 		ui_sb_err("There is no newer menu");
@@ -1024,11 +1019,6 @@ cnewer_cmd(const cmd_info_t *cmd_info)
 static int
 colder_cmd(const cmd_info_t *cmd_info)
 {
-	if(!menus_showing_stash(menu->state))
-	{
-		ui_sb_err("Current menu wasn't opened via :copen");
-		return CMDS_ERR_CUSTOM;
-	}
 	if(menus_unstash_older(menu->state) != 0)
 	{
 		ui_sb_err("There is no older menu");

@@ -107,9 +107,6 @@ void menus_reset_data(menu_data_t *m);
  * status bar message should be saved. */
 int menus_enter(menu_state_t *m, struct view_t *view);
 
-/* Checks whether menu displays a stash.  Returns non-zero if so. */
-int menus_showing_stash(const menu_state_t *m);
-
 /* Restore previously saved menu.  Returns non-zero if status bar message should
  * be saved. */
 int menus_unstash(struct view_t *view);

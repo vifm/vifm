@@ -82,6 +82,7 @@ static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static void init_menu_state(menu_state_t *ms, view_t *view);
 static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
+static int stash_is_displayed(void);
 static void unstash_menu_at(menu_state_t *m, int index);
 static const char * get_relative_path_base(const menu_data_t *m,
 		const view_t *view);
@@ -207,10 +208,12 @@ menus_reset_data(menu_data_t *m)
 	if(can_stash_menu(m))
 	{
 		stash_menu(m);
-		return;
+	}
+	else
+	{
+		deinit_menu_data(m);
 	}
 
-	deinit_menu_data(m);
 	reset_menu_state(m->state);
 }
 
@@ -607,7 +610,7 @@ static void
 draw_menu_frame(const menu_state_t *m)
 {
 	char *prefix;
-	if(menus_showing_stash(m))
+	if(stash_is_displayed())
 	{
 		prefix = format_str("[%d/%d] ", menu_stash_depth - menu_stash_index,
 				menu_stash_depth);
@@ -759,7 +762,7 @@ can_stash_menu(const menu_data_t *m)
 static void
 stash_menu(menu_data_t *m)
 {
-	if(menus_showing_stash(m->state))
+	if(stash_is_displayed())
 	{
 		/* Re-use the same stash and do not drop newer menus until another one is
 		 * added. */
@@ -793,12 +796,11 @@ stash_menu(menu_data_t *m)
 	/* Latest menu is always the first one. */
 	menu_data_stash[menu_stash_index] = *m;
 	m->initialized = 0;
-
-	reset_menu_state(m->state);
 }
 
-int
-menus_showing_stash(const menu_state_t *m)
+/* Checks whether menu displays a stash.  Returns non-zero if so. */
+static int
+stash_is_displayed(void)
 {
 	return menu_stash_index < menu_stash_depth
 	    && !menu_data_stash[menu_stash_index].initialized;
@@ -826,6 +828,28 @@ menus_unstash(view_t *view)
 int
 menus_unstash_older(menu_state_t *m)
 {
+	/* Starting viewing stashes requires special handling. */
+	if(!stash_is_displayed())
+	{
+		if(menu_stash_depth == 0)
+		{
+			/* An older stash doesn't exist. */
+			return 1;
+		}
+
+		if(!can_stash_menu(m->d))
+		{
+			/* Behave as :copen in this case. */
+			unstash_menu_at(m, menu_stash_index);
+			return 0;
+		}
+
+		/* Stash current menu the same way it would be done on closing it and
+		 * proceed as usual, again producing the same result as leaving the mode,
+		 * running :copen and then :colder. */
+		stash_menu(m->d);
+	}
+
 	if(menu_stash_index >= menu_stash_depth - 1)
 	{
 		return 1;
@@ -838,7 +862,7 @@ menus_unstash_older(menu_state_t *m)
 int
 menus_unstash_newer(menu_state_t *m)
 {
-	if(menu_stash_index == 0)
+	if(!stash_is_displayed() || menu_stash_index == 0)
 	{
 		return 1;
 	}
@@ -847,21 +871,24 @@ menus_unstash_newer(menu_state_t *m)
 	return 0;
 }
 
-/* Assuming stashed menu is active, saves current menu back to the stash and
- * loads a new one specified by its index. */
+/* Loads a stashed menu specified by its index.  If another stashed menu was
+ * active, it's saved back to the stash. */
 static void
 unstash_menu_at(menu_state_t *m, int index)
 {
 	static menu_data_t menu_data_storage;
 
-	menu_data_stash[menu_stash_index] = *m->d;
-	m->d->initialized = 0;
-	menu_stash_index = index;
+	if(stash_is_displayed())
+	{
+		menu_data_stash[menu_stash_index] = *m->d;
+		m->d->initialized = 0;
+	}
 
 	deinit_menu_data(&menu_data_storage);
 	menu_data_storage = menu_data_stash[index];
 	menu_data_stash[index].initialized = 0;
 
+	menu_stash_index = index;
 	modmenu_reenter(&menu_data_storage);
 }
 
