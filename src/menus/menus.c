@@ -609,25 +609,16 @@ normalize_top(menu_state_t *ms)
 static void
 draw_menu_frame(const menu_state_t *ms)
 {
-	char *prefix;
+	char *title = menus_format_title(ms->d, ms->view);
 	if(stash_is_displayed())
 	{
-		prefix = format_str("[%d/%d] ", menu_stash_depth - menu_stash_index,
-				menu_stash_depth);
-	}
-	else
-	{
-		prefix = strdup("");
+		char *full_title = format_str("[%d/%d] %s",
+				menu_stash_depth - menu_stash_index, menu_stash_depth, title);
+		free(title);
+		title = full_title;
 	}
 
 	const size_t title_len = getmaxx(menu_win) - 2*4;
-	const char *const suffix = menu_and_view_are_in_sync(ms->d, ms->view)
-	                         ? ""
-	                         : replace_home_part(ms->d->cwd);
-	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
-	char *const title = format_str("%s%s%s%s", prefix, ms->d->title, at, suffix);
-	free(prefix);
-
 	char *const ellipsed = right_ellipsis(title, title_len, curr_stats.ellipsis);
 	free(title);
 
@@ -642,6 +633,16 @@ draw_menu_frame(const menu_state_t *ms)
 	wattroff(menu_win, A_BOLD);
 
 	free(ellipsed);
+}
+
+char *
+menus_format_title(const menu_data_t *m, struct view_t *view)
+{
+	const char *const suffix = menu_and_view_are_in_sync(m, view)
+	                         ? ""
+	                         : replace_home_part(m->cwd);
+	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
+	return format_str("%s%s%s", m->title, at, suffix);
 }
 
 /* Implements process_cmd_output() callback that loads lines to a menu. */

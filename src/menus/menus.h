@@ -205,6 +205,10 @@ char * menus_get_targets(struct view_t *view);
 KHandlerResponse menus_def_khandler(struct view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 
+/* Formats menu's title as it's drawn on the frame.  Returns newly allocated
+ * string. */
+char * menus_format_title(const menu_data_t *m, struct view_t *view);
+
 TSTATIC_DEFS(
 	void menus_drop_stash(void);
 )

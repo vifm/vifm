@@ -40,7 +40,15 @@ show_chistory_menu(struct view_t *view)
 	const menu_data_t *stash;
 	while((stash = menus_get_stash(i++, &current)) != NULL)
 	{
-		char *item = format_str("%12d    %s", stash->len, stash->title);
+		char *title = menus_format_title(stash, view);
+		if(title == NULL)
+		{
+			continue;
+		}
+
+		char *item = format_str("%12d    %s", stash->len, title);
+		free(title);
+
 		if(item == NULL)
 		{
 			continue;
