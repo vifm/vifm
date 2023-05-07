@@ -105,7 +105,7 @@ void menus_reset_data(menu_data_t *m);
 
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */
-int menus_enter(menu_state_t *m, struct view_t *view);
+int menus_enter(menu_state_t *ms, struct view_t *view);
 
 /* Restore previously saved menu.  Returns non-zero if status bar message should
  * be saved. */
@@ -113,15 +113,15 @@ int menus_unstash(struct view_t *view);
 
 /* When the menu already displays a stash, loads an older one.  Returns zero on
  * sucess or non-zero if there is no older stash. */
-int menus_unstash_older(menu_state_t *m);
+int menus_unstash_older(menu_state_t *ms);
 
 /* When the menu already displays a stash, loads an newer one.  Returns zero on
  * sucess or non-zero if there is no newer stash. */
-int menus_unstash_newer(menu_state_t *m);
+int menus_unstash_newer(menu_state_t *ms);
 
 /* Moves menu items into custom view.  Returns zero on success, otherwise
  * non-zero is returned. */
-int menus_to_custom_view(menu_state_t *m, struct view_t *view, int very);
+int menus_to_custom_view(menu_state_t *ms, struct view_t *view, int very);
 
 /* Either makes a menu or custom view out of command output.  Returns non-zero
  * if status bar message should be saved. */
@@ -131,18 +131,18 @@ int menus_capture(struct view_t *view, const char cmd[], int user_sh,
 /* Menu drawing. */
 
 /* Erases current menu item in menu window. */
-void menus_erase_current(menu_state_t *m);
+void menus_erase_current(menu_state_t *ms);
 
 /* Redraws all screen elements used by menus. */
-void menus_full_redraw(menu_state_t *m);
+void menus_full_redraw(menu_state_t *ms);
 
 /* Redraws only menu list itself. */
-void menus_partial_redraw(menu_state_t *m);
+void menus_partial_redraw(menu_state_t *ms);
 
 /* Menu operations. */
 
 /* Updates current position in the menu. */
-void menus_set_pos(menu_state_t *m, int pos);
+void menus_set_pos(menu_state_t *ms, int pos);
 
 /* Removes current menu item and redraws the menu. */
 void menus_remove_current(menu_state_t *ms);
@@ -166,14 +166,14 @@ void menus_goto_dir(struct view_t *view, const char path[]);
 int menus_search(const char pattern[], menu_data_t *m, int print_errors);
 
 /* Resets search state of the menu according to specified parameters. */
-void menus_search_reset(menu_state_t *m, int backward, int new_repeat_count);
+void menus_search_reset(menu_state_t *ms, int backward, int new_repeat_count);
 
 /* Reset search highlight of a menu. */
-void menus_search_reset_hilight(menu_state_t *m);
+void menus_search_reset_hilight(menu_state_t *ms);
 
 /* Performs search in requested direction.  Either continues the previous one or
  * restarts it. */
-void menus_search_repeat(menu_state_t *m, int backward);
+void menus_search_repeat(menu_state_t *ms, int backward);
 
 /* Prints results or error message about search operation to the user. */
 void menus_search_print_msg(const menu_data_t *m);

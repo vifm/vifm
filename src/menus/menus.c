@@ -74,8 +74,8 @@ static void navigate_to_selected_file(view_t *view, const char path[]);
 static void draw_menu_item(menu_state_t *ms, int pos, int line, int clear);
 static void draw_search_match(char str[], int start, int end, int line,
 		int width, const cchar_t *attrs);
-static void normalize_top(menu_state_t *m);
-static void draw_menu_frame(const menu_state_t *m);
+static void normalize_top(menu_state_t *ms);
+static void draw_menu_frame(const menu_state_t *ms);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
@@ -83,15 +83,15 @@ static void init_menu_state(menu_state_t *ms, view_t *view);
 static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
 static int stash_is_displayed(void);
-static void unstash_menu_at(menu_state_t *m, int index);
+static void unstash_menu_at(menu_state_t *ms, int index);
 static const char * get_relative_path_base(const menu_data_t *m,
 		const view_t *view);
 static int menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view);
 static int search_menu(menu_state_t *ms, int start_pos, int print_errors);
-static int search_menu_forwards(menu_state_t *m, int start_pos);
-static int search_menu_backwards(menu_state_t *m, int start_pos);
-static int navigate_to_match(menu_state_t *m, int pos);
-static int get_match_index(const menu_state_t *m);
+static int search_menu_forwards(menu_state_t *ms, int start_pos);
+static int search_menu_backwards(menu_state_t *ms, int start_pos);
+static int navigate_to_match(menu_state_t *ms, int pos);
+static int get_match_index(const menu_state_t *ms);
 TSTATIC void menus_drop_stash(void);
 
 struct menu_state_t
@@ -159,9 +159,9 @@ menus_remove_current(menu_state_t *ms)
 }
 
 void
-menus_erase_current(menu_state_t *m)
+menus_erase_current(menu_state_t *ms)
 {
-	draw_menu_item(m, m->d->pos, m->current, 1);
+	draw_menu_item(ms, ms->d->pos, ms->current, 1);
 }
 
 void
@@ -339,17 +339,17 @@ show_position_in_menu(const menu_data_t *m)
 }
 
 void
-menus_full_redraw(menu_state_t *m)
+menus_full_redraw(menu_state_t *ms)
 {
 	if(resize_for_menu_like() != 0)
 	{
 		return;
 	}
 
-	m->win_rows = getmaxy(menu_win);
+	ms->win_rows = getmaxy(menu_win);
 
-	menus_partial_redraw(m);
-	menus_set_pos(m, m->d->pos);
+	menus_partial_redraw(ms);
+	menus_set_pos(ms, ms->d->pos);
 	ui_refresh_win(menu_win);
 }
 
@@ -450,22 +450,22 @@ menus_goto_dir(view_t *view, const char path[])
 }
 
 void
-menus_partial_redraw(menu_state_t *m)
+menus_partial_redraw(menu_state_t *ms)
 {
 	int i, pos;
 	const int y = getmaxy(menu_win);
 
-	normalize_top(m);
+	normalize_top(ms);
 
 	werase(menu_win);
-	draw_menu_frame(m);
+	draw_menu_frame(ms);
 
-	for(i = 0, pos = m->d->top; i < y - 2 && pos < m->d->len; ++i, ++pos)
+	for(i = 0, pos = ms->d->top; i < y - 2 && pos < ms->d->len; ++i, ++pos)
 	{
-		draw_menu_item(m, pos, i + 1, 0);
+		draw_menu_item(ms, pos, i + 1, 0);
 	}
 
-	show_position_in_menu(m->d);
+	show_position_in_menu(ms->d);
 }
 
 /* Draws single menu item at position specified by line argument.  Non-zero
@@ -600,14 +600,14 @@ draw_search_match(char str[], int start, int end, int line, int width,
 
 /* Ensures that value of m->top lies in a correct range. */
 static void
-normalize_top(menu_state_t *m)
+normalize_top(menu_state_t *ms)
 {
-	m->d->top = MAX(0, MIN(m->d->len - (m->win_rows - 2), m->d->top));
+	ms->d->top = MAX(0, MIN(ms->d->len - (ms->win_rows - 2), ms->d->top));
 }
 
 /* Draws box and title of the menu. */
 static void
-draw_menu_frame(const menu_state_t *m)
+draw_menu_frame(const menu_state_t *ms)
 {
 	char *prefix;
 	if(stash_is_displayed())
@@ -621,11 +621,11 @@ draw_menu_frame(const menu_state_t *m)
 	}
 
 	const size_t title_len = getmaxx(menu_win) - 2*4;
-	const char *const suffix = menu_and_view_are_in_sync(m->d, m->view)
+	const char *const suffix = menu_and_view_are_in_sync(ms->d, ms->view)
 	                         ? ""
-	                         : replace_home_part(m->d->cwd);
+	                         : replace_home_part(ms->d->cwd);
 	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
-	char *const title = format_str("%s%s%s%s", prefix, m->d->title, at, suffix);
+	char *const title = format_str("%s%s%s%s", prefix, ms->d->title, at, suffix);
 	free(prefix);
 
 	char *const ellipsed = right_ellipsis(title, title_len, curr_stats.ellipsis);
@@ -699,22 +699,22 @@ expand_tabulation_a(const char line[], size_t tab_stops)
 }
 
 int
-menus_enter(menu_state_t *m, view_t *view)
+menus_enter(menu_state_t *ms, view_t *view)
 {
-	if(m->d->len < 1)
+	if(ms->d->len < 1)
 	{
-		ui_sb_msg(m->d->empty_msg);
-		menus_reset_data(m->d);
+		ui_sb_msg(ms->d->empty_msg);
+		menus_reset_data(ms->d);
 		return 1;
 	}
 
-	init_menu_state(m, view);
+	init_menu_state(ms, view);
 
 	ui_setup_for_menu_like();
-	term_title_update(m->d->title);
-	menus_partial_redraw(m);
-	menus_set_pos(m, m->d->pos);
-	modmenu_enter(m->d, view);
+	term_title_update(ms->d->title);
+	menus_partial_redraw(ms);
+	menus_set_pos(ms, ms->d->pos);
+	modmenu_enter(ms->d, view);
 	return 0;
 }
 
@@ -826,7 +826,7 @@ menus_unstash(view_t *view)
 }
 
 int
-menus_unstash_older(menu_state_t *m)
+menus_unstash_older(menu_state_t *ms)
 {
 	/* Starting viewing stashes requires special handling. */
 	if(!stash_is_displayed())
@@ -837,17 +837,17 @@ menus_unstash_older(menu_state_t *m)
 			return 1;
 		}
 
-		if(!can_stash_menu(m->d))
+		if(!can_stash_menu(ms->d))
 		{
 			/* Behave as :copen in this case. */
-			unstash_menu_at(m, menu_stash_index);
+			unstash_menu_at(ms, menu_stash_index);
 			return 0;
 		}
 
 		/* Stash current menu the same way it would be done on closing it and
 		 * proceed as usual, again producing the same result as leaving the mode,
 		 * running :copen and then :colder. */
-		stash_menu(m->d);
+		stash_menu(ms->d);
 	}
 
 	if(menu_stash_index >= menu_stash_depth - 1)
@@ -855,33 +855,33 @@ menus_unstash_older(menu_state_t *m)
 		return 1;
 	}
 
-	unstash_menu_at(m, menu_stash_index + 1);
+	unstash_menu_at(ms, menu_stash_index + 1);
 	return 0;
 }
 
 int
-menus_unstash_newer(menu_state_t *m)
+menus_unstash_newer(menu_state_t *ms)
 {
 	if(!stash_is_displayed() || menu_stash_index == 0)
 	{
 		return 1;
 	}
 
-	unstash_menu_at(m, menu_stash_index - 1);
+	unstash_menu_at(ms, menu_stash_index - 1);
 	return 0;
 }
 
 /* Loads a stashed menu specified by its index.  If another stashed menu was
  * active, it's saved back to the stash. */
 static void
-unstash_menu_at(menu_state_t *m, int index)
+unstash_menu_at(menu_state_t *ms, int index)
 {
 	static menu_data_t menu_data_storage;
 
 	if(stash_is_displayed())
 	{
-		menu_data_stash[menu_stash_index] = *m->d;
-		m->d->initialized = 0;
+		menu_data_stash[menu_stash_index] = *ms->d;
+		ms->d->initialized = 0;
 	}
 
 	deinit_menu_data(&menu_data_storage);
@@ -893,24 +893,24 @@ unstash_menu_at(menu_state_t *m, int index)
 }
 
 KHandlerResponse
-menus_def_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
+menus_def_khandler(view_t *view, menu_data_t *ms, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{
-		(void)menus_goto_file(m, view, m->items[m->pos], 0);
+		(void)menus_goto_file(ms, view, ms->items[ms->pos], 0);
 		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		(void)menus_goto_file(m, view, m->items[m->pos], 1);
+		(void)menus_goto_file(ms, view, ms->items[ms->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"c") == 0)
 	{
 		/* Insert just file name. */
 		int line_num;
-		const char *const rel_base = get_relative_path_base(m, view);
-		char *const path = parse_file_spec(m->items[m->pos], &line_num, rel_base);
+		const char *const rel_base = get_relative_path_base(ms, view);
+		char *const path = parse_file_spec(ms->items[ms->pos], &line_num, rel_base);
 		if(path == NULL)
 		{
 			show_error_msg("Command insertion", "No valid filename found");
@@ -925,26 +925,26 @@ menus_def_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 }
 
 int
-menus_to_custom_view(menu_state_t *m, view_t *view, int very)
+menus_to_custom_view(menu_state_t *ms, view_t *view, int very)
 {
 	int i;
 	char *current = NULL;
-	const char *const rel_base = get_relative_path_base(m->d, view);
+	const char *const rel_base = get_relative_path_base(ms->d, view);
 
-	flist_custom_start(view, m->d->title);
+	flist_custom_start(view, ms->d->title);
 
-	for(i = 0; i < m->d->len; ++i)
+	for(i = 0; i < ms->d->len; ++i)
 	{
 		char *path;
 		int line_num;
 
 		/* Skip empty lines. */
-		if(skip_whitespace(m->d->items[i])[0] == '\0')
+		if(skip_whitespace(ms->d->items[i])[0] == '\0')
 		{
 			continue;
 		}
 
-		path = parse_file_spec(m->d->items[i], &line_num, rel_base);
+		path = parse_file_spec(ms->d->items[i], &line_num, rel_base);
 		if(path == NULL)
 		{
 			continue;
@@ -953,7 +953,7 @@ menus_to_custom_view(menu_state_t *m, view_t *view, int very)
 		flist_custom_add(view, path);
 
 		/* Use either exact position or the next path. */
-		if(i == m->d->pos || (current == NULL && i > m->d->pos))
+		if(i == ms->d->pos || (current == NULL && i > ms->d->pos))
 		{
 			current = path;
 			continue;
@@ -1046,23 +1046,23 @@ menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 }
 
 void
-menus_search_repeat(menu_state_t *m, int backward)
+menus_search_repeat(menu_state_t *ms, int backward)
 {
-	if(is_null_or_empty(m->regexp))
+	if(is_null_or_empty(ms->regexp))
 	{
 		ui_sb_err("No search pattern set");
 		curr_stats.save_msg = 1;
 		return;
 	}
 
-	m->backward_search = backward;
-	(void)menus_search(NULL, m->d, 1);
+	ms->backward_search = backward;
+	(void)menus_search(NULL, ms->d, 1);
 	ui_refresh_win(menu_win);
 
-	if(m->matching_entries > 0)
+	if(ms->matching_entries > 0)
 	{
-		ui_sb_msgf("(%d of %d) %c%s", get_match_index(m), m->matching_entries,
-				backward ? '?' : '/', m->regexp);
+		ui_sb_msgf("(%d of %d) %c%s", get_match_index(ms), ms->matching_entries,
+				backward ? '?' : '/', ms->regexp);
 	}
 
 	curr_stats.save_msg = 1;
@@ -1165,15 +1165,15 @@ search_menu(menu_state_t *ms, int start_pos, int print_errors)
 /* Looks for next matching element in forward direction from current position.
  * Returns new value for save_msg flag. */
 static int
-search_menu_forwards(menu_state_t *m, int start_pos)
+search_menu_forwards(menu_state_t *ms, int start_pos)
 {
 	int match_up = -1;
 	int match_down = -1;
 	int i;
 
-	for(i = 0; i < m->d->len; ++i)
+	for(i = 0; i < ms->d->len; ++i)
 	{
-		if(m->matches[i][0] < 0)
+		if(ms->matches[i][0] < 0)
 		{
 			continue;
 		}
@@ -1190,25 +1190,25 @@ search_menu_forwards(menu_state_t *m, int start_pos)
 
 	if(!cfg.wrap_scan && match_down <= -1)
 	{
-		ui_sb_errf("Search hit BOTTOM without match for: %s", m->regexp);
+		ui_sb_errf("Search hit BOTTOM without match for: %s", ms->regexp);
 		return 1;
 	}
 
-	return navigate_to_match(m, (match_down > -1) ? match_down : match_up);
+	return navigate_to_match(ms, (match_down > -1) ? match_down : match_up);
 }
 
 /* Looks for next matching element in backward direction from current position.
  * Returns new value for save_msg flag. */
 static int
-search_menu_backwards(menu_state_t *m, int start_pos)
+search_menu_backwards(menu_state_t *ms, int start_pos)
 {
 	int match_up = -1;
 	int match_down = -1;
 	int i;
 
-	for(i = m->d->len - 1; i > -1; --i)
+	for(i = ms->d->len - 1; i > -1; --i)
 	{
-		if(m->matches[i][0] < 0)
+		if(ms->matches[i][0] < 0)
 		{
 			continue;
 		}
@@ -1225,41 +1225,41 @@ search_menu_backwards(menu_state_t *m, int start_pos)
 
 	if(!cfg.wrap_scan && match_up <= -1)
 	{
-		ui_sb_errf("Search hit TOP without match for: %s", m->regexp);
+		ui_sb_errf("Search hit TOP without match for: %s", ms->regexp);
 		return 1;
 	}
 
-	return navigate_to_match(m, (match_up > -1) ? match_up : match_down);
+	return navigate_to_match(ms, (match_up > -1) ? match_up : match_down);
 }
 
 /* Tries to navigate to menu search match specified via pos argument.  If pos is
  * negative, match wasn't found and the message is printed.  Returns new value
  * for save_msg flag. */
 static int
-navigate_to_match(menu_state_t *m, int pos)
+navigate_to_match(menu_state_t *ms, int pos)
 {
 	if(pos > -1)
 	{
-		if(!m->search_highlight)
+		if(!ms->search_highlight)
 		{
 			/* Might need to highlight other items, so redraw whole menu. */
-			m->search_highlight = 1;
-			m->d->pos = pos;
-			menus_partial_redraw(m);
+			ms->search_highlight = 1;
+			ms->d->pos = pos;
+			menus_partial_redraw(ms);
 		}
 		else
 		{
-			menus_erase_current(m);
-			menus_set_pos(m, pos);
+			menus_erase_current(ms);
+			menus_set_pos(ms, pos);
 		}
-		menus_search_print_msg(m->d);
+		menus_search_print_msg(ms->d);
 	}
 	else
 	{
-		menus_set_pos(m, m->d->pos);
+		menus_set_pos(ms, ms->d->pos);
 		if(cfg.wrap_scan)
 		{
-			menus_search_print_msg(m->d);
+			menus_search_print_msg(ms->d);
 		}
 	}
 	return 1;
@@ -1305,15 +1305,15 @@ menus_search_print_msg(const menu_data_t *m)
 /* Calculates the index of the current match from the list of matches.  Returns
  * the index. */
 static int
-get_match_index(const menu_state_t *m)
+get_match_index(const menu_state_t *ms)
 {
 	int n, i;
 
-	n = (m->matches[0][0] >= 0 ? 1 : 0);
+	n = (ms->matches[0][0] >= 0 ? 1 : 0);
 	i = 0;
-	while(i++ < m->d->pos)
+	while(i++ < ms->d->pos)
 	{
-		if(m->matches[i][0] >= 0)
+		if(ms->matches[i][0] >= 0)
 		{
 			++n;
 		}
@@ -1323,10 +1323,10 @@ get_match_index(const menu_state_t *m)
 }
 
 void
-menus_search_reset_hilight(menu_state_t *m)
+menus_search_reset_hilight(menu_state_t *ms)
 {
-	m->search_highlight = 0;
-	menus_full_redraw(m);
+	ms->search_highlight = 0;
+	menus_full_redraw(ms);
 }
 
 int
@@ -1336,11 +1336,11 @@ menus_search_matched(const menu_data_t *m)
 }
 
 void
-menus_search_reset(menu_state_t *m, int backward, int new_repeat_count)
+menus_search_reset(menu_state_t *ms, int backward, int new_repeat_count)
 {
-	m->search_repeat = new_repeat_count;
-	m->backward_search = backward;
-	update_string(&m->regexp, NULL);
+	ms->search_repeat = new_repeat_count;
+	ms->backward_search = backward;
+	update_string(&ms->regexp, NULL);
 }
 
 void
