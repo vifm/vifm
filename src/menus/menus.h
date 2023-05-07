@@ -114,13 +114,20 @@ int menus_enter(menu_state_t *ms, struct view_t *view);
  * be saved. */
 int menus_unstash(struct view_t *view);
 
-/* When the menu already displays a stash, loads an older one.  Returns zero on
+/* Loads an older stash after possibly stashing current menu.  Returns zero on
  * sucess or non-zero if there is no older stash. */
 int menus_unstash_older(menu_state_t *ms);
 
-/* When the menu already displays a stash, loads an newer one.  Returns zero on
- * sucess or non-zero if there is no newer stash. */
+/* Loads a newer menu stash.  Returns zero on sucess or non-zero if there is no
+ * such stash. */
 int menus_unstash_newer(menu_state_t *ms);
+
+/* Loads menu from a stash by its index. */
+void menus_unstash_at(menu_state_t *ms, int index);
+
+/* Retrieves stashed menu by its index (from 0).  Sets *current if that's the
+ * last viewed menu.  Returns NULL on invalid index. */
+const menu_data_t * menus_get_stash(int index, int *current);
 
 /* Moves menu items into custom view.  Returns zero on success, otherwise
  * non-zero is returned. */

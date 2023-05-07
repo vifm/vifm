@@ -1412,6 +1412,11 @@ The builtin commands are:
     rhs can contain spaces and any special sequences accepted in rhs of
     mappings (see |vifm-mappings|).  Abbreviations are expanded non-recursively.
 
+                                               *vifm-:chistory* *vifm-:chi*
+:chi[story]
+    display menu of saved menus.  See |vifm-menus-and-dialogs| for controls,
+    also see |vifm-menus-history|.
+
                                                *vifm-:cnoreabbrev*
                                                *vifm-:cnorea*
 :cnorea[bbrev]
@@ -5492,6 +5497,11 @@ m
 ]
     put cursor on the next device.
 
+Menus history (:chistory) menu~
+
+Enter, l
+    load selected menu.
+
 Plugins (:plugins) menu~
 
 e
@@ -5590,6 +5600,8 @@ As already hinted above, this doesn't apply to every menu because things like
 need to be saved.  Only menus that are derived from external sources and
 support navigation (like via |vifm-m_gf|) are remembered.
 
+Navigating through history~
+
 Re-opening the last viewed menu of relevant type is done by running
 |vifm-:copen| command.  Once opened |vifm-m_:colder| can be used to view older
 menus and |vifm-m_:cnewer| to view newer ones.
@@ -5626,9 +5638,15 @@ this situation, but :colder will:
    sequence (current menu is stashed the same way as described above)
  - if current menu can't be stashed, behave as |vifm-m_:quit|, :copen sequence
 
+Viewing history~
+
+In order to avoid enumerating menus looking for the matching one,
+|vifm-:chistory| command can be used to get an overview of saved menus and
+opening a specific one.
+
 Related topics~
 
-Commands: |vifm-:copen|, |vifm-m_:colder|, |vifm-m_:cnewer|
+Commands: |vifm-:chistory|, |vifm-:copen|, |vifm-m_:colder|, |vifm-m_:cnewer|
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*

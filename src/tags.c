@@ -205,6 +205,8 @@ const char *tags[] = {
 	"vifm-:cd",
 	"vifm-:cds",
 	"vifm-:change",
+	"vifm-:chi",
+	"vifm-:chistory",
 	"vifm-:chmod",
 	"vifm-:chown",
 	"vifm-:clone",

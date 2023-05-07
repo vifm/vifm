@@ -871,6 +871,12 @@ menus_unstash_newer(menu_state_t *ms)
 	return 0;
 }
 
+void
+menus_unstash_at(menu_state_t *ms, int index)
+{
+	unstash_menu_at(ms, menu_stash_depth - 1 - index);
+}
+
 /* Loads a stashed menu specified by its index.  If another stashed menu was
  * active, it's saved back to the stash. */
 static void
@@ -890,6 +896,19 @@ unstash_menu_at(menu_state_t *ms, int index)
 
 	menu_stash_index = index;
 	modmenu_reenter(&menu_data_storage);
+}
+
+const menu_data_t *
+menus_get_stash(int index, int *current)
+{
+	if(index >= menu_stash_depth)
+	{
+		return NULL;
+	}
+
+	int real_index = menu_stash_depth - 1 - index;
+	*current = (real_index == menu_stash_index);
+	return &menu_data_stash[real_index];
 }
 
 KHandlerResponse

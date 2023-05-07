@@ -10,6 +10,8 @@
 	Added :col[der] and :cnew[er] commands to menu mode to traverse history of
 	navigation menus.
 
+	Added :chi[story] command that opens a menu of saved menus.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

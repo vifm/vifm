@@ -1596,6 +1596,12 @@ register new or overwrites existing abbreviation for command-line mode.  rhs
 can contain spaces and any special sequences accepted in rhs of mappings (see
 "Mappings" section below).  Abbreviations are expanded non-recursively.
 .TP
+.BI "                                         :chistory"
+.TP
+.BI ":chi[story]"
+display menu of saved menus.  See "Menus and dialogs" section for controls,
+also see "Menus history" section.
+.TP
 .BI "                                         :cnoreabbrev"
 .TP
 .BI ":cnorea[bbrev]"
@@ -6566,6 +6572,12 @@ put cursor on the previous device.
 put cursor on the next device.
 
 .LP
+.B Menus history (:chistory) menu
+.TP
+.B "Enter, l"
+load selected menu.
+
+.LP
 .B Plugins (:plugins) menu
 .TP
 .B e
@@ -6689,6 +6701,8 @@ As already hinted above, this doesn't apply to every menu because things like
 need to be saved.  Only menus that are derived from external sources and
 support navigation (like via gf) are remembered.
 
+.B Navigating through history
+
 Re-opening the last viewed menu of relevant type is done by running
 :copen command.  Once opened :colder can be used to view older
 menus and :cnewer to view newer ones.
@@ -6729,9 +6743,15 @@ this situation, but :colder will:
 sequence (current menu is stashed the same way as described above)
  - if current menu can't be stashed, behave as :quit, :copen sequence
 
+.B Viewing history
+
+In order to avoid enumerating menus looking for the matching one,
+:chistory command can be used to get an overview of saved menus and
+opening a specific one.
+
 .B Related topics
 
-Commands: :copen, :colder (in menus), :cnewer (in menus)
+Commands: :chistory, :copen, :colder (in menus), :cnewer (in menus)
 .\" ---------------------------------------------------------------------------
 .SH Custom views
 .\" ---------------------------------------------------------------------------

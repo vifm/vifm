@@ -514,11 +514,22 @@ rege
 reged
 regedi
 regedit
+chi
+chis
+chist
+chisto
+chistor
+chistory
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session
 nnoremap lhs :delsession
 nnoremap lhs :tabonly
+nnoremap lhs :chis
+nnoremap lhs :chist
+nnoremap lhs :chisto
+nnoremap lhs :chistor
+nnoremap lhs :chistory
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
