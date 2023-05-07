@@ -81,6 +81,9 @@ typedef struct menu_data_t
 	/* Whether this menu when non-empty should be saved for future use on closing
 	 * menu. */
 	int stashable;
+	/* Whether selecting an item should keep menu mode active while running
+	 * execute_handler. */
+	int menu_context;
 
 	menu_state_t *state; /* Opaque pointer to menu mode state. */
 	int initialized;     /* Marker that shows whether menu data needs freeing. */

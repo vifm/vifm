@@ -111,6 +111,7 @@ show_history(view_t *view, HistoryType type, hist_t *hist, const char title[])
 	m.execute_handler = &execute_history_cb;
 	m.key_handler = &history_khandler;
 	m.extra_data = type;
+	m.menu_context = (type == MENUCMDHISTORY);
 
 	int i;
 	for(i = 0; i < hist->size; ++i)
@@ -132,8 +133,6 @@ execute_history_cb(view_t *view, menu_data_t *m)
 	{
 		case MENUCMDHISTORY:
 			hists_menucmd_save(line);
-			/* This callback is called with mode set to "normal". */
-			vle_mode_set(MENU_MODE, VMT_PRIMARY);
 			curr_stats.save_msg = (cmds_dispatch(line, view, CIT_MENU_COMMAND) != 0);
 			/* Request staying in the menu only if the command hasn't left it. */
 			return vle_mode_is(MENU_MODE);

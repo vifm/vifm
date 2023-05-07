@@ -490,8 +490,12 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	static menu_data_t *saved_menu;
 
-	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	saved_menu = menu;
+	if(!menu->menu_context)
+	{
+		vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
+	}
+
 	if(menu->execute_handler != NULL && menu->execute_handler(view, menu))
 	{
 		vle_mode_set(MENU_MODE, VMT_PRIMARY);
