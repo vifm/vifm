@@ -88,7 +88,7 @@ static void unstash_menu_at(menu_state_t *ms, int index);
 static const char * get_relative_path_base(const menu_data_t *m,
 		const view_t *view);
 static int menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view);
-static int search_menu(menu_state_t *ms, int start_pos, int print_errors);
+static int search_menu(menu_state_t *ms, int print_errors);
 static int search_menu_forwards(menu_state_t *ms, int start_pos);
 static int search_menu_backwards(menu_state_t *ms, int start_pos);
 static int navigate_to_match(menu_state_t *ms, int pos);
@@ -1114,7 +1114,7 @@ menus_search(const char pattern[], menu_data_t *m, int print_errors)
 	{
 		/* Reactivate match highlighting on search. */
 		ms->search_highlight = 1;
-		if(search_menu(ms, m->pos, print_errors) != 0)
+		if(search_menu(ms, print_errors) != 0)
 		{
 			menus_partial_redraw(ms);
 			menus_set_pos(ms, m->pos);
@@ -1140,7 +1140,7 @@ menus_search(const char pattern[], menu_data_t *m, int print_errors)
 /* Goes through all menu items and marks those that match search pattern.
  * Returns non-zero on error. */
 static int
-search_menu(menu_state_t *ms, int start_pos, int print_errors)
+search_menu(menu_state_t *ms, int print_errors)
 {
 	menu_data_t *const m = ms->d;
 	int cflags;
