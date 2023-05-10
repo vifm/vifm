@@ -54,7 +54,7 @@ show_jobs_menu(view_t *view)
 
 	reload_jobs_list(&jobs_m);
 
-	return menus_enter(jobs_m.state, view);
+	return menus_enter(&jobs_m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

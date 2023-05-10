@@ -49,7 +49,7 @@ show_history_menu(view_t *view)
 	m.items = list.items;
 	m.len = list.nitems;
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Lists directory history of the view.  Puts current position into *pos.

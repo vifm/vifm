@@ -39,7 +39,7 @@ show_dirstack_menu(view_t *view)
 	m.items = dir_stack_list();
 	m.len = count_strings(m.items);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

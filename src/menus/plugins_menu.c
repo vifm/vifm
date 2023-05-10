@@ -59,7 +59,7 @@ show_plugins_menu(view_t *view)
 		plugs_m.void_data[plugs_m.len - 1] = (void *)plug;
 	}
 
-	return menus_enter(plugs_m.state, view);
+	return menus_enter(&plugs_m, view);
 }
 
 /* Turns plugin status into a string.  Returns the string. */

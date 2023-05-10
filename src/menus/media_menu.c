@@ -105,7 +105,7 @@ show_media_menu(struct view_t *view)
 
 	position_cursor(&m);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback that is called when menu item is selected.  Return non-zero to stay

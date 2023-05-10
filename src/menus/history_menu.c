@@ -119,7 +119,7 @@ show_history(view_t *view, HistoryType type, hist_t *hist, const char title[])
 		m.len = add_to_string_array(&m.items, m.len, hist->items[i].text);
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback that is invoked when menu item is selected.  Should return non-zero

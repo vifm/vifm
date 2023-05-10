@@ -54,7 +54,7 @@ show_undolist_menu(view_t *view, int with_details)
 	menus_set_pos(m.state, un_get_list_pos(with_details));
 	set_mark(&m, m.pos);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken

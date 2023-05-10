@@ -62,7 +62,7 @@ show_trashes_menu(view_t *view, int calc_size)
 
 	free_string_array(trashes, ntrashes);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Formats single menu item.  Returns pointer to newly allocated string. */

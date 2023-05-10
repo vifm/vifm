@@ -701,22 +701,22 @@ expand_tabulation_a(const char line[], size_t tab_stops)
 }
 
 int
-menus_enter(menu_state_t *ms, view_t *view)
+menus_enter(menu_data_t *m, view_t *view)
 {
-	if(ms->d->len < 1)
+	if(m->len < 1)
 	{
-		ui_sb_msg(ms->d->empty_msg);
-		menus_reset_data(ms->d);
+		ui_sb_msg(m->empty_msg);
+		menus_reset_data(m);
 		return 1;
 	}
 
-	init_menu_state(ms, view);
+	init_menu_state(m->state, view);
 
 	ui_setup_for_menu_like();
-	term_title_update(ms->d->title);
-	menus_partial_redraw(ms);
-	menus_set_pos(ms, ms->d->pos);
-	modmenu_enter(ms->d, view);
+	term_title_update(m->title);
+	menus_partial_redraw(m->state);
+	menus_set_pos(m->state, m->pos);
+	modmenu_enter(m, view);
 	return 0;
 }
 
@@ -850,7 +850,7 @@ menus_unstash(view_t *view)
 	menu_data_stash[menu_stash_index].initialized = 0;
 	menu_state.d = &menu_data_storage;
 
-	return menus_enter(menu_data_storage.state, view);
+	return menus_enter(&menu_data_storage, view);
 }
 
 int
@@ -1089,7 +1089,7 @@ menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 		append_to_string(&m->empty_msg, " (cancelled)");
 	}
 
-	return menus_enter(m->state, view);
+	return menus_enter(m, view);
 }
 
 void

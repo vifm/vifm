@@ -59,7 +59,7 @@ show_bmarks_menu(view_t *view, const char tags[], int go_on_single_match)
 		return curr_stats.save_msg;
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback for listings of bookmarks. */

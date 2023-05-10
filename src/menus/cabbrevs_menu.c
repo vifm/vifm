@@ -53,7 +53,7 @@ show_cabbrevs_menu(view_t *view)
 		m.len = put_into_string_array(&m.items, m.len, descr);
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken

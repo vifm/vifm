@@ -67,7 +67,7 @@ show_chistory_menu(struct view_t *view)
 		}
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

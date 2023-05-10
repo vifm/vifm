@@ -39,7 +39,7 @@ show_vifm_menu(view_t *view)
 	m.items = reallocarray(NULL, len, sizeof(char *));
 	m.len = fill_version_info(m.items, /*include_stats=*/1);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

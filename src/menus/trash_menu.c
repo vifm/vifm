@@ -61,7 +61,7 @@ show_trash_menu(view_t *view)
 		}
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken

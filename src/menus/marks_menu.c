@@ -114,7 +114,7 @@ show_marks_menu(view_t *view, const char marks[])
 	}
 	m.len = i;
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
