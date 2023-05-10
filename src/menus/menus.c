@@ -173,10 +173,6 @@ menus_init_data(menu_data_t *m, view_t *view, char title[], char empty_msg[])
 		menus_reset_data(m);
 	}
 
-	if(menu_state.d != NULL)
-	{
-		menu_state.d->state = NULL;
-	}
 	menu_state.d = m;
 
 	m->title = escape_unreadable(title);
@@ -247,21 +243,11 @@ deinit_menu_data(menu_data_t *m)
 static void
 reset_menu_state(menu_state_t *ms)
 {
-	if(ms == NULL)
-	{
-		return;
-	}
-
 	update_string(&ms->regexp, NULL);
 	free(ms->matches);
 	ms->matches = NULL;
 
-	if(menu_state.d != NULL)
-	{
-		menu_state.d->state = NULL;
-	}
-	menu_state.d = NULL;
-
+	ms->d = NULL;
 	ms->view = NULL;
 }
 
@@ -753,10 +739,6 @@ replace_menu_data(menu_data_t *m)
 	free(menu_state.matches);
 	menu_state.matches = NULL;
 
-	if(menu_state.d != NULL)
-	{
-		menu_state.d->state = NULL;
-	}
 	menu_state.d = m;
 	m->state = &menu_state;
 }
