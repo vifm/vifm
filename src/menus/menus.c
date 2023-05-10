@@ -79,7 +79,7 @@ static void draw_menu_frame(const menu_state_t *ms);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
-static void init_menu_state(menu_state_t *ms, view_t *view);
+static void init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view);
 static void replace_menu_data(menu_data_t *m);
 static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
@@ -94,6 +94,7 @@ static int search_menu_backwards(menu_state_t *ms, int start_pos);
 static int navigate_to_match(menu_state_t *ms, int pos);
 static int get_match_index(const menu_state_t *ms);
 TSTATIC void menus_drop_stash(void);
+TSTATIC void menus_set_active(menu_data_t *m);
 
 struct menu_state_t
 {
@@ -172,8 +173,6 @@ menus_init_data(menu_data_t *m, view_t *view, char title[], char empty_msg[])
 	{
 		menus_reset_data(m);
 	}
-
-	menu_state.d = m;
 
 	m->title = escape_unreadable(title);
 	free(title);
@@ -696,7 +695,7 @@ menus_enter(menu_data_t *m, view_t *view)
 		return 1;
 	}
 
-	init_menu_state(m->state, view);
+	init_menu_state(m->state, m, view);
 
 	ui_setup_for_menu_like();
 	term_title_update(m->title);
@@ -708,8 +707,9 @@ menus_enter(menu_data_t *m, view_t *view)
 
 /* Initializes menu state structure with default/initial value. */
 static void
-init_menu_state(menu_state_t *ms, view_t *view)
+init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
 {
+	ms->d = m;
 	ms->current = 1;
 	ms->win_rows = getmaxy(menu_win);
 	ms->backward_search = 0;
@@ -1384,6 +1384,12 @@ menus_drop_stash(void)
 
 	menu_stash_depth = 0;
 	menu_stash_index = 0;
+}
+
+TSTATIC void
+menus_set_active(menu_data_t *m)
+{
+	menu_state.d = m;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -20,6 +20,8 @@ SETUP()
 	m.len = add_to_string_array(&m.items, m.len, "a");
 	m.len = add_to_string_array(&m.items, m.len, "b");
 	m.len = add_to_string_array(&m.items, m.len, "c");
+
+	menus_set_active(&m);
 }
 
 TEARDOWN()

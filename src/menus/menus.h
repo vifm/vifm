@@ -211,6 +211,7 @@ char * menus_format_title(const menu_data_t *m, struct view_t *view);
 
 TSTATIC_DEFS(
 	void menus_drop_stash(void);
+	void menus_set_active(menu_data_t *m);
 )
 
 #endif /* VIFM__MENUS__MENUS_H__ */
