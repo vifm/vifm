@@ -67,7 +67,6 @@
 #include "../status.h"
 
 static void deinit_menu_data(menu_data_t *m);
-static void reset_menu_state(menu_state_t *ms);
 static void show_position_in_menu(const menu_data_t *m);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(view_t *view, const char path[]);
@@ -209,8 +208,6 @@ menus_reset_data(menu_data_t *m)
 	{
 		deinit_menu_data(m);
 	}
-
-	reset_menu_state(m->state);
 }
 
 /* Frees resources taken up by data at most once.  Accepts zero-initialized
@@ -236,18 +233,6 @@ deinit_menu_data(menu_data_t *m)
 	free(m->empty_msg);
 	free(m->cwd);
 	m->initialized = 0;
-}
-
-/* Frees resources associated with menu mode.  ms can be NULL. */
-static void
-reset_menu_state(menu_state_t *ms)
-{
-	update_string(&ms->regexp, NULL);
-	free(ms->matches);
-	ms->matches = NULL;
-
-	ms->d = NULL;
-	ms->view = NULL;
 }
 
 void
@@ -705,10 +690,13 @@ menus_enter(menu_data_t *m, view_t *view)
 	return 0;
 }
 
-/* Initializes menu state structure with default/initial value. */
+/* Initializes menu state structure with default/initial values. */
 static void
 init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
 {
+	free(ms->regexp);
+	free(ms->matches);
+
 	ms->d = m;
 	ms->current = 1;
 	ms->win_rows = getmaxy(menu_win);
