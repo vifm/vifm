@@ -712,16 +712,27 @@ init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
 void
 menus_switch_to(menu_data_t *m)
 {
-	modmenu_set_data(m);
+	menu_state_t *ms = m->state;
+
+	if(stash_is_displayed())
+	{
+		menu_data_stash[menu_stash_index] = *ms->d;
+		ms->d->initialized = 0;
+	}
+	else if(ms->d != NULL && can_stash_menu(ms->d))
+	{
+		stash_menu(ms->d);
+	}
 
 	replace_menu_data(m);
-	menus_full_redraw(m->state);
 }
 
 /* Changes active menu data. */
 static void
 replace_menu_data(menu_data_t *m)
 {
+	modmenu_set_data(m);
+
 	menu_state.current = 1;
 	menu_state.matching_entries = 0;
 	free(menu_state.matches);
@@ -729,6 +740,10 @@ replace_menu_data(menu_data_t *m)
 
 	menu_state.d = m;
 	m->state = &menu_state;
+
+	menus_partial_redraw(m->state);
+	menus_set_pos(m->state, m->pos);
+	ui_refresh_win(menu_win);
 }
 
 char *
@@ -893,7 +908,7 @@ unstash_menu_at(menu_state_t *ms, int index)
 	menu_data_stash[index].initialized = 0;
 
 	menu_stash_index = index;
-	menus_switch_to(&menu_data_storage);
+	replace_menu_data(&menu_data_storage);
 }
 
 const menu_data_t *
