@@ -103,8 +103,9 @@ void menus_reset_data(menu_data_t *m);
 
 /* Menu entering/reentering and transformation. */
 
-/* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
- * status bar message should be saved. */
+/* Prepares menu, draws it and switches to the menu mode.  If a menu mode is
+ * already active, switch to the new menu stashing the current one if necessary.
+ * Returns non-zero if status bar message should be saved. */
 int menus_enter(menu_data_t *m, struct view_t *view);
 
 /* Replaces menu of the menu mode. */

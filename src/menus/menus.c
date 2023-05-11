@@ -680,6 +680,12 @@ menus_enter(menu_data_t *m, view_t *view)
 		return 1;
 	}
 
+	if(vle_mode_is(MENU_MODE))
+	{
+		menus_switch_to(m);
+		return 0;
+	}
+
 	init_menu_state(m->state, m, view);
 
 	ui_setup_for_menu_like();
