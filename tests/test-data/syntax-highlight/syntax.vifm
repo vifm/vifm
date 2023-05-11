@@ -530,6 +530,12 @@ nnoremap lhs :chist
 nnoremap lhs :chisto
 nnoremap lhs :chistor
 nnoremap lhs :chistory
+nnoremap lhs :keepsel
+nnoremap lhs :plugin
+nnoremap lhs :plugins
+nnoremap lhs :st
+nnoremap lhs :sto
+nnoremap lhs :stop
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
