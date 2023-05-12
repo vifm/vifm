@@ -107,7 +107,7 @@ show_file_menu(view_t *view, int background)
 		m.len = add_to_string_array(&m.items, m.len, entry);
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Returns pointer to a statically allocated buffer */
@@ -188,7 +188,7 @@ show_fileprograms_menu(view_t *view, const char fname[])
 	fill_menu_from_records(&m, &file_programs);
 	ft_assoc_records_free(&file_programs);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 int
@@ -205,7 +205,7 @@ show_fileviewers_menu(view_t *view, const char fname[])
 	fill_menu_from_records(&m, &file_viewers);
 	ft_assoc_records_free(&file_viewers);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Fills the menu with commands from association records. */

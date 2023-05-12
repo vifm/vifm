@@ -53,7 +53,7 @@ show_colorschemes_menu(view_t *view)
 	m.pos = string_array_pos_case(m.items, m.len, cfg.cs.name);
 #endif
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

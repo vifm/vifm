@@ -23,7 +23,6 @@
 
 #include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../modes/menu.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -60,7 +59,7 @@ show_plugins_menu(view_t *view)
 		plugs_m.void_data[plugs_m.len - 1] = (void *)plug;
 	}
 
-	return menus_enter(plugs_m.state, view);
+	return menus_enter(&plugs_m, view);
 }
 
 /* Turns plugin status into a string.  Returns the string. */
@@ -114,7 +113,7 @@ show_plugin_log(view_t *view, menu_data_t *m, plug_t *plug)
 		log_m.key_handler = &log_khandler;
 		log_m.items = break_into_lines(plug->log, plug->log_len, &log_m.len, 0);
 
-		modmenu_reenter(&log_m);
+		menus_switch_to(&log_m);
 	}
 }
 
@@ -125,7 +124,7 @@ log_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"h") == 0)
 	{
-		modmenu_reenter(&plugs_m);
+		menus_switch_to(&plugs_m);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

@@ -211,6 +211,7 @@ vifm_SOURCES = \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bmarks_menu.c menus/bmarks_menu.h \
 	menus/cabbrevs_menu.c menus/cabbrevs_menu.h \
+	menus/chistory_menu.c menus/chistory_menu.h \
 	menus/colorscheme_menu.c menus/colorscheme_menu.h \
 	menus/commands_menu.c menus/commands_menu.h \
 	menus/dirhistory_menu.c menus/dirhistory_menu.h \

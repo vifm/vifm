@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2023 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,30 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "vifm_menu.h"
+#ifndef VIFM__MENUS__CHISTORY_MENU_H__
+#define VIFM__MENUS__CHISTORY_MENU_H__
 
-#include <stddef.h> /* NULL */
-#include <string.h> /* strdup() */
+struct view_t;
 
-#include "../compat/reallocarray.h"
-#include "../ui/ui.h"
-#include "../version.h"
-#include "menus.h"
+/* Displays list of stashed menus.  Returns non-zero if status bar message
+ * should be saved. */
+int show_chistory_menu(struct view_t *view);
 
-int
-show_vifm_menu(view_t *view)
-{
-	static menu_data_t m;
-	int len;
-	/* Version information menu always contains at least one item. */
-	menus_init_data(&m, view, strdup("Vifm Information"), NULL);
-
-	len = fill_version_info(NULL, /*include_stats=*/1);
-	m.items = reallocarray(NULL, len, sizeof(char *));
-	m.len = fill_version_info(m.items, /*include_stats=*/1);
-
-	return menus_enter(&m, view);
-}
+#endif /* VIFM__MENUS__CHISTORY_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

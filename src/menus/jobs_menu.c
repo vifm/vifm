@@ -25,7 +25,6 @@
 
 #include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../modes/menu.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -55,7 +54,7 @@ show_jobs_menu(view_t *view)
 
 	reload_jobs_list(&jobs_m);
 
-	return menus_enter(jobs_m.state, view);
+	return menus_enter(&jobs_m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
@@ -237,7 +236,7 @@ show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job)
 		m.key_handler = &errs_khandler;
 		m.items = break_into_lines(errors, errors_len, &m.len, 0);
 
-		modmenu_reenter(&m);
+		menus_switch_to(&m);
 	}
 	free(cmd);
 	free(errors);
@@ -250,7 +249,7 @@ errs_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"h") == 0)
 	{
-		modmenu_reenter(&jobs_m);
+		menus_switch_to(&jobs_m);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

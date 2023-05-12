@@ -36,7 +36,7 @@ void modmenu_enter(menu_data_t *m, struct view_t *active_view);
 void modmenu_abort(void);
 
 /* Replaces menu of the menu mode. */
-void modmenu_reenter(menu_data_t *m);
+void modmenu_set_data(menu_data_t *m);
 
 /* Performs pre main loop actions for the menu mode, which is assumed to be
  * activated. */

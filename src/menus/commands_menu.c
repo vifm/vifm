@@ -81,7 +81,7 @@ show_commands_menu(view_t *view)
 
 	free_string_array(list, m.len*2);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

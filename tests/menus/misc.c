@@ -11,6 +11,7 @@
 #include "../../src/modes/menu.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -153,6 +154,296 @@ TEST(menu_is_turned_into_cv)
 	assert_true(flist_custom_active(&lwin));
 	assert_string_equal("!echo existing-files/a%M", lwin.custom.title);
 
+	undo_teardown();
+}
+
+TEST(can_not_unstash_a_menu_when_there_is_none)
+{
+	menus_drop_stash();
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_string_equal("No saved menu to display", ui_sb_last());
+}
+
+TEST(can_unstash_a_menu)
+{
+	menus_drop_stash();
+	undo_setup();
+
+	assert_success(cmds_dispatch1("!echo only-line %M", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1, menu_get_current()->len);
+	assert_string_equal("only-line", menu_get_current()->items[0]);
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1, menu_get_current()->len);
+	assert_string_equal("only-line", menu_get_current()->items[0]);
+	(void)vle_keys_exec(WK_ESC);
+
+	undo_teardown();
+}
+
+TEST(can_switch_between_stashed_menus_outside_of_copen)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	/* No older stashes yet. */
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("There is no older menu", ui_sb_last());
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+
+	/* Not stashable. */
+	assert_success(cmds_dispatch1("!echo 3 %m", &lwin, CIT_COMMAND));
+
+	/* There can't be a newer menu. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("There is no newer menu", ui_sb_last());
+
+	/* :colder initiates :copen. */
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+
+	/* More recent menus are dropped, but the current one is stashed. */
+	assert_success(cmds_dispatch1("!echo 4 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+	assert_success(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 4 %M", menu_get_current()->title);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(cnewer_can_start_viewing_history)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+
+	/* Not stashable. */
+	assert_success(cmds_dispatch1("!echo 3 %m", &lwin, CIT_COMMAND));
+
+	/* Last time "!echo 1 %M" was shown, so can move forward. */
+	assert_success(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 2 %M", menu_get_current()->title);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(can_switch_between_stashed_menus)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo first %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo second %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_string_equal("!echo second %M", menu_get_current()->title);
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo first %M", menu_get_current()->title);
+
+	(void)vle_keys_exec(WK_ESC);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(can_not_switch_stashes_indefinitely)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo menu %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_string_equal("!echo menu %M", menu_get_current()->title);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("There is no older menu", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("There is no newer menu", ui_sb_last());
+
+	(void)vle_keys_exec(WK_ESC);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(new_stashes_push_out_old_ones)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	int i;
+
+	for(i = 0; i < 15; ++i)
+	{
+		char cmd[32];
+		snprintf(cmd, sizeof(cmd), "!echo %d %%M", i + 1);
+
+		assert_success(cmds_dispatch1(cmd, &lwin, CIT_COMMAND));
+		(void)vle_keys_exec(WK_ESC);
+	}
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_string_equal("!echo 15 %M", menu_get_current()->title);
+
+	for(i = 14; i > 5; --i)
+	{
+		char title[32];
+		snprintf(title, sizeof(title), "!echo %d %%M", i);
+
+		assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+		assert_string_equal(title, menu_get_current()->title);
+	}
+
+	(void)vle_keys_exec(WK_ESC);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(new_menus_drop_newer_than_current_stash)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo 3 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("!echo 4 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_string_equal("!echo 4 %M", menu_get_current()->title);
+	assert_failure(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+
+	(void)vle_keys_exec(WK_ESC);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(copen_remembers_position)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo 3 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+	assert_failure(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 2 %M", menu_get_current()->title);
+	assert_success(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 3 %M", menu_get_current()->title);
+
+	(void)vle_keys_exec(WK_ESC);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(chistory_menu)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(cmds_dispatch1("chistory", &lwin, CIT_COMMAND));
+	assert_string_equal("Item count -- Menu title", menu_get_current()->title);
+	assert_int_equal(2, menu_get_current()->len);
+	assert_int_equal(1, menu_get_current()->pos);
+
+	(void)vle_keys_exec(WK_CR);
+
+	(void)vle_keys_exec(WK_ESC);
+	assert_string_equal("!echo 2 %M", menu_get_current()->title);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
+TEST(chistory_within_menu)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+
+	assert_success(cmds_dispatch1("chistory", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("Item count -- Menu title", menu_get_current()->title);
+	assert_int_equal(2, menu_get_current()->len);
+	assert_int_equal(1, menu_get_current()->pos);
+	(void)vle_keys_exec(WK_k);
+	assert_int_equal(0, menu_get_current()->pos);
+	(void)vle_keys_exec(WK_CR);
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+
+	opt_handlers_teardown();
 	undo_teardown();
 }
 

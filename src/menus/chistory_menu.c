@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2023 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +16,56 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "dirstack_menu.h"
+#include "chistory_menu.h"
 
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
-#include "../ui/ui.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../dir_stack.h"
 #include "menus.h"
 
-static int execute_dirstack_cb(view_t *view, menu_data_t *m);
+static int execute_stash_cb(struct view_t *view, menu_data_t *m);
 
 int
-show_dirstack_menu(view_t *view)
+show_chistory_menu(struct view_t *view)
 {
 	static menu_data_t m;
-	/* Directory stack always contains at least one item (current directories). */
-	menus_init_data(&m, view, strdup("Directory Stack"), NULL);
-	m.execute_handler = &execute_dirstack_cb;
+	menus_init_data(&m, view, strdup("Item count -- Menu title"),
+			strdup("No saved menus"));
+	m.execute_handler = &execute_stash_cb;
+	m.menu_context = 1;
 
-	m.items = dir_stack_list();
-	m.len = count_strings(m.items);
+	int i = 0, current;
+	const menu_data_t *stash;
+	while((stash = menus_get_stash(i++, &current)) != NULL)
+	{
+		char *title = menus_format_title(stash, view);
+		if(title == NULL)
+		{
+			continue;
+		}
+
+		char *item = format_str("%12d    %s", stash->len, title);
+		free(title);
+
+		if(item == NULL)
+		{
+			continue;
+		}
+
+		if(put_into_string_array(&m.items, m.len, item) != m.len + 1)
+		{
+			free(item);
+			continue;
+		}
+
+		++m.len;
+		if(current)
+		{
+			m.pos = m.len - 1;
+		}
+	}
 
 	return menus_enter(&m, view);
 }
@@ -45,23 +73,10 @@ show_dirstack_menu(view_t *view)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_dirstack_cb(view_t *view, menu_data_t *m)
+execute_stash_cb(struct view_t *view, menu_data_t *m)
 {
-	if(m->items[m->pos][0] != '-')
-	{
-		int pos = 0;
-		int i;
-
-		for(i = 0; i < m->pos; ++i)
-		{
-			if(m->items[i][0] == '-')
-			{
-				++pos;
-			}
-		}
-		dir_stack_rotate(pos);
-	}
-	return 0;
+	menus_unstash_at(m->state, m->pos);
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

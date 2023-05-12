@@ -51,10 +51,10 @@ show_undolist_menu(view_t *view, int with_details)
 		m.len = add_to_string_array(&m.items, m.len, " <<< list end >>>");
 	}
 
-	menus_set_pos(m.state, un_get_list_pos(with_details));
+	m.pos = un_get_list_pos(with_details);
 	set_mark(&m, m.pos);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken

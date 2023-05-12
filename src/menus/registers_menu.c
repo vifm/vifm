@@ -36,7 +36,7 @@ show_register_menu(view_t *view, const char registers[])
 	m.items = regs_list(registers);
 	m.len = count_strings(m.items);
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

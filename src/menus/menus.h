@@ -22,6 +22,7 @@
 
 #include <stddef.h> /* wchar_t */
 
+#include "../utils/test_helpers.h"
 #include "../macros.h"
 
 struct view_t;
@@ -80,6 +81,9 @@ typedef struct menu_data_t
 	/* Whether this menu when non-empty should be saved for future use on closing
 	 * menu. */
 	int stashable;
+	/* Whether selecting an item should keep menu mode active while running
+	 * execute_handler. */
+	int menu_context;
 
 	menu_state_t *state; /* Opaque pointer to menu mode state. */
 	int initialized;     /* Marker that shows whether menu data needs freeing. */
@@ -94,25 +98,45 @@ menu_data_t;
 void menus_init_data(menu_data_t *m, struct view_t *view, char title[],
 		char empty_msg[]);
 
-/* Changes active menu data. */
-void menus_replace_data(menu_data_t *m);
-
 /* Frees resources associated with the menu and clears menu window. */
 void menus_reset_data(menu_data_t *m);
 
 /* Menu entering/reentering and transformation. */
 
-/* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
- * status bar message should be saved. */
-int menus_enter(menu_state_t *m, struct view_t *view);
+/* Prepares menu, draws it and switches to the menu mode.  If a menu mode is
+ * already active, switch to the new menu stashing the current one if necessary.
+ * Returns non-zero if status bar message should be saved. */
+int menus_enter(menu_data_t *m, struct view_t *view);
+
+/* Replaces menu of the menu mode. */
+void menus_switch_to(menu_data_t *m);
+
+/* If the active menu can be stashed but wasn't stashed yet, do it now without
+ * disrupting the menu in any way. */
+void menus_put_on_stash(menu_state_t *ms);
 
 /* Restore previously saved menu.  Returns non-zero if status bar message should
  * be saved. */
 int menus_unstash(struct view_t *view);
 
+/* Loads an older stash after possibly stashing current menu.  Returns zero on
+ * sucess or non-zero if there is no older stash. */
+int menus_unstash_older(menu_state_t *ms);
+
+/* Loads a newer menu stash.  Returns zero on sucess or non-zero if there is no
+ * such stash. */
+int menus_unstash_newer(menu_state_t *ms);
+
+/* Loads menu from a stash by its index. */
+void menus_unstash_at(menu_state_t *ms, int index);
+
+/* Retrieves stashed menu by its index (from 0).  Sets *current if that's the
+ * last viewed menu.  Returns NULL on invalid index. */
+const menu_data_t * menus_get_stash(int index, int *current);
+
 /* Moves menu items into custom view.  Returns zero on success, otherwise
  * non-zero is returned. */
-int menus_to_custom_view(menu_state_t *m, struct view_t *view, int very);
+int menus_to_custom_view(menu_state_t *ms, struct view_t *view, int very);
 
 /* Either makes a menu or custom view out of command output.  Returns non-zero
  * if status bar message should be saved. */
@@ -122,18 +146,18 @@ int menus_capture(struct view_t *view, const char cmd[], int user_sh,
 /* Menu drawing. */
 
 /* Erases current menu item in menu window. */
-void menus_erase_current(menu_state_t *m);
+void menus_erase_current(menu_state_t *ms);
 
 /* Redraws all screen elements used by menus. */
-void menus_full_redraw(menu_state_t *m);
+void menus_full_redraw(menu_state_t *ms);
 
 /* Redraws only menu list itself. */
-void menus_partial_redraw(menu_state_t *m);
+void menus_partial_redraw(menu_state_t *ms);
 
 /* Menu operations. */
 
 /* Updates current position in the menu. */
-void menus_set_pos(menu_state_t *m, int pos);
+void menus_set_pos(menu_state_t *ms, int pos);
 
 /* Removes current menu item and redraws the menu. */
 void menus_remove_current(menu_state_t *ms);
@@ -157,14 +181,14 @@ void menus_goto_dir(struct view_t *view, const char path[]);
 int menus_search(const char pattern[], menu_data_t *m, int print_errors);
 
 /* Resets search state of the menu according to specified parameters. */
-void menus_search_reset(menu_state_t *m, int backward, int new_repeat_count);
+void menus_search_reset(menu_state_t *ms, int backward, int new_repeat_count);
 
 /* Reset search highlight of a menu. */
-void menus_search_reset_hilight(menu_state_t *m);
+void menus_search_reset_hilight(menu_state_t *ms);
 
 /* Performs search in requested direction.  Either continues the previous one or
  * restarts it. */
-void menus_search_repeat(menu_state_t *m, int backward);
+void menus_search_repeat(menu_state_t *ms, int backward);
 
 /* Prints results or error message about search operation to the user. */
 void menus_search_print_msg(const menu_data_t *m);
@@ -185,6 +209,15 @@ char * menus_get_targets(struct view_t *view);
  * next. */
 KHandlerResponse menus_def_khandler(struct view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
+
+/* Formats menu's title as it's drawn on the frame.  Returns newly allocated
+ * string. */
+char * menus_format_title(const menu_data_t *m, struct view_t *view);
+
+TSTATIC_DEFS(
+	void menus_drop_stash(void);
+	void menus_set_active(menu_data_t *m);
+)
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

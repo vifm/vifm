@@ -92,7 +92,7 @@ show_volumes_menu(view_t *view)
 		}
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Retrieves target of a drive created with `subst` command or equivalent.

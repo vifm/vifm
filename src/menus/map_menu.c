@@ -80,7 +80,7 @@ show_map_menu(view_t *view, const char mode_str[], int mode,
 		m.len = 0;
 	}
 
-	return menus_enter(m.state, view);
+	return menus_enter(&m, view);
 }
 
 /* Adds matching key information to the menu after pre-formatting. */

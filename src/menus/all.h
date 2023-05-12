@@ -23,6 +23,7 @@
 #include "apropos_menu.h"
 #include "bmarks_menu.h"
 #include "cabbrevs_menu.h"
+#include "chistory_menu.h"
 #include "colorscheme_menu.h"
 #include "commands_menu.h"
 #include "dirhistory_menu.h"

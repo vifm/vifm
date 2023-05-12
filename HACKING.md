@@ -154,6 +154,7 @@ of changes of each kind.
     |  |  |-- apropos_menu.c - handles :apropos menu
     |  |  |-- bmarks_menu.c - handles :bmarks menu
     |  |  |-- cabbrevs_menu.c - handles :cabbrev and :cnoreabbrev menus
+    |  |  |-- chistory_menu.c - handles :chistory menu
     |  |  |-- colorscheme_menu.c - handles :colorscheme menu
     |  |  |-- commands_menu.c - handles :command menu
     |  |  |-- dirhistory_menu.c - handles :history menu

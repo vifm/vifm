@@ -62,11 +62,11 @@ lua := $(addprefix lua/, $(lua) common.c vifm.c vifm_cmds.c vifm_events.c \
                                 vifmtab.c vifmview.c vlua.c vlua_cbacks.c \
                                 vlua_state.c)
 
-menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c colorscheme_menu.c \
-         commands_menu.c dirhistory_menu.c dirstack_menu.c filetypes_menu.c \
-         find_menu.c grep_menu.c history_menu.c jobs_menu.c locate_menu.c \
-         trash_menu.c trashes_menu.c map_menu.c marks_menu.c menus.c \
-         plugins_menu.c registers_menu.c undolist_menu.c users_menu.c \
+menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c chistory_menu.c \
+         colorscheme_menu.c commands_menu.c dirhistory_menu.c dirstack_menu.c \
+         filetypes_menu.c find_menu.c grep_menu.c history_menu.c jobs_menu.c \
+         locate_menu.c trash_menu.c trashes_menu.c map_menu.c marks_menu.c \
+         menus.c plugins_menu.c registers_menu.c undolist_menu.c users_menu.c \
          vifm_menu.c volumes_menu.c
 menus := $(addprefix menus/, $(menus))
 

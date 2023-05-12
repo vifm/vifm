@@ -7,6 +7,13 @@
 
 	Added ":history mcmd" menu for displaying command-line history of menus.
 
+	Added :col[der] and :cnew[er] commands to menu mode to traverse history of
+	navigation menus.
+
+	Added :chi[story] command that opens a menu of saved menus.
+
+	Added :chi[story] command to menu mode.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
@@ -19,6 +26,8 @@
 	Allowed wild menu popup to take up up to 40% of the screen.
 
 	Made documentation of 'vifminfo' more readable.
+
+	Rewrote "Menus and dialogs" part of the documentation.
 
 	Fixed line number column not including padding to the left of it.
 
