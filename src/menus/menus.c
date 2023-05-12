@@ -745,7 +745,6 @@ replace_menu_data(menu_data_t *m)
 	menu_state.matches = NULL;
 
 	menu_state.d = m;
-	m->state = &menu_state;
 
 	menus_partial_redraw(m->state);
 	menus_set_pos(m->state, m->pos);
