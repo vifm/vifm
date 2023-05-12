@@ -694,9 +694,13 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 		case FT_EXEC:
 			return EXECUTABLE_COLOR;
 
-		default:
-			return (entry->nlinks > 1 ? HARD_LINK_COLOR : WIN_COLOR);
+		case FT_REG:
+		case FT_UNK:
+		case FT_COUNT:
+			break;
 	}
+
+	return (entry->nlinks > 1 ? HARD_LINK_COLOR : WIN_COLOR);
 }
 
 /* Draws a full cell of the file list.  lpadding and rpadding are flags (0/1).
