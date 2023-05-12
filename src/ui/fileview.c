@@ -106,7 +106,7 @@ static int calculate_number_width(const view_t *view, int list_length,
 		int width);
 static int count_digits(int num);
 static int calculate_top_position(view_t *view, int top);
-static int get_line_color(const view_t *view, const dir_entry_t *entry);
+static int get_entry_color(const view_t *view, const dir_entry_t *entry);
 static void draw_cell(columns_t *columns, column_data_t *cdt, int lpadding,
 		size_t print_width, int rpadding);
 static columns_t * get_view_columns(const view_t *view, int truncated);
@@ -512,7 +512,7 @@ print_side_column(view_t *view, entries_t entries, const char current[],
 			.view = view,
 			.entry = &entries.entries[i],
 			.line_pos = i,
-			.line_hi_group = get_line_color(view, &entries.entries[i]),
+			.line_hi_group = get_entry_color(view, &entries.entries[i]),
 			.current_pos = pos,
 			.total_width = number_width + width,
 			.number_width = number_width,
@@ -653,7 +653,7 @@ calculate_top_position(view_t *view, int top)
 
 /* Calculates highlight group for the entry.  Returns highlight group number. */
 static int
-get_line_color(const view_t *view, const dir_entry_t *entry)
+get_entry_color(const view_t *view, const dir_entry_t *entry)
 {
 	switch(entry->type)
 	{
@@ -956,7 +956,7 @@ fview_draw_inactive_cursor(view_t *view)
 	calculate_table_conf(view, &col_count, &col_width);
 
 	cchar_t line_attrs = prepare_inactive_color(view, get_current_entry(view),
-			get_line_color(view, get_current_entry(view)));
+			get_entry_color(view, get_current_entry(view)));
 
 	line = fpos_get_line(view, view->curr_line);
 	column = view->real_num_width + ui_view_left_reserved(view)
@@ -1024,7 +1024,7 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_count,
 
 	cdt->current_line = fpos_get_line(cdt->view, cell);
 	cdt->column_offset = ui_view_left_reserved(cdt->view) + col*col_width;
-	cdt->line_hi_group = get_line_color(cdt->view, cdt->entry);
+	cdt->line_hi_group = get_entry_color(cdt->view, cdt->entry);
 	cdt->number_width = cdt->view->real_num_width;
 	cdt->total_width = ui_view_main_padded(cdt->view);
 	cdt->prefix_len = &prefix_len;
