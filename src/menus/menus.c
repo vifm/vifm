@@ -826,6 +826,18 @@ stash_is_displayed(void)
 	    && !menu_data_stash[menu_stash_index].initialized;
 }
 
+void
+menus_put_on_stash(menu_state_t *ms)
+{
+	if(can_stash_menu(ms->d))
+	{
+		stash_menu(ms->d);
+
+		/* Unstash the menu to keep using it. */
+		move_menu_data(ms->d, &menu_data_stash[menu_stash_index]);
+	}
+}
+
 int
 menus_unstash(view_t *view)
 {

@@ -1,4 +1,4 @@
-.TH VIFM 1 "07 May 2023" "vifm 0.13"
+.TH VIFM 1 "12 May 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6285,6 +6285,12 @@ use cases, the first action is taken for "dir" and the second one for "dir/".
 .BI :range
 navigate to a menu line.
 .TP
+.BI "                                         :chistory"
+.TP
+.BI :chi[story]
+display menu of saved menus.  See "Menus and dialogs" section for controls,
+also see "Menus history" section.
+.TP
 .BI "                                         :colder"
 .TP
 .BI :col[der]
@@ -6746,12 +6752,13 @@ sequence (current menu is stashed the same way as described above)
 .B Viewing history
 
 In order to avoid enumerating menus looking for the matching one,
-:chistory command can be used to get an overview of saved menus and
-opening a specific one.
+:chistory command can be used to get an overview of saved menus, maybe search
+for one and then open it.  The command is also available in menu mode.
 
 .B Related topics
 
-Commands: :chistory, :copen, :colder (in menus), :cnewer (in menus)
+Commands: :chistory, :copen
+Menu commands: :chistory, :colder, :cnewer
 .\" ---------------------------------------------------------------------------
 .SH Custom views
 .\" ---------------------------------------------------------------------------

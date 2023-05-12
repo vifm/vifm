@@ -12,6 +12,8 @@
 
 	Added :chi[story] command that opens a menu of saved menus.
 
+	Added :chi[story] command to menu mode.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

@@ -401,6 +401,29 @@ TEST(chistory_menu)
 	undo_teardown();
 }
 
+TEST(chistory_within_menu)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+
+	assert_success(cmds_dispatch1("chistory", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("Item count -- Menu title", menu_get_current()->title);
+	assert_int_equal(2, menu_get_current()->len);
+	assert_int_equal(1, menu_get_current()->pos);
+	(void)vle_keys_exec(WK_k);
+	assert_int_equal(0, menu_get_current()->pos);
+	(void)vle_keys_exec(WK_CR);
+	assert_string_equal("!echo 1 %M", menu_get_current()->title);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
 TEST(locate_menu_can_escape_args, IF(not_windows))
 {
 	char script_path[PATH_MAX + 1];

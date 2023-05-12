@@ -35,6 +35,7 @@
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../lua/vlua.h"
+#include "../menus/chistory_menu.h"
 #include "../menus/menus.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/fileview.h"
@@ -112,6 +113,7 @@ static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
 static int all_lines_visible(const menu_data_t *menu);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
+static int chistory_cmd(const cmd_info_t *cmd_info);
 static int cnewer_cmd(const cmd_info_t *cmd_info);
 static int colder_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
@@ -187,6 +189,10 @@ static const cmd_add_t commands[] = {
 	  .descr = "navigate to specific line",
 	  .flags = HAS_RANGE,
 	  .handler = &goto_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "chistory",          .abbr = "chi",   .id = -1,
+	  .descr = "display history of menus",
+	  .flags = 0,
+	  .handler = &chistory_cmd,    .min_args = 0,   .max_args = 0, },
 	{ .name = "cnewer",            .abbr = "cnew",  .id = -1,
 	  .descr = "load a newer navigation menu",
 	  .flags = 0,
@@ -1002,6 +1008,17 @@ goto_cmd(const cmd_info_t *cmd_info)
 		ui_refresh_win(menu_win);
 	}
 	return 0;
+}
+
+/* Displays list of remembered menus. */
+static int
+chistory_cmd(const cmd_info_t *cmd_info)
+{
+	/* Make sure current menu is stored to the stash before displaying the
+	 * stash. */
+	menus_put_on_stash(menu->state);
+
+	return show_chistory_menu(view) != 0;
 }
 
 /* Loads a newer navigation menu if there is one. */

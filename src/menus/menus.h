@@ -111,6 +111,10 @@ int menus_enter(menu_data_t *m, struct view_t *view);
 /* Replaces menu of the menu mode. */
 void menus_switch_to(menu_data_t *m);
 
+/* If the active menu can be stashed but wasn't stashed yet, do it now without
+ * disrupting the menu in any way. */
+void menus_put_on_stash(menu_state_t *ms);
+
 /* Restore previously saved menu.  Returns non-zero if status bar message should
  * be saved. */
 int menus_unstash(struct view_t *view);

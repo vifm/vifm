@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 07
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5268,6 +5268,10 @@ Menu commands~
 :range                                         *vifm-m_:range*
     navigate to a menu line.
 
+                                               *vifm-m_:chistory* *vifm-:m_chi*
+:chi[story]
+    display menu of saved menus.  See |vifm-menus-and-dialogs| for controls,
+    also see |vifm-menus-history|.
 :col[der]                                      *vifm-m_:colder* *vifm-m_:col*
     load an older navigation menu if there is one.
     See |vifm-menus-history|.
@@ -5641,12 +5645,14 @@ this situation, but :colder will:
 Viewing history~
 
 In order to avoid enumerating menus looking for the matching one,
-|vifm-:chistory| command can be used to get an overview of saved menus and
-opening a specific one.
+|vifm-:chistory| command can be used to get an overview of saved menus,
+maybe search for one and then open it.  The command is also available in menu
+mode (|vifm-m_:chistory|).
 
 Related topics~
 
-Commands: |vifm-:chistory|, |vifm-:copen|, |vifm-m_:colder|, |vifm-m_:cnewer|
+Commands: |vifm-:chistory|, |vifm-:copen|
+Menu commands: |vifm-m_:chistory|, |vifm-m_:colder|, |vifm-m_:cnewer|
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*
