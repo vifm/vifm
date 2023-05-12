@@ -84,6 +84,7 @@ static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
 static int stash_is_displayed(void);
 static void unstash_menu_at(menu_state_t *ms, int index);
+static void move_menu_data(menu_data_t *to, menu_data_t *from);
 static const char * get_relative_path_base(const menu_data_t *m,
 		const view_t *view);
 static int menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view);
@@ -722,8 +723,7 @@ menus_switch_to(menu_data_t *m)
 
 	if(stash_is_displayed())
 	{
-		menu_data_stash[menu_stash_index] = *ms->d;
-		ms->d->initialized = 0;
+		move_menu_data(&menu_data_stash[menu_stash_index], ms->d);
 	}
 	else if(ms->d != NULL && can_stash_menu(ms->d))
 	{
@@ -808,13 +808,15 @@ stash_menu(menu_data_t *m)
 			deinit_menu_data(&menu_data_stash[ARRAY_LEN(menu_data_stash) - 1]);
 			menu_stash_depth = ARRAY_LEN(menu_data_stash);
 		}
+
 		mem_shr(menu_data_stash, ARRAY_LEN(menu_data_stash),
 				sizeof(menu_data_stash[0]), /*offset=*/1);
+
+		/* We stole data of this item while moving memory. */
+		menu_data_stash[0].initialized = 0;
 	}
 
-	/* Latest menu is always the first one. */
-	menu_data_stash[menu_stash_index] = *m;
-	m->initialized = 0;
+	move_menu_data(&menu_data_stash[menu_stash_index], m);
 }
 
 /* Checks whether menu displays a stash.  Returns non-zero if so. */
@@ -836,9 +838,7 @@ menus_unstash(view_t *view)
 		return 1;
 	}
 
-	deinit_menu_data(&menu_data_storage);
-	menu_data_storage = menu_data_stash[menu_stash_index];
-	menu_data_stash[menu_stash_index].initialized = 0;
+	move_menu_data(&menu_data_storage, &menu_data_stash[menu_stash_index]);
 	menu_state.d = &menu_data_storage;
 
 	return menus_enter(&menu_data_storage, view);
@@ -905,16 +905,25 @@ unstash_menu_at(menu_state_t *ms, int index)
 
 	if(stash_is_displayed())
 	{
-		menu_data_stash[menu_stash_index] = *ms->d;
-		ms->d->initialized = 0;
+		move_menu_data(&menu_data_stash[menu_stash_index], ms->d);
 	}
 
-	deinit_menu_data(&menu_data_storage);
-	menu_data_storage = menu_data_stash[index];
-	menu_data_stash[index].initialized = 0;
+	move_menu_data(&menu_data_storage, &menu_data_stash[index]);
 
 	menu_stash_index = index;
 	replace_menu_data(&menu_data_storage);
+}
+
+/* Changes location of menu data while managing its initialized flag. */
+static void
+move_menu_data(menu_data_t *to, menu_data_t *from)
+{
+	assert(to != from && "Can't move menu data into itself.");
+	assert(from->initialized && "Uninitialized menus shouldn't be moved.");
+
+	deinit_menu_data(to);
+	*to = *from;
+	from->initialized = 0;
 }
 
 const menu_data_t *
