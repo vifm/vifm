@@ -892,7 +892,7 @@ menus_unstash_older(menu_state_t *ms)
 int
 menus_unstash_newer(menu_state_t *ms)
 {
-	if(!stash_is_displayed() || menu_stash_index == 0)
+	if((can_stash_menu(ms->d) && !stash_is_displayed()) || menu_stash_index == 0)
 	{
 		return 1;
 	}

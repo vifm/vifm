@@ -6743,8 +6743,9 @@ Running `:find 11` results in:
 .EE
 
 For convenience, :colder and :cnewer can be used any time
-you're in a menu, not just after :copen.  :cnewer won't do anything in
-this situation, but :colder will:
+you're in a menu, not just after :copen.  :cnewer will work only if
+current menu can't be saved and you've moved back in menus history before.
+Behaviour of :colder is like this:
  - if current menu can be stashed, behave as :quit, :copen, :colder \
 sequence (current menu is stashed the same way as described above)
  - if current menu can't be stashed, behave as :quit, :copen sequence

@@ -5636,8 +5636,9 @@ Running `:find 11` results in:
 10. None
 
 For convenience, |vifm-m_:colder| and |vifm-m_:cnewer| can be used any time
-you're in a menu, not just after |vifm-:copen|.  :cnewer won't do anything in
-this situation, but :colder will:
+you're in a menu, not just after |vifm-:copen|.  :cnewer will work only if
+current menu can't be saved and you've moved back in menus history before.
+Behaviour of :colder is like this:
  - if current menu can be stashed, behave as |vifm-m_:quit|, :copen, :colder
    sequence (current menu is stashed the same way as described above)
  - if current menu can't be stashed, behave as |vifm-m_:quit|, :copen sequence

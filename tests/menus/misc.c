@@ -227,6 +227,29 @@ TEST(can_switch_between_stashed_menus_outside_of_copen)
 	undo_teardown();
 }
 
+TEST(cnewer_can_start_viewing_history)
+{
+	menus_drop_stash();
+	undo_setup();
+	opt_handlers_setup();
+
+	assert_success(cmds_dispatch1("!echo 1 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("!echo 2 %M", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_success(cmds_dispatch1("quit", &lwin, CIT_MENU_COMMAND));
+
+	/* Not stashable. */
+	assert_success(cmds_dispatch1("!echo 3 %m", &lwin, CIT_COMMAND));
+
+	/* Last time "!echo 1 %M" was shown, so can move forward. */
+	assert_success(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("!echo 2 %M", menu_get_current()->title);
+
+	opt_handlers_teardown();
+	undo_teardown();
+}
+
 TEST(can_switch_between_stashed_menus)
 {
 	menus_drop_stash();
