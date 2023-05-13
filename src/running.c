@@ -180,7 +180,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	int selected_entry = (curr->marked && (!user_selection || curr->selected));
 	if(!selected_entry && could_enter_entry)
 	{
-		int dir_like_entry = (is_dir(full_path) || is_unc_root(view->curr_dir));
+		int dir_like_entry = (fentry_is_dir(curr) || is_unc_root(view->curr_dir));
 		if(dir_like_entry)
 		{
 			(void)rn_enter_dir(view);
