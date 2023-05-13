@@ -42,6 +42,9 @@
 	Fixed statusbar output not being preserved on running commands from
 	:history menus.
 
+	Fixed not being able to pick a symbolic link to a directory via
+	--choose-files or --on-choose by selecting and opening it.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

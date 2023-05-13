@@ -231,10 +231,9 @@ is_multiselect(view_t *view)
 static int
 is_runnable(const char full_path[], int type, int force_follow)
 {
-	if(!force_follow && !cfg.follow_links && type == FT_LINK &&
-			get_symlink_type(full_path) != SLT_DIR)
+	if(type == FT_LINK)
 	{
-		return 1;
+		return (!force_follow && !cfg.follow_links);
 	}
 
 	if(type == FT_REG)
