@@ -1260,7 +1260,7 @@ get_drive_info(const char at[], uint64_t *total_bytes, uint64_t *free_bytes)
 uint64_t
 get_true_inode(const dir_entry_t *entry)
 {
-	if(entry->type != FT_LINK)
+	if(entry->type != FT_LINK || entry->slow_target)
 	{
 		return entry->inode;
 	}
