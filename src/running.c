@@ -190,8 +190,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 
 	int multiselect = is_multiselect(view);
 	int runnable = is_runnable(full_path, curr->type, follow != FHL_NO_FOLLOW);
-	int executable =
-		is_executable(full_path, curr, exec == FHE_NO_RUN, multiselect || runnable);
+	int executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
 	if(stats_file_choose_action_set() && (multiselect || runnable || executable))
 	{
