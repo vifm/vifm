@@ -87,7 +87,7 @@
  *  - this makes padding on the left to be included into number area when
  *    padding is present
  *
- * Column_line_print() accounts for the padding (adjusts offset), but it's
+ * column_line_print() accounts for the padding (adjusts offset), but it's
  * really drawn by draw_cell().
  *
  * Padding should be included in widths unless it's explicitly specified
