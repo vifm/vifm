@@ -963,9 +963,10 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 
 		const SymLinkType symlink_type = get_symlink_type(path);
 		entry->dir_link = (symlink_type != SLT_UNKNOWN);
+		entry->slow_target = (symlink_type == SLT_SLOW);
 
 		/* Query mode of symbolic link target. */
-		if(symlink_type != SLT_SLOW && os_stat(entry->name, &s) == 0)
+		if(!entry->slow_target && os_stat(entry->name, &s) == 0)
 		{
 			entry->mode = s.st_mode;
 		}
@@ -1027,6 +1028,7 @@ fill_dir_entry(dir_entry_t *entry, const char path[],
 	{
 		const SymLinkType symlink_type = get_symlink_type(path);
 		entry->dir_link = (symlink_type != SLT_UNKNOWN);
+		entry->slow_target = (symlink_type == SLT_SLOW);
 
 		entry->type = FT_LINK;
 	}
@@ -1589,7 +1591,7 @@ void
 fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
 		uint64_t *size, uint64_t *nitems)
 {
-	const int is_slow_fs = view->on_slow_fs;
+	const int is_slow_fs = view->on_slow_fs || entry->slow_target;
 	dcache_result_t size_res, nitems_res;
 
 	assert((size != NULL || nitems != NULL) &&
@@ -2666,6 +2668,7 @@ init_dir_entry(view_t *view, dir_entry_t *entry, const char name[])
 	entry->type = FT_UNK;
 	entry->nlinks = 0;
 	entry->dir_link = 0;
+	entry->slow_target = 0;
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
 

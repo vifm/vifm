@@ -54,7 +54,6 @@
 #include "../modes/view.h"
 #include "../modes/wk.h"
 #include "../utils/darray.h"
-#include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/matchers.h"
@@ -1920,17 +1919,7 @@ ui_view_reset_decor_cache(const view_t *view)
 static FileType
 ui_view_entry_target_type(const dir_entry_t *entry)
 {
-	if(entry->type == FT_LINK)
-	{
-		char *const full_path = format_str("%s/%s", entry->origin, entry->name);
-		const FileType type = (get_symlink_type(full_path) != SLT_UNKNOWN)
-		                    ? FT_DIR
-		                    : FT_LINK;
-		free(full_path);
-		return type;
-	}
-
-	return entry->type;
+	return (fentry_is_dir(entry) ? FT_DIR : entry->type);
 }
 
 void

@@ -84,10 +84,10 @@ FileHandleLink;
 
 static void handle_file(view_t *view, FileHandleExec exec,
 		FileHandleLink follow);
-static int is_runnable(view_t *view, const char full_path[], int type,
-		int force_follow);
+static int is_multiselect(view_t *view);
+static int is_runnable(const char full_path[], int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
-		int dont_execute, int runnable);
+		int runnable);
 #ifdef _WIN32
 static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
@@ -180,7 +180,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	int selected_entry = (curr->marked && (!user_selection || curr->selected));
 	if(!selected_entry && could_enter_entry)
 	{
-		int dir_like_entry = (is_dir(full_path) || is_unc_root(view->curr_dir));
+		int dir_like_entry = (fentry_is_dir(curr) || is_unc_root(view->curr_dir));
 		if(dir_like_entry)
 		{
 			(void)rn_enter_dir(view);
@@ -188,11 +188,13 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 		}
 	}
 
-	int runnable = is_runnable(view, full_path, curr->type,
-			follow != FHL_NO_FOLLOW);
-	int executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
+	int multiselect = is_multiselect(view);
+	int runnable = is_runnable(full_path, curr->type, follow != FHL_NO_FOLLOW);
+	int executable = (exec != FHE_NO_RUN)
+	              && cfg.auto_execute
+	              && is_executable(full_path, curr, runnable);
 
-	if(stats_file_choose_action_set() && (executable || runnable))
+	if(stats_file_choose_action_set() && (multiselect || runnable || executable))
 	{
 		/* Reuse marking second time. */
 		view->pending_marking = 1;
@@ -204,7 +206,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		execute_file(full_path, exec == FHE_ELEVATE_AND_RUN);
 	}
-	else if(runnable)
+	else if(multiselect || runnable)
 	{
 		run_selection(view, exec == FHE_NO_RUN);
 	}
@@ -214,25 +216,24 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	}
 }
 
+/* Checks whether marking covers multiple files.  Returns non-zero if so. */
+static int
+is_multiselect(view_t *view)
+{
+	/* Checking for at least 2 files in the marking. */
+	dir_entry_t *entry = NULL;
+	return iter_marked_entries(view, &entry)
+	    && iter_marked_entries(view, &entry);
+}
+
 /* Returns non-zero if file can be executed or it's a link to a directory (it
  * can be entered), otherwise zero is returned. */
 static int
-is_runnable(view_t *view, const char full_path[], int type, int force_follow)
+is_runnable(const char full_path[], int type, int force_follow)
 {
-	int count = 0;
-	dir_entry_t *entry = NULL;
-	while(iter_marked_entries(view, &entry))
+	if(type == FT_LINK)
 	{
-		if(++count > 1)
-		{
-			return 1;
-		}
-	}
-
-	if(!force_follow && !cfg.follow_links && type == FT_LINK &&
-			get_symlink_type(full_path) != SLT_DIR)
-	{
-		return 1;
+		return (!force_follow && !cfg.follow_links);
 	}
 
 	if(type == FT_REG)
@@ -245,17 +246,19 @@ is_runnable(view_t *view, const char full_path[], int type, int force_follow)
 
 /* Returns non-zero if file can be executed, otherwise zero is returned. */
 static int
-is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
-		int runnable)
+is_executable(const char full_path[], const dir_entry_t *curr, int runnable)
 {
-	int executable;
+	int executable = (curr->type == FT_EXEC);
 #ifndef _WIN32
-	executable = curr->type == FT_EXEC ||
-			(runnable && os_access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
-#else
-	executable = curr->type == FT_EXEC;
+	if(!executable)
+	{
+		/* XXX: why "runnable" is here?  Aren't the checks excessive? */
+		executable = runnable
+		          && (os_access(full_path, X_OK) == 0)
+		          && S_ISEXE(curr->mode);
+	}
 #endif
-	return executable && !dont_execute && cfg.auto_execute;
+	return executable;
 }
 
 #ifdef _WIN32

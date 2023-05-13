@@ -260,6 +260,7 @@ struct dir_entry_t
 	unsigned int marked : 1;       /* Whether file should be processed. */
 	unsigned int temporary : 1;    /* Whether this is temporary node. */
 	unsigned int dir_link : 1;     /* Whether this is symlink to a directory. */
+	unsigned int slow_target : 1;  /* Whether this symlink has a slow target. */
 	unsigned int owns_origin : 1;  /* Whether this entry is custom one. */
 	unsigned int folded : 1;       /* Whether this entry is folded. */
 };
