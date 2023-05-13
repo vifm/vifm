@@ -87,7 +87,7 @@ static void handle_file(view_t *view, FileHandleExec exec,
 static int is_multiselect(view_t *view);
 static int is_runnable(const char full_path[], int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
-		int dont_execute, int runnable);
+		int runnable);
 #ifdef _WIN32
 static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
@@ -190,7 +190,9 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 
 	int multiselect = is_multiselect(view);
 	int runnable = is_runnable(full_path, curr->type, follow != FHL_NO_FOLLOW);
-	int executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
+	int executable = (exec != FHE_NO_RUN)
+	              && cfg.auto_execute
+	              && is_executable(full_path, curr, runnable);
 
 	if(stats_file_choose_action_set() && (multiselect || runnable || executable))
 	{
@@ -245,17 +247,19 @@ is_runnable(const char full_path[], int type, int force_follow)
 
 /* Returns non-zero if file can be executed, otherwise zero is returned. */
 static int
-is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
-		int runnable)
+is_executable(const char full_path[], const dir_entry_t *curr, int runnable)
 {
-	int executable;
+	int executable = (curr->type == FT_EXEC);
 #ifndef _WIN32
-	executable = curr->type == FT_EXEC ||
-			(runnable && os_access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
-#else
-	executable = curr->type == FT_EXEC;
+	if(!executable)
+	{
+		/* XXX: why "runnable" is here?  Aren't the checks excessive? */
+		executable = runnable
+		          && (os_access(full_path, X_OK) == 0)
+		          && S_ISEXE(curr->mode);
+	}
 #endif
-	return executable && !dont_execute && cfg.auto_execute;
+	return executable;
 }
 
 #ifdef _WIN32
