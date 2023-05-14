@@ -531,7 +531,7 @@ static char ** list_cs_files(int *len);
 static void restore_primary_cs(const col_scheme_t *cs);
 static void reset_to_default_cs(col_scheme_t *cs);
 static void free_cs_highlights(col_scheme_t *cs);
-static file_hi_t * clone_cs_highlights(const col_scheme_t *from);
+static file_hi_t * clone_file_highlights(const col_scheme_t *from);
 static void reset_cs_colors(col_scheme_t *cs);
 static int source_cs(const char name[]);
 static void get_cs_path(const char name[], char buf[], size_t buf_size);
@@ -935,7 +935,7 @@ cs_assign(col_scheme_t *to, const col_scheme_t *from)
 {
 	free_cs_highlights(to);
 	*to = *from;
-	to->file_hi = clone_cs_highlights(from);
+	to->file_hi = clone_file_highlights(from);
 }
 
 /* Resets color scheme to default builtin values. */
@@ -970,7 +970,7 @@ free_cs_highlights(col_scheme_t *cs)
 /* Clones filename specific highlight array of the *from color scheme and
  * returns it. */
 static file_hi_t *
-clone_cs_highlights(const col_scheme_t *from)
+clone_file_highlights(const col_scheme_t *from)
 {
 	int i;
 	file_hi_t *const file_hi = reallocarray(NULL, from->file_hi_count + 1,
