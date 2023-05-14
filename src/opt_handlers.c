@@ -250,41 +250,6 @@ static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
 
-static const char *sort_enum[] = {
-	/* SK_* start with 1. */
-	[0] = "",
-
-	[SK_BY_EXTENSION]     = "ext",
-	[SK_BY_NAME]          = "name",
-	[SK_BY_SIZE]          = "size",
-	[SK_BY_TIME_ACCESSED] = "atime",
-	[SK_BY_TIME_CHANGED]  = "ctime",
-	[SK_BY_TIME_MODIFIED] = "mtime",
-	[SK_BY_INAME]         = "iname",
-	[SK_BY_DIR]           = "dir",
-	[SK_BY_TYPE]          = "type",
-	[SK_BY_FILEEXT]       = "fileext",
-	[SK_BY_NITEMS]        = "nitems",
-	[SK_BY_GROUPS]        = "groups",
-	[SK_BY_TARGET]        = "target",
-	[SK_BY_ROOT]          = "root",
-	[SK_BY_FILEROOT]      = "fileroot",
-#ifndef _WIN32
-	[SK_BY_GROUP_ID]      = "gid",
-	[SK_BY_GROUP_NAME]    = "gname",
-	[SK_BY_MODE]          = "mode",
-	[SK_BY_OWNER_ID]      = "uid",
-	[SK_BY_OWNER_NAME]    = "uname",
-	[SK_BY_PERMISSIONS]   = "perms",
-	[SK_BY_NLINKS]        = "nlinks",
-	[SK_BY_INODE]         = "inode",
-#endif
-
-	[SK_NONE]             = "",
-	[SK_BY_ID]            = "",
-};
-ARRAY_GUARD(sort_enum, SK_TOTAL);
-
 /* Possible values of 'caseoptions'. */
 static const char *caseoptions_vals[][2] = {
 	{ "pPgG", "all caseoptions values" },
