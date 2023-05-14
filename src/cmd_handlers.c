@@ -3062,7 +3062,7 @@ get_file_hi_str(const matchers_t *matchers, const col_attr_t *col)
 static const char *
 get_hi_str(const char title[], const col_attr_t *col)
 {
-	static char buf[256];
+	static char buf[512];
 	static char gui_buf[2*sizeof(buf)];
 
 	char fg_buf[16], bg_buf[16];

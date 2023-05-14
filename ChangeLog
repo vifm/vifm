@@ -29,6 +29,9 @@
 
 	Rewrote "Menus and dialogs" part of the documentation.
 
+	Increase line length limit used during formatting output of :highlight
+	command to allow longer strings.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
