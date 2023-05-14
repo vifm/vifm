@@ -831,6 +831,9 @@ struct strlist_t;
  * specified point on the window beforehand. */
 void ui_pass_through(const struct strlist_t *lines, WINDOW *win, int x, int y);
 
+/* Maps column name to column id.  Returns column id or -1 on error. */
+int ui_map_column_name(const char name[]);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

@@ -68,6 +68,7 @@
 #include "../flist_sel.h"
 #include "../macros.h"
 #include "../opt_handlers.h"
+#include "../sort.h"
 #include "../status.h"
 #include "../vifm.h"
 #include "private/statusline.h"
@@ -2975,6 +2976,19 @@ ui_pass_through(const strlist_t *lines, WINDOW *win, int x, int y)
 	touchwin(status_bar);
 	checked_wmove(status_bar, 0, 0);
 	use_wrefresh(status_bar);
+}
+
+int
+ui_map_column_name(const char name[])
+{
+	int pos =
+		string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1, name);
+	if(pos >= 0)
+	{
+		return 1 + pos;
+	}
+
+	return vlua_viewcolumn_map(curr_stats.vlua, name);
 }
 
 void

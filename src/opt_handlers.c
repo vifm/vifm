@@ -34,7 +34,6 @@
 #include "engine/options.h"
 #include "engine/text_buffer.h"
 #include "int/term_title.h"
-#include "lua/vlua.h"
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
@@ -3375,14 +3374,7 @@ map_name(const char name[], void *arg)
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
 
-	int pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
-			name);
-	if(pos >= 0)
-	{
-		return (pos + 1);
-	}
-
-	int id = vlua_viewcolumn_map(curr_stats.vlua, name);
+	int id = ui_map_column_name(name);
 	if(id == -1)
 	{
 		vle_tb_append_linef(vle_err, "Failed to find column: %s", name);
