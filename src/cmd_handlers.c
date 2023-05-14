@@ -2823,7 +2823,7 @@ hideui_cmd(const cmd_info_t *cmd_info)
 }
 
 /* Handles :highlight command.  There are three forms:
- *  - clear all
+ *  - highlight clear [file]
  *  - highlight file
  *  - highlight group */
 static int
