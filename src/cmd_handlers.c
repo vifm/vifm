@@ -211,7 +211,7 @@ static const char * get_group_str(int group, const col_attr_t *col);
 static const char * get_file_hi_str(const matchers_t *matchers,
 		const col_attr_t *col);
 static const char * get_hi_str(const char title[], const col_attr_t *col);
-static int parse_file_highlight(const cmd_info_t *cmd_info,
+static int parse_highlight_attrs(const cmd_info_t *cmd_info,
 		col_attr_t *color);
 static int try_parse_cterm_color(const char str[], int is_fg,
 		col_attr_t *color);
@@ -2912,7 +2912,7 @@ highlight_file(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	result = parse_file_highlight(cmd_info, &color);
+	result = parse_highlight_attrs(cmd_info, &color);
 	if(result != 0)
 	{
 		matchers_free(matchers);
@@ -2984,7 +2984,7 @@ highlight_group(const cmd_info_t *cmd_info)
 	}
 
 	tmp_color = *color;
-	result = parse_file_highlight(cmd_info, &tmp_color);
+	result = parse_highlight_attrs(cmd_info, &tmp_color);
 	if(result != 0)
 	{
 		return result;
@@ -3091,7 +3091,7 @@ get_hi_str(const char title[], const col_attr_t *col)
 /* Parses arguments of :highlight command.  Returns non-zero in case of error
  * and prints a message on the status bar, on success zero is returned. */
 static int
-parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
+parse_highlight_attrs(const cmd_info_t *cmd_info, col_attr_t *color)
 {
 	int i;
 
