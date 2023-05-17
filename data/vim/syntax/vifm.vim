@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: May 12, 2023
+" Last Change: May 17, 2023
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -142,17 +142,17 @@ syntax case match
 syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ cdpath cd chaselinks classify columns co confirm cf cpoptions cpo
 		\ cvoptions deleteprg dotdirs dotfiles dirsize fastrun fillchars fcs findprg
-		\ followlinks fusehome gdefault grepprg histcursor history hi hlsearch hls
-		\ iec ignorecase ic iooptions incsearch is laststatus lines locateprg ls
-		\ lsoptions lsview mediaprg milleroptions millerview mintimeoutlen mouse
-		\ navoptions number nu numberwidth nuw previewoptions previewprg quickview
-		\ relativenumber rnu rulerformat ruf runexec scrollbind scb scrolloff
-		\ sessionoptions ssop so sort sortgroups sortorder sortnumbers shell sh
-		\ shellflagcmd shcf shortmess shm showtabline stal sizefmt slowfs smartcase
-		\ scs statusline stl suggestoptions syncregs syscalls tablabel tabline
-		\ tabprefix tabscope tabstop tabsuffix tal timefmt timeoutlen title tm trash
-		\ trashdir ts tuioptions to undolevels ul vicmd viewcolumns vifminfo vimhelp
-		\ vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
+		\ followlinks fusehome gdefault grepprg histcursor history hi hloptions
+		\ hlsearch hls iec ignorecase ic iooptions incsearch is laststatus lines
+		\ locateprg ls lsoptions lsview mediaprg milleroptions millerview
+		\ mintimeoutlen mouse navoptions number nu numberwidth nuw previewoptions
+		\ previewprg quickview relativenumber rnu rulerformat ruf runexec scrollbind
+		\ scb scrolloff sessionoptions ssop so sort sortgroups sortorder sortnumbers
+		\ shell sh shellflagcmd shcf shortmess shm showtabline stal sizefmt slowfs
+		\ smartcase scs statusline stl suggestoptions syncregs syscalls tablabel
+		\ tabline tabprefix tabscope tabstop tabsuffix tal timefmt timeoutlen title
+		\ tm trash trashdir ts tuioptions to undolevels ul vicmd viewcolumns
+		\ vifminfo vimhelp vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks

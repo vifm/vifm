@@ -160,6 +160,15 @@ typedef enum
 }
 ChposWhen;
 
+/* What columns should be colored using the entry color. */
+typedef enum
+{
+	CW_PATH,     /* All columns that display part of file path or of its name. */
+	CW_ONE_ROW,  /* Path columns and every column of the current row. */
+	CW_ALL_ROWS, /* All columns of all rows. */
+}
+ColorWhat;
+
 /* File decoration description. */
 typedef struct
 {
@@ -305,6 +314,9 @@ typedef struct config_t
 
 	/* Whether employing Unicode characters in the interface is allowed. */
 	int use_unicode_characters;
+
+	/* What columns should be colored using the entry color. */
+	ColorWhat color_what;
 
 	/* Whether vertical splitter should change its width to equalize view
 	 * sizes. */

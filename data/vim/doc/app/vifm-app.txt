@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 12
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3654,6 +3654,21 @@ type: integer
 default: 15
 
 Maximum number of stored items in all histories.
+
+                                               *vifm-'hloptions'*
+type: string list
+default: "filehi:onerow"
+
+Configures behaviour of highlighting.
+
+    item        default~
+    filehi:str  onerow
+
+The "filehi" item specifies which columns of the view get colored according to
+file type and its name:
+ - path    - highlight columns that display file path, name, root or extension
+ - onerow  - same as "path" and also highlight all columns of the current line
+ - allrows - highlight all columns of each row
 
                                                *vifm-'hlsearch'* *vifm-'hls'*
 hlsearch hls

@@ -191,6 +191,7 @@ cfg_init(void)
 	cfg.extra_padding = 1;
 	cfg.side_borders_visible = 1;
 	cfg.use_unicode_characters = 0;
+	cfg.color_what = CW_ONE_ROW;
 	cfg.flexible_splitter = 1;
 	cfg.display_statusline = 1;
 

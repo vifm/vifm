@@ -1,4 +1,4 @@
-.TH VIFM 1 "12 May 2023" "vifm 0.13"
+.TH VIFM 1 "17 May 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4372,6 +4372,22 @@ type: integer
 default: 15
 .br
 Maximum number of stored items in all histories.
+.TP
+.BI vifm-'hloptions'
+type: string list
+.br
+default: "filehi:onerow"
+.br
+Configures behaviour of highlighting.
+
+  item        default
+  filehi:str  onerow
+
+The "filehi" item specifies which columns of the view get colored according to
+file type and its name:
+ - path    - highlight columns that display file path, name, root or extension
+ - onerow  - same as "path" and also highlight all columns of the current line
+ - allrows - highlight all columns of each row
 .TP
 .BI "'hlsearch' 'hls'"
 type: boolean

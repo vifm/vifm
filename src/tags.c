@@ -71,6 +71,7 @@ const char *tags[] = {
 	"vifm-'hi'",
 	"vifm-'histcursor'",
 	"vifm-'history'",
+	"vifm-'hloptions'",
 	"vifm-'hls'",
 	"vifm-'hlsearch'",
 	"vifm-'ic'",

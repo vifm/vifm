@@ -726,5 +726,33 @@ TEST(tabline)
 	assert_string_equal("asdf", cfg.tab_line);
 }
 
+TEST(hloptions)
+{
+	vle_tb_clear(vle_err);
+	assert_failure(cmds_dispatch("se hloptions=wrong", &lwin, CIT_COMMAND));
+	assert_string_equal("Unknown key for 'hloptions' option: wrong",
+			vle_tb_get_data(vle_err));
+
+	vle_tb_clear(vle_err);
+	assert_failure(cmds_dispatch("se hloptions=filehi:wrong", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("Failed to parse \"filehi\" value: wrong",
+			vle_tb_get_data(vle_err));
+
+	assert_success(cmds_dispatch("se hloptions=filehi:path", &lwin, CIT_COMMAND));
+	assert_int_equal(CW_PATH, cfg.color_what);
+	assert_success(cmds_dispatch("se hloptions=filehi:onerow", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(CW_ONE_ROW, cfg.color_what);
+	assert_success(cmds_dispatch("se hloptions=filehi:allrows", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(CW_ALL_ROWS, cfg.color_what);
+
+	/* Failed parsing doesn't update value. */
+	assert_failure(cmds_dispatch("se hloptions=filehi:path,filehi:wrong", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(CW_ALL_ROWS, cfg.color_what);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
