@@ -594,6 +594,7 @@ hi OddLine
 " "mouse" should be highlighted as 'option'
 " "navoptions" should be highlighted as 'option'
 " "tabline" and "tal" should be highlighted as 'option'
+" "hloptions" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -617,6 +618,7 @@ set autocd noautocd invautocd autocd!
 set mouse
 set navoptions
 set tabline tal
+set hloptions
 
 " "echo" should be highlighted as :command
 " "chooseopt" should be highlighted as builtin function

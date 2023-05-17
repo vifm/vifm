@@ -1383,9 +1383,11 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 	{
 		const int is_current = (cdt->line_pos == cdt->current_pos);
 
-		/* File-specific highlight affects only primary field for non-current lines
-		 * and whole line for the current line. */
-		const int with_line_hi = (primary || is_current);
+		/* Highlight derived from file type/path/name always affects primary field,
+		 * but the rest depends on configuration. */
+		const int with_line_hi = primary
+		                      || (cfg.color_what == CW_ONE_ROW && is_current)
+		                      || cfg.color_what == CW_ALL_ROWS;
 		const int line_color = with_line_hi ? cdt->line_hi_group : -1;
 		mix_in_common_colors(&col, view, cdt->entry, line_color);
 

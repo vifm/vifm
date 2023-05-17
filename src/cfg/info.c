@@ -2253,6 +2253,8 @@ store_global_options(JSON_Object *root)
 	append_dstr(options, format_str("histcursor=%s",
 			escape_spaces(vle_opts_get("histcursor", OPT_GLOBAL))));
 	append_dstr(options, format_str("history=%d", cfg.history_len));
+	append_dstr(options, format_str("hloptions=%s",
+			escape_spaces(vle_opts_get("hloptions", OPT_GLOBAL))));
 	append_dstr(options, format_str("%shlsearch", cfg.hl_search ? "" : "no"));
 	append_dstr(options, format_str("%siec",
 				cfg.sizefmt.ieci_prefixes ? "" : "no"));

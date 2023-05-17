@@ -507,5 +507,31 @@ TEST(active_pane_is_respected_both_ways)
 	remove_file(SANDBOX_PATH "/vifminfo.json");
 }
 
+TEST(options_round_trip)
+{
+	opt_handlers_setup();
+	cfg.vifm_info = VINFO_OPTIONS;
+
+	assert_success(process_set_args("numberwidth=1", /*global=*/1, /*local=*/0));
+	assert_success(process_set_args("numberwidth=11", /*global=*/0, /*local=*/1));
+	assert_int_equal(1, curr_view->num_width_g);
+	assert_int_equal(11, curr_view->num_width);
+	assert_success(process_set_args("grepprg=111", /*global=*/1, /*local=*/0));
+	assert_string_equal("111", cfg.grep_prg);
+
+	write_info_file();
+	assert_success(process_set_args("numberwidth=2", /*global=*/1, /*local=*/0));
+	assert_success(process_set_args("numberwidth=22", /*global=*/0, /*local=*/1));
+	assert_success(process_set_args("grepprg=222", /*global=*/1, /*local=*/0));
+
+	state_load(0);
+	/* Only global values of local options is stored and restored. */
+	assert_int_equal(1, curr_view->num_width_g);
+	assert_int_equal(1, curr_view->num_width);
+	assert_string_equal("111", cfg.grep_prg);
+
+	opt_handlers_teardown();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

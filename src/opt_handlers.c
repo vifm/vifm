@@ -34,7 +34,6 @@
 #include "engine/options.h"
 #include "engine/text_buffer.h"
 #include "int/term_title.h"
-#include "lua/vlua.h"
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
@@ -87,6 +86,7 @@ static void init_classify(optval_t *val);
 static void init_cpoptions(optval_t *val);
 static void init_dirsize(optval_t *val);
 static void init_fillchars(optval_t *val);
+static void init_hloptions(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
 static void init_trashdir(optval_t *val);
 static void init_dotfiles(optval_t *val);
@@ -140,6 +140,7 @@ static void gdefault_handler(OPT_OP op, optval_t val);
 static void grepprg_handler(OPT_OP op, optval_t val);
 static void histcursor_handler(OPT_OP op, optval_t val);
 static void history_handler(OPT_OP op, optval_t val);
+static void hloptions_handler(OPT_OP op, optval_t val);
 static void hlsearch_handler(OPT_OP op, optval_t val);
 static void iec_handler(OPT_OP op, optval_t val);
 static void ignorecase_handler(OPT_OP op, optval_t val);
@@ -250,41 +251,6 @@ static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
 
-static const char *sort_enum[] = {
-	/* SK_* start with 1. */
-	[0] = "",
-
-	[SK_BY_EXTENSION]     = "ext",
-	[SK_BY_NAME]          = "name",
-	[SK_BY_SIZE]          = "size",
-	[SK_BY_TIME_ACCESSED] = "atime",
-	[SK_BY_TIME_CHANGED]  = "ctime",
-	[SK_BY_TIME_MODIFIED] = "mtime",
-	[SK_BY_INAME]         = "iname",
-	[SK_BY_DIR]           = "dir",
-	[SK_BY_TYPE]          = "type",
-	[SK_BY_FILEEXT]       = "fileext",
-	[SK_BY_NITEMS]        = "nitems",
-	[SK_BY_GROUPS]        = "groups",
-	[SK_BY_TARGET]        = "target",
-	[SK_BY_ROOT]          = "root",
-	[SK_BY_FILEROOT]      = "fileroot",
-#ifndef _WIN32
-	[SK_BY_GROUP_ID]      = "gid",
-	[SK_BY_GROUP_NAME]    = "gname",
-	[SK_BY_MODE]          = "mode",
-	[SK_BY_OWNER_ID]      = "uid",
-	[SK_BY_OWNER_NAME]    = "uname",
-	[SK_BY_PERMISSIONS]   = "perms",
-	[SK_BY_NLINKS]        = "nlinks",
-	[SK_BY_INODE]         = "inode",
-#endif
-
-	[SK_NONE]             = "",
-	[SK_BY_ID]            = "",
-};
-ARRAY_GUARD(sort_enum, SK_TOTAL);
-
 /* Possible values of 'caseoptions'. */
 static const char *caseoptions_vals[][2] = {
 	{ "pPgG", "all caseoptions values" },
@@ -334,6 +300,11 @@ static const char *histcursor_vals[][2] = {
 	[BIT(CHPOS_ENTER)] =   { "direnter", "after picking directory in file list" },
 };
 ARRAY_GUARD(histcursor_vals, NUM_CHPOS);
+
+/* Possible keys of 'hloptions' option. */
+static const char *hloptions_enum[][2] = {
+	{ "filehi:", "when to use file highlight: path, onerow or allrows" },
+};
 
 /* Possible keys of 'lsoptions' option. */
 static const char *lsoptions_enum[][2] = {
@@ -701,6 +672,11 @@ options[] = {
 	  OPT_SET, ARRAY_LEN(histcursor_vals), histcursor_vals,
 		&histcursor_handler, NULL,
 	  { .ref.set_items = &cfg.ch_pos_on },
+	},
+	{ "hloptions", "", "settings for how highlighting is done",
+	  OPT_STRLIST, ARRAY_LEN(hloptions_enum), hloptions_enum,
+		&hloptions_handler, NULL,
+	  { .init = &init_hloptions },
 	},
 	{ "history", "hi", "length of all histories",
 	  OPT_INT, 0, NULL, &history_handler, NULL,
@@ -1181,6 +1157,17 @@ init_fillchars(optval_t *val)
 	snprintf(buf, sizeof(buf), "vborder:%s,hborder:%s",
 			cfg.vborder_filler,
 			cfg.hborder_filler);
+	val->str_val = buf;
+}
+
+/* Initializes 'hloptions' with a value built from current configuration. */
+static void
+init_hloptions(optval_t *val)
+{
+	static char buf[128];
+	snprintf(buf, sizeof(buf), "filehi:%s",
+			cfg.color_what == CW_PATH ? "path" :
+			cfg.color_what == CW_ONE_ROW ? "onerow" : "allrows");
 	val->str_val = buf;
 }
 
@@ -2249,6 +2236,59 @@ static void
 history_handler(OPT_OP op, optval_t val)
 {
 	cfg_resize_histories(val.int_val);
+}
+
+/* Handles changes of 'hloptions'.  Updates related configuration value. */
+static void
+hloptions_handler(OPT_OP op, optval_t val)
+{
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	ColorWhat color_what = CW_ONE_ROW;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		const char *option = part;
+		if(skip_prefix(&option, "filehi:"))
+		{
+			if(strcmp(option, "path") == 0)
+			{
+				color_what = CW_PATH;
+			}
+			else if(strcmp(option, "onerow") == 0)
+			{
+				color_what = CW_ONE_ROW;
+			}
+			else if(strcmp(option, "allrows") == 0)
+			{
+				color_what = CW_ALL_ROWS;
+			}
+			else
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"filehi\" value: %s",
+						option);
+				break;
+			}
+		}
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err, "Unknown key for 'hloptions' option: %s",
+					part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		cfg.color_what = color_what;
+		stats_redraw_later();
+	}
+
+	init_hloptions(&val);
+	vle_opts_assign("hloptions", val, OPT_GLOBAL);
 }
 
 static void
@@ -3410,14 +3450,7 @@ map_name(const char name[], void *arg)
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
 
-	int pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
-			name);
-	if(pos >= 0)
-	{
-		return (pos + 1);
-	}
-
-	int id = vlua_viewcolumn_map(curr_stats.vlua, name);
+	int id = ui_map_column_name(name);
 	if(id == -1)
 	{
 		vle_tb_append_linef(vle_err, "Failed to find column: %s", name);

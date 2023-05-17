@@ -14,6 +14,9 @@
 
 	Added :chi[story] command to menu mode.
 
+	Added 'hloptions' option to configure which columns get colored.  Thanks to
+	qsmodo.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
@@ -28,6 +31,9 @@
 	Made documentation of 'vifminfo' more readable.
 
 	Rewrote "Menus and dialogs" part of the documentation.
+
+	Increase line length limit used during formatting output of :highlight
+	command to allow longer strings.
 
 	Fixed line number column not including padding to the left of it.
 

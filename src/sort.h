@@ -23,6 +23,9 @@
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
 
+/* Map from SK_* constants to strings. */
+extern const char *sort_enum[SK_TOTAL];
+
 /* Sorts entries of the view according to its sorting configuration. */
 void sort_view(view_t *view);
 
