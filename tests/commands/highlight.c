@@ -72,8 +72,8 @@ TEST(gui_colors_are_printed)
 				CIT_COMMAND));
 	assert_failure(cmds_dispatch("hi Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
-			"Win        cterm=none ctermfg=white   ctermbg=black  \n"
-			"           gui=none   guifg=#1234fe   guibg=red    ",
+			"Win        cterm=none ctermfg=white   ctermbg=black\n"
+			"           gui=none   guifg=#1234fe   guibg=red",
 			ui_sb_last());
 }
 
@@ -132,7 +132,7 @@ TEST(attributes_are_printed_back_correctly)
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("highlight Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
-			"Win        cterm=underline,reverse ctermfg=white   ctermbg=black  ",
+			"Win        cterm=underline,reverse ctermfg=white   ctermbg=black",
 			ui_sb_last());
 
 	assert_success(cmds_dispatch("highlight Win cterm=italic,standout,bold",
@@ -142,11 +142,11 @@ TEST(attributes_are_printed_back_correctly)
 	assert_failure(cmds_dispatch("highlight Win", &lwin, CIT_COMMAND));
 #ifdef HAVE_A_ITALIC_DECL
 	assert_string_equal(
-			"Win        cterm=bold,standout,italic ctermfg=white   ctermbg=black  ",
+			"Win        cterm=bold,standout,italic ctermfg=white   ctermbg=black",
 			ui_sb_last());
 #else
 	assert_string_equal(
-			"Win        cterm=bold,reverse,standout ctermfg=white   ctermbg=black  ",
+			"Win        cterm=bold,reverse,standout ctermfg=white   ctermbg=black",
 			ui_sb_last());
 #endif
 }
