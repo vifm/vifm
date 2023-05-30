@@ -36,6 +36,79 @@ TEARDOWN()
 	curr_stats.cs = NULL;
 }
 
+/* General behaviour. */
+
+TEST(all_colors_are_printed)
+{
+	/* On PDCurses A_STANDOUT == (A_REVERSE | A_BOLD). */
+#if __PDCURSES__
+# define ATTR ",standout"
+#else
+# define ATTR ""
+#endif
+
+	const char *expected =
+		"Win        cterm=none ctermfg=white   ctermbg=black\n"
+		"Directory  cterm=bold ctermfg=cyan    ctermbg=default\n"
+		"Link       cterm=bold ctermfg=yellow  ctermbg=default\n"
+		"BrokenLink cterm=bold ctermfg=red     ctermbg=default\n"
+		"HardLink   cterm=none ctermfg=yellow  ctermbg=default\n"
+		"Socket     cterm=bold ctermfg=magenta ctermbg=default\n"
+		"Device     cterm=bold ctermfg=red     ctermbg=default\n"
+		"Fifo       cterm=bold ctermfg=cyan    ctermbg=default\n"
+		"Executable cterm=bold ctermfg=green   ctermbg=default\n"
+		"Selected   cterm=bold ctermfg=magenta ctermbg=default\n"
+		"CurrLine   cterm=bold,reverse" ATTR " ctermfg=default ctermbg=default\n"
+		"TopLine    cterm=none ctermfg=black   ctermbg=white\n"
+		"TopLineSel cterm=bold ctermfg=black   ctermbg=default\n"
+		"StatusLine cterm=bold ctermfg=black   ctermbg=white\n"
+		"WildMenu   cterm=underline,reverse ctermfg=white   ctermbg=black\n"
+		"CmdLine    cterm=none ctermfg=white   ctermbg=black\n"
+		"ErrorMsg   cterm=none ctermfg=red     ctermbg=black\n"
+		"Border     cterm=none ctermfg=black   ctermbg=white\n"
+		"OtherLine  cterm=none ctermfg=default ctermbg=default\n"
+		"JobLine    cterm=bold,reverse" ATTR " ctermfg=black   ctermbg=white\n"
+		"SuggestBox cterm=bold ctermfg=default ctermbg=default\n"
+		"CmpMismatch cterm=bold ctermfg=white   ctermbg=red\n"
+		"CmpUnmatched cterm=bold ctermfg=white   ctermbg=green\n"
+		"CmpBlank   cterm=none ctermfg=default ctermbg=default\n"
+		"AuxWin     cterm=none ctermfg=default ctermbg=default\n"
+		"TabLine    cterm=none ctermfg=white   ctermbg=black\n"
+		"TabLineSel cterm=bold,reverse" ATTR " ctermfg=default ctermbg=default\n"
+		"User1      cterm=none ctermfg=default ctermbg=default\n"
+		"User2      cterm=none ctermfg=default ctermbg=default\n"
+		"User3      cterm=none ctermfg=default ctermbg=default\n"
+		"User4      cterm=none ctermfg=default ctermbg=default\n"
+		"User5      cterm=none ctermfg=default ctermbg=default\n"
+		"User6      cterm=none ctermfg=default ctermbg=default\n"
+		"User7      cterm=none ctermfg=default ctermbg=default\n"
+		"User8      cterm=none ctermfg=default ctermbg=default\n"
+		"User9      cterm=none ctermfg=default ctermbg=default\n"
+		"User10     cterm=none ctermfg=default ctermbg=default\n"
+		"User11     cterm=none ctermfg=default ctermbg=default\n"
+		"User12     cterm=none ctermfg=default ctermbg=default\n"
+		"User13     cterm=none ctermfg=default ctermbg=default\n"
+		"User14     cterm=none ctermfg=default ctermbg=default\n"
+		"User15     cterm=none ctermfg=default ctermbg=default\n"
+		"User16     cterm=none ctermfg=default ctermbg=default\n"
+		"User17     cterm=none ctermfg=default ctermbg=default\n"
+		"User18     cterm=none ctermfg=default ctermbg=default\n"
+		"User19     cterm=none ctermfg=default ctermbg=default\n"
+		"User20     cterm=none ctermfg=default ctermbg=default\n"
+		"OtherWin   cterm=none ctermfg=default ctermbg=default\n"
+		"LineNr     cterm=none ctermfg=default ctermbg=default\n"
+		"OddLine    cterm=none ctermfg=default ctermbg=default\n"
+		"\n"
+		"{*.jpg}    cterm=none ctermfg=red     ctermbg=blue";
+
+	assert_success(cmds_dispatch("highlight\t{*.jpg} ctermfg=red\tctermbg=blue",
+				&lwin, CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
+}
+
 /* Colors. */
 
 TEST(wrong_gui_color_causes_error)
