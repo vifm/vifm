@@ -27,8 +27,15 @@ struct vlua_t;
 /* Initializes this unit. */
 void vifm_viewcolumns_init(struct vlua_t *vlua);
 
+/* Retrieves next available column ID to be used as a limit of IDs.  Retrieves
+ * the ID. */
+int vifm_viewcolumns_next_id(struct vlua_t *vlua);
+
 /* Maps column name to column id.  Returns column id or -1 on error. */
 int vifm_viewcolumns_map(struct vlua_t *vlua, const char name[]);
+
+/* Maps column name to column id.  Returns column name or -1 on error. */
+char * vifm_viewcolumns_map_back(struct vlua_t *vlua, int id);
 
 /* Checks whether specified column is a primary one.  Returns non-zero if so,
  * otherwise zero is returned. */

@@ -56,8 +56,15 @@ int vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info,
 
 /* View columns. */
 
+/* Retrieves next available column ID to be used as a limit of IDs.  Retrieves
+ * the ID. */
+int vlua_viewcolumns_next_id(vlua_t *vlua);
+
 /* Maps column name to column id.  Returns column id or -1 on error. */
 int vlua_viewcolumn_map(vlua_t *vlua, const char name[]);
+
+/* Maps column id to column name.  Returns column name or NULL on error. */
+char * vlua_viewcolumn_map_back(vlua_t *vlua, int id);
 
 /* Checks whether specified view column should be considered a primary one.
  * Returns non-zero if so, otherwise zero is returned. */

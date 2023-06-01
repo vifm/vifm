@@ -397,9 +397,21 @@ vlua_complete_cmd(vlua_t *vlua, const struct cmd_info_t *cmd_info, int arg_pos)
 }
 
 int
+vlua_viewcolumns_next_id(vlua_t *vlua)
+{
+	return vifm_viewcolumns_next_id(vlua);
+}
+
+int
 vlua_viewcolumn_map(vlua_t *vlua, const char name[])
 {
 	return vifm_viewcolumns_map(vlua, name);
+}
+
+char *
+vlua_viewcolumn_map_back(vlua_t *vlua, int id)
+{
+	return vifm_viewcolumns_map_back(vlua, id);
 }
 
 int

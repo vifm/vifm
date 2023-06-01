@@ -58,6 +58,12 @@ vifm_viewcolumns_init(vlua_t *vlua)
 }
 
 int
+vifm_viewcolumns_next_id(vlua_t *vlua)
+{
+	return viewcolumn_next_id;
+}
+
+int
 vifm_viewcolumns_map(vlua_t *vlua, const char name[])
 {
 	/* Don't need lua_pcall() to handle errors, because no one should be able to
@@ -73,6 +79,24 @@ vifm_viewcolumns_map(vlua_t *vlua, const char name[])
 	int id = lua_tointeger(vlua->lua, -1);
 	lua_pop(vlua->lua, 3);
 	return id;
+}
+
+char *
+vifm_viewcolumns_map_back(vlua_t *vlua, int id)
+{
+	/* Don't need lua_pcall() to handle errors, because no one should be able to
+	 * mess with internal tables. */
+	vlua_state_get_table(vlua, &viewcolumns_key);
+	if(lua_geti(vlua->lua, -1, id) != LUA_TTABLE)
+	{
+		lua_pop(vlua->lua, 2);
+		return NULL;
+	}
+
+	lua_getfield(vlua->lua, -1, "name");
+	char *name = strdup(lua_tostring(vlua->lua, -1));
+	lua_pop(vlua->lua, 3);
+	return name;
 }
 
 int
@@ -129,6 +153,8 @@ VLUA_API(vifm_addcolumntype)(lua_State *lua)
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/2); /* viewcolumn table */
 	lua_pushinteger(lua, column_id);
 	lua_setfield(lua, -2, "id");
+	lua_pushstring(lua, name);
+	lua_setfield(lua, -2, "name");
 	lua_pushboolean(lua, is_primary);
 	lua_setfield(lua, -2, "isprimary");
 	lua_pushvalue(lua, -1);                       /* viewcolumn table */
