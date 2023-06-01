@@ -1,4 +1,4 @@
-.TH VIFM 1 "17 May 2023" "vifm 0.13"
+.TH VIFM 1 "2 Jun 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2225,16 +2225,6 @@ in the active view.
 .LP
 All style values as well as color names are case insensitive.
 .LP
-Available style values (some of them can be combined):
- \- bold
- \- underline
- \- reverse or inverse
- \- standout
- \- italic (on unsupported systems becomes reverse)
- \- combine \- add attributes of current group to attributes of the parent in \
-group hierarchy (see below) instead of replacing them
- \- none
-
 Available group-name values:
  \- Win \- color of all windows (views, dialogs, menus) and default color for \
 their content (e.g. regular files in views)
@@ -2268,6 +2258,16 @@ their content (e.g. regular files in views)
  \- CmpUnmatched \- comparison file entry that has no pair in the other pane
  \- CmpBlank \- entry placeholder in a compare view, paired with CmpUnmatched
  \- User1..User20 \- 20 colors which can be used via %* 'statusline' macro
+
+Available style values (some of them can be combined):
+ \- bold
+ \- underline
+ \- reverse or inverse
+ \- standout
+ \- italic (on unsupported systems becomes reverse)
+ \- combine \- add attributes of current group to attributes of the parent in \
+group hierarchy (see below) instead of replacing them
+ \- none
 
 Available colors:
  \- \-1 or default or none \- default or transparent

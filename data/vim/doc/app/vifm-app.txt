@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 May 17
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Jun 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1907,16 +1907,6 @@ The builtin commands are:
 
 All style values as well as color names are case insensitive.
 
-Available style values (some of them can be combined):
- - bold
- - underline
- - reverse or inverse
- - standout
- - italic (on unsupported systems becomes reverse)
- - combine - add attributes of current group to attributes of the parent in
-             group hierarchy (see below) instead of replacing them
- - none
-
 Available group-name values:
  - Win - color of all windows (views, dialogs, menus) and default color for
          their content (e.g. regular files in views)
@@ -1952,6 +1942,16 @@ Available group-name values:
  - CmpBlank - entry placeholder in a compare view, paired with CmpUnmatched
  - User1..User20 - 20 colors which can be used via %* |vifm-'statusline'|
    macro
+
+Available style values (some of them can be combined):
+ - bold
+ - underline
+ - reverse or inverse
+ - standout
+ - italic (on unsupported systems becomes reverse)
+ - combine - add attributes of current group to attributes of the parent in
+             group hierarchy (see below) instead of replacing them
+ - none
 
 Available colors:
  - -1 or default or none - transparent
