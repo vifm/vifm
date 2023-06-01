@@ -59,9 +59,10 @@ typedef struct columns_t columns_t;
 typedef struct format_info_t format_info_t;
 struct format_info_t
 {
-	void *data; /* User data passed to columns_format_line(). */
-	int id;     /* Id of the column. */
-	int width;  /* Calculated width of the column. */
+	void *data;  /* User data passed to columns_format_line(). */
+	int id;      /* Id of the column or FILL_COLUMN_ID (pseudo-column). */
+	int real_id; /* Id of the column that is being printed/filled. */
+	int width;   /* Calculated width of the column. */
 };
 
 /* A column callback function, which should fill the buf with column text. */
