@@ -3016,9 +3016,8 @@ get_all_highlights(void)
 
 	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
-		snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
-				get_group_str(i, &cs->color[i]), (i < MAXNUM_COLOR - 1) ? "\n" : "");
-		msg_len += strlen(msg + msg_len);
+		sstrappend(msg, &msg_len, sizeof(msg), get_group_str(i, &cs->color[i]));
+		sstrappendch(msg, &msg_len, sizeof(msg), '\n');
 	}
 
 	if(cs->file_hi_count <= 0)
@@ -3026,16 +3025,22 @@ get_all_highlights(void)
 		return msg;
 	}
 
-	snprintf(msg + msg_len, sizeof(msg) - msg_len, "\n\n");
-	msg_len += strlen(msg + msg_len);
+	if(cs->file_hi_count > 0)
+	{
+		sstrappend(msg, &msg_len, sizeof(msg), "\n");
+	}
 
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
 		const char *const line = get_file_hi_str(file_hi->matchers, &file_hi->hi);
-		snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s", line,
-				(i < cs->file_hi_count - 1) ? "\n" : "");
-		msg_len += strlen(msg + msg_len);
+		sstrappend(msg, &msg_len, sizeof(msg), line);
+		sstrappendch(msg, &msg_len, sizeof(msg), '\n');
+	}
+
+	if(msg_len > 0 && msg[msg_len - 1] == '\n')
+	{
+		msg[msg_len - 1] = '\0';
 	}
 
 	return msg;
