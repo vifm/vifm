@@ -28,7 +28,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcpy() strlen() */
+#include <string.h> /* memcpy() memset() strcpy() strlen() */
 
 #include "../cfg/config.h"
 #include "../compat/dtype.h"
@@ -532,6 +532,7 @@ static void restore_primary_cs(const col_scheme_t *cs);
 static void reset_to_default_cs(col_scheme_t *cs);
 static void free_cs_highlights(col_scheme_t *cs);
 static file_hi_t * clone_file_highlights(const col_scheme_t *from);
+static col_attr_t * clone_column_highlights(const col_scheme_t *from);
 static void reset_cs_colors(col_scheme_t *cs);
 static int source_cs(const char name[]);
 static void get_cs_path(const char name[], char buf[], size_t buf_size);
@@ -936,6 +937,7 @@ cs_assign(col_scheme_t *to, const col_scheme_t *from)
 	free_cs_highlights(to);
 	*to = *from;
 	to->file_hi = clone_file_highlights(from);
+	to->column_hi = clone_column_highlights(from);
 }
 
 /* Resets color scheme to default builtin values. */
@@ -962,9 +964,12 @@ free_cs_highlights(col_scheme_t *cs)
 	}
 
 	free(cs->file_hi);
-
 	cs->file_hi = NULL;
 	cs->file_hi_count = 0;
+
+	free(cs->column_hi);
+	cs->column_hi = NULL;
+	cs->column_hi_count = 0;
 }
 
 /* Clones filename specific highlight array of the *from color scheme and
@@ -984,6 +989,19 @@ clone_file_highlights(const col_scheme_t *from)
 	}
 
 	return file_hi;
+}
+
+/* Clones column highlight array of the *from color scheme and returns it. */
+static col_attr_t *
+clone_column_highlights(const col_scheme_t *from)
+{
+	size_t size = sizeof(*from->column_hi)*from->column_hi_count;
+	col_attr_t *column_hi = malloc(size);
+	if(column_hi != NULL)
+	{
+		memcpy(column_hi, from->column_hi, size);
+	}
+	return column_hi;
 }
 
 int
@@ -1492,6 +1510,63 @@ color_diff(int a, int b)
 	int gd = abs(((a >> 8)&0xff) - ((b >> 8)&0xff));
 	int bd = abs((a&0xff) - (b&0xff));
 	return rd + gd + bd;
+}
+
+int
+cs_set_column_hi(col_scheme_t *cs, int column_id, const col_attr_t *hi)
+{
+	if(column_id >= cs->column_hi_count)
+	{
+		void *p =
+			reallocarray(cs->column_hi, column_id + 1, sizeof(*cs->column_hi));
+		if(p == NULL)
+		{
+			return 1;
+		}
+		cs->column_hi = p;
+
+		int i;
+		for(i = cs->column_hi_count; i < column_id; ++i)
+		{
+			memset(&cs->column_hi[i], 0xff, sizeof(cs->column_hi[i]));
+		}
+
+		cs->column_hi_count = column_id + 1;
+	}
+
+	cs->column_hi[column_id] = *hi;
+	return 0;
+}
+
+const col_attr_t *
+cs_get_column_hi(const col_scheme_t *cs, int column_id)
+{
+	if(column_id <= 0 || column_id >= cs->column_hi_count)
+	{
+		return NULL;
+	}
+
+	char ones[sizeof(cs->column_hi[column_id])];
+	memset(ones, 0xff, sizeof(ones));
+
+	/* XXX: might want to improve marking entries as unused. */
+	if(memcmp(&cs->column_hi[column_id], &ones, sizeof(ones)) == 0)
+	{
+		return NULL;
+	}
+	return &cs->column_hi[column_id];
+}
+
+int
+cs_del_column_hi(col_scheme_t *cs, int column_id)
+{
+	if(cs_get_column_hi(cs, column_id) == NULL)
+	{
+		return 0;
+	}
+
+	memset(&cs->column_hi[column_id], 0xff, sizeof(cs->column_hi[column_id]));
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

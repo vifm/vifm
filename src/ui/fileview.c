@@ -126,7 +126,7 @@ static void highlight_search(view_t *view, const char full_column[], char buf[],
 		size_t buf_len, AlignType align, int line, int col,
 		const cchar_t *line_attrs, int match_from, int match_to);
 static cchar_t prepare_col_color(const view_t *view, int primary, int line_nr,
-		const column_data_t *cdt);
+		const column_data_t *cdt, int real_id);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
 		dir_entry_t *entry, int line_color);
 static void mix_in_file_hi(const view_t *view, dir_entry_t *entry, int type_hi,
@@ -1167,7 +1167,8 @@ column_line_print(const char buf[], int offset, AlignType align,
 	                 || info->id == SK_BY_EXTENSION
 	                 || info->id == SK_BY_FILEEXT
 	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, info->id);
-	const cchar_t line_attrs = prepare_col_color(view, primary, 0, cdt);
+	const cchar_t line_attrs =
+		prepare_col_color(view, primary, 0, cdt, info->real_id);
 
 	/* Non-empty prefix contains tree pseudo-graphics. */
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
@@ -1204,7 +1205,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 		full_column += extra_prefix;
 
 		checked_wmove(view->win, cdt->current_line, final_offset - extra_prefix);
-		cchar_t cch = prepare_col_color(view, 0, 0, cdt);
+		cchar_t cch = prepare_col_color(view, 0, 0, cdt, /*real_id=*/-1);
 		wprinta(view->win, print_buf, &cch, 0);
 	}
 
@@ -1264,7 +1265,7 @@ draw_line_number(const column_data_t *cdt, int column)
 			num);
 
 	checked_wmove(view->win, cdt->current_line, column);
-	cchar_t cch = prepare_col_color(view, 0, 1, cdt);
+	cchar_t cch = prepare_col_color(view, 0, 1, cdt, /*real_id=*/-1);
 	wprinta(view->win, num_str, &cch, 0);
 }
 
@@ -1364,7 +1365,7 @@ highlight_search(view_t *view, const char full_column[], char buf[],
  * used for drawing on a window. */
 static cchar_t
 prepare_col_color(const view_t *view, int primary, int line_nr,
-		const column_data_t *cdt)
+		const column_data_t *cdt, int real_id)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	col_attr_t col = ui_get_win_color(view, cs);
@@ -1377,6 +1378,12 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 	if(cdt->current_line%2 == 1)
 	{
 		cs_mix_colors(&col, &cs->color[ODD_LINE_COLOR]);
+	}
+
+	const col_attr_t *column_hi = cs_get_column_hi(cs, real_id);
+	if(column_hi != NULL)
+	{
+		cs_mix_colors(&col, column_hi);
 	}
 
 	if(cdt->line_pos != -1)
