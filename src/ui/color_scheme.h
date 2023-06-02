@@ -61,6 +61,10 @@ typedef struct
 
 	file_hi_t *file_hi; /* List of file highlight preferences. */
 	int file_hi_count;  /* Number of file highlight definitions. */
+
+	col_attr_t *column_hi; /* List of column highlight preferences.
+	                          Unused entries are filled with 0xff. */
+	int column_hi_count;   /* Number of column highlight definitions. */
 }
 col_scheme_t;
 
@@ -179,6 +183,20 @@ void cs_color_enable_gui(col_attr_t *color);
 /* Turns a direct RGB color into an index of a 256-color palette.  Returns the
  * index. */
 int cs_downscale_color(int direct_color);
+
+/* Column highlighting. */
+
+/* Registers column highlight for the color scheme.  Creates the association or
+ * updates it.  Returns zero on success. */
+int cs_set_column_hi(col_scheme_t *cs, int column_id, const col_attr_t *hi);
+
+/* Gets column highlight.  Returns NULL if nothing is found, otherwise returns
+ * pointer to one of color scheme's highlights. */
+const col_attr_t * cs_get_column_hi(const col_scheme_t *cs, int column_id);
+
+/* Removes column highlight by its index.  Returns non-zero on successful
+ * removal and zero if pattern wasn't found. */
+int cs_del_column_hi(col_scheme_t *cs, int column_id);
 
 #endif /* VIFM__UI__COLOR_SCHEME_H__ */
 

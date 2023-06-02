@@ -6,6 +6,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/ui/color_scheme.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
@@ -34,6 +35,84 @@ TEARDOWN()
 {
 	cs_reset(&cfg.cs);
 	curr_stats.cs = NULL;
+}
+
+/* General behaviour. */
+
+TEST(all_colors_are_printed)
+{
+	/* On PDCurses A_STANDOUT == (A_REVERSE | A_BOLD). */
+#if __PDCURSES__
+# define ATTR ",standout"
+#else
+# define ATTR ""
+#endif
+
+	const char *expected =
+		"Win        cterm=none ctermfg=white   ctermbg=black\n"
+		"Directory  cterm=bold ctermfg=cyan    ctermbg=default\n"
+		"Link       cterm=bold ctermfg=yellow  ctermbg=default\n"
+		"BrokenLink cterm=bold ctermfg=red     ctermbg=default\n"
+		"HardLink   cterm=none ctermfg=yellow  ctermbg=default\n"
+		"Socket     cterm=bold ctermfg=magenta ctermbg=default\n"
+		"Device     cterm=bold ctermfg=red     ctermbg=default\n"
+		"Fifo       cterm=bold ctermfg=cyan    ctermbg=default\n"
+		"Executable cterm=bold ctermfg=green   ctermbg=default\n"
+		"Selected   cterm=bold ctermfg=magenta ctermbg=default\n"
+		"CurrLine   cterm=bold,reverse" ATTR " ctermfg=default ctermbg=default\n"
+		"TopLine    cterm=none ctermfg=black   ctermbg=white\n"
+		"TopLineSel cterm=bold ctermfg=black   ctermbg=default\n"
+		"StatusLine cterm=bold ctermfg=black   ctermbg=white\n"
+		"WildMenu   cterm=underline,reverse ctermfg=white   ctermbg=black\n"
+		"CmdLine    cterm=none ctermfg=white   ctermbg=black\n"
+		"ErrorMsg   cterm=none ctermfg=red     ctermbg=black\n"
+		"Border     cterm=none ctermfg=black   ctermbg=white\n"
+		"OtherLine  cterm=none ctermfg=default ctermbg=default\n"
+		"JobLine    cterm=bold,reverse" ATTR " ctermfg=black   ctermbg=white\n"
+		"SuggestBox cterm=bold ctermfg=default ctermbg=default\n"
+		"CmpMismatch cterm=bold ctermfg=white   ctermbg=red\n"
+		"CmpUnmatched cterm=bold ctermfg=white   ctermbg=green\n"
+		"CmpBlank   cterm=none ctermfg=default ctermbg=default\n"
+		"AuxWin     cterm=none ctermfg=default ctermbg=default\n"
+		"TabLine    cterm=none ctermfg=white   ctermbg=black\n"
+		"TabLineSel cterm=bold,reverse" ATTR " ctermfg=default ctermbg=default\n"
+		"User1      cterm=none ctermfg=default ctermbg=default\n"
+		"User2      cterm=none ctermfg=default ctermbg=default\n"
+		"User3      cterm=none ctermfg=default ctermbg=default\n"
+		"User4      cterm=none ctermfg=default ctermbg=default\n"
+		"User5      cterm=none ctermfg=default ctermbg=default\n"
+		"User6      cterm=none ctermfg=default ctermbg=default\n"
+		"User7      cterm=none ctermfg=default ctermbg=default\n"
+		"User8      cterm=none ctermfg=default ctermbg=default\n"
+		"User9      cterm=none ctermfg=default ctermbg=default\n"
+		"User10     cterm=none ctermfg=default ctermbg=default\n"
+		"User11     cterm=none ctermfg=default ctermbg=default\n"
+		"User12     cterm=none ctermfg=default ctermbg=default\n"
+		"User13     cterm=none ctermfg=default ctermbg=default\n"
+		"User14     cterm=none ctermfg=default ctermbg=default\n"
+		"User15     cterm=none ctermfg=default ctermbg=default\n"
+		"User16     cterm=none ctermfg=default ctermbg=default\n"
+		"User17     cterm=none ctermfg=default ctermbg=default\n"
+		"User18     cterm=none ctermfg=default ctermbg=default\n"
+		"User19     cterm=none ctermfg=default ctermbg=default\n"
+		"User20     cterm=none ctermfg=default ctermbg=default\n"
+		"OtherWin   cterm=none ctermfg=default ctermbg=default\n"
+		"LineNr     cterm=none ctermfg=default ctermbg=default\n"
+		"OddLine    cterm=none ctermfg=default ctermbg=default\n"
+		"\n"
+		"column:size cterm=bold ctermfg=red     ctermbg=red\n"
+		"\n"
+		"{*.jpg}    cterm=none ctermfg=red     ctermbg=blue";
+
+	assert_success(cmds_dispatch("highlight {*.jpg} ctermfg=red\tctermbg=blue",
+				&lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(
+				"highlight column:size ctermfg=red ctermbg=red cterm=bold", &lwin,
+				CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
 }
 
 /* Colors. */
@@ -72,8 +151,8 @@ TEST(gui_colors_are_printed)
 				CIT_COMMAND));
 	assert_failure(cmds_dispatch("hi Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
-			"Win        cterm=none ctermfg=white   ctermbg=black  \n"
-			"           gui=none   guifg=#1234fe   guibg=red    ",
+			"Win        cterm=none ctermfg=white   ctermbg=black\n"
+			"           gui=none   guifg=#1234fe   guibg=red",
 			ui_sb_last());
 }
 
@@ -132,7 +211,7 @@ TEST(attributes_are_printed_back_correctly)
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("highlight Win", &lwin, CIT_COMMAND));
 	assert_string_equal(
-			"Win        cterm=underline,reverse ctermfg=white   ctermbg=black  ",
+			"Win        cterm=underline,reverse ctermfg=white   ctermbg=black",
 			ui_sb_last());
 
 	assert_success(cmds_dispatch("highlight Win cterm=italic,standout,bold",
@@ -142,11 +221,11 @@ TEST(attributes_are_printed_back_correctly)
 	assert_failure(cmds_dispatch("highlight Win", &lwin, CIT_COMMAND));
 #ifdef HAVE_A_ITALIC_DECL
 	assert_string_equal(
-			"Win        cterm=bold,standout,italic ctermfg=white   ctermbg=black  ",
+			"Win        cterm=bold,standout,italic ctermfg=white   ctermbg=black",
 			ui_sb_last());
 #else
 	assert_string_equal(
-			"Win        cterm=bold,reverse,standout ctermfg=white   ctermbg=black  ",
+			"Win        cterm=bold,reverse,standout ctermfg=white   ctermbg=black",
 			ui_sb_last());
 #endif
 }
@@ -173,6 +252,94 @@ TEST(original_color_is_unchanged_on_parsing_error)
 	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
 	assert_failure(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_int_equal(COLOR_BLUE, curr_stats.cs->color[WIN_COLOR].fg);
+}
+
+/* Column highlighting. */
+
+TEST(column_name_is_wrong)
+{
+	curr_stats.vlua = vlua_init();
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi column:badone ctermfg=red", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("No such column: badone", ui_sb_last());
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
+TEST(column_color_is_not_set)
+{
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+	assert_failure(cmds_dispatch("hi column:size ctermfg=bad", &lwin,
+				CIT_COMMAND));
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+}
+
+TEST(column_color_is_set)
+{
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+
+	assert_success(cmds_dispatch(
+				"hi column:size ctermfg=red ctermbg=red cterm=bold", &lwin,
+				CIT_COMMAND));
+
+	const col_attr_t *hi = cs_get_column_hi(curr_stats.cs, SK_BY_SIZE);
+	assert_int_equal(COLOR_RED, hi->fg);
+	assert_int_equal(COLOR_RED, hi->bg);
+	assert_int_equal(A_BOLD, hi->attr);
+}
+
+TEST(skipped_column_color_is_not_set)
+{
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_NAME));
+	assert_success(cmds_dispatch(
+				"hi column:size ctermfg=red ctermbg=red cterm=bold", &lwin, CIT_COMMAND));
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_NAME));
+}
+
+TEST(column_color_not_removed)
+{
+	curr_stats.vlua = vlua_init();
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi clear column:bad", &lwin, CIT_COMMAND));
+	assert_string_equal("No such column: bad", ui_sb_last());
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
+TEST(column_color_is_removed)
+{
+	/* Nothing to remove yet. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi clear column:size", &lwin, CIT_COMMAND));
+	assert_string_equal("No such group: column:size", ui_sb_last());
+
+	assert_success(cmds_dispatch("hi column:size ctermfg=red cterm=bold", &lwin,
+				CIT_COMMAND));
+	assert_non_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+
+	assert_success(cmds_dispatch("hi clear column:size", &lwin, CIT_COMMAND));
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+}
+
+TEST(column_color_is_printed)
+{
+	ui_sb_msg("");
+	assert_success(cmds_dispatch("hi column:size", &lwin, CIT_COMMAND));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(cmds_dispatch("hi column:size ctermfg=red cterm=bold", &lwin,
+				CIT_COMMAND));
+	assert_non_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi column:size", &lwin, CIT_COMMAND));
+	assert_string_equal("column:size cterm=bold ctermfg=red     ctermbg=default",
+			ui_sb_last());
 }
 
 /* File-specific highlight. */

@@ -73,6 +73,7 @@
 #include "filelist.h"
 #include "filetype.h"
 #include "plugins.h"
+#include "sort.h"
 #include "tags.h"
 
 /* State information for making completion. */
@@ -108,7 +109,7 @@ static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
 static void complete_plugin(const char str[], char *argv[], int arg_num);
 static int complete_highlight(const char args[], const char arg[], int arg_num);
-static void complete_highlight_groups(const char str[], int file_hi_only);
+static void complete_highlight_groups(const char str[], int for_clear);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
 static int complete_select(completion_data_t *data);
@@ -791,12 +792,49 @@ complete_highlight(const char args[], const char arg[], int arg_num)
 
 /* Completes highlight groups and subcommand "clear" for :highlight command. */
 static void
-complete_highlight_groups(const char str[], int file_hi_only)
+complete_highlight_groups(const char str[], int for_clear)
 {
 	int i;
 	const size_t len = strlen(str);
-
 	col_scheme_t *const cs = curr_stats.cs;
+
+	for(i = 0; i < SK_TOTAL; ++i)
+	{
+		if(sort_enum[i][0] == '\0' ||
+				(for_clear && cs_get_column_hi(cs, i) == NULL))
+		{
+			continue;
+		}
+
+		char name[16];
+		snprintf(name, sizeof(name), "column:%s", sort_enum[i]);
+		if(strncmp(str, name, len) == 0)
+		{
+			vle_compl_add_match(name, "");
+		}
+	}
+
+	int next_lua_id = vlua_viewcolumns_next_id(curr_stats.vlua);
+	for(i = SK_TOTAL; i < next_lua_id; ++i)
+	{
+		if(for_clear && cs_get_column_hi(cs, i) == NULL)
+		{
+			continue;
+		}
+
+		char *lua_name = vlua_viewcolumn_map_back(curr_stats.vlua, i);
+		if(lua_name != NULL)
+		{
+			char name[16];
+			snprintf(name, sizeof(name), "column:%s", lua_name);
+			if(strncmp(str, name, len) == 0)
+			{
+				vle_compl_add_match(name, "");
+			}
+			free(lua_name);
+		}
+	}
+
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const char *const expr = matchers_get_expr(cs->file_hi[i].matchers);
@@ -806,7 +844,7 @@ complete_highlight_groups(const char str[], int file_hi_only)
 		}
 	}
 
-	if(!file_hi_only)
+	if(!for_clear)
 	{
 		for(i = 0; i < MAXNUM_COLOR; ++i)
 		{

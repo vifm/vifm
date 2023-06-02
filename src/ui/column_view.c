@@ -74,7 +74,7 @@ static int calculate_max_width(const column_t *col, int len,
 		int max_line_width);
 static int calculate_start_pos(const column_t *col, const char buf[],
 		AlignType align);
-static void fill_gap_pos(void *format_data, int from, int to);
+static void fill_gap_pos(void *format_data, int from, int to, int column_id);
 static int get_width_on_screen(const char str[]);
 static void recalculate_if_needed(columns_t *cols, int max_width);
 static void recalculate(columns_t *cols, int max_width);
@@ -295,10 +295,11 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 
 	int i;
 	int prev_col_end = 0;
+	int prev_col_id = FILL_COLUMN_ID;
 
 	recalculate_if_needed(cols, max_line_width);
 
-	for(i = 0U; i < cols->count; ++i)
+	for(i = 0; i < cols->count; ++i)
 	{
 		/* Use big buffer to hold whole item so there will be no issues with right
 		 * aligned fields. */
@@ -308,6 +309,7 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 		const format_info_t info = {
 			.data = format_data,
 			.id = col->info.column_id,
+			.real_id = col->info.column_id,
 			.width = col->print_width,
 		};
 
@@ -324,29 +326,35 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 
 		AlignType align = decorate_output(col, col_buffer, sizeof(col_buffer),
 				max_line_width);
-		int cur_col_start = calculate_start_pos(col, col_buffer, align);
+		const int cur_col_start = calculate_start_pos(col, col_buffer, align);
+		int print_start = MIN(cur_col_start, col->start);
 
 		/* Ensure that we are not trying to draw current column in the middle of a
 		 * character inside previous column. */
-		if(prev_col_end > cur_col_start)
+		if(prev_col_end > print_start)
 		{
-			const int prev_col_max_width = (cur_col_start > prev_col_start)
-			                             ? (cur_col_start - prev_col_start)
+			const int prev_col_max_width = (print_start > prev_col_start)
+			                             ? (print_start - prev_col_start)
 			                             : 0;
 			const size_t break_point = utf8_strsnlen(prev_col_buf,
 					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
-			fill_gap_pos(format_data,
-					prev_col_start + get_width_on_screen(prev_col_buf), cur_col_start);
+			int real_prev_end = prev_col_start + get_width_on_screen(prev_col_buf);
+			fill_gap_pos(format_data, real_prev_end, print_start, prev_col_id);
+			print_start = prev_col_end;
 		}
 		else
 		{
-			fill_gap_pos(format_data, prev_col_end, cur_col_start);
+			fill_gap_pos(format_data, prev_col_end, print_start, prev_col_id);
 		}
+
+		/* Gap filling is done per column.  This one is for the current one. */
+		fill_gap_pos(format_data, print_start, cur_col_start, col->info.column_id);
 
 		print_func(col_buffer, cur_col_start, align, full_column, &info);
 
 		prev_col_end = cur_col_start + get_width_on_screen(col_buffer);
+		prev_col_id = col->info.column_id;
 
 		/* Store information about the current column for usage on the next
 		 * iteration. */
@@ -354,7 +362,7 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 		prev_col_start = cur_col_start;
 	}
 
-	fill_gap_pos(format_data, prev_col_end, max_line_width);
+	fill_gap_pos(format_data, prev_col_end, max_line_width, prev_col_id);
 }
 
 /* Adds decorations like ellipsis to the output.  Returns actual align type used
@@ -424,7 +432,7 @@ calculate_start_pos(const column_t *col, const char buf[], AlignType align)
 /* Prints gap filler (GAP_FILL_CHAR) in place of gaps.  Does nothing if to less
  * or equal to from. */
 static void
-fill_gap_pos(void *format_data, int from, int to)
+fill_gap_pos(void *format_data, int from, int to, int column_id)
 {
 	if(to > from)
 	{
@@ -435,6 +443,7 @@ fill_gap_pos(void *format_data, int from, int to)
 		const format_info_t info = {
 			.data = format_data,
 			.id = FILL_COLUMN_ID,
+			.real_id = column_id,
 			.width = to - from,
 		};
 		print_func(gap, from, AT_LEFT, gap, &info);

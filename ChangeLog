@@ -17,6 +17,9 @@
 	Added 'hloptions' option to configure which columns get colored.  Thanks to
 	qsmodo.
 
+	Added "column:{name}" form of argument to :highlight command to specify
+	style of a separate column.  Thanks to Anton Gepting.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
