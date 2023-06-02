@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 1 June, 2023)
+" Sample configuration file for vifm (last updated: 2 June, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -332,9 +332,9 @@ filetype {*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg},
 fileviewer *.zip,*.jar,*.war,*.ear,*.oxt unzip -l %f
 
 " ArchiveMount
-filetype {*.cpio,*.cpio.gz,*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,
-         \*.tar.zst,*.tzst},
-        \<application/x-cpio,application/x-tar>
+filetype {*.cpio,*.cpio.gz,*.rpm,*.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,
+         \*.txz,*.tar.zst,*.tzst},
+        \<application/x-cpio,application/x-rpm,application/x-tar>
        \ {Mount with archivemount}
        \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
 fileviewer *.tgz,*.tar.gz tar -tzf %c
@@ -343,6 +343,7 @@ fileviewer *.tar.xz,*.txz tar -tJf %c
 fileviewer *.tar.zst,*.tzst tar -t --zstd -f %c
 fileviewer {*.tar},<application/x-tar> tar -tf %c
 fileviewer {*.cpio},<application/x-cpio> cpio -t < %c
+fileviewer {*.rpm},<application/x-rpm> rpm -q --list %c%q 2> /dev/null
 
 " Rar2FsMount and rar archives
 filetype {*.rar},<application/x-rar>
