@@ -315,6 +315,12 @@ highlight {{*.djvu,
 highlight {*.djvu, "not comment
           " \*.xhtml,
           \*.xml} cterm=underline ctermfg=188 ctermbg=default
+" "column:*" should be highlighted
+highlight column:ext cterm=bold
+highlight column:iname cterm=bold
+highlight column:Custom cterm=bold
+" "column:bad" shouldn't be highlighted
+highlight column:bad cterm=bold
 
 " "italic" should be highlighted
 " "combine" should be highlighted

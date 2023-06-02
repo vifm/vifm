@@ -6,6 +6,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/lua/vlua.h"
 #include "../../src/ui/color_scheme.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
@@ -99,10 +100,15 @@ TEST(all_colors_are_printed)
 		"LineNr     cterm=none ctermfg=default ctermbg=default\n"
 		"OddLine    cterm=none ctermfg=default ctermbg=default\n"
 		"\n"
+		"column:size cterm=bold ctermfg=red     ctermbg=red\n"
+		"\n"
 		"{*.jpg}    cterm=none ctermfg=red     ctermbg=blue";
 
-	assert_success(cmds_dispatch("highlight\t{*.jpg} ctermfg=red\tctermbg=blue",
+	assert_success(cmds_dispatch("highlight {*.jpg} ctermfg=red\tctermbg=blue",
 				&lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch(
+				"highlight column:size ctermfg=red ctermbg=red cterm=bold", &lwin,
+				CIT_COMMAND));
 
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("hi", &lwin, CIT_COMMAND));
@@ -246,6 +252,94 @@ TEST(original_color_is_unchanged_on_parsing_error)
 	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
 	assert_failure(cmds_dispatch(COMMANDS, &lwin, CIT_COMMAND));
 	assert_int_equal(COLOR_BLUE, curr_stats.cs->color[WIN_COLOR].fg);
+}
+
+/* Column highlighting. */
+
+TEST(column_name_is_wrong)
+{
+	curr_stats.vlua = vlua_init();
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi column:badone ctermfg=red", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("No such column: badone", ui_sb_last());
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
+TEST(column_color_is_not_set)
+{
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+	assert_failure(cmds_dispatch("hi column:size ctermfg=bad", &lwin,
+				CIT_COMMAND));
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+}
+
+TEST(column_color_is_set)
+{
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+
+	assert_success(cmds_dispatch(
+				"hi column:size ctermfg=red ctermbg=red cterm=bold", &lwin,
+				CIT_COMMAND));
+
+	const col_attr_t *hi = cs_get_column_hi(curr_stats.cs, SK_BY_SIZE);
+	assert_int_equal(COLOR_RED, hi->fg);
+	assert_int_equal(COLOR_RED, hi->bg);
+	assert_int_equal(A_BOLD, hi->attr);
+}
+
+TEST(skipped_column_color_is_not_set)
+{
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_NAME));
+	assert_success(cmds_dispatch(
+				"hi column:size ctermfg=red ctermbg=red cterm=bold", &lwin, CIT_COMMAND));
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_NAME));
+}
+
+TEST(column_color_not_removed)
+{
+	curr_stats.vlua = vlua_init();
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi clear column:bad", &lwin, CIT_COMMAND));
+	assert_string_equal("No such column: bad", ui_sb_last());
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
+TEST(column_color_is_removed)
+{
+	/* Nothing to remove yet. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi clear column:size", &lwin, CIT_COMMAND));
+	assert_string_equal("No such group: column:size", ui_sb_last());
+
+	assert_success(cmds_dispatch("hi column:size ctermfg=red cterm=bold", &lwin,
+				CIT_COMMAND));
+	assert_non_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+
+	assert_success(cmds_dispatch("hi clear column:size", &lwin, CIT_COMMAND));
+	assert_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+}
+
+TEST(column_color_is_printed)
+{
+	ui_sb_msg("");
+	assert_success(cmds_dispatch("hi column:size", &lwin, CIT_COMMAND));
+	assert_string_equal("", ui_sb_last());
+
+	assert_success(cmds_dispatch("hi column:size ctermfg=red cterm=bold", &lwin,
+				CIT_COMMAND));
+	assert_non_null(cs_get_column_hi(curr_stats.cs, SK_BY_SIZE));
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("hi column:size", &lwin, CIT_COMMAND));
+	assert_string_equal("column:size cterm=bold ctermfg=red     ctermbg=default",
+			ui_sb_last());
 }
 
 /* File-specific highlight. */

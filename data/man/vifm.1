@@ -2213,17 +2213,20 @@ rules.
 .BI ":hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )"
 remove specified rule.
 .TP
-.BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/ )"
+.BI ":hi[ghlight] ( group\-name | column:name | {pat1,pat2,...} | /regexp/ )"
 display information on given highlight group or file name pattern of color
 scheme used in the active view.
 .TP
-.BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/[iI] ) cterm=style \
+.BI ":hi[ghlight] \
+( group\-name | column:name | {pat1,pat2,...} | /regexp/[iI] ) cterm=style \
 | ctermfg=color | ctermbg=color | gui=style | guifg=color | guibg=color"
 set style (cterm, gui), foreground (ctermfg, guifg) and/or background (ctermbg,
 guibg) parameters of highlight group or file name pattern for color scheme used
 in the active view.
 .LP
-All style values as well as color names are case insensitive.
+Group names, style values and color names are case insensitive.  Note that this
+doesn't include column names as that would make builtin and custom columns
+indistinguishable.
 .LP
 Available group-name values:
  \- Win \- color of all windows (views, dialogs, menus) and default color for \
@@ -2258,6 +2261,15 @@ their content (e.g. regular files in views)
  \- CmpUnmatched \- comparison file entry that has no pair in the other pane
  \- CmpBlank \- entry placeholder in a compare view, paired with CmpUnmatched
  \- User1..User20 \- 20 colors which can be used via %* 'statusline' macro
+
+Column names match names of columns of |vifm-'viewcolumns'| option, which in
+turn are based on values of |vifm-'sort'| and custom columns added from Lua.
+Regardless of the source, columns are specified as "column:{name}", for
+example:
+.EX
+
+  highlight column:fileext ctermfg=red
+.EE
 
 Available style values (some of them can be combined):
  \- bold
@@ -2421,23 +2433,24 @@ transparency:
     OtherWin
       AuxWin
         OddLine
-          File name specific highlights
-            Directory
-            Link
-            BrokenLink
-            HardLink
-            Socket
-            Device
-            Fifo
-            Executable
-              CmpMismatch
-              CmpUnmatched
-              CmpBlank
-                Selected
-                  CurrLine
-                    LineNr (in active pane)
-                  OtherLine
-                    LineNr (in inactive pane)
+          Column highlights
+            File name specific highlights
+              Directory
+              Link
+              BrokenLink
+              HardLink
+              Socket
+              Device
+              Fifo
+              Executable
+                CmpMismatch
+                CmpUnmatched
+                CmpBlank
+                  Selected
+                    CurrLine
+                      LineNr (in active pane)
+                    OtherLine
+                      LineNr (in inactive pane)
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)

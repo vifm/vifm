@@ -111,6 +111,7 @@
 #include "plugins.h"
 #include "registers.h"
 #include "running.h"
+#include "sort.h"
 #include "trash.h"
 #include "undo.h"
 #include "vifm.h"
@@ -203,11 +204,14 @@ static int help_cmd(const cmd_info_t *cmd_info);
 static int hideui_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
 static int highlight_clear(const cmd_info_t *cmd_info);
+static int highlight_column(const cmd_info_t *cmd_info);
+static int find_column_id(const char arg[]);
 static int highlight_file(const cmd_info_t *cmd_info);
 static void display_file_highlights(const matchers_t *matchers);
 static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, const col_attr_t *col);
+static const char * get_column_hi_str(int index, const col_attr_t *col);
 static const char * get_file_hi_str(const matchers_t *matchers,
 		const col_attr_t *col);
 static const char * get_hi_str(const char title[], const col_attr_t *col);
@@ -2822,10 +2826,11 @@ hideui_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* Handles :highlight command.  There are three forms:
- *  - highlight clear [file]
+/* Handles :highlight command.  There are several forms:
+ *  - highlight clear [file|column:name]
  *  - highlight file
- *  - highlight group */
+ *  - highlight group
+ *  - highlight column:name */
 static int
 highlight_cmd(const cmd_info_t *cmd_info)
 {
@@ -2840,11 +2845,14 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return highlight_clear(cmd_info);
 	}
 
+	if(starts_with_lit(cmd_info->argv[0], "column:"))
+	{
+		return highlight_column(cmd_info);
+	}
 	if(matchers_is_expr(cmd_info->argv[0]))
 	{
 		return highlight_file(cmd_info);
 	}
-
 	return highlight_group(cmd_info);
 }
 
@@ -2855,7 +2863,21 @@ highlight_clear(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 2)
 	{
-		if(!cs_del_file_hi(cmd_info->argv[1]))
+		if(starts_with_lit(cmd_info->argv[1], "column:"))
+		{
+			int column_idx = find_column_id(cmd_info->argv[1]);
+			if(column_idx < 0)
+			{
+				return CMDS_ERR_CUSTOM;
+			}
+
+			if(!cs_del_column_hi(curr_stats.cs, column_idx))
+			{
+				ui_sb_errf("No such group: %s", cmd_info->argv[1]);
+				return CMDS_ERR_CUSTOM;
+			}
+		}
+		else if(!cs_del_file_hi(cmd_info->argv[1]))
 		{
 			ui_sb_errf("No such group: %s", cmd_info->argv[1]);
 			return CMDS_ERR_CUSTOM;
@@ -2881,6 +2903,63 @@ highlight_clear(const cmd_info_t *cmd_info)
 	}
 
 	return CMDS_ERR_TRAILING_CHARS;
+}
+
+/* Handles highlight-column form of :highlight command.  Returns value to be
+ * returned by command handler. */
+static int
+highlight_column(const cmd_info_t *cmd_info)
+{
+	int column_idx = find_column_id(cmd_info->argv[0]);
+	if(column_idx < 0)
+	{
+		return 1;
+	}
+
+	/* XXX: start with an existing value, if present? */
+	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
+	int result = parse_highlight_attrs(cmd_info, &color);
+	if(result != 0)
+	{
+		return result;
+	}
+
+	if(cmd_info->argc == 1)
+	{
+		const col_attr_t *col = cs_get_column_hi(curr_stats.cs, column_idx);
+		if(col != NULL)
+		{
+			ui_sb_msg(get_column_hi_str(column_idx, col));
+			return 1;
+		}
+		return 0;
+	}
+
+	if(cs_set_column_hi(curr_stats.cs, column_idx, &color) != 0)
+	{
+		ui_sb_err("Failed to add/update column color");
+		return 1;
+	}
+
+	/* Redraw to update columns' look. */
+	stats_redraw_later();
+
+	return 0;
+}
+
+/* Looks up column id by column:name argument.  Returns the id or -1 on failure
+ * and prints error message to the status bar. */
+static int
+find_column_id(const char arg[])
+{
+	(void)skip_prefix(&arg, "column:");
+
+	int column_idx = ui_map_column_name(arg);
+	if(column_idx < 0)
+	{
+		ui_sb_errf("No such column: %s", arg);
+	}
+	return column_idx;
 }
 
 /* Handles highlight-file form of :highlight command.  Returns value to be
@@ -3020,14 +3099,25 @@ get_all_highlights(void)
 		sstrappendch(msg, &msg_len, sizeof(msg), '\n');
 	}
 
-	if(cs->file_hi_count <= 0)
+	int has_column_hi = 0;
+	for(i = 0; i < cs->column_hi_count; ++i)
 	{
-		return msg;
+		const col_attr_t *col = cs_get_column_hi(cs, i);
+		if(col != NULL)
+		{
+			has_column_hi = 1;
+
+			/* Different order is due to the fact that non-zero cs->column_hi_count
+			 * doesn't necessarily imply that cs_get_column_hi() will return
+			 * non-NULL even once. */
+			sstrappendch(msg, &msg_len, sizeof(msg), '\n');
+			sstrappend(msg, &msg_len, sizeof(msg), get_column_hi_str(i, col));
+		}
 	}
 
 	if(cs->file_hi_count > 0)
 	{
-		sstrappend(msg, &msg_len, sizeof(msg), "\n");
+		sstrappend(msg, &msg_len, sizeof(msg), (has_column_hi ? "\n\n" : "\n"));
 	}
 
 	for(i = 0; i < cs->file_hi_count; ++i)
@@ -3052,6 +3142,16 @@ static const char *
 get_group_str(int group, const col_attr_t *col)
 {
 	return get_hi_str(HI_GROUPS[group], col);
+}
+
+/* Composes string representation of column highlight definition.  Returns
+ * pointer to a statically allocated buffer. */
+static const char *
+get_column_hi_str(int index, const col_attr_t *col)
+{
+	char name[16];
+	snprintf(name, sizeof(name), "column:%s", sort_enum[index]);
+	return get_hi_str(name, col);
 }
 
 /* Composes string representation of filename specific highlight definition.

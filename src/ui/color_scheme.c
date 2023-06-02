@@ -995,11 +995,16 @@ clone_file_highlights(const col_scheme_t *from)
 static col_attr_t *
 clone_column_highlights(const col_scheme_t *from)
 {
+	col_attr_t *column_hi = NULL;
+
 	size_t size = sizeof(*from->column_hi)*from->column_hi_count;
-	col_attr_t *column_hi = malloc(size);
-	if(column_hi != NULL)
+	if(size != 0)
 	{
-		memcpy(column_hi, from->column_hi, size);
+		column_hi = malloc(size);
+		if(column_hi != NULL)
+		{
+			memcpy(column_hi, from->column_hi, size);
+		}
 	}
 	return column_hi;
 }
