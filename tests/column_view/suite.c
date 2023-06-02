@@ -33,7 +33,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	assert_non_null(print_next);
-	print_next(info->data, info->id, buf, offset, align);
+	print_next(info->data, info->real_id, buf, offset, align);
 }
 
 static void

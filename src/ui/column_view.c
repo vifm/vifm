@@ -326,26 +326,30 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 
 		AlignType align = decorate_output(col, col_buffer, sizeof(col_buffer),
 				max_line_width);
-		int cur_col_start = calculate_start_pos(col, col_buffer, align);
+		const int cur_col_start = calculate_start_pos(col, col_buffer, align);
+		int print_start = MIN(cur_col_start, col->start);
 
 		/* Ensure that we are not trying to draw current column in the middle of a
 		 * character inside previous column. */
-		if(prev_col_end > cur_col_start)
+		if(prev_col_end > print_start)
 		{
-			const int prev_col_max_width = (cur_col_start > prev_col_start)
-			                             ? (cur_col_start - prev_col_start)
+			const int prev_col_max_width = (print_start > prev_col_start)
+			                             ? (print_start - prev_col_start)
 			                             : 0;
 			const size_t break_point = utf8_strsnlen(prev_col_buf,
 					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
-			fill_gap_pos(format_data,
-					prev_col_start + get_width_on_screen(prev_col_buf), cur_col_start,
-					prev_col_id);
+			int real_prev_end = prev_col_start + get_width_on_screen(prev_col_buf);
+			fill_gap_pos(format_data, real_prev_end, print_start, prev_col_id);
+			print_start = prev_col_end;
 		}
 		else
 		{
-			fill_gap_pos(format_data, prev_col_end, cur_col_start, prev_col_id);
+			fill_gap_pos(format_data, prev_col_end, print_start, prev_col_id);
 		}
+
+		/* Gap filling is done per column.  This one is for the current one. */
+		fill_gap_pos(format_data, print_start, cur_col_start, col->info.column_id);
 
 		print_func(col_buffer, cur_col_start, align, full_column, &info);
 

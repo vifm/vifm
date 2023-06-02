@@ -14,6 +14,8 @@ static char print_buffer[40 + 1];
 
 static void column_line_print(const void *data, int column_id, const char buf[],
 		int offset, AlignType align);
+static void filler_print(const void *data, int column_id, const char buf[],
+		int offset, AlignType align);
 static void column1_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 static void column2_func(void *data, size_t buf_len, char buf[],
@@ -40,6 +42,15 @@ column_line_print(const void *data, int column_id, const char buf[], int offset,
 		AlignType align)
 {
 	memcpy(print_buffer + offset, buf, strlen(buf));
+}
+
+static void
+filler_print(const void *data, int column_id, const char buf[], int offset,
+		AlignType align)
+{
+	int buf_len = strlen(buf);
+	memset(print_buffer + offset, '0' + column_id, buf_len);
+	print_buffer[offset + buf_len] = '\0';
 }
 
 static void
@@ -218,6 +229,25 @@ TEST(ellipsis_less_space)
 	columns_format_line(cols, NULL, 2);
 
 	columns_free(cols);
+
+	assert_string_equal(expected, print_buffer);
+}
+
+TEST(filling_is_done_per_column)
+{
+	static column_info_t column_infos[2] = {
+		{ .column_id = COL1_ID, .full_width = 15UL,    .text_width = 15UL,
+		  .align = AT_LEFT,     .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+		{ .column_id = COL2_ID, .full_width = 35UL,    .text_width = 35UL,
+		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
+	};
+	static const char expected[] = "1111111111111112222222222222222222222222";
+
+	print_next = &filler_print;
+	col1_next = column2_short_func;
+	col2_next = column2_short_func;
+
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
