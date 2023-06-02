@@ -20,7 +20,7 @@ static void column1_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 static void column2_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
-static void column2_short_func(void *data, size_t buf_len, char buf[],
+static void column_short_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 
 SETUP()
@@ -66,7 +66,7 @@ column2_func(void *data, size_t buf_len, char buf[], const format_info_t *info)
 }
 
 static void
-column2_short_func(void *data, size_t buf_len, char buf[],
+column_short_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info)
 {
 	snprintf(buf, buf_len + 1, "%s", "xxxxx");
@@ -159,7 +159,7 @@ TEST(none_align_right_overlapping)
 	};
 	static const char expected[] = "aaaaaaaaaaaaaaazzzzzzzzzzzzzzz     xxxxx";
 
-	col2_next = column2_short_func;
+	col2_next = column_short_func;
 	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
@@ -177,7 +177,7 @@ TEST(no_overlapping)
 	};
 	static const char expected[] = "xxxxx                          xxxxxxxxx";
 
-	col2_next = column2_short_func;
+	col2_next = column_short_func;
 	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
@@ -244,8 +244,8 @@ TEST(filling_is_done_per_column)
 	static const char expected[] = "1111111111111112222222222222222222222222";
 
 	print_next = &filler_print;
-	col1_next = column2_short_func;
-	col2_next = column2_short_func;
+	col1_next = column_short_func;
+	col2_next = column_short_func;
 
 	perform_test(column_infos, ARRAY_LEN(column_infos));
 
