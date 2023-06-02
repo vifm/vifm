@@ -1394,7 +1394,7 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 		 * but the rest depends on configuration. */
 		const int with_line_hi = primary
 		                      || (cfg.color_what == CW_ONE_ROW && is_current)
-		                      || cfg.color_what == CW_ALL_ROWS;
+		                      || (cfg.color_what == CW_ALL_ROWS);
 		const int line_color = with_line_hi ? cdt->line_hi_group : -1;
 		mix_in_common_colors(&col, view, cdt->entry, line_color);
 
