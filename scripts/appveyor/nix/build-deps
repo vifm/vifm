@@ -3,7 +3,7 @@
 set -e
 
 if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = Ubuntu ]; then
-    sudo apt install libncursesw5-dev ccache
+    sudo apt install -y --no-install-recommends libncursesw5-dev ccache
     ccache -M 100Mi
 fi
 
