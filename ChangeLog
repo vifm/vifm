@@ -1,5 +1,8 @@
 0.13 to current
 
+	Changed --with-gtk flag to --with-glib (old name is still available).  GTK
+	was pulled in by mistake, only GIO/GLib was ever used...
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It

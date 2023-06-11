@@ -630,11 +630,21 @@ dnl ----------------------------------------------------------------------------
 dnl checks for external libraries
 dnl ----------------------------------------------------------------------------
 
+AC_ARG_WITH(glib,
+    AS_HELP_STRING([--with-glib],
+        [use GLib2 to determine mimetypes if available @<:@default=yes@:>@]),
+    [use_glib=$withval],
+    [use_glib=yes])
+dnl for backward compatibility
 AC_ARG_WITH(gtk,
     AS_HELP_STRING([--with-gtk],
-        [use GTK+ to determine mimetypes if available @<:@default=yes@:>@]),
+        [(obsolete name of --with-glib) use GLib2 to determine mimetypes if available @<:@default=yes@:>@]),
     [use_gtk=$withval],
-    [use_gtk=yes])
+    [use_gtk=use_glib])
+if test "x$use_gtk" != "xuse_glib"; then
+    AC_MSG_WARN(["--with(out)-gtk flag is obsolete, please use --with(out)-glib instead"])
+    use_glib=$use_gtk
+fi
 
 AC_ARG_WITH(libmagic,
     AS_HELP_STRING([--with-libmagic],
@@ -658,25 +668,23 @@ dnl ----------------------------------------------------------------------------
 dnl checks for mimetype detection
 dnl ----------------------------------------------------------------------------
 
-if test "$use_gtk" = "yes"; then
+if test "$use_glib" = "yes"; then
     if test "x$(which pkg-config)" != "x"; then
-        if pkg-config --exists glib-2.0 gtk+-2.0; then
-            CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-            LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+        if pkg-config --exists glib-2.0 gio-2.0; then
+            CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gio-2.0)"
+            LIBS="$LIBS $(pkg-config --libs glib-2.0 gio-2.0)"
             AC_CHECK_HEADER([gio/gio.h], [], [AC_MSG_ERROR([gio/gio.h header not found.])], [[#include <gio/gio.h>]])
             AC_CHECK_HEADER([glib.h], [], [AC_MSG_ERROR([glib.h header not found.])], [[#include <glib.h>]])
-            AC_CHECK_HEADER([gtk/gtk.h], [], [AC_MSG_ERROR([gtk/gtk.h header not found.])], [[#include <gtk/gtk.h>]])
-            AC_CHECK_FUNC([gtk_init_check], [], [AC_MSG_ERROR([gtk_init_check() function not found.])])
             AC_CHECK_FUNC([g_file_info_get_content_type], [], [AC_MSG_ERROR([g_file_info_get_content_type() function not found.])])
             AC_CHECK_FUNC([g_file_new_for_path], [], [AC_MSG_ERROR([g_file_new_for_path() function not found.])])
             AC_CHECK_FUNC([g_file_query_info], [], [AC_MSG_ERROR([g_file_query_info() function not found.])])
             AC_CHECK_FUNC([g_object_unref], [], [AC_MSG_ERROR([g_object_unref() function not found.])])
-            AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+            AC_DEFINE([HAVE_GLIB], [1], [use glib2 to determine mime type])
         else
-            AC_MSG_WARN("Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.")
+            AC_MSG_WARN(["Could not find glib-2.0/gio-2.0 via pkg-config.  No GLib support."])
         fi
     else
-        AC_MSG_WARN("Could not find pkg-config.  No GTK+ support.")
+        AC_MSG_WARN(["Could not find pkg-config.  No GLib support."])
     fi
 fi
 

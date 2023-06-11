@@ -19,13 +19,6 @@
 
 #include "status.h"
 
-#ifdef HAVE_LIBGTK
-#include <gio/gio.h>
-#include <gtk/gtk.h>
-#undef MAX
-#undef MIN
-#endif
-
 #include <sys/types.h> /* ino_t */
 
 #include <assert.h> /* assert() */
@@ -89,7 +82,6 @@ selection_t;
 
 static void load_def_values(status_t *stats, config_t *config);
 static void determine_fuse_umount_cmd(status_t *stats);
-static void set_gtk_available(status_t *stats);
 static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
 static void dcache_get(const char path[], time_t mtime, uint64_t inode,
@@ -133,7 +125,6 @@ stats_init(config_t *config)
 
 	load_def_values(&curr_stats, config);
 	determine_fuse_umount_cmd(&curr_stats);
-	set_gtk_available(&curr_stats);
 	curr_stats.exec_env_type = get_exec_env_type();
 	stats_update_shell_type(config->shell);
 
@@ -244,10 +235,6 @@ load_def_values(status_t *stats, config_t *config)
 	stats->ipc = NULL;
 	stats->vlua = NULL;
 	stats->plugs = NULL;
-
-#ifdef HAVE_LIBGTK
-	stats->gtk_available = 0;
-#endif
 }
 
 /* Initializes stats->fuse_umount_cmd field of the stats. */
@@ -267,17 +254,6 @@ determine_fuse_umount_cmd(status_t *stats)
 	{
 		/* Leave default value. */
 	}
-}
-
-static void
-set_gtk_available(status_t *stats)
-{
-#ifdef HAVE_LIBGTK
-	char *argv[] = { "vifm", NULL };
-	int argc = ARRAY_LEN(argv) - 1;
-	char **ptr = argv;
-	stats->gtk_available = gtk_init_check(&argc, &ptr);
-#endif
 }
 
 int

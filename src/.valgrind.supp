@@ -91,3 +91,34 @@
    fun:realloc
    fun:l_alloc
 }
+
+{
+    gobject-and-glib-globals
+    Memcheck:Leak
+    match-leak-kinds: possible
+    ...
+    obj:*/libgobject-2.0.so.*
+    ...
+    fun:_dl_init
+    ...
+}
+{
+    gio-globals
+    Memcheck:Leak
+    match-leak-kinds: possible
+    ...
+    fun:g_type_register_static
+    ...
+    obj:*/libgio-2.0.so.*
+    ...
+}
+{
+    gio-types
+    Memcheck:Leak
+    match-leak-kinds: possible
+    ...
+    fun:g_type_create_instance
+    ...
+    obj:*/libgio-2.0.so.*
+    ...
+}

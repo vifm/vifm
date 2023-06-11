@@ -50,7 +50,7 @@ popd
 
 # Configure vifm to use our libncursesw6
 ./configure --sysconfdir=/etc --prefix=/usr --with-curses="$NCURSES_DIR/build" \
-    --without-gtk --without-X11 --without-libmagic
+    --without-glib --without-X11 --without-libmagic
 make -j4
 make DESTDIR="$BUILD_DIR/AppDir" install
 

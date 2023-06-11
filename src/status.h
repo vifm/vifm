@@ -235,10 +235,6 @@ typedef struct
 	struct ipc_t *ipc;     /* Handle for IPC mechanism. */
 	struct vlua_t *vlua;   /* Handle for Lua unit. */
 	struct plugs_t *plugs; /* Handle for plugins unit. */
-
-#ifdef HAVE_LIBGTK
-	int gtk_available; /* for mimetype detection */
-#endif
 }
 status_t;
 

@@ -18,10 +18,9 @@
 
 #include "file_magic.h"
 
-#ifdef HAVE_LIBGTK
+#ifdef HAVE_GLIB
 #include <gio/gio.h>
 #include <glib.h>
-#include <gtk/gtk.h>
 #endif
 
 #ifdef HAVE_LIBMAGIC
@@ -178,14 +177,9 @@ update_cache(fsddata_t *cache, const char path[], const char mimetype[],
 static int
 get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
-#ifdef HAVE_LIBGTK
+#ifdef HAVE_GLIB
 	GFile *file;
 	GFileInfo *info;
-
-	if(!curr_stats.gtk_available)
-	{
-		return -1;
-	}
 
 	file = g_file_new_for_path(filename);
 	info = g_file_query_info(file, "standard::", G_FILE_QUERY_INFO_NONE, NULL,
@@ -200,9 +194,9 @@ get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
 	g_object_unref(info);
 	g_object_unref(file);
 	return 0;
-#else /* #ifdef HAVE_LIBGTK */
+#else /* #ifdef HAVE_GLIB */
 	return -1;
-#endif /* #ifdef HAVE_LIBGTK */
+#endif /* #ifdef HAVE_GLIB */
 }
 
 static int
