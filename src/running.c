@@ -97,7 +97,7 @@ static void execute_file(const char full_path[], int elevate);
 static void run_selection(view_t *view, int dont_execute);
 static void run_with_defaults(view_t *view);
 static void run_selection_separately(view_t *view, int dont_execute);
-static int is_multi_run_compat(view_t *view, const char prog_cmd[]);
+static int is_multi_run_compat(const char prog_cmd[]);
 static void run_explicit_prog(view_t *view, const char prog_spec[], int pause,
 		int force_bg);
 static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
@@ -402,7 +402,7 @@ run_selection(view_t *view, int dont_execute)
 	const char *common_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
-	int can_multi_run = (is_multi_run_compat(view, common_prog_cmd) != 0);
+	int can_multi_run = (is_multi_run_compat(common_prog_cmd) != 0);
 	int files_without_handler = (common_prog_cmd == NULL);
 	int identical_handlers = 1;
 	int nentries = 0;
@@ -429,7 +429,7 @@ run_selection(view_t *view, int dont_execute)
 			continue;
 		}
 
-		can_multi_run &= (is_multi_run_compat(view, entry_prog_cmd) != 0);
+		can_multi_run &= (is_multi_run_compat(entry_prog_cmd) != 0);
 		if(common_prog_cmd == NULL)
 		{
 			common_prog_cmd = entry_prog_cmd;
@@ -507,7 +507,7 @@ run_selection_separately(view_t *view, int dont_execute)
  * set of selected files.  Returns non-zero if so, otherwise zero is
  * returned. */
 static int
-is_multi_run_compat(view_t *view, const char prog_cmd[])
+is_multi_run_compat(const char prog_cmd[])
 {
 	size_t len;
 	if(prog_cmd == NULL)
