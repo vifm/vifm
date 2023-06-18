@@ -594,7 +594,7 @@ retarget_one(view_t *view)
 	}
 
 	fops_line_prompt("Link target: ", linkto, &change_link_cb, /*cb_arg=*/NULL,
-			&complete_filename, 0);
+			&complete_filename);
 	return 0;
 }
 
@@ -1462,7 +1462,7 @@ fops_chuser(void)
 		return;
 	}
 	fops_line_prompt("New owner: ", "", &change_owner_cb, /*cb_arg=*/NULL,
-			&complete_owner, 0);
+			&complete_owner);
 }
 
 /* Handles users response for new file owner name prompt. */
@@ -1504,7 +1504,7 @@ fops_chgroup(void)
 		return;
 	}
 	fops_line_prompt("New group: ", "", &change_group_cb, /*cb_arg=*/NULL,
-			&complete_group, 0);
+			&complete_group);
 }
 
 /* Handles users response for new file group name prompt. */

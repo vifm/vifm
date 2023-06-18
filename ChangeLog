@@ -64,6 +64,10 @@
 	inability to understand that "${var}" is the same as "$var".  Thanks to
 	aleksejrs.
 
+	Fixed a historical omission of Ctrl-G not being available in some prompts:
+	file rename on conflict; owner, group and symbolic link target change.
+	Thanks to Branislav Gerazov.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

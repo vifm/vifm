@@ -70,7 +70,7 @@ typedef int (*fo_complete_cmd_func)(const char cmd[], void *arg);
 
 /* Function to request filename editing. */
 typedef void (*line_prompt_func)(const char prompt[], const char filename[],
-		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
+		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete);
 
 /* Function to choose an option.  Returns the choice. */
 typedef char (*options_prompt_func)(const struct custom_prompt_t *details);
