@@ -456,8 +456,7 @@ run_selection(view_t *view, int dont_execute)
 	}
 	else
 	{
-		show_error_msg("Run error", "Handlers of selected files are "
-		                            "incompatible.");
+		show_error_msg("Run error", "Handlers of selected files are incompatible.");
 	}
 }
 
