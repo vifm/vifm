@@ -47,14 +47,14 @@
 /* Define to 1 if the system has the type `getmntinfo'. */
 #undef HAVE_GETMNTINFO
 
+/* use glib2 to determine mime type */
+#undef HAVE_GLIB
+
 /* inotify is available */
 #undef HAVE_INOTIFY
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* use gtk to determine mime type */
-#undef HAVE_LIBGTK
 
 /* Define to 1 if you have the `magic' library (-lmagic). */
 #undef HAVE_LIBMAGIC

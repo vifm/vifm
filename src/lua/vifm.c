@@ -337,8 +337,7 @@ VLUA_API(vifm_input)(lua_State *lua)
 	}
 
 	input_cb_data_t cb_data = { .quit = 0, .response = NULL };
-	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data, complete,
-			/*allow_ee=*/1);
+	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data, complete);
 	event_loop(&cb_data.quit, /*manage_marking=*/0);
 
 	if(cb_data.response == NULL)

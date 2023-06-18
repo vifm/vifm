@@ -21,9 +21,9 @@
 #include "../../src/trash.h"
 
 static void line_prompt(const char prompt[], const char filename[],
-		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
+		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete);
 static void line_prompt_rec(const char prompt[], const char filename[],
-		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
+		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete);
 static char options_prompt_rename(const custom_prompt_t *details);
 static char options_prompt_rename_rec(const custom_prompt_t *details);
 static char options_prompt_overwrite(const custom_prompt_t *details);
@@ -66,14 +66,14 @@ TEARDOWN()
 
 static void
 line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
-		void *cb_arg, fo_complete_cmd_func complete, int allow_ee)
+		void *cb_arg, fo_complete_cmd_func complete)
 {
 	cb("b", cb_arg);
 }
 
 static void
 line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
-		void *cb_arg, fo_complete_cmd_func complete, int allow_ee)
+		void *cb_arg, fo_complete_cmd_func complete)
 {
 	rename_cb = cb;
 }

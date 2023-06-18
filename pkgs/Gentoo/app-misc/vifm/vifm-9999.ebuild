@@ -28,7 +28,7 @@ IUSE="X +extended-keys gtk +magic vim vim-syntax"
 DEPEND="
 	>=sys-libs/ncurses-5.7-r7
 	magic? ( sys-apps/file )
-	gtk? ( x11-libs/gtk+:2 )
+	gtk? ( dev-libs/glib )
 	X? ( x11-libs/libX11 )
 "
 RDEPEND="

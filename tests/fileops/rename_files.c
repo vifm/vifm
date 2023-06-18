@@ -19,7 +19,7 @@
 #include "../../src/status.h"
 
 static void broken_link_name(const char prompt[], const char filename[],
-		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete, int allow_ee);
+		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete);
 
 static char *saved_cwd;
 
@@ -187,7 +187,7 @@ TEST(rename_to_broken_symlink_name, IF(not_windows))
 
 static void
 broken_link_name(const char prompt[], const char filename[], fo_prompt_cb cb,
-		void *cb_arg, fo_complete_cmd_func complete, int allow_ee)
+		void *cb_arg, fo_complete_cmd_func complete)
 {
 	cb("broken-link", cb_arg);
 }

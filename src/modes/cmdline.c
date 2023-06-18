@@ -701,7 +701,7 @@ enter_submode(CmdLineSubmode sub_mode, const char initial[], int reenter)
 
 void
 modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
-		void *cb_arg, complete_cmd_func complete, int allow_ee)
+		void *cb_arg, complete_cmd_func complete)
 {
 	wchar_t *wprompt = to_wide_force(prompt);
 	wchar_t *winitial = to_wide_force(initial);
@@ -712,7 +712,8 @@ modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 	}
 	else
 	{
-		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT, allow_ee);
+		prepare_cmdline_mode(wprompt, winitial, complete, CLS_PROMPT,
+				/*allow_ee=*/1);
 		input_stat.prompt_callback = cb;
 		input_stat.prompt_callback_arg = cb_arg;
 	}
@@ -2002,7 +2003,7 @@ cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 	if(!is_cmdmode(input_stat.prev_mode))
 	{
 		modcline_prompt("(=)", "", &expr_reg_prompt_cb, /*cb_arg=*/NULL,
-				&expr_reg_prompt_completion, /*allow_ee=*/1);
+				&expr_reg_prompt_completion);
 	}
 }
 

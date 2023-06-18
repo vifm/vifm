@@ -1,5 +1,8 @@
 0.13 to current
 
+	Changed --with-gtk flag to --with-glib (old name is still available).  GTK
+	was pulled in by mistake, only GIO/GLib was ever used...
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It
@@ -56,6 +59,14 @@
 
 	Fixed 'slowfs' option not being applied to targets of symbolic links on
 	operations related to directory sizes.  Thanks to rok (a.k.a. aca).
+
+	Fixed running long shell commands when fish is used.  Caused by its
+	inability to understand that "${var}" is the same as "$var".  Thanks to
+	aleksejrs.
+
+	Fixed a historical omission of Ctrl-G not being available in some prompts:
+	file rename on conflict; owner, group and symbolic link target change.
+	Thanks to Branislav Gerazov.
 
 0.13-beta to 0.13 (2023-04-04)
 

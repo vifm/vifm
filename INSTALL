@@ -55,7 +55,9 @@ when building with Cygwin):
       --with-sanitize=basic|thread|leak - enables address and undefined, thread
           or leaks sanitizers respecitively.
 
-      --without/[with]-gtk - use GTK+ to determine mimetypes if available.
+      --without/[with]-glib - use GLib2/GIO to determine mimetypes if available.
+
+      --without/[with]-gtk - old (incorrect) name of --without/[with]-glib.
 
       --without/[with]-libmagic - use libmagic to determine mimetypes if
           available.
@@ -86,7 +88,7 @@ On OS X you need:
 
     Proceed like in *nix Installation section.
 
-    Also you probably want to pass --with-gtk=no argument to ./configure
+    Also you probably want to pass --with-glib=no argument to ./configure
     script to omit unwanted error message when vifm starts.
 
 On Windows you need:

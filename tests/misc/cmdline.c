@@ -82,7 +82,7 @@ TEST(prompt_cb_is_called_on_success)
 	prompt_invocation_count = 0;
 
 	modcline_prompt("(prompt)", "initial", &prompt_callback, /*cb_arg=*/NULL,
-			/*complete=*/NULL, /*allow_ee=*/0);
+			/*complete=*/NULL);
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_int_equal(CLS_PROMPT, stats->sub_mode);
 	(void)vle_keys_exec_timed_out(WK_CR);
@@ -97,7 +97,7 @@ TEST(prompt_cb_is_called_on_cancellation)
 	prompt_invocation_count = 0;
 
 	modcline_prompt("(prompt)", "initial", &prompt_callback, /*cb_arg=*/NULL,
-			/*complete=*/NULL, /*allow_ee=*/0);
+			/*complete=*/NULL);
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_int_equal(CLS_PROMPT, stats->sub_mode);
 	(void)vle_keys_exec_timed_out(WK_C_c);

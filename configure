@@ -745,6 +745,7 @@ enable_dependency_tracking
 enable_largefile
 with_curses_name
 with_curses
+with_glib
 with_gtk
 with_libmagic
 with_X11
@@ -1413,8 +1414,10 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-curses-name=NAME name of curses library file [default=ncursesw]
   --with-curses=DIR       where ncurses is installed
-  --with-gtk              use GTK+ to determine mimetypes if available
+  --with-glib             use GLib2 to determine mimetypes if available
                           [default=yes]
+  --with-gtk              (obsolete name of --with-glib) use GLib2 to
+                          determine mimetypes if available [default=yes]
   --with-libmagic         use libmagic to determine mimetypes if available
                           [default=yes]
   --with-X11              use libX11 to determine terminal emulator title
@@ -10202,13 +10205,26 @@ fi
 
 
 
+# Check whether --with-glib was given.
+if test "${with_glib+set}" = set; then :
+  withval=$with_glib; use_glib=$withval
+else
+  use_glib=yes
+fi
+
+
 # Check whether --with-gtk was given.
 if test "${with_gtk+set}" = set; then :
   withval=$with_gtk; use_gtk=$withval
 else
-  use_gtk=yes
+  use_gtk=use_glib
 fi
 
+if test "x$use_gtk" != "xuse_glib"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"--with(out)-gtk flag is obsolete, please use --with(out)-glib instead\"" >&5
+$as_echo "$as_me: WARNING: \"--with(out)-gtk flag is obsolete, please use --with(out)-glib instead\"" >&2;}
+    use_glib=$use_gtk
+fi
 
 
 # Check whether --with-libmagic was given.
@@ -10238,11 +10254,11 @@ fi
 
 
 
-if test "$use_gtk" = "yes"; then
+if test "$use_glib" = "yes"; then
     if test "x$(which pkg-config)" != "x"; then
-        if pkg-config --exists glib-2.0 gtk+-2.0; then
-            CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-            LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+        if pkg-config --exists glib-2.0 gio-2.0; then
+            CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gio-2.0)"
+            LIBS="$LIBS $(pkg-config --libs glib-2.0 gio-2.0)"
             ac_fn_c_check_header_compile "$LINENO" "gio/gio.h" "ac_cv_header_gio_gio_h" "#include <gio/gio.h>
 "
 if test "x$ac_cv_header_gio_gio_h" = xyes; then :
@@ -10260,22 +10276,6 @@ else
   as_fn_error $? "glib.h header not found." "$LINENO" 5
 fi
 
-
-            ac_fn_c_check_header_compile "$LINENO" "gtk/gtk.h" "ac_cv_header_gtk_gtk_h" "#include <gtk/gtk.h>
-"
-if test "x$ac_cv_header_gtk_gtk_h" = xyes; then :
-
-else
-  as_fn_error $? "gtk/gtk.h header not found." "$LINENO" 5
-fi
-
-
-            ac_fn_c_check_func "$LINENO" "gtk_init_check" "ac_cv_func_gtk_init_check"
-if test "x$ac_cv_func_gtk_init_check" = xyes; then :
-
-else
-  as_fn_error $? "gtk_init_check() function not found." "$LINENO" 5
-fi
 
             ac_fn_c_check_func "$LINENO" "g_file_info_get_content_type" "ac_cv_func_g_file_info_get_content_type"
 if test "x$ac_cv_func_g_file_info_get_content_type" = xyes; then :
@@ -10306,15 +10306,15 @@ else
 fi
 
 
-$as_echo "#define HAVE_LIBGTK 1" >>confdefs.h
+$as_echo "#define HAVE_GLIB 1" >>confdefs.h
 
         else
-            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.\"" >&5
-$as_echo "$as_me: WARNING: \"Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.\"" >&2;}
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find glib-2.0/gio-2.0 via pkg-config.  No GLib support.\"" >&5
+$as_echo "$as_me: WARNING: \"Could not find glib-2.0/gio-2.0 via pkg-config.  No GLib support.\"" >&2;}
         fi
     else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find pkg-config.  No GTK+ support.\"" >&5
-$as_echo "$as_me: WARNING: \"Could not find pkg-config.  No GTK+ support.\"" >&2;}
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find pkg-config.  No GLib support.\"" >&5
+$as_echo "$as_me: WARNING: \"Could not find pkg-config.  No GLib support.\"" >&2;}
     fi
 fi
 

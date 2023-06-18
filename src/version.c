@@ -62,10 +62,10 @@ fill_version_info(char **list, int include_stats)
 	list[x++] = strdup("Parsing of .desktop files is disabled");
 #endif
 
-#ifdef HAVE_LIBGTK
-	list[x++] = strdup("With GTK+ library");
+#ifdef HAVE_GLIB
+	list[x++] = strdup("With GLib2 library");
 #else
-	list[x++] = strdup("Without GTK+ library");
+	list[x++] = strdup("Without GLib2 library");
 #endif
 
 #ifdef HAVE_LIBMAGIC

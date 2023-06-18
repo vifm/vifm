@@ -428,8 +428,7 @@ input_builtin(const call_info_t *call_info)
 		goto fail;
 	}
 
-	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data, complete,
-			/*allow_ee=*/1);
+	modcline_prompt(prompt, initial, &input_builtin_cb, &cb_data, complete);
 
 	free(prompt);
 	free(initial);

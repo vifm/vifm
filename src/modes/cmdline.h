@@ -67,9 +67,9 @@ void modcline_in_menu(CmdLineSubmode sub_mode, const char initial[],
 /* Enters command-line editing mode with prompt submode activated.  initial is
  * the start value, cb is callback called with the result on success and
  * with NULL on cancellation, complete is completion function (can be NULL),
- * allow_ee specifies whether issuing external editor is allowed. */
+ * External editor is always allowed. */
 void modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
-		void *cb_arg, complete_cmd_func complete, int allow_ee);
+		void *cb_arg, complete_cmd_func complete);
 
 /* Redraws UI elements of the command-line mode. */
 void modcline_redraw(void);

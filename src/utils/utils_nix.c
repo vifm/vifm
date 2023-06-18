@@ -392,7 +392,7 @@ make_execv_array(char shell[], char shell_flag[], char cmd[])
 		char s[32];
 		char c;
 
-		snprintf(s, sizeof(s), "${%d}", (int)i);
+		snprintf(s, sizeof(s), "$%d", (int)i);
 		(void)strappend(&eval_cmd, &len, s);
 
 		c = cmd[safe_arg_len];
