@@ -1,4 +1,4 @@
-.TH VIFM 1 "2 Jun 2023" "vifm 0.13"
+.TH VIFM 1 "25 Jun 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4221,17 +4221,18 @@ default: ""
 Sets characters used to fill borders.
 
   item         default    used for
-  vborder:c    ' '        left, middle and right vertical borders
   hborder:c    ''         middle horizontal border
+  millersep:c  ''         separator of miller columns
+  vborder:c    ' '        left, middle and right vertical borders
 
-A null string for vborder is equivalent to a space.
+An empty string for millersep or vborder is equivalent to a space.
 
-A null string for hborder omits the horizontal border.
+An empty string for hborder omits the horizontal border.
 
 Example:
 
 .EX
-  set fillchars=vborder:".",hborder:""
+  set fillchars=vborder:".",hborder:"",millersep:"|"
 .EE
 .TP
 .BI 'findprg'

@@ -240,12 +240,15 @@ TEST(fillchars_is_set_on_correct_input)
 {
 	(void)replace_string(&cfg.vborder_filler, "x");
 	(void)replace_string(&cfg.hborder_filler, "y");
-	assert_success(cmds_dispatch("set fillchars=vborder:a,hborder:b", &lwin,
-				CIT_COMMAND));
+	(void)replace_string(&cfg.millersep_filler, "z");
+	assert_success(cmds_dispatch("set fillchars=vborder:a,hborder:b,millersep:c",
+				&lwin, CIT_COMMAND));
 	assert_string_equal("a", cfg.vborder_filler);
 	assert_string_equal("b", cfg.hborder_filler);
+	assert_string_equal("c", cfg.millersep_filler);
 	update_string(&cfg.vborder_filler, NULL);
 	update_string(&cfg.hborder_filler, NULL);
+	update_string(&cfg.millersep_filler, NULL);
 }
 
 TEST(fillchars_not_changed_on_wrong_input)
@@ -267,7 +270,7 @@ TEST(values_in_fillchars_are_deduplicated)
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("fillchars?", OPT_GLOBAL));
-	assert_string_equal("  fillchars=vborder:b,hborder:",
+	assert_string_equal("  fillchars=hborder:,millersep:,vborder:b",
 			vle_tb_get_data(vle_err));
 
 	update_string(&cfg.vborder_filler, NULL);
@@ -275,23 +278,33 @@ TEST(values_in_fillchars_are_deduplicated)
 
 TEST(fillchars_can_be_reset)
 {
-	assert_success(cmds_dispatch("set fillchars=vborder:v,hborder:h", &lwin,
-				CIT_COMMAND));
+	assert_success(cmds_dispatch("set fillchars=vborder:v,hborder:h,millersep:m",
+				&lwin, CIT_COMMAND));
 
 	assert_success(cmds_dispatch("set fillchars=vborder:v", &lwin, CIT_COMMAND));
 	assert_string_equal("v", cfg.vborder_filler);
 	assert_string_equal("", cfg.hborder_filler);
+	assert_string_equal("", cfg.millersep_filler);
 
 	assert_success(cmds_dispatch("set fillchars=hborder:h", &lwin, CIT_COMMAND));
 	assert_string_equal(" ", cfg.vborder_filler);
 	assert_string_equal("h", cfg.hborder_filler);
+	assert_string_equal("", cfg.millersep_filler);
+
+	assert_success(cmds_dispatch("set fillchars=millersep:m", &lwin,
+				CIT_COMMAND));
+	assert_string_equal(" ", cfg.vborder_filler);
+	assert_string_equal("", cfg.hborder_filler);
+	assert_string_equal("m", cfg.millersep_filler);
 
 	assert_success(cmds_dispatch("set fillchars=", &lwin, CIT_COMMAND));
 	assert_string_equal(" ", cfg.vborder_filler);
 	assert_string_equal("", cfg.hborder_filler);
+	assert_string_equal("", cfg.millersep_filler);
 
 	update_string(&cfg.vborder_filler, NULL);
 	update_string(&cfg.hborder_filler, NULL);
+	update_string(&cfg.millersep_filler, NULL);
 }
 
 TEST(sizefmt_is_set_on_correct_input)

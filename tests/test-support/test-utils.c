@@ -98,6 +98,7 @@ conf_setup(void)
 	update_string(&cfg.media_prg, "");
 	update_string(&cfg.vborder_filler, "");
 	update_string(&cfg.hborder_filler, "");
+	update_string(&cfg.millersep_filler, "");
 	update_string(&cfg.tab_prefix, "");
 	update_string(&cfg.tab_label, "");
 	update_string(&cfg.tab_suffix, "");
@@ -139,6 +140,7 @@ conf_teardown(void)
 	update_string(&cfg.media_prg, NULL);
 	update_string(&cfg.vborder_filler, NULL);
 	update_string(&cfg.hborder_filler, NULL);
+	update_string(&cfg.millersep_filler, NULL);
 	update_string(&cfg.tab_prefix, NULL);
 	update_string(&cfg.tab_label, NULL);
 	update_string(&cfg.tab_suffix, NULL);

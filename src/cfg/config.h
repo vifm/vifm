@@ -325,9 +325,10 @@ typedef struct config_t
 	/* Whether displaying status line is enabled. */
 	int display_statusline;
 
-	/* Per line pattern for borders. */
-	char *vborder_filler;
-	char *hborder_filler;
+	/* Per line/column pattern for borders. */
+	char *vborder_filler;   /* Pane borders (left, right, middle). */
+	char *hborder_filler;   /* Middle horizontal border. */
+	char *millersep_filler; /* Separator between miller columns. */
 
 	/* Whether terminal title should be updated or not. */
 	int set_title;
