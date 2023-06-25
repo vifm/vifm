@@ -23,6 +23,9 @@
 	Added "column:{name}" form of argument to :highlight command to specify
 	style of a separate column.  Thanks to Anton Gepting.
 
+	Added "millersep:" value to 'fillchars' that allows customizing the border
+	between miller columns.  Thanks to Shuo (a.k.a. shenqshuoh).
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

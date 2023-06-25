@@ -96,6 +96,7 @@
 
 static void draw_left_column(view_t *view);
 static void draw_right_column(view_t *view);
+static void draw_miller_separator(view_t *view, int column);
 static void print_side_column(view_t *view, entries_t entries,
 		const char current[], const char path[], int width, int offset,
 		int number_width);
@@ -397,6 +398,8 @@ draw_left_column(view_t *view)
 		print_side_column(view, view->left_column.entries, dir, path, lcol_width, 0,
 				number_width);
 	}
+
+	draw_miller_separator(view, lcol_width);
 }
 
 /* Draws a column to the right of the main part of the view. */
@@ -447,6 +450,25 @@ draw_right_column(view_t *view)
 	{
 		print_side_column(view, view->right_column.entries, NULL, path, rcol_width,
 				offset, 0);
+	}
+
+	draw_miller_separator(view, offset - 1);
+}
+
+/* Draws a vertical line in a view to visually separate miller columns from each
+ * other. */
+static void
+draw_miller_separator(view_t *view, int column)
+{
+	const col_scheme_t *const cs = ui_view_get_cs(view);
+	col_attr_t col = ui_get_win_color(view, cs);
+	cchar_t attrs = cs_color_to_cchar(&col, -1);
+
+	int line;
+	for(line = 0; line < view->window_rows; ++line)
+	{
+		checked_wmove(view->win, line, column);
+		wprinta(view->win, cfg.millersep_filler, &attrs, /*attrs_xors=*/0);
 	}
 }
 

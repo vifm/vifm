@@ -197,6 +197,7 @@ cfg_init(void)
 
 	cfg.vborder_filler = strdup(" ");
 	cfg.hborder_filler = strdup("");
+	cfg.millersep_filler = strdup("");
 
 	cfg.set_title = term_title_restorable();
 

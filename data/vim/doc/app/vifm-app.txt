@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Jun 2
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Jun 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3517,15 +3517,16 @@ default: ""
 Sets characters used to fill borders.
 
     item          default         used for ~
-    vborder:c     ' '             left, middle and right vertical borders
     hborder:c     ''              middle horizontal border
+    millersep:c   ''              separator of miller columns
+    vborder:c     ' '             left, middle and right vertical borders
 
-A null string for vborder is equivalent to a space.
+An empty string for millersep or vborder is equivalent to a space.
 
-A null string for hborder omits the horizontal border.
+An empty string for hborder omits the horizontal border.
 
 Example: >
-    set fillchars=vborder:".",hborder:""
+    set fillchars=vborder:".",hborder:"",millersep:"|"
 <
                                                *vifm-'findprg'*
 findprg

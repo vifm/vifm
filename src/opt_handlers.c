@@ -407,8 +407,9 @@ static const char *dirsize_enum[][2] = {
 
 /* Possible keys of 'fillchars' option. */
 static const char *fillchars_enum[][2] = {
-	{ "vborder:", "filler of vertical borders" },
-	{ "hborder:", "filler of horizontal border" },
+	{ "hborder:",   "filler of horizontal border" },
+	{ "millersep:", "separator of miller columns" },
+	{ "vborder:",   "filler of vertical borders" },
 };
 
 /* Possible keys of 'milleroptions' option. */
@@ -1154,9 +1155,10 @@ static void
 init_fillchars(optval_t *val)
 {
 	static char buf[128];
-	snprintf(buf, sizeof(buf), "vborder:%s,hborder:%s",
-			cfg.vborder_filler,
-			cfg.hborder_filler);
+	snprintf(buf, sizeof(buf), "hborder:%s,millersep:%s,vborder:%s",
+			cfg.hborder_filler,
+			cfg.millersep_filler,
+			cfg.vborder_filler);
 	val->str_val = buf;
 }
 
@@ -2131,8 +2133,10 @@ fillchars_handler(OPT_OP op, optval_t val)
 	/* Save current state and load default values. */
 	char *const old_vborder = cfg.vborder_filler;
 	char *const old_hborder = cfg.hborder_filler;
+	char *const old_millersep = cfg.millersep_filler;
 	cfg.vborder_filler = strdup(" ");
 	cfg.hborder_filler = strdup("");
+	cfg.millersep_filler = strdup("");
 
 	int error = 0;
 	while((part = split_and_get(part, ',', &state)) != NULL)
@@ -2144,6 +2148,10 @@ fillchars_handler(OPT_OP op, optval_t val)
 		else if(starts_with_lit(part, "hborder:"))
 		{
 			(void)replace_string(&cfg.hborder_filler, after_first(part, ':'));
+		}
+		else if(starts_with_lit(part, "millersep:"))
+		{
+			(void)replace_string(&cfg.millersep_filler, after_first(part, ':'));
 		}
 		else
 		{
@@ -2161,6 +2169,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 		/* Restore previous state on error. */
 		put_string(&cfg.vborder_filler, old_vborder);
 		put_string(&cfg.hborder_filler, old_hborder);
+		put_string(&cfg.millersep_filler, old_millersep);
 	}
 	else
 	{
@@ -2170,6 +2179,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 		/* Drop saved state. */
 		free(old_vborder);
 		free(old_hborder);
+		free(old_millersep);
 	}
 
 	/* In case of error, restore previous value, otherwise reload it anyway to
