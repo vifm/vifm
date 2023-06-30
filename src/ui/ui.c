@@ -2943,10 +2943,17 @@ ui_set_attr(WINDOW *win, const col_attr_t *col, int pair)
 		pair = cs_load_color(col);
 	}
 
-	/* Compiler complains about unused result of comma operator, because
-	 * wattr_set() is a macro and it uses comma to evaluate multiple expresions.
-	 * So cast result to void. */
-	(void)wattr_set(win, cs_color_get_attr(col), pair, NULL);
+	/*
+	 * Compiler complains about unused result of comma operator, because
+	 * wattr_set() is a macro and it uses comma to evaluate multiple expressions.
+	 * So cast result to void.
+	 *
+	 * Color pair is specified twice to support both older and newer ncurses
+	 * versions in one call.  MIN() might not be necessary for older versions with
+	 * at most 32768 color pairs, but it won't hurt and makes the API constraints
+	 * clearer.
+	 */
+	(void)wattr_set(win, cs_color_get_attr(col), MIN(pair, SHRT_MAX), &pair);
 }
 
 void

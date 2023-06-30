@@ -71,6 +71,9 @@
 	file rename on conflict; owner, group and symbolic link target change.
 	Thanks to Branislav Gerazov.
 
+	Fixed display issues or a crash when using a terminal with more than 32768
+	color pairs.  Thanks to iboggs and itshog.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
