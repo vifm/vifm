@@ -29,6 +29,7 @@
 #include "utils/hist.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
+#include "utils/utils.h"
 #include "filetype.h"
 
 /* Special value foe dcache fields meaning that it wasn't set. */
@@ -52,15 +53,6 @@ typedef enum
 	SOURCING_FINISHING,
 }
 SourcingState;
-
-/* Type of execution environment. */
-typedef enum
-{
-	EET_LINUX_NATIVE,    /* Linux native console. */
-	EET_EMULATOR,        /* Terminal emulator with no DISPLAY defined. */
-	EET_EMULATOR_WITH_X, /* Terminal emulator within accessible X. */
-}
-ExecEnvType;
 
 /* List of terminal multiplexers. */
 typedef enum
@@ -89,20 +81,6 @@ typedef enum
 	TS_BACK_TO_NORMAL, /* Was too small some moments ago, need to restore UI. */
 }
 TermState;
-
-typedef enum
-{
-	/* POSIX-like shell that is aware of command escaping and backslashes in
-	 * paths. */
-	ST_POSIX,
-	/* Dumb cmd.exe shell on Windows. */
-	ST_CMD,
-	/* An improved version of cmd.exe shell on Windows. */
-	ST_YORI,
-	/* PowerShell on Windows. (Any less dumb?  I wish...) */
-	ST_PS,
-}
-ShellType;
 
 /* Type of output variables of dcache_get_of(), which represent state of cache
  * entries. */

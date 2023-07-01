@@ -29,7 +29,6 @@
 #include <time.h> /* time_t */
 
 #include "../macros.h"
-#include "../status.h"
 
 /* Type of operating environment in which the application is running. */
 typedef enum
@@ -38,6 +37,29 @@ typedef enum
 	ET_WIN,  /* Runs on Windows. */
 }
 EnvType;
+
+/* Type of execution environment. */
+typedef enum
+{
+	EET_LINUX_NATIVE,    /* Linux native console. */
+	EET_EMULATOR,        /* Terminal emulator with no DISPLAY defined. */
+	EET_EMULATOR_WITH_X, /* Terminal emulator within accessible X. */
+}
+ExecEnvType;
+
+typedef enum
+{
+	/* POSIX-like shell that is aware of command escaping and backslashes in
+	 * paths. */
+	ST_POSIX,
+	/* Dumb cmd.exe shell on Windows. */
+	ST_CMD,
+	/* An improved version of cmd.exe shell on Windows. */
+	ST_YORI,
+	/* PowerShell on Windows. (Any less dumb?  I wish...) */
+	ST_PS,
+}
+ShellType;
 
 /* Whether user customizations on how to invoke the shell should be applied. */
 typedef enum
