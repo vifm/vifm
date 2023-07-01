@@ -18,24 +18,24 @@ SETUP()
 
 TEST(number_of_available_pairs)
 {
-	assert_true(count_available_pairs(INUSE_SEED, INT_MAX) == CUSTOM_COLOR_PAIRS);
+	assert_int_equal(CUSTOM_COLOR_PAIRS,
+			count_available_pairs(INUSE_SEED, INT_MAX));
 }
 
 TEST(number_of_available_pairs_after_reset)
 {
 	(void)count_available_pairs(INUSE_SEED, INT_MAX);
 	colmgr_reset();
-	assert_true(count_available_pairs(INUSE_SEED, INT_MAX) == CUSTOM_COLOR_PAIRS);
+	assert_int_equal(CUSTOM_COLOR_PAIRS,
+			count_available_pairs(INUSE_SEED, INT_MAX));
 }
 
 TEST(compression)
 {
-	assert_true(
-			count_available_pairs(UNUSED_SEED, CUSTOM_COLOR_PAIRS)
-			==
-			CUSTOM_COLOR_PAIRS
-	);
-	assert_true(count_available_pairs(INUSE_SEED, INT_MAX) == CUSTOM_COLOR_PAIRS);
+	assert_int_equal(CUSTOM_COLOR_PAIRS,
+			count_available_pairs(UNUSED_SEED, CUSTOM_COLOR_PAIRS));
+	assert_int_equal(CUSTOM_COLOR_PAIRS,
+			count_available_pairs(INUSE_SEED, INT_MAX));
 }
 
 static int
