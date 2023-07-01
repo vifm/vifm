@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Jun 25
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Jul 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2169,7 +2169,7 @@ important in certain cases.
       b[search] or ?  show search history and search backward on l key.
       i[nput]   or @  show prompt history (e.g. on one file renaming).
       fi[lter]  or =  show local filter history (see |vifm-=|).
-      e[xprreg]       show expression register history (see |vifm-c_Ctrl-R_=|).
+      e[xprreg]       show expression register history (see |vifm-c_CTRL-R_=|).
       mc[md]          show command-line history of menus.
     See |vifm-menus-and-dialogs| for controls.
 
@@ -4601,7 +4601,7 @@ Controls what will be saved in the $VIFM/vifminfo file:
 
    chistory  - command line history
    dhistory  - directory history
-   ehistory  - expression register history (see |vifm-c_Ctrl-R_=|)
+   ehistory  - expression register history (see |vifm-c_CTRL-R_=|)
    fhistory  - history of local filter (see |vifm-=|)
    mchistory - command line history of menus
    phistory  - prompt history
