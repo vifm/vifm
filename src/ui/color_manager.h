@@ -56,6 +56,9 @@ void colmgr_reset(void);
  * falls back to color pair 0. */
 int colmgr_get_pair(int fg, int bg);
 
+/* Retrieves number of color pairs currently in use.  Returns the number. */
+int colmgr_used_pairs(void);
+
 #endif /* VIFM__UI__COLOR_MANAGER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

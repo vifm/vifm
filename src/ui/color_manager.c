@@ -217,5 +217,13 @@ compress_pair_space(void)
 	return 0;
 }
 
+int
+colmgr_used_pairs(void)
+{
+	assert(initialized && "colmgr_init() must be called before this function!");
+
+	return used_pairs;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

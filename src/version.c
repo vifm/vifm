@@ -24,6 +24,7 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* strdup() */
 
+#include "ui/color_manager.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "status.h"
@@ -35,7 +36,7 @@ extern const char GIT_INFO[];
 int
 fill_version_info(char **list, int include_stats)
 {
-	const int LEN = 22;
+	const int LEN = 23;
 	int x = 0;
 
 	if(list == NULL)
@@ -130,6 +131,7 @@ fill_version_info(char **list, int include_stats)
 
 		list[x++] = strdup("");
 		list[x++] = format_str("Preview cache size: %s", size);
+		list[x++] = format_str("Color pairs in use: %d", colmgr_used_pairs());
 	}
 
 	assert(x <= LEN);
