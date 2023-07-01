@@ -5626,7 +5626,7 @@ last such menus and provides means for recalling them using familiar set of
 Vim commands.
 
 As already hinted above, this doesn't apply to every menu because things like
-|vifm-:version| or |vifm-:commands| rely solely on internal data and don't
+|vifm-:version| or |vifm-:command| rely solely on internal data and don't
 need to be saved.  Only menus that are derived from external sources and
 support navigation (like via |vifm-m_gf|) are remembered.
 
