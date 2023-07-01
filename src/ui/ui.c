@@ -895,12 +895,9 @@ ui_resize_all(void)
 	int border_h = get_working_area_height();
 	int border_y = 1 + get_tabline_height();
 
-	/* TODO: ideally we shouldn't set any colors here (why do we do it?). */
-	ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(lborder, border_h, 1);
 	mvwin(lborder, border_y, 0);
 
-	ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(rborder, border_h, 1);
 	mvwin(rborder, border_y, screen_w - 1);
 
