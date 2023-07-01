@@ -172,7 +172,6 @@ vifm_SOURCES = \
 	lua/lua/loadlib.c \
 	lua/lua/lobject.c lua/lua/lobject.h \
 	lua/lua/lopcodes.c lua/lua/lopcodes.h \
-	lua/lua/lopnames.h \
 	lua/lua/loslib.c \
 	lua/lua/lparser.c lua/lua/lparser.h \
 	lua/lua/lprefix.h \

@@ -51,10 +51,16 @@ void colmgr_init(const colmgr_conf_t *conf_init);
 /* Resets all color pairs that are available for dynamic allocation. */
 void colmgr_reset(void);
 
+/* Optimizes use of color resources by freeing those which seem to be unused. */
+void colmgr_minimize(void);
+
 /* Gets (might dynamically allocate) color pair number for specified
  * foreground (fg) and background (bg) colors.  Returns the number.  On failure
  * falls back to color pair 0. */
 int colmgr_get_pair(int fg, int bg);
+
+/* Retrieves number of color pairs currently in use.  Returns the number. */
+int colmgr_used_pairs(void);
 
 #endif /* VIFM__UI__COLOR_MANAGER_H__ */
 

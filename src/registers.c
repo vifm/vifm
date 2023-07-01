@@ -27,6 +27,7 @@
 #include <fcntl.h>    /* O_RDWR, O_EXCL, O_CREAT, ... */
 #include <unistd.h>   /* ftruncate */
 
+#include "compat/fs_limits.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h" /* show_error_msgf */
 #include "utils/fs.h"

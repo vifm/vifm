@@ -11,6 +11,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
 #include "../../src/cmd_completion.h"
+#include "../../src/status.h"
 
 static void line_handler(const char line[], void *arg);
 

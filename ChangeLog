@@ -44,6 +44,8 @@
 	Increase line length limit used during formatting output of :highlight
 	command to allow longer strings.
 
+	Display number of color pairs in use to :version/:vifm menu.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -70,6 +72,11 @@
 	Fixed a historical omission of Ctrl-G not being available in some prompts:
 	file rename on conflict; owner, group and symbolic link target change.
 	Thanks to Branislav Gerazov.
+
+	Fixed display issues or a crash when using a terminal with more than 32768
+	color pairs.  Thanks to iboggs and itshog.
+
+	Fixed performance degradation after preview consumes lots of color pairs.
 
 0.13-beta to 0.13 (2023-04-04)
 

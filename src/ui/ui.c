@@ -808,6 +808,10 @@ update_start(UpdateType update_kind)
 		return 0;
 	}
 
+	/* The idea of doing it here is that all color pairs actually in use should be
+	 * reallocated during the screen update. */
+	colmgr_minimize();
+
 	update_attributes();
 
 	if(curr_stats.term_state != TS_NORMAL)
@@ -895,12 +899,9 @@ ui_resize_all(void)
 	int border_h = get_working_area_height();
 	int border_y = 1 + get_tabline_height();
 
-	/* TODO: ideally we shouldn't set any colors here (why do we do it?). */
-	ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(lborder, border_h, 1);
 	mvwin(lborder, border_y, 0);
 
-	ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(rborder, border_h, 1);
 	mvwin(rborder, border_y, screen_w - 1);
 
@@ -2943,10 +2944,17 @@ ui_set_attr(WINDOW *win, const col_attr_t *col, int pair)
 		pair = cs_load_color(col);
 	}
 
-	/* Compiler complains about unused result of comma operator, because
-	 * wattr_set() is a macro and it uses comma to evaluate multiple expresions.
-	 * So cast result to void. */
-	(void)wattr_set(win, cs_color_get_attr(col), pair, NULL);
+	/*
+	 * Compiler complains about unused result of comma operator, because
+	 * wattr_set() is a macro and it uses comma to evaluate multiple expressions.
+	 * So cast result to void.
+	 *
+	 * Color pair is specified twice to support both older and newer ncurses
+	 * versions in one call.  MIN() might not be necessary for older versions with
+	 * at most 32768 color pairs, but it won't hurt and makes the API constraints
+	 * clearer.
+	 */
+	(void)wattr_set(win, cs_color_get_attr(col), MIN(pair, SHRT_MAX), &pair);
 }
 
 void
