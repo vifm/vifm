@@ -11,6 +11,7 @@
 
 #include <test-utils.h>
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/utils/gmux.h"
 #include "../../src/utils/shmem.h"
 #include "../../src/utils/utils.h"
