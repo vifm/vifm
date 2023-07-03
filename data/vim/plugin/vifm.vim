@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2022 August 16
+" Last Change: 2023 July 3
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -77,7 +77,8 @@ if !has('nvim') && exists('*term_start')
 		if has('job') && type(data.cwdjob) == v:t_job
 			call job_stop(data.cwdjob)
 		endif
-		call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
+		call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd,
+		                      \ data.snapshot)
 	endfunction
 endif
 
@@ -127,6 +128,8 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 	call map(pickargs, embed ? 'shellescape(v:val)' : 'shellescape(v:val, 1)')
 	let pickargsstr = join(pickargs, ' ')
 
+	let bufsnapshot = s:TakeBufferSnapshot()
+
 	" Use embedded terminal if available.
 	if embed
 		let [cwdf, cwdjob] = s:StartCwdJob()
@@ -138,7 +141,8 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 		endif
 
 		let data = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd,
-					\ 'cwdjob' : cwdjob, 'split': get(g:, 'vifm_embed_split', 0) }
+					\ 'cwdjob' : cwdjob, 'split': get(g:, 'vifm_embed_split', 0),
+					\ 'snapshot' : bufsnapshot }
 
 		if !has('nvim')
 			let env = { 'TERM' : s:DetermineTermEnv() }
@@ -158,7 +162,8 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 				if self.cwdjob != 0
 					call jobstop(self.cwdjob)
 				endif
-				call s:HandleRunResults(a:code, self.listf, self.typef, self.editcmd)
+				call s:HandleRunResults(a:code, self.listf, self.typef, self.editcmd,
+				                      \ self.snapshot)
 			endfunction
 		endif
 
@@ -204,7 +209,38 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 		" redraw before doing anything else.
 		redraw!
 
-		call s:HandleRunResults(v:shell_error, listf, typef, a:editcmd)
+		call s:HandleRunResults(v:shell_error, listf, typef, a:editcmd, bufsnapshot)
+	endif
+endfunction
+
+" Makes list of open buffers backed up by files.  Invoked before starting a Vifm
+" instance.
+function s:TakeBufferSnapshot() abort
+	let buffer_snapshot = []
+	for buf in getbufinfo({ 'buflisted': 1 })
+		if filereadable(buf.name)
+			call add(buffer_snapshot, buf.bufnr)
+		endif
+	endfor
+	return buffer_snapshot
+endfunction
+
+" Closes unchanged buffers snapshotted by TakeBufferSnapshot() which no longer
+" correspond to any buffer.  Invoked after Vifm has closed (even with an error
+" code, because file system could have been updated).
+function s:DropGoneBuffers(buffer_snapshot) abort
+	let gone_buffers = []
+	for bufnr in a:buffer_snapshot
+		if bufexists(bufnr)
+			let info = getbufinfo(bufnr)[0]
+			" Do not close a changed buffer even if its file is gone.
+			if !info.changed && !filereadable(info.name)
+				call add(gone_buffers, bufnr)
+			endif
+		endif
+	endfor
+	if !empty(gone_buffers)
+		execute 'silent! bwipeout ' join(gone_buffers, ' ')
 	endif
 endfunction
 
@@ -246,7 +282,10 @@ function! s:HandleCwdOut(data) abort
 	exec 'cd ' . fnameescape(a:data)
 endfunction
 
-function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
+function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
+	# Call this even on non-zero exit code.
+	call s:DropGoneBuffers(a:bufsnapshot)
+
 	if a:exitcode != 0
 		echoerr 'Got non-zero code from vifm: ' . a:exitcode
 		call delete(a:listf)
