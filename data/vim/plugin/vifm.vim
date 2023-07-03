@@ -283,7 +283,7 @@ function! s:HandleCwdOut(data) abort
 endfunction
 
 function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
-	# Call this even on non-zero exit code.
+	" Call this even on non-zero exit code.
 	call s:DropGoneBuffers(a:bufsnapshot)
 
 	if a:exitcode != 0
