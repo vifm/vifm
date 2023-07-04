@@ -41,6 +41,8 @@ functionality to work correctly.
 
 ### Installation example ###
 
+#### Arch Linux ####
+
 For a particular combination of [pacman] and [vundle]:
 
 1. Install the application with the following command:
@@ -54,6 +56,21 @@ Plugin 'vifm/vifm.vim'
 3. Install this plugin with `:PluginInstall`.
 
 Use different commands for other package/plugin managers.
+
+#### Debian/Ubuntu/etc. Linux ####
+
+    sudo apt install vifm
+
+Then see Vim 8+ Package install notes.
+
+#### Vim 8+ Package ####
+
+For vim 8 and later can install directly from git:
+
+    git clone https://github.com/vifm/vifm.vim.git ~/.vim/pack/bundle/start/vifm
+
+Assuming `bundle` is the name of your plugin/packages directory.
+
 
 ### Screenshot ###
 
