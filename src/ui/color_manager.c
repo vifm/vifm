@@ -20,6 +20,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
+#include <stdlib.h> /* bsearch() */
 
 #include "../compat/reallocarray.h"
 #include "../utils/macros.h"
