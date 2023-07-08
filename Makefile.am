@@ -15,7 +15,4 @@ distcheck-hook:
 mostlyclean-local:
 	+make -C "$(abs_top_srcdir)/tests" "B=$(abs_builddir)/tests/" clean
 
-coverage: force
-	$(MAKE) -C src $@
-
 force: ;
