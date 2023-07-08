@@ -329,7 +329,11 @@ flist_free_view(view_t *view)
 	modview_info_free(view->vi);
 	view->vi = NULL;
 
-	regfree(&view->primary_group);
+	if(view->primary_group_set)
+	{
+		regfree(&view->primary_group);
+		view->primary_group_set = 0;
+	}
 
 	marks_clear_view(view);
 

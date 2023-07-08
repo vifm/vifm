@@ -253,6 +253,7 @@ fview_init(view_t *view)
 	view->sort_groups_g = strdup("");
 	(void)regexp_compile(&view->primary_group, view->sort_groups,
 			REG_EXTENDED | REG_ICASE);
+	view->primary_group_set = 1;
 
 	view->preview_prg = strdup("");
 	view->preview_prg_g = strdup("");

@@ -409,8 +409,13 @@ TEST(groups_sorting_works)
 	lwin.dir_entry[6].origin = lwin.curr_dir;
 
 	update_string(&lwin.sort_groups, "-(done|todo).*");
+	if(lwin.primary_group_set)
+	{
+		regfree(&lwin.primary_group);
+	}
 	(void)regcomp(&lwin.primary_group, "-(done|todo).*",
 			REG_EXTENDED | REG_ICASE);
+	lwin.primary_group_set = 1;
 
 	/* Ascending sorting. */
 
@@ -437,15 +442,17 @@ TEST(groups_sorting_works)
 	assert_string_equal("11-todo-publish", lwin.dir_entry[4].name);
 	assert_string_equal("1-done", lwin.dir_entry[5].name);
 	assert_string_equal("3-done", lwin.dir_entry[6].name);
-
-	regfree(&lwin.primary_group);
-	update_string(&lwin.sort_groups, NULL);
 }
 
 TEST(global_groups_sorts_entries_list)
 {
 	update_string(&lwin.sort_groups_g, "([0-9])");
+	if(lwin.primary_group_set)
+	{
+		regfree(&lwin.primary_group);
+	}
 	(void)regcomp(&lwin.primary_group, "([a-z])", REG_EXTENDED | REG_ICASE);
+	lwin.primary_group_set = 1;
 
 	dir_entry_t entry_list[] = { { .name = "a1" }, { .name = "b0" } };
 	entries_t entries = { entry_list, 2 };
