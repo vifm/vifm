@@ -78,6 +78,9 @@
 
 	Fixed performance degradation after preview consumes lots of color pairs.
 
+	Fixed running tests with musl libc.  Thanks to Henrik Holst (a.k.a.
+	hholst80).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

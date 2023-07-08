@@ -32,6 +32,7 @@
 #include "../../src/utils/macros.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
+#include "../../src/utils/regexp.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/utils/utils.h"
@@ -253,6 +254,10 @@ view_setup(view_t *view)
 
 	view_set_sort(view->sort, SK_BY_NAME, SK_NONE);
 	view_set_sort(view->sort_g, SK_BY_NAME, SK_NONE);
+
+	/* The code assumes that this field is initialized. */
+	assert_success(regexp_compile(&view->primary_group, "", REG_ICASE));
+	view->primary_group_set = 1;
 
 	view->custom.entry_count = 0;
 	view->custom.entries = NULL;

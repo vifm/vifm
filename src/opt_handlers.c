@@ -3301,9 +3301,13 @@ set_sortgroups(view_t *view, char **opt, char value[])
 	{
 		if(scope == OPT_LOCAL)
 		{
-			regfree(&view->primary_group);
+			if(view->primary_group_set)
+			{
+				regfree(&view->primary_group);
+			}
 			(void)regexp_compile(&view->primary_group, first,
 					REG_EXTENDED | REG_ICASE);
+			view->primary_group_set = 1;
 		}
 		free(first);
 	}

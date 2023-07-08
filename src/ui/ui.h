@@ -449,6 +449,9 @@ struct view_t
 	char *sort_groups, *sort_groups_g;
 	/* Primary group of sort_groups (not sort_groups_g) in compiled form. */
 	regex_t primary_group;
+	/* Indicates that primary_group was initialized, which is used to avoid
+	 * freeing uninitialized data or freeing it twice. */
+	int primary_group_set;
 
 	int history_num;    /* Number of used history elements. */
 	int history_pos;    /* Current position in history. */
