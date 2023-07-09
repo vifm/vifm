@@ -447,6 +447,21 @@ TEST(chistory_within_menu)
 	undo_teardown();
 }
 
+TEST(no_selected_files_message)
+{
+	setup_grid(&lwin, 20, 1, /*init=*/1);
+	replace_string(&lwin.dir_entry[0].name, "a");
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+
+	ui_sb_msg("");
+	assert_success(cmds_dispatch("version", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec_timed_out(WK_g);
+	modes_statusbar_update();
+	assert_string_equal("", ui_sb_last());
+}
+
 TEST(locate_menu_can_escape_args, IF(not_windows))
 {
 	char script_path[PATH_MAX + 1];

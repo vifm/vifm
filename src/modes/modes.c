@@ -201,6 +201,12 @@ modes_statusbar_update(void)
 		return;
 	}
 
+	if(modes_is_menu_like())
+	{
+		ui_sb_clear();
+		return;
+	}
+
 	if(vle_mode_is(VISUAL_MODE))
 	{
 		ui_sb_msgf("-- %s -- ", modvis_describe());

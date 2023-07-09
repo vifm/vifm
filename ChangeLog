@@ -87,6 +87,9 @@
 	Fixed abort on instance sending something over IPC to itself.  Thanks to
 	Marcin Kurczewski (a.k.a. rr-).
 
+	Fixed "N files selected" message appearing in menus on waiting for
+	multikey input (regression in 0.12-beta).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
