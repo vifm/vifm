@@ -38,6 +38,14 @@ static struct
 		int includes_path; /* Whether last_args contains path to search in. */
 	}
 	find;
+
+	/* For act_grep(). */
+	struct
+	{
+		char *last_args; /* Last arguments passed to the command. */
+		int last_invert; /* Last inversion flag passed to the command. */
+	}
+	grep;
 }
 act_state;
 
@@ -68,27 +76,24 @@ act_find(const char args[], int argc, char *argv[])
 int
 act_grep(const char args[], int invert)
 {
-	static char *last_args;
-	static int last_invert;
-
 	if(args != NULL)
 	{
-		(void)replace_string(&last_args, args);
-		last_invert = invert;
+		(void)replace_string(&act_state.grep.last_args, args);
+		act_state.grep.last_invert = invert;
 	}
-	else if(last_args == NULL)
+	else if(act_state.grep.last_args == NULL)
 	{
 		ui_sb_err("Nothing to repeat");
 		return CMDS_ERR_CUSTOM;
 	}
 
-	int inv = last_invert;
+	int inv = act_state.grep.last_invert;
 	if(args == NULL && invert)
 	{
 		inv = !inv;
 	}
 
-	return show_grep_menu(curr_view, last_args, inv) != 0;
+	return show_grep_menu(curr_view, act_state.grep.last_args, inv) != 0;
 }
 
 TSTATIC void
@@ -96,6 +101,9 @@ act_drop_state(void)
 {
 	update_string(&act_state.find.last_args, NULL);
 	act_state.find.includes_path = 0;
+
+	update_string(&act_state.grep.last_args, NULL);
+	act_state.grep.last_invert = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
