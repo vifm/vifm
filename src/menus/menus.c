@@ -738,14 +738,16 @@ void
 menus_switch_to(menu_data_t *m)
 {
 	menu_state_t *ms = m->state;
-
-	if(stash_is_displayed())
+	if(ms->d != NULL)
 	{
-		move_menu_data(&menu_data_stash[menu_stash_index], ms->d);
-	}
-	else if(ms->d != NULL && can_stash_menu(ms->d))
-	{
-		stash_menu(ms->d);
+		if(stash_is_displayed())
+		{
+			move_menu_data(&menu_data_stash[menu_stash_index], ms->d);
+		}
+		else if(can_stash_menu(ms->d))
+		{
+			stash_menu(ms->d);
+		}
 	}
 
 	replace_menu_data(m);

@@ -802,6 +802,8 @@ const char *tags[] = {
 	"vifm-m_:colder",
 	"vifm-m_:exi",
 	"vifm-m_:exit",
+	"vifm-m_:gr",
+	"vifm-m_:grep",
 	"vifm-m_:noh",
 	"vifm-m_:nohlsearch",
 	"vifm-m_:q",

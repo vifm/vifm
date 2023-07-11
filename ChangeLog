@@ -26,6 +26,9 @@
 	Added "millersep:" value to 'fillchars' that allows customizing the border
 	between miller columns.  Thanks to Shuo (a.k.a. shenqshuoh).
 
+	Added :gr[ep] command to menu mode.  Allows (re)running grep command
+	on the same set of files without leaving the mode.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

@@ -1,4 +1,4 @@
-.TH VIFM 1 "25 Jun 2023" "vifm 0.13"
+.TH VIFM 1 "11 Jul 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6332,6 +6332,13 @@ See also "Menus history" section.
 .BI :cnew[er]
 load a newer navigation menu if there is one.
 See also "Menus history" section.
+.TP
+.BI "                                         :grep"
+.TP
+.BI :gr[ep]
+the behaviour matches that of non-menu :grep except that no range is
+accepted.  If active view contained selection before entering menu mode,
+the command takes it into account.
 .LP
 .B :exi[t][!]
 .br

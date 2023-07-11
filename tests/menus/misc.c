@@ -6,6 +6,7 @@
 #include <test-utils.h>
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/menu.h"
@@ -486,6 +487,41 @@ TEST(locate_menu_can_escape_args, IF(not_windows))
 	assert_string_equal("b", menu_get_current()->items[1]);
 
 	assert_success(remove(script_path));
+}
+
+TEST(can_start_menu_from_menus, IF(not_windows))
+{
+	opt_handlers_setup();
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "scripts",
+			NULL);
+	assert_success(populate_dir_list(&lwin, /*reload=*/0));
+	assert_success(os_chdir(lwin.curr_dir));
+
+	assert_success(cmds_dispatch1("set grepprg='grep -n -H -r %i %a %s'", &lwin,
+				CIT_COMMAND));
+
+	/* Start menu mode with a :grep. */
+	assert_success(cmds_dispatch1("grep endif", &lwin, CIT_COMMAND));
+	assert_string_equal("Grep endif", menu_get_current()->title);
+	assert_int_equal(4, menu_get_current()->len);
+
+	/* Run a new :grep while in menu mode. */
+	assert_success(cmds_dispatch1("grep finish", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("Grep finish", menu_get_current()->title);
+	assert_int_equal(2, menu_get_current()->len);
+
+	/* Switch to the first grep to verify that it was saved. */
+	assert_success(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("Grep endif", menu_get_current()->title);
+	assert_int_equal(4, menu_get_current()->len);
+
+	/* Switch to the second grep to verify that it was saved. */
+	assert_success(cmds_dispatch1("cnewer", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("Grep finish", menu_get_current()->title);
+	assert_int_equal(2, menu_get_current()->len);
+
+	opt_handlers_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
