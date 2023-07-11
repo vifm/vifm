@@ -98,11 +98,12 @@ TEST(global_local_always_updates_two_views)
 
 TEST(global_local_updates_regular_options_only_once)
 {
-	cfg.tab_stop = 0;
+	assert_success(cmds_dispatch("set tabstop=1", &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.tab_stop);
 
 	curr_stats.global_local_settings = 1;
 	assert_success(cmds_dispatch("set tabstop+=10", &lwin, CIT_COMMAND));
-	assert_int_equal(10, cfg.tab_stop);
+	assert_int_equal(11, cfg.tab_stop);
 	curr_stats.global_local_settings = 0;
 }
 
