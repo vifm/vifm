@@ -258,6 +258,7 @@ of changes of each kind.
     |  |-- background.c - runs commands in background
     |  |-- bmarks.c - management of (named) bookmarks
     |  |-- bracket_notation.c - list of bracket notation entries
+    |  |-- cmd_actions.c - reusable parts of action-like functionality
     |  |-- cmd_completion.c - handles command line completion
     |  |-- cmd_core.c - command line parsing
     |  |-- cmd_handlers.c - handlers for command line commands

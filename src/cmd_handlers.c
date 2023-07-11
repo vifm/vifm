@@ -89,6 +89,7 @@
 #include "background.h"
 #include "bmarks.h"
 #include "bracket_notation.h"
+#include "cmd_actions.h"
 #include "cmd_completion.h"
 #include "cmd_core.h"
 #include "compare.h"
@@ -2727,29 +2728,11 @@ goto_path_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Handles :grep command with possible inversion of matches. */
 static int
 grep_cmd(const cmd_info_t *cmd_info)
 {
-	static char *last_args;
-	static int last_invert;
-	int inv;
-
-	if(cmd_info->argc > 0)
-	{
-		(void)replace_string(&last_args, cmd_info->args);
-		last_invert = cmd_info->emark;
-	}
-	else if(last_args == NULL)
-	{
-		ui_sb_err("Nothing to repeat");
-		return CMDS_ERR_CUSTOM;
-	}
-
-	inv = last_invert;
-	if(cmd_info->argc == 0 && cmd_info->emark)
-		inv = !inv;
-
-	return show_grep_menu(curr_view, last_args, inv) != 0;
+	return act_grep(cmd_info->argc > 0 ? cmd_info->args : NULL, cmd_info->emark);
 }
 
 /* Displays documentation. */
