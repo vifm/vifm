@@ -524,5 +524,35 @@ TEST(can_start_menu_from_menus, IF(not_windows))
 	opt_handlers_teardown();
 }
 
+TEST(find_cmd, IF(not_windows))
+{
+	opt_handlers_setup();
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "scripts",
+			NULL);
+	assert_success(populate_dir_list(&lwin, /*reload=*/0));
+	assert_success(os_chdir(lwin.curr_dir));
+
+	assert_success(cmds_dispatch1("set findprg='find %s %a'", &lwin,
+				CIT_COMMAND));
+
+	/* Start menu mode with a :find. */
+	assert_success(cmds_dispatch1("find *.vifm", &lwin, CIT_COMMAND));
+	assert_string_equal("Find *.vifm", menu_get_current()->title);
+	assert_int_equal(7, menu_get_current()->len);
+
+	/* Run a new good :find while in menu mode. */
+	assert_success(cmds_dispatch1("find finish-*.%c:e", &lwin, CIT_MENU_COMMAND));
+	assert_string_equal("Find finish-*.vifm", menu_get_current()->title);
+	assert_int_equal(2, menu_get_current()->len);
+
+	/* Run a new bad :find while in menu mode. */
+	assert_failure(cmds_dispatch1("find no-such", &lwin, CIT_MENU_COMMAND));
+	/* Just a sanity check that failed search didn't ruin the menu. */
+	(void)vle_keys_exec(WK_G);
+
+	opt_handlers_teardown();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

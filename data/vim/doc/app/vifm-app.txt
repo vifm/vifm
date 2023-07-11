@@ -5305,6 +5305,14 @@ Menu commands~
     load a newer navigation menu if there is one.
     See |vifm-menus-history|.
 
+                                               *vifm-m_:find* *vifm-m_:fin*
+:fin[d] pattern
+:fin[d] -opt...
+:fin[d] path -opt...
+:fin[d]
+    the behaviour matches that of non-menu |vifm-:find| except that no range is
+    accepted.  If active view contained selection before entering menu mode,
+    the command takes it into account.
                                                *vifm-m_:grep* *vifm-m_:gr*
 :gr[ep][!] pattern
 :gr[ep][!] -opt...

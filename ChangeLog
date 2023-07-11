@@ -29,6 +29,9 @@
 	Added :gr[ep] command to menu mode.  Allows (re)running grep command
 	on the same set of files without leaving the mode.
 
+	Added :fin[d] command to menu mode.  Allows (re)running find command
+	on the same set of files without leaving the mode.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

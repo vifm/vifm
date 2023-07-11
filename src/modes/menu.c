@@ -117,6 +117,7 @@ static int goto_cmd(const cmd_info_t *cmd_info);
 static int chistory_cmd(const cmd_info_t *cmd_info);
 static int cnewer_cmd(const cmd_info_t *cmd_info);
 static int colder_cmd(const cmd_info_t *cmd_info);
+static int find_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
@@ -207,6 +208,10 @@ static const cmd_add_t commands[] = {
 	  .descr = "exit the menu",
 	  .flags = 0,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "find",              .abbr = "fin",   .id = COM_FIND,
+	  .descr = "query find results",
+	  .flags = HAS_QUOTED_ARGS | HAS_MACROS_FOR_CMD,
+	  .handler = &find_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "grep",              .abbr = "gr",    .id = COM_GREP,
 	  .descr = "query grep results",
 	  .flags = HAS_EMARK,
@@ -266,7 +271,14 @@ resolve_mark(char mark)
 static char *
 menu_expand_macros(const char str[], int for_shell, int *usr1, int *usr2)
 {
-	return strdup(str);
+	char *result;
+	MacroFlags flags = MF_NONE;
+
+	result = ma_expand(str, NULL, &flags, for_shell ? MER_SHELL_OP : MER_OP);
+
+	*usr1 = flags;
+
+	return result;
 }
 
 static char *
@@ -1041,6 +1053,13 @@ colder_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 	return 0;
+}
+
+/* Looks for files matching a pattern. */
+static int
+find_cmd(const cmd_info_t *cmd_info)
+{
+	return act_find(cmd_info->args, cmd_info->argc, cmd_info->argv);
 }
 
 /* Handles :grep command with possible inversion of matches. */
