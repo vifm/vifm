@@ -19,10 +19,51 @@
 #include "cmd_actions.h"
 
 #include "engine/cmds.h"
-#include "menus/grep_menu.h"
+#include "menus/all.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
+#include "utils/fs.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
+
+TSTATIC void act_drop_state(void);
+
+/* Holds static state. */
+static struct
+{
+	/* For act_find(). */
+	struct
+	{
+		char *last_args;   /* Last arguments passed to the command. */
+		int includes_path; /* Whether last_args contains path to search in. */
+	}
+	find;
+}
+act_state;
+
+int
+act_find(const char args[], int argc, char *argv[])
+{
+	if(argc > 0)
+	{
+		if(argc == 1)
+			act_state.find.includes_path = 0;
+		else if(is_dir(argv[0]))
+			act_state.find.includes_path = 1;
+		else
+			act_state.find.includes_path = 0;
+
+		(void)replace_string(&act_state.find.last_args, args);
+	}
+	else if(act_state.find.last_args == NULL)
+	{
+		ui_sb_err("Nothing to repeat");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	return show_find_menu(curr_view, act_state.find.includes_path,
+			act_state.find.last_args) != 0;
+}
 
 int
 act_grep(const char args[], int invert)
@@ -48,6 +89,13 @@ act_grep(const char args[], int invert)
 	}
 
 	return show_grep_menu(curr_view, last_args, inv) != 0;
+}
+
+TSTATIC void
+act_drop_state(void)
+{
+	update_string(&act_state.find.last_args, NULL);
+	act_state.find.includes_path = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

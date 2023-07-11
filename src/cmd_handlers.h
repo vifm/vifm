@@ -25,7 +25,6 @@
 #include <stddef.h> /* size_t */
 
 #include "engine/cmds.h"
-#include "utils/test_helpers.h"
 
 /* Commands without completion, but for which we need to have an id. */
 enum
@@ -63,10 +62,6 @@ enum
 extern const cmd_add_t cmds_list[];
 /* Number of elements in cmds_list. */
 extern const size_t cmds_list_size;
-
-TSTATIC_DEFS(
-	void cmds_drop_state(void);
-)
 
 #endif /* VIFM__CMD_HANDLERS_H__ */
 

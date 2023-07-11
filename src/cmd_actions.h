@@ -19,10 +19,20 @@
 #ifndef VIFM__CMD_ACTIONS_H__
 #define VIFM__CMD_ACTIONS_H__
 
+#include "utils/test_helpers.h"
+
+/* Looks for files matching pattern.  Returns error code compatible with
+ * :command handlers. */
+int act_find(const char args[], int argc, char *argv[]);
+
 /* Handles :grep command.  The args parameter should be NULL when there are
  * none which triggers repeat of the last invocation.  Returns error code
  * compatible with :command handlers. */
 int act_grep(const char args[], int invert);
+
+TSTATIC_DEFS(
+	void act_drop_state(void);
+)
 
 #endif /* VIFM__CMD_ACTIONS_H__ */
 
