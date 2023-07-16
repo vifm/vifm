@@ -141,6 +141,8 @@ static void handle_expr(ipc_t *ipc, const char from[], char *array[], int len);
 static void handle_eval_result(ipc_t *ipc, char *array[], int len);
 static int format_and_send(ipc_t *ipc, const char whom[], char *data[],
 		const char type[]);
+static size_t format_adaptive(ipc_t *ipc, const char whom[], char *data[],
+		const char type[], char *pkg, const size_t pkg_size);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(const ipc_t *ipc);
 static char ** list_servers(const ipc_t *ipc, int *len);
@@ -624,24 +626,51 @@ ipc_eval(ipc_t *ipc, const char whom[], const char expr[])
 static int
 format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 {
-	/* FIXME: this shouldn't have fixed size.  Or maybe it should be PIPE_BUF to
-	 * guarantee atomic operation. */
-	char pkg[8192];
-	size_t len;
-	char *name = NULL;
 	int ret;
+	size_t pkg_size = 8192;
+	char *pkg = NULL;
+	size_t len = 0;
+
+	while(1) {
+		pkg = realloc(pkg, pkg_size);
+		len = format_adaptive(ipc, whom, data, type, pkg, pkg_size);
+		if (len) {
+			break;
+		}
+		pkg_size += pkg_size / 2;
+	}
+
+	ret = send_pkg(whom, pkg, len);
+	free(pkg);
+
+	return ret;
+}
+
+/* Formats a message of specified type.  The data array should be NULL
+ * terminated.  Returns formatted package length if pkg_size was big enough to
+ * fit it, 0 otherwise.  Does not allocate memory. */
+static size_t
+format_adaptive(ipc_t *ipc, const char whom[], char *data[], const char type[],
+		char *pkg, const size_t pkg_size)
+{
+	size_t len = 0;
+	char *name = NULL;
+
+	if (!pkg_size) {
+		return 0;
+	}
 
 	/* Compose "header". */
-	len = copy_str(pkg, sizeof(pkg), IPC_VERSION);
-	len += MIN(snprintf(pkg + len, sizeof(pkg) - len, "from:%s",
+	len += copy_str(pkg, pkg_size, IPC_VERSION);
+	len += MIN(snprintf(pkg + len, pkg_size - len, "from:%s",
 				ipc_get_name(ipc)) + 1,
-			(int)(sizeof(pkg) - len));
-	len += MIN(snprintf(pkg + len, sizeof(pkg) - len, "body:%s", type) + 1,
-			(int)(sizeof(pkg) - len));
+			(int)(pkg_size - len));
+	len += MIN(snprintf(pkg + len, pkg_size - len, "body:%s", type) + 1,
+			(int)(pkg_size - len));
 
 	if(strcmp(type, ARGS_TYPE) == 0)
 	{
-		if(get_cwd(pkg + len, sizeof(pkg) - len) == NULL)
+		if(get_cwd(pkg + len, pkg_size - len) == NULL)
 		{
 			LOG_ERROR_MSG("Can't get working directory");
 			return 1;
@@ -651,7 +680,7 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 
 	while(*data != NULL)
 	{
-		len += copy_str(pkg + len, sizeof(pkg) - len, *data);
+		len += copy_str(pkg + len, pkg_size - len, *data);
 		++data;
 	}
 
@@ -665,10 +694,10 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 		whom = name;
 	}
 
-	ret = send_pkg(whom, pkg, len);
-
-	free(name);
-	return ret;
+	if (name) {
+		free(name);
+	}
+	return len < pkg_size ? len : 0;
 }
 
 /* Performs actual sending of package to another instance.  Returns zero on
