@@ -164,3 +164,5 @@ Alexandr Keyp (a.k.a. IAmKapuze) contributed improvements for :compare.
 Zhipeng Xue fixed a couple of potential NULL dereferences.
 
 Rostislav Tolushkin (a.k.a. nullptr-deref) implemented :regedit command.
+
+Marcin Kurczewski (a.k.a. rr-) fixed limited size of IPC buffer.

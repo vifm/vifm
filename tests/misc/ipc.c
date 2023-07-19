@@ -2,7 +2,7 @@
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcmp() strdup() */
+#include <string.h> /* memset() strcmp() strdup() */
 
 #include <test-utils.h>
 
@@ -99,6 +99,30 @@ TEST(instance_is_not_listed_after_it_is_freed, IF(ipc_enabled))
 TEST(message_is_delivered, IF(enabled_and_not_in_wine))
 {
 	char msg[] = "test message";
+	char *data[] = { msg, NULL };
+
+	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	ipc_t *const ipc2 = ipc_init(NAME, &test_ipc_args2, &test_ipc_eval);
+
+	assert_success(ipc_send(ipc1, ipc_get_name(ipc2), data));
+	assert_false(ipc_check(ipc1));
+	assert_true(ipc_check(ipc2));
+	assert_false(ipc_check(ipc2));
+
+	ipc_free(ipc1);
+	ipc_free(ipc2);
+
+	assert_int_equal(0, nmessages);
+	assert_string_equal(NULL, message);
+	assert_int_equal(2, nmessages2);
+	assert_string_equal(msg, message2);
+}
+
+TEST(large_message_is_delivered, IF(enabled_and_not_in_wine))
+{
+	char msg[10*1024 + 1];
+	memset(msg, 'x', sizeof(msg) - 1);
+
 	char *data[] = { msg, NULL };
 
 	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
