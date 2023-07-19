@@ -2,7 +2,7 @@
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcmp() strdup() */
+#include <string.h> /* memset() strcmp() strdup() */
 
 #include <test-utils.h>
 
@@ -118,6 +118,31 @@ TEST(message_is_delivered, IF(enabled_and_not_in_wine))
 	assert_string_equal(msg, message2);
 }
 
+TEST(large_message_is_delivered, IF(enabled_and_not_in_wine))
+{
+	char msg[10*1024 + 1];
+	memset(msg, 'x', sizeof(msg) - 1);
+	msg[sizeof(msg) - 1] = '\0';
+
+	char *data[] = { msg, NULL };
+
+	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	ipc_t *const ipc2 = ipc_init(NAME, &test_ipc_args2, &test_ipc_eval);
+
+	assert_success(ipc_send(ipc1, ipc_get_name(ipc2), data));
+	assert_false(ipc_check(ipc1));
+	assert_true(ipc_check(ipc2));
+	assert_false(ipc_check(ipc2));
+
+	ipc_free(ipc1);
+	ipc_free(ipc2);
+
+	assert_int_equal(0, nmessages);
+	assert_string_equal(NULL, message);
+	assert_int_equal(2, nmessages2);
+	assert_string_equal(msg, message2);
+}
+
 TEST(expr_is_evaluated, IF(enabled_and_not_in_wine))
 {
 	const char expr[] = "good expression";
@@ -189,6 +214,35 @@ TEST(checking_ipc_from_ipc_handler_is_noop, IF(enabled_and_not_windows))
 
 	ipc_free(ipc1);
 	ipc_free(ipc2);
+}
+
+TEST(no_send_to_self, IF(enabled_and_not_in_wine))
+{
+	char msg[] = "test message";
+	char *data[] = { msg, NULL };
+
+	ipc_t *ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+
+	assert_failure(ipc_send(ipc, ipc_get_name(ipc), data));
+	assert_false(ipc_check(ipc));
+	ipc_free(ipc);
+
+	assert_int_equal(0, nmessages);
+	assert_string_equal(NULL, message);
+}
+
+TEST(no_eval_to_self, IF(enabled_and_not_in_wine))
+{
+	const char expr[] = "good expression";
+
+	ipc_t *ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+
+	assert_string_equal(NULL, ipc_eval(ipc, ipc_get_name(ipc), expr));
+	assert_false(ipc_check(ipc));
+	ipc_free(ipc);
+
+	assert_int_equal(0, nmessages);
+	assert_string_equal(NULL, message);
 }
 
 static void

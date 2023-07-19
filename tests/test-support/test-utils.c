@@ -255,8 +255,9 @@ view_setup(view_t *view)
 	view_set_sort(view->sort, SK_BY_NAME, SK_NONE);
 	view_set_sort(view->sort_g, SK_BY_NAME, SK_NONE);
 
-	/* The code assumes that this field is initialized. */
-	assert_success(regexp_compile(&view->primary_group, "", REG_ICASE));
+	/* The code assumes that this field is initialized.  At OS X and other
+	 * BSD-like refuse to compile empty regular expression. */
+	assert_success(regexp_compile(&view->primary_group, ".*", REG_ICASE));
 	view->primary_group_set = 1;
 
 	view->custom.entry_count = 0;

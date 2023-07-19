@@ -51,7 +51,9 @@
 #include <stdlib.h> /* free() malloc() snprintf() */
 #include <string.h> /* strcmp() strcpy() strlen() */
 
+#include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "engine/text_buffer.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -141,7 +143,8 @@ static void handle_expr(ipc_t *ipc, const char from[], char *array[], int len);
 static void handle_eval_result(ipc_t *ipc, char *array[], int len);
 static int format_and_send(ipc_t *ipc, const char whom[], char *data[],
 		const char type[]);
-static int send_pkg(const char whom[], const char what[], size_t len);
+static int send_pkg(ipc_t *ipc, const char whom[], const char what[],
+		size_t len);
 static char * get_the_only_target(const ipc_t *ipc);
 static char ** list_servers(const ipc_t *ipc, int *len);
 static int add_to_list(const char name[], const void *data, void *param);
@@ -624,37 +627,34 @@ ipc_eval(ipc_t *ipc, const char whom[], const char expr[])
 static int
 format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 {
-	/* FIXME: this shouldn't have fixed size.  Or maybe it should be PIPE_BUF to
-	 * guarantee atomic operation. */
-	char pkg[8192];
-	size_t len;
-	char *name = NULL;
-	int ret;
+	vle_textbuf *pkg = vle_tb_create();
+	if(pkg == NULL)
+	{
+		return -1;
+	}
 
 	/* Compose "header". */
-	len = copy_str(pkg, sizeof(pkg), IPC_VERSION);
-	len += MIN(snprintf(pkg + len, sizeof(pkg) - len, "from:%s",
-				ipc_get_name(ipc)) + 1,
-			(int)(sizeof(pkg) - len));
-	len += MIN(snprintf(pkg + len, sizeof(pkg) - len, "body:%s", type) + 1,
-			(int)(sizeof(pkg) - len));
+	vle_tb_appendf(pkg, "%s%c", IPC_VERSION, '\0');
+	vle_tb_appendf(pkg, "from:%s%c", ipc_get_name(ipc), '\0');
+	vle_tb_appendf(pkg, "body:%s%c", type, '\0');
 
 	if(strcmp(type, ARGS_TYPE) == 0)
 	{
-		if(get_cwd(pkg + len, sizeof(pkg) - len) == NULL)
+		char cwd[PATH_MAX + 1];
+		if(get_cwd(cwd, sizeof(cwd)) == NULL)
 		{
 			LOG_ERROR_MSG("Can't get working directory");
 			return 1;
 		}
-		len += strlen(pkg + len) + 1;
+		vle_tb_appendf(pkg, "%s%c", cwd, '\0');
 	}
 
 	while(*data != NULL)
 	{
-		len += copy_str(pkg + len, sizeof(pkg) - len, *data);
-		++data;
+		vle_tb_appendf(pkg, "%s%c", *data++, '\0');
 	}
 
+	char *name = NULL;
 	if(whom == NULL)
 	{
 		name = get_the_only_target(ipc);
@@ -665,7 +665,8 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 		whom = name;
 	}
 
-	ret = send_pkg(whom, pkg, len);
+	int ret = send_pkg(ipc, whom, vle_tb_get_data(pkg), vle_tb_get_len(pkg));
+	vle_tb_free(pkg);
 
 	free(name);
 	return ret;
@@ -674,8 +675,14 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 /* Performs actual sending of package to another instance.  Returns zero on
  * success and non-zero otherwise. */
 static int
-send_pkg(const char whom[], const char what[], size_t len)
+send_pkg(ipc_t *ipc, const char whom[], const char what[], size_t len)
 {
+	if(stroscmp(ipc_get_name(ipc), whom) == 0)
+	{
+		LOG_SERROR_MSG(errno, "Won't send IPC message to myself");
+		return 1;
+	}
+
 #ifndef WIN32_PIPE_READ
 	char path[PATH_MAX + 1];
 	int fd;

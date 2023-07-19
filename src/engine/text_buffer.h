@@ -86,6 +86,9 @@ void vle_tb_append_linef(vle_textbuf *tb, const char format[], ...)
  * call of functions in this module.  Never returns NULL, only empty string. */
 const char * vle_tb_get_data(vle_textbuf *tb);
 
+/* Retrieves size of the buffer.  Returns the size. */
+size_t vle_tb_get_len(vle_textbuf *tb);
+
 #endif /* VIFM__ENGINE__TEXT_BUFFER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
