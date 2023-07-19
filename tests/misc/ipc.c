@@ -216,6 +216,35 @@ TEST(checking_ipc_from_ipc_handler_is_noop, IF(enabled_and_not_windows))
 	ipc_free(ipc2);
 }
 
+TEST(no_send_to_self, IF(enabled_and_not_in_wine))
+{
+	char msg[] = "test message";
+	char *data[] = { msg, NULL };
+
+	ipc_t *ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+
+	assert_failure(ipc_send(ipc, ipc_get_name(ipc), data));
+	assert_false(ipc_check(ipc));
+	ipc_free(ipc);
+
+	assert_int_equal(0, nmessages);
+	assert_string_equal(NULL, message);
+}
+
+TEST(no_eval_to_self, IF(enabled_and_not_in_wine))
+{
+	const char expr[] = "good expression";
+
+	ipc_t *ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+
+	assert_string_equal(NULL, ipc_eval(ipc, ipc_get_name(ipc), expr));
+	assert_false(ipc_check(ipc));
+	ipc_free(ipc);
+
+	assert_int_equal(0, nmessages);
+	assert_string_equal(NULL, message);
+}
+
 static void
 test_ipc_args(char *args[])
 {

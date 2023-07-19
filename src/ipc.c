@@ -143,7 +143,8 @@ static void handle_expr(ipc_t *ipc, const char from[], char *array[], int len);
 static void handle_eval_result(ipc_t *ipc, char *array[], int len);
 static int format_and_send(ipc_t *ipc, const char whom[], char *data[],
 		const char type[]);
-static int send_pkg(const char whom[], const char what[], size_t len);
+static int send_pkg(ipc_t *ipc, const char whom[], const char what[],
+		size_t len);
 static char * get_the_only_target(const ipc_t *ipc);
 static char ** list_servers(const ipc_t *ipc, int *len);
 static int add_to_list(const char name[], const void *data, void *param);
@@ -664,7 +665,7 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 		whom = name;
 	}
 
-	int ret = send_pkg(whom, vle_tb_get_data(pkg), vle_tb_get_len(pkg));
+	int ret = send_pkg(ipc, whom, vle_tb_get_data(pkg), vle_tb_get_len(pkg));
 	vle_tb_free(pkg);
 
 	free(name);
@@ -674,8 +675,14 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 /* Performs actual sending of package to another instance.  Returns zero on
  * success and non-zero otherwise. */
 static int
-send_pkg(const char whom[], const char what[], size_t len)
+send_pkg(ipc_t *ipc, const char whom[], const char what[], size_t len)
 {
+	if(stroscmp(ipc_get_name(ipc), whom) == 0)
+	{
+		LOG_SERROR_MSG(errno, "Won't send IPC message to myself");
+		return 1;
+	}
+
 #ifndef WIN32_PIPE_READ
 	char path[PATH_MAX + 1];
 	int fd;

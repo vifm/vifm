@@ -84,6 +84,9 @@
 	Fixed IPC payloads larger than 8155 bytes.  Patch by Marcin
 	Kurczewski (a.k.a. rr-).
 
+	Fixed abort on instance sending something over IPC to itself.  Thanks to
+	Marcin Kurczewski (a.k.a. rr-).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
