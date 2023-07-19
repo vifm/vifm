@@ -122,6 +122,7 @@ TEST(large_message_is_delivered, IF(enabled_and_not_in_wine))
 {
 	char msg[10*1024 + 1];
 	memset(msg, 'x', sizeof(msg) - 1);
+	msg[sizeof(msg) - 1] = '\0';
 
 	char *data[] = { msg, NULL };
 

@@ -51,7 +51,9 @@
 #include <stdlib.h> /* free() malloc() snprintf() */
 #include <string.h> /* strcmp() strcpy() strlen() */
 
+#include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "engine/text_buffer.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -141,8 +143,6 @@ static void handle_expr(ipc_t *ipc, const char from[], char *array[], int len);
 static void handle_eval_result(ipc_t *ipc, char *array[], int len);
 static int format_and_send(ipc_t *ipc, const char whom[], char *data[],
 		const char type[]);
-static size_t format_adaptive(ipc_t *ipc, const char whom[], char *data[],
-		const char type[], char *pkg, const size_t pkg_size);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(const ipc_t *ipc);
 static char ** list_servers(const ipc_t *ipc, int *len);
@@ -626,64 +626,34 @@ ipc_eval(ipc_t *ipc, const char whom[], const char expr[])
 static int
 format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 {
-	int ret;
-	size_t pkg_size = 8192;
-	char *pkg = NULL;
-	size_t len = 0;
-
-	while(1) {
-		pkg = realloc(pkg, pkg_size);
-		len = format_adaptive(ipc, whom, data, type, pkg, pkg_size);
-		if (len) {
-			break;
-		}
-		pkg_size += pkg_size / 2;
-	}
-
-	ret = send_pkg(whom, pkg, len);
-	free(pkg);
-
-	return ret;
-}
-
-/* Formats a message of specified type.  The data array should be NULL
- * terminated.  Returns formatted package length if pkg_size was big enough to
- * fit it, 0 otherwise.  Does not allocate memory. */
-static size_t
-format_adaptive(ipc_t *ipc, const char whom[], char *data[], const char type[],
-		char *pkg, const size_t pkg_size)
-{
-	size_t len = 0;
-	char *name = NULL;
-
-	if (!pkg_size) {
-		return 0;
+	vle_textbuf *pkg = vle_tb_create();
+	if(pkg == NULL)
+	{
+		return -1;
 	}
 
 	/* Compose "header". */
-	len += copy_str(pkg, pkg_size, IPC_VERSION);
-	len += MIN(snprintf(pkg + len, pkg_size - len, "from:%s",
-				ipc_get_name(ipc)) + 1,
-			(int)(pkg_size - len));
-	len += MIN(snprintf(pkg + len, pkg_size - len, "body:%s", type) + 1,
-			(int)(pkg_size - len));
+	vle_tb_appendf(pkg, "%s%c", IPC_VERSION, '\0');
+	vle_tb_appendf(pkg, "from:%s%c", ipc_get_name(ipc), '\0');
+	vle_tb_appendf(pkg, "body:%s%c", type, '\0');
 
 	if(strcmp(type, ARGS_TYPE) == 0)
 	{
-		if(get_cwd(pkg + len, pkg_size - len) == NULL)
+		char cwd[PATH_MAX + 1];
+		if(get_cwd(cwd, sizeof(cwd)) == NULL)
 		{
 			LOG_ERROR_MSG("Can't get working directory");
 			return 1;
 		}
-		len += strlen(pkg + len) + 1;
+		vle_tb_appendf(pkg, "%s%c", cwd, '\0');
 	}
 
 	while(*data != NULL)
 	{
-		len += copy_str(pkg + len, pkg_size - len, *data);
-		++data;
+		vle_tb_appendf(pkg, "%s%c", *data++, '\0');
 	}
 
+	char *name = NULL;
 	if(whom == NULL)
 	{
 		name = get_the_only_target(ipc);
@@ -694,10 +664,11 @@ format_adaptive(ipc_t *ipc, const char whom[], char *data[], const char type[],
 		whom = name;
 	}
 
-	if (name) {
-		free(name);
-	}
-	return len < pkg_size ? len : 0;
+	int ret = send_pkg(whom, vle_tb_get_data(pkg), vle_tb_get_len(pkg));
+	vle_tb_free(pkg);
+
+	free(name);
+	return ret;
 }
 
 /* Performs actual sending of package to another instance.  Returns zero on

@@ -154,5 +154,11 @@ vle_tb_get_data(vle_textbuf *tb)
 	return (tb->data == NULL) ? "" : tb->data;
 }
 
+size_t
+vle_tb_get_len(vle_textbuf *tb)
+{
+	return tb->len;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
