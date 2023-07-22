@@ -348,14 +348,6 @@ modmenu_abort(void)
 }
 
 void
-modmenu_set_data(menu_data_t *m)
-{
-	assert(vle_mode_is(MENU_MODE) && "Can't reenter if not in menu mode.");
-	assert(m->len > 0 && "Menu cannot be empty.");
-	menu = m;
-}
-
-void
 modmenu_pre(void)
 {
 	touchwin(ruler_win);

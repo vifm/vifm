@@ -108,7 +108,14 @@ void menus_reset_data(menu_data_t *m);
  * Returns non-zero if status bar message should be saved. */
 int menus_enter(menu_data_t *m, struct view_t *view);
 
-/* Replaces menu of the menu mode. */
+/* Replaces active menu mode while saving current menu into provided buffer
+ * instead of discarding it:
+ *  1. *current_m = active menu;
+ *  2. active menu = *new_m; */
+void menus_rotate(menu_data_t *new_m, menu_data_t *current_m);
+
+/* Replaces menu of the menu mode possibly discarding current menu unless it's
+ * stashable. */
 void menus_switch_to(menu_data_t *m);
 
 /* If the active menu can be stashed but wasn't stashed yet, do it now without

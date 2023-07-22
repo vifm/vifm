@@ -98,7 +98,13 @@ TSTATIC void menus_set_active(menu_data_t *m);
 
 struct menu_state_t
 {
+	/* Pointer to data_storage field which can also point to something else for
+	 * testing purposes. */
 	menu_data_t *d;
+	/* Storage for the active menu.  Before a menu is displayed, its data is moved
+	 * here. */
+	menu_data_t data_storage;
+
 	int current; /* Cursor position on the menu_win. */
 	int win_rows;
 	int backward_search; /* Search direction. */
@@ -687,13 +693,14 @@ menus_enter(menu_data_t *m, view_t *view)
 		return 0;
 	}
 
-	init_menu_state(m->state, m, view);
+	/* This moves data out of `m`, so don't use it below. */
+	init_menu_state(&menu_state, m, view);
 
 	ui_setup_for_menu_like();
-	term_title_update(m->title);
-	menus_partial_redraw(m->state);
-	menus_set_pos(m->state, m->pos);
-	modmenu_enter(m, view);
+	term_title_update(menu_state.d->title);
+	menus_partial_redraw(&menu_state);
+	menus_set_pos(&menu_state, menu_state.d->pos);
+	modmenu_enter(menu_state.d, view);
 	return 0;
 }
 
@@ -704,7 +711,11 @@ init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
 	free(ms->regexp);
 	free(ms->matches);
 
-	ms->d = m;
+	/* Move menu data into the state to avoid issues with data initialization on
+	 * opening menu from within a menu of the same kind. */
+	move_menu_data(&ms->data_storage, m);
+	ms->d = &ms->data_storage;
+
 	ms->current = 1;
 	ms->win_rows = getmaxy(menu_win);
 	ms->backward_search = 0;
@@ -714,6 +725,13 @@ init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
 	ms->regexp = NULL;
 	ms->search_repeat = 0;
 	ms->view = view;
+}
+
+void
+menus_rotate(menu_data_t *new_m, menu_data_t *current_m)
+{
+	move_menu_data(current_m, new_m->state->d);
+	replace_menu_data(new_m);
 }
 
 void
@@ -737,14 +755,13 @@ menus_switch_to(menu_data_t *m)
 static void
 replace_menu_data(menu_data_t *m)
 {
-	modmenu_set_data(m);
-
 	menu_state.current = 1;
 	menu_state.matching_entries = 0;
 	free(menu_state.matches);
 	menu_state.matches = NULL;
 
-	menu_state.d = m;
+	move_menu_data(&menu_state.data_storage, m);
+	menu_state.d = &menu_state.data_storage;
 
 	menus_partial_redraw(m->state);
 	menus_set_pos(m->state, m->pos);
@@ -841,18 +858,13 @@ menus_put_on_stash(menu_state_t *ms)
 int
 menus_unstash(view_t *view)
 {
-	static menu_data_t menu_data_storage;
-
 	if(menu_stash_depth == 0)
 	{
 		ui_sb_msg("No saved menu to display");
 		return 1;
 	}
 
-	move_menu_data(&menu_data_storage, &menu_data_stash[menu_stash_index]);
-	menu_state.d = &menu_data_storage;
-
-	return menus_enter(&menu_data_storage, view);
+	return menus_enter(&menu_data_stash[menu_stash_index], view);
 }
 
 int
@@ -912,17 +924,13 @@ menus_unstash_at(menu_state_t *ms, int index)
 static void
 unstash_menu_at(menu_state_t *ms, int index)
 {
-	static menu_data_t menu_data_storage;
-
 	if(stash_is_displayed())
 	{
 		move_menu_data(&menu_data_stash[menu_stash_index], ms->d);
 	}
 
-	move_menu_data(&menu_data_storage, &menu_data_stash[index]);
-
 	menu_stash_index = index;
-	replace_menu_data(&menu_data_storage);
+	replace_menu_data(&menu_data_stash[index]);
 }
 
 /* Changes location of menu data while managing its initialized flag. */

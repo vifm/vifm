@@ -113,7 +113,7 @@ show_plugin_log(view_t *view, menu_data_t *m, plug_t *plug)
 		log_m.key_handler = &log_khandler;
 		log_m.items = break_into_lines(plug->log, plug->log_len, &log_m.len, 0);
 
-		menus_switch_to(&log_m);
+		menus_rotate(&log_m, &plugs_m);
 	}
 }
 
