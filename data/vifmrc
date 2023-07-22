@@ -479,9 +479,9 @@ elseif $WAYLAND_DISPLAY
 elseif $DISPLAY
     if executable('xclip')
         " Yank current directory path into the clipboard
-        nnoremap yd :!echo %d | xclip %i<cr>
+        nnoremap yd :!echo -n %d | xclip -selection clipboard %i<cr>
         " Yank current file path into the clipboard
-        nnoremap yf :!echo %c:p | xclip %i<cr>
+        nnoremap yf :!echo -n %c:p | xclip -selection clipboard %i<cr>
     elseif executable('xsel')
         " Yank current directory path into primary and selection clipboards
         nnoremap yd :!echo -n %d | xsel --input --primary %i &&
