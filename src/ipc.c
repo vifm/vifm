@@ -643,6 +643,7 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 		char cwd[PATH_MAX + 1];
 		if(get_cwd(cwd, sizeof(cwd)) == NULL)
 		{
+			vle_tb_free(pkg);
 			LOG_ERROR_MSG("Can't get working directory");
 			return 1;
 		}
@@ -660,6 +661,7 @@ format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
 		name = get_the_only_target(ipc);
 		if(name == NULL)
 		{
+			vle_tb_free(pkg);
 			return 1;
 		}
 		whom = name;
