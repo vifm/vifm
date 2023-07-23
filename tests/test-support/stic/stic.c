@@ -296,14 +296,14 @@ void stic_assert_non_null(const void *value, const char function[], const char f
 void stic_assert_int_equal(int expected, int actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "Expected %d but was %d", expected, actual);
+	snprintf(s, sizeof(s), "Expected %d but was %d", expected, actual);
 	stic_simple_test_result(expected==actual, s, function, file, line);
 }
 
 void stic_assert_ulong_equal(unsigned long expected, unsigned long actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "Expected %lu but was %lu", expected, actual);
+	snprintf(s, sizeof(s), "Expected %lu but was %lu", expected, actual);
 	stic_simple_test_result(expected==actual, s, function, file, line);
 }
 
@@ -311,7 +311,7 @@ void stic_assert_float_equal( float expected, float actual, float delta, const c
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	float result = expected-actual;
-	sprintf(s, "Expected %f but was %f", expected, actual);
+	snprintf(s, sizeof(s), "Expected %f but was %f", expected, actual);
 	if(result < 0.0) result = 0.0f - result;
 	stic_simple_test_result( result <= delta, s, function, file, line);
 }
@@ -320,7 +320,7 @@ void stic_assert_double_equal( double expected, double actual, double delta, con
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	double result = expected-actual;
-	sprintf(s, "Expected %f but was %f", expected, actual);
+	snprintf(s, sizeof(s), "Expected %f but was %f", expected, actual);
 	if(result < 0.0) result = 0.0 - result;
 	stic_simple_test_result( result <= delta, s, function, file, line);
 }
@@ -332,23 +332,23 @@ void stic_assert_string_equal(const char* expected, const char* actual, const ch
 
 	if ((expected == (char *)0) && (actual == (char *)0))
 	{
-		sprintf(s, "Expected <NULL> but was <NULL>");
+		snprintf(s, sizeof(s), "Expected <NULL> but was <NULL>");
 		comparison = 1;
 	}
 	else if (expected == (char *)0)
 	{
-		sprintf(s, "Expected <NULL> but was \"%s\"", actual);
+		snprintf(s, sizeof(s), "Expected <NULL> but was \"%s\"", actual);
 		comparison = 0;
 	}
 	else if (actual == (char *)0)
 	{
-		sprintf(s, "Expected \"%s\" but was <NULL>", expected);
+		snprintf(s, sizeof(s), "Expected \"%s\" but was <NULL>", expected);
 		comparison = 0;
 	}
 	else
 	{
 		comparison = strcmp(expected, actual) == 0;
-		sprintf(s, "Expected \"%s\" but was \"%s\"", expected, actual);
+		snprintf(s, sizeof(s), "Expected \"%s\" but was \"%s\"", expected, actual);
 	}
 
 	stic_simple_test_result(comparison, s, function, file, line);
@@ -361,24 +361,24 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 
 	if ((expected == NULL) && (actual == NULL))
 	{
-		sprintf(s, "Expected <NULL> but was <NULL>");
+		snprintf(s, sizeof(s), "Expected <NULL> but was <NULL>");
 		comparison = 1;
 	}
 	else if (expected == NULL)
 	{
 #ifdef STIC_C99
-		sprintf(s, "Expected <NULL> but was \"%ls\"", actual);
+		snprintf(s, sizeof(s), "Expected <NULL> but was \"%ls\"", actual);
 #else
-		sprintf(s, "Expected <NULL> but was wide string");
+		snprintf(s, sizeof(s), "Expected <NULL> but was wide string");
 #endif
 		comparison = 0;
 	}
 	else if (actual == NULL)
 	{
 #ifdef STIC_C99
-		sprintf(s, "Expected \"%ls\" but was <NULL>", expected);
+		snprintf(s, sizeof(s), "Expected \"%ls\" but was <NULL>", expected);
 #else
-		sprintf(s, "Expected wide string but was <NULL>");
+		snprintf(s, sizeof(s), "Expected wide string but was <NULL>");
 #endif
 		comparison = 0;
 	}
@@ -386,9 +386,9 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 	{
 		comparison = wcscmp(expected, actual) == 0;
 #ifdef STIC_C99
-		sprintf(s, "Expected \"%ls\" but was \"%ls\"", expected, actual);
+		snprintf(s, sizeof(s), "Expected \"%ls\" but was \"%ls\"", expected, actual);
 #else
-		sprintf(s, "Expected wide string doesn't match");
+		snprintf(s, sizeof(s), "Expected wide string doesn't match");
 #endif
 	}
 
@@ -398,28 +398,28 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 void stic_assert_string_ends_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "Expected \"%s\" to end with \"%s\"", actual, expected);
+	snprintf(s, sizeof(s), "Expected \"%s\" to end with \"%s\"", actual, expected);
 	stic_simple_test_result(strcmp(expected, actual+(strlen(actual)-strlen(expected)))==0, s, function, file, line);
 }
 
 void stic_assert_string_starts_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "Expected \"%s\" to start with \"%s\"", actual, expected);
+	snprintf(s, sizeof(s), "Expected \"%s\" to start with \"%s\"", actual, expected);
 	stic_simple_test_result(strncmp(expected, actual, strlen(expected))==0, s, function, file, line);
 }
 
 void stic_assert_string_contains(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "Expected \"%s\" to be in \"%s\"", expected, actual);
+	snprintf(s, sizeof(s), "Expected \"%s\" to be in \"%s\"", expected, actual);
 	stic_simple_test_result(strstr(actual, expected)!=0, s, function, file, line);
 }
 
 void stic_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "Expected \"%s\" not to have \"%s\" in it", actual, expected);
+	snprintf(s, sizeof(s), "Expected \"%s\" not to have \"%s\" in it", actual, expected);
 	stic_simple_test_result(strstr(actual, expected)==0, s, function, file, line);
 }
 
@@ -470,7 +470,7 @@ void stic_test_fixture_end()
 		printf("\n");
 	}
 
-	sprintf(s, "%d test%s run  %d check%s failed", nrun, nrun == 1 ? "" : "s",
+	snprintf(s, sizeof(s), "%d test%s run  %d check%s failed", nrun, nrun == 1 ? "" : "s",
 			nfailed, nfailed == 1 ? "" : "s");
 
 	stic_header_printer(s, stic_screen_width, ' ');
@@ -560,14 +560,14 @@ int run_tests(stic_void_void tests)
 
 	if (end - start == 0)
 	{
-		sprintf(time,"< 1 ms");
+		snprintf(time, sizeof(time), "< 1 ms");
 	}
 	else
 	{
-		sprintf(time,"%lu ms",end - start);
+		snprintf(time, sizeof(time), "%lu ms",end - start);
 	}
 
-	sprintf(s,"%d check%s :: %d run test%s :: %d skipped test%s :: %s",
+	snprintf(s, sizeof(s), "%d check%s :: %d run test%s :: %d skipped test%s :: %s",
 			stic_checks_passed + stic_checks_failed,
 			stic_checks_passed + stic_checks_failed == 1 ? "" : "s",
 			stic_tests_run, stic_tests_run == 1 ? "" : "s",
