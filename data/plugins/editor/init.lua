@@ -4,6 +4,7 @@ Provides Lua handler that wraps invocation of an editor.  Name of the wrapper
 needs to be passed in as an argument.
 
 Builtin wrappers:
+ * emacs
  * gvim
  * vim
 
@@ -13,9 +14,12 @@ Usage example:
 
 --]]
 
+-- TODO: consider loading implementations lazily, more than one is unlikely to
+--       be used
 local impls = {
-    vim = vifm.plugin.require('vim'),
+    emacs = vifm.plugin.require('emacs'),
     gvim = vifm.plugin.require('gvim'),
+    vim = vifm.plugin.require('vim'),
 }
 
 local function run(info)

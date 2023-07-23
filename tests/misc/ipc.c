@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcmp() strdup() */
 
 #include <test-utils.h>
@@ -120,19 +120,23 @@ TEST(message_is_delivered, IF(enabled_and_not_in_wine))
 
 TEST(large_message_is_delivered, IF(enabled_and_not_in_wine))
 {
-	char msg[10*1024 + 1];
-	memset(msg, 'x', sizeof(msg) - 1);
-	msg[sizeof(msg) - 1] = '\0';
+	enum { LEN = 64*1024 };
+
+	char *msg = malloc(LEN + 1);
+	memset(msg, 'x', LEN - 1);
+	msg[LEN - 1] = '\0';
 
 	char *data[] = { msg, NULL };
 
 	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
 	ipc_t *const ipc2 = ipc_init(NAME, &test_ipc_args2, &test_ipc_eval);
 
+	assert_success(bg_execute("", "", 0, 1, &other_instance, ipc2));
+
 	assert_success(ipc_send(ipc1, ipc_get_name(ipc2), data));
 	assert_false(ipc_check(ipc1));
-	assert_true(ipc_check(ipc2));
-	assert_false(ipc_check(ipc2));
+
+	wait_for_bg();
 
 	ipc_free(ipc1);
 	ipc_free(ipc2);
@@ -141,6 +145,8 @@ TEST(large_message_is_delivered, IF(enabled_and_not_in_wine))
 	assert_string_equal(NULL, message);
 	assert_int_equal(2, nmessages2);
 	assert_string_equal(msg, message2);
+
+	free(msg);
 }
 
 TEST(expr_is_evaluated, IF(enabled_and_not_in_wine))
