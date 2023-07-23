@@ -32,14 +32,14 @@ int stic_is_string_equal_i(const char* s1, const char* s2)
 
 static unsigned int GetTickCount()
 {
-    enum {
-        MS_PER_SEC = 1000,
-        NS_PER_MS  = 1000,
-    };
+	enum {
+		MS_PER_SEC = 1000,
+		NS_PER_MS  = 1000,
+	};
 
-    struct timeval t;
-    gettimeofday(&t, 0);
-    return t.tv_sec*MS_PER_SEC + t.tv_usec/NS_PER_MS;
+	struct timeval t;
+	gettimeofday(&t, 0);
+	return t.tv_sec*MS_PER_SEC + t.tv_usec/NS_PER_MS;
 }
 
 int stic_is_string_equal_i(const char* s1, const char* s2)
@@ -133,15 +133,15 @@ void stic_skip_test(const char fixture[], const char test[])
 
 int stic_positive_predicate( void )
 {
-    return 1;
+	return 1;
 }
 
 void stic_printf(char buf[], const char format[], ...)
 {
-    va_list ap;
-    va_start(ap, format);
-    vsprintf(buf, format, ap);
-    va_end(ap);
+	va_list ap;
+	va_start(ap, format);
+	vsprintf(buf, format, ap);
+	va_end(ap);
 }
 
 void stic_suite_teardown( void )
@@ -332,23 +332,23 @@ void stic_assert_string_equal(const char* expected, const char* actual, const ch
 
 	if ((expected == (char *)0) && (actual == (char *)0))
 	{
-          sprintf(s, "Expected <NULL> but was <NULL>");
-	  comparison = 1;
+		sprintf(s, "Expected <NULL> but was <NULL>");
+		comparison = 1;
 	}
-        else if (expected == (char *)0)
+	else if (expected == (char *)0)
 	{
-	  sprintf(s, "Expected <NULL> but was \"%s\"", actual);
-	  comparison = 0;
+		sprintf(s, "Expected <NULL> but was \"%s\"", actual);
+		comparison = 0;
 	}
-        else if (actual == (char *)0)
+	else if (actual == (char *)0)
 	{
-	  sprintf(s, "Expected \"%s\" but was <NULL>", expected);
-	  comparison = 0;
+		sprintf(s, "Expected \"%s\" but was <NULL>", expected);
+		comparison = 0;
 	}
 	else
 	{
-	  comparison = strcmp(expected, actual) == 0;
-	  sprintf(s, "Expected \"%s\" but was \"%s\"", expected, actual);
+		comparison = strcmp(expected, actual) == 0;
+		sprintf(s, "Expected \"%s\" but was \"%s\"", expected, actual);
 	}
 
 	stic_simple_test_result(comparison, s, function, file, line);
