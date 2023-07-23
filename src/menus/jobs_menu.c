@@ -236,7 +236,7 @@ show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job)
 		m.key_handler = &errs_khandler;
 		m.items = break_into_lines(errors, errors_len, &m.len, 0);
 
-		menus_switch_to(&m);
+		menus_rotate(&m, &jobs_m);
 	}
 	free(cmd);
 	free(errors);

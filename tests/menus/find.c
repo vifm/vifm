@@ -16,6 +16,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/cmd_actions.h"
 #include "../../src/cmd_core.h"
 #include "../../src/cmd_handlers.h"
 
@@ -71,7 +72,7 @@ TEST(find_command, IF(not_windows))
 				CIT_COMMAND));
 
 	/* Nothing to repeat. */
-	cmds_drop_state();
+	act_drop_state();
 	assert_failure(cmds_dispatch("find", &lwin, CIT_COMMAND));
 
 	assert_success(cmds_dispatch("find a", &lwin, CIT_COMMAND));

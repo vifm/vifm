@@ -212,9 +212,10 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
 	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
 	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) cmd_completion.$(OBJEXT) \
-	cmd_core.$(OBJEXT) cmd_handlers.$(OBJEXT) compare.$(OBJEXT) \
-	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) cmd_actions.$(OBJEXT) \
+	cmd_completion.$(OBJEXT) cmd_core.$(OBJEXT) \
+	cmd_handlers.$(OBJEXT) compare.$(OBJEXT) dir_stack.$(OBJEXT) \
+	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fops_common.$(OBJEXT) \
 	fops_cpmv.$(OBJEXT) fops_misc.$(OBJEXT) fops_put.$(OBJEXT) \
 	fops_rename.$(OBJEXT) filetype.$(OBJEXT) filtering.$(OBJEXT) \
@@ -274,43 +275,44 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/args.Po ./$(DEPDIR)/background.Po \
 	./$(DEPDIR)/bmarks.Po ./$(DEPDIR)/bracket_notation.Po \
-	./$(DEPDIR)/builtin_functions.Po ./$(DEPDIR)/cmd_completion.Po \
-	./$(DEPDIR)/cmd_core.Po ./$(DEPDIR)/cmd_handlers.Po \
-	./$(DEPDIR)/compare.Po ./$(DEPDIR)/compile_info.Po \
-	./$(DEPDIR)/dir_stack.Po ./$(DEPDIR)/event_loop.Po \
-	./$(DEPDIR)/filelist.Po ./$(DEPDIR)/filename_modifiers.Po \
-	./$(DEPDIR)/filetype.Po ./$(DEPDIR)/filtering.Po \
-	./$(DEPDIR)/flist_hist.Po ./$(DEPDIR)/flist_pos.Po \
-	./$(DEPDIR)/flist_sel.Po ./$(DEPDIR)/fops_common.Po \
-	./$(DEPDIR)/fops_cpmv.Po ./$(DEPDIR)/fops_misc.Po \
-	./$(DEPDIR)/fops_put.Po ./$(DEPDIR)/fops_rename.Po \
-	./$(DEPDIR)/instance.Po ./$(DEPDIR)/ipc.Po \
-	./$(DEPDIR)/macros.Po ./$(DEPDIR)/marks.Po ./$(DEPDIR)/ops.Po \
-	./$(DEPDIR)/opt_handlers.Po ./$(DEPDIR)/plugins.Po \
-	./$(DEPDIR)/registers.Po ./$(DEPDIR)/running.Po \
-	./$(DEPDIR)/search.Po ./$(DEPDIR)/signals.Po \
-	./$(DEPDIR)/sort.Po ./$(DEPDIR)/status.Po ./$(DEPDIR)/tags.Po \
-	./$(DEPDIR)/trash.Po ./$(DEPDIR)/types.Po ./$(DEPDIR)/undo.Po \
-	./$(DEPDIR)/vcache.Po ./$(DEPDIR)/version.Po \
-	./$(DEPDIR)/viewcolumns_parser.Po ./$(DEPDIR)/vifm.Po \
-	cfg/$(DEPDIR)/config.Po cfg/$(DEPDIR)/info.Po \
-	compat/$(DEPDIR)/curses.Po compat/$(DEPDIR)/dtype.Po \
-	compat/$(DEPDIR)/getopt.Po compat/$(DEPDIR)/getopt1.Po \
-	compat/$(DEPDIR)/mntent.Po compat/$(DEPDIR)/os.Po \
-	compat/$(DEPDIR)/pthread.Po compat/$(DEPDIR)/reallocarray.Po \
-	engine/$(DEPDIR)/abbrevs.Po engine/$(DEPDIR)/autocmds.Po \
-	engine/$(DEPDIR)/cmds.Po engine/$(DEPDIR)/completion.Po \
-	engine/$(DEPDIR)/functions.Po engine/$(DEPDIR)/keys.Po \
-	engine/$(DEPDIR)/mode.Po engine/$(DEPDIR)/options.Po \
-	engine/$(DEPDIR)/parsing.Po engine/$(DEPDIR)/text_buffer.Po \
-	engine/$(DEPDIR)/var.Po engine/$(DEPDIR)/variables.Po \
-	int/$(DEPDIR)/desktop.Po int/$(DEPDIR)/ext_edit.Po \
-	int/$(DEPDIR)/file_magic.Po int/$(DEPDIR)/fuse.Po \
-	int/$(DEPDIR)/path_env.Po int/$(DEPDIR)/term_title.Po \
-	int/$(DEPDIR)/vim.Po io/$(DEPDIR)/ioe.Po io/$(DEPDIR)/ioeta.Po \
-	io/$(DEPDIR)/iop.Po io/$(DEPDIR)/ior.Po \
-	io/private/$(DEPDIR)/ioc.Po io/private/$(DEPDIR)/ioe.Po \
-	io/private/$(DEPDIR)/ioeta.Po io/private/$(DEPDIR)/ionotif.Po \
+	./$(DEPDIR)/builtin_functions.Po ./$(DEPDIR)/cmd_actions.Po \
+	./$(DEPDIR)/cmd_completion.Po ./$(DEPDIR)/cmd_core.Po \
+	./$(DEPDIR)/cmd_handlers.Po ./$(DEPDIR)/compare.Po \
+	./$(DEPDIR)/compile_info.Po ./$(DEPDIR)/dir_stack.Po \
+	./$(DEPDIR)/event_loop.Po ./$(DEPDIR)/filelist.Po \
+	./$(DEPDIR)/filename_modifiers.Po ./$(DEPDIR)/filetype.Po \
+	./$(DEPDIR)/filtering.Po ./$(DEPDIR)/flist_hist.Po \
+	./$(DEPDIR)/flist_pos.Po ./$(DEPDIR)/flist_sel.Po \
+	./$(DEPDIR)/fops_common.Po ./$(DEPDIR)/fops_cpmv.Po \
+	./$(DEPDIR)/fops_misc.Po ./$(DEPDIR)/fops_put.Po \
+	./$(DEPDIR)/fops_rename.Po ./$(DEPDIR)/instance.Po \
+	./$(DEPDIR)/ipc.Po ./$(DEPDIR)/macros.Po ./$(DEPDIR)/marks.Po \
+	./$(DEPDIR)/ops.Po ./$(DEPDIR)/opt_handlers.Po \
+	./$(DEPDIR)/plugins.Po ./$(DEPDIR)/registers.Po \
+	./$(DEPDIR)/running.Po ./$(DEPDIR)/search.Po \
+	./$(DEPDIR)/signals.Po ./$(DEPDIR)/sort.Po \
+	./$(DEPDIR)/status.Po ./$(DEPDIR)/tags.Po ./$(DEPDIR)/trash.Po \
+	./$(DEPDIR)/types.Po ./$(DEPDIR)/undo.Po ./$(DEPDIR)/vcache.Po \
+	./$(DEPDIR)/version.Po ./$(DEPDIR)/viewcolumns_parser.Po \
+	./$(DEPDIR)/vifm.Po cfg/$(DEPDIR)/config.Po \
+	cfg/$(DEPDIR)/info.Po compat/$(DEPDIR)/curses.Po \
+	compat/$(DEPDIR)/dtype.Po compat/$(DEPDIR)/getopt.Po \
+	compat/$(DEPDIR)/getopt1.Po compat/$(DEPDIR)/mntent.Po \
+	compat/$(DEPDIR)/os.Po compat/$(DEPDIR)/pthread.Po \
+	compat/$(DEPDIR)/reallocarray.Po engine/$(DEPDIR)/abbrevs.Po \
+	engine/$(DEPDIR)/autocmds.Po engine/$(DEPDIR)/cmds.Po \
+	engine/$(DEPDIR)/completion.Po engine/$(DEPDIR)/functions.Po \
+	engine/$(DEPDIR)/keys.Po engine/$(DEPDIR)/mode.Po \
+	engine/$(DEPDIR)/options.Po engine/$(DEPDIR)/parsing.Po \
+	engine/$(DEPDIR)/text_buffer.Po engine/$(DEPDIR)/var.Po \
+	engine/$(DEPDIR)/variables.Po int/$(DEPDIR)/desktop.Po \
+	int/$(DEPDIR)/ext_edit.Po int/$(DEPDIR)/file_magic.Po \
+	int/$(DEPDIR)/fuse.Po int/$(DEPDIR)/path_env.Po \
+	int/$(DEPDIR)/term_title.Po int/$(DEPDIR)/vim.Po \
+	io/$(DEPDIR)/ioe.Po io/$(DEPDIR)/ioeta.Po io/$(DEPDIR)/iop.Po \
+	io/$(DEPDIR)/ior.Po io/private/$(DEPDIR)/ioc.Po \
+	io/private/$(DEPDIR)/ioe.Po io/private/$(DEPDIR)/ioeta.Po \
+	io/private/$(DEPDIR)/ionotif.Po \
 	io/private/$(DEPDIR)/traverser.Po lua/$(DEPDIR)/common.Po \
 	lua/$(DEPDIR)/vifm.Po lua/$(DEPDIR)/vifm_cmds.Po \
 	lua/$(DEPDIR)/vifm_events.Po lua/$(DEPDIR)/vifm_handlers.Po \
@@ -1016,6 +1018,7 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
+	cmd_actions.c cmd_actions.h \
 	cmd_completion.c cmd_completion.h \
 	cmd_core.c cmd_core.h \
 	cmd_handlers.c cmd_handlers.h \
@@ -1662,6 +1665,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bmarks.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_actions.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_completion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_core.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_handlers.Po@am__quote@ # am--include-marker
@@ -2700,6 +2704,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/bmarks.Po
 	-rm -f ./$(DEPDIR)/bracket_notation.Po
 	-rm -f ./$(DEPDIR)/builtin_functions.Po
+	-rm -f ./$(DEPDIR)/cmd_actions.Po
 	-rm -f ./$(DEPDIR)/cmd_completion.Po
 	-rm -f ./$(DEPDIR)/cmd_core.Po
 	-rm -f ./$(DEPDIR)/cmd_handlers.Po
@@ -2964,6 +2969,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/bmarks.Po
 	-rm -f ./$(DEPDIR)/bracket_notation.Po
 	-rm -f ./$(DEPDIR)/builtin_functions.Po
+	-rm -f ./$(DEPDIR)/cmd_actions.Po
 	-rm -f ./$(DEPDIR)/cmd_completion.Po
 	-rm -f ./$(DEPDIR)/cmd_core.Po
 	-rm -f ./$(DEPDIR)/cmd_handlers.Po

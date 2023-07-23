@@ -82,13 +82,13 @@
 #include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-#include "utils/test_helpers.h"
 #include "utils/trie.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bmarks.h"
 #include "bracket_notation.h"
+#include "cmd_actions.h"
 #include "cmd_completion.h"
 #include "cmd_core.h"
 #include "compare.h"
@@ -347,7 +347,6 @@ static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int get_reg(const char arg[], int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static int parse_bg_mark(char cmd[]);
-TSTATIC void cmds_drop_state(void);
 
 const cmd_add_t cmds_list[] = {
 	{ .name = "",                  .abbr = NULL,    .id = COM_GOTO,
@@ -999,19 +998,6 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &usercmd_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 };
 const size_t cmds_list_size = ARRAY_LEN(cmds_list);
-
-/* Holds global state of command handlers. */
-static struct
-{
-	/* For :find command. */
-	struct
-	{
-		char *last_args;   /* Last arguments passed to the command */
-		int includes_path; /* Whether last_args contains path to search in. */
-	}
-	find;
-}
-cmds_state;
 
 /* Return value of all functions below which name ends with "_cmd" mean:
  *  - <0 -- one of CMDS_* errors from cmds.h;
@@ -2657,29 +2643,11 @@ set_view_filter(view_t *view, const char filter[], const char fallback[],
 	return 0;
 }
 
-/* Looks for files matching pattern. */
+/* Looks for files matching a pattern. */
 static int
 find_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->argc > 0)
-	{
-		if(cmd_info->argc == 1)
-			cmds_state.find.includes_path = 0;
-		else if(is_dir(cmd_info->argv[0]))
-			cmds_state.find.includes_path = 1;
-		else
-			cmds_state.find.includes_path = 0;
-
-		(void)replace_string(&cmds_state.find.last_args, cmd_info->args);
-	}
-	else if(cmds_state.find.last_args == NULL)
-	{
-		ui_sb_err("Nothing to repeat");
-		return CMDS_ERR_CUSTOM;
-	}
-
-	return show_find_menu(curr_view, cmds_state.find.includes_path,
-			cmds_state.find.last_args) != 0;
+	return act_find(cmd_info->args, cmd_info->argc, cmd_info->argv);
 }
 
 static int
@@ -2727,29 +2695,11 @@ goto_path_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Handles :grep command with possible inversion of matches. */
 static int
 grep_cmd(const cmd_info_t *cmd_info)
 {
-	static char *last_args;
-	static int last_invert;
-	int inv;
-
-	if(cmd_info->argc > 0)
-	{
-		(void)replace_string(&last_args, cmd_info->args);
-		last_invert = cmd_info->emark;
-	}
-	else if(last_args == NULL)
-	{
-		ui_sb_err("Nothing to repeat");
-		return CMDS_ERR_CUSTOM;
-	}
-
-	inv = last_invert;
-	if(cmd_info->argc == 0 && cmd_info->emark)
-		inv = !inv;
-
-	return show_grep_menu(curr_view, last_args, inv) != 0;
+	return act_grep(cmd_info->argc > 0 ? cmd_info->args : NULL, cmd_info->emark);
 }
 
 /* Displays documentation. */
@@ -5903,13 +5853,6 @@ parse_bg_mark(char cmd[])
 
 	amp[-1] = '\0';
 	return 1;
-}
-
-TSTATIC void
-cmds_drop_state(void)
-{
-	update_string(&cmds_state.find.last_args, NULL);
-	cmds_state.find.includes_path = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

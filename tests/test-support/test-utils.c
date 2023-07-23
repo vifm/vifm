@@ -110,6 +110,8 @@ conf_setup(void)
 	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.space = 0;
 
+	cfg.tab_stop = 4;
+
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
 	update_string(&cfg.shell_cmd_flag, "-c");

@@ -305,6 +305,7 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
+	cmd_actions.c cmd_actions.h \
 	cmd_completion.c cmd_completion.h \
 	cmd_core.c cmd_core.h \
 	cmd_handlers.c cmd_handlers.h \
