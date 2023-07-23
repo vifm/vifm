@@ -2,6 +2,7 @@
 
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
+#include <string.h> /* strcmp() */
 
 #include <test-utils.h>
 
@@ -514,7 +515,9 @@ check_regexp(matcher_t *m)
 static int
 has_mime_type_detection(void)
 {
-	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL;
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL
+	    && strcmp(get_mimetype(TEST_DATA_PATH "/read/binary-data", 0),
+	                           "text/plain") != 0;
 }
 
 static int
