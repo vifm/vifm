@@ -344,7 +344,7 @@ static void
 path_get_decors(const char path[], FileType type, const char **prefix,
 		const char **suffix)
 {
-	dir_entry_t entry;
+	dir_entry_t entry = {};
 
 	entry.name = get_last_path_component(path);
 	/* Avoid memory allocation. */
