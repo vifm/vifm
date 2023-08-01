@@ -7,6 +7,7 @@ Builtin wrappers:
  * emacs
  * gvim
  * vim
+ * helix
 
 Usage example:
 
@@ -20,6 +21,7 @@ local impls = {
     emacs = vifm.plugin.require('emacs'),
     gvim = vifm.plugin.require('gvim'),
     vim = vifm.plugin.require('vim'),
+    helix = vifm.plugin.require('helix'),
 }
 
 local function run(info)
