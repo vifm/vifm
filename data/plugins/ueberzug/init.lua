@@ -240,34 +240,29 @@ local function cb7(info)
     return cached_view_for_archives(info, 'fuse3-p7zip "%s" "$tmpdir"')
 end
 
-local added = vifm.addhandler { name = 'clear', handler = clear }
-if not added then vifm.sb.error('Failed to register #clear') end
+local function handle(info)
+    local added = vifm.addhandler(info)
+    if not added then
+        vifm.sb.error(string.format('Failed to register #%s#%s',
+                                    vifm.plugin.name, info.name))
+    end
+end
 
-local added = vifm.addhandler { name = 'image', handler = image }
-if not added then vifm.sb.error('Failed to register #image') end
-local added = vifm.addhandler { name = 'image_no_cache', handler = image_no_cache }
-if not added then vifm.sb.error('Failed to register #image_no_cache') end
-local added = vifm.addhandler { name = 'video', handler = video }
-if not added then vifm.sb.error('Failed to register #video') end
-local added = vifm.addhandler { name = 'audio', handler = audio }
-if not added then vifm.sb.error('Failed to register #audio') end
-local added = vifm.addhandler { name = 'font', handler = font }
-if not added then vifm.sb.error('Failed to register #font') end
+handle { name = 'clear', handler = clear }
 
-local added = vifm.addhandler { name = 'pdf', handler = pdf }
-if not added then vifm.sb.error('Failed to register #pdf') end
-local added = vifm.addhandler { name = 'epub', handler = epub }
-if not added then vifm.sb.error('Failed to register #epub') end
-local added = vifm.addhandler { name = 'djvu', handler = djvu }
-if not added then vifm.sb.error('Failed to register #djvu') end
+handle { name = 'image', handler = image }
+handle { name = 'image_no_cache', handler = image_no_cache }
+handle { name = 'video', handler = video }
+handle { name = 'audio', handler = audio }
+handle { name = 'font', handler = font }
 
-local added = vifm.addhandler { name = 'cbz', handler = cbz }
-if not added then vifm.sb.error('Failed to register #cbz') end
-local added = vifm.addhandler { name = 'cbt', handler = cbt }
-if not added then vifm.sb.error('Failed to register #cbt') end
-local added = vifm.addhandler { name = 'cbr', handler = cbr }
-if not added then vifm.sb.error('Failed to register #cbr') end
-local added = vifm.addhandler { name = 'cb7', handler = cb7 }
-if not added then vifm.sb.error('Failed to register #cb7') end
+handle { name = 'pdf', handler = pdf }
+handle { name = 'epub', handler = epub }
+handle { name = 'djvu', handler = djvu }
+
+handle { name = 'cbz', handler = cbz }
+handle { name = 'cbt', handler = cbt }
+handle { name = 'cbr', handler = cbr }
+handle { name = 'cb7', handler = cb7 }
 
 return M
