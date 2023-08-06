@@ -65,6 +65,8 @@ Usage example:
 --       other viewers to kick in
 -- TODO: generate JSON properly
 -- TODO: stop Ueberzug after some period of inactivity (needs timer API?)
+-- TODO: try not waiting for previewers and poking ueberzug inside "onexit"
+--       handler of previewer's job
 
 local M = {}
 local layer_id = 'vifm-preview'
