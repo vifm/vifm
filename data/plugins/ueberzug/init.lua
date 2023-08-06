@@ -12,7 +12,8 @@ Ueberzug:
 
 Usage example:
     fileviewer <image/*>
-        \ #ueberzug#image_no_cache %px %py %pw %ph
+        \ #ueberzug#image %px %py %pw %ph
+        " or \ #ueberzug#image_no_cache %px %py %pw %ph
         \ %pc
         \ #ueberzug#clear
     fileviewer <video/*>
@@ -102,7 +103,7 @@ local function get_cache_path()
         if not cache_path then
           cache_path = os.getenv('HOME')..'/.cache'
         end
-        cache_path_storage = cache_path..'/ueberzug/'
+        cache_path_storage = cache_path..'/vifm/'
         vifm.makepath(cache_path_storage)
     end
     return cache_path_storage
@@ -202,7 +203,7 @@ local function image(info)
     return cached_view(info, 'convert -thumbnail 720 "%s" "%s"')
 end
 local function video(info)
-    return cached_view(info, 'ffmpegthumbnailer -i "%s" -o "%s" -s 0 -q 5')
+    return cached_view(info, 'ffmpegthumbnailer -i "%s" -o "%s" -s 720 -q 5')
 end
 local function audio(info)
     return cached_view(info, 'ffmpeg -hide_banner -i "%s" "%s" -y >/dev/null')
