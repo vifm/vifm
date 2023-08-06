@@ -119,7 +119,6 @@ local function clear(info)
 
     local format = '{"action":"remove", "identifier":"%s"}\n'
     local message = format:format(layer_id)
-    print(message)
     pipe:write(message)
     pipe:flush()
     return { lines = {} }
@@ -137,7 +136,6 @@ local function view(info)
     local message = format:format(layer_id,
                                   info.x, info.y, info.width, info.height,
                                   info.path)
-    print(message)
     pipe:write(message)
     pipe:flush()
     return { lines = {} }
