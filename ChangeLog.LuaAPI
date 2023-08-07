@@ -15,6 +15,9 @@ documented in the regular ChangeLog.
 	Added VifmView.cursor:entry() that provides VifmEntry under the cursor.
 	This is a shortcut to VifmView:entry(VifmView.cursor.pos).
 
+	Added ability to move the cursor within a view by assigning an integer to
+	VifmView.cursor.pos.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Added VifmView:select() and VifmView:unselect() that select and unselect

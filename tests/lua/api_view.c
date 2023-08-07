@@ -2,9 +2,12 @@
 
 #include <string.h> /* strdup() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
 #include "../../src/int/file_magic.h"
 #include "../../src/lua/vlua.h"
+#include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
@@ -20,6 +23,7 @@ static int has_mime_type_detection(void);
 static int has_no_mime_type_detection(void);
 
 static vlua_t *vlua;
+static line_stats_t *stats;
 
 SETUP_ONCE()
 {
@@ -27,6 +31,8 @@ SETUP_ONCE()
 
 	curr_view = &lwin;
 	other_view = &lwin;
+
+	stats = get_line_stats();
 }
 
 TEARDOWN_ONCE()
@@ -43,6 +49,7 @@ SETUP()
 	strcpy(lwin.curr_dir, "/lwin");
 	lwin.list_rows = 2;
 	lwin.list_pos = 1;
+	lwin.top_line = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("file0");
@@ -103,6 +110,138 @@ TEST(vifmview_cursor)
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.currview().cursor:entry().name)"));
 	assert_string_equal("file1", ui_sb_last());
+}
+
+TEST(vifmview_set_cursor_pos_in_normal_mode)
+{
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
+	assert_string_equal("1", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 10"));
+	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
+	assert_string_equal("2", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 0"));
+	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
+	assert_string_equal("1", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_failure(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1.5"));
+	assert_string_ends_with("bad argument #3 to 'newindex'"
+			" (number has no integer representation)", ui_sb_last());
+}
+
+TEST(vifmview_set_cursor_pos_in_visual_mode)
+{
+	modes_init();
+	opt_handlers_setup();
+
+	modvis_enter(VS_NORMAL);
+
+	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+
+	assert_true(vle_mode_is(VISUAL_MODE));
+	assert_int_equal(0, lwin.list_pos);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
+	assert_string_equal("1", ui_sb_last());
+
+	modvis_leave(/*save_msg=*/0, /*goto_top=*/1, /*clear_selection=*/1);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+	vle_keys_reset();
+	opt_handlers_teardown();
+}
+
+TEST(vifmview_set_cursor_pos_in_cmdline_mode)
+{
+	modes_init();
+	opt_handlers_setup();
+
+	modcline_enter(CLS_COMMAND, "");
+
+	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+
+	assert_true(vle_mode_is(CMDLINE_MODE));
+	assert_int_equal(0, lwin.list_pos);
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
+	assert_string_equal("1", ui_sb_last());
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+	vle_keys_reset();
+	opt_handlers_teardown();
+}
+
+TEST(vifmview_set_cursor_pos_during_incsearch_from_normal_mode)
+{
+	modes_init();
+	opt_handlers_setup();
+	conf_setup();
+	cfg.inc_search = 1;
+
+	(void)vle_keys_exec_timed_out(WK_SLASH);
+
+	assert_true(vle_mode_is(CMDLINE_MODE));
+	assert_int_equal(1, lwin.list_pos);
+	assert_int_equal(0, stats->old_top);
+	assert_int_equal(1, stats->old_pos);
+
+	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+
+	assert_true(vle_mode_is(CMDLINE_MODE));
+	assert_int_equal(0, lwin.list_pos);
+	assert_int_equal(0, stats->old_top);
+	assert_int_equal(0, stats->old_pos);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+	cfg.inc_search = 0;
+	conf_teardown();
+	vle_keys_reset();
+	opt_handlers_teardown();
+}
+
+TEST(vifmview_set_cursor_pos_during_incsearch_from_visual_mode)
+{
+	modes_init();
+	opt_handlers_setup();
+	conf_setup();
+	cfg.inc_search = 1;
+
+	(void)vle_keys_exec_timed_out(WK_v WK_SLASH);
+
+	assert_true(vle_mode_is(CMDLINE_MODE));
+	assert_true(vle_primary_mode_is(VISUAL_MODE));
+	assert_int_equal(1, lwin.list_pos);
+	assert_int_equal(0, stats->old_top);
+	assert_int_equal(1, stats->old_pos);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+
+	assert_true(vle_mode_is(CMDLINE_MODE));
+	assert_true(vle_primary_mode_is(VISUAL_MODE));
+	assert_int_equal(0, lwin.list_pos);
+	assert_int_equal(0, stats->old_top);
+	assert_int_equal(0, stats->old_pos);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+
+	(void)vle_keys_exec_timed_out(WK_C_c);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+	cfg.inc_search = 0;
+	conf_teardown();
+	vle_keys_reset();
+	opt_handlers_teardown();
 }
 
 TEST(vifmview_custom)

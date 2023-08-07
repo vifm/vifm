@@ -1263,10 +1263,15 @@ Table related to cursor position in a view.
 
 Fields:
  - "pos" (integer)
-   Index of an entry under the cursor.
+   Index of an entry under the cursor.  Moves cursor on assigning an integer.
  - "entry" (function)
    Retrieves |vifm-l_VifmEntry| under the cursor.  This is a shortcut to
    `VifmView:entry(VifmView.cursor.pos)`.
+
+Assigning fields is {unsafe}.
+
+Raises an error:~
+  On assigning non-integer to "pos".
 
 VifmView.currententry (integer)                *vifm-l_VifmView.currententry*
 Index of the current entry.

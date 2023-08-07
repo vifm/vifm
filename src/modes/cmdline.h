@@ -74,6 +74,11 @@ void modcline_prompt(const char prompt[], const char initial[], prompt_cb cb,
 /* Redraws UI elements of the command-line mode. */
 void modcline_redraw(void);
 
+/* Updates information related to cursor position in current view.  Intended to
+ * be called when the cursor position has changed while the command-line mode is
+ * still active. */
+void modcline_update_curr_view_cursor(void);
+
 /* Completes paths ignoring files.  Returns completion offset. */
 int modcline_complete_dirs(const char str[], void *arg);
 

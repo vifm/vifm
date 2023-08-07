@@ -194,6 +194,7 @@ static int get_required_height(void);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 static void move_view_cursor(line_stats_t *stat, view_t *view, int new_pos);
+static void update_view_cursor(line_stats_t *stat, view_t *view);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void nav_start(line_stats_t *stat);
@@ -2614,7 +2615,23 @@ static void
 move_view_cursor(line_stats_t *stat, view_t *view, int new_pos)
 {
 	fpos_set_pos(view, new_pos);
+	update_view_cursor(stat, view);
+}
 
+void
+modcline_update_curr_view_cursor(void)
+{
+	update_view_cursor(&input_stat, curr_view);
+	if(input_stat.prev_mode == VISUAL_MODE)
+	{
+		modvis_update();
+	}
+}
+
+/* Updates information related to cursor position. */
+static void
+update_view_cursor(line_stats_t *stat, view_t *view)
+{
 	if(stat->sub_mode == CLS_FILTER)
 	{
 		local_filter_update_pos(view);

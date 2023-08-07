@@ -23,11 +23,14 @@
 
 #include "../engine/mode.h"
 #include "../engine/options.h"
+#include "../modes/cmdline.h"
+#include "../modes/dialogs/sort_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/visual.h"
 #include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../filelist.h"
+#include "../flist_pos.h"
 #include "../flist_sel.h"
 #include "../opt_handlers.h"
 #include "lua/lauxlib.h"
@@ -39,6 +42,7 @@
 
 static int VLUA_API(vifmview_index)(lua_State *lua);
 static int VLUA_API(cursor_index)(lua_State *lua);
+static int VLUA_API(cursor_newindex)(lua_State *lua);
 static int VLUA_API(cursor_entry)(lua_State *lua);
 static int VLUA_API(viewopts_index)(lua_State *lua);
 static int VLUA_API(viewopts_newindex)(lua_State *lua);
@@ -59,6 +63,7 @@ static view_t * find_view(lua_State *lua, unsigned int id);
 
 VLUA_DECLARE_SAFE(vifmview_index);
 VLUA_DECLARE_SAFE(cursor_index);
+VLUA_DECLARE_UNSAFE(cursor_newindex);
 VLUA_DECLARE_SAFE(cursor_entry);
 VLUA_DECLARE_SAFE(viewopts_index);
 VLUA_DECLARE_UNSAFE(viewopts_newindex);
@@ -169,6 +174,8 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	{
 		lua_pushcfunction(lua, VLUA_REF(cursor_index));
 		lua_setfield(lua, -2, "__index");
+		lua_pushcfunction(lua, VLUA_REF(cursor_newindex));
+		lua_setfield(lua, -2, "__newindex");
 	}
 	else
 	{
@@ -202,6 +209,42 @@ VLUA_API(cursor_index)(lua_State *lua)
 		lua_pushlightuserdata(lua, id);
 		lua_pushcclosure(lua, VLUA_REF(cursor_entry), 1);
 		return 1;
+	}
+	return 0;
+}
+
+/* Provides write access to data related to cursor position (index) in a
+ * view. */
+static int
+VLUA_API(cursor_newindex)(lua_State *lua)
+{
+	const char *key = luaL_checkstring(lua, 2);
+	if(strcmp(key, "pos") == 0)
+	{
+		if(modes_is_dialog_like() && !vle_mode_is(SORT_MODE))
+		{
+			return 0;
+		}
+		const unsigned int *id = lua_touserdata(lua, 1);
+		view_t *view = find_view(lua, *id);
+		const int pos = luaL_checkinteger(lua, 3) - 1;
+		fpos_set_pos(view, pos);
+		if(vle_mode_is(VISUAL_MODE))
+		{
+			modvis_update();
+		}
+		else if(modes_is_cmdline_like())
+		{
+			if(view == curr_view && !vle_primary_mode_is(MENU_MODE))
+			{
+				modcline_update_curr_view_cursor();
+			}
+		}
+		else if(vle_mode_is(SORT_MODE))
+		{
+			redraw_sort_dialog();
+		}
+		return 0;
 	}
 	return 0;
 }
