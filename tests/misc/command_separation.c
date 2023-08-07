@@ -17,7 +17,7 @@ TEARDOWN()
 	vle_cmds_reset();
 }
 
-TEST(pipe)
+TEST(pipe_symbol)
 {
 	const char *buf;
 
