@@ -10,7 +10,7 @@ Usage example for `vifmrc`:
 
 local function fmt(info)
     local view = info.view
-    local entry = view:entry(view.currententry)
+    local entry = view.cursor:entry()
     local format = " %t%=%A %10u:%-7g %15s %20d "
     if entry.type == 'link' then
         local target = entry.gettarget()
