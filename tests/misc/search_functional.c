@@ -6,11 +6,13 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
+#include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
+#include "../../src/flist_pos.h"
 #include "../../src/status.h"
 
 static char *saved_cwd;
@@ -266,6 +268,44 @@ TEST(selection_is_not_leaved_on_cursor_backtracking_during_incsearch_in_vismode)
 	assert_false(lwin.dir_entry[1].selected);
 
 	(void)vle_keys_exec_timed_out(WK_C_c);
+}
+
+TEST(message_after_cursor_movements_during_incsearch)
+{
+	cfg.inc_search = 1;
+
+	/* Don't show a message if there is no match under the cursor. */
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(WK_SLASH L"dos");
+	assert_int_equal(1, lwin.list_pos);
+	fpos_set_pos(&lwin, 0);
+	(void)vle_keys_exec_timed_out(WK_CR);
+	assert_string_equal("", ui_sb_last());
+
+	/* Show a message if there is a match under the cursor. */
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(WK_SLASH L"dos");
+	assert_int_equal(1, lwin.list_pos);
+	fpos_set_pos(&lwin, 2);
+	(void)vle_keys_exec_timed_out(WK_CR);
+	assert_string_starts_with("2 of 2 matching files", ui_sb_last());
+
+	/* Show a message if no matches found. */
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(WK_SLASH L"asdfasdfasdf");
+	assert_int_equal(2, lwin.list_pos);
+	fpos_set_pos(&lwin, 3);
+	(void)vle_keys_exec_timed_out(WK_CR);
+	assert_string_starts_with("Search hit BOTTOM without match for: asdfasdfasdf",
+			ui_sb_last());
+
+	/* Show a message for invalid pattern. */
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(WK_SLASH L"*");
+	assert_int_equal(3, lwin.list_pos);
+	fpos_set_pos(&lwin, 4);
+	(void)vle_keys_exec_timed_out(WK_CR);
+	assert_string_starts_with("Regexp (*) error: ", ui_sb_last());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
