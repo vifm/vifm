@@ -1271,6 +1271,8 @@ Fields:
 VifmView.currententry (integer)                *vifm-l_VifmView.currententry*
 Index of the current entry.
 
+This is {deprecated}.  See |vifm-l_VifmView.cursor|.pos instead.
+
 VifmView.cwd (string)                          *vifm-l_VifmView.cwd*
 Location of the current view.
 
