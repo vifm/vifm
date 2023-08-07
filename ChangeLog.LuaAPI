@@ -18,6 +18,8 @@ documented in the regular ChangeLog.
 	Added ability to move the cursor within a view by assigning an integer to
 	VifmView.cursor.pos.
 
+	Added cursorpos field to selectors that moves the cursor within a view.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Added VifmView:select() and VifmView:unselect() that select and unselect

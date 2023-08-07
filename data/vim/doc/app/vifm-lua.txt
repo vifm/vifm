@@ -891,6 +891,8 @@ Fields of table returned by {key}.handler for selectors:
    Table of indexes of entries of the current view (|vifm-l_vifm.currview()|)
    that were selected for the operation.  Invalid, nonexistent and duplicate
    indexes are silently ignored.  Indexes are sorted before processing.
+ - "cursorpos" (integer) (optional)
+   New position of the cursor.  Non-integer values are ignored.
 
 Parameters:~
   {key}  Table with information about a key.

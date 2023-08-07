@@ -217,6 +217,27 @@ TEST(keys_selector_duplicated_indexes)
 	assert_string_equal("1 file yanked", ui_sb_last());
 }
 
+TEST(keys_bad_selector_cursorpos)
+{
+	assert_success(vlua_run_string(vlua, "function badhandler()\n"
+	                                     "  return {"
+	                                     "    indexes = { 1, 2 },"
+	                                     "    cursorpos = 1.5,"
+	                                     "  }\n"
+	                                     "end"));
+
+	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
+	                                     "  shortcut = 'X',"
+	                                     "  modes = { 'normal' },"
+	                                     "  isselector = true,"
+	                                     "  handler = badhandler,"
+	                                     "})"));
+	assert_string_equal("true", ui_sb_last());
+
+	(void)vle_keys_exec_timed_out(L"yX");
+	assert_int_equal(0, lwin.list_pos);
+}
+
 TEST(keys_add)
 {
 	ui_sb_msg("");
@@ -268,7 +289,10 @@ TEST(keys_add_selector)
 
 	assert_success(vlua_run_string(vlua, "function handler(info)"
 	                                     "  print('in handler')"
-	                                     "  return { indexes = { 1, 2 } }"
+	                                     "  return {"
+	                                     "    indexes = { 1, 2 },"
+	                                     "    cursorpos = 2,"
+	                                     "  }\n"
 	                                     "end"));
 	assert_string_equal("", ui_sb_last());
 
@@ -290,6 +314,8 @@ TEST(keys_add_selector)
 	assert_int_equal(2, reg->nfiles);
 	assert_string_equal("/lwin/file0", reg->files[0]);
 	assert_string_equal("/lwin/file1", reg->files[1]);
+
+	assert_int_equal(1, lwin.list_pos);
 }
 
 TEST(keys_add_modes)
