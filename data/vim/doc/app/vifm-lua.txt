@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 19
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Aug 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1257,6 +1257,16 @@ Equivalent of |vifm-l_vifm.opts.global| for view-specific options, see there
 for details.  These are "global" values of view-specific options.
 
 Assigning view options is {unsafe}.
+
+VifmView.cursor (table)                        *vifm-l_VifmView.cursor*
+Table related to cursor position in a view.
+
+Fields:
+ - "pos" (integer)
+   Index of an entry under the cursor.
+ - "entry" (function)
+   Retrieves |vifm-l_VifmEntry| under the cursor.  This is a shortcut to
+   `VifmView:entry(VifmView.cursor.pos)`.
 
 VifmView.currententry (integer)                *vifm-l_VifmView.currententry*
 Index of the current entry.

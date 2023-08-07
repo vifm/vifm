@@ -4,6 +4,14 @@ API things should stay fairly stable to not cause breakage too often, but
 while stabilizing for v1.0 a bunch of breaking changes can happen at once.
 After that all changes will be documented in the regular ChangeLog.
 
+0.13 to current
+
+	Added VifmView.cursor.pos that provides an index of an entry under the
+	cursor.
+
+	Added VifmView.cursor:entry() that provides VifmEntry under the cursor.
+	This is a shortcut to VifmView:entry(VifmView.cursor.pos).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Added VifmView:select() and VifmView:unselect() that select and unselect

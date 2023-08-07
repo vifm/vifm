@@ -93,6 +93,18 @@ TEST(vifmview_entry)
 	assert_string_equal("nil", ui_sb_last());
 }
 
+TEST(vifmview_cursor)
+{
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
+	assert_string_equal("2", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.currview().cursor:entry().name)"));
+	assert_string_equal("file1", ui_sb_last());
+}
+
 TEST(vifmview_custom)
 {
 	ui_sb_msg("");
