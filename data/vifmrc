@@ -263,12 +263,15 @@ filextype {*.cr2}
 filextype {*.xcf}
         \ {Open in GIMP}
         \ gimp %f,
-filextype {.kra}
+filextype {*.kra}
         \ {Open in Krita}
         \ krita %f,
-filextype {.blend}
+filextype {*.blend}
         \ {Open in Blender}
         \ blender %c,
+filextype {*.sh3d}
+        \ {Open in Sweet Home 3D}
+        \ sweethome3d %c:p,
 filextype {*.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm},<image/*>
         \ {View in sxiv}
         \ sxiv %f,
