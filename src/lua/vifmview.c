@@ -23,11 +23,14 @@
 
 #include "../engine/mode.h"
 #include "../engine/options.h"
+#include "../modes/cmdline.h"
+#include "../modes/dialogs/sort_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/visual.h"
 #include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../filelist.h"
+#include "../flist_pos.h"
 #include "../flist_sel.h"
 #include "../opt_handlers.h"
 #include "lua/lauxlib.h"
@@ -38,6 +41,9 @@
 #include "vifmentry.h"
 
 static int VLUA_API(vifmview_index)(lua_State *lua);
+static int VLUA_API(cursor_index)(lua_State *lua);
+static int VLUA_API(cursor_newindex)(lua_State *lua);
+static int VLUA_API(cursor_entry)(lua_State *lua);
 static int VLUA_API(viewopts_index)(lua_State *lua);
 static int VLUA_API(viewopts_newindex)(lua_State *lua);
 static opt_t * find_view_opt(const char name[]);
@@ -56,6 +62,9 @@ static view_t * check_view(lua_State *lua);
 static view_t * find_view(lua_State *lua, unsigned int id);
 
 VLUA_DECLARE_SAFE(vifmview_index);
+VLUA_DECLARE_SAFE(cursor_index);
+VLUA_DECLARE_UNSAFE(cursor_newindex);
+VLUA_DECLARE_SAFE(cursor_entry);
 VLUA_DECLARE_SAFE(viewopts_index);
 VLUA_DECLARE_UNSAFE(viewopts_newindex);
 VLUA_DECLARE_SAFE(locopts_index);
@@ -91,6 +100,7 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	const char *key = luaL_checkstring(lua, 2);
 
 	int viewopts;
+	int cursor = 0;
 	if(strcmp(key, "viewopts") == 0)
 	{
 		viewopts = 1;
@@ -98,6 +108,10 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	else if(strcmp(key, "locopts") == 0)
 	{
 		viewopts = 0;
+	}
+	else if(strcmp(key, "cursor") == 0)
+	{
+		cursor = 1;
 	}
 	else if(strcmp(key, "custom") == 0)
 	{
@@ -155,13 +169,93 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	make_metatable(lua, /*name=*/NULL);
 	lua_pushvalue(lua, -1);
 	lua_setmetatable(lua, -2);
-	lua_pushcfunction(lua,
-			viewopts ? VLUA_REF(viewopts_index) : VLUA_REF(locopts_index));
-	lua_setfield(lua, -2, "__index");
-	lua_pushcfunction(lua,
-		viewopts ? VLUA_REF(viewopts_newindex) : VLUA_REF(locopts_newindex));
-	lua_setfield(lua, -2, "__newindex");
+
+	if(cursor)
+	{
+		lua_pushcfunction(lua, VLUA_REF(cursor_index));
+		lua_setfield(lua, -2, "__index");
+		lua_pushcfunction(lua, VLUA_REF(cursor_newindex));
+		lua_setfield(lua, -2, "__newindex");
+	}
+	else
+	{
+		lua_pushcfunction(lua,
+				viewopts ? VLUA_REF(viewopts_index) : VLUA_REF(locopts_index));
+		lua_setfield(lua, -2, "__index");
+		lua_pushcfunction(lua,
+			viewopts ? VLUA_REF(viewopts_newindex) : VLUA_REF(locopts_newindex));
+		lua_setfield(lua, -2, "__newindex");
+	}
+
 	lua_setmetatable(lua, -2);
+	return 1;
+}
+
+/* Provides read access to data related to cursor position (index) in a view. */
+static int
+VLUA_API(cursor_index)(lua_State *lua)
+{
+	const char *key = luaL_checkstring(lua, 2);
+	if(strcmp(key, "pos") == 0)
+	{
+		const unsigned int *id = lua_touserdata(lua, 1);
+		view_t *view = find_view(lua, *id);
+		lua_pushinteger(lua, view->list_pos + 1);
+		return 1;
+	}
+	else if(strcmp(key, "entry") == 0)
+	{
+		unsigned int *id = lua_touserdata(lua, 1);
+		lua_pushlightuserdata(lua, id);
+		lua_pushcclosure(lua, VLUA_REF(cursor_entry), 1);
+		return 1;
+	}
+	return 0;
+}
+
+/* Provides write access to data related to cursor position (index) in a
+ * view. */
+static int
+VLUA_API(cursor_newindex)(lua_State *lua)
+{
+	const char *key = luaL_checkstring(lua, 2);
+	if(strcmp(key, "pos") == 0)
+	{
+		if(modes_is_dialog_like() && !vle_mode_is(SORT_MODE))
+		{
+			return 0;
+		}
+		const unsigned int *id = lua_touserdata(lua, 1);
+		view_t *view = find_view(lua, *id);
+		const int pos = luaL_checkinteger(lua, 3) - 1;
+		fpos_set_pos(view, pos);
+		if(vle_mode_is(VISUAL_MODE))
+		{
+			modvis_update();
+		}
+		else if(modes_is_cmdline_like())
+		{
+			if(view == curr_view && !vle_primary_mode_is(MENU_MODE))
+			{
+				modcline_update_curr_view_cursor();
+			}
+		}
+		else if(vle_mode_is(SORT_MODE))
+		{
+			redraw_sort_dialog();
+		}
+		return 0;
+	}
+	return 0;
+}
+
+/* Makes `VifmEntry` out of entry under the cursor. */
+static int
+VLUA_API(cursor_entry)(lua_State *lua)
+{
+	const unsigned int *id = lua_touserdata(lua, lua_upvalueindex(1));
+	view_t *view = find_view(lua, *id);
+	vifmentry_new(lua, &view->dir_entry[view->list_pos]);
 	return 1;
 }
 

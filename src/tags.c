@@ -719,6 +719,7 @@ const char *tags[] = {
 	"vifm-l_VifmTab:getview()",
 	"vifm-l_VifmView",
 	"vifm-l_VifmView.currententry",
+	"vifm-l_VifmView.cursor",
 	"vifm-l_VifmView.custom",
 	"vifm-l_VifmView.cwd",
 	"vifm-l_VifmView.entrycount",

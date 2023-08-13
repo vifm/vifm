@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Mar 19
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Aug 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -891,6 +891,8 @@ Fields of table returned by {key}.handler for selectors:
    Table of indexes of entries of the current view (|vifm-l_vifm.currview()|)
    that were selected for the operation.  Invalid, nonexistent and duplicate
    indexes are silently ignored.  Indexes are sorted before processing.
+ - "cursorpos" (integer) (optional)
+   New position of the cursor.  Non-integer values are ignored.
 
 Parameters:~
   {key}  Table with information about a key.
@@ -1258,8 +1260,25 @@ for details.  These are "global" values of view-specific options.
 
 Assigning view options is {unsafe}.
 
+VifmView.cursor (table)                        *vifm-l_VifmView.cursor*
+Table related to cursor position in a view.
+
+Fields:
+ - "pos" (integer)
+   Index of an entry under the cursor.  Moves cursor on assigning an integer.
+ - "entry" (function)
+   Retrieves |vifm-l_VifmEntry| under the cursor.  This is a shortcut to
+   `VifmView:entry(VifmView.cursor.pos)`.
+
+Assigning fields is {unsafe}.
+
+Raises an error:~
+  On assigning non-integer to "pos".
+
 VifmView.currententry (integer)                *vifm-l_VifmView.currententry*
 Index of the current entry.
+
+This is {deprecated}.  See |vifm-l_VifmView.cursor|.pos instead.
 
 VifmView.cwd (string)                          *vifm-l_VifmView.cwd*
 Location of the current view.

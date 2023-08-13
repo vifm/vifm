@@ -28,6 +28,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../bracket_notation.h"
+#include "../flist_pos.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
@@ -239,7 +240,7 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if(is_selector)
+	if(is_selector && lua_istable(lua, -1))
 	{
 		if(extract_indexes(lua, curr_view, &keys_info->count,
 					&keys_info->indexes) == 0)
@@ -250,6 +251,16 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 				keys_info->indexes = NULL;
 			}
 		}
+
+		if(lua_getfield(lua, -1, "cursorpos") == LUA_TNUMBER)
+		{
+			const int pos = lua_tointeger(lua, -1) - 1;
+			if(pos >= 0)
+			{
+				fpos_set_pos(curr_view, pos);
+			}
+		}
+		lua_pop(lua, 1);
 	}
 
 	lua_pop(lua, 3);

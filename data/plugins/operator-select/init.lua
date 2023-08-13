@@ -39,8 +39,8 @@ local added = vifm.keys.add {
     handler = function(info)
         local count = info.count or 1
         local currview = vifm.currview()
-        local indexes = range(currview.currententry,
-                              currview.currententry + count - 1)
+        local indexes = range(currview.cursor.pos,
+                              currview.cursor.pos + count - 1)
         currview:select({ indexes = indexes })
     end,
 }
