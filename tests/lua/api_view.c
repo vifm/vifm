@@ -110,6 +110,16 @@ TEST(vifmview_cursor)
 	assert_success(vlua_run_string(vlua,
 				"print(vifm.currview().cursor:entry().name)"));
 	assert_string_equal("file1", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"print(vifm.currview().cursor.nosuchfield)"));
+	assert_string_equal("nil", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_success(vlua_run_string(vlua,
+				"vifm.currview().cursor.nosuchfield = 10"));
+	assert_string_equal("", ui_sb_last());
 }
 
 TEST(vifmview_set_cursor_pos_in_normal_mode)
@@ -365,6 +375,14 @@ TEST(vifmview_unselect)
 	                                     "}))"));
 
 	assert_string_equal("1", ui_sb_last());
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+
+	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
+	                                     "  indexes = 1"
+	                                     "}))"));
+
+	assert_string_equal("0", ui_sb_last());
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
