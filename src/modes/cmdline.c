@@ -1621,20 +1621,17 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			menus_search_print_msg(menu);
 			curr_stats.save_msg = 1;
 		}
+		else if(get_current_entry(curr_view)->search_match == 0 &&
+				input_stat.search_match_found)
+		{
+			/* The cursor might have been intentionally moved not by the search.
+			 * Don't show any message. */
+		}
 		else
 		{
-			if(get_current_entry(curr_view)->search_match == 0 &&
-					input_stat.search_match_found)
-			{
-				/* The cursor might have been intentionally moved not by the search.
-				 * Don't show any message. */
-			}
-			else
-			{
-				curr_stats.save_msg = print_search_result(curr_view,
-						input_stat.search_match_found, is_backward_search(sub_mode),
-						&print_search_msg);
-			}
+			curr_stats.save_msg = print_search_result(curr_view,
+					input_stat.search_match_found, is_backward_search(sub_mode),
+					&print_search_msg);
 		}
 	}
 
