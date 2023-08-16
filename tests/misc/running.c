@@ -24,6 +24,7 @@
 #include "../../src/filetype.h"
 #include "../../src/running.h"
 #include "../../src/status.h"
+#include "../lua/asserts.h"
 
 static int prog_exists(const char name[]);
 static void start_use_script(void);
@@ -141,10 +142,10 @@ TEST(can_open_via_plugin)
 {
 	curr_stats.vlua = vlua_init();
 
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"function open(info) name = info.entry.name\n end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addhandler{ name = 'open', handler = open }"));
+	GLUA_EQ(curr_stats.vlua, "",
+			"function open(info) name = info.entry.name end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler{ name = 'open', handler = open }");
 
 	char *error;
 	matchers_t *ms = matchers_alloc("*", 0, 1, "", &error);
@@ -153,9 +154,7 @@ TEST(can_open_via_plugin)
 
 	rn_open(&lwin, FHE_NO_RUN);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(curr_stats.vlua, "print(name)"));
-	assert_string_equal("a", ui_sb_last());
+	GLUA_EQ(curr_stats.vlua, "a", "print(name)");
 
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;

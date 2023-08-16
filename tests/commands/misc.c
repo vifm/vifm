@@ -31,6 +31,7 @@
 #include "../../src/registers.h"
 #include "../../src/running.h"
 #include "../../src/status.h"
+#include "../lua/asserts.h"
 
 static char *saved_cwd;
 
@@ -671,36 +672,28 @@ TEST(help_command)
 
 	curr_stats.vlua = vlua_init();
 
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"function handler(info) ginfo = info; return { success = false } end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addhandler{ name = 'editor', handler = handler }"));
+	GLUA_EQ(curr_stats.vlua, "",
+			"function handler(info) ginfo = info; return { success = false } end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler{ name = 'editor', handler = handler }");
 
 	cfg.use_vim_help = 0;
 
 	assert_success(cmds_dispatch("help", &lwin, CIT_COMMAND));
 
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
-	assert_string_equal("edit-one", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.path)"));
-	assert_string_equal("/vifm-help.txt", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.mustwait)"));
-	assert_string_equal("false", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.line)"));
-	assert_string_equal("nil", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.column)"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(curr_stats.vlua, "edit-one", "print(ginfo.action)");
+	GLUA_EQ(curr_stats.vlua, "/vifm-help.txt", "print(ginfo.path)");
+	GLUA_EQ(curr_stats.vlua, "false", "print(ginfo.mustwait)");
+	GLUA_EQ(curr_stats.vlua, "nil", "print(ginfo.line)");
+	GLUA_EQ(curr_stats.vlua, "nil", "print(ginfo.column)");
 
 	cfg.use_vim_help = 1;
 
 	assert_success(cmds_dispatch("help", &lwin, CIT_COMMAND));
 
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
-	assert_string_equal("open-help", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.topic)"));
-	assert_string_equal("vifm-app.txt", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.vimdocdir)"));
-	assert_string_ends_with("/vim-doc", ui_sb_last());
+	GLUA_EQ(curr_stats.vlua, "open-help", "print(ginfo.action)");
+	GLUA_EQ(curr_stats.vlua, "vifm-app.txt", "print(ginfo.topic)");
+	GLUA_ENDS(curr_stats.vlua, "/vim-doc", "print(ginfo.vimdocdir)");
 
 	cfg.use_vim_help = 0;
 

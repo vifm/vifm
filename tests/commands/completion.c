@@ -29,6 +29,7 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 #include "../../src/plugins.h"
+#include "../lua/asserts.h"
 
 #define ASSERT_COMPLETION(initial, expected) \
 	do \
@@ -591,9 +592,9 @@ TEST(highlight_columns_are_completed)
 {
 	curr_stats.vlua = vlua_init();
 
-	assert_success(vlua_run_string(curr_stats.vlua, "function handler() end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addcolumntype{ name = 'Test', handler = handler }"));
+	GLUA_EQ(curr_stats.vlua, "", "function handler() end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addcolumntype{ name = 'Test', handler = handler }");
 
 	/* Completion doesn't require columns to be colored. */
 	ASSERT_COMPLETION(L"hi column:s", L"hi column:size");

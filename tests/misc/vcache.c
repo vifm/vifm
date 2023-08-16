@@ -16,6 +16,7 @@
 #include "../../src/background.h"
 #include "../../src/status.h"
 #include "../../src/vcache.h"
+#include "../lua/asserts.h"
 
 static int wait_for_cache(void);
 static int is_previewed(const char path[]);
@@ -100,10 +101,10 @@ TEST(can_view_via_plugin)
 {
 	curr_stats.vlua = vlua_init();
 
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"function vcache(info) return { lines = {'line1', 'line2'} } end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addhandler{ name = 'vcache', handler = vcache }"));
+	GLUA_EQ(curr_stats.vlua, "",
+			"function vcache(info) return { lines = {'line1', 'line2'} } end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler { name = 'vcache', handler = vcache }");
 
 	/* Also test that output of graphical viewers is preserved in full. */
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines",
