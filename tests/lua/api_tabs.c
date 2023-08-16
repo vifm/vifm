@@ -4,11 +4,12 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/lua/vlua.h"
-#include "../../src/ui/statusbar.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
+
+#include "asserts.h"
 
 static vlua_t *vlua;
 
@@ -54,48 +55,26 @@ TEARDOWN()
 
 TEST(getcount_global_tabs)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcount())"));
-	assert_string_equal("1", ui_sb_last());
-
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcount())");
 	tabs_new(NULL, NULL);
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcount())"));
-	assert_string_equal("2", ui_sb_last());
+	GLUA_EQ(vlua, "2", "print(vifm.tabs.getcount())");
 }
 
 TEST(getcount_pane_tabs)
 {
 	cfg.pane_tabs = 1;
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcount())"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcount())");
 
 	tabs_new(NULL, NULL);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcount())"));
-	assert_string_equal("2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcount {"
-				"    other = true"
-				"})"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "2", "print(vifm.tabs.getcount())");
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcount { other = true })");
 
 	swap_view_roles();
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcount())"));
-	assert_string_equal("1", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcount {"
-				"    other = true"
-				"})"));
-	assert_string_equal("2", ui_sb_last());
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcount())");
+	GLUA_EQ(vlua, "2", "print(vifm.tabs.getcount { other = true })");
 }
 
 TEST(getcurrent_global_tabs)
@@ -103,15 +82,9 @@ TEST(getcurrent_global_tabs)
 	tabs_new(NULL, NULL);
 	tabs_goto(0);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcurrent())"));
-	assert_string_equal("1", ui_sb_last());
-
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcurrent())");
 	tabs_next(1);
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcurrent())"));
-	assert_string_equal("2", ui_sb_last());
+	GLUA_EQ(vlua, "2", "print(vifm.tabs.getcurrent())");
 }
 
 TEST(getcurrent_pane_tabs)
@@ -121,33 +94,17 @@ TEST(getcurrent_pane_tabs)
 	tabs_new(NULL, NULL);
 	tabs_goto(0);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcurrent())"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcurrent())");
 
 	tabs_next(1);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcurrent())"));
-	assert_string_equal("2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcurrent {"
-				"    other = true"
-				"})"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "2", "print(vifm.tabs.getcurrent())");
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcurrent { other = true })");
 
 	swap_view_roles();
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcurrent())"));
-	assert_string_equal("1", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.tabs.getcurrent {"
-				"    other = true"
-				"})"));
-	assert_string_equal("2", ui_sb_last());
+	GLUA_EQ(vlua, "1", "print(vifm.tabs.getcurrent())");
+	GLUA_EQ(vlua, "2", "print(vifm.tabs.getcurrent { other = true })");
 }
 
 TEST(getname_global_tabs)
@@ -156,31 +113,14 @@ TEST(getname_global_tabs)
 	tabs_new(NULL, NULL);
 	tabs_rename(curr_view, "tab2");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getname())"));
-	assert_string_equal("tab1", ui_sb_last());
+	GLUA_EQ(vlua, "tab1", "print(vifm.tabs.get({ index = 1 }):getname())");
+	GLUA_EQ(vlua, "tab2", "print(vifm.tabs.get({ index = 2 }):getname())");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 2 }):getname())"));
-	assert_string_equal("tab2", ui_sb_last());
+	GLUA_EQ(vlua, "tab2", "print(vifm.tabs.get({ }):getname())");
+	GLUA_EQ(vlua, "tab2", "print(vifm.tabs.get():getname())");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ }):getname())"));
-	assert_string_equal("tab2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get():getname())"));
-	assert_string_equal("tab2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 0 }):getname())"));
-	assert_string_ends_with(": No tab with index -1 on active side",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": No tab with index -1 on active side",
+			"print(vifm.tabs.get({ index = 0 }):getname())");
 }
 
 TEST(getname_pane_tabs)
@@ -191,59 +131,31 @@ TEST(getname_pane_tabs)
 	tabs_new(NULL, NULL);
 	tabs_rename(curr_view, "tab2");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getname())"));
-	assert_string_equal("tab1", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 2 }):getname())"));
-	assert_string_equal("tab2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ }):getname())"));
-	assert_string_equal("tab2", ui_sb_last());
+	GLUA_EQ(vlua, "tab1", "print(vifm.tabs.get({ index = 1 }):getname())");
+	GLUA_EQ(vlua, "tab2", "print(vifm.tabs.get({ index = 2 }):getname())");
+	GLUA_EQ(vlua, "tab2", "print(vifm.tabs.get({ }):getname())");
 
 	swap_view_roles();
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getname())"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "", "print(vifm.tabs.get({ index = 1 }):getname())");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1, other = true }):getname())"));
-	assert_string_equal("tab1", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ other = true }):getname())"));
-	assert_string_equal("tab2", ui_sb_last());
+	GLUA_EQ(vlua, "tab1",
+			"print(vifm.tabs.get({ index = 1, other = true }):getname())");
+	GLUA_EQ(vlua, "tab2",
+			"print(vifm.tabs.get({ other = true }):getname())");
 }
 
 TEST(getname_does_not_return_nil)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getname())"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "", "print(vifm.tabs.get({ index = 1 }):getname())");
 }
 
 TEST(getview_errors)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 0 }).cwd)"));
-	assert_string_ends_with(": pane field is not in the range [1; 2]",
-			ui_sb_last());
-
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview(0))"));
-	assert_string_ends_with(": Parameter #2 value must be a table", ui_sb_last());
+	BLUA_ENDS(vlua, ": pane field is not in the range [1; 2]",
+				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 0 }).cwd)");
+	BLUA_ENDS(vlua, ": Parameter #2 value must be a table",
+				"print(vifm.tabs.get({ index = 1 }):getview(0))");
 }
 
 TEST(getview_global_tabs)
@@ -254,35 +166,24 @@ TEST(getview_global_tabs)
 	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), "t2vl");
 	copy_str(rwin.curr_dir, sizeof(rwin.curr_dir), "t2vr");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview().cwd)"));
-	assert_string_equal("t1vl", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 1 }).cwd)"));
-	assert_string_equal("t1vl", ui_sb_last());
+	GLUA_EQ(vlua, "t1vl",
+			"print(vifm.tabs.get({ index = 1 }):getview().cwd)");
+	GLUA_EQ(vlua, "t1vl",
+			"print(vifm.tabs.get({ index = 1 }):getview({ pane = 1 }).cwd)");
 
 	/* Changing active pane should have no affect on operation of getview(). */
 	swap_view_roles();
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 2 }).cwd)"));
-	assert_string_equal("t1vr", ui_sb_last());
-
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get{}:getview{}.cwd)"));
-	assert_string_equal("t2vr", ui_sb_last());
+	GLUA_EQ(vlua, "t1vr",
+			"print(vifm.tabs.get({ index = 1 }):getview({ pane = 2 }).cwd)");
+	GLUA_EQ(vlua, "t2vr",
+			"print(vifm.tabs.get{}:getview{}.cwd)");
 
 	/* Accessing dead tab should fail. */
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "tab = vifm.tabs.get({ index = 2 })"));
+	GLUA_EQ(vlua, "",  "tab = vifm.tabs.get({ index = 2 })");
 	tabs_close();
-	assert_failure(vlua_run_string(vlua, "tab:getview()"));
-	assert_string_ends_with(": Invalid VifmTab object (associated tab is dead)",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": Invalid VifmTab object (associated tab is dead)",
+			"tab:getview()");
 }
 
 TEST(getview_pane_tabs)
@@ -293,28 +194,18 @@ TEST(getview_pane_tabs)
 	tabs_new(NULL, NULL);
 	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), "t2vl");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview().cwd)"));
-	assert_string_equal("t1vl", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 1 }).cwd)"));
-	assert_string_equal("t1vl", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getview({ pane = 2 }).cwd)"));
-	assert_string_equal("t1vl", ui_sb_last());
+	GLUA_EQ(vlua, "t1vl",
+			"print(vifm.tabs.get({ index = 1 }):getview().cwd)");
+	GLUA_EQ(vlua, "t1vl",
+			"print(vifm.tabs.get({ index = 1 }):getview({ pane = 1 }).cwd)");
+	GLUA_EQ(vlua, "t1vl",
+			"print(vifm.tabs.get({ index = 1 }):getview({ pane = 2 }).cwd)");
 
 	/* Accessing dead tab */
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "tab = vifm.tabs.get({ index = 2 })"));
+	GLUA_EQ(vlua, "", "tab = vifm.tabs.get({ index = 2 })");
 	tabs_close();
-	assert_failure(vlua_run_string(vlua, "tab:getview()"));
-	assert_string_ends_with(": Invalid VifmTab object (associated tab is dead)",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": Invalid VifmTab object (associated tab is dead)",
+			"tab:getview()");
 }
 
 TEST(getlayout_global_tabs)
@@ -325,15 +216,8 @@ TEST(getlayout_global_tabs)
 
 	curr_stats.number_of_windows = 1;
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getlayout().split)"));
-	assert_string_equal("h", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 2 }):getlayout().only)"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "h", "print(vifm.tabs.get({ index = 1 }):getlayout().split)");
+	GLUA_EQ(vlua, "true", "print(vifm.tabs.get({ index = 2 }):getlayout().only)");
 
 	curr_stats.number_of_windows = 2;
 }
@@ -346,24 +230,16 @@ TEST(getlayout_pane_tabs)
 	tabs_new(NULL, NULL);
 	tabs_rename(curr_view, "tab2");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 1 }):getlayout().only)"));
-	assert_string_equal("false", ui_sb_last());
+	GLUA_EQ(vlua, "false",
+			"print(vifm.tabs.get({ index = 1 }):getlayout().only)");
 
 	curr_stats.number_of_windows = 1;
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get({ index = 2 }):getlayout().only)"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true", "print(vifm.tabs.get({ index = 2 }):getlayout().only)");
 
 	swap_view_roles();
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.tabs.get():getlayout().split)"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "nil", "print(vifm.tabs.get():getlayout().split)");
 
 	curr_stats.number_of_windows = 2;
 }

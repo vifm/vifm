@@ -23,6 +23,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/vcache.h"
+#include "../lua/asserts.h"
 
 SETUP()
 {
@@ -228,23 +229,18 @@ TEST(can_clean_via_plugin)
 	lwin.window_cols = 10;
 	lwin.window_rows = 20;
 
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"function clear(info) ginfo = info; return {} end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addhandler{ name = 'clear', handler = clear }"));
+	GLUA_EQ(curr_stats.vlua, "",
+			"function clear(info) ginfo = info; return {} end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler{ name = 'clear', handler = clear }");
 
 	qv_cleanup(&lwin, "#vifmtest#clear %%");
 
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.command)"));
-	assert_string_equal("#vifmtest#clear %", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.x)"));
-	assert_string_equal("-1", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.y)"));
-	assert_string_equal("-1", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.width)"));
-	assert_string_equal("10", ui_sb_last());
-	assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.height)"));
-	assert_string_equal("20", ui_sb_last());
+	GLUA_EQ(curr_stats.vlua, "#vifmtest#clear %", "print(ginfo.command)");
+	GLUA_EQ(curr_stats.vlua, "-1", "print(ginfo.x)");
+	GLUA_EQ(curr_stats.vlua, "-1", "print(ginfo.y)");
+	GLUA_EQ(curr_stats.vlua, "10", "print(ginfo.width)");
+	GLUA_EQ(curr_stats.vlua, "20", "print(ginfo.height)");
 
 	view_teardown(&lwin);
 	vlua_finish(curr_stats.vlua);

@@ -11,13 +11,14 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
-#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
 #include <test-utils.h>
+
+#include "asserts.h"
 
 static int has_mime_type_detection(void);
 static int has_no_mime_type_detection(void);
@@ -67,82 +68,41 @@ TEARDOWN()
 
 TEST(vifmview_properties)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().entrycount)"));
-	assert_string_equal("2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().currententry)"));
-	assert_string_equal("2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().cwd)"));
-	assert_string_equal("/lwin", ui_sb_last());
+	GLUA_EQ(vlua, "2", "print(vifm.currview().entrycount)");
+	GLUA_EQ(vlua, "2", "print(vifm.currview().currententry)");
+	GLUA_EQ(vlua, "/lwin", "print(vifm.currview().cwd)");
 }
 
 TEST(vifmview_entry)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():entry(0))"));
-	assert_string_equal("nil", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():entry(1).name)"));
-	assert_string_equal("file0", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.otherview():entry(2).name)"));
-	assert_string_equal("file1", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():entry(3))"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(0))");
+	GLUA_EQ(vlua, "file0", "print(vifm.currview():entry(1).name)");
+	GLUA_EQ(vlua, "file1", "print(vifm.otherview():entry(2).name)");
+	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(3))");
 }
 
 TEST(vifmview_cursor)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
-	assert_string_equal("2", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.currview().cursor:entry().name)"));
-	assert_string_equal("file1", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.currview().cursor.nosuchfield)"));
-	assert_string_equal("nil", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"vifm.currview().cursor.nosuchfield = 10"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "2", "print(vifm.currview().cursor.pos)");
+	GLUA_EQ(vlua, "file1", "print(vifm.currview().cursor:entry().name)");
+	GLUA_EQ(vlua, "nil", "print(vifm.currview().cursor.nosuchfield)");
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.nosuchfield = 10");
 }
 
 TEST(vifmview_set_cursor_pos_in_normal_mode)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.pos = 1");
+	GLUA_EQ(vlua, "1", "print(vifm.currview().cursor.pos)");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 10"));
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
-	assert_string_equal("2", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.pos = 10");
+	GLUA_EQ(vlua, "2", "print(vifm.currview().cursor.pos)");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 0"));
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.pos = 0");
+	GLUA_EQ(vlua, "1", "print(vifm.currview().cursor.pos)");
 
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1.5"));
-	assert_string_ends_with("bad argument #3 to 'newindex'"
-			" (number has no integer representation)", ui_sb_last());
+	BLUA_ENDS(vlua,
+			"bad argument #3 to 'newindex' (number has no integer representation)",
+			"vifm.currview().cursor.pos = 1.5");
 }
 
 TEST(vifmview_set_cursor_pos_in_visual_mode)
@@ -152,16 +112,14 @@ TEST(vifmview_set_cursor_pos_in_visual_mode)
 
 	modvis_enter(VS_NORMAL);
 
-	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.pos = 1");
 
 	assert_true(vle_mode_is(VISUAL_MODE));
 	assert_int_equal(0, lwin.list_pos);
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1", "print(vifm.currview().cursor.pos)");
 
 	modvis_leave(/*save_msg=*/0, /*goto_top=*/1, /*clear_selection=*/1);
 
@@ -177,14 +135,12 @@ TEST(vifmview_set_cursor_pos_in_cmdline_mode)
 
 	modcline_enter(CLS_COMMAND, "");
 
-	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.pos = 1");
 
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_int_equal(0, lwin.list_pos);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().cursor.pos)"));
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1", "print(vifm.currview().cursor.pos)");
 
 	(void)vle_keys_exec_timed_out(WK_C_c);
 	vle_keys_reset();
@@ -205,7 +161,7 @@ TEST(vifmview_set_cursor_pos_during_incsearch_from_normal_mode)
 	assert_int_equal(0, stats->old_top);
 	assert_int_equal(1, stats->old_pos);
 
-	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.pos = 1");
 
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_int_equal(0, lwin.list_pos);
@@ -236,7 +192,7 @@ TEST(vifmview_set_cursor_pos_during_incsearch_from_visual_mode)
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
-	assert_success(vlua_run_string(vlua, "vifm.currview().cursor.pos = 1"));
+	GLUA_EQ(vlua, "", "vifm.currview().cursor.pos = 1");
 
 	assert_true(vle_mode_is(CMDLINE_MODE));
 	assert_true(vle_primary_mode_is(VISUAL_MODE));
@@ -256,21 +212,15 @@ TEST(vifmview_set_cursor_pos_during_incsearch_from_visual_mode)
 
 TEST(vifmview_custom)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.currview().custom)"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "nil", "print(vifm.currview().custom)");
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), "", "", NULL);
 	flist_custom_start(&lwin, "vifmview_custom");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_success(flist_custom_finish(&lwin, CV_REGULAR, /*allow_empty=*/0));
 
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.currview().custom.title)"));
-	assert_string_equal("vifmview_custom", ui_sb_last());
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.currview().custom.type)"));
-	assert_string_equal("custom", ui_sb_last());
+	GLUA_EQ(vlua, "vifmview_custom", "print(vifm.currview().custom.title)");
+	GLUA_EQ(vlua, "custom", "print(vifm.currview().custom.type)");
 }
 
 TEST(vifmview_select)
@@ -278,31 +228,18 @@ TEST(vifmview_select)
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
-	                                     "  indexes = { 0, 1.5, 10 }"
-	                                     "}))"));
-
-	assert_string_equal("0", ui_sb_last());
+	GLUA_EQ(vlua, "0",
+			"print(vifm.currview():select({ indexes = { 0, 1.5, 10 } }))");
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
-	                                     "  indexes = { 2 }"
-	                                     "}))"));
-
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1",
+			"print(vifm.currview():select({ indexes = { 2 } }))");
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
-	                                     "  indexes = { 1, 2 }"
-	                                     "}))"));
-
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1",
+			"print(vifm.currview():select({ indexes = { 1, 2 } }))");
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 }
@@ -319,13 +256,7 @@ TEST(vifmview_select_in_visual_mode)
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
-	                                     "  indexes = { 1 }"
-	                                     "}))"));
-
-	assert_string_equal("0", ui_sb_last());
+	GLUA_EQ(vlua, "0", "print(vifm.currview():select({ indexes = { 1 } }))");
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
@@ -336,13 +267,7 @@ TEST(vifmview_select_in_visual_mode)
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():select({"
-	                                     "  indexes = { 1 }"
-	                                     "}))"));
-
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1", "print(vifm.currview():select({ indexes = { 1 } }))");
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
@@ -358,49 +283,30 @@ TEST(vifmview_unselect)
 	lwin.dir_entry[0].selected = 1;
 	lwin.dir_entry[1].selected = 1;
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
-	                                     "  indexes = { 0, 1.5, 10 }"
-	                                     "}))"));
-
-	assert_string_equal("0", ui_sb_last());
+	GLUA_EQ(vlua, "0",
+			"print(vifm.currview():unselect({ indexes = { 0, 1.5, 10 } }))");
 	assert_true(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
-	                                     "  indexes = { 2 }"
-	                                     "}))"));
-
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1",
+			"print(vifm.currview():unselect({ indexes = { 2 } }))");
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
-	                                     "  indexes = 1"
-	                                     "}))"));
-
-	assert_string_equal("0", ui_sb_last());
+	GLUA_EQ(vlua, "0",
+			"print(vifm.currview():unselect({ indexes = 1 }))");
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 
-	assert_success(vlua_run_string(vlua, "print(vifm.currview():unselect({"
-	                                     "  indexes = { 1, 2 }"
-	                                     "}))"));
-
-	assert_string_equal("1", ui_sb_last());
+	GLUA_EQ(vlua, "1",
+			"print(vifm.currview():unselect({ indexes = { 1, 2 } }))");
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 }
 
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.currview():entry(2):mimetype())"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(2):mimetype())");
 }
 
 TEST(vifmview_entry_mimetype, IF(has_mime_type_detection))
@@ -409,10 +315,7 @@ TEST(vifmview_entry_mimetype, IF(has_mime_type_detection))
 	lwin.dir_entry[1].origin = SANDBOX_PATH;
 	copy_file(TEST_DATA_PATH "/read/very-long-line", SANDBOX_PATH "/file1");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.currview():entry(2):mimetype())"));
-	assert_string_equal("text/plain", ui_sb_last());
+	GLUA_EQ(vlua, "text/plain", "print(vifm.currview():entry(2):mimetype())");
 
 	remove_file(SANDBOX_PATH "/file1");
 }

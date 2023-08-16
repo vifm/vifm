@@ -2,7 +2,8 @@
 
 #include "../../src/cfg/info.h"
 #include "../../src/lua/vlua.h"
-#include "../../src/ui/statusbar.h"
+
+#include "asserts.h"
 
 static vlua_t *vlua;
 
@@ -18,18 +19,14 @@ TEARDOWN()
 
 TEST(no_current_session)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.sessions.current())"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "nil", "print(vifm.sessions.current())");
 }
 
 TEST(current_session)
 {
 	assert_success(sessions_create("test-session"));
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "print(vifm.sessions.current())"));
-	assert_string_equal("test-session", ui_sb_last());
+	GLUA_EQ(vlua, "test-session", "print(vifm.sessions.current())");
 
 	assert_success(sessions_stop());
 }

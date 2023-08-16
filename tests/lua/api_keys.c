@@ -15,6 +15,8 @@
 
 #include <test-utils.h>
 
+#include "asserts.h"
+
 static vlua_t *vlua;
 
 SETUP_ONCE()
@@ -59,62 +61,56 @@ TEARDOWN()
 
 TEST(keys_add_errors)
 {
-	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
-	                                     "  modes = { 'cmdline', 'normal' },"
-	                                     "  handler = handler,"
-	                                     "}"));
-	assert_string_ends_with(": `shortcut` key is mandatory", ui_sb_last());
+	BLUA_ENDS(vlua, ": `shortcut` key is mandatory",
+			"vifm.keys.add {"
+			"  modes = { 'cmdline', 'normal' },"
+			"  handler = handler,"
+			"}");
 
-	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  handler = handler,"
-	                                     "}"));
-	assert_string_ends_with(": `modes` key is mandatory", ui_sb_last());
+	BLUA_ENDS(vlua, ": `modes` key is mandatory",
+			"vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  handler = handler,"
+			"}");
 
-	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'cmdline', 'normal' },"
-	                                     "}"));
-	assert_string_ends_with(": `handler` key is mandatory", ui_sb_last());
+	BLUA_ENDS(vlua, ": `handler` key is mandatory",
+			"vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'cmdline', 'normal' },"
+			"}");
 
-	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
-	                                     "  shortcut = '',"
-	                                     "  modes = { 'cmdline', 'normal' },"
-	                                     "  handler = handler,"
-	                                     "}"));
-	assert_string_ends_with(": Shortcut can't be empty or longer than 15",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": Shortcut can't be empty or longer than 15",
+			"vifm.keys.add {"
+			"  shortcut = '',"
+			"  modes = { 'cmdline', 'normal' },"
+			"  handler = handler,"
+			"}");
 
-	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'cmdline', 'normal' },"
-	                                     "  handler = handler,"
-	                                     "  followedby = 'something',"
-	                                     "}"));
-	assert_string_ends_with(": Unrecognized value for `followedby`: something",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": Unrecognized value for `followedby`: something",
+			"vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'cmdline', 'normal' },"
+			"  handler = handler,"
+			"  followedby = 'something',"
+			"}");
 
-	assert_failure(vlua_run_string(vlua, "vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  isselector = 10,"
-	                                     "}"));
-	assert_string_ends_with(": `isselector` value must be a boolean",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": `isselector` value must be a boolean",
+			"vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  isselector = 10,"
+			"}");
 }
 
 TEST(keys_bad_key_handler)
 {
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  adsf()\n"
-	                                     "end"));
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  handler = function() adsf() end,"
+			"})");
 
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  handler = badhandler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
-
+	ui_sb_msg("");
 	(void)vle_keys_exec_timed_out(WK_X);
 	assert_string_ends_with(": attempt to call a nil value (global 'adsf')",
 			ui_sb_last());
@@ -122,18 +118,15 @@ TEST(keys_bad_key_handler)
 
 TEST(keys_bad_selector_handler)
 {
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  adsf()\n"
-	                                     "end"));
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  isselector = true,"
+			"  handler = function() adsf() end,"
+			"})");
 
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  isselector = true,"
-	                                     "  handler = badhandler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
-
+	ui_sb_msg("");
 	(void)vle_keys_exec_timed_out(L"yX");
 	assert_string_ends_with(": attempt to call a nil value (global 'adsf')",
 			ui_sb_last());
@@ -141,17 +134,13 @@ TEST(keys_bad_selector_handler)
 
 TEST(keys_bad_selector_return)
 {
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  return 1\n"
-	                                     "end"));
-
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  isselector = true,"
-	                                     "  handler = badhandler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  isselector = true,"
+			"  handler = function() return 1 end,"
+			"})");
 
 	ui_sb_msg("");
 	(void)vle_keys_exec_timed_out(L"yX");
@@ -160,17 +149,13 @@ TEST(keys_bad_selector_return)
 
 TEST(keys_bad_selector_return_table)
 {
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  return {}\n"
-	                                     "end"));
-
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  isselector = true,"
-	                                     "  handler = badhandler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  isselector = true,"
+			"  handler = function() return {} end,"
+			"})");
 
 	ui_sb_msg("");
 	(void)vle_keys_exec_timed_out(L"yX");
@@ -179,19 +164,13 @@ TEST(keys_bad_selector_return_table)
 
 TEST(keys_bad_selector_index)
 {
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  return {"
-	                                     "    indexes = { 0, 'notint', 1.5 }"
-	                                     "  }\n"
-	                                     "end"));
-
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  isselector = true,"
-	                                     "  handler = badhandler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  isselector = true,"
+			"  handler = function() return { indexes = { 0, 'notint', 1.5 } } end,"
+			"})");
 
 	ui_sb_msg("");
 	(void)vle_keys_exec_timed_out(L"yX");
@@ -200,18 +179,15 @@ TEST(keys_bad_selector_index)
 
 TEST(keys_selector_duplicated_indexes)
 {
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  return { indexes = { 1, 1 } }\n"
-	                                     "end"));
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  isselector = true,"
+			"  handler = function() return { indexes = { 1, 1 } } end,"
+			"})");
 
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  isselector = true,"
-	                                     "  handler = badhandler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
-
+	ui_sb_msg("");
 	(void)vle_keys_exec_timed_out(L"yX");
 	assert_int_equal(1, curr_stats.save_msg);
 	assert_string_equal("1 file yanked", ui_sb_last());
@@ -219,20 +195,21 @@ TEST(keys_selector_duplicated_indexes)
 
 TEST(keys_bad_selector_cursorpos)
 {
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  return {"
-	                                     "    indexes = { 1, 2 },"
-	                                     "    cursorpos = 1.5,"
-	                                     "  }\n"
-	                                     "end"));
+	GLUA_EQ(vlua, "",
+			"function badhandler()"
+			"  return {"
+			"    indexes = { 1, 2 },"
+			"    cursorpos = 1.5,"
+			"  }"
+			"end");
 
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  isselector = true,"
-	                                     "  handler = badhandler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  isselector = true,"
+			"  handler = badhandler,"
+			"})");
 
 	(void)vle_keys_exec_timed_out(L"yX");
 	assert_int_equal(0, lwin.list_pos);
@@ -240,33 +217,31 @@ TEST(keys_bad_selector_cursorpos)
 
 TEST(keys_add)
 {
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "function handler(info)\n"
-	                                     "  if info.count == nil then\n"
-	                                     "    print 'count is missing'\n"
-	                                     "    return\n"
-	                                     "  end\n"
-	                                     "  if info.register == nil then\n"
-	                                     "    print 'register is missing'\n"
-	                                     "    return\n"
-	                                     "  end\n"
-	                                     "  print(info.count .. info.register)\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handler(info)"
+			"  if info.count == nil then"
+			"    print 'count is missing'"
+			"    return"
+			"  end"
+			"  if info.register == nil then"
+			"    print 'register is missing'"
+			"    return"
+			"  end"
+			"  print(info.count .. info.register)"
+			"end");
 
 	/* Create a mapping. */
 	assert_success(vle_keys_user_add(L"X", L"x", NORMAL_MODE, 0));
 
 	/* Replace a mapping. */
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'cmdline', 'normal' },"
-	                                     "  description = 'print a message',"
-	                                     "  followedby = 'none',"
-	                                     "  handler = handler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'cmdline', 'normal' },"
+			"  description = 'print a message',"
+			"  followedby = 'none',"
+			"  handler = handler,"
+			"})");
 	assert_true(vle_keys_user_exists(L"X", NORMAL_MODE));
 	assert_true(vle_keys_user_exists(L"X", CMDLINE_MODE));
 
@@ -285,25 +260,23 @@ TEST(keys_add)
 
 TEST(keys_add_selector)
 {
-	ui_sb_msg("");
+	GLUA_EQ(vlua, "",
+			"function handler(info)"
+			"  print('in handler')"
+			"  return {"
+			"    indexes = { 1, 2 },"
+			"    cursorpos = 2,"
+			"  }"
+			"end");
 
-	assert_success(vlua_run_string(vlua, "function handler(info)"
-	                                     "  print('in handler')"
-	                                     "  return {"
-	                                     "    indexes = { 1, 2 },"
-	                                     "    cursorpos = 2,"
-	                                     "  }\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'cmdline', 'normal' },"
-	                                     "  description = 'print a message',"
-	                                     "  isselector = true,"
-	                                     "  handler = handler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'cmdline', 'normal' },"
+			"  description = 'print a message',"
+			"  isselector = true,"
+			"  handler = handler,"
+			"})");
 
 	(void)vle_keys_exec_timed_out(L"yX");
 	assert_int_equal(1, curr_stats.save_msg);
@@ -320,17 +293,15 @@ TEST(keys_add_selector)
 
 TEST(keys_add_modes)
 {
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "    shortcut = 'X',"
-	                                     "    modes = { 'cmdline', 'nav',"
-	                                     "              'normal', 'visual',"
-	                                     "              'menus', 'dialogs',"
-	                                     "              'view' },"
-	                                     "    handler = function() end,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"    shortcut = 'X',"
+			"    modes = { 'cmdline', 'nav',"
+			"              'normal', 'visual',"
+			"              'menus', 'dialogs',"
+			"              'view' },"
+			"    handler = function() end,"
+			"})");
 
 	assert_true(vle_keys_user_exists(L"X", NORMAL_MODE));
 	assert_true(vle_keys_user_exists(L"X", CMDLINE_MODE));
@@ -347,22 +318,15 @@ TEST(keys_add_modes)
 
 TEST(keys_followed_by_selector)
 {
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "function handler(info)"
-	                                     "  print(#info.indexes,"
-	                                     "         info.indexes[1],"
-	                                     "         info.indexes[2])"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  followedby = 'selector',"
-	                                     "  handler = handler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  followedby = 'selector',"
+			"  handler = function(info)"
+			"    print(#info.indexes, info.indexes[1], info.indexes[2])"
+			"  end"
+			"})");
 
 	(void)vle_keys_exec_timed_out(L"Xj");
 	assert_int_equal(1, curr_stats.save_msg);
@@ -371,20 +335,15 @@ TEST(keys_followed_by_selector)
 
 TEST(keys_followed_by_multikey)
 {
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua, "function handler(info)"
-	                                     "  print(info.keyarg)"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-
-	assert_success(vlua_run_string(vlua, "print(vifm.keys.add {"
-	                                     "  shortcut = 'X',"
-	                                     "  modes = { 'normal' },"
-	                                     "  followedby = 'keyarg',"
-	                                     "  handler = handler,"
-	                                     "})"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  followedby = 'keyarg',"
+			"  handler = function(info)"
+			"    print(info.keyarg)"
+			"  end"
+			"})");
 
 	(void)vle_keys_exec_timed_out(L"Xj");
 	assert_int_equal(1, curr_stats.save_msg);

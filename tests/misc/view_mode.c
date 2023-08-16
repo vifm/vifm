@@ -10,7 +10,6 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
-#include "../../src/ui/statusbar.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matchers.h"
@@ -20,6 +19,7 @@
 #include "../../src/filetype.h"
 #include "../../src/running.h"
 #include "../../src/status.h"
+#include "../lua/asserts.h"
 
 static int start_view_mode(const char pattern[], const char viewers[],
 		const char base_dir[], const char sub_path[]);
@@ -257,14 +257,14 @@ TEST(cmd_v)
 
 	curr_stats.vlua = vlua_init();
 
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"function handler(info)"
-				"  local s = ginfo ~= nil"
-				"  ginfo = info"
-				"  return { success = s }"
-				"end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addhandler{ name = 'editor', handler = handler }"));
+	GLUA_EQ(curr_stats.vlua, "",
+			"function handler(info)"
+			"  local s = ginfo ~= nil"
+			"  ginfo = info"
+			"  return { success = s }"
+			"end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler{ name = 'editor', handler = handler }");
 
 	curr_stats.exec_env_type = EET_EMULATOR;
 	update_string(&cfg.vi_command, "#vifmtest#editor");
@@ -274,18 +274,13 @@ TEST(cmd_v)
 	{
 		(void)vle_keys_exec_timed_out(WK_v);
 
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
-		assert_string_equal("edit-one", ui_sb_last());
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.path)"));
-		assert_string_ends_with("scripts/append-env.vifm", ui_sb_last());
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.mustwait)"));
-		assert_string_equal("false", ui_sb_last());
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.line)"));
-		assert_string_equal("1", ui_sb_last());
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.column)"));
-		assert_string_equal("nil", ui_sb_last());
+		GLUA_EQ(curr_stats.vlua, "edit-one", "print(ginfo.action)");
+		GLUA_ENDS(curr_stats.vlua, "scripts/append-env.vifm", "print(ginfo.path)");
+		GLUA_EQ(curr_stats.vlua, "false", "print(ginfo.mustwait)");
+		GLUA_EQ(curr_stats.vlua, "1", "print(ginfo.line)");
+		GLUA_EQ(curr_stats.vlua, "nil", "print(ginfo.column)");
 
-		assert_success(vlua_run_string(curr_stats.vlua, "ginfo = {}"));
+		GLUA_EQ(curr_stats.vlua, "", "ginfo = {}");
 	}
 
 	vlua_finish(curr_stats.vlua);

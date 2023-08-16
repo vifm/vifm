@@ -10,6 +10,8 @@
 
 #include <test-utils.h>
 
+#include "asserts.h"
+
 static void wait_for_job(void);
 
 static vlua_t *vlua;
@@ -28,11 +30,8 @@ TEARDOWN()
 
 TEST(vifmjob_bad_arg)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
-	                                     "         iomode = 'u' }\n"
-	                                     "job = vifm.startjob(info)"));
-	assert_string_ends_with("Unknown 'iomode' value: u", ui_sb_last());
+	BLUA_ENDS(vlua, "Unknown 'iomode' value: u",
+						"job = vifm.startjob { cmd = 'echo ignored', iomode = 'u' }");
 }
 
 /* This test comes before other good startjob tests to make it pass faster.
@@ -40,57 +39,49 @@ TEST(vifmjob_bad_arg)
  * from the process. */
 TEST(vifmjob_errors)
 {
-	ui_sb_msg("");
+	GLUA_STARTS(vlua, "err",
+			"job = vifm.startjob { cmd = 'echo err 1>&2' }"
+			"job:wait()"
+			"while #job:errors() == 0 do end\n"
+			"print(job:errors())");
 
-	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo err 1>&2' }\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "job:wait()\n"
-	                                     "while #job:errors() == 0 do end\n"
-	                                     "print(job:errors())"));
-	assert_string_starts_with("err", ui_sb_last());
-
-	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo out' }\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:errors())"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"job = vifm.startjob { cmd = 'echo out' }"
+			"print(job:errors())");
 }
 
 TEST(vifm_startjob)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "job = vifm.startjob({ cmd = 'echo' })\n"
-	                                     "job:stdout():lines()()\n"
-	                                     "print(job:exitcode())"));
-	assert_string_equal("0", ui_sb_last());
+	GLUA_EQ(vlua, "0",
+			"job = vifm.startjob { cmd = 'echo' }"
+			"job:stdout():lines()()"
+			"print(job:exitcode())");
 }
 
 TEST(vifmjob_exitcode)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "info = {\n"
-	                                     "  cmd = 'exit 41',\n"
-	                                     "  visible = true,\n"
-	                                     "  description = 'exit 41'\n"
-	                                     "}\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:exitcode())"));
-	assert_string_equal("41", ui_sb_last());
+	GLUA_EQ(vlua, "41",
+			"info = {"
+			"  cmd = 'exit 41',"
+			"  visible = true,"
+			"  description = 'exit 41'"
+			"}"
+			"job = vifm.startjob(info)"
+			"print(job:exitcode())");
 }
 
 TEST(vifmjob_stdin, IF(have_cat))
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-	      "info = { cmd = 'cat > " SANDBOX_PATH "/file', iomode = 'w' }\n"
-	      "job = vifm.startjob(info)\n"
-	      "if job:stdin() ~= job:stdin() then\n"
-	      "  print('Result should be the same')\n"
-	      "else\n"
-	      "  print(job:stdin():write('text') == job:stdin())\n"
-	      "end\n"
-	      "job:stdin():close()\n"
-	      "job:wait()"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"info = { cmd = 'cat > " SANDBOX_PATH "/file', iomode = 'w' }"
+			"job = vifm.startjob(info)"
+			"if job:stdin() ~= job:stdin() then"
+			"  print('Result should be the same')"
+			"else"
+			"  print(job:stdin():write('text') == job:stdin())"
+			"end\n"
+			"job:stdin():close()"
+			"job:wait()");
 
 	const char *lines[] = { "text" };
 	file_is(SANDBOX_PATH "/file", lines, 1);
@@ -103,74 +94,57 @@ TEST(vifmjob_stdin_broken_pipe, IF(not_windows))
 	setvar("v:jobcount", var);
 	var_free(var);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-	      "info = { cmd = 'no-such-command-exists', iomode = 'w' }"
-	      "job = vifm.startjob(info)"
-	      "vifm.startjob({ cmd = 'sleep 0.01' }):wait()"
-	      "print(job:stdin():write('text') == job:stdin())"
-	      "job:stdin():close()"
-	      "job:wait()"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"job = vifm.startjob { cmd = 'no-such-command-exists', iomode = 'w' }"
+			"vifm.startjob({ cmd = 'sleep 0.01' }):wait()"
+			"print(job:stdin():write('text') == job:stdin())"
+			"job:stdin():close()"
+			"job:wait()");
 
 	/* Broken pipe + likely dead parent VifmJob object. */
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-	      "info = { cmd = 'no-such-command-exists', iomode = 'w' }"
-	      "stdin = vifm.startjob(info):stdin()"
-	      "vifm.startjob({ cmd = 'sleep 0.01' }):wait()"
-	      "print(stdin:write('text') == stdin)"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"info = { cmd = 'no-such-command-exists', iomode = 'w' }"
+			"stdin = vifm.startjob(info):stdin()"
+			"vifm.startjob({ cmd = 'sleep 0.01' }):wait()"
+			"print(stdin:write('text') == stdin)");
 	bg_check();
-	assert_failure(vlua_run_string(vlua, "print(stdin:write('text') == stdin)"));
-	assert_string_ends_with(": attempt to use a closed file", ui_sb_last());
+	BLUA_ENDS(vlua, ": attempt to use a closed file",
+			"print(stdin:write('text') == stdin)");
 }
 
 TEST(vifmjob_stdout)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo out' }\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "if job:stdout() ~= job:stdout() then\n"
-	                                     "  print('Result should be the same')\n"
-	                                     "else\n"
-	                                     "  print(job:stdout():read('a'))\n"
-	                                     "end"));
-	assert_string_starts_with("out", ui_sb_last());
+	GLUA_STARTS(vlua, "out",
+			"job = vifm.startjob { cmd = 'echo out' }"
+			"if job:stdout() ~= job:stdout() then"
+			"  print('Result should be the same')"
+			"else"
+			"  print(job:stdout():read('a'))"
+			"end");
 }
 
 TEST(vifmjob_stderr)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo err 1>&2' }\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:stdout():read('a'))"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "info = { cmd = 'echo err 1>&2',"
-	                                     "         mergestreams = true }\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:stdout():read('a'))"));
-	assert_string_starts_with("err", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"job = vifm.startjob { cmd = 'echo err 1>&2' }"
+			"print(job:stdout():read('a'))");
+	GLUA_STARTS(vlua, "err",
+			"job = vifm.startjob { cmd = 'echo err 1>&2', mergestreams = true }"
+			"print(job:stdout():read('a'))");
 }
 
 TEST(vifmjob_no_out)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
-	                                     "         iomode = '' }\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:stdout() and 'FAIL')"));
-	assert_string_ends_with("The job has no output stream", ui_sb_last());
+	BLUA_ENDS(vlua, "The job has no output stream",
+			"job = vifm.startjob { cmd = 'echo ignored', iomode = '' }"
+			"print(job:stdout() and 'FAIL')");
 }
 
 TEST(vifmjob_no_in)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua, "info = { cmd = 'echo ignored',"
-	                                     "         iomode = '' }\n"
-	                                     "job = vifm.startjob(info)\n"
-	                                     "print(job:stdin() and 'FAIL')"));
-	assert_string_ends_with("The job has no input stream", ui_sb_last());
+	BLUA_ENDS(vlua, "The job has no input stream",
+			"job = vifm.startjob { cmd = 'echo ignored', iomode = '' }"
+			"print(job:stdin() and 'FAIL')");
 }
 
 TEST(vifmjob_onexit_good)
@@ -179,12 +153,10 @@ TEST(vifmjob_onexit_good)
 	setvar("v:jobcount", var);
 	var_free(var);
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua,
-	      "info = { cmd = 'echo hi',"
-	              " onexit = function(job) print(job:exitcode()) end }"
-	      "vifm.startjob(info)"));
+	GLUA_EQ(vlua, "",
+			"info = { cmd = 'echo hi',"
+			"         onexit = function(job) print(job:exitcode()) end }"
+			"vifm.startjob(info)");
 
 	wait_for_job();
 	vlua_process_callbacks(vlua);
@@ -198,12 +170,10 @@ TEST(vifmjob_onexit_bad)
 	setvar("v:jobcount", var);
 	var_free(var);
 
-	ui_sb_msg("");
-
-	assert_success(vlua_run_string(vlua,
-	      "info = { cmd = 'echo hi',"
-	              " onexit = function(job) fail_here() end }"
-	      "vifm.startjob(info)"));
+	GLUA_EQ(vlua, "",
+			"info = { cmd = 'echo hi',"
+			"         onexit = function(job) fail_here() end }"
+			"vifm.startjob(info)");
 
 	wait_for_job();
 	vlua_process_callbacks(vlua);

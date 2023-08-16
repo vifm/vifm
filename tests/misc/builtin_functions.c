@@ -25,6 +25,7 @@
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
+#include "../lua/asserts.h"
 #include "../parsing/asserts.h"
 
 SETUP()
@@ -419,10 +420,8 @@ TEST(has_handler)
 {
 	curr_stats.vlua = vlua_init();
 
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"function handler(info) end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addhandler{ name = 'handler', handler = handler }"));
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler { name = 'handler', handler = function() end }");
 
 	ASSERT_OK("has('#vifmtest#nohandler')", "0");
 	ASSERT_OK("has('#vifmtest#handler')", "1");

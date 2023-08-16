@@ -10,6 +10,8 @@
 
 #include <test-utils.h>
 
+#include "asserts.h"
+
 static void check_next_completion(const char expected[]);
 
 static vlua_t *vlua;
@@ -37,94 +39,59 @@ TEST(cmds_add)
 {
 	cmds_init();
 
-	ui_sb_msg("");
+	GLUA_EQ(vlua, "",
+			"function handler(info)"
+			"  if info.args == nil then"
+			"    print 'args is missing'"
+			"  end"
+			"  if info.argv == nil then"
+			"    print 'argsv is missing'"
+			"  end"
+			"  if info.args ~= info.argv[1] then"
+			"    print 'args or argv is wrong'"
+			"  end"
+			"  print 'msg'"
+			"end");
+	GLUA_EQ(vlua, "",
+			"function badhandler()\n"
+			"  adsf()\n"
+			"end");
 
-	assert_success(vlua_run_string(vlua, "function handler(info)\n"
-	                                     "  if info.args == nil then\n"
-	                                     "    print 'args is missing'\n"
-	                                     "  end\n"
-	                                     "  if info.argv == nil then\n"
-	                                     "    print 'argsv is missing'\n"
-	                                     "  end\n"
-	                                     "  if info.args ~= info.argv[1] then\n"
-	                                     "    print 'args or argv is wrong'\n"
-	                                     "  end\n"
-	                                     "  print 'msg'\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
+	BLUA_ENDS(vlua, "`handler` key is mandatory",
+			"vifm.cmds.add { name = 'cmd' }");
+	BLUA_ENDS(vlua, "`name` key is mandatory",
+			"vifm.cmds.add { handler = handler }");
+	BLUA_ENDS(vlua, "`handler` value must be a function",
+			"vifm.cmds.add { name = 'cmd', handler = 10 }");
+	BLUA_ENDS(vlua, "`minargs` value must be a number",
+			"vifm.cmds.add { name = 'cmd', handler = handler, minargs = 'min' }");
+	BLUA_ENDS(vlua, "`maxargs` value must be a number",
+			"vifm.cmds.add { name = 'cmd', handler = handler, maxargs = 'max' }");
 
-	assert_success(vlua_run_string(vlua, "function badhandler()\n"
-	                                     "  adsf()\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-
-	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'cmd'"
-	                                     "}"));
-	assert_string_ends_with("`handler` key is mandatory", ui_sb_last());
-
-	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  handler = handler"
-	                                     "}"));
-	assert_string_ends_with("`name` key is mandatory", ui_sb_last());
-
-	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'cmd',"
-	                                     "  handler = 10"
-	                                     "}"));
-	assert_string_ends_with("`handler` value must be a function", ui_sb_last());
-
-	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'cmd',"
-	                                     "  handler = handler,"
-	                                     "  minargs = 'min'"
-	                                     "}"));
-	assert_string_ends_with("`minargs` value must be a number", ui_sb_last());
-
-	assert_failure(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'cmd',"
-	                                     "  handler = handler,"
-	                                     "  maxargs = 'max'"
-	                                     "}"));
-	assert_string_ends_with("`maxargs` value must be a number", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'cmd',"
-	                                     "  description = 'description',"
-	                                     "  handler = handler,"
-	                                     "  minargs = 1,"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
-
-	ui_sb_msg("");
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'cmd',"
+			"  description = 'description',"
+			"  handler = handler,"
+			"  minargs = 1,"
+			"}");
 	assert_failure(cmds_dispatch1("cmd arg", curr_view, CIT_COMMAND));
 	assert_string_equal("msg", ui_sb_last());
 	assert_int_equal(1, curr_stats.save_msg);
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'bcmd',"
-	                                     "  handler = badhandler,"
-	                                     "  minargs = 0,"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
-
-	ui_sb_msg("");
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add { name = 'bcmd', handler = badhandler, minargs = 0 }");
 	assert_failure(cmds_dispatch1("bcmd", curr_view, CIT_COMMAND));
 	assert_string_ends_with(": attempt to call a nil value (global 'adsf')",
 			ui_sb_last());
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'cmdinf',"
-	                                     "  handler = handler,"
-	                                     "  minargs = 1,"
-	                                     "  maxargs = -1"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
-
-	ui_sb_msg("");
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'cmdinf',"
+			"  handler = handler,"
+			"  minargs = 1,"
+			"  maxargs = -1"
+			"}");
 	assert_failure(cmds_dispatch1("cmdinf arg1 arg2", curr_view, CIT_COMMAND));
 	assert_string_equal("msg", ui_sb_last());
 	assert_int_equal(1, curr_stats.save_msg);
@@ -132,142 +99,120 @@ TEST(cmds_add)
 
 TEST(cmds_command)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua, "vifm.cmds.command {"
-	                                     "  name = 'name',"
-	                                     "  action = ''"
-	                                     "}"));
-	assert_string_ends_with("Action can't be empty", ui_sb_last());
+	BLUA_ENDS(vlua, "Action can't be empty",
+			"vifm.cmds.command { name = 'name', action = '' }");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command({"
-	                                     "  name = 'name',"
-	                                     "  action = 'action',"
-	                                     "  description = 'descr'"
-	                                     "})\n"
-	                                     "if not r then print 'fail' end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"r = vifm.cmds.command({"
+			"  name = 'name',"
+			"  action = 'action',"
+			"  description = 'descr'"
+			"})"
+			"if not r then print 'fail' end");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command {"
-	                                     "  name = 'name',"
-	                                     "  action = 'action'"
-	                                     "}\n"
-	                                     "if not r then print 'fail' end"));
-	assert_string_equal("fail", ui_sb_last());
+	GLUA_EQ(vlua, "fail",
+			"r = vifm.cmds.command { name = 'name', action = 'action' }"
+			"if not r then print 'fail' end");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command {"
-	                                     "  name = 'name',"
-	                                     "  action = 'action',"
-	                                     "  overwrite = true"
-	                                     "}\n"
-	                                     "if not r then print 'fail' end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"r = vifm.cmds.command {"
+			"  name = 'name',"
+			"  action = 'action',"
+			"  overwrite = true"
+			"}"
+			"if not r then print 'fail' end");
 }
 
 TEST(cmds_names_with_numbers)
 {
-	assert_success(vlua_run_string(vlua, "r = vifm.cmds.add {"
-	                                     "  name = 'my1',"
-	                                     "  handler = function() end"
-	                                     "}\n"
-	                                     "if not r then print 'fail' end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"r = vifm.cmds.add {"
+			"  name = 'my1',"
+			"  handler = function() end"
+			"}"
+			"if not r then print 'fail' end");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command {"
-	                                     "  name = 'my2',"
-	                                     "  action = 'bla'"
-	                                     "}\n"
-	                                     "if not r then print 'fail' end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"r = vifm.cmds.command {"
+			"  name = 'my2',"
+			"  action = 'bla'"
+			"}"
+			"if not r then print 'fail' end");
 }
 
 TEST(cmds_delcommand)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "r = vifm.cmds.command {"
-	                                     "  name = 'name',"
-	                                     "  action = 'action'"
-	                                     "}\n"
-	                                     "if not r then print 'fail' end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"r = vifm.cmds.command {"
+			"  name = 'name',"
+			"  action = 'action'"
+			"}"
+			"if not r then print 'fail' end");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "r = vifm.cmds.delcommand('name')\n"
-	                                     "if not r then print 'fail' end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"r = vifm.cmds.delcommand('name')"
+	    "if not r then print 'fail' end");
 }
 
 TEST(cmds_completion)
 {
-	assert_success(vlua_run_string(vlua, "function handler()\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "function bad()\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "function failing()\n"
-	                                     "  asdfadsf()\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "function completor(info)\n"
-	                                     "  if info.arg == nil then\n"
-	                                     "    print 'arg m isissing'\n"
-	                                     "  end\n"
-	                                     "  if info.args == nil then\n"
-	                                     "    print 'args is missing'\n"
-	                                     "  end\n"
-	                                     "  if info.argv == nil then\n"
-	                                     "    print 'argsv is missing'\n"
-	                                     "  end\n"
-	                                     "  if info.arg ~= info.args then\n"
-	                                     "    print 'arg or args is wrong'\n"
-	                                     "  end\n"
-	                                     "  if info.arg ~= info.argv[1] then\n"
-	                                     "    print 'arg or argv is wrong'\n"
-	                                     "  end\n"
-	                                     "  return {\n"
-	                                     "    offset = 1,\n"
-	                                     "    matches = {\n"
-	                                     "      'aa',\n"
-	                                     "      {match = 'ab',\n"
-	                                     "       description = 'desc'},\n"
-	                                     "      {description = 'only desc'},\n"
-	                                     "      {match = 'bc'} \n"
-	                                     "    }\n"
-	                                     "  }\n"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "function evilcompletor()\n"
-	                                     "  return {"
-	                                     "    offset = 0,"
-	                                     "    matches = { evilcompletor }"
-	                                     "  }"
-	                                     "end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handler() end");
+	GLUA_EQ(vlua, "", "function bad() end");
+	GLUA_EQ(vlua, "", "function failing() asdfadsf() end");
+	GLUA_EQ(vlua, "",
+			"function completor(info)"
+			"  if info.arg == nil then"
+			"    print 'arg m isissing'"
+			"  end"
+			"  if info.args == nil then"
+			"    print 'args is missing'"
+			"  end"
+			"  if info.argv == nil then"
+			"    print 'argsv is missing'"
+			"  end"
+			"  if info.arg ~= info.args then"
+			"    print 'arg or args is wrong'"
+			"  end"
+			"  if info.arg ~= info.argv[1] then"
+			"    print 'arg or argv is wrong'"
+			"  end"
+			"  return {"
+			"    offset = 1,"
+			"    matches = {"
+			"      'aa',"
+			"      {match = 'ab',"
+			"       description = 'desc'},"
+			"      {description = 'only desc'},"
+			"      {match = 'bc'}"
+			"    }"
+			"  }"
+			"end");
+	GLUA_EQ(vlua, "",
+			"function evilcompletor()\n"
+			"  return {"
+			"    offset = 0,"
+			"    matches = { evilcompletor }"
+			"  }"
+			"end");
 
 	/* :command without completion. */
 
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'nocompl',"
-	                                     "  handler = handler,"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
-
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'nocompl',"
+			"  handler = handler"
+			"}");
 	assert_int_equal(7, vle_cmds_complete("nocompl a", NULL));
 	assert_int_equal(0, vle_compl_get_count());
 
 	/* :command with working completion. */
 
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'test',"
-	                                     "  handler = handler,"
-	                                     "  complete = completor"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
-
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'test',"
+			"  handler = handler,"
+			"  complete = completor"
+			"}");
 	vle_compl_reset();
 	assert_int_equal(6, vle_cmds_complete("test a", NULL));
 	check_next_completion("aa");
@@ -277,36 +222,36 @@ TEST(cmds_completion)
 
 	/* :command with completion that returns nil. */
 
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'testcmd',"
-	                                     "  handler = handler,"
-	                                     "  complete = bad"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'testcmd',"
+			"  handler = handler,"
+			"  complete = bad"
+			"}");
 	vle_compl_reset();
 	assert_int_equal(8, vle_cmds_complete("testcmd p", NULL));
 	assert_int_equal(0, vle_compl_get_count());
 
 	/* :command with completion that errors. */
 
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'tcmd',"
-	                                     "  handler = handler,"
-	                                     "  complete = failing"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'tcmd',"
+			"  handler = handler,"
+			"  complete = failing"
+			"}");
 	vle_compl_reset();
 	assert_int_equal(5, vle_cmds_complete("tcmd z", NULL));
 	assert_int_equal(0, vle_compl_get_count());
 
 	/* :command with completion that has unsupported values. */
 
-	assert_success(vlua_run_string(vlua, "vifm.cmds.add {"
-	                                     "  name = 'evilcmpl',"
-	                                     "  handler = handler,"
-	                                     "  complete = evilcompletor"
-	                                     "}"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'evilcmpl',"
+			"  handler = handler,"
+			"  complete = evilcompletor"
+			"}");
 	vle_compl_reset();
 	assert_int_equal(9, vle_cmds_complete("evilcmpl z", NULL));
 	assert_int_equal(1, vle_compl_get_count());

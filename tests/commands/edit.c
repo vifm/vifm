@@ -16,6 +16,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
+#include "../lua/asserts.h"
 
 static char sandbox[PATH_MAX + 1];
 
@@ -90,30 +91,26 @@ TEST(edit_command)
 
 	curr_stats.vlua = vlua_init();
 
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"function handler(info)"
-				"  local s = ginfo ~= nil"
-				"  ginfo = info"
-				"  return { success = s }"
-				"end"));
-	assert_success(vlua_run_string(curr_stats.vlua,
-				"vifm.addhandler{ name = 'editor', handler = handler }"));
+	GLUA_EQ(curr_stats.vlua, "",
+			"function handler(info)"
+			"  local s = ginfo ~= nil"
+			"  ginfo = info"
+			"  return { success = s }"
+			"end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler{ name = 'editor', handler = handler }");
 
 	int i;
 	for(i = 0; i < 2; ++i)
 	{
 		assert_success(cmds_dispatch("edit a b", &lwin, CIT_COMMAND));
 
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.action)"));
-		assert_string_equal("edit-many", ui_sb_last());
-		assert_success(vlua_run_string(curr_stats.vlua, "print(#ginfo.paths)"));
-		assert_string_equal("2", ui_sb_last());
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.paths[1])"));
-		assert_string_equal("a", ui_sb_last());
-		assert_success(vlua_run_string(curr_stats.vlua, "print(ginfo.paths[2])"));
-		assert_string_equal("b", ui_sb_last());
+		GLUA_EQ(curr_stats.vlua, "edit-many", "print(ginfo.action)");
+		GLUA_EQ(curr_stats.vlua, "2", "print(#ginfo.paths)");
+		GLUA_EQ(curr_stats.vlua, "a", "print(ginfo.paths[1])");
+		GLUA_EQ(curr_stats.vlua, "b", "print(ginfo.paths[2])");
 
-		assert_success(vlua_run_string(curr_stats.vlua, "ginfo = {}"));
+		GLUA_EQ(curr_stats.vlua, "", "ginfo = {}");
 	}
 
 	vlua_finish(curr_stats.vlua);
