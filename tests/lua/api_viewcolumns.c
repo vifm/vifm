@@ -5,11 +5,12 @@
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
-#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/opt_handlers.h"
 
 #include <test-utils.h>
+
+#include "asserts.h"
 
 static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
@@ -43,56 +44,37 @@ TEARDOWN()
 
 TEST(bad_args)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = nil,"
-				                         " handler = nil })"));
-	assert_string_ends_with(": `name` key is mandatory", ui_sb_last());
+	BLUA_ENDS(vlua, ": `name` key is mandatory",
+			"print(vifm.addcolumntype{ name = nil, handler = nil })");
 
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'NAME',"
-				                         " handler = nil })"));
-	assert_string_ends_with(": `handler` key is mandatory", ui_sb_last());
+	BLUA_ENDS(vlua, ": `handler` key is mandatory",
+			"print(vifm.addcolumntype{ name = 'NAME', handler = nil })");
 }
 
 TEST(bad_name)
 {
-	assert_success(vlua_run_string(vlua, "function handler() end"));
+	GLUA_EQ(vlua, "", "function handler() end");
 
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = '',"
-				                         " handler = handler })"));
-	assert_string_ends_with(": View column name can't be empty", ui_sb_last());
+	BLUA_ENDS(vlua, ": View column name can't be empty",
+			"print(vifm.addcolumntype{ name = '', handler = handler })");
 
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'name',"
-				                         " handler = handler })"));
-	assert_string_ends_with(
+	BLUA_ENDS(vlua,
 			": View column name must not start with a lower case Latin letter",
-			ui_sb_last());
+			"print(vifm.addcolumntype{ name = 'name', handler = handler })");
 
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'A-A',"
-				                         " handler = handler })"));
-	assert_string_ends_with(
-			": View column name must not contain non-Latin characters", ui_sb_last());
+	BLUA_ENDS(vlua,
+			": View column name must not contain non-Latin characters",
+			"print(vifm.addcolumntype{ name = 'A-A', handler = handler })");
 }
 
 TEST(column_is_registered)
 {
-	assert_success(vlua_run_string(vlua, "function handler() end"));
+	GLUA_EQ(vlua, "", "function handler() end");
 
 	assert_int_equal(-1, vlua_viewcolumn_map(vlua, "Test"));
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'Test',"
-				                         " handler = handler })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype{ name = 'Test', handler = handler })");
 
 	int id = vlua_viewcolumn_map(vlua, "Test");
 	assert_true(id != -1);
@@ -106,17 +88,12 @@ TEST(column_is_registered)
 
 TEST(duplicate_name)
 {
-	assert_success(vlua_run_string(vlua, "function handler() end"));
+	GLUA_EQ(vlua, "", "function handler() end");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'Test',"
-				                         " handler = handler })"));
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'Test',"
-				                         " handler = handler })"));
-	assert_string_ends_with(": View column with such name already exists: Test",
-			ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype{ name = 'Test', handler = handler })");
+	BLUA_ENDS(vlua, ": View column with such name already exists: Test",
+			"print(vifm.addcolumntype{ name = 'Test', handler = handler })");
 }
 
 TEST(columns_are_used)
@@ -125,30 +102,21 @@ TEST(columns_are_used)
 	lwin.columns = columns_create();
 	curr_stats.vlua = vlua;
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "function err() func() end"));
-	assert_success(vlua_run_string(vlua, "function noval() end"));
-	assert_success(vlua_run_string(vlua, "function badval() return {} end"));
-	assert_success(vlua_run_string(vlua,
-				"function good(info)\n"
-				"  return { text = info.entry.name .. info.width }\n"
-				"end"));
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'Err',"
-				                         " handler = err })"));
-	assert_string_equal("true", ui_sb_last());
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'NoVal',"
-				                         " handler = noval })"));
-	assert_string_equal("true", ui_sb_last());
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'BadVal',"
-				                         " handler = badval })"));
-	assert_string_equal("true", ui_sb_last());
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'Good',"
-				                         " handler = good })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function err() func() end");
+	GLUA_EQ(vlua, "", "function noval() end");
+	GLUA_EQ(vlua, "", "function badval() return {} end");
+	GLUA_EQ(vlua, "",
+			"function good(info)"
+			"  return { text = info.entry.name .. info.width }"
+			"end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype { name = 'Err', handler = err })");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype { name = 'NoVal', handler = noval })");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype { name = 'BadVal', handler = badval })");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype { name = 'Good', handler = good })");
 
 	process_set_args("viewcolumns=10{Err},10{NoVal},10{BadVal},10{Good}", 0, 1);
 
@@ -171,20 +139,17 @@ TEST(symlinks, IF(not_windows))
 	lwin.columns = columns_create();
 	curr_stats.vlua = vlua;
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-	      "function handler(info)\n"
-	      "  return { text = info.entry.type .. ' -> ' .. info.entry.gettarget(),"
-	      "           matchstart = 1,"
-				"           matchend = 2 }\n"
-	      "end"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handler(info)"
+			"  return { text = info.entry.type .. ' -> ' .. info.entry.gettarget(),"
+			"           matchstart = 1,"
+			"           matchend = 2 }"
+			"end");
 
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addcolumntype{ name = 'Test',"
-				                         " handler = handler,"
-				                         " isprimary = true })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+				"print(vifm.addcolumntype { name = 'Test',"
+				"                           handler = handler,"
+				"                           isprimary = true })");
 
 	process_set_args("viewcolumns=-20{Test}", 0, 1);
 

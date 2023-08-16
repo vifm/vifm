@@ -11,6 +11,7 @@
 #include "../../src/status.h"
 
 #include <test-utils.h>
+#include "asserts.h"
 
 static vlua_t *vlua;
 
@@ -50,46 +51,27 @@ TEST(handler_check)
 
 TEST(bad_args)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = nil,"
-				                      " handler = nil })"));
-	assert_string_ends_with(": `name` key is mandatory", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'NAME',"
-				                      " handler = nil })"));
-	assert_string_ends_with(": `handler` key is mandatory", ui_sb_last());
+	BLUA_ENDS(vlua, ": `name` key is mandatory",
+			"print(vifm.addhandler { name = nil, handler = nil })");
+	BLUA_ENDS(vlua, ": `handler` key is mandatory",
+			"print(vifm.addhandler { name = 'NAME', handler = nil })");
 }
 
 TEST(bad_name)
 {
-	assert_success(vlua_run_string(vlua, "function handler() end"));
+	GLUA_EQ(vlua, "", "function handler() end");
 
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = '',"
-				                      " handler = handler })"));
-	assert_string_ends_with(": Handler's name can't be empty", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'name with white\tspace',"
-				                      " handler = handler })"));
-	assert_string_ends_with(": Handler's name can't contain whitespace",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": Handler's name can't be empty",
+			"print(vifm.addhandler { name = '', handler = handler })");
+	BLUA_ENDS(vlua, ": Handler's name can't contain whitespace",
+			"print(vifm.addhandler { name = 'name with white\tspace',"
+			"                        handler = handler })");
 }
 
 TEST(registered)
 {
-	assert_success(vlua_run_string(vlua, "function handler() end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handler })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = function() end })");
 
 	assert_true(vlua_handler_present(vlua, "#vifmtest#handle"));
 
@@ -100,33 +82,20 @@ TEST(registered)
 
 TEST(duplicate_rejected)
 {
-	assert_success(vlua_run_string(vlua, "function handler() end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handler })"));
-	assert_string_equal("true", ui_sb_last());
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handler })"));
-	assert_string_equal("false", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = function() end })");
+	GLUA_EQ(vlua, "false",
+			"print(vifm.addhandler { name = 'handle', handler = function() end })");
 }
 
 TEST(invoked)
 {
-	assert_success(vlua_run_string(vlua,
+	GLUA_EQ(vlua, "",
 				"function handler(info)"
-				"  return { lines = {info.command, info.path} }\n"
-				"end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handler })"));
-	assert_string_equal("true", ui_sb_last());
+				"  return { lines = {info.command, info.path} }"
+				"end");
+	GLUA_EQ(vlua, "true",
+				"print(vifm.addhandler { name = 'handle', handler = handler })");
 
 	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(2, lines.nitems);
@@ -147,13 +116,9 @@ TEST(bad_invocation)
 
 TEST(error_invocation)
 {
-	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() asdf() end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
@@ -162,13 +127,9 @@ TEST(error_invocation)
 
 TEST(wrong_return)
 {
-	assert_success(vlua_run_string(vlua, "function handle() return true end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() return true end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler{  name = 'handle', handler = handle })");
 
 	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
@@ -177,13 +138,9 @@ TEST(wrong_return)
 
 TEST(missing_field)
 {
-	assert_success(vlua_run_string(vlua, "function handle() return {} end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() return {} end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	strlist_t lines = vlua_view_file(vlua, "#vifmtest#handle", "path", &parea);
 	assert_int_equal(0, lines.nitems);
@@ -192,13 +149,9 @@ TEST(missing_field)
 
 TEST(error_open_invocation)
 {
-	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() asdf() end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	ui_sb_msg("");
 	vlua_open_file(vlua, "#vifmtest#handle", &entry);
@@ -215,13 +168,9 @@ TEST(invalid_statusline_formatter)
 
 TEST(error_statusline_formatter)
 {
-	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() asdf() end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
 	assert_string_ends_with(": attempt to call a nil value (global 'asdf')",
@@ -231,13 +180,9 @@ TEST(error_statusline_formatter)
 
 TEST(bad_statusline_formatter)
 {
-	assert_success(vlua_run_string(vlua, "function handle() return 'format' end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() return 'format' end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
 	assert_string_equal("Return value isn't a table.", format);
@@ -246,14 +191,10 @@ TEST(bad_statusline_formatter)
 
 TEST(good_statusline_formatter)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle(info) return { format = 'width='..info.width } end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handle(info) return { format = 'width='..info.width } end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
 	assert_string_equal("width=10", format);
@@ -262,17 +203,13 @@ TEST(good_statusline_formatter)
 
 TEST(good_tabline_formatter)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle(info)"
-				"  return { format = 'width='..info.width"
-				"                  ..',other='..tostring(info.other) }"
-				"end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handle(info)"
+			"  return { format = 'width='..info.width"
+			"                  ..',other='..tostring(info.other) }"
+			"end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	char *format =
 		vlua_make_tab_line(vlua, "#vifmtest#handle", /*other=*/1, /*width=*/11);
@@ -282,14 +219,10 @@ TEST(good_tabline_formatter)
 
 TEST(handlers_run_in_safe_mode)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle(info) vifm.opts.global.statusline = 'value' end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handle(info) vifm.opts.global.statusline = 'value' end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle'," " handler = handle })");
 
 	char *format = vlua_make_status_line(vlua, "#vifmtest#handle", &lwin, 10);
 	assert_string_ends_with(
@@ -304,13 +237,9 @@ TEST(bad_editor_handler)
 
 TEST(error_editor_handler)
 {
-	assert_success(vlua_run_string(vlua, "function handle() asdf() end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() asdf() end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
 	assert_string_ends_with(": attempt to call a nil value (global 'asdf')",
@@ -321,39 +250,26 @@ TEST(error_editor_handler_return)
 {
 	/* nil return. */
 
-	assert_success(vlua_run_string(vlua, "function handle() end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
 
 	/* Bad table fields. */
 
-	assert_success(vlua_run_string(vlua, "function handle() return {} end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle2',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() return {} end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle2', handler = handle })");
 
 	assert_failure(vlua_edit_one(vlua, "#vifmtest#handle2", "path", -1, -1, 0));
 }
 
 TEST(good_editor_handler_return)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle() return { success = true } end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "", "function handle() return { success = true } end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler{ name = 'handle', handler = handle })");
 
 	assert_success(vlua_edit_one(vlua, "#vifmtest#handle", "path", -1, -1, 0));
 }
@@ -364,17 +280,14 @@ TEST(open_help_input)
 	snprintf(vimdoc_dir, sizeof(vimdoc_dir), "%s/vim-doc",
 			get_installed_data_dir());
 
-	assert_success(vlua_run_string(vlua,
-				"function handle(info)"
-				"  print(info.command, info.action, info.vimdocdir, info.topic)"
-				"  return { success = true }"
-				"end"));
+	GLUA_EQ(vlua, "",
+			"function handle(info)"
+			"  print(info.command, info.action, info.vimdocdir, info.topic)"
+			"  return { success = true }"
+			"end");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	char expected[PATH_MAX + 1];
 	snprintf(expected, sizeof(expected), "#vifmtest#handle\topen-help\t%s\ttopic",
@@ -386,18 +299,14 @@ TEST(open_help_input)
 
 TEST(edit_one_input)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle(info)"
-				"  print(info.command, info.action, info.path, info.mustwait,"
-				"         info.line, info.column)"
-				"  return { success = true }"
-				"end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handle(info)"
+			"  print(info.command, info.action, info.path, info.mustwait,"
+			"        info.line, info.column)"
+			"  return { success = true }"
+			"end");
+	GLUA_EQ(vlua, "true",
+				"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	assert_success(vlua_edit_one(vlua, "#vifmtest#handle", "path", 10, 1, 0));
 	assert_string_equal("#vifmtest#handle\tedit-one\tpath\tfalse\t10\t1",
@@ -406,17 +315,13 @@ TEST(edit_one_input)
 
 TEST(edit_many_input)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle(info)"
-				"  print(info.command, info.action, #info.paths, info.paths[1])"
-				"  return { success = true }"
-				"end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handle(info)"
+			"  print(info.command, info.action, #info.paths, info.paths[1])"
+			"  return { success = true }"
+			"end");
+	GLUA_EQ(vlua, "true",
+				"print(vifm.addhandler { name = 'handle', handler = handle })");
 
 	char path[] = "path";
 	char *paths[] = { path };
@@ -427,18 +332,14 @@ TEST(edit_many_input)
 
 TEST(edit_list_input)
 {
-	assert_success(vlua_run_string(vlua,
-				"function handle(info)"
-				"  print(info.command, info.action, #info.entries, info.entries[1],"
-				"        info.entries[2], info.current, info.isquickfix)"
-				"  return { success = true }"
-				"end"));
-
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"print(vifm.addhandler{ name = 'handle',"
-				                      " handler = handle })"));
-	assert_string_equal("true", ui_sb_last());
+	GLUA_EQ(vlua, "",
+			"function handle(info)"
+			"  print(info.command, info.action, #info.entries, info.entries[1],"
+			"        info.entries[2], info.current, info.isquickfix)"
+			"  return { success = true }"
+			"end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addhandler{ name = 'handle', handler = handle })");
 
 	char entry0[] = "e0";
 	char entry1[] = "e1";

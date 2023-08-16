@@ -1,10 +1,11 @@
 #include <stic.h>
 
 #include "../../src/lua/vlua.h"
-#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 
 #include <test-utils.h>
+
+#include "asserts.h"
 
 static vlua_t *vlua;
 
@@ -38,141 +39,101 @@ TEARDOWN()
 
 TEST(no_such_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.nooption = 1"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.nooption)"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "",  "vifm.opts.global.nooption = 1");
+	GLUA_EQ(vlua, "nil", "print(vifm.opts.global.nooption)");
 }
 
 TEST(bad_option_value)
 {
-	ui_sb_msg("");
-	assert_failure(vlua_run_string(vlua, "vifm.opts.global.caseoptions = 'yes'"));
-	assert_string_ends_with(
+	BLUA_ENDS(vlua,
 			"Illegal character: <y>\n" "Failed to set value of option caseoptions",
-			ui_sb_last());
+			"vifm.opts.global.caseoptions = 'yes'");
 }
 
 TEST(local_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.dotfiles = false"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.dotfiles)"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.opts.global.dotfiles = false");
+	GLUA_EQ(vlua, "nil", "print(vifm.opts.global.dotfiles)");
 }
 
 TEST(bool_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.wrap = true"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.wrap)"));
-	assert_string_equal("true", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.wrap = false"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.wrap)"));
-	assert_string_equal("false", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.opts.global.wrap = true");
+	GLUA_EQ(vlua, "true", "print(vifm.opts.global.wrap)");
+	GLUA_EQ(vlua, "", "vifm.opts.global.wrap = false");
+	GLUA_EQ(vlua, "false", "print(vifm.opts.global.wrap)");
 }
 
 TEST(int_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.scrolloff = 123"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.scrolloff)"));
-	assert_string_equal("123", ui_sb_last());
+	GLUA_EQ(vlua, "",  "vifm.opts.global.scrolloff = 123");
+	GLUA_EQ(vlua, "123", "print(vifm.opts.global.scrolloff)");
 }
 
 TEST(string_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.vicmd = 'vi-cmd'"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.vicmd)"));
-	assert_string_equal("vi-cmd", ui_sb_last());
+	GLUA_EQ(vlua, "",  "vifm.opts.global.vicmd = 'vi-cmd'");
+	GLUA_EQ(vlua, "vi-cmd", "print(vifm.opts.global.vicmd)");
 }
 
 TEST(string_list_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.cdpath = 'a,b,c'"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.cdpath)"));
-	assert_string_equal("a,b,c", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.opts.global.cdpath = 'a,b,c'");
+	GLUA_EQ(vlua, "a,b,c",  "print(vifm.opts.global.cdpath)");
 }
 
 TEST(enum_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.dirsize = 'nitems'"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.dirsize)"));
-	assert_string_equal("nitems", ui_sb_last());
+	GLUA_EQ(vlua, "",  "vifm.opts.global.dirsize = 'nitems'");
+	GLUA_EQ(vlua, "nitems", "print(vifm.opts.global.dirsize)");
 }
 
 TEST(set_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua,
-				"vifm.opts.global.confirm = 'delete,permdelete'"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.confirm)"));
-	assert_string_equal("delete,permdelete", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.opts.global.confirm = 'delete,permdelete'");
+	GLUA_EQ(vlua, "delete,permdelete", "print(vifm.opts.global.confirm)");
 }
 
 TEST(charset_option)
 {
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "vifm.opts.global.caseoptions = 'pG'"));
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.caseoptions)"));
-	assert_string_equal("pG", ui_sb_last());
+	GLUA_EQ(vlua, "", "vifm.opts.global.caseoptions = 'pG'");
+	GLUA_EQ(vlua, "pG", "print(vifm.opts.global.caseoptions)");
 }
 
 TEST(view_option)
 {
-	assert_success(vlua_run_string(vlua, "v = vifm.currview()"));
+	GLUA_EQ(vlua, "", "v = vifm.currview()");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "v.viewopts.vicmd = 'vicmd'"));
-	assert_success(vlua_run_string(vlua, "print(v.viewopts.vicmd)"));
-	assert_string_equal("nil", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "v.locopts.vicmd = 'vicmd'"));
-	assert_success(vlua_run_string(vlua, "print(v.locopts.vicmd)"));
-	assert_string_equal("nil", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "print(vifm.opts.global.vicmd)"));
-	assert_string_equal("", ui_sb_last());
+	GLUA_EQ(vlua, "", "v.viewopts.vicmd = 'vicmd'");
+	GLUA_EQ(vlua, "nil", "print(v.viewopts.vicmd)");
+	GLUA_EQ(vlua, "", "v.locopts.vicmd = 'vicmd'");
+	GLUA_EQ(vlua, "nil", "print(v.locopts.vicmd)");
+	GLUA_EQ(vlua, "", "print(vifm.opts.global.vicmd)");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "v.viewopts.bla = something"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "v.locopts.bla = something"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "print(v.viewopts.bla)"));
-	assert_string_equal("nil", ui_sb_last());
-	assert_success(vlua_run_string(vlua, "print(v.locopts.bla)"));
-	assert_string_equal("nil", ui_sb_last());
+	GLUA_EQ(vlua, "", "v.viewopts.bla = something");
+	GLUA_EQ(vlua, "", "v.locopts.bla = something");
+	GLUA_EQ(vlua, "nil", "print(v.viewopts.bla)");
+	GLUA_EQ(vlua, "nil", "print(v.locopts.bla)");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "v.viewopts.dotfiles = false"));
-	assert_success(vlua_run_string(vlua,
-				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))"));
-	assert_string_equal("falsetrue", ui_sb_last());
+	GLUA_EQ(vlua, "", "v.viewopts.dotfiles = false");
+	GLUA_EQ(vlua, "falsetrue",
+				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))");
 
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "v.locopts.dotfiles = false"));
-	assert_success(vlua_run_string(vlua,
-				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))"));
-	assert_string_equal("falsefalse", ui_sb_last());
+	GLUA_EQ(vlua, "", "v.locopts.dotfiles = false");
+	GLUA_EQ(vlua, "falsefalse",
+				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))");
 
 	swap_view_roles();
-	ui_sb_msg("");
-	assert_success(vlua_run_string(vlua, "v.locopts.dotfiles = true"));
-	assert_string_equal("", ui_sb_last());
-	assert_success(vlua_run_string(vlua,
+	GLUA_EQ(vlua, "", "v.locopts.dotfiles = true");
+	GLUA_EQ(vlua, "truetrue",
 				"print(tostring(vifm.currview().viewopts.dotfiles).."
-				               "tostring(vifm.currview().locopts.dotfiles))"));
-	assert_string_equal("truetrue", ui_sb_last());
-	assert_success(vlua_run_string(vlua,
-				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))"));
-	assert_string_equal("falsetrue", ui_sb_last());
+				"               tostring(vifm.currview().locopts.dotfiles))");
+	GLUA_EQ(vlua, "falsetrue",
+				"print(tostring(v.viewopts.dotfiles)..tostring(v.locopts.dotfiles))");
 
 	assert_true(curr_view == &rwin);
-	assert_failure(vlua_run_string(vlua, "v.locopts.dotfiles = 'asdf'"));
-	assert_string_ends_with(
-			"bad argument #3 to '?' (boolean expected, got string)", ui_sb_last());
+	BLUA_ENDS(vlua, "bad argument #3 to '?' (boolean expected, got string)",
+			"v.locopts.dotfiles = 'asdf'");
 	assert_true(curr_view == &rwin);
 }
 

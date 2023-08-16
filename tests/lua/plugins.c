@@ -10,6 +10,8 @@
 
 #include <test-utils.h>
 
+#include "asserts.h"
+
 static vlua_t *vlua;
 static plugs_t *plugs;
 static plug_t plug_dummy;
@@ -117,10 +119,9 @@ TEST(multiple_plugins_loaded)
 	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
-	assert_success(vlua_run_string(vlua,
-	      "print((vifm.plugins.all.plug and '1y' or '1n').."
-	      "      (vifm.plugins.all.plug2 and '2y' or '2n'))"));
-	assert_string_equal("1y2y", ui_sb_last());
+	GLUA_EQ(vlua, "1y2y",
+			"print((vifm.plugins.all.plug and '1y' or '1n').."
+			"      (vifm.plugins.all.plug2 and '2y' or '2n'))");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
@@ -192,10 +193,9 @@ TEST(plugins_can_be_blacklisted)
 	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
-	assert_success(vlua_run_string(vlua,
-	      "print((vifm.plugins.all.plug and '1y' or '1n').."
-	      "      (vifm.plugins.all.plug2 and '2y' or '2n'))"));
-	assert_string_equal("1y2n", ui_sb_last());
+	GLUA_EQ(vlua, "1y2n",
+			"print((vifm.plugins.all.plug and '1y' or '1n').."
+			"      (vifm.plugins.all.plug2 and '2y' or '2n'))");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
@@ -215,10 +215,9 @@ TEST(plugins_can_be_whitelisted)
 	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
-	assert_success(vlua_run_string(vlua,
-	      "print((vifm.plugins.all.plug and '1y' or '1n').."
-	      "      (vifm.plugins.all.plug2 and '2y' or '2n'))"));
-	assert_string_equal("1n2y", ui_sb_last());
+	GLUA_EQ(vlua, "1n2y",
+			"print((vifm.plugins.all.plug and '1y' or '1n').."
+			"      (vifm.plugins.all.plug2 and '2y' or '2n'))");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
@@ -232,8 +231,9 @@ TEST(plugin_metadata)
 
 	ui_sb_msg("");
 	load_plugins(plugs, cfg.config_dir);
-	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.name)"));
-	assert_string_equal("plug", ui_sb_last());
+	assert_string_equal("", ui_sb_last());
+
+	GLUA_EQ(vlua, "plug", "print(vifm.plugins.all.plug.name)");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
@@ -249,8 +249,9 @@ TEST(good_plugin_module)
 
 	ui_sb_msg("");
 	load_plugins(plugs, cfg.config_dir);
-	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.source)"));
-	assert_string_equal("subsub", ui_sb_last());
+	assert_string_equal("", ui_sb_last());
+
+	GLUA_EQ(vlua, "subsub", "print(vifm.plugins.all.plug.source)");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/subsub.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug/sub.lua");
@@ -264,8 +265,9 @@ TEST(missing_plugin_module)
 
 	ui_sb_msg("");
 	load_plugins(plugs, cfg.config_dir);
-	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug)"));
-	assert_string_equal("nil", ui_sb_last());
+	assert_string_starts_with("Failed to start 'plug' plugin: ", ui_sb_last());
+
+	GLUA_EQ(vlua, "nil", "print(vifm.plugins.all.plug)");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
@@ -356,8 +358,7 @@ TEST(can_not_load_plugins_with_the_same_name)
 
 	free_string_array(plugins_dirs.items, plugins_dirs.nitems);
 
-	assert_success(vlua_run_string(vlua, "print(vifm.plugins.all.plug.src)"));
-	assert_string_equal("plugins2", ui_sb_last());
+	GLUA_EQ(vlua, "plugins2", "print(vifm.plugins.all.plug.src)");
 
 	const plug_t *plug1, *plug2;
 	assert_true(plugs_get(plugs, 0, &plug1));
@@ -383,21 +384,20 @@ TEST(global_table_is_mocked)
 {
 	create_dir(SANDBOX_PATH "/plugins/plug2");
 	make_file(SANDBOX_PATH "/plugins/plug/init.lua",
-			"_G.data = 'plug1' "
+			"_G.data = 'plug1'"
 			"return {}");
 	make_file(SANDBOX_PATH "/plugins/plug2/init.lua",
 			"function _G.func()"
-			"  return data "
-			"end "
+			"  return data\n"
+			"end\n"
 			"return {}");
 
 	ui_sb_msg("");
 	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
-	assert_failure(vlua_run_string(vlua, "print(func())"));
-	assert_string_ends_with(": attempt to call a nil value (global 'func')",
-			ui_sb_last());
+	BLUA_ENDS(vlua, ": attempt to call a nil value (global 'func')",
+			"print(func())");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 	remove_file(SANDBOX_PATH "/plugins/plug2/init.lua");
@@ -412,9 +412,7 @@ TEST(metatables_are_protected)
 	load_plugins(plugs, cfg.config_dir);
 	assert_string_equal("", ui_sb_last());
 
-	assert_success(vlua_run_string(vlua,
-				"print(getmetatable(vifm.plugins.all.plug._G))"));
-	assert_string_equal("false", ui_sb_last());
+	GLUA_EQ(vlua, "false", "print(getmetatable(vifm.plugins.all.plug._G))");
 
 	remove_file(SANDBOX_PATH "/plugins/plug/init.lua");
 }
