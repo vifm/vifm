@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2023 July 3
+" Last Change: 2023 August 18
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -348,9 +348,10 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
 	endif
 
 	for file in flist
-		execute editcmd fnamemodify(file, ':.')
+		let file = resolve(fnamemodify(file, ':.'))
+		execute editcmd file
 		if editcmd == 'edit' && len(flist) > 1
-			execute 'argadd' fnamemodify(file, ':.')
+			execute 'argadd' file
 		endif
 	endfor
 
