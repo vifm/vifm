@@ -11,13 +11,13 @@ Ueberzug:
  - improved rewrite in C++: https://github.com/jstkdng/ueberzugpp
 
 Usage example:
+    fileviewer <video/*>,{*.gif}
+        \ #ueberzug#video %px %py %pw %ph
+        \ %pc
+        \ #ueberzug#clear
     fileviewer <image/*>
         \ #ueberzug#image %px %py %pw %ph
         " or \ #ueberzug#image_no_cache %px %py %pw %ph
-        \ %pc
-        \ #ueberzug#clear
-    fileviewer <video/*>
-        \ #ueberzug#video %px %py %pw %ph
         \ %pc
         \ #ueberzug#clear
     fileviewer <audio/*>
