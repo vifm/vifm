@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 2 June, 2023)
+" Sample configuration file for vifm (last updated: 24 August, 2023)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -469,7 +469,7 @@ if has('win')
     " Yank current directory path to Windows clipboard with forward slashes
     nnoremap yp :!echo %"d:gs!\!/! %i | clip<cr>
     " Yank path to current file to Windows clipboard with forward slashes
-    nnoremap yf :!echo %"c:gs!\!/! %i | clip<cr>
+    nnoremap yf :!echo %"c:p:gs!\!/! %i | clip<cr>
 elseif $WAYLAND_DISPLAY
     if executable('wl-copy')
         " Yank current directory path into primary and selection clipboards
