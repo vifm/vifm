@@ -108,6 +108,9 @@
 	Fixed graphics not being cleared on switching to single-pane view.  Thanks
 	to ret2src.
 
+	Fixed merging directories on copying not asking for overwrite
+	confirmations.  Thanks to aleksejrs.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

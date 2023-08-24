@@ -186,7 +186,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int flags)
 		else
 		{
 			err = cp_file(entry->origin, dst_dir, entry->name, dst, op, 1, ops,
-					force);
+					0);
 		}
 
 		ops_advance(ops, err == 0);
