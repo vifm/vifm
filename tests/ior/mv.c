@@ -18,6 +18,10 @@
 static IoErrCbResult ignore_errors(struct io_args_t *args,
 		const ioe_err_t *err);
 static int can_rename_changing_case(void);
+static int confirm_overwrite(io_args_t *args, const char src[],
+		const char dst[]);
+
+static int confirm_called;
 
 TEST(file_is_moved)
 {
@@ -296,6 +300,40 @@ TEST(nested_directories_can_be_merged)
 	delete_tree(SANDBOX_PATH "/second");
 }
 
+TEST(merging_overwrites_conflicting_files)
+{
+	create_empty_dir(SANDBOX_PATH "/from");
+	make_file(SANDBOX_PATH "/from/file", "from");
+
+	create_empty_dir(SANDBOX_PATH "/to");
+	create_empty_file(SANDBOX_PATH "/to/file");
+
+	{
+		io_args_t args = {
+			.arg1.src = SANDBOX_PATH "/from",
+			.arg2.dst = SANDBOX_PATH "/to",
+			.arg3.crs = IO_CRS_REPLACE_FILES,
+
+			.confirm = &confirm_overwrite,
+		};
+		ioe_errlst_init(&args.result.errors);
+
+		confirm_called = 0;
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
+		assert_int_equal(0, args.result.errors.error_count);
+		/* "from" and "file" prompts. */
+		assert_int_equal(2, confirm_called);
+	}
+
+	/* Original directory must be deleted. */
+	assert_false(file_exists(SANDBOX_PATH "/from/file"));
+	assert_false(file_exists(SANDBOX_PATH "/from"));
+
+	assert_int_equal(4, get_file_size(SANDBOX_PATH "/to/file"));
+
+	delete_tree(SANDBOX_PATH "/to");
+}
+
 TEST(fails_to_move_directory_inside_itself)
 {
 	create_empty_dir(SANDBOX_PATH "/empty-dir");
@@ -396,6 +434,13 @@ can_rename_changing_case(void)
 		delete_file(SANDBOX_PATH "/file");
 	}
 	return ok;
+}
+
+static int
+confirm_overwrite(io_args_t *args, const char src[], const char dst[])
+{
+	++confirm_called;
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

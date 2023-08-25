@@ -759,6 +759,9 @@ TEST(merging_on_copy_confirms_overwrites)
 	assert_int_equal(1, merge_prompt_count);
 	assert_int_equal(1, yes_prompt_count);
 
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
 	assert_success(unlink(SANDBOX_PATH "/from/dir/file"));
 	assert_success(rmdir(SANDBOX_PATH "/from/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/from"));
@@ -791,6 +794,9 @@ TEST(merging_on_move_confirms_overwrites)
 	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/1);
 	assert_int_equal(1, merge_prompt_count);
 	assert_int_equal(1, yes_prompt_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(unlink(SANDBOX_PATH "/to/dir/file"));
 	assert_success(rmdir(SANDBOX_PATH "/to/dir"));

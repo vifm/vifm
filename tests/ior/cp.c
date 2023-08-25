@@ -13,6 +13,11 @@
 
 #include "utils.h"
 
+static int confirm_overwrite(io_args_t *args, const char src[],
+		const char dst[]);
+
+static int confirm_called;
+
 TEST(file_is_copied)
 {
 	{
@@ -358,6 +363,55 @@ TEST(directories_can_be_merged)
 	}
 }
 
+TEST(merging_overwrites_conflicting_files)
+{
+	create_empty_dir(SANDBOX_PATH "/from");
+	make_file(SANDBOX_PATH "/from/file", "from");
+
+	create_empty_dir(SANDBOX_PATH "/to");
+	create_empty_file(SANDBOX_PATH "/to/file");
+
+	{
+		io_args_t args = {
+			.arg1.src = SANDBOX_PATH "/from",
+			.arg2.dst = SANDBOX_PATH "/to",
+			.arg3.crs = IO_CRS_REPLACE_FILES,
+
+			.confirm = &confirm_overwrite,
+		};
+		ioe_errlst_init(&args.result.errors);
+
+		confirm_called = 0;
+		assert_int_equal(IO_RES_SUCCEEDED, ior_cp(&args));
+		assert_int_equal(0, args.result.errors.error_count);
+		/* "file" prompt. XXX: should there be a prompt for "from"? */
+		assert_int_equal(1, confirm_called);
+	}
+
+	assert_success(access(SANDBOX_PATH "/from/file", F_OK));
+	assert_int_equal(4, get_file_size(SANDBOX_PATH "/to/file"));
+
+	{
+		io_args_t args = {
+			.arg1.path = SANDBOX_PATH "/from",
+		};
+		ioe_errlst_init(&args.result.errors);
+
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
+		assert_int_equal(0, args.result.errors.error_count);
+	}
+
+	{
+		io_args_t args = {
+			.arg1.path = SANDBOX_PATH "/to",
+		};
+		ioe_errlst_init(&args.result.errors);
+
+		assert_int_equal(IO_RES_SUCCEEDED, ior_rm(&args));
+		assert_int_equal(0, args.result.errors.error_count);
+	}
+}
+
 TEST(fails_to_copy_directory_inside_itself)
 {
 	create_empty_dir(SANDBOX_PATH "/empty-dir");
@@ -596,6 +650,13 @@ TEST(symlink_to_dir_is_symlink_after_copy, IF(not_windows))
 		assert_int_equal(IO_RES_SUCCEEDED, iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
+}
+
+static int
+confirm_overwrite(io_args_t *args, const char src[], const char dst[])
+{
+	++confirm_called;
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
