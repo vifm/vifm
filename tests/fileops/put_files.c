@@ -67,95 +67,6 @@ TEARDOWN()
 	fops_init(NULL, NULL);
 }
 
-static void
-line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
-		void *cb_arg, fo_complete_cmd_func complete)
-{
-	cb("b", cb_arg);
-}
-
-static void
-line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
-		void *cb_arg, fo_complete_cmd_func complete)
-{
-	rename_cb = cb;
-}
-
-static char
-options_prompt_rename(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &options_prompt_overwrite);
-	return 'r';
-}
-
-static char
-options_prompt_rename_rec(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt_rec, &options_prompt_overwrite);
-	return 'r';
-}
-
-static char
-options_prompt_overwrite(const custom_prompt_t *details)
-{
-	return 'o';
-}
-
-static char
-options_prompt_abort(const custom_prompt_t *details)
-{
-	const response_variant *variants = details->variants;
-
-	options_count = 0;
-	while(variants->key != '\0')
-	{
-		++options_count;
-		++variants;
-	}
-
-	return '\x03';
-}
-
-static char
-options_prompt_skip_all(const custom_prompt_t *details)
-{
-	return 'S';
-}
-
-static char
-options_prompt_merge(const custom_prompt_t *details)
-{
-	if(merge_prompt_count == 0)
-	{
-		++merge_prompt_count;
-		return 'm';
-	}
-
-	++yes_prompt_count;
-	return 'y';
-}
-
-static char
-cm_overwrite(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &cm_no);
-	return 'o';
-}
-
-static char
-cm_no(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &cm_skip);
-	return 'n';
-}
-
-static char
-cm_skip(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &options_prompt_overwrite);
-	return 's';
-}
-
 TEST(put_files_bg_fails_on_wrong_register)
 {
 	assert_true(fops_put_bg(&lwin, -1, -1, 0));
@@ -802,6 +713,95 @@ TEST(merging_on_move_confirms_overwrites)
 	assert_success(rmdir(SANDBOX_PATH "/to/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/to"));
 	assert_success(rmdir(SANDBOX_PATH "/from"));
+}
+
+static void
+line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
+		void *cb_arg, fo_complete_cmd_func complete)
+{
+	cb("b", cb_arg);
+}
+
+static void
+line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
+		void *cb_arg, fo_complete_cmd_func complete)
+{
+	rename_cb = cb;
+}
+
+static char
+options_prompt_rename(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &options_prompt_overwrite);
+	return 'r';
+}
+
+static char
+options_prompt_rename_rec(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt_rec, &options_prompt_overwrite);
+	return 'r';
+}
+
+static char
+options_prompt_overwrite(const custom_prompt_t *details)
+{
+	return 'o';
+}
+
+static char
+options_prompt_abort(const custom_prompt_t *details)
+{
+	const response_variant *variants = details->variants;
+
+	options_count = 0;
+	while(variants->key != '\0')
+	{
+		++options_count;
+		++variants;
+	}
+
+	return '\x03';
+}
+
+static char
+options_prompt_skip_all(const custom_prompt_t *details)
+{
+	return 'S';
+}
+
+static char
+options_prompt_merge(const custom_prompt_t *details)
+{
+	if(merge_prompt_count == 0)
+	{
+		++merge_prompt_count;
+		return 'm';
+	}
+
+	++yes_prompt_count;
+	return 'y';
+}
+
+static char
+cm_overwrite(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &cm_no);
+	return 'o';
+}
+
+static char
+cm_no(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &cm_skip);
+	return 'n';
+}
+
+static char
+cm_skip(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &options_prompt_overwrite);
+	return 's';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
