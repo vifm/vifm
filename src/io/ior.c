@@ -201,7 +201,7 @@ ior_mv(io_args_t *args)
 		/* Ask user whether to overwrite destination file. */
 		if(confirm != NULL && !confirm(args, src, dst))
 		{
-			return IO_RES_SUCCEEDED;
+			return IO_RES_SKIPPED;
 		}
 		confirmed = 1;
 	}

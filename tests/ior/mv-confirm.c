@@ -117,7 +117,7 @@ TEST(deny_to_overwrite_is_considered)
 		ioe_errlst_init(&args.result.errors);
 
 		confirm_called = 0;
-		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
+		assert_int_equal(IO_RES_SKIPPED, ior_mv(&args));
 		assert_int_equal(1, confirm_called);
 
 		assert_int_equal(0, args.result.errors.error_count);
