@@ -102,6 +102,9 @@
 	Fixed %a 'statusline' macro on FreeBSD producing wrong values.  Patch by
 	voh9eepah.
 
+	Fixed %a 'statusline' macro producing wrong values on non-Linux Unix-like
+	systems.  Thanks to voh9eepah.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
