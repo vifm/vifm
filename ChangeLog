@@ -99,6 +99,9 @@
 	Fixed "N files selected" message appearing in menus on waiting for
 	multikey input (regression in 0.12-beta).
 
+	Fixed %a 'statusline' macro on FreeBSD producing wrong values.  Patch by
+	voh9eepah.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
