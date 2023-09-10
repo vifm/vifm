@@ -376,6 +376,36 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 	delete_file(SANDBOX_PATH "/moved-sym-link");
 }
 
+TEST(broken_symlink_is_considered_to_exist, IF(not_windows))
+{
+	create_empty_file(SANDBOX_PATH "/empty-file");
+
+	{
+		io_args_t args = {
+			.arg1.path = "broken",
+			.arg2.target = SANDBOX_PATH "/sym-link",
+		};
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
+	}
+
+	{
+		io_args_t args = {
+			.arg1.src = SANDBOX_PATH "/empty-file",
+			.arg2.dst = SANDBOX_PATH "/sym-link",
+
+			.result.errors = IOE_ERRLST_INIT,
+		};
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
+		assert_int_equal(1, args.result.errors.error_count);
+		assert_string_equal("Destination path already exists",
+				args.result.errors.errors[0].msg);
+		ioe_errlst_free(&args.result.errors);
+	}
+
+	delete_file(SANDBOX_PATH "/empty-file");
+	delete_file(SANDBOX_PATH "/sym-link");
+}
+
 TEST(case_change_on_rename, IF(can_rename_changing_case))
 {
 	create_empty_file(SANDBOX_PATH "/a-file");

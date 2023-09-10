@@ -174,7 +174,8 @@ ior_mv(io_args_t *args)
 	const io_confirm confirm = args->confirm;
 	int confirmed = 0;
 
-	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
+	if(crs == IO_CRS_FAIL && path_exists(dst, NODEREF) &&
+			!is_case_change(src, dst))
 	{
 		(void)ioe_errlst_append(&args->result.errors, dst, EEXIST,
 				"Destination path already exists");
