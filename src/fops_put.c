@@ -70,7 +70,7 @@ static int put_files_i(view_t *view, int start);
 static void update_cursor_position(view_t *view);
 static int put_next(int force);
 static int unprocessed_dirs_present(void);
-TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
+TSTATIC OpsResult merge_dirs(const char src[], const char dst[], ops_t *ops);
 static int handle_clashing(int move, const char src[], const char dst[]);
 static void prompt_what_to_do(const char fname[], const char caused_by[]);
 static void handle_prompt_response(const char fname[], const char caused_by[],
@@ -699,20 +699,25 @@ put_next(int force)
 			put_confirm.reg->nfiles);
 
 	/* Merging directory on move requires special handling as it can't be done by
-	 * move operation itself. */
+	 * `mv` and it's better to use the same code regardless of the state of
+	 * 'syscalls'. */
 	if(move && merge)
 	{
 		char dst_path[PATH_MAX + 1];
-
-		success = 1;
 
 		un_group_reopen_last();
 
 		build_path(dst_path, sizeof(dst_path), dst_dir, dst_name);
 
-		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
+		OpsResult result = merge_dirs(src_buf, dst_path, put_confirm.ops);
+		success = (result != OPS_FAILED);
+		if(result == OPS_SKIPPED)
 		{
-			success = 0;
+			char *pretty_src = prettify_fname(src_buf, &src_st);
+			show_error_msgf("Directory merge notice",
+					"Source directory \"%s\" still exists and contains files which "
+					"weren't moved.", pretty_src);
+			free(pretty_src);
 		}
 
 		un_group_close();
@@ -825,21 +830,18 @@ unprocessed_dirs_present(void)
 	return 0;
 }
 
-/* Merges src into dst.  Returns zero on success, otherwise non-zero is
- * returned. */
-TSTATIC int
+/* Merges src into dst.  Returns status where OPS_SKIPPED means that some source
+ * files weren't moved. */
+TSTATIC OpsResult
 merge_dirs(const char src[], const char dst[], ops_t *ops)
 {
 	struct stat st;
-	DIR *dir;
-	struct dirent *d;
-
 	if(os_stat(src, &st) != 0)
 	{
 		return -1;
 	}
 
-	dir = os_opendir(src);
+	DIR *dir = os_opendir(src);
 	if(dir == NULL)
 	{
 		return -1;
@@ -850,7 +852,11 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	 * if we can't create this directory for some reason. */
 	(void)perform_operation(OP_MKDIR, NULL, (void *)(size_t)1, dst, NULL);
 
-	while((d = os_readdir(dir)) != NULL)
+	int skipped = 0;
+	OpsResult result = OPS_SUCCEEDED;
+
+	struct dirent *d;
+	while(result != OPS_FAILED && (d = os_readdir(dir)) != NULL)
 	{
 		char src_path[PATH_MAX + 1];
 		char dst_path[PATH_MAX + 1];
@@ -865,19 +871,21 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 
 		if(fops_is_dir_entry(dst_path, d))
 		{
-			if(merge_dirs(src_path, dst_path, ops) != 0)
-			{
-				break;
-			}
+			result = merge_dirs(src_path, dst_path, ops);
 		}
 		else
 		{
-			if(perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
-						dst_path) != OPS_SUCCEEDED)
+			result = perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
+					dst_path);
+			if(result == OPS_SUCCEEDED)
 			{
-				break;
+				un_group_add_op(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
 			}
-			un_group_add_op(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
+		}
+
+		if(result == OPS_SKIPPED)
+		{
+			++skipped;
 		}
 	}
 	os_closedir(dir);
@@ -887,11 +895,14 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 		return 1;
 	}
 
-	OpsResult result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src,
-			NULL);
-	if(result == OPS_SUCCEEDED)
+	/* Directory removal will fail unless it contains no files. */
+	if(skipped == 0)
 	{
-		un_group_add_op(OP_RMDIR, NULL, NULL, src, "");
+		result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src, NULL);
+		if(result == OPS_SUCCEEDED)
+		{
+			un_group_add_op(OP_RMDIR, NULL, NULL, src, "");
+		}
 	}
 
 	/* Clone file properties as the last step, because modifying directory affects
@@ -899,7 +910,12 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	clone_attribs(dst, src, &st);
 	(void)chmod(dst, st.st_mode);
 
-	return (result == OPS_SUCCEEDED ? 0 : 1);
+	if(result == OPS_SUCCEEDED && skipped > 0)
+	{
+		result = OPS_SKIPPED;
+	}
+
+	return result;
 }
 
 /* Goes through the rest of files in the register to see whether they are inside

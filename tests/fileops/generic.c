@@ -89,7 +89,7 @@ TEST(merge_directories)
 		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", ".", NULL,
 					NULL));
 		ops->crp = CRP_OVERWRITE_ALL;
-		assert_success(merge_dirs("first", "second", ops));
+		assert_int_equal(OPS_SUCCEEDED, merge_dirs("first", "second", ops));
 		ops_free(ops);
 
 		un_group_close();
@@ -221,7 +221,7 @@ perform_merge(int op)
 	ops->crp = CRP_OVERWRITE_ALL;
 	if(op == OP_MOVEF)
 	{
-		assert_success(merge_dirs("first", "second", ops));
+		assert_int_equal(OPS_SUCCEEDED, merge_dirs("first", "second", ops));
 	}
 	else
 	{
