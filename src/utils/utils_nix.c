@@ -1245,15 +1245,16 @@ get_drive_info(const char at[], uint64_t *total_bytes, uint64_t *free_bytes)
 		return -1;
 	}
 
+	*total_bytes = st.f_blocks*st.f_frsize;
+
 #if defined(__APPLE__) || defined(__FreeBSD__)
 	/* Apple and FreeBSD are so fucking different... */
 	const uint64_t block_size = st.f_frsize;
 #else
 	const uint64_t block_size = st.f_bsize;
 #endif
-
-	*total_bytes = st.f_blocks*block_size;
 	*free_bytes = st.f_bavail*block_size;
+
 	return 0;
 }
 
