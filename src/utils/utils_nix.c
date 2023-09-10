@@ -1245,15 +1245,21 @@ get_drive_info(const char at[], uint64_t *total_bytes, uint64_t *free_bytes)
 		return -1;
 	}
 
-#ifdef __APPLE__
-	/* Apple is so fucking different... */
-	const uint64_t block_size = st.f_frsize;
-#else
-	const uint64_t block_size = st.f_bsize;
-#endif
+	*total_bytes = st.f_blocks*st.f_frsize;
 
-	*total_bytes = st.f_blocks*block_size;
+#ifdef __linux__
+	/* Linux didn't have `f_frsize` until 2.6 and still uses `f_bsize` as a unit
+	 * for a bunch of fields.  `f_bsize` is essentially always equal to
+	 * `f_frsize`.
+	 *
+	 * `f_frsize` should be less or equal to `f_bsize`, but not sure it's safe to
+	 * use that instead of an #ifdef. */
+	const uint64_t block_size = st.f_bsize;
+#else
+	const uint64_t block_size = st.f_frsize;
+#endif
 	*free_bytes = st.f_bavail*block_size;
+
 	return 0;
 }
 
