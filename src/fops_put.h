@@ -42,7 +42,7 @@ int fops_put_links(struct view_t *view, int reg_name, int relative);
 #include "ops.h"
 #endif
 TSTATIC_DEFS(
-	int merge_dirs(const char src[], const char dst[], ops_t *ops);
+	OpsResult merge_dirs(const char src[], const char dst[], ops_t *ops);
 )
 
 #endif /* VIFM__FOPS_PUT_H__ */

@@ -29,6 +29,8 @@ static char options_prompt_rename_rec(const custom_prompt_t *details);
 static char options_prompt_overwrite(const custom_prompt_t *details);
 static char options_prompt_abort(const custom_prompt_t *details);
 static char options_prompt_skip_all(const custom_prompt_t *details);
+static char options_prompt_merge(const custom_prompt_t *details);
+static char options_prompt_merge_no_overwrite(const custom_prompt_t *details);
 static char cm_overwrite(const custom_prompt_t *details);
 static char cm_no(const custom_prompt_t *details);
 static char cm_skip(const custom_prompt_t *details);
@@ -37,6 +39,9 @@ static void double_clash_with_put(int move);
 
 static fo_prompt_cb rename_cb;
 static int options_count;
+static int merge_prompt_count;
+static int yes_prompt_count;
+static int no_prompt_count;
 
 static char *saved_cwd;
 
@@ -62,82 +67,6 @@ TEARDOWN()
 	regs_reset();
 	restore_cwd(saved_cwd);
 	fops_init(NULL, NULL);
-}
-
-static void
-line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
-		void *cb_arg, fo_complete_cmd_func complete)
-{
-	cb("b", cb_arg);
-}
-
-static void
-line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
-		void *cb_arg, fo_complete_cmd_func complete)
-{
-	rename_cb = cb;
-}
-
-static char
-options_prompt_rename(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &options_prompt_overwrite);
-	return 'r';
-}
-
-static char
-options_prompt_rename_rec(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt_rec, &options_prompt_overwrite);
-	return 'r';
-}
-
-static char
-options_prompt_overwrite(const custom_prompt_t *details)
-{
-	return 'o';
-}
-
-static char
-options_prompt_abort(const custom_prompt_t *details)
-{
-	const response_variant *variants = details->variants;
-
-	options_count = 0;
-	while(variants->key != '\0')
-	{
-		++options_count;
-		++variants;
-	}
-
-	return '\x03';
-}
-
-static char
-options_prompt_skip_all(const custom_prompt_t *details)
-{
-	return 'S';
-}
-
-static char
-cm_overwrite(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &cm_no);
-	return 'o';
-}
-
-static char
-cm_no(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &cm_skip);
-	return 'n';
-}
-
-static char
-cm_skip(const custom_prompt_t *details)
-{
-	fops_init(&line_prompt, &options_prompt_overwrite);
-	return 's';
 }
 
 TEST(put_files_bg_fails_on_wrong_register)
@@ -716,6 +645,266 @@ TEST(no_merge_options_on_putting_links)
 	assert_success(rmdir(SANDBOX_PATH "/dir/sub"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/sub"));
+}
+
+TEST(merging_on_copy_confirms_overwrites)
+{
+	create_dir(SANDBOX_PATH "/from");
+	create_dir(SANDBOX_PATH "/from/dir");
+	create_file(SANDBOX_PATH "/from/dir/file");
+
+	create_dir(SANDBOX_PATH "/to");
+	create_dir(SANDBOX_PATH "/to/dir");
+	create_file(SANDBOX_PATH "/to/dir/file");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/dir", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_merge);
+	merge_prompt_count = 0;
+	yes_prompt_count = 0;
+
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/0);
+	assert_int_equal(1, merge_prompt_count);
+	assert_int_equal(1, yes_prompt_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/from/dir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/from/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/from"));
+	assert_success(unlink(SANDBOX_PATH "/to/dir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/to/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/to"));
+}
+
+TEST(merging_on_move_confirms_overwrites)
+{
+	create_dir(SANDBOX_PATH "/from");
+	create_dir(SANDBOX_PATH "/from/dir");
+	create_file(SANDBOX_PATH "/from/dir/file");
+
+	create_dir(SANDBOX_PATH "/to");
+	create_dir(SANDBOX_PATH "/to/dir");
+	create_file(SANDBOX_PATH "/to/dir/file");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/dir", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_merge);
+	merge_prompt_count = 0;
+	yes_prompt_count = 0;
+
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/1);
+	assert_int_equal(1, merge_prompt_count);
+	assert_int_equal(1, yes_prompt_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/to/dir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/to/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/to"));
+	assert_success(rmdir(SANDBOX_PATH "/from"));
+}
+
+TEST(failure_to_remove_source_due_to_user_does_not_stop_moving)
+{
+	create_dir(SANDBOX_PATH "/from/");
+	create_dir(SANDBOX_PATH "/from/dir");
+	create_dir(SANDBOX_PATH "/from/dir/a");
+	create_file(SANDBOX_PATH "/from/dir/a/file");
+	create_dir(SANDBOX_PATH "/from/dir/b");
+	create_file(SANDBOX_PATH "/from/dir/b/file");
+
+	create_dir(SANDBOX_PATH "/to/");
+	create_dir(SANDBOX_PATH "/to/dir");
+	create_dir(SANDBOX_PATH "/to/dir/a");
+	create_file(SANDBOX_PATH "/to/dir/a/file");
+	create_dir(SANDBOX_PATH "/to/dir/b");
+	create_file(SANDBOX_PATH "/to/dir/b/file");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/dir", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_merge_no_overwrite);
+	merge_prompt_count = 0;
+	no_prompt_count = 0;
+
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/1);
+	assert_int_equal(1, merge_prompt_count);
+	assert_int_equal(2, no_prompt_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/to/dir/b/file"));
+	assert_success(rmdir(SANDBOX_PATH "/to/dir/b"));
+	assert_success(unlink(SANDBOX_PATH "/to/dir/a/file"));
+	assert_success(rmdir(SANDBOX_PATH "/to/dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/to/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/to"));
+
+	assert_success(unlink(SANDBOX_PATH "/from/dir/b/file"));
+	assert_success(rmdir(SANDBOX_PATH "/from/dir/b"));
+	assert_success(unlink(SANDBOX_PATH "/from/dir/a/file"));
+	assert_success(rmdir(SANDBOX_PATH "/from/dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/from/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/from"));
+}
+
+TEST(put_keeps_unmoved_files_that_were_denied_to_overwrite)
+{
+	create_dir(SANDBOX_PATH "/from/");
+	create_dir(SANDBOX_PATH "/from/dir");
+	create_file(SANDBOX_PATH "/from/dir/a");
+
+	create_dir(SANDBOX_PATH "/to/");
+	create_dir(SANDBOX_PATH "/to/dir");
+	create_file(SANDBOX_PATH "/to/dir/a");
+	create_file(SANDBOX_PATH "/to/dir/b");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/dir", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_merge_no_overwrite);
+	merge_prompt_count = 0;
+	no_prompt_count = 0;
+
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/1);
+	assert_int_equal(1, merge_prompt_count);
+	assert_int_equal(1, no_prompt_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/to/dir/b"));
+	assert_success(unlink(SANDBOX_PATH "/to/dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/to/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/to"));
+
+	assert_success(unlink(SANDBOX_PATH "/from/dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/from/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/from"));
+}
+
+static void
+line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
+		void *cb_arg, fo_complete_cmd_func complete)
+{
+	cb("b", cb_arg);
+}
+
+static void
+line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
+		void *cb_arg, fo_complete_cmd_func complete)
+{
+	rename_cb = cb;
+}
+
+static char
+options_prompt_rename(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &options_prompt_overwrite);
+	return 'r';
+}
+
+static char
+options_prompt_rename_rec(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt_rec, &options_prompt_overwrite);
+	return 'r';
+}
+
+static char
+options_prompt_overwrite(const custom_prompt_t *details)
+{
+	return 'o';
+}
+
+static char
+options_prompt_abort(const custom_prompt_t *details)
+{
+	const response_variant *variants = details->variants;
+
+	options_count = 0;
+	while(variants->key != '\0')
+	{
+		++options_count;
+		++variants;
+	}
+
+	return '\x03';
+}
+
+static char
+options_prompt_skip_all(const custom_prompt_t *details)
+{
+	return 'S';
+}
+
+static char
+options_prompt_merge(const custom_prompt_t *details)
+{
+	if(merge_prompt_count == 0)
+	{
+		++merge_prompt_count;
+		return 'm';
+	}
+
+	++yes_prompt_count;
+	return 'y';
+}
+
+static char
+options_prompt_merge_no_overwrite(const custom_prompt_t *details)
+{
+	if(merge_prompt_count == 0)
+	{
+		++merge_prompt_count;
+		return 'm';
+	}
+
+	++no_prompt_count;
+	return 'n';
+}
+
+static char
+cm_overwrite(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &cm_no);
+	return 'o';
+}
+
+static char
+cm_no(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &cm_skip);
+	return 'n';
+}
+
+static char
+cm_skip(const custom_prompt_t *details)
+{
+	fops_init(&line_prompt, &options_prompt_overwrite);
+	return 's';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

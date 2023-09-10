@@ -18,6 +18,10 @@
 static IoErrCbResult ignore_errors(struct io_args_t *args,
 		const ioe_err_t *err);
 static int can_rename_changing_case(void);
+static int confirm_overwrite(io_args_t *args, const char src[],
+		const char dst[]);
+
+static int confirm_called;
 
 TEST(file_is_moved)
 {
@@ -296,6 +300,40 @@ TEST(nested_directories_can_be_merged)
 	delete_tree(SANDBOX_PATH "/second");
 }
 
+TEST(merging_overwrites_conflicting_files)
+{
+	create_empty_dir(SANDBOX_PATH "/from");
+	make_file(SANDBOX_PATH "/from/file", "from");
+
+	create_empty_dir(SANDBOX_PATH "/to");
+	create_empty_file(SANDBOX_PATH "/to/file");
+
+	{
+		io_args_t args = {
+			.arg1.src = SANDBOX_PATH "/from",
+			.arg2.dst = SANDBOX_PATH "/to",
+			.arg3.crs = IO_CRS_REPLACE_FILES,
+
+			.confirm = &confirm_overwrite,
+		};
+		ioe_errlst_init(&args.result.errors);
+
+		confirm_called = 0;
+		assert_int_equal(IO_RES_SUCCEEDED, ior_mv(&args));
+		assert_int_equal(0, args.result.errors.error_count);
+		/* "from" and "file" prompts. */
+		assert_int_equal(2, confirm_called);
+	}
+
+	/* Original directory must be deleted. */
+	assert_false(file_exists(SANDBOX_PATH "/from/file"));
+	assert_false(file_exists(SANDBOX_PATH "/from"));
+
+	assert_int_equal(4, get_file_size(SANDBOX_PATH "/to/file"));
+
+	delete_tree(SANDBOX_PATH "/to");
+}
+
 TEST(fails_to_move_directory_inside_itself)
 {
 	create_empty_dir(SANDBOX_PATH "/empty-dir");
@@ -336,6 +374,36 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 	assert_true(is_symlink(SANDBOX_PATH "/moved-sym-link"));
 
 	delete_file(SANDBOX_PATH "/moved-sym-link");
+}
+
+TEST(broken_symlink_is_considered_to_exist, IF(not_windows))
+{
+	create_empty_file(SANDBOX_PATH "/empty-file");
+
+	{
+		io_args_t args = {
+			.arg1.path = "broken",
+			.arg2.target = SANDBOX_PATH "/sym-link",
+		};
+		assert_int_equal(IO_RES_SUCCEEDED, iop_ln(&args));
+	}
+
+	{
+		io_args_t args = {
+			.arg1.src = SANDBOX_PATH "/empty-file",
+			.arg2.dst = SANDBOX_PATH "/sym-link",
+
+			.result.errors = IOE_ERRLST_INIT,
+		};
+		assert_int_equal(IO_RES_FAILED, ior_mv(&args));
+		assert_int_equal(1, args.result.errors.error_count);
+		assert_string_equal("Destination path already exists",
+				args.result.errors.errors[0].msg);
+		ioe_errlst_free(&args.result.errors);
+	}
+
+	delete_file(SANDBOX_PATH "/empty-file");
+	delete_file(SANDBOX_PATH "/sym-link");
 }
 
 TEST(case_change_on_rename, IF(can_rename_changing_case))
@@ -396,6 +464,13 @@ can_rename_changing_case(void)
 		delete_file(SANDBOX_PATH "/file");
 	}
 	return ok;
+}
+
+static int
+confirm_overwrite(io_args_t *args, const char src[], const char dst[])
+{
+	++confirm_called;
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

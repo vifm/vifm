@@ -174,7 +174,8 @@ ior_mv(io_args_t *args)
 	const io_confirm confirm = args->confirm;
 	int confirmed = 0;
 
-	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
+	if(crs == IO_CRS_FAIL && path_exists(dst, NODEREF) &&
+			!is_case_change(src, dst))
 	{
 		(void)ioe_errlst_append(&args->result.errors, dst, EEXIST,
 				"Destination path already exists");
@@ -201,7 +202,7 @@ ior_mv(io_args_t *args)
 		/* Ask user whether to overwrite destination file. */
 		if(confirm != NULL && !confirm(args, src, dst))
 		{
-			return IO_RES_SUCCEEDED;
+			return IO_RES_SKIPPED;
 		}
 		confirmed = 1;
 	}
