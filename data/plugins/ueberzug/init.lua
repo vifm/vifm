@@ -12,13 +12,13 @@ Ueberzug:
 
 Usage example:
     " If you are using ueberzugpp, you can have animated gif previews with this:
-    fileviewer {*.gif}
+    fileviewer <image/gif>
         \ #ueberzug#image_no_cache %px %py %pw %ph
         \ %pc
         \ #ueberzug#clear
 
     " Otherwise, use the video fileviewer for gifs
-    " fileviewer <video/*>,{*.gif}
+    " fileviewer <video/*>,<image/gif>
     fileviewer <video/*>
         \ #ueberzug#video %px %py %pw %ph
         \ %pc
