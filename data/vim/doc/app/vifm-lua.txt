@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Aug 7
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Sep 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -19,6 +19,7 @@ Current API version: v0.1.0
 |vifm-lua-caps|        What using Lua in Vifm buys you.
 |vifm-lua-api|         Root-level API.
 |vifm-l_vifm|          `vifm` global table.
+|vifm-l_vifm.abbrevs|  `vifm.abbrevs` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
 |vifm-l_vifm.events|   `vifm.events` global table.
 |vifm-l_vifm.keys|     `vifm.keys` global table.
@@ -458,6 +459,7 @@ This is what one can do by using Lua at the moment:
  * starting background jobs to do something when they're over (see "onexit" of
    |vifm-l_vifm.startjob()|)
  * defining custom keys and selectors (|vifm-l_vifm.keys.add()|)
+ * defining custom command-line abbreviations (|vifm-l_vifm.abbrevs.add()|)
  * running code before exit and when a file operation is done (|vifm-lua-events|)
 
 --------------------------------------------------------------------------------
@@ -487,8 +489,14 @@ Interaction with the host happens through `vifm` global table.  See |vifm-l_vifm
 
 Global `vifm` table is the entry-point to the API.
 
+vifm.abbrevs
+Table for managing command-line abbreviations.  See |vifm-l_vifm.abbrevs|.
+
 vifm.cmds
 Table for managing command-line commands.  See |vifm-l_vifm.cmds|.
+
+vifm.keys
+Table for managing keys.  See |vifm-l_vifm.keys|.
 
 vifm.opts
 Table for managing options.  See |vifm-l_vifm.opts|.
@@ -730,6 +738,40 @@ Return:~
 
 Raises an error:~
   If {info}.complete has incorrect value.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.abbrevs*
+
+This global `vifm.abbrevs` table provides means of managing command-line
+abbreviations.
+
+vifm.abbrevs.add({abbrev})                     *vifm-l_vifm.abbrevs.add()*
+Registers a new command-line abbreviation.
+
+Possible fields of {abbrev}:
+ - "lhs" (string)
+   Left-hand side of the abbreviation.
+ - "description" (string) (default: "")
+   Description of the abbreviation.
+ - "noremap" (boolean) (default: true)
+   Whether to ignore user mappings in "rhs" during expansion.
+ - "handler" (function)
+   Handler which accepts {info} and returns {results}.
+
+Fields of {info} argument for "handler":
+ - "lhs" (string)
+   Left-hand side of the abbreviation.
+
+Fields of {results} return value of "handler":
+ - "rhs" (string)
+   Right-hand side of the abbreviation.
+In case of inappropriate {results}, the abbreviation won't be expanded.
+
+Parameters:~
+  {abbrev}  Table with information about an abbreviation.
+
+Return:~
+  `true` on success.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.cmds*

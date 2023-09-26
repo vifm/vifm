@@ -35,6 +35,7 @@
 #include "lua/lauxlib.h"
 #include "api.h"
 #include "common.h"
+#include "vifm_abbrevs.h"
 #include "vifm_cmds.h"
 #include "vifm_events.h"
 #include "vifm_handlers.h"
@@ -154,6 +155,10 @@ vifm_init(lua_State *lua)
 	vifmview_init(lua);
 
 	luaL_newlib(lua, vifm_methods);
+
+	/* Setup vifm.abbrevs. */
+	vifm_abbrevs_init(lua);
+	lua_setfield(lua, -2, "abbrevs");
 
 	/* Setup vifm.cmds. */
 	vifm_cmds_init(lua);

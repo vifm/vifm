@@ -21,6 +21,9 @@
 
 #include <stddef.h> /* wchar_t */
 
+/* Handler for foreign abbreviations. */
+typedef wchar_t * (*abbrev_handler)(void *user_data);
+
 /* Registers abbreviation from LHS to RHS.  Overwrites any previously existing
  * abbreviations for LHS.  Returns zero on success or non-zero on memory
  * allocation error. */
@@ -28,6 +31,11 @@ int vle_abbr_add(const wchar_t lhs[], const wchar_t rhs[]);
 
 /* Same as vle_abbr_add(), but registers noremap kind of abbreviation. */
 int vle_abbr_add_no_remap(const wchar_t lhs[], const wchar_t rhs[]);
+
+/* Registers a new foreign abbreviation.  Returns non-zero on error, otherwise
+ * zero is returned. */
+int vle_abbr_add_foreign(const wchar_t *lhs, const char *descr, int no_remap,
+		abbrev_handler handler, void *user_data);
 
 /* Removes abbreviation by first matching matching str with LHS and, if no
  * matches found, with RHS.  Returns zero on successful removal, otherwise

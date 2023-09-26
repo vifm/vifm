@@ -730,6 +730,8 @@ const char *tags[] = {
 	"vifm-l_VifmView:select()",
 	"vifm-l_VifmView:unselect()",
 	"vifm-l_vifm",
+	"vifm-l_vifm.abbrevs",
+	"vifm-l_vifm.abbrevs.add()",
 	"vifm-l_vifm.addcolumntype()",
 	"vifm-l_vifm.addhandler()",
 	"vifm-l_vifm.cmds",
