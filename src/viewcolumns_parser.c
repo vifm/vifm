@@ -189,6 +189,11 @@ parse_align(const char str[], column_info_t *info)
 		info->align = AT_DYN;
 		++str;
 	}
+	else if(*str == '^')
+	{
+		info->align = AT_MIDDLE;
+		++str;
+	}
 	return str;
 }
 

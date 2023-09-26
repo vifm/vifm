@@ -203,6 +203,11 @@ char * left_ellipsis(const char str[], size_t max_width, const char ell[]);
  * Returns newly allocated modified string. */
 char * right_ellipsis(const char str[], size_t max_width, const char ell[]);
 
+/* Ensures that str is of width (in character positions) less than or equal to
+ * max_width and is left aligned putting ellipsis in the middle if needed.
+ * Returns newly allocated modified string. */
+char * middle_ellipsis(const char str[], size_t max_width, const char ell[]);
+
 /* "Breaks" single line it two parts (before and after separator), and
  * re-formats it filling specified width by putting "left part", padded centre
  * followed by "right part".  Frees the str.  Returns re-formatted string in

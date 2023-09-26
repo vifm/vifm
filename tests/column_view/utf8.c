@@ -227,6 +227,24 @@ TEST(wide_right_ellipsis_ok, IF(locale_works))
 	assert_string_equal(expected, print_buffer);
 }
 
+TEST(wide_middle_ellipsis_ok, IF(locale_works))
+{
+	/* A gap might appear after removing several characters to insert ellipsis in
+	 * their place, make sure that it's filled with spaces to obtain requested
+	 * width. */
+
+	static column_info_t column_infos[1] = {
+		{ .column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		  .align = AT_MIDDLE,    .sizing = ST_AUTO, .cropping = CT_ELLIPSIS, },
+	};
+	static const char expected[] = ",,师从螺...从螺丝刀 ";
+
+	col1_str = ",,师从螺丝刀师从螺丝刀";
+	perform_test(column_infos, ARRAY_LEN(column_infos), MAX_WIDTH);
+
+	assert_string_equal(expected, print_buffer);
+}
+
 static int
 locale_works(void)
 {

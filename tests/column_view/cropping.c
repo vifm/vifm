@@ -252,5 +252,50 @@ TEST(filling_is_done_per_column)
 	assert_string_equal(expected, print_buffer);
 }
 
+TEST(ellipsis_align_middle)
+{
+	static column_info_t column_infos[2] = {
+		{ .column_id = COL1_ID, .full_width = 15UL,    .text_width = 15UL,
+		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS, },
+		{ .column_id = COL2_ID, .full_width = 35UL,    .text_width = 35UL,
+		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
+	};
+	static const char expected[] = "aaaaaa...zzzzzzbbbbbbbbbbbbbbbbbbbbbbbbb";
+
+	perform_test(column_infos, ARRAY_LEN(column_infos));
+
+	assert_string_equal(expected, print_buffer);
+}
+
+TEST(truncating_align_middle)
+{
+	static column_info_t column_infos[2] = {
+		{ .column_id = COL1_ID, .full_width = 15UL,    .text_width = 15UL,
+		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+		{ .column_id = COL2_ID, .full_width = 35UL,    .text_width = 35UL,
+		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
+	};
+	static const char expected[] = "aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbb";
+
+	perform_test(column_infos, ARRAY_LEN(column_infos));
+
+	assert_string_equal(expected, print_buffer);
+}
+
+TEST(none_align_middle)
+{
+	static column_info_t column_infos[2] = {
+		{ .column_id = COL1_ID, .full_width = 15UL,    .text_width = 15UL,
+		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+		{ .column_id = COL2_ID, .full_width = 35UL,    .text_width = 35UL,
+		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+	};
+	static const char expected[] = "aaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+
+	perform_test(column_infos, ARRAY_LEN(column_infos));
+
+	assert_string_equal(expected, print_buffer);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

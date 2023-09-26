@@ -212,5 +212,83 @@ TEST(dyn_align_on_the_right)
 	columns_free(cols);
 }
 
+TEST(middle_align)
+{
+	static column_info_t column_info = {
+		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_MIDDLE,      .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+	};
+
+	columns_t *const cols = columns_create();
+	col1_next = column1_func2;
+	columns_add_column(cols, column_info);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 8);
+	assert_string_equal("abcdefg ", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 7);
+	assert_string_equal("abcdefg", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 6);
+	assert_string_equal("ab...g", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 5);
+	assert_string_equal("a...g", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 4);
+	assert_string_equal("a...", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 2);
+	assert_string_equal("..", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
+
+	columns_free(cols);
+}
+
+TEST(middle_align_on_the_right)
+{
+	static column_info_t column_info1 = {
+		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_RIGHT,    .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+	};
+
+	static column_info_t column_info2 = {
+		.column_id = COL2_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_MIDDLE,      .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+	};
+
+	columns_t *const cols = columns_create();
+	columns_add_column(cols, column_info1);
+	columns_add_column(cols, column_info2);
+
+	col2_next = &column1_func2;
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 10);
+	assert_string_equal("aaaaaabefg", print_buffer);
+
+	col1_next = &column1_func2;
+	col2_next = &column2_func;
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 16);
+	assert_string_equal(" abcdefgbxx     ", print_buffer);
+
+	col2_next = NULL;
+
+	columns_free(cols);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -7332,6 +7332,15 @@ right align (default)
   set viewcolumns={name}
 .EE
 .IP \- 2
+middle align
+
+It's like left alignment, but when the text is bigger than the column, it
+is cut in the middle (so the start and the end of the field are always visible).
+
+.EX
+  set viewcolumns=^{name}
+.EE
+.IP \- 2
 dynamic align
 
 It's like left alignment, but when the text is bigger than the column, the
