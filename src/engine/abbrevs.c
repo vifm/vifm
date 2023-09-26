@@ -302,9 +302,20 @@ vle_abbr_complete(const char prefix[])
 		char *const mb_lhs = to_multibyte(abbrevs[i].lhs);
 		if(strncmp(mb_lhs, prefix, prefix_len) == 0)
 		{
-			char *const mb_rhs = to_multibyte(abbrevs[i].rhs);
-			(void)vle_compl_add_match(mb_lhs, mb_rhs);
-			free(mb_rhs);
+			if(abbrevs[i].descr != NULL)
+			{
+				(void)vle_compl_add_match(mb_lhs, abbrevs[i].descr);
+			}
+			else if(abbrevs[i].rhs == NULL)
+			{
+				(void)vle_compl_add_match(mb_lhs, "<nop>");
+			}
+			else
+			{
+				char *const mb_rhs = to_multibyte(abbrevs[i].rhs);
+				(void)vle_compl_add_match(mb_lhs, mb_rhs);
+				free(mb_rhs);
+			}
 		}
 		free(mb_lhs);
 	}
