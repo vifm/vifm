@@ -30,8 +30,8 @@ int show_cabbrevs_menu(struct view_t *view);
 /* Describes an abbreviation for printing it out.  The offset parameter
  * specifies additional left-side displacement.  Returns newly allocated
  * string. */
-char * describe_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap,
-		int offset);
+char * describe_abbrev(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[], int no_remap, int offset);
 
 #endif /* VIFM__MENUS__CABBREVS_MENU_H__ */
 

@@ -1391,6 +1391,7 @@ list_abbrevs(const char prefix[])
 	size_t prefix_len;
 	void *state;
 	const wchar_t *lhs, *rhs;
+	const char *descr;
 	int no_remap;
 	vle_textbuf *msg;
 	int seen_match;
@@ -1404,26 +1405,27 @@ list_abbrevs(const char prefix[])
 	}
 
 	state = NULL;
-	if(!vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
+	if(!vle_abbr_iter(&lhs, &rhs, &descr, &no_remap, &state))
 	{
 		ui_sb_msg("No abbreviation found");
 		return 1;
 	}
 
 	msg = vle_tb_create();
-	vle_tb_append_line(msg, "Abbreviation -- N -- Replacement");
+	vle_tb_append_line(msg, "Abbreviation -- N -- Description");
 
 	prefix_len = wcslen(wide_prefix);
 
 	seen_match = 0;
 	state = NULL;
-	while(vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
+	while(vle_abbr_iter(&lhs, &rhs, &descr, &no_remap, &state))
 	{
 		if(wcsncmp(lhs, wide_prefix, prefix_len) == 0)
 		{
-			char *const descr = describe_abbrev(lhs, rhs, no_remap, 0);
-			vle_tb_append_line(msg, descr);
-			free(descr);
+			char *const line = describe_abbrev(lhs, rhs, descr, no_remap,
+					/*offset=*/0);
+			vle_tb_append_line(msg, line);
+			free(line);
 			seen_match = 1;
 		}
 	}

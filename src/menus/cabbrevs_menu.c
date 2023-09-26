@@ -39,18 +39,19 @@ show_cabbrevs_menu(view_t *view)
 {
 	void *state;
 	const wchar_t *lhs, *rhs;
+	const char *descr;
 	int no_remap;
 
 	static menu_data_t m;
-	menus_init_data(&m, view, strdup("Abbreviation -- N -- Replacement"),
+	menus_init_data(&m, view, strdup("Abbreviation -- N -- Description"),
 			strdup("No abbreviation set"));
 	m.key_handler = &commands_khandler;
 
 	state = NULL;
-	while(vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
+	while(vle_abbr_iter(&lhs, &rhs, &descr, &no_remap, &state))
 	{
-		char *const descr = describe_abbrev(lhs, rhs, no_remap, 2);
-		m.len = put_into_string_array(&m.items, m.len, descr);
+		char *const line = describe_abbrev(lhs, rhs, descr, no_remap, /*offset=*/2);
+		m.len = put_into_string_array(&m.items, m.len, line);
 	}
 
 	return menus_enter(&m, view);
@@ -76,18 +77,31 @@ commands_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 }
 
 char *
-describe_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap,
-		int offset)
+describe_abbrev(const wchar_t lhs[], const wchar_t rhs[], const char descr[],
+		int no_remap, int offset)
 {
 	enum { LHS_MIN_WIDTH = 13 };
 	const char map_mark = no_remap ? '*' : ' ';
 
-	char *const keys = wstr_to_spec(rhs);
-	char *const descr = format_str("%-*ls %3c    %s", offset + LHS_MIN_WIDTH, lhs,
-			map_mark, keys);
-	free(keys);
+	char *rhs_descr;
+	if(descr != NULL)
+	{
+		rhs_descr = strdup(descr);
+	}
+	else if(rhs == NULL)
+	{
+		rhs_descr = strdup("<nop>");
+	}
+	else
+	{
+		rhs_descr = wstr_to_spec(rhs);
+	}
 
-	return descr;
+	char *const line = format_str("%-*ls %3c    %s", offset + LHS_MIN_WIDTH, lhs,
+			map_mark, rhs_descr);
+	free(rhs_descr);
+
+	return line;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -325,8 +325,8 @@ vle_abbr_complete(const char prefix[])
 }
 
 int
-vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, int *no_remap,
-		void **param)
+vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, const char **descr,
+		int *no_remap, void **param)
 {
 	size_t i = (*param == NULL) ? 0 : ((abbrev_t *)*param - abbrevs + 1);
 	abbrev_t *abbrev;
@@ -335,6 +335,7 @@ vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, int *no_remap,
 	{
 		*lhs = NULL;
 		*rhs = NULL;
+		*descr = NULL;
 		*param = NULL;
 		return 0;
 	}
@@ -342,6 +343,7 @@ vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, int *no_remap,
 	abbrev = &abbrevs[i];
 	*lhs = abbrev->lhs;
 	*rhs = abbrev->rhs;
+	*descr = abbrev->descr;
 	*no_remap = abbrev->no_remap;
 	*param = abbrev;
 	return 1;
