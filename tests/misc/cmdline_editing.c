@@ -510,6 +510,23 @@ TEST(abbrevs_are_expanded)
 	(void)vle_keys_exec_timed_out(L" ");
 	assert_wstring_equal(L"rhs ", stats->line);
 
+	/* Abbrevs that leave cmdline mode. */
+	assert_success(vle_abbr_add(L"lhs2", L"rhs2" WK_C_c));
+
+	(void)vle_keys_exec_timed_out(L"lhs2" WK_C_RB);
+	assert_false(vle_mode_is(CMDLINE_MODE));
+	assert_null(stats->line);
+
+	modcline_enter(CLS_COMMAND, "");
+	(void)vle_keys_exec_timed_out(L"lhs2 ");
+	assert_false(vle_mode_is(CMDLINE_MODE));
+	assert_null(stats->line);
+
+	modcline_enter(CLS_COMMAND, "");
+	(void)vle_keys_exec_timed_out(L"lhs2" WK_CR);
+	assert_false(vle_mode_is(CMDLINE_MODE));
+	assert_null(stats->line);
+
 	vle_abbr_reset();
 
 	memset(cfg.word_chars, 0, sizeof(cfg.word_chars));

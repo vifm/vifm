@@ -349,6 +349,10 @@ def_handler(wchar_t key)
 	if(!cfg_is_word_wchar(key))
 	{
 		expand_abbrev();
+		if(!is_cmdmode(vle_mode_get()))
+		{
+			return 0;
+		}
 	}
 
 	p = reallocarray(input_stat.line, input_stat.len + 2, sizeof(wchar_t));
@@ -1526,6 +1530,10 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	expand_abbrev();
+	if(!is_cmdmode(vle_mode_get()))
+	{
+		return;
+	}
 
 	char *input = to_multibyte(input_stat.line);
 	save_input_to_history(keys_info, input);
@@ -1731,6 +1739,11 @@ expand_abbrev(void)
 		input_stat.expanding_abbrev = 1;
 		exec_abbrev(abbrev_rhs, no_remap, pos);
 		input_stat.expanding_abbrev = 0;
+
+		if(!is_cmdmode(vle_mode_get()))
+		{
+			return;
+		}
 
 		update_cmdline_size();
 		update_cmdline_text(&input_stat);
