@@ -1722,10 +1722,6 @@ is_input_line_empty(void)
 static void
 expand_abbrev(void)
 {
-	int pos;
-	const wchar_t *abbrev_rhs;
-	int no_remap;
-
 	/* Don't expand command-line abbreviations in navigation and avoid recursion
 	 * on expanding abbreviations. */
 	if(input_stat.navigating || input_stat.expanding_abbrev)
@@ -1733,21 +1729,25 @@ expand_abbrev(void)
 		return;
 	}
 
-	abbrev_rhs = extract_abbrev(&input_stat, &pos, &no_remap);
-	if(abbrev_rhs != NULL)
+	int pos;
+	int no_remap;
+	const wchar_t *abbrev_rhs = extract_abbrev(&input_stat, &pos, &no_remap);
+	if(abbrev_rhs == NULL)
 	{
-		input_stat.expanding_abbrev = 1;
-		exec_abbrev(abbrev_rhs, no_remap, pos);
-		input_stat.expanding_abbrev = 0;
-
-		if(!is_cmdmode(vle_mode_get()))
-		{
-			return;
-		}
-
-		update_cmdline_size();
-		update_cmdline_text(&input_stat);
+		return;
 	}
+
+	input_stat.expanding_abbrev = 1;
+	exec_abbrev(abbrev_rhs, no_remap, pos);
+	input_stat.expanding_abbrev = 0;
+
+	if(!is_cmdmode(vle_mode_get()))
+	{
+		return;
+	}
+
+	update_cmdline_size();
+	update_cmdline_text(&input_stat);
 }
 
 /* Lookups for an abbreviation to the left of cursor position.  Returns RHS for
