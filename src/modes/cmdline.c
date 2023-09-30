@@ -133,7 +133,7 @@ static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void nav_open(void);
 static int is_input_line_empty(void);
-static void expand_abbrev(void);
+static int expand_abbrev(void);
 TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
 		int *no_remap);
 static void exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos);
@@ -348,8 +348,7 @@ def_handler(wchar_t key)
 
 	if(!cfg_is_word_wchar(key))
 	{
-		expand_abbrev();
-		if(!is_cmdmode(vle_mode_get()))
+		if(expand_abbrev() != 0)
 		{
 			return 0;
 		}
@@ -1164,7 +1163,7 @@ extedit_prompt(const char input[], int cursor_col, int is_expr_reg,
 static void
 cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info)
 {
-	expand_abbrev();
+	(void)expand_abbrev();
 }
 
 /* Handles backspace. */
@@ -1529,8 +1528,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	expand_abbrev();
-	if(!is_cmdmode(vle_mode_get()))
+	if(expand_abbrev() != 0)
 	{
 		return;
 	}
@@ -1718,15 +1716,16 @@ is_input_line_empty(void)
 }
 
 /* Expands abbreviation to the left of current cursor position, if any
- * present, otherwise does nothing. */
-static void
+ * present, otherwise does nothing.  Returns non-zero if an ongoing command-line
+ * mode operation should be considered done. */
+static int
 expand_abbrev(void)
 {
 	/* Don't expand command-line abbreviations in navigation and avoid recursion
 	 * on expanding abbreviations. */
 	if(input_stat.navigating || input_stat.expanding_abbrev)
 	{
-		return;
+		return 0;
 	}
 
 	int pos;
@@ -1734,20 +1733,21 @@ expand_abbrev(void)
 	const wchar_t *abbrev_rhs = extract_abbrev(&input_stat, &pos, &no_remap);
 	if(abbrev_rhs == NULL)
 	{
-		return;
+		return 0;
 	}
 
 	input_stat.expanding_abbrev = 1;
 	exec_abbrev(abbrev_rhs, no_remap, pos);
 	input_stat.expanding_abbrev = 0;
-
 	if(!is_cmdmode(vle_mode_get()))
 	{
-		return;
+		/* We must stop processing command-line mode as it has already been left. */
+		return 1;
 	}
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
+	return 0;
 }
 
 /* Lookups for an abbreviation to the left of cursor position.  Returns RHS for
