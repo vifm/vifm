@@ -1,4 +1,4 @@
-.TH VIFM 1 "11 Jul 2023" "vifm 0.13"
+.TH VIFM 1 "1 Oct 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -7416,19 +7416,22 @@ if 'viewcolumns' is empty, but adding ellipsis for long file names:
 .EE
 
 The last kind of column value is a string literal.  The literal is used as a
-column value for every row.  The syntax is "{#literal}", for example:
+column value for every row.  The syntax is "{#literal}", examples:
 
 .EX
-  3{#},{#|},{# | }
+  " double-character pseudo-padding on both sides
+  set viewcolumns='2{#},*{name}..,{},2{#}'
+  " pseudo-border between columns
+  set viewcolumns='*{name}..,{#|},6{}'
+  " pseudo-border with padding between columns
+  set viewcolumns='*{name}..,{# | },6{}'
 .EE
 
 This can be used to draw column separators.  Mind that for convenience
 literals have different defaults: truncation and automatically determined
-absolute size, which is what you usually want for them.  Example:
-
-.EX
-  set viewcolumns=*{name}..,{#|},6{}.
-.EE
+absolute size, which is what you usually want for them.  Make sure to quote or
+escape spaces, vertical bars and other special symbols when using them as part
+of literals.
 .LP
 .B Cropping specifier
 

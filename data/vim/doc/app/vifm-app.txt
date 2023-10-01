@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Jul 11
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Oct 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -6248,12 +6248,18 @@ if |vifm-'viewcolumns'| is empty, but adding ellipsis for long file names: >
     set viewcolumns=-{name}..,6{}.
 
 The last kind of column value is a string literal.  The literal is used as a
-column value for every row.  The syntax is `{#literal}`, for example: >
-    3{#},{#|},{# | }
+column value for every row.  The syntax is `{#literal}`, examples: >
+    " double-character pseudo-padding on both sides
+    set viewcolumns='2{#},*{name}..,{},2{#}'
+    " pseudo-border between columns
+    set viewcolumns='*{name}..,{#|},6{}'
+    " pseudo-border with padding between columns
+    set viewcolumns='*{name}..,{# | },6{}'
 This can be used to draw column separators.  Mind that for convenience
 literals have different defaults: truncation and automatically determined
-absolute size, which is what you usually want for them.  Example: >
-    set viewcolumns=*{name}..,{#|},6{}.
+absolute size, which is what you usually want for them.  Make sure to quote or
+escape spaces, vertical bars and other special symbols when using them as part
+of literals.
 
 Cropping specifier~
 
