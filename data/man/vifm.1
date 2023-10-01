@@ -7395,10 +7395,10 @@ This is usually a sorting key surrounded with curly braces, e.g.
   {name},{ext},{mtime}
 .EE
 
-{name} and {iname} types are the same and present both for consistency with
-\(aqsort\(aq option.
+{name} and {iname} types are the same and are both present for consistency
+with \(aqsort\(aq option.
 
-Following types don't have corresponding sorting keys:
+The following column types don't have corresponding sorting keys:
 .RS 2
 .IP \- 2
 {root}     \- display name without extension (as a complement for {ext})
@@ -7408,8 +7408,8 @@ directories and symbolic links to directories (as a complement for {fileext})
 .RE
 
 Empty curly braces ({}) are replaced with the default secondary column for
-primary sort key. So after the next command view will be displayed almost as
-if 'viewcolumns' is empty, but adding ellipsis for long file names:
+primary sort key.  So after the next command view will be displayed almost as
+if 'viewcolumns' was empty, but adding ellipsis for long file names:
 
 .EX
   set viewcolumns=\-{name}..,6{}.

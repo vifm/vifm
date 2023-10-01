@@ -6233,18 +6233,18 @@ Column contents~
 This is usually a sorting key surrounded with curly braces, e.g. >
     {name},{ext},{mtime}
 <
-{name} and {iname} types are the same and present both for consistency with
-|vifm-'sort'| option.
+{name} and {iname} types are the same and are both present for consistency
+with |vifm-'sort'| option.
 
-Following types don't have corresponding sorting keys:
+The following column types don't have corresponding sorting keys:
  - {root}     - display name without extension (as a complement for {ext})
  - {fileroot} - display name without extension for anything except for
                 directories and symbolic links to directories (as a
                 complement for {fileext})
 
 Empty curly braces ({}) are replaced with the default secondary column for
-primary sort key. So after the next command views will be displayed almost as
-if |vifm-'viewcolumns'| is empty, but adding ellipsis for long file names: >
+primary sort key.  So after the next command views will be displayed almost as
+if |vifm-'viewcolumns'| was empty, but adding ellipsis for long file names: >
     set viewcolumns=-{name}..,6{}.
 
 The last kind of column value is a string literal.  The literal is used as a
