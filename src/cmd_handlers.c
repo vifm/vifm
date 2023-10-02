@@ -4419,7 +4419,7 @@ select_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Either range or argument should be supplied.");
 		error = 1;
 	}
-	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
+	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{<", cmd_info->args[1]))
 	{
 		error = flist_sel_by_filter(curr_view, cmd_info->args + 1, cmd_info->emark,
 				1);
@@ -5276,7 +5276,7 @@ unselect_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Either range or argument should be supplied.");
 		error = 1;
 	}
-	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
+	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{<", cmd_info->args[1]))
 	{
 		error = flist_sel_by_filter(curr_view, cmd_info->args + 1, cmd_info->emark,
 				0);
