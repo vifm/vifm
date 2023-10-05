@@ -383,7 +383,7 @@ decorate_output(const column_t *col, char buf[], size_t buf_len,
 		return (col->info.align == AT_RIGHT ? AT_RIGHT : AT_LEFT);
 	}
 
-	if (col->info.align == AT_MIDDLE)
+	if(col->info.align == AT_MIDDLE)
 	{
 		ellipsed = middle_ellipsis(buf, max_col_width, ell);
 		result = AT_LEFT;

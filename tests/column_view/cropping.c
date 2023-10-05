@@ -256,9 +256,9 @@ TEST(ellipsis_align_middle)
 {
 	static column_info_t column_infos[2] = {
 		{ .column_id = COL1_ID, .full_width = 15UL,    .text_width = 15UL,
-		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS, },
+		  .align = AT_MIDDLE,   .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS, },
 		{ .column_id = COL2_ID, .full_width = 35UL,    .text_width = 35UL,
-		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
+		  .align = AT_MIDDLE,   .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
 	};
 	static const char expected[] = "aaaaaa...zzzzzzbbbbbbbbbbbbbbbbbbbbbbbbb";
 
@@ -271,9 +271,9 @@ TEST(truncating_align_middle)
 {
 	static column_info_t column_infos[2] = {
 		{ .column_id = COL1_ID, .full_width = 15UL,    .text_width = 15UL,
-		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+		  .align = AT_MIDDLE,   .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
 		{ .column_id = COL2_ID, .full_width = 35UL,    .text_width = 35UL,
-		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
+		  .align = AT_MIDDLE,   .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
 	};
 	static const char expected[] = "aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbb";
 
@@ -286,7 +286,7 @@ TEST(none_align_middle)
 {
 	static column_info_t column_infos[2] = {
 		{ .column_id = COL1_ID, .full_width = 15UL,    .text_width = 15UL,
-		  .align = AT_MIDDLE,     .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+		  .align = AT_MIDDLE,   .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
 		{ .column_id = COL2_ID, .full_width = 35UL,    .text_width = 35UL,
 		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
 	};

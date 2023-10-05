@@ -235,7 +235,7 @@ TEST(wide_middle_ellipsis_ok, IF(locale_works))
 
 	static column_info_t column_infos[1] = {
 		{ .column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
-		  .align = AT_MIDDLE,    .sizing = ST_AUTO, .cropping = CT_ELLIPSIS, },
+		  .align = AT_MIDDLE,   .sizing = ST_AUTO, .cropping = CT_ELLIPSIS, },
 	};
 	static const char expected[] = ",,师从螺...从螺丝刀 ";
 

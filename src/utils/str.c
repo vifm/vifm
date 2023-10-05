@@ -612,8 +612,8 @@ ellipsis(const char str[], size_t max_width, const char ell[], int ell_alignment
 
 	if(ell_alignment == 2)
 	{
-		/* Middle ellipsis */
-		const int prefix_width = max_width / 2 - ell_width / 2;
+		/* Middle ellipsis. */
+		const int prefix_width = max_width/2 - ell_width/2;
 
 		const int prefix = utf8_nstrsnlen(str, prefix_width);
 		const char *suffix = str + prefix;
@@ -628,12 +628,12 @@ ellipsis(const char str[], size_t max_width, const char ell[], int ell_alignment
 	}
 	else if(ell_alignment == 1)
 	{
-		/* Right ellipsis */
+		/* Right ellipsis. */
 		const int prefix = utf8_nstrsnlen(str, max_width - ell_width);
 		return format_str("%.*s%s", prefix, str, ell);
 	}
 
-	/* Left ellipsis */
+	/* Left ellipsis. */
 	while(width > max_width - ell_width)
 	{
 		width -= utf8_chrsw(str);

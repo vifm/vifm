@@ -216,7 +216,7 @@ TEST(middle_align)
 {
 	static column_info_t column_info = {
 		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
-		.align = AT_MIDDLE,      .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+		.align = AT_MIDDLE,   .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
 	};
 
 	columns_t *const cols = columns_create();
@@ -265,7 +265,7 @@ TEST(middle_align_on_the_right)
 
 	static column_info_t column_info2 = {
 		.column_id = COL2_ID, .full_width = 0UL, .text_width = 0UL,
-		.align = AT_MIDDLE,      .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+		.align = AT_MIDDLE,   .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
 	};
 
 	columns_t *const cols = columns_create();

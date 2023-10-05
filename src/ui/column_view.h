@@ -29,11 +29,11 @@ typedef enum
 {
 	AT_LEFT,   /* Left alignment. */
 	AT_RIGHT,  /* Right alignment. */
-	AT_MIDDLE, /* Left alignment, if the text fits if the text is longer, make sure
-	              the start and the end of field are always visible by cutting the
-	              text in the middle. */
-	AT_DYN     /* Left alignment, if the text fits if the text is longer, make sure
-	              the end of field is always visible. */
+	AT_MIDDLE, /* Left alignment, if the text fits.  If the text is longer, make
+	              sure the start and the end of field are always visible by
+	              cutting the text in the middle. */
+	AT_DYN     /* Left alignment, if the text fits if the text is longer, make
+	              sure the end of field is always visible. */
 }
 AlignType;
 
