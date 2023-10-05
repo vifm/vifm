@@ -3274,7 +3274,7 @@ makes vifm call `highlight` program to colorize source and header files in C
 language for a 256-color terminal.  Equal command would be >
  :fileviewer *.c,*.h highlight -O xterm256 -s dante --syntax c %c
 
-Inside square brackets `^` or `!` can be used for symbol class negotiation and
+Inside square brackets `^` or `!` can be used for symbol class negation and
 the `-` symbol to set a range.  `^` and `!` should appear right after the opening
 square bracket.  For example >
  :filetype *.[!d]/ inspect_dir
