@@ -19,6 +19,12 @@ TEST(right_alignment_ok)
 	assert_int_equal(AT_RIGHT, info.align);
 }
 
+TEST(middle_alignment_ok)
+{
+	assert_success(do_parse("^{name}"));
+	assert_int_equal(AT_MIDDLE, info.align);
+}
+
 TEST(dynamic_alignment_ok)
 {
 	assert_success(do_parse("*{name}"));
