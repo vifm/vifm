@@ -1,4 +1,5 @@
 Basic things:
+  * Middle ellipsis breaks search highlighting.
   * Improve ga and gA commands. (partially done)
   * Queueing of file operations.
   * Backgrounding of commands with job control (pause/resume/kill). (partially

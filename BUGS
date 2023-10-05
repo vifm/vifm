@@ -1,3 +1,4 @@
+* Middle ellipsis breaks search highlighting.
 * Better to check for existence of $HOME.
 * Duplicate detection lags in custom views on :substitute.
 * filextype is useless on OS X.

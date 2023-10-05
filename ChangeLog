@@ -32,6 +32,10 @@
 	Added :fin[d] command to menu mode.  Allows (re)running find command
 	on the same set of files without leaving the mode.
 
+	Added middle view column alignment (specified by "^" in 'viewcolumns'
+	option).  Part of the text is replaced with ellipsis to keep both start
+	and end visible.  Patch by Vadim Curcă.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

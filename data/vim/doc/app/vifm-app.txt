@@ -6189,6 +6189,14 @@ Specifies type of text alignment within a column.  Two types are supported:
 
      set viewcolumns={name}
 <
+ - middle align
+
+    It's like left alignment, but when the text is bigger than the column, it
+    is cut in the middle (so the start and the end of the field are always
+    visible). >
+
+     set viewcolumns=^{name}
+<
  - dynamic align
 
     It's like left alignment, but when the text is bigger than the column,
