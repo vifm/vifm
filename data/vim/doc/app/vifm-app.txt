@@ -3274,7 +3274,7 @@ makes vifm call `highlight` program to colorize source and header files in C
 language for a 256-color terminal.  Equal command would be >
  :fileviewer *.c,*.h highlight -O xterm256 -s dante --syntax c %c
 
-Inside square brackets `^` or `!` can be used for symbol class negotiation and
+Inside square brackets `^` or `!` can be used for symbol class negation and
 the `-` symbol to set a range.  `^` and `!` should appear right after the opening
 square bracket.  For example >
  :filetype *.[!d]/ inspect_dir
@@ -6188,6 +6188,14 @@ Specifies type of text alignment within a column.  Two types are supported:
  - right align (default) >
 
      set viewcolumns={name}
+<
+ - middle align
+
+    It's like left alignment, but when the text is bigger than the column, it
+    is cut in the middle (so the start and the end of the field are always
+    visible). >
+
+     set viewcolumns=^{name}
 <
  - dynamic align
 

@@ -168,3 +168,5 @@ Rostislav Tolushkin (a.k.a. nullptr-deref) implemented :regedit command.
 Marcin Kurczewski (a.k.a. rr-) fixed limited size of IPC buffer.
 
 voh9eepah fixed available file-system space size on FreeBSD.
+
+Vadim Curcă added middle ellipsis to view columns.

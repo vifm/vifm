@@ -37,13 +37,22 @@
 #include "utf8.h"
 #include "utils.h"
 
+/* Where to place ellipsis. */
+typedef enum
+{
+	EK_LEFT,   /* On the far left. */
+	EK_RIGHT,  /* On the far right. */
+	EK_MIDDLE, /* In the middle. */
+}
+EllipsisKind;
+
 static int transform_ascii_str(const char str[], int (*f)(int), char buf[],
 		size_t buf_len);
 static int transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len);
 TSTATIC void squash_double_commas(char str[]);
 static char * ellipsis(const char str[], size_t max_width, const char ell[],
-		int right);
+		EllipsisKind kind);
 static size_t copy_substr(char dst[], size_t dst_len, const char src[],
 		char terminator);
 
@@ -568,20 +577,27 @@ stralign(char str[], size_t width, char pad, int left_align)
 char *
 left_ellipsis(const char str[], size_t max_width, const char ell[])
 {
-	return ellipsis(str, max_width, ell, 0);
+	return ellipsis(str, max_width, ell, EK_LEFT);
 }
 
 char *
 right_ellipsis(const char str[], size_t max_width, const char ell[])
 {
-	return ellipsis(str, max_width, ell, 1);
+	return ellipsis(str, max_width, ell, EK_RIGHT);
+}
+
+char *
+middle_ellipsis(const char str[], size_t max_width, const char ell[])
+{
+	return ellipsis(str, max_width, ell, EK_MIDDLE);
 }
 
 /* Ensures that str is of width (in character positions) less than or equal to
- * max_width and is aligned appropriately putting ellipsis on one of the ends if
- * needed.  Returns newly allocated modified string. */
+ * max_width and is aligned appropriately putting ellipsis on one of the ends or
+ * in the middle if needed.  Returns newly allocated modified string. */
 static char *
-ellipsis(const char str[], size_t max_width, const char ell[], int right)
+ellipsis(const char str[], size_t max_width, const char ell[],
+		EllipsisKind kind)
 {
 	if(max_width == 0U)
 	{
@@ -604,12 +620,30 @@ ellipsis(const char str[], size_t max_width, const char ell[], int right)
 		return format_str("%.*s", prefix, ell);
 	}
 
-	if(right)
+	if(kind == EK_MIDDLE)
 	{
+		/* Middle ellipsis. */
+		const int prefix_width = max_width/2 - ell_width/2;
+
+		const int prefix = utf8_nstrsnlen(str, prefix_width);
+		const char *suffix = str + prefix;
+
+		while(width > max_width - ell_width)
+		{
+			width -= utf8_chrsw(suffix);
+			suffix += utf8_chrw(suffix);
+		}
+
+		return format_str("%.*s%s%s", prefix, str, ell, suffix);
+	}
+	else if(kind == EK_RIGHT)
+	{
+		/* Right ellipsis. */
 		const int prefix = utf8_nstrsnlen(str, max_width - ell_width);
 		return format_str("%.*s%s", prefix, str, ell);
 	}
 
+	/* Left ellipsis. */
 	while(width > max_width - ell_width)
 	{
 		width -= utf8_chrsw(str);

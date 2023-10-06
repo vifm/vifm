@@ -3955,7 +3955,7 @@ language for a 256-color terminal.  Equal command would be
 
 .EE
 
-Inside square brackets `^` or `!` can be used for symbol class negotiation and
+Inside square brackets `^` or `!` can be used for symbol class negation and
 the `\-` symbol to set a range.  `^` and `!` should appear right after the
 opening square bracket.  For example
 .EX
@@ -7330,6 +7330,15 @@ right align (default)
 
 .EX
   set viewcolumns={name}
+.EE
+.IP \- 2
+middle align
+
+It's like left alignment, but when the text is bigger than the column, it
+is cut in the middle (so the start and the end of the field are always visible).
+
+.EX
+  set viewcolumns=^{name}
 .EE
 .IP \- 2
 dynamic align
