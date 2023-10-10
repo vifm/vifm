@@ -43,7 +43,8 @@ show_cabbrevs_menu(view_t *view)
 	int no_remap;
 
 	static menu_data_t m;
-	menus_init_data(&m, view, strdup("Abbreviation -- N -- Description"),
+	menus_init_data(&m, view,
+			strdup("Abbreviation -- N -- Expansion/Description"),
 			strdup("No abbreviation set"));
 	m.key_handler = &commands_khandler;
 

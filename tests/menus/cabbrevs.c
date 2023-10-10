@@ -53,7 +53,7 @@ TEST(title_and_no_remap)
 
 	menu_data_t *m = menu_get_current();
 	assert_int_equal(2, m->len);
-	assert_string_equal("Abbreviation -- N -- Description", m->title);
+	assert_string_equal("Abbreviation -- N -- Expansion/Description", m->title);
 	assert_string_equal("lhs1              *    rhs1", m->items[0]);
 	assert_string_equal("lhs2                   rhs2", m->items[1]);
 }

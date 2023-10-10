@@ -1412,7 +1412,7 @@ list_abbrevs(const char prefix[])
 	}
 
 	msg = vle_tb_create();
-	vle_tb_append_line(msg, "Abbreviation -- N -- Description");
+	vle_tb_append_line(msg, "Abbreviation -- N -- Expansion/Description");
 
 	prefix_len = wcslen(wide_prefix);
 
