@@ -1407,7 +1407,7 @@ list_abbrevs(const char prefix[])
 	state = NULL;
 	if(!vle_abbr_iter(&lhs, &rhs, &descr, &no_remap, &state))
 	{
-		ui_sb_msg("No abbreviation found");
+		ui_sb_msg("No abbreviations found");
 		return 1;
 	}
 
@@ -1436,7 +1436,7 @@ list_abbrevs(const char prefix[])
 	}
 	else
 	{
-		ui_sb_msg("No abbreviation found");
+		ui_sb_msg("No abbreviations found");
 	}
 	vle_tb_free(msg);
 
