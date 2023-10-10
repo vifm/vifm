@@ -21,7 +21,7 @@
 
 #include <stddef.h> /* wchar_t */
 
-/* Handler for foreign abbreviations. */
+/* Handler for foreign abbreviations.  Should return NULL on errors. */
 typedef wchar_t * (*abbrev_handler)(void *user_data);
 
 /* Registers abbreviation from LHS to RHS.  Overwrites any previously existing

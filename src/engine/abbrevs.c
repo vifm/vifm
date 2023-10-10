@@ -30,15 +30,16 @@
 /* Information about single abbreviation. */
 typedef struct
 {
-	wchar_t *lhs;           /* What is expanded. */
-	wchar_t *rhs;           /* To what it's expanded. */
-	int no_remap;           /* Whether user mappings should be processed on
-	                           expansion. */
-	char *descr;            /* Brief description of the abbreviation (can be
-	                           NULL). */
-	abbrev_handler handler; /* Function invoked to retrieve `rhs` (can be
-	                           NULL). */
-	void *user_data;        /* User data for the handler (can be NULL). */
+	wchar_t *lhs; /* What is expanded. */
+	wchar_t *rhs; /* To what it's expanded.  This field is updated at runtime if
+	                 handler is not NULL. */
+	int no_remap; /* Whether user mappings should be processed on expansion. */
+	char *descr;  /* Brief description of the abbreviation (can be NULL). */
+
+	/* Function invoked to retrieve `rhs` (can be NULL). */
+	abbrev_handler handler;
+	/* User data for the handler (can be NULL). */
+	void *user_data;
 }
 abbrev_t;
 

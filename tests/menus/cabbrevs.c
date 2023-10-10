@@ -106,7 +106,8 @@ TEST(lua_abbrevs)
 			"  handler = handler,"
 			"})");
 
-	/* Trigger expansion to make sure `rhs` is not used as a description. */
+	/* Trigger expansion to make sure `rhs` is not used as a description when both
+	 * are non-NULL. */
 	assert_non_null(vle_abbr_expand(L"lhs1", &no_remap));
 	assert_non_null(vle_abbr_expand(L"lhs2", &no_remap));
 
