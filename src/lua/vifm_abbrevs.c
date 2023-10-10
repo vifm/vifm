@@ -35,7 +35,7 @@
 static int VLUA_API(abbrevs_add)(lua_State *lua);
 static wchar_t * lua_abbrev_handler(void *user_data);
 
-VLUA_DECLARE_SAFE(abbrevs_add);
+VLUA_DECLARE_UNSAFE(abbrevs_add);
 
 /* Functions of `vifm.abbrevs` table. */
 static const luaL_Reg vifm_abbrevs_methods[] = {
@@ -120,7 +120,11 @@ lua_abbrev_handler(void *user_data)
 	lua_pushstring(lua, lhs);
 	lua_setfield(lua, -2, "lhs");
 
-	if(lua_pcall(lua, /*nargs=*/1, /*nresults=*/1, /*msgh=*/0) != LUA_OK)
+	int sm_cookie = vlua_state_safe_mode_on(lua);
+	int result = lua_pcall(lua, /*nargs=*/1, /*nresults=*/1, /*msgh=*/0);
+	vlua_state_safe_mode_off(lua, sm_cookie);
+
+	if(result != LUA_OK)
 	{
 		const char *error = lua_tostring(lua, -1);
 		ui_sb_err(error);

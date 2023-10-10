@@ -758,6 +758,9 @@ Possible fields of {abbrev}:
  - "handler" (function)
    Handler which accepts {info} and returns {results}.
 
+{abbrev}.handler is executed in a safe environment and can't call API marked
+as {unsafe}.
+
 Fields of {info} argument for "handler":
  - "lhs" (string)
    Left-hand side of the abbreviation.
@@ -766,6 +769,8 @@ Fields of {results} return value of "handler":
  - "rhs" (string)
    Right-hand side of the abbreviation.
 In case of inappropriate {results}, the abbreviation won't be expanded.
+
+This function is {unsafe}.
 
 Parameters:~
   {abbrev}  Table with information about an abbreviation.
