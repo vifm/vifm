@@ -14,6 +14,7 @@
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
+#include "../../src/status.h"
 #include "../lua/asserts.h"
 
 SETUP()
