@@ -8,6 +8,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/abbrevs.h"
+#include "../../src/engine/keys.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/menus/cabbrevs_menu.h"
 #include "../../src/modes/menu.h"
@@ -36,6 +37,7 @@ TEARDOWN()
 	modes_abort_menu_like();
 
 	vle_abbr_reset();
+	vle_keys_reset();
 	conf_teardown();
 
 	view_teardown(&lwin);
