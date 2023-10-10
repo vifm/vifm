@@ -103,9 +103,9 @@ TEST(abbrevs_add)
 			"print(vifm.abbrevs.add {"
 			"  lhs = 'lhs',"
 			"  description = 'descr',"
-			"  handler = function(info)\n"
-			"    print(info.lhs)\n"
-			"    return { rhs = 'rhs' }\n"
+			"  handler = function(info)"
+			"    print(info.lhs)"
+			"    return { rhs = 'rhs' }"
 			"  end,"
 			"})");
 
@@ -124,8 +124,8 @@ TEST(abbrevs_noremap)
 			"  lhs = 'lhs',"
 			"  description = 'descr',"
 			"  noremap = false,"
-			"  handler = function(info)\n"
-			"    return { rhs = 'rhs' }\n"
+			"  handler = function(info)"
+			"    return { rhs = 'rhs' }"
 			"  end,"
 			"})");
 

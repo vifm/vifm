@@ -85,8 +85,8 @@ TEST(lua_abbrevs)
 	curr_stats.vlua = vlua_init();
 
 	GLUA_EQ(curr_stats.vlua, "",
-			"function handler(info)\n"
-			"  return { rhs = 'should not be shown' }\n"
+			"function handler(info)"
+			"  return { rhs = 'should not be shown' }"
 			"end");
 	GLUA_EQ(curr_stats.vlua, "true",
 			"print(vifm.abbrevs.add {"
