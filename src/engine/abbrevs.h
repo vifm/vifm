@@ -53,6 +53,10 @@ void vle_abbr_reset(void);
 /* Completes names of abbreviations. */
 void vle_abbr_complete(const char prefix[]);
 
+/* Provides a description of an abbreviation from its properties.  Returns a
+ * newly allocated string. */
+char * vle_abbr_describe(const wchar_t rhs[], const char descr[]);
+
 /* Enumerates registered abbreviations.  For the first call *state must be set
  * to NULL.  Returns zero when end of the list is reached (and sets pointers to
  * NULLs), otherwise non-zero is returned.  Do not modify abbreviations between

@@ -84,20 +84,7 @@ describe_abbrev(const wchar_t lhs[], const wchar_t rhs[], const char descr[],
 	enum { LHS_MIN_WIDTH = 13 };
 	const char map_mark = no_remap ? '*' : ' ';
 
-	char *rhs_descr;
-	if(descr != NULL)
-	{
-		rhs_descr = strdup(descr);
-	}
-	else if(rhs == NULL)
-	{
-		rhs_descr = strdup("<nop>");
-	}
-	else
-	{
-		rhs_descr = wstr_to_spec(rhs);
-	}
-
+	char *rhs_descr = vle_abbr_describe(rhs, descr);
 	char *const line = format_str("%-*ls %3c    %s", offset + LHS_MIN_WIDTH, lhs,
 			map_mark, rhs_descr);
 	free(rhs_descr);

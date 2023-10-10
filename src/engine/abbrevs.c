@@ -25,6 +25,7 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/str.h"
+#include "../bracket_notation.h"
 #include "completion.h"
 
 /* Information about single abbreviation. */
@@ -303,26 +304,29 @@ vle_abbr_complete(const char prefix[])
 		char *const mb_lhs = to_multibyte(abbrevs[i].lhs);
 		if(strncmp(mb_lhs, prefix, prefix_len) == 0)
 		{
-			if(abbrevs[i].descr != NULL)
-			{
-				(void)vle_compl_add_match(mb_lhs, abbrevs[i].descr);
-			}
-			else if(abbrevs[i].rhs == NULL)
-			{
-				(void)vle_compl_add_match(mb_lhs, "<nop>");
-			}
-			else
-			{
-				char *const mb_rhs = to_multibyte(abbrevs[i].rhs);
-				(void)vle_compl_add_match(mb_lhs, mb_rhs);
-				free(mb_rhs);
-			}
+			char *rhs_descr = vle_abbr_describe(abbrevs[i].rhs, abbrevs[i].descr);
+			(void)vle_compl_add_match(mb_lhs, rhs_descr);
+			free(rhs_descr);
 		}
 		free(mb_lhs);
 	}
 
 	vle_compl_finish_group();
 	vle_compl_add_last_match(prefix);
+}
+
+char *
+vle_abbr_describe(const wchar_t rhs[], const char descr[])
+{
+	if(descr != NULL)
+	{
+		return strdup(descr);
+	}
+	if(rhs == NULL)
+	{
+		return strdup("<nop>");
+	}
+	return wstr_to_spec(rhs);
 }
 
 int
