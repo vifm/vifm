@@ -778,6 +778,7 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 		case L'\r':            strcpy(buf, "<cr>");         break;
 		case L'\n':            strcpy(buf, "<c-j>");        break;
 		case L'\177':          strcpy(buf, "<del>");        break;
+		case L'<':             strcpy(buf, "<lt>");         break;
 		case K(KEY_HOME):      strcpy(buf, "<home>");       break;
 		case K(KEY_END):       strcpy(buf, "<end>");        break;
 		case K(KEY_UP):        strcpy(buf, "<up>");         break;

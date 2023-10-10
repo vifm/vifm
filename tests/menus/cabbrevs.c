@@ -73,7 +73,7 @@ TEST(bracket_notation_in_rhs)
 
 	menu_data_t *m = menu_get_current();
 	assert_int_equal(1, m->len);
-	assert_string_equal("lhs               *    <", m->items[0]);
+	assert_string_equal("lhs               *    <lt>", m->items[0]);
 
 	memset(cfg.word_chars, 0, sizeof(cfg.word_chars));
 }

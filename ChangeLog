@@ -123,6 +123,8 @@
 
 	Fixed completion of :cabbrev not using bracket notation in expansion.
 
+	Fixed `<` not being turned to `<lt>` on displaying right-hand sides.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

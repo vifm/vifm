@@ -102,12 +102,6 @@ add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 		{
 			return;
 		}
-
-		/* Handle empty RHS. */
-		if(rhs[0] == L'\0' && descr[0] == '\0')
-		{
-			rhs = L"<nop>";
-		}
 	}
 
 	char *mb_lhs = wstr_to_spec(lhs);
@@ -117,6 +111,11 @@ add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 	if(is_separator)
 	{
 		m.items[m.len++] = strdup(descr);
+	}
+	else if(rhs[0] == L'\0' && descr[0] == '\0')
+	{
+		/* RHS is empty. */
+		m.items[m.len++] = format_str("%-*s <nop>", MAP_WIDTH, mb_lhs);
 	}
 	else if(rhs[0] == L'\0')
 	{
