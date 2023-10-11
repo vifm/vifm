@@ -322,7 +322,7 @@ vle_abbr_describe(const wchar_t rhs[], const char descr[])
 	{
 		return strdup(descr);
 	}
-	if(rhs == NULL)
+	if(rhs == NULL || rhs[0] == L'\0')
 	{
 		return strdup("<nop>");
 	}

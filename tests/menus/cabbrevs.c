@@ -51,14 +51,16 @@ TEST(title_and_no_remap)
 {
 	assert_success(vle_abbr_add_no_remap(L"lhs1", L"rhs1"));
 	assert_success(vle_abbr_add(L"lhs2", L"rhs2"));
+	assert_success(vle_abbr_add(L"lhs3", L""));
 
 	assert_success(cmds_dispatch("cabbrev", &lwin, CIT_COMMAND));
 
 	menu_data_t *m = menu_get_current();
-	assert_int_equal(2, m->len);
+	assert_int_equal(3, m->len);
 	assert_string_equal("Abbreviation -- N -- Expansion/Description", m->title);
 	assert_string_equal("lhs1              *    rhs1", m->items[0]);
 	assert_string_equal("lhs2                   rhs2", m->items[1]);
+	assert_string_equal("lhs3                   <nop>", m->items[2]);
 }
 
 TEST(bracket_notation_in_rhs)
