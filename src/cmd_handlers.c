@@ -1407,6 +1407,7 @@ list_abbrevs(const char prefix[])
 	state = NULL;
 	if(!vle_abbr_iter(&lhs, &rhs, &descr, &no_remap, &state))
 	{
+		free(wide_prefix);
 		ui_sb_msg("No abbreviations found");
 		return 1;
 	}

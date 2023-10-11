@@ -127,6 +127,9 @@
 
 	Fixed description of empty abbreviations being empty instead of `<nop>`.
 
+	Fixed tiny memory leak on trying to list abbreviations when there are
+	none.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
