@@ -127,5 +127,36 @@ TEST(unabbrev_error)
 	assert_string_equal("No such abbreviation: rhs", ui_sb_last());
 }
 
+TEST(cant_list_no_abbrevs)
+{
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("cabbrev l", &lwin, CIT_COMMAND));
+	assert_string_equal("No abbreviations found", ui_sb_last());
+}
+
+TEST(list_abbrevs_matches)
+{
+	const char *expected =
+		"Abbreviation -- N -- Expansion/Description\n"
+		"lhs1                 1\n"
+		"lhs2                 2";
+
+	assert_success(cmds_dispatch("cabbrev lhs1 1", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("cabbrev lhs2 2", &lwin, CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("cabbrev lh", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
+}
+
+TEST(list_abbrevs_no_matches)
+{
+	assert_success(cmds_dispatch("cabbrev lhs1 1", &lwin, CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("cabbrev r", &lwin, CIT_COMMAND));
+	assert_string_equal("No abbreviations found", ui_sb_last());
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
