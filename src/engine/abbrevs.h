@@ -21,6 +21,9 @@
 
 #include <stddef.h> /* wchar_t */
 
+/* Handler for foreign abbreviations.  Should return NULL on errors. */
+typedef wchar_t * (*abbrev_handler)(void *user_data);
+
 /* Registers abbreviation from LHS to RHS.  Overwrites any previously existing
  * abbreviations for LHS.  Returns zero on success or non-zero on memory
  * allocation error. */
@@ -28,6 +31,11 @@ int vle_abbr_add(const wchar_t lhs[], const wchar_t rhs[]);
 
 /* Same as vle_abbr_add(), but registers noremap kind of abbreviation. */
 int vle_abbr_add_no_remap(const wchar_t lhs[], const wchar_t rhs[]);
+
+/* Registers a new foreign abbreviation.  Returns non-zero on error, otherwise
+ * zero is returned. */
+int vle_abbr_add_foreign(const wchar_t *lhs, const char *descr, int no_remap,
+		abbrev_handler handler, void *user_data);
 
 /* Removes abbreviation by first matching matching str with LHS and, if no
  * matches found, with RHS.  Returns zero on successful removal, otherwise
@@ -45,12 +53,16 @@ void vle_abbr_reset(void);
 /* Completes names of abbreviations. */
 void vle_abbr_complete(const char prefix[]);
 
+/* Provides a description of an abbreviation from its properties.  Returns a
+ * newly allocated string. */
+char * vle_abbr_describe(const wchar_t rhs[], const char descr[]);
+
 /* Enumerates registered abbreviations.  For the first call *state must be set
  * to NULL.  Returns zero when end of the list is reached (and sets pointers to
- * NULLs), otherwise zero is returned.  Do not modify abbreviations between
+ * NULLs), otherwise non-zero is returned.  Do not modify abbreviations between
  * calls. */
-int vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, int *no_remap,
-		void **param);
+int vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, const char **descr,
+		int *no_remap, void **param);
 
 #endif /* VIFM__ENGINE__ABBREVS_H__ */
 

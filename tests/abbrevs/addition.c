@@ -1,6 +1,11 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL wchar_t */
+
 #include "../../src/engine/abbrevs.h"
+#include "../../src/utils/str.h"
+
+static wchar_t * handler(void *user_data);
 
 TEST(adds_fine_first_time)
 {
@@ -47,6 +52,25 @@ TEST(overwrite_changes_mapping_type)
 	assert_success(vle_abbr_add(L"lhs", L"rhs"));
 	assert_non_null(vle_abbr_expand(L"lhs", &no_remap));
 	assert_false(no_remap);
+}
+
+TEST(overwrite_foreign)
+{
+	int no_remap;
+
+	assert_success(vle_abbr_add_foreign(L"lhs", "descr", /*no_remap=*/1, handler,
+				/*user_data=*/NULL));
+	assert_wstring_equal(L"hrhs", vle_abbr_expand(L"lhs", &no_remap));
+	assert_true(no_remap);
+	assert_success(vle_abbr_add(L"lhs", L"rhs"));
+	assert_wstring_equal(L"rhs", vle_abbr_expand(L"lhs", &no_remap));
+	assert_false(no_remap);
+}
+
+static wchar_t *
+handler(void *user_data)
+{
+	return vifm_wcsdup(L"hrhs");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -136,6 +136,7 @@ of changes of each kind.
     |  |  |-- lua/ - Lua 5.4.4 sources
     |  |  |-- common.c - common code for Lua API implementation
     |  |  |-- vifm.c - implementation of `vifm`
+    |  |  |-- vifm_abbrevs.c - implementation of `vifm.abbrevs`
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
     |  |  |-- vifm_events.c - implementation of `vifm.events`
     |  |  |-- vifm_handlers.c - implementation of `vifm.addhandler`

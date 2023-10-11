@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 
 #include "../../src/engine/abbrevs.h"
@@ -8,7 +9,8 @@
 SETUP()
 {
 	assert_success(vle_abbr_add(L"lhs1", L"rhs1"));
-	assert_success(vle_abbr_add(L"lhs2", L"rhs2"));
+	assert_success(vle_abbr_add_foreign(L"lhs2", "descr", /*no_remap=*/1,
+				/*handler=*/NULL, /*user_data=*/NULL));
 	assert_success(vle_abbr_add(L"seq", L"rhs3"));
 }
 

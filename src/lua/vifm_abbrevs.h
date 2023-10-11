@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2015 xaizek.
+ * Copyright (C) 2023 filterfalse <filterfalse@gmail.com>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MENUS__CABBREVS_MENU_H__
-#define VIFM__MENUS__CABBREVS_MENU_H__
+#ifndef VIFM__LUA__VIFM_ABBREVS_H__
+#define VIFM__LUA__VIFM_ABBREVS_H__
 
-#include <stddef.h> /* wchar_t */
+struct lua_State;
 
-struct view_t;
+/* Produces `vifm.abbrevs` table.  Puts the table on the top of the stack. */
+void vifm_abbrevs_init(struct lua_State *lua);
 
-/* Displays list of command-line mode abbreviations.  Returns non-zero if status
- * bar message should be saved. */
-int show_cabbrevs_menu(struct view_t *view);
-
-/* Describes an abbreviation for printing it out.  The offset parameter
- * specifies additional left-side displacement.  Returns newly allocated
- * string. */
-char * describe_abbrev(const wchar_t lhs[], const wchar_t rhs[],
-		const char descr[], int no_remap, int offset);
-
-#endif /* VIFM__MENUS__CABBREVS_MENU_H__ */
+#endif /* VIFM__LUA__VIFM_ABBREVS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 filetype=c : */
+/* vim: set cinoptions+=t0 : */

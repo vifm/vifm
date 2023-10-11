@@ -20,6 +20,8 @@ documented in the regular ChangeLog.
 
 	Added cursorpos field to selectors that moves the cursor within a view.
 
+	Added vifm.abbrevs.add() that registers command-line abbreviations.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Added VifmView:select() and VifmView:unselect() that select and unselect
