@@ -115,6 +115,21 @@ TEST(abbrevs_add)
 	assert_string_equal("lhs", ui_sb_last());
 }
 
+TEST(abbrevs_add_duplicate_fails)
+{
+	GLUA_EQ(vlua, "true",
+			"print(vifm.abbrevs.add {"
+			"  lhs = 'lhs',"
+			"  handler = function(info) end"
+			"})");
+
+	GLUA_EQ(vlua, "false",
+			"print(vifm.abbrevs.add {"
+			"  lhs = 'lhs',"
+			"  handler = function(info) end"
+			"})");
+}
+
 TEST(abbrevs_noremap)
 {
 	int no_remap;
