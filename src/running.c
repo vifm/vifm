@@ -124,7 +124,8 @@ static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 static void output_to_statusbar(const char cmd[], view_t *view,
 		MacroFlags flags);
 static int output_to_preview(view_t *view, const char cmd[], MacroFlags flags);
-static void run_in_split(const view_t *view, const char cmd[], int vert_split);
+static void run_in_split(const view_t *view, const char cmd[], int vert_split,
+		int pause);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
 
@@ -581,7 +582,7 @@ run_explicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	bg = !pause && (bg || force_bg);
 
 	int save_msg = 0;
-	if(rn_ext(view, cmd, prog_spec, flags, bg, &save_msg) != 0)
+	if(rn_ext(view, cmd, prog_spec, flags, pause, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
@@ -1217,7 +1218,7 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 
 int
 rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
-		int bg, int *save_msg)
+		int pause, int bg, int *save_msg)
 {
 	if(bg && (ma_flags_missing(flags, MF_NONE) &&
 	          ma_flags_missing(flags, MF_NO_TERM_MUX) &&
@@ -1285,7 +1286,7 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 	        curr_stats.term_multiplexer != TM_NONE)
 	{
 		const int vert_split = ma_flags_present(flags, MF_SPLIT_VERT);
-		run_in_split(view, cmd, vert_split);
+		run_in_split(view, cmd, vert_split, pause);
 	}
 	else if(ma_flags_present(flags, MF_CUSTOMVIEW_OUTPUT) ||
 	        ma_flags_present(flags, MF_VERYCUSTOMVIEW_OUTPUT) ||
@@ -1372,11 +1373,19 @@ output_to_preview(view_t *view, const char cmd[], MacroFlags flags)
 /* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
  * is NULL. */
 static void
-run_in_split(const view_t *view, const char cmd[], int vert_split)
+run_in_split(const view_t *view, const char cmd[], int vert_split, int pause)
 {
-	char *const escaped_cmd = (cmd == NULL)
-	                        ? strdup(cfg.shell)
-	                        : shell_arg_escape(cmd, curr_stats.shell_type);
+	char *escaped_cmd;
+	if(cmd == NULL)
+	{
+		escaped_cmd = strdup(cfg.shell);
+	}
+	else
+	{
+		char *raw_shell_cmd = format_str("%s%s", cmd, pause ? PAUSE_STR : "");
+		escaped_cmd = shell_arg_escape(raw_shell_cmd, curr_stats.shell_type);
+		free(raw_shell_cmd);
+	}
 
 	setup_shellout_env();
 

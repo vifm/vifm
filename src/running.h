@@ -83,7 +83,7 @@ int rn_open_with_match(struct view_t *view, const char beginning[],
  *  - = 0 -- not handled at all;
  *  - < 0 -- handled, exit. */
 int rn_ext(struct view_t *view, const char cmd[], const char title[],
-		MacroFlags flags, int bg, int *save_msg);
+		MacroFlags flags, int pause, int bg, int *save_msg);
 
 /* Starts background command optionally handling input redirection. */
 void rn_start_bg_command(struct view_t *view, const char cmd[],

@@ -1043,7 +1043,8 @@ emark_cmd(const cmd_info_t *cmd_info)
 
 	MacroFlags flags = (MacroFlags)cmd_info->usr1;
 	char *title = format_str("!%s", cmd_info->raw_args);
-	int handled = rn_ext(curr_view, com, title, flags, cmd_info->bg, &save_msg);
+	int handled = rn_ext(curr_view, com, title, flags, /*pause=*/cmd_info->emark,
+			cmd_info->bg, &save_msg);
 	free(title);
 
 	if(handled > 0)
@@ -5757,7 +5758,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	char *title = format_str(":%s%s%s", cmd_info->user_cmd,
 			(cmd_info->raw_args[0] == '\0' ? "" : " "), cmd_info->raw_args);
-	int handled = rn_ext(curr_view, expanded_com, title, flags, bg, &save_msg);
+	int handled = rn_ext(curr_view, expanded_com, title, flags, /*pause=*/0, bg,
+			&save_msg);
 	free(title);
 
 	const int use_term_multiplexer = ma_flags_missing(flags, MF_NO_TERM_MUX);

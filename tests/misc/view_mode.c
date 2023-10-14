@@ -129,8 +129,8 @@ TEST(command_for_quickview_is_not_expanded_again)
 	update_string(&curr_view->dir_entry[0].name, "fake");
 
 	int save_msg;
-	assert_true(rn_ext(curr_view, "echo %d%c", "title", MF_PREVIEW_OUTPUT, 0,
-		&save_msg) < 0);
+	assert_true(rn_ext(curr_view, "echo %d%c", "title", MF_PREVIEW_OUTPUT,
+				/*pause=*/0, /*bg=*/0, &save_msg) < 0);
 
 	strlist_t lines = modview_lines(curr_stats.preview.explore);
 	assert_int_equal(1, lines.nitems);
@@ -152,7 +152,8 @@ TEST(quickview_command_with_input_redirection, IF(have_cat))
 
 	int save_msg;
 	assert_true(rn_ext(curr_view, "cat", "title",
-				MF_PREVIEW_OUTPUT | MF_PIPE_FILE_LIST, 0, &save_msg) < 0);
+				MF_PREVIEW_OUTPUT | MF_PIPE_FILE_LIST, /*pause=*/0, /*bg=*/0,
+				&save_msg) < 0);
 
 	strlist_t lines = modview_lines(curr_stats.preview.explore);
 	assert_int_equal(1, lines.nitems);
