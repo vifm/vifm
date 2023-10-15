@@ -1053,7 +1053,8 @@ split_and_get_dc(char str[], char **state)
 			ptr = str + strlen(str);
 		}
 
-		while(isspace(*str) || *str == ',')
+		/* TODO: maybe drop this loop and adjust callers accordingly. */
+		while(isspace(*str))
 		{
 			++str;
 		}
@@ -1065,7 +1066,7 @@ split_and_get_dc(char str[], char **state)
 			break;
 		}
 
-		str = ptr;
+		str = (ptr[0] == '\0' ? NULL : ptr);
 	}
 
 	if(str == NULL)

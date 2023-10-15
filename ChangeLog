@@ -142,6 +142,9 @@
 	Fixed !! not affecting commands that include %s or %v macro.  Thanks to
 	James Dietrich.
 
+	Fixed parsing of comma-separated lists hanging on empty last element and
+	skipping leading commas.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

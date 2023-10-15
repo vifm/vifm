@@ -298,7 +298,8 @@ void replace_char(char str[], char from, char to);
 char * split_and_get(char str[], char sep, char **state);
 
 /* Like split_and_get(), but works on comma-separated list with double commas
- * signifying literal comma character. */
+ * signifying literal comma character.  Additionally skips leading whitespace of
+ * entries (if an entry contains only whitespace, it won't be returned). */
 char * split_and_get_dc(char str[], char **state);
 
 /* Counts lines in the text.  Considers wrapping around max_width column unless
