@@ -5724,7 +5724,6 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	char *expanded_com;
 	MacroFlags flags;
 	int external = 1;
-	int bg;
 	int save_msg = 0;
 
 	MacroExpandReason mer = MER_OP;
@@ -5752,13 +5751,25 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		return sm != 0;
 	}
 
-	bg = parse_bg_mark(expanded_com);
+	int bg = parse_bg_mark(expanded_com);
+	int pause = 0;
+	const char *ext_cmd = expanded_com;
+	if(*ext_cmd == '!')
+	{
+		++ext_cmd;
+		if(*ext_cmd == '!')
+		{
+			pause = 1;
+			++ext_cmd;
+		}
+		ext_cmd = skip_whitespace(ext_cmd);
+	}
 
 	flist_sel_stash(curr_view);
 
 	char *title = format_str(":%s%s%s", cmd_info->user_cmd,
 			(cmd_info->raw_args[0] == '\0' ? "" : " "), cmd_info->raw_args);
-	int handled = rn_ext(curr_view, expanded_com, title, flags, /*pause=*/0, bg,
+	int handled = rn_ext(curr_view, ext_cmd, title, flags, pause, bg,
 			&save_msg);
 	free(title);
 
@@ -5782,24 +5793,17 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(expanded_com[0] == '!')
 	{
-		char *com_beginning = expanded_com;
-		int pause = 0;
-		com_beginning++;
-		if(*com_beginning == '!')
+		if(*ext_cmd != '\0')
 		{
-			pause = 1;
-			com_beginning++;
-		}
-		com_beginning = skip_whitespace(com_beginning);
-
-		if(*com_beginning != '\0' && bg)
-		{
-			bg_run_external(com_beginning, 0, SHELL_BY_USER, NULL);
-		}
-		else if(strlen(com_beginning) > 0)
-		{
-			rn_shell(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					use_term_multiplexer, SHELL_BY_USER);
+			if(bg)
+			{
+				bg_run_external(ext_cmd, 0, SHELL_BY_USER, NULL);
+			}
+			else
+			{
+				rn_shell(ext_cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+						use_term_multiplexer, SHELL_BY_USER);
+			}
 		}
 	}
 	else if(expanded_com[0] == '/')

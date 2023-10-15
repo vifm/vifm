@@ -62,6 +62,9 @@
 	Clarify documentation on column literals and escaping.  Thanks to
 	chelovechishko.
 
+	Allow and skip !/!! prefix of custom external :commands for more
+	macros (%S, %q, %i, %m, %M, %s, %v, %u, %U, %Iu, %IU).
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
