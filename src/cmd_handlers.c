@@ -1239,11 +1239,15 @@ aucmd_list_cb(const char event[], const char pattern[], int negated,
 		const char action[], void *arg)
 {
 	vle_textbuf *msg = arg;
-	const char *fmt = (strlen(pattern) <= 10)
-	                ? "%-10s %s%-10s %s"
-	                : "%-10s %s%-10s\n                      %s";
 
-	vle_tb_append_linef(msg, fmt, event, negated ? "!" : "", pattern, action);
+	int pattern_len = (negated ? 1 : 0) + strlen(pattern);
+	const char *fmt = (pattern_len <= 10)
+	                ? "%-10s %s%-*s %s"
+	                : "%-10s %s%-*s\n                      %s";
+	int max_pattern_width = (negated ? 9 : 10);
+
+	vle_tb_append_linef(msg, fmt, event, negated ? "!" : "",
+			max_pattern_width, pattern, action);
 }
 
 /* Unregisters a navigation mapping. */

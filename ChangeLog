@@ -145,6 +145,9 @@
 	Fixed parsing of comma-separated lists hanging on empty last element and
 	skipping leading commas.
 
+	Fixed output formatting of :autocmd (pattern negation broke column
+	alignment and wrapping).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
