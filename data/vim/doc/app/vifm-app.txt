@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Oct 1
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Oct 16
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2951,7 +2951,10 @@ The command macros may be used in user commands.
                                                                *vifm-%N*
   %N        do not detach viewer from terminal session (keeps `/dev/tty`
             available) or process group (keeps the command in the set of
-            foreground clients of the terminal).
+            foreground clients of the terminal).  This flag is a workaround
+            for rare commands/terminals which might need a working TTY for
+            |vifm-:fileviewer| command to operate correctly and has no effect
+            otherwise.
                                                                *vifm-%i*
   %i        run in background and suppress error dialogs, but collect
             errors internally for viewing via |vifm-:jobs| menu.

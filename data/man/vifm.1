@@ -1,4 +1,4 @@
-.TH VIFM 1 "1 Oct 2023" "vifm 0.13"
+.TH VIFM 1 "16 Oct 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3569,7 +3569,10 @@ Forbid use of terminal multiplexer to run the command.
 .BI %N
 Do not detach viewer from terminal session (keeps `/dev/tty`
 available) or process group (keeps the command in the set of
-foreground clients of the terminal).
+foreground clients of the terminal).  This flag is a workaround
+for rare commands/terminals which might need a working TTY for
+:fileviewer command to operate correctly and has no effect
+otherwise.
 .TP
 .BI %i
 Run in background and suppress error dialogs, but collect
