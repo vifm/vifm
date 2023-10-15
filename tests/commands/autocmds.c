@@ -9,6 +9,7 @@
 #include "../../src/compat/os.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/autocmds.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
@@ -18,6 +19,7 @@
 #include "../../src/status.h"
 
 static int change_view_directory(view_t *view, const char path[]);
+static void check_autocmd_print(const char cmd[], const char output[]);
 
 static char sandbox[PATH_MAX + 1];
 static char test_data[PATH_MAX + 1];
@@ -346,6 +348,30 @@ TEST(autocmd_in_vifmrc_affects_only_current_view)
 	assert_false(rwin.hide_dot);
 }
 
+TEST(list_autocmds)
+{
+	check_autocmd_print("auto DirEnter pat p",
+			"DirEnter   pat        p");
+	check_autocmd_print("auto DirEnter !pat n",
+			"DirEnter   !pat       n");
+	check_autocmd_print("auto DirEnter 0123456789 0",
+			"DirEnter   0123456789 0");
+	check_autocmd_print("auto DirEnter 01234567890 1",
+			"DirEnter   01234567890\n"
+			"                      1");
+	check_autocmd_print("auto DirEnter !012345678 2",
+			"DirEnter   !012345678 2");
+	check_autocmd_print("auto DirEnter !0123456789 3",
+			"DirEnter   !0123456789\n"
+			"                      3");
+	check_autocmd_print("auto DirEnter looongpattern x",
+			"DirEnter   looongpattern\n"
+			"                      x");
+	check_autocmd_print("auto DirEnter !looongpattern y",
+			"DirEnter   !looongpattern\n"
+			"                      y");
+}
+
 /* Windows has various limitations on characters used in file names. */
 TEST(tilde_is_expanded_after_negation, IF(not_windows))
 {
@@ -375,6 +401,17 @@ change_view_directory(view_t *view, const char path[])
 		assert_success(populate_dir_list(view, 0));
 	}
 	return ret;
+}
+
+static void
+check_autocmd_print(const char cmd[], const char output[])
+{
+	assert_success(cmds_dispatch("auto!", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1(cmd, &lwin, CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("auto", &lwin, CIT_COMMAND));
+	assert_string_equal(output, ui_sb_last());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

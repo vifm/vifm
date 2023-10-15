@@ -59,6 +59,12 @@
 	Don't show a message at the end of 'incsearch' if the cursor was moved not
 	by the search.  Patch by filterfalse.
 
+	Clarify documentation on column literals and escaping.  Thanks to
+	chelovechishko.
+
+	Allow and skip !/!! prefix of custom external :commands for more
+	macros (%S, %q, %i, %m, %M, %s, %v, %u, %U, %Iu, %IU).
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -129,6 +135,18 @@
 
 	Fixed tiny memory leak on trying to list abbreviations when there are
 	none.
+
+	Fixed `:[un]select !<text/html>` treating "<text/html>" as an external
+	command.
+
+	Fixed !! not affecting commands that include %s or %v macro.  Thanks to
+	James Dietrich.
+
+	Fixed parsing of comma-separated lists hanging on empty last element and
+	skipping leading commas.
+
+	Fixed output formatting of :autocmd (pattern negation broke column
+	alignment and wrapping).
 
 0.13-beta to 0.13 (2023-04-04)
 

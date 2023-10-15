@@ -1043,7 +1043,8 @@ emark_cmd(const cmd_info_t *cmd_info)
 
 	MacroFlags flags = (MacroFlags)cmd_info->usr1;
 	char *title = format_str("!%s", cmd_info->raw_args);
-	int handled = rn_ext(curr_view, com, title, flags, cmd_info->bg, &save_msg);
+	int handled = rn_ext(curr_view, com, title, flags, /*pause=*/cmd_info->emark,
+			cmd_info->bg, &save_msg);
 	free(title);
 
 	if(handled > 0)
@@ -1238,11 +1239,15 @@ aucmd_list_cb(const char event[], const char pattern[], int negated,
 		const char action[], void *arg)
 {
 	vle_textbuf *msg = arg;
-	const char *fmt = (strlen(pattern) <= 10)
-	                ? "%-10s %s%-10s %s"
-	                : "%-10s %s%-10s\n                      %s";
 
-	vle_tb_append_linef(msg, fmt, event, negated ? "!" : "", pattern, action);
+	int pattern_len = (negated ? 1 : 0) + strlen(pattern);
+	const char *fmt = (pattern_len <= 10)
+	                ? "%-10s %s%-*s %s"
+	                : "%-10s %s%-*s\n                      %s";
+	int max_pattern_width = (negated ? 9 : 10);
+
+	vle_tb_append_linef(msg, fmt, event, negated ? "!" : "",
+			max_pattern_width, pattern, action);
 }
 
 /* Unregisters a navigation mapping. */
@@ -4419,7 +4424,7 @@ select_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Either range or argument should be supplied.");
 		error = 1;
 	}
-	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
+	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{<", cmd_info->args[1]))
 	{
 		error = flist_sel_by_filter(curr_view, cmd_info->args + 1, cmd_info->emark,
 				1);
@@ -5276,7 +5281,7 @@ unselect_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Either range or argument should be supplied.");
 		error = 1;
 	}
-	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
+	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{<", cmd_info->args[1]))
 	{
 		error = flist_sel_by_filter(curr_view, cmd_info->args + 1, cmd_info->emark,
 				0);
@@ -5723,7 +5728,6 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	char *expanded_com;
 	MacroFlags flags;
 	int external = 1;
-	int bg;
 	int save_msg = 0;
 
 	MacroExpandReason mer = MER_OP;
@@ -5751,13 +5755,26 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		return sm != 0;
 	}
 
-	bg = parse_bg_mark(expanded_com);
+	int bg = parse_bg_mark(expanded_com);
+	int pause = 0;
+	const char *ext_cmd = expanded_com;
+	if(*ext_cmd == '!')
+	{
+		++ext_cmd;
+		if(*ext_cmd == '!')
+		{
+			pause = 1;
+			++ext_cmd;
+		}
+		ext_cmd = skip_whitespace(ext_cmd);
+	}
 
 	flist_sel_stash(curr_view);
 
 	char *title = format_str(":%s%s%s", cmd_info->user_cmd,
 			(cmd_info->raw_args[0] == '\0' ? "" : " "), cmd_info->raw_args);
-	int handled = rn_ext(curr_view, expanded_com, title, flags, bg, &save_msg);
+	int handled = rn_ext(curr_view, ext_cmd, title, flags, pause, bg,
+			&save_msg);
 	free(title);
 
 	const int use_term_multiplexer = ma_flags_missing(flags, MF_NO_TERM_MUX);
@@ -5780,24 +5797,17 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(expanded_com[0] == '!')
 	{
-		char *com_beginning = expanded_com;
-		int pause = 0;
-		com_beginning++;
-		if(*com_beginning == '!')
+		if(*ext_cmd != '\0')
 		{
-			pause = 1;
-			com_beginning++;
-		}
-		com_beginning = skip_whitespace(com_beginning);
-
-		if(*com_beginning != '\0' && bg)
-		{
-			bg_run_external(com_beginning, 0, SHELL_BY_USER, NULL);
-		}
-		else if(strlen(com_beginning) > 0)
-		{
-			rn_shell(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					use_term_multiplexer, SHELL_BY_USER);
+			if(bg)
+			{
+				bg_run_external(ext_cmd, 0, SHELL_BY_USER, NULL);
+			}
+			else
+			{
+				rn_shell(ext_cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+						use_term_multiplexer, SHELL_BY_USER);
+			}
 		}
 	}
 	else if(expanded_com[0] == '/')

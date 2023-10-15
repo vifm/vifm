@@ -464,6 +464,18 @@ TEST(pipe_in_pattern_does_not_separate_commands)
 	assert_success(cmds_dispatch("unselect /first|second/", &lwin, CIT_COMMAND));
 }
 
+TEST(negated_mimetype_matcher_is_handled)
+{
+	/* !<bla> must not be taken for a request to run an external command. */
+
+	add_some_files_to_view(&lwin);
+
+	assert_success(cmds_dispatch("select !<bla>{*.c}", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_success(cmds_dispatch("unselect !<bla>{*.c}", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+}
+
 static void
 add_some_files_to_view(view_t *view)
 {

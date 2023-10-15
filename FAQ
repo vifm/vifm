@@ -1,8 +1,14 @@
-Q: Vifm fails to display some files, is it a bug?
+Q: Vifm fails to display some files which present on file system, is it a bug?
 
 A: Most likely reason for missing files are name filters.  Use `:filter?`
-   command to see their state or try pressing zO shortcut to disable all
+   command to see their state or try pressing zR shortcut to disable all
    filters (undo that with zM).
+
+   You got there probably by pressing zf on a file by accident at some point.
+   In this case the file will be missing only in one of the panes.
+   If you don't have :filter in your vifmrc and 'vifminfo' includes "state"
+   value, such accidental filtering will persist across restarts of Vifm until
+   you use :filter command or press a key like zO that resets permanent filter.
 
 --------------------------------------------------------------------------------
 Q: Vifm doesn't run executables, what's wrong with it?

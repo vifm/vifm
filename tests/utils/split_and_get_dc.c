@@ -12,6 +12,41 @@ TEST(empty_string_null_returned)
 	assert_string_equal(NULL, part = split_and_get_dc(part, &state));
 }
 
+TEST(single_comma_produces_nothing)
+{
+	char input[] = ",";
+	char *part = input, *state = NULL;
+
+	assert_string_equal(NULL, part = split_and_get_dc(part, &state));
+}
+
+TEST(double_comma_produces_comma)
+{
+	char input[] = ",,";
+	char *part = input, *state = NULL;
+
+	assert_string_equal(",", part = split_and_get_dc(part, &state));
+	assert_string_equal(NULL, part = split_and_get_dc(part, &state));
+}
+
+TEST(triple_comma_produces_comma)
+{
+	char input[] = ",,,";
+	char *part = input, *state = NULL;
+
+	assert_string_equal(",", part = split_and_get_dc(part, &state));
+	assert_string_equal(NULL, part = split_and_get_dc(part, &state));
+}
+
+TEST(quadruple_comma_produces_doublecomma)
+{
+	char input[] = ",,,,";
+	char *part = input, *state = NULL;
+
+	assert_string_equal(",,", part = split_and_get_dc(part, &state));
+	assert_string_equal(NULL, part = split_and_get_dc(part, &state));
+}
+
 TEST(several_elements_are_extracted)
 {
 	char input[] = ":dir:/,:link:@";
