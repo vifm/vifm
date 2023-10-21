@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Oct 16
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Oct 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2993,10 +2993,10 @@ The command macros may be used in user commands.
 Use %% if you need to put a percent sign in your command.
 
 Note that %i, %Iu, %IU, %m, %M, %n, %q, %s, %S, %u, %U and %v macros are
-mutually exclusive.  Only the last one of them on the command will take
+mutually exclusive.  Only the last one of them in the command will take
 effect.
 
-Note that %Pl and %Pz are mutually exclusive.  Only the last one of them on
+Note that %Pl and %Pz are mutually exclusive.  Only the last one of them in
 the command will take effect.
 
                                                      *vifm-filename-modifiers*
@@ -6433,7 +6433,7 @@ also erases information about previous edits.
 Note: <ScrollWheelDown> is not available on 32-bit *nix systems, because
 ncurses doesn't support it there (limitation of implementation).
 
-Note: these are not available in mappings at the momemnt.
+Note: these are not available in mappings at the moment.
 
                                                *vifm-mouse-overview*
 Normal Mode:
