@@ -358,12 +358,14 @@ TEST(flags_from_different_sets)
 	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_PREVIEW_OUTPUT, flags);
 	free(expanded);
 
-	expanded = ma_expand("echo%m%pu%Pz", "", &flags, MER_OP);
+	expanded = ma_expand("echo%m%pu%Pz%N", "", &flags, MER_OP);
 	assert_string_equal("echo", expanded);
-	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_MENU_OUTPUT | MF_NO_CACHE, flags);
+	assert_int_equal(MF_PIPE_FILE_LIST_Z | MF_MENU_OUTPUT | MF_NO_CACHE |
+			MF_KEEP_IN_FG, flags);
 	assert_true(ma_flags_present(flags, MF_PIPE_FILE_LIST_Z));
 	assert_true(ma_flags_present(flags, MF_MENU_OUTPUT));
 	assert_true(ma_flags_present(flags, MF_NO_CACHE));
+	assert_true(ma_flags_present(flags, MF_KEEP_IN_FG));
 	free(expanded);
 }
 
