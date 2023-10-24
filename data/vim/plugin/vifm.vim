@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2023 August 18
+" Last Change: 2023 October 24
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -94,6 +94,16 @@ function s:DetermineTermEnv() abort
 	return $TERM
 endfunction
 
+function s:UniqueBufferName(name) abort
+	let i = 2
+	let name = a:name
+	while bufexists(name)
+		let name = a:name . ' (' . i . ')'
+		let i = i + 1
+	endwhile
+	return name
+endfunction
+
 function! s:StartVifm(mods, count, editcmd, ...) abort
 	if a:0 > 2
 		echoerr 'Too many arguments'
@@ -186,7 +196,8 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 			call termopen(termcmd, data)
 
 			let oldbuf = bufname('%')
-			execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
+			let newbuf = s:UniqueBufferName('vifm: '.a:editcmd)
+			execute 'keepalt file' escape(newbuf, ' |')
 			" This is for Neovim, which uses these options even in terminal mode
 			setlocal nonumber norelativenumber nospell
 			execute bufnr(oldbuf).'bwipeout'
