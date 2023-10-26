@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/variables.h"
@@ -37,6 +39,14 @@ TEST(envvars_are_expanded)
 	let_variables("$TEST_ENVVAR = 'envvars_are_expanded'");
 	assert_success(get_cmd_path("$TEST_ENVVAR/prog", sizeof(path), path));
 	assert_string_equal("envvars_are_expanded/prog", path);
+}
+
+TEST(envvars_are_expanded_for_path_search, IF(have_cat))
+{
+	char path[PATH_MAX + 1];
+	let_variables("$TEST_ENVVAR = 'cat'");
+	assert_success(get_cmd_path("$TEST_ENVVAR", sizeof(path), path));
+	assert_string_ends_with("/cat", path);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

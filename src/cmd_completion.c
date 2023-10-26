@@ -1495,15 +1495,20 @@ get_cmd_path(const char cmd[], size_t path_len, char path[])
 		cmd += 2;
 	}
 
+	char *const expanded = replace_tilde(expand_envvars(cmd, EEF_NONE));
+
+	int failed;
 	if(contains_slash(cmd))
 	{
-		char *const expanded = replace_tilde(expand_envvars(cmd, EEF_NONE));
 		copy_str(path, path_len, expanded);
-		free(expanded);
-		return 0;
+		failed = 0;
 	}
-
-	return find_cmd_in_path(cmd, path_len, path);
+	else
+	{
+		failed = find_cmd_in_path(expanded, path_len, path);
+	}
+	free(expanded);
+	return failed;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
