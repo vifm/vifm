@@ -1496,12 +1496,20 @@ get_cmd_path(const char cmd[], size_t path_len, char path[])
 	}
 
 	char *const expanded = replace_tilde(expand_envvars(cmd, EEF_NONE));
+	if(expanded == NULL)
+	{
+		return 1;
+	}
 
 	int failed;
 	if(contains_slash(cmd))
 	{
-		copy_str(path, path_len, expanded);
 		failed = 0;
+		if(copy_str(path, path_len, expanded) == path_len && path_len > 0 &&
+				path[path_len - 1] != '\0')
+		{
+			failed = 1;
+		}
 	}
 	else
 	{
