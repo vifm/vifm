@@ -46,13 +46,13 @@
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
-#include "cmd_completion.h"
 #include "cmd_core.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "ipc.h"
 #include "opt_handlers.h"
 #include "plugins.h"
+#include "running.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
  * identify the host. */
@@ -241,11 +241,11 @@ load_def_values(status_t *stats, config_t *config)
 static void
 determine_fuse_umount_cmd(status_t *stats)
 {
-	if(external_command_exists("fusermount"))
+	if(rn_cmd_exists("fusermount"))
 	{
 		stats->fuse_umount_cmd = "fusermount -u";
 	}
-	else if(external_command_exists("umount"))
+	else if(rn_cmd_exists("umount"))
 	{
 		/* Some systems use regular umount command for FUSE. */
 		stats->fuse_umount_cmd = "umount";

@@ -74,7 +74,6 @@
 #include "background.h"
 #include "bracket_notation.h"
 #include "builtin_functions.h"
-#include "cmd_completion.h"
 #include "cmd_core.h"
 #include "event_loop.h"
 #include "filelist.h"
@@ -235,7 +234,7 @@ vifm_main(int argc, char *argv[])
 
 	/* Tell file type module what function to use to check availability of
 	 * external programs. */
-	ft_init(&external_command_exists);
+	ft_init(&rn_cmd_exists);
 	/* This should be called before loading any configuration file. */
 	ft_reset(curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 

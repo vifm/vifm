@@ -137,15 +137,6 @@ void complete_user_name(const char *str);
 
 void complete_group_name(const char *str);
 
-/* Checks whether program with given name is an executable that present in the
- * $PATH environment variable or can be found by full path. */
-int external_command_exists(const char cmd[]);
-
-/* Gets path to an executable expanding command name using $PATH if needed.
- * Might not include extension of a command on Windows.  Returns zero on
- * success, otherwise non-zero is returned. */
-int get_cmd_path(const char cmd[], size_t path_len, char path[]);
-
 #endif /* VIFM__CMD_COMPLETION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
