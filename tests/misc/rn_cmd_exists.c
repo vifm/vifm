@@ -2,8 +2,8 @@
 
 #include <test-utils.h>
 
-#include "../../src/cmd_completion.h"
 #include "../../src/filetype.h"
+#include "../../src/running.h"
 #include "../../src/status.h"
 
 TEST(system_shell_exists)
@@ -13,22 +13,22 @@ TEST(system_shell_exists)
 #else
 	const char *const shell = "sh";
 #endif
-	const int exists = external_command_exists(shell);
+	const int exists = rn_cmd_exists(shell);
 	assert_true(exists);
 }
 
 TEST(start_always_exists_in_cmd_like_shells)
 {
 	curr_stats.shell_type = ST_CMD;
-	assert_true(external_command_exists("start"));
+	assert_true(rn_cmd_exists("start"));
 
 	curr_stats.shell_type = ST_YORI;
-	assert_true(external_command_exists("start"));
+	assert_true(rn_cmd_exists("start"));
 }
 
 TEST(exe_path_with_backslashes, IF(windows))
 {
-	ft_init(&external_command_exists);
+	ft_init(&rn_cmd_exists);
 	create_dir(SANDBOX_PATH "/dir");
 	create_executable(SANDBOX_PATH "/dir/exe.exe");
 

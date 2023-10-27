@@ -100,6 +100,16 @@ int rn_for_flist(struct view_t *view, const char cmd[], const char title[],
 int rn_for_lines(struct view_t *view, const char cmd[], char ***lines,
 		int *nlines, MacroFlags flags);
 
+/* Checks whether program with the given name is an executable that is present
+ * in the $PATH environment variable or can be found by full path.  Returns
+ * non-zero if so. */
+int rn_cmd_exists(const char cmd[]);
+
+/* Gets path to an executable expanding command name using $PATH if needed.
+ * Might not include extension of a command on Windows.  Returns zero on
+ * success, otherwise non-zero is returned. */
+int rn_find_cmd(const char cmd[], size_t path_len, char path[]);
+
 #endif /* VIFM__RUNNING_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

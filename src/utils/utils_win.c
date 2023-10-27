@@ -45,7 +45,7 @@
 #include "../compat/os.h"
 #include "../compat/wcwidth.h"
 #include "../ui/ui.h"
-#include "../cmd_completion.h"
+#include "../running.h"
 #include "../status.h"
 #include "cancellation.h"
 #include "env.h"
@@ -424,7 +424,7 @@ should_wait_for_program(const char cmd[])
 	(void)extract_cmd_name(cmd, 0, sizeof(name), name);
 	system_to_internal_slashes(name);
 
-	if(get_cmd_path(name, sizeof(path), path) == 0)
+	if(rn_find_cmd(name, sizeof(path), path) == 0)
 	{
 		return get_subsystem(path) != SUBSYSTEM_GUI;
 	}

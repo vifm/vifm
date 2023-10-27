@@ -448,15 +448,19 @@ ma_flags_set(MacroFlags *flags, MacroFlags flag)
 	}
 	else if(flag < MF_SECOND_SET_)
 	{
-		*flags = (*flags & ~0x00f) | flag;
+		*flags = (*flags & ~0x000f) | flag;
 	}
 	else if(flag < MF_THIRD_SET_)
 	{
-		*flags = (*flags & ~0x0f0) | flag;
+		*flags = (*flags & ~0x00f0) | flag;
+	}
+	else if(flag < MF_FOURTH_SET_)
+	{
+		*flags = (*flags & ~0x0f00) | flag;
 	}
 	else
 	{
-		*flags = (*flags & ~0xf00) | flag;
+		*flags = (*flags & ~0xf000) | flag;
 	}
 }
 
@@ -893,15 +897,19 @@ ma_flags_present(MacroFlags flags, MacroFlags flag)
 	}
 	else if(flag < MF_SECOND_SET_)
 	{
-		return ((flags & 0x00f) == flag);
+		return ((flags & 0x000f) == flag);
 	}
 	else if(flag < MF_THIRD_SET_)
 	{
-		return ((flags & 0x0f0) == flag);
+		return ((flags & 0x00f0) == flag);
+	}
+	else if(flag < MF_FOURTH_SET_)
+	{
+		return ((flags & 0x0f00) == flag);
 	}
 	else
 	{
-		return ((flags & 0xf00) == flag);
+		return ((flags & 0xf000) == flag);
 	}
 }
 
@@ -919,6 +927,7 @@ ma_flags_to_str(MacroFlags flags)
 		case MF_FIRST_SET_:
 		case MF_SECOND_SET_:
 		case MF_THIRD_SET_:
+		case MF_FOURTH_SET_:
 		case MF_NONE: return "";
 
 		case MF_MENU_OUTPUT: return "%m";

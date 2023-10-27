@@ -1545,5 +1545,63 @@ line_handler(const char line[], void *arg)
 	list->nitems = add_to_string_array(&list->items, list->nitems, line);
 }
 
+int
+rn_cmd_exists(const char cmd[])
+{
+	if(vlua_handler_cmd(curr_stats.vlua, cmd))
+	{
+		return vlua_handler_present(curr_stats.vlua, cmd);
+	}
+
+	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
+	{
+		/* This is a builtin command. */
+		if(stroscmp(cmd, "start") == 0)
+		{
+			return 1;
+		}
+	}
+
+	char path[PATH_MAX + 1];
+	if(rn_find_cmd(cmd, sizeof(path), path) == 0)
+	{
+		return executable_exists(path);
+	}
+
+	return 0;
+}
+
+int
+rn_find_cmd(const char cmd[], size_t path_len, char path[])
+{
+	if(starts_with(cmd, "!!"))
+	{
+		cmd += 2;
+	}
+
+	char *const expanded = replace_tilde(expand_envvars(cmd, EEF_NONE));
+	if(expanded == NULL)
+	{
+		return 1;
+	}
+
+	int failed;
+	if(contains_slash(cmd))
+	{
+		failed = 0;
+		if(copy_str(path, path_len, expanded) == path_len && path_len > 0 &&
+				path[path_len - 1] != '\0')
+		{
+			failed = 1;
+		}
+	}
+	else
+	{
+		failed = find_cmd_in_path(expanded, path_len, path);
+	}
+	free(expanded);
+	return failed;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -1461,50 +1461,5 @@ file_matches(const char fname[], const char prefix[], size_t prefix_len)
 	return (cmp == 0);
 }
 
-int
-external_command_exists(const char cmd[])
-{
-	if(vlua_handler_cmd(curr_stats.vlua, cmd))
-	{
-		return vlua_handler_present(curr_stats.vlua, cmd);
-	}
-
-	if(curr_stats.shell_type == ST_CMD || curr_stats.shell_type == ST_YORI)
-	{
-		/* This is a builtin command. */
-		if(stroscmp(cmd, "start") == 0)
-		{
-			return 1;
-		}
-	}
-
-	char path[PATH_MAX + 1];
-	if(get_cmd_path(cmd, sizeof(path), path) == 0)
-	{
-		return executable_exists(path);
-	}
-
-	return 0;
-}
-
-int
-get_cmd_path(const char cmd[], size_t path_len, char path[])
-{
-	if(starts_with(cmd, "!!"))
-	{
-		cmd += 2;
-	}
-
-	if(contains_slash(cmd))
-	{
-		char *const expanded = replace_tilde(expand_envvars(cmd, EEF_NONE));
-		copy_str(path, path_len, expanded);
-		free(expanded);
-		return 0;
-	}
-
-	return find_cmd_in_path(cmd, path_len, path);
-}
-
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

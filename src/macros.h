@@ -50,9 +50,6 @@ typedef enum
 	MF_IGNORE,      /* Completely ignore command output. */
 	MF_NO_TERM_MUX, /* Forbid using terminal multiplexer, even if active. */
 
-	MF_KEEP_IN_FG, /* Don't detach command from terminal session or process
-	                  group. */
-
 	/* Second set of mutually exclusive flags. */
 	MF_SECOND_SET_ = 0x10,
 
@@ -63,6 +60,13 @@ typedef enum
 	MF_THIRD_SET_ = 0x100,
 
 	MF_NO_CACHE = 0x200, /* Inhibit caching of preview results. */
+
+	/* Fourth set of mutually exclusive flags. */
+	MF_FOURTH_SET_ = 0x1000,
+
+	/* Don't detach command from terminal session or process group.  In separate
+	 * group so it can safely appear among other flags without disabling them. */
+	MF_KEEP_IN_FG = 0x2000,
 }
 MacroFlags;
 
