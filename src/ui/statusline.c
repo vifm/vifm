@@ -140,11 +140,21 @@ split_and_print_status_line(view_t *view, int width)
 		}
 
 		cline_t result = expand_status_line_macros(view, current);
-		assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
-		result.line = break_in_two(result.line, width, "%=");
-		result.attrs = break_in_two(result.attrs, width, "=");
-		checked_wmove(stat_win, line++, 0);
-		cline_print(&result, stat_win, &cfg.cs.color[STATUS_LINE_COLOR]);
+		if(result.line != NULL && result.attrs != NULL)
+		{
+			assert(strlen(result.attrs) == utf8_strsw(result.line) &&
+					"Broken attrs!");
+
+			result.line = break_in_two(result.line, width, "%=");
+			result.attrs = break_in_two(result.attrs, width, "=");
+			if(result.line != NULL && result.attrs != NULL)
+			{
+				checked_wmove(stat_win, line, 0);
+				cline_print(&result, stat_win, &cfg.cs.color[STATUS_LINE_COLOR]);
+			}
+		}
+
+		++line;
 		cline_dispose(&result);
 	}
 
