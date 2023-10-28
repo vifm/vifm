@@ -1151,6 +1151,10 @@ put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
 		int is_partial, CompareType ct)
 {
 	compare_record_t *const record = malloc(sizeof(*record));
+	if(record == NULL)
+	{
+		return;
+	}
 
 	record->id = id;
 	record->is_partial = is_partial;
