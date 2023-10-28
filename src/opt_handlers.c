@@ -2128,6 +2128,12 @@ static void
 fillchars_handler(OPT_OP op, optval_t val)
 {
 	char *new_val = strdup(val.str_val);
+	if(new_val == NULL)
+	{
+		load_fillchars();
+		return;
+	}
+
 	char *part = new_val, *state = NULL;
 
 	/* Save current state and load default values. */
@@ -2137,6 +2143,16 @@ fillchars_handler(OPT_OP op, optval_t val)
 	cfg.vborder_filler = strdup(" ");
 	cfg.hborder_filler = strdup("");
 	cfg.millersep_filler = strdup("");
+
+	if(cfg.vborder_filler == NULL || cfg.hborder_filler == NULL ||
+			cfg.millersep_filler == NULL)
+	{
+		put_string(&cfg.vborder_filler, old_vborder);
+		put_string(&cfg.hborder_filler, old_hborder);
+		put_string(&cfg.millersep_filler, old_millersep);
+		load_fillchars();
+		return;
+	}
 
 	int error = 0;
 	while((part = split_and_get(part, ',', &state)) != NULL)
