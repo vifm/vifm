@@ -574,6 +574,51 @@ stralign(char str[], size_t width, char pad, int left_align)
 	}
 }
 
+void
+get_left_cut_range(const char str[], size_t max_width, size_t* cut_from, size_t* cut_to)
+{
+	size_t width = utf8_strsw(str);
+	const char *suffix = str;
+
+	while(width > max_width)
+	{
+		width -= utf8_chrsw(suffix);
+		suffix += utf8_chrw(suffix);
+	}
+
+	*cut_from = 0;
+	*cut_to = suffix - str;
+}
+
+void
+get_right_cut_range(const char str[], size_t max_width, size_t* cut_from, size_t* cut_to)
+{
+	const size_t prefix = utf8_nstrsnlen(str, max_width);
+
+	*cut_from = prefix;
+	*cut_to = strlen(str);
+}
+
+
+void
+get_middle_cut_range(const char str[], size_t max_width, size_t* cut_from, size_t* cut_to)
+{
+	size_t width = utf8_strsw(str);
+	const size_t prefix_width = max_width/2;
+
+	const size_t prefix = utf8_nstrsnlen(str, prefix_width);
+	const char *suffix = str + prefix;
+
+	while(width > max_width)
+	{
+		width -= utf8_chrsw(suffix);
+		suffix += utf8_chrw(suffix);
+	}
+
+	*cut_from = prefix;
+	*cut_to = suffix - str;
+}
+
 char *
 left_ellipsis(const char str[], size_t max_width, const char ell[])
 {
@@ -620,37 +665,21 @@ ellipsis(const char str[], size_t max_width, const char ell[],
 		return format_str("%.*s", prefix, ell);
 	}
 
+	size_t cut_from = 0;
+	size_t cut_to = 0;
+
 	if(kind == EK_MIDDLE)
 	{
-		/* Middle ellipsis. */
-		const int prefix_width = max_width/2 - ell_width/2;
-
-		const int prefix = utf8_nstrsnlen(str, prefix_width);
-		const char *suffix = str + prefix;
-
-		while(width > max_width - ell_width)
-		{
-			width -= utf8_chrsw(suffix);
-			suffix += utf8_chrw(suffix);
-		}
-
-		return format_str("%.*s%s%s", prefix, str, ell, suffix);
+		get_middle_cut_range(str, max_width - ell_width, &cut_from, &cut_to);
 	}
 	else if(kind == EK_RIGHT)
 	{
-		/* Right ellipsis. */
-		const int prefix = utf8_nstrsnlen(str, max_width - ell_width);
-		return format_str("%.*s%s", prefix, str, ell);
+		get_right_cut_range(str, max_width - ell_width, &cut_from, &cut_to);
+	} else {
+		get_left_cut_range(str, max_width - ell_width, &cut_from, &cut_to);
 	}
 
-	/* Left ellipsis. */
-	while(width > max_width - ell_width)
-	{
-		width -= utf8_chrsw(str);
-		str += utf8_chrw(str);
-	}
-
-	return format_str("%s%s", ell, str);
+	return format_str("%.*s%s%s", (int)cut_from, str, ell, str + cut_to);
 }
 
 char *

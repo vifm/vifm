@@ -193,6 +193,21 @@ int sstrappend(char str[], size_t *len, size_t size, const char suffix[]);
 /* Pads buffer pointed to by str to be at least of width "width + 1". */
 void stralign(char str[], size_t width, char pad, int left_align);
 
+/* Get left and right offsets needed to cut str on the left side and ensure its
+ * width is (in character positions) less than or equal to max_width. */
+void get_left_cut_range(const char str[], size_t max_width, size_t *cut_from,
+                        size_t *cut_to);
+
+/* Get left and right offsets needed to cut str on the right side and ensure its
+ * width is (in character positions) less than or equal to max_width. */
+void get_right_cut_range(const char str[], size_t max_width, size_t *cut_from,
+                         size_t *cut_to);
+
+/* Get left and right offsets needed to cut str in the middle and ensure its
+ * width is (in character positions) less than or equal to max_width. */
+void get_middle_cut_range(const char str[], size_t max_width, size_t *cut_from,
+                          size_t *cut_to);
+
 /* Ensures that str is of width (in character positions) less than or equal to
  * max_width and is right aligned putting ellipsis on the left side if needed.
  * Returns newly allocated modified string. */
