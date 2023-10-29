@@ -604,7 +604,7 @@ void
 get_middle_cut_range(const char str[], size_t max_width, size_t* cut_from, size_t* cut_to)
 {
 	size_t width = utf8_strsw(str);
-	const size_t prefix_width = max_width/2;
+	const size_t prefix_width = (max_width+1)/2;
 
 	const size_t prefix = utf8_nstrsnlen(str, prefix_width);
 	const char *suffix = str + prefix;

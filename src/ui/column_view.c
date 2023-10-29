@@ -25,9 +25,13 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../lua/vlua.h"
+#include "fileview.h"
+#include "ui.h"
 
 /* Character used to fill gaps in lines. */
 #define GAP_FILL_CHAR ' '
@@ -68,8 +72,12 @@ static int extend_column_list(columns_t *cols);
 static void init_new_column(column_t *col, column_info_t info);
 static void mark_for_recalculation(columns_t *cols);
 static const column_desc_t * get_column_func(int column_id);
-static AlignType decorate_output(const column_t *col, char buf[],
-		size_t buf_len, int max_line_width);
+static void get_match_range(struct dir_entry_t *entry, const char full_column[],
+		int *match_from, int *match_to);
+static void adjust_match_range(size_t cut_from, size_t cut_to, size_t ell_len,
+		size_t *match_from, size_t *match_to, bool *use_marks);
+static AlignType decorate_output(const column_t *col, column_data_t *format_data,
+		char buf[], size_t buf_len, int max_line_width);
 static int calculate_max_width(const column_t *col, int len,
 		int max_line_width);
 static int calculate_start_pos(const column_t *col, const char buf[],
@@ -91,6 +99,10 @@ static column_desc_t *col_descs;
 static column_line_print_func print_func;
 /* String to be used in place of ellipsis. */
 static const char *ellipsis = "...";
+/* Strings to be used when highlighted text goes out of bounds. */
+static const char *left_marks = "<<<";
+static const char *right_marks = ">>>";
+static const char *middle_marks = ">..<";
 
 void
 columns_set_line_print_func(column_line_print_func func)
@@ -286,8 +298,69 @@ get_column_func(int column_id)
 	return NULL;
 }
 
+/* Adjusts search match offsets for the entry (assumed to be a search hit) to
+ * account for decorations and full path.  Sets *match_from and *match_to. */
+static void
+get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
+		int *match_to)
+{
+	const char *prefix, *suffix;
+	ui_get_decors(entry, &prefix, &suffix);
+
+	const char *fname = get_last_path_component(full_column) + strlen(prefix);
+	size_t name_offset = fname - full_column;
+
+	*match_from = name_offset + entry->match_left;
+	*match_to = name_offset + entry->match_right;
+
+	if((size_t)entry->match_right > strlen(fname) - strlen(suffix))
+	{
+		/* Don't highlight anything past the end of file name except for single
+		 * trailing slash. */
+		*match_to -= entry->match_right - (strlen(fname) - strlen(suffix));
+		if(suffix[0] == '/')
+		{
+			++*match_to;
+		}
+	}
+}
+
+/* Adjusts search match offsets according to cut range and ellipsis length. Sets
+ * use_marks argument to true if match range overlaps ellipsis, otherwise to
+ * false. */
+static void adjust_match_range(size_t cut_from, size_t cut_to, size_t ell_len,
+		size_t *match_from, size_t *match_to, bool *use_marks)
+{
+	*use_marks = FALSE;
+
+	if(*match_from >= cut_from && *match_from < cut_to)
+	{
+		*match_from = cut_from;
+		*use_marks = TRUE;
+	}
+	else if(*match_from >= cut_to)
+	{
+		*match_from = cut_from + ell_len + *match_from - cut_to;
+	}
+
+	if(*match_to > cut_from && *match_to <= cut_to)
+	{
+		*match_to = cut_from + ell_len;
+		*use_marks = TRUE;
+	}
+	else if(*match_to > cut_to)
+	{
+		*match_to = cut_from + ell_len + *match_to - cut_to;
+	}
+
+	if(*match_from < cut_from && *match_to > cut_from)
+	{
+		*use_marks = TRUE;
+	}
+}
+
 void
-columns_format_line(columns_t *cols, void *format_data, int max_line_width)
+columns_format_line(columns_t *cols, column_data_t *format_data, int max_line_width)
 {
 	char prev_col_buf[1024 + 1];
 	int prev_col_start = 0;
@@ -322,9 +395,28 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 			copy_str(col_buffer, sizeof(col_buffer), col->info.literal);
 		}
 
+		if(format_data != NULL)
+		{
+			view_t *view = format_data->view;
+			dir_entry_t *entry = format_data->entry;
+
+			const int primary = info.id == SK_BY_NAME
+				|| info.id == SK_BY_INAME
+				|| info.id == SK_BY_ROOT
+				|| info.id == SK_BY_FILEROOT
+				|| info.id == SK_BY_EXTENSION
+				|| info.id == SK_BY_FILEEXT
+				|| vlua_viewcolumn_is_primary(curr_stats.vlua, info.id);
+
+			if(primary && view->matches != 0 && entry->search_match && !format_data->custom_match)
+			{
+				get_match_range(entry, col_buffer, &format_data->match_from, &format_data->match_to);
+			}
+		}
+
 		strcpy(full_column, col_buffer);
 
-		AlignType align = decorate_output(col, col_buffer, sizeof(col_buffer),
+		AlignType align = decorate_output(col, format_data, col_buffer, sizeof(col_buffer),
 				max_line_width);
 		const int cur_col_start = calculate_start_pos(col, col_buffer, align);
 		int print_start = MIN(cur_col_start, col->start);
@@ -368,14 +460,19 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 /* Adds decorations like ellipsis to the output.  Returns actual align type used
  * for the column (might not match col->info.align). */
 static AlignType
-decorate_output(const column_t *col, char buf[], size_t buf_len,
-		int max_line_width)
+decorate_output(const column_t *col, column_data_t *format_data, char buf[],
+		size_t buf_len, int max_line_width)
 {
+	char *(*add_ellipsis)(const char str[], size_t max_width, const char ell[]);
+	void (*get_cut_range)(const char str[], size_t max_width, size_t* cut_from,
+			size_t* cut_to);
+
 	const int len = get_width_on_screen(buf);
 	const int max_col_width = calculate_max_width(col, len, max_line_width);
 	const int too_long = len > max_col_width;
 	AlignType result;
-	const char *const ell = (col->info.cropping == CT_ELLIPSIS ? ellipsis : "");
+	const char *ell = (col->info.cropping == CT_ELLIPSIS ? ellipsis : "");
+	const char *marks;
 	char *ellipsed;
 
 	if(!too_long)
@@ -385,20 +482,65 @@ decorate_output(const column_t *col, char buf[], size_t buf_len,
 
 	if(col->info.align == AT_MIDDLE)
 	{
-		ellipsed = middle_ellipsis(buf, max_col_width, ell);
+		add_ellipsis = middle_ellipsis;
+		get_cut_range = get_middle_cut_range;
+
+		marks = middle_marks;
 		result = AT_LEFT;
 	}
-	else if(col->info.align == AT_LEFT ||
-			(col->info.align == AT_DYN && len <= max_col_width))
+	else if (col->info.align == AT_LEFT)
 	{
-		ellipsed = right_ellipsis(buf, max_col_width, ell);
+		add_ellipsis = right_ellipsis;
+		get_cut_range = get_right_cut_range;
+
+		marks = right_marks;
 		result = AT_LEFT;
 	}
 	else
 	{
-		ellipsed = left_ellipsis(buf, max_col_width, ell);
+		add_ellipsis = left_ellipsis;
+		get_cut_range = get_left_cut_range;
+
+		marks = left_marks;
 		result = AT_RIGHT;
 	}
+
+	if(format_data != NULL && format_data->match_from != format_data->match_to)
+	{
+		/* If the line is cut, search match offsets might need to be adjusted. */
+		size_t match_from = format_data->match_from;
+		size_t match_to = format_data->match_to;
+		size_t cut_from = 0;
+		size_t cut_to = 0;
+		size_t ell_len = strlen(ell);
+		size_t ell_width = utf8_strsw(ell);
+		bool use_marks;
+
+		get_cut_range(buf, max_col_width - ell_width, &cut_from, &cut_to);
+		adjust_match_range(cut_from, cut_to, ell_len, &match_from, &match_to,
+				&use_marks);
+
+		if(use_marks)
+		{
+			ell = marks;
+			size_t new_ell_len = strlen(ell);
+			size_t new_ell_width = utf8_strsw(ell);
+			if(new_ell_len != ell_len || new_ell_width != ell_width)
+			{
+				/* If ellipsis length or width has changed, readjust match range. */
+				match_from = format_data->match_from;
+				match_to = format_data->match_to;
+				get_cut_range(buf, max_col_width - new_ell_width, &cut_from, &cut_to);
+				adjust_match_range(cut_from, cut_to, new_ell_len, &match_from, &match_to,
+						&use_marks);
+			}
+		}
+
+		format_data->match_from = match_from;
+		format_data->match_to = match_to;
+	}
+
+	ellipsed = add_ellipsis(buf, max_col_width, ell);
 
 	copy_str(buf, buf_len, ellipsed);
 	free(ellipsed);

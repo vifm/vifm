@@ -276,7 +276,7 @@ TEST(middle_align_on_the_right)
 
 	memset(print_buffer, '\0', MAX_WIDTH);
 	columns_format_line(cols, NULL, 10);
-	assert_string_equal("aaaaaabefg", print_buffer);
+	assert_string_equal("aaaaaabcfg", print_buffer);
 
 	col1_next = &column1_func2;
 	col2_next = &column2_func;

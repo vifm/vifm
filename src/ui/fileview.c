@@ -121,8 +121,6 @@ static void compute_and_draw_cell(column_data_t *cdt, int cell,
 static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void draw_line_number(const column_data_t *cdt, int column);
-static void get_match_range(dir_entry_t *entry, const char full_column[],
-		int *match_from, int *match_to);
 static void highlight_search(view_t *view, const char full_column[], char buf[],
 		size_t buf_len, AlignType align, int line, int col,
 		const cchar_t *line_attrs, int match_from, int match_to);
@@ -1256,11 +1254,6 @@ column_line_print(const char buf[], int offset, AlignType align,
 		int match_from = cdt->match_from;
 		int match_to = cdt->match_to;
 
-		if(!cdt->custom_match)
-		{
-			get_match_range(entry, full_column, &match_from, &match_to);
-		}
-
 		if(match_from != match_to)
 		{
 			highlight_search(view, full_column, print_buf, trim_pos, align,
@@ -1292,33 +1285,6 @@ draw_line_number(const column_data_t *cdt, int column)
 	wprinta(view->win, num_str, &cch, 0);
 }
 
-/* Adjusts search match offsets for the entry (assumed to be a search hit) to
- * account for decorations and full path.  Sets *match_from and *match_to. */
-static void
-get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
-		int *match_to)
-{
-	const char *prefix, *suffix;
-	ui_get_decors(entry, &prefix, &suffix);
-
-	const char *fname = get_last_path_component(full_column) + strlen(prefix);
-	size_t name_offset = fname - full_column;
-
-	*match_from = name_offset + entry->match_left;
-	*match_to = name_offset + entry->match_right;
-
-	if((size_t)entry->match_right > strlen(fname) - strlen(suffix))
-	{
-		/* Don't highlight anything past the end of file name except for single
-		 * trailing slash. */
-		*match_to -= entry->match_right - (strlen(fname) - strlen(suffix));
-		if(suffix[0] == '/')
-		{
-			++*match_to;
-		}
-	}
-}
-
 /* Highlights search match for the entry (assumed to be a search hit).  Modifies
  * the buf argument in process. */
 static void
@@ -1326,62 +1292,15 @@ highlight_search(view_t *view, const char full_column[], char buf[],
 		size_t buf_len, AlignType align, int line, int col,
 		const cchar_t *line_attrs, int match_from, int match_to)
 {
-	size_t lo = match_from;
-	size_t ro = match_to;
+	/* Calculate number of screen characters before the match. */
+	char c = buf[match_from];
+	buf[match_from] = '\0';
+	size_t match_start = utf8_strsw(buf);
+	buf[match_from] = c;
 
-	const size_t width = utf8_strsw(buf);
-
-	if(align == AT_LEFT && buf_len < ro)
-	{
-		/* Right end of the match isn't visible. */
-
-		char mark[4];
-		const size_t mark_len = MIN(sizeof(mark) - 1, width);
-		const int offset = width - mark_len;
-		copy_str(mark, mark_len + 1, ">>>");
-
-		checked_wmove(view->win, line, col + offset);
-		wprinta(view->win, mark, line_attrs, A_REVERSE);
-	}
-	else if(align == AT_RIGHT && lo < (short int)strlen(full_column) - buf_len)
-	{
-		/* Left end of the match isn't visible. */
-
-		char mark[4];
-		const size_t mark_len = MIN(sizeof(mark) - 1, width);
-		copy_str(mark, mark_len + 1, "<<<");
-
-		checked_wmove(view->win, line, col);
-		wprinta(view->win, mark, line_attrs, A_REVERSE);
-	}
-	else
-	{
-		/* Match is completely visible (although some chars might be concealed with
-		 * ellipsis). */
-
-		size_t match_start;
-		char c;
-
-		/* Match offsets require correction if left hand side of file name is
-		 * trimmed. */
-		if(align == AT_RIGHT && utf8_strsw(full_column) > width)
-		{
-			/* As left side is trimmed and might contain ellipsis calculate offsets
-			 * according to the right side. */
-			lo = utf8_strsnlen(buf, width - utf8_strsw(full_column + lo));
-			ro = utf8_strsnlen(buf, width - utf8_strsw(full_column + ro));
-		}
-
-		/* Calculate number of screen characters before the match. */
-		c = buf[lo];
-		buf[lo] = '\0';
-		match_start = utf8_strsw(buf);
-		buf[lo] = c;
-
-		checked_wmove(view->win, line, col + match_start);
-		buf[ro] = '\0';
-		wprinta(view->win, buf + lo, line_attrs, (A_REVERSE | A_UNDERLINE));
-	}
+	checked_wmove(view->win, line, col + match_start);
+	buf[match_to] = '\0';
+	wprinta(view->win, buf + match_from, line_attrs, (A_REVERSE | A_UNDERLINE));
 }
 
 /* Calculate color attributes for a view column.  Returns attributes that can be

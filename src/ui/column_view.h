@@ -20,6 +20,7 @@
 #define VIFM__UI__COLUMN_VIEW_H__
 
 #include <stddef.h> /* size_t */
+#include "fileview.h"
 
 /* Special reserved column id for gap filling request. */
 #define FILL_COLUMN_ID ~0
@@ -118,7 +119,7 @@ void columns_add_column(columns_t *cols, column_info_t info);
 void columns_clear(columns_t *cols);
 
 /* Performs actual formatting of columns. */
-void columns_format_line(columns_t *cols, void *format_data,
+void columns_format_line(columns_t *cols, column_data_t *format_data,
 		int max_line_width);
 
 /* Checks if recalculation is needed.  Returns non-zero if so, otherwise zero is
