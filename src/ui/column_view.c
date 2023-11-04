@@ -25,13 +25,10 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/macros.h"
-#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
-#include "../lua/vlua.h"
 #include "fileview.h"
-#include "ui.h"
 
 /* Character used to fill gaps in lines. */
 #define GAP_FILL_CHAR ' '
@@ -72,8 +69,6 @@ static int extend_column_list(columns_t *cols);
 static void init_new_column(column_t *col, column_info_t info);
 static void mark_for_recalculation(columns_t *cols);
 static const column_desc_t * get_column_func(int column_id);
-static void get_match_range(struct dir_entry_t *entry, const char full_column[],
-		int *match_from, int *match_to);
 static void adjust_match_range(size_t cut_from, size_t cut_to, size_t ell_len,
 		size_t *match_from, size_t *match_to, int *use_marks);
 static AlignType decorate_output(const column_t *col,
@@ -97,6 +92,8 @@ static int col_desc_count;
 static column_desc_t *col_descs;
 /* Column print function. */
 static column_line_print_func print_func;
+/* Optional function to query column match. */
+static column_line_match_func match_func;
 /* String to be used in place of ellipsis. */
 static const char *ellipsis = "...";
 /* Strings to be used when highlighted text goes out of bounds. */
@@ -108,6 +105,12 @@ void
 columns_set_line_print_func(column_line_print_func func)
 {
 	print_func = func;
+}
+
+void
+columns_set_line_match_func(column_line_match_func func)
+{
+	match_func = func;
 }
 
 void
@@ -298,33 +301,6 @@ get_column_func(int column_id)
 	return NULL;
 }
 
-/* Adjusts search match offsets for the entry (assumed to be a search hit) to
- * account for decorations and full path.  Sets *match_from and *match_to. */
-static void
-get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
-		int *match_to)
-{
-	const char *prefix, *suffix;
-	ui_get_decors(entry, &prefix, &suffix);
-
-	const char *fname = get_last_path_component(full_column) + strlen(prefix);
-	size_t name_offset = fname - full_column;
-
-	*match_from = name_offset + entry->match_left;
-	*match_to = name_offset + entry->match_right;
-
-	if((size_t)entry->match_right > strlen(fname) - strlen(suffix))
-	{
-		/* Don't highlight anything past the end of file name except for single
-		 * trailing slash. */
-		*match_to -= entry->match_right - (strlen(fname) - strlen(suffix));
-		if(suffix[0] == '/')
-		{
-			++*match_to;
-		}
-	}
-}
-
 /* Adjusts search match offsets according to cut range and ellipsis length.
  * Sets use_marks argument to non-zero if match range overlaps ellipsis,
  * otherwise to zero. */
@@ -397,25 +373,10 @@ columns_format_line(columns_t *cols, column_data_t *format_data,
 			copy_str(col_buffer, sizeof(col_buffer), col->info.literal);
 		}
 
-		if(format_data != NULL)
+		if(match_func != NULL)
 		{
-			view_t *view = format_data->view;
-			dir_entry_t *entry = format_data->entry;
-
-			const int primary = info.id == SK_BY_NAME
-				|| info.id == SK_BY_INAME
-				|| info.id == SK_BY_ROOT
-				|| info.id == SK_BY_FILEROOT
-				|| info.id == SK_BY_EXTENSION
-				|| info.id == SK_BY_FILEEXT
-				|| vlua_viewcolumn_is_primary(curr_stats.vlua, info.id);
-
-			if(primary && view->matches != 0 && entry->search_match &&
-					!format_data->custom_match)
-			{
-				get_match_range(entry, col_buffer, &format_data->match_from,
-						&format_data->match_to);
-			}
+			match_func(col_buffer, &info, &format_data->match_from,
+					&format_data->match_to);
 		}
 
 		strcpy(full_column, col_buffer);

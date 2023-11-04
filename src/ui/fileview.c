@@ -120,6 +120,8 @@ static void compute_and_draw_cell(column_data_t *cdt, int cell,
 		size_t col_count, size_t col_width);
 static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
+static void column_line_match(const char full_column[],
+		const format_info_t *info, int *match_from, int *match_to);
 static void draw_line_number(const column_data_t *cdt, int column);
 static int is_primary_column_id(int id);
 static void highlight_search(view_t *view, const char full_column[], char buf[],
@@ -224,6 +226,7 @@ fview_setup(void)
 	size_t i;
 
 	columns_set_line_print_func(&column_line_print);
+	columns_set_line_match_func(&column_line_match);
 	for(i = 0U; i < ARRAY_LEN(sort_to_func); ++i)
 	{
 		columns_add_column_desc(sort_to_func[i].key, sort_to_func[i].func, NULL);
@@ -1278,6 +1281,48 @@ draw_line_number(const column_data_t *cdt, int column)
 	checked_wmove(view->win, cdt->current_line, column);
 	cchar_t cch = prepare_col_color(view, 0, 1, cdt, /*real_id=*/-1);
 	wprinta(view->win, num_str, &cch, 0);
+}
+
+/* Match callback for column_view unit. */
+static void
+column_line_match(const char full_column[], const format_info_t *info,
+		int *match_from, int *match_to)
+{
+	const column_data_t *cdt = info->data;
+	dir_entry_t *entry = cdt->entry;
+
+	int primary = is_primary_column_id(info->id);
+	if(!primary || cdt->view->matches == 0 || !entry->search_match ||
+			cdt->custom_match)
+	{
+		return;
+	}
+
+	/*
+	 * Adjust search match offsets for the entry to account for decorations and
+	 * full path.
+	 */
+
+	const char *prefix, *suffix;
+	ui_get_decors(entry, &prefix, &suffix);
+
+	const char *fname = get_last_path_component(full_column) + strlen(prefix);
+	size_t name_offset = fname - full_column;
+
+	*match_from = name_offset + entry->match_left;
+	*match_to = name_offset + entry->match_right;
+
+	size_t suffix_pos = strlen(fname) - strlen(suffix);
+	if((size_t)entry->match_right > suffix_pos)
+	{
+		/* Don't highlight anything past the end of file name except for single
+		 * trailing slash. */
+		*match_to -= entry->match_right - suffix_pos;
+		if(suffix[0] == '/')
+		{
+			++*match_to;
+		}
+	}
 }
 
 /* Checks whether column id corresponds to a column that displays part of
