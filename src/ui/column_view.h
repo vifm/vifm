@@ -20,7 +20,6 @@
 #define VIFM__UI__COLUMN_VIEW_H__
 
 #include <stddef.h> /* size_t */
-#include "fileview.h"
 
 /* Special reserved column id for gap filling request. */
 #define FILL_COLUMN_ID ~0
@@ -63,10 +62,12 @@ typedef struct columns_t columns_t;
 typedef struct format_info_t format_info_t;
 struct format_info_t
 {
-	void *data;  /* User data passed to columns_format_line(). */
-	int id;      /* Id of the column or FILL_COLUMN_ID (pseudo-column). */
-	int real_id; /* Id of the column that is being printed/filled. */
-	int width;   /* Calculated width of the column. */
+	void *data;     /* User data passed to columns_format_line(). */
+	int id;         /* Id of the column or FILL_COLUMN_ID (pseudo-column). */
+	int real_id;    /* Id of the column that is being printed/filled. */
+	int width;      /* Calculated width of the column. */
+	int match_from; /* Start offset of the match, -1 for no match. */
+	int match_to;   /* End offset of the mat, -1 for no match. */
 };
 
 /* A column callback function, which should fill the buf with column text. */
@@ -78,7 +79,8 @@ typedef void (*column_func)(void *data, size_t buf_len, char buf[],
 typedef void (*column_line_print_func)(const char buf[], int offset,
 		AlignType align, const char full_column[], const format_info_t *info);
 /* A callback function that returns search match of the column via match_from
- * and match_to output parameters. */
+ * and match_to output parameters (no need to update them if there is no
+ * match). */
 typedef void (*column_line_match_func)(const char full_column[],
 		const format_info_t *info, int *match_from, int *match_to);
 
@@ -126,7 +128,7 @@ void columns_add_column(columns_t *cols, column_info_t info);
 void columns_clear(columns_t *cols);
 
 /* Performs actual formatting of columns. */
-void columns_format_line(columns_t *cols, column_data_t *format_data,
+void columns_format_line(columns_t *cols, void *format_data,
 		int max_line_width);
 
 /* Checks if recalculation is needed.  Returns non-zero if so, otherwise zero is

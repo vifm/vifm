@@ -124,9 +124,6 @@ static void column_line_match(const char full_column[],
 		const format_info_t *info, int *match_from, int *match_to);
 static void draw_line_number(const column_data_t *cdt, int column);
 static int is_primary_column_id(int id);
-static void highlight_search(view_t *view, const char full_column[], char buf[],
-		size_t buf_len, AlignType align, int line, int col,
-		const cchar_t *line_attrs, int match_from, int match_to);
 static cchar_t prepare_col_color(const view_t *view, int primary, int line_nr,
 		const column_data_t *cdt, int real_id);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
@@ -1247,16 +1244,18 @@ column_line_print(const char buf[], int offset, AlignType align,
 	}
 	wprinta(view->win, print_buf, &line_attrs, 0);
 
-	if(primary && view->matches != 0 && entry->search_match)
+	/* Draw match highlighting if there is any. */
+	int match_from = (cdt->custom_match ? cdt->match_from : info->match_from);
+	int match_to = (cdt->custom_match ? cdt->match_to : info->match_to);
+	if(match_from != match_to)
 	{
-		int match_from = cdt->match_from;
-		int match_to = cdt->match_to;
+		/* Calculate number of screen characters before the match. */
+		size_t match_start_col = utf8_nstrsw(print_buf, match_from);
 
-		if(match_from != match_to)
-		{
-			highlight_search(view, full_column, print_buf, trim_pos, align,
-					cdt->current_line, final_offset, &line_attrs, match_from, match_to);
-		}
+		checked_wmove(view->win, cdt->current_line, final_offset + match_start_col);
+		print_buf[match_to] = '\0';
+		wprinta(view->win, print_buf + match_from, &line_attrs,
+				A_REVERSE | A_UNDERLINE);
 	}
 }
 
@@ -1337,24 +1336,6 @@ is_primary_column_id(int id)
 	    || id == SK_BY_EXTENSION
 	    || id == SK_BY_FILEEXT
 	    || vlua_viewcolumn_is_primary(curr_stats.vlua, id);
-}
-
-/* Highlights search match for the entry (assumed to be a search hit).  Modifies
- * the buf argument in process. */
-static void
-highlight_search(view_t *view, const char full_column[], char buf[],
-		size_t buf_len, AlignType align, int line, int col,
-		const cchar_t *line_attrs, int match_from, int match_to)
-{
-	/* Calculate number of screen characters before the match. */
-	char c = buf[match_from];
-	buf[match_from] = '\0';
-	size_t match_start = utf8_strsw(buf);
-	buf[match_from] = c;
-
-	checked_wmove(view->win, line, col + match_start);
-	buf[match_to] = '\0';
-	wprinta(view->win, buf + match_from, line_attrs, (A_REVERSE | A_UNDERLINE));
 }
 
 /* Calculate color attributes for a view column.  Returns attributes that can be

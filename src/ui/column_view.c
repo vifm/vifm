@@ -28,7 +28,6 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
-#include "fileview.h"
 
 /* Character used to fill gaps in lines. */
 #define GAP_FILL_CHAR ' '
@@ -71,8 +70,8 @@ static void mark_for_recalculation(columns_t *cols);
 static const column_desc_t * get_column_func(int column_id);
 static void adjust_match_range(size_t cut_from, size_t cut_to, size_t ell_len,
 		size_t *match_from, size_t *match_to, int *use_marks);
-static AlignType decorate_output(const column_t *col,
-		column_data_t *format_data, char buf[], size_t buf_len, int max_line_width);
+static AlignType decorate_output(const column_t *col, format_info_t *info,
+		char buf[], size_t buf_len, int max_line_width);
 static int calculate_max_width(const column_t *col, int len,
 		int max_line_width);
 static int calculate_start_pos(const column_t *col, const char buf[],
@@ -337,8 +336,7 @@ adjust_match_range(size_t cut_from, size_t cut_to, size_t ell_len,
 }
 
 void
-columns_format_line(columns_t *cols, column_data_t *format_data,
-		int max_line_width)
+columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 {
 	char prev_col_buf[1024 + 1];
 	int prev_col_start = 0;
@@ -357,11 +355,13 @@ columns_format_line(columns_t *cols, column_data_t *format_data,
 		char col_buffer[sizeof(prev_col_buf)];
 		char full_column[sizeof(prev_col_buf)];
 		const column_t *const col = &cols->list[i];
-		const format_info_t info = {
+		format_info_t info = {
 			.data = format_data,
 			.id = col->info.column_id,
 			.real_id = col->info.column_id,
 			.width = col->print_width,
+			.match_from = -1,
+			.match_to = -1,
 		};
 
 		if(col->info.literal == NULL)
@@ -375,13 +375,12 @@ columns_format_line(columns_t *cols, column_data_t *format_data,
 
 		if(match_func != NULL)
 		{
-			match_func(col_buffer, &info, &format_data->match_from,
-					&format_data->match_to);
+			match_func(col_buffer, &info, &info.match_from, &info.match_to);
 		}
 
 		strcpy(full_column, col_buffer);
 
-		AlignType align = decorate_output(col, format_data, col_buffer,
+		AlignType align = decorate_output(col, &info, col_buffer,
 				sizeof(col_buffer), max_line_width);
 		const int cur_col_start = calculate_start_pos(col, col_buffer, align);
 		int print_start = MIN(cur_col_start, col->start);
@@ -425,7 +424,7 @@ columns_format_line(columns_t *cols, column_data_t *format_data,
 /* Adds decorations like ellipsis to the output.  Returns actual align type used
  * for the column (might not match col->info.align). */
 static AlignType
-decorate_output(const column_t *col, column_data_t *format_data, char buf[],
+decorate_output(const column_t *col, format_info_t *info, char buf[],
 		size_t buf_len, int max_line_width)
 {
 	char * (*add_ellipsis)(const char str[], size_t max_width, const char ell[]);
@@ -470,11 +469,11 @@ decorate_output(const column_t *col, column_data_t *format_data, char buf[],
 		result = AT_RIGHT;
 	}
 
-	if(format_data != NULL && format_data->match_from != format_data->match_to)
+	if(info->match_from != info->match_to)
 	{
 		/* If the line is cut, search match offsets might need to be adjusted. */
-		size_t match_from = format_data->match_from;
-		size_t match_to = format_data->match_to;
+		size_t match_from = info->match_from;
+		size_t match_to = info->match_to;
 		size_t cut_from = 0;
 		size_t cut_to = 0;
 		size_t ell_len = strlen(ell);
@@ -493,16 +492,16 @@ decorate_output(const column_t *col, column_data_t *format_data, char buf[],
 			if(new_ell_len != ell_len || new_ell_width != ell_width)
 			{
 				/* If ellipsis length or width has changed, readjust match range. */
-				match_from = format_data->match_from;
-				match_to = format_data->match_to;
+				match_from = info->match_from;
+				match_to = info->match_to;
 				get_cut_range(buf, max_col_width - new_ell_width, &cut_from, &cut_to);
 				adjust_match_range(cut_from, cut_to, new_ell_len, &match_from,
 						&match_to, &use_marks);
 			}
 		}
 
-		format_data->match_from = match_from;
-		format_data->match_to = match_to;
+		info->match_from = match_from;
+		info->match_to = match_to;
 	}
 
 	ellipsed = add_ellipsis(buf, max_col_width, ell);
