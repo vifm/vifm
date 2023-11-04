@@ -121,6 +121,7 @@ static void compute_and_draw_cell(column_data_t *cdt, int cell,
 static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
 static void draw_line_number(const column_data_t *cdt, int column);
+static int is_primary_column_id(int id);
 static void highlight_search(view_t *view, const char full_column[], char buf[],
 		size_t buf_len, AlignType align, int line, int col,
 		const cchar_t *line_attrs, int match_from, int match_to);
@@ -1181,13 +1182,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	const int numbers_visible = (offset == 0 && cdt->number_width > 0);
 	const int padding = (cfg.extra_padding != 0);
 
-	const int primary = info->id == SK_BY_NAME
-	                 || info->id == SK_BY_INAME
-	                 || info->id == SK_BY_ROOT
-	                 || info->id == SK_BY_FILEROOT
-	                 || info->id == SK_BY_EXTENSION
-	                 || info->id == SK_BY_FILEEXT
-	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, info->id);
+	const int primary = is_primary_column_id(info->id);
 	const cchar_t line_attrs =
 		prepare_col_color(view, primary, 0, cdt, info->real_id);
 
@@ -1283,6 +1278,20 @@ draw_line_number(const column_data_t *cdt, int column)
 	checked_wmove(view->win, cdt->current_line, column);
 	cchar_t cch = prepare_col_color(view, 0, 1, cdt, /*real_id=*/-1);
 	wprinta(view->win, num_str, &cch, 0);
+}
+
+/* Checks whether column id corresponds to a column that displays part of
+ * entry's path or name.  Returns non-zero if so. */
+static int
+is_primary_column_id(int id)
+{
+	return id == SK_BY_NAME
+	    || id == SK_BY_INAME
+	    || id == SK_BY_ROOT
+	    || id == SK_BY_FILEROOT
+	    || id == SK_BY_EXTENSION
+	    || id == SK_BY_FILEEXT
+	    || vlua_viewcolumn_is_primary(curr_stats.vlua, id);
 }
 
 /* Highlights search match for the entry (assumed to be a search hit).  Modifies
