@@ -133,7 +133,7 @@ of changes of each kind.
     |  |
     |  |-- lua/ - Lua interface
     |  |  |
-    |  |  |-- lua/ - Lua 5.4.4 sources
+    |  |  |-- lua/ - Lua 5.4.6 sources
     |  |  |-- common.c - common code for Lua API implementation
     |  |  |-- vifm.c - implementation of `vifm`
     |  |  |-- vifm_abbrevs.c - implementation of `vifm.abbrevs`
