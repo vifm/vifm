@@ -8,19 +8,23 @@ documented in the regular ChangeLog.
 0.13 to current
 
 	Deprecated VifmView.currententry field in favour of VifmView.cursor.pos.
+	Patch by filterfalse.
 
 	Added VifmView.cursor.pos that provides an index of an entry under the
-	cursor.
+	cursor.  Patch by filterfalse.
 
 	Added VifmView.cursor:entry() that provides VifmEntry under the cursor.
-	This is a shortcut to VifmView:entry(VifmView.cursor.pos).
+	This is a shortcut to VifmView:entry(VifmView.cursor.pos).  Patch by
+	filterfalse.
 
 	Added ability to move the cursor within a view by assigning an integer to
-	VifmView.cursor.pos.
+	VifmView.cursor.pos.  Patch by filterfalse.
 
 	Added cursorpos field to selectors that moves the cursor within a view.
+	Patch by filterfalse.
 
-	Added vifm.abbrevs.add() that registers command-line abbreviations.
+	Added vifm.abbrevs.add() that registers command-line abbreviations.  Patch
+	by filterfalse.
 
 0.13-beta to 0.13 (2023-04-04)
 
