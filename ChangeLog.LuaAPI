@@ -7,6 +7,8 @@ documented in the regular ChangeLog.
 
 0.13 to current
 
+	Upgraded Lua from 5.4.4 to 5.4.6.
+
 	Deprecated VifmView.currententry field in favour of VifmView.cursor.pos.
 	Patch by filterfalse.
 
