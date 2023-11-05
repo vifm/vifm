@@ -6,8 +6,8 @@
 
 #include "test.h"
 
-static void print_not_less_than_zero(const void *data, int column_id,
-		const char buf[], int offset, AlignType align);
+static void print_not_less_than_zero(const char buf[], int offset,
+		AlignType align, const format_info_t *info);
 static void column12_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 
@@ -43,8 +43,8 @@ TEARDOWN()
 }
 
 static void
-print_not_less_than_zero(const void *data, int column_id, const char buf[],
-		int offset, AlignType align)
+print_not_less_than_zero(const char buf[], int offset, AlignType align,
+		const format_info_t *info)
 {
 	assert_true(offset <= MAX_WIDTH);
 }

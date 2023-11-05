@@ -7,12 +7,13 @@
 #define COL2_ID 2
 
 /* This is version of column_line_print_func with fewer number of parameters.
- * Omitted those which are provide additional information and do not very
- * valuable in tests. */
-typedef void (*print_func)(const void *data, int column_id, const char buf[],
-		int offset, AlignType align);
+ * Omitted those which are provide additional information and are not very
+ * valuable for tests. */
+typedef void (*print_func)(const char buf[], int offset, AlignType align,
+		const format_info_t *info);
 
 print_func print_next;
+column_line_match_func match_next;
 
 column_func col1_next;
 column_func col2_next;
