@@ -300,41 +300,6 @@ get_column_func(int column_id)
 	return NULL;
 }
 
-/* Adjusts search match offsets according to cut range and ellipsis length.
- * Sets use_marks argument to non-zero if match range overlaps ellipsis,
- * otherwise to zero. */
-static void
-adjust_match_range(size_t cut_from, size_t cut_to, size_t ell_len,
-		size_t *match_from, size_t *match_to, int *use_marks)
-{
-	*use_marks = 0;
-
-	if(*match_from >= cut_from && *match_from < cut_to)
-	{
-		*match_from = cut_from;
-		*use_marks = 1;
-	}
-	else if(*match_from >= cut_to)
-	{
-		*match_from = cut_from + ell_len + *match_from - cut_to;
-	}
-
-	if(*match_to > cut_from && *match_to <= cut_to)
-	{
-		*match_to = cut_from + ell_len;
-		*use_marks = 1;
-	}
-	else if(*match_to > cut_to)
-	{
-		*match_to = cut_from + ell_len + *match_to - cut_to;
-	}
-
-	if(*match_from < cut_from && *match_to > cut_from)
-	{
-		*use_marks = 1;
-	}
-}
-
 void
 columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 {
@@ -510,6 +475,41 @@ decorate_output(const column_t *col, format_info_t *info, char buf[],
 	free(ellipsed);
 
 	return result;
+}
+
+/* Adjusts search match offsets according to cut range and ellipsis length.
+ * Sets use_marks argument to non-zero if match range overlaps ellipsis,
+ * otherwise to zero. */
+static void
+adjust_match_range(size_t cut_from, size_t cut_to, size_t ell_len,
+		size_t *match_from, size_t *match_to, int *use_marks)
+{
+	*use_marks = 0;
+
+	if(*match_from >= cut_from && *match_from < cut_to)
+	{
+		*match_from = cut_from;
+		*use_marks = 1;
+	}
+	else if(*match_from >= cut_to)
+	{
+		*match_from = cut_from + ell_len + *match_from - cut_to;
+	}
+
+	if(*match_to > cut_from && *match_to <= cut_to)
+	{
+		*match_to = cut_from + ell_len;
+		*use_marks = 1;
+	}
+	else if(*match_to > cut_to)
+	{
+		*match_to = cut_from + ell_len + *match_to - cut_to;
+	}
+
+	if(*match_from < cut_from && *match_to > cut_from)
+	{
+		*use_marks = 1;
+	}
 }
 
 /* Calculates maximum width for outputting content of the col. */
