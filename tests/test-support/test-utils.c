@@ -305,6 +305,7 @@ columns_teardown(void)
 {
 	columns_clear_column_descs();
 	columns_set_line_print_func(NULL);
+	columns_set_line_match_func(NULL);
 }
 
 void

@@ -157,6 +157,9 @@
 	Fixed environment variables not being expanded on checking that a
 	:file[x]type or :fileviewer command exists.  Thanks to Ben Elan.
 
+	Fixed search match highlighting when the match is cut off due lack of
+	space.  Patch by Vadim Curcă.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

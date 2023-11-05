@@ -7,8 +7,8 @@
 #include "../../src/ui/column_view.h"
 #include "test.h"
 
-static void column_line_print(const void *data, int column_id, const char buf[],
-		int offset, AlignType align);
+static void column_line_print(const char buf[], int offset, AlignType align,
+		const format_info_t *info);
 
 static const size_t MAX_WIDTH = 80;
 
@@ -27,8 +27,8 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[], int offset,
-		AlignType align)
+column_line_print(const char buf[], int offset, AlignType align,
+		const format_info_t *info)
 {
 	print_offset = offset;
 	memcpy(print_buffer + offset, buf, strlen(buf));

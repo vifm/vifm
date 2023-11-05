@@ -120,12 +120,10 @@ static void compute_and_draw_cell(column_data_t *cdt, int cell,
 		size_t col_count, size_t col_width);
 static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
+static void column_line_match(const char full_column[],
+		const format_info_t *info, int *match_from, int *match_to);
 static void draw_line_number(const column_data_t *cdt, int column);
-static void get_match_range(dir_entry_t *entry, const char full_column[],
-		int *match_from, int *match_to);
-static void highlight_search(view_t *view, const char full_column[], char buf[],
-		size_t buf_len, AlignType align, int line, int col,
-		const cchar_t *line_attrs, int match_from, int match_to);
+static int is_primary_column_id(int id);
 static cchar_t prepare_col_color(const view_t *view, int primary, int line_nr,
 		const column_data_t *cdt, int real_id);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
@@ -225,6 +223,7 @@ fview_setup(void)
 	size_t i;
 
 	columns_set_line_print_func(&column_line_print);
+	columns_set_line_match_func(&column_line_match);
 	for(i = 0U; i < ARRAY_LEN(sort_to_func); ++i)
 	{
 		columns_add_column_desc(sort_to_func[i].key, sort_to_func[i].func, NULL);
@@ -1183,13 +1182,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	const int numbers_visible = (offset == 0 && cdt->number_width > 0);
 	const int padding = (cfg.extra_padding != 0);
 
-	const int primary = info->id == SK_BY_NAME
-	                 || info->id == SK_BY_INAME
-	                 || info->id == SK_BY_ROOT
-	                 || info->id == SK_BY_FILEROOT
-	                 || info->id == SK_BY_EXTENSION
-	                 || info->id == SK_BY_FILEEXT
-	                 || vlua_viewcolumn_is_primary(curr_stats.vlua, info->id);
+	const int primary = is_primary_column_id(info->id);
 	const cchar_t line_attrs =
 		prepare_col_color(view, primary, 0, cdt, info->real_id);
 
@@ -1251,21 +1244,18 @@ column_line_print(const char buf[], int offset, AlignType align,
 	}
 	wprinta(view->win, print_buf, &line_attrs, 0);
 
-	if(primary && view->matches != 0 && entry->search_match)
+	/* Draw match highlighting if there is any. */
+	int match_from = (cdt->custom_match ? cdt->match_from : info->match_from);
+	int match_to = (cdt->custom_match ? cdt->match_to : info->match_to);
+	if(match_from != match_to)
 	{
-		int match_from = cdt->match_from;
-		int match_to = cdt->match_to;
+		/* Calculate number of screen characters before the match. */
+		size_t match_start_col = utf8_nstrsw(print_buf, match_from);
 
-		if(!cdt->custom_match)
-		{
-			get_match_range(entry, full_column, &match_from, &match_to);
-		}
-
-		if(match_from != match_to)
-		{
-			highlight_search(view, full_column, print_buf, trim_pos, align,
-					cdt->current_line, final_offset, &line_attrs, match_from, match_to);
-		}
+		checked_wmove(view->win, cdt->current_line, final_offset + match_start_col);
+		print_buf[match_to] = '\0';
+		wprinta(view->win, print_buf + match_from, &line_attrs,
+				A_REVERSE | A_UNDERLINE);
 	}
 }
 
@@ -1292,12 +1282,26 @@ draw_line_number(const column_data_t *cdt, int column)
 	wprinta(view->win, num_str, &cch, 0);
 }
 
-/* Adjusts search match offsets for the entry (assumed to be a search hit) to
- * account for decorations and full path.  Sets *match_from and *match_to. */
+/* Match callback for column_view unit. */
 static void
-get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
-		int *match_to)
+column_line_match(const char full_column[], const format_info_t *info,
+		int *match_from, int *match_to)
 {
+	const column_data_t *cdt = info->data;
+	dir_entry_t *entry = cdt->entry;
+
+	int primary = is_primary_column_id(info->id);
+	if(!primary || cdt->view->matches == 0 || !entry->search_match ||
+			cdt->custom_match)
+	{
+		return;
+	}
+
+	/*
+	 * Adjust search match offsets for the entry to account for decorations and
+	 * full path.
+	 */
+
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
 
@@ -1307,11 +1311,12 @@ get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
 	*match_from = name_offset + entry->match_left;
 	*match_to = name_offset + entry->match_right;
 
-	if((size_t)entry->match_right > strlen(fname) - strlen(suffix))
+	size_t suffix_pos = strlen(fname) - strlen(suffix);
+	if((size_t)entry->match_right > suffix_pos)
 	{
 		/* Don't highlight anything past the end of file name except for single
 		 * trailing slash. */
-		*match_to -= entry->match_right - (strlen(fname) - strlen(suffix));
+		*match_to -= entry->match_right - suffix_pos;
 		if(suffix[0] == '/')
 		{
 			++*match_to;
@@ -1319,69 +1324,18 @@ get_match_range(dir_entry_t *entry, const char full_column[], int *match_from,
 	}
 }
 
-/* Highlights search match for the entry (assumed to be a search hit).  Modifies
- * the buf argument in process. */
-static void
-highlight_search(view_t *view, const char full_column[], char buf[],
-		size_t buf_len, AlignType align, int line, int col,
-		const cchar_t *line_attrs, int match_from, int match_to)
+/* Checks whether column id corresponds to a column that displays part of
+ * entry's path or name.  Returns non-zero if so. */
+static int
+is_primary_column_id(int id)
 {
-	size_t lo = match_from;
-	size_t ro = match_to;
-
-	const size_t width = utf8_strsw(buf);
-
-	if(align == AT_LEFT && buf_len < ro)
-	{
-		/* Right end of the match isn't visible. */
-
-		char mark[4];
-		const size_t mark_len = MIN(sizeof(mark) - 1, width);
-		const int offset = width - mark_len;
-		copy_str(mark, mark_len + 1, ">>>");
-
-		checked_wmove(view->win, line, col + offset);
-		wprinta(view->win, mark, line_attrs, A_REVERSE);
-	}
-	else if(align == AT_RIGHT && lo < (short int)strlen(full_column) - buf_len)
-	{
-		/* Left end of the match isn't visible. */
-
-		char mark[4];
-		const size_t mark_len = MIN(sizeof(mark) - 1, width);
-		copy_str(mark, mark_len + 1, "<<<");
-
-		checked_wmove(view->win, line, col);
-		wprinta(view->win, mark, line_attrs, A_REVERSE);
-	}
-	else
-	{
-		/* Match is completely visible (although some chars might be concealed with
-		 * ellipsis). */
-
-		size_t match_start;
-		char c;
-
-		/* Match offsets require correction if left hand side of file name is
-		 * trimmed. */
-		if(align == AT_RIGHT && utf8_strsw(full_column) > width)
-		{
-			/* As left side is trimmed and might contain ellipsis calculate offsets
-			 * according to the right side. */
-			lo = utf8_strsnlen(buf, width - utf8_strsw(full_column + lo));
-			ro = utf8_strsnlen(buf, width - utf8_strsw(full_column + ro));
-		}
-
-		/* Calculate number of screen characters before the match. */
-		c = buf[lo];
-		buf[lo] = '\0';
-		match_start = utf8_strsw(buf);
-		buf[lo] = c;
-
-		checked_wmove(view->win, line, col + match_start);
-		buf[ro] = '\0';
-		wprinta(view->win, buf + lo, line_attrs, (A_REVERSE | A_UNDERLINE));
-	}
+	return id == SK_BY_NAME
+	    || id == SK_BY_INAME
+	    || id == SK_BY_ROOT
+	    || id == SK_BY_FILEROOT
+	    || id == SK_BY_EXTENSION
+	    || id == SK_BY_FILEEXT
+	    || vlua_viewcolumn_is_primary(curr_stats.vlua, id);
 }
 
 /* Calculate color attributes for a view column.  Returns attributes that can be

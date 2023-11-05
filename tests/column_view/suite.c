@@ -8,6 +8,8 @@
 
 static void column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info);
+static void column_line_match(const char full_column[],
+		const format_info_t *info, int *match_from, int *match_to);
 static void column1_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 static void column2_func(void *data, size_t buf_len, char buf[],
@@ -19,6 +21,7 @@ SETUP()
 {
 	columns_set_ellipsis("...");
 	columns_set_line_print_func(&column_line_print);
+	columns_set_line_match_func(&column_line_match);
 	assert_int_equal(0, columns_add_column_desc(COL1_ID, &column1_func, NULL));
 	assert_int_equal(0, columns_add_column_desc(COL2_ID, &column2_func, NULL));
 }
@@ -33,7 +36,17 @@ column_line_print(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
 {
 	assert_non_null(print_next);
-	print_next(info->data, info->real_id, buf, offset, align);
+	print_next(buf, offset, align, info);
+}
+
+static void
+column_line_match(const char full_column[], const format_info_t *info,
+		int *match_from, int *match_to)
+{
+	if(match_next != NULL)
+	{
+		match_next(full_column, info, match_from, match_to);
+	}
 }
 
 static void

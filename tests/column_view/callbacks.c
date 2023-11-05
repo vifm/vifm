@@ -6,8 +6,8 @@
 
 #include "test.h"
 
-static void column_line_print(const void *data, int column_id, const char buf[],
-		int offset, AlignType align);
+static void column_line_print(const char buf[], int offset, AlignType align,
+		const format_info_t *info);
 static void columns_func(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
 
@@ -53,8 +53,8 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char buf[], int offset,
-		AlignType align)
+column_line_print(const char buf[], int offset, AlignType align,
+		const format_info_t *info)
 {
 	++print_counter;
 }

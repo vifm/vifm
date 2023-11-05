@@ -169,4 +169,5 @@ Marcin Kurczewski (a.k.a. rr-) fixed limited size of IPC buffer.
 
 voh9eepah fixed available file-system space size on FreeBSD.
 
-Vadim Curcă added middle ellipsis to view columns.
+Vadim Curcă added middle ellipsis to view columns and fixed search match
+highlighting when the match is cut off due lack of space.

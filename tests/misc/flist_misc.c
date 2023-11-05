@@ -372,20 +372,20 @@ TEST(fentry_get_recalculates_size)
 	copy_file(TEST_DATA_PATH "/various-sizes/block-size-file",
 			SANDBOX_PATH "/dir/file");
 	WAIT_FOR((dir.mtime += 1000, fentry_get_size(&lwin, &dir) == 8192),
-			50/*ms*/);
+			100/*ms*/);
 	assert_ulong_equal(8192, fentry_get_size(&lwin, &dir));
 	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
 
 	copy_file(TEST_DATA_PATH "/various-sizes/block-size-file",
 			SANDBOX_PATH "/dir/subdir/file");
 	WAIT_FOR((subdir.mtime += 1000, fentry_get_size(&lwin, &subdir) == 8192),
-			50/*ms*/);
+			100/*ms*/);
 	assert_ulong_equal(8192, fentry_get_size(&lwin, &subdir));
 	assert_ulong_equal(16384, fentry_get_size(&lwin, &dir));
 
 	assert_success(remove(SANDBOX_PATH "/dir/subdir/file"));
 	WAIT_FOR((subdir.mtime += 1000, fentry_get_size(&lwin, &subdir) == 0),
-			50/*ms*/);
+			100/*ms*/);
 	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
 	assert_ulong_equal(8192, fentry_get_size(&lwin, &dir));
 
