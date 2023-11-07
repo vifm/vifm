@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <stdio.h> /* fclose() fopen() */
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/variables.h"
@@ -286,6 +288,30 @@ TEST(vifm_input)
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
+}
+
+TEST(vifm_stdout)
+{
+	curr_stats.original_stdout = fopen(SANDBOX_PATH "/out", "w");
+	assert_non_null(curr_stats.original_stdout);
+
+	GLUA_EQ(vlua, "true",
+			"print(vifm.stdout() ~= nil)");
+
+	GLUA_EQ(vlua, "true",
+			"stream = vifm.stdout()"
+			"print(stream == vifm.stdout())");
+
+	GLUA_EQ(vlua, "",
+			"vifm.stdout():write('test')");
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+
+	const char *lines[] = { "test" };
+	file_is(SANDBOX_PATH "/out", lines, 1);
+
+	remove_file(SANDBOX_PATH "/out");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -127,7 +127,7 @@ patch_env(lua_State *lua)
 static void
 load_api(lua_State *lua)
 {
-	make_metatable(lua, "VifmPluginEnv");
+	vlua_cmn_make_metatable(lua, "VifmPluginEnv");
 	lua_pushglobaltable(lua);
 	lua_setfield(lua, -2, "__index");
 	lua_pop(lua, 1);
@@ -254,7 +254,7 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	/* Plugin-specific `vifm` table. */
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 	/* Meta-table for it. */
-	make_metatable(lua, /*name=*/NULL);
+	vlua_cmn_make_metatable(lua, /*name=*/NULL);
 	lua_getglobal(lua, "vifm");
 	lua_setfield(lua, -2, "__index");
 	lua_setmetatable(lua, -2);
@@ -285,7 +285,7 @@ setup_plugin_env(lua_State *lua, plug_t *plug)
 	lua_setfield(lua, -2, "print");
 
 	/* Map plug to plugin environment for future queries. */
-	vlua_state_get_table(get_state(lua), &plugin_envs);
+	vlua_state_get_table(vlua_state_get(lua), &plugin_envs);
 	lua_pushlightuserdata(lua, plug);
 	lua_pushvalue(lua, -3);
 	lua_settable(lua, -3);
@@ -351,7 +351,7 @@ VLUA_IMPL(require_plugin_module)(lua_State *lua)
 	/* Fetch custom environment of the current plugin. */
 	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));
 	assert(plug != NULL && "Invalid call to require_plugin_module()");
-	vlua_state_get_table(get_state(lua), &plugin_envs);
+	vlua_state_get_table(vlua_state_get(lua), &plugin_envs);
 	lua_pushlightuserdata(lua, plug);
 	if(lua_gettable(lua, -2) != LUA_TTABLE)
 	{

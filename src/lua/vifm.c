@@ -18,6 +18,8 @@
 
 #include "vifm.h"
 
+#include <unistd.h> /* isatty() */
+
 #include "../cfg/info.h"
 #include "../engine/options.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -77,6 +79,8 @@ static int VLUA_API(vifm_input)(lua_State *lua);
 static int VLUA_API(vifm_makepath)(lua_State *lua);
 static int VLUA_API(vifm_run)(lua_State *lua);
 static int VLUA_API(vifm_sessions_current)(lua_State *lua);
+static int VLUA_API(vifm_stdout)(lua_State *lua);
+static int VLUA_IMPL(stdout_closef)(lua_State *lua);
 
 static int VLUA_API(api_is_at_least)(lua_State *lua);
 static int VLUA_API(api_has)(lua_State *lua);
@@ -98,6 +102,7 @@ VLUA_DECLARE_SAFE(vifm_input);
 VLUA_DECLARE_SAFE(vifm_makepath);
 VLUA_DECLARE_SAFE(vifm_run);
 VLUA_DECLARE_SAFE(vifm_sessions_current);
+VLUA_DECLARE_SAFE(vifm_stdout);
 
 VLUA_DECLARE_SAFE(api_is_at_least);
 VLUA_DECLARE_SAFE(api_has);
@@ -129,6 +134,7 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "input",         VLUA_REF(vifm_input)         },
 	{ "makepath",      VLUA_REF(vifm_makepath)      },
 	{ "run",           VLUA_REF(vifm_run)           },
+	{ "stdout",        VLUA_REF(vifm_stdout)        },
 
 	/* Defined in other units. */
 	{ "addcolumntype", VLUA_REF(vifm_addcolumntype) },
@@ -178,8 +184,8 @@ vifm_init(lua_State *lua)
 
 	/* Setup vifm.opts. */
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/1); /* vifm.opts */
-	lua_newtable(lua);                  /* vifm.opts.global */
-	make_metatable(lua, /*name=*/NULL); /* metatable of vifm.opts.global */
+	lua_newtable(lua);                            /* vifm.opts.global */
+	vlua_cmn_make_metatable(lua, /*name=*/NULL);  /* for vifm.opts.global */
 	lua_pushcfunction(lua, VLUA_REF(opts_global_index));
 	lua_setfield(lua, -2, "__index");
 	lua_pushcfunction(lua, VLUA_REF(opts_global_newindex));
@@ -314,17 +320,17 @@ VLUA_API(vifm_input)(lua_State *lua)
 {
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "prompt", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "prompt", LUA_TSTRING);
 	const char *prompt = lua_tostring(lua, -1);
 
 	const char *initial = "";
-	if(check_opt_field(lua, 1, "initial", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "initial", LUA_TSTRING))
 	{
 		initial = lua_tostring(lua, -1);
 	}
 
 	complete_cmd_func complete = NULL;
-	if(check_opt_field(lua, 1, "complete", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "complete", LUA_TSTRING))
 	{
 		const char *value = lua_tostring(lua, -1);
 		if(strcmp(value, "dir") == 0)
@@ -383,17 +389,17 @@ VLUA_API(vifm_run)(lua_State *lua)
 {
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "cmd", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "cmd", LUA_TSTRING);
 	const char *cmd = lua_tostring(lua, -1);
 
 	int use_term_mux = 1;
-	if(check_opt_field(lua, 1, "usetermmux", LUA_TBOOLEAN))
+	if(vlua_cmn_check_opt_field(lua, 1, "usetermmux", LUA_TBOOLEAN))
 	{
 		use_term_mux = lua_toboolean(lua, -1);
 	}
 
 	ShellPause pause = PAUSE_ON_ERROR;
-	if(check_opt_field(lua, 1, "pause", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "pause", LUA_TSTRING))
 	{
 		const char *value = lua_tostring(lua, -1);
 		if(strcmp(value, "never") == 0)
@@ -415,6 +421,47 @@ VLUA_API(vifm_run)(lua_State *lua)
 	}
 
 	lua_pushinteger(lua, rn_shell(cmd, pause, use_term_mux, SHELL_BY_APP));
+	return 1;
+}
+
+/* Member of `vifm` that retrieves stream associated with application's output.
+ * Returns file stream object compatible with I/O library that is always the
+ * same and that cannot be closed. */
+static int
+VLUA_API(vifm_stdout)(lua_State *lua)
+{
+	static char stdout_key;
+
+	if(isatty(fileno(curr_stats.original_stdout)))
+	{
+		lua_pushnil(lua);
+		return 1;
+	}
+
+	vlua_cmn_from_pointer(lua, &stdout_key);
+	if(lua_isnil(lua, -1))
+	{
+		luaL_Stream *stream = lua_newuserdatauv(lua, sizeof(*stream), 0);
+		stream->closef = VLUA_IREF(stdout_closef);
+		luaL_setmetatable(lua, LUA_FILEHANDLE);
+		stream->f = curr_stats.original_stdout;
+
+		vlua_cmn_set_pointer(lua, &stdout_key);
+	}
+
+	return 1;
+}
+
+/* Custom destructor for luaL_Stream that prevents closing the stream.  Always
+ * raises an error. */
+static int
+VLUA_IMPL(stdout_closef)(lua_State *lua)
+{
+	luaL_Stream *stream = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
+	stream->closef = VLUA_IREF(stdout_closef);
+
+	luaL_pushfail(lua);
+	lua_pushliteral(lua, "cannot close standard file");
 	return 1;
 }
 
@@ -482,7 +529,7 @@ VLUA_API(opts_global_index)(lua_State *lua)
 		return 0;
 	}
 
-	return get_opt(lua, opt);
+	return vlua_cmn_get_opt(lua, opt);
 }
 
 /* Provides write access to global options by their name as
@@ -498,7 +545,7 @@ VLUA_API(opts_global_newindex)(lua_State *lua)
 		return 0;
 	}
 
-	return set_opt(lua, opt);
+	return vlua_cmn_set_opt(lua, opt);
 }
 
 /* Member of `vifm.sb` that prints a normal message on the status bar.  Doesn't

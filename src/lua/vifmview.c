@@ -86,7 +86,7 @@ static const luaL_Reg vifmview_methods[] = {
 void
 vifmview_init(struct lua_State *lua)
 {
-	make_metatable(lua, "VifmView");
+	vlua_cmn_make_metatable(lua, "VifmView");
 	lua_pushcfunction(lua, VLUA_REF(vifmview_index));
 	lua_setfield(lua, -2, "__index");
 	luaL_setfuncs(lua, vifmview_methods, 0);
@@ -166,7 +166,7 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	unsigned int *id_copy = lua_newuserdatauv(lua, sizeof(*id_copy), 0);
 	*id_copy = *id;
 
-	make_metatable(lua, /*name=*/NULL);
+	vlua_cmn_make_metatable(lua, /*name=*/NULL);
 	lua_pushvalue(lua, -1);
 	lua_setmetatable(lua, -2);
 
@@ -345,7 +345,7 @@ do_opt(lua_State *lua, opt_t *opt, int set)
 
 	if(view == curr_view)
 	{
-		return (set ? set_opt(lua, opt) : get_opt(lua, opt));
+		return (set ? vlua_cmn_set_opt(lua, opt) : vlua_cmn_get_opt(lua, opt));
 	}
 
 	/* XXX: have to go extra mile to restore `curr_view` on error. */
@@ -385,20 +385,20 @@ VLUA_IMPL(restore_curr_view)(lua_State *lua)
 	return 1;
 }
 
-/* Lua-wrapper of get_opt(). */
+/* Lua-wrapper of vlua_cmn_get_opt(). */
 static int
 VLUA_IMPL(get_opt_wrapper)(lua_State *lua)
 {
 	opt_t *opt = lua_touserdata(lua, 1);
-	return get_opt(lua, opt);
+	return vlua_cmn_get_opt(lua, opt);
 }
 
-/* Lua-wrapper of set_opt(). */
+/* Lua-wrapper of vlua_cmn_set_opt(). */
 static int
 VLUA_IMPL(set_opt_wrapper)(lua_State *lua)
 {
 	opt_t *opt = lua_touserdata(lua, 1);
-	return set_opt(lua, opt);
+	return vlua_cmn_set_opt(lua, opt);
 }
 
 void
@@ -487,7 +487,7 @@ select_unselect(lua_State *lua, int select)
 
 	int count = 0;
 	int *indexes = NULL;
-	if(extract_indexes(lua, view, &count, &indexes) != 0)
+	if(vlua_cmn_extract_indexes(lua, view, &count, &indexes) != 0)
 	{
 		lua_pushinteger(lua, 0);
 		return 1;

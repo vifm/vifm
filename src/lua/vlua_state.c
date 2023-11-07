@@ -77,7 +77,7 @@ vlua_state_free(vlua_t *vlua)
 }
 
 state_ptr_t *
-state_store_pointer(vlua_t *vlua, void *ptr)
+vlua_state_store_pointer(vlua_t *vlua, void *ptr)
 {
 	state_ptr_t **p = DA_EXTEND(vlua->ptrs);
 	if(p == NULL)
@@ -98,7 +98,7 @@ state_store_pointer(vlua_t *vlua, void *ptr)
 }
 
 const char *
-state_store_string(vlua_t *vlua, const char str[])
+vlua_state_store_string(vlua_t *vlua, const char str[])
 {
 	int n = add_to_string_array(&vlua->strings.items, vlua->strings.nitems, str);
 	if(n == vlua->strings.nitems)
@@ -120,7 +120,7 @@ set_state(lua_State *lua, vlua_t *vlua)
 }
 
 vlua_t *
-get_state(lua_State *lua)
+vlua_state_get(lua_State *lua)
 {
 	lua_pushlightuserdata(lua, &vlua_state_key);
 	lua_gettable(lua, LUA_REGISTRYINDEX);
@@ -147,14 +147,14 @@ vlua_state_get_table(vlua_t *vlua, void *key)
 int
 vlua_state_safe_mode_on(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 	return vlua->safe_mode_level++;
 }
 
 void
 vlua_state_safe_mode_off(lua_State *lua, int cookie)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 	--vlua->safe_mode_level;
 
 	assert(vlua->safe_mode_level == cookie && "Mismatched safe mode change!");
@@ -164,7 +164,7 @@ vlua_state_safe_mode_off(lua_State *lua, int cookie)
 int
 vlua_state_proxy_call(lua_State *lua, int (*call)(lua_State *lua))
 {
-	if(get_state(lua)->safe_mode_level != 0)
+	if(vlua_state_get(lua)->safe_mode_level != 0)
 	{
 		return luaL_error(lua, "%s",
 				"Unsafe functions can't be called in this environment!");

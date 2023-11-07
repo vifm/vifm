@@ -73,13 +73,14 @@ VLUA_API(tabs_getcurrent)(lua_State *lua)
 static view_t *
 pick_side(lua_State *lua)
 {
-	if(!check_opt_arg(lua, 1, LUA_TTABLE))
+	if(!vlua_cmn_check_opt_arg(lua, 1, LUA_TTABLE))
 	{
 		return curr_view;
 	}
 
 	view_t *side = curr_view;
-	if(check_opt_field(lua, 1, "other", LUA_TBOOLEAN) && lua_toboolean(lua, -1))
+	if(vlua_cmn_check_opt_field(lua, 1, "other", LUA_TBOOLEAN) &&
+			lua_toboolean(lua, -1))
 	{
 		side = other_view;
 	}

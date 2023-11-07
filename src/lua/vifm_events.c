@@ -84,7 +84,7 @@ vifm_events_init(lua_State *lua)
 {
 	luaL_newlib(lua, vifm_events_methods);
 
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 	vlua_state_make_table(vlua, &events_key);
 	vifm_events_add(vlua, "app.exit");
 	vifm_events_add(vlua, "app.fsop");
@@ -113,16 +113,16 @@ VLUA_API(events_listen)(lua_State *lua)
 {
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "event", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "event", LUA_TSTRING);
 	const char *event = lua_tostring(lua, -1);
 
-	vlua_state_get_table(get_state(lua), &events_key);
+	vlua_state_get_table(vlua_state_get(lua), &events_key);
 	if(lua_getfield(lua, -1, event) == LUA_TNIL)
 	{
 		return luaL_error(lua, "No such event: %s", event);
 	}
 
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
+	vlua_cmn_check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_pushboolean(lua, 1);
 	lua_settable(lua, -3);
 	return 0;

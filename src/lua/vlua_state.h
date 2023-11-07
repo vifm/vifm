@@ -53,14 +53,14 @@ vlua_t * vlua_state_alloc(void);
 void vlua_state_free(vlua_t *vlua);
 
 /* Stores pointer within the state. */
-state_ptr_t * state_store_pointer(vlua_t *vlua, void *ptr);
+state_ptr_t * vlua_state_store_pointer(vlua_t *vlua, void *ptr);
 
 /* Stores a string within the state.  Returns pointer to the interned string or
  * pointer to "" on error. */
-const char * state_store_string(vlua_t *vlua, const char str[]);
+const char * vlua_state_store_string(vlua_t *vlua, const char str[]);
 
 /* Retrieves pointer to vlua from Lua state.  Returns the pointer. */
-vlua_t * get_state(struct lua_State *lua);
+vlua_t * vlua_state_get(struct lua_State *lua);
 
 /* Creates an empty table which can be accessed later by passing
  * vlua_state_get_table() the same key. */

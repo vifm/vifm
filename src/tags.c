@@ -768,6 +768,7 @@ const char *tags[] = {
 	"vifm-l_vifm.sessions",
 	"vifm-l_vifm.sessions.current",
 	"vifm-l_vifm.startjob()",
+	"vifm-l_vifm.stdout()",
 	"vifm-l_vifm.tabs",
 	"vifm-l_vifm.tabs.get()",
 	"vifm-l_vifm.tabs.getcount()",

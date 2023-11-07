@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Sep 26
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Nov 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -717,6 +717,14 @@ Return:~
 
 Raises an error:~
   If "iomode" has incorrect value.
+
+vifm.stdout()                                  *vifm-l_vifm.stdout()*
+Retrieves stream to which Vifm's standard stream was redirected.
+
+Return:~
+  The stream that can't be closed or `nil` if output stream wasn't redirected
+  to a TTY (character device on Windows).  In the former case the same stream
+  is returned on each call.
 
 vifm.input({info})                             *vifm-l_vifm.input()*
 Prompts user for input via command-line prompt.

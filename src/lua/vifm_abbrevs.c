@@ -54,13 +54,13 @@ vifm_abbrevs_init(lua_State *lua)
 static int
 VLUA_API(abbrevs_add)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
 	wchar_t wlhs[32];
 	const size_t max_wlhs_len = ARRAY_LEN(wlhs) - 1U;
-	check_field(lua, 1, "lhs", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "lhs", LUA_TSTRING);
 	const char *lhs = lua_tostring(lua, -1);
 	wchar_t *tmp_wlhs = substitute_specs(lhs);
 	if(wcslen(tmp_wlhs) == 0 || wcslen(tmp_wlhs) > max_wlhs_len)
@@ -74,26 +74,26 @@ VLUA_API(abbrevs_add)(lua_State *lua)
 	free(tmp_wlhs);
 
 	lua_newtable(lua);
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
+	vlua_cmn_check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_setfield(lua, -2, "handler");
 	lua_pushstring(lua, lhs);
 	lua_setfield(lua, -2, "lhs");
-	void *handler = to_pointer(lua);
+	void *handler = vlua_cmn_to_pointer(lua);
 
-	void *user_data = state_store_pointer(vlua, handler);
+	void *user_data = vlua_state_store_pointer(vlua, handler);
 	if(user_data == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to store handler data");
 	}
 
 	const char *descr = "";
-	if(check_opt_field(vlua->lua, 1, "description", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(vlua->lua, 1, "description", LUA_TSTRING))
 	{
 		descr = lua_tostring(lua, -1);
 	}
 
 	int no_remap = 1;
-	if(check_opt_field(lua, 1, "noremap", LUA_TBOOLEAN))
+	if(vlua_cmn_check_opt_field(lua, 1, "noremap", LUA_TBOOLEAN))
 	{
 		no_remap = lua_toboolean(lua, -1);
 	}
@@ -111,7 +111,7 @@ lua_abbrev_handler(void *user_data)
 	state_ptr_t *p = user_data;
 	lua_State *lua = p->vlua->lua;
 
-	from_pointer(lua, p->ptr);
+	vlua_cmn_from_pointer(lua, p->ptr);
 	lua_getfield(lua, -1, "lhs");
 	const char *lhs = lua_tostring(lua, -1);
 	lua_getfield(lua, -2, "handler");
