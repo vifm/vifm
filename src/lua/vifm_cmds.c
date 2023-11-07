@@ -62,7 +62,7 @@ vifm_cmds_init(lua_State *lua)
 static int
 VLUA_API(cmds_add)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
@@ -95,7 +95,7 @@ VLUA_API(cmds_add)(lua_State *lua)
 
 	parse_cmd_params(vlua, &cmd);
 
-	cmd.user_data = state_store_pointer(vlua, handler);
+	cmd.user_data = vlua_state_store_pointer(vlua, handler);
 	if(cmd.user_data == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to store handler data");
@@ -111,7 +111,7 @@ parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd)
 {
 	if(check_opt_field(vlua->lua, 1, "description", LUA_TSTRING))
 	{
-		cmd->descr = state_store_string(vlua, lua_tostring(vlua->lua, -1));
+		cmd->descr = vlua_state_store_string(vlua, lua_tostring(vlua->lua, -1));
 	}
 
 	if(check_opt_field(vlua->lua, 1, "minargs", LUA_TNUMBER))
@@ -137,7 +137,7 @@ parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd)
 static int
 VLUA_API(cmds_command)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
@@ -154,7 +154,7 @@ VLUA_API(cmds_command)(lua_State *lua)
 	const char *descr = NULL;
 	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
-		descr = state_store_string(vlua, lua_tostring(lua, -1));
+		descr = vlua_state_store_string(vlua, lua_tostring(lua, -1));
 	}
 
 	int overwrite = 0;

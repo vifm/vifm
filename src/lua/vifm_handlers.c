@@ -442,7 +442,7 @@ extract_handler_name(const char viewer[])
 int
 VLUA_API(vifm_addhandler)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	const char *namespace = NULL;
 	plug_t *plug = lua_touserdata(lua, lua_upvalueindex(1));

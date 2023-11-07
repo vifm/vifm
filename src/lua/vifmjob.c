@@ -91,13 +91,13 @@ vifmjob_init(lua_State *lua)
 	luaL_setfuncs(lua, vifmjob_methods, 0);
 	lua_pop(lua, 1);
 
-	vlua_state_make_table(get_state(lua), &jobs_key);
+	vlua_state_make_table(vlua_state_get(lua), &jobs_key);
 }
 
 void
 vifmjob_finish(lua_State *lua)
 {
-	vlua_state_get_table(get_state(lua), &jobs_key);
+	vlua_state_get_table(vlua_state_get(lua), &jobs_key);
 	lua_pushnil(lua);
 	while(lua_next(lua, -2) != 0)
 	{
@@ -113,7 +113,7 @@ vifmjob_finish(lua_State *lua)
 int
 VLUA_API(vifmjob_new)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 

@@ -125,7 +125,7 @@ vifm_viewcolumns_is_primary(vlua_t *vlua, int column_id)
 int
 VLUA_API(vifm_addcolumntype)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
@@ -142,7 +142,7 @@ VLUA_API(vifm_addcolumntype)(lua_State *lua)
 		is_primary = lua_toboolean(vlua->lua, -1);
 	}
 
-	void *data = state_store_pointer(vlua, handler);
+	void *data = vlua_state_store_pointer(vlua, handler);
 	if(data == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to store handler data");

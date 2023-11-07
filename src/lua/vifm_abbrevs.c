@@ -54,7 +54,7 @@ vifm_abbrevs_init(lua_State *lua)
 static int
 VLUA_API(abbrevs_add)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
@@ -80,7 +80,7 @@ VLUA_API(abbrevs_add)(lua_State *lua)
 	lua_setfield(lua, -2, "lhs");
 	void *handler = to_pointer(lua);
 
-	void *user_data = state_store_pointer(vlua, handler);
+	void *user_data = vlua_state_store_pointer(vlua, handler);
 	if(user_data == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to store handler data");

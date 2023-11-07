@@ -62,7 +62,7 @@ vifm_keys_init(lua_State *lua)
 static int
 VLUA_API(keys_add)(lua_State *lua)
 {
-	vlua_t *vlua = get_state(lua);
+	vlua_t *vlua = vlua_state_get(lua);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
@@ -83,7 +83,7 @@ VLUA_API(keys_add)(lua_State *lua)
 	const char *descr = "";
 	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
-		descr = state_store_string(vlua, lua_tostring(lua, -1));
+		descr = vlua_state_store_string(vlua, lua_tostring(lua, -1));
 	}
 
 	int is_selector = 0;
@@ -131,7 +131,7 @@ VLUA_API(keys_add)(lua_State *lua)
 		.followed = followed_by,
 	};
 
-	key.user_data = state_store_pointer(vlua, handler);
+	key.user_data = vlua_state_store_pointer(vlua, handler);
 	if(key.user_data == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to store handler data");
