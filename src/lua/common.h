@@ -42,6 +42,10 @@ int check_opt_field(struct lua_State *lua, int table_idx, const char name[],
  * it.  Returns the pointer. */
 void * to_pointer(struct lua_State *lua);
 
+/* Associates value at the top of Lua stack with the pointer value for future
+ * lookup via from_pointer(). */
+void set_pointer(struct lua_State *lua, void *key);
+
 /* Converts C pointer to a Lua value and pushes it on top of the stack. */
 void from_pointer(struct lua_State *lua, void *ptr);
 

@@ -83,10 +83,16 @@ void *
 to_pointer(lua_State *lua)
 {
 	void *ptr = (void *)lua_topointer(lua, -1);
+	set_pointer(lua, ptr);
+	return ptr;
+}
+
+void
+set_pointer(lua_State *lua, void *ptr)
+{
 	lua_pushlightuserdata(lua, ptr);
 	lua_pushvalue(lua, -2);
 	lua_settable(lua, LUA_REGISTRYINDEX);
-	return ptr;
 }
 
 void
