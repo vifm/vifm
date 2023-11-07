@@ -28,6 +28,10 @@ documented in the regular ChangeLog.
 	Added vifm.abbrevs.add() that registers command-line abbreviations.  Patch
 	by filterfalse.
 
+	Added vifm.stdout() to return stream to which Vifm's output was
+	redirected (if it was redirected, i.e. original output wasn't connected to
+	a TTY or character device on Windows).  Thanks to gruvw.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Added VifmView:select() and VifmView:unselect() that select and unselect

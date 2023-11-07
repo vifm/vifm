@@ -18,6 +18,8 @@
 
 #include "vifm.h"
 
+#include <unistd.h> /* isatty() */
+
 #include "../cfg/info.h"
 #include "../engine/options.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -77,6 +79,8 @@ static int VLUA_API(vifm_input)(lua_State *lua);
 static int VLUA_API(vifm_makepath)(lua_State *lua);
 static int VLUA_API(vifm_run)(lua_State *lua);
 static int VLUA_API(vifm_sessions_current)(lua_State *lua);
+static int VLUA_API(vifm_stdout)(lua_State *lua);
+static int VLUA_IMPL(stdout_closef)(lua_State *lua);
 
 static int VLUA_API(api_is_at_least)(lua_State *lua);
 static int VLUA_API(api_has)(lua_State *lua);
@@ -98,6 +102,7 @@ VLUA_DECLARE_SAFE(vifm_input);
 VLUA_DECLARE_SAFE(vifm_makepath);
 VLUA_DECLARE_SAFE(vifm_run);
 VLUA_DECLARE_SAFE(vifm_sessions_current);
+VLUA_DECLARE_SAFE(vifm_stdout);
 
 VLUA_DECLARE_SAFE(api_is_at_least);
 VLUA_DECLARE_SAFE(api_has);
@@ -129,6 +134,7 @@ static const struct luaL_Reg vifm_methods[] = {
 	{ "input",         VLUA_REF(vifm_input)         },
 	{ "makepath",      VLUA_REF(vifm_makepath)      },
 	{ "run",           VLUA_REF(vifm_run)           },
+	{ "stdout",        VLUA_REF(vifm_stdout)        },
 
 	/* Defined in other units. */
 	{ "addcolumntype", VLUA_REF(vifm_addcolumntype) },
@@ -415,6 +421,47 @@ VLUA_API(vifm_run)(lua_State *lua)
 	}
 
 	lua_pushinteger(lua, rn_shell(cmd, pause, use_term_mux, SHELL_BY_APP));
+	return 1;
+}
+
+/* Member of `vifm` that retrieves stream associated with application's output.
+ * Returns file stream object compatible with I/O library that is always the
+ * same and that cannot be closed. */
+static int
+VLUA_API(vifm_stdout)(lua_State *lua)
+{
+	static char stdout_key;
+
+	if(isatty(fileno(curr_stats.original_stdout)))
+	{
+		lua_pushnil(lua);
+		return 1;
+	}
+
+	from_pointer(lua, &stdout_key);
+	if(lua_isnil(lua, -1))
+	{
+		luaL_Stream *stream = lua_newuserdatauv(lua, sizeof(*stream), 0);
+		stream->closef = VLUA_IREF(stdout_closef);
+		luaL_setmetatable(lua, LUA_FILEHANDLE);
+		stream->f = curr_stats.original_stdout;
+
+		set_pointer(lua, &stdout_key);
+	}
+
+	return 1;
+}
+
+/* Custom destructor for luaL_Stream that prevents closing the stream.  Always
+ * raises an error. */
+static int
+VLUA_IMPL(stdout_closef)(lua_State *lua)
+{
+	luaL_Stream *stream = luaL_checkudata(lua, 1, LUA_FILEHANDLE);
+	stream->closef = VLUA_IREF(stdout_closef);
+
+	luaL_pushfail(lua);
+	lua_pushliteral(lua, "cannot close standard file");
 	return 1;
 }
 
