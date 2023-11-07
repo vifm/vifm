@@ -113,7 +113,7 @@ VLUA_API(events_listen)(lua_State *lua)
 {
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "event", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "event", LUA_TSTRING);
 	const char *event = lua_tostring(lua, -1);
 
 	vlua_state_get_table(vlua_state_get(lua), &events_key);
@@ -122,7 +122,7 @@ VLUA_API(events_listen)(lua_State *lua)
 		return luaL_error(lua, "No such event: %s", event);
 	}
 
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
+	vlua_cmn_check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_pushboolean(lua, 1);
 	lua_settable(lua, -3);
 	return 0;

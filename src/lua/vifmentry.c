@@ -56,7 +56,7 @@ static const luaL_Reg vifmentry_methods[] = {
 void
 vifmentry_init(lua_State *lua)
 {
-	make_metatable(lua, "VifmEntry");
+	vlua_cmn_make_metatable(lua, "VifmEntry");
 	luaL_setfuncs(lua, vifmentry_methods, 0);
 	lua_pop(lua, 1);
 }

@@ -66,20 +66,20 @@ VLUA_API(cmds_add)(lua_State *lua)
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "name", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "name", LUA_TSTRING);
 	const char *name = lua_tostring(lua, -1);
 
 	int id = -1;
 
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/1);
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
+	vlua_cmn_check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_setfield(lua, -2, "handler");
-	if(check_opt_field(lua, 1, "complete", LUA_TFUNCTION))
+	if(vlua_cmn_check_opt_field(lua, 1, "complete", LUA_TFUNCTION))
 	{
 		lua_setfield(lua, -2, "complete");
 		id = COM_FOREIGN;
 	}
-	void *handler = to_pointer(lua);
+	void *handler = vlua_cmn_to_pointer(lua);
 
 	cmd_add_t cmd = {
 	  .name = name,
@@ -109,16 +109,16 @@ VLUA_API(cmds_add)(lua_State *lua)
 static void
 parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd)
 {
-	if(check_opt_field(vlua->lua, 1, "description", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(vlua->lua, 1, "description", LUA_TSTRING))
 	{
 		cmd->descr = vlua_state_store_string(vlua, lua_tostring(vlua->lua, -1));
 	}
 
-	if(check_opt_field(vlua->lua, 1, "minargs", LUA_TNUMBER))
+	if(vlua_cmn_check_opt_field(vlua->lua, 1, "minargs", LUA_TNUMBER))
 	{
 		cmd->min_args = lua_tointeger(vlua->lua, -1);
 	}
-	if(check_opt_field(vlua->lua, 1, "maxargs", LUA_TNUMBER))
+	if(vlua_cmn_check_opt_field(vlua->lua, 1, "maxargs", LUA_TNUMBER))
 	{
 		cmd->max_args = lua_tointeger(vlua->lua, -1);
 		if(cmd->max_args < 0)
@@ -141,10 +141,10 @@ VLUA_API(cmds_command)(lua_State *lua)
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "name", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "name", LUA_TSTRING);
 	const char *name = lua_tostring(lua, -1);
 
-	check_field(lua, 1, "action", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "action", LUA_TSTRING);
 	const char *action = skip_whitespace(lua_tostring(lua, -1));
 	if(action[0] == '\0')
 	{
@@ -152,13 +152,13 @@ VLUA_API(cmds_command)(lua_State *lua)
 	}
 
 	const char *descr = NULL;
-	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
 		descr = vlua_state_store_string(vlua, lua_tostring(lua, -1));
 	}
 
 	int overwrite = 0;
-	if(check_opt_field(lua, 1, "overwrite", LUA_TBOOLEAN))
+	if(vlua_cmn_check_opt_field(lua, 1, "overwrite", LUA_TBOOLEAN))
 	{
 		overwrite = lua_toboolean(lua, -1);
 	}
@@ -187,13 +187,13 @@ lua_cmd_handler(const cmd_info_t *cmd_info)
 	state_ptr_t *p = cmd_info->user_data;
 	lua_State *lua = p->vlua->lua;
 
-	from_pointer(lua, p->ptr);
+	vlua_cmn_from_pointer(lua, p->ptr);
 	lua_getfield(lua, -1, "handler");
 
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushstring(lua, cmd_info->args);
 	lua_setfield(lua, -2, "args");
-	push_str_array(lua, cmd_info->argv, cmd_info->argc);
+	vlua_cmn_push_str_array(lua, cmd_info->argv, cmd_info->argc);
 	lua_setfield(lua, -2, "argv");
 
 	curr_stats.save_msg = 0;
@@ -215,7 +215,7 @@ vifm_cmds_complete(lua_State *lua, const cmd_info_t *cmd_info, int arg_pos)
 {
 	state_ptr_t *p = cmd_info->user_data;
 
-	from_pointer(lua, p->ptr);
+	vlua_cmn_from_pointer(lua, p->ptr);
 	if(lua_getfield(lua, -1, "complete") == LUA_TNIL)
 	{
 		return 0;
@@ -224,7 +224,7 @@ vifm_cmds_complete(lua_State *lua, const cmd_info_t *cmd_info, int arg_pos)
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/3);
 	lua_pushstring(lua, cmd_info->args);
 	lua_setfield(lua, -2, "args");
-	push_str_array(lua, cmd_info->argv, cmd_info->argc);
+	vlua_cmn_push_str_array(lua, cmd_info->argv, cmd_info->argc);
 	lua_setfield(lua, -2, "argv");
 	lua_pushstring(lua, cmd_info->args + arg_pos);
 	lua_setfield(lua, -2, "arg");

@@ -129,15 +129,15 @@ VLUA_API(vifm_addcolumntype)(lua_State *lua)
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "name", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "name", LUA_TSTRING);
 	const char *name = lua_tostring(lua, -1);
 	check_viewcolumn_name(vlua, name);
 
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
-	void *handler = to_pointer(lua);
+	vlua_cmn_check_field(lua, 1, "handler", LUA_TFUNCTION);
+	void *handler = vlua_cmn_to_pointer(lua);
 
 	int is_primary = 0;
-	if(check_opt_field(lua, 1, "isprimary", LUA_TBOOLEAN))
+	if(vlua_cmn_check_opt_field(lua, 1, "isprimary", LUA_TBOOLEAN))
 	{
 		is_primary = lua_toboolean(vlua->lua, -1);
 	}
@@ -164,7 +164,7 @@ VLUA_API(vifm_addcolumntype)(lua_State *lua)
 	int error = columns_add_column_desc(column_id, &lua_viewcolumn_handler, data);
 	if(error)
 	{
-		drop_pointer(lua, handler);
+		vlua_cmn_drop_pointer(lua, handler);
 	}
 	lua_pushboolean(lua, !error);
 	return 1;
@@ -211,7 +211,7 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 	state_ptr_t *p = data;
 	lua_State *lua = p->vlua->lua;
 
-	from_pointer(lua, p->ptr);
+	vlua_cmn_from_pointer(lua, p->ptr);
 
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
 

@@ -53,7 +53,7 @@ static const luaL_Reg vifmtab_methods[] = {
 void
 vifmtab_init(lua_State *lua)
 {
-	make_metatable(lua, "VifmTab");
+	vlua_cmn_make_metatable(lua, "VifmTab");
 	luaL_setfuncs(lua, vifmtab_methods, 0);
 	lua_pop(lua, 1);
 }
@@ -67,12 +67,13 @@ VLUA_API(vifmtab_new)(struct lua_State *lua)
 
 	if(!lua_isnoneornil(lua, 1))
 	{
-		if(check_opt_field(lua, 1, "other", LUA_TBOOLEAN) && lua_toboolean(lua, -1))
+		if(vlua_cmn_check_opt_field(lua, 1, "other", LUA_TBOOLEAN) &&
+				lua_toboolean(lua, -1))
 		{
 			side = other_view;
 		}
 
-		if(check_opt_field(lua, 1, "index", LUA_TNUMBER))
+		if(vlua_cmn_check_opt_field(lua, 1, "index", LUA_TNUMBER))
 		{
 			index = lua_tointeger(lua, -1) - 1;
 			index_set = 1;
@@ -143,8 +144,8 @@ VLUA_API(vifmtab_getview)(lua_State *lua)
 	/* Querying active pane of a global tab by default. */
 	view_t *side = curr_view;
 	tab_search_f tab_search = tabs_get;
-	if(check_opt_arg(lua, 2, LUA_TTABLE) &&
-			check_opt_field(lua, 2, "pane", LUA_TNUMBER))
+	if(vlua_cmn_check_opt_arg(lua, 2, LUA_TTABLE) &&
+			vlua_cmn_check_opt_field(lua, 2, "pane", LUA_TNUMBER))
 	{
 		int pane = lua_tointeger(lua, -1);
 		if(pane < 1 || pane > 2)

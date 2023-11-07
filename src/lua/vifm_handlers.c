@@ -346,7 +346,7 @@ vifm_handlers_edit_many(struct vlua_t *vlua, const char handler[],
 	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushstring(vlua->lua, "edit-many");
 	lua_setfield(vlua->lua, -2, "action");
-	push_str_array(vlua->lua, files, nfiles);
+	vlua_cmn_push_str_array(vlua->lua, files, nfiles);
 	lua_setfield(vlua->lua, -2, "paths");
 
 	int result = run_editor_handler(vlua, handler);
@@ -361,7 +361,7 @@ vifm_handlers_edit_list(vlua_t *vlua, const char handler[], char *entries[],
 	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/4);
 	lua_pushstring(vlua->lua, "edit-list");
 	lua_setfield(vlua->lua, -2, "action");
-	push_str_array(vlua->lua, entries, nentries);
+	vlua_cmn_push_str_array(vlua->lua, entries, nentries);
 	lua_setfield(vlua->lua, -2, "entries");
 	lua_pushinteger(vlua->lua, current + 1);
 	lua_setfield(vlua->lua, -2, "current");
@@ -461,11 +461,11 @@ VLUA_API(vifm_addhandler)(lua_State *lua)
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "name", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "name", LUA_TSTRING);
 	const char *name = lua_tostring(lua, -1);
 	check_handler_name(vlua, name);
 
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
+	vlua_cmn_check_field(lua, 1, "handler", LUA_TFUNCTION);
 
 	char *full_name = format_str("#%s#%s", namespace, name);
 

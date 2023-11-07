@@ -25,56 +25,57 @@ struct view_t;
 /* Retrieves optional argument while checking its type and aborting (Lua does
  * longjmp()) if it doesn't match.  Returns non-zero if the argument is present
  * and is of correct type. */
-int check_opt_arg(struct lua_State *lua, int arg_idx, int expected_type);
+int vlua_cmn_check_opt_arg(struct lua_State *lua, int arg_idx,
+		int expected_type);
 
 /* Retrieves mandatory field of a table while checking its type and aborting
  * (Lua does longjmp()) if it's missing or doesn't match. */
-void check_field(struct lua_State *lua, int table_idx, const char name[],
-		int lua_type);
+void vlua_cmn_check_field(struct lua_State *lua, int table_idx,
+		const char name[], int lua_type);
 
 /* Retrieves optional field of a table while checking its type and aborting (Lua
  * does longjmp()) if it doesn't match.  Returns non-zero if the field is
  * present and is of correct type. */
-int check_opt_field(struct lua_State *lua, int table_idx, const char name[],
-		int lua_type);
+int vlua_cmn_check_opt_field(struct lua_State *lua, int table_idx,
+		const char name[], int lua_type);
 
 /* Converts Lua value at the top of the stack into a C pointer without popping
  * it.  Returns the pointer. */
-void * to_pointer(struct lua_State *lua);
+void * vlua_cmn_to_pointer(struct lua_State *lua);
 
 /* Associates value at the top of Lua stack with the pointer value for future
- * lookup via from_pointer(). */
-void set_pointer(struct lua_State *lua, void *key);
+ * lookup via vlua_cmn_from_pointer(). */
+void vlua_cmn_set_pointer(struct lua_State *lua, void *key);
 
 /* Converts C pointer to a Lua value and pushes it on top of the stack. */
-void from_pointer(struct lua_State *lua, void *ptr);
+void vlua_cmn_from_pointer(struct lua_State *lua, void *ptr);
 
-/* Removes pointer stored by to_pointer(). */
-void drop_pointer(struct lua_State *lua, void *ptr);
+/* Removes pointer stored by vlua_cmn_to_pointer(). */
+void vlua_cmn_drop_pointer(struct lua_State *lua, void *ptr);
 
 struct opt_t;
 
 /* Reads option value as a Lua value.  Returns number of results. */
-int get_opt(struct lua_State *lua, struct opt_t *opt);
+int vlua_cmn_get_opt(struct lua_State *lua, struct opt_t *opt);
 
 /* Sets option value from a Lua value.  Returns number of results, which is
  * always zero. */
-int set_opt(struct lua_State *lua, struct opt_t *opt);
+int vlua_cmn_set_opt(struct lua_State *lua, struct opt_t *opt);
 
 /* Creates an array of strings and leaves it on the top of the stack. */
-void push_str_array(struct lua_State *lua, char *array[], int len);
+void vlua_cmn_push_str_array(struct lua_State *lua, char *array[], int len);
 
 /* Creates a metatable whose __index points to itself and which is opaque for
  * Lua code (can't be read or set).  If name is NULL, the metatable isn't stored
  * in the registry.  The metatable is left on the top of the stack. */
-void make_metatable(struct lua_State *lua, const char name[]);
+void vlua_cmn_make_metatable(struct lua_State *lua, const char name[]);
 
 /* Extracts selected indexes from "indexes" field of the table at the top of Lua
  * stack.  For valid "indexes" field, allocates an array, which should be freed
  * by the caller.  Indexes are sorted and deduplicated.  Returns zero on success
  * (valid "indexes" field) and non-zero on error. */
-int extract_indexes(struct lua_State *lua, struct view_t *view, int *count,
-		int *indexes[]);
+int vlua_cmn_extract_indexes(struct lua_State *lua, struct view_t *view,
+		int *count, int *indexes[]);
 
 #endif /* VIFM__LUA__COMMON_H__ */
 

@@ -87,7 +87,7 @@ static char jobs_key;
 void
 vifmjob_init(lua_State *lua)
 {
-	make_metatable(lua, "VifmJob");
+	vlua_cmn_make_metatable(lua, "VifmJob");
 	luaL_setfuncs(lua, vifmjob_methods, 0);
 	lua_pop(lua, 1);
 
@@ -117,21 +117,21 @@ VLUA_API(vifmjob_new)(lua_State *lua)
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 
-	check_field(lua, 1, "cmd", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "cmd", LUA_TSTRING);
 	const char *cmd = lua_tostring(lua, -1);
 
 	const char *iomode = NULL;
-	if(check_opt_field(lua, 1, "iomode", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "iomode", LUA_TSTRING))
 	{
 		iomode = lua_tostring(lua, -1);
 	}
 
 	BgJobFlags flags = BJF_MENU_VISIBLE;
-	if(check_opt_field(lua, 1, "visible", LUA_TBOOLEAN))
+	if(vlua_cmn_check_opt_field(lua, 1, "visible", LUA_TBOOLEAN))
 	{
 		flags |= (lua_toboolean(lua, -1) ? BJF_JOB_BAR_VISIBLE : BJF_NONE);
 	}
-	if(check_opt_field(lua, 1, "mergestreams", LUA_TBOOLEAN))
+	if(vlua_cmn_check_opt_field(lua, 1, "mergestreams", LUA_TBOOLEAN))
 	{
 		flags |= (lua_toboolean(lua, -1) ? BJF_MERGE_STREAMS : BJF_NONE);
 	}
@@ -149,12 +149,12 @@ VLUA_API(vifmjob_new)(lua_State *lua)
 	}
 
 	const char *descr = NULL;
-	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
 		descr = lua_tostring(lua, -1);
 	}
 
-	int with_on_exit = check_opt_field(lua, 1, "onexit", LUA_TFUNCTION);
+	int with_on_exit = vlua_cmn_check_opt_field(lua, 1, "onexit", LUA_TFUNCTION);
 
 	bg_job_t *job = bg_run_external_job(cmd, flags);
 	if(job == NULL)
@@ -256,11 +256,11 @@ VLUA_API(vifmjob_gc)(lua_State *lua)
 
 	if(vifm_job->input != NULL)
 	{
-		drop_pointer(lua, vifm_job->input->obj);
+		vlua_cmn_drop_pointer(lua, vifm_job->input->obj);
 	}
 	if(vifm_job->output != NULL)
 	{
-		drop_pointer(lua, vifm_job->output->obj);
+		vlua_cmn_drop_pointer(lua, vifm_job->output->obj);
 	}
 
 	return 0;
@@ -353,7 +353,7 @@ VLUA_API(vifmjob_stdin)(lua_State *lua)
 	}
 	else
 	{
-		from_pointer(lua, vifm_job->input->obj);
+		vlua_cmn_from_pointer(lua, vifm_job->input->obj);
 	}
 
 	return 1;
@@ -379,7 +379,7 @@ VLUA_API(vifmjob_stdout)(lua_State *lua)
 	}
 	else
 	{
-		from_pointer(lua, vifm_job->output->obj);
+		vlua_cmn_from_pointer(lua, vifm_job->output->obj);
 	}
 
 	return 1;
@@ -422,7 +422,7 @@ job_stream_open(lua_State *lua, bg_job_t *job, FILE *stream)
 	js->job = job;
 	bg_job_incref(job);
 
-	js->obj = to_pointer(lua);
+	js->obj = vlua_cmn_to_pointer(lua);
 
 	return js;
 }
@@ -438,7 +438,7 @@ job_stream_close(lua_State *lua, job_stream_t *js)
 		bg_job_decref(js->job);
 	}
 
-	drop_pointer(lua, js->obj);
+	vlua_cmn_drop_pointer(lua, js->obj);
 }
 
 /* Custom destructor for luaL_Stream that decrements use counter of the job.

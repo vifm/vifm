@@ -68,7 +68,7 @@ VLUA_API(keys_add)(lua_State *lua)
 
 	wchar_t lhs[16];
 	const size_t max_lhs_len = ARRAY_LEN(lhs) - 1U;
-	check_field(lua, 1, "shortcut", LUA_TSTRING);
+	vlua_cmn_check_field(lua, 1, "shortcut", LUA_TSTRING);
 	wchar_t *tmp_lhs = substitute_specs(lua_tostring(lua, -1));
 	if(wcslen(tmp_lhs) == 0 || wcslen(tmp_lhs) > max_lhs_len)
 	{
@@ -81,19 +81,19 @@ VLUA_API(keys_add)(lua_State *lua)
 	free(tmp_lhs);
 
 	const char *descr = "";
-	if(check_opt_field(lua, 1, "description", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
 		descr = vlua_state_store_string(vlua, lua_tostring(lua, -1));
 	}
 
 	int is_selector = 0;
-	if(check_opt_field(lua, 1, "isselector", LUA_TBOOLEAN))
+	if(vlua_cmn_check_opt_field(lua, 1, "isselector", LUA_TBOOLEAN))
 	{
 		is_selector = lua_toboolean(lua, -1);
 	}
 
 	FollowedBy followed_by = FOLLOWED_BY_NONE;
-	if(check_opt_field(lua, 1, "followedby", LUA_TSTRING))
+	if(vlua_cmn_check_opt_field(lua, 1, "followedby", LUA_TSTRING))
 	{
 		const char *value = lua_tostring(lua, -1);
 		if(strcmp(value, "none") == 0)
@@ -115,15 +115,15 @@ VLUA_API(keys_add)(lua_State *lua)
 	}
 
 	char modes[MODES_COUNT] = { };
-	check_field(lua, 1, "modes", LUA_TTABLE);
+	vlua_cmn_check_field(lua, 1, "modes", LUA_TTABLE);
 	parse_modes(vlua, modes);
 
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
-	check_field(lua, 1, "handler", LUA_TFUNCTION);
+	vlua_cmn_check_field(lua, 1, "handler", LUA_TFUNCTION);
 	lua_setfield(lua, -2, "handler");
 	lua_pushboolean(lua, is_selector);
 	lua_setfield(lua, -2, "isselector");
-	void *handler = to_pointer(lua);
+	void *handler = vlua_cmn_to_pointer(lua);
 
 	key_conf_t key = {
 		.data.handler = &lua_key_handler,
@@ -205,7 +205,7 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 	state_ptr_t *p = key_info.user_data;
 	lua_State *lua = p->vlua->lua;
 
-	from_pointer(lua, p->ptr);
+	vlua_cmn_from_pointer(lua, p->ptr);
 	lua_getfield(lua, -1, "isselector");
 	int is_selector = lua_toboolean(lua, -1);
 	lua_getfield(lua, -2, "handler");
@@ -242,7 +242,7 @@ lua_key_handler(key_info_t key_info, keys_info_t *keys_info)
 
 	if(is_selector && lua_istable(lua, -1))
 	{
-		if(extract_indexes(lua, curr_view, &keys_info->count,
+		if(vlua_cmn_extract_indexes(lua, curr_view, &keys_info->count,
 					&keys_info->indexes) == 0)
 		{
 			if(keys_info->count == 0)

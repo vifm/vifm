@@ -30,7 +30,7 @@ static int deduplicate_ints(int array[], int count);
 static int int_sorter(const void *first, const void *second);
 
 int
-check_opt_arg(lua_State *lua, int arg_idx, int expected_type)
+vlua_cmn_check_opt_arg(lua_State *lua, int arg_idx, int expected_type)
 {
 	int type = lua_type(lua, arg_idx);
 	if(type == LUA_TNONE)
@@ -47,7 +47,8 @@ check_opt_arg(lua_State *lua, int arg_idx, int expected_type)
 }
 
 void
-check_field(lua_State *lua, int table_idx, const char name[], int lua_type)
+vlua_cmn_check_field(lua_State *lua, int table_idx, const char name[],
+		int lua_type)
 {
 	int type = lua_getfield(lua, table_idx, name);
 	if(type == LUA_TNIL)
@@ -62,7 +63,8 @@ check_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 }
 
 int
-check_opt_field(lua_State *lua, int table_idx, const char name[], int lua_type)
+vlua_cmn_check_opt_field(lua_State *lua, int table_idx, const char name[],
+		int lua_type)
 {
 	int type = lua_getfield(lua, table_idx, name);
 	if(type == LUA_TNIL)
@@ -80,15 +82,15 @@ check_opt_field(lua_State *lua, int table_idx, const char name[], int lua_type)
 }
 
 void *
-to_pointer(lua_State *lua)
+vlua_cmn_to_pointer(lua_State *lua)
 {
 	void *ptr = (void *)lua_topointer(lua, -1);
-	set_pointer(lua, ptr);
+	vlua_cmn_set_pointer(lua, ptr);
 	return ptr;
 }
 
 void
-set_pointer(lua_State *lua, void *ptr)
+vlua_cmn_set_pointer(lua_State *lua, void *ptr)
 {
 	lua_pushlightuserdata(lua, ptr);
 	lua_pushvalue(lua, -2);
@@ -96,14 +98,14 @@ set_pointer(lua_State *lua, void *ptr)
 }
 
 void
-from_pointer(lua_State *lua, void *ptr)
+vlua_cmn_from_pointer(lua_State *lua, void *ptr)
 {
 	lua_pushlightuserdata(lua, ptr);
 	lua_gettable(lua, LUA_REGISTRYINDEX);
 }
 
 void
-drop_pointer(lua_State *lua, void *ptr)
+vlua_cmn_drop_pointer(lua_State *lua, void *ptr)
 {
 	lua_pushlightuserdata(lua, ptr);
 	lua_pushnil(lua);
@@ -111,7 +113,7 @@ drop_pointer(lua_State *lua, void *ptr)
 }
 
 int
-get_opt(lua_State *lua, opt_t *opt)
+vlua_cmn_get_opt(lua_State *lua, opt_t *opt)
 {
 	int nresults = 0;
 	switch(opt->type)
@@ -137,7 +139,7 @@ get_opt(lua_State *lua, opt_t *opt)
 }
 
 int
-set_opt(lua_State *lua, opt_t *opt)
+vlua_cmn_set_opt(lua_State *lua, opt_t *opt)
 {
 	vle_tb_clear(vle_err);
 
@@ -175,7 +177,7 @@ set_opt(lua_State *lua, opt_t *opt)
 }
 
 void
-push_str_array(lua_State *lua, char *array[], int len)
+vlua_cmn_push_str_array(lua_State *lua, char *array[], int len)
 {
 	int i;
 	lua_createtable(lua, len, /*nrec=*/0);
@@ -187,7 +189,7 @@ push_str_array(lua_State *lua, char *array[], int len)
 }
 
 void
-make_metatable(lua_State *lua, const char name[])
+vlua_cmn_make_metatable(lua_State *lua, const char name[])
 {
 	if(name == NULL)
 	{
@@ -205,7 +207,8 @@ make_metatable(lua_State *lua, const char name[])
 }
 
 int
-extract_indexes(lua_State *lua, view_t *view, int *count, int *indexes[])
+vlua_cmn_extract_indexes(lua_State *lua, view_t *view, int *count,
+		int *indexes[])
 {
 	if(!lua_istable(lua, -1))
 	{
