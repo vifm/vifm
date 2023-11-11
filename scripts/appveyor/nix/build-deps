@@ -3,7 +3,9 @@
 set -e
 
 if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = Ubuntu ]; then
-    sudo apt update
+    # allow it to fail because things might still install
+    sudo apt update || true
+
     sudo apt install -y --no-install-recommends libncursesw5-dev ccache
     ccache -M 100Mi
 fi
