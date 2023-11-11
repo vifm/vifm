@@ -21,6 +21,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
+#include <curses.h>
 #include <term.h>
 #endif
 
