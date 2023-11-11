@@ -21,8 +21,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include <curses.h>
-#include <term.h>
+#include <curses.h> /* for <term.h> */
+#include <term.h> /* cur_term del_curterm() setupterm() tgoto() tigetstr() */
 #endif
 
 #if !defined(_WIN32) && defined(HAVE_X11)
