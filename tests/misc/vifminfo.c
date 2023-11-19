@@ -23,14 +23,18 @@
 #include "../../src/opt_handlers.h"
 #include "../../src/status.h"
 
+static char *saved_locale;
+
 SETUP_ONCE()
 {
 	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	saved_locale = drop_locale();
 }
 
 TEARDOWN_ONCE()
 {
 	cfg.config_dir[0] = '\0';
+	restore_locale(saved_locale);
 }
 
 SETUP()

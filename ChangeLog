@@ -160,6 +160,9 @@
 	Fixed search match highlighting when the match is cut off due lack of
 	space.  Patch by Vadim Curcă.
 
+	Fixed running tests with locales that use comma for decimal point.  Thanks
+	to PRESFIL.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
