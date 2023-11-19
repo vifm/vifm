@@ -8,6 +8,18 @@
 static void admixture_is_moved(const char import[]);
 static void admixture_is_inserted(const char source[], const char import[]);
 
+static char *saved_locale;
+
+SETUP_ONCE()
+{
+	saved_locale = drop_locale();
+}
+
+TEARDOWN_ONCE()
+{
+	restore_locale(saved_locale);
+}
+
 TEST(empty_import)
 {
 	admixture_is_moved("{}");

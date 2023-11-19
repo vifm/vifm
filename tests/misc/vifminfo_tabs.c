@@ -12,6 +12,8 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 
+static char *saved_locale;
+
 SETUP_ONCE()
 {
 	char cwd[PATH_MAX + 1];
@@ -23,6 +25,8 @@ SETUP_ONCE()
 
 	curr_view = &lwin;
 	other_view = &rwin;
+
+	saved_locale = drop_locale();
 }
 
 TEARDOWN_ONCE()
@@ -31,6 +35,8 @@ TEARDOWN_ONCE()
 
 	curr_view = NULL;
 	other_view = NULL;
+
+	restore_locale(saved_locale);
 }
 
 SETUP()
