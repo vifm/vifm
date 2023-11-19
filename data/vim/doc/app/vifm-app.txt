@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Oct 21
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Nov 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -982,7 +982,7 @@ Shift-Tab                                      *vifm-c_SHIFT-Tab*
     complete in reverse order.
 
 Ctrl-_                                         *vifm-c_CTRL-_*
-    stop completion and return original input.
+    stop completion and restore original input.
 
 Ctrl-B, Left  - move cursor to the left.       *vifm-c_CTRL-B* *vifm-c_Left*
 Ctrl-F, Right - move cursor to the right.      *vifm-c_CTRL-F* *vifm-c_Right*
