@@ -536,7 +536,7 @@ handle_nonempty_input(void)
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = menus_search(mbinput, input_stat.menu, /*print_erros=*/0);
+			result = menus_search(mbinput, input_stat.menu, /*print_errors=*/0);
 			update_state(result, menus_search_matched(input_stat.menu));
 			break;
 		case CLS_FILTER:
