@@ -84,12 +84,13 @@ when building with Cygwin):
 
 On OS X you need:
 
-    Get and install libscursesw or libncursesw.
+    Some compatible curses implementation usually comes with the system.  If
+    not, get and install libscursesw or libncursesw.
 
     Proceed like in *nix Installation section.
 
-    Also you probably want to pass --with-glib=no argument to ./configure
-    script to omit unwanted error message when vifm starts.
+    You might also want to pass --with-glib=no argument to ./configure script
+    to omit unwanted error message when vifm starts.
 
 On Windows you need:
 
