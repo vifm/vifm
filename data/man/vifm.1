@@ -1,4 +1,4 @@
-.TH VIFM 1 "20 Nov 2023" "vifm 0.13"
+.TH VIFM 1 "21 Nov 2023" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1084,10 +1084,12 @@ appropriate history and can be recalled later.
 execute command and leave command line mode.
 .TP
 .BI "Ctrl-I, Tab"
-complete command or its argument.
+complete command or its argument on editing of a :command, complete file
+names in file name prompts, move cursor onto the next search match in
+file search prompt (including in navigation) when 'incsearch' is set.
 .TP
 .BI Shift-Tab
-complete in reverse order.
+complete in reverse order or move cursor onto the previous file search match.
 .TP
 .BI Ctrl-_
 stop completion and restore original input.

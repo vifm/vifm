@@ -71,6 +71,10 @@
 
 	Slightly expand documentation on %N macro.  Thanks to James Dietrich.
 
+	Made Tab and Shift-Tab in interactive search prompts (including when
+	navigating) move cursor to next/previous search match.  Thanks to
+	David Sierra DiazGranados (a.k.a. davidsierradz).
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

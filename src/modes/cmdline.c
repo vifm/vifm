@@ -124,6 +124,8 @@ static int no_initial_line(void);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void do_completion(void);
+static void go_to_search_match(line_stats_t *stat, view_t *view,
+		int in_reverse);
 static void draw_wild_menu(int op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
 static int draw_wild_popup(int *last_pos, int *pos, int *len);
@@ -1223,6 +1225,12 @@ no_initial_line(void)
 static void
 cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(input_stat.search_mode)
+	{
+		go_to_search_match(&input_stat, curr_view, /*in_reverse=*/0);
+		return;
+	}
+
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 0;
@@ -1238,6 +1246,12 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(input_stat.search_mode)
+	{
+		go_to_search_match(&input_stat, curr_view, /*in_reverse=*/1);
+		return;
+	}
+
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 1;
@@ -1248,6 +1262,30 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 	do_completion();
 	if(cfg.wild_menu)
 		draw_wild_menu(0);
+}
+
+/* Navigates to next/previous search match.  Relies on already available search
+ * results and does not perform the search. */
+static void
+go_to_search_match(line_stats_t *stat, view_t *view, int in_reverse)
+{
+	if(!cfg.inc_search || stat->sub_mode == CLS_MENU_FSEARCH ||
+			stat->sub_mode == CLS_MENU_BSEARCH)
+	{
+		return;
+	}
+
+	int backward = is_backward_search(stat->sub_mode);
+	if(in_reverse)
+	{
+		backward = !backward;
+	}
+
+	int match_pos = find_search_match(view, backward, /*count=*/1);
+	if(match_pos >= 0)
+	{
+		move_view_cursor(stat, view, match_pos);
+	}
 }
 
 static void

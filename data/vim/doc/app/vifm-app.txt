@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Nov 20
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Nov 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -977,9 +977,12 @@ Ctrl-M, Enter                                  *vifm-c_CTRL-M* *vifm-c_Enter*
     execute command and leave command line mode.
 
 Ctrl-I, Tab                                    *vifm-c_CTRL-I* *vifm-c_Tab*
-    complete command or its argument.
+    complete command or its argument on editing of a :command, complete file
+    names in file name prompts, move cursor onto the next search match in
+    file search prompt (including in navigation) when |vifm-'incsearch'| is set.
 Shift-Tab                                      *vifm-c_SHIFT-Tab*
-    complete in reverse order.
+    complete in reverse order or move cursor onto the previous file search
+    match.
 
 Ctrl-_                                         *vifm-c_CTRL-_*
     stop completion and restore original input.
