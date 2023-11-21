@@ -157,7 +157,7 @@ typedef struct
 	wchar_t *line_buf;   /* Content of line before using history. */
 
 	/* For search prompt. */
-	int search_mode;        /* If it's a search prompt. */
+	int search_mode;        /* If it's a file list or menu search prompt. */
 	int search_match_found; /* Reflects interactive search success/failure. */
 	int old_top;            /* Saved top for interactive searching. */
 	int old_pos;            /* Saved position for interactive searching. */

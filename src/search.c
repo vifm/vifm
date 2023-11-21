@@ -121,8 +121,9 @@ goto_search_match(view_t *view, int backward, int count,
 int
 find_search_match(view_t *view, int backward, int count)
 {
-	int c, i = view->list_pos;
 	assert(count > 0 && "Zero searches.");
+
+	int c, i = view->list_pos;
 	for(c = 0; c < count; ++c)
  	{
 		i = find_match(view, i, backward);

@@ -588,6 +588,71 @@ TEST(navigation_opens_files, IF(not_windows))
 	cfg.nav_open_files = 0;
 }
 
+TEST(search_match_navigation)
+{
+	conf_setup();
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "read", NULL);
+	populate_dir_list(curr_view, /*reload=*/0);
+
+	(void)vle_keys_exec_timed_out(L"/");
+	assert_int_equal(0, curr_view->list_pos);
+
+	/* Regular search mode, non-incremental search. */
+	cfg.inc_search = 0;
+
+	(void)vle_keys_exec_timed_out(L"li");
+	assert_int_equal(0, curr_view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_C_i);
+	assert_int_equal(0, curr_view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_C_u);
+
+	/* Regular search mode, incremental search. */
+	cfg.inc_search = 1;
+
+	/* No matches, no cursor movement. */
+	(void)vle_keys_exec_timed_out(WK_C_i);
+	assert_int_equal(0, curr_view->list_pos);
+
+	(void)vle_keys_exec_timed_out(L"li");
+	assert_int_equal(2, curr_view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_C_i);
+	assert_int_equal(3, curr_view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_C_i);
+	assert_int_equal(5, curr_view->list_pos);
+
+	/* Wrap scan is disabled, so the cursor isn't moved. */
+	(void)vle_keys_exec_timed_out(WK_C_i);
+	assert_int_equal(5, curr_view->list_pos);
+
+	/* Can go back as well. */
+	(void)vle_keys_exec_timed_out(WK_ESC L"[Z");
+	assert_int_equal(3, curr_view->list_pos);
+
+	/* Navigation search mode, incremental search, wrap scan. */
+	cfg.wrap_scan = 1;
+
+	(void)vle_keys_exec_timed_out(WK_C_y);
+	assert_int_equal(3, curr_view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_ESC L"[Z");
+	assert_int_equal(2, curr_view->list_pos);
+
+	/* Wrapping. */
+	(void)vle_keys_exec_timed_out(WK_ESC L"[Z");
+	assert_int_equal(5, curr_view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_ESC);
+
+	conf_teardown();
+	cfg.wrap_scan = 0;
+}
+
 static void
 prompt_callback(const char response[], void *arg)
 {
