@@ -59,7 +59,8 @@ highlight {Makefile,Makefile.am,Makefile.in,Makefile.win,*.mak,*.mk,*.m4,*.ac,
 " archives
 highlight {*.7z,*.ace,*.arj,*.bz2,*.cpio,*.deb,*.dz,*.gz,*.jar,*.lzh,*.lzma,
           \*.rar,*.rpm,*.rz,*.tar,*.taz,*.tb2,*.tbz,*.tbz2,*.tgz,*.tlz,*.trz,
-          \*.txz,*.tz,*.tz2,*.xz,*.z,*.zip,*.zoo,*.apk,*.gzip,*.lz}
+          \*.txz,*.tz,*.tz2,*.tzst,*.xz,*.z,*.zip,*.zoo,*.apk,*.gzip,*.lz,
+          \*.zstd}
         \ cterm=none ctermfg=215 ctermbg=default
 " configuration and other readable textual formats
 highlight {*.css,*.less,*.scss,*.markdown,*.md,*.mkd,*.org,*.pandoc,*.pdc,*.tex,
