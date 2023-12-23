@@ -8,6 +8,7 @@ Builtin wrappers:
  * gvim
  * vim
  * helix
+ * helix-tmux
 
 Usage example:
 
@@ -22,6 +23,7 @@ local impls = {
     gvim = vifm.plugin.require('gvim'),
     vim = vifm.plugin.require('vim'),
     helix = vifm.plugin.require('helix'),
+    ['helix-tmux'] = vifm.plugin.require('helix-tmux'),
 }
 
 local function run(info)
