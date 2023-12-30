@@ -1639,9 +1639,8 @@ vle_cmds_print_udcs(const char beginning[])
 			content_len = strlen(content);
 		}
 
-		const char *detail;
-
-		if (cur->type == USER_CMD)
+		const char *detail = "";
+		if(cur->type == USER_CMD)
 		{
 			detail = cur->cmd;
 		}
@@ -1651,7 +1650,7 @@ vle_cmds_print_udcs(const char beginning[])
 		}
 		else
 		{
-			assert(0 && "Unexpected cmd->type.");
+			assert(0 && "Expected user or foreign command type.");
 		}
 
 		new_size = content_len + 1 + strlen(cur->name) + 10 + strlen(detail) + 1;

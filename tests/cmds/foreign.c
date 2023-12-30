@@ -103,7 +103,8 @@ TEST(foreign_command_is_listed_with_udcs)
 	free_string_array(list, len);
 }
 
-TEST(foreign_command_is_printed_with_udcs) {
+TEST(foreign_command_is_printed_with_udcs)
+{
 	cmd_add_t command = {
 		.name = "foreign",
 		.abbr = NULL,
