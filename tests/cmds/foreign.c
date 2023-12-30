@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
+#include <stdlib.h> /* free() */
 
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
@@ -100,6 +101,26 @@ TEST(foreign_command_is_listed_with_udcs)
 	assert_string_equal("descr", list[1]);
 
 	free_string_array(list, len);
+}
+
+TEST(foreign_command_is_printed_with_udcs) {
+	cmd_add_t command = {
+		.name = "foreign",
+		.abbr = NULL,
+		.id = -1,
+		.descr = "descr",
+		.flags = HAS_RANGE,
+		.handler = &foreign_cmd,
+		.min_args = 0,
+		.max_args = NOT_DEF,
+	};
+	assert_success(vle_cmds_add_foreign(&command));
+
+	char *desc = vle_cmds_print_udcs("fore");
+
+	assert_string_equal("Command -- Action\nforeign    descr", desc);
+
+	free(desc);
 }
 
 static int

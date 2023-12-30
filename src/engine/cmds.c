@@ -1621,7 +1621,8 @@ vle_cmds_print_udcs(const char beginning[])
 		void *ptr;
 		size_t new_size;
 
-		if(strncmp(cur->name, beginning, len) != 0 || cur->type != USER_CMD)
+		if(strncmp(cur->name, beginning, len) != 0 ||
+				(cur->type != USER_CMD && cur->type != FOREIGN_CMD))
 		{
 			cur = cur->next;
 			continue;
@@ -1637,14 +1638,31 @@ vle_cmds_print_udcs(const char beginning[])
 
 			content_len = strlen(content);
 		}
-		new_size = content_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1;
+
+		const char *detail;
+
+		if (cur->type == USER_CMD)
+		{
+			detail = cur->cmd;
+		}
+		else if(cur->type == FOREIGN_CMD)
+		{
+			detail = cur->descr;
+		}
+		else
+		{
+			assert(0 && "Unexpected cmd->type.");
+		}
+
+		new_size = content_len + 1 + strlen(cur->name) + 10 + strlen(detail) + 1;
 		ptr = realloc(content, new_size);
 		if(ptr != NULL)
 		{
 			content = ptr;
 			content_len += sprintf(content + content_len, "\n%-*s %s", 10, cur->name,
-					cur->cmd);
+					detail);
 		}
+
 		cur = cur->next;
 	}
 
