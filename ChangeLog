@@ -167,6 +167,9 @@
 	Fixed running tests with locales that use comma for decimal point.  Thanks
 	to PRESFIL.
 
+	Fixed foreign commands missing from `:commands {prefix}` output.  Patch by
+	高浩亮 (a.k.a. haolian9).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
