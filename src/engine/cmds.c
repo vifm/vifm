@@ -84,6 +84,8 @@ static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int noescaping, int comments, int *last_arg,
 		int (**positions)[2]);
+static int is_builtin_like_cmd(const cmd_t *cmd);
+static int is_custom_cmd(const cmd_t *cmd);
 static int is_separator(char c, char sep);
 
 void
@@ -1122,8 +1124,7 @@ vle_cmds_add_user(const char name[], const char body[], const char descr[],
 	cmd_t *cur = &inner->head;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, name)) < 0)
 	{
-		int builtin_like = (cur->next->type == BUILTIN_CMD)
-		                || (cur->next->type == FOREIGN_CMD);
+		const int builtin_like = is_builtin_like_cmd(cur->next);
 		if(has_emark && builtin_like && cur->next->emark &&
 				strncmp(name, cur->next->name, len - 1) == 0)
 		{
@@ -1143,7 +1144,7 @@ vle_cmds_add_user(const char name[], const char body[], const char descr[],
 	if(cmp == 0)
 	{
 		cur = cur->next;
-		if(cur->type == BUILTIN_CMD || cur->type == FOREIGN_CMD)
+		if(is_builtin_like_cmd(cur))
 			return CMDS_ERR_NO_BUILTIN_REDEFINE;
 		if(!overwrite)
 			return CMDS_ERR_NEED_BANG;
@@ -1621,8 +1622,7 @@ vle_cmds_print_udcs(const char beginning[])
 		void *ptr;
 		size_t new_size;
 
-		if(strncmp(cur->name, beginning, len) != 0 ||
-				(cur->type != USER_CMD && cur->type != FOREIGN_CMD))
+		if(strncmp(cur->name, beginning, len) != 0 || !is_custom_cmd(cur))
 		{
 			cur = cur->next;
 			continue;
@@ -1666,6 +1666,22 @@ vle_cmds_print_udcs(const char beginning[])
 	}
 
 	return content;
+}
+
+/* Checks that a command has all the features of a builtin one.  Returns
+ * non-zero if so. */
+static int
+is_builtin_like_cmd(const cmd_t *cmd)
+{
+	return (cmd->type == BUILTIN_CMD || cmd->type == FOREIGN_CMD);
+}
+
+/* Checks that a command's definition is not part of the code base.  Returns
+ * non-zero if so. */
+static int
+is_custom_cmd(const cmd_t *cmd)
+{
+	return (cmd->type == USER_CMD || cmd->type == FOREIGN_CMD);
 }
 
 char *
