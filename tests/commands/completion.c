@@ -53,6 +53,7 @@
 
 static void dummy_handler(OPT_OP op, optval_t val);
 static void prepare_for_line_completion(const wchar_t str[]);
+static int foreign_cmd(const cmd_info_t *cmd_info);
 
 static line_stats_t stats;
 static char *saved_cwd;
@@ -620,6 +621,19 @@ TEST(command_options_are_completed)
 	other_view = NULL;
 }
 
+TEST(foreign_commands_are_completed_for_com_and_delcom)
+{
+	cmd_add_t command = {
+	  .name = "foreign",       .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = HAS_RANGE,
+	  .handler = &foreign_cmd, .min_args = 0, .max_args = NOT_DEF,
+	};
+	assert_success(vle_cmds_add_foreign(&command));
+
+	ASSERT_COMPLETION(L"command fore", L"command foreign");
+	ASSERT_COMPLETION(L"delcommand fore", L"delcommand foreign");
+}
+
 static void
 dummy_handler(OPT_OP op, optval_t val)
 {
@@ -636,6 +650,12 @@ prepare_for_line_completion(const wchar_t str[])
 	stats.complete_continue = 0;
 
 	vle_compl_reset();
+}
+
+static int
+foreign_cmd(const cmd_info_t *cmd_info)
+{
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

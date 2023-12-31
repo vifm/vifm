@@ -886,7 +886,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 	{
 		if(cur->type == BUILTIN_ABBR)
 			;
-		else if(cur->type != USER_CMD && user_only)
+		else if(!is_custom_cmd(cur) && user_only)
 			;
 		else if(cur->name[0] == '\0')
 			;
