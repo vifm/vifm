@@ -159,8 +159,8 @@ Completion for fish shell by Hoang Nguyen (a.k.a. FollieHiyuki).
 
 Alexandr Keyp (a.k.a. IAmKapuze) contributed improvements for :compare.
 
-高浩亮 (a.k.a. haolian9) enabled mouse handling and fixed displaying of
-foreign commands in `:commands {prefix}`.
+高浩亮 (a.k.a. haolian9) enabled mouse handling and fixed displaying and
+completion of foreign :commands in `:[del]command`.
 
 Zhipeng Xue fixed a couple of potential NULL dereferences.
 

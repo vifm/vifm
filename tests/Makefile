@@ -95,7 +95,7 @@ suites += ioeta ionotif iop ior
 # ui
 suites += colmgr column_view viewcolumns_parser
 # everything else
-suites += bmarks env escape fileops filetype filter lua menus misc undo utils
+suites += bmarks escape fileops filetype filter lua menus misc undo utils
 
 # these are built, but not automatically executed
 apps := fuzz regs_shmem_app

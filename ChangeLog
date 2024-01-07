@@ -167,8 +167,11 @@
 	Fixed running tests with locales that use comma for decimal point.  Thanks
 	to PRESFIL.
 
-	Fixed foreign commands missing from `:commands {prefix}` output.  Patch by
+	Fixed foreign commands missing from `:command {prefix}` output.  Patch by
 	高浩亮 (a.k.a. haolian9).
+
+	Fixed foreign commands missing from completion of `:[del]command
+	{prefix}`.  Patch by 高浩亮 (a.k.a. haolian9).
 
 0.13-beta to 0.13 (2023-04-04)
 

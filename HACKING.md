@@ -301,7 +301,38 @@ of changes of each kind.
     |  |-- vifm.c - contains main initialization/termination code
     |  `-- win_helper.c - needed for temporary rights elevation on Windows
     |
-    |-- tests/ - test suites
+    |-- tests/ - testing infrastructure and test suites
+    |  |-- abbrevs/ - tests of src/engine/abbrevs.c
+    |  |-- autocmds/ - tests of src/engine/autocmds.c
+    |  |-- bmarks/ - tests of src/bmarks.c
+    |  |-- cmds/ - tests of src/engine/cmds.c
+    |  |-- colmgr/ - tests of src/ui/color_manager.c
+    |  |-- column_view/ - tests of src/ui/column_view.c
+    |  |-- commands/ - tests of src/cmd_*.c
+    |  |-- completion/ - tests of src/engine/completion.c
+    |  |-- escape/ - tests of src/ui/escape.c
+    |  |-- fileops/ - tests of src/fops_*.c
+    |  |-- filetype/ - tests of src/filetype.c
+    |  |-- filter/ - tests of src/utils/filter.c
+    |  |-- fuzz/ - fuzzy tests, built but not run (need a test driver)
+    |  |-- ioeta/ - tests of src/io/ioeta.c
+    |  |-- ionotif/ - tests of src/io/ionotif.h
+    |  |-- iop/ - tests of src/io/iop.c
+    |  |-- ior/ - tests of src/io/ior.c
+    |  |-- keys/ - tests of src/engine/keys.c
+    |  |-- lua/ - tests of src/lua/*.c
+    |  |-- menus/ - tests of src/menus/*.c
+    |  |-- misc/ - tests of things without a dedicated test suite
+    |  |-- options/ - tests of src/engine/options.c
+    |  |-- parsing/ - tests of src/engine/parsing.c
+    |  |-- regs_shmem_app/ - a helper for tests/misc/registers_shared_memory.c
+    |  |-- test-data/ - files used by tests in run-time
+    |  |-- test-support/ - test framework (stic) and common test functions
+    |  |-- text_buffer/ - tests of src/engine/text_buffer.c
+    |  |-- undo/ - tests of src/undo.c
+    |  |-- utils/ - tests of src/utils/*.c
+    |  |-- variables/ - tests of src/engine/variables.c
+    |  `-- viewcolumns_parser/ - tests of src/viewcolumns_parser.c
     |
     |-- AUTHORS - list of code contributors
     |-- BUGS - some of known issues

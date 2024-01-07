@@ -13,6 +13,7 @@ enum { COM_WINDO };
 static int dummy_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
+static int foreign_cmd(const cmd_info_t *cmd_info);
 
 extern cmds_conf_t cmds_conf;
 
@@ -286,6 +287,36 @@ TEST(udf_completion)
 	free(buf);
 }
 
+TEST(foreign_command_name_is_completed)
+{
+	cmd_add_t command = {
+		.name = "foreign",       .abbr = NULL,  .id = -1,      .descr = "descr",
+		.flags = HAS_RANGE,
+		.handler = &foreign_cmd, .min_args = 0, .max_args = NOT_DEF,
+	};
+	assert_success(vle_cmds_add_foreign(&command));
+
+	char *buf;
+
+	/* :command */
+
+	vle_compl_reset();
+	assert_int_equal(8, vle_cmds_complete("command fo", NULL));
+
+	buf = vle_compl_next();
+	assert_string_equal("foreign", buf);
+	free(buf);
+
+	/* :delcommand */
+
+	vle_compl_reset();
+	assert_int_equal(11, vle_cmds_complete("delcommand fo", NULL));
+
+	buf = vle_compl_next();
+	assert_string_equal("foreign", buf);
+	free(buf);
+}
+
 TEST(completing_args_of_unknown_command)
 {
 	vle_compl_reset();
@@ -330,6 +361,12 @@ TEST(line_completion_args)
 	buf = vle_compl_next();
 	assert_string_equal("notreally a command", buf);
 	free(buf);
+}
+
+static int
+foreign_cmd(const cmd_info_t *cmd_info)
+{
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
