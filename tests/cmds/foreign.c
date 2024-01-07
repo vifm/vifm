@@ -105,14 +105,9 @@ TEST(foreign_command_is_listed_with_udcs)
 TEST(foreign_command_is_printed_with_udcs)
 {
 	cmd_add_t command = {
-		.name = "foreign",
-		.abbr = NULL,
-		.id = -1,
-		.descr = "descr",
+		.name = "foreign",       .abbr = NULL,  .id = -1,      .descr = "descr",
 		.flags = HAS_RANGE,
-		.handler = &foreign_cmd,
-		.min_args = 0,
-		.max_args = NOT_DEF,
+		.handler = &foreign_cmd, .min_args = 0, .max_args = NOT_DEF,
 	};
 	assert_success(vle_cmds_add_foreign(&command));
 
