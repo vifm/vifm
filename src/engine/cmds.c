@@ -68,7 +68,7 @@ static const char * parse_range_elem(const char cmd[], cmd_info_t *cmd_info,
 		char last_sep);
 static int complete_cmd_args(cmd_t *cur, const char args[],
 		cmd_info_t *cmd_info, void *arg);
-static void complete_cmd_name(const char cmd_name[], int user_only);
+static void complete_cmd_name(const char cmd_name[], int custom_only);
 TSTATIC int add_builtin_cmd(const char name[], CMD_TYPE type,
 		const cmd_add_t *conf);
 static int is_builtin_like_name_ok(const char name[]);
@@ -518,7 +518,7 @@ vle_cmds_complete(const char cmd[], void *arg)
 
 		if(*args == '\0' && strcmp(cmd_name, "!") != 0)
 		{
-			complete_cmd_name(cmd_name, 0);
+			complete_cmd_name(cmd_name, /*custom_only=*/0);
 
 			if(vle_compl_get_count() == 0)
 			{
@@ -846,7 +846,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		arg = strrchr(args, ' ');
 		arg = (arg == NULL) ? args : (arg + 1);
 
-		complete_cmd_name(arg, 1);
+		complete_cmd_name(arg, /*custom_only=*/1);
 		vle_compl_add_last_match(arg);
 
 		result += arg - args;
@@ -872,7 +872,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 }
 
 static void
-complete_cmd_name(const char cmd_name[], int user_only)
+complete_cmd_name(const char cmd_name[], int custom_only)
 {
 	cmd_t *cur;
 	size_t len;
@@ -886,7 +886,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 	{
 		if(cur->type == BUILTIN_ABBR)
 			;
-		else if(!is_custom_cmd(cur) && user_only)
+		else if(!is_custom_cmd(cur) && custom_only)
 			;
 		else if(cur->name[0] == '\0')
 			;
