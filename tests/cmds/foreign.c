@@ -4,7 +4,6 @@
 #include <stdlib.h> /* free() */
 
 #include "../../src/engine/cmds.h"
-#include "../../src/engine/completion.h"
 #include "../../src/utils/string_array.h"
 
 static int foreign_cmd(const cmd_info_t *cmd_info);
