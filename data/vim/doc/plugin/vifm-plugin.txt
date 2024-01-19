@@ -128,9 +128,6 @@ Repository: https://github.com/vifm/vifm.vim
 Website: https://vifm.info/
 Wiki: https://wiki.vifm.info/
 
-Esperanto translation of the documentation by Sebastian Cyprych:
-http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
-
 Vifm's Vim-documentation: |vifm-app.txt|
 
 --------------------------------------------------------------------------------
