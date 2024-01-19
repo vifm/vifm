@@ -70,6 +70,7 @@ executable.
 
                                                *g:vifm_exec_args*
 A string variable that specifies arguments for vifm.  Empty by default.
+E.g. to start with a single window, instead of two: `let vifm_exec_args='-c only'`
 
                                                *g:vifm_term*
 A string variable that specifies command to run GUI terminal.
