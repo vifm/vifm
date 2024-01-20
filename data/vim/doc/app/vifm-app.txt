@@ -3166,7 +3166,9 @@ handle it:
 
 |vifm-:highlight|, |vifm-:filetype|, |vifm-:filextype|, |vifm-:fileviewer|
 commands and |vifm-'classify'| option support globs, regular expressions and
-mime types to match file names or their paths.
+mime types to match file names or their paths.  Directory paths get an
+implicit trailing slash on matching against a pattern, keep that in mind for
+globs or regular expressions that end with `$`.
 
 There are six possible ways to write a single pattern:
  1. [!]{comma-separated-name-globs}
@@ -3395,8 +3397,9 @@ classify
 type: string list
 default: ":dir:/"
 
-Specifies file name prefixes and suffixes depending on file type or name.
-The format is either of:
+Specifies file name prefixes and suffixes depending on file type or name (mind
+that directory names have an implicit trailing slash).  The format is either
+of:
   - [{prefix}]:{filetype}:[{suffix}]
   - [{prefix}]::{pattern}::[{suffix}]
 Possible {pattern} forms are described in |vifm-patterns|.

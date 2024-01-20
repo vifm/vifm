@@ -3809,7 +3809,8 @@ parallel execution.
 .\" ---------------------------------------------------------------------------
 :highlight, :filetype, :filextype, :fileviewer commands and 'classify' option
 support globs, regular expressions and mime types to match file names or their
-paths.
+paths.  Directory paths get an implicit trailing slash on matching against a
+pattern, keep that in mind for globs or regular expressions that end with `$`.
 
 There are six possible ways to write a single pattern:
 .RS 2
@@ -4102,8 +4103,9 @@ type: string list
 .br
 default: ":dir:/"
 .br
-Specifies file name prefixes and suffixes depending on file type or name.
-The format is either of:
+Specifies file name prefixes and suffixes depending on file type or name (mind
+that directory names have an implicit trailing slash).  The format is either
+of:
   - [{prefix}]:{filetype}:[{suffix}]
   - [{prefix}]::{pattern}::[{suffix}]
 .br
