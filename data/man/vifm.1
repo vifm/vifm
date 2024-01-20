@@ -1,4 +1,4 @@
-.TH VIFM 1 "21 Nov 2023" "vifm 0.13"
+.TH VIFM 1 "20 Jan 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -666,16 +666,30 @@ controls.
 .BI [count]C
 clone file [count] times.
 .TP
-.BI "[count]dd or d[count]selector"
-move selected file or files to trash directory (if 'trash' option is set,
-otherwise delete).  See "Trash directory" section below.
+.BI "[count]dd"
+move files to trash directory if 'trash' option is set,
+otherwise delete them permanently.  See "Trash directory" section below.
+
+When "s" is present in 'cpoptions', operates on selected
+files or, in the absence of selection, the current one.  When the flag
+isn't set, always operates on the current file only.
 .TP
-.BI "[count]DD or D[count]selector"
-like dd and d<selector>, but omitting trash directory (even when 'trash' option
-is set).
+.BI "d[count]<selector>"
+like dd, but accepts motions/selectors.
 .TP
-.BI "Y, [count]yy or y[count]selector"
-yank selected files.
+.BI "[count]DD or D[count]<selector>"
+like dd and d<selector>, but always omits trash directory (even
+when 'trash' option is set).  Affected by "s" flag in 'cpoptions'.
+.TP
+.BI "[count]Y or [count]yy"
+yank files.
+
+When "s" is present in 'cpoptions', operates on selected
+files or, in the absence of selection, the current one.  When the flag
+isn't set, always operates on the current file only.
+.TP
+.BI "y[count]<selector>"
+yank files specified by motion/selector.
 .TP
 .BI p
 copy yanked files to the current directory or move the files to the current
@@ -3809,7 +3823,8 @@ parallel execution.
 .\" ---------------------------------------------------------------------------
 :highlight, :filetype, :filextype, :fileviewer commands and 'classify' option
 support globs, regular expressions and mime types to match file names or their
-paths.
+paths.  Directory paths get an implicit trailing slash on matching against a
+pattern, keep that in mind for globs or regular expressions that end with `$`.
 
 There are six possible ways to write a single pattern:
 .RS 2
@@ -4102,8 +4117,9 @@ type: string list
 .br
 default: ":dir:/"
 .br
-Specifies file name prefixes and suffixes depending on file type or name.
-The format is either of:
+Specifies file name prefixes and suffixes depending on file type or name (mind
+that directory names have an implicit trailing slash).  The format is either
+of:
   - [{prefix}]:{filetype}:[{suffix}]
   - [{prefix}]::{pattern}::[{suffix}]
 .br
@@ -4147,8 +4163,9 @@ older versions of vifm.  Flags:
 left) filter, when omitted, meaning of the exclamation mark changes to the
 opposite;
 .br
- \- s \- when included, yy, dd and DD normal mode commands act on selection, \
-otherwise they operate on current file only;
+ \- s \- when included, yy, Y, dd and DD normal mode commands act
+on selection if there is any, otherwise they operate on the current file;
+when omitted, those commands always operate on the current file;
 .br
  \- t \- when included, <tab> (thus <c-i>) behave as <space> and switches \
 active pane, otherwise <tab> and <c-i> go forward in the view history.  It's
@@ -5660,19 +5677,23 @@ Alt + Ctrl + some key.
 .RE
 .TP
 .BI "<f0> \- <f63>"
-Functional keys.
+functional keys.  These also correspond to keys like <c-f1> and can be
+used in their place.
 .TP
-.BI "<c-f1> \- <c-f12>" "" " {only for MS-Windows}"
+.BI "<c-f1> \- <c-f12>"
 .br
 functional keys with Control key pressed.
 .TP
-.BI "<a-f1> \- <a-f12>" "" " {only for MS-Windows}"
+.BI "<a-f1> \- <a-f12>, <m-f1> \- <m-f12>"
 .br
 functional keys with Alt key pressed.
 .TP
-.BI "<s-f1> \- <s-f12>" "" " {only for MS-Windows}"
+.BI "<s-f1> \- <s-f12>"
 .br
 functional keys with Shift key pressed.
+.LP
+Note that whether and how functional keys work might depend on the terminal
+and corresponding terminfo record.
 .LP
 Note that due to the way terminals process their input, several keyboard keys
 might be mapped to single key code, for example:
@@ -7819,10 +7840,6 @@ work this way on its own).
 Website: https://vifm.info/
 .br
 Wiki: https://wiki.vifm.info/
-
-Esperanto translation of the documentation by Sebastian Cyprych:
-.br
-http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
 .\" ---------------------------------------------------------------------------
 .SH AUTHOR
 .\" ---------------------------------------------------------------------------

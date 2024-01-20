@@ -75,6 +75,8 @@
 	navigating) move cursor to next/previous search match.  Thanks to
 	David Sierra DiazGranados (a.k.a. davidsierradz).
 
+	Somewhat improve documentation on functional keys.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -172,6 +174,9 @@
 
 	Fixed foreign commands missing from completion of `:[del]command
 	{prefix}`.  Patch by 高浩亮 (a.k.a. haolian9).
+
+	Fixed documentation on yy, Y, dd and DD not mentioning how "s" flag of
+	'cpoptions' affects their behaviour.  Thanks to James Dietrich.
 
 0.13-beta to 0.13 (2023-04-04)
 
