@@ -666,16 +666,30 @@ controls.
 .BI [count]C
 clone file [count] times.
 .TP
-.BI "[count]dd or d[count]selector"
-move selected file or files to trash directory (if 'trash' option is set,
-otherwise delete).  See "Trash directory" section below.
+.BI "[count]dd"
+move files to trash directory if 'trash' option is set,
+otherwise delete them permanently.  See "Trash directory" section below.
+
+When "s" is present in 'cpoptions', operates on selected
+files or, in the absence of selection, the current one.  When the flag
+isn't set, always operates on the current file only.
 .TP
-.BI "[count]DD or D[count]selector"
-like dd and d<selector>, but omitting trash directory (even when 'trash' option
-is set).
+.BI "d[count]<selector>"
+like dd, but accepts motions/selectors.
 .TP
-.BI "Y, [count]yy or y[count]selector"
-yank selected files.
+.BI "[count]DD or D[count]<selector>"
+like dd and d<selector>, but always omits trash directory (even
+when 'trash' option is set).  Affected by "s" flag in 'cpoptions'.
+.TP
+.BI "[count]Y or [count]yy"
+yank files.
+
+When "s" is present in 'cpoptions', operates on selected
+files or, in the absence of selection, the current one.  When the flag
+isn't set, always operates on the current file only.
+.TP
+.BI "y[count]<selector>"
+yank files specified by motion/selector.
 .TP
 .BI p
 copy yanked files to the current directory or move the files to the current
@@ -4149,8 +4163,9 @@ older versions of vifm.  Flags:
 left) filter, when omitted, meaning of the exclamation mark changes to the
 opposite;
 .br
- \- s \- when included, yy, dd and DD normal mode commands act on selection, \
-otherwise they operate on current file only;
+ \- s \- when included, yy, Y, dd and DD normal mode commands act
+on selection if there is any, otherwise they operate on the current file;
+when omitted, those commands always operate on the current file;
 .br
  \- t \- when included, <tab> (thus <c-i>) behave as <space> and switches \
 active pane, otherwise <tab> and <c-i> go forward in the view history.  It's

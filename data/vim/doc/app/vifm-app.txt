@@ -581,19 +581,27 @@ cg - change file group.                        {only for *nix}
 [count]C                                       *vifm-C*
     clone file [count] times.
 
-dd                                             *vifm-dd*
-    move selected file or files to |vifm-trash| directory (if |vifm-'trash'|
-    option is set, otherwise delete).
-d<selector>                                    *vifm-d*
+[count]dd                                      *vifm-dd*
+    move files to |vifm-trash| directory if |vifm-'trash'| option is set,
+    otherwise delete them permanently.
+
+    When |vifm-cpo-s| is present in |vifm-'cpoptions'|, operates on selected
+    files or, in the absence of selection, the current one.  When the flag
+    isn't set, always operates on the current file only.
+d[count]<selector>                             *vifm-d*
     like dd, but accepts motions/selectors.
 
-DD and D<selector>                             *vifm-D* *vifm-DD*
-    like dd and d<selector>, but omitting |vifm-trash|
-    directory (even when |vifm-'trash'| option is set).
+[count]DD and D[count]<selector>               *vifm-D* *vifm-DD*
+    like dd and d<selector>, but always omits |vifm-trash| directory (even
+    when |vifm-'trash'| option is set).  Affected by |vifm-cpo-s|.
 
-yy or Y                                        *vifm-yy* *vifm-Y*
-    yank selected files.
-y<selector>                                    *vifm-y*
+[count]yy or [count]Y                          *vifm-yy* *vifm-Y*
+    yank files.
+
+    When |vifm-cpo-s| is present in |vifm-'cpoptions'|, operates on selected
+    files or, in the absence of selection, the current one.  When the flag
+    isn't set, always operates on the current file only.
+y[count]<selector>                             *vifm-y*
     yank files specified by motion/selector.
 
 p                                              *vifm-p*
@@ -3447,8 +3455,9 @@ f - when included, running |vifm-:filter| command results in not inverted
     are left) filter, when omitted, meaning of the exclamation mark changes to
     the opposite;
                                                *vifm-cpo-s*
-s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act on
-    selection, otherwise they operate on current file only;
+s - when included, |vifm-yy|, |vifm-Y|, |vifm-dd| and |vifm-DD| normal mode commands act
+    on selection if there is any, otherwise they operate on the current file;
+    when omitted, those commands always operate on the current file;
                                                *vifm-cpo-t*
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
     pane, otherwise <c-i> goes forward in the view history.  It's possible to

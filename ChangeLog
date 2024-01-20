@@ -175,6 +175,9 @@
 	Fixed foreign commands missing from completion of `:[del]command
 	{prefix}`.  Patch by 高浩亮 (a.k.a. haolian9).
 
+	Fixed documentation on yy, Y, dd and DD not mentioning how "s" flag of
+	'cpoptions' affects their behaviour.  Thanks to James Dietrich.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
