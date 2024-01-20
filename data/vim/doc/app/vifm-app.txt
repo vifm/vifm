@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2023 Nov 21
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 Jan 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -6548,9 +6548,6 @@ Vim plugin documentation: |vifm-plugin.txt|
 
 Website: https://vifm.info/
 Wiki: https://wiki.vifm.info/
-
-Esperanto translation of the documentation by Sebastian Cyprych:
-http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:sw=4:ft=help:norl:
