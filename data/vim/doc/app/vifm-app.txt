@@ -4767,13 +4767,17 @@ sequences that can be used in place of them.  They are:
 <s-m-a>,<s-m-b>,...,<s-m-z>                    {only for *nix}
     Alt + Shift + some key.
 <f0> - <f63>
-    functional keys.
-<c-f1>,...,<c-f12>                             {only for MS-Windows}
+    functional keys.  These also correspond to keys like <c-f1> and can be
+    used in their place.
+<c-f1>,...,<c-f12>
     functional keys with Control key pressed.
-<a-f1>,...,<a-f12>                             {only for MS-Windows}
+<a-f1>,...,<a-f12>, <m-f1>,...,<m-f12>
     functional keys with Alt key pressed.
-<s-f1>,...,<s-f12>                             {only for MS-Windows}
+<s-f1>,...,<s-f12>
     functional keys with Shift key pressed.
+
+Note that whether and how functional keys work might depend on the terminal
+and corresponding terminfo record.
 
 Note that due to the way terminals process their input, several keyboard keys
 might be mapped to single key code, for example:

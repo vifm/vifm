@@ -5660,19 +5660,23 @@ Alt + Ctrl + some key.
 .RE
 .TP
 .BI "<f0> \- <f63>"
-Functional keys.
+functional keys.  These also correspond to keys like <c-f1> and can be
+used in their place.
 .TP
-.BI "<c-f1> \- <c-f12>" "" " {only for MS-Windows}"
+.BI "<c-f1> \- <c-f12>"
 .br
 functional keys with Control key pressed.
 .TP
-.BI "<a-f1> \- <a-f12>" "" " {only for MS-Windows}"
+.BI "<a-f1> \- <a-f12>, <m-f1> \- <m-f12>"
 .br
 functional keys with Alt key pressed.
 .TP
-.BI "<s-f1> \- <s-f12>" "" " {only for MS-Windows}"
+.BI "<s-f1> \- <s-f12>"
 .br
 functional keys with Shift key pressed.
+.LP
+Note that whether and how functional keys work might depend on the terminal
+and corresponding terminfo record.
 .LP
 Note that due to the way terminals process their input, several keyboard keys
 might be mapped to single key code, for example:
