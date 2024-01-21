@@ -16,10 +16,7 @@ dnl features of Posix that are extensions to C, as well as platform extensions
 dnl not defined by Posix.
 AC_USE_SYSTEM_EXTENSIONS
 
-AC_ISC_POSIX
 AC_PROG_CC
-AM_PROG_CC_STDC
-AC_HEADER_STDC
 AM_PROG_CC_C_O
 AM_SILENT_RULES([yes])
 
