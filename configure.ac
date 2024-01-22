@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(vifm, 0.13, xaizek@posteo.net, vifm, https://vifm.info)
+AC_INIT([vifm],[0.13],[xaizek@posteo.net],[vifm],[https://vifm.info])
 AC_CONFIG_SRCDIR(src/vifm.c)
 AC_CONFIG_AUX_DIR(build-aux)
 AC_CONFIG_MACRO_DIR(build-aux/m4)
@@ -16,10 +16,7 @@ dnl features of Posix that are extensions to C, as well as platform extensions
 dnl not defined by Posix.
 AC_USE_SYSTEM_EXTENSIONS
 
-AC_ISC_POSIX
 AC_PROG_CC
-AM_PROG_CC_STDC
-AC_HEADER_STDC
 AM_PROG_CC_C_O
 AM_SILENT_RULES([yes])
 

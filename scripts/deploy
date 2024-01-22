@@ -54,7 +54,7 @@ if [ "$target" = all ] || [ "$target" = update ]; then
            ChangeLog ChangeLog.LuaAPI
 
     # update version in configure script
-    sed -i "/AC_INIT(/s/, [^,]\\+/, $ver/" configure.ac
+    sed -i "/AC_INIT(/s/,\\[[^,]\\+/,[$ver]/" configure.ac
 
     if [ "$OS" != Windows_NT ]; then
         # regenerate autotools files
