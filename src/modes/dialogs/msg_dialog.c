@@ -36,6 +36,7 @@
 #include "../../ui/ui.h"
 #include "../../utils/macros.h"
 #include "../../utils/str.h"
+#include "../../utils/test_helpers.h"
 #include "../../utils/utf8.h"
 #include "../../event_loop.h"
 #include "../../status.h"
@@ -107,6 +108,7 @@ static void draw_msg(const char title[], const char msg[],
 static size_t measure_sub_lines(const char msg[], int skip_empty,
 		size_t *max_len);
 static size_t measure_text_width(const char msg[]);
+TSTATIC void dlg_set_callback(dlg_cb_f cb);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
@@ -120,6 +122,9 @@ static keys_add_info_t builtin_cmds[] = {
 
 /* Currently active dialog or NULL. */
 static dialog_data_t *current_dialog;
+
+/* Optional callback to be invoked when a dialog is requested. */
+static dlg_cb_f dlg_cb;
 
 void
 init_msg_dialog_mode(void)
@@ -297,6 +302,11 @@ prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip)
 {
 	static int skip_until_started;
+
+	if(dlg_cb != NULL)
+	{
+		dlg_cb("error", title, message);
+	}
 
 	if(curr_stats.load_stage == 0)
 		return 1;
@@ -800,6 +810,12 @@ show_errors_from_file(FILE *ef, const char title[])
 	}
 
 	fclose(ef);
+}
+
+TSTATIC void
+dlg_set_callback(dlg_cb_f cb)
+{
+	dlg_cb = cb;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

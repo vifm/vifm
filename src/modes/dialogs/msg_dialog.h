@@ -21,6 +21,7 @@
 #define VIFM__MODES__DIALOGS__MSG_DIALOG_H__
 
 #include "../../utils/macros.h"
+#include "../../utils/test_helpers.h"
 
 #include <stdio.h> /* FILE */
 
@@ -102,6 +103,16 @@ int confirm_deletion(char *files[], int nfiles, int use_trash);
 /* Reads contents of the file and displays it in series of dialog messages.  ef
  * can be NULL.  Closes ef. */
 void show_errors_from_file(FILE *ef, const char title[]);
+
+/* Type of callback function that can be used in tests.  The type parameter
+ * allows to differentiate between different kidns of dialogs. */
+typedef void (*dlg_cb_f)(const char type[], const char title[],
+		const char message[]);
+
+TSTATIC_DEFS(
+	/* Sets callback to be invoked when a dialog is requested. */
+	void dlg_set_callback(dlg_cb_f cb);
+)
 
 #endif /* VIFM__MODES__DIALOGS__MSG_DIALOG_H__ */
 

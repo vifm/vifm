@@ -180,6 +180,9 @@
 	Fixed documentation on yy, Y, dd and DD not mentioning how "s" flag of
 	'cpoptions' affects their behaviour.  Thanks to James Dietrich.
 
+	Fixed FUSE mounter error message dialog missing newlines (regression in
+	0.13-beta).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
