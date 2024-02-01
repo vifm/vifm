@@ -44,6 +44,9 @@ AC_SUBST([TESTS_CFLAGS])
 AC_DEFINE([_XOPEN_SOURCE_EXTENDED], [1],
           [Define to 1 to enable wide functions of ncurses in some environments.])
 
+AC_DEFINE([UTF8PROC_STATIC], [1],
+          [Make it so that utf8proc does not think it is a library.])
+
 dnl Check for system headers.
 AC_CHECK_HEADERS([alloca.h], [AC_DEFINE([HAVE_ALLOCA_H], [1], [alloca.h header is available.])])
 AC_CHECK_HEADERS([malloc.h], [AC_DEFINE([HAVE_MALLOC_H], [1], [malloc.h header is available.])])

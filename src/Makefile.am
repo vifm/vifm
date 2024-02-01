@@ -296,6 +296,7 @@ vifm_SOURCES = \
 	utils/test_helpers.h \
 	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \
+	utils/utf8proc.c utils/utf8proc.h utils/utf8proc_data.inc \
 	utils/utils.c utils/utils.h \
 	utils/utils_int.h \
 	utils/utils_nix.c utils/utils_nix.h \
