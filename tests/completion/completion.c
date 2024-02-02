@@ -4,6 +4,13 @@
 
 #include "../../src/engine/completion.h"
 
+#include <test-utils.h>
+
+SETUP_ONCE()
+{
+	try_enable_utf8_locale();
+}
+
 TEST(general)
 {
 	char *buf;
@@ -275,6 +282,51 @@ TEST(removes_duplicates)
 
 	buf = vle_compl_next();
 	assert_string_equal("mou", buf);
+	free(buf);
+}
+
+TEST(unicode_sorting, IF(utf8_locale))
+{
+	/* Hex-coded names are öäüßÖÄÜ written with and without compount
+	 * characters. */
+	const char *compounds =
+		"\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f\x4f\xcc\x88\x41\xcc\x88\x55"
+		"\xcc\x88";
+	const char *non_compounds =
+		"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f\xc3\x96\xc3\x84\xc3\x9c";
+
+	assert_int_equal(0, vle_compl_add_match("a", ""));
+	assert_int_equal(0, vle_compl_add_match("A", ""));
+	assert_int_equal(0, vle_compl_add_match(compounds, ""));
+	assert_int_equal(0, vle_compl_add_match(non_compounds, ""));
+	assert_int_equal(0, vle_compl_add_match("ß", ""));
+	assert_int_equal(0, vle_compl_add_match("Ö", ""));
+	assert_int_equal(0, vle_compl_add_match("ö", ""));
+	assert_int_equal(0, vle_compl_add_match("p", ""));
+	vle_compl_finish_group();
+
+	char *buf;
+
+	buf = vle_compl_next();
+	assert_string_equal("A", buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal("Ö", buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal("a", buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal("ö", buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal(compounds, buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal(non_compounds, buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal("p", buf);
 	free(buf);
 }
 

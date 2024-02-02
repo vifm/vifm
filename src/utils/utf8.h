@@ -83,6 +83,11 @@ size_t utf8_strcpy(char dst[], const char src[], size_t dst_len);
  * of input character, which can be 0. */
 wchar_t utf8_first_char(const char utf8[], int *len);
 
+/* Converts UTF-8 string into UTF-8 string that uses predictable encoding forms
+ * of symbols, thus making it possible to compare differently encoded but
+ * otherwise identical symbols.  Returns a newly allocated string or NULL. */
+char * utf8_normalize(const char str[], int ignore_case);
+
 #ifdef _WIN32
 
 /* Converts utf-8 to utf-16 string.  Returns newly allocated utf-8 string. */

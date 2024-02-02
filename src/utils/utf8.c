@@ -29,6 +29,7 @@
 
 #include "../compat/reallocarray.h"
 #include "macros.h"
+#include "utf8proc.h"
 #include "utils.h"
 
 static size_t guess_char_width(char c);
@@ -299,6 +300,23 @@ utf8_first_char(const char utf8[], int *len)
 		return L'\0';
 	}
 	return utf8_char_to_wchar(utf8, *len);
+}
+
+char *
+utf8_normalize(const char str[], int ignore_case)
+{
+	utf8proc_option_t options = UTF8PROC_NULLTERM | UTF8PROC_STABLE
+	                          | UTF8PROC_DECOMPOSE | UTF8PROC_COMPAT
+	                          | UTF8PROC_IGNORE;
+	if(ignore_case)
+	{
+		options |= UTF8PROC_CASEFOLD;
+	}
+
+	utf8proc_uint8_t *utf8proc_data;
+	utf8proc_map((const utf8proc_uint8_t *)str, /*strlen=*/0, &utf8proc_data,
+			options);
+	return (char *)utf8proc_data;
 }
 
 #ifdef _WIN32

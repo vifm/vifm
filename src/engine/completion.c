@@ -26,6 +26,7 @@
 #include "../utils/darray.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../utils/utf8.h"
 #include "../utils/utils.h"
 
 static enum
@@ -43,6 +44,10 @@ static DA_INSTANCE(items);
 static int curr = -1;
 static int group_begin;
 static int order;
+/* Cached sorting keys after Unicode normalization if it was necessary.  If it
+ * wasn't necessary because the key is just ASCII, then the entry points to
+ * original completion text and must not be freed. */
+static char **sort_keys;
 
 /* Function called to pre-process path for completion list. */
 static vle_compl_add_path_hook_f add_path_hook = &strdup;
@@ -162,12 +167,85 @@ vle_compl_unite_groups(void)
 static void
 group_unique_sort(size_t start_index, size_t len)
 {
-	vle_compl_t *const group_start = items + start_index;
-
 	assert(state != COMPLETING);
 
-	safe_qsort(group_start, len, sizeof(*group_start), &sorter);
-	remove_duplicates(group_start, len);
+	if(len == 0)
+	{
+		return;
+	}
+
+	/*
+	 * Handling empty array above for simplicity.
+	 *
+	 * Below:
+	 * 1. Create array of keys caching Unicode normalization if necessary.
+	 * 2. Create array of indices.
+	 * 3. Sort indices by keys.
+	 * 4. Treat array of indices as a permutation to be applied to sort_section.
+	 *
+	 * On memory error:
+	 *  - for one of arrays: leave sort_section unsorted, just remove duplicates
+	 *  - for one of keys: just use the original key
+	 */
+
+	vle_compl_t *sort_section = items + start_index;
+
+	sort_keys = reallocarray(NULL, len, sizeof(*sort_keys));
+	int *sort_indices = reallocarray(NULL, len, sizeof(*sort_indices));
+	if(sort_keys == NULL || sort_indices == NULL)
+	{
+		free(sort_keys);
+		free(sort_indices);
+		goto exit;
+	}
+
+	size_t i;
+	for(i = 0; i < len; ++i)
+	{
+		sort_indices[i] = i;
+
+		sort_keys[i] = sort_section[i].text;
+		if(!str_is_ascii(sort_section[i].text))
+		{
+			/* Compare case sensitive strings even on Windows. */
+			char *normalized = utf8_normalize(sort_section[i].text, /*ignore_case=*/0);
+			if(normalized != NULL)
+			{
+				sort_keys[i] = normalized;
+			}
+		}
+	}
+
+	safe_qsort(sort_indices, len, sizeof(*sort_indices), &sorter);
+
+	for(i = 0; i < len; ++i)
+	{
+		if(sort_keys[i] != sort_section[i].text)
+		{
+			free(sort_keys[i]);
+		}
+	}
+	free(sort_keys);
+
+	vle_compl_t *tmp_section = reallocarray(NULL, len, sizeof(*tmp_section));
+	if(tmp_section == NULL)
+	{
+		free(sort_indices);
+		goto exit;
+	}
+
+	/* Could also apply permutation in place, but not sure if it would pay off. */
+	for(i = 0; i < len; ++i)
+	{
+		tmp_section[i] = sort_section[sort_indices[i]];
+	}
+	free(sort_indices);
+
+	memcpy(sort_section, tmp_section, sizeof(*sort_section)*len);
+	free(tmp_section);
+
+exit:
+	remove_duplicates(sort_section, len);
 	group_begin = DA_SIZE(items);
 }
 
@@ -176,8 +254,8 @@ group_unique_sort(size_t start_index, size_t len)
 static int
 sorter(const void *first, const void *second)
 {
-	const char *const stra = ((const vle_compl_t *)first)->text;
-	const char *const strb = ((const vle_compl_t *)second)->text;
+	const char *const stra = sort_keys[*(const int *)first];
+	const char *const strb = sort_keys[*(const int *)second];
 	const size_t lena = strlen(stra);
 	const size_t lenb = strlen(strb);
 
@@ -197,7 +275,13 @@ sorter(const void *first, const void *second)
 	}
 
 	/* Compare case sensitive strings even on Windows. */
-	return strcmp(stra, strb);
+	int result = strcmp(stra, strb);
+	if(result == 0)
+	{
+		/* Stable sorting. */
+		result = *(const int *)first - *(const int *)second;
+	}
+	return result;
 }
 
 char *
