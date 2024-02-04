@@ -112,6 +112,9 @@ static const signed char *view_sort;
 static const char *view_sort_groups;
 /* Whether the view displays custom file list. */
 static int custom_view;
+
+/* The following variables are set by sort_by_key(). */
+
 /* Whether it's descending sort. */
 static int sort_descending;
 /* Key used to sort entries in current sorting round. */
@@ -135,10 +138,10 @@ sort_view(view_t *v)
 	view_sort_groups = v->sort_groups;
 	custom_view = flist_custom_active(v);
 
+	/* Tree sorting works fine for flat list, but requires a bit more
+	 * resources, so skip it if we can. */
 	if(!custom_view || !cv_tree(v->custom.type))
 	{
-		/* Tree sorting works fine for flat list, but requires a bit more
-		 * resources, so skip it. */
 		sort_sequence(&v->dir_entry[0], v->list_rows);
 		return;
 	}
@@ -170,6 +173,7 @@ sort_view(view_t *v)
 	}
 	else
 	{
+		/* This undoes effect of flist_custom_uncompress_tree() from above. */
 		filters_drop_temporaries(v, unsorted_list);
 	}
 }
@@ -228,7 +232,8 @@ sort_entries(view_t *v, entries_t entries)
 	sort_sequence(entries.entries, entries.nentries);
 }
 
-/* Sorts sequence of file entries (plain list, not tree). */
+/* Sorts sequence of file entries (plain list, not tree, although it can be some
+ * part of a tree). */
 static void
 sort_sequence(dir_entry_t *entries, size_t nentries)
 {
