@@ -333,7 +333,7 @@ static const char *navoptions_vals[][2] = {
 static const char *previewoptions_vals[][2] = {
 	{ "graphicsdelay:",    "delay before drawing graphics" },
 	{ "hardgraphicsclear", "redraw screen to get rid of graphics" },
-	{ "maxtreedepth:",     "how many tree levels too display" },
+	{ "maxtreedepth:",     "how many tree levels to display" },
 	{ "toptreestats",      "show file counts on top of the tree" },
 };
 
