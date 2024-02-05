@@ -97,6 +97,8 @@ static int compare_entry_names(const dir_entry_t *a, const dir_entry_t *b,
 		int ignore_case);
 static int compare_full_file_names(const char s[], const char t[],
 		int ignore_case);
+static int compare_file_exts(const dir_entry_t *f, int f_dir,
+		const dir_entry_t *s, int s_dir, SortingKey sort_type);
 static int compare_file_names(const char s[], const char t[], int ignore_case);
 static int compare_file_sizes(const dir_entry_t *f, const dir_entry_t *s);
 static int compare_item_count(const dir_entry_t *f, int fdir,
@@ -400,8 +402,6 @@ sort_dir_list(const void *one, const void *two)
 	retval = 0;
 	switch(sort_type)
 	{
-		char *pfirst, *psecond;
-
 		case SK_BY_NAME:
 		case SK_BY_INAME:
 			if(custom_view)
@@ -428,36 +428,8 @@ sort_dir_list(const void *one, const void *two)
 
 		case SK_BY_FILEEXT:
 		case SK_BY_EXTENSION:
-			pfirst = strrchr(first->name,  '.');
-			psecond = strrchr(second->name, '.');
-
-			if(first_is_dir && second_is_dir && sort_type == SK_BY_FILEEXT)
-			{
-				retval = compare_file_names(first->name, second->name, 0);
-			}
-			else if(first_is_dir != second_is_dir && sort_type == SK_BY_FILEEXT)
-			{
-				retval = first_is_dir ? -1 : 1;
-			}
-			else if(pfirst && psecond)
-			{
-				if(pfirst == first->name && psecond != second->name)
-				{
-					retval = -1;
-				}
-				else if(pfirst != first->name && psecond == second->name)
-				{
-					retval = 1;
-				}
-				else
-				{
-					retval = compare_file_names(++pfirst, ++psecond, 0);
-				}
-			}
-			else if(pfirst || psecond)
-				retval = pfirst ? -1 : 1;
-			else
-				retval = compare_file_names(first->name, second->name, 0);
+			retval = compare_file_exts(first, first_is_dir, second, second_is_dir,
+					sort_type);
 			break;
 
 		case SK_BY_SIZE:
@@ -641,6 +613,54 @@ compare_full_file_names(const char s[], const char t[], int ignore_case)
 	{
 		return compare_file_names(s, t, ignore_case);
 	}
+}
+
+/* Compares files/directories by extensions.  Returns standard < 0, == 0, > 0
+ * comparison result. */
+static int
+compare_file_exts(const dir_entry_t *f, int f_dir, const dir_entry_t *s,
+		int s_dir, SortingKey sort_type)
+{
+	const char *f_name = f->name;
+	const char *s_name = s->name;
+
+	if(sort_type == SK_BY_FILEEXT)
+	{
+		if(f_dir && s_dir)
+		{
+			return compare_file_names(f_name, s_name, /*ignore_case=*/0);
+		}
+
+		if(f_dir || s_dir)
+		{
+			return (f_dir ? -1 : 1);
+		}
+	}
+
+	const char *f_ext = strrchr(f_name, '.');
+	const char *s_ext = strrchr(s_name, '.');
+
+	if(f_ext != NULL && s_ext != NULL)
+	{
+		if(f_ext == f_name && s_ext != s_name)
+		{
+			return -1;
+		}
+
+		if(f_ext != f_name && s_ext == s_name)
+		{
+			return 1;
+		}
+
+		return compare_file_names(f_ext + 1, s_ext + 1, /*ignore_case=*/0);
+	}
+
+	if(f_ext != NULL || s_ext != NULL)
+	{
+		return (f_ext != NULL ? -1 : 1);
+	}
+
+	return compare_file_names(f_name, s_name, /*ignore_case=*/0);
 }
 
 /* Compares two file names or their parts (e.g. extensions).  Returns positive
