@@ -35,7 +35,7 @@ typedef enum
 #ifndef _WIN32
 	FT_SOCK,      /* Socket file. */
 #endif
-	FT_EXEC,      /* Executable file. */
+	FT_EXEC,      /* Regular executable file. */
 	FT_REG,       /* Regular (non-executable) file. */
 	FT_FIFO,      /* Named pipe. */
 	FT_UNK,       /* Unknown object (shouldn't occur in file list). */
