@@ -81,6 +81,7 @@ ARRAY_GUARD(sort_enum, SK_TOTAL);
 
 static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 		size_t nchildren, int root);
+static int prepare_for_sorting(view_t *v, int local);
 static void sort_sequence(dir_entry_t *entries, size_t nentries);
 static void sort_by_groups(dir_entry_t *entries, signed char key,
 		size_t nentries);
@@ -103,6 +104,8 @@ static int compare_item_count(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
 static int compare_group(const char f[], const char s[], regex_t *regex);
 static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
+
+/* The following variables are set by prepare_for_sorting(). */
 
 /* View which is being sorted. */
 static view_t *view;
@@ -127,16 +130,10 @@ sort_view(view_t *v)
 {
 	dir_entry_t *unsorted_list;
 
-	if(v->sort[0] > SK_LAST)
+	if(prepare_for_sorting(v, /*local=*/1) != 0)
 	{
-		/* Completely skip sorting if primary key isn't set. */
 		return;
 	}
-
-	view = v;
-	view_sort = v->sort;
-	view_sort_groups = v->sort_groups;
-	custom_view = flist_custom_active(v);
 
 	/* Tree sorting works fine for flat list, but requires a bit more
 	 * resources, so skip it if we can. */
@@ -218,18 +215,29 @@ sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 void
 sort_entries(view_t *v, entries_t entries)
 {
-	if(v->sort_g[0] > SK_LAST)
+	if(prepare_for_sorting(v, /*local=*/0) == 0)
+	{
+		sort_sequence(entries.entries, entries.nentries);
+	}
+}
+
+/* Prepares globals of this unit for performing sorting.  Returns non-zero if
+ * there is no sorting to do. */
+static int
+prepare_for_sorting(view_t *v, int local)
+{
+	const signed char *sort = (local ? v->sort : v->sort_g);
+	if(sort[0] > SK_LAST)
 	{
 		/* Completely skip sorting if primary key isn't set. */
-		return;
+		return 1;
 	}
 
 	view = v;
-	view_sort = v->sort_g;
-	view_sort_groups = v->sort_groups_g;
+	view_sort = sort;
+	view_sort_groups = (local ? v->sort_groups : v->sort_groups_g);
 	custom_view = flist_custom_active(v);
-
-	sort_sequence(entries.entries, entries.nentries);
+	return 0;
 }
 
 /* Sorts sequence of file entries (plain list, not tree, although it can be some
