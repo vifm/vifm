@@ -93,13 +93,11 @@ static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
 #endif
-static int compare_entry_names(const dir_entry_t *a, const dir_entry_t *b,
-		int ignore_case);
-static int compare_full_file_names(const char s[], const char t[],
-		int ignore_case);
+static int compare_file_names(const dir_entry_t *f, const dir_entry_t *s,
+		SortingKey sort_type);
 static int compare_file_exts(const dir_entry_t *f, int f_dir,
 		const dir_entry_t *s, int s_dir, SortingKey sort_type);
-static int compare_file_names(const char s[], const char t[], int ignore_case);
+static int compare_name_part(const char s[], const char t[]);
 static int compare_file_sizes(const dir_entry_t *f, const dir_entry_t *s);
 static int compare_item_count(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
@@ -404,15 +402,7 @@ sort_dir_list(const void *one, const void *two)
 	{
 		case SK_BY_NAME:
 		case SK_BY_INAME:
-			if(custom_view)
-			{
-				retval = compare_entry_names(first, second, sort_type == SK_BY_INAME);
-			}
-			else
-			{
-				retval = compare_full_file_names(first->name, second->name,
-						sort_type == SK_BY_INAME);
-			}
+			retval = compare_file_names(first, second, sort_type);
 			break;
 
 		case SK_BY_DIR:
@@ -581,38 +571,63 @@ compare_targets(const dir_entry_t *f, const dir_entry_t *s)
 	return stroscmp(nlink, plink);
 }
 
-/* Compares names of two file entries.  Returns positive value if a is greater
- * than b, zero if they are equal, otherwise negative value is returned. */
+/* Compares two file names (could include one or several components) assuming
+ * that the leading dot character is smaller than any other character.  Returns
+ * positive value if s is greater than t, zero if they are equal, otherwise
+ * negative value is returned. */
 static int
-compare_entry_names(const dir_entry_t *a, const dir_entry_t *b, int ignore_case)
+compare_file_names(const dir_entry_t *f, const dir_entry_t *s,
+		SortingKey sort_type)
 {
-	char a_short_path[PATH_MAX + 1];
-	char b_short_path[PATH_MAX + 1];
+	const char *f_name = f->name;
+	const char *s_name = s->name;
 
-	get_short_path_of(view, a, NF_NONE, 0, sizeof(a_short_path), a_short_path);
-	get_short_path_of(view, b, NF_NONE, 0, sizeof(b_short_path), b_short_path);
+	char f_short[PATH_MAX + 1];
+	char s_short[PATH_MAX + 1];
 
-	return compare_full_file_names(a_short_path, b_short_path, ignore_case);
-}
+	if(custom_view)
+	{
+		get_short_path_of(view, f, NF_NONE, /*drop_prefix=*/0, sizeof(f_short),
+				f_short);
+		get_short_path_of(view, s, NF_NONE, /*drop_prefix=*/0, sizeof(s_short),
+				s_short);
 
-/* Compares two full filenames and assumes that dot character is smaller than
- * any other character.  Returns positive value if s is greater than t, zero if
- * they are equal, otherwise negative value is returned. */
-static int
-compare_full_file_names(const char s[], const char t[], int ignore_case)
-{
-	if(s[0] == '.' && t[0] != '.')
+		f_name = f_short;
+		s_name = s_short;
+	}
+
+	if(f_name[0] == '.' && s_name[0] != '.')
 	{
 		return -1;
 	}
-	else if(s[0] != '.' && t[0] == '.')
+	if(f_name[0] != '.' && s_name[0] == '.')
 	{
 		return 1;
 	}
-	else
+
+	const char *f_prev = f_name, *s_prev = s_name;
+
+	char f_ignorecase[NAME_MAX + 1];
+	char s_ignorecase[NAME_MAX + 1];
+	if(sort_type == SK_BY_INAME)
 	{
-		return compare_file_names(s, t, ignore_case);
+		/* Ignore too small buffer errors by not caring about part that didn't
+		 * fit. */
+		(void)str_to_lower(f_name, f_ignorecase, sizeof(f_ignorecase));
+		(void)str_to_lower(s_name, s_ignorecase, sizeof(s_ignorecase));
+
+		f_name = f_ignorecase;
+		s_name = s_ignorecase;
 	}
+
+	int result = compare_name_part(f_name, s_name);
+	if(result == 0 && sort_type == SK_BY_INAME)
+	{
+		/* Resort to comparing original names when their normalized versions match
+		 * to always solve ties in a deterministic way. */
+		result = strcmp(f_prev, s_prev);
+	}
+	return result;
 }
 
 /* Compares files/directories by extensions.  Returns standard < 0, == 0, > 0
@@ -628,7 +643,7 @@ compare_file_exts(const dir_entry_t *f, int f_dir, const dir_entry_t *s,
 	{
 		if(f_dir && s_dir)
 		{
-			return compare_file_names(f_name, s_name, /*ignore_case=*/0);
+			return compare_name_part(f_name, s_name);
 		}
 
 		if(f_dir || s_dir)
@@ -652,7 +667,7 @@ compare_file_exts(const dir_entry_t *f, int f_dir, const dir_entry_t *s,
 			return 1;
 		}
 
-		return compare_file_names(f_ext + 1, s_ext + 1, /*ignore_case=*/0);
+		return compare_name_part(f_ext + 1, s_ext + 1);
 	}
 
 	if(f_ext != NULL || s_ext != NULL)
@@ -660,39 +675,16 @@ compare_file_exts(const dir_entry_t *f, int f_dir, const dir_entry_t *s,
 		return (f_ext != NULL ? -1 : 1);
 	}
 
-	return compare_file_names(f_name, s_name, /*ignore_case=*/0);
+	return compare_name_part(f_name, s_name);
 }
 
 /* Compares two file names or their parts (e.g. extensions).  Returns positive
  * value if s is greater than t, zero if they are equal, otherwise negative
  * value is returned. */
 static int
-compare_file_names(const char s[], const char t[], int ignore_case)
+compare_name_part(const char s[], const char t[])
 {
-	const char *s_val = s, *t_val = t;
-	char s_buf[NAME_MAX + 1];
-	char t_buf[NAME_MAX + 1];
-	int result;
-
-	if(ignore_case)
-	{
-		/* Ignore too small buffer errors by not caring about part that didn't
-		 * fit. */
-		(void)str_to_lower(s, s_buf, sizeof(s_buf));
-		(void)str_to_lower(t, t_buf, sizeof(t_buf));
-
-		s_val = s_buf;
-		t_val = t_buf;
-	}
-
-	result = cfg.sort_numbers ? strnumcmp(s_val, t_val) : strcmp(s_val, t_val);
-	if(result == 0 && ignore_case)
-	{
-		/* Resort to comparing original names when their normalized versions match
-		 * to always solve ties in deterministic way. */
-		result = strcmp(s, t);
-	}
-	return result;
+	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
 }
 
 SortingKey
