@@ -28,6 +28,7 @@
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
+#include "compat/reallocarray.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/fs.h"
@@ -38,6 +39,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "filelist.h"
 #include "filtering.h"
@@ -82,11 +84,16 @@ ARRAY_GUARD(sort_enum, SK_TOTAL);
 static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 		size_t nchildren, int root);
 static int prepare_for_sorting(view_t *v, int local);
+static int setup_linking(dir_entry_t *entries, int nentries);
+static void cleanup_linking(void);
 static void sort_sequence(dir_entry_t *entries, size_t nentries);
 static void sort_by_groups(dir_entry_t *entries, signed char key,
 		size_t nentries);
 static void sort_by_key(dir_entry_t *entries, size_t nentries, signed char key,
 		void *data);
+static char * map_ascii_clone(const char str[], int ignore_case);
+static char * map_ascii(const char str[], int ignore_case);
+static char * lowerdup(const char str[]);
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
@@ -116,6 +123,20 @@ static const char *view_sort_groups;
 /* Whether the view displays custom file list. */
 static int custom_view;
 
+/* The following variables are set up by setup_linking() and managed by
+ * sort_by_key(). */
+
+/* A key per entry in a currently processed sequence of entries.  The value in
+ * principle can be anything, but it's either name or short path at the moment.
+ *
+ * An entry can be NULL in which case original entry's value should be used.
+ * The check for NULL seems to work measurably faster (not using NULLs doubles
+ * Unicode decomposition overhead from around 3% to 6%), otherwise NULLs could
+ * be replaced by those values.  This probably happens because CPU doesn't need
+ * to actually store that NULL anywhere on a check and data to use instead of
+ * NULL is already available in CPU's cache. */
+static char **cached_keys;
+
 /* The following variables are set by sort_by_key(). */
 
 /* Whether it's descending sort. */
@@ -139,7 +160,11 @@ sort_view(view_t *v)
 	 * resources, so skip it if we can. */
 	if(!custom_view || !cv_tree(v->custom.type))
 	{
-		sort_sequence(&v->dir_entry[0], v->list_rows);
+		if(setup_linking(&v->dir_entry[0], v->list_rows) == 0)
+		{
+			sort_sequence(&v->dir_entry[0], v->list_rows);
+			cleanup_linking();
+		}
 		return;
 	}
 
@@ -149,6 +174,14 @@ sort_view(view_t *v)
 	if(!filter_is_empty(&v->local_filter.filter))
 	{
 		flist_custom_uncompress_tree(v);
+	}
+
+	/* This must be done after uncompressing custom tree. */
+	if(setup_linking(v->dir_entry, v->list_rows) != 0)
+	{
+		/* Compress custom tree back. */
+		filters_drop_temporaries(v, /*entries=*/NULL);
+		return;
 	}
 
 	unsorted_list = v->dir_entry;
@@ -163,6 +196,9 @@ sort_view(view_t *v)
 		v->dir_entry = unsorted_list;
 		unsorted_list = NULL;
 	}
+
+	/* Done with linking data by now. */
+	cleanup_linking();
 
 	if(filter_is_empty(&v->local_filter.filter))
 	{
@@ -215,9 +251,15 @@ sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 void
 sort_entries(view_t *v, entries_t entries)
 {
-	if(prepare_for_sorting(v, /*local=*/0) == 0)
+	if(prepare_for_sorting(v, /*local=*/0) != 0)
+	{
+		return;
+	}
+
+	if(setup_linking(entries.entries, entries.nentries) == 0)
 	{
 		sort_sequence(entries.entries, entries.nentries);
+		cleanup_linking();
 	}
 }
 
@@ -238,6 +280,35 @@ prepare_for_sorting(view_t *v, int local)
 	view_sort_groups = (local ? v->sort_groups : v->sort_groups_g);
 	custom_view = flist_custom_active(v);
 	return 0;
+}
+
+/* Initializes cached keys storage and numbers entries to make future access to
+ * cache possible.  Use cleanup_linking() to cleanup.  Returns zero on
+ * success. */
+static int
+setup_linking(dir_entry_t *entries, int nentries)
+{
+	cached_keys = reallocarray(NULL, nentries, sizeof(*cached_keys));
+	if(cached_keys == NULL)
+	{
+		return 1;
+	}
+
+	int i;
+	for(i = 0; i < nentries; ++i)
+	{
+		entries[i].link = i;
+	}
+	return 0;
+}
+
+/* Frees resources allocated by setup_linking(). */
+static void
+cleanup_linking(void)
+{
+	/* Individual array elements are allocated and freed in sort_by_key(). */
+	free(cached_keys);
+	cached_keys = NULL;
 }
 
 /* Sorts sequence of file entries (plain list, not tree, although it can be some
@@ -314,6 +385,45 @@ sort_by_key(dir_entry_t *entries, size_t nentries, signed char key, void *data)
 	sort_type = (SortingKey)abs(key);
 	sort_data = data;
 
+	int using_cache = 0;
+
+	if(sort_type == SK_BY_NAME || sort_type == SK_BY_INAME)
+	{
+		using_cache = 1;
+
+		const int ignore_case = (sort_type == SK_BY_INAME);
+
+		unsigned int i;
+		if(custom_view)
+		{
+			for(i = 0; i < nentries; ++i)
+			{
+				char short_path[PATH_MAX + 1];
+				get_short_path_of(view, &entries[i], NF_NONE, 0, sizeof(short_path),
+						short_path);
+				cached_keys[entries[i].link] = map_ascii_clone(short_path, ignore_case);
+			}
+		}
+		else
+		{
+			for(i = 0; i < nentries; ++i)
+			{
+				cached_keys[entries[i].link] = map_ascii(entries[i].name, ignore_case);
+			}
+		}
+	}
+	else if(sort_type == SK_BY_FILEEXT || sort_type == SK_BY_EXTENSION)
+	{
+		using_cache = 1;
+
+		unsigned int i;
+		for(i = 0; i < nentries; ++i)
+		{
+			cached_keys[entries[i].link] =
+				map_ascii(entries[i].name, /*ignore_case=*/0);
+		}
+	}
+
 	unsigned int i;
 	for(i = 0U; i < nentries; ++i)
 	{
@@ -321,6 +431,65 @@ sort_by_key(dir_entry_t *entries, size_t nentries, signed char key, void *data)
 	}
 
 	safe_qsort(entries, nentries, sizeof(*entries), &sort_dir_list);
+
+	if(using_cache)
+	{
+		for(i = 0; i < nentries; ++i)
+		{
+			free(cached_keys[entries[i].link]);
+		}
+	}
+}
+
+/* Turns non-ASCII strings into normalized UTF-8 strings or just clones it.
+ * Returns a newly allocated string. */
+static char *
+map_ascii_clone(const char str[], int ignore_case)
+{
+	char *mapped = map_ascii(str, ignore_case);
+	if(mapped == NULL)
+	{
+		mapped = strdup(str);
+	}
+	return mapped;
+}
+
+/* Checks whether input string is ASCII and allocates its normalized UTF-8
+ * version if not.  Returns NULL on error or if string is good as is. */
+static char *
+map_ascii(const char str[], int ignore_case)
+{
+	if(str_is_ascii(str))
+	{
+		if(ignore_case)
+		{
+			return lowerdup(str);
+		}
+		return NULL;
+	}
+
+	return utf8_normalize(str, ignore_case);
+}
+
+/* strdup()-like function which changes string to lower case.  Returns newly
+ * allocated string or NULL on out of memory. */
+static char *
+lowerdup(const char str[])
+{
+	/* Could save memory by returning NULL when string is already in lower case,
+	 * but that might reduce performance. */
+	size_t len = strlen(str);
+	char *copy = malloc(len + 1);
+	if(copy != NULL)
+	{
+		size_t i;
+		for(i = 0; i < len; ++i)
+		{
+			copy[i] = tolower(str[i]);
+		}
+		copy[len] = '\0';
+	}
+	return copy;
 }
 
 /* Compares file names containing numbers correctly. */
@@ -587,21 +756,17 @@ static int
 compare_file_names(const dir_entry_t *f, const dir_entry_t *s,
 		SortingKey sort_type)
 {
-	const char *f_name = f->name;
-	const char *s_name = s->name;
-
-	char f_short[PATH_MAX + 1];
-	char s_short[PATH_MAX + 1];
-
-	if(custom_view)
+	/* NULL check and conditional load is actually faster than just reading a
+	 * value and not by a trivial amount. */
+	const char *f_name = cached_keys[f->link];
+	if(f_name == NULL)
 	{
-		get_short_path_of(view, f, NF_NONE, /*drop_prefix=*/0, sizeof(f_short),
-				f_short);
-		get_short_path_of(view, s, NF_NONE, /*drop_prefix=*/0, sizeof(s_short),
-				s_short);
-
-		f_name = f_short;
-		s_name = s_short;
+		f_name = f->name;
+	}
+	const char *s_name = cached_keys[s->link];
+	if(s_name == NULL)
+	{
+		s_name = s->name;
 	}
 
 	if(f_name[0] == '.' && s_name[0] != '.')
@@ -613,28 +778,33 @@ compare_file_names(const dir_entry_t *f, const dir_entry_t *s,
 		return 1;
 	}
 
-	const char *f_prev = f_name, *s_prev = s_name;
-
-	char f_ignorecase[NAME_MAX + 1];
-	char s_ignorecase[NAME_MAX + 1];
-	if(sort_type == SK_BY_INAME)
-	{
-		/* Ignore too small buffer errors by not caring about part that didn't
-		 * fit. */
-		(void)str_to_lower(f_name, f_ignorecase, sizeof(f_ignorecase));
-		(void)str_to_lower(s_name, s_ignorecase, sizeof(s_ignorecase));
-
-		f_name = f_ignorecase;
-		s_name = s_ignorecase;
-	}
-
 	int result = compare_name_part(f_name, s_name);
+
+	/* Resort to comparing original names when their normalized versions match
+	 * to always solve ties in a deterministic way. */
 	if(result == 0 && sort_type == SK_BY_INAME)
 	{
-		/* Resort to comparing original names when their normalized versions match
-		 * to always solve ties in a deterministic way. */
-		result = strcmp(f_prev, s_prev);
+		f_name = f->name;
+		s_name = s->name;
+
+		char f_short[PATH_MAX + 1];
+		char s_short[PATH_MAX + 1];
+		if(custom_view)
+		{
+			/* Computing these short paths here isn't a big deal as such ties should
+			 * be a rare occasion. */
+			get_short_path_of(view, f, NF_NONE, /*drop_prefix=*/0, sizeof(f_short),
+					f_short);
+			get_short_path_of(view, s, NF_NONE, /*drop_prefix=*/0, sizeof(s_short),
+					s_short);
+
+			f_name = f_short;
+			s_name = s_short;
+		}
+
+		result = strcmp(f_name, s_name);
 	}
+
 	return result;
 }
 
@@ -644,8 +814,18 @@ static int
 compare_file_exts(const dir_entry_t *f, int f_dir, const dir_entry_t *s,
 		int s_dir, SortingKey sort_type)
 {
-	const char *f_name = f->name;
-	const char *s_name = s->name;
+	/* NULL check and conditional load is actually faster than just reading a
+	 * value and not by a trivial amount. */
+	const char *f_name = cached_keys[f->link];
+	if(f_name == NULL)
+	{
+		f_name = f->name;
+	}
+	const char *s_name = cached_keys[s->link];
+	if(s_name == NULL)
+	{
+		s_name = s->name;
+	}
 
 	if(sort_type == SK_BY_FILEEXT)
 	{

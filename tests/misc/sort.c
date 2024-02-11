@@ -1,17 +1,18 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() unlink() */
+#include <unistd.h> /* chdir() rmdir() unlink() */
 
-#include <locale.h> /* LC_ALL setlocale() */
 #include <stdarg.h> /* va_list va_arg() va_copy() va_end() va_start() */
 #include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/filelist.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
 
@@ -20,9 +21,11 @@
 		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
 
 static void set_file_list(view_t *view, FileType def_ftype, ...);
+static int case_sensitive_fs(void);
+
 SETUP_ONCE()
 {
-	(void)setlocale(LC_ALL, "");
+	try_enable_utf8_locale();
 }
 
 SETUP()
@@ -414,6 +417,113 @@ TEST(global_groups_sorts_entries_list)
 	assert_string_equal("a1", entries.entries[1].name);
 }
 
+/* Not a proper collation, but a sensible ordering that is consistent whether
+ * case is ignored or not. */
+TEST(case_sensitive_unicode_sorting, IF(utf8_locale))
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	/* Hex-coded names are öäüßÖÄÜ written with and without compount
+	 * characters. */
+	const char *compounds =
+		"\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f\x4f\xcc\x88\x41\xcc\x88\x55"
+		"\xcc\x88";
+	const char *non_compounds =
+		"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f\xc3\x96\xc3\x84\xc3\x9c";
+
+	set_file_list(&lwin, FT_REG, "a", "A", compounds, non_compounds, "ß", "Ö",
+			"ö", "p", NULL);
+
+	view_set_sort(lwin.sort, SK_BY_NAME, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("A", lwin.dir_entry[0].name);
+	assert_string_equal("Ö", lwin.dir_entry[1].name);
+	assert_string_equal("a", lwin.dir_entry[2].name);
+	assert_string_equal("ö", lwin.dir_entry[3].name);
+	assert_string_equal(compounds, lwin.dir_entry[4].name);
+	assert_string_equal(non_compounds, lwin.dir_entry[5].name);
+	assert_string_equal("p", lwin.dir_entry[6].name);
+}
+
+/* Not a proper collation, but a sensible ordering that is consistent whether
+ * case is ignored or not. */
+TEST(case_insensitive_unicode_sorting, IF(utf8_locale))
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	/* Hex-coded names are öäüßÖÄÜ written with and without compount
+	 * characters. */
+	const char *compounds =
+		"\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f\x4f\xcc\x88\x41\xcc\x88\x55"
+		"\xcc\x88";
+	const char *non_compounds =
+		"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f\xc3\x96\xc3\x84\xc3\x9c";
+
+	set_file_list(&lwin, FT_REG, "a", "A", compounds, non_compounds, "ß", "Ö",
+			"ö", "p", NULL);
+
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("A", lwin.dir_entry[0].name);
+	assert_string_equal("a", lwin.dir_entry[1].name);
+	assert_string_equal("Ö", lwin.dir_entry[2].name);
+	assert_string_equal("ö", lwin.dir_entry[3].name);
+	assert_string_equal(compounds, lwin.dir_entry[4].name);
+	assert_string_equal(non_compounds, lwin.dir_entry[5].name);
+	assert_string_equal("p", lwin.dir_entry[6].name);
+}
+
+/* Not a proper collation, but a sensible ordering that is consistent whether
+ * case is ignored or not. */
+TEST(case_insensitive_unicode_sorting_for_exts, IF(utf8_locale))
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	set_file_list(&lwin, FT_REG, "x.o", "y.Ö", "z.ö", NULL);
+
+	view_set_sort(lwin.sort, SK_BY_FILEEXT, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("y.Ö", lwin.dir_entry[0].name);
+	assert_string_equal("x.o", lwin.dir_entry[1].name);
+	assert_string_equal("z.ö", lwin.dir_entry[2].name);
+}
+
+TEST(custom_view_is_sorted_by_short_paths, IF(case_sensitive_fs))
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), /*base=*/".",
+			/*sub=*/"", /*cwd=*/NULL);
+
+	create_dir(SANDBOX_PATH "/D");
+	create_file(SANDBOX_PATH "/D/f");
+	create_dir(SANDBOX_PATH "/d");
+	create_file(SANDBOX_PATH "/d/f");
+
+	/* flist_custom_finish() does actual sorting. */
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, SANDBOX_PATH "/d/f");
+	flist_custom_add(&lwin, SANDBOX_PATH "/D/f");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_string_equal("f", lwin.dir_entry[0].name);
+	assert_string_ends_with("/D", lwin.dir_entry[0].origin);
+	assert_string_equal("f", lwin.dir_entry[1].name);
+	assert_string_ends_with("/d", lwin.dir_entry[1].origin);
+
+	remove_file(SANDBOX_PATH "/d/f");
+	remove_file(SANDBOX_PATH "/D/f");
+	remove_dir(SANDBOX_PATH "/d");
+	remove_dir(SANDBOX_PATH "/D");
+}
+
 #ifndef _WIN32
 
 TEST(inode_sorting_works)
@@ -469,6 +579,15 @@ set_file_list(view_t *view, FileType def_ftype, ...)
 #endif
 	}
 	va_end(aq);
+}
+
+static int
+case_sensitive_fs(void)
+{
+	int result = (os_mkdir(SANDBOX_PATH "/tEsT", 0700) == 0)
+	          && (os_rmdir(SANDBOX_PATH "/test") != 0);
+	(void)rmdir(SANDBOX_PATH "/tEsT");
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

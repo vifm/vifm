@@ -236,6 +236,11 @@ struct dir_entry_t
 
 	int id;           /* File uniqueness identifier on comparison. */
 
+	int link;         /* A field that can be used for the purposes of linking the
+	                     entry to some additional information.  Like to point to
+	                     some cache related to the entry on sorting.  This is
+	                     close to tag field in spirit, but is less transient. */
+
 	int tag;          /* Used to hold temporary data associated with the item,
 	                     e.g. by sorting comparer to perform stable sort or item
 	                     mapping during tree filtering. */
