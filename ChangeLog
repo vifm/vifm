@@ -197,6 +197,9 @@
 	'sortnumbers' option is set and strverscmp() is not provided by the
 	system (like on Windows).
 
+	Fixed "Querying... (??%)" message on :compare having an extra space in
+	parenthesis.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
