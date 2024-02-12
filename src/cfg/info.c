@@ -1776,7 +1776,8 @@ timestamp_cmp(const void *a, const void *b)
 	double lhs_ts = -1, rhs_ts = -1;
 	get_double(*(const JSON_Object **)a, "ts", &lhs_ts);
 	get_double(*(const JSON_Object **)b, "ts", &rhs_ts);
-	return lhs_ts - rhs_ts;
+	/* There is no fractional part, so can compare similar to integers. */
+	return SORT_CMP(lhs_ts, rhs_ts);
 }
 
 /* Merges two lists of associations. */

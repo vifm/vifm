@@ -22,6 +22,7 @@
 #include "../engine/options.h"
 #include "../engine/text_buffer.h"
 #include "../ui/ui.h"
+#include "../utils/macros.h"
 #include "../utils/utils.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
@@ -288,7 +289,7 @@ int_sorter(const void *first, const void *second)
 	const int *a = first;
 	const int *b = second;
 
-	return (*a - *b);
+	return SORT_CMP(*a, *b);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -270,7 +270,7 @@ sorter(const void *first, const void *second)
 		/* Compare case sensitive strings even on Windows. */
 		if(strncmp(stra, strb, len) == 0)
 		{
-			return lena - lenb;
+			return SORT_CMP(lena, lenb);
 		}
 	}
 
@@ -279,7 +279,7 @@ sorter(const void *first, const void *second)
 	if(result == 0)
 	{
 		/* Stable sorting. */
-		result = *(const int *)first - *(const int *)second;
+		result = SORT_CMP(*(const int *)first, *(const int *)second);
 	}
 	return result;
 }
