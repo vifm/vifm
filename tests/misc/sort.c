@@ -284,6 +284,22 @@ TEST(extensions_of_dot_files_are_sorted_correctly)
 	assert_string_equal(".tmux.conf", lwin.dir_entry[2].name);
 }
 
+TEST(sorting_has_no_integer_overflows)
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	set_file_list(&lwin, FT_REG, "\xff", "\x81", "\x01", "\x80", "\x7f", NULL);
+	view_set_sort(lwin.sort, SK_BY_NAME, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("\x01", lwin.dir_entry[0].name);
+	assert_string_equal("\x7f", lwin.dir_entry[1].name);
+	assert_string_equal("\x80", lwin.dir_entry[2].name);
+	assert_string_equal("\x81", lwin.dir_entry[3].name);
+	assert_string_equal("\xff", lwin.dir_entry[4].name);
+}
+
 TEST(sorting_uses_dcache_for_dirs)
 {
 	view_teardown(&lwin);

@@ -357,7 +357,7 @@ vercmp(const char s[], const char t[])
 			if(num_a != num_b)
 				return SORT_CMP(num_a, num_b);
 			else if(*os != *ot)
-				return SORT_CMP(*os, *ot);
+				return SORT_CMP((unsigned char)*os, (unsigned char)*ot);
 		}
 		else if(*s == *t)
 		{
@@ -368,7 +368,7 @@ vercmp(const char s[], const char t[])
 			break;
 	}
 
-	return SORT_CMP(*s, *t);
+	return SORT_CMP((unsigned char)*s, (unsigned char)*t);
 }
 #else
 /* Skips all zeros in front of numbers (correctly handles zero).  Returns str, a

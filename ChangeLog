@@ -190,6 +190,10 @@
 
 	Fixed potential integer overflows on sorting.
 
+	Fixed weird sorting of filenames with non-Latin characters when
+	'sortnumbers' option is set and strverscmp() is not provided by the
+	system (like on Windows).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
