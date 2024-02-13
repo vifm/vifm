@@ -2690,6 +2690,7 @@ init_dir_entry(view_t *view, dir_entry_t *entry, const char name[])
 
 	entry->tag = -1;
 	entry->id = -1;
+	entry->link = -1;
 }
 
 void

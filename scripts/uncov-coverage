@@ -50,4 +50,5 @@ uncov new-gcovi --capture-worktree \
                 --exclude src/lua/lua \
                 --exclude src/utils/parson.c \
                 --exclude src/utils/xxhash.c \
+                --exclude src/utils/utf8proc.c \
                 "$coverage_worktree/src"

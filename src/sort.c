@@ -28,6 +28,7 @@
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
+#include "compat/reallocarray.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/fs.h"
@@ -38,6 +39,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "filelist.h"
 #include "filtering.h"
@@ -81,11 +83,17 @@ ARRAY_GUARD(sort_enum, SK_TOTAL);
 
 static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 		size_t nchildren, int root);
+static int prepare_for_sorting(view_t *v, int local);
+static int setup_linking(dir_entry_t *entries, int nentries);
+static void cleanup_linking(void);
 static void sort_sequence(dir_entry_t *entries, size_t nentries);
 static void sort_by_groups(dir_entry_t *entries, signed char key,
 		size_t nentries);
 static void sort_by_key(dir_entry_t *entries, size_t nentries, signed char key,
 		void *data);
+static char * map_ascii_clone(const char str[], int ignore_case);
+static char * map_ascii(const char str[], int ignore_case);
+static char * lowerdup(const char str[]);
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
@@ -93,16 +101,18 @@ static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
 #endif
-static int compare_entry_names(const dir_entry_t *a, const dir_entry_t *b,
-		int ignore_case);
-static int compare_full_file_names(const char s[], const char t[],
-		int ignore_case);
-static int compare_file_names(const char s[], const char t[], int ignore_case);
+static int compare_file_names(const dir_entry_t *f, const dir_entry_t *s,
+		SortingKey sort_type);
+static int compare_file_exts(const dir_entry_t *f, int f_dir,
+		const dir_entry_t *s, int s_dir, SortingKey sort_type);
+static int compare_name_part(const char s[], const char t[]);
 static int compare_file_sizes(const dir_entry_t *f, const dir_entry_t *s);
 static int compare_item_count(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
 static int compare_group(const char f[], const char s[], regex_t *regex);
 static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
+
+/* The following variables are set by prepare_for_sorting(). */
 
 /* View which is being sorted. */
 static view_t *view;
@@ -112,6 +122,23 @@ static const signed char *view_sort;
 static const char *view_sort_groups;
 /* Whether the view displays custom file list. */
 static int custom_view;
+
+/* The following variables are set up by setup_linking() and managed by
+ * sort_by_key(). */
+
+/* A key per entry in a currently processed sequence of entries.  The value in
+ * principle can be anything, but it's either name or short path at the moment.
+ *
+ * An entry can be NULL in which case original entry's value should be used.
+ * The check for NULL seems to work measurably faster (not using NULLs doubles
+ * Unicode decomposition overhead from around 3% to 6%), otherwise NULLs could
+ * be replaced by those values.  This probably happens because CPU doesn't need
+ * to actually store that NULL anywhere on a check and data to use instead of
+ * NULL is already available in CPU's cache. */
+static char **cached_keys;
+
+/* The following variables are set by sort_by_key(). */
+
 /* Whether it's descending sort. */
 static int sort_descending;
 /* Key used to sort entries in current sorting round. */
@@ -124,22 +151,20 @@ sort_view(view_t *v)
 {
 	dir_entry_t *unsorted_list;
 
-	if(v->sort[0] > SK_LAST)
+	if(prepare_for_sorting(v, /*local=*/1) != 0)
 	{
-		/* Completely skip sorting if primary key isn't set. */
 		return;
 	}
 
-	view = v;
-	view_sort = v->sort;
-	view_sort_groups = v->sort_groups;
-	custom_view = flist_custom_active(v);
-
+	/* Tree sorting works fine for flat list, but requires a bit more
+	 * resources, so skip it if we can. */
 	if(!custom_view || !cv_tree(v->custom.type))
 	{
-		/* Tree sorting works fine for flat list, but requires a bit more
-		 * resources, so skip it. */
-		sort_sequence(&v->dir_entry[0], v->list_rows);
+		if(setup_linking(&v->dir_entry[0], v->list_rows) == 0)
+		{
+			sort_sequence(&v->dir_entry[0], v->list_rows);
+			cleanup_linking();
+		}
 		return;
 	}
 
@@ -149,6 +174,14 @@ sort_view(view_t *v)
 	if(!filter_is_empty(&v->local_filter.filter))
 	{
 		flist_custom_uncompress_tree(v);
+	}
+
+	/* This must be done after uncompressing custom tree. */
+	if(setup_linking(v->dir_entry, v->list_rows) != 0)
+	{
+		/* Compress custom tree back. */
+		filters_drop_temporaries(v, /*entries=*/NULL);
+		return;
 	}
 
 	unsorted_list = v->dir_entry;
@@ -164,12 +197,16 @@ sort_view(view_t *v)
 		unsorted_list = NULL;
 	}
 
+	/* Done with linking data by now. */
+	cleanup_linking();
+
 	if(filter_is_empty(&v->local_filter.filter))
 	{
 		dynarray_free(unsorted_list);
 	}
 	else
 	{
+		/* This undoes effect of flist_custom_uncompress_tree() from above. */
 		filters_drop_temporaries(v, unsorted_list);
 	}
 }
@@ -214,21 +251,68 @@ sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 void
 sort_entries(view_t *v, entries_t entries)
 {
-	if(v->sort_g[0] > SK_LAST)
+	if(prepare_for_sorting(v, /*local=*/0) != 0)
 	{
-		/* Completely skip sorting if primary key isn't set. */
 		return;
 	}
 
-	view = v;
-	view_sort = v->sort_g;
-	view_sort_groups = v->sort_groups_g;
-	custom_view = flist_custom_active(v);
-
-	sort_sequence(entries.entries, entries.nentries);
+	if(setup_linking(entries.entries, entries.nentries) == 0)
+	{
+		sort_sequence(entries.entries, entries.nentries);
+		cleanup_linking();
+	}
 }
 
-/* Sorts sequence of file entries (plain list, not tree). */
+/* Prepares globals of this unit for performing sorting.  Returns non-zero if
+ * there is no sorting to do. */
+static int
+prepare_for_sorting(view_t *v, int local)
+{
+	const signed char *sort = (local ? v->sort : v->sort_g);
+	if(sort[0] > SK_LAST)
+	{
+		/* Completely skip sorting if primary key isn't set. */
+		return 1;
+	}
+
+	view = v;
+	view_sort = sort;
+	view_sort_groups = (local ? v->sort_groups : v->sort_groups_g);
+	custom_view = flist_custom_active(v);
+	return 0;
+}
+
+/* Initializes cached keys storage and numbers entries to make future access to
+ * cache possible.  Use cleanup_linking() to cleanup.  Returns zero on
+ * success. */
+static int
+setup_linking(dir_entry_t *entries, int nentries)
+{
+	cached_keys = reallocarray(NULL, nentries, sizeof(*cached_keys));
+	if(cached_keys == NULL)
+	{
+		return 1;
+	}
+
+	int i;
+	for(i = 0; i < nentries; ++i)
+	{
+		entries[i].link = i;
+	}
+	return 0;
+}
+
+/* Frees resources allocated by setup_linking(). */
+static void
+cleanup_linking(void)
+{
+	/* Individual array elements are allocated and freed in sort_by_key(). */
+	free(cached_keys);
+	cached_keys = NULL;
+}
+
+/* Sorts sequence of file entries (plain list, not tree, although it can be some
+ * part of a tree). */
 static void
 sort_sequence(dir_entry_t *entries, size_t nentries)
 {
@@ -301,6 +385,45 @@ sort_by_key(dir_entry_t *entries, size_t nentries, signed char key, void *data)
 	sort_type = (SortingKey)abs(key);
 	sort_data = data;
 
+	int using_cache = 0;
+
+	if(sort_type == SK_BY_NAME || sort_type == SK_BY_INAME)
+	{
+		using_cache = 1;
+
+		const int ignore_case = (sort_type == SK_BY_INAME);
+
+		unsigned int i;
+		if(custom_view)
+		{
+			for(i = 0; i < nentries; ++i)
+			{
+				char short_path[PATH_MAX + 1];
+				get_short_path_of(view, &entries[i], NF_NONE, 0, sizeof(short_path),
+						short_path);
+				cached_keys[entries[i].link] = map_ascii_clone(short_path, ignore_case);
+			}
+		}
+		else
+		{
+			for(i = 0; i < nentries; ++i)
+			{
+				cached_keys[entries[i].link] = map_ascii(entries[i].name, ignore_case);
+			}
+		}
+	}
+	else if(sort_type == SK_BY_FILEEXT || sort_type == SK_BY_EXTENSION)
+	{
+		using_cache = 1;
+
+		unsigned int i;
+		for(i = 0; i < nentries; ++i)
+		{
+			cached_keys[entries[i].link] =
+				map_ascii(entries[i].name, /*ignore_case=*/0);
+		}
+	}
+
 	unsigned int i;
 	for(i = 0U; i < nentries; ++i)
 	{
@@ -308,6 +431,65 @@ sort_by_key(dir_entry_t *entries, size_t nentries, signed char key, void *data)
 	}
 
 	safe_qsort(entries, nentries, sizeof(*entries), &sort_dir_list);
+
+	if(using_cache)
+	{
+		for(i = 0; i < nentries; ++i)
+		{
+			free(cached_keys[entries[i].link]);
+		}
+	}
+}
+
+/* Turns non-ASCII strings into normalized UTF-8 strings or just clones it.
+ * Returns a newly allocated string. */
+static char *
+map_ascii_clone(const char str[], int ignore_case)
+{
+	char *mapped = map_ascii(str, ignore_case);
+	if(mapped == NULL)
+	{
+		mapped = strdup(str);
+	}
+	return mapped;
+}
+
+/* Checks whether input string is ASCII and allocates its normalized UTF-8
+ * version if not.  Returns NULL on error or if string is good as is. */
+static char *
+map_ascii(const char str[], int ignore_case)
+{
+	if(str_is_ascii(str))
+	{
+		if(ignore_case)
+		{
+			return lowerdup(str);
+		}
+		return NULL;
+	}
+
+	return utf8_normalize(str, ignore_case);
+}
+
+/* strdup()-like function which changes string to lower case.  Returns newly
+ * allocated string or NULL on out of memory. */
+static char *
+lowerdup(const char str[])
+{
+	/* Could save memory by returning NULL when string is already in lower case,
+	 * but that might reduce performance. */
+	size_t len = strlen(str);
+	char *copy = malloc(len + 1);
+	if(copy != NULL)
+	{
+		size_t i;
+		for(i = 0; i < len; ++i)
+		{
+			copy[i] = tolower(str[i]);
+		}
+		copy[len] = '\0';
+	}
+	return copy;
 }
 
 /* Compares file names containing numbers correctly. */
@@ -342,9 +524,9 @@ vercmp(const char s[], const char t[])
 			t = p;
 
 			if(num_a != num_b)
-				return num_a - num_b;
+				return SORT_CMP(num_a, num_b);
 			else if(*os != *ot)
-				return *os - *ot;
+				return SORT_CMP((unsigned char)*os, (unsigned char)*ot);
 		}
 		else if(*s == *t)
 		{
@@ -355,7 +537,7 @@ vercmp(const char s[], const char t[])
 			break;
 	}
 
-	return *s - *t;
+	return SORT_CMP((unsigned char)*s, (unsigned char)*t);
 }
 #else
 /* Skips all zeros in front of numbers (correctly handles zero).  Returns str, a
@@ -395,19 +577,9 @@ sort_dir_list(const void *one, const void *two)
 	retval = 0;
 	switch(sort_type)
 	{
-		char *pfirst, *psecond;
-
 		case SK_BY_NAME:
 		case SK_BY_INAME:
-			if(custom_view)
-			{
-				retval = compare_entry_names(first, second, sort_type == SK_BY_INAME);
-			}
-			else
-			{
-				retval = compare_full_file_names(first->name, second->name,
-						sort_type == SK_BY_INAME);
-			}
+			retval = compare_file_names(first, second, sort_type);
 			break;
 
 		case SK_BY_DIR:
@@ -423,36 +595,8 @@ sort_dir_list(const void *one, const void *two)
 
 		case SK_BY_FILEEXT:
 		case SK_BY_EXTENSION:
-			pfirst = strrchr(first->name,  '.');
-			psecond = strrchr(second->name, '.');
-
-			if(first_is_dir && second_is_dir && sort_type == SK_BY_FILEEXT)
-			{
-				retval = compare_file_names(first->name, second->name, 0);
-			}
-			else if(first_is_dir != second_is_dir && sort_type == SK_BY_FILEEXT)
-			{
-				retval = first_is_dir ? -1 : 1;
-			}
-			else if(pfirst && psecond)
-			{
-				if(pfirst == first->name && psecond != second->name)
-				{
-					retval = -1;
-				}
-				else if(pfirst != first->name && psecond == second->name)
-				{
-					retval = 1;
-				}
-				else
-				{
-					retval = compare_file_names(++pfirst, ++psecond, 0);
-				}
-			}
-			else if(pfirst || psecond)
-				retval = pfirst ? -1 : 1;
-			else
-				retval = compare_file_names(first->name, second->name, 0);
+			retval = compare_file_exts(first, first_is_dir, second, second_is_dir,
+					sort_type);
 			break;
 
 		case SK_BY_SIZE:
@@ -472,34 +616,34 @@ sort_dir_list(const void *one, const void *two)
 			break;
 
 		case SK_BY_TIME_MODIFIED:
-			retval = first->mtime - second->mtime;
+			retval = SORT_CMP(first->mtime, second->mtime);
 			break;
 
 		case SK_BY_TIME_ACCESSED:
-			retval = first->atime - second->atime;
+			retval = SORT_CMP(first->atime, second->atime);
 			break;
 
 		case SK_BY_TIME_CHANGED:
-			retval = first->ctime - second->ctime;
+			retval = SORT_CMP(first->ctime, second->ctime);
 			break;
 
 #ifndef _WIN32
 		case SK_BY_MODE:
-			retval = first->mode - second->mode;
+			retval = SORT_CMP(first->mode, second->mode);
 			break;
 
 		case SK_BY_INODE:
-			retval = first->inode - second->inode;
+			retval = SORT_CMP(first->inode, second->inode);
 			break;
 
 		case SK_BY_OWNER_NAME: /* FIXME */
 		case SK_BY_OWNER_ID:
-			retval = first->uid - second->uid;
+			retval = SORT_CMP(first->uid, second->uid);
 			break;
 
 		case SK_BY_GROUP_NAME: /* FIXME */
 		case SK_BY_GROUP_ID:
-			retval = first->gid - second->gid;
+			retval = SORT_CMP(first->gid, second->gid);
 			break;
 
 		case SK_BY_PERMISSIONS:
@@ -512,14 +656,14 @@ sort_dir_list(const void *one, const void *two)
 			break;
 
 		case SK_BY_NLINKS:
-			retval = first->nlinks - second->nlinks;
+			retval = SORT_CMP(first->nlinks, second->nlinks);
 			break;
 #endif
 	}
 
 	if(retval == 0)
 	{
-		retval = first->tag - second->tag;
+		retval = SORT_CMP(first->tag, second->tag);
 	}
 	else if(sort_descending)
 	{
@@ -535,7 +679,7 @@ compare_file_sizes(const dir_entry_t *f, const dir_entry_t *s)
 {
 	const uint64_t fsize = fentry_get_size(view, f);
 	const uint64_t ssize = fentry_get_size(view, s);
-	return (fsize < ssize) ? -1 : (fsize > ssize);
+	return SORT_CMP(fsize, ssize);
 }
 
 /* Compares number of items in two directories (taken as zero for files).
@@ -549,7 +693,7 @@ compare_item_count(const dir_entry_t *f, int fdir, const dir_entry_t *s,
 	 * performance overhead is not desirable. */
 	const uint64_t fsize = fdir ? fentry_get_nitems(view, f) : 0U;
 	const uint64_t ssize = sdir ? fentry_get_nitems(view, s) : 0U;
-	return (fsize > ssize) ? 1 : (fsize < ssize) ? -1 : 0;
+	return SORT_CMP(fsize, ssize);
 }
 
 /* Compares two file names according to grouping regular expression.  Returns
@@ -604,70 +748,131 @@ compare_targets(const dir_entry_t *f, const dir_entry_t *s)
 	return stroscmp(nlink, plink);
 }
 
-/* Compares names of two file entries.  Returns positive value if a is greater
- * than b, zero if they are equal, otherwise negative value is returned. */
+/* Compares two file names (could include one or several components) assuming
+ * that the leading dot character is smaller than any other character.  Returns
+ * positive value if s is greater than t, zero if they are equal, otherwise
+ * negative value is returned. */
 static int
-compare_entry_names(const dir_entry_t *a, const dir_entry_t *b, int ignore_case)
+compare_file_names(const dir_entry_t *f, const dir_entry_t *s,
+		SortingKey sort_type)
 {
-	char a_short_path[PATH_MAX + 1];
-	char b_short_path[PATH_MAX + 1];
+	/* NULL check and conditional load is actually faster than just reading a
+	 * value and not by a trivial amount. */
+	const char *f_name = cached_keys[f->link];
+	if(f_name == NULL)
+	{
+		f_name = f->name;
+	}
+	const char *s_name = cached_keys[s->link];
+	if(s_name == NULL)
+	{
+		s_name = s->name;
+	}
 
-	get_short_path_of(view, a, NF_NONE, 0, sizeof(a_short_path), a_short_path);
-	get_short_path_of(view, b, NF_NONE, 0, sizeof(b_short_path), b_short_path);
-
-	return compare_full_file_names(a_short_path, b_short_path, ignore_case);
-}
-
-/* Compares two full filenames and assumes that dot character is smaller than
- * any other character.  Returns positive value if s is greater than t, zero if
- * they are equal, otherwise negative value is returned. */
-static int
-compare_full_file_names(const char s[], const char t[], int ignore_case)
-{
-	if(s[0] == '.' && t[0] != '.')
+	if(f_name[0] == '.' && s_name[0] != '.')
 	{
 		return -1;
 	}
-	else if(s[0] != '.' && t[0] == '.')
+	if(f_name[0] != '.' && s_name[0] == '.')
 	{
 		return 1;
 	}
-	else
+
+	int result = compare_name_part(f_name, s_name);
+
+	/* Resort to comparing original names when their normalized versions match
+	 * to always solve ties in a deterministic way. */
+	if(result == 0 && sort_type == SK_BY_INAME)
 	{
-		return compare_file_names(s, t, ignore_case);
+		f_name = f->name;
+		s_name = s->name;
+
+		char f_short[PATH_MAX + 1];
+		char s_short[PATH_MAX + 1];
+		if(custom_view)
+		{
+			/* Computing these short paths here isn't a big deal as such ties should
+			 * be a rare occasion. */
+			get_short_path_of(view, f, NF_NONE, /*drop_prefix=*/0, sizeof(f_short),
+					f_short);
+			get_short_path_of(view, s, NF_NONE, /*drop_prefix=*/0, sizeof(s_short),
+					s_short);
+
+			f_name = f_short;
+			s_name = s_short;
+		}
+
+		result = strcmp(f_name, s_name);
 	}
+
+	return result;
+}
+
+/* Compares files/directories by extensions.  Returns standard < 0, == 0, > 0
+ * comparison result. */
+static int
+compare_file_exts(const dir_entry_t *f, int f_dir, const dir_entry_t *s,
+		int s_dir, SortingKey sort_type)
+{
+	/* NULL check and conditional load is actually faster than just reading a
+	 * value and not by a trivial amount. */
+	const char *f_name = cached_keys[f->link];
+	if(f_name == NULL)
+	{
+		f_name = f->name;
+	}
+	const char *s_name = cached_keys[s->link];
+	if(s_name == NULL)
+	{
+		s_name = s->name;
+	}
+
+	if(sort_type == SK_BY_FILEEXT)
+	{
+		if(f_dir && s_dir)
+		{
+			return compare_name_part(f_name, s_name);
+		}
+
+		if(f_dir || s_dir)
+		{
+			return (f_dir ? -1 : 1);
+		}
+	}
+
+	const char *f_ext = strrchr(f_name, '.');
+	const char *s_ext = strrchr(s_name, '.');
+
+	if(f_ext != NULL && s_ext != NULL)
+	{
+		if(f_ext == f_name && s_ext != s_name)
+		{
+			return -1;
+		}
+
+		if(f_ext != f_name && s_ext == s_name)
+		{
+			return 1;
+		}
+
+		return compare_name_part(f_ext + 1, s_ext + 1);
+	}
+
+	if(f_ext != NULL || s_ext != NULL)
+	{
+		return (f_ext != NULL ? -1 : 1);
+	}
+
+	return compare_name_part(f_name, s_name);
 }
 
 /* Compares two file names or their parts (e.g. extensions).  Returns positive
  * value if s is greater than t, zero if they are equal, otherwise negative
  * value is returned. */
 static int
-compare_file_names(const char s[], const char t[], int ignore_case)
+compare_name_part(const char s[], const char t[])
 {
-	const char *s_val = s, *t_val = t;
-	char s_buf[NAME_MAX + 1];
-	char t_buf[NAME_MAX + 1];
-	int result;
-
-	if(ignore_case)
-	{
-		/* Ignore too small buffer errors by not caring about part that didn't
-		 * fit. */
-		(void)str_to_lower(s, s_buf, sizeof(s_buf));
-		(void)str_to_lower(t, t_buf, sizeof(t_buf));
-
-		s_val = s_buf;
-		t_val = t_buf;
-	}
-
-	result = cfg.sort_numbers ? strnumcmp(s_val, t_val) : strcmp(s_val, t_val);
-	if(result == 0 && ignore_case)
-	{
-		/* Resort to comparing original names when their normalized versions match
-		 * to always solve ties in deterministic way. */
-		result = strcmp(s, t);
-	}
-	return result;
+	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
 }
 
 SortingKey

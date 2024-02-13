@@ -1,16 +1,18 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() unlink() */
+#include <unistd.h> /* chdir() rmdir() unlink() */
 
-#include <locale.h> /* LC_ALL setlocale() */
+#include <stdarg.h> /* va_list va_arg() va_copy() va_end() va_start() */
 #include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/filelist.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
 
@@ -18,9 +20,12 @@
 #define ASSERT_STRCMP_EQUAL(a, b) \
 		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
 
+static void set_file_list(view_t *view, FileType def_ftype, ...);
+static int case_sensitive_fs(void);
+
 SETUP_ONCE()
 {
-	(void)setlocale(LC_ALL, "");
+	try_enable_utf8_locale();
 }
 
 SETUP()
@@ -28,24 +33,10 @@ SETUP()
 	cfg.sort_numbers = 1;
 
 	view_setup(&lwin);
-	lwin.list_rows = 3;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].type = FT_REG;
-	lwin.dir_entry[1].name = strdup("_");
-	lwin.dir_entry[1].type = FT_REG;
-	lwin.dir_entry[2].name = strdup("A");
-	lwin.dir_entry[2].type = FT_REG;
+	set_file_list(&lwin, FT_REG, "a", "_", "A", NULL);
 
 	view_setup(&rwin);
-	rwin.list_rows = 2;
-	rwin.dir_entry = dynarray_cextend(NULL,
-			rwin.list_rows*sizeof(*rwin.dir_entry));
-	rwin.dir_entry[0].name = strdup("аааааааааа");
-	rwin.dir_entry[0].type = FT_REG;
-	rwin.dir_entry[1].name = strdup("АААААААААА");
-	rwin.dir_entry[1].type = FT_REG;
+	set_file_list(&rwin, FT_REG, "аааааааааа", "АААААААААА", NULL);
 
 	update_string(&cfg.shell, "");
 }
@@ -287,22 +278,29 @@ TEST(extensions_of_dot_files_are_sorted_correctly)
 	view_teardown(&lwin);
 	view_setup(&lwin);
 
-	lwin.list_rows = 3;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("disown.c");
-	lwin.dir_entry[0].type = FT_REG;
-	lwin.dir_entry[1].name = strdup(".cdargsresult");
-	lwin.dir_entry[1].type = FT_REG;
-	lwin.dir_entry[2].name = strdup(".tmux.conf");
-	lwin.dir_entry[2].type = FT_REG;
-
+	set_file_list(&lwin, FT_REG, "disown.c", ".cdargsresult", ".tmux.conf", NULL);
 	view_set_sort(lwin.sort, SK_BY_EXTENSION, SK_NONE);
 	sort_view(&lwin);
 
 	assert_string_equal(".cdargsresult", lwin.dir_entry[0].name);
 	assert_string_equal("disown.c", lwin.dir_entry[1].name);
 	assert_string_equal(".tmux.conf", lwin.dir_entry[2].name);
+}
+
+TEST(sorting_has_no_integer_overflows)
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	set_file_list(&lwin, FT_REG, "\xff", "\x81", "\x01", "\x80", "\x7f", NULL);
+	view_set_sort(lwin.sort, SK_BY_NAME, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("\x01", lwin.dir_entry[0].name);
+	assert_string_equal("\x7f", lwin.dir_entry[1].name);
+	assert_string_equal("\x80", lwin.dir_entry[2].name);
+	assert_string_equal("\x81", lwin.dir_entry[3].name);
+	assert_string_equal("\xff", lwin.dir_entry[4].name);
 }
 
 TEST(sorting_uses_dcache_for_dirs)
@@ -312,20 +310,7 @@ TEST(sorting_uses_dcache_for_dirs)
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	lwin.list_rows = 2;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("read");
-	lwin.dir_entry[0].type = FT_DIR;
-	lwin.dir_entry[0].origin = lwin.curr_dir;
-	lwin.dir_entry[1].name = strdup("rename");
-	lwin.dir_entry[1].type = FT_DIR;
-	lwin.dir_entry[1].origin = lwin.curr_dir;
-
-#ifndef _WIN32
-	lwin.dir_entry[0].inode = 1;
-	lwin.dir_entry[1].inode = 2;
-#endif
+	set_file_list(&lwin, FT_DIR, "read", "rename", NULL);
 
 	view_set_sort(lwin.sort, SK_BY_SIZE, SK_NONE);
 
@@ -355,18 +340,7 @@ TEST(nitems_sorting_works)
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	lwin.list_rows = 3;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("read");
-	lwin.dir_entry[0].type = FT_DIR;
-	lwin.dir_entry[0].origin = lwin.curr_dir;
-	lwin.dir_entry[1].name = strdup("rename");
-	lwin.dir_entry[1].type = FT_DIR;
-	lwin.dir_entry[1].origin = lwin.curr_dir;
-	lwin.dir_entry[2].name = strdup("various-sizes");
-	lwin.dir_entry[2].type = FT_DIR;
-	lwin.dir_entry[2].origin = lwin.curr_dir;
+	set_file_list(&lwin, FT_DIR, "read", "rename", "various-sizes", NULL);
 
 	view_set_sort(lwin.sort, SK_BY_NITEMS, SK_NONE);
 	sort_view(&lwin);
@@ -383,30 +357,8 @@ TEST(groups_sorting_works)
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	lwin.list_rows = 7;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("1-done");
-	lwin.dir_entry[0].type = FT_REG;
-	lwin.dir_entry[0].origin = lwin.curr_dir;
-	lwin.dir_entry[1].name = strdup("10-bla-todo-edit");
-	lwin.dir_entry[1].type = FT_REG;
-	lwin.dir_entry[1].origin = lwin.curr_dir;
-	lwin.dir_entry[2].name = strdup("11-todo-publish");
-	lwin.dir_entry[2].type = FT_REG;
-	lwin.dir_entry[2].origin = lwin.curr_dir;
-	lwin.dir_entry[3].name = strdup("2-todo-replace");
-	lwin.dir_entry[3].type = FT_REG;
-	lwin.dir_entry[3].origin = lwin.curr_dir;
-	lwin.dir_entry[4].name = strdup("3-done");
-	lwin.dir_entry[4].type = FT_REG;
-	lwin.dir_entry[4].origin = lwin.curr_dir;
-	lwin.dir_entry[5].name = strdup("4-todo-edit");
-	lwin.dir_entry[5].type = FT_REG;
-	lwin.dir_entry[5].origin = lwin.curr_dir;
-	lwin.dir_entry[6].name = strdup("5-todo-publish");
-	lwin.dir_entry[6].type = FT_REG;
-	lwin.dir_entry[6].origin = lwin.curr_dir;
+	set_file_list(&lwin, FT_REG, "1-done", "10-bla-todo-edit", "11-todo-publish",
+			"2-todo-replace", "3-done", "4-todo-edit", "5-todo-publish", NULL);
 
 	update_string(&lwin.sort_groups, "-(done|todo).*");
 	if(lwin.primary_group_set)
@@ -465,6 +417,113 @@ TEST(global_groups_sorts_entries_list)
 	assert_string_equal("a1", entries.entries[1].name);
 }
 
+/* Not a proper collation, but a sensible ordering that is consistent whether
+ * case is ignored or not. */
+TEST(case_sensitive_unicode_sorting, IF(utf8_locale))
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	/* Hex-coded names are öäüßÖÄÜ written with and without compount
+	 * characters. */
+	const char *compounds =
+		"\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f\x4f\xcc\x88\x41\xcc\x88\x55"
+		"\xcc\x88";
+	const char *non_compounds =
+		"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f\xc3\x96\xc3\x84\xc3\x9c";
+
+	set_file_list(&lwin, FT_REG, "a", "A", compounds, non_compounds, "ß", "Ö",
+			"ö", "p", NULL);
+
+	view_set_sort(lwin.sort, SK_BY_NAME, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("A", lwin.dir_entry[0].name);
+	assert_string_equal("Ö", lwin.dir_entry[1].name);
+	assert_string_equal("a", lwin.dir_entry[2].name);
+	assert_string_equal("ö", lwin.dir_entry[3].name);
+	assert_string_equal(compounds, lwin.dir_entry[4].name);
+	assert_string_equal(non_compounds, lwin.dir_entry[5].name);
+	assert_string_equal("p", lwin.dir_entry[6].name);
+}
+
+/* Not a proper collation, but a sensible ordering that is consistent whether
+ * case is ignored or not. */
+TEST(case_insensitive_unicode_sorting, IF(utf8_locale))
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	/* Hex-coded names are öäüßÖÄÜ written with and without compount
+	 * characters. */
+	const char *compounds =
+		"\x6f\xcc\x88\x61\xcc\x88\x75\xcc\x88\xc3\x9f\x4f\xcc\x88\x41\xcc\x88\x55"
+		"\xcc\x88";
+	const char *non_compounds =
+		"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f\xc3\x96\xc3\x84\xc3\x9c";
+
+	set_file_list(&lwin, FT_REG, "a", "A", compounds, non_compounds, "ß", "Ö",
+			"ö", "p", NULL);
+
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("A", lwin.dir_entry[0].name);
+	assert_string_equal("a", lwin.dir_entry[1].name);
+	assert_string_equal("Ö", lwin.dir_entry[2].name);
+	assert_string_equal("ö", lwin.dir_entry[3].name);
+	assert_string_equal(compounds, lwin.dir_entry[4].name);
+	assert_string_equal(non_compounds, lwin.dir_entry[5].name);
+	assert_string_equal("p", lwin.dir_entry[6].name);
+}
+
+/* Not a proper collation, but a sensible ordering that is consistent whether
+ * case is ignored or not. */
+TEST(case_insensitive_unicode_sorting_for_exts, IF(utf8_locale))
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	set_file_list(&lwin, FT_REG, "x.o", "y.Ö", "z.ö", NULL);
+
+	view_set_sort(lwin.sort, SK_BY_FILEEXT, SK_NONE);
+	sort_view(&lwin);
+
+	assert_string_equal("y.Ö", lwin.dir_entry[0].name);
+	assert_string_equal("x.o", lwin.dir_entry[1].name);
+	assert_string_equal("z.ö", lwin.dir_entry[2].name);
+}
+
+TEST(custom_view_is_sorted_by_short_paths, IF(case_sensitive_fs))
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), /*base=*/".",
+			/*sub=*/"", /*cwd=*/NULL);
+
+	create_dir(SANDBOX_PATH "/D");
+	create_file(SANDBOX_PATH "/D/f");
+	create_dir(SANDBOX_PATH "/d");
+	create_file(SANDBOX_PATH "/d/f");
+
+	/* flist_custom_finish() does actual sorting. */
+	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, SANDBOX_PATH "/d/f");
+	flist_custom_add(&lwin, SANDBOX_PATH "/D/f");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_string_equal("f", lwin.dir_entry[0].name);
+	assert_string_ends_with("/D", lwin.dir_entry[0].origin);
+	assert_string_equal("f", lwin.dir_entry[1].name);
+	assert_string_ends_with("/d", lwin.dir_entry[1].origin);
+
+	remove_file(SANDBOX_PATH "/d/f");
+	remove_file(SANDBOX_PATH "/D/f");
+	remove_dir(SANDBOX_PATH "/d");
+	remove_dir(SANDBOX_PATH "/D");
+}
+
 #ifndef _WIN32
 
 TEST(inode_sorting_works)
@@ -474,18 +533,10 @@ TEST(inode_sorting_works)
 	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	lwin.list_rows = 3;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("read");
+	set_file_list(&lwin, FT_REG, "read", "rename", "various-sizes", NULL);
 	lwin.dir_entry[0].inode = 10;
-	lwin.dir_entry[0].origin = lwin.curr_dir;
-	lwin.dir_entry[1].name = strdup("rename");
 	lwin.dir_entry[1].inode = 5;
-	lwin.dir_entry[1].origin = lwin.curr_dir;
-	lwin.dir_entry[2].name = strdup("various-sizes");
 	lwin.dir_entry[2].inode = 7;
-	lwin.dir_entry[2].origin = lwin.curr_dir;
 
 	view_set_sort(lwin.sort, SK_BY_INODE, SK_NONE);
 	sort_view(&lwin);
@@ -496,6 +547,48 @@ TEST(inode_sorting_works)
 }
 
 #endif
+
+static void
+set_file_list(view_t *view, FileType def_ftype, ...)
+{
+	va_list ap;
+	va_start(ap, def_ftype);
+
+	va_list aq;
+	va_copy(aq, ap);
+
+	int count = 0;
+	while(va_arg(ap, const char *) != NULL)
+	{
+		++count;
+	}
+	va_end(ap);
+
+	view->list_rows = count;
+	view->dir_entry = dynarray_cextend(NULL,
+			view->list_rows*sizeof(*view->dir_entry));
+
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		view->dir_entry[i].name = strdup(va_arg(aq, const char *));
+		view->dir_entry[i].type = def_ftype;
+		view->dir_entry[i].origin = view->curr_dir;
+#ifndef _WIN32
+		view->dir_entry[i].inode = 1 + i;
+#endif
+	}
+	va_end(aq);
+}
+
+static int
+case_sensitive_fs(void)
+{
+	int result = (os_mkdir(SANDBOX_PATH "/tEsT", 0700) == 0)
+	          && (os_rmdir(SANDBOX_PATH "/test") != 0);
+	(void)rmdir(SANDBOX_PATH "/tEsT");
+	return result;
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

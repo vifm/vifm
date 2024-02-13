@@ -34,6 +34,7 @@
 #include "ui/cancellation.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -412,7 +413,7 @@ path_depth_sort(const void *one, const void *two)
 		copy_str(t_real, sizeof(t_real), t);
 	}
 
-	return chars_in_str(t_real, '/') - chars_in_str(s_real, '/');
+	return SORT_CMP(chars_in_str(t_real, '/'), chars_in_str(s_real, '/'));
 }
 
 /* Checks whether moving the file into specified directory might potentially

@@ -1209,6 +1209,22 @@ double_char(const char str[], char c)
 	return doubled;
 }
 
+int
+str_is_ascii(const char str[])
+{
+	/* Tried to optimize this by checking multiple bytes at once after determining
+	 * size, but it wasn't faster.  The result of such an optimization could
+	 * depend on string length though. */
+	while(*str != '\0')
+	{
+		if((*str++ & 0x80) != 0)
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
 #ifndef HAVE_STRCASESTR
 
 char *

@@ -690,7 +690,7 @@ id_sorter(const void *first, const void *second)
 {
 	const dir_entry_t *a = first;
 	const dir_entry_t *b = second;
-	return a->id == b->id ? a->tag - b->tag : a->id - b->id;
+	return a->id == b->id ? SORT_CMP(a->tag, b->tag) : SORT_CMP(a->id, b->id);
 }
 
 /* Either puts the entry into the view or frees it (depends on the take

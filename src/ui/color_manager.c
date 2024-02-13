@@ -327,7 +327,7 @@ pair_cache_cmp(const void *a, const void *b)
 {
 	const pair_cache_t *s = a;
 	const pair_cache_t *t = b;
-	return (s->fg != t->fg ? s->fg - t->fg : s->bg - t->bg);
+	return (s->fg != t->fg ? SORT_CMP(s->fg, t->fg) : SORT_CMP(s->bg, t->bg));
 }
 
 int

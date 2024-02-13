@@ -328,6 +328,10 @@ size_t chars_in_str(const char s[], char c);
  * process.  Returns cloned value. */
 char * double_char(const char str[], char c);
 
+/* Checks whether string contains only ASCII characters.  Returns non-zero if
+ * so. */
+int str_is_ascii(const char str[]);
+
 #ifndef HAVE_STRCASESTR
 
 /* Same as strstr(), but in case insensitive way. */

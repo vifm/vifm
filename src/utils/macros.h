@@ -103,6 +103,15 @@
 														_a - _a%_b; \
 													})
 
+/* Compares parameters to produce result that's less than, equal or greater than
+ * zero that reflects the same relation between the parameters while avoiding
+ * overflows.  Returns a signed int. */
+#define SORT_CMP(a,b)  ({ \
+													const typeof(a) _a = (a); \
+													const typeof(b) _b = (b); \
+													(_a < _b) ? -1 : (_a > _b); \
+												})
+
 /* Maps single-bit mask onto bit number, e.g. BIT(8) == 3. */
 #define BIT(x) ((x) == 1U << 0  ? 0  : (x) == 1U << 1  ? 1  : \
                 (x) == 1U << 2  ? 2  : (x) == 1U << 3  ? 3  : \

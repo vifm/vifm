@@ -250,6 +250,7 @@ of changes of each kind.
     |  |  |-- string_array.c - functions to work with arrays of strings
     |  |  |-- trie.c - 3-way trie implementation
     |  |  |-- utf8.c - functions to handle utf8 strings
+    |  |  |-- utf8proc.c - third-party implementation of UTF-8 Unicode handling
     |  |  |-- utils.c - various utilities
     |  |  |-- utils_nix.c - various utilities for *nix systems
     |  |  |-- utils_win.c - various utilities for MS Windows

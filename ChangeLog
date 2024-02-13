@@ -79,6 +79,11 @@
 
 	Updated autotools scripts.  Thanks to phanium (a.k.a. phanen).
 
+	Perform sorting of completion items after doing Unicode normalization.
+
+	Perform sorting of file names after doing Unicode normalization.  Thanks
+	to hacksenwerk.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -182,6 +187,15 @@
 
 	Fixed FUSE mounter error message dialog missing newlines (regression in
 	0.13-beta).
+
+	Fixed "Querying... (??%)" message on :compare having an extra space in
+	parenthesis.
+
+	Fixed potential integer overflows on sorting.
+
+	Fixed weird sorting of filenames with non-Latin characters when
+	'sortnumbers' option is set and strverscmp() is not provided by the
+	system (like on Windows).
 
 	Fixed "Querying... (??%)" message on :compare having an extra space in
 	parenthesis.
