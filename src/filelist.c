@@ -579,7 +579,7 @@ change_directory(view_t *view, const char directory[])
 	}
 	else
 	{
-		char newdir[PATH_MAX + 1];
+		char newdir[PATH_MAX + 1 + NAME_MAX + 1];
 		const char *const dir = flist_get_dir(view);
 #ifdef _WIN32
 		if(directory[0] == '/')
@@ -4431,7 +4431,7 @@ entry_is_visible(view_t *view, const char name[], const void *data)
 		return 0;
 	}
 
-	char full_path[PATH_MAX + 1];
+	char full_path[PATH_MAX + 1 + NAME_MAX + 1];
 	snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view), name);
 
 	const int is_dir = data_is_dir_entry(data, full_path);

@@ -772,7 +772,7 @@ make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 			char progress_msg[128];
 
 			last_progress = progress;
-			snprintf(progress_msg, sizeof(progress_msg), "Querying... %d (% 2d%%)", i,
+			snprintf(progress_msg, sizeof(progress_msg), "Querying... %d (%2d%%)", i,
 					progress);
 			show_progress(progress_msg, -1);
 		}

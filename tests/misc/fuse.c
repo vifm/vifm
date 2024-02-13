@@ -11,6 +11,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/int/fuse.h"
+#include "../../src/modes/dialogs/msg_dialog.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
@@ -23,6 +24,10 @@ static char *saved_cwd;
 static void populate(view_t *view);
 static void mount(view_t *view, const char cmd[]);
 static int unmount(view_t *view);
+static void mounter_error_dlg_cb(const char type[], const char title[],
+		const char message[]);
+static void failed_mount_dlg_cb(const char type[], const char title[],
+		const char message[]);
 static int can_fuse(void);
 static int can_fuse_and_emulate_errors(void);
 
@@ -71,6 +76,8 @@ TEST(bad_mounter_is_handled, IF(can_fuse))
 {
 	os_mkdir(SANDBOX_PATH "/mount.me", 0777);
 	populate(&lwin);
+
+	dlg_set_callback(&failed_mount_dlg_cb);
 
 	mount(&lwin, "FUSE_MOUNT|false");
 	assert_false(fuse_is_mount_point(lwin.curr_dir));
@@ -383,6 +390,19 @@ TEST(fuse_get_mount_file_works, IF(can_fuse))
 	assert_success(rmdir(SANDBOX_PATH "/mount.me"));
 }
 
+TEST(multiline_errors_are_handled, IF(can_fuse))
+{
+	os_mkdir(SANDBOX_PATH "/mount.me", 0777);
+	populate(&lwin);
+
+	dlg_set_callback(&mounter_error_dlg_cb);
+
+	mount(&lwin, "FUSE_MOUNT|echo first 1>&2 &&echo second 1>&2 &&exit 1");
+	assert_false(fuse_is_mount_point(lwin.curr_dir));
+
+	assert_success(rmdir(SANDBOX_PATH "/mount.me"));
+}
+
 TEST(bad_fuse_home_is_handled, IF(can_fuse_and_emulate_errors))
 {
 	os_mkdir(SANDBOX_PATH "/mount.me", 0777);
@@ -433,6 +453,29 @@ unmount(view_t *view)
 	saved_cwd = save_cwd();
 
 	return result;
+}
+
+static void
+mounter_error_dlg_cb(const char type[], const char title[],
+		const char message[])
+{
+	assert_string_equal("error", type);
+	assert_string_equal("FUSE Mounter Errors", title);
+	assert_string_equal("first\nsecond", message);
+
+	dlg_set_callback(&failed_mount_dlg_cb);
+}
+
+static void
+failed_mount_dlg_cb(const char type[], const char title[],
+		const char message[])
+{
+	assert_string_equal("error", type);
+	assert_string_equal("FUSE", title);
+	assert_string_starts_with("Failed to mount file: ", message);
+	assert_string_ends_with("mount.me", message);
+
+	dlg_set_callback(NULL);
 }
 
 static int

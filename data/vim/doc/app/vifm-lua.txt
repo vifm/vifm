@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2023 Nov 7
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Feb 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -395,6 +395,9 @@ Fields of {info} argument:
 
 --------------------------------------------------------------------------------
 *vifm-lua-events*
+
+These are types of events that can be subscribed to via
+|vifm-l_vifm.events.listen()|.
 
 "app.exit" event~
 

@@ -651,6 +651,10 @@ read_proc_stream(pid_t pid, FILE *fp, const cancellation_t *cancellation)
 	wait_for_data_from(pid, fp, /*fd=*/-1, cancellation);
 	while((line = read_line(fp, line)) != NULL)
 	{
+		if(buf_len != 0)
+		{
+			(void)strappendch(&buf, &buf_len, '\n');
+		}
 		(void)strappend(&buf, &buf_len, line);
 		wait_for_data_from(pid, fp, /*fd=*/-1, cancellation);
 	}
