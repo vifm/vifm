@@ -160,9 +160,9 @@ sort_view(view_t *v)
 	 * resources, so skip it if we can. */
 	if(!custom_view || !cv_tree(v->custom.type))
 	{
-		if(setup_linking(&v->dir_entry[0], v->list_rows) == 0)
+		if(setup_linking(v->dir_entry, v->list_rows) == 0)
 		{
-			sort_sequence(&v->dir_entry[0], v->list_rows);
+			sort_sequence(v->dir_entry, v->list_rows);
 			cleanup_linking();
 		}
 		return;
@@ -188,7 +188,7 @@ sort_view(view_t *v)
 	v->dir_entry = dynarray_extend(NULL, v->list_rows*sizeof(*v->dir_entry));
 	if(v->dir_entry != NULL)
 	{
-		sort_tree_slice(&v->dir_entry[0], unsorted_list, v->list_rows, 1);
+		sort_tree_slice(v->dir_entry, unsorted_list, v->list_rows, 1);
 	}
 	else
 	{

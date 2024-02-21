@@ -2,7 +2,10 @@
 
 set -xe
 
-make check
+if ! make check; then
+    cat src/test-suite.log
+    exit 1
+fi
 
 if [ "$COLLECT_COVERAGE" = yes ] && [ -n "$COVERALLS_REPO_TOKEN" ]; then
      PATH="$HOME/.local/bin:$PATH"

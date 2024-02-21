@@ -638,14 +638,11 @@ get_ext(const char path[])
 static char *
 find_ext_dot(const char path[])
 {
-	const char *const slash = strrchr(path, '/');
-	char *const dot = strrchr(path, '.');
+	const char *const basename = after_last(path, '/');
+	char *const dot = strrchr(basename, '.');
 
 	const int no_ext = dot == NULL
-	                || (slash != NULL && dot < slash)
-	                || dot == path
-	                || dot == slash + 1;
-
+	                || dot == basename;
 	return no_ext ? NULL : dot;
 }
 

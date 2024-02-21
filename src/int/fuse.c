@@ -124,14 +124,14 @@ fuse_try_mount(view_t *view, const char program[])
 			FILE *f;
 			if((f = os_fopen(file_full_path, "r")) == NULL)
 			{
-				show_error_msg("SSH mount failed", "Can't open file for reading");
+				show_error_msg("FUSE mount failed", "Can't open file for reading");
 				curr_stats.save_msg = 1;
 				return;
 			}
 
 			if(fgets(param, sizeof(param), f) == NULL)
 			{
-				show_error_msg("SSH mount failed", "Can't read file content");
+				show_error_msg("FUSE mount failed", "Can't read file content");
 				curr_stats.save_msg = 1;
 				fclose(f);
 				return;
@@ -141,7 +141,7 @@ fuse_try_mount(view_t *view, const char program[])
 			chomp(param);
 			if(param[0] == '\0')
 			{
-				show_error_msg("SSH mount failed", "File is empty");
+				show_error_msg("FUSE mount failed", "File is empty");
 				curr_stats.save_msg = 1;
 				return;
 			}
