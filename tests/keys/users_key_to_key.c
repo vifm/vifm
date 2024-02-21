@@ -17,10 +17,10 @@ SETUP()
 	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
-TEST(user_key_sequence_cannot_be_empty_even)
+TEST(user_key_sequence_cannot_be_empty_even_after_reset)
 {
 	assert_false(vle_keys_user_exists(L"", NORMAL_MODE));
-	vle_keys_reset();
+	vle_keys_user_clear();
 	assert_false(vle_keys_user_exists(L"", NORMAL_MODE));
 }
 
