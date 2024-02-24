@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 Jan 20
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 Feb 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5835,7 +5835,8 @@ How files are compared:
  - bysize     - only by their size;
  - bycontents - by data they contain (combination of size and hash of
                 small chunk of contents is used as first approximation,
-                so don't worry too much about large files).
+                so don't worry too much about large files; non-regular files
+                like pipes are assumed to be empty).
 
 Which files to display:
  - listall    - all files;

@@ -84,6 +84,8 @@
 	Perform sorting of file names after doing Unicode normalization.  Thanks
 	to hacksenwerk.
 
+	Make :compare treat non-regular files (pipes, sockets, etc.) as empty.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -199,6 +201,9 @@
 
 	Fixed "Querying... (??%)" message on :compare having an extra space in
 	parenthesis.
+
+	Fixed :compare hanging on trying to compare non-regular files like pipes
+	by contents.
 
 0.13-beta to 0.13 (2023-04-04)
 
