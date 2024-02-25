@@ -1137,8 +1137,6 @@ static int
 files_are_identical(const char a[], int a_readable, const char b[],
 		int b_readable)
 {
-	char a_block[BLOCK_SIZE], b_block[BLOCK_SIZE];
-
 	/* Unreadable files are treated as empty. */
 	if(!a_readable && !b_readable)
 	{
@@ -1171,6 +1169,7 @@ files_are_identical(const char a[], int a_readable, const char b[],
 
 	while(1)
 	{
+		char a_block[BLOCK_SIZE], b_block[BLOCK_SIZE];
 		const size_t a_read = fread(&a_block, 1, sizeof(a_block), a_file);
 		const size_t b_read = fread(&b_block, 1, sizeof(b_block), b_file);
 		if(a_read == 0U && b_read == 0U && feof(a_file) && feof(b_file))
