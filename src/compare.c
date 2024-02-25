@@ -969,7 +969,7 @@ static char *
 get_contents_fingerprint(const char path[], int is_readable,
 		unsigned long long size)
 {
-	char block[BLOCK_SIZE];
+	char buf[PREFIX_SIZE];
 	size_t to_read = PREFIX_SIZE;
 
 	if(!is_readable)
@@ -1002,14 +1002,14 @@ get_contents_fingerprint(const char path[], int is_readable,
 
 	while(to_read != 0U)
 	{
-		const size_t portion = MIN(sizeof(block), to_read);
-		const size_t nread = fread(&block, 1, portion, in);
+		const size_t portion = MIN(sizeof(buf), to_read);
+		const size_t nread = fread(&buf, 1, portion, in);
 		if(nread == 0U)
 		{
 			break;
 		}
 
-		XXH3_64bits_update(st, block, nread);
+		XXH3_64bits_update(st, buf, nread);
 		to_read -= nread;
 	}
 	fclose(in);
