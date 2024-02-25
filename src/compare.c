@@ -70,7 +70,7 @@
 #define XXH_PRIVATE_API
 #include "utils/xxhash.h"
 
-/* Amount of data to read at once. */
+/* Amount of data to read at once when comparing files in full. */
 #define BLOCK_SIZE (32*1024)
 
 /* Amount of data to hash for coarse comparison. */
@@ -962,8 +962,9 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 	return strdup("");
 }
 
-/* Makes fingerprint of file contents (all or part of it of fixed size).
- * Returns the fingerprint as a string, which is empty or NULL on error. */
+/* Makes fingerprint of file contents (all or of its fixed-size prefix,
+ * whichever is smaller).  Returns the fingerprint as a string, which is empty
+ * or NULL on error. */
 static char *
 get_contents_fingerprint(const char path[], int is_readable,
 		unsigned long long size)
