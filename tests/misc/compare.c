@@ -1,10 +1,10 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod() */
+#include <sys/stat.h> /* chmod() mkfifo() */
 #include <unistd.h> /* rmdir() */
 
 #include <stdio.h> /* FILE fopen() fwrite() fclose() remove() */
-#include <string.h> /* strcpy() */
+#include <string.h> /* memset() strcpy() */
 
 #include <test-utils.h>
 
@@ -448,6 +448,79 @@ TEST(content_difference_is_detected)
 	remove_dir(SANDBOX_PATH "/a");
 	remove_dir(SANDBOX_PATH "/b");
 }
+
+TEST(files_with_identical_fingerprints_are_handled_well)
+{
+	char contents[32*1024];
+	memset(contents, ' ', sizeof(contents));
+	contents[sizeof(contents) - 1] = '\0';
+
+	/* Files are pair-wise identical (1-1, 2-2, 3-3), but all of them have the
+	 * same fingerprint because of the same size and prefix (4096 first bytes, but
+	 * trying to allow for changes here). */
+	create_dir(SANDBOX_PATH "/a");
+	create_dir(SANDBOX_PATH "/b");
+	contents[sizeof(contents)/2] = '1';
+	make_file(SANDBOX_PATH "/a/1", contents);
+	make_file(SANDBOX_PATH "/b/1", contents);
+	contents[sizeof(contents)/2] = '2';
+	make_file(SANDBOX_PATH "/a/2", contents);
+	make_file(SANDBOX_PATH "/b/2", contents);
+	contents[sizeof(contents)/2] = '3';
+	make_file(SANDBOX_PATH "/a/3", contents);
+	make_file(SANDBOX_PATH "/b/3", contents);
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
+	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
+	compare_two_panes(CT_CONTENTS, LT_ALL, CF_SHOW | CF_GROUP_PATHS);
+
+	assert_int_equal(3, lwin.list_rows);
+	assert_int_equal(3, rwin.list_rows);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, rwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(2, rwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+	assert_int_equal(3, rwin.dir_entry[2].id);
+
+	remove_file(SANDBOX_PATH "/a/1");
+	remove_file(SANDBOX_PATH "/b/1");
+	remove_file(SANDBOX_PATH "/a/2");
+	remove_file(SANDBOX_PATH "/b/2");
+	remove_file(SANDBOX_PATH "/a/3");
+	remove_file(SANDBOX_PATH "/b/3");
+	remove_dir(SANDBOX_PATH "/a");
+	remove_dir(SANDBOX_PATH "/b");
+}
+
+/* Because of mkfifo() */
+#ifndef _WIN32
+
+TEST(non_regular_files_are_not_read)
+{
+	assert_success(mkfifo(SANDBOX_PATH "/fifo1", 0755));
+	assert_success(mkfifo(SANDBOX_PATH "/fifo2", 0755));
+	create_file(SANDBOX_PATH "/regular");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, CF_NONE);
+
+	assert_int_equal(CV_COMPARE, lwin.custom.type);
+	assert_int_equal(3, lwin.list_rows);
+	assert_string_equal("fifo1", lwin.dir_entry[0].name);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_string_equal("fifo2", lwin.dir_entry[1].name);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+	assert_string_equal("regular", lwin.dir_entry[2].name);
+	assert_int_equal(1, lwin.dir_entry[2].id);
+
+	assert_success(remove(SANDBOX_PATH "/fifo1"));
+	assert_success(remove(SANDBOX_PATH "/fifo2"));
+	assert_success(remove(SANDBOX_PATH "/regular"));
+}
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

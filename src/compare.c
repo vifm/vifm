@@ -70,7 +70,7 @@
 #define XXH_PRIVATE_API
 #include "utils/xxhash.h"
 
-/* Amount of data to read at once. */
+/* Amount of data to read at once when comparing files in full. */
 #define BLOCK_SIZE (32*1024)
 
 /* Amount of data to hash for coarse comparison. */
@@ -79,10 +79,12 @@
 /* Entry in singly-bounded list of files that have matched fingerprints. */
 typedef struct compare_record_t
 {
+	struct compare_record_t *next; /* Next entry in the list of conflicts. */
 	char *path;                    /* Full path to file with sample content. */
 	int id;                        /* Chosen id. */
-	int is_partial;                /* Shows that fingerprinting was lazy. */
-	struct compare_record_t *next; /* Next entry in the list of conflicts. */
+	unsigned is_partial : 1;       /* Shows that fingerprinting was lazy. */
+	unsigned is_readable : 1;      /* Shows that this file can be read.  If not,
+	                                  its contents is assumed to be empty. */
 }
 compare_record_t;
 
@@ -107,13 +109,17 @@ static void list_files_recursively(const view_t *view, const char path[],
 		int skip_dot_files, int flags, strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct, int flags, int lazy);
-static char * get_contents_fingerprint(const char path[],
+static char * get_contents_fingerprint(const char path[], int is_readable,
 		unsigned long long size);
 static int add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
 		CompareType ct, int dups_only, int flags, int *next_id);
-static int files_are_identical(const char a[], const char b[]);
+static int filetype_is_readable(FileType type);
+static int files_are_identical(const char a[], int a_readable, const char b[],
+		int b_readable);
+static int file_is_empty(const char path[]);
 static void put_file_id(trie_t *trie, const char path[],
-		const char fingerprint[], int id, int is_partial, CompareType ct);
+		const char fingerprint[], int id, int is_readable, int is_partial,
+		CompareType ct);
 static void free_compare_records(void *ptr);
 static void compare_move_entry(ops_t *ops, view_t *from, view_t *to, int idx);
 
@@ -949,56 +955,41 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 
 				return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
 			}
-			return get_contents_fingerprint(path, entry->size);
+			return get_contents_fingerprint(path, filetype_is_readable(entry->type),
+					entry->size);
 	}
 	assert(0 && "Unexpected diffing type.");
 	return strdup("");
 }
 
-/* Makes fingerprint of file contents (all or part of it of fixed size).
- * Returns the fingerprint as a string, which is empty or NULL on error. */
+/* Makes fingerprint of file contents (all or of its fixed-size prefix,
+ * whichever is smaller).  Returns the fingerprint as a string, which is empty
+ * or NULL on error. */
 static char *
-get_contents_fingerprint(const char path[], unsigned long long size)
+get_contents_fingerprint(const char path[], int is_readable,
+		unsigned long long size)
 {
-	char block[BLOCK_SIZE];
-	size_t to_read = PREFIX_SIZE;
-	FILE *in = os_fopen(path, "rb");
-	if(in == NULL)
-	{
-		return strdup("");
-	}
+	char contents[PREFIX_SIZE];
+	size_t len;
 
-	XXH3_state_t *st = XXH3_createState();
-	if(st == NULL)
+	if(is_readable)
 	{
-		fclose(in);
-		return strdup("");
-	}
-
-	if(XXH3_64bits_reset(st) == XXH_ERROR)
-	{
-		fclose(in);
-		XXH3_freeState(st);
-		return strdup("");
-	}
-
-	while(to_read != 0U)
-	{
-		const size_t portion = MIN(sizeof(block), to_read);
-		const size_t nread = fread(&block, 1, portion, in);
-		if(nread == 0U)
+		FILE *in = os_fopen(path, "rb");
+		if(in == NULL)
 		{
-			break;
+			return strdup("");
 		}
-
-		XXH3_64bits_update(st, block, nread);
-		to_read -= nread;
+		len = fread(&contents, 1, sizeof(contents), in);
+		fclose(in);
 	}
-	fclose(in);
+	else
+	{
+		/* This isn't an error, just treat such files (e.g., pipes and sockets) as
+		 * empty. */
+		len = 0;
+	}
 
-	const unsigned long long digest = XXH3_64bits_digest(st);
-	XXH3_freeState(st);
-
+	const unsigned long long digest = XXH3_64bits(contents, len);
 	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL, size, digest);
 }
 
@@ -1022,6 +1013,7 @@ add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
 
 	compare_record_t *record = data;
 	int is_partial = (ct == CT_CONTENTS);
+	int is_readable = filetype_is_readable(entry->type);
 
 	/* Comparison by contents is the only one when we need to account for lazy
 	 * fingerprint computation or resolve fingerprint conflicts. */
@@ -1042,9 +1034,11 @@ add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
 		if(record->is_partial)
 		{
 			/* There is another file of the same size whose contents fingerprint
-			 * hasn't been computed yet.  Do it here. */
+			 * hasn't been computed yet.  Do it here.  Using `entry->size` is valid
+			 * because partial hash is just the size, so both entries must share
+			 * it. */
 			char *other_fingerprint = get_contents_fingerprint(record->path,
-					entry->size);
+					record->is_readable, entry->size);
 			if(is_null_or_empty(fingerprint))
 			{
 				/* That other file has issues, don't update it and skip any other file
@@ -1056,7 +1050,7 @@ add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
 			}
 
 			put_file_id(trie, record->path, other_fingerprint, record->id,
-					/*is_partial=*/0, ct);
+					record->is_readable, /*is_partial=*/0, ct);
 			free(other_fingerprint);
 
 			record->is_partial = 0;
@@ -1070,7 +1064,8 @@ add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
 		 * with identical contents. */
 		do
 		{
-			if(files_are_identical(path, record->path))
+			if(files_are_identical(path, is_readable, record->path,
+						record->is_readable))
 			{
 				break;
 			}
@@ -1093,18 +1088,42 @@ add_file_to_diff(trie_t *trie, const char path[], dir_entry_t *entry,
 
 	int id = *next_id;
 	++*next_id;
-	put_file_id(trie, path, fingerprint, id, is_partial, ct);
+	put_file_id(trie, path, fingerprint, id, is_readable, is_partial, ct);
 
 	free(fingerprint);
 	return id;
 }
 
+/* Checks whether files of the specified type can be read (for example, pipes
+ * can't be).  Returns non-zero if so. */
+static int
+filetype_is_readable(FileType type)
+{
+	/* Symbolic links to files are allowed and directories should have been
+	 * filtered out before this check. */
+	return (type == FT_LINK || type == FT_REG || type == FT_EXEC);
+}
+
 /* Checks whether two files specified by their names hold identical content.
  * Returns non-zero if so, otherwise zero is returned. */
 static int
-files_are_identical(const char a[], const char b[])
+files_are_identical(const char a[], int a_readable, const char b[],
+		int b_readable)
 {
-	char a_block[BLOCK_SIZE], b_block[BLOCK_SIZE];
+	/* Unreadable files are treated as empty. */
+	if(!a_readable && !b_readable)
+	{
+		return 1;
+	}
+	if(a_readable && !b_readable)
+	{
+		return file_is_empty(a);
+	}
+	if(!a_readable && b_readable)
+	{
+		return file_is_empty(b);
+	}
+
 	FILE *const a_file = fopen(a, "rb");
 	FILE *const b_file = fopen(b, "rb");
 
@@ -1123,6 +1142,7 @@ files_are_identical(const char a[], const char b[])
 
 	while(1)
 	{
+		char a_block[BLOCK_SIZE], b_block[BLOCK_SIZE];
 		const size_t a_read = fread(&a_block, 1, sizeof(a_block), a_file);
 		const size_t b_read = fread(&b_block, 1, sizeof(b_block), b_file);
 		if(a_read == 0U && b_read == 0U && feof(a_file) && feof(b_file))
@@ -1145,10 +1165,20 @@ files_are_identical(const char a[], const char b[])
 	return 1;
 }
 
+/* Checks that a file is empty.  Returns non-zero if so and there was no
+ * error. */
+static int
+file_is_empty(const char path[])
+{
+	/* get_file_size() would return size of a symbolic link. */
+	struct stat st;
+	return (os_stat(path, &st) == 0 && st.st_size == 0);
+}
+
 /* Stores id of a file with given fingerprint in the trie. */
 static void
 put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
-		int is_partial, CompareType ct)
+		int is_readable, int is_partial, CompareType ct)
 {
 	compare_record_t *const record = malloc(sizeof(*record));
 	if(record == NULL)
@@ -1156,9 +1186,10 @@ put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
 		return;
 	}
 
+	record->next = NULL;
 	record->id = id;
 	record->is_partial = is_partial;
-	record->next = NULL;
+	record->is_readable = is_readable;
 
 	/* Comparison by contents is the only one when we need to resolve fingerprint
 	 * conflicts. */
@@ -1170,6 +1201,7 @@ put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
 	compare_record_t *prev = data;
 	if(prev != NULL)
 	{
+		record->next = prev->next;
 		prev->next = record;
 		return;
 	}
@@ -1298,7 +1330,8 @@ compare_move_entry(ops_t *ops, view_t *from, view_t *to, int idx)
 		int match = (strcmp(from_fingerprint, to_fingerprint) == 0);
 		if(match && ct == CT_CONTENTS)
 		{
-			match = files_are_identical(from_path, to_path);
+			match = files_are_identical(from_path, filetype_is_readable(curr->type),
+					to_path, filetype_is_readable(other->type));
 		}
 		if(match)
 		{
