@@ -86,6 +86,8 @@
 
 	Make :compare treat non-regular files (pipes, sockets, etc.) as empty.
 
+	Slightly improve performance of comparing files by content.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

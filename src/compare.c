@@ -969,54 +969,27 @@ static char *
 get_contents_fingerprint(const char path[], int is_readable,
 		unsigned long long size)
 {
-	char buf[PREFIX_SIZE];
-	size_t to_read = PREFIX_SIZE;
+	char contents[PREFIX_SIZE];
+	size_t len;
 
-	if(!is_readable)
+	if(is_readable)
+	{
+		FILE *in = os_fopen(path, "rb");
+		if(in == NULL)
+		{
+			return strdup("");
+		}
+		len = fread(&contents, 1, sizeof(contents), in);
+		fclose(in);
+	}
+	else
 	{
 		/* This isn't an error, just treat such files (e.g., pipes and sockets) as
 		 * empty. */
-		const unsigned long long digest = XXH3_64bits(/*input=*/NULL, /*len=*/0);
-		return format_str("%" PRINTF_ULL "|%" PRINTF_ULL, size, digest);
+		len = 0;
 	}
 
-	FILE *in = os_fopen(path, "rb");
-	if(in == NULL)
-	{
-		return strdup("");
-	}
-
-	XXH3_state_t *st = XXH3_createState();
-	if(st == NULL)
-	{
-		fclose(in);
-		return strdup("");
-	}
-
-	if(XXH3_64bits_reset(st) == XXH_ERROR)
-	{
-		fclose(in);
-		XXH3_freeState(st);
-		return strdup("");
-	}
-
-	while(to_read != 0U)
-	{
-		const size_t portion = MIN(sizeof(buf), to_read);
-		const size_t nread = fread(&buf, 1, portion, in);
-		if(nread == 0U)
-		{
-			break;
-		}
-
-		XXH3_64bits_update(st, buf, nread);
-		to_read -= nread;
-	}
-	fclose(in);
-
-	const unsigned long long digest = XXH3_64bits_digest(st);
-	XXH3_freeState(st);
-
+	const unsigned long long digest = XXH3_64bits(contents, len);
 	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL, size, digest);
 }
 
