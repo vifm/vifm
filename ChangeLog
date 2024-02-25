@@ -205,6 +205,10 @@
 	Fixed :compare hanging on trying to compare non-regular files like pipes
 	by contents.
 
+	Fixed :compare reporting identical files as changed when there were
+	more than a couple of files with identical size and 4096-byte prefix.
+	A regression in 0.13-beta.  Thanks to Alexandr Keyp (a.k.a. IAmKapuze).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

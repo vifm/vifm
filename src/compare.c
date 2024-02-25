@@ -1228,6 +1228,7 @@ put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
 	compare_record_t *prev = data;
 	if(prev != NULL)
 	{
+		record->next = prev->next;
 		prev->next = record;
 		return;
 	}
