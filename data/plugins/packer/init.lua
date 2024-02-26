@@ -23,7 +23,7 @@ Requirements:
    `tar` - for (un)packing compressed tarballs. currently supports
          gzip, xz, bzip2 and zstd compressed tarballs.
 
-   `awk` & `cut` commands are required as well.
+   `awk` is required as well. TODO: test using non-GNU awk
 
 Features:
    - unpack zip, rar, 7z, tar.gz, tar.bz2 etc
@@ -73,7 +73,7 @@ local function get_common_unpack_prefix(archive, format) -- <<<
       -- when large archives or archives with lots of files
       cmd = string.format("tar tf %s", archive)
    elseif format == 'zip' or format == 'rar' or format == '7z' then
-      cmd = string.format("7z -ba l %s | awk '{print ($3 ~ /^D/) ? $0\"/\" : $0 }' | cut -c 54-", archive)
+      cmd = string.format("7z -ba l %s | awk '{($3 ~ /^D/) ? $0=$0\"/\" : $0; a=match($0, $6); print substr($0,a) }'", archive)
    else
       return nil, 'unsupported format: '..format
    end
