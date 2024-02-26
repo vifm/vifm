@@ -252,6 +252,7 @@ local function pack(info) -- <<<
       if vifm.fnamemodify(outfile, ':r:e') == 'tar' then
          ext = 'tar.'..ext
       end
+      outfile = escape_name(outfile)
    else
       local singlefile = (vifm.expand('%c') == files)
       local basename = singlefile and vifm.expand('%c:r:r') or vifm.expand('%d:t')
