@@ -58,7 +58,7 @@ Status:
 local M = {}
 
 local function unescape_name(name)
-   return name:gsub('\\([$*#!&?|\\(){}<>["\'%s])', '%1'):gsub('\\(])', '%1')
+   return name:gsub('\\(.)', '%1')
 end
 
 local function get_common_unpack_prefix(archive, format) -- <<<
