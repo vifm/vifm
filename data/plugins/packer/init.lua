@@ -57,9 +57,6 @@ Status:
 
 local M = {}
 
-local function escape_name(name)
-   return name:gsub('([$*#!&?|\\(){}<>["\'%s])', '\\%1'):gsub('(])', '\\%1')
-end
 local function unescape_name(name)
    return name:gsub('\\([$*#!&?|\\(){}<>["\'%s])', '%1'):gsub('\\(])', '%1')
 end
@@ -166,7 +163,7 @@ local function unpack_archive(archive, target) -- <<<
          return
       end
    else
-      prefix = escape_name(prefix)
+      prefix = vifm.escape(prefix)
       if vifm.exists(unescape_name(string.format("%s/%s", outdir, prefix))) then
          vifm.errordialog(":Unpack", string.format("Prefix directory already exist %%%%%s/%s%%%%", outdir, prefix))
          return
@@ -265,7 +262,7 @@ local function pack(info) -- <<<
       if vifm.fnamemodify(outfile, ':r:e') == 'tar' then
          ext = 'tar.'..ext
       end
-      outfile = escape_name(outfile)
+      outfile = vifm.escape(outfile)
    else
       local singlefile = (vifm.expand('%c') == files)
       local basename = singlefile and vifm.expand('%c:r:r') or vifm.expand('%d:t')
