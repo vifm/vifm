@@ -206,25 +206,38 @@ local function unpack_archive(archive, target) -- <<<
    end
 end -- >>>
 
+local function add_to_selection(selection, entry)
+   if entry.type == 'exe' or entry.type == 'reg' or entry.type == 'link' then
+      local path = string.format('%s/%s', entry.location, entry.name)
+      table.insert(selection, path)
+   end
+end
+
+local function get_selected_paths(view)
+   local selection = { }
+   local has_selection = false
+
+   for i = 1, view.entrycount do
+      local entry = view:entry(i)
+      if entry.selected then
+         has_selection = true
+         add_to_selection(selection, entry)
+      end
+   end
+
+   if not has_selection then
+      add_to_selection(selection, view:entry(view.currententry))
+   end
+
+   return selection
+end
+
 local function unpack(info) -- <<<
-   local selection = vifm.expand('%f:p')
-   if #selection == 0 or
-         selection == '.' or selection == './' or
-         selection == '..' or selection == '../' then
+   local archives = get_selected_paths(vifm.currview())
+   if #archives == 0 then
       vifm.sb.error('Error: no file object under cursor')
       return
    end
-
-   -- get a list of archives
-   local archives  = {}
-   local start = 1
-   for i = 1, #selection do
-      if selection:sub(i-1, i) == ' /' then -- '\s/'
-         table.insert(archives, selection:sub(start, i-2))
-         start = i
-      end
-   end
-   table.insert(archives, selection:sub(start, #selection)) -- the last file
 
    local target
    if #info.argv == 1 then
