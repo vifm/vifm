@@ -34,7 +34,6 @@ Features:
 
 Limitations:
    - extracting large tarballs is slow due to `tar tf` being slow
-   - packing doesn't work well with filenames having special characters
 
 Commands:
    :Unpack <dir>
@@ -55,6 +54,11 @@ Status:
 
 --]]
 
+-- TODO: check presence of the applications
+-- TODO: displaying progress would be nice
+-- TODO: a way to specify default path for unpacking
+-- TODO: make unpacking asynchronous by way of callbacks
+
 local M = {}
 
 local function unescape_name(name)
@@ -68,9 +72,10 @@ local function get_common_unpack_prefix(archive, format) -- <<<
    if format == 'tar' then
       -- this is slow in comparison to 7z. noticably slow
       -- when large archives or archives with lots of files
-      cmd = string.format("tar tf %s", archive)
+      cmd = string.format("tar tf %s", vifm.escape(archive))
    elseif format == 'zip' or format == 'rar' or format == '7z' then
-      cmd = string.format("7z -ba l %s | awk '{($3 ~ /^D/) ? $0=$0\"/\" : $0; a=match($0, $6); print substr($0,a) }'", archive)
+      cmd = string.format("7z -ba l %s | awk '{($3 ~ /^D/) ? $0=$0\"/\" : $0; a=match($0, $6); print substr($0,a) }'",
+                          vifm.escape(archive))
    else
       return nil, 'unsupported format: '..format
    end
@@ -132,12 +137,8 @@ local function unpack_archive(archive, target) -- <<<
       ext = 'tar'
    end
 
-   local outdir = fdir
-   if target ~= nil then
-      -- TODO: vifm doesn't expand '~', find way to fix
-      outdir = vifm.fnamemodify(vifm.expand(target), ':p')
-   end
-   if not vifm.exists(unescape_name(outdir)) then
+   local outdir = target or fdir
+   if not vifm.exists(outdir) then
       vifm.errordialog(":Unpack", "Error: output directory does not exists")
       return
    end
@@ -154,38 +155,43 @@ local function unpack_archive(archive, target) -- <<<
       else
          outdir = string.format("%s/%s", outdir, vifm.fnamemodify(fname, ':r'))
       end
-      if vifm.exists(unescape_name(outdir)) then
-         vifm.errordialog(":Unpack", string.format("Output directory already exist %%%%%s%%%%", outdir))
+      if vifm.exists(outdir) then
+         local msg = string.format("Output directory already exists:\n \n\"%s\"", outdir)
+         vifm.errordialog(":Unpack", msg)
          return
       end
-      if not vifm.makepath(unescape_name(outdir)) then
-         vifm.errordialog(":Unpack", string.format('Failed to create output directory: %%%%%s%%%%', outdir))
+      if not vifm.makepath(outdir) then
+         local msg = string.format('Failed to create output directory:\n \n\"%s\"', outdir)
+         vifm.errordialog(":Unpack", msg)
          return
       end
    else
-      prefix = vifm.escape(prefix)
-      if vifm.exists(unescape_name(string.format("%s/%s", outdir, prefix))) then
-         vifm.errordialog(":Unpack", string.format("Prefix directory already exist %%%%%s/%s%%%%", outdir, prefix))
+      if vifm.exists(string.format("%s/%s", outdir, prefix)) then
+         local msg = string.format("Prefix directory already exists:\n \n\"%s/%s\"", outdir, prefix)
+         vifm.errordialog(":Unpack", msg)
          return
       end
    end
 
+   local eoutdir = vifm.escape(outdir)
+   local efpath = vifm.escape(fpath)
+
    local cmd
    if ext == 'tar' then
       if cmp == "tgz" or cmp == "gz" then
-         cmd = string.format('tar -C %s -vxzf %s', outdir, fpath)
+         cmd = string.format('tar -C %s -vxzf %s', eoutdir, efpath)
       elseif cmp == "tbz2" or cmp == "bz2" then
-         cmd = string.format('tar -C %s -vxjf %s', outdir, fpath)
+         cmd = string.format('tar -C %s -vxjf %s', eoutdir, efpath)
       elseif cmp == "txz" or cmp == "xz" then
-         cmd = string.format('tar -C %s -vxJf %s', outdir, fpath)
+         cmd = string.format('tar -C %s -vxJf %s', eoutdir, efpath)
       elseif cmp == "tzst" or cmp == "zst" then
-         cmd = string.format("tar -C %s -I 'zstd -d' -vxf %s", outdir, fpath)
+         cmd = string.format("tar -C %s -I 'zstd -d' -vxf %s", eoutdir, efpath)
       else
          vifm.sb.error("Error: unknown compression format"..cmp)
          return
       end
    elseif ext == 'zip' or ext == 'rar' or ext == '7z' or ext == 'lz4' then
-      cmd = string.format("cd %s && 7z -bd x %s", outdir, fpath)
+      cmd = string.format("cd %s && 7z -bd x %s", eoutdir, efpath)
    end
 
    local job = vifm.startjob { cmd = cmd }
@@ -238,7 +244,8 @@ local function unpack(info) -- <<<
 
    local target
    if #info.argv == 1 then
-      target = vifm.fnamemodify(vifm.expand(info.argv[1]), ':p')
+      -- TODO: vifm.expand() doesn't expand '~', find way to fix
+      target = vifm.fnamemodify(unescape_name(vifm.expand(info.argv[1])), ':p')
    end
    for _, archive in ipairs(archives) do
       unpack_archive(archive, target)
@@ -257,37 +264,38 @@ local function pack(info) -- <<<
    local outfile
    local ext = 'tar.gz' -- default extension
    if #info.argv == 1 then
-      outfile = info.argv[1]
+      outfile = unescape_name(vifm.expand(info.argv[1]))
       ext = vifm.fnamemodify(outfile, ':e')
       if vifm.fnamemodify(outfile, ':r:e') == 'tar' then
          ext = 'tar.'..ext
       end
-      outfile = vifm.escape(outfile)
    else
       local singlefile = (vifm.expand('%c') == files)
       local basename = singlefile and vifm.expand('%c:r:r') or vifm.expand('%d:t')
-      outfile = string.format("%s.%s", basename, ext)
+      outfile = string.format("%s.%s", unescape_name(basename), ext)
    end
-   if vifm.exists(unescape_name(outfile)) then
+   if vifm.exists(outfile) then
       vifm.errordialog(":Pack", string.format("File already exists: %s", outfile))
       return
    end
 
+   local eoutfile = vifm.escape(outfile)
+
    local cmd
    if ext == 'tar.gz' or ext == 'tgz' then
-      cmd = string.format("tar -cvzf %s %s", outfile, files)
+      cmd = string.format("tar -cvzf %s %s", eoutfile, files)
    elseif ext == 'tar.bz2' or ext == 'tbz2' then
-      cmd = string.format("tar -cvjf %s %s", outfile, files)
+      cmd = string.format("tar -cvjf %s %s", eoutfile, files)
    elseif ext == 'tar.xz' or ext == 'txz' then
-      cmd = string.format("tar -cvJf %s %s", outfile, files)
+      cmd = string.format("tar -cvJf %s %s", eoutfile, files)
    elseif ext == 'tar.zst' or ext == 'tzst' then
-      cmd = string.format("tar -I 'zstd -19' -cvf %s %s", outfile, files)
+      cmd = string.format("tar -I 'zstd -19' -cvf %s %s", eoutfile, files)
    elseif ext == "tar" then
-      cmd = string.format("tar -cvf %s %s", outfile, files)
+      cmd = string.format("tar -cvf %s %s", eoutfile, files)
    elseif ext == "7z" or
          ext == "lz4" or
          ext == "zip" then
-      cmd = string.format("7z a %s %s", outfile, files)
+      cmd = string.format("7z a %s %s", eoutfile, files)
    else -- TODO: rar, gzip, bzip2, xz, zst etc
       vifm.sb.error(string.format("Unknown format: %s", ext))
       return
@@ -295,7 +303,7 @@ local function pack(info) -- <<<
 
    local job = vifm.startjob {
       cmd = cmd,
-      description = "Packing archive: "..unescape_name(outfile), -- doesn't show up
+      description = "Packing archive: "..outfile, -- doesn't show up
       visible = true,
       iomode = '', -- ignore output to not block
    }
