@@ -29,15 +29,16 @@ function pack(info) -- <<<
 
    local cmd
    if ext == 'tar.gz' or ext == 'tgz' then
-      cmd = string.format("tar -cvzf %s %s", eoutfile, files)
+      cmd = string.format("tar --force-local -cvzf %s %s", eoutfile, files)
    elseif ext == 'tar.bz2' or ext == 'tbz2' then
-      cmd = string.format("tar -cvjf %s %s", eoutfile, files)
+      cmd = string.format("tar --force-local -cvjf %s %s", eoutfile, files)
    elseif ext == 'tar.xz' or ext == 'txz' then
-      cmd = string.format("tar -cvJf %s %s", eoutfile, files)
+      cmd = string.format("tar --force-local -cvJf %s %s", eoutfile, files)
    elseif ext == 'tar.zst' or ext == 'tzst' then
-      cmd = string.format("tar -I 'zstd -19' -cvf %s %s", eoutfile, files)
+      cmd = string.format("tar -I 'zstd -19' --force-local -cvf %s %s",
+                          eoutfile, files)
    elseif ext == "tar" then
-      cmd = string.format("tar -cvf %s %s", eoutfile, files)
+      cmd = string.format("tar --force-local -cvf %s %s", eoutfile, files)
    elseif ext == "7z" or
          ext == "lz4" or
          ext == "zip" then

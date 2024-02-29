@@ -5,7 +5,7 @@ local function get_common_unpack_prefix(archive, format) -- <<<
    if format == 'tar' then
       -- this is slow in comparison to 7z. noticably slow
       -- when large archives or archives with lots of files
-      cmd = string.format("tar tf %s", vifm.escape(archive))
+      cmd = string.format("tar --force-local -tf %s", vifm.escape(archive))
    elseif format == 'zip' or format == 'rar' or format == '7z' then
       cmd = string.format("7z -ba l %s | awk '{($3 ~ /^D/) ? $0=$0\"/\" : $0; a=match($0, $6); print substr($0,a) }'",
                           vifm.escape(archive))
@@ -112,13 +112,13 @@ local function unpack_archive(archive, target) -- <<<
    local cmd
    if ext == 'tar' then
       if cmp == "tgz" or cmp == "gz" then
-         cmd = string.format('tar -C %s -vxzf %s', eoutdir, efpath)
+         cmd = string.format('tar --force-local -C %s -vxzf %s', eoutdir, efpath)
       elseif cmp == "tbz2" or cmp == "bz2" then
-         cmd = string.format('tar -C %s -vxjf %s', eoutdir, efpath)
+         cmd = string.format('tar --force-local -C %s -vxjf %s', eoutdir, efpath)
       elseif cmp == "txz" or cmp == "xz" then
-         cmd = string.format('tar -C %s -vxJf %s', eoutdir, efpath)
+         cmd = string.format('tar --force-local -C %s -vxJf %s', eoutdir, efpath)
       elseif cmp == "tzst" or cmp == "zst" then
-         cmd = string.format("tar -C %s -I 'zstd -d' -vxf %s", eoutdir, efpath)
+         cmd = string.format("tar --force-local -C %s -I 'zstd -d' -vxf %s", eoutdir, efpath)
       else
          vifm.sb.error("Error: unknown compression format"..cmp)
          return
