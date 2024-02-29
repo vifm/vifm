@@ -50,19 +50,21 @@ function pack(info) -- <<<
 
    local job = vifm.startjob {
       cmd = cmd,
-      description = "Packing archive: "..outfile, -- doesn't show up
+      description = "Packing: "..outfile,
       visible = true,
       iomode = '', -- ignore output to not block
-   }
-
-   if job:exitcode() ~= 0 then
-      local errors = job:errors()
-      if #errors == 0 then
-         vifm.errordialog('Packing failed', 'Error message is not available.')
-      else
-         vifm.errordialog('Packing failed', errors)
+      onexit = function(job)
+          if job:exitcode() ~= 0 then
+             local errors = job:errors()
+             if #errors == 0 then
+                vifm.errordialog('Packing failed',
+                                 'Error message is not available.')
+             else
+                vifm.errordialog('Packing failed', errors)
+             end
+          end
       end
-   end
+   }
 end -- >>>
 
 -- vim: set et sts=3 sw=3:
