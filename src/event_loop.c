@@ -60,7 +60,8 @@
 #include "vifm.h"
 
 static int ensure_term_is_ready(void);
-static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
+static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout,
+		int process_callbacks);
 static int is_previewed(const char path[]);
 static void process_scheduled_updates(void);
 TSTATIC int process_scheduled_updates_of_view(view_t *view);
@@ -151,16 +152,16 @@ event_loop(const int *quit, int manage_marking)
 
 			bg_check();
 
-			/* Lua might not be initialized in tests. */
-			if(input_buf_pos == 0 && !wait_for_enter && vle_mode_is(NORMAL_MODE) &&
-					curr_stats.vlua != NULL)
-			{
-				/* We're not waiting for anything, so side-effects of callbacks
-				 * shouldn't be disruptive to the user. */
-				vlua_process_callbacks(curr_stats.vlua);
-			}
+			/* We're not waiting for anything, so side-effects of callbacks
+			 * shouldn't be disruptive to the user. */
+			int process_callbacks = input_buf_pos == 0
+			                     && !wait_for_enter
+			                     && vle_mode_is(NORMAL_MODE)
+			                     /* Lua might not be initialized in tests. */
+			                     && curr_stats.vlua != NULL;
 
-			got_input = (get_char_async_loop(status_bar, &c, actual_timeout) != ERR);
+			got_input = (get_char_async_loop(status_bar, &c, actual_timeout,
+						process_callbacks) != ERR);
 
 			/* If suggestion delay timed out, reset it and wait the rest of the
 			 * timeout. */
@@ -367,7 +368,7 @@ ensure_term_is_ready(void)
  * Returns KEY_CODE_YES for functional keys (preprocesses *c in this case), OK
  * for wide character and ERR otherwise (e.g. after timeout). */
 static int
-get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
+get_char_async_loop(WINDOW *win, wint_t *c, int timeout, int process_callbacks)
 {
 	const int IPC_F = ipc_enabled() ? 10 : 1;
 
@@ -399,6 +400,12 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			if(vcache_check(&is_previewed))
 			{
 				stats_redraw_later();
+			}
+
+			if(process_callbacks)
+			{
+				bg_check();
+				vlua_process_callbacks(curr_stats.vlua);
 			}
 
 			wtimeout(win, delay_slice);
