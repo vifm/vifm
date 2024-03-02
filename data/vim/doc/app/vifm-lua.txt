@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Feb 6
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Mar 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -706,7 +706,8 @@ Possible fields of {job}:
     - "w" - providing input to the process (see |vifm-l_VifmJob:stdin()|)
     - ""  - no I/O interaction
  - "onexit" (function) (default: `nil`)
-   Handler to invoke when the job is done.  The handler is {delayed}.
+   Handler to invoke when the job is done, gets the job as its only parameter.
+   The handler is {delayed}.
  - "mergestreams" (boolean) (default: false)
    Whether to merge error stream of the command with its output stream.
  - "visible" (boolean) (default: false)
