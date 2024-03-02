@@ -30,4 +30,4 @@ end
 
 return {}
 
--- vim: set et sts=3 sw=3:
+-- vim: set et ts=3 sts=3 sw=3:
