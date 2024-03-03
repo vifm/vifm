@@ -45,7 +45,8 @@ TEARDOWN()
  * are no other jobs which can slow down receiving errors from the process. */
 TEST(capture_error_of_external_command)
 {
-	bg_job_t *job = bg_run_external_job("echo there 1>&2", BJF_CAPTURE_OUT);
+	bg_job_t *job =
+		bg_run_external_job("echo there 1>&2", BJF_CAPTURE_OUT, /*descr=*/NULL);
 	assert_non_null(job);
 	assert_non_null(job->output);
 
@@ -172,7 +173,8 @@ TEST(explicitly_wait_for_a_job)
 
 TEST(create_a_job_explicitly)
 {
-	bg_job_t *job = bg_run_external_job("exit 5", BJF_CAPTURE_OUT);
+	bg_job_t *job =
+		bg_run_external_job("exit 5", BJF_CAPTURE_OUT, /*descr=*/NULL);
 	assert_non_null(job);
 
 	assert_success(bg_job_wait(job));
@@ -183,7 +185,8 @@ TEST(create_a_job_explicitly)
 
 TEST(capture_output_of_external_command)
 {
-	bg_job_t *job = bg_run_external_job("echo there", BJF_CAPTURE_OUT);
+	bg_job_t *job =
+		bg_run_external_job("echo there", BJF_CAPTURE_OUT, /*descr=*/NULL);
 	assert_non_null(job);
 	assert_non_null(job->output);
 
@@ -201,7 +204,7 @@ TEST(capture_output_of_external_command)
 
 TEST(jobs_exit_cb_is_called)
 {
-	bg_job_t *job = bg_run_external_job("echo there", BJF_NONE);
+	bg_job_t *job = bg_run_external_job("echo there", BJF_NONE, /*descr=*/NULL);
 	assert_non_null(job);
 
 	int called = 0;
@@ -233,8 +236,8 @@ on_job_exit(struct bg_job_t *job, void *data)
 
 TEST(supply_input_to_external_command, IF(have_cat))
 {
-	bg_job_t *job = bg_run_external_job("cat",
-			BJF_CAPTURE_OUT | BJF_SUPPLY_INPUT);
+	bg_job_t *job = bg_run_external_job("cat", BJF_CAPTURE_OUT | BJF_SUPPLY_INPUT,
+			/*descr=*/NULL);
 	assert_non_null(job);
 	assert_non_null(job->input);
 	assert_non_null(job->output);

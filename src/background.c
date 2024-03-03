@@ -930,7 +930,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 }
 
 bg_job_t *
-bg_run_external_job(const char cmd[], BgJobFlags flags)
+bg_run_external_job(const char cmd[], BgJobFlags flags, const char descr[])
 {
 	bg_job_t *job = launch_external(cmd, flags, SHELL_BY_APP);
 	if(job == NULL)
@@ -945,6 +945,9 @@ bg_run_external_job(const char cmd[], BgJobFlags flags)
 
 	if(flags & BJF_JOB_BAR_VISIBLE)
 	{
+		/* Set description before placing the job on the bar so that the first
+		 * redraw will already have the description. */
+		bg_op_set_descr(&job->bg_op, descr);
 		place_on_job_bar(job);
 	}
 
