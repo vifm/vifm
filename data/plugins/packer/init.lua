@@ -11,7 +11,7 @@ local added = vifm.cmds.add {
    description = "unpack an archive into specified directory",
    handler = unpack,
    minargs = 0,
-   maxargs = 1,
+   maxargs = 2,
 }
 if not added then
    vifm.sb.error("Failed to register :Unpack")

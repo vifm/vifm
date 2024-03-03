@@ -39,7 +39,7 @@ at once (performed in sequence).
 
 Syntax:
 ```
-:Unpack [<dir>]
+:Unpack -b [<dir>]
 ```
 
 Examples:
@@ -49,7 +49,9 @@ Examples:
 :Unpack /tmp
 ```
 
-Extracts archive into a subdirectory or `<dir>` if given.
+Extracts archive into a subdirectory or `<dir>` if given.  With `-b`, the
+command returns after starting to unpack the first archive and schedules the
+next one after the first one is done, etc.
 
 #### Pack
 
@@ -83,7 +85,6 @@ TODOs:
  - check presence of the applications
  - displaying progress would be nice
  - a way to specify default path for unpacking
- - make unpacking asynchronous by way of callbacks
  - test using non-GNU awk
  - replace listing of archive's content with always extracting into subdirectory
    and moving files afterward

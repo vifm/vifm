@@ -52,7 +52,7 @@ local function get_common_unpack_prefix(archive, format) -- <<<
    return prefix
 end -- >>>
 
-local function unpack_archive(archive, target) -- <<<
+local function unpack_archive(archive, target, onexit) -- <<<
    local fpath = archive
    local fname = vifm.fnamemodify(fpath, ':t')
    local fdir = vifm.fnamemodify(fpath, ':h')
@@ -127,19 +127,14 @@ local function unpack_archive(archive, target) -- <<<
       cmd = string.format("cd %s && 7z -bd x %s", eoutdir, efpath)
    end
 
-   local job = vifm.startjob { cmd = cmd }
-   for line in job:stdout():lines() do
-      vifm.sb.quick("Extracting: "..line)
-   end
-
-   if job:exitcode() ~= 0 then
-      local errors = job:errors()
-      if #errors == 0 then
-         vifm.errordialog('Unpacking failed', 'Error message is not available.')
-      else
-         vifm.errordialog('Unpacking failed', errors)
-      end
-   end
+   return vifm.startjob {
+      cmd = cmd,
+      description = "Unpacking: "..fname,
+      visible = true,
+      -- ignore output to not block a background task
+      iomode = onexit and '' or 'r',
+      onexit = onexit,
+   }
 end -- >>>
 
 local function add_to_selection(selection, entry)
@@ -168,6 +163,39 @@ local function get_selected_paths(view)
    return selection
 end
 
+local function report_result(job)
+   if job:exitcode() ~= 0 then
+      local errors = job:errors()
+      -- TODO: need to report archive name here
+      if #errors == 0 then
+         vifm.errordialog('Unpacking failed', 'Error message is not available.')
+      else
+         vifm.errordialog('Unpacking failed', errors)
+      end
+   end
+end
+
+function unpack_next_in_bg(state)
+   if state.current < #state.archives then
+      state.current = state.current + 1
+      unpack_in_bg(state)
+   end
+end
+
+function unpack_in_bg(state)
+   local onexit = function(job)
+      report_result(job)
+      unpack_next_in_bg(state)
+   end
+
+   local archive = state.archives[state.current]
+   if not unpack_archive(archive, state.target, onexit) then
+      -- the callback won't run due to an error, so schedule next task right
+      -- away
+      unpack_next_in_bg(state)
+   end
+end
+
 function unpack(info) -- <<<
    local archives = get_selected_paths(vifm.currview())
    if #archives == 0 then
@@ -175,13 +203,40 @@ function unpack(info) -- <<<
       return
    end
 
-   local target
-   if #info.argv == 1 then
-      -- TODO: vifm.expand() doesn't expand '~', find way to fix
-      target = vifm.fnamemodify(unescape_name(vifm.expand(info.argv[1])), ':p')
+   local targetidx = 1
+   local bg = false
+   if info.argv[1] == '-b' then
+      bg = true
+      targetidx = 2
+   elseif #info.argv == 2 then
+      local msg = string.format('Error: unexpected option: %s', info.argv[1])
+      vifm.sb.error(msg)
+      return
    end
-   for _, archive in ipairs(archives) do
-      unpack_archive(archive, target)
+
+   local target
+   if targetidx <= #info.argv then
+      -- TODO: vifm.expand() doesn't expand '~', find way to fix
+      target = vifm.fnamemodify(unescape_name(vifm.expand(info.argv[targetidx])), ':p')
+   end
+
+   if bg then
+      local state = {
+         archives = archives,
+         target = target,
+         current = 1,
+      }
+      unpack_in_bg(state)
+   else
+      for _, archive in ipairs(archives) do
+         local job = unpack_archive(archive, target, nil)
+         if job then
+            for line in job:stdout():lines() do
+               vifm.sb.quick("Extracting: "..line)
+            end
+            report_result(job)
+         end
+      end
    end
 end -- >>>
 
