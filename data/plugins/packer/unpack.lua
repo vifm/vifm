@@ -7,7 +7,7 @@ local function get_common_unpack_prefix(archive, format) -- <<<
       -- when large archives or archives with lots of files
       cmd = string.format("tar --force-local -tf %s", vifm.escape(archive))
    elseif format == 'zip' or format == 'rar' or format == '7z' then
-      cmd = string.format("7z -ba l %s | awk '{($3 ~ /^D/) ? $0=$0\"/\" : $0; a=match($0, $6); print substr($0,a) }'",
+      cmd = string.format("7z -ba l %s | awk '{($3 ~ /^D/) ? $0=$0\"/\" : $0; print substr($0,54) }'",
                           vifm.escape(archive))
    else
       return nil, 'unsupported format: '..format
