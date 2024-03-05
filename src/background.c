@@ -1184,10 +1184,7 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 			NULL, NULL, &startup, &pinfo);
 	free(wide_cmd);
 	CloseHandle(hnul);
-	if(startup.hStdInput != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(startup.hStdInput);
-	}
+	CloseHandle(startup.hStdInput);
 	CloseHandle(startup.hStdOutput);
 	if(startup.hStdError != startup.hStdOutput)
 	{
