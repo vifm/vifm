@@ -1151,7 +1151,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	HANDLE hin = INVALID_HANDLE_VALUE;
 	if(supply_input && !CreatePipe(&startup.hStdInput, &hin, NULL, 16*1024))
 	{
-		CloseHandle(herr);
+		if(herr != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(herr);
+		}
 		CloseHandle(hnul);
 		return NULL;
 	}
@@ -1161,7 +1164,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	{
 		if(!CreatePipe(&hout, &startup.hStdOutput, NULL, 16*1024))
 		{
-			CloseHandle(herr);
+			if(herr != INVALID_HANDLE_VALUE)
+			{
+				CloseHandle(herr);
+			}
 			CloseHandle(hin);
 			CloseHandle(hnul);
 			return NULL;
@@ -1194,6 +1200,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	if(!started)
 	{
 		free(sh_cmd);
+		if(herr != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(herr);
+		}
 		CloseHandle(hout);
 		CloseHandle(hin);
 		return NULL;
@@ -1211,7 +1221,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 
 	if(job == NULL)
 	{
-		CloseHandle(herr);
+		if(herr != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(herr);
+		}
 		CloseHandle(hin);
 		CloseHandle(hout);
 		CloseHandle(pinfo.hProcess);
