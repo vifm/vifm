@@ -161,6 +161,7 @@ bg_init(void)
 	pthread_t id;
 	if(pthread_create(&id, NULL, &error_thread, NULL) != 0)
 	{
+		pthread_key_delete(current_job);
 		return 1;
 	}
 
