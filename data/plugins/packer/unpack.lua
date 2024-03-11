@@ -120,7 +120,7 @@ local function unpack_archive(archive, target, onexit) -- <<<
       elseif cmp == "tzst" or cmp == "zst" then
          cmd = string.format("tar --force-local -C %s -I 'zstd -d' -vxf %s", eoutdir, efpath)
       else
-         vifm.sb.error("Error: unknown compression format"..cmp)
+         vifm.sb.error("Error: unknown compression format '"..cmp.."'")
          return
       end
    elseif ext == 'zip' or ext == 'rar' or ext == '7z' or ext == 'lz4' then
