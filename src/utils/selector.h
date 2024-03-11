@@ -45,9 +45,6 @@ void selector_reset(selector_t *selector);
 /* Adds item to the set of objects to watch.  If error occurs, its ignored. */
 void selector_add(selector_t *selector, selector_item_t item);
 
-/* Removes item from the set of objects to watch. */
-void selector_remove(selector_t *selector, selector_item_t item);
-
 /* Waits for at least one of watched objects to become available for reading
  * from during the period of time specified by the delay in milliseconds.
  * Returns zero on error or if timeout was reached without any of the objects

@@ -90,20 +90,6 @@ selector_add(selector_t *selector, selector_item_t item)
 	selector->items[selector->size++] = item;
 }
 
-void
-selector_remove(selector_t *selector, selector_item_t item)
-{
-	int i;
-	for(i = 0; i < selector->size; ++i)
-	{
-		if(selector->items[i] == item)
-		{
-			selector->items[i] = selector->items[--selector->size];
-			break;
-		}
-	}
-}
-
 int
 selector_wait(selector_t *selector, int delay)
 {

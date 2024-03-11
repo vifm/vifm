@@ -97,6 +97,7 @@ typedef struct bg_job_t
 	/* The lock is meant to guard state-related fields. */
 	pthread_spinlock_t status_lock;
 	int running;   /* Whether this job is still running. */
+	int erroring;  /* Whether error thread still handles this job. */
 	int use_count; /* Count of uses of this job entry. */
 	int exit_code; /* Exit code of external command. */
 
@@ -147,9 +148,11 @@ int bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 
 /* Creates background job running external command which does not interact with
  * the user and is detached from controlling terminal.  Upon creation the job
- * has one extra use, which needs to be decremented for it to be freed.  Returns
- * the job or NULL on error. */
-bg_job_t * bg_run_external_job(const char cmd[], BgJobFlags flags);
+ * has one extra use, which needs to be decremented for it to be freed.  The
+ * optional description is for the job bar and can be NULL.  Returns the job or
+ * NULL on error. */
+bg_job_t * bg_run_external_job(const char cmd[], BgJobFlags flags,
+		const char descr[]);
 
 struct cancellation_t;
 
@@ -206,6 +209,13 @@ int bg_job_was_killed(bg_job_t *job);
 /* Waits for external command to finish (don't pass any other kind of job).
  * Returns zero on success, otherwise non-zero is returned. */
 int bg_job_wait(bg_job_t *job);
+
+/* Waits until error thread is done with this job.  The job might have nothing
+ * to do with the error thread and might actually be running with errors still
+ * comming, but it's possible that the job has exited and not all errors were
+ * processed which is the interesting case.  Returns zero on success or non-zero
+ * on failure to wait for error thread to release the job (timeout). */
+int bg_job_wait_errors(bg_job_t *job);
 
 /* Increases use counter of the job.  Doing this prevents object deletion while
  * it's still in use. */

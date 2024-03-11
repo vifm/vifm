@@ -156,15 +156,10 @@ VLUA_API(vifmjob_new)(lua_State *lua)
 
 	int with_on_exit = vlua_cmn_check_opt_field(lua, 1, "onexit", LUA_TFUNCTION);
 
-	bg_job_t *job = bg_run_external_job(cmd, flags);
+	bg_job_t *job = bg_run_external_job(cmd, flags, descr);
 	if(job == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to start a job");
-	}
-
-	if((flags & BJF_JOB_BAR_VISIBLE) && descr != NULL)
-	{
-		bg_op_set_descr(&job->bg_op, descr);
 	}
 
 	vifm_job_t *data = lua_newuserdatauv(lua, sizeof(*data), 0);
@@ -391,6 +386,11 @@ static int
 VLUA_API(vifmjob_errors)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+
+	if(bg_job_wait_errors(vifm_job->job) != 0)
+	{
+		return luaL_error(lua, "%s", "Failed to wait for errors of an exited job");
+	}
 
 	char *errors = NULL;
 	pthread_spin_lock(&vifm_job->job->errors_lock);

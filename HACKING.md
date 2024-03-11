@@ -224,6 +224,9 @@ of changes of each kind.
     |  |  |-- darray.c - macros for managin dynamic arrays
     |  |  |-- dynarray.c - array reallocation with fewer memory copies
     |  |  |-- env.c - environment variables related functions
+    |  |  |-- event_nix.c - pipe() wrapper to interrupt selector
+    |  |  |-- event_win.c - event object of manual reset kind to interrupt
+    |  |  |                 selector
     |  |  |-- fs.c - functions to deal with file system objects
     |  |  |-- fsdata.c - maps arbitrary data onto file system tree
     |  |  |-- fsddata.c - fsdata wrapper that takes care of dynamic memory

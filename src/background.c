@@ -30,7 +30,7 @@
 #include <sys/wait.h> /* waitpid() */
 #endif
 #include <signal.h> /* SIG* kill() */
-#include <unistd.h> /* execve() fork() setsid() */
+#include <unistd.h> /* execve() fork() setsid() usleep() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -49,6 +49,7 @@
 #include "ui/ui.h"
 #include "utils/cancellation.h"
 #include "utils/env.h"
+#include "utils/event.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -127,6 +128,9 @@ static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], BgJobFlags flags,
 		ShellRequester by);
+#ifdef _WIN32
+static int finish_startup_info(STARTUPINFOW *startup);
+#endif
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
@@ -135,10 +139,14 @@ static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 static void * background_task_bootstrap(void *arg);
 static int update_job_status(bg_job_t *job);
 static void mark_job_finished(bg_job_t *job, int exit_code);
+static void poke_error_thread(void);
 static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
 
+/* Event to wake up error thread from sleep for processing by
+ * poke_error_thread(). */
+static event_t *error_thread_event;
 /* Head of list of newly started jobs. */
 static bg_job_t *new_err_jobs;
 /* Mutex to protect new_err_jobs. */
@@ -152,15 +160,24 @@ static pthread_key_t current_job;
 int
 bg_init(void)
 {
+	error_thread_event = event_alloc();
+	if(error_thread_event == NULL)
+	{
+		return 1;
+	}
+
 	/* Create thread-local storage before starting any background threads. */
 	if(pthread_key_create(&current_job, NULL) != 0)
 	{
+		event_free(error_thread_event);
 		return 1;
 	}
 
 	pthread_t id;
 	if(pthread_create(&id, NULL, &error_thread, NULL) != 0)
 	{
+		pthread_key_delete(current_job);
+		event_free(error_thread_event);
 		return 1;
 	}
 
@@ -181,6 +198,8 @@ bg_check(void)
 		set_jobcount_var(0);
 		return;
 	}
+
+	poke_error_thread();
 
 	int active_jobs = 0;
 
@@ -426,13 +445,21 @@ error_thread(void *p)
 	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
 
+	const event_end_t event_end = event_wait_end(error_thread_event);
+
 	while(1)
 	{
 		update_error_jobs(&jobs);
 		make_ready_list(jobs, selector);
+		selector_add(selector, event_end);
 		while(selector_wait(selector, ERROR_SELECT_TIMEOUT_MS))
 		{
 			int need_update_list = (jobs == NULL);
+
+			if(selector_is_ready(selector, event_end))
+			{
+				(void)event_reset(error_thread_event);
+			}
 
 			bg_job_t **job = &jobs;
 			while(*job != NULL)
@@ -440,6 +467,15 @@ error_thread(void *p)
 				bg_job_t *const j = *job;
 				char err_msg[ERR_MSG_LEN];
 				ssize_t nread;
+
+				if(j->drained)
+				{
+					/* List update drops jobs which aren't running anymore thus allowing
+					 * them to be gone.  Matters at least in tests which wait for all
+					 * tasks to finish and looping here leads to a timeout. */
+					need_update_list = 1;
+					goto next_job;
+				}
 
 				if(!selector_is_ready(selector, j->err_stream))
 				{
@@ -457,25 +493,17 @@ error_thread(void *p)
 					nread = bytes_read;
 				}
 #endif
-				if(nread < 0)
+				if(nread > 0)
 				{
+					err_msg[nread] = '\0';
+					append_error_msg(j, err_msg);
+				}
+				else
+				{
+					/* EOF or some error. */
 					need_update_list = 1;
 					j->drained = 1;
-					goto next_job;
 				}
-
-				if(nread == 0)
-				{
-					/* Reached EOF, exclude corresponding file descriptor from the set,
-					 * cut the job out of our list and decrement its use counter. */
-					selector_remove(selector, j->err_stream);
-					*job = j->err_next;
-					bg_job_decref(j);
-					continue;
-				}
-
-				err_msg[nread] = '\0';
-				append_error_msg(j, err_msg);
 
 			next_job:
 				job = &j->err_next;
@@ -494,6 +522,7 @@ error_thread(void *p)
 	}
 
 	selector_free(selector);
+	event_free(error_thread_event);
 	return NULL;
 }
 
@@ -520,6 +549,7 @@ free_drained_jobs(bg_job_t **jobs)
 			if(!j->running)
 			{
 				--j->use_count;
+				j->erroring = 0;
 				*job = j->err_next;
 				(void)pthread_spin_unlock(&j->status_lock);
 				continue;
@@ -930,7 +960,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 }
 
 bg_job_t *
-bg_run_external_job(const char cmd[], BgJobFlags flags)
+bg_run_external_job(const char cmd[], BgJobFlags flags, const char descr[])
 {
 	bg_job_t *job = launch_external(cmd, flags, SHELL_BY_APP);
 	if(job == NULL)
@@ -945,6 +975,9 @@ bg_run_external_job(const char cmd[], BgJobFlags flags)
 
 	if(flags & BJF_JOB_BAR_VISIBLE)
 	{
+		/* Set description before placing the job on the bar so that the first
+		 * redraw will already have the description. */
+		bg_op_set_descr(&job->bg_op, descr);
 		place_on_job_bar(job);
 	}
 
@@ -1124,32 +1157,31 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 
 	return job;
 #else
-	STARTUPINFOW startup = { .dwFlags = STARTF_USESTDHANDLES };
+	/* Handles are either set below or redirected to NUL in
+	 * finish_startup_info(). */
+	STARTUPINFOW startup = {
+		.dwFlags = STARTF_USESTDHANDLES,
+		.hStdInput = INVALID_HANDLE_VALUE,
+		.hStdOutput = INVALID_HANDLE_VALUE,
+		.hStdError = INVALID_HANDLE_VALUE,
+	};
 	PROCESS_INFORMATION pinfo;
 	char *sh_cmd;
 	wchar_t *wide_cmd;
 
-	HANDLE hnul = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE, 0, NULL,
-			OPEN_EXISTING, 0, NULL);
-	if(hnul == INVALID_HANDLE_VALUE)
-	{
-		return NULL;
-	}
-	startup.hStdInput = hnul;
-	startup.hStdOutput = hnul;
-
 	HANDLE herr = INVALID_HANDLE_VALUE;
 	if(!merge_streams && !CreatePipe(&herr, &startup.hStdError, NULL, 16*1024))
 	{
-		CloseHandle(hnul);
 		return NULL;
 	}
 
 	HANDLE hin = INVALID_HANDLE_VALUE;
 	if(supply_input && !CreatePipe(&startup.hStdInput, &hin, NULL, 16*1024))
 	{
-		CloseHandle(herr);
-		CloseHandle(hnul);
+		if(herr != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(herr);
+		}
 		return NULL;
 	}
 
@@ -1158,42 +1190,50 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	{
 		if(!CreatePipe(&hout, &startup.hStdOutput, NULL, 16*1024))
 		{
-			CloseHandle(herr);
+			if(herr != INVALID_HANDLE_VALUE)
+			{
+				CloseHandle(herr);
+			}
 			CloseHandle(hin);
-			CloseHandle(hnul);
 			return NULL;
 		}
 
 		if(merge_streams)
 		{
-			startup.hStdError = startup.hStdOutput;
+			/* Duplicate instead of just assigning so that closing one handle keeps
+			 * the other one operational. */
+			HANDLE this_process = GetCurrentProcess();
+			if(!DuplicateHandle(this_process, startup.hStdOutput, this_process,
+						&startup.hStdError, /*access=*/0, /*inheritable=*/TRUE,
+						DUPLICATE_SAME_ACCESS))
+			{
+				CloseHandle(startup.hStdOutput);
+				CloseHandle(hout);
+				CloseHandle(hin);
+				return NULL;
+			}
 		}
 	}
 
-	SetHandleInformation(startup.hStdInput, HANDLE_FLAG_INHERIT, 1);
-	SetHandleInformation(startup.hStdOutput, HANDLE_FLAG_INHERIT, 1);
-	SetHandleInformation(startup.hStdError, HANDLE_FLAG_INHERIT, 1);
-
+	finish_startup_info(&startup);
 	sh_cmd = win_make_sh_cmd(cmd, by);
 
 	wide_cmd = to_wide(sh_cmd);
 	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, CREATE_SUSPENDED,
 			NULL, NULL, &startup, &pinfo);
 	free(wide_cmd);
-	CloseHandle(hnul);
-	if(startup.hStdInput != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(startup.hStdInput);
-	}
+
+	CloseHandle(startup.hStdInput);
 	CloseHandle(startup.hStdOutput);
-	if(startup.hStdError != startup.hStdOutput)
-	{
-		CloseHandle(startup.hStdError);
-	}
+	CloseHandle(startup.hStdError);
 
 	if(!started)
 	{
 		free(sh_cmd);
+		if(herr != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(herr);
+		}
 		CloseHandle(hout);
 		CloseHandle(hin);
 		return NULL;
@@ -1211,7 +1251,10 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 
 	if(job == NULL)
 	{
-		CloseHandle(herr);
+		if(herr != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(herr);
+		}
 		CloseHandle(hin);
 		CloseHandle(hout);
 		CloseHandle(pinfo.hProcess);
@@ -1256,6 +1299,69 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	return job;
 #endif
 }
+
+#ifdef _WIN32
+/* Makes sure that standard handles of startup structure which weren't
+ * initialized are redirected to NUL.  Returns zero on success. */
+static int
+finish_startup_info(STARTUPINFOW *startup)
+{
+	int missing = (startup->hStdInput == INVALID_HANDLE_VALUE)
+	            + (startup->hStdOutput == INVALID_HANDLE_VALUE)
+	            + (startup->hStdError == INVALID_HANDLE_VALUE);
+	if(missing == 0)
+	{
+		goto no_redirects;
+	}
+
+	/* Open up to three handles so that child process could close one of them
+	 * while keep using others. */
+	HANDLE hnul[3];
+	hnul[0] = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
+	if(hnul[0] == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	int i;
+	HANDLE this_process = GetCurrentProcess();
+	for(i = 1; i < missing; ++i)
+	{
+		if(!DuplicateHandle(this_process, hnul[0], this_process, &hnul[i],
+					/*access=*/0, /*inheritable=*/TRUE, DUPLICATE_SAME_ACCESS))
+		{
+			int j;
+			for(j = 0; j < i; ++j)
+			{
+				CloseHandle(hnul[j]);
+			}
+			return 1;
+		}
+	}
+
+	if(startup->hStdInput == INVALID_HANDLE_VALUE)
+	{
+		startup->hStdInput = hnul[--missing];
+	}
+	if(startup->hStdOutput == INVALID_HANDLE_VALUE)
+	{
+		startup->hStdOutput = hnul[--missing];
+	}
+	if(startup->hStdError == INVALID_HANDLE_VALUE)
+	{
+		startup->hStdError = hnul[--missing];
+	}
+
+no_redirects:
+	SetHandleInformation(startup->hStdInput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup->hStdOutput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup->hStdError, HANDLE_FLAG_INHERIT, 1);
+
+	return 0;
+}
+#endif
 
 int
 bg_execute(const char descr[], const char op_descr[], int total, int important,
@@ -1368,6 +1474,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	}
 
 	new->running = 1;
+	new->erroring = 0;
 	new->use_count = 0;
 	new->exit_code = -1;
 
@@ -1387,6 +1494,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 
 	if(new->err_stream != NO_JOB_ID)
 	{
+		new->erroring = 1;
 		++new->use_count;
 
 		if(pthread_mutex_lock(&new_err_jobs_lock) != 0)
@@ -1651,6 +1759,54 @@ mark_job_finished(bg_job_t *job, int exit_code)
 		job->exit_code = exit_code;
 		(void)pthread_spin_unlock(&job->status_lock);
 	}
+}
+
+int
+bg_job_wait_errors(bg_job_t *job)
+{
+	enum
+	{
+		ERROR_SLEEP_US = 50,
+		ERROR_SLEEP_MAX_US = 50*1000, /* 50ms should be more than enough. */
+	};
+
+	if(job->err_stream == NO_JOB_ID || bg_job_is_running(job))
+	{
+		return 0;
+	}
+
+	/* Using active polling with a sleep to avoid adding a mutex and a conditional
+	 * variable to every job with an error stream.  The code below shouldn't run
+	 * often. */
+
+	int i;
+	int erroring = 1;
+	for(i = 0; i < ERROR_SLEEP_MAX_US/ERROR_SLEEP_US && erroring; ++i)
+	{
+		if(pthread_spin_lock(&job->status_lock) == 0)
+		{
+			erroring = job->erroring;
+			(void)pthread_spin_unlock(&job->status_lock);
+		}
+
+		if(erroring)
+		{
+			poke_error_thread();
+			usleep(ERROR_SLEEP_US);
+		}
+	}
+
+	/* In case we've reached here and `erroring` is still non-zero, this could be
+	 * a bug in handling jobs or the system is under heavy load.  Either way, we
+	 * probably shouldn't wait here forever, so return an error. */
+	return erroring;
+}
+
+/* Wakes up error thread to process any changes to the jobs. */
+static void
+poke_error_thread(void)
+{
+	(void)event_signal(error_thread_event);
 }
 
 void

@@ -98,7 +98,7 @@ suites += colmgr column_view viewcolumns_parser
 suites += bmarks escape fileops filetype filter lua menus misc undo utils
 
 # these are built, but not automatically executed
-apps := fuzz regs_shmem_app
+apps := fuzz io_tester_app regs_shmem_app
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ lua/ lua/lua/ menus/
@@ -377,6 +377,7 @@ $(foreach suite, $(suites) $(apps), $(eval $(call suite_template,$(suite))))
 
 # extra dependencies between test fixtures
 misc: | $(regs_shmem_app.bin)
+lua: | $(io_tester_app.bin)
 
 # import dependencies calculated by the compiler
 include $(wildcard $(deps) \

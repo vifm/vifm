@@ -144,7 +144,8 @@ TEST(system_catches_stdout_and_err)
 #endif
 }
 
-TEST(term_catches_stdout)
+/* Something doesn't work on 32-bit Wine. */
+TEST(term_catches_stdout, IF(not_wine))
 {
 	ASSERT_OK("term('echo a')", "a");
 }
