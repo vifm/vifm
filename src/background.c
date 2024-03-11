@@ -49,6 +49,7 @@
 #include "ui/ui.h"
 #include "utils/cancellation.h"
 #include "utils/env.h"
+#include "utils/event.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -135,10 +136,14 @@ static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 static void * background_task_bootstrap(void *arg);
 static int update_job_status(bg_job_t *job);
 static void mark_job_finished(bg_job_t *job, int exit_code);
+static void poke_error_thread(void);
 static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
 
+/* Event to wake up error thread from sleep for processing by
+ * poke_error_thread(). */
+static event_t *error_thread_event;
 /* Head of list of newly started jobs. */
 static bg_job_t *new_err_jobs;
 /* Mutex to protect new_err_jobs. */
@@ -152,9 +157,16 @@ static pthread_key_t current_job;
 int
 bg_init(void)
 {
+	error_thread_event = event_alloc();
+	if(error_thread_event == NULL)
+	{
+		return 1;
+	}
+
 	/* Create thread-local storage before starting any background threads. */
 	if(pthread_key_create(&current_job, NULL) != 0)
 	{
+		event_free(error_thread_event);
 		return 1;
 	}
 
@@ -162,6 +174,7 @@ bg_init(void)
 	if(pthread_create(&id, NULL, &error_thread, NULL) != 0)
 	{
 		pthread_key_delete(current_job);
+		event_free(error_thread_event);
 		return 1;
 	}
 
@@ -182,6 +195,8 @@ bg_check(void)
 		set_jobcount_var(0);
 		return;
 	}
+
+	poke_error_thread();
 
 	int active_jobs = 0;
 
@@ -427,13 +442,21 @@ error_thread(void *p)
 	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
 
+	const event_end_t event_end = event_wait_end(error_thread_event);
+
 	while(1)
 	{
 		update_error_jobs(&jobs);
 		make_ready_list(jobs, selector);
+		selector_add(selector, event_end);
 		while(selector_wait(selector, ERROR_SELECT_TIMEOUT_MS))
 		{
 			int need_update_list = (jobs == NULL);
+
+			if(selector_is_ready(selector, event_end))
+			{
+				(void)event_reset(error_thread_event);
+			}
 
 			bg_job_t **job = &jobs;
 			while(*job != NULL)
@@ -441,6 +464,15 @@ error_thread(void *p)
 				bg_job_t *const j = *job;
 				char err_msg[ERR_MSG_LEN];
 				ssize_t nread;
+
+				if(j->drained)
+				{
+					/* List update drops jobs which aren't running anymore thus allowing
+					 * them to be gone.  Matters at least in tests which wait for all
+					 * tasks to finish and looping here leads to a timeout. */
+					need_update_list = 1;
+					goto next_job;
+				}
 
 				if(!selector_is_ready(selector, j->err_stream))
 				{
@@ -458,25 +490,17 @@ error_thread(void *p)
 					nread = bytes_read;
 				}
 #endif
-				if(nread < 0)
+				if(nread > 0)
 				{
+					err_msg[nread] = '\0';
+					append_error_msg(j, err_msg);
+				}
+				else
+				{
+					/* EOF or some error. */
 					need_update_list = 1;
 					j->drained = 1;
-					goto next_job;
 				}
-
-				if(nread == 0)
-				{
-					/* Reached EOF, exclude corresponding file descriptor from the set,
-					 * cut the job out of our list and decrement its use counter. */
-					selector_remove(selector, j->err_stream);
-					*job = j->err_next;
-					bg_job_decref(j);
-					continue;
-				}
-
-				err_msg[nread] = '\0';
-				append_error_msg(j, err_msg);
 
 			next_job:
 				job = &j->err_next;
@@ -495,6 +519,7 @@ error_thread(void *p)
 	}
 
 	selector_free(selector);
+	event_free(error_thread_event);
 	return NULL;
 }
 
@@ -1665,6 +1690,13 @@ mark_job_finished(bg_job_t *job, int exit_code)
 		job->exit_code = exit_code;
 		(void)pthread_spin_unlock(&job->status_lock);
 	}
+}
+
+/* Wakes up error thread to process any changes to the jobs. */
+static void
+poke_error_thread(void)
+{
+	(void)event_signal(error_thread_event);
 }
 
 void

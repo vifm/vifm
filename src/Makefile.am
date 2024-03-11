@@ -270,6 +270,7 @@ vifm_SOURCES = \
 	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
+	utils/event_nix.c utils/event.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
