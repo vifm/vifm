@@ -66,17 +66,6 @@ selector_add(selector_t *selector, selector_item_t item)
 	}
 }
 
-void
-selector_remove(selector_t *selector, selector_item_t item)
-{
-	FD_CLR(item, &selector->set);
-	if(item == selector->max_fd)
-	{
-		/* Could do more here. */
-		--selector->max_fd;
-	}
-}
-
 int
 selector_wait(selector_t *selector, int delay)
 {
