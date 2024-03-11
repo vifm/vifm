@@ -2,6 +2,8 @@
 
 #include <unistd.h> /* usleep() */
 
+#include <stdlib.h> /* getenv() */
+
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
@@ -12,6 +14,7 @@
 
 #include "asserts.h"
 
+static void setup_io_tester(void);
 static void wait_for_job(void);
 
 static vlua_t *vlua;
@@ -25,6 +28,10 @@ SETUP()
 TEARDOWN()
 {
 	vlua_finish(vlua);
+	/* Without waiting for jobs to finish tests hang in Wine but not on Windows
+	 * which makes it hard to debug.  Unclear whether this indicates a bug in Vifm
+	 * or in Wine. */
+	wait_for_all_bg();
 	conf_teardown();
 }
 
@@ -146,6 +153,80 @@ TEST(vifmjob_no_in)
 			"print(job:stdin() and 'FAIL')");
 }
 
+TEST(vifmjob_io_close_none)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "",
+			"job = vifm.startjob { cmd = io_tester..' uuu', iomode = 'w' }");
+	GLUA_EQ(vlua, "true", "print(job:stdin():write('stdin') == job:stdin())");
+	GLUA_EQ(vlua, "0", "print(job:exitcode())");
+	GLUA_EQ(vlua, "stderr", "print(job:errors())");
+}
+
+TEST(vifmjob_io_close_all)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "0",
+			"job = vifm.startjob { cmd = io_tester..' ccc', iomode = '' }"
+			"print(job:exitcode())"); // got 21
+}
+
+TEST(vifmjob_io_close_in)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = io_tester..' cuu' }");
+	GLUA_EQ(vlua, "stdout", "print(job:stdout():lines()())");
+	GLUA_EQ(vlua, "0", "print(job:exitcode())");
+	GLUA_EQ(vlua, "stderr", "print(job:errors())");
+}
+
+TEST(vifmjob_io_close_out)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "",
+			"job = vifm.startjob { cmd = io_tester..' ucu', iomode = 'w' }");
+	GLUA_EQ(vlua, "true", "print(job:stdin():write('stdin') == job:stdin())");
+	GLUA_EQ(vlua, "0", "print(job:exitcode())");
+	GLUA_EQ(vlua, "stderr", "print(job:errors())");
+}
+
+TEST(vifmjob_io_close_err)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "",
+			"job = vifm.startjob { cmd = io_tester..' uuc', iomode = 'w' }");
+	GLUA_EQ(vlua, "true", "print(job:stdin():write('stdin') == job:stdin())");
+	GLUA_EQ(vlua, "0", "print(job:exitcode())");
+	GLUA_EQ(vlua, "", "print(job:errors())");
+}
+
+TEST(vifmjob_io_keep_in)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "",
+			"job = vifm.startjob { cmd = io_tester..' ucc', iomode = 'w' }");
+	GLUA_EQ(vlua, "true", "print(job:stdin():write('stdin') == job:stdin())");
+	GLUA_EQ(vlua, "0", "print(job:exitcode())");
+	GLUA_EQ(vlua, "", "print(job:errors())");
+}
+
+TEST(vifmjob_io_keep_out)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = io_tester..' cuc' }");
+	GLUA_EQ(vlua, "stdout", "print(job:stdout():lines()())");
+	GLUA_EQ(vlua, "0", "print(job:exitcode())");
+	GLUA_EQ(vlua, "", "print(job:errors())");
+}
+
+TEST(vifmjob_io_keep_err)
+{
+	setup_io_tester();
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = io_tester..' ccu' }");
+	GLUA_EQ(vlua, "0", "print(job:exitcode())");
+	GLUA_EQ(vlua, "stderr", "print(job:errors())");
+}
+
 TEST(vifmjob_onexit_good)
 {
 	var_t var = var_from_int(0);
@@ -179,6 +260,18 @@ TEST(vifmjob_onexit_bad)
 
 	assert_string_ends_with(": attempt to call a nil value (global 'fail_here')",
 			ui_sb_last());
+}
+
+static void
+setup_io_tester(void)
+{
+	const int debug = (getenv("DEBUG") != NULL);
+	const char *bin_path = (debug ? "bin/debug" : "bin");
+
+	char set_cmd_lua[64];
+	snprintf(set_cmd_lua, sizeof(set_cmd_lua),
+			"io_tester = '%s" SL "io_tester_app'", bin_path);
+	assert_success(vlua_run_string(vlua, set_cmd_lua));
 }
 
 static void

@@ -211,6 +211,10 @@
 	more than a couple of files with identical size and 4096-byte prefix.
 	A regression in 0.13-beta.  Thanks to Alexandr Keyp (a.k.a. IAmKapuze).
 
+	Fixed stream redirection issues with background jobs on Windows (those
+	created via `:!cmd &` or in Lua) if the application was closing one of
+	standard streams.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

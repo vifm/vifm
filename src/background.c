@@ -128,6 +128,9 @@ static void report_error_msg(const char title[], const char text[]);
 #endif
 static bg_job_t * launch_external(const char cmd[], BgJobFlags flags,
 		ShellRequester by);
+#ifdef _WIN32
+static int finish_startup_info(STARTUPINFOW *startup);
+#endif
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static void place_on_job_bar(bg_job_t *job);
 static void get_off_job_bar(bg_job_t *job);
@@ -1154,24 +1157,21 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 
 	return job;
 #else
-	STARTUPINFOW startup = { .dwFlags = STARTF_USESTDHANDLES };
+	/* Handles are either set below or redirected to NUL in
+	 * finish_startup_info(). */
+	STARTUPINFOW startup = {
+		.dwFlags = STARTF_USESTDHANDLES,
+		.hStdInput = INVALID_HANDLE_VALUE,
+		.hStdOutput = INVALID_HANDLE_VALUE,
+		.hStdError = INVALID_HANDLE_VALUE,
+	};
 	PROCESS_INFORMATION pinfo;
 	char *sh_cmd;
 	wchar_t *wide_cmd;
 
-	HANDLE hnul = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE, 0, NULL,
-			OPEN_EXISTING, 0, NULL);
-	if(hnul == INVALID_HANDLE_VALUE)
-	{
-		return NULL;
-	}
-	startup.hStdInput = hnul;
-	startup.hStdOutput = hnul;
-
 	HANDLE herr = INVALID_HANDLE_VALUE;
 	if(!merge_streams && !CreatePipe(&herr, &startup.hStdError, NULL, 16*1024))
 	{
-		CloseHandle(hnul);
 		return NULL;
 	}
 
@@ -1182,7 +1182,6 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 		{
 			CloseHandle(herr);
 		}
-		CloseHandle(hnul);
 		return NULL;
 	}
 
@@ -1196,33 +1195,37 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 				CloseHandle(herr);
 			}
 			CloseHandle(hin);
-			CloseHandle(hnul);
 			return NULL;
 		}
 
 		if(merge_streams)
 		{
-			startup.hStdError = startup.hStdOutput;
+			/* Duplicate instead of just assigning so that closing one handle keeps
+			 * the other one operational. */
+			HANDLE this_process = GetCurrentProcess();
+			if(!DuplicateHandle(this_process, startup.hStdOutput, this_process,
+						&startup.hStdError, /*access=*/0, /*inheritable=*/TRUE,
+						DUPLICATE_SAME_ACCESS))
+			{
+				CloseHandle(startup.hStdOutput);
+				CloseHandle(hout);
+				CloseHandle(hin);
+				return NULL;
+			}
 		}
 	}
 
-	SetHandleInformation(startup.hStdInput, HANDLE_FLAG_INHERIT, 1);
-	SetHandleInformation(startup.hStdOutput, HANDLE_FLAG_INHERIT, 1);
-	SetHandleInformation(startup.hStdError, HANDLE_FLAG_INHERIT, 1);
-
+	finish_startup_info(&startup);
 	sh_cmd = win_make_sh_cmd(cmd, by);
 
 	wide_cmd = to_wide(sh_cmd);
 	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, CREATE_SUSPENDED,
 			NULL, NULL, &startup, &pinfo);
 	free(wide_cmd);
-	CloseHandle(hnul);
+
 	CloseHandle(startup.hStdInput);
 	CloseHandle(startup.hStdOutput);
-	if(startup.hStdError != startup.hStdOutput)
-	{
-		CloseHandle(startup.hStdError);
-	}
+	CloseHandle(startup.hStdError);
 
 	if(!started)
 	{
@@ -1296,6 +1299,69 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	return job;
 #endif
 }
+
+#ifdef _WIN32
+/* Makes sure that standard handles of startup structure which weren't
+ * initialized are redirected to NUL.  Returns zero on success. */
+static int
+finish_startup_info(STARTUPINFOW *startup)
+{
+	int missing = (startup->hStdInput == INVALID_HANDLE_VALUE)
+	            + (startup->hStdOutput == INVALID_HANDLE_VALUE)
+	            + (startup->hStdError == INVALID_HANDLE_VALUE);
+	if(missing == 0)
+	{
+		goto no_redirects;
+	}
+
+	/* Open up to three handles so that child process could close one of them
+	 * while keep using others. */
+	HANDLE hnul[3];
+	hnul[0] = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
+	if(hnul[0] == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	int i;
+	HANDLE this_process = GetCurrentProcess();
+	for(i = 1; i < missing; ++i)
+	{
+		if(!DuplicateHandle(this_process, hnul[0], this_process, &hnul[i],
+					/*access=*/0, /*inheritable=*/TRUE, DUPLICATE_SAME_ACCESS))
+		{
+			int j;
+			for(j = 0; j < i; ++j)
+			{
+				CloseHandle(hnul[j]);
+			}
+			return 1;
+		}
+	}
+
+	if(startup->hStdInput == INVALID_HANDLE_VALUE)
+	{
+		startup->hStdInput = hnul[--missing];
+	}
+	if(startup->hStdOutput == INVALID_HANDLE_VALUE)
+	{
+		startup->hStdOutput = hnul[--missing];
+	}
+	if(startup->hStdError == INVALID_HANDLE_VALUE)
+	{
+		startup->hStdError = hnul[--missing];
+	}
+
+no_redirects:
+	SetHandleInformation(startup->hStdInput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup->hStdOutput, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation(startup->hStdError, HANDLE_FLAG_INHERIT, 1);
+
+	return 0;
+}
+#endif
 
 int
 bg_execute(const char descr[], const char op_descr[], int total, int important,
