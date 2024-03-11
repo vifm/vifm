@@ -42,7 +42,6 @@ TEST(vifmjob_errors)
 	GLUA_STARTS(vlua, "err",
 			"job = vifm.startjob { cmd = 'echo err 1>&2' }"
 			"job:wait()"
-			"while #job:errors() == 0 do end\n"
 			"print(job:errors())");
 
 	GLUA_EQ(vlua, "",

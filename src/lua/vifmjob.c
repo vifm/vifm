@@ -387,6 +387,11 @@ VLUA_API(vifmjob_errors)(lua_State *lua)
 {
 	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
 
+	if(bg_job_wait_errors(vifm_job->job) != 0)
+	{
+		return luaL_error(lua, "%s", "Failed to wait for errors of an exited job");
+	}
+
 	char *errors = NULL;
 	pthread_spin_lock(&vifm_job->job->errors_lock);
 	update_string(&errors, vifm_job->job->errors);

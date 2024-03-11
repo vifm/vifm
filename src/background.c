@@ -30,7 +30,7 @@
 #include <sys/wait.h> /* waitpid() */
 #endif
 #include <signal.h> /* SIG* kill() */
-#include <unistd.h> /* execve() fork() setsid() */
+#include <unistd.h> /* execve() fork() setsid() usleep() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -546,6 +546,7 @@ free_drained_jobs(bg_job_t **jobs)
 			if(!j->running)
 			{
 				--j->use_count;
+				j->erroring = 0;
 				*job = j->err_next;
 				(void)pthread_spin_unlock(&j->status_lock);
 				continue;
@@ -1407,6 +1408,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 	}
 
 	new->running = 1;
+	new->erroring = 0;
 	new->use_count = 0;
 	new->exit_code = -1;
 
@@ -1426,6 +1428,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 
 	if(new->err_stream != NO_JOB_ID)
 	{
+		new->erroring = 1;
 		++new->use_count;
 
 		if(pthread_mutex_lock(&new_err_jobs_lock) != 0)
@@ -1690,6 +1693,47 @@ mark_job_finished(bg_job_t *job, int exit_code)
 		job->exit_code = exit_code;
 		(void)pthread_spin_unlock(&job->status_lock);
 	}
+}
+
+int
+bg_job_wait_errors(bg_job_t *job)
+{
+	enum
+	{
+		ERROR_SLEEP_US = 50,
+		ERROR_SLEEP_MAX_US = 50*1000, /* 50ms should be more than enough. */
+	};
+
+	if(job->err_stream == NO_JOB_ID || bg_job_is_running(job))
+	{
+		return 0;
+	}
+
+	/* Using active polling with a sleep to avoid adding a mutex and a conditional
+	 * variable to every job with an error stream.  The code below shouldn't run
+	 * often. */
+
+	int i;
+	int erroring = 1;
+	for(i = 0; i < ERROR_SLEEP_MAX_US/ERROR_SLEEP_US && erroring; ++i)
+	{
+		if(pthread_spin_lock(&job->status_lock) == 0)
+		{
+			erroring = job->erroring;
+			(void)pthread_spin_unlock(&job->status_lock);
+		}
+
+		if(erroring)
+		{
+			poke_error_thread();
+			usleep(ERROR_SLEEP_US);
+		}
+	}
+
+	/* In case we've reached here and `erroring` is still non-zero, this could be
+	 * a bug in handling jobs or the system is under heavy load.  Either way, we
+	 * probably shouldn't wait here forever, so return an error. */
+	return erroring;
 }
 
 /* Wakes up error thread to process any changes to the jobs. */
