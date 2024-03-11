@@ -1,5 +1,5 @@
 function pack(info) -- <<<
-   local files = vifm.expand('%f')
+   local files = vifm.expand('%"f')
    if #files == 0 or
          files == '.' or files == './' or
          files == '..' or files == '../' then
@@ -16,7 +16,7 @@ function pack(info) -- <<<
          ext = 'tar.'..ext
       end
    else
-      local singlefile = (vifm.expand('%c') == files)
+      local singlefile = (vifm.expand('%"c') == files)
       local basename = singlefile and vifm.expand('%c:r:r') or vifm.expand('%d:t')
       outfile = string.format("%s.%s", unescape_name(basename), ext)
    end

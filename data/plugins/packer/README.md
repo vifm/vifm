@@ -72,7 +72,7 @@ Archives the selected files.  Optionally takes archive name.
 
 Operating systems:
  - working under Linux environment (tested on Gentoo, Slackware)
- - not tested on Windows, please report if it doesn't work
+ - working in Windows
 
 Limitations:
  - extracting large tarballs is slow due to `tar tf` being slow

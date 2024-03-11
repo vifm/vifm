@@ -7,8 +7,9 @@ local function get_common_unpack_prefix(archive, format) -- <<<
       -- when large archives or archives with lots of files
       cmd = string.format("tar --force-local -tf %s", vifm.escape(archive))
    elseif format == 'zip' or format == 'rar' or format == '7z' then
-      cmd = string.format("7z -ba l %s | awk '{($3 ~ /^D/) ? $0=$0\"/\" : $0; print substr($0,54) }'",
-                          vifm.escape(archive))
+      cmd = string.format("7z -ba l %s | awk %s",
+                          vifm.escape(archive),
+                          vifm.escape('{($3 ~ /^D/) ? $0=$0"/" : $0; print substr($0,54) }'))
    else
       return nil, 'unsupported format: '..format
    end
@@ -17,6 +18,13 @@ local function get_common_unpack_prefix(archive, format) -- <<<
    local prefix
    local prefix_len
    for line in job:stdout():lines() do
+      -- this conversion is really just for Windows, but there is currently no
+      -- way of checking whether we're running on Windows
+      --
+      -- Unix systems can allow slashes in file names in which case we might end
+      -- up computing incorrect prefix, but it's a highly unlikely corner case
+      line = line:gsub('\\', '/')
+
       vifm.sb.quick("Checking: "..line)
       if prefix == nil then
          prefix = line
