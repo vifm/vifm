@@ -321,14 +321,19 @@ TEST(autocd_completion)
 	create_dir(SANDBOX_PATH "/mydir1");
 	create_dir(SANDBOX_PATH "/mydir2");
 	create_dir(SANDBOX_PATH "/mydir3");
+	create_dir(SANDBOX_PATH "/mydir3/sub3");
 
 	ASSERT_COMPLETION(L"myd", L"mydir1/");
 	ASSERT_NEXT_MATCH("mydir2/");
 	ASSERT_NEXT_MATCH("mydir3/");
 	ASSERT_NEXT_MATCH("myd");
 
-	ASSERT_COMPLETION(L"../m", L"../menus/");
-	ASSERT_COMPLETION(L"../misc/my", L"../misc/mydir1/");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"mydir2", saved_cwd);
+	ASSERT_COMPLETION(L"../m", L"../mydir1/");
+	ASSERT_COMPLETION(L"../mydir3/s", L"../mydir3/sub3/");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
 
 	cfg.auto_cd = 0;
 
@@ -336,6 +341,7 @@ TEST(autocd_completion)
 
 	remove_dir(SANDBOX_PATH "/mydir1");
 	remove_dir(SANDBOX_PATH "/mydir2");
+	remove_dir(SANDBOX_PATH "/mydir3/sub3");
 	remove_dir(SANDBOX_PATH "/mydir3");
 }
 
