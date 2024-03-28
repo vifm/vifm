@@ -134,13 +134,6 @@ colmgr_reset(void)
 	pair_cache_sorted = 0;
 }
 
-void
-colmgr_minimize(void)
-{
-	/* We don't care if anything was freed. */
-	(void)compress_pair_space();
-}
-
 int
 colmgr_get_pair(int fg, int bg)
 {

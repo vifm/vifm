@@ -808,10 +808,6 @@ update_start(UpdateType update_kind)
 		return 0;
 	}
 
-	/* The idea of doing it here is that all color pairs actually in use should be
-	 * reallocated during the screen update. */
-	colmgr_minimize();
-
 	update_attributes();
 
 	if(curr_stats.term_state != TS_NORMAL)
