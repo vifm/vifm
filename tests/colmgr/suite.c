@@ -8,7 +8,7 @@
 static int init_pair(int pair, int f, int b);
 static int pair_content(int pair, int *f, int *b);
 static int pair_in_use(int pair);
-static void move_pair(int from, int to);
+static void pair_moved(int from, int to);
 
 int colors[TOTAL_COLOR_PAIRS][3];
 
@@ -28,7 +28,7 @@ SETUP_ONCE()
 		.init_pair = &init_pair,
 		.pair_content = &pair_content,
 		.pair_in_use = &pair_in_use,
-		.move_pair = &move_pair,
+		.pair_moved = &pair_moved,
 	};
 	colmgr_init(&colmgr_conf);
 }
@@ -57,7 +57,7 @@ pair_in_use(int pair)
 }
 
 static void
-move_pair(int from, int to)
+pair_moved(int from, int to)
 {
 	colors[to][2] = 1;
 	colors[from][2] = 0;

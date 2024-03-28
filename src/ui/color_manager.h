@@ -40,8 +40,9 @@ typedef struct
 	 * so and zero otherwise. */
 	int (*pair_in_use)(int pair);
 
-	/* Substitutes old pair number with the new one. */
-	void (*move_pair)(int from, int to);
+	/* Informs the client about pair number rename so that it can update all uses
+	 * of old number with the new one. */
+	void (*pair_moved)(int from, int to);
 }
 colmgr_conf_t;
 

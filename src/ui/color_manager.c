@@ -106,7 +106,7 @@ colmgr_init(const colmgr_conf_t *conf_init)
 	assert(conf_init->init_pair != NULL && "init_pair must be set.");
 	assert(conf_init->pair_content != NULL && "pair_content must be set.");
 	assert(conf_init->pair_in_use != NULL && "pair_in_use must be set.");
-	assert(conf_init->move_pair != NULL && "move_pair must be set.");
+	assert(conf_init->pair_moved != NULL && "pair_moved must be set.");
 
 	conf = *conf_init;
 	initialized = 1;
@@ -289,7 +289,7 @@ compress_pair_space(void)
 				break;
 			}
 
-			conf.move_pair(i, j);
+			conf.pair_moved(i, j);
 
 			/* Advance to next unused pair. */
 			do
