@@ -219,6 +219,8 @@
 	created via `:!cmd &` or in Lua) if the application was closing one of
 	standard streams.
 
+	Fixed colors sometimes (rarely) changing in seemingly random ways.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

@@ -10,7 +10,7 @@ static int pair_content(int pair, int *f, int *b);
 static int pair_in_use(int pair);
 static void move_pair(int from, int to);
 
-static int colors[TOTAL_COLOR_PAIRS][2];
+int colors[TOTAL_COLOR_PAIRS][3];
 
 DEFINE_SUITE();
 
@@ -38,6 +38,7 @@ init_pair(int pair, int f, int b)
 {
 	colors[pair][0] = f;
 	colors[pair][1] = b;
+	colors[pair][2] = (f == INUSE_SEED);
 	return 0;
 }
 
@@ -52,16 +53,14 @@ pair_content(int pair, int *f, int *b)
 static int
 pair_in_use(int pair)
 {
-	return colors[pair][0] == INUSE_SEED;
+	return colors[pair][2];
 }
 
 static void
 move_pair(int from, int to)
 {
-	colors[to][0] = colors[from][0];
-	colors[to][1] = colors[from][1];
-
-	colors[from][0] = UNUSED_SEED;
+	colors[to][2] = 1;
+	colors[from][2] = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

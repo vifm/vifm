@@ -284,6 +284,18 @@ compress_pair_space(void)
 	{
 		if(conf.pair_in_use(i))
 		{
+			/* Copy old pair's content to the new one. */
+			int fg, bg;
+			if(conf.pair_content(i, &fg, &bg) != 0 ||
+					conf.init_pair(j, fg, bg) != 0)
+			{
+				/* Something went wrong.  Can't return because we might have already
+				 * moved some pairs and need to update cache accordingly.  Set j in a
+				 * way that will avoid any shrinking of color pairs. */
+				j = used_pairs;
+				break;
+			}
+
 			conf.move_pair(i, j);
 
 			/* Advance to next unused pair. */
