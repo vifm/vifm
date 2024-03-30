@@ -18,7 +18,7 @@
 
 #include "vcache.h"
 
-#include <fcntl.h> /* F_GETFL O_NONBLOCK fcntl() */
+#include <fcntl.h> /* F_GETFL F_SETFL O_NONBLOCK fcntl() */
 
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* free() */
@@ -753,7 +753,7 @@ view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 
 #ifndef _WIN32
 	/* Enable non-blocking read from output pipe.  On Windows we read the
-		* exact amount of data present in the stream. */
+	 * exact amount of data present in the stream. */
 	int fd = fileno(centry->job->output);
 	int file_flags = fcntl(fd, F_GETFL, 0);
 	fcntl(fd, F_SETFL, file_flags | O_NONBLOCK);
