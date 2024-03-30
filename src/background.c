@@ -187,17 +187,26 @@ bg_init(void)
 void
 bg_check(void)
 {
-#ifndef _WIN32
-	rip_children();
-#endif
-
-	/* Quit if there is no jobs or list is unavailable (e.g. used by another
-	 * invocation of this function). */
-	if(bg_jobs == NULL)
+	static int checking;
+	if(checking)
 	{
-		set_jobcount_var(0);
+		/* This function is not re-entrant. */
 		return;
 	}
+
+	checking = 1;
+
+#ifndef _WIN32
+	/*
+	 * Rip children even if there are no jobs because it doesn't guarantee absence
+	 * of zombies.
+	 *
+	 * Do not do this in nested calls because implementation relies on job list
+	 * and won't be able to update job status if the list is not available leaving
+	 * job instances around in a permanent "running" state.
+	 */
+	rip_children();
+#endif
 
 	poke_error_thread();
 
@@ -262,6 +271,8 @@ bg_check(void)
 	bg_jobs = head;
 
 	set_jobcount_var(active_jobs);
+
+	checking = 0;
 }
 
 /* Updates builtin variable that holds number of active jobs.  Schedules UI

@@ -227,6 +227,8 @@
 
 	Fixed colors sometimes (rarely) changing in seemingly random ways.
 
+	Fixed some :jobs showing some already dead jobs as running.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
