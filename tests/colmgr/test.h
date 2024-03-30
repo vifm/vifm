@@ -8,6 +8,9 @@
 #define UNUSED_SEED 99
 #define INUSE_SEED 999
 
+/* fg, bg, in_use */
+extern int colors[TOTAL_COLOR_PAIRS][3];
+
 #endif /* VIFM_TESTS__COLMGR__TEST_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

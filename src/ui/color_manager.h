@@ -40,8 +40,9 @@ typedef struct
 	 * so and zero otherwise. */
 	int (*pair_in_use)(int pair);
 
-	/* Substitutes old pair number with the new one. */
-	void (*move_pair)(int from, int to);
+	/* Informs the client about pair number rename so that it can update all uses
+	 * of old number with the new one. */
+	void (*pair_moved)(int from, int to);
 }
 colmgr_conf_t;
 
@@ -50,9 +51,6 @@ void colmgr_init(const colmgr_conf_t *conf_init);
 
 /* Resets all color pairs that are available for dynamic allocation. */
 void colmgr_reset(void);
-
-/* Optimizes use of color resources by freeing those which seem to be unused. */
-void colmgr_minimize(void);
 
 /* Gets (might dynamically allocate) color pair number for specified
  * foreground (fg) and background (bg) colors.  Returns the number.  On failure

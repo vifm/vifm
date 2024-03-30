@@ -6,6 +6,7 @@
 
 #include "../../src/ui/colors.h"
 #include "../../src/ui/color_manager.h"
+#include "../../src/utils/macros.h"
 
 #include "test.h"
 
@@ -59,6 +60,33 @@ TEST(negative_fg_and_or_bg)
 	assert_true(colmgr_get_pair(-1, 0) >= 0);
 	assert_true(colmgr_get_pair(0, -1) >= 0);
 	assert_true(colmgr_get_pair(-1, -1) >= 0);
+}
+
+TEST(auto_compression_on_out_of_pairs)
+{
+	int i;
+
+	/* Mark upper half of custom colors as used. */
+	for(i = 0; i < CUSTOM_COLOR_PAIRS/2; ++i)
+	{
+		assert_int_equal(RESERVED_COLOR_PAIRS + i, colmgr_get_pair(UNUSED_SEED, i));
+	}
+	for(i = CUSTOM_COLOR_PAIRS/2; i < CUSTOM_COLOR_PAIRS; ++i)
+	{
+		assert_int_equal(RESERVED_COLOR_PAIRS + i, colmgr_get_pair(INUSE_SEED, i));
+	}
+
+	/* Cause compression. */
+	assert_int_equal(RESERVED_COLOR_PAIRS + DIV_ROUND_UP(CUSTOM_COLOR_PAIRS, 2),
+			colmgr_get_pair(INUSE_SEED, CUSTOM_COLOR_PAIRS));
+
+	/* Verify that all used colors were moved to the bottom half. */
+	for(i = RESERVED_COLOR_PAIRS; i < RESERVED_COLOR_PAIRS + CUSTOM_COLOR_PAIRS/2;
+			++i)
+	{
+		assert_int_equal(INUSE_SEED, colors[i][0]);
+		assert_int_equal(CUSTOM_COLOR_PAIRS/2 + i, colors[i][1]);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

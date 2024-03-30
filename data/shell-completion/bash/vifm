@@ -4,7 +4,14 @@
 # Single hyphen counts as arg.
 _vifm_args() {
     local cword words
-    __reassemble_comp_words_by_ref "$1" words cword
+
+    # _comp__reassemble_words seems to be a new name of
+    # __reassemble_comp_words_by_ref
+    if [[ $(type -t _comp__reassemble_words) == function ]]; then
+        _comp__reassemble_words "$1" words cword
+    else
+        __reassemble_comp_words_by_ref "$1" words cword
+    fi
 
     args=1
     hyphen=false

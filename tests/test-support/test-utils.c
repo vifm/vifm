@@ -65,7 +65,7 @@ static void init_list(view_t *view);
 static int init_pair_stub(int pair, int f, int b);
 static int pair_content_stub(int pair, int *f, int *b);
 static int pair_in_use_stub(int pair);
-static void move_pair_stub(int from, int to);
+static void pair_moved_stub(int from, int to);
 
 void
 fix_environ(void)
@@ -773,7 +773,7 @@ stub_colmgr(void)
 		.init_pair = &init_pair_stub,
 		.pair_content = &pair_content_stub,
 		.pair_in_use = &pair_in_use_stub,
-		.move_pair = &move_pair_stub,
+		.pair_moved = &pair_moved_stub,
 	};
 	colmgr_init(&colmgr_conf);
 }
@@ -799,7 +799,7 @@ pair_in_use_stub(int pair)
 }
 
 static void
-move_pair_stub(int from, int to)
+pair_moved_stub(int from, int to)
 {
 }
 

@@ -88,6 +88,16 @@
 
 	Slightly improve performance of comparing files by content.
 
+	Configure 'vifminfo' in sample vifmrcs to store most of the things in
+	vifminfo by default (add missing histories and tabs).  Thanks to Christoph
+	Schmidpeter.
+
+	Adjusted heuristic for determining previewer type to allow use of %px and
+	%py with %pd without any implications.  Thanks to iambumblehead.
+
+	Document how use of different preview macros affect classification of the
+	previewer.  Thanks to iambumblehead.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -214,6 +224,10 @@
 	Fixed stream redirection issues with background jobs on Windows (those
 	created via `:!cmd &` or in Lua) if the application was closing one of
 	standard streams.
+
+	Fixed colors sometimes (rarely) changing in seemingly random ways.
+
+	Fixed some :jobs showing some already dead jobs as running.
 
 0.13-beta to 0.13 (2023-04-04)
 

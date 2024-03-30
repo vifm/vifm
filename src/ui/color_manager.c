@@ -106,7 +106,7 @@ colmgr_init(const colmgr_conf_t *conf_init)
 	assert(conf_init->init_pair != NULL && "init_pair must be set.");
 	assert(conf_init->pair_content != NULL && "pair_content must be set.");
 	assert(conf_init->pair_in_use != NULL && "pair_in_use must be set.");
-	assert(conf_init->move_pair != NULL && "move_pair must be set.");
+	assert(conf_init->pair_moved != NULL && "pair_moved must be set.");
 
 	conf = *conf_init;
 	initialized = 1;
@@ -132,13 +132,6 @@ colmgr_reset(void)
 
 	pair_cache_size = 0;
 	pair_cache_sorted = 0;
-}
-
-void
-colmgr_minimize(void)
-{
-	/* We don't care if anything was freed. */
-	(void)compress_pair_space();
 }
 
 int
@@ -284,7 +277,19 @@ compress_pair_space(void)
 	{
 		if(conf.pair_in_use(i))
 		{
-			conf.move_pair(i, j);
+			/* Copy old pair's content to the new one. */
+			int fg, bg;
+			if(conf.pair_content(i, &fg, &bg) != 0 ||
+					conf.init_pair(j, fg, bg) != 0)
+			{
+				/* Something went wrong.  Can't return because we might have already
+				 * moved some pairs and need to update cache accordingly.  Set j in a
+				 * way that will avoid any shrinking of color pairs. */
+				j = used_pairs;
+				break;
+			}
+
+			conf.pair_moved(i, j);
 
 			/* Advance to next unused pair. */
 			do

@@ -187,17 +187,26 @@ bg_init(void)
 void
 bg_check(void)
 {
-#ifndef _WIN32
-	rip_children();
-#endif
-
-	/* Quit if there is no jobs or list is unavailable (e.g. used by another
-	 * invocation of this function). */
-	if(bg_jobs == NULL)
+	static int checking;
+	if(checking)
 	{
-		set_jobcount_var(0);
+		/* This function is not re-entrant. */
 		return;
 	}
+
+	checking = 1;
+
+#ifndef _WIN32
+	/*
+	 * Rip children even if there are no jobs because it doesn't guarantee absence
+	 * of zombies.
+	 *
+	 * Do not do this in nested calls because implementation relies on job list
+	 * and won't be able to update job status if the list is not available leaving
+	 * job instances around in a permanent "running" state.
+	 */
+	rip_children();
+#endif
 
 	poke_error_thread();
 
@@ -262,6 +271,8 @@ bg_check(void)
 	bg_jobs = head;
 
 	set_jobcount_var(active_jobs);
+
+	checking = 0;
 }
 
 /* Updates builtin variable that holds number of active jobs.  Schedules UI
@@ -545,16 +556,13 @@ free_drained_jobs(bg_job_t **jobs)
 
 		if(j->drained && pthread_spin_lock(&j->status_lock) == 0)
 		{
-			/* If finished, decrement use_count and drop it from the list. */
-			if(!j->running)
-			{
-				--j->use_count;
-				j->erroring = 0;
-				*job = j->err_next;
-				(void)pthread_spin_unlock(&j->status_lock);
-				continue;
-			}
+			/* Drop it from the list even if the job is still running, we won't be
+			 * able to get anything out of it anyway. */
+			--j->use_count;
+			j->erroring = 0;
+			*job = j->err_next;
 			(void)pthread_spin_unlock(&j->status_lock);
+			continue;
 		}
 
 		job = &j->err_next;
@@ -1806,7 +1814,11 @@ bg_job_wait_errors(bg_job_t *job)
 static void
 poke_error_thread(void)
 {
-	(void)event_signal(error_thread_event);
+	/* Don't raise the event if error thread has no jobs to work with. */
+	if(bg_jobs != NULL)
+	{
+		(void)event_signal(error_thread_event);
+	}
 }
 
 void

@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 12 November, 2023)
+" Sample configuration file for vifm on OSX (last updated: 19 March, 2024)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -45,8 +45,8 @@ set trash
 
 " What should be saved automatically on restarting vifm.  Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
-set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
-            \phistory,fhistory,dirstack,registers,bookmarks,bmarks
+set vifminfo=dhistory,savedirs,chistory,state,tui,tabs,shistory,ehistory,
+            \phistory,fhistory,dirstack,registers,bookmarks,bmarks,mchistory
 
 " This is how many directories to store in the directory history.
 set history=100
