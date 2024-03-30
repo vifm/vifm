@@ -1806,7 +1806,11 @@ bg_job_wait_errors(bg_job_t *job)
 static void
 poke_error_thread(void)
 {
-	(void)event_signal(error_thread_event);
+	/* Don't raise the event if error thread has no jobs to work with. */
+	if(bg_jobs != NULL)
+	{
+		(void)event_signal(error_thread_event);
+	}
 }
 
 void
