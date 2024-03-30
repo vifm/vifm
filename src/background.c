@@ -556,16 +556,13 @@ free_drained_jobs(bg_job_t **jobs)
 
 		if(j->drained && pthread_spin_lock(&j->status_lock) == 0)
 		{
-			/* If finished, decrement use_count and drop it from the list. */
-			if(!j->running)
-			{
-				--j->use_count;
-				j->erroring = 0;
-				*job = j->err_next;
-				(void)pthread_spin_unlock(&j->status_lock);
-				continue;
-			}
+			/* Drop it from the list even if the job is still running, we won't be
+			 * able to get anything out of it anyway. */
+			--j->use_count;
+			j->erroring = 0;
+			*job = j->err_next;
 			(void)pthread_spin_unlock(&j->status_lock);
+			continue;
 		}
 
 		job = &j->err_next;
