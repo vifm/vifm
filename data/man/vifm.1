@@ -1,4 +1,4 @@
-.TH VIFM 1 "24 Feb 2024" "vifm 0.13"
+.TH VIFM 1 "30 Mar 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3637,6 +3637,10 @@ effect.
 
 Note that %Pl and %Pz are mutually exclusive.  Only the last one of them in
 the command will take effect.
+
+Note that a previewer with both %px and %py is considered to be a graphical
+previewer, a previewr with %pd is considered a pass through previewer, the
+rest are treated as text.
 
 You can use file name modifiers after %c, %C, %f, %F, %b, %d and %D macros.
 Supported modifiers are:

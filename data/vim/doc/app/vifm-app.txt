@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 Feb 24
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 Mar 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3009,6 +3009,10 @@ effect.
 
 Note that %Pl and %Pz are mutually exclusive.  Only the last one of them in
 the command will take effect.
+
+Note that a previewer with both %px and %py is considered to be a graphical
+previewer, a previewr with %pd is considered a pass through previewer, the
+rest are treated as text.
 
                                                      *vifm-filename-modifiers*
 You can use file name modifiers after %c, %C, %f, %F, %b, %d and %D macros.
