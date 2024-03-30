@@ -136,8 +136,10 @@ TEST(viewer_kind)
 	assert_int_equal(VK_TEXTUAL, ft_viewer_kind("echo %py"));
 
 	assert_int_equal(VK_GRAPHICAL, ft_viewer_kind("echo %px %py"));
+	assert_int_equal(VK_GRAPHICAL, ft_viewer_kind("echo %px %py %ph %pw"));
 
 	assert_int_equal(VK_PASS_THROUGH, ft_viewer_kind("echo %pd"));
+	assert_int_equal(VK_PASS_THROUGH, ft_viewer_kind("echo %px %py %pw %ph %pd"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
