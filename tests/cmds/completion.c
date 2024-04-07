@@ -369,6 +369,28 @@ TEST(line_completion_args)
 	free(buf);
 }
 
+TEST(line_completion_bad_range)
+{
+	char *buf;
+
+	line_completion_enabled = 1;
+
+	vle_compl_reset();
+	assert_int_equal(0, vle_cmds_complete("/bad-range", NULL));
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line1", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line2", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("/bad-range", buf);
+	free(buf);
+}
+
 static int
 foreign_cmd(const cmd_info_t *cmd_info)
 {

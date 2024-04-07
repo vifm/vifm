@@ -232,6 +232,9 @@
 	Fixed running external commands which start with a dash.  Patch by Ivan
 	Shapovalov.
 
+	Fixed absolute paths not being completed when 'autocd' option is enabled.
+	Thanks to Taras Halturin (a.k.a. halturin).
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

@@ -335,6 +335,16 @@ TEST(autocd_completion)
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
 			"", saved_cwd);
 
+	/* Absolute path completion. */
+	char abs_path[PATH_MAX + 1], expected[PATH_MAX + 1];
+	make_abs_path(abs_path, sizeof(abs_path), SANDBOX_PATH, "mydir", saved_cwd);
+	make_abs_path(expected, sizeof(expected), SANDBOX_PATH, "mydir1/", saved_cwd);
+	wchar_t *wide_abs_path = to_wide_force(abs_path);
+	wchar_t *wide_expected = to_wide_force(expected);
+	ASSERT_COMPLETION(wide_abs_path, wide_expected);
+	free(wide_expected);
+	free(wide_abs_path);
+
 	cfg.auto_cd = 0;
 
 	ASSERT_NO_COMPLETION(L"myd");
