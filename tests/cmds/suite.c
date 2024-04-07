@@ -42,6 +42,7 @@ cmds_conf_t cmds_conf = {
 };
 
 int swap_range;
+int line_completion_enabled;
 
 DEFINE_SUITE();
 
@@ -67,6 +68,7 @@ SETUP()
 	vle_cmds_add(&command, 1);
 
 	swap_range = 1;
+	line_completion_enabled = 0;
 	user_cmd_handler = &def_usercmd_cmd;
 }
 
@@ -78,11 +80,14 @@ TEARDOWN()
 static int
 complete_line(const char cmd_line[], void *extra_arg)
 {
-	vle_compl_reset();
-	vle_compl_add_match("whole-line1", "");
-	vle_compl_add_match("whole-line2", "");
-	vle_compl_finish_group();
-	vle_compl_add_last_match(cmd_line);
+	if(line_completion_enabled)
+	{
+		vle_compl_reset();
+		vle_compl_add_match("whole-line1", "");
+		vle_compl_add_match("whole-line2", "");
+		vle_compl_finish_group();
+		vle_compl_add_last_match(cmd_line);
+	}
 	return 0;
 }
 
