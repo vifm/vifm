@@ -62,6 +62,7 @@ static int check_for_clashes(verify_args_t *args, char *list[], char *marked[],
 		int nlines, char **error);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
+static void set_cpmv_bg_descr(bg_op_t *bg_op, bg_args_t *args, size_t i);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
 		int move, int force, int skip, int from_trash, const char dst_dir[]);
 static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
@@ -607,13 +608,42 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	{
 		const char *const src = args->sel_list[i];
 		const char *const dst = args->list[i];
-		bg_op_set_descr(bg_op, src);
+
+		set_cpmv_bg_descr(bg_op, args, i);
+
 		cpmv_file_in_bg(ops, src, dst, args->move, args->force, args->skip,
 				args->is_in_trash[i], args->path);
 		++bg_op->done;
 	}
 
 	fops_free_bg_args(args);
+}
+
+/* Sets nice title for the background job. */
+static void
+set_cpmv_bg_descr(bg_op_t *bg_op, bg_args_t *args, size_t i)
+{
+	const char *src = args->sel_list[i];
+
+	/* Start with the source path. */
+	const char *descr = src;
+
+	/* In case there are multiple files to process, prepend current position. */
+	char *stats = NULL;
+	if(args->sel_list_len > 1)
+	{
+		/* The space is doubled for the symmetry with progress appended by the job
+		 * bar. */
+		stats = format_str("%d/%d  %s", (int)i + 1, (int)args->sel_list_len, descr);
+	}
+	if(stats != NULL)
+	{
+		descr = stats;
+	}
+
+	bg_op_set_descr(bg_op, descr);
+
+	free(stats);
 }
 
 /* Actual implementation of background file copying/moving. */

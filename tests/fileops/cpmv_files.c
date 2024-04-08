@@ -17,6 +17,7 @@
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/background.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_cpmv.h"
 #include "../../src/trash.h"
@@ -36,8 +37,8 @@ SETUP()
 			saved_cwd);
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
+	/* An extra item is to simplify test that needs two files. */
+	lwin.dir_entry = dynarray_cextend(NULL, 2*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("file");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
@@ -497,6 +498,41 @@ TEST(can_skip_existing_files)
 		remove_file("dir/file");
 		remove_dir("dir");
 	}
+}
+
+TEST(bg_jog_has_correct_title)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "dir",
+			saved_cwd);
+
+	create_dir("dir");
+	create_file("dir/file");
+	create_file("dir/file2");
+
+	lwin.dir_entry[0].marked = 1;
+
+	lwin.list_rows = 2;
+	lwin.dir_entry[1].name = strdup("file2");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].marked = 1;
+
+	char last_src_file[PATH_MAX + 1];
+	make_abs_path(last_src_file, sizeof(last_src_file), SANDBOX_PATH, "dir/file2",
+			saved_cwd);
+
+	char descr[PATH_MAX + 1];
+	snprintf(descr, sizeof(descr), "2/2  %s", last_src_file);
+
+	wait_for_all_bg();
+	(void)fops_cpmv_bg(&lwin, NULL, 0, CMLO_COPY, CMLF_SKIP);
+	wait_for_bg();
+	assert_string_equal(descr, bg_jobs->bg_op.descr);
+
+	remove_file("file");
+	remove_file("file2");
+	remove_file("dir/file");
+	remove_file("dir/file2");
+	remove_dir("dir");
 }
 
 TEST(broken_link_behaves_like_a_regular_file_on_conflict, IF(not_windows))
