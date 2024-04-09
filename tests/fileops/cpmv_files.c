@@ -502,6 +502,10 @@ TEST(can_skip_existing_files)
 
 TEST(bg_jog_has_correct_title)
 {
+	/* To test the use of ~. */
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), SANDBOX_PATH, "/",
+			saved_cwd);
+
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "dir",
 			saved_cwd);
 
@@ -516,23 +520,18 @@ TEST(bg_jog_has_correct_title)
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].marked = 1;
 
-	char last_src_file[PATH_MAX + 1];
-	make_abs_path(last_src_file, sizeof(last_src_file), SANDBOX_PATH, "dir/file2",
-			saved_cwd);
-
-	char descr[PATH_MAX + 1];
-	snprintf(descr, sizeof(descr), "2/2  %s", last_src_file);
-
 	wait_for_all_bg();
 	(void)fops_cpmv_bg(&lwin, NULL, 0, CMLO_COPY, CMLF_SKIP);
 	wait_for_bg();
-	assert_string_equal(descr, bg_jobs->bg_op.descr);
+	assert_string_equal("2/2  ~/dir/file2", bg_jobs->bg_op.descr);
 
 	remove_file("file");
 	remove_file("file2");
 	remove_file("dir/file");
 	remove_file("dir/file2");
 	remove_dir("dir");
+
+	cfg.home_dir[0] = '\0';
 }
 
 TEST(broken_link_behaves_like_a_regular_file_on_conflict, IF(not_windows))

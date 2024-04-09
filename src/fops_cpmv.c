@@ -628,6 +628,13 @@ set_cpmv_bg_descr(bg_op_t *bg_op, bg_args_t *args, size_t i)
 	/* Start with the source path. */
 	const char *descr = src;
 
+	/* Try shorten the path using tilde and use that if it worked. */
+	char *tilde_src = make_tilde_path(src);
+	if(tilde_src != NULL)
+	{
+		descr = tilde_src;
+	}
+
 	/* In case there are multiple files to process, prepend current position. */
 	char *stats = NULL;
 	if(args->sel_list_len > 1)
@@ -643,6 +650,7 @@ set_cpmv_bg_descr(bg_op_t *bg_op, bg_args_t *args, size_t i)
 
 	bg_op_set_descr(bg_op, descr);
 
+	free(tilde_src);
 	free(stats);
 }
 

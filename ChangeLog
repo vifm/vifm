@@ -101,6 +101,8 @@
 	When processing multiple files in background, show current position in the
 	list on the job bar.
 
+	Shorten home directory in paths shown on job bar.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
