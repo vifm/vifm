@@ -1213,7 +1213,7 @@ dispatch_error(io_args_t *args, const ioe_err_t *err)
 	}
 
 	title = format_str("Error while %s", curr_ops->descr);
-	msg = format_str("%s: %s", replace_home_part(err->path), err->msg);
+	msg = ioe_err_to_str(err);
 
 	response = prompt_user(args, title, msg, responses);
 
