@@ -542,6 +542,10 @@ vle_cmds_complete(const char cmd[], void *arg)
 			prefix_len += complete_cmd_args(cur, args, &cmd_info, arg);
 		}
 	}
+	else
+	{
+		prefix_len += cmds_conf->complete_line(cmd, arg);
+	}
 
 	return prefix_len;
 }

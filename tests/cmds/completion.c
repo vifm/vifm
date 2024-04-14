@@ -8,6 +8,8 @@
 #include "../../src/engine/completion.h"
 #include "../../src/utils/macros.h"
 
+#include "suite.h"
+
 enum { COM_WINDO };
 
 static int dummy_cmd(const cmd_info_t *cmd_info);
@@ -327,6 +329,8 @@ TEST(line_completion_no_args)
 {
 	char *buf;
 
+	line_completion_enabled = 1;
+
 	vle_compl_reset();
 	assert_int_equal(0, vle_cmds_complete("notreallyacommand", NULL));
 
@@ -347,6 +351,8 @@ TEST(line_completion_args)
 {
 	char *buf;
 
+	line_completion_enabled = 1;
+
 	vle_compl_reset();
 	assert_int_equal(0, vle_cmds_complete("notreally a command", NULL));
 
@@ -360,6 +366,28 @@ TEST(line_completion_args)
 
 	buf = vle_compl_next();
 	assert_string_equal("notreally a command", buf);
+	free(buf);
+}
+
+TEST(line_completion_bad_range)
+{
+	char *buf;
+
+	line_completion_enabled = 1;
+
+	vle_compl_reset();
+	assert_int_equal(0, vle_cmds_complete("/bad-range", NULL));
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line1", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("whole-line2", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("/bad-range", buf);
 	free(buf);
 }
 

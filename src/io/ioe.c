@@ -26,6 +26,8 @@
 #include "../utils/path.h"
 #include "private/ioe.h"
 
+static void print_err_to_buf(const ioe_err_t *err, vle_textbuf *str);
+
 void
 ioe_errlst_init(ioe_errlst_t *elist)
 {
@@ -63,24 +65,57 @@ ioe_errlst_to_str(const ioe_errlst_t *elist)
 
 	for(i = 0U; i < elist->error_count; ++i)
 	{
-		const ioe_err_t *const err = &elist->errors[i];
-		const char *const path = replace_home_part(err->path);
-		if(err->error_code == IO_ERR_UNKNOWN)
+		if(i > 0U)
 		{
-			vle_tb_append_linef(str, "%s: %s", path, err->msg);
+			vle_tb_append(str, "\n");
 		}
-		else if(err->msg[0] == '\0')
-		{
-			vle_tb_append_linef(str, "%s: %s", path, strerror(err->error_code));
-		}
-		else
-		{
-			vle_tb_append_linef(str, "%s: %s (%s)", path, err->msg,
-					strerror(err->error_code));
-		}
+
+		print_err_to_buf(&elist->errors[i], str);
 	}
 
 	return vle_tb_release(str);
+}
+
+char *
+ioe_err_to_str(const ioe_err_t *err)
+{
+	vle_textbuf *str = vle_tb_create();
+	if(str == NULL)
+	{
+		return NULL;
+	}
+
+	print_err_to_buf(err, str);
+	return vle_tb_release(str);
+}
+
+/* Formats error into a buffer without adding newline. */
+static void
+print_err_to_buf(const ioe_err_t *err, vle_textbuf *str)
+{
+	const char *path = err->path;
+
+	char *tilde_path = make_tilde_path(path);
+	if(tilde_path != NULL)
+	{
+		path = tilde_path;
+	}
+
+	if(err->error_code == IO_ERR_UNKNOWN)
+	{
+		vle_tb_appendf(str, "%s: %s", path, err->msg);
+	}
+	else if(err->msg[0] == '\0')
+	{
+		vle_tb_appendf(str, "%s: %s", path, strerror(err->error_code));
+	}
+	else
+	{
+		vle_tb_appendf(str, "%s: %s (%s)", path, err->msg,
+				strerror(err->error_code));
+	}
+
+	free(tilde_path);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -98,6 +98,11 @@
 	Document how use of different preview macros affect classification of the
 	previewer.  Thanks to iambumblehead.
 
+	When processing multiple files in background, show current position in the
+	list on the job bar.
+
+	Shorten home directory in paths shown on job bar.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -231,6 +236,13 @@
 
 	Fixed running external commands which start with a dash.  Patch by Ivan
 	Shapovalov.
+
+	Fixed absolute paths not being completed when 'autocd' option is enabled.
+	Thanks to Taras Halturin (a.k.a. halturin).
+
+	Fixed individual error messages when 'syscalls' is on lacking system error
+	string which is present when errors are aggregated at the end of an
+	operation.  Thanks to an anonymous at Vifm Q2A site.
 
 0.13-beta to 0.13 (2023-04-04)
 

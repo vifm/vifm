@@ -1017,7 +1017,7 @@ format_job_bar(void)
 		}
 		else
 		{
-			snprintf(item_text, sizeof(item_text), "[%s %3d%%]", ellipsed, progress);
+			snprintf(item_text, sizeof(item_text), "[%s  %d%%]", ellipsed, progress);
 		}
 
 		free(ellipsed);

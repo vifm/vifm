@@ -32,8 +32,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memset() strcat() strcmp() strdup() strncmp() strncat()
-                       strchr() strcpy() strlen() strpbrk() strrchr() */
+#include <string.h> /* memset() strcat() strcmp() strdup() strncmp() strchr()
+                       strcpy() strlen() strpbrk() strrchr() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -45,6 +45,7 @@
 #include "utils.h"
 
 static int skip_dotdir_if_any(const char *path[], int has_parent);
+static const char * find_home_tail(const char path[]);
 static char * try_replace_tilde(const char path[]);
 static char * find_ext_dot(const char path[]);
 
@@ -369,20 +370,50 @@ char *
 replace_home_part_strict(const char path[])
 {
 	static char buf[PATH_MAX + 1];
-	size_t len;
 
-	len = strlen(cfg.home_dir) - 1;
-	if(strnoscmp(path, cfg.home_dir, len) == 0 &&
-			(path[len] == '\0' || path[len] == '/'))
-	{
-		strncat(strcpy(buf, "~"), path + len, sizeof(buf) - strlen(buf) - 1);
-	}
-	else
+	const char *home_tail = find_home_tail(path);
+	if(home_tail == NULL)
 	{
 		copy_str(buf, sizeof(buf), path);
 	}
+	else
+	{
+		buf[0] = '~';
+		buf[1] = '/';
+		copy_str(buf + 2, sizeof(buf) - 2, home_tail);
+	}
 
 	return buf;
+}
+
+char *
+make_tilde_path(const char path[])
+{
+	const char *home_tail = find_home_tail(path);
+	if(home_tail == NULL)
+	{
+		return strdup(path);
+	}
+
+	return format_str("~/%s", home_tail);
+}
+
+/* Finds part of the path which follows home directory and any number of slashes
+ * after it.  Returns pointer to the part or NULL if it's not present. */
+static const char *
+find_home_tail(const char path[])
+{
+	const size_t len = strlen(cfg.home_dir) - 1;
+
+	/* Not using path_starts_with() because cfg.home_dir always ends with a slash
+	 * and this way we can avoid repeating strlen(). */
+	if(strnoscmp(path, cfg.home_dir, len) == 0 &&
+			(path[len] == '\0' || path[len] == '/'))
+	{
+		return skip_char(path + len, '/');
+	}
+
+	return NULL;
 }
 
 char *

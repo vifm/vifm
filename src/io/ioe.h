@@ -86,6 +86,10 @@ void ioe_errlst_free(ioe_errlst_t *elist);
  * newly allocated string. */
 char * ioe_errlst_to_str(const ioe_errlst_t *elist);
 
+/* Converts a single error from I/O module into a string.  Returns newly
+ * allocated string. */
+char * ioe_err_to_str(const ioe_err_t *err);
+
 #endif /* VIFM__IO__IOE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
