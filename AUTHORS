@@ -172,3 +172,5 @@ voh9eepah fixed available file-system space size on FreeBSD.
 
 Vadim Curcă added middle ellipsis to view columns and fixed search match
 highlighting when the match is cut off due lack of space.
+
+Ivan Shapovalov fixed running external commands which start with a dash.

@@ -3,6 +3,8 @@
 #include <unistd.h> /* chdir() usleep() */
 
 #include <stdio.h> /* FILE fclose() fputs() */
+#include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 
 #include <test-utils.h>
 
@@ -10,6 +12,7 @@
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/utils/cancellation.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/ui/ui.h"
 #include "../../src/background.h"
@@ -265,6 +268,25 @@ TEST(supply_input_to_external_command, IF(have_cat))
 TEST(background_redirects_streams_properly, IF(not_windows))
 {
 	assert_success(bg_and_wait_for_errors("echo a", &no_cancellation));
+}
+
+TEST(can_run_command_starting_with_a_dash, IF(not_windows))
+{
+	char sandbox[PATH_MAX + 1];
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", /*cwd=*/NULL);
+
+	create_executable(SANDBOX_PATH "/-script");
+	make_file(SANDBOX_PATH "/-script", "#!/bin/sh");
+
+	char *saved_path_env = strdup(env_get("PATH"));
+	env_set("PATH", sandbox);
+
+	assert_success(bg_and_wait_for_errors("-script", &no_cancellation));
+
+	env_set("PATH", saved_path_env);
+	free(saved_path_env);
+
+	remove_file(SANDBOX_PATH "/-script");
 }
 
 static void

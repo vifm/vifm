@@ -358,7 +358,7 @@ make_execv_array(char shell[], char shell_flag[], char cmd[])
 
 	char name[NAME_MAX + 1];
 
-	char **args = reallocarray(NULL, 4 + npieces + 1, sizeof(*args));
+	char **args = reallocarray(NULL, 5 + npieces + 1, sizeof(*args));
 	char *eval_cmd;
 	size_t len;
 	size_t i;
@@ -376,6 +376,7 @@ make_execv_array(char shell[], char shell_flag[], char cmd[])
 			args[i++] = sh_arg;
 		}
 		args[i++] = shell_flag;
+		args[i++] = "--";
 		args[i++] = cmd;
 		args[i++] = NULL;
 		return args;
@@ -386,7 +387,7 @@ make_execv_array(char shell[], char shell_flag[], char cmd[])
 	 * see https://lists.gnu.org/archive/html/bug-make/2009-07/msg00012.html */
 	eval_cmd = NULL;
 	len = 0U;
-	(void)strappend(&eval_cmd, &len, "eval \"");
+	(void)strappend(&eval_cmd, &len, "eval -- \"");
 	for(i = 0; i < npieces; ++i)
 	{
 		char s[32];
