@@ -253,6 +253,12 @@
 	Fixed `data/vifmrc` next to vifm.exe being used as global vifmrc file on
 	Windows.  Thanks to midrare.
 
+	Fixed vifm-media script not listing external drives with udevil and
+	udisks.
+
+	Fixed vifm-media script not listing removable drives with udisks marked as
+	non-removable by udisks.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

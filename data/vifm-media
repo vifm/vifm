@@ -24,7 +24,9 @@ function list() {
             continue
         fi
 
-        if grep -qe '^\s*removable:\s*0\s*$' <<< "$out"; then
+        if grep -qe '^\s*removable:\s*0\s*$' <<< "$out" &&
+           grep -qe '^\s*system internal:\s*1\s*$' <<< "$out"; then
+            # skip drives which aren't detachable
             continue
         fi
 
