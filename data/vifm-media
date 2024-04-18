@@ -19,6 +19,11 @@ function list() {
 
         local out=$(info "$dev")
 
+        if grep -qe '^\s*partition table:\s*$' <<< "$out"; then
+            # can't mount the whole drive
+            continue
+        fi
+
         if grep -qe '^\s*removable:\s*0\s*$' <<< "$out"; then
             continue
         fi
@@ -85,10 +90,14 @@ def devs():
     om = dbus.Interface(ud_manager_obj, 'org.freedesktop.DBus.ObjectManager')
     for v in om.GetManagedObjects().values():
         drive_info = v.get('org.freedesktop.UDisks2.Block', {})
+        part_table = v.get('org.freedesktop.UDisks2.PartitionTable')
         usage = drive_info.get('IdUsage')
-        hint = drive_info.get('HintSystem')
+        system = drive_info.get('HintSystem')
         ro = drive_info.get('ReadOnly')
-        if usage == "filesystem" and not hint and not ro:
+        if usage == "filesystem" and \
+           not system and \
+           not ro and \
+           part_table is None:
             device = drive_info.get('Device')
             if device is not None:
                 device = decode(device)
