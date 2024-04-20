@@ -142,23 +142,33 @@ if [ "$target" = all ] || [ "$target" = archive ]; then
         rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
+
         for i in "$dir/data/colors"/*; do
             unix2dos -c ISO "$i"
         done
+
+        # remove Unix-specific files from data/
         rm "$dir/data"/*.desktop
         rm -r "$dir/data/man"
+
+        # update EOLs of a few other files in data/
         unix2dos -c ISO "$dir/data/vifm-help.txt"
         unix2dos -c ISO "$dir/data/vifmrc"
+
+        # prepare Vim-files in data/
         mv "$dir/data/vim/doc/plugin/vifm-plugin.txt" "$dir/data/vim/doc/vifm-plugin.txt"
         rmdir "$dir/data/vim/doc/plugin"
         mkdir "$dir/data/vim-doc"
         mv "$dir/data/vim/doc/app" "$dir/data/vim-doc/doc"
+
+        # the rest of text files are outside of data/
         pkgfiles='AUTHORS BUGS ChangeLog ChangeLog.LuaAPI COPYING COPYING.3party FAQ INSTALL NEWS README THANKS TODO'
         for i in $pkgfiles; do
             dest="$dir/$i.txt"
             cp "$i" "$dest"
             unix2dos -c ISO "$dest"
         done
+
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded "$dir"/*.dll "$dir"/*.exe
 
