@@ -149,6 +149,9 @@ if [ "$target" = all ] || [ "$target" = archive ]; then
 
         # remove Unix-specific files from data/
         rm "$dir/data"/*.desktop
+        rm "$dir/data"/vifm-media*
+        rm "$dir/data"/vifm.appdata.xml
+        rm "$dir/data/vifmrc-osx"
         rm -r "$dir/data/man"
 
         # update EOLs of a few other files in data/
