@@ -143,9 +143,12 @@ if [ "$target" = all ] || [ "$target" = archive ]; then
         mkdir "$dir"
         cp -R data "$dir"
 
+        # place colors to a pseudo-/etc directory in data/ after updating EOLs
         for i in "$dir/data/colors"/*; do
             unix2dos -c ISO "$i"
         done
+        mkdir "$dir/data/etc"
+        mv "$dir/data/colors" "$dir/data/etc"
 
         # remove Unix-specific files from data/
         rm "$dir/data"/*.desktop

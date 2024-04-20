@@ -942,7 +942,13 @@ get_installed_data_dir(void)
 const char *
 get_sys_conf_dir(int idx)
 {
-	return (idx == 0 ? get_installed_data_dir() : NULL);
+	static char sys_conf_dir[PATH_MAX + 1];
+	if(sys_conf_dir[0] == '\0')
+	{
+		snprintf(sys_conf_dir, sizeof(sys_conf_dir), "%s/etc",
+				get_installed_data_dir());
+	}
+	return (idx == 0 ? sys_conf_dir : NULL);
 }
 
 void

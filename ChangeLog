@@ -247,6 +247,9 @@
 	string which is present when errors are aggregated at the end of an
 	operation.  Thanks to an anonymous at Vifm Q2A site.
 
+	Fixed `data/vifmrc` next to vifm.exe being used as global vifmrc file on
+	Windows.  Thanks to midrare.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
