@@ -103,6 +103,9 @@
 
 	Shorten home directory in paths shown on job bar.
 
+	Commented out one of MC-like shortcuts in sample vifmrc files, Ctrl-U, to
+	avoid confusing Vim users with default configuration.  Thanks to midrare.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

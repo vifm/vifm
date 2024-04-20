@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 19 March, 2024)
+" Sample configuration file for vifm (last updated: 20 April, 2024)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -536,8 +536,8 @@ nnoremap <f8> :delete<cr>
 nnoremap <a-i> :sync<cr>
 " Open directory under cursor in the other pane
 nnoremap <a-o> :sync %c<cr>
-" Swap panes
-nnoremap <c-u> <c-w>x
+" Swap panes (uncomment if you don't need builtin behaviour of Ctrl-U)
+" nnoremap <c-u> <c-w>x
 
 " ------------------------------------------------------------------------------
 " Various customization examples
