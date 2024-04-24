@@ -15,6 +15,15 @@
 #  - udisks2: second vesion of disk management D-Bus daemon
 #    requirements: `udisksctl` and either `python2` or `python3` with "dbus"
 #                  module
+#
+# Support for additional protocols (used in addition to standard drives, but
+# support depends on installed dependencies):
+#  - MTP: /dev/libmtp-* devices
+#    requirements: requires `simple-mtpfs` command to obtain device's name or
+#                  mount/unmount it
+#    limitations: can list and unmount only if this script was used for mounting
+#                 because source field of a FUSE mount is mounter's name rather
+#                 than the mounted device
 
 function usage_error() {
     echo "Usage: vifm-media list | mount <device> | unmount <path>"
@@ -173,24 +182,112 @@ else
     exit 1
 fi
 
+function have_simple_mtpfs() {
+    type simple-mtpfs > /dev/null 2>&1
+}
+
+function make_mtp_mount_path() {
+    local dev=$1
+
+    echo "/tmp/vifm-media$(echo -n "$dev" | tr -c 'a-zA-Z0-9-' _)"
+}
+
+function is_mtp_mount_path() {
+    local path=$1
+
+    case "$path" in
+        /tmp/vifm-media*) return 0 ;;
+        *)                return 1 ;;
+    esac
+}
+
+function list_mtp() {
+    for dev in /dev/libmtp-*; do
+        echo device="$dev"
+
+        if have_simple_mtpfs; then
+            local label=$(simple-mtpfs --list-devices "$dev" | cut -f2- -d' ')
+            echo "label=$label"
+        fi
+
+        echo -n /dev/libmtp-1-9 | tr -c 'a-zA-Z0-9-' _
+
+        local mount_path=$(make_mtp_mount_path "$dev")
+        if findmnt "$mount_path"; then
+            echo "mount-point=$mount_path"
+        fi
+    done
+}
+
+function is_mtp() {
+    local dev=$1
+
+    case "$dev" in
+        /dev/libmtp-*) return 0 ;;
+        *)             return 1 ;;
+    esac
+}
+
+function mount_mtp() {
+    local dev=$1
+
+    if ! have_simple_mtpfs; then
+        echo "vifm-media: need simple-mtpfs command to mount over MTP" 1>&2
+        exit 1
+    fi
+
+    local mount_path=$(make_mtp_mount_path "$dev")
+    if [ -e "$mount_path" ]; then
+        if ! rmdir "$mount_path"; then
+            exit 1
+        fi
+    fi
+
+    if ! ( umask 077 && mkdir "$mount_path" ); then
+        exit 1
+    fi
+
+    if ! simple-mtpfs "$dev" "$mount_path"; then
+        rmdir "$mount_path"
+        exit 1
+    fi
+}
+
+function unmount_mtp() {
+    local path=$1
+
+    umount "$path" && rmdir "$path"
+}
+
 case "$1" in
     list)
         if [ $# -ne 1 ]; then
             usage_error
         fi
         list
+        list_mtp
         ;;
     mount)
         if [ $# -ne 2 ]; then
             usage_error
         fi
-        mount "$2"
+
+        if is_mtp "$2"; then
+            mount_mtp "$2"
+        else
+            mount "$2"
+        fi
         ;;
     unmount)
         if [ $# -ne 2 ]; then
             usage_error
         fi
-        unmount "$2"
+
+        if is_mtp_mount_path "$2"; then
+            unmount_mtp "$2"
+        else
+            unmount "$2"
+        fi
         ;;
 
     *)
