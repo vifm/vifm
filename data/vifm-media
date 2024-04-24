@@ -1,10 +1,20 @@
 #!/bin/bash
 
 # This script is meant to support common media managing utilities.
+#
 # Parameters:
 #  - list           -- list media
 #  - mount <device> -- mount a device
 #  - unmount <path> -- unmount given mount point
+#
+# Supported utilities (only one is used, listed higher to lower priority):
+#  - udevil: udisks-like command-line tool with no D-Bus or daemon
+#    requirements: `udevil` and `devmon` commands (both are part of udevil)
+#  - udisks: first vesion of disk management D-Bus daemon
+#    requirements: `udisks` and `umount` commands
+#  - udisks2: second vesion of disk management D-Bus daemon
+#    requirements: `udisksctl` and either `python2` or `python3` with "dbus"
+#                  module
 
 function usage_error() {
     echo "Usage: vifm-media list | mount <device> | unmount <path>"
