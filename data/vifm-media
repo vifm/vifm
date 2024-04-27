@@ -202,6 +202,7 @@ function is_mtp_mount_path() {
 }
 
 function list_mtp() {
+    shopt -s nullglob
     for dev in /dev/libmtp-*; do
         echo device="$dev"
 
