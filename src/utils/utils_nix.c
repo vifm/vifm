@@ -376,7 +376,10 @@ make_execv_array(char shell[], char shell_flag[], char cmd[])
 			args[i++] = sh_arg;
 		}
 		args[i++] = shell_flag;
-		args[i++] = "--";
+		if(cmd[0] == '-')
+		{
+			args[i++] = "--";
+		}
 		args[i++] = cmd;
 		args[i++] = NULL;
 		return args;
@@ -387,7 +390,7 @@ make_execv_array(char shell[], char shell_flag[], char cmd[])
 	 * see https://lists.gnu.org/archive/html/bug-make/2009-07/msg00012.html */
 	eval_cmd = NULL;
 	len = 0U;
-	(void)strappend(&eval_cmd, &len, "eval -- \"");
+	(void)strappend(&eval_cmd, &len, (cmd[0] == '-' ? "eval -- \"" : "eval \""));
 	for(i = 0; i < npieces; ++i)
 	{
 		char s[32];
