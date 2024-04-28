@@ -20,6 +20,7 @@
 #include "fs.h"
 
 #ifdef _WIN32
+#include <aclapi.h>
 #include <windows.h>
 #include <ntdef.h>
 #include <winioctl.h>
@@ -388,17 +389,82 @@ is_dir_writable(const char path[])
 	}
 
 	wchar_t *utf16_path = utf8_to_utf16(path);
-	HANDLE hdir = CreateFileW(utf16_path, GENERIC_WRITE,
-			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+	if(utf16_path == NULL)
+	{
+		return 0;
+	}
+
+	PSECURITY_DESCRIPTOR sec_descr;
+
+	/* Requesting owner and group information seems to be necessary as well.
+	 * There is also GetFileSecurityW(), but the biggest difference is that it
+	 * won't allocate buffer for us. */
+	DWORD ret = GetNamedSecurityInfoW(utf16_path, SE_FILE_OBJECT,
+			OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION |
+			DACL_SECURITY_INFORMATION, /*sidOwner=*/NULL, /*sidGroup=*/NULL,
+			/*dacl=*/NULL, /*sacl=*/NULL, &sec_descr);
 	free(utf16_path);
 
-	if(hdir != INVALID_HANDLE_VALUE)
+	if(ret != ERROR_SUCCESS)
 	{
-		CloseHandle(hdir);
-		return 1;
+		LOG_ERROR_MSG("Failed to get security info");
+		LOG_WERROR(GetLastError());
+		return 0;
 	}
-	return 0;
+
+	/* No, opened token won't do for the purposes of "impersonating" current
+	 * process, have to use DuplicateToken(). */
+	HANDLE process_token, impersonation_token;
+	if(OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE, &process_token))
+	{
+		BOOL success = DuplicateToken(process_token, SecurityImpersonation,
+				&impersonation_token);
+		CloseHandle(process_token);
+
+		if(!success)
+		{
+			LOG_ERROR_MSG("Failed to duplicate process token for impersonation");
+			LocalFree(sec_descr);
+			return 0;
+		}
+	}
+
+	/* Request all possible rights to see which would be granted. */
+	DWORD desired_access = MAXIMUM_ALLOWED;
+	GENERIC_MAPPING generic_mapping = {
+		FILE_GENERIC_READ,
+		FILE_GENERIC_WRITE,
+		FILE_GENERIC_EXECUTE,
+		FILE_ALL_ACCESS
+	};
+	MapGenericMask(&desired_access, &generic_mapping);
+
+	PRIVILEGE_SET privileges_used;
+	DWORD privileges_size = sizeof(privileges_used);
+	DWORD granted_access;
+	BOOL has_access;
+	if(!AccessCheck(sec_descr, impersonation_token, desired_access,
+				&generic_mapping, &privileges_used, &privileges_size, &granted_access,
+				&has_access))
+	{
+		LOG_ERROR_MSG("Couldn't get access info");
+		has_access = FALSE;
+	}
+	else if(has_access)
+	{
+		/* Consider having any of these flags set as an indication that writing is
+		 * possible, after all write permission on POSIX systems might not allow
+		 * removing files owned by someone else in case of sticky bit.  A more
+		 * fine-grained solution requires passing in parameter which specifies
+		 * kind of write operation. */
+		const DWORD write_flags =
+			FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY | FILE_DELETE_CHILD;
+		has_access = (granted_access & write_flags);
+	}
+
+	CloseHandle(impersonation_token);
+	LocalFree(sec_descr);
+	return has_access;
 #endif
 }
 
