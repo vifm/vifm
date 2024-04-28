@@ -374,35 +374,32 @@ directory_accessible(const char path[])
 int
 is_dir_writable(const char path[])
 {
-	if(!is_unc_root(path))
+	if(is_unc_root(path))
 	{
-#ifdef _WIN32
-		HANDLE hdir;
-		wchar_t *utf16_path;
-
-		if(is_on_fat_volume(path))
-		{
-			return 1;
-		}
-
-		utf16_path = utf8_to_utf16(path);
-		hdir = CreateFileW(utf16_path, GENERIC_WRITE,
-				FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-				FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
-		free(utf16_path);
-
-		if(hdir != INVALID_HANDLE_VALUE)
-		{
-			CloseHandle(hdir);
-			return 1;
-		}
-#else
-	if(os_access(path, W_OK) == 0)
-		return 1;
-#endif
+		return 0;
 	}
 
+#ifndef _WIN32
+	return (os_access(path, W_OK) == 0);
+#else
+	if(is_on_fat_volume(path))
+	{
+		return 1;
+	}
+
+	wchar_t *utf16_path = utf8_to_utf16(path);
+	HANDLE hdir = CreateFileW(utf16_path, GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+	free(utf16_path);
+
+	if(hdir != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(hdir);
+		return 1;
+	}
 	return 0;
+#endif
 }
 
 uint64_t
