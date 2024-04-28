@@ -383,11 +383,6 @@ is_dir_writable(const char path[])
 #ifndef _WIN32
 	return (os_access(path, W_OK) == 0);
 #else
-	if(is_on_fat_volume(path))
-	{
-		return 1;
-	}
-
 	wchar_t *utf16_path = utf8_to_utf16(path);
 	if(utf16_path == NULL)
 	{
@@ -934,34 +929,6 @@ int
 readlink(const char *path, char *buf, size_t len)
 {
 	return -1;
-}
-
-int
-is_on_fat_volume(const char *path)
-{
-	char buf[NAME_MAX + 1];
-	char fs[16];
-	if(is_unc_path(path))
-	{
-		int i = 4, j = 0;
-		copy_str(buf, sizeof(buf), path);
-		while(i > 0 && buf[j] != '\0')
-			if(buf[j++] == '/')
-				i--;
-		if(i == 0)
-			buf[j - 1] = '\0';
-	}
-	else
-	{
-		strcpy(buf, "x:\\");
-		buf[0] = path[0];
-	}
-	if(GetVolumeInformationA(buf, NULL, 0, NULL, NULL, NULL, fs, sizeof(fs)))
-	{
-		if(strncasecmp(fs, "fat", 3) == 0)
-			return 1;
-	}
-	return 0;
 }
 
 int
