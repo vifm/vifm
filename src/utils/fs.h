@@ -230,8 +230,6 @@ int S_ISLNK(mode_t mode);
 
 int readlink(const char *path, char *buf, size_t len);
 
-int is_on_fat_volume(const char *path);
-
 /* Checks specified drive for existence.  Returns non-zero if it exists,
  * otherwise zero is returned. */
 int drive_exists(char letter);
