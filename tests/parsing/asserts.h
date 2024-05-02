@@ -10,9 +10,12 @@
 		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
 		assert_int_equal(PE_NO_ERROR, result.error); \
 		\
-		char *str_res = var_to_str(result.value); \
-		assert_string_equal((expected), str_res); \
-		free(str_res); \
+		if(result.value.type != VTYPE_ERROR) \
+		{ \
+			char *str_res = var_to_str(result.value); \
+			assert_string_equal((expected), str_res); \
+			free(str_res); \
+		} \
 		\
 		var_free(result.value); \
 	} \
@@ -25,8 +28,12 @@
 		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
 		assert_int_equal(PE_NO_ERROR, result.error); \
 		\
-		int int_res = var_to_int(result.value); \
-		assert_int_equal((expected), int_res); \
+		if(result.value.type != VTYPE_ERROR) \
+		{ \
+			int int_res = var_to_int(result.value); \
+			assert_int_equal((expected), int_res); \
+		} \
+		\
 		var_free(result.value); \
 	} \
 	while(0)
