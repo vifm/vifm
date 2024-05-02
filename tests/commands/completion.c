@@ -152,7 +152,8 @@ TEST(tabnew_has_directory_only_completion)
 
 TEST(function_name_completion)
 {
-	ASSERT_COMPLETION(L"echo e", L"echo executable(");
+	ASSERT_COMPLETION(L"echo e", L"echo escape(");
+	ASSERT_NEXT_MATCH("executable(");
 	ASSERT_NEXT_MATCH("expand(");
 	ASSERT_NEXT_MATCH("extcached(");
 	ASSERT_NEXT_MATCH("e");

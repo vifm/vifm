@@ -67,6 +67,7 @@ typedef struct
 input_cb_data_t;
 
 static var_t chooseopt_builtin(const call_info_t *call_info);
+static var_t escape_builtin(const call_info_t *call_info);
 static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t extcached_builtin(const call_info_t *call_info);
@@ -92,6 +93,7 @@ static var_t execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin);
 static const function_t functions[] = {
 	/* Name           Description                   Args   Handler  */
 	{ "chooseopt",    "query choose options",      {1,1}, &chooseopt_builtin },
+	{ "escape",       "escapes characters",        {2,2}, &escape_builtin },
 	{ "executable",   "check for executable file", {1,1}, &executable_builtin },
 	{ "expand",       "expand macros in a string", {1,1}, &expand_builtin },
 	{ "extcached",    "caches result of a command",{3,3}, &extcached_builtin },
@@ -151,6 +153,35 @@ chooseopt_builtin(const call_info_t *call_info)
 	free(type);
 
 	return var_from_str(result == NULL ? "" : result);
+}
+
+/* Escapes specified characters via slash in a string.  Returns escaped
+ * string. */
+static var_t
+escape_builtin(const call_info_t *call_info)
+{
+	char *string = var_to_str(call_info->argv[0]);
+	char *chars = var_to_str(call_info->argv[1]);
+	if(string == NULL || chars == NULL)
+	{
+		free(string);
+		free(chars);
+		return var_error();
+	}
+
+	char *escaped = escape_chars(string, chars);
+	free(string);
+	free(chars);
+
+	if(escaped == NULL)
+	{
+		return var_error();
+	}
+
+	var_t result = var_from_str(escaped);
+	free(escaped);
+
+	return result;
 }
 
 /* Checks whether executable exists at absolute path or in directories listed in

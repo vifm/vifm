@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 Mar 30
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 May 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5082,6 +5082,8 @@ operators are applied.
 USAGE                 RESULT      DESCRIPTION	~
 
 chooseopt({opt})      String      Queries choose parameters passed on startup.
+escape({string}, {chars})
+                      String      Returns {string} after escaping {chars} in it.
 executable({expr})    Integer     Checks whether {expr} command available.
 expand({expr})        String      Expands special keywords in {expr}.
 extcached({cache}, {path}, {extcmd})
@@ -5110,6 +5112,11 @@ Retrieves values of options related to file choosing.  {opt} can be one of:
     dir        returns argument of |vifm---choose-dir| or empty string
     cmd        returns argument of |vifm---on-choose| or empty string
     delimiter  returns argument of |vifm---delimiter| or the default one ("\n")
+
+escape({string}, {chars})                      *vifm-escape()*
+
+Escapes all occurrences of {chars} in the {string} by prepending slash (`\`) to
+them.  Note that the slash itself is not escaped unless it appears in {chars}.
 
 executable({expr})                             *vifm-executable()*
 

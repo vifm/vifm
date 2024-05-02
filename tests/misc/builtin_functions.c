@@ -493,5 +493,22 @@ TEST(input_wrong_arg)
 	ASSERT_FAIL("input('prompt', 'input', 'bla')", PE_INVALID_EXPRESSION);
 }
 
+TEST(escape_strings)
+{
+	ASSERT_FAIL("escape(0)", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("escape('a')", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("escape('a', 'b', 'c')", PE_INVALID_EXPRESSION);
+
+	ASSERT_OK("escape('a0a', 0)", "a\\0a");
+	ASSERT_OK("escape('0', 0)", "\\0");
+
+	ASSERT_OK("escape('\\', '')", "\\");
+	ASSERT_OK("escape('\\b', 'b')", "\\\\b");
+
+	ASSERT_OK("escape('test', ' ')", "test");
+	ASSERT_OK("escape('a test', ' ')", "a\\ test");
+	ASSERT_OK("escape(' \t ', ' \t')", "\\ \\\t\\ ");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

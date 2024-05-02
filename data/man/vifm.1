@@ -1,4 +1,4 @@
-.TH VIFM 1 "30 Mar 2024" "vifm 0.13"
+.TH VIFM 1 "2 May 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6069,6 +6069,9 @@ USAGE                 RESULT      DESCRIPTION
 
 chooseopt({opt})      String      Queries choose parameters passed on startup.
 .br
+escape({string}, {chars})
+                      String      Returns {string} after escaping {chars} in it.
+.br
 executable({expr})    Integer     Checks whether {expr} command available.
 .br
 expand({expr})        String      Expands special keywords in {expr}.
@@ -6110,6 +6113,11 @@ Retrieves values of options related to file choosing.  {opt} can be one of:
     dir        returns argument of \-\-choose-dir or empty string
     cmd        returns argument of \-\-on-choose or empty string
     delimiter  returns argument of \-\-delimiter or the default one (\\n)
+
+.BI escape({string}, {chars})
+
+Escapes all occurrences of {chars} in the {string} by prepending slash (`\`) to
+them.  Note that the slash itself is not escaped unless it appears in {chars}.
 
 .BI executable({expr})
 

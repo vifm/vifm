@@ -637,6 +637,9 @@ echo term('cmd')
 " "tabpagenr" should be highlighted as a function()
 echo tabpagenr('$')
 
+" "escape" should be highlighted as a function()
+echo escape('path name', '\ ')
+
 " "fnameescape" should be highlighted as a function()
 echo fnameescape('path name')
 
