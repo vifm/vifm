@@ -743,7 +743,7 @@ complete_progs(const char *str, assoc_records_t records)
 
 		if(strnoscmp(cmd, str, len) == 0)
 		{
-			vle_compl_put_match(escape_chars(cmd, "|"), assoc->description);
+			vle_compl_put_match(escape_chars(cmd, "|\\"), assoc->description);
 		}
 	}
 }

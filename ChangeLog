@@ -40,6 +40,9 @@
 	option).  Part of the text is replaced with ellipsis to keep both start
 	and end visible.  Patch by Vadim Curcă.
 
+	Added escape() builtin function to escape specific characters in strings.
+	Thanks to The Cyberduck.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
