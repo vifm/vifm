@@ -723,7 +723,7 @@ downward.
 Or you can use count with motions passed to y, d or D.
 
 d[count]j delete (count + 1) files starting from current cursor position
-upward.
+downward.
 
 Registers~
                                                *vifm-registers*
@@ -1847,7 +1847,7 @@ The builtin commands are:
 
                                                *vifm-:find* *vifm-:fin*
 :[range]fin[d] pattern
-    display results of find command in the menu.  Searche among selected
+    display results of find command in the menu.  Searches among selected
     files if any and no range given.  Macros are accepted.  By default the
     command relies on the external "find" utility, which can be customized
     by altering value of the |vifm-'findprg'| option.  See
@@ -2904,7 +2904,7 @@ Command macros~
 The command macros may be used in user commands.
                                                                *vifm-%a*
   %a        user arguments.  When user arguments contain macros, they are
-            expanded before preforming substitution of %a.
+            expanded before performing substitution of %a.
                                                                *vifm-%c*
   %c  %"c   the current file under the cursor.
                                                                *vifm-%C*
@@ -3304,8 +3304,8 @@ character extension unless it's "d" letter.  And >
 associates `sxiv` picture viewer only for JPEG-files that contain single digit
 in their name.
 
-If you need to include literal comma, which is normally separates multiple
-globs, double it.
+If you need to include literal comma, which normally separates multiple globs,
+double it.
 
 --------------------------------------------------------------------------------
 *vifm-set-options*
@@ -4488,7 +4488,7 @@ which will be expanded (prepend $ with a slash to prevent expansion).
 Environment variables are expanded when the option is set.
 
 On *nix, if element ends with "%u", the mark is replaced with real user ID and
-permissions are set so that only that only owner is able to use it.
+permissions are set so that only that owner is able to use it.
 Note that even this setup is not completely secure when combined with "%r/"
 and it's overall safer to keep files in home directory, but that implies cost
 of copying files between partitions.
