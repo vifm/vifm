@@ -1399,7 +1399,7 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
-			vle_compl_put_match(escape_chars(vle_opt_to_string(opt), " |"), "");
+			vle_compl_put_match(escape_chars(vle_opt_to_string(opt), " |\\"), "");
 		}
 	}
 

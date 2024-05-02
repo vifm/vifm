@@ -241,7 +241,8 @@ const char * extract_part(const char str[], const char separators[],
 /* Skips all leading characters of the str which are equal to the c. */
 char * skip_char(const char str[], char c);
 
-/* Escapes chars symbols in the string.  Returns new string, caller should free
+/* Escapes chars symbols in the string with a slash.  Slash itself gets escaped
+ * only if it's included in chars.  Returns new string, caller should free
  * it. */
 char * escape_chars(const char string[], const char chars[]);
 

@@ -791,7 +791,7 @@ escape_chars(const char string[], const char chars[])
 
 	for(i = 0; i < len; i++)
 	{
-		if(string[i] == '\\' || char_is_one_of(chars, string[i]))
+		if(char_is_one_of(chars, string[i]))
 		{
 			*dup++ = '\\';
 		}

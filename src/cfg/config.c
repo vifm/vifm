@@ -598,7 +598,7 @@ store_config_paths(const char data_dir[])
 		base = (is_dir(data_dir) ? data_dir : cfg.config_dir);
 	}
 
-	char *trash_base = escape_chars(base, "$");
+	char *trash_base = escape_chars(base, "$\\");
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), trash_dir_fmt, trash_base);
 	free(trash_base);
 
