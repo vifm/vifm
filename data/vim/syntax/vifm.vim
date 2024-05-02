@@ -78,7 +78,23 @@ syntax case match
 
 " Builtin functions
 syntax match vifmBuiltinFunction
-		\ '\(chooseopt\|escape\|expand\|executable\|extcached\|filereadable\|filetype\|fnameescape\|getpanetype\|has\|input\|layoutis\|paneisat\|system\|tabpagenr\|term\)\ze('
+		\ '\(chooseopt
+		  \\|escape
+		  \\|expand
+		  \\|executable
+		  \\|extcached
+		  \\|filereadable
+		  \\|filetype
+		  \\|fnameescape
+		  \\|getpanetype
+		  \\|has
+		  \\|input
+		  \\|layoutis
+		  \\|paneisat
+		  \\|system
+		  \\|tabpagenr
+		  \\|term
+		  \\)\ze('
 
 " Operators
 syntax match vifmOperator "\(==\|!=\|>=\?\|<=\?\|\.\|-\|+\|&&\|||\)" skipwhite
