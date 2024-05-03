@@ -4428,7 +4428,7 @@ Example of highlighting tab number: >
  highlight User8 ctermbg=blue ctermfg=none
  " use optional group predicated on current-tab flag
  set tabprefix=[%7*%[%8*%C%]%N%*:
-
+<
                                                *vifm-'tabscope'*
 tabscope
 type: enumeration
