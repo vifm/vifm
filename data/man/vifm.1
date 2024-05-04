@@ -816,7 +816,7 @@ yank count files starting from current cursor position downward.
 Or you can use count with motions passed to y, d or D.
 .TP
 .BI d[count]j
-delete (count + 1) files starting from current cursor position upward.
+delete (count + 1) files starting from current cursor position downward.
 .\" ---------------------------------------------------------------------------
 .SH Registers
 .\" ---------------------------------------------------------------------------
@@ -3510,7 +3510,7 @@ The command macros may be used in user commands.
 .TP
 .BI %a
 User arguments.  When user arguments contain macros, they are expanded before
-preforming substitution of %a.
+performing substitution of %a.
 .TP
 .BI "%c %""c"
 The current file under the cursor.
@@ -3997,7 +3997,7 @@ character extension unless it's "d" letter.  And
 associates `sxiv` picture viewer only for JPEG-files that contain single digit
 in their name.
 
-If you need to include literal comma, which is normally separates multiple
+If you need to include literal comma, which normally separates multiple
 globs, double it.
 .\" ---------------------------------------------------------------------------
 .SH :set options
@@ -5357,7 +5357,7 @@ which will be expanded (prepend $ with a slash to prevent expansion).
 Environment variables are expanded when the option is set.
 
 On *nix, if element ends with "%u", the mark is replaced with real user ID and
-permissions are set so that only that only owner is able to use it.
+permissions are set so that only that owner is able to use it.
 .br
 .B Note
 that even this setup is not completely secure when combined with "%r/" and it's

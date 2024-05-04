@@ -23,6 +23,6 @@ fi
 new="const char GIT_INFO[] = \"$info\";"
 
 if [ "$old" != "$new" -o ! -f compile_info.c ]; then
-    echo "Updating build revision"
+    echo "Updating build revision to be '$info'"
     echo "$new" > compile_info.c
 fi
