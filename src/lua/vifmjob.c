@@ -81,7 +81,12 @@ static const luaL_Reg vifmjob_methods[] = {
 	{ NULL,       NULL                       }
 };
 
-/* Address of this variable serves as a key in Lua table. */
+/*
+ * Address of this variable serves as a key in Lua table which maps VifmJob
+ * instances onto dictionary with such fields:
+ *  - "obj" - vifm_job_t user data
+ *  - "on_exit" - Lua callback to invoke when the job is done
+ */
 static char jobs_key;
 
 void
