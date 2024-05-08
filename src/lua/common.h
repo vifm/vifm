@@ -39,6 +39,11 @@ void vlua_cmn_check_field(struct lua_State *lua, int table_idx,
 int vlua_cmn_check_opt_field(struct lua_State *lua, int table_idx,
 		const char name[], int lua_type);
 
+/* Retrieves user data from a specified stack index aborting (Lua does
+ * longjmp()) if it's missing or isn't user data.  Returns user data pointer,
+ * never NULL. */
+void * vlua_cmn_check_this(struct lua_State *lua, int idx);
+
 /* Converts Lua value at the top of the stack into a C pointer without popping
  * it.  Returns the pointer. */
 void * vlua_cmn_to_pointer(struct lua_State *lua);

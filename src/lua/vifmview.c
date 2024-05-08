@@ -198,14 +198,14 @@ VLUA_API(cursor_index)(lua_State *lua)
 	const char *key = luaL_checkstring(lua, 2);
 	if(strcmp(key, "pos") == 0)
 	{
-		const unsigned int *id = lua_touserdata(lua, 1);
+		const unsigned int *id = vlua_cmn_check_this(lua, 1);
 		view_t *view = find_view(lua, *id);
 		lua_pushinteger(lua, view->list_pos + 1);
 		return 1;
 	}
 	else if(strcmp(key, "entry") == 0)
 	{
-		unsigned int *id = lua_touserdata(lua, 1);
+		unsigned int *id = vlua_cmn_check_this(lua, 1);
 		lua_pushlightuserdata(lua, id);
 		lua_pushcclosure(lua, VLUA_REF(cursor_entry), 1);
 		return 1;
@@ -225,7 +225,7 @@ VLUA_API(cursor_newindex)(lua_State *lua)
 		{
 			return 0;
 		}
-		const unsigned int *id = lua_touserdata(lua, 1);
+		const unsigned int *id = vlua_cmn_check_this(lua, 1);
 		view_t *view = find_view(lua, *id);
 		const int pos = luaL_checkinteger(lua, 3) - 1;
 		fpos_set_pos(view, pos);
@@ -253,7 +253,7 @@ VLUA_API(cursor_newindex)(lua_State *lua)
 static int
 VLUA_API(cursor_entry)(lua_State *lua)
 {
-	const unsigned int *id = lua_touserdata(lua, lua_upvalueindex(1));
+	const unsigned int *id = vlua_cmn_check_this(lua, lua_upvalueindex(1));
 	view_t *view = find_view(lua, *id);
 	vifmentry_new(lua, &view->dir_entry[view->list_pos]);
 	return 1;
@@ -340,7 +340,7 @@ VLUA_API(locopts_newindex)(lua_State *lua)
 static int
 do_opt(lua_State *lua, opt_t *opt, int set)
 {
-	const unsigned int *id = lua_touserdata(lua, 1);
+	const unsigned int *id = vlua_cmn_check_this(lua, 1);
 	view_t *view = find_view(lua, *id);
 
 	if(view == curr_view)
@@ -379,7 +379,7 @@ do_opt(lua_State *lua, opt_t *opt, int set)
 static int
 VLUA_IMPL(restore_curr_view)(lua_State *lua)
 {
-	view_t *curr = lua_touserdata(lua, lua_upvalueindex(1));
+	view_t *curr = vlua_cmn_check_this(lua, lua_upvalueindex(1));
 	curr_view = curr;
 	load_view_options(curr_view);
 	return 1;
@@ -389,7 +389,7 @@ VLUA_IMPL(restore_curr_view)(lua_State *lua)
 static int
 VLUA_IMPL(get_opt_wrapper)(lua_State *lua)
 {
-	opt_t *opt = lua_touserdata(lua, 1);
+	opt_t *opt = vlua_cmn_check_this(lua, 1);
 	return vlua_cmn_get_opt(lua, opt);
 }
 
@@ -397,7 +397,7 @@ VLUA_IMPL(get_opt_wrapper)(lua_State *lua)
 static int
 VLUA_IMPL(set_opt_wrapper)(lua_State *lua)
 {
-	opt_t *opt = lua_touserdata(lua, 1);
+	opt_t *opt = vlua_cmn_check_this(lua, 1);
 	return vlua_cmn_set_opt(lua, opt);
 }
 
