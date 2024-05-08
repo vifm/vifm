@@ -109,6 +109,7 @@ vifmjob_finish(lua_State *lua)
 		lua_pop(lua, 1);
 
 		bg_job_t *job = lua_touserdata(lua, -1);
+		assert(job != NULL && "List of Lua jobs includes a bad key!");
 		bg_job_set_exit_cb(job, NULL, NULL);
 	}
 
@@ -215,6 +216,7 @@ job_exit_cb(struct bg_job_t *job, void *arg)
 
 	lua_getfield(vlua->lua, -2, "obj");
 	vifm_job_t *vifm_job = lua_touserdata(vlua->lua, -1);
+	assert(vifm_job != NULL && "List of Lua jobs is includes bad element!");
 
 	/* Remove the table entry we've just used. */
 	lua_pushlightuserdata(vlua->lua, job);

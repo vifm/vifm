@@ -126,6 +126,8 @@ vlua_state_get(lua_State *lua)
 	lua_gettable(lua, LUA_REGISTRYINDEX);
 	vlua_t *vlua = lua_touserdata(lua, -1);
 	lua_pop(lua, 1);
+
+	assert(vlua != NULL && "Failed to obtain vlua state!");
 	return vlua;
 }
 
