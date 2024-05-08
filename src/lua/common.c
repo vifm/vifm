@@ -76,7 +76,7 @@ vlua_cmn_check_opt_field(lua_State *lua, int table_idx, const char name[],
 
 	if(type != lua_type)
 	{
-		return luaL_error(lua, "`%s` value must be a %s",name,
+		return luaL_error(lua, "`%s` value must be a %s", name,
 				lua_typename(lua, lua_type));
 	}
 	return 1;
