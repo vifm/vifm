@@ -291,8 +291,9 @@ transform_ascii_str(const char str[], int (*f)(int), char buf[], size_t buf_len)
 }
 
 /* Transforms characters of the string to while they fit in the buffer by
- * calling specified function on them.  Returns zero on success or non-zero if
- * output buffer is too small. */
+ * calling specified function on them.  Returns zero on success or non-zero on
+ * error (output buffer is too small or out of memory) in which case buffer is
+ * filled with full UTF-8 characters from input. */
 static int
 transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len)
