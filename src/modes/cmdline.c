@@ -2365,21 +2365,17 @@ static char *
 escape_cmd_for_pasting(const char str[])
 {
 	wchar_t *const wide_input = vifm_wcsdup(input_stat.line);
-	char *mb_input;
-	char *escaped;
-
 	if(wide_input == NULL)
 	{
 		return NULL;
 	}
 
 	wide_input[input_stat.index] = L'\0';
-	mb_input = to_multibyte(wide_input);
-
-	escaped = cmds_insertion_escape(mb_input, strlen(mb_input), str);
-
-	free(mb_input);
+	char *mb_input = to_multibyte(wide_input);
 	free(wide_input);
+
+	char *escaped = cmds_insertion_escape(mb_input, strlen(mb_input), str);
+	free(mb_input);
 
 	return escaped;
 }
