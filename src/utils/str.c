@@ -319,6 +319,13 @@ transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 	}
 
 	narrow = to_multibyte(wstring);
+	if(narrow == NULL)
+	{
+		free(wstring);
+		(void)utf8_strcpy(buf, str, buf_len);
+		return 1;
+	}
+
 	copied = utf8_strcpy(buf, narrow, buf_len);
 	error = copied == 0U || narrow[copied - 1U] != '\0';
 
