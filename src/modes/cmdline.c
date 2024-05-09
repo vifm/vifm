@@ -2368,6 +2368,11 @@ escape_cmd_for_pasting(const char str[])
 	char *mb_input;
 	char *escaped;
 
+	if(wide_input == NULL)
+	{
+		return NULL;
+	}
+
 	wide_input[input_stat.index] = L'\0';
 	mb_input = to_multibyte(wide_input);
 
