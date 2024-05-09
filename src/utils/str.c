@@ -298,38 +298,31 @@ static int
 transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len)
 {
-	size_t copied;
-	int error;
-	wchar_t *wstring;
-	wchar_t *p;
-	char *narrow;
-
-	wstring = to_wide(str);
+	wchar_t *wstring = to_wide(str);
 	if(wstring == NULL)
 	{
 		(void)utf8_strcpy(buf, str, buf_len);
 		return 1;
 	}
 
-	p = wstring;
+	wchar_t *p = wstring;
 	while(*p != L'\0')
 	{
 		*p = f(*p);
 		++p;
 	}
 
-	narrow = to_multibyte(wstring);
+	char *narrow = to_multibyte(wstring);
+	free(wstring);
+
 	if(narrow == NULL)
 	{
-		free(wstring);
 		(void)utf8_strcpy(buf, str, buf_len);
 		return 1;
 	}
 
-	copied = utf8_strcpy(buf, narrow, buf_len);
-	error = copied == 0U || narrow[copied - 1U] != '\0';
-
-	free(wstring);
+	size_t copied = utf8_strcpy(buf, narrow, buf_len);
+	int error = (copied == 0U || narrow[copied - 1U] != '\0');
 	free(narrow);
 
 	return error;
