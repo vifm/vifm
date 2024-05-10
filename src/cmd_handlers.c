@@ -3701,6 +3701,11 @@ mark_cmd(const cmd_info_t *cmd_info)
 	}
 
 	expanded_path = expand_tilde(cmd_info->argv[1]);
+	if(expanded_path == NULL)
+	{
+		return CMDS_ERR_NO_MEM;
+	}
+
 	if(!is_path_absolute(expanded_path))
 	{
 		free(expanded_path);

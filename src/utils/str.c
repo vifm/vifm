@@ -291,37 +291,38 @@ transform_ascii_str(const char str[], int (*f)(int), char buf[], size_t buf_len)
 }
 
 /* Transforms characters of the string to while they fit in the buffer by
- * calling specified function on them.  Returns zero on success or non-zero if
- * output buffer is too small. */
+ * calling specified function on them.  Returns zero on success or non-zero on
+ * error (output buffer is too small or out of memory) in which case buffer is
+ * filled with full UTF-8 characters from input. */
 static int
 transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len)
 {
-	size_t copied;
-	int error;
-	wchar_t *wstring;
-	wchar_t *p;
-	char *narrow;
-
-	wstring = to_wide(str);
+	wchar_t *wstring = to_wide(str);
 	if(wstring == NULL)
 	{
 		(void)utf8_strcpy(buf, str, buf_len);
 		return 1;
 	}
 
-	p = wstring;
+	wchar_t *p = wstring;
 	while(*p != L'\0')
 	{
 		*p = f(*p);
 		++p;
 	}
 
-	narrow = to_multibyte(wstring);
-	copied = utf8_strcpy(buf, narrow, buf_len);
-	error = copied == 0U || narrow[copied - 1U] != '\0';
-
+	char *narrow = to_multibyte(wstring);
 	free(wstring);
+
+	if(narrow == NULL)
+	{
+		(void)utf8_strcpy(buf, str, buf_len);
+		return 1;
+	}
+
+	size_t copied = utf8_strcpy(buf, narrow, buf_len);
+	int error = (copied == 0U || narrow[copied - 1U] != '\0');
 	free(narrow);
 
 	return error;

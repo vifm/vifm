@@ -137,7 +137,7 @@ VLUA_API(vifmentry_gc)(lua_State *lua)
 static int
 VLUA_API(vifmentry_gettarget)(lua_State *lua)
 {
-	vifm_entry_t *vifm_entry = lua_touserdata(lua, lua_upvalueindex(1));
+	vifm_entry_t *vifm_entry = vlua_cmn_check_this(lua, lua_upvalueindex(1));
 
 	if(vifm_entry->type != FT_LINK)
 	{
@@ -158,7 +158,7 @@ VLUA_API(vifmentry_gettarget)(lua_State *lua)
 static int
 VLUA_API(vifmentry_mimetype)(lua_State *lua)
 {
-	vifm_entry_t *vifm_entry = lua_touserdata(lua, lua_upvalueindex(1));
+	vifm_entry_t *vifm_entry = vlua_cmn_check_this(lua, lua_upvalueindex(1));
 
 	const char *mimetype = get_mimetype(vifm_entry->full_path,
 			/*resolve_symlinks=*/1);
