@@ -53,7 +53,7 @@ static int count_digits(int number);
 static const char * substitute_tr(const char name[], const char pattern[],
 		const char sub[]);
 static int schedule_a_rename(dir_entry_t *entry, const char new_fname[],
-		strlist_t *new_names);
+		int case_change, strlist_t *new_names);
 static int rename_marked(view_t *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 
@@ -630,21 +630,14 @@ count_digits(int number)
 int
 fops_case(view_t *view, int to_upper)
 {
-	char **dest;
-	int ndest;
-	dir_entry_t *entry;
-	int save_msg;
-	int err;
-
 	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
 
-	entry = NULL;
-	ndest = 0;
-	dest = NULL;
-	err = 0;
+	strlist_t new_names = {};
+	dir_entry_t *entry = NULL;
+	int err = 0;
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *const old_fname = entry->name;
@@ -661,38 +654,25 @@ fops_case(view_t *view, int to_upper)
 			(void)str_to_lower(old_fname, new_fname, sizeof(new_fname));
 		}
 
-		if(strcmp(new_fname, old_fname) == 0)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/1, &new_names) != 0)
 		{
-			entry->marked = 0;
-			continue;
-		}
-
-		if(is_in_string_array(dest, ndest, new_fname))
-		{
-			ui_sb_errf("Name \"%s\" duplicates", new_fname);
 			err = 1;
 			break;
 		}
-		if(path_exists(new_fname, NODEREF) && !is_case_change(new_fname, old_fname))
-		{
-			ui_sb_errf("File \"%s\" already exists", new_fname);
-			err = 1;
-			break;
-		}
-
-		ndest = add_to_string_array(&dest, ndest, new_fname);
 	}
 
+	int save_msg;
 	if(err)
 	{
 		save_msg = 1;
 	}
 	else
 	{
-		save_msg = rename_marked(view, to_upper ? "gU" : "gu", NULL, NULL, dest);
+		const char *desc = (to_upper ? "gU" : "gu");
+		save_msg = rename_marked(view, desc, NULL, NULL, new_names.items);
 	}
 
-	free_string_array(dest, ndest);
+	free_string_array(new_names.items, new_names.nitems);
 
 	return save_msg;
 }
@@ -752,7 +732,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 			new_fname = regexp_subst(entry->name, sub, matches, NULL);
 		}
 
-		if(schedule_a_rename(entry, new_fname, &new_names) != 0)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_names) != 0)
 		{
 			err = 1;
 			break;
@@ -792,7 +772,7 @@ fops_tr(view_t *view, const char from[], const char to[])
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *new_fname = substitute_tr(entry->name, from, to);
-		if(schedule_a_rename(entry, new_fname, &new_names) != 0)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_names) != 0)
 		{
 			err = 1;
 			break;
@@ -839,7 +819,7 @@ substitute_tr(const char name[], const char pattern[], const char sub[])
  * necessary.  Returns 0 on success, otherwise non-zero is returned and an
  * error message is printed on the status bar. */
 static int
-schedule_a_rename(dir_entry_t *entry, const char new_fname[],
+schedule_a_rename(dir_entry_t *entry, const char new_fname[], int case_change,
 		strlist_t *new_names)
 {
 	/* Compare case sensitive strings even on Windows to let user rename file
@@ -867,8 +847,14 @@ schedule_a_rename(dir_entry_t *entry, const char new_fname[],
 	}
 	if(path_exists(new_fname, NODEREF))
 	{
-		ui_sb_errf("File \"%s\" already exists", new_fname);
-		return 1;
+		/* If we're changing case and target filesystem is case insensitive, this is
+		 * not an error condition because the same file can be accessed by
+		 * different names, otherwise it is an error. */
+		if(!(case_change && !case_sensitive_paths(entry->origin)))
+		{
+			ui_sb_errf("File \"%s\" already exists", new_fname);
+			return 1;
+		}
 	}
 
 	int new_size =
