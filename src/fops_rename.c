@@ -53,9 +53,9 @@ static int count_digits(int number);
 static const char * substitute_tr(const char name[], const char pattern[],
 		const char sub[]);
 static int schedule_a_rename(dir_entry_t *entry, const char new_fname[],
-		int case_change, strlist_t *new_names);
+		int case_change, strlist_t *new_paths);
 static int rename_marked(view_t *view, const char desc[], const char lhs[],
-		const char rhs[], char **dest);
+		const char rhs[], char **new_paths);
 
 void
 fops_rename_current(view_t *view, int name_only)
@@ -635,7 +635,7 @@ fops_case(view_t *view, int to_upper)
 		return 0;
 	}
 
-	strlist_t new_names = {};
+	strlist_t new_paths = {};
 	dir_entry_t *entry = NULL;
 	int err = 0;
 	while(iter_marked_entries(view, &entry))
@@ -654,7 +654,7 @@ fops_case(view_t *view, int to_upper)
 			(void)str_to_lower(old_fname, new_fname, sizeof(new_fname));
 		}
 
-		if(schedule_a_rename(entry, new_fname, /*case_change=*/1, &new_names) != 0)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/1, &new_paths) != 0)
 		{
 			err = 1;
 			break;
@@ -669,10 +669,10 @@ fops_case(view_t *view, int to_upper)
 	else
 	{
 		const char *desc = (to_upper ? "gU" : "gu");
-		save_msg = rename_marked(view, desc, NULL, NULL, new_names.items);
+		save_msg = rename_marked(view, desc, NULL, NULL, new_paths.items);
 	}
 
-	free_string_array(new_names.items, new_names.nitems);
+	free_string_array(new_paths.items, new_paths.nitems);
 
 	return save_msg;
 }
@@ -709,7 +709,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 		return 1;
 	}
 
-	strlist_t new_names = {};
+	strlist_t new_paths = {};
 	dir_entry_t *entry = NULL;
 	err = 0;
 	while(iter_marked_entries(view, &entry))
@@ -732,7 +732,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 			new_fname = regexp_subst(entry->name, sub, matches, NULL);
 		}
 
-		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_names) != 0)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_paths) != 0)
 		{
 			err = 1;
 			break;
@@ -748,10 +748,10 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 	}
 	else
 	{
-		save_msg = rename_marked(view, "s", pattern, sub, new_names.items);
+		save_msg = rename_marked(view, "s", pattern, sub, new_paths.items);
 	}
 
-	free_string_array(new_names.items, new_names.nitems);
+	free_string_array(new_paths.items, new_paths.nitems);
 
 	return save_msg;
 }
@@ -766,13 +766,13 @@ fops_tr(view_t *view, const char from[], const char to[])
 		return 0;
 	}
 
-	strlist_t new_names = {};
+	strlist_t new_paths = {};
 	dir_entry_t *entry = NULL;
 	int err = 0;
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *new_fname = substitute_tr(entry->name, from, to);
-		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_names) != 0)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_paths) != 0)
 		{
 			err = 1;
 			break;
@@ -786,10 +786,10 @@ fops_tr(view_t *view, const char from[], const char to[])
 	}
 	else
 	{
-		save_msg = rename_marked(view, "t", from, to, new_names.items);
+		save_msg = rename_marked(view, "t", from, to, new_paths.items);
 	}
 
-	free_string_array(new_names.items, new_names.nitems);
+	free_string_array(new_paths.items, new_paths.nitems);
 
 	return save_msg;
 }
@@ -815,12 +815,12 @@ substitute_tr(const char name[], const char pattern[], const char sub[])
 }
 
 /* Evaluates possibility of renaming a file to new_fname.  If everything is
- * fine, appends new name to *new_names or unmarks an entry if no rename is
+ * fine, appends new name to *new_paths or unmarks an entry if no rename is
  * necessary.  Returns 0 on success, otherwise non-zero is returned and an
  * error message is printed on the status bar. */
 static int
 schedule_a_rename(dir_entry_t *entry, const char new_fname[], int case_change,
-		strlist_t *new_names)
+		strlist_t *new_paths)
 {
 	/* Compare case sensitive strings even on Windows to let user rename file
 	 * changing only case of some characters. */
@@ -830,7 +830,10 @@ schedule_a_rename(dir_entry_t *entry, const char new_fname[], int case_change,
 		return 0;
 	}
 
-	if(is_in_string_array(new_names->items, new_names->nitems, new_fname))
+	char new_path[PATH_MAX + 1];
+	build_path(new_path, sizeof(new_path), entry->origin, new_fname);
+
+	if(is_in_string_array(new_paths->items, new_paths->nitems, new_path))
 	{
 		ui_sb_errf("Name \"%s\" duplicates", new_fname);
 		return 1;
@@ -858,25 +861,25 @@ schedule_a_rename(dir_entry_t *entry, const char new_fname[], int case_change,
 	}
 
 	int new_size =
-		add_to_string_array(&new_names->items, new_names->nitems, new_fname);
+		add_to_string_array(&new_paths->items, new_paths->nitems, new_path);
 
-	if(new_names->nitems == new_size)
+	if(new_paths->nitems == new_size)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		ui_sb_err("Rename operation has failed");
 		return 1;
 	}
 
-	new_names->nitems = new_size;
+	new_paths->nitems = new_size;
 	return 0;
 }
 
-/* Renames marked files using corresponding entries of the dest array.  lhs and
- * rhs can be NULL to omit their printing (both at the same time).  Returns new
- * value for save_msg flag. */
+/* Renames marked files using corresponding entries of the new_paths array.  lhs
+ * and rhs can be NULL to omit their printing (both at the same time).  Returns
+ * new value for save_msg flag. */
 static int
 rename_marked(view_t *view, const char desc[], const char lhs[],
-		const char rhs[], char **dest)
+		const char rhs[], char **new_paths)
 {
 	int i;
 	int nrenamed;
@@ -901,7 +904,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
-		const char *const new_fname = dest[i++];
+		const char *const new_fname = after_last(new_paths[i++], '/');
 		if(fops_mv_file(entry->name, entry->origin, new_fname, entry->origin,
 					OP_MOVE, 1, NULL) == 0)
 		{

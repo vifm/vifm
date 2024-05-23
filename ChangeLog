@@ -269,6 +269,10 @@
 	Windows (primarily C:\ could be reported as non-writable).  Thanks to
 	theorlangur and bitraid.
 
+	Fixed :substitute, :tr, gu* and gU* detecting a non-existent target name
+	conflict when rename in a custom view would produce an identically named
+	files in different directories.  Thanks to aleksejrs.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
