@@ -273,6 +273,9 @@
 	conflict when rename in a custom view would produce an identically named
 	files in different directories.  Thanks to aleksejrs.
 
+	Fixed lack of a redraw after running :substitute, :tr, gu* or gU* in a
+	custom view.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

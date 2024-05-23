@@ -914,8 +914,16 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 	}
 
 	un_group_close();
-	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 
+	if(nrenamed > 0 && flist_custom_active(view))
+	{
+		/* Custom views don't have watchers that tell them to reload and redraw a
+		 * file list when a change like rename happens, so schedule a redraw.
+		 * Paths should have been updated in-place by fentry_rename(). */
+		ui_view_schedule_redraw(view);
+	}
+
+	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 	return 1;
 }
 
