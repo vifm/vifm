@@ -871,8 +871,17 @@ schedule_a_rename(dir_entry_t *entry, const char new_fname[],
 		return 1;
 	}
 
-	new_names->nitems = add_to_string_array(&new_names->items, new_names->nitems,
-			new_fname);
+	int new_size =
+		add_to_string_array(&new_names->items, new_names->nitems, new_fname);
+
+	if(new_names->nitems == new_size)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		ui_sb_err("Rename operation has failed");
+		return 1;
+	}
+
+	new_names->nitems = new_size;
 	return 0;
 }
 
