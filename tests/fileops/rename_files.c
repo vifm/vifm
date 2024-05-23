@@ -9,6 +9,8 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
@@ -20,6 +22,7 @@
 
 static void broken_link_name(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete);
+static int on_case_sensitive_fs(void);
 
 static char *saved_cwd;
 
@@ -318,8 +321,141 @@ TEST(global_substitution_of_caret_pattern)
 	assert_success(unlink(SANDBOX_PATH "/01"));
 }
 
+TEST(case_change_works, IF(on_case_sensitive_fs))
+{
+	create_file(SANDBOX_PATH "/fIlE1");
+	create_file(SANDBOX_PATH "/FiLe2");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	ui_sb_msg("");
+	(void)fops_case(&lwin, /*to_upper=*/0);
+	assert_string_equal("2 files renamed", ui_sb_last());
+
+	assert_failure(unlink(SANDBOX_PATH "/fIlE1"));
+	assert_failure(unlink(SANDBOX_PATH "/FiLe2"));
+	assert_success(unlink(SANDBOX_PATH "/file1"));
+	assert_success(unlink(SANDBOX_PATH "/file2"));
+}
+
+TEST(case_change_detect_dups, IF(on_case_sensitive_fs))
+{
+	create_file(SANDBOX_PATH "/fIlE");
+	create_file(SANDBOX_PATH "/FiLe");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	ui_sb_msg("");
+	(void)fops_case(&lwin, /*to_upper=*/0);
+	assert_string_equal("Name \"file\" duplicates", ui_sb_last());
+
+	assert_success(unlink(SANDBOX_PATH "/fIlE"));
+	assert_success(unlink(SANDBOX_PATH "/FiLe"));
+	assert_failure(unlink(SANDBOX_PATH "/file"));
+}
+
+TEST(substitution_and_idential_names_in_different_dirs)
+{
+	create_dir(SANDBOX_PATH "/adir");
+	create_file(SANDBOX_PATH "/adir/abc");
+	create_dir(SANDBOX_PATH "/bdir");
+	create_file(SANDBOX_PATH "/bdir/abc");
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "adir/abc");
+	flist_custom_add(&lwin, "bdir/abc");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	ui_sb_msg("");
+	(void)fops_subst(&lwin, "$", "d", /*ic=*/0, /*glob=*/0);
+	assert_string_equal("2 files renamed", ui_sb_last());
+
+	assert_failure(unlink(SANDBOX_PATH "/adir/abc"));
+	assert_success(unlink(SANDBOX_PATH "/adir/abcd"));
+	assert_success(rmdir(SANDBOX_PATH "/adir"));
+	assert_failure(unlink(SANDBOX_PATH "/bdir/abc"));
+	assert_success(unlink(SANDBOX_PATH "/bdir/abcd"));
+	assert_success(rmdir(SANDBOX_PATH "/bdir"));
+}
+
+TEST(translation_and_idential_names_in_different_dirs)
+{
+	create_dir(SANDBOX_PATH "/adir");
+	create_file(SANDBOX_PATH "/adir/abc");
+	create_dir(SANDBOX_PATH "/bdir");
+	create_file(SANDBOX_PATH "/bdir/abc");
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "adir/abc");
+	flist_custom_add(&lwin, "bdir/abc");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	ui_sb_msg("");
+	(void)fops_tr(&lwin, "abc", "xyz");
+	assert_string_equal("2 files renamed", ui_sb_last());
+
+	assert_failure(unlink(SANDBOX_PATH "/adir/abc"));
+	assert_success(unlink(SANDBOX_PATH "/adir/xyz"));
+	assert_success(rmdir(SANDBOX_PATH "/adir"));
+	assert_failure(unlink(SANDBOX_PATH "/bdir/abc"));
+	assert_success(unlink(SANDBOX_PATH "/bdir/xyz"));
+	assert_success(rmdir(SANDBOX_PATH "/bdir"));
+}
+
+TEST(case_change_and_idential_names_in_different_dirs, IF(on_case_sensitive_fs))
+{
+	create_dir(SANDBOX_PATH "/adir");
+	create_file(SANDBOX_PATH "/adir/abc");
+	create_dir(SANDBOX_PATH "/bdir");
+	create_file(SANDBOX_PATH "/bdir/abc");
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "adir/abc");
+	flist_custom_add(&lwin, "bdir/abc");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	ui_sb_msg("");
+	(void)fops_case(&lwin, /*to_upper=*/1);
+	assert_string_equal("2 files renamed", ui_sb_last());
+
+	assert_failure(unlink(SANDBOX_PATH "/adir/abc"));
+	assert_success(unlink(SANDBOX_PATH "/adir/ABC"));
+	assert_success(rmdir(SANDBOX_PATH "/adir"));
+	assert_failure(unlink(SANDBOX_PATH "/bdir/abc"));
+	assert_success(unlink(SANDBOX_PATH "/bdir/ABC"));
+	assert_success(rmdir(SANDBOX_PATH "/bdir"));
+}
+
 /* No tests for custom/tree view, because control doesn't reach necessary checks
  * when new filenames are provided beforehand (only when user edits them). */
+
+/* Checks that sandbox directory is located on a file-system that allows files
+ * that differ only by character case.  Returns non-zero if so. */
+static int
+on_case_sensitive_fs(void)
+{
+	/* Use of SANDBOX_PATH prevents this function from being in test utilities. */
+	int result = (os_mkdir(SANDBOX_PATH "/tEsT", 0700) == 0)
+	          && (os_rmdir(SANDBOX_PATH "/test") != 0);
+	(void)os_rmdir(SANDBOX_PATH "/tEsT");
+	return result;
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

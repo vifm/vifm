@@ -39,15 +39,6 @@
 #include "fops_common.h"
 #include "undo.h"
 
-/* What to do with rename candidate name (old name and new name). */
-typedef enum
-{
-	RA_SKIP,   /* Skip rename (when new name matches the old one). */
-	RA_FAIL,   /* Abort renaming (status bar error was printed). */
-	RA_RENAME, /* Rename this file. */
-}
-RenameAction;
-
 static void rename_file_cb(const char new_name[], void *arg);
 static int complete_filename_only(const char str[], void *arg);
 static char ** list_files_to_rename(view_t *view, int recursive, int *len);
@@ -61,10 +52,10 @@ TSTATIC const char * incdec_name(const char fname[], int k);
 static int count_digits(int number);
 static const char * substitute_tr(const char name[], const char pattern[],
 		const char sub[]);
-static RenameAction check_rename(const char old_fname[], const char new_fname[],
-		char **dest, int ndest);
+static int schedule_a_rename(dir_entry_t *entry, const char new_fname[],
+		int case_change, strlist_t *new_paths);
 static int rename_marked(view_t *view, const char desc[], const char lhs[],
-		const char rhs[], char **dest);
+		const char rhs[], char **new_paths);
 
 void
 fops_rename_current(view_t *view, int name_only)
@@ -639,21 +630,14 @@ count_digits(int number)
 int
 fops_case(view_t *view, int to_upper)
 {
-	char **dest;
-	int ndest;
-	dir_entry_t *entry;
-	int save_msg;
-	int err;
-
 	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
 
-	entry = NULL;
-	ndest = 0;
-	dest = NULL;
-	err = 0;
+	strlist_t new_paths = {};
+	dir_entry_t *entry = NULL;
+	int err = 0;
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *const old_fname = entry->name;
@@ -670,38 +654,25 @@ fops_case(view_t *view, int to_upper)
 			(void)str_to_lower(old_fname, new_fname, sizeof(new_fname));
 		}
 
-		if(strcmp(new_fname, old_fname) == 0)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/1, &new_paths) != 0)
 		{
-			entry->marked = 0;
-			continue;
-		}
-
-		if(is_in_string_array(dest, ndest, new_fname))
-		{
-			ui_sb_errf("Name \"%s\" duplicates", new_fname);
 			err = 1;
 			break;
 		}
-		if(path_exists(new_fname, NODEREF) && !is_case_change(new_fname, old_fname))
-		{
-			ui_sb_errf("File \"%s\" already exists", new_fname);
-			err = 1;
-			break;
-		}
-
-		ndest = add_to_string_array(&dest, ndest, new_fname);
 	}
 
+	int save_msg;
 	if(err)
 	{
 		save_msg = 1;
 	}
 	else
 	{
-		save_msg = rename_marked(view, to_upper ? "gU" : "gu", NULL, NULL, dest);
+		const char *desc = (to_upper ? "gU" : "gu");
+		save_msg = rename_marked(view, desc, NULL, NULL, new_paths.items);
 	}
 
-	free_string_array(dest, ndest);
+	free_string_array(new_paths.items, new_paths.nitems);
 
 	return save_msg;
 }
@@ -710,18 +681,12 @@ int
 fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 		int glob)
 {
-	regex_t re;
-	char **dest;
-	int ndest;
-	int cflags;
-	dir_entry_t *entry;
-	int err, save_msg;
-
 	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
 
+	int cflags;
 	if(ic == 0)
 	{
 		cflags = get_regexp_cflags(pattern);
@@ -735,29 +700,29 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 		cflags = REG_EXTENDED;
 	}
 
-	if((err = regexp_compile(&re, pattern, cflags)) != 0)
+	regex_t re;
+	int err = regexp_compile(&re, pattern, cflags);
+	if(err != 0)
 	{
 		ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return 1;
 	}
 
-	entry = NULL;
-	ndest = 0;
-	dest = NULL;
+	strlist_t new_paths = {};
+	dir_entry_t *entry = NULL;
 	err = 0;
-	while(iter_marked_entries(view, &entry) && !err)
+	while(iter_marked_entries(view, &entry))
 	{
-		const char *new_fname;
 		regmatch_t matches[10];
-		RenameAction action;
-
 		if(regexec(&re, entry->name, ARRAY_LEN(matches), matches, 0) != 0)
 		{
+			/* Regexp didn't match. */
 			entry->marked = 0;
 			continue;
 		}
 
+		const char *new_fname;
 		if(glob && pattern[0] != '^')
 		{
 			new_fname = regexp_gsubst(&re, entry->name, sub, matches);
@@ -767,37 +732,26 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 			new_fname = regexp_subst(entry->name, sub, matches, NULL);
 		}
 
-		action = check_rename(entry->name, new_fname, dest, ndest);
-		switch(action)
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_paths) != 0)
 		{
-			case RA_SKIP:
-				entry->marked = 0;
-				continue;
-			case RA_FAIL:
-				err = 1;
-				break;
-			case RA_RENAME:
-				ndest = add_to_string_array(&dest, ndest, new_fname);
-				break;
-
-			default:
-				assert(0 && "Unhandled rename action.");
-				break;
+			err = 1;
+			break;
 		}
 	}
 
 	regfree(&re);
 
+	int save_msg;
 	if(err)
 	{
 		save_msg = 1;
 	}
 	else
 	{
-		save_msg = rename_marked(view, "s", pattern, sub, dest);
+		save_msg = rename_marked(view, "s", pattern, sub, new_paths.items);
 	}
 
-	free_string_array(dest, ndest);
+	free_string_array(new_paths.items, new_paths.nitems);
 
 	return save_msg;
 }
@@ -805,11 +759,6 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 int
 fops_tr(view_t *view, const char from[], const char to[])
 {
-	char **dest;
-	int ndest;
-	dir_entry_t *entry;
-	int err, save_msg;
-
 	assert(strlen(from) == strlen(to) && "Lengths don't match.");
 
 	if(!fops_view_can_be_changed(view))
@@ -817,46 +766,30 @@ fops_tr(view_t *view, const char from[], const char to[])
 		return 0;
 	}
 
-	entry = NULL;
-	ndest = 0;
-	dest = NULL;
-	err = 0;
-	while(iter_marked_entries(view, &entry) && !err)
+	strlist_t new_paths = {};
+	dir_entry_t *entry = NULL;
+	int err = 0;
+	while(iter_marked_entries(view, &entry))
 	{
-		const char *new_fname;
-		RenameAction action;
-
-		new_fname = substitute_tr(entry->name, from, to);
-
-		action = check_rename(entry->name, new_fname, dest, ndest);
-		switch(action)
+		const char *new_fname = substitute_tr(entry->name, from, to);
+		if(schedule_a_rename(entry, new_fname, /*case_change=*/0, &new_paths) != 0)
 		{
-			case RA_SKIP:
-				entry->marked = 0;
-				continue;
-			case RA_FAIL:
-				err = 1;
-				break;
-			case RA_RENAME:
-				ndest = add_to_string_array(&dest, ndest, new_fname);
-				break;
-
-			default:
-				assert(0 && "Unhandled rename action.");
-				break;
+			err = 1;
+			break;
 		}
 	}
 
+	int save_msg;
 	if(err)
 	{
 		save_msg = 1;
 	}
 	else
 	{
-		save_msg = rename_marked(view, "t", from, to, dest);
+		save_msg = rename_marked(view, "t", from, to, new_paths.items);
 	}
 
-	free_string_array(dest, ndest);
+	free_string_array(new_paths.items, new_paths.nitems);
 
 	return save_msg;
 }
@@ -881,49 +814,72 @@ substitute_tr(const char name[], const char pattern[], const char sub[])
 	return buf;
 }
 
-/* Evaluates possibility of renaming old_fname to new_fname.  Returns
- * resolution. */
-static RenameAction
-check_rename(const char old_fname[], const char new_fname[], char **dest,
-		int ndest)
+/* Evaluates possibility of renaming a file to new_fname.  If everything is
+ * fine, appends new name to *new_paths or unmarks an entry if no rename is
+ * necessary.  Returns 0 on success, otherwise non-zero is returned and an
+ * error message is printed on the status bar. */
+static int
+schedule_a_rename(dir_entry_t *entry, const char new_fname[], int case_change,
+		strlist_t *new_paths)
 {
 	/* Compare case sensitive strings even on Windows to let user rename file
 	 * changing only case of some characters. */
-	if(strcmp(old_fname, new_fname) == 0)
+	if(strcmp(entry->name, new_fname) == 0)
 	{
-		return RA_SKIP;
+		entry->marked = 0;
+		return 0;
 	}
 
-	if(is_in_string_array(dest, ndest, new_fname))
+	char new_path[PATH_MAX + 1];
+	build_path(new_path, sizeof(new_path), entry->origin, new_fname);
+
+	if(is_in_string_array(new_paths->items, new_paths->nitems, new_path))
 	{
 		ui_sb_errf("Name \"%s\" duplicates", new_fname);
-		return RA_FAIL;
+		return 1;
 	}
 	if(new_fname[0] == '\0')
 	{
-		ui_sb_errf("Destination name of \"%s\" is empty", old_fname);
-		return RA_FAIL;
+		ui_sb_errf("Destination name of \"%s\" is empty", entry->name);
+		return 1;
 	}
 	if(contains_slash(new_fname))
 	{
 		ui_sb_errf("Destination name \"%s\" contains slash", new_fname);
-		return RA_FAIL;
+		return 1;
 	}
 	if(path_exists(new_fname, NODEREF))
 	{
-		ui_sb_errf("File \"%s\" already exists", new_fname);
-		return RA_FAIL;
+		/* If we're changing case and target filesystem is case insensitive, this is
+		 * not an error condition because the same file can be accessed by
+		 * different names, otherwise it is an error. */
+		if(!(case_change && !case_sensitive_paths(entry->origin)))
+		{
+			ui_sb_errf("File \"%s\" already exists", new_fname);
+			return 1;
+		}
 	}
 
-	return RA_RENAME;
+	int new_size =
+		add_to_string_array(&new_paths->items, new_paths->nitems, new_path);
+
+	if(new_paths->nitems == new_size)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		ui_sb_err("Rename operation has failed");
+		return 1;
+	}
+
+	new_paths->nitems = new_size;
+	return 0;
 }
 
-/* Renames marked files using corresponding entries of the dest array.  lhs and
- * rhs can be NULL to omit their printing (both at the same time).  Returns new
- * value for save_msg flag. */
+/* Renames marked files using corresponding entries of the new_paths array.  lhs
+ * and rhs can be NULL to omit their printing (both at the same time).  Returns
+ * new value for save_msg flag. */
 static int
 rename_marked(view_t *view, const char desc[], const char lhs[],
-		const char rhs[], char **dest)
+		const char rhs[], char **new_paths)
 {
 	int i;
 	int nrenamed;
@@ -948,7 +904,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
-		const char *const new_fname = dest[i++];
+		const char *const new_fname = after_last(new_paths[i++], '/');
 		if(fops_mv_file(entry->name, entry->origin, new_fname, entry->origin,
 					OP_MOVE, 1, NULL) == 0)
 		{
@@ -958,8 +914,16 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 	}
 
 	un_group_close();
-	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 
+	if(nrenamed > 0 && flist_custom_active(view))
+	{
+		/* Custom views don't have watchers that tell them to reload and redraw a
+		 * file list when a change like rename happens, so schedule a redraw.
+		 * Paths should have been updated in-place by fentry_rename(). */
+		ui_view_schedule_redraw(view);
+	}
+
+	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 	return 1;
 }
 

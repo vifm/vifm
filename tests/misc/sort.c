@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() rmdir() unlink() */
+#include <unistd.h> /* chdir() unlink() */
 
 #include <stdarg.h> /* va_list va_arg() va_copy() va_end() va_start() */
 #include <string.h> /* strcpy() */
@@ -21,7 +21,7 @@
 		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
 
 static void set_file_list(view_t *view, FileType def_ftype, ...);
-static int case_sensitive_fs(void);
+static int on_case_sensitive_fs(void);
 
 SETUP_ONCE()
 {
@@ -494,7 +494,7 @@ TEST(case_insensitive_unicode_sorting_for_exts, IF(utf8_locale))
 	assert_string_equal("z.ö", lwin.dir_entry[2].name);
 }
 
-TEST(custom_view_is_sorted_by_short_paths, IF(case_sensitive_fs))
+TEST(custom_view_is_sorted_by_short_paths, IF(on_case_sensitive_fs))
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), /*base=*/".",
 			/*sub=*/"", /*cwd=*/NULL);
@@ -581,12 +581,15 @@ set_file_list(view_t *view, FileType def_ftype, ...)
 	va_end(aq);
 }
 
+/* Checks that sandbox directory is located on a file-system that allows files
+ * that differ only by character case.  Returns non-zero if so. */
 static int
-case_sensitive_fs(void)
+on_case_sensitive_fs(void)
 {
+	/* Use of SANDBOX_PATH prevents this function from being in test utilities. */
 	int result = (os_mkdir(SANDBOX_PATH "/tEsT", 0700) == 0)
 	          && (os_rmdir(SANDBOX_PATH "/test") != 0);
-	(void)rmdir(SANDBOX_PATH "/tEsT");
+	(void)os_rmdir(SANDBOX_PATH "/tEsT");
 	return result;
 }
 
