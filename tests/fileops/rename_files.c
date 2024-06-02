@@ -64,6 +64,23 @@ TEST(generally_renames_files)
 	assert_success(unlink(SANDBOX_PATH "/dir"));
 }
 
+TEST(fail_to_renames_files)
+{
+	char file[] = "file";
+	char *names[] = { file, file };
+
+	create_file(SANDBOX_PATH "/file");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	ui_sb_msg("");
+	(void)fops_rename(&lwin, names, /*nlines=*/2, /*recursive=*/0);
+	assert_string_equal("Too many file names (2/1)", ui_sb_last());
+
+	assert_success(unlink(SANDBOX_PATH "/file"));
+}
+
 TEST(renames_files_recursively)
 {
 	char file1[] = "dir2/file1";

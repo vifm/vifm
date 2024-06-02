@@ -276,6 +276,8 @@
 	Fixed lack of a redraw after running :substitute, :tr, gu* or gU* in a
 	custom view.
 
+	Fixed a leak of error message string when using `:rename new-names...`.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

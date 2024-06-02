@@ -223,6 +223,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		{
 			ui_sb_err(error_str);
 		}
+		free(error_str);
 	}
 
 	if(from_file)
