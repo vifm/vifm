@@ -24,9 +24,9 @@ static char *saved_cwd;
 static void populate(view_t *view);
 static void mount(view_t *view, const char cmd[]);
 static int unmount(view_t *view);
-static void mounter_error_dlg_cb(const char type[], const char title[],
+static int mounter_error_dlg_cb(const char type[], const char title[],
 		const char message[]);
-static void failed_mount_dlg_cb(const char type[], const char title[],
+static int failed_mount_dlg_cb(const char type[], const char title[],
 		const char message[]);
 static int can_fuse(void);
 static int can_fuse_and_emulate_errors(void);
@@ -455,7 +455,7 @@ unmount(view_t *view)
 	return result;
 }
 
-static void
+static int
 mounter_error_dlg_cb(const char type[], const char title[],
 		const char message[])
 {
@@ -464,9 +464,10 @@ mounter_error_dlg_cb(const char type[], const char title[],
 	assert_string_equal("first\nsecond", message);
 
 	dlg_set_callback(&failed_mount_dlg_cb);
+	return 0;
 }
 
-static void
+static int
 failed_mount_dlg_cb(const char type[], const char title[],
 		const char message[])
 {
@@ -476,6 +477,7 @@ failed_mount_dlg_cb(const char type[], const char title[],
 	assert_string_ends_with("mount.me", message);
 
 	dlg_set_callback(NULL);
+	return 0;
 }
 
 static int

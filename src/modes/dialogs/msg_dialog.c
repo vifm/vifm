@@ -305,7 +305,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 
 	if(dlg_cb != NULL)
 	{
-		dlg_cb("error", title, message);
+		(void)dlg_cb("error", title, message);
 	}
 
 	if(curr_stats.load_stage == 0)
@@ -419,6 +419,13 @@ enter(dialog_data_t *data)
 	if(curr_stats.load_stage > 0)
 	{
 		event_loop(&data->exit_requested, /*manage_marking=*/0);
+	}
+	else if(dlg_cb != NULL)
+	{
+		const custom_prompt_t *details = &data->details;
+		DialogResult dr =
+			dlg_cb("prompt", details->title, details->message) ? DR_YES : DR_NO;
+		handle_response(current_dialog, dr);
 	}
 
 	vle_mode_set(prev_mode, VMT_SECONDARY);
