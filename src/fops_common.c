@@ -689,8 +689,7 @@ format_pretty_path(const char base_dir[], const char path[], char pretty[],
 }
 
 int
-fops_is_name_list_ok(int count, int nlines, char *list[], char *files[],
-		char **error)
+fops_is_name_list_ok(int count, int nlines, char *list[], char **error)
 {
 	int i;
 
@@ -710,30 +709,6 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[],
 	for(i = 0; i < count; ++i)
 	{
 		chomp(list[i]);
-
-		if(files != NULL)
-		{
-			char *file_s = find_slashr(files[i]);
-			char *list_s = find_slashr(list[i]);
-			if(list_s != NULL || file_s != NULL)
-			{
-				if(list_s == NULL || file_s == NULL ||
-						list_s - list[i] != file_s - files[i] ||
-						strnoscmp(files[i], list[i], list_s - list[i]) != 0)
-				{
-					if(file_s == NULL)
-					{
-						put_string(error, format_str("Name \"%s\" contains slash",
-									list[i]));
-					}
-					else
-					{
-						put_string(error, format_str("Won't move \"%s\" file", files[i]));
-					}
-					return 0;
-				}
-			}
-		}
 
 		if(list[i][0] != '\0' && is_in_string_array(list, i, list[i]))
 		{
@@ -766,6 +741,81 @@ fops_is_copy_list_ok(const char dst[], int count, char *list[], int force,
 		}
 	}
 	return 1;
+}
+
+int
+fops_check_moves_on_rename(int count, char *list[], char *files[], char **error)
+{
+	int moves = 0;
+
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		/* Assuming that fops_is_name_list_ok() did chomp(), so not repeating it. */
+
+		if(list[i][0] == '\0')
+		{
+			/* This file won't be renamed. */
+			continue;
+		}
+
+		char *file_s = find_slashr(files[i]);
+		char *list_s = find_slashr(list[i]);
+		if(list_s == NULL && file_s == NULL)
+		{
+			/* No prefixes, not a move. */
+			continue;
+		}
+
+		if(list_s != NULL && file_s != NULL &&
+				list_s - list[i] == file_s - files[i] &&
+				strnoscmp(files[i], list[i], list_s - list[i]) == 0)
+		{
+			/* Prefixes are identical. */
+			continue;
+		}
+
+		char *list_tail = (list_s == NULL ? list[i] : list_s);
+		char *file_tail = (file_s == NULL ? files[i] : file_s);
+
+		char list_tail_c = *list_tail;
+		char file_tail_c = *file_tail;
+		*list_tail = '\0';
+		*file_tail = '\0';
+
+		int same_prefix = paths_are_same(list[i][0] == '\0' ? "." : list[i],
+				files[i][0] == '\0' ? "." : files[i]);
+		*list_tail = list_tail_c;
+		*file_tail = file_tail_c;
+
+		if(same_prefix)
+		{
+			/* Even though prefixes look different, they point at the same path. */
+			continue;
+		}
+
+		++moves;
+
+		if(list_s == NULL)
+		{
+			/* Empty prefix is some parent directory which must already exist. */
+			continue;
+		}
+
+		char list_slash = *list_s;
+		*list_s = '\0';
+		int dir_exists = is_dir(list[i]);
+		*list_s = list_slash;
+
+		if(!dir_exists)
+		{
+			char *msg = format_str("Won't create directory for \"%s\"", list[i]);
+			put_string(error, msg);
+			return -1;
+		}
+	}
+
+	return moves;
 }
 
 int

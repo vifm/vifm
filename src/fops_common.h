@@ -94,14 +94,19 @@ void fops_init(line_prompt_func line_func, options_prompt_func options_func);
 int fops_view_can_be_changed(const struct view_t *view);
 
 /* Checks if name list is consistent.  Reallocates *error to provide error
- * message.  Returns non-zero is so, otherwise zero is returned. */
-int fops_is_name_list_ok(int count, int nlines, char *list[], char *files[],
-		char **error);
+ * message.  Returns non-zero if list is OK, otherwise zero is returned. */
+int fops_is_name_list_ok(int count, int nlines, char *list[], char **error);
 
 /* Checks whether list of files doesn't mention any existing files.  Reallocates
  * *error to provide error message.  Returns non-zero if everything is fine,
  * otherwise zero is returned. */
 int fops_is_copy_list_ok(const char dst[], int count, char *list[], int force,
+		char **error);
+
+/* Counts file moves in the rename list which don't need target parent to be
+ * created.  Returns number of moves or -1 on error in which case *error is set
+ * to describe it (missing target directory is the only possible error). */
+int fops_check_moves_on_rename(int count, char *list[], char *files[],
 		char **error);
 
 /* Checks rename correctness and forms an array of duplication marks.

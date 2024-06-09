@@ -39,7 +39,7 @@ TEST(names_less_than_files)
 	char *src[] = { "a", "b" };
 	char *dst[] = { "a" };
 	char *error = NULL;
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src,
 				&error));
 	assert_string_equal("Not enough file names (1/2)", error);
 	free(error);
@@ -50,27 +50,105 @@ TEST(names_greater_that_files_fail)
 	char *src[] = { "a" };
 	char *dst[] = { "a", "b" };
 	char *error = NULL;
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src,
 				&error));
 	assert_string_equal("Too many file names (2/1)", error);
 	free(error);
 }
 
-TEST(move_fail)
+TEST(move_is_allowed)
 {
-	char *src[] = { "a", "b" };
-	char *dst[] = { "../a", "b" };
+	char src1[] = "a", src2[] = "b";
+	char *src[] = { src1, src2 };
+	char dst1[] = "../a", dst2[] = "b";
+	char *dst[] = { dst1, dst2 };
+
 	char *error = NULL;
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src,
 				&error));
-	assert_string_equal("Won't move \"../a\" file", error);
+	assert_string_equal(NULL, error);
+
+	assert_int_equal(1, fops_check_moves_on_rename(ARRAY_LEN(dst), dst, src,
+				&error));
+	assert_string_equal(NULL, error);
 
 #ifdef _WIN32
-	dst[0] = "..\\a";
-	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+	char dst3[] = "..\\a";
+	dst[0] = dst3;
+
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src,
 				&error));
-	assert_string_equal("Won't move \"..\\a\" file", error);
+	assert_string_equal(NULL, error);
+
+	assert_int_equal(1, fops_check_moves_on_rename(ARRAY_LEN(dst), dst, src,
+				&error));
+	assert_string_equal(NULL, error);
 #endif
+
+	free(error);
+}
+
+TEST(move_check_handles_empty_lines)
+{
+	char src1[] = "a";
+	char *src[] = { src1 };
+	char dst1[] = "";
+	char *dst[] = { dst1 };
+
+	char *error = NULL;
+
+	assert_int_equal(0, fops_check_moves_on_rename(ARRAY_LEN(dst), dst, src,
+				&error));
+	assert_string_equal(NULL, error);
+
+	free(error);
+}
+
+TEST(move_check_detects_identical_prefixes)
+{
+	char src1[] = "././a";
+	char *src[] = { src1 };
+	char dst1[] = "a";
+	char *dst[] = { dst1 };
+
+	char *error = NULL;
+
+	assert_int_equal(0, fops_check_moves_on_rename(ARRAY_LEN(dst), dst, src,
+				&error));
+	assert_string_equal(NULL, error);
+
+	free(error);
+}
+
+TEST(move_check_handles_empty_target_prefix)
+{
+	char src1[] = "b/a";
+	char *src[] = { src1 };
+	char dst1[] = "a";
+	char *dst[] = { dst1 };
+
+	char *error = NULL;
+
+	assert_int_equal(1, fops_check_moves_on_rename(ARRAY_LEN(dst), dst, src,
+				&error));
+	assert_string_equal(NULL, error);
+
+	free(error);
+}
+
+TEST(move_check_detects_missing_target_parent)
+{
+	char src1[] = "a";
+	char *src[] = { src1 };
+	char dst1[] = "b/a";
+	char *dst[] = { dst1 };
+
+	char *error = NULL;
+
+	assert_int_equal(-1, fops_check_moves_on_rename(ARRAY_LEN(dst), dst, src,
+				&error));
+	assert_string_equal("Won't create directory for \"b/a\"", error);
 
 	free(error);
 }
@@ -80,14 +158,14 @@ TEST(rename_inside_subdir_ok)
 	char *src[] = { "../a", "b" };
 	char *dst[] = { "../a_a", "b" };
 	char *error = NULL;
-	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src,
 				&error));
 	assert_string_equal(NULL, error);
 
 #ifdef _WIN32
 	src[0] = "..\\a";
 	dst[0] = "..\\a_a";
-	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst,
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src,
 			&error));
 	assert_string_equal(NULL, error);
 #endif
@@ -137,9 +215,13 @@ TEST(single_file_rename)
 TEST(rename_list_checks)
 {
 	size_t i;
-	char *list[] = { "a", "aa", "aaa" };
-	char *files[] = { "", "aa", "bbb" };
+
+	char src1[] = "a", src2[] = "aa", src3[] = "aaa";
+	char *list[] = { src1, src2, src3 };
+	char dst1[] = "", dst2[] = "aa", dst3[] = "bbb";
+	char *files[] = { dst1, dst2, dst3 };
 	ARRAY_GUARD(files, ARRAY_LEN(list));
+
 	char dup[ARRAY_LEN(files)] = {};
 	char *error = NULL;
 

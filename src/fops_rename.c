@@ -209,7 +209,9 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	else
 	{
 		char *error_str = NULL;
-		if(verify_list(files, nfiles, list, nlines, &error_str, is_dup))
+		/* If external editing was involved, verify_list() was run above. */
+		if(from_file ||
+				verify_list(files, nfiles, list, nlines, &error_str, is_dup))
 		{
 			const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 			if(renamed >= 0)
@@ -273,8 +275,32 @@ verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
 	char *is_dup = data;
 	memset(is_dup, 0, nfiles);
 
-	int ok = fops_is_name_list_ok(nfiles, nnames, names, files, error)
+	int ok = fops_is_name_list_ok(nfiles, nnames, names, error)
 	      && fops_is_rename_list_ok(files, is_dup, nfiles, names, error);
+
+	if(ok)
+	{
+		int moves = fops_check_moves_on_rename(nfiles, names, files, error);
+		if(moves < 0)
+		{
+			ok = 0;
+		}
+		else if(moves > 0)
+		{
+			const char *suffix = (moves == 1 ? "" : "s");
+			/* Stray space prevents removal of the line. */
+			if(!prompt_msgf("Rename",
+						"It appears that the rename list has %d file move%s, which could "
+						"have happened by mistake."
+						"\n \n"
+						"Perform the move%s?",
+						moves, suffix, suffix))
+			{
+				put_string(error, format_str("%d unintended move%s", moves, suffix));
+				ok = 0;
+			}
+		}
+	}
 
 	return ok;
 }

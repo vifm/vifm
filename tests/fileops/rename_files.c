@@ -10,6 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
+#include "../../src/modes/dialogs/msg_dialog.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
@@ -22,6 +23,10 @@
 
 static void broken_link_name(const char prompt[], const char filename[],
 		fo_prompt_cb cb, void *cb_arg, fo_complete_cmd_func complete);
+static int allow_move_dlg_cb(const char type[], const char title[],
+		const char message[]);
+static int deny_move_dlg_cb(const char type[], const char title[],
+		const char message[]);
 static int on_case_sensitive_fs(void);
 
 static char *saved_cwd;
@@ -338,6 +343,80 @@ TEST(global_substitution_of_caret_pattern)
 	assert_success(unlink(SANDBOX_PATH "/01"));
 }
 
+TEST(rename_can_move_files)
+{
+	create_file(SANDBOX_PATH "/file");
+	create_dir(SANDBOX_PATH "/dir");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[1].marked = 1;
+
+	char file[] = "dir/file";
+	char *names[] = { file };
+
+	assert_success(chdir(SANDBOX_PATH));
+
+	dlg_set_callback(&allow_move_dlg_cb);
+
+	ui_sb_msg("");
+	(void)fops_rename(&lwin, names, /*nlines=*/1, /*recursive=*/0);
+	assert_string_equal("1 file renamed", ui_sb_last());
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/dir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(rename_accepts_rejection_to_move_files)
+{
+	create_file(SANDBOX_PATH "/file");
+	create_dir(SANDBOX_PATH "/dir");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[1].marked = 1;
+
+	char file[] = "dir/file";
+	char *names[] = { file };
+
+	assert_success(chdir(SANDBOX_PATH));
+
+	dlg_set_callback(&deny_move_dlg_cb);
+
+	ui_sb_msg("");
+	(void)fops_rename(&lwin, names, /*nlines=*/1, /*recursive=*/0);
+	assert_string_equal("1 unintended move", ui_sb_last());
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/file"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(rename_wont_create_target_dir)
+{
+	create_file(SANDBOX_PATH "/file");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	char file[] = "dir/file";
+	char *names[] = { file };
+
+	assert_success(chdir(SANDBOX_PATH));
+
+	ui_sb_msg("");
+	(void)fops_rename(&lwin, names, /*nlines=*/1, /*recursive=*/0);
+	assert_string_equal("Won't create directory for \"dir/file\"", ui_sb_last());
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/file"));
+}
+
 TEST(case_change_works, IF(on_case_sensitive_fs))
 {
 	create_file(SANDBOX_PATH "/fIlE1");
@@ -457,6 +536,30 @@ TEST(case_change_and_idential_names_in_different_dirs, IF(on_case_sensitive_fs))
 	assert_failure(unlink(SANDBOX_PATH "/bdir/abc"));
 	assert_success(unlink(SANDBOX_PATH "/bdir/ABC"));
 	assert_success(rmdir(SANDBOX_PATH "/bdir"));
+}
+
+static int
+allow_move_dlg_cb(const char type[], const char title[], const char message[])
+{
+	assert_string_equal("prompt", type);
+	assert_string_equal("Rename", title);
+	assert_string_starts_with("It appears that the rename list has 1 file move,",
+			message);
+
+	dlg_set_callback(NULL);
+	return 1;
+}
+
+static int
+deny_move_dlg_cb(const char type[], const char title[], const char message[])
+{
+	assert_string_equal("prompt", type);
+	assert_string_equal("Rename", title);
+	assert_string_starts_with("It appears that the rename list has 1 file move,",
+			message);
+
+	dlg_set_callback(NULL);
+	return 0;
 }
 
 /* No tests for custom/tree view, because control doesn't reach necessary checks
