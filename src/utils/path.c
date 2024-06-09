@@ -122,7 +122,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 
 #ifdef _WIN32
 	/* Handle first component of a UNC path. */
-	if(p[0] == '/' && p[1] == '/' && p[2] != '/')
+	if(is_unc_path(p))
 	{
 		strcpy(buf, "//");
 		q = buf + 1;
