@@ -21,6 +21,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcmp() strdup() strlen() */
 
 #include "compat/os.h"
@@ -185,7 +186,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		return 1;
 	}
 
-	char *is_dup = calloc(nfiles, 1);
+	char *is_dup = malloc(nfiles);
 	if(is_dup == NULL)
 	{
 		free_string_array(files, nfiles);
@@ -198,7 +199,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	const int from_file = (nlines == 0);
 	if(from_file)
 	{
-		list = fops_query_list(nfiles, files, &nlines, 0, &verify_list, NULL);
+		list = fops_query_list(nfiles, files, &nlines, 0, &verify_list, is_dup);
 	}
 
 	if(nlines == 0)
@@ -270,18 +271,11 @@ verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
 		void *data)
 {
 	char *is_dup = data;
-	if(is_dup == NULL)
-	{
-		is_dup = calloc(nfiles, 1);
-	}
+	memset(is_dup, 0, nfiles);
 
 	int ok = fops_is_name_list_ok(nfiles, nnames, names, files, error)
 	      && fops_is_rename_list_ok(files, is_dup, nfiles, names, error);
 
-	if(data == NULL)
-	{
-		free(is_dup);
-	}
 	return ok;
 }
 
