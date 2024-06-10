@@ -44,6 +44,8 @@
 #include "str.h"
 #include "utils.h"
 
+static void make_canonic_path(const char directory[], char buf[],
+		size_t buf_size, int strict_rel_paths);
 static int skip_dotdir_if_any(const char *path[], int has_parent);
 static const char * find_home_tail(const char path[]);
 static char * try_replace_tilde(const char path[]);
@@ -104,14 +106,25 @@ paths_are_equal(const char s[], const char t[])
 	char s_can[strlen(s) + 8];
 	char t_can[strlen(t) + 8];
 
-	canonicalize_path(s, s_can, sizeof(s_can));
-	canonicalize_path(t, t_can, sizeof(t_can));
+	make_canonic_path(s, s_can, sizeof(s_can), /*strict_rel_paths=*/1);
+	make_canonic_path(t, t_can, sizeof(t_can), /*strict_rel_paths=*/1);
 
 	return stroscmp(s_can, t_can) == 0;
 }
 
 void
 canonicalize_path(const char directory[], char buf[], size_t buf_size)
+{
+	make_canonic_path(directory, buf, buf_size, /*strict_rel_paths=*/0);
+}
+
+/* Removes excess slashes, "../" and "./" from the path.  buf will always
+ * contain trailing forward slash (empty result will become "./").  Non-zero
+ * strict_rel_paths results in relative paths getting "./" prefix if they
+ * didn't have it, which doesn't happen otherwise. */
+static void
+make_canonic_path(const char directory[], char buf[], size_t buf_size,
+		int strict_rel_paths)
 {
 	/* Source string pointer. */
 	const char *p = directory;
@@ -133,7 +146,13 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 		}
 		buf = q + 1;
 	}
+	else /* note this else */
 #endif
+	if(strict_rel_paths)
+	{
+		strcpy(buf, "./");
+		q += 2;;
+	}
 
 	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1U)
 	{
