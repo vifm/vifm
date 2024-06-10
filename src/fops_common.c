@@ -836,7 +836,7 @@ fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[],
 		int j;
 		for(j = 0; j < len; ++j)
 		{
-			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
+			if(paths_are_equal(list[i], files[j]) && !is_dup[j])
 			{
 				is_dup[j] = 1;
 				break;

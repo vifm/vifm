@@ -236,6 +236,39 @@ TEST(rename_list_checks)
 	}
 }
 
+TEST(rename_list_checks_normalized_paths)
+{
+	char src1[] = "aa/../bb", src2[] = "ccc/ccc", src3[] = "./a";
+	char *src[] = { src1, src2, src3 };
+	char dst1[] = "a", dst2[] = "bb", dst3[] = "ccc//ccc";
+	char *dst[] = { dst1, dst2, dst3 };
+	ARRAY_GUARD(src, ARRAY_LEN(dst));
+
+	char dup[ARRAY_LEN(src)] = {};
+	char *error = NULL;
+
+	/* This is to avoid error due to missing target path. */
+	assert_success(chdir(SANDBOX_PATH));
+	create_dir("ccc");
+
+	assert_true(fops_is_rename_list_ok(src, dup, ARRAY_LEN(dst), dst, &error));
+	assert_string_equal(NULL, error);
+
+	assert_int_equal(2, fops_check_moves_on_rename(ARRAY_LEN(dst), src, dst,
+				&error));
+	assert_string_equal(NULL, error);
+
+	free(error);
+
+	size_t i;
+	for(i = 0; i < ARRAY_LEN(dst); ++i)
+	{
+		assert_true(dup[i]);
+	}
+
+	remove_dir("ccc");
+}
+
 TEST(file_name_list_can_be_reread)
 {
 	char long_name[PATH_MAX + NAME_MAX + 1];

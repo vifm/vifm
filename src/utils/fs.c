@@ -199,7 +199,7 @@ paths_are_same(const char s[], const char t[])
 
 	if(os_realpath(s, s_real) != s_real || os_realpath(t, t_real) != t_real)
 	{
-		return (stroscmp(s, t) == 0);
+		return paths_are_equal(s, t);
 	}
 	return (stroscmp(s_real, t_real) == 0);
 }
