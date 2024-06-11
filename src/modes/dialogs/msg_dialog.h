@@ -105,8 +105,9 @@ int confirm_deletion(char *files[], int nfiles, int use_trash);
 void show_errors_from_file(FILE *ef, const char title[]);
 
 /* Type of callback function that can be used in tests.  The type parameter
- * allows to differentiate between different kidns of dialogs. */
-typedef void (*dlg_cb_f)(const char type[], const char title[],
+ * allows to differentiate between different kinds of dialogs.  Should return
+ * non-zero to agree to a prompt. */
+typedef int (*dlg_cb_f)(const char type[], const char title[],
 		const char message[]);
 
 TSTATIC_DEFS(

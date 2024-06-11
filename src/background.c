@@ -139,13 +139,15 @@ static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 static void * background_task_bootstrap(void *arg);
 static int update_job_status(bg_job_t *job);
 static void mark_job_finished(bg_job_t *job, int exit_code);
-static void poke_error_thread(void);
+static void maybe_wake_error_thread(void);
+static int is_job_erroring(bg_job_t *job);
+static void wake_error_thread(void);
 static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
 
 /* Event to wake up error thread from sleep for processing by
- * poke_error_thread(). */
+ * wake_error_thread(). */
 static event_t *error_thread_event;
 /* Head of list of newly started jobs. */
 static bg_job_t *new_err_jobs;
@@ -208,7 +210,7 @@ bg_check(void)
 	rip_children();
 #endif
 
-	poke_error_thread();
+	maybe_wake_error_thread();
 
 	int active_jobs = 0;
 
@@ -1791,15 +1793,10 @@ bg_job_wait_errors(bg_job_t *job)
 	int erroring = 1;
 	for(i = 0; i < ERROR_SLEEP_MAX_US/ERROR_SLEEP_US && erroring; ++i)
 	{
-		if(pthread_spin_lock(&job->status_lock) == 0)
-		{
-			erroring = job->erroring;
-			(void)pthread_spin_unlock(&job->status_lock);
-		}
-
+		erroring = is_job_erroring(job);
 		if(erroring)
 		{
-			poke_error_thread();
+			wake_error_thread();
 			usleep(ERROR_SLEEP_US);
 		}
 	}
@@ -1810,15 +1807,43 @@ bg_job_wait_errors(bg_job_t *job)
 	return erroring;
 }
 
+/* Wakes up error thread to process any changes to the jobs if it makes
+ * sense. */
+static void
+maybe_wake_error_thread(void)
+{
+	/* Don't wake up the error thread unless there is at least one job handled by
+	 * it. */
+	bg_job_t *job;
+	for(job = bg_jobs; job != NULL; job = job->next)
+	{
+		if(is_job_erroring(job))
+		{
+			wake_error_thread();
+			break;
+		}
+	}
+}
+
+/* Checks whether the job is being used by the error thread.  Returns non-zero
+ * if so. */
+static int
+is_job_erroring(bg_job_t *job)
+{
+	int erroring = 0;
+	if(pthread_spin_lock(&job->status_lock) == 0)
+	{
+		erroring = job->erroring;
+		(void)pthread_spin_unlock(&job->status_lock);
+	}
+	return erroring;
+}
+
 /* Wakes up error thread to process any changes to the jobs. */
 static void
-poke_error_thread(void)
+wake_error_thread(void)
 {
-	/* Don't raise the event if error thread has no jobs to work with. */
-	if(bg_jobs != NULL)
-	{
-		(void)event_signal(error_thread_event);
-	}
+	(void)event_signal(error_thread_event);
 }
 
 void

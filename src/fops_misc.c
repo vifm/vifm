@@ -906,7 +906,7 @@ verify_clone_list(char *files[], int nfiles, char *names[], int nnames,
 		char **error, void *data)
 {
 	verify_args_t *args = data;
-	return fops_is_name_list_ok(nfiles, nnames, names, NULL, error)
+	return fops_is_name_list_ok(nfiles, nnames, names, error)
 	    && fops_is_copy_list_ok(args->dst_path, nnames, names, args->force,
 	                            error);
 }

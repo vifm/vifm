@@ -501,7 +501,7 @@ verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
 	int ok = 1;
 
 	if(nnames > 0 &&
-			(!fops_is_name_list_ok(nfiles, nnames, names, NULL, error) ||
+			(!fops_is_name_list_ok(nfiles, nnames, names, error) ||
 			!fops_is_copy_list_ok(args->dst_path, nnames, names, args->force, error)))
 	{
 		ok = 0;

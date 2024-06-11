@@ -343,7 +343,7 @@ def_handler(wchar_t key)
 
 	stop_completion();
 
-	if(key != L'\r' && !iswprint(key))
+	if(key != L'\r' && (key == WC_C_SPACE || !iswprint(key)))
 	{
 		return 0;
 	}

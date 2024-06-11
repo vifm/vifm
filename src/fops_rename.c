@@ -21,6 +21,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcmp() strdup() strlen() */
 
 #include "compat/os.h"
@@ -185,7 +186,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		return 1;
 	}
 
-	char *is_dup = calloc(nfiles, 1);
+	char *is_dup = malloc(nfiles);
 	if(is_dup == NULL)
 	{
 		free_string_array(files, nfiles);
@@ -198,7 +199,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	const int from_file = (nlines == 0);
 	if(from_file)
 	{
-		list = fops_query_list(nfiles, files, &nlines, 0, &verify_list, NULL);
+		list = fops_query_list(nfiles, files, &nlines, 0, &verify_list, is_dup);
 	}
 
 	if(nlines == 0)
@@ -208,7 +209,9 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	else
 	{
 		char *error_str = NULL;
-		if(verify_list(files, nfiles, list, nlines, &error_str, is_dup))
+		/* If external editing was involved, verify_list() was run above. */
+		if(from_file ||
+				verify_list(files, nfiles, list, nlines, &error_str, is_dup))
 		{
 			const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 			if(renamed >= 0)
@@ -223,6 +226,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		{
 			ui_sb_err(error_str);
 		}
+		free(error_str);
 	}
 
 	if(from_file)
@@ -269,18 +273,35 @@ verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
 		void *data)
 {
 	char *is_dup = data;
-	if(is_dup == NULL)
-	{
-		is_dup = calloc(nfiles, 1);
-	}
+	memset(is_dup, 0, nfiles);
 
-	int ok = fops_is_name_list_ok(nfiles, nnames, names, files, error)
+	int ok = fops_is_name_list_ok(nfiles, nnames, names, error)
 	      && fops_is_rename_list_ok(files, is_dup, nfiles, names, error);
 
-	if(data == NULL)
+	if(ok)
 	{
-		free(is_dup);
+		int moves = fops_check_moves_on_rename(nfiles, names, files, error);
+		if(moves < 0)
+		{
+			ok = 0;
+		}
+		else if(moves > 0)
+		{
+			const char *suffix = (moves == 1 ? "" : "s");
+			/* Stray space prevents removal of the line. */
+			if(!prompt_msgf("Rename",
+						"It appears that the rename list has %d file move%s, which could "
+						"have happened by mistake."
+						"\n \n"
+						"Perform the move%s?",
+						moves, suffix, suffix))
+			{
+				put_string(error, format_str("%d unintended move%s", moves, suffix));
+				ok = 0;
+			}
+		}
 	}
+
 	return ok;
 }
 
