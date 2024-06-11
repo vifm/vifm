@@ -284,6 +284,9 @@
 	Fixed :rename not recognizing identical paths in source and destination
 	lists if they were edited (e.g., to contain extra slashes, "./" or "../").
 
+	Fixed weird character appearing on Ctrl+Space combination in command-line
+	mode.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
