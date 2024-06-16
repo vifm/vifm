@@ -55,7 +55,7 @@ void load_view_columns_option(struct view_t *view, const char value[]);
 /* Loads current state of quick view into corresponding option. */
 void load_quickview_option(void);
 
-/* Loads current state of tab scopr into corresponding option. */
+/* Loads current state of tab scope into corresponding option. */
 void load_tabscope_option(void);
 
 /* Loads current history size into corresponding option. */
