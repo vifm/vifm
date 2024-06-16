@@ -68,6 +68,11 @@ instance_start_restart(void)
 
 	/* All kinds of histories. */
 	cfg_clear_histories(tabs_count(&lwin) == 0 && tabs_count(&rwin) == 0);
+	/* Load new history size into options unit, a possibly more reliable
+	 * alternative would be to re-initialize options from current state below
+	 * instead of resetting to defaults, but not many options would benefit from
+	 * that, history is kinda special. */
+	load_history_option();
 
 	/* Session status.  Must be reset _before_ options, because options take some
 	 * of values from status. */

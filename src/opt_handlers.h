@@ -58,6 +58,9 @@ void load_quickview_option(void);
 /* Loads current state of tab scopr into corresponding option. */
 void load_tabscope_option(void);
 
+/* Loads current history size into corresponding option. */
+void load_history_option(void);
+
 /* Updates geometry related options. */
 void load_geometry(void);
 

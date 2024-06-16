@@ -3504,6 +3504,13 @@ load_tabscope_option(void)
 }
 
 void
+load_history_option(void)
+{
+	optval_t val = { .int_val = cfg.history_len };
+	vle_opts_assign("history", val, OPT_GLOBAL);
+}
+
+void
 load_geometry(void)
 {
 	optval_t val;

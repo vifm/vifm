@@ -10,6 +10,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
 #include "../../src/flist_hist.h"
+#include "../../src/status.h"
 
 static void setup_tabs(void);
 static void check_first_tab(void);
@@ -31,6 +32,7 @@ SETUP()
 	columns_setup_column(SK_BY_SIZE);
 
 	cmds_init();
+	cfg.history_len = 10;
 	opt_handlers_setup();
 }
 
@@ -42,6 +44,7 @@ TEARDOWN()
 	columns_teardown();
 
 	opt_handlers_teardown();
+	cfg.history_len = 0;
 	vle_keys_reset();
 
 	view_teardown(&lwin);
@@ -62,6 +65,28 @@ TEST(history_survives_in_tabs_on_restart_without_persistance)
 	check_second_tab();
 	assert_success(cmds_dispatch("tabprev", &lwin, CIT_COMMAND));
 	check_first_tab();
+}
+
+TEST(history_works_after_restart)
+{
+	histories_init(10);
+
+	hists_commands_save("cmd-1");
+	hists_commands_save("cmd-2");
+
+	assert_int_equal(10, curr_stats.cmd_hist.capacity);
+	assert_int_equal(2, curr_stats.cmd_hist.size);
+	assert_string_equal("cmd-2", curr_stats.cmd_hist.items[0].text);
+	assert_string_equal("cmd-1", curr_stats.cmd_hist.items[1].text);
+
+	assert_success(cmds_dispatch("restart", &lwin, CIT_COMMAND));
+	assert_int_equal(10, cfg.history_len);
+
+	hists_commands_save("cmd-3");
+
+	assert_int_equal(10, curr_stats.cmd_hist.capacity);
+	assert_int_equal(1, curr_stats.cmd_hist.size);
+	assert_string_equal("cmd-3", curr_stats.cmd_hist.items[0].text);
 }
 
 TEST(restart_checks_its_parameter)
