@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 20 April, 2024)
+" Sample configuration file for vifm (last updated: 16 June, 2024)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -44,7 +44,9 @@ set trash
 set vifminfo=dhistory,savedirs,chistory,state,tui,tabs,shistory,ehistory,
             \phistory,fhistory,dirstack,registers,bookmarks,bmarks,mchistory
 
-" This is how many directories to store in the directory history.
+" This is size of all of the many kinds of histories, in particular it's the
+" number of last visited directories (not necessarily distinct ones) stored in
+" the directory history.
 set history=100
 
 " Automatically resolve symbolic links on l or Enter.
