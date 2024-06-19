@@ -1492,16 +1492,16 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 
 	if(!flist_custom_active(view))
 	{
-		/* Just file name. */
+		/* Just the file name. */
 		format_entry_name(cdt->entry, fmt, buf_len + 1, buf);
-		return;
+		goto escape;
 	}
 
 	if(!ui_view_displays_columns(view) || !cv_tree(view->custom.type))
 	{
-		/* File name possibly with path prefix. */
+		/* File name possibly with the path prefix. */
 		get_short_path_of(view, cdt->entry, fmt, 0, buf_len + 1U, buf);
-		return;
+		goto escape;
 	}
 
 	/* File name possibly with path and tree prefixes. */
@@ -1546,6 +1546,11 @@ format_name(void *data, size_t buf_len, char buf[], const format_info_t *info)
 	get_short_path_of(view, cdt->entry, fmt, 1, buf_len + 1U - prefix_len,
 			buf + prefix_len);
 	*cdt->prefix_len = prefix_len;
+
+escape: ; /* Labels can't point to declarations. */
+	char *escaped = escape_unreadable(buf);
+	copy_str(buf, buf_len + 1U, escaped);
+	free(escaped);
 }
 
 /* Primary name group format (first value of 'sortgroups' option) callback for

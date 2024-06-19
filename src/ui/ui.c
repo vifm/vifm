@@ -1810,9 +1810,7 @@ format_entry_name(const dir_entry_t *entry, NameFormat fmt, size_t buf_len,
 {
 	if(fmt == NF_NONE)
 	{
-		char *escaped = escape_unreadable(entry->name);
-		copy_str(buf, buf_len, escaped);
-		free(escaped);
+		copy_str(buf, buf_len, entry->name);
 		return;
 	}
 
@@ -1829,14 +1827,10 @@ format_entry_name(const dir_entry_t *entry, NameFormat fmt, size_t buf_len,
 		name = tmp_buf;
 	}
 
-	char *escaped = escape_unreadable(name);
-
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
 	snprintf(buf, buf_len, "%s%s%s", prefix,
-			(is_root_dir(escaped) && suffix[0] == '/') ? "" : escaped, suffix);
-
-	free(escaped);
+			(is_root_dir(name) && suffix[0] == '/') ? "" : name, suffix);
 }
 
 void

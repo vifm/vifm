@@ -290,6 +290,10 @@
 	Fixed :restart leaving histories disabled unless 'history' is set to a
 	non-default value in vifmrc.  Thanks to James Dietrich.
 
+	Fixed processing of file names and paths that undergo escaping in the UI,
+	like inability to externally rename them (regression in 0.12.1 beta).
+	Thanks to jc-SpaceXp.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

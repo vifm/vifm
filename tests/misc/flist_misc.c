@@ -550,6 +550,68 @@ TEST(filename_is_formatted_according_to_column_and_filetype)
 	assert_string_equal("a.b", name);
 }
 
+TEST(filename_is_escaped_only_for_display)
+{
+	char origin[] = "";
+
+	column_data_t cdt = { .view = &lwin };
+	format_info_t info = { .data = &cdt };
+	char name[16];
+
+	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
+	cfg.type_decs[FT_DIR][DECORATION_SUFFIX][0] = '/';
+
+	dir_entry_t dir_entry = {
+		.name = "a.\x11.c", .type = FT_DIR, .origin = origin,
+	};
+	cdt.entry = &dir_entry;
+
+	info.id = SK_BY_INAME;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^Q.c/", name);
+
+	info.id = SK_BY_NAME;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^Q.c/", name);
+
+	info.id = SK_BY_FILEROOT;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^Q.c/", name);
+
+	info.id = SK_BY_ROOT;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^Q/", name);
+
+	get_short_path_of(&lwin, cdt.entry, NF_FULL, /*drop_prefix=*/1, sizeof(name),
+			name);
+	assert_string_equal("/a.\x11.c/", name);
+
+	dir_entry_t file_entry = {
+		.name = "a.\x10.c", .type = FT_REG, .origin = origin,
+	};
+	cdt.entry = &file_entry;
+
+	info.id = SK_BY_INAME;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^P.c", name);
+
+	info.id = SK_BY_NAME;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^P.c", name);
+
+	info.id = SK_BY_FILEROOT;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^P", name);
+
+	info.id = SK_BY_ROOT;
+	format_name(NULL, sizeof(name), name, &info);
+	assert_string_equal("a.^P", name);
+
+	get_short_path_of(&lwin, cdt.entry, NF_FULL, /*drop_prefix=*/1, sizeof(name),
+			name);
+	assert_string_equal("/a.\x10.c", name);
+}
+
 TEST(fview_previews_works)
 {
 	lwin.list_rows = 2;
