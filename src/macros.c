@@ -32,6 +32,7 @@
 #include "ui/colored_line.h"
 #include "ui/quickview.h"
 #include "ui/ui.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
@@ -51,19 +52,27 @@ typedef enum
 }
 PathType;
 
-/* Should return the same character if processing of the macro is allowed or
- * '\0' if it's not allowed. */
-typedef char (*macro_filter_func)(int *quoted, char c, char data,
-		int ncurr, int nother);
+/* Details about a macro found by find_next_macro(). */
+typedef struct
+{
+	MacroKind kind;     /* Type of the macro or invalid/none mark. */
+	const char *begin;  /* Points at the start of the macro (percent sign). */
+	const char *end;    /* Points past the end of the macro. */
+
+	const char *mod;  /* Location of filename modifiers. */
+	const reg_t *reg; /* Register to be used by MK_r. */
+	int quoted;       /* Whether escaping via quotes should be used during macro
+	                     expansion. */
+}
+macro_info_t;
 
 /* File iteration function. */
 typedef int (*iter_func)(view_t *view, dir_entry_t **entry);
 
-static char filter_all(int *quoted, char c, char data, int ncurr, int nother);
-static char filter_single(int *quoted, char c, char data,
-		int ncurr, int nother);
-static char * expand_macros_i(const char command[], const char args[],
-		MacroFlags *flags, int for_shell, int for_op, macro_filter_func filter);
+static char * expand_macros(const char command[], const char args[],
+		MacroFlags *flags, int for_shell, int for_op, int single_only);
+static macro_info_t find_next_macro(const char str[]);
+static void limit_to_single_only(macro_info_t *info, int ncurr, int nother);
 TSTATIC char * append_selected_files(view_t *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], iter_func iter,
 		int for_shell);
@@ -71,13 +80,15 @@ static char * append_entry(view_t *view, char expanded[], PathType type,
 		dir_entry_t *entry, int quotes, const char mod[], int for_shell);
 static char * expand_directory_path(view_t *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
-static char * expand_register(const char curr_dir[], char expanded[],
-		int quotes, const char mod[], int key, int *well_formed, int for_shell);
-static char * expand_preview(char expanded[], int key, int *well_formed);
+static char * expand_register(const reg_t *reg, const char curr_dir[],
+		char expanded[], int quotes, const char mod[], int for_shell);
+static char * expand_preview(char expanded[], MacroKind kind);
 static preview_area_t get_preview_area(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
+static char * append_to_expanded_n(char expanded[], const char str[],
+		size_t str_len);
 static cline_t expand_custom(const char **pattern, size_t nmacros,
 		custom_macro_t macros[], int with_opt, int in_opt);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
@@ -93,21 +104,13 @@ ma_expand(const char command[], const char args[], MacroFlags *flags,
 	int lpending_marking = lwin.pending_marking;
 	int rpending_marking = rwin.pending_marking;
 
-	char *res = expand_macros_i(command, args, flags, for_shell, for_op,
-			&filter_all);
+	char *res =
+		expand_macros(command, args, flags, for_shell, for_op, /*single_only=*/0);
 
 	lwin.pending_marking = lpending_marking;
 	rwin.pending_marking = rpending_marking;
 
 	return res;
-}
-
-/* macro_filter_func instantiation that allows all macros.  Returns the
- * argument. */
-static char
-filter_all(int *quoted, char c, char data, int ncurr, int nother)
-{
-	return c;
 }
 
 char *
@@ -116,8 +119,8 @@ ma_expand_single(const char command[])
 	int lpending_marking = lwin.pending_marking;
 	int rpending_marking = rwin.pending_marking;
 
-	char *const res = expand_macros_i(command, NULL, NULL, /*for_shell=*/0,
-			/*for_op=*/0, &filter_single);
+	char *const res = expand_macros(command, NULL, NULL, /*for_shell=*/0,
+			/*for_op=*/0, /*single_only=*/1);
 
 	lwin.pending_marking = lpending_marking;
 	rwin.pending_marking = rpending_marking;
@@ -126,72 +129,18 @@ ma_expand_single(const char command[])
 	return res;
 }
 
-/* macro_filter_func instantiation that filters out non-single element macros.
- * Returns the argument on allowed macro and '\0' otherwise. */
-static char
-filter_single(int *quoted, char c, char data, int ncurr, int nother)
-{
-	if(strchr("cCdD", c) != NULL)
-	{
-		*quoted = 0;
-		return c;
-	}
-
-	if(c == 'f' && ncurr <= 1)
-	{
-		return c;
-	}
-
-	if(c == 'F' && nother <= 1)
-	{
-		return c;
-	}
-
-	if(c == 'r')
-	{
-		const reg_t *reg = regs_find(tolower(data));
-		if(reg != NULL && reg->nfiles == 1)
-		{
-			return c;
-		}
-	}
-
-	return '\0';
-}
-
-/* args and flags parameters can equal NULL. The string returned needs to be
- * freed in the calling function. After executing flags is one of MF_*
- * values. */
+/* Performs substitution of macros with their values.  args and flags
+ * parameters can be NULL.  The string returned needs to be freed by the
+ * caller.  After executing flags is one of MF_* values.  On error NULL is
+ * returned. */
 static char *
-expand_macros_i(const char command[], const char args[], MacroFlags *flags,
-		int for_shell, int for_op, macro_filter_func filter)
+expand_macros(const char command[], const char args[], MacroFlags *flags,
+		int for_shell, int for_op, int single_only)
 {
-	/* TODO: refactor this function expand_macros_i() */
-	/* FIXME: repetitive len = strlen(expanded) could be optimized. */
-
-	static const char MACROS_WITH_QUOTING[] = "cCfFlLbdDr";
-
-	size_t cmd_len;
-	char *expanded;
-	size_t x;
-	int len = 0;
-
 	ma_flags_set(flags, MF_NONE);
-
-	cmd_len = strlen(command);
-
-	for(x = 0; x < cmd_len; x++)
-		if(command[x] == '%')
-			break;
-
-	if(x >= cmd_len)
-	{
-		return strdup(command);
-	}
 
 	iter_func iter;
 	int ncurr, nother;
-
 	if(for_op)
 	{
 		iter = &iter_marked_entries;
@@ -210,228 +159,284 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		nother = other_view->selected_files;
 	}
 
-	if(strstr(command + x, "%r") != NULL)
+	if(strstr(command, "%r") != NULL)
 	{
 		regs_sync_from_shared_memory();
 	}
 
-	expanded = calloc(cmd_len + 1, sizeof(char));
-	strncat(expanded, command, x);
-	x++;
-	len = strlen(expanded);
-
-	do
+	char *expanded = strdup("");
+	if(expanded == NULL)
 	{
-		size_t y;
-		char *p;
+		return NULL;
+	}
 
-		int quotes = 0;
-		if(command[x] == '"' && char_is_one_of(MACROS_WITH_QUOTING, command[x + 1]))
+	const char *tail;
+	macro_info_t info;
+	for(tail = command; ; tail = info.end)
+	{
+		info = find_next_macro(tail);
+
+		/* Append prefix until the current macro to result. */
+		expanded = append_to_expanded_n(expanded, tail, info.begin - tail);
+		if(expanded == NULL)
 		{
-			quotes = 1;
-			++x;
+			return NULL;
 		}
-		switch(filter(&quotes, command[x],
-					command[x] == '\0' ? '\0' : command[x + 1], ncurr, nother))
-		{
-			int well_formed;
-			char key;
 
-			case 'a': /* user arguments */
+		if(info.kind == MK_NONE)
+		{
+			break;
+		}
+
+		if(single_only)
+		{
+			limit_to_single_only(&info, ncurr, nother);
+		}
+
+		switch(info.kind)
+		{
+			case MK_NONE:           /* Handled above.  Pass-through. */
+			case MK_INVALID: break; /* Just skip over it. */
+			case MK_PERCENT:
+				expanded = append_to_expanded(expanded, "%");
+				break;
+
+			case MK_a:
 				if(args != NULL)
 				{
 					expanded = append_to_expanded(expanded, args);
-					len = strlen(expanded);
 				}
 				break;
-			case 'b': /* selected files of both dirs */
-				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1, iter, for_shell);
+
+			case MK_b:
+				expanded = append_selected_files(curr_view, expanded, 0, info.quoted,
+						info.mod, iter, for_shell);
 				expanded = append_to_expanded(expanded, " ");
-				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1, iter, for_shell);
-				len = strlen(expanded);
+				expanded = append_selected_files(other_view, expanded, 0, info.quoted,
+						info.mod, iter, for_shell);
 				break;
-			case 'c': /* current dir file under the cursor */
-				expanded = append_selected_files(curr_view, expanded, 1, quotes,
-						command + x + 1, iter, for_shell);
-				len = strlen(expanded);
+
+			case MK_c:
+				expanded = append_selected_files(curr_view, expanded, 1, info.quoted,
+						info.mod, iter, for_shell);
 				break;
-			case 'C': /* other dir file under the cursor */
-				expanded = append_selected_files(other_view, expanded, 1, quotes,
-						command + x + 1, iter, for_shell);
-				len = strlen(expanded);
+			case MK_C:
+				expanded = append_selected_files(other_view, expanded, 1, info.quoted,
+						info.mod, iter, for_shell);
 				break;
-			case 'f': /* current dir selected files */
-				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1, iter, for_shell);
-				len = strlen(expanded);
+
+			case MK_f:
+				expanded = append_selected_files(curr_view, expanded, 0, info.quoted,
+						info.mod, iter, for_shell);
 				break;
-			case 'F': /* other dir selected files */
-				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1, iter, for_shell);
-				len = strlen(expanded);
+			case MK_F:
+				expanded = append_selected_files(other_view, expanded, 0, info.quoted,
+						info.mod, iter, for_shell);
 				break;
-			case 'l': /* current dir selected files or nothing if no selection */
-				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1, &iter_selected_entries, for_shell);
-				len = strlen(expanded);
+
+			case MK_l:
+				expanded = append_selected_files(curr_view, expanded, 0, info.quoted,
+						info.mod, &iter_selected_entries, for_shell);
 				break;
-			case 'L': /* other dir selected files or nothing if no selection */
-				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1, &iter_selected_entries, for_shell);
-				len = strlen(expanded);
+			case MK_L:
+				expanded = append_selected_files(other_view, expanded, 0, info.quoted,
+						info.mod, &iter_selected_entries, for_shell);
 				break;
-			case 'd': /* current directory */
-				expanded = expand_directory_path(curr_view, expanded, quotes,
-						command + x + 1, for_shell);
-				len = strlen(expanded);
+
+			case MK_d:
+				expanded = expand_directory_path(curr_view, expanded, info.quoted,
+						info.mod, for_shell);
 				break;
-			case 'D': /* Directory of the other view. */
-				expanded = expand_directory_path(other_view, expanded, quotes,
-						command + x + 1, for_shell);
-				len = strlen(expanded);
+			case MK_D:
+				expanded = expand_directory_path(other_view, expanded, info.quoted,
+						info.mod, for_shell);
 				break;
-			case 'n': /* Forbid using of terminal multiplexer, even if active. */
-				ma_flags_set(flags, MF_NO_TERM_MUX);
+
+			case MK_n: ma_flags_set(flags, MF_NO_TERM_MUX); break;
+			case MK_N: ma_flags_set(flags, MF_KEEP_IN_FG); break;
+			case MK_m: ma_flags_set(flags, MF_MENU_OUTPUT); break;
+			case MK_M: ma_flags_set(flags, MF_MENU_NAV_OUTPUT); break;
+			case MK_S: ma_flags_set(flags, MF_STATUSBAR_OUTPUT); break;
+			case MK_q: ma_flags_set(flags, MF_PREVIEW_OUTPUT); break;
+			case MK_s: ma_flags_set(flags, MF_SPLIT); break;
+			case MK_v: ma_flags_set(flags, MF_SPLIT_VERT); break;
+			case MK_u: ma_flags_set(flags, MF_CUSTOMVIEW_OUTPUT); break;
+			case MK_U: ma_flags_set(flags, MF_VERYCUSTOMVIEW_OUTPUT); break;
+			case MK_i: ma_flags_set(flags, MF_IGNORE); break;
+
+			case MK_r:
+				expanded = expand_register(info.reg, flist_get_dir(curr_view), expanded,
+						info.quoted, info.mod, for_shell);
 				break;
-			case 'N': /* Do not run the command in a separate terminal session or
-			             process group. */
-				ma_flags_set(flags, MF_KEEP_IN_FG);
-				break;
-			case 'm': /* Use menu. */
-				ma_flags_set(flags, MF_MENU_OUTPUT);
-				break;
-			case 'M': /* Use menu like with :locate and :find. */
-				ma_flags_set(flags, MF_MENU_NAV_OUTPUT);
-				break;
-			case 'S': /* Show command output in the status bar */
-				ma_flags_set(flags, MF_STATUSBAR_OUTPUT);
-				break;
-			case 'q': /* Show command output in the preview */
-				ma_flags_set(flags, MF_PREVIEW_OUTPUT);
-				break;
-			case 's': /* Execute command in a new horizontal split. */
-				ma_flags_set(flags, MF_SPLIT);
-				break;
-			case 'v': /* Execute command in a new vertical split. */
-				ma_flags_set(flags, MF_SPLIT_VERT);
-				break;
-			case 'u': /* Parse output as list of files and compose custom view. */
-				ma_flags_set(flags, MF_CUSTOMVIEW_OUTPUT);
-				break;
-			case 'U': /* Parse output as list of files and compose unsorted view. */
-				ma_flags_set(flags, MF_VERYCUSTOMVIEW_OUTPUT);
-				break;
-			case 'i': /* Ignore output. */
-				ma_flags_set(flags, MF_IGNORE);
-				break;
-			case 'I': /* Interactive custom views. */
-				switch(command[x + 1])
-				{
-					case 'u':
-						++x;
-						ma_flags_set(flags, MF_CUSTOMVIEW_IOUTPUT);
-						break;
-					case 'U':
-						++x;
-						ma_flags_set(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
-						break;
-				}
-				break;
-			case 'r': /* Registers' content. */
-				expanded = expand_register(flist_get_dir(curr_view), expanded, quotes,
-						command + x + 2, command[x + 1], &well_formed, for_shell);
-				len = strlen(expanded);
-				if(well_formed)
-				{
-					++x;
-				}
-				break;
-			case 'p': /* Preview pane properties. */
-				key = command[x + 1];
-				if(key == 'c')
-				{
-					return expanded;
-				}
-				if(key == 'u') /* Do not cache preview result. */
-				{
-					ma_flags_set(flags, MF_NO_CACHE);
-					++x;
-					break;
-				}
+
+			case MK_Iu: ma_flags_set(flags, MF_CUSTOMVIEW_IOUTPUT); break;
+			case MK_IU: ma_flags_set(flags, MF_VERYCUSTOMVIEW_IOUTPUT); break;
+
+			case MK_Pl: ma_flags_set(flags, MF_PIPE_FILE_LIST); break;
+			case MK_Pz: ma_flags_set(flags, MF_PIPE_FILE_LIST_Z); break;
+
+			case MK_pc:
+				return expanded;
+			case MK_pd:
 				/* Just skip %pd. */
-				if(key == 'd')
-				{
-					++x;
-					break;
-				}
-
-				expanded = expand_preview(expanded, key, &well_formed);
-				len = strlen(expanded);
-				if(well_formed)
-				{
-					++x;
-				}
 				break;
-			case 'P': /* Pipe file list. */
-				switch(command[x + 1])
-				{
-					case 'l':
-						++x;
-						ma_flags_set(flags, MF_PIPE_FILE_LIST);
-						break;
-					case 'z':
-						++x;
-						ma_flags_set(flags, MF_PIPE_FILE_LIST_Z);
-						break;
-				}
+			case MK_pu:
+				ma_flags_set(flags, MF_NO_CACHE);
 				break;
-			case '%':
-				expanded = append_to_expanded(expanded, "%");
-				len = strlen(expanded);
-				break;
-
-			case '\0':
-				if(char_is_one_of("pr", command[x]) && command[x + 1] != '\0')
-				{
-					++x;
-				}
+			case MK_ph:
+			case MK_pw:
+			case MK_px:
+			case MK_py:
+				expanded = expand_preview(expanded, info.kind);
 				break;
 		}
-		if(command[x] != '\0')
-			x++;
-
-		x += mods_length(command + x);
-
-		y = x;
-
-		while(x < cmd_len)
-		{
-			if(command[x] == '%')
-				break;
-			if(command[x] != '\0')
-				x++;
-		}
-
-		assert(x >= y);
-		assert(y <= cmd_len);
-
-		p = realloc(expanded, len + (x - y) + 1);
-		if(p == NULL)
-		{
-			free(expanded);
-			return NULL;
-		}
-		expanded = p;
-		strncat(expanded, command + y, x - y);
-		len = strlen(expanded);
-
-		++x;
 	}
-	while(x < cmd_len);
 
 	return expanded;
+}
+
+/* Finds first macro in the string.  Returns information about the macro from
+ * which absence of a macro or details about it can be derived. */
+static macro_info_t
+find_next_macro(const char str[])
+{
+	static const char MACROS_WITH_QUOTING[] = "cCfFlLbdDr";
+
+	macro_info_t info = {};
+
+	const char *p = until_first(str, '%');
+	if(*p == '\0')
+	{
+		info.begin = p;
+		info.end = p;
+		info.kind = MK_NONE;
+		return info;
+	}
+
+	info.begin = p++;
+	if(*p == '"' && char_is_one_of(MACROS_WITH_QUOTING, *(p + 1)))
+	{
+		info.quoted = 1;
+		++p;
+	}
+
+	info.kind = MK_INVALID;
+	switch(*p)
+	{
+		case '%': info.kind = MK_PERCENT; break;
+
+		case 'a': info.kind = MK_a; break;
+		case 'b': info.kind = MK_b; break;
+
+		case 'c': info.kind = MK_c; break;
+		case 'C': info.kind = MK_C; break;
+		case 'f': info.kind = MK_f; break;
+		case 'F': info.kind = MK_F; break;
+		case 'l': info.kind = MK_l; break;
+		case 'L': info.kind = MK_L; break;
+		case 'd': info.kind = MK_d; break;
+		case 'D': info.kind = MK_D; break;
+
+		case 'n': info.kind = MK_n; break;
+		case 'N': info.kind = MK_N; break;
+		case 'm': info.kind = MK_m; break;
+		case 'M': info.kind = MK_M; break;
+		case 'S': info.kind = MK_S; break;
+		case 'q': info.kind = MK_q; break;
+		case 's': info.kind = MK_s; break;
+		case 'v': info.kind = MK_v; break;
+		case 'u': info.kind = MK_u; break;
+		case 'U': info.kind = MK_U; break;
+		case 'i': info.kind = MK_i; break;
+
+		case 'r':
+			info.kind = MK_r;
+			info.reg = regs_find(tolower(*++p));
+			if(info.reg == NULL)
+			{
+				--p;
+				info.reg = regs_find(DEFAULT_REG_NAME);
+				assert(info.reg != NULL);
+			}
+			break;
+
+		case 'I':
+			switch(*++p)
+			{
+				case 'u': info.kind = MK_Iu; break;
+				case 'U': info.kind = MK_IU; break;
+
+				default: --p; break;
+			}
+			break;
+
+		case 'P':
+			switch(*++p)
+			{
+				case 'l': info.kind = MK_Pl; break;
+				case 'z': info.kind = MK_Pz; break;
+
+				default: --p; break;
+			}
+			break;
+
+		case 'p':
+			switch(*++p)
+			{
+				case 'c': info.kind = MK_pc; break;
+				case 'd': info.kind = MK_pd; break;
+				case 'u': info.kind = MK_pu; break;
+				case 'h': info.kind = MK_ph; break;
+				case 'w': info.kind = MK_pw; break;
+				case 'x': info.kind = MK_px; break;
+				case 'y': info.kind = MK_py; break;
+
+				default: --p; break;
+			}
+			break;
+	}
+
+	/* In combination with pointer updates in the switch above, this ensures
+	 * skipping at least a single character after percent sign. */
+	info.end = (*p != '\0' ? p + 1 : p);
+
+	if(info.kind != MK_INVALID)
+	{
+		/* XXX: it's weird that filename modifiers are processed for all macros. */
+		info.mod = info.end;
+		info.end += mods_length(info.end);
+	}
+
+	return info;
+}
+
+/* Updates information about a macro in place to filter out non-single element
+ * macros. */
+static void
+limit_to_single_only(macro_info_t *info, int ncurr, int nother)
+{
+	if(ONE_OF(info->kind, MK_c, MK_C, MK_d, MK_D))
+	{
+		/* Single-entry macro expansion is used only for internal purposes. */
+		info->quoted = 0;
+		return;
+	}
+
+	if(info->kind == MK_f && ncurr <= 1)
+	{
+		return;
+	}
+	if(info->kind == MK_F && nother <= 1)
+	{
+		return;
+	}
+
+	if(info->kind == MK_r && info->reg->nfiles <= 1)
+	{
+		return;
+	}
+
+	info->kind = MK_INVALID;
 }
 
 void
@@ -551,30 +556,20 @@ expand_directory_path(view_t *view, char *expanded, int quotes, const char *mod,
 
 	if(for_shell && curr_stats.shell_type == ST_CMD)
 	{
+		/* XXX: why update slashes in the whole result instead of only in the just
+		 *      added path? */
 		internal_to_system_slashes(result);
 	}
 
 	return result;
 }
 
-/* Expands content of a register specified by the key argument considering
- * filename-modifiers.  If key is unknown, falls back to the default register.
- * Sets *well_formed to non-zero for valid value of the key.  Reallocates the
- * expanded string and returns result (possibly NULL). */
+/* Expands content of a register specified considering filename-modifiers.
+ * Reallocates the expanded string and returns result (possibly NULL). */
 static char *
-expand_register(const char curr_dir[], char expanded[], int quotes,
-		const char mod[], int key, int *well_formed, int for_shell)
+expand_register(const reg_t *reg, const char curr_dir[], char expanded[],
+		int quotes, const char mod[], int for_shell)
 {
-	*well_formed = 1;
-	const reg_t *reg = regs_find(tolower(key));
-	if(reg == NULL)
-	{
-		*well_formed = 0;
-		reg = regs_find(DEFAULT_REG_NAME);
-		assert(reg != NULL);
-		mod--;
-	}
-
 	int i;
 	for(i = 0; i < reg->nfiles; ++i)
 	{
@@ -600,29 +595,20 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 	return expanded;
 }
 
-/* Expands preview parameter macros specified by the key argument.  If key is
- * unknown, skips the macro.  Sets *well_formed to non-zero for valid value of
- * the key.  Reallocates the expanded string and returns result (possibly
- * NULL). */
+/* Expands preview parameter macros specified by the key argument.  Reallocates
+ * the expanded string and returns result (possibly NULL). */
 static char *
-expand_preview(char expanded[], int key, int *well_formed)
+expand_preview(char expanded[], MacroKind kind)
 {
-	*well_formed = char_is_one_of("hwxy", key);
-	if(!*well_formed)
-	{
-		*well_formed = 0;
-		return expanded;
-	}
-
 	const preview_area_t parea = get_preview_area(curr_view);
 
 	int param;
-	switch(key)
+	switch(kind)
 	{
-		case 'h': param = parea.h; break;
-		case 'w': param = parea.w; break;
-		case 'x': param = getbegx(parea.view->win) + parea.x; break;
-		case 'y': param = getbegy(parea.view->win) + parea.y; break;
+		case MK_ph: param = parea.h; break;
+		case MK_pw: param = parea.w; break;
+		case MK_px: param = getbegx(parea.view->win) + parea.x; break;
+		case MK_py: param = getbegy(parea.view->win) + parea.y; break;
 
 		default:
 			assert(0 && "Unhandled preview property type");
@@ -697,17 +683,30 @@ append_path_to_expanded(char expanded[], int quotes, const char path[])
 static char *
 append_to_expanded(char expanded[], const char str[])
 {
-	char *t;
-	const size_t len = strlen(expanded);
+	return append_to_expanded_n(expanded, str, strlen(str));
+}
 
-	t = realloc(expanded, len + strlen(str) + 1);
+/* Appends at most str_len characters at the beginning of str to expanded with
+ * reallocation.  Returns address of the new string or NULL on reallocation
+ * error. */
+static char *
+append_to_expanded_n(char expanded[], const char str[], size_t str_len)
+{
+	if(str_len == 0)
+	{
+		return expanded;
+	}
+
+	/* XXX: strlen() would be unnecessary if we cached it. */
+	const size_t old_len = strlen(expanded);
+	char *t = realloc(expanded, old_len + str_len + 1);
 	if(t == NULL)
 	{
 		free(expanded);
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return NULL;
 	}
-	strcpy(t + len, str);
+	copy_str(t + old_len, str_len + 1, str);
 	return t;
 }
 
