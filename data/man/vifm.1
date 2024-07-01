@@ -1,4 +1,4 @@
-.TH VIFM 1 "2 May 2024" "vifm 0.13"
+.TH VIFM 1 "1 July 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3678,8 +3678,8 @@ Position and quantity (if there is any) of %m, %M, %S or %s macros in the
 command is unimportant.  All their occurrences are removed from the resulting
 command.
 
-%c and %f macros are expanded to file names only, when %C and %F are expanded
-to full paths.  %f and %F follow this in %b too.
+%c and %f macros are expanded to relative paths, while %C and %F are always
+expanded to full paths.  The same applies to %f and %F implicitly used by %b.
 .TP
 .BI ":com move mv %f %D"
 set the :move command to move all of the files selected in the current directory
