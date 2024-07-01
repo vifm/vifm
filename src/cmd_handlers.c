@@ -2068,18 +2068,16 @@ get_bmark_dir(const cmd_info_t *cmd_info)
 static char *
 make_bmark_path(const char path[])
 {
-	char *ret;
-	const char *const cwd = flist_get_dir(curr_view);
-	char *const expanded = replace_tilde(ma_expand_single(path));
-
-	if(is_path_absolute(expanded))
+	char *expanded = replace_tilde(ma_expand_single(path));
+	if(expanded == NULL || is_path_absolute(expanded))
 	{
 		return expanded;
 	}
 
-	ret = format_str("%s%s%s", cwd, is_root_dir(cwd) ? "" : "/", expanded);
+	char *abs_path = join_paths(flist_get_dir(curr_view), expanded);
 	free(expanded);
-	return ret;
+
+	return abs_path;
 }
 
 /* Compares files in one or two panes to produce their diff or lists of

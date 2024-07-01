@@ -24,6 +24,73 @@
 
 #include "utils/test_helpers.h"
 
+/* Kind of a macro.  Each kind corresponds to some %-sequence disregarding
+ * quoting (e.g., both %c and %"c map to MK_c). */
+typedef enum
+{
+	MK_NONE,    /* Signifies absence of a macro. */
+	MK_INVALID, /* Signifies an unrecognized macro that needs to be skipped. */
+	MK_PERCENT, /* A literal percent sign. */
+
+	/*
+	 * Argument-less macros.
+	 */
+
+	MK_a, /* User arguments. */
+	MK_b, /* Selected files of both views. */
+
+	/* Pairs of macros for active/inactive views. */
+	MK_c, /* Current view's file under the cursor. */
+	MK_C, /* Other view's file under the cursor. */
+	MK_f, /* Current view's selected files. */
+	MK_F, /* Other view's selected files. */
+	MK_l, /* Current view's selected files or nothing if no selection. */
+	MK_L, /* Other view's selected files or nothing if no selection. */
+	MK_d, /* Current view's path. */
+	MK_D, /* Other view's path. */
+
+	/* Flags (don't expand to anything). */
+	MK_n, /* Forbid using of terminal multiplexer, even if active. */
+	MK_N, /* Do not run the command in a separate terminal session or process
+	         group. */
+	MK_m, /* Build a menu out of command's output. */
+	MK_M, /* Build a menu with navigation out of command's output. */
+	MK_S, /* Show command' output in the status bar. */
+	MK_q, /* Show command' output in the preview. */
+	MK_s, /* Execute command in a new horizontal split. */
+	MK_v, /* Execute command in a new vertical split. */
+	MK_u, /* Parse output as list of files and compose custom view. */
+	MK_U, /* Parse output as list of files and compose unsorted view. */
+	MK_i, /* Ignore output. */
+
+	/*
+	 * Single-argument macros.
+	 */
+	MK_r, /* Registers' content. */
+
+	/*
+	 * Grouped macros, all argument-less.
+	 */
+
+	/* Interactive custom view flags. */
+	MK_Iu, /* Interactive sorted custom view. */
+	MK_IU, /* Interactive unsorted custom view. */
+
+	/* File list piping flags. */
+	MK_Pl, /* Pipe in newline-separated file list. */
+	MK_Pz, /* Pipe in NUL-separated file list. */
+
+	/* Preview-related. */
+	MK_pc, /* End of the preview command, start of clear command. */
+	MK_pd, /* Pass-through (direct) preview. */
+	MK_pu, /* Do not cache preview result. */
+	MK_ph, /* Height of preview area. */
+	MK_pw, /* Width of preview area. */
+	MK_px, /* X coordinate of the top-left corner of preview area. */
+	MK_py, /* Y coordinate of the top-left corner of preview area. */
+}
+MacroKind;
+
 /* Macros that affect running of commands and processing their output. */
 typedef enum
 {
@@ -108,9 +175,10 @@ typedef struct
 }
 custom_macro_t;
 
-/* args and flags parameters can equal NULL.  The string returned needs to be
- * freed in the calling function.  After executing flags is a combination of
- * MF_* values. */
+/* Performs substitution of macros with their values.  args and flags
+ * parameters can be NULL.  The string returned needs to be freed by the
+ * caller.  After executing flags is one of MF_* values.  On error NULL is
+ * returned. */
 char * ma_expand(const char command[], const char args[], MacroFlags *flags,
 		MacroExpandReason reason);
 
@@ -121,6 +189,15 @@ char * ma_expand_single(const char command[]);
 /* Gets clear part of the viewer.  Returns NULL if there is none, otherwise
  * pointer inside the cmd string is returned. */
 const char * ma_get_clear_cmd(const char cmd[]);
+
+/* Checks that the command contains a macro of the specified kind.  Returns
+ * non-zero if so. */
+int ma_contains1(const char cmd[], MacroKind kind);
+
+/* Checks that the command contains at least one macro out of up to 2 specified
+ * kinds (MK_NONE can be passed in to much anything).  Returns non-zero if
+ * so. */
+int ma_contains2(const char cmd[], MacroKind kind1, MacroKind kind2);
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
  * macros specification.  Optionally handles %[opt%] nested expansions.  Returns

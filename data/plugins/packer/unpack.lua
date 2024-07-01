@@ -138,7 +138,8 @@ local function unpack_archive(archive, target, onexit) -- <<<
    return vifm.startjob {
       cmd = cmd,
       description = "Unpacking: "..fname,
-      visible = true,
+      -- don't show on the job bar if running in foreground
+      visible = onexit ~= nil,
       -- ignore output to not block a background task
       iomode = onexit and '' or 'r',
       onexit = onexit,

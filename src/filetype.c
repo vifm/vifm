@@ -367,14 +367,14 @@ ft_viewer_kind(const char viewer[])
 
 	/* Pass-through marker (for sixel graphics or something similar), %px and %py
 	 * could be needed here as well, so this check has higher priority. */
-	if(strstr(viewer, "%pd") != NULL)
+	if(ma_contains1(viewer, MK_pd))
 	{
 		return VK_PASS_THROUGH;
 	}
 
 	/* %pw and %ph can be useful for text output, but %px and %py are useful
 	 * for graphics only and basically must be used both at the same time. */
-	if(strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL)
+	if(ma_contains1(viewer, MK_px) && ma_contains1(viewer, MK_py))
 	{
 		return VK_GRAPHICAL;
 	}

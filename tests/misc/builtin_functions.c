@@ -38,6 +38,8 @@ SETUP()
 	init_variables();
 
 	view_setup(&lwin);
+	curr_view = &lwin;
+	other_view = &rwin;
 
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 }
@@ -50,6 +52,8 @@ TEARDOWN()
 	update_string(&cfg.shell_cmd_flag, NULL);
 
 	view_teardown(&lwin);
+	curr_view = NULL;
+	other_view = NULL;
 }
 
 TEST(executable_true_for_executable)

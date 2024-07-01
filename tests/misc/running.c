@@ -471,6 +471,41 @@ TEST(handler_can_be_matched_by_a_prefix, IF(not_windows))
 	stop_use_script();
 }
 
+TEST(selection_multi_run, IF(not_windows))
+{
+	start_use_script();
+
+	char *error;
+	matchers_t *ms;
+	char cmd[PATH_MAX + 1];
+
+	ms = matchers_alloc("{a}", 0, 1, "", &error);
+	assert_non_null(ms);
+	snprintf(cmd, sizeof(cmd), "%s a %%c &", script_path);
+	ft_set_programs(ms, cmd, /*for_x=*/0, /*in_x=*/0);
+
+	ms = matchers_alloc("{b}", 0, 1, "", &error);
+	assert_non_null(ms);
+	snprintf(cmd, sizeof(cmd), "%s b %%\"c &", script_path);
+	ft_set_programs(ms, cmd, /*for_x=*/0, /*in_x=*/0);
+
+	rn_open(&lwin, FHE_NO_RUN);
+
+	wait_for_all_bg();
+
+	const char *lines_a[] = { "a" };
+	file_is(SANDBOX_PATH "/a-list", lines_a, ARRAY_LEN(lines_a));
+
+	const char *lines_b[] = { "b" };
+	file_is(SANDBOX_PATH "/b-list", lines_b, ARRAY_LEN(lines_b));
+
+	assert_success(remove(SANDBOX_PATH "/a-list"));
+	assert_success(remove(SANDBOX_PATH "/b-list"));
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
 TEST(provide_input_on_statusbar_redirection, IF(have_cat))
 {
 	view_setup(&rwin);
