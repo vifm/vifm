@@ -718,6 +718,7 @@ TEST(preview_clear_cmd_gets_cut_off)
 
 TEST(preview_clear_cmd_is_extracted)
 {
+	assert_string_equal(NULL, ma_get_clear_cmd("draw %pw %ph %%pc clear"));
 	assert_string_equal("clear", ma_get_clear_cmd("draw %pw %ph %pc clear"));
 }
 

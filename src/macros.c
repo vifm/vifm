@@ -159,7 +159,7 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 		nother = other_view->selected_files;
 	}
 
-	if(strstr(command, "%r") != NULL)
+	if(ma_contains1(command, MK_r))
 	{
 		regs_sync_from_shared_memory();
 	}
@@ -713,15 +713,31 @@ append_to_expanded_n(char expanded[], const char str[], size_t str_len)
 const char *
 ma_get_clear_cmd(const char cmd[])
 {
-	const char *clear_cmd;
-	const char *const break_point = strstr(cmd, "%pc");
-	if(break_point == NULL)
+	macro_info_t info = find_next_macro(cmd);
+	for( ; info.kind != MK_NONE; info = find_next_macro(info.end))
 	{
-		return NULL;
+		if(info.kind == MK_pc)
+		{
+			const char *clear_cmd = skip_whitespace(info.end);
+			return is_null_or_empty(clear_cmd) ? NULL : clear_cmd;
+		}
 	}
 
-	clear_cmd = skip_whitespace(break_point + 3);
-	return is_null_or_empty(clear_cmd) ? NULL : clear_cmd;
+	return NULL;
+}
+
+int
+ma_contains1(const char cmd[], MacroKind kind)
+{
+	macro_info_t info = find_next_macro(cmd);
+	for( ; info.kind != MK_NONE; info = find_next_macro(info.end))
+	{
+		if(info.kind == kind)
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 int

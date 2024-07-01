@@ -298,6 +298,13 @@
 	%"c/%"C/%"f/%"F macros into account (relevant mostly to Windows).  Thanks
 	to smoothdad.
 
+	Fixed unreliable internal checks for %pd, %px, %py, %pc and %r macros.
+	Previously they could be found in something like "%%pd", which should not
+	be interpreted as %pd.
+
+	Fixed registers' content of multiple instances not being synchronized on
+	use of %"r macro.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
