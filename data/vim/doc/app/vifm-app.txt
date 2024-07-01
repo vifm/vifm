@@ -3163,8 +3163,8 @@ handle it:
 
     2. If all handlers match the following criteria:
         - backgrounded
-        - include `%c` and/or `%C`
-        - include neither `%f` nor `%F`
+        - include `%c`/`%"c` and/or `%C`/`%"C`
+        - include neither `%f`/`%"f` nor `%F`/`%"F`
        then each file is executed independently of the rest.
 
     3. If all handlers are equal, the common handler is executed.  This

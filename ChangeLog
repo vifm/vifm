@@ -294,6 +294,10 @@
 	like inability to externally rename them (regression in 0.12.1 beta).
 	Thanks to jc-SpaceXp.
 
+	Fixed rules for handling of selection by :file[x]type not taking
+	%"c/%"C/%"f/%"F macros into account (relevant mostly to Windows).  Thanks
+	to smoothdad.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

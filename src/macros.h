@@ -190,6 +190,11 @@ char * ma_expand_single(const char command[]);
  * pointer inside the cmd string is returned. */
 const char * ma_get_clear_cmd(const char cmd[]);
 
+/* Checks that the command contains at least one macro out of up to 2 specified
+ * kinds (MK_NONE can be passed in to much anything).  Returns non-zero if
+ * so. */
+int ma_contains2(const char cmd[], MacroKind kind1, MacroKind kind2);
+
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
  * macros specification.  Optionally handles %[opt%] nested expansions.  Returns
  * expanded string. */

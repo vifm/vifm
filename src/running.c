@@ -517,11 +517,9 @@ is_multi_run_compat(const char prog_cmd[])
 	/* XXX: should the check be for " &" and not just "&"? */
 	if(prog_cmd[len - 1] != '&')
 		return 0;
-	if(strstr(prog_cmd, "%f") != NULL || strstr(prog_cmd, "%F") != NULL)
-		return 0;
-	if(strstr(prog_cmd, "%c") == NULL && strstr(prog_cmd, "%C") == NULL)
-		return 0;
-	return 1;
+
+	return ma_contains2(prog_cmd, MK_c, MK_C)
+	    && !ma_contains2(prog_cmd, MK_f, MK_F);
 }
 
 void

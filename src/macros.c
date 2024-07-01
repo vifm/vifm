@@ -724,6 +724,20 @@ ma_get_clear_cmd(const char cmd[])
 	return is_null_or_empty(clear_cmd) ? NULL : clear_cmd;
 }
 
+int
+ma_contains2(const char cmd[], MacroKind kind1, MacroKind kind2)
+{
+	macro_info_t info = find_next_macro(cmd);
+	for( ; info.kind != MK_NONE; info = find_next_macro(info.end))
+	{
+		if(ONE_OF(info.kind, kind1, kind2))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 char *
 ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[],
 		int with_opt)
