@@ -1208,7 +1208,7 @@ filename_completion(const char str[], CompletionType type,
 	temp = strrchr(dirname, '/');
 	if(temp != NULL && type != CT_FILE && type != CT_FILE_WOE)
 	{
-		strcpy(filename, ++temp);
+		replace_string(&filename, ++temp);
 		*temp = '\0';
 	}
 	else if(replace_string(&dirname, ".") != 0)

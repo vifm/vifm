@@ -91,6 +91,11 @@ int_stack_pop(int_stack_t *stack)
 void
 int_stack_pop_seq(int_stack_t *stack, int seq_guard)
 {
+	if(int_stack_is_empty(stack))
+	{
+		return;
+	}
+
 	while(--stack->top > 0 && stack->data[stack->top] != seq_guard)
 	{
 		/* Do nothing. */
