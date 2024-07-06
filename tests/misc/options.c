@@ -8,6 +8,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/options.h"
 #include "../../src/engine/text_buffer.h"
+#include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
@@ -765,6 +766,23 @@ TEST(hloptions)
 	assert_failure(cmds_dispatch("se hloptions=filehi:path,filehi:wrong", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(CW_ALL_ROWS, cfg.color_what);
+}
+
+TEST(long_envvar_values_do_not_cause_a_crash_with_fast_run)
+{
+	undo_setup();
+	cfg.fast_run = 1;
+	/* To not actually run anything. */
+	update_string(&cfg.shell, "echo");
+
+	/* Environment variable that expands to a value with a slash and suffix after
+	 * the slash is longer than the original completion string. */
+	let_variables("$VIFM_TEST_VAR='VIFM_TEST/VAR_EXPANDS_TO_A_LONG_STRING'");
+
+	(void)cmds_dispatch1("$!$VIFM_TEST_VAR", &lwin, CIT_COMMAND);
+
+	cfg.fast_run = 0;
+	undo_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
