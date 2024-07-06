@@ -307,7 +307,7 @@ TEST(new_stashes_push_out_old_ones)
 
 	int i;
 
-	for(i = 0; i < 15; ++i)
+	for(i = 0; i < 30; ++i)
 	{
 		char cmd[32];
 		snprintf(cmd, sizeof(cmd), "!echo %d %%M", i + 1);
@@ -317,9 +317,9 @@ TEST(new_stashes_push_out_old_ones)
 	}
 
 	assert_success(cmds_dispatch1("copen", &lwin, CIT_COMMAND));
-	assert_string_equal("!echo 15 %M", menu_get_current()->title);
+	assert_string_equal("!echo 30 %M", menu_get_current()->title);
 
-	for(i = 14; i > 5; --i)
+	for(i = 29; i > 5; --i)
 	{
 		char title[32];
 		snprintf(title, sizeof(title), "!echo %d %%M", i);

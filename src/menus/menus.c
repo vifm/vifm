@@ -125,7 +125,7 @@ menu_state;
 
 /* Storage for data of stashable menus in chronological order (newest to
  * oldest). */
-static menu_data_t menu_data_stash[10];
+static menu_data_t menu_data_stash[25];
 /* Index of the last viewed stashed menu. */
 static int menu_stash_index;
 /* Number of stashed menus. */
