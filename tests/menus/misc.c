@@ -328,6 +328,8 @@ TEST(new_stashes_push_out_old_ones)
 		assert_string_equal(title, menu_get_current()->title);
 	}
 
+	assert_failure(cmds_dispatch1("colder", &lwin, CIT_MENU_COMMAND));
+
 	(void)vle_keys_exec(WK_ESC);
 
 	opt_handlers_teardown();
