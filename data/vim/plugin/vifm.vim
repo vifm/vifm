@@ -255,85 +255,22 @@ function! s:DropGoneBuffers(buffer_snapshot) abort
 	endif
 endfunction
 
-function! s:StartCwdJob() abort
-	if get(g:, 'vifm_embed_cwd', 0) && (has('job') || has('nvim'))
-		let cwdf = tempname()
-		silent! exec '!mkfifo '. cwdf
-
-		let cwdcmd = ['/bin/sh', '-c',
-					\ 'while true; do cat ' . shellescape(cwdf) . '; done']
-
-		if !has('nvim')
-			let cwdopts = { 'out_cb': 'VifmCwdCb' }
-
-			function! VifmCwdCb(channel, data) abort
-				call s:HandleCwdOut(a:data)
-			endfunction
-
-			let cwdjob = job_start(cwdcmd, cwdopts)
-		else
-			let cwdopts = {}
-
-			function! cwdopts.on_stdout(id, data, event) abort
-				if a:data[0] ==# ''
-					return
-				endif
-				call s:HandleCwdOut(a:data[0])
-			endfunction
-
-			let cwdjob = jobstart(cwdcmd, cwdopts)
-		endif
-
-		return [cwdf, cwdjob]
-	endif
-	return ['', 0]
-endfunction
-
-function! s:HandleCwdOut(data) abort
-	exec 'cd ' . fnameescape(a:data)
-endfunction
-
-function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
-	" Call this even on non-zero exit code.
-	call s:DropGoneBuffers(a:bufsnapshot)
-
-	if a:exitcode != 0
-		echoerr 'Got non-zero code from vifm: ' . a:exitcode
-		call delete(a:listf)
-		call delete(a:typef)
-		return
-	endif
-
-	" The selected files are written and read from a file instead of using
-	" vim's clientserver so that it will work in the console without a X server
-	" running.
-
-	if !file_readable(a:listf)
-		echoerr 'Failed to read list of files'
-		call delete(a:listf)
-		call delete(a:typef)
-		return
-	endif
-
-	let flist = readfile(a:listf)
-	call delete(a:listf)
-
-	let opentype = file_readable(a:typef) ? readfile(a:typef) : []
-	call delete(a:typef)
-
+" Opens files after exiting Vifm.
+function! s:OpenFiles(editcmd, flist, opentype) abort
 	" User exits vifm without selecting a file.
-	if empty(flist)
+	if empty(a:flist)
 		echohl WarningMsg | echo 'No file selected' | echohl None
 		return
 	endif
 
+	let flist = a:flist
 	let unescaped_firstfile = flist[0]
 	call map(flist, 'fnameescape(v:val)')
 	let firstfile = flist[0]
 
-	if !empty(opentype) && !empty(opentype[0]) &&
-		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
-		let editcmd = has('win32') ? opentype[0][1:-2] : opentype[0]
+	if !empty(a:opentype) && !empty(a:opentype[0]) &&
+		\ a:opentype[0] != '"%VIFM_OPEN_TYPE%"'
+		let editcmd = has('win32') ? a:opentype[0][1:-2] : a:opentype[0]
 	else
 		let editcmd = a:editcmd
 	endif
@@ -385,6 +322,78 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
 		" Mind that drop replaces arglist, so don't use it with :edit.
 		execute 'drop' firstfile
 	endif
+endfunction
+
+function! s:StartCwdJob() abort
+	if get(g:, 'vifm_embed_cwd', 0) && (has('job') || has('nvim'))
+		let cwdf = tempname()
+		silent! exec '!mkfifo '. cwdf
+
+		let cwdcmd = ['/bin/sh', '-c',
+					\ 'while true; do cat ' . shellescape(cwdf) . '; done']
+
+		if !has('nvim')
+			let cwdopts = { 'out_cb': 'VifmCwdCb' }
+
+			function! VifmCwdCb(channel, data) abort
+				call s:HandleCwdOut(a:data)
+			endfunction
+
+			let cwdjob = job_start(cwdcmd, cwdopts)
+		else
+			let cwdopts = {}
+
+			function! cwdopts.on_stdout(id, data, event) abort
+				if a:data[0] ==# ''
+					return
+				endif
+				call s:HandleCwdOut(a:data[0])
+			endfunction
+
+			let cwdjob = jobstart(cwdcmd, cwdopts)
+		endif
+
+		return [cwdf, cwdjob]
+	endif
+	return ['', 0]
+endfunction
+
+function! s:HandleCwdOut(data) abort
+	exec 'cd ' . fnameescape(a:data)
+endfunction
+
+function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
+	let err = 0
+
+	if a:exitcode != 0
+		echoerr 'Got non-zero code from vifm: ' . a:exitcode
+		let err = 1
+	endif
+
+	" The selected files are written and read from a file instead of using
+	" vim's clientserver so that it will work in the console without a X server
+	" running.
+
+	if !err && !file_readable(a:listf)
+		echoerr 'Failed to read list of files'
+		let err = 1
+	endif
+
+	if !err
+		let flist = readfile(a:listf)
+		let opentype = file_readable(a:typef) ? readfile(a:typef) : []
+
+		call delete(a:listf)
+		call delete(a:typef)
+
+		call s:OpenFiles(a:editcmd, flist, opentype)
+	else
+		call delete(a:listf)
+		call delete(a:typef)
+	endif
+
+	" Drop removed buffers regardless of errors
+	call s:DropGoneBuffers(a:bufsnapshot)
 endfunction
 
 function! s:PreparePath(path) abort
