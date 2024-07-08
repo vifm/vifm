@@ -239,10 +239,10 @@ endfunction
 " Closes unchanged buffers snapshotted by TakeBufferSnapshot() which no longer
 " correspond to any buffer.  Invoked after Vifm has closed (even with an error
 " code, because file system could have been updated).
-function! s:DropGoneBuffers(buffer_snapshot) abort
+function! s:DropGoneBuffers(buffer_snapshot, excluded_bufnrs) abort
 	let gone_buffers = []
 	for bufnr in a:buffer_snapshot
-		if bufexists(bufnr)
+		if bufexists(bufnr) && !get(a:excluded_bufnrs, bufnr)
 			let info = getbufinfo(bufnr)[0]
 			" Do not close a changed buffer even if its file is gone.
 			if !info.changed && !filereadable(info.name)
@@ -255,12 +255,14 @@ function! s:DropGoneBuffers(buffer_snapshot) abort
 	endif
 endfunction
 
-" Opens files after exiting Vifm.
+" Opens files after exiting Vifm.  Returns a dict of opened buffer names.
 function! s:OpenFiles(editcmd, flist, opentype) abort
+	let opened_bufnrs = {}
+
 	" User exits vifm without selecting a file.
 	if empty(a:flist)
 		echohl WarningMsg | echo 'No file selected' | echohl None
-		return
+		return opened_bufnrs
 	endif
 
 	let flist = a:flist
@@ -277,9 +279,10 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 	" Don't split if current window is empty
 	if empty(expand('%')) && editcmd =~ '^v\?split$'
 		execute 'edit' fnameescape(flist[0])
+		let opened_bufnrs[bufnr(flist[0])] = 1
 		let flist = flist[1:-1]
 		if len(flist) == 0
-			return
+			return opened_bufnrs
 		endif
 	endif
 
@@ -296,6 +299,7 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 
 	for file in flist
 		execute editcmd fnameescape(file)
+		let opened_bufnrs[bufnr(file)] = 1
 		if editcmd == 'edit' && len(flist) > 1
 			execute 'argadd' file
 		endif
@@ -304,7 +308,7 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 	" When we open a single file, there is no need to navigate to its window,
 	" because we're already there
 	if len(flist) == 1
-		return
+		return opened_bufnrs
 	endif
 
 	" Go to the first file working around possibility that :drop command is not
@@ -315,6 +319,8 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 		" Mind that drop replaces arglist, so don't use it with :edit.
 		execute 'drop' fnameescape(firstfile)
 	endif
+
+	return opened_bufnrs
 endfunction
 
 function! s:StartCwdJob() abort
@@ -372,6 +378,8 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
 		let err = 1
 	endif
 
+	let opened_bufnrs = {}
+
 	if !err
 		let flist = readfile(a:listf)
 		let opentype = file_readable(a:typef) ? readfile(a:typef) : []
@@ -379,14 +387,14 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
 		call delete(a:listf)
 		call delete(a:typef)
 
-		call s:OpenFiles(a:editcmd, flist, opentype)
+		let opened_bufnrs = s:OpenFiles(a:editcmd, flist, opentype)
 	else
 		call delete(a:listf)
 		call delete(a:typef)
 	endif
 
 	" Drop removed buffers regardless of errors
-	call s:DropGoneBuffers(a:bufsnapshot)
+	call s:DropGoneBuffers(a:bufsnapshot, opened_bufnrs)
 endfunction
 
 function! s:PreparePath(path) abort
