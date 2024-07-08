@@ -264,8 +264,7 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 	endif
 
 	let flist = a:flist
-	let unescaped_firstfile = flist[0]
-	call map(flist, 'fnameescape(v:val)')
+	call map(flist, 'resolve(fnamemodify(v:val, ":."))')
 	let firstfile = flist[0]
 
 	if !empty(a:opentype) && !empty(a:opentype[0]) &&
@@ -277,7 +276,7 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 
 	" Don't split if current window is empty
 	if empty(expand('%')) && editcmd =~ '^v\?split$'
-		execute 'edit' fnamemodify(flist[0], ':.')
+		execute 'edit' fnameescape(flist[0])
 		let flist = flist[1:-1]
 		if len(flist) == 0
 			return
@@ -296,8 +295,7 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 	endif
 
 	for file in flist
-		let file = resolve(fnamemodify(file, ':.'))
-		execute editcmd file
+		execute editcmd fnameescape(file)
 		if editcmd == 'edit' && len(flist) > 1
 			execute 'argadd' file
 		endif
@@ -312,15 +310,10 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 	" Go to the first file working around possibility that :drop command is not
 	" evailable, if possible
 	if editcmd == 'edit' || !s:has_drop
-		" Linked folders must be resolved to successfully call 'buffer'
-		let firstfile = unescaped_firstfile
-		let firstfile = resolve(fnamemodify(firstfile, ':h'))
-					\ .'/'.fnamemodify(firstfile, ':t')
-		let firstfile = fnameescape(firstfile)
-		execute 'buffer' fnamemodify(firstfile, ':.')
+		execute 'buffer' fnameescape(firstfile)
 	elseif s:has_drop
 		" Mind that drop replaces arglist, so don't use it with :edit.
-		execute 'drop' firstfile
+		execute 'drop' fnameescape(firstfile)
 	endif
 endfunction
 
