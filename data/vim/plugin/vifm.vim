@@ -82,7 +82,7 @@ if !has('nvim') && exists('*term_start')
 	endfunction
 endif
 
-function s:DetermineTermEnv() abort
+function! s:DetermineTermEnv() abort
 	if !has('gui_running')
 		return (&term =~ 256 ? 'xterm-256color' : &term)
 	endif
@@ -94,7 +94,7 @@ function s:DetermineTermEnv() abort
 	return $TERM
 endfunction
 
-function s:UniqueBufferName(name) abort
+function! s:UniqueBufferName(name) abort
 	let i = 2
 	let name = a:name
 	while bufexists(name)
@@ -226,7 +226,7 @@ endfunction
 
 " Makes list of open buffers backed up by files.  Invoked before starting a Vifm
 " instance.
-function s:TakeBufferSnapshot() abort
+function! s:TakeBufferSnapshot() abort
 	let buffer_snapshot = []
 	for buf in getbufinfo({ 'buflisted': 1 })
 		if filereadable(buf.name)
@@ -239,7 +239,7 @@ endfunction
 " Closes unchanged buffers snapshotted by TakeBufferSnapshot() which no longer
 " correspond to any buffer.  Invoked after Vifm has closed (even with an error
 " code, because file system could have been updated).
-function s:DropGoneBuffers(buffer_snapshot) abort
+function! s:DropGoneBuffers(buffer_snapshot) abort
 	let gone_buffers = []
 	for bufnr in a:buffer_snapshot
 		if bufexists(bufnr)
