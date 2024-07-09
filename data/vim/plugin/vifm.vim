@@ -394,7 +394,9 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
 	endif
 
 	" Drop removed buffers regardless of errors
-	call s:DropGoneBuffers(a:bufsnapshot, opened_bufnrs)
+	if get(g:, 'vifm_drop_gone_buffers', 0)
+		call s:DropGoneBuffers(a:bufsnapshot, opened_bufnrs)
+	endif
 endfunction
 
 function! s:PreparePath(path) abort

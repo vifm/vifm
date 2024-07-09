@@ -108,6 +108,10 @@ opening directories using vifm.  Defaults to false.
 A string variable.  The command to use to open folders when
 g:vifm_replace_netrw is enabled.  Defaults to "Vifm".
 
+                                               *g:vifm_drop_gone_buffers*
+A boolean variable.  When true, upon exiting Vifm, previously open buffers
+will be deleted if they contain files that were deleted.  Defaults to false.
+
 Extension for "vifm" filetype~
 
                                                 *vifm-K*
