@@ -7,6 +7,9 @@
 	macros (it wasn't documented and didn't make much sense).  Thanks to James
 	Dietrich.
 
+	Changed handling of Ctrl-Z to not suspend the application if a
+	corresponding user mapping exists.  Patch 高浩亮 (a.k.a. haolian9).
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It

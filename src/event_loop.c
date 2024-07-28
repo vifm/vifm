@@ -210,7 +210,7 @@ event_loop(const int *quit, int manage_marking)
 				}
 			}
 
-			if(c == WC_C_z)
+			if(c == WC_C_z && !vle_keys_user_exists(WK_C_z, vle_mode_get()))
 			{
 				instance_stop();
 				continue;

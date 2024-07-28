@@ -5,6 +5,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
@@ -53,6 +54,20 @@ TEST(quit_on_key_press)
 	vle_keys_add(&keys, 1U, NORMAL_MODE);
 
 	feed_keys(L"x");
+
+	quit = 0;
+	event_loop(&quit, /*manage_marking=*/1);
+}
+
+TEST(quit_on_key_press_user_defined_ctrl_z)
+{
+	key_conf_t key = { { &x_key} };
+	assert_success(vle_keys_foreign_add(WK_C_z, &key, /*is_selector=*/0,
+				NORMAL_MODE));
+	assert_true(vle_mode_get() == NORMAL_MODE);
+	assert_true(vle_keys_user_exists(WK_C_z, NORMAL_MODE));
+
+	feed_keys(WK_C_z);
 
 	quit = 0;
 	event_loop(&quit, /*manage_marking=*/1);
