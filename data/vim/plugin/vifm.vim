@@ -82,7 +82,7 @@ if !has('nvim') && exists('*term_start')
 	endfunction
 endif
 
-function s:DetermineTermEnv() abort
+function! s:DetermineTermEnv() abort
 	if !has('gui_running')
 		return (&term =~ 256 ? 'xterm-256color' : &term)
 	endif
@@ -94,7 +94,7 @@ function s:DetermineTermEnv() abort
 	return $TERM
 endfunction
 
-function s:UniqueBufferName(name) abort
+function! s:UniqueBufferName(name) abort
 	let i = 2
 	let name = a:name
 	while bufexists(name)
@@ -226,7 +226,7 @@ endfunction
 
 " Makes list of open buffers backed up by files.  Invoked before starting a Vifm
 " instance.
-function s:TakeBufferSnapshot() abort
+function! s:TakeBufferSnapshot() abort
 	let buffer_snapshot = []
 	for buf in getbufinfo({ 'buflisted': 1 })
 		if filereadable(buf.name)
@@ -239,10 +239,10 @@ endfunction
 " Closes unchanged buffers snapshotted by TakeBufferSnapshot() which no longer
 " correspond to any buffer.  Invoked after Vifm has closed (even with an error
 " code, because file system could have been updated).
-function s:DropGoneBuffers(buffer_snapshot) abort
+function! s:DropGoneBuffers(buffer_snapshot, excluded_bufnrs) abort
 	let gone_buffers = []
 	for bufnr in a:buffer_snapshot
-		if bufexists(bufnr)
+		if bufexists(bufnr) && !get(a:excluded_bufnrs, bufnr)
 			let info = getbufinfo(bufnr)[0]
 			" Do not close a changed buffer even if its file is gone.
 			if !info.changed && !filereadable(info.name)
@@ -253,6 +253,74 @@ function s:DropGoneBuffers(buffer_snapshot) abort
 	if !empty(gone_buffers)
 		execute 'silent! bwipeout ' join(gone_buffers, ' ')
 	endif
+endfunction
+
+" Opens files after exiting Vifm.  Returns a dict of opened buffer names.
+function! s:OpenFiles(editcmd, flist, opentype) abort
+	let opened_bufnrs = {}
+
+	" User exits vifm without selecting a file.
+	if empty(a:flist)
+		echohl WarningMsg | echo 'No file selected' | echohl None
+		return opened_bufnrs
+	endif
+
+	let flist = a:flist
+	call map(flist, 'resolve(fnamemodify(v:val, ":."))')
+	let firstfile = flist[0]
+
+	if !empty(a:opentype) && !empty(a:opentype[0]) &&
+		\ a:opentype[0] != '"%VIFM_OPEN_TYPE%"'
+		let editcmd = has('win32') ? a:opentype[0][1:-2] : a:opentype[0]
+	else
+		let editcmd = a:editcmd
+	endif
+
+	" Don't split if current window is empty
+	if empty(expand('%')) && editcmd =~ '^v\?split$'
+		execute 'edit' fnameescape(flist[0])
+		let opened_bufnrs[bufnr(flist[0])] = 1
+		let flist = flist[1:-1]
+		if len(flist) == 0
+			return opened_bufnrs
+		endif
+	endif
+
+	" We emulate :args to not leave unnamed buffer around after we open our
+	" buffers.
+	if editcmd == 'edit' && len(flist) > 1
+		silent! %argdelete
+	endif
+
+	" Doesn't make sense to run :pedit multiple times in a row.
+	if editcmd == 'pedit' && len(flist) > 1
+		let flist = [ flist[0] ]
+	endif
+
+	for file in flist
+		execute editcmd fnameescape(file)
+		let opened_bufnrs[bufnr(file)] = 1
+		if editcmd == 'edit' && len(flist) > 1
+			execute 'argadd' file
+		endif
+	endfor
+
+	" When we open a single file, there is no need to navigate to its window,
+	" because we're already there
+	if len(flist) == 1
+		return opened_bufnrs
+	endif
+
+	" Go to the first file working around possibility that :drop command is not
+	" evailable, if possible
+	if editcmd == 'edit' || !s:has_drop
+		execute 'buffer' fnameescape(firstfile)
+	elseif s:has_drop
+		" Mind that drop replaces arglist, so don't use it with :edit.
+		execute 'drop' fnameescape(firstfile)
+	endif
+
+	return opened_bufnrs
 endfunction
 
 function! s:StartCwdJob() abort
@@ -294,96 +362,40 @@ function! s:HandleCwdOut(data) abort
 endfunction
 
 function! s:HandleRunResults(exitcode, listf, typef, editcmd, bufsnapshot) abort
-	" Call this even on non-zero exit code.
-	call s:DropGoneBuffers(a:bufsnapshot)
+	let err = 0
 
 	if a:exitcode != 0
 		echoerr 'Got non-zero code from vifm: ' . a:exitcode
-		call delete(a:listf)
-		call delete(a:typef)
-		return
+		let err = 1
 	endif
 
 	" The selected files are written and read from a file instead of using
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
 
-	if !file_readable(a:listf)
+	if !err && !file_readable(a:listf)
 		echoerr 'Failed to read list of files'
+		let err = 1
+	endif
+
+	let opened_bufnrs = {}
+
+	if !err
+		let flist = readfile(a:listf)
+		let opentype = file_readable(a:typef) ? readfile(a:typef) : []
+
 		call delete(a:listf)
 		call delete(a:typef)
-		return
-	endif
 
-	let flist = readfile(a:listf)
-	call delete(a:listf)
-
-	let opentype = file_readable(a:typef) ? readfile(a:typef) : []
-	call delete(a:typef)
-
-	" User exits vifm without selecting a file.
-	if empty(flist)
-		echohl WarningMsg | echo 'No file selected' | echohl None
-		return
-	endif
-
-	let unescaped_firstfile = flist[0]
-	call map(flist, 'fnameescape(v:val)')
-	let firstfile = flist[0]
-
-	if !empty(opentype) && !empty(opentype[0]) &&
-		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
-		let editcmd = has('win32') ? opentype[0][1:-2] : opentype[0]
+		let opened_bufnrs = s:OpenFiles(a:editcmd, flist, opentype)
 	else
-		let editcmd = a:editcmd
+		call delete(a:listf)
+		call delete(a:typef)
 	endif
 
-	" Don't split if current window is empty
-	if empty(expand('%')) && editcmd =~ '^v\?split$'
-		execute 'edit' fnamemodify(flist[0], ':.')
-		let flist = flist[1:-1]
-		if len(flist) == 0
-			return
-		endif
-	endif
-
-	" We emulate :args to not leave unnamed buffer around after we open our
-	" buffers.
-	if editcmd == 'edit' && len(flist) > 1
-		silent! %argdelete
-	endif
-
-	" Doesn't make sense to run :pedit multiple times in a row.
-	if editcmd == 'pedit' && len(flist) > 1
-		let flist = [ flist[0] ]
-	endif
-
-	for file in flist
-		let file = resolve(fnamemodify(file, ':.'))
-		execute editcmd file
-		if editcmd == 'edit' && len(flist) > 1
-			execute 'argadd' file
-		endif
-	endfor
-
-	" When we open a single file, there is no need to navigate to its window,
-	" because we're already there
-	if len(flist) == 1
-		return
-	endif
-
-	" Go to the first file working around possibility that :drop command is not
-	" evailable, if possible
-	if editcmd == 'edit' || !s:has_drop
-		" Linked folders must be resolved to successfully call 'buffer'
-		let firstfile = unescaped_firstfile
-		let firstfile = resolve(fnamemodify(firstfile, ':h'))
-					\ .'/'.fnamemodify(firstfile, ':t')
-		let firstfile = fnameescape(firstfile)
-		execute 'buffer' fnamemodify(firstfile, ':.')
-	elseif s:has_drop
-		" Mind that drop replaces arglist, so don't use it with :edit.
-		execute 'drop' firstfile
+	" Drop removed buffers regardless of errors
+	if get(g:, 'vifm_drop_gone_buffers', 0)
+		call s:DropGoneBuffers(a:bufsnapshot, opened_bufnrs)
 	endif
 endfunction
 
