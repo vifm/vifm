@@ -18,6 +18,7 @@
 
 /* Widely used function types. */
 
+typedef void (*stic_test)(void);
 typedef void (*stic_void_void)(void);
 typedef void (*stic_void_string)(char[]);
 
@@ -147,7 +148,7 @@ struct stic_test_data
 {
     const char *const n;
     const char *const f;
-    stic_void_void t;
+    stic_test t;
     int (*const p)(void);
 };
 
@@ -303,7 +304,7 @@ static const char * stic_get_fixture_name(void)
 static void stic_fixture(void)
 {
     extern const char *stic_current_test_name;
-    extern stic_void_void stic_current_test;
+    extern stic_test stic_current_test;
 
     size_t i;
     int has_any_tests = 0;
