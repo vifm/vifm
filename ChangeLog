@@ -312,6 +312,9 @@
 	via expansion of an environment variable when 'fastrun' is set (e.g.,
 	`!$EDITOR`).  Thanks to Quaddroo.
 
+	Fixed :elseif evaluating its expression even if an earlier conditional
+	branch was already taken.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

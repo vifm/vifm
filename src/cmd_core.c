@@ -1257,6 +1257,23 @@ cmds_scope_finish(void)
 	return 0;
 }
 
+int
+cmds_scoped_should_eval(int cmd_id)
+{
+	if(int_stack_is_empty(&if_levels))
+	{
+		return 1;
+	}
+
+	IfFrame if_frame = int_stack_get_top(&if_levels);
+	if(ONE_OF(if_frame, IF_MATCH, IF_ELSE) && cmd_id == COM_ELSEIF_STMT)
+	{
+		return 0;
+	}
+
+	return ONE_OF(if_frame, IF_BEFORE_MATCH, IF_MATCH, IF_ELSE, IF_SCOPE_GUARD);
+}
+
 void
 cmds_scoped_if(int cond)
 {

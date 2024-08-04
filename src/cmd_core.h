@@ -134,6 +134,10 @@ char * cmds_eval_args(const char args[], const char **stop_ptr);
  * be called from command handlers, or it won't have any effect. */
 void cmds_preserve_selection(void);
 
+/* Checks whether conditional command should evaluate its expression in current
+ * context.  Returns non-zero if so. */
+int cmds_scoped_should_eval(int cmd_id);
+
 /* Enters if branch of if-else-endif statement. */
 void cmds_scoped_if(int cond);
 

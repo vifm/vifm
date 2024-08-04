@@ -1,16 +1,26 @@
 #include <stic.h>
 
+#include <unistd.h> /* chdir() */
+
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcmp() */
 
+#include "../../src/engine/functions.h"
+#include "../../src/engine/variables.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
+#include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
+
+#include <test-utils.h>
 
 #define VAR_A "VAR_A"
 #define VAR_B "VAR_B"
 #define VAR_C "VAR_C"
 #define VAR_D "VAR_D"
+
+static int run_cmds(const char cmds[], int scoped);
 
 static void
 remove_tmp_vars(void)
@@ -320,6 +330,66 @@ TEST(finish_inside_if_statement_causes_no_missing_endif_error)
 		" | endif";
 
 	assert_int_equal(0, cmds_dispatch(CMDS, &lwin, CIT_COMMAND));
+}
+
+TEST(condition_of_inactive_elseif_is_not_evaluated, REPEAT(2))
+{
+	const int scoped = STIC_TEST_PARAM;
+
+	const char *const CMDS = " | let $REACHED = 0"
+	                         ""
+	                         " | if 1"
+	                         " |   let $REACHED .= 1"
+	                         " | elseif system('echo > temp-file') == ''"
+	                         " |   let $REACHED .= 2"
+	                         " | endif"
+	                         " | let $REACHED .= 3"
+	                         ""
+	                         " | if 0"
+	                         " |   let $REACHED .= 4"
+	                         " | elseif 1"
+	                         " |   let $REACHED .= 5"
+	                         " | elseif system('echo > temp-file') == ''"
+	                         " |   let $REACHED .= 6"
+	                         " | endif"
+	                         " | let $REACHED .= 7"
+	                         ""
+	                         " | if 1"
+	                         " |   let $REACHED .= 8"
+	                         " | else"
+	                         " |   if system('echo > temp-file') == ''"
+	                         " |     let $REACHED .= 9"
+	                         " |   endif"
+	                         " | endif"
+	                         " | let $REACHED .= 'A'";
+
+	assert_success(chdir(SANDBOX_PATH));
+	conf_setup();
+	init_builtin_functions();
+
+	ui_sb_msg("");
+	assert_success(run_cmds(CMDS, scoped));
+	assert_string_equal("", ui_sb_last());
+	assert_string_equal("013578A", local_getenv_null("REACHED"));
+
+	no_remove_file("temp-file");
+	conf_teardown();
+	function_reset_all();
+}
+
+static int
+run_cmds(const char cmds[], int scoped)
+{
+	if(scoped)
+	{
+		cmds_scope_start();
+	}
+	int result = cmds_dispatch(cmds, &lwin, CIT_COMMAND);
+	if(scoped && cmds_scope_finish() != 0 && result == 0)
+	{
+		result = -1;
+	}
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
