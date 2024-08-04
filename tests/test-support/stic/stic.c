@@ -91,6 +91,8 @@ static stic_void_void stic_fixture_teardown = 0;
 const char *stic_current_test_name;
 stic_test stic_current_test;
 const char *stic_suite_name;
+int stic_current_count;
+int stic_max_count;
 
 void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line) = stic_simple_test_result_log;
 
@@ -192,9 +194,11 @@ static int test_had_output(void)
 void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
 	static stic_test last_test;
+	static int last_count;
 	static stic_test last_failed_test;
 
-	const char *test_name = (stic_current_test == last_test) ? "" : stic_current_test_name;
+	int same_test = (stic_current_test == last_test && stic_current_count == last_count);
+	const char *test_name = same_test ? "" : stic_current_test_name;
 
 	if (stic_current_test_name != NULL && strcmp(function, stic_current_test_name) == 0)
 	{
@@ -219,9 +223,16 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		}
 		else
 		{
-			if(stic_current_test != last_test)
+			if(!same_test)
 			{
-				printf("\n%s:\n", test_name);
+				if (stic_max_count > 1)
+				{
+					printf("\n%s(%d):\n", test_name, stic_current_count);
+				}
+				else
+				{
+					printf("\n%s:\n", test_name);
+				}
 			}
 			printf("   (-) FAILED\n"
 			       "       %s:%u: error: check failed\n"
@@ -238,6 +249,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		last_failed_test = stic_current_test;
 
 		last_test = stic_current_test;
+		last_count = stic_current_count;
 	}
 	else
 	{
@@ -249,7 +261,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			}
 			else
 			{
-				if(stic_current_test != last_test)
+				if(!same_test)
 				{
 					printf("\n%s\n", test_name);
 				}
@@ -258,6 +270,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 				       "       in %s\n", file, line, function);
 			}
 			last_test = stic_current_test;
+			last_count = stic_current_count;
 		}
 		stic_checks_passed++;
 	}

@@ -18,7 +18,7 @@
 
 /* Widely used function types. */
 
-typedef void (*stic_test)(void);
+typedef void (*stic_test)(int test_param);
 typedef void (*stic_void_void)(void);
 typedef void (*stic_void_string)(char[]);
 
@@ -150,6 +150,8 @@ struct stic_test_data
     const char *const f;
     stic_test t;
     int (*const p)(void);
+    char C; /* Whether .c has been initialized. */
+    int c;  /* Number of times to repeat the test (1 by default). */
 };
 
 /* Auxiliary macros for internal use. */
@@ -181,10 +183,17 @@ struct stic_test_data
 
 # define IF(...) .p = __VA_ARGS__,
 
+/* Specifies number of times to repeat the test as an integer (1 by default). */
+# define REPEAT(...) .C = 1, .c = (__VA_ARGS__),
+
+/* Iteration number of the test (0..<repeat number - 1>) or 0.  To be used only
+ * in test body. */
+# define STIC_TEST_PARAM test_param
+
 # define TEST(name, ...) \
     STIC_STATIC_ASSERT(STIC_CAT(too_many_lines_in_file_, __LINE__), \
                        __LINE__ < STIC_MAX_LINES); \
-    static void name(void); \
+    static void name(int test_param); \
     static struct stic_test_data STIC_CAT(stic_test_data_, name) = { \
         .n = #name, \
         .t = &name, \
@@ -192,7 +201,7 @@ struct stic_test_data
         __VA_ARGS__ \
     }; \
     static struct stic_test_data *STIC_CAT(l, __LINE__) = &STIC_CAT(stic_test_data_, name); \
-    static void name(void)
+    static void name(int test_param)
 
 #else
 
@@ -203,19 +212,19 @@ struct stic_test_data
     static struct stic_test_data STIC_CAT(stic_test_data_, name) = { \
         /* .n = */ #name, \
         /* .t = */ &name, \
-        /* .f = */ __FILE__ \
+        /* .f = */ __FILE__, \
     }; \
     static struct stic_test_data *STIC_CAT(l, __LINE__) = &STIC_CAT(stic_test_data_, name); \
-    static void name(void)
+    static void name(int test_param)
 
 #endif
 
 /* Setup/teardown declaration macros. */
 
 #define SETUP_ONCE() \
-    static void stic_setup_once_func_impl(void); \
-    static void (*stic_setup_once_func)(void) = &stic_setup_once_func_impl; \
-    static void stic_setup_once_func_impl(void)
+    static void stic_setup_once_func_impl(int no_test_param); \
+    static void (*stic_setup_once_func)(int no_test_param) = &stic_setup_once_func_impl; \
+    static void stic_setup_once_func_impl(int no_test_param)
 
 #define SETUP() \
     static void stic_setup_func_impl(void); \
@@ -223,9 +232,9 @@ struct stic_test_data
     static void stic_setup_func_impl(void)
 
 #define TEARDOWN_ONCE() \
-    static void stic_teardown_once_func_impl(void); \
-    static void (*stic_teardown_once_func)(void) = &stic_teardown_once_func_impl; \
-    static void stic_teardown_once_func_impl(void)
+    static void stic_teardown_once_func_impl(int no_test_param); \
+    static void (*stic_teardown_once_func)(int no_test_param) = &stic_teardown_once_func_impl; \
+    static void stic_teardown_once_func_impl(int no_test_param)
 
 #define TEARDOWN() \
     static void stic_teardown_func_impl(void); \
@@ -262,12 +271,12 @@ struct stic_test_data
         const int file_has_tests = (stic_get_fixture_name() != NULL); \
         if(!file_has_tests && stic_setup_once_func != NULL) \
         { \
-            stic_setup_once_func(); \
+            stic_setup_once_func(/*no_test_param=*/0); \
         } \
         r = stic_testrunner(argc, argv, stic_suite, stic_setup_func, stic_teardown_func) == 0; \
         if(!file_has_tests && stic_teardown_once_func != NULL) \
         { \
-            stic_teardown_once_func(); \
+            stic_teardown_once_func(/*no_test_param=*/0); \
         } \
         return r; \
     }
@@ -280,9 +289,9 @@ typedef struct stic_test_data *stic_test_data_p;
 static stic_test_data_p TEST_DATA_STRUCTS;
 
 static void (*stic_setup_func)(void);
-static void (*stic_setup_once_func)(void);
+static void (*stic_setup_once_func)(int no_test_param);
 static void (*stic_teardown_func)(void);
-static void (*stic_teardown_once_func)(void);
+static void (*stic_teardown_once_func)(int no_test_param);
 
 static struct stic_test_data *const *const stic_test_data[] = {
     TEST_DATA_STRUCTS_REF
@@ -305,8 +314,11 @@ static void stic_fixture(void)
 {
     extern const char *stic_current_test_name;
     extern stic_test stic_current_test;
+    extern int stic_current_count;
+    extern int stic_max_count;
 
     size_t i;
+    int c;
     int has_any_tests = 0;
 
     const char *fixture_name = stic_get_fixture_name();
@@ -335,11 +347,11 @@ static void stic_fixture(void)
             {
                 stic_current_test_name = "<setup once>";
                 stic_current_test = stic_setup_once_func;
-                stic_setup_once_func();
+                stic_setup_once_func(/*no_test_param=*/0);
             }
         }
 
-        if(td->p != NULL && !td->p())
+        if((td->p != NULL && !td->p()) || (td->C && td->c < 1))
         {
             stic_skip_test(fixture_name, td->n);
             continue;
@@ -347,11 +359,19 @@ static void stic_fixture(void)
 
         stic_current_test_name = td->n;
         stic_current_test = td->t;
-        stic_suite_setup();
-        stic_setup();
-        td->t();
-        stic_teardown();
-        stic_suite_teardown();
+        stic_max_count = (td->C ? td->c : 1);
+
+        for(c = 0; c < stic_max_count; ++c)
+        {
+            stic_current_count = c;
+
+            stic_suite_setup();
+            stic_setup();
+            td->t(c);
+            stic_teardown();
+            stic_suite_teardown();
+        }
+
         stic_run_test(fixture_name, td->n);
     }
 
@@ -359,7 +379,7 @@ static void stic_fixture(void)
     {
         stic_current_test_name = "<teardown once>";
         stic_current_test = stic_teardown_once_func;
-        stic_teardown_once_func();
+        stic_teardown_once_func(/*no_test_param=*/0);
     }
     test_fixture_end();
 }
