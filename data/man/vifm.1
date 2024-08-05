@@ -1,4 +1,4 @@
-.TH VIFM 1 "6 July 2024" "vifm 0.13"
+.TH VIFM 1 "5 August 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2533,7 +2533,9 @@ same as <c-o>.
 .BI ":if {expr1}"
 start conditional block.  Commands are executed until next matching :elseif,
 :else or :endif command if {expr1} evaluates to non-zero, otherwise they are
-ignored.  See also help on :else and :endif commands.
+ignored.  An error during evaluation of {expr1} results in not taking any
+conditional branches (not even an else-branch).  See also help on :else and
+:endif commands.
 
 Example:
 .EX

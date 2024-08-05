@@ -10,6 +10,11 @@
 	Changed handling of Ctrl-Z to not suspend the application if a
 	corresponding user mapping exists.  Patch 高浩亮 (a.k.a. haolian9).
 
+	Changed behaviour on failure to evaluate an expression of :if or :elseif.
+	Previously this resulted in trying to execute any commands until and
+	including :endif (all branches taken).  Now everything up to :endif will
+	not be executed (no branches taken).  Thanks to Ed Pavlov.
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It

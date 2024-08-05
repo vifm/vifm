@@ -377,6 +377,112 @@ TEST(condition_of_inactive_elseif_is_not_evaluated, REPEAT(2))
 	function_reset_all();
 }
 
+TEST(stray_elseif, REPEAT(2))
+{
+	const int scoped = STIC_TEST_PARAM;
+
+	ui_sb_msg("");
+	assert_failure(run_cmds("elseif 1 == 1", scoped));
+	assert_string_equal("Misplaced :elseif", ui_sb_last());
+}
+
+TEST(error_in_if_condition)
+{
+	const char *const CMDS = " | let $REACHED = 0"
+	                         " | if level1"
+	                         " |   let $REACHED .= 1"
+	                         " | endif"
+	                         " | let $REACHED .= 2";
+
+	ui_sb_msg("");
+	/* Unscoped use can't handle top-level errors gracefully because there is no
+	 * code that handles end of scope.  This isn't a big deal because user
+	 * shouldn't be able to run commands out of scope anyway. */
+	assert_failure(run_cmds(CMDS, /*scoped=*/1));
+	assert_string_equal("Invalid expression: level1", ui_sb_last());
+	assert_string_equal("02", local_getenv_null("REACHED"));
+}
+
+TEST(error_in_inactive_elseif_condition_is_ignored, REPEAT(2))
+{
+	const int scoped = STIC_TEST_PARAM;
+
+	const char *const CMDS = " | let $REACHED = 0"
+	                         " | if 1"
+	                         " |   let $REACHED .= 1"
+	                         " | elseif bad_elseif"
+	                         " |   let $REACHED .= 2"
+	                         " | endif"
+	                         " | let $REACHED .= 3";
+
+	ui_sb_msg("");
+	assert_success(run_cmds(CMDS, scoped));
+	assert_string_equal("", ui_sb_last());
+	assert_string_equal("013", local_getenv_null("REACHED"));
+}
+
+TEST(error_in_active_elseif_condition, REPEAT(2))
+{
+	const int scoped = STIC_TEST_PARAM;
+
+	const char *const CMDS = " | let $REACHED = 0"
+	                         " | if 0"
+	                         " |   let $REACHED .= 1"
+	                         " | elseif bad_elseif"
+	                         " |   let $REACHED .= 2"
+	                         " | endif"
+	                         " | let $REACHED .= 3";
+
+	ui_sb_msg("");
+	assert_failure(run_cmds(CMDS, scoped));
+	assert_string_equal("Invalid expression: bad_elseif", ui_sb_last());
+	assert_string_equal("03", local_getenv_null("REACHED"));
+}
+
+TEST(error_in_a_nested_condition, REPEAT(2))
+{
+	const int scoped = STIC_TEST_PARAM;
+
+	const char *const CMDS = " | let $REACHED = 0"
+	                         " | if 1"
+	                         " |   let $REACHED .= 1"
+	                         " |   if level2"
+	                         " |     let $REACHED .= 2"
+	                         " |   endif"
+	                         " |   let $REACHED .= 3"
+	                         " | endif"
+	                         " | let $REACHED .= 4";
+
+	ui_sb_msg("");
+	assert_failure(run_cmds(CMDS, scoped));
+	assert_string_equal("Invalid expression: level2", ui_sb_last());
+	assert_string_equal("0134", local_getenv_null("REACHED"));
+}
+
+TEST(error_in_doubly_nested_condition, REPEAT(2))
+{
+	const int scoped = STIC_TEST_PARAM;
+
+	const char *const CMDS = " | let $REACHED = 0"
+	                         " | if 1"
+	                         " |   let $REACHED .= 1"
+	                         " |   if 2"
+	                         " |     let $REACHED .= 2"
+	                         " |     if level3"
+	                         " |       let $REACHED .= 3"
+	                         " |     endif"
+	                         " |     let $REACHED .= 4"
+	                         " |   endif"
+	                         " |   let $REACHED .= 5"
+	                         " | endif"
+	                         " | let $REACHED .= 6";
+
+	ui_sb_msg("");
+	assert_failure(run_cmds(CMDS, scoped));
+	assert_string_equal("Invalid expression: level3", ui_sb_last());
+	assert_string_equal("012456", local_getenv_null("REACHED"));
+}
+
 static int
 run_cmds(const char cmds[], int scoped)
 {

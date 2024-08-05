@@ -2348,6 +2348,7 @@ elseif_cmd(const cmd_info_t *cmd_info)
 	const int x = eval_if_condition(COM_ELSEIF_STMT, cmd_info);
 	if(x < 0)
 	{
+		cmds_scoped_error();
 		return CMDS_ERR_CUSTOM;
 	}
 
@@ -3470,6 +3471,7 @@ if_cmd(const cmd_info_t *cmd_info)
 	const int x = eval_if_condition(COM_IF_STMT, cmd_info);
 	if(x < 0)
 	{
+		cmds_scoped_error();
 		return CMDS_ERR_CUSTOM;
 	}
 

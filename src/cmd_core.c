@@ -89,6 +89,7 @@ CmdArgsType;
 typedef enum
 {
 	IF_SCOPE_GUARD,  /* Command scope marker, prevents mixing of levels. */
+	IF_ACTIVE_SCOPE, /* Scope of a taken conditional branch. */
 	IF_BEFORE_MATCH, /* Before condition that evaluates to true is found. */
 	IF_MATCH,        /* Just found true condition and processing that branch. */
 	IF_AFTER_MATCH,  /* Left branch corresponding to true condition. */
@@ -123,6 +124,7 @@ static CmdArgsType get_cmd_args_type(const char cmd[]);
 static char * skip_to_cmd_name(const char cmd[]);
 static int repeat_command(view_t *view, CmdInputType type);
 static int is_at_scope_bottom(const int_stack_t *scope_stack);
+static int is_at_scope_guard(const int_stack_t *scope_stack);
 
 /* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
@@ -643,10 +645,12 @@ is_implicit_cd(view_t *view, const char cmd[], int cmd_error)
 static int
 cmd_should_be_processed(int cmd_id)
 {
+	/* XXX: this should probably be zeroed when exiting a scope (including on
+	 *      error) and yet I failed to come up with an test case which exposes an
+	 *      issue with not zeroing this. */
 	static int skipped_nested_if_stmts;
 
-	if(is_at_scope_bottom(&if_levels) || int_stack_top_is(&if_levels, IF_MATCH)
-			|| int_stack_top_is(&if_levels, IF_ELSE))
+	if(is_at_scope_bottom(&if_levels))
 	{
 		return 1;
 	}
@@ -1237,7 +1241,7 @@ cmds_scope_start(void)
 void
 cmds_scope_escape(void)
 {
-	while(!is_at_scope_bottom(&if_levels))
+	while(!is_at_scope_guard(&if_levels))
 	{
 		int_stack_pop(&if_levels);
 	}
@@ -1246,7 +1250,7 @@ cmds_scope_escape(void)
 int
 cmds_scope_finish(void)
 {
-	if(!is_at_scope_bottom(&if_levels))
+	if(!is_at_scope_guard(&if_levels))
 	{
 		ui_sb_err("Missing :endif");
 		int_stack_pop_seq(&if_levels, IF_SCOPE_GUARD);
@@ -1255,6 +1259,26 @@ cmds_scope_finish(void)
 
 	int_stack_pop(&if_levels);
 	return 0;
+}
+
+void
+cmds_scoped_error(void)
+{
+	if(int_stack_is_empty(&if_levels))
+	{
+		/* Can't signal error in this case because there will be no invocation of
+		 * cmds_scope_finish(). */
+		return;
+	}
+
+	if(is_at_scope_bottom(&if_levels))
+	{
+		(void)int_stack_push(&if_levels, IF_AFTER_MATCH);
+	}
+	else
+	{
+		int_stack_set_top(&if_levels, IF_AFTER_MATCH);
+	}
 }
 
 int
@@ -1266,12 +1290,12 @@ cmds_scoped_should_eval(int cmd_id)
 	}
 
 	IfFrame if_frame = int_stack_get_top(&if_levels);
-	if(ONE_OF(if_frame, IF_MATCH, IF_ELSE) && cmd_id == COM_ELSEIF_STMT)
+	if(if_frame == IF_ACTIVE_SCOPE && cmd_id == COM_ELSEIF_STMT)
 	{
 		return 0;
 	}
 
-	return ONE_OF(if_frame, IF_BEFORE_MATCH, IF_MATCH, IF_ELSE, IF_SCOPE_GUARD);
+	return ONE_OF(if_frame, IF_BEFORE_MATCH, IF_SCOPE_GUARD, IF_ACTIVE_SCOPE);
 }
 
 void
@@ -1279,19 +1303,27 @@ cmds_scoped_if(int cond)
 {
 	(void)int_stack_push(&if_levels, cond ? IF_MATCH : IF_BEFORE_MATCH);
 	cmds_preserve_selection();
+
+	if(cond)
+	{
+		(void)int_stack_push(&if_levels, IF_ACTIVE_SCOPE);
+	}
 }
 
 int
 cmds_scoped_elseif(int cond)
 {
-	IfFrame if_frame;
-
-	if(is_at_scope_bottom(&if_levels))
+	if(is_at_scope_guard(&if_levels))
 	{
 		return 1;
 	}
 
-	if_frame = int_stack_get_top(&if_levels);
+	if(int_stack_top_is(&if_levels, IF_ACTIVE_SCOPE))
+	{
+		int_stack_pop(&if_levels);
+	}
+
+	IfFrame if_frame = int_stack_get_top(&if_levels);
 	if(if_frame == IF_ELSE || if_frame == IF_FINISH)
 	{
 		return 1;
@@ -1300,6 +1332,11 @@ cmds_scoped_elseif(int cond)
 	int_stack_set_top(&if_levels, (if_frame == IF_BEFORE_MATCH) ?
 			(cond ? IF_MATCH : IF_BEFORE_MATCH) :
 			IF_AFTER_MATCH);
+	if(cond)
+	{
+		(void)int_stack_push(&if_levels, IF_ACTIVE_SCOPE);
+	}
+
 	cmds_preserve_selection();
 	return 0;
 }
@@ -1307,14 +1344,17 @@ cmds_scoped_elseif(int cond)
 int
 cmds_scoped_else(void)
 {
-	IfFrame if_frame;
+	if(int_stack_top_is(&if_levels, IF_ACTIVE_SCOPE))
+	{
+		int_stack_pop(&if_levels);
+	}
 
 	if(is_at_scope_bottom(&if_levels))
 	{
 		return 1;
 	}
 
-	if_frame = int_stack_get_top(&if_levels);
+	IfFrame if_frame = int_stack_get_top(&if_levels);
 	if(if_frame == IF_ELSE || if_frame == IF_FINISH)
 	{
 		return 1;
@@ -1322,6 +1362,11 @@ cmds_scoped_else(void)
 
 	int_stack_set_top(&if_levels,
 			(if_frame == IF_BEFORE_MATCH) ? IF_ELSE : IF_FINISH);
+	if(if_frame == IF_BEFORE_MATCH)
+	{
+		(void)int_stack_push(&if_levels, IF_ACTIVE_SCOPE);
+	}
+
 	cmds_preserve_selection();
 	return 0;
 }
@@ -1329,6 +1374,11 @@ cmds_scoped_else(void)
 int
 cmds_scoped_endif(void)
 {
+	if(int_stack_top_is(&if_levels, IF_ACTIVE_SCOPE))
+	{
+		int_stack_pop(&if_levels);
+	}
+
 	if(is_at_scope_bottom(&if_levels))
 	{
 		return 1;
@@ -1348,6 +1398,15 @@ cmds_scoped_empty(void)
  * otherwise zero is returned. */
 static int
 is_at_scope_bottom(const int_stack_t *scope_stack)
+{
+	return is_at_scope_guard(scope_stack)
+	    || int_stack_top_is(scope_stack, IF_ACTIVE_SCOPE);
+}
+
+/* Checks that current scope of commands is empty.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_at_scope_guard(const int_stack_t *scope_stack)
 {
 	return int_stack_is_empty(scope_stack)
 	    || int_stack_top_is(scope_stack, IF_SCOPE_GUARD);

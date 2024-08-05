@@ -134,6 +134,10 @@ char * cmds_eval_args(const char args[], const char **stop_ptr);
  * be called from command handlers, or it won't have any effect. */
 void cmds_preserve_selection(void);
 
+/* Marks current scope as failed unless there is no scope.  This results in not
+ * processing any commands until the scope is over. */
+void cmds_scoped_error(void);
+
 /* Checks whether conditional command should evaluate its expression in current
  * context.  Returns non-zero if so. */
 int cmds_scoped_should_eval(int cmd_id);
