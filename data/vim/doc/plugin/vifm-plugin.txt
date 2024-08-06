@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.13  Last change: 2023 Apr 04
+*vifm-plugin.txt*    For Vifm version 0.13  Last change: 2024 Jul 07
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -27,9 +27,12 @@ Commands:
                                                *vifm-:VifmCs*
   :VifmCs     "converts" specified color schemes or the current one to be
               used by Vifm.  Color scheme files are created in current
-              directory.  The command will work only when run in a terminal
-              with 256-color palette.  Don't expect great results, think of
-              it as a way of generating boilerplate.
+              directory.  Created file will differ depending on the
+              environment in which the command is run.  Running it in a
+              terminal with 256-color palette, you get a 256-color color
+              scheme.  Running it in a terminal with 24-bit colors or in GUI,
+              you get a 24-bit color scheme.  Don't expect great results,
+              think of it as a way of generating boilerplate.
 
 Each command accepts up to two arguments: left pane directory and right pane
 directory.  After arguments are checked, vifm process is spawned in a special

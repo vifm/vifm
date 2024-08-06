@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 July 6
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2190,8 +2190,9 @@ important in certain cases.
 :if {expr1}                                    *vifm-:if*
     start conditional block.  Commands are executed until next matching
     |vifm-:elseif|, |vifm-:else| or |vifm-:endif| command if {expr1} evaluates
-    to non-zero, otherwise they are ignored.  See also
-    |vifm-commands-and-selection|.
+    to non-zero, otherwise they are ignored.  An error during evaluation of
+    {expr1} results in not taking any conditional branches (not even an
+    else-branch).  See also |vifm-commands-and-selection|.
 
     Example: >
       if $TERM == 'screen.linux'
