@@ -24,7 +24,7 @@ typedef void (*stic_void_string)(char[]);
 
 /* Declarations. */
 
-void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line);
+extern void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line);
 void stic_test_fixture_start(const char filepath[]);
 void stic_test_fixture_end( void );
 void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line);
