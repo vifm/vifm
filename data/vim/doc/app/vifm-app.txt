@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 5
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1935,7 +1935,7 @@ Available group-name values:
  - ErrorMsg - color of error messages in the status bar
  - StatusLine - color of the line above the status bar
  - JobLine - color of job line that appears above the status line
- - WildMenu - color of the wild menu items
+ - WildMenu - color of the selected wild menu item
  - SuggestBox - color of key suggestion box
  - CurrLine - line at cursor position in active view
  - OtherLine - line at cursor position in inactive view
