@@ -1005,8 +1005,8 @@ complete_select(completion_data_t *data)
 		return data->start - args;
 	}
 
-	/* Fake !-command completion by hiding "!" in front and calling this
-		* function again. */
+	/* Fake !-command completion by hiding "!" in front and calling this function
+	 * again. */
 	cmd_info_t exec_info = *data->cmd_info;
 	char *exec_argv[exec_info.argc];
 
