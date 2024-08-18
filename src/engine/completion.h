@@ -75,7 +75,10 @@ char * vle_compl_next(void);
 
 int vle_compl_get_count(void);
 
-void vle_compl_set_order(int reversed);
+/* Sets direction from which the next completion item is selected.
+ * vle_compl_reset() resets to forward direction which is the default.  The
+ * direction can be changed at any moment. */
+void vle_compl_set_reversed(int reversed);
 
 /* Sets or resets (when the parameter is NULL) a custom completion sorter.  The
  * sorter is always reset by vle_compl_reset().  Must be called after

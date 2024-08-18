@@ -43,7 +43,8 @@ static vle_compl_t *items;
 static DA_INSTANCE(items);
 static int curr = -1;
 static int group_begin;
-static int order;
+/* Whether the next item is selected from the backward direction. */
+static int compl_is_reversed;
 /* Optional custom sorter of completion items. */
 static vle_compl_sorter_f compl_sorter;
 /* Cached sorting keys after Unicode normalization if it was necessary.  If it
@@ -74,7 +75,7 @@ vle_compl_reset(void)
 	state = NOT_STARTED;
 	curr = -1;
 	group_begin = 0;
-	order = 0;
+	compl_is_reversed = 0;
 	compl_sorter = NULL;
 }
 
@@ -314,14 +315,14 @@ vle_compl_next(void)
 		return strdup(items[idx].text);
 	}
 
-	if(!order)
+	if(!compl_is_reversed)
 	{
-		/* Straight order. */
+		/* Forward. */
 		curr = (curr + 1) % DA_SIZE(items);
 	}
 	else
 	{
-		/* Reverse order. */
+		/* Backward. */
 		if(curr == -1)
 		{
 			curr = DA_SIZE(items) - 2U;
@@ -368,9 +369,9 @@ vle_compl_get_count(void)
 }
 
 void
-vle_compl_set_order(int reversed)
+vle_compl_set_reversed(int reversed)
 {
-	order = reversed;
+	compl_is_reversed = reversed;
 }
 
 void

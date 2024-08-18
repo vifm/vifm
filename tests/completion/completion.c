@@ -206,7 +206,7 @@ TEST(rewind_completion)
 	free(buf);
 }
 
-TEST(order)
+TEST(direction)
 {
 	char *buf;
 
@@ -216,7 +216,7 @@ TEST(order)
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
-	vle_compl_set_order(1);
+	vle_compl_set_reversed(1);
 
 	buf = vle_compl_next();
 	assert_string_equal("az", buf);
