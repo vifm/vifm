@@ -315,26 +315,15 @@ vle_compl_next(void)
 		return strdup(items[idx].text);
 	}
 
-	if(!compl_is_reversed)
+	if(compl_is_reversed)
 	{
-		/* Forward. */
-		curr = (curr + 1) % DA_SIZE(items);
+		/* Backward. */
+		curr = (curr + DA_SIZE(items) - 1) % DA_SIZE(items);
 	}
 	else
 	{
-		/* Backward. */
-		if(curr == -1)
-		{
-			curr = DA_SIZE(items) - 2U;
-		}
-		else
-		{
-			--curr;
-		}
-		if(curr < 0)
-		{
-			curr = DA_SIZE(items) - 1U;
-		}
+		/* Forward. */
+		curr = (curr + 1) % DA_SIZE(items);
 	}
 	return strdup(items[curr].text);
 }
