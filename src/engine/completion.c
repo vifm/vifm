@@ -44,6 +44,8 @@ static DA_INSTANCE(items);
 static int curr = -1;
 static int group_begin;
 static int order;
+/* Optional custom sorter of completion items. */
+static vle_compl_sorter_f compl_sorter;
 /* Cached sorting keys after Unicode normalization if it was necessary.  If it
  * wasn't necessary because the key is just ASCII, then the entry points to
  * original completion text and must not be freed. */
@@ -73,6 +75,7 @@ vle_compl_reset(void)
 	curr = -1;
 	group_begin = 0;
 	order = 0;
+	compl_sorter = NULL;
 }
 
 int
@@ -256,6 +259,12 @@ sorter(const void *first, const void *second)
 {
 	const char *const stra = sort_keys[*(const int *)first];
 	const char *const strb = sort_keys[*(const int *)second];
+
+	if(compl_sorter != NULL)
+	{
+		return compl_sorter(stra, strb);
+	}
+
 	const size_t lena = strlen(stra);
 	const size_t lenb = strlen(strb);
 
@@ -362,6 +371,13 @@ void
 vle_compl_set_order(int reversed)
 {
 	order = reversed;
+}
+
+void
+vle_compl_set_sorter(vle_compl_sorter_f sorter)
+{
+	assert(state == NOT_STARTED && "Sorter can only be set after reset.");
+	compl_sorter = sorter;
 }
 
 const vle_compl_t *

@@ -1,10 +1,13 @@
 #include <stic.h>
 
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
+#include <string.h> /* strcmp() */
 
 #include "../../src/engine/completion.h"
 
 #include <test-utils.h>
+
+static int reverse_sorter(const char a[], const char b[]);
 
 SETUP_ONCE()
 {
@@ -59,6 +62,37 @@ TEST(sorting)
 	free(buf);
 	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
+	free(buf);
+}
+
+TEST(custom_sorter)
+{
+	char *buf;
+
+	vle_compl_set_sorter(&reverse_sorter);
+
+	assert_int_equal(0, vle_compl_add_match("a", ""));
+	assert_int_equal(0, vle_compl_add_match("b", ""));
+	assert_int_equal(0, vle_compl_add_match("c", ""));
+	vle_compl_finish_group();
+
+	assert_int_equal(0, vle_compl_add_last_match("x"));
+
+	buf = vle_compl_next();
+	assert_string_equal("c", buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal("b", buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal("a", buf);
+	free(buf);
+	buf = vle_compl_next();
+	assert_string_equal("x", buf);
+	free(buf);
+
+	buf = vle_compl_next();
+	assert_string_equal("c", buf);
 	free(buf);
 }
 
@@ -328,6 +362,13 @@ TEST(unicode_sorting, IF(utf8_locale))
 	buf = vle_compl_next();
 	assert_string_equal("p", buf);
 	free(buf);
+}
+
+static int
+reverse_sorter(const char a[], const char b[])
+{
+	int r = strcmp(a, b);
+	return (r < 0 ? 1 : (r > 0 ? -1 : 0));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

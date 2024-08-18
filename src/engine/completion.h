@@ -31,6 +31,10 @@ vle_compl_t;
  * string. */
 typedef char * (*vle_compl_add_path_hook_f)(const char match[]);
 
+/* Type of a custom qsort()-like completion sorter.  Inputs are already
+ * normalized. */
+typedef int (*vle_compl_sorter_f)(const char a[], const char b[]);
+
 /* Adds raw match as completion match.  Returns zero on success, otherwise
  * non-zero is returned. */
 int vle_compl_add_match(const char match[], const char descr[]);
@@ -72,6 +76,11 @@ char * vle_compl_next(void);
 int vle_compl_get_count(void);
 
 void vle_compl_set_order(int reversed);
+
+/* Sets or resets (when the parameter is NULL) a custom completion sorter.  The
+ * sorter is always reset by vle_compl_reset().  Must be called after
+ * vle_compl_reset() before adding any matches or querying completions. */
+void vle_compl_set_sorter(vle_compl_sorter_f sorter);
 
 /* Retrieves list of completion items.  Returns the list of size
  * vle_compl_get_count().  The array is managed by the unit. */
