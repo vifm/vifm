@@ -259,11 +259,13 @@ sorter(const void *first, const void *second)
 	const size_t lena = strlen(stra);
 	const size_t lenb = strlen(strb);
 
+	/* XXX: this looks weird, or at least not stable. */
 	if(strcmp(stra, "./") == 0 || strcmp(strb, "./") == 0)
 	{
 		return 1;
 	}
 
+	/* Consider a path to be smaller than any of its subpaths. */
 	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
 	{
 		size_t len = MIN(lena - 1, lenb - 1);
