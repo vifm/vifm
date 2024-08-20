@@ -335,6 +335,7 @@ static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int wincmd_cmd(const cmd_info_t *cmd_info);
 static int windo_cmd(const cmd_info_t *cmd_info);
+static int wingo_cmd(const cmd_info_t *cmd_info);
 static int winrun_cmd(const cmd_info_t *cmd_info);
 static int winrun(view_t *view, const char cmd[]);
 static int write_cmd(const cmd_info_t *cmd_info);
@@ -962,6 +963,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "run command for each pane",
 	  .flags = 0,
 	  .handler = &windo_cmd,       .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "wingo",             .abbr = NULL,    .id = COM_WINGO,
+	  .descr = "navigate to a view by id or title/path match",
+	  .flags = 0,
+	  .handler = &wingo_cmd,       .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "winrun",            .abbr = NULL,    .id = COM_WINRUN,
 	  .descr = "run command for specific pane(s)",
 	  .flags = 0,
@@ -5522,6 +5527,36 @@ wincmd_cmd(const cmd_info_t *cmd_info)
 
 	(void)vle_keys_exec_timed_out_no_remap(wcmd);
 	free(wcmd);
+	return 0;
+}
+
+/* Navigate to a view by id or title/path match. */
+static int
+wingo_cmd(const cmd_info_t *cmd_info)
+{
+	unsigned int win_id;
+	if(!isdigit(cmd_info->argv[0][0]) || !read_uint(cmd_info->argv[0], &win_id) ||
+			win_id <= 0)
+	{
+		int matches = complete_to_view_id(cmd_info->args, &win_id);
+		if(matches == 0)
+		{
+			ui_sb_errf("No view matches '%s'", cmd_info->args);
+			return CMDS_ERR_CUSTOM;
+		}
+		if(matches > 1)
+		{
+			ui_sb_errf("%d views match '%s'", matches, cmd_info->args);
+			return CMDS_ERR_CUSTOM;
+		}
+	}
+
+	if(ui_focus_view(win_id) != 0)
+	{
+		ui_sb_errf("Couldn't find view #%u", win_id);
+		return CMDS_ERR_CUSTOM;
+	}
+
 	return 0;
 }
 

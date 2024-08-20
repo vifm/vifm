@@ -33,6 +33,7 @@
 #endif
 
 #include <assert.h> /* assert() */
+#include <ctype.h> /* isdigit() isspace() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* snprintf() */
@@ -60,6 +61,7 @@
 #include "ui/color_scheme.h"
 #include "ui/colors.h"
 #include "ui/statusbar.h"
+#include "ui/tabs.h"
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
@@ -113,6 +115,9 @@ static void complete_highlight_groups(const char str[], int for_clear);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
 static int complete_select(completion_data_t *data);
+static void complete_wingo(const char str[]);
+static int wingo_sorter(const char a[], const char b[]);
+static const char * skip_number(const char str[]);
 static void complete_winrun(const char str[]);
 static void complete_from_string_list(const char str[], const char *items[][2],
 		size_t item_count, int ignore_case);
@@ -243,6 +248,11 @@ non_path_completion(completion_data_t *data)
 	}
 	else if(id == COM_KEEPSEL || id == COM_WINDO)
 		;
+	else if(id == COM_WINGO)
+	{
+		complete_wingo(args);
+		data->start = args;
+	}
 	else if(id == COM_WINRUN)
 	{
 		if(argc == 0)
@@ -1029,6 +1039,63 @@ complete_select(completion_data_t *data)
 	return 1 + complete_args(COM_EXECUTE, &exec_info, arg_pos, data->extra_arg);
 }
 
+/* Completes views by matching input string against their paths and titles. */
+static void
+complete_wingo(const char str[])
+{
+	vle_compl_set_sorter(&wingo_sorter);
+
+	const char *needle = skip_number(str);
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		const view_t *view = tab_info.view;
+
+		char *title = ui_view_make_title(view);
+		if(title == NULL)
+		{
+			continue;
+		}
+
+		/* Compare case sensitive strings even on Windows. */
+		if(strstr(title, needle) != NULL ||
+				strstr(flist_get_dir(view), needle) != NULL)
+		{
+			vle_compl_put_match(format_str("%2u %s", view->id, title), "");
+		}
+		free(title);
+	}
+
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
+}
+
+/* qsort()-like sorter for completion items of the :wingo command.  It skips
+ * leading view id so that views are sorted by their title. */
+static int
+wingo_sorter(const char a[], const char b[])
+{
+	/* Compare case sensitive strings even on Windows. */
+	return strcmp(skip_number(a), skip_number(b));
+}
+
+/* Advances over a number followed by whitespace at the beginning of a string if
+ * there is one.  The whitespace (before and after) is dropped.  Returns
+ * possibly updated input pointer. */
+static const char *
+skip_number(const char str[])
+{
+	const char *s = skip_whitespace(str);
+	while(isdigit(*s))
+	{
+		++s;
+	}
+
+	return skip_whitespace(isspace(s[0]) ? s + 1 : str);
+}
+
 /* Completes first :winrun argument. */
 static void
 complete_winrun(const char str[])
@@ -1116,6 +1183,39 @@ fast_run_complete(const char cmd[])
 	free(completed);
 
 	return result;
+}
+
+int
+complete_to_view_id(const char str[], unsigned int *id)
+{
+	int i;
+	tab_info_t tab_info;
+	int matches = 0;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		const view_t *view = tab_info.view;
+
+		char *title = ui_view_make_title(view);
+		if(title == NULL)
+		{
+			continue;
+		}
+
+		/* Compare case sensitive strings even on Windows. */
+		if(strstr(title, str) != NULL || strstr(flist_get_dir(view), str) != NULL)
+		{
+			if(matches == 0)
+			{
+				*id = view->id;
+			}
+
+			++matches;
+		}
+
+		free(title);
+	}
+
+	return matches;
 }
 
 /* Fills list of completions with executables in $PATH. */

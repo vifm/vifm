@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 12
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1285,6 +1285,7 @@ These commands see '|' as part of their arguments even when it's escaped:
     :vnoremap
     :wincmd
     :windo
+    :wingo
     :winrun
 
 To be able to use another command after one of these, wrap it with the
@@ -2731,6 +2732,18 @@ yet supported) and might be changed in future releases, or get an alias.
 
 :windo [command...]                            *vifm-:windo*
     execute command for each pane (same as :winrun % command).
+
+:wingo {id} [{substr}]                         *vifm-:wingo*
+    navigate to a view by its id number.  The {substr} part is used for
+    completion (can be any number of words, only leading whitespace is
+    removed).  The view will become the current one by switching to the
+    corresponding tab and pane.  Matching is case sensitive substring search
+    in view title or its full current path (with `~` expanded regardless of
+    any settings).
+:wingo {substr}
+    this form navigates to a view that is uniquely identified by {substr} or
+    errors.  The form will not be used if the first word of {substr} is a
+    valid number that starts with a digit (i.e., no `+` or `-` in front).
 
 :winrun type [command...]                      *vifm-:winrun*
     execute command for pane(s), which is determined by type argument:

@@ -51,6 +51,9 @@
 	Added escape() builtin function to escape specific characters in strings.
 	Thanks to The Cyberduck.
 
+	Added :wingo command to navigate to a view by substring matching against
+	its title or path.  Thanks to iSeeU816 and Alexandre Viau.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

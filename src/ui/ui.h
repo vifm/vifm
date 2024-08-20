@@ -642,6 +642,10 @@ void switch_panes(void);
  * entries. */
 void ui_swap_view_data(view_t *left, view_t *right);
 
+/* Finds a view by its id and makes it the current view by switching active tab
+ * and side.  Returns zero on success and non-zero if the id is invalid. */
+int ui_focus_view(unsigned int id);
+
 /* Setups view to the the curr_view.  Saving previous state in supplied buffers.
  * Use ui_view_unpick() to revert the effect. */
 void ui_view_pick(view_t *view, view_t **old_curr, view_t **old_other);
@@ -728,6 +732,9 @@ void ui_views_update_titles(void);
 
 /* Updates title of the view. */
 void ui_view_title_update(view_t *view);
+
+/* Formats title for a view.  Returns newly allocated string. */
+char * ui_view_make_title(const view_t *view);
 
 /* Looks for the given key in sort option.  Returns non-zero when found,
  * otherwise zero is returned. */

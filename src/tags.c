@@ -427,6 +427,7 @@ const char *tags[] = {
 	"vifm-:winc",
 	"vifm-:wincmd",
 	"vifm-:windo",
+	"vifm-:wingo",
 	"vifm-:winrun",
 	"vifm-:wq",
 	"vifm-:wqa",

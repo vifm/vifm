@@ -76,6 +76,7 @@ enum
 	COM_VSPLIT,
 	COM_WINCMD,
 	COM_WINDO,
+	COM_WINGO,
 	COM_WINRUN,
 
 	COM_MENU_WRITE,
@@ -122,6 +123,10 @@ int complete_args(int id, const struct cmd_info_t *cmd_info, int arg_pos,
  * NULL and sets status bar error message when command is ambiguous, otherwise
  * newly allocated string, which should be returned by caller, is returned. */
 char * fast_run_complete(const char cmd[]);
+
+/* Finds id of the first view which matches the string.  Returns the total
+ * number of views matching the string. */
+int complete_to_view_id(const char str[], unsigned int *id);
 
 /* Completes file names in a requested manner.  If skip_canonicalization is set,
  * "../" will be resolved to actual parent directories of target files.  Returns

@@ -992,6 +992,19 @@ read_int(const char line[], int *i)
 
 	*i = (l > INT_MAX) ? INT_MAX : ((l < INT_MIN) ? INT_MIN : l);
 
+	/* XXX: return zero if *i != l? */
+	return *line != '\0' && *endptr == '\0';
+}
+
+int
+read_uint(const char line[], unsigned int *ui)
+{
+	char *endptr;
+	const unsigned long ul = strtoul(line, &endptr, 10);
+
+	*ui = (ul > UINT_MAX ? UINT_MAX : ul);
+
+	/* XXX: return zero if *ui != ul? */
 	return *line != '\0' && *endptr == '\0';
 }
 

@@ -171,6 +171,7 @@ static void update_statusbar_layout(void);
 static int are_statusbar_widgets_visible(void);
 static int get_ruler_width(view_t *view);
 static char * expand_ruler_macros(view_t *view, const char format[]);
+static int locate_view(unsigned int id, int *tab_idx, view_t **side);
 static void switch_panes_content(void);
 static void set_splitter(int pos);
 static FileType ui_view_entry_target_type(const dir_entry_t *entry);
@@ -190,7 +191,8 @@ TSTATIC tab_title_info_t make_tab_title_info(const tab_info_t *tab_info,
 TSTATIC void dispose_tab_title_info(tab_title_info_t *title_info);
 static cline_t format_tab_part(const char fmt[],
 		const tab_title_info_t *title_info);
-static char * format_view_title(const view_t *view, path_func pf);
+static char * format_view_title(const view_t *view, path_func pf,
+		int consider_qv);
 static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
 static int is_in_miller_view(const view_t *view);
@@ -1619,6 +1621,79 @@ switch_panes(void)
 	modview_try_activate();
 }
 
+int
+ui_focus_view(unsigned int id)
+{
+	int tab_idx;
+	view_t *side;
+	if(locate_view(id, &tab_idx, &side) != 0)
+	{
+		return 1;
+	}
+
+	if(cfg.pane_tabs)
+	{
+		if(curr_view != side)
+		{
+			go_to_other_pane();
+		}
+		tabs_goto(tab_idx);
+	}
+	else
+	{
+		tabs_goto(tab_idx);
+		if(curr_view != side)
+		{
+			go_to_other_pane();
+		}
+	}
+
+	return 0;
+}
+
+/* Finds tab index and side that correspond to a view identified by its id.
+ * Returns zero on success. */
+static int
+locate_view(unsigned int id, int *tab_idx, view_t **side)
+{
+	int tab = 0;
+	view_t *tab_side = NULL;
+	while(1)
+	{
+		tab_info_t tab_info;
+
+		int left_exists = tabs_enum(&lwin, tab, &tab_info);
+		if(left_exists && tab_info.view->id == id)
+		{
+			tab_side = &lwin;
+			break;
+		}
+
+		int right_exists = tabs_enum(&rwin, tab, &tab_info);
+		if(right_exists && tab_info.view->id == id)
+		{
+			tab_side = &rwin;
+			break;
+		}
+
+		if(!left_exists && !right_exists)
+		{
+			break;
+		}
+
+		++tab;
+	}
+
+	if(tab_side == NULL)
+	{
+		return 1;
+	}
+
+	*tab_idx = tab;
+	*side = tab_side;
+	return 0;
+}
+
 void
 ui_view_pick(view_t *view, view_t **old_curr, view_t **old_other)
 {
@@ -2111,7 +2186,7 @@ ui_view_title_update(view_t *view)
 
 	if(view == selected && !stats_silenced_ui())
 	{
-		char *const term_title = format_view_title(view, pf);
+		char *const term_title = format_view_title(view, pf, /*consider_qv=*/1);
 		term_title_update(term_title);
 		free(term_title);
 	}
@@ -2124,7 +2199,7 @@ ui_view_title_update(view_t *view)
 	}
 	else
 	{
-		char *const title = format_view_title(view, pf);
+		char *const title = format_view_title(view, pf, /*consider_qv=*/1);
 		print_view_title(view, view == selected, title);
 		wnoutrefresh(view->title);
 		free(title);
@@ -2465,7 +2540,7 @@ make_tab_title_info(const tab_info_t *tab_info, path_func pf, int tab_num,
 	result.escaped_path = escape_unreadable(path);
 	result.cv_title = escape_unreadable(custom_title);
 
-	char *view_title = format_view_title(view, pf);
+	char *view_title = format_view_title(view, pf, /*consider_qv=*/1);
 	result.escaped_view_title = escape_unreadable(view_title);
 	free(view_title);
 
@@ -2509,11 +2584,18 @@ format_tab_part(const char fmt[], const tab_title_info_t *title_info)
 	return title;
 }
 
+char *
+ui_view_make_title(const view_t *view)
+{
+	path_func pf = cfg.shorten_title_paths ? &replace_home_part : &path_identity;
+	return format_view_title(view, pf, /*consider_qv=*/0);
+}
+
 /* Formats title for the view.  The pf function will be applied to full paths.
  * Returns newly allocated string, which should be freed by the caller, or NULL
  * if there is not enough memory. */
 static char *
-format_view_title(const view_t *view, path_func pf)
+format_view_title(const view_t *view, path_func pf, int consider_qv)
 {
 	char *unescaped_title;
 
@@ -2523,7 +2605,7 @@ format_view_title(const view_t *view, path_func pf)
 		get_current_full_path(view, sizeof(full_path), full_path);
 		unescaped_title = strdup(pf(full_path));
 	}
-	else if(curr_stats.preview.on && view == other_view)
+	else if(consider_qv && curr_stats.preview.on && view == other_view)
 	{
 		const char *const viewer = modview_detached_get_viewer();
 		if(viewer != NULL)

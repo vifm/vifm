@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: May 2, 2024
+" Last Change: August 20, 2024
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -23,8 +23,8 @@ syntax keyword vifmCommand contained
 		\ rege[dit] reg[isters] regular rename restart restore rlink screen sh[ell]
 		\ siblnext siblprev sor[t] sp[lit] st[op] s[ubstitute] tabc[lose] tabm[ove]
 		\ tabname tabnew tabn[ext] tabo[nly] tabp[revious] touch tr trashes tree
-		\ session sync undol[ist] ve[rsion] vie[w] vifm vs[plit] winc[md] w[rite]
-		\ wq wqa[ll] xa[ll] x[it] y[ank]
+		\ session sync undol[ist] ve[rsion] vie[w] vifm vs[plit] winc[md] wingo
+		\ w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
 		\ nextgroup=vifmArgs
 syntax keyword vifmCommandCN contained
 		\ alink apropos bmark bmarks bmgo cds change chi[story] chmod chown clone
@@ -36,8 +36,8 @@ syntax keyword vifmCommandCN contained
 		\ rege[dit] reg[isters] regular rename restart restore rlink screen sh[ell]
 		\ siblnext siblprev sor[t] sp[lit] st[op] s[ubstitute] tabc[lose] tabm[ove]
 		\ tabname tabnew tabn[ext] tabo[nly] tabp[revious] touch tr trashes tree
-		\ session sync undol[ist] ve[rsion] vie[w] vifm vs[plit] winc[md] w[rite]
-		\ wq wqa[ll] xa[ll] x[it] y[ank]
+		\ session sync undol[ist] ve[rsion] vie[w] vifm vs[plit] winc[md] wingo
+		\ w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
 		\ nextgroup=vifmArgsCN
 
 " commands that might be prepended to a command without changing everything else
