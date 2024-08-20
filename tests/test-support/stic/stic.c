@@ -415,6 +415,17 @@ void stic_assert_string_ends_with(const char* expected, const char* actual, cons
 	stic_simple_test_result(strcmp(expected, actual+(strlen(actual)-strlen(expected)))==0, s, function, file, line);
 }
 
+void stic_assert_wstring_ends_with(const wchar_t expected[], const wchar_t actual[], const char function[], const char file[], unsigned int line)
+{
+	char s[STIC_PRINT_BUFFER_SIZE];
+#ifdef STIC_C99
+	snprintf(s, sizeof(s), "Expected \"%ls\" to end with \"%ls\"", actual, expected);
+#else
+	snprintf(s, sizeof(s), "Wide string doesn't end with the expected suffix");
+#endif
+	stic_simple_test_result(wcscmp(expected, actual+(wcslen(actual)-wcslen(expected)))==0, s, function, file, line);
+}
+
 void stic_assert_string_starts_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
