@@ -33,10 +33,15 @@ they succeed without any changes.
 
 ## Tests ##
 
-Tests are available and can be run with `make check` in the root, `src/` or
-`tests/` directory.  When inside `tests/`, there are multiple ways to run
-specific tests in several different modes, see comment inside the `Makefile`
-there for instructions.
+Tests can be run with `make check` in the root, `src/` or `tests/` directory.
+
+When inside `tests/` directory, there are multiple ways to run specific tests
+in several different modes, see top comment of the `Makefile` file there for
+instructions.
+
+To use the same modes from `src/` directory (including when building out of
+tree, which is especially useful), auto-generated `./runtests` script can be
+used instead.
 
 ## ChangeLog format ##
 
