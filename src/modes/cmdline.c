@@ -3192,7 +3192,7 @@ line_completion(line_stats_t *stat)
 		vle_compl_set_add_path_hook(NULL);
 	}
 
-	vle_compl_set_order(stat->reverse_completion);
+	vle_compl_set_reversed(stat->reverse_completion);
 
 	if(vle_compl_get_count() == 0)
 		return 0;

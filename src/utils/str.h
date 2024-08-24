@@ -293,6 +293,11 @@ int str_to_int(const char str[]);
  * resulting value.  Returns non-zero on success and zero otherwise. */
 int read_int(const char line[], int *i);
 
+/* Converts line to an unsigned number.  Handles overflow/underflow by
+ * saturating resulting value.  Returns non-zero on success and zero
+ * otherwise. */
+int read_uint(const char line[], unsigned int *ui);
+
 /* Replaces all occurrences of the from non-nul character in the str to the to
  * character. */
 void replace_char(char str[], char from, char to);

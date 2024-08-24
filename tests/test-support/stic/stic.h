@@ -41,6 +41,7 @@ void stic_assert_double_equal(double expected, double actual, double delta, cons
 void stic_assert_string_equal(const char* expected, const char* actual, const char* function, const char file[], unsigned int line);
 void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[], const char function[], const char file[], unsigned int line);
 void stic_assert_string_ends_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line);
+void stic_assert_wstring_ends_with(const wchar_t expected[], const wchar_t actual[], const char function[], const char file[], unsigned int line);
 void stic_assert_string_starts_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line);
 void stic_assert_string_contains(const char* expected, const char* actual, const char* function, const char file[], unsigned int line);
 void stic_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, const char file[], unsigned int line);
@@ -67,6 +68,7 @@ void stic_printf(char buf[], const char format[], ...);
 #define assert_ulong_equal(expected, actual) do {  stic_assert_ulong_equal(expected, actual, __FUNCTION__, __FILE__, __LINE__); } while (0)
 #define assert_string_equal(expected, actual) do {  stic_assert_string_equal(expected, actual, __FUNCTION__, __FILE__, __LINE__); } while (0)
 #define assert_wstring_equal(expected, actual) do {  stic_assert_wstring_equal(expected, actual, __FUNCTION__, __FILE__, __LINE__); } while (0)
+#define assert_wstring_ends_with(expected, actual) do {  stic_assert_wstring_ends_with(expected, actual, __FUNCTION__, __FILE__, __LINE__); } while (0)
 #define assert_n_array_equal(expected, actual, n) do { int stic_count; for(stic_count=0; stic_count<n; stic_count++) { char s_seatest[STIC_PRINT_BUFFER_SIZE]; stic_printf(s_seatest,"Expected %d to be %d at position %d", actual[stic_count], expected[stic_count], stic_count); stic_simple_test_result((expected[stic_count] == actual[stic_count]), s_seatest, __FUNCTION__, __FILE__, __LINE__);} } while (0)
 #define assert_bit_set(bit_number, value) { stic_simple_test_result(((1 << bit_number) & value), " Expected bit to be set" ,  __FUNCTION__, __FILE__, __LINE__); } while (0)
 #define assert_bit_not_set(bit_number, value) { stic_simple_test_result(!((1 << bit_number) & value), " Expected bit not to to be set" ,  __FUNCTION__, __FILE__, __LINE__); } while (0)

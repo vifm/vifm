@@ -43,7 +43,10 @@ static vle_compl_t *items;
 static DA_INSTANCE(items);
 static int curr = -1;
 static int group_begin;
-static int order;
+/* Whether the next item is selected from the backward direction. */
+static int compl_is_reversed;
+/* Optional custom sorter of completion items. */
+static vle_compl_sorter_f compl_sorter;
 /* Cached sorting keys after Unicode normalization if it was necessary.  If it
  * wasn't necessary because the key is just ASCII, then the entry points to
  * original completion text and must not be freed. */
@@ -72,7 +75,8 @@ vle_compl_reset(void)
 	state = NOT_STARTED;
 	curr = -1;
 	group_begin = 0;
-	order = 0;
+	compl_is_reversed = 0;
+	compl_sorter = NULL;
 }
 
 int
@@ -256,14 +260,22 @@ sorter(const void *first, const void *second)
 {
 	const char *const stra = sort_keys[*(const int *)first];
 	const char *const strb = sort_keys[*(const int *)second];
+
+	if(compl_sorter != NULL)
+	{
+		return compl_sorter(stra, strb);
+	}
+
 	const size_t lena = strlen(stra);
 	const size_t lenb = strlen(strb);
 
+	/* XXX: this looks weird, or at least not stable. */
 	if(strcmp(stra, "./") == 0 || strcmp(strb, "./") == 0)
 	{
 		return 1;
 	}
 
+	/* Consider a path to be smaller than any of its subpaths. */
 	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
 	{
 		size_t len = MIN(lena - 1, lenb - 1);
@@ -303,26 +315,15 @@ vle_compl_next(void)
 		return strdup(items[idx].text);
 	}
 
-	if(!order)
+	if(compl_is_reversed)
 	{
-		/* Straight order. */
-		curr = (curr + 1) % DA_SIZE(items);
+		/* Backward. */
+		curr = (curr + DA_SIZE(items) - 1) % DA_SIZE(items);
 	}
 	else
 	{
-		/* Reverse order. */
-		if(curr == -1)
-		{
-			curr = DA_SIZE(items) - 2U;
-		}
-		else
-		{
-			--curr;
-		}
-		if(curr < 0)
-		{
-			curr = DA_SIZE(items) - 1U;
-		}
+		/* Forward. */
+		curr = (curr + 1) % DA_SIZE(items);
 	}
 	return strdup(items[curr].text);
 }
@@ -357,9 +358,16 @@ vle_compl_get_count(void)
 }
 
 void
-vle_compl_set_order(int reversed)
+vle_compl_set_reversed(int reversed)
 {
-	order = reversed;
+	compl_is_reversed = reversed;
+}
+
+void
+vle_compl_set_sorter(vle_compl_sorter_f sorter)
+{
+	assert(state == NOT_STARTED && "Sorter can only be set after reset.");
+	compl_sorter = sorter;
 }
 
 const vle_compl_t *

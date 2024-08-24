@@ -13,6 +13,7 @@
 #include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/color_scheme.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
@@ -24,10 +25,10 @@
 SETUP()
 {
 	view_setup(&lwin);
-	setup_grid(&lwin, 1, 1, 1);
+	setup_grid(&lwin, /*column_count=*/1, /*list_rows=*/1, /*init=*/1);
 	curr_view = &lwin;
 	view_setup(&rwin);
-	setup_grid(&rwin, 1, 1, 1);
+	setup_grid(&rwin, /*column_count=*/1, /*list_rows=*/1, /*init=*/1);
 	other_view = &rwin;
 
 	modes_init();
@@ -475,6 +476,125 @@ TEST(tabonly_keeps_inactive_side_intact)
 	assert_success(cmds_dispatch("tabonly", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_count(curr_view));
 	assert_int_equal(2, tabs_count(other_view));
+}
+
+TEST(wingo_global_tabs)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH, "", NULL);
+
+	cfg.pane_tabs = 0;
+
+	/*
+	 * Tab0:
+	 *  - test-data
+	 *  - test-data
+	 * Tab1:
+	 *  - test-data/tree
+	 *  - test-data
+	 * Tab2:
+	 *  - test-data/scripts
+	 *  - test-data
+	 * Tab3:
+	 *  - test-data/scripts
+	 *  - test-data/read
+	 * Tab4:
+	 *  - test-data/scripts
+	 *  - test-data/rename
+	 */
+	assert_success(cmds_dispatch1("tabnew tree", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("tabnew ../scripts", &lwin, CIT_COMMAND));
+	swap_view_roles();
+	assert_success(cmds_dispatch1("tabnew read", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("tabnew ../rename", &lwin, CIT_COMMAND));
+
+	/* Hits. */
+
+	assert_success(cmds_dispatch1("wingo tree", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(curr_view));
+	assert_true(curr_view == &lwin);
+
+	assert_success(cmds_dispatch1("wingo read", &lwin, CIT_COMMAND));
+	assert_int_equal(3, tabs_current(curr_view));
+	assert_true(curr_view == &rwin);
+
+	char cmd[32];
+	snprintf(cmd, sizeof(cmd), "wingo %u", other_view->id);
+	assert_success(cmds_dispatch1(cmd, &lwin, CIT_COMMAND));
+	assert_int_equal(3, tabs_current(curr_view));
+	assert_true(curr_view == &lwin);
+
+	/* Misses. */
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("wingo test-data", &lwin, CIT_COMMAND));
+	assert_string_equal("10 views match 'test-data'", ui_sb_last());
+	assert_int_equal(3, tabs_current(curr_view));
+	assert_true(curr_view == &lwin);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("wingo no such match", &lwin, CIT_COMMAND));
+	assert_string_equal("No view matches 'no such match'", ui_sb_last());
+	assert_int_equal(3, tabs_current(curr_view));
+	assert_true(curr_view == &lwin);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("wingo 59999", &lwin, CIT_COMMAND));
+	assert_string_equal("Couldn't find view #59999", ui_sb_last());
+	assert_int_equal(3, tabs_current(curr_view));
+	assert_true(curr_view == &lwin);
+}
+
+TEST(wingo_pane_tabs)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH, "", NULL);
+
+	cfg.pane_tabs = 1;
+
+	/*
+	 * Left:
+	 *  - tab0: test-data
+	 *  - tab1: test-data/tree
+	 *  - tab2: test-data/scripts
+	 * Right:
+	 *  - tab0: test-data
+	 *  - tab1: test-data/read
+	 *  - tab2: test-data/rename
+	 */
+	assert_success(cmds_dispatch1("tabnew tree", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("tabnew ../scripts", &lwin, CIT_COMMAND));
+	swap_view_roles();
+	assert_success(cmds_dispatch1("tabnew read", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("tabnew ../rename", &lwin, CIT_COMMAND));
+
+	/* Hits. */
+
+	assert_success(cmds_dispatch1("wingo tree", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(curr_view));
+	assert_true(curr_view == &lwin);
+
+	assert_success(cmds_dispatch1("wingo rename", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_current(curr_view));
+	assert_true(curr_view == &rwin);
+
+	assert_success(cmds_dispatch1("wingo read", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(curr_view));
+	assert_true(curr_view == &rwin);
+
+	/* Misses. */
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("wingo test-data", &lwin, CIT_COMMAND));
+	assert_string_equal("6 views match 'test-data'", ui_sb_last());
+	assert_int_equal(1, tabs_current(curr_view));
+	assert_true(curr_view == &rwin);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("wingo no such match", &lwin, CIT_COMMAND));
+	assert_string_equal("No view matches 'no such match'", ui_sb_last());
+	assert_int_equal(1, tabs_current(curr_view));
+	assert_true(curr_view == &rwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

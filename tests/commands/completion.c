@@ -40,6 +40,15 @@
 	} \
 	while (0)
 
+#define ASSERT_COMPLETION_ENDS_WITH(initial, expected) \
+	do \
+	{ \
+		prepare_for_line_completion(initial); \
+		assert_success(line_completion(&stats)); \
+		assert_wstring_ends_with(expected, stats.line); \
+	} \
+	while (0)
+
 #define ASSERT_NO_COMPLETION(initial) ASSERT_COMPLETION((initial), (initial))
 
 #define ASSERT_NEXT_MATCH(str) \
@@ -47,6 +56,15 @@
 	{ \
 		char *const buf = vle_compl_next(); \
 		assert_string_equal((str), buf); \
+		free(buf); \
+	} \
+	while (0)
+
+#define ASSERT_NEXT_MATCH_ENDS_WITH(str) \
+	do \
+	{ \
+		char *const buf = vle_compl_next(); \
+		assert_string_ends_with((str), buf); \
 		free(buf); \
 	} \
 	while (0)
@@ -619,6 +637,24 @@ TEST(command_options_are_completed)
 	ASSERT_COMPLETION(L"copy -- -", L"copy -- -");
 #endif
 	other_view = NULL;
+}
+
+TEST(wingo_is_completed)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"compare/a", saved_cwd);
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH,
+			"compare/b", saved_cwd);
+
+	ASSERT_COMPLETION_ENDS_WITH(L"wingo ", L"/compare/a");
+	ASSERT_NEXT_MATCH_ENDS_WITH("/compare/b");
+
+	/* Check that path part designed by ~ is being matched against. */
+	cfg.shorten_title_paths = 1;
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH,
+			"/compare/b/", saved_cwd);
+	ASSERT_COMPLETION_ENDS_WITH(L"wingo compare/b", L" ~");
+	cfg.shorten_title_paths = 0;
 }
 
 static void

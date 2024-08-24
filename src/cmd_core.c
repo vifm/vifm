@@ -1080,6 +1080,7 @@ get_cmd_args_type(const char cmd[])
 		case COM_NOREMAP:
 		case COM_WINCMD:
 		case COM_WINDO:
+		case COM_WINGO:
 		case COM_WINRUN:
 			return CAT_UNTIL_THE_END;
 
