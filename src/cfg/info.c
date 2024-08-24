@@ -714,9 +714,17 @@ load_gtabs(JSON_Object *root, int reread)
 		}
 	}
 
-	int i, n;
+	int gtab_count = json_array_get_count(gtabs);
+	if(gtab_count > 1)
+	{
+		/* More than one global tab might require updating tab scope option. */
+		cfg.pane_tabs = 0;
+		load_tabscope_option();
+	}
+
+	int i;
 	view_t *left = &lwin, *right = &rwin;
-	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)
+	for(i = 0; i < gtab_count; ++i)
 	{
 		JSON_Object *gtab = json_array_get_object(gtabs, i);
 
