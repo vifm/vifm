@@ -323,6 +323,9 @@
 	Fixed :elseif evaluating its expression even if an earlier conditional
 	branch was already taken.
 
+	Fixed loading a session with global tabs when 'tabscope' is "pane"
+	resulting in global tabs being invisible.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

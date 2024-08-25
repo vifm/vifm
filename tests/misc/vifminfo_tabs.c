@@ -207,5 +207,33 @@ TEST(layout_of_pane_tab_is_restored)
 	assert_false(curr_stats.preview.on);
 }
 
+TEST(tab_scope_is_switched_to_pane_tabs)
+{
+	cfg.pane_tabs = 1;
+
+	assert_success(tabs_new("ltab1", NULL));
+	assert_success(tabs_new("ltab2", NULL));
+
+	write_info_file();
+	tabs_only(&lwin);
+	cfg.pane_tabs = 0;
+	state_load(0);
+
+	assert_true(cfg.pane_tabs);
+}
+
+TEST(tab_scope_is_switched_to_global_tabs)
+{
+	assert_success(tabs_new("gtab1", NULL));
+	assert_success(tabs_new("gtab2", NULL));
+
+	write_info_file();
+	tabs_only(&lwin);
+	cfg.pane_tabs = 1;
+	state_load(0);
+
+	assert_false(cfg.pane_tabs);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
