@@ -27,6 +27,7 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "completion.h"
 #include "text_buffer.h"
 
@@ -91,7 +92,7 @@ static char * str_add(char old[], const char value[]);
 static int str_remove(char old[], const char value[]);
 static int find_val(const opt_t *opt, const char value[]);
 static int set_print(const opt_t *opt);
-static char * extract_option(const char **argsp, int replace);
+static char * extract_option(const char **argsp, int completion);
 static char * skip_alphas(const char str[]);
 static void complete_option_name(const char buf[], int bool_only, int pseudo,
 		OPT_SCOPE scope);
@@ -319,7 +320,7 @@ vle_opts_set(const char args[], OPT_SCOPE scope)
 	{
 		int print;
 
-		char *const opt = extract_option(&args, 1);
+		char *const opt = extract_option(&args, /*completion=*/0);
 		if(args == NULL || opt == NULL)
 		{
 			free(opt);
@@ -1316,7 +1317,7 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 		*start = args;
 
 		free(last_opt);
-		last_opt = extract_option(&args, 0);
+		last_opt = extract_option(&args, /*completion=*/1);
 
 		if(args == NULL || (*args == '\0' && is_null_or_empty(last_opt)))
 		{
@@ -1397,9 +1398,33 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 		{
 			*start += complete_option_value(opt, p);
 		}
-		else if(*p == '\0' && opt->type != OPT_BOOL)
+		else if(opt->type != OPT_BOOL)
 		{
-			vle_compl_put_match(escape_chars(vle_opt_to_string(opt), " |\\"), "");
+			/* Provide current value of the option as the only completion item. */
+			const char *str_val = vle_opt_to_string(opt);
+
+			if(*p == '\0')
+			{
+				vle_compl_put_match(escape_chars(str_val, " |\\"), "");
+			}
+			else if(strcmp(p, "'") == 0)
+			{
+				char *escaped = escape_for_squotes(str_val, /*offset=*/0);
+				if(escaped != NULL)
+				{
+					vle_compl_put_match(format_str("'%s'", escaped), "");
+					free(escaped);
+				}
+			}
+			else if(strcmp(p, "\"") == 0)
+			{
+				char *escaped = escape_for_dquotes(str_val, /*offset=*/0);
+				if(escaped != NULL)
+				{
+					vle_compl_put_match(format_str("\"%s\"", escaped), "");
+					free(escaped);
+				}
+			}
 		}
 	}
 
@@ -1416,12 +1441,13 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 	free(last_opt);
 }
 
-/* Extracts next option from option list.  On error either returns NULL or sets
- * *argsp to NULL, which allows different handling.  On success returns option
- * string.  On reaching trailing comment, empty string is returned.  *argsp is
- * advanced according to parsing. */
+/* Extracts the next option from the string.  On error, either returns NULL or
+ * sets *argsp to NULL, which allows for different handling.  On success,
+ * returns option string.  On reaching a trailing comment, empty string is
+ * returned.  *argsp is advanced according to parsing.  The completion mode
+ * prevents an error on unmatched quote and doesn't unescape option values. */
 static char *
-extract_option(const char **argsp, int replace)
+extract_option(const char **argsp, int completion)
 {
 	int quote = 0;
 	int slash = 0;
@@ -1451,7 +1477,7 @@ extract_option(const char **argsp, int replace)
 		else if(*args == '\\')
 		{
 			slash = 1;
-			if(replace && (quote == 0 || quote == 2))
+			if(!completion && (quote == 0 || quote == 2))
 			{
 				++args;
 			}
@@ -1496,33 +1522,33 @@ extract_option(const char **argsp, int replace)
 			}
 			break;
 		}
-		else if(*args == '\'' && quote == 0)
+		else
 		{
-			quote = 1;
-			args++;
-		}
-		else if(*args == '\'' && quote == 1)
-		{
-			quote = 0;
-			args++;
-		}
-		else if(*args == '"' && quote == 0)
-		{
-			quote = 2;
-			args++;
-		}
-		else if(*args == '"' && quote == 2)
-		{
-			quote = 0;
-			args++;
-		}
-		else if(strappendch(&opt, &opt_len, *args++) != 0)
-		{
-			goto error;
+			/* The original is used to detect whether the quote was processed. */
+			const int old_quote = quote;
+
+			if(*args == '\'' && quote != 2)
+			{
+				quote = (quote == 0 ? 1 : 0);
+			}
+			else if(*args == '"' && quote != 1)
+			{
+				quote = (quote == 0 ? 2 : 0);
+			}
+
+			if(quote == old_quote || completion)
+			{
+				if(strappendch(&opt, &opt_len, *args) != 0)
+				{
+					goto error;
+				}
+			}
+
+			++args;
 		}
 	}
 
-	if(quote != 0)
+	if(!completion && quote != 0)
 	{
 		/* Probably an unmatched quote. */
 		goto error;

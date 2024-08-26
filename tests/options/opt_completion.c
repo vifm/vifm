@@ -200,6 +200,18 @@ TEST(after_equal_sign_completion_spaces_ok)
 	vle_compl_reset();
 	vle_opts_complete("fusehome=", &start, OPT_GLOBAL);
 	ASSERT_NEXT_MATCH("/home\\ directory/tmp");
+
+	vle_compl_reset();
+	vle_opts_complete("fusehome='", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("'/home directory/tmp'");
+
+	vle_compl_reset();
+	vle_opts_complete("fusehome=\"", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\"/home directory/tmp\"");
+
+	vle_compl_reset();
+	vle_opts_complete("tabstop=\"", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\"8\"");
 }
 
 TEST(after_fake_equal_sign_completion_fail)
@@ -212,6 +224,14 @@ TEST(after_fake_equal_sign_completion_fail)
 	vle_compl_reset();
 	vle_opts_complete("fusehome=a=", &start, OPT_GLOBAL);
 	ASSERT_NEXT_MATCH("a=");
+
+	vle_compl_reset();
+	vle_opts_complete("fusehome='a=", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("'a=");
+
+	vle_compl_reset();
+	vle_opts_complete("fusehome=\"a=", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\"a=");
 }
 
 TEST(after_equal_sign_and_comma_completion_fail)
