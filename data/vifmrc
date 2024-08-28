@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 16 June, 2024)
+" Sample configuration file for vifm (last updated: 29 August, 2024)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -86,7 +86,7 @@ set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
 set ignorecase
 set smartcase
 
-" Don't highlight search results automatically
+" Don't select search matches automatically
 set nohlsearch
 
 " Use increment searching (search while typing)
