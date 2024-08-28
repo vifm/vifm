@@ -101,7 +101,11 @@ if !has('win')
 endif
 
 " Set custom status line look
-set statusline="  Hint: %z%= %A %10u:%-7g %15s %20d  "
+if !has('win')
+    set statusline="  Hint: %z%= %A %10u:%-7g %15s %20d  "
+else
+    set statusline="  Hint: %z%= %A %15s %20d  "
+endif
 
 " List of color schemes to try (picks the first one supported by the terminal)
 colorscheme Default-256 Default
