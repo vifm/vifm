@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 20
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3567,7 +3567,7 @@ Example: >
                                                *vifm-'findprg'*
 findprg
 type: string
-default: "find %s %a -print , -type d \( ! -readable -o ! -executable \) -prune"
+default: "find %s %a"
 
 Specifies format for an external command to be invoked by the |vifm-:find|
 command.  The format supports expansion of macros specific for this particular

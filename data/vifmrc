@@ -107,6 +107,11 @@ else
     set statusline="  Hint: %z%= %A %15s %20d  "
 endif
 
+" Suppress "Permission denied" errors using syntax specific to GNU find
+if system("find --version | grep -c 'GNU findutils'") != 0
+    set findprg='find %s %a -print , -type d \( ! -readable -o ! -executable \) -prune'
+endif
+
 " List of color schemes to try (picks the first one supported by the terminal)
 colorscheme Default-256 Default
 
