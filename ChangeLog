@@ -15,6 +15,11 @@
 	including :endif (all branches taken).  Now everything up to :endif will
 	not be executed (no branches taken).  Thanks to Ed Pavlov.
 
+	Changed default value of 'findprg' to avoid the use of syntax specific to
+	GNU find.  The only difference is that now one can see "Permission denied"
+	errors which weren't displayed before.  Sample vifmrc files contain
+	detection of GNU find on startup.  Thanks to Jose Riha (a.k.a. jose1711).
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It
