@@ -148,6 +148,9 @@ typedef struct
 }
 sbuffer;
 
+static parsing_result_t parse_from(const char input[],
+		expr_t (*production)(parse_context_t *ctx, const char **in), int strict,
+		int interactive);
 static int eval_expr(parse_context_t *ctx, expr_t *expr);
 static int eval_or_op(parse_context_t *ctx, int nops, expr_t ops[],
 		var_t *result);
@@ -204,6 +207,26 @@ vle_parser_init(getenv_func getenv_f)
 parsing_result_t
 vle_parser_eval(const char input[], int interactive)
 {
+	return parse_from(input, &parse_or_expr, /*strict=*/0, interactive);
+}
+
+parsing_result_t
+vle_parser_eval_call(const char input[])
+{
+	/* Unlike in Vim, don't execute call expression followed by trailing
+	 * characters. */
+	return parse_from(input, &parse_funccall, /*strict=*/1, /*interactive=*/1);
+}
+
+/* Performs parsing and evaluation.  Accepts top-level production.  Non-strict
+ * parsing means evaluation of an expression followed by trailing characters.
+ * Returns structure describing the outcome.  Field value of the result should
+ * be freed by the caller. */
+static
+parsing_result_t parse_from(const char input[],
+		expr_t (*production)(parse_context_t *ctx, const char **in),
+		int strict, int interactive)
+{
 	assert(initialized && "Parser must be initialized before use.");
 
 	parsing_result_t result = {};
@@ -217,7 +240,7 @@ vle_parser_eval(const char input[], int interactive)
 	};
 
 	get_next(&ctx, &ctx.last_position);
-	expr_t expr_root = parse_or_expr(&ctx, &ctx.last_position);
+	expr_t expr_root = production(&ctx, &ctx.last_position);
 	result.last_parsed_char = ctx.last_position;
 
 	result.value = var_error();
@@ -235,9 +258,13 @@ vle_parser_eval(const char input[], int interactive)
 				/* This is a comment, just ignore it. */
 				ctx.last_position += strlen(ctx.last_position);
 			}
-			else if(eval_expr(&ctx, &expr_root) == 0)
+			else if(!strict && eval_expr(&ctx, &expr_root) == 0)
 			{
 				result.value = var_clone(expr_root.value);
+				ctx.last_error = PE_INVALID_EXPRESSION;
+			}
+			else if(strict)
+			{
 				ctx.last_error = PE_INVALID_EXPRESSION;
 			}
 		}
@@ -1303,7 +1330,9 @@ parse_funccall(parse_context_t *ctx, const char **in)
 	{
 		ctx->last_error = PE_INVALID_EXPRESSION;
 	}
+
 	get_next(ctx, in);
+	skip_whitespace_tokens(ctx, in);
 
 	return result;
 }

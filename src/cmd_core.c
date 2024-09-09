@@ -339,11 +339,14 @@ cmds_goes_to_history(const char command[])
 int
 cmds_has_expr_args(int cmd_id)
 {
+	/* XXX: would be nicer to complete only function names for top-level :call
+	 *      expression. */
 	return cmd_id == COM_ECHO
 	    || cmd_id == COM_EXE
 	    || cmd_id == COM_IF_STMT
 	    || cmd_id == COM_ELSEIF_STMT
-	    || cmd_id == COM_LET;
+	    || cmd_id == COM_LET
+	    || cmd_id == COM_CALL;
 }
 
 char *

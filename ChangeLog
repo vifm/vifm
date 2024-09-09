@@ -59,6 +59,9 @@
 	Added :wingo command to navigate to a view by substring matching against
 	its title or path.  Thanks to iSeeU816 and Alexandre Viau.
 
+	Added :cal[l] command to run a function discarding its return value.
+	Thanks to anyone asking about simply running a function.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

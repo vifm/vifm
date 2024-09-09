@@ -1,4 +1,4 @@
-.TH VIFM 1 "29 August 2024" "vifm 0.13"
+.TH VIFM 1 "9 September 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1612,6 +1612,14 @@ specified prefix.
 register new or overwrites existing abbreviation for command-line mode.  rhs
 can contain spaces and any special sequences accepted in rhs of mappings (see
 "Mappings" section below).  Abbreviations are expanded non-recursively.
+.TP
+.BI "                                         :call"
+.TP
+.BI ":cal[l] {function}([{expr1}, ...])"
+invoke a {function} discarding its return value.
+.br
+Unlike in Vim, a call expression followed by trailing characters is not
+invoked.
 .TP
 .BI "                                         :chistory"
 .TP

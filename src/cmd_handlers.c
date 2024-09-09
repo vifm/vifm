@@ -134,6 +134,7 @@ static int bmarks_do(const cmd_info_t *cmd_info, int go);
 static char * make_tags_list(const cmd_info_t *cmd_info);
 static char * args_to_csl(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
+static int call_cmd(const cmd_info_t *cmd_info);
 static int chistory_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
 static int handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap);
@@ -400,6 +401,11 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display/create cmdline abbrevs",
 	  .flags = 0,
 	  .handler = &cabbrev_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
+	/* engine/parsing unit handles comments to resolve parsing ambiguity. */
+	{ .name = "call",              .abbr = "cal",   .id = COM_CALL,
+	  .descr = "Invoke a function discarding its return value",
+	  .flags = 0,
+	  .handler = &call_cmd,        .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "chistory",          .abbr = "chi",   .id = -1,
 	  .descr = "display history of menus",
 	  .flags = 0,
@@ -1361,6 +1367,24 @@ static int
 cabbrev_cmd(const cmd_info_t *cmd_info)
 {
 	return handle_cabbrevs(cmd_info, 0);
+}
+
+/* Invokes a function discarding its return value. */
+static int
+call_cmd(const cmd_info_t *cmd_info)
+{
+	parsing_result_t result = vle_parser_eval_call(cmd_info->args);
+	var_free(result.value);
+
+	if(result.error != PE_NO_ERROR)
+	{
+		vle_tb_clear(vle_err);
+		vle_parser_report(&result);
+		ui_sb_err(vle_tb_get_data(vle_err));
+		return CMDS_ERR_CUSTOM;
+	}
+
+	return 0;
 }
 
 /* Displays list of remembered menus. */

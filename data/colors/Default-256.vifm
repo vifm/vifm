@@ -2,7 +2,7 @@
 
 " This is Vifm's default color scheme for terminals that support 256 colors.
 "
-" This file last updated: 21 February, 2024
+" This file last updated: 6 September, 2024
 
 highlight clear
 
@@ -67,7 +67,7 @@ highlight {*.css,*.less,*.scss,*.markdown,*.md,*.mkd,*.org,*.pandoc,*.pdc,*.tex,
           \*.txt,*.xml,*.log,*.rss,*.xul,*.json,*.yaml,*.yml,*.csv,*.plist,
           \*.ini,*.cfg,*.rc,*.conf,*.spec,*.qrc,*.description,*.list,*.log.old,
           \*.log.1,*.log.2,*.log.3,*.log.4,*.log.5,*.log.6,*.log.7,*.log.8,
-          \syslog,syslog.1,*.xsd,*.toml}
+          \syslog,syslog.1,*.xsd,*.toml,*.rst}
         \ cterm=none ctermfg=217 ctermbg=default
 " still text files, but keeping this unoptimizable glob separately
 highlight {*[^0-9].[1-9]}

@@ -527,6 +527,8 @@ chisto
 chistor
 chistory
 wingo
+cal
+call
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session
@@ -627,10 +629,11 @@ set navoptions
 set tabline tal
 set hloptions
 
-" "echo" should be highlighted as :command
+" "echo" and "call" should be highlighted as :command
 " "chooseopt" should be highlighted as builtin function
 " "'file'" should be highlighted as a string
 echo chooseopt('file')
+call chooseopt('file')
 
 " "term" should be highlighted as a function()
 echo term('cmd')

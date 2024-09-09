@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 August 29
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 September 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1423,6 +1423,13 @@ The builtin commands are:
     register new or overwrite existing abbreviation for command-line mode.
     rhs can contain spaces and any special sequences accepted in rhs of
     mappings (see |vifm-mappings|).  Abbreviations are expanded non-recursively.
+
+                                               *vifm-:call* *vifm-:cal*
+:cal[l] {function}([{expr1}, ...])
+    invoke a {function} discarding its return value.
+
+    Unlike in Vim, a call expression followed by trailing characters is not
+    invoked.
 
                                                *vifm-:chistory* *vifm-:chi*
 :chi[story]

@@ -65,6 +65,10 @@ void vle_parser_init(getenv_func getenv_f);
  * Field value of the result should be freed by the caller. */
 parsing_result_t vle_parser_eval(const char input[], int interactive);
 
+/* Same as vle_parser_eval(), but uses call expression as top-level
+ * production. */
+parsing_result_t vle_parser_eval_call(const char input[]);
+
 /* Appends error message with details to the error stream. */
 void vle_parser_report(const parsing_result_t *result);
 
