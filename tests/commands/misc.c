@@ -772,6 +772,37 @@ TEST(registers_command)
 	regs_reset();
 }
 
+TEST(open_command)
+{
+	curr_stats.vlua = vlua_init();
+
+	GLUA_EQ(curr_stats.vlua, "",
+			"function editor(i) info = i end");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addhandler{ name = 'editor', handler = editor }");
+
+	update_string(&cfg.vi_command, "#vifmtest#editor");
+
+	create_file(SANDBOX_PATH "/to-open");
+
+	lwin.list_rows = 1;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("to-open");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	strcpy(lwin.curr_dir, sandbox);
+
+	assert_success(cmds_dispatch1("open \"comment", &lwin, CIT_COMMAND));
+
+	GLUA_EQ(curr_stats.vlua, "to-open", "print(info.paths[1])");
+
+	remove_file(SANDBOX_PATH "/to-open");
+
+	vlua_finish(curr_stats.vlua);
+	curr_stats.vlua = NULL;
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {

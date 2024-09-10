@@ -259,6 +259,7 @@ static int map_or_remap(const cmd_info_t *cmd_info, int no_remap);
 static int normal_cmd(const cmd_info_t *cmd_info);
 static int nunmap_cmd(const cmd_info_t *cmd_info);
 static int only_cmd(const cmd_info_t *cmd_info);
+static int open_cmd(const cmd_info_t *cmd_info);
 static int plugin_cmd(const cmd_info_t *cmd_info);
 static int plugins_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
@@ -726,6 +727,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "switch to single-view mode",
 	  .flags = HAS_COMMENT,
 	  .handler = &only_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "open",              .abbr = "o",     .id = -1,
+	  .descr = "open current file or selection",
+	  .flags = HAS_COMMENT,
+	  .handler = &open_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "plugin",            .abbr = NULL,    .id = COM_PLUGIN,
 	  .descr = "manage plugins",
 	  .flags = HAS_COMMENT,
@@ -4033,6 +4038,14 @@ static int
 only_cmd(const cmd_info_t *cmd_info)
 {
 	only();
+	return 0;
+}
+
+/* Opens current file or selection.  Works like Enter key. */
+static int
+open_cmd(const cmd_info_t *cmd_info)
+{
+	rn_open(curr_view, FHE_RUN);
 	return 0;
 }
 
