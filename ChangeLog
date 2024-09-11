@@ -62,8 +62,8 @@
 	Added :cal[l] command to run a function discarding its return value.
 	Thanks to anyone asking about simply running a function.
 
-	Added :o[pen] command to open current file or selection as if Enter was
-	pressed.  Thanks to Safal Piya (a.k.a. mrsafalpiya).
+	Added :o[pen] command to open current file, selection or range as if Enter
+	was pressed.  Thanks to Safal Piya (a.k.a. mrsafalpiya).
 
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.

@@ -784,20 +784,29 @@ TEST(open_command)
 	update_string(&cfg.vi_command, "#vifmtest#editor");
 
 	create_file(SANDBOX_PATH "/to-open");
+	create_file(SANDBOX_PATH "/to-open-2");
 
-	lwin.list_rows = 1;
+	lwin.list_rows = 2;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("to-open");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("to-open-2");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 	strcpy(lwin.curr_dir, sandbox);
 
 	assert_success(cmds_dispatch1("open \"comment", &lwin, CIT_COMMAND));
-
+	GLUA_EQ(curr_stats.vlua, "1", "print(#info.paths)");
 	GLUA_EQ(curr_stats.vlua, "to-open", "print(info.paths[1])");
 
+	assert_success(cmds_dispatch1("%open", &lwin, CIT_COMMAND));
+	GLUA_EQ(curr_stats.vlua, "2", "print(#info.paths)");
+	GLUA_EQ(curr_stats.vlua, "to-open", "print(info.paths[1])");
+	GLUA_EQ(curr_stats.vlua, "to-open-2", "print(info.paths[2])");
+
 	remove_file(SANDBOX_PATH "/to-open");
+	remove_file(SANDBOX_PATH "/to-open-2");
 
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;
