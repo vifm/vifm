@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 September 9
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 September 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2325,6 +2325,10 @@ order using the '.' operator.  Any whitespace is ignored.
 
 :on[ly]                                        *vifm-:only* *vifm-:on*
     switch to a one window view.
+
+:[range]o[pen]                                 *vifm-:o* *vifm-:open*
+    open current file, selection or files in the range as if |vifm-Enter| was
+    pressed.
 
                                                *vifm-:plugin*
 :plugin load

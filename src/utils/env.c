@@ -56,8 +56,6 @@ env_list(int *count)
 
 	return lst;
 #else
-	extern wchar_t **_wenviron;
-
 	char **lst = NULL;
 	wchar_t **env;
 
