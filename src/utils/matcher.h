@@ -36,6 +36,11 @@ typedef struct matcher_t matcher_t;
 matcher_t * matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		const char on_empty_re[], char **error);
 
+/* Creates a glob matcher not processing any decorations.  Expression is either
+ * an empty string (matches nothing, not allowed by matcher_alloc()) or a
+ * comma-separated list of globs.  Works as matcher_alloc() otherwise. */
+matcher_t * matcher_alloc_glob(const char expr[], char **error);
+
 /* Makes a copy of existing matcher.  Returns the clone, or NULL on error. */
 matcher_t * matcher_clone(const matcher_t *matcher);
 

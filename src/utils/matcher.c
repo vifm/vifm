@@ -55,6 +55,8 @@ struct matcher_t
 	regex_t regex; /* The expression in compiled form, unless matcher is empty. */
 };
 
+static matcher_t * alloc_matcher(matcher_t m, const char expr[], int cs_by_def,
+		const char on_empty_re[], int strip, char **error);
 static int is_full_path(const char expr[], int re, int glob, int *strip);
 static MType determine_type(const char expr[], int re, int glob,
 		int glob_by_def, int *strip);
@@ -84,13 +86,46 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 	const int full_path = is_full_path(expr, re, glob, &strip);
 
 	MType type = determine_type(expr, re, glob, glob_by_def, &strip);
-	matcher_t *matcher, m = {
+	matcher_t template = {
 		.type = type,
 		.raw = strdup(expr + strip),
 		.negated = negated,
 		.full_path = full_path,
 	};
 
+	return alloc_matcher(template, orig_expr, cs_by_def, on_empty_re, strip,
+			error);
+}
+
+matcher_t *
+matcher_alloc_glob(const char expr[], char **error)
+{
+	matcher_t template = {
+		.type = MT_GLOBS,
+		.raw = strdup(expr),
+		.negated = 0,
+		.full_path = 0,
+	};
+
+	if(expr[0] == '\0')
+	{
+		/* Allow such glob matchers to be empty and not match anything. */
+		template.type = MT_REGEX;
+	}
+
+	return alloc_matcher(template, expr, /*cs_by_def=*/0, /*on_empty_re=*/"",
+			/*strip=*/0, error);
+}
+
+/* Parses matcher expression and allocates a matcher based on a passed in
+ * matcher template.  on_empty_re string is used if passed in regexp is empty.
+ * Returns matcher on success and sets *error to NULL, otherwise NULL is
+ * returned and *error is initialized with newly allocated string describing
+ * the error. */
+static matcher_t *
+alloc_matcher(matcher_t m, const char expr[], int cs_by_def,
+		const char on_empty_re[], int strip, char **error)
+{
 	*error = NULL;
 
 	if(m.raw == NULL)
@@ -99,7 +134,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		return NULL;
 	}
 
-	m.expr = strdup(orig_expr);
+	m.expr = strdup(expr);
 	if(m.expr == NULL)
 	{
 		free(m.raw);
@@ -115,7 +150,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		return NULL;
 	}
 
-	matcher = malloc(sizeof(*matcher));
+	matcher_t *matcher = malloc(sizeof(*matcher));
 	if(matcher == NULL)
 	{
 		replace_string(error, "Failed allocate memory for matcher.");
