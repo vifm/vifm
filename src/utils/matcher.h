@@ -42,7 +42,8 @@ matcher_t * matcher_clone(const matcher_t *matcher);
 /* Frees all resources allocated by the matcher.  matcher can be NULL. */
 void matcher_free(matcher_t *matcher);
 
-/* Checks whether given path/name matches.  Returns non-zero if so, otherwise
+/* Checks whether given path/name matches.  An empty matcher doesn't match
+ * anything (not even an empty string).  Returns non-zero on a match, otherwise
  * zero is returned. */
 int matcher_matches(const matcher_t *matcher, const char path[]);
 
