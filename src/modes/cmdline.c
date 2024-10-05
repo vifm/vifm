@@ -213,6 +213,7 @@ static void cmd_page_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void update_cmdline_size(void);
 TSTATIC int line_completion(line_stats_t *stat);
+static int start_completion(line_stats_t *stat);
 static char * escaped_arg_hook(const char match[]);
 static char * squoted_arg_hook(const char match[]);
 static char * dquoted_arg_hook(const char match[]);
@@ -3134,62 +3135,10 @@ line_completion(line_stats_t *stat)
 
 	if(!stat->complete_continue)
 	{
-		wchar_t t;
-		CompletionPreProcessing compl_func_arg;
-
-		/* Only complete the part before the cursor so just copy that part to
-		 * line_mb. */
-		t = stat->line[stat->index];
-		stat->line[stat->index] = L'\0';
-
-		char *const line_mb = to_multibyte(stat->line);
-		stat->line[stat->index] = t;
-		if(line_mb == NULL)
+		if(start_completion(stat) != 0)
 		{
 			return -1;
 		}
-
-		const char *line_mb_cmd = line_mb;
-
-		vle_compl_reset();
-
-		compl_func_arg = CPP_NONE;
-		if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
-		{
-			line_mb_cmd = cmds_find_last(line_mb);
-
-			const CmdLineLocation ipt = cmds_classify_pos(line_mb,
-					line_mb + strlen(line_mb));
-			switch(ipt)
-			{
-				case CLL_OUT_OF_ARG:
-				case CLL_NO_QUOTING:
-				case CLL_R_QUOTING:
-					vle_compl_set_add_path_hook(&escaped_arg_hook);
-					compl_func_arg = CPP_PERCENT_UNESCAPE;
-					break;
-
-				case CLL_S_QUOTING:
-					vle_compl_set_add_path_hook(&squoted_arg_hook);
-					compl_func_arg = CPP_SQUOTES_UNESCAPE;
-					break;
-
-				case CLL_D_QUOTING:
-					vle_compl_set_add_path_hook(&dquoted_arg_hook);
-					compl_func_arg = CPP_DQUOTES_UNESCAPE;
-					break;
-			}
-		}
-
-		const int offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
-		if(offset >= 0 && offset < (int)strlen(line_mb_cmd))
-		{
-			line_mb[line_mb_cmd - line_mb + offset] = '\0';
-		}
-		stat->prefix_len = wide_len(line_mb);
-		free(line_mb);
-
-		vle_compl_set_add_path_hook(NULL);
 	}
 
 	vle_compl_set_reversed(stat->reverse_completion);
@@ -3205,6 +3154,67 @@ line_completion(line_stats_t *stat)
 		stat->complete_continue = 1;
 
 	return result;
+}
+
+/* Generates completion entries for the current state of the command-line.
+ * Returns zero on success. */
+static int
+start_completion(line_stats_t *stat)
+{
+	/* Only complete the part before the cursor so just copy that part to
+	 * line_mb. */
+	wchar_t t = stat->line[stat->index];
+	stat->line[stat->index] = L'\0';
+
+	char *const line_mb = to_multibyte(stat->line);
+	stat->line[stat->index] = t;
+	if(line_mb == NULL)
+	{
+		return -1;
+	}
+
+	const char *line_mb_cmd = line_mb;
+
+	vle_compl_reset();
+
+	CompletionPreProcessing compl_func_arg = CPP_NONE;
+	if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
+	{
+		line_mb_cmd = cmds_find_last(line_mb);
+
+		const CmdLineLocation ipt = cmds_classify_pos(line_mb,
+				line_mb + strlen(line_mb));
+		switch(ipt)
+		{
+			case CLL_OUT_OF_ARG:
+			case CLL_NO_QUOTING:
+			case CLL_R_QUOTING:
+				vle_compl_set_add_path_hook(&escaped_arg_hook);
+				compl_func_arg = CPP_PERCENT_UNESCAPE;
+				break;
+
+			case CLL_S_QUOTING:
+				vle_compl_set_add_path_hook(&squoted_arg_hook);
+				compl_func_arg = CPP_SQUOTES_UNESCAPE;
+				break;
+
+			case CLL_D_QUOTING:
+				vle_compl_set_add_path_hook(&dquoted_arg_hook);
+				compl_func_arg = CPP_DQUOTES_UNESCAPE;
+				break;
+		}
+	}
+
+	const int offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
+	if(offset >= 0 && offset < (int)strlen(line_mb_cmd))
+	{
+		line_mb[line_mb_cmd - line_mb + offset] = '\0';
+	}
+	stat->prefix_len = wide_len(line_mb);
+	free(line_mb);
+
+	vle_compl_set_add_path_hook(NULL);
+	return 0;
 }
 
 /* Processes completion match for insertion into command-line as escaped value.
