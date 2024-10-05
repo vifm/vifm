@@ -234,7 +234,6 @@ TEST(gF, IF(not_windows))
 
 TEST(cl_on_file, IF(not_windows))
 {
-	conf_setup();
 	undo_setup();
 	fops_init(&modcline_prompt, NULL);
 
@@ -261,12 +260,10 @@ TEST(cl_on_file, IF(not_windows))
 
 	fops_init(NULL, NULL);
 	undo_teardown();
-	conf_teardown();
 }
 
 TEST(cl_multiple_files, IF(not_windows))
 {
-	conf_setup();
 	undo_setup();
 	fops_init(&modcline_prompt, NULL);
 
@@ -315,7 +312,6 @@ TEST(cl_multiple_files, IF(not_windows))
 
 	fops_init(NULL, NULL);
 	undo_teardown();
-	conf_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

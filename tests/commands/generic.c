@@ -478,7 +478,6 @@ TEST(usercmd_range_is_as_good_as_selection)
 
 #ifndef _WIN32
 
-	conf_setup();
 	update_string(&cfg.shell, "/bin/sh");
 
 	char script_path[PATH_MAX + 1];
@@ -549,7 +548,6 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_success(remove(SANDBOX_PATH "/vi-list"));
 
 	assert_success(remove(script_path));
-	conf_teardown();
 
 #endif
 

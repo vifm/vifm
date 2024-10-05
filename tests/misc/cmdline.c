@@ -399,7 +399,7 @@ TEST(normal_in_autocmd_does_not_break_filter_navigation)
 
 TEST(filter_in_autocmd_does_not_break_filter_navigation)
 {
-	conf_setup();
+	opt_handlers_setup();
 	histories_init(5);
 	cfg.inc_search = 1;
 	cfg.auto_ch_pos = 1;
@@ -409,7 +409,6 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	columns_setup_column(SK_BY_SIZE);
 	columns_set_line_print_func(&column_line_print);
 	curr_view->columns = columns_create();
-	opt_handlers_setup();
 
 	assert_success(cmds_dispatch1("autocmd DirEnter tree/ filter! dir", curr_view,
 				CIT_COMMAND));
@@ -439,7 +438,6 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	columns_teardown();
 
 	histories_init(0);
-	conf_teardown();
 	cfg.auto_ch_pos = 0;
 	cfg.ch_pos_on = 0;
 }
