@@ -125,6 +125,7 @@ static int no_initial_line(void);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void do_completion(void);
+static void maybe_grab_statusline(void);
 static void go_to_search_match(line_stats_t *stat, view_t *view,
 		int in_reverse);
 static void draw_wild_menu(int op);
@@ -1322,8 +1323,14 @@ do_completion(void)
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
 
-	/* Indicate that status line is being reused for wild menu and there is a
-	 * potential usage conflict due to size differences. */
+	maybe_grab_statusline();
+}
+
+/* Possibly indicates that status line is being reused for wild menu and there
+ * is a potential usage conflict due to size differences. */
+static void
+maybe_grab_statusline(void)
+{
 	if(cfg.display_statusline && !curr_stats.reusing_statusline &&
 			cfg.wild_menu && vle_compl_get_count() > 2 && getmaxy(stat_win) > 1)
 	{
