@@ -13,6 +13,7 @@
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
@@ -649,6 +650,27 @@ TEST(search_match_navigation)
 
 	conf_teardown();
 	cfg.wrap_scan = 0;
+}
+
+TEST(wild_inc_completion)
+{
+	char *error;
+	cfg.wild_inc = matcher_alloc_glob(":plugin", &error);
+	assert_string_equal(NULL, error);
+
+	(void)vle_keys_exec_timed_out(L":plugin");
+	assert_false(stats->inc_completion);
+	(void)vle_keys_exec_timed_out(L" ");
+	assert_true(stats->inc_completion);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	(void)vle_keys_exec_timed_out(L":set");
+	assert_false(stats->inc_completion);
+	(void)vle_keys_exec_timed_out(L" ");
+	assert_false(stats->inc_completion);
+
+	matcher_free(cfg.wild_inc);
+	cfg.wild_inc = NULL;
 }
 
 static void

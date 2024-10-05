@@ -91,6 +91,8 @@ static int def_handler(wchar_t key);
 static void update_cmdline_text(line_stats_t *stat);
 static void draw_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
+static void wild_inc_completion(line_stats_t *stat);
+static int wild_inc_applies(const char cmd_line[]);
 static int detect_input_change(line_stats_t *stat);
 static void handle_empty_input(void);
 static void handle_nonempty_input(void);
@@ -215,7 +217,7 @@ static void cmd_page_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void update_cmdline_size(void);
 TSTATIC int line_completion(line_stats_t *stat);
-static int start_completion(line_stats_t *stat);
+static int start_completion(line_stats_t *stat, int inc_completion);
 static char * escaped_arg_hook(const char match[]);
 static char * squoted_arg_hook(const char match[]);
 static char * dquoted_arg_hook(const char match[]);
@@ -384,7 +386,15 @@ def_handler(wchar_t key)
 static void
 update_cmdline_text(line_stats_t *stat)
 {
-	input_line_changed();
+	if(input_stat.sub_mode == CLS_COMMAND)
+	{
+		wild_inc_completion(stat);
+	}
+	else
+	{
+		input_line_changed();
+	}
+
 	draw_cmdline_text(stat);
 }
 
@@ -481,6 +491,77 @@ input_line_changed(void)
 	 * bar to force cursor moving there before it becomes visible again. */
 	ui_refresh_win(status_bar);
 	ui_set_cursor(/*visibility=*/1);
+}
+
+/* Automatically display completion entries if current command-line qualifies
+ * for that (depends on 'wildinc' option). */
+static void
+wild_inc_completion(line_stats_t *stat)
+{
+	if(stat->manual_completion)
+	{
+		/* Do not interfere with user-initiated completion. */
+		return;
+	}
+
+	if(!detect_input_change(stat))
+	{
+		return;
+	}
+
+	/* Only complete the part before the cursor so just copy that part to
+	 * line_mb. */
+	wchar_t t = stat->line[stat->index];
+	stat->line[stat->index] = L'\0';
+
+	char *line_mb = to_multibyte(stat->line);
+	stat->line[stat->index] = t;
+	if(line_mb == NULL)
+	{
+		/* Not enough memory?  Just don't do the completion, no big deal. */
+		return;
+	}
+
+	if(wild_inc_applies(line_mb))
+	{
+		stop_completion();
+		if(cfg.wild_menu)
+			draw_wild_menu(1);
+
+		if(start_completion(stat, /*inc_completion=*/1) == 0)
+		{
+			stat->complete_continue = 1;
+			maybe_grab_statusline();
+			if(cfg.wild_menu)
+				draw_wild_menu(0);
+		}
+	}
+
+	free(line_mb);
+}
+
+/* Checks whether completion should be performed automatically for the current
+ * :command.  Returns non-zero if so. */
+static int
+wild_inc_applies(const char cmd_line[])
+{
+	cmd_info_t info;
+	const cmd_t *cmd = vle_cmds_parse(cmds_find_last(cmd_line), &info);
+	if(cmd == NULL || is_null_or_empty(info.post_name))
+	{
+		return 0;
+	}
+
+	char *name = format_str(":%s", cmd->name);
+	if(name == NULL)
+	{
+		return 0;
+	}
+
+	/* NULL check is for tests. */
+	int applies = (cfg.wild_inc != NULL && matcher_matches(cfg.wild_inc, name));
+	free(name);
+	return applies;
 }
 
 /* Checks whether input line has changed since this function was called last
@@ -851,6 +932,8 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 	stat->history_search = HIST_NONE;
 	stat->line_buf = NULL;
 	stat->reverse_completion = 0;
+	stat->manual_completion = 0;
+	stat->inc_completion = 0;
 	stat->complete = complete;
 	stat->search_mode = 0;
 	stat->search_match_found = 0;
@@ -1318,12 +1401,16 @@ do_completion(void)
 		return;
 	}
 
+	input_stat.manual_completion = 1;
+
 	line_completion(&input_stat);
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
 
 	maybe_grab_statusline();
+
+	input_stat.manual_completion = 0;
 }
 
 /* Possibly indicates that status line is being reused for wild menu and there
@@ -1363,7 +1450,10 @@ draw_wild_menu(int op)
 		return;
 	}
 
-	if(input_stat.complete == NULL || count < 2)
+	/* Makes sense to show even single completion item for automatic
+	 * completion. */
+	const int min_count = (input_stat.inc_completion ? 1 : 2);
+	if(input_stat.complete == NULL || count < min_count)
 	{
 		return;
 	}
@@ -3159,7 +3249,7 @@ line_completion(line_stats_t *stat)
 {
 	if(!stat->complete_continue)
 	{
-		if(start_completion(stat) != 0)
+		if(start_completion(stat, /*inc_completion=*/0) != 0)
 		{
 			return -1;
 		}
@@ -3187,7 +3277,7 @@ line_completion(line_stats_t *stat)
 /* Generates completion entries for the current state of the command-line.
  * Returns zero on success. */
 static int
-start_completion(line_stats_t *stat)
+start_completion(line_stats_t *stat, int inc_completion)
 {
 	/* Only complete the part before the cursor so just copy that part to
 	 * line_mb. */
@@ -3240,6 +3330,8 @@ start_completion(line_stats_t *stat)
 	}
 	stat->prefix_len = wide_len(line_mb);
 	free(line_mb);
+
+	stat->inc_completion = inc_completion;
 
 	vle_compl_set_add_path_hook(NULL);
 	return 0;

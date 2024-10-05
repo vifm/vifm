@@ -149,6 +149,8 @@ typedef struct
 	size_t prefix_len;          /* Prefix length for the active completion. */
 	int complete_continue;      /* If non-zero, continue previous completion. */
 	int reverse_completion;     /* Completion in the opposite direction. */
+	int manual_completion;      /* User-initiated completion is ongoing. */
+	int inc_completion;         /* Auto-initiated completion. */
 	complete_cmd_func complete; /* Completion function. */
 
 	/* History completion. */

@@ -1,4 +1,4 @@
-.TH VIFM 1 "11 September 2024" "vifm 0.13"
+.TH VIFM 1 "6 October 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5525,6 +5525,25 @@ type: boolean
 default: false
 .br
 Use vim help format.
+.TP
+.BI 'wildinc'
+type: string
+.br
+default: ""
+.br
+A comma-separated list of globs which defines what should be completed
+incrementally.  Currently, it can only be :commands which are matched with the
+colon in front of their name.  For such commands completion is always active
+and is displayed even if there is only one completion item.  Examples:
+.EX
+
+  " for all :commands
+  set wildinc=:*
+  " only for these two
+  set wildinc=:wingo,:bmgo
+
+.EE
+See "Patterns" and "Globs" sections for more information on syntax.
 .TP
 .BI "'wildmenu' 'wmnu'"
 type: boolean

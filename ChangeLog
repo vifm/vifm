@@ -65,6 +65,9 @@
 	Added :o[pen] command to open current file, selection or range as if Enter
 	was pressed.  Thanks to Safal Piya (a.k.a. mrsafalpiya).
 
+	Added 'wildinc' option that defines which :commands should be completed as
+	they are edited.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 September 11
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 October 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4664,6 +4664,22 @@ type: boolean
 default: false
 
 Use vim help format.
+
+                                               *vifm-'wildinc'*
+wildinc
+type: string
+default:""
+
+A comma-separated list of globs which defines what should be completed
+incrementally.  Currently, it can only be :commands which are matched with the
+colon in front of their name.  For such commands completion is always active
+and is displayed even if there is only one completion item.  Examples: >
+    " for all :commands
+    set wildinc=:*
+    " only for these two
+    set wildinc=:wingo,:bmgo
+
+See |vifm-patterns| and |vifm-globs| for more information on syntax.
 
                                                *vifm-'wildmenu'* *vifm-'wmnu'*
 wildmenu wmnu

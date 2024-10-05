@@ -25,6 +25,8 @@
 #include "../compat/fs_limits.h"
 #include "../ui/color_scheme.h"
 #include "../types.h"
+#include "../utils/matcher.h"
+#include "../utils/matchers.h"
 
 /* Name of help file in plain text format. */
 #define VIFM_HELP "vifm-help.txt"
@@ -221,6 +223,9 @@ typedef struct config_t
 	int wild_menu;
 	/* Whether wild menu should be a popup instead of a bar. */
 	int wild_popup;
+	/* Things (mainly :commands) which match this matcher are to be completed
+	 * automatically. */
+	matcher_t *wild_inc;
 
 	/* Settings related to suggestions. */
 	struct

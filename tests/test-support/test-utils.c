@@ -122,6 +122,15 @@ conf_setup(void)
 	stats_update_shell_type(cfg.shell);
 
 	cfg.dot_dirs = DD_TREE_LEAFS_PARENT;
+
+	if(cfg.wild_inc != NULL)
+	{
+		matcher_free(cfg.wild_inc);
+	}
+
+	char *error;
+	cfg.wild_inc = matcher_alloc_glob("", &error);
+	free(error);
 }
 
 void
@@ -157,6 +166,9 @@ conf_teardown(void)
 	cfg.sizefmt.precision = 0;
 	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.space = 0;
+
+	matcher_free(cfg.wild_inc);
+	cfg.wild_inc = NULL;
 }
 
 void

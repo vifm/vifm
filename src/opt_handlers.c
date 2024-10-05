@@ -42,6 +42,7 @@
 #include "utils/darray.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/matcher.h"
 #include "utils/matchers.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
@@ -107,6 +108,7 @@ static void init_relativenumber(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_tuioptions(optval_t *val);
+static void init_wildinc(optval_t *val);
 static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
@@ -242,6 +244,7 @@ static void vicmd_handler(OPT_OP op, optval_t val);
 static void vixcmd_handler(OPT_OP op, optval_t val);
 static void vifminfo_handler(OPT_OP op, optval_t val);
 static void vimhelp_handler(OPT_OP op, optval_t val);
+static void wildinc_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
 static void wildstyle_handler(OPT_OP op, optval_t val);
 static void wordchars_handler(OPT_OP op, optval_t val);
@@ -886,6 +889,10 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &vimhelp_handler, NULL,
 	  { .ref.bool_val = &cfg.use_vim_help },
 	},
+	{ "wildinc", "", "what to complete incrementally (live)",
+	  OPT_STR, 0, NULL, &wildinc_handler, NULL,
+	  { .init = &init_wildinc },
+	},
 	{ "wildmenu", "wmnu", "display completion matches in TUI",
 	  OPT_BOOL, 0, NULL, &wildmenu_handler, NULL,
 	  { .ref.bool_val = &cfg.wild_menu },
@@ -1362,6 +1369,13 @@ init_tuioptions(optval_t *val)
 			cfg.use_unicode_characters ? "u" : "",
 			cfg.flexible_splitter ? "v" : "");
 	val->str_val = buf;
+}
+
+/* Composes initial value of 'wildinc' from current configuration. */
+static void
+init_wildinc(optval_t *val)
+{
+	val->str_val = (char *)matcher_get_undec(cfg.wild_inc);
 }
 
 /* Formats 'wordchars' initial value from cfg.word_chars array. */
@@ -3907,6 +3921,26 @@ static void
 vimhelp_handler(OPT_OP op, optval_t val)
 {
 	cfg.use_vim_help = val.bool_val;
+}
+
+/* Handles changes of 'wildinc'. */
+static void
+wildinc_handler(OPT_OP op, optval_t val)
+{
+	char *error;
+	matcher_t *m = matcher_alloc_glob(val.str_val, &error);
+	if(error != NULL)
+	{
+		vle_tb_append_linef(vle_err, "Bad pattern: %s", error);
+		free(error);
+
+		init_wildinc(&val);
+		vle_opts_assign("wildinc", val, OPT_GLOBAL);
+		return;
+	}
+
+	matcher_free(cfg.wild_inc);
+	cfg.wild_inc = m;
 }
 
 static void
