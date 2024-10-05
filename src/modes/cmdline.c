@@ -3130,9 +3130,6 @@ update_cmdline_size(void)
 TSTATIC int
 line_completion(line_stats_t *stat)
 {
-	char *completion;
-	int result;
-
 	if(!stat->complete_continue)
 	{
 		if(start_completion(stat) != 0)
@@ -3144,14 +3141,18 @@ line_completion(line_stats_t *stat)
 	vle_compl_set_reversed(stat->reverse_completion);
 
 	if(vle_compl_get_count() == 0)
+	{
 		return 0;
+	}
 
-	completion = vle_compl_next();
-	result = line_part_complete(stat, completion);
+	char *completion = vle_compl_next();
+	int result = line_part_complete(stat, completion);
 	free(completion);
 
 	if(vle_compl_get_count() >= 2)
+	{
 		stat->complete_continue = 1;
+	}
 
 	return result;
 }
