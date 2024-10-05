@@ -91,6 +91,7 @@ static int def_handler(wchar_t key);
 static void update_cmdline_text(line_stats_t *stat);
 static void draw_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
+static int detect_input_change(line_stats_t *stat);
 static void handle_empty_input(void);
 static void handle_nonempty_input(void);
 static void update_state(int result, int nmatches);
@@ -458,11 +459,8 @@ input_line_changed(void)
 		set_view_port();
 		handle_empty_input();
 	}
-	else if(input_stat.last_line == NULL ||
-			wcscmp(input_stat.last_line, input_stat.line) != 0)
+	else if(detect_input_change(&input_stat))
 	{
-		(void)replace_wstring(&input_stat.last_line, input_stat.line);
-
 		set_view_port();
 		handle_nonempty_input();
 	}
@@ -482,6 +480,28 @@ input_line_changed(void)
 	 * bar to force cursor moving there before it becomes visible again. */
 	ui_refresh_win(status_bar);
 	ui_set_cursor(/*visibility=*/1);
+}
+
+/* Checks whether input line has changed since this function was called last
+ * time.  Returns non-zero if so. */
+static int
+detect_input_change(line_stats_t *stat)
+{
+	/* last_line is NULL initially and line can be NULL in tests. */
+	if(stat->last_line == NULL && stat->line == NULL)
+	{
+		return 0;
+	}
+
+	int changed = (stat->last_line == NULL)
+	           || (wcscmp(stat->last_line, stat->line) != 0);
+	if(changed)
+	{
+		/* Falsely reporting that an input has changed shouldn't have any negative
+		 * consequences. */
+		(void)replace_wstring(&stat->last_line, stat->line);
+	}
+	return changed;
 }
 
 /* Provides reaction for empty input during interactive search/filtering. */
