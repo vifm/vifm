@@ -1512,6 +1512,10 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 			++*last_pos;
 	}
 
+	col_attr_t wild_box_col = cfg.cs.color[STATUS_LINE_COLOR];
+	int wild_box_pair = cs_load_color(&wild_box_col);
+	ui_set_attr(stat_win, &wild_box_col, wild_box_pair);
+
 	for(i = *last_pos; i < count && *len > 0; ++i)
 	{
 		char *escaped = escape_unreadable(items[i].text);
@@ -1537,15 +1541,14 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 
 		if(i == *pos)
 		{
-			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
+			col_attr_t col = wild_box_col;
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-			ui_set_attr(stat_win, &col, -1);
+			ui_set_attr(stat_win, &col, /*pair=*/-1);
 		}
 		wprint(stat_win, escaped);
 		if(i == *pos)
 		{
-			ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
-					cfg.cs.pair[STATUS_LINE_COLOR]);
+			ui_set_attr(stat_win, &wild_box_col, wild_box_pair);
 			*pos = -*pos;
 		}
 
