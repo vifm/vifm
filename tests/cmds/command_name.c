@@ -78,7 +78,7 @@ TEARDOWN()
 TEST(builtin)
 {
 	cmd_add_t command = {
-	  .name = "",           .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .name = "",            .abbr = NULL,  .id = -1,      .descr = "descr",
 	  .flags = HAS_RANGE,
 	  .handler = &dummy_cmd, .min_args = 0, .max_args = 0,
 	};

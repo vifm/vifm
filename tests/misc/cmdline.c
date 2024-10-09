@@ -13,6 +13,7 @@
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
@@ -399,7 +400,7 @@ TEST(normal_in_autocmd_does_not_break_filter_navigation)
 
 TEST(filter_in_autocmd_does_not_break_filter_navigation)
 {
-	conf_setup();
+	opt_handlers_setup();
 	histories_init(5);
 	cfg.inc_search = 1;
 	cfg.auto_ch_pos = 1;
@@ -409,7 +410,6 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	columns_setup_column(SK_BY_SIZE);
 	columns_set_line_print_func(&column_line_print);
 	curr_view->columns = columns_create();
-	opt_handlers_setup();
 
 	assert_success(cmds_dispatch1("autocmd DirEnter tree/ filter! dir", curr_view,
 				CIT_COMMAND));
@@ -439,7 +439,6 @@ TEST(filter_in_autocmd_does_not_break_filter_navigation)
 	columns_teardown();
 
 	histories_init(0);
-	conf_teardown();
 	cfg.auto_ch_pos = 0;
 	cfg.ch_pos_on = 0;
 }
@@ -651,6 +650,27 @@ TEST(search_match_navigation)
 
 	conf_teardown();
 	cfg.wrap_scan = 0;
+}
+
+TEST(wild_inc_completion)
+{
+	char *error;
+	cfg.wild_inc = matcher_alloc_glob(":plugin", &error);
+	assert_string_equal(NULL, error);
+
+	(void)vle_keys_exec_timed_out(L":plugin");
+	assert_false(stats->inc_completion);
+	(void)vle_keys_exec_timed_out(L" ");
+	assert_true(stats->inc_completion);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	(void)vle_keys_exec_timed_out(L":set");
+	assert_false(stats->inc_completion);
+	(void)vle_keys_exec_timed_out(L" ");
+	assert_false(stats->inc_completion);
+
+	matcher_free(cfg.wild_inc);
+	cfg.wild_inc = NULL;
 }
 
 static void

@@ -56,7 +56,7 @@ static cmds_conf_t *cmds_conf;
 static const char * correct_limit(const char cmd[], cmd_info_t *cmd_info);
 static int udf_is_ambiguous(const char name[]);
 static const char * parse_tail(cmd_t *cur, const char cmd[],
-		cmd_info_t *cmd_info);
+		cmd_info_t *cmd_info, int strict_marks);
 static const char * get_cmd_name(const char cmd[], char buf[], size_t buf_len);
 static void init_cmd_info(cmd_info_t *cmd_info);
 static const char * skip_prefix_commands(const char cmd[]);
@@ -213,9 +213,11 @@ vle_cmds_run(const char cmd[])
 	if(cur == NULL)
 		return CMDS_ERR_INVALID_CMD;
 
-	args = parse_tail(cur, cmd, &cmd_info);
+	args = parse_tail(cur, cmd, &cmd_info, /*strict_marks=*/0);
 
-	cmd_info.raw_args = strdup(args);
+	int offset = args - cmd_info.post_name;
+	cmd_info.post_name = strdup(cmd_info.post_name);
+	cmd_info.raw_args = cmd_info.post_name + offset;
 
 	/* Set background flag and remove background mark from raw arguments, when
 	 * command supports backgrounding. */
@@ -312,7 +314,7 @@ vle_cmds_run(const char cmd[])
 		}
 	}
 
-	free(cmd_info.raw_args);
+	free(cmd_info.post_name);
 	free(cmd_info.args);
 	free_string_array(cmd_info.argv, cmd_info.argc);
 	free(cmd_info.argvp);
@@ -395,19 +397,25 @@ udf_is_ambiguous(const char name[])
 	return (count > 1);
 }
 
+/* Determines marks and separator of the command.  When marks aren't treated
+ * strictly, consumes ? or ! to facilitate error reporting on their misuse.
+ * Returns pointer to the argument list skipping separators. */
 static const char *
-parse_tail(cmd_t *cur, const char cmd[], cmd_info_t *cmd_info)
+parse_tail(cmd_t *cur, const char cmd[], cmd_info_t *cmd_info, int strict_marks)
 {
-	if(*cmd == '!' && (!cur->cust_sep || cur->emark))
+	int consume_marks = (!strict_marks && !cur->cust_sep);
+	if(*cmd == '!' && (consume_marks || cur->emark))
 	{
 		cmd_info->emark = 1;
 		cmd++;
 	}
-	else if(*cmd == '?' && (!cur->cust_sep || cur->qmark))
+	else if(*cmd == '?' && (consume_marks || cur->qmark))
 	{
 		cmd_info->qmark = 1;
 		cmd++;
 	}
+
+	cmd_info->post_name = (char *)cmd;
 
 	if(*cmd != '\0' && !isspace(*cmd))
 	{
@@ -451,6 +459,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->count = NOT_DEF;
 	cmd_info->emark = 0;
 	cmd_info->qmark = 0;
+	cmd_info->post_name = NULL;
 	cmd_info->raw_args = NULL;
 	cmd_info->args = NULL;
 	cmd_info->argc = 0;
@@ -487,7 +496,7 @@ vle_cmds_parse(const char cmd[], cmd_info_t *info)
 		return NULL;
 	}
 
-	cmd_info.raw_args = (char *)parse_tail(c, cmd, &cmd_info);
+	cmd_info.raw_args = (char *)parse_tail(c, cmd, &cmd_info, /*strict_marks=*/1);
 
 	*info = cmd_info;
 	return c;
@@ -839,7 +848,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 	if(cur->id >= NO_COMPLETION_BOUNDARY && cur->id < 0)
 		return 0;
 
-	args = parse_tail(cur, tmp_args, cmd_info);
+	args = parse_tail(cur, tmp_args, cmd_info, /*strict_marks=*/0);
 	args = vle_cmds_at_arg(args);
 	result += args - tmp_args;
 

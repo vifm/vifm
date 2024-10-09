@@ -59,7 +59,8 @@ enum
 	TOP_LINE_COLOR,     /* Top line of the other pane. */
 	TOP_LINE_SEL_COLOR, /* Top line of the selected pane. */
 	STATUS_LINE_COLOR,  /* Status line. */
-	WILD_MENU_COLOR,    /* Wild menu. */
+	WILD_BOX_COLOR,     /* Wild menu window (bar/popup). */
+	WILD_MENU_COLOR,    /* Current item of a wild menu. */
 	CMD_LINE_COLOR,     /* Command line. */
 	ERROR_MSG_COLOR,    /* Error of the command line. */
 	BORDER_COLOR,       /* Vertical border lines. */

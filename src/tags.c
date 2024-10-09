@@ -154,6 +154,7 @@ const char *tags[] = {
 	"vifm-'vifminfo'",
 	"vifm-'vimhelp'",
 	"vifm-'vixcmd'",
+	"vifm-'wildinc'",
 	"vifm-'wildmenu'",
 	"vifm-'wildstyle'",
 	"vifm-'wmnu'",

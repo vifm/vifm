@@ -785,5 +785,18 @@ TEST(long_envvar_values_do_not_cause_a_crash_with_fast_run)
 	undo_teardown();
 }
 
+TEST(wildinc)
+{
+	ui_sb_msg("");
+	assert_true(cmds_dispatch("set wildinc=* wildinc?", &rwin, CIT_COMMAND));
+	assert_string_equal("  wildinc=*", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_true(cmds_dispatch("set wildinc=[^]", &rwin, CIT_COMMAND));
+	assert_string_starts_with("Bad pattern: Unmatched", ui_sb_last());
+	assert_true(cmds_dispatch("set wildinc?", &rwin, CIT_COMMAND));
+	assert_string_equal("  wildinc=*", ui_sb_last());
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -130,8 +130,13 @@ cfg_init(void)
 	cfg.use_trash = 1;
 	cfg.use_term_multiplexer = 0;
 	cfg.use_vim_help = 0;
+
 	cfg.wild_menu = 0;
 	cfg.wild_popup = 0;
+
+	char *error;
+	cfg.wild_inc = matcher_alloc_glob("", &error);
+	free(error);
 
 	cfg.sug.flags = 0;
 	cfg.sug.maxregfiles = 5;

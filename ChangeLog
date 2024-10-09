@@ -65,6 +65,12 @@
 	Added :o[pen] command to open current file, selection or range as if Enter
 	was pressed.  Thanks to Safal Piya (a.k.a. mrsafalpiya).
 
+	Added 'wildinc' option that defines which :commands should be completed as
+	they are edited.
+
+	Added WildBox highlight group.  It can be used to set background of
+	completion window.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
@@ -143,6 +149,9 @@
 	Made completion of an option with its current value work not only on
 	`opt=<tab>`, but also on `opt='<tab>` and `opt="<tab>`.  Thanks to
 	aleksejrs.
+
+	Provide numerical value of a color as a description of a completion item
+	for it.
 
 	Fixed line number column not including padding to the left of it.
 
@@ -340,6 +349,9 @@
 
 	Fixed loading a session with global tabs when 'tabscope' is "pane"
 	resulting in global tabs being invisible.
+
+	Fixed statusline having invalid colors when 'wildstyle' is "bar" and
+	completion is initiated by Shift-Tab.
 
 0.13-beta to 0.13 (2023-04-04)
 

@@ -91,6 +91,9 @@ static int def_handler(wchar_t key);
 static void update_cmdline_text(line_stats_t *stat);
 static void draw_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
+static void wild_inc_completion(line_stats_t *stat);
+static int wild_inc_applies(const char cmd_line[]);
+static int detect_input_change(line_stats_t *stat);
 static void handle_empty_input(void);
 static void handle_nonempty_input(void);
 static void update_state(int result, int nmatches);
@@ -124,6 +127,7 @@ static int no_initial_line(void);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void do_completion(void);
+static void maybe_grab_statusline(void);
 static void go_to_search_match(line_stats_t *stat, view_t *view,
 		int in_reverse);
 static void draw_wild_menu(int op);
@@ -213,6 +217,7 @@ static void cmd_page_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void update_cmdline_size(void);
 TSTATIC int line_completion(line_stats_t *stat);
+static int start_completion(line_stats_t *stat, int inc_completion);
 static char * escaped_arg_hook(const char match[]);
 static char * squoted_arg_hook(const char match[]);
 static char * dquoted_arg_hook(const char match[]);
@@ -381,7 +386,15 @@ def_handler(wchar_t key)
 static void
 update_cmdline_text(line_stats_t *stat)
 {
-	input_line_changed();
+	if(input_stat.sub_mode == CLS_COMMAND)
+	{
+		wild_inc_completion(stat);
+	}
+	else
+	{
+		input_line_changed();
+	}
+
 	draw_cmdline_text(stat);
 }
 
@@ -457,11 +470,8 @@ input_line_changed(void)
 		set_view_port();
 		handle_empty_input();
 	}
-	else if(input_stat.last_line == NULL ||
-			wcscmp(input_stat.last_line, input_stat.line) != 0)
+	else if(detect_input_change(&input_stat))
 	{
-		(void)replace_wstring(&input_stat.last_line, input_stat.line);
-
 		set_view_port();
 		handle_nonempty_input();
 	}
@@ -481,6 +491,99 @@ input_line_changed(void)
 	 * bar to force cursor moving there before it becomes visible again. */
 	ui_refresh_win(status_bar);
 	ui_set_cursor(/*visibility=*/1);
+}
+
+/* Automatically display completion entries if current command-line qualifies
+ * for that (depends on 'wildinc' option). */
+static void
+wild_inc_completion(line_stats_t *stat)
+{
+	if(stat->manual_completion)
+	{
+		/* Do not interfere with user-initiated completion. */
+		return;
+	}
+
+	if(!detect_input_change(stat))
+	{
+		return;
+	}
+
+	/* Only complete the part before the cursor so just copy that part to
+	 * line_mb. */
+	wchar_t t = stat->line[stat->index];
+	stat->line[stat->index] = L'\0';
+
+	char *line_mb = to_multibyte(stat->line);
+	stat->line[stat->index] = t;
+	if(line_mb == NULL)
+	{
+		/* Not enough memory?  Just don't do the completion, no big deal. */
+		return;
+	}
+
+	if(wild_inc_applies(line_mb))
+	{
+		stop_completion();
+		if(cfg.wild_menu)
+			draw_wild_menu(1);
+
+		if(start_completion(stat, /*inc_completion=*/1) == 0)
+		{
+			stat->complete_continue = 1;
+			maybe_grab_statusline();
+			if(cfg.wild_menu)
+				draw_wild_menu(0);
+		}
+	}
+
+	free(line_mb);
+}
+
+/* Checks whether completion should be performed automatically for the current
+ * :command.  Returns non-zero if so. */
+static int
+wild_inc_applies(const char cmd_line[])
+{
+	cmd_info_t info;
+	const cmd_t *cmd = vle_cmds_parse(cmds_find_last(cmd_line), &info);
+	if(cmd == NULL || is_null_or_empty(info.post_name))
+	{
+		return 0;
+	}
+
+	char *name = format_str(":%s", cmd->name);
+	if(name == NULL)
+	{
+		return 0;
+	}
+
+	/* NULL check is for tests. */
+	int applies = (cfg.wild_inc != NULL && matcher_matches(cfg.wild_inc, name));
+	free(name);
+	return applies;
+}
+
+/* Checks whether input line has changed since this function was called last
+ * time.  Returns non-zero if so. */
+static int
+detect_input_change(line_stats_t *stat)
+{
+	/* last_line is NULL initially and line can be NULL in tests. */
+	if(stat->last_line == NULL && stat->line == NULL)
+	{
+		return 0;
+	}
+
+	int changed = (stat->last_line == NULL)
+	           || (wcscmp(stat->last_line, stat->line) != 0);
+	if(changed)
+	{
+		/* Falsely reporting that an input has changed shouldn't have any negative
+		 * consequences. */
+		(void)replace_wstring(&stat->last_line, stat->line);
+	}
+	return changed;
 }
 
 /* Provides reaction for empty input during interactive search/filtering. */
@@ -829,6 +932,8 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 	stat->history_search = HIST_NONE;
 	stat->line_buf = NULL;
 	stat->reverse_completion = 0;
+	stat->manual_completion = 0;
+	stat->inc_completion = 0;
 	stat->complete = complete;
 	stat->search_mode = 0;
 	stat->search_match_found = 0;
@@ -1296,13 +1401,23 @@ do_completion(void)
 		return;
 	}
 
+	input_stat.manual_completion = 1;
+
 	line_completion(&input_stat);
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
 
-	/* Indicate that status line is being reused for wild menu and there is a
-	 * potential usage conflict due to size differences. */
+	maybe_grab_statusline();
+
+	input_stat.manual_completion = 0;
+}
+
+/* Possibly indicates that status line is being reused for wild menu and there
+ * is a potential usage conflict due to size differences. */
+static void
+maybe_grab_statusline(void)
+{
 	if(cfg.display_statusline && !curr_stats.reusing_statusline &&
 			cfg.wild_menu && vle_compl_get_count() > 2 && getmaxy(stat_win) > 1)
 	{
@@ -1335,7 +1450,10 @@ draw_wild_menu(int op)
 		return;
 	}
 
-	if(input_stat.complete == NULL || count < 2)
+	/* Makes sense to show even single completion item for automatic
+	 * completion. */
+	const int min_count = (input_stat.inc_completion ? 1 : 2);
+	if(input_stat.complete == NULL || count < min_count)
 	{
 		return;
 	}
@@ -1394,6 +1512,15 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 			++*last_pos;
 	}
 
+	col_attr_t wild_box_col = cfg.cs.color[STATUS_LINE_COLOR];
+	cs_mix_colors(&wild_box_col, &cfg.cs.color[WILD_BOX_COLOR]);
+	int wild_box_pair = cs_load_color(&wild_box_col);
+	ui_set_attr(stat_win, &wild_box_col, wild_box_pair);
+
+	/* Clear background where there are no completion items. */
+	ui_set_bg(stat_win, &wild_box_col, wild_box_pair);
+	werase(stat_win);
+
 	for(i = *last_pos; i < count && *len > 0; ++i)
 	{
 		char *escaped = escape_unreadable(items[i].text);
@@ -1419,15 +1546,14 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 
 		if(i == *pos)
 		{
-			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
+			col_attr_t col = wild_box_col;
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-			ui_set_attr(stat_win, &col, -1);
+			ui_set_attr(stat_win, &col, /*pair=*/-1);
 		}
 		wprint(stat_win, escaped);
 		if(i == *pos)
 		{
-			ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
-					cfg.cs.pair[STATUS_LINE_COLOR]);
+			ui_set_attr(stat_win, &wild_box_col, wild_box_pair);
 			*pos = -*pos;
 		}
 
@@ -1454,8 +1580,11 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 
 	ui_stat_reposition(getmaxy(status_bar), height);
 	wresize(stat_win, height, getmaxx(stdscr));
-	ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
-			cfg.cs.pair[STATUS_LINE_COLOR]);
+
+	col_attr_t wild_box_col = cfg.cs.color[STATUS_LINE_COLOR];
+	cs_mix_colors(&wild_box_col, &cfg.cs.color[WILD_BOX_COLOR]);
+	ui_set_attr(stat_win, &wild_box_col, /*pair=*/-1);
+
 	werase(stat_win);
 
 	max_title_width = 0U;
@@ -1475,9 +1604,9 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	{
 		if(i == *pos)
 		{
-			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
+			col_attr_t col = wild_box_col;
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-			ui_set_attr(stat_win, &col, -1);
+			ui_set_attr(stat_win, &col, /*pair=*/-1);
 		}
 
 		checked_wmove(stat_win, j, 0);
@@ -1487,8 +1616,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 
 		if(i == *pos)
 		{
-			ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
-					cfg.cs.pair[STATUS_LINE_COLOR]);
+			ui_set_attr(stat_win, &wild_box_col, /*pair=*/-1);
 			*pos = -*pos;
 		}
 	}
@@ -3129,82 +3257,94 @@ update_cmdline_size(void)
 TSTATIC int
 line_completion(line_stats_t *stat)
 {
-	char *completion;
-	int result;
-
 	if(!stat->complete_continue)
 	{
-		wchar_t t;
-		CompletionPreProcessing compl_func_arg;
-
-		/* Only complete the part before the cursor so just copy that part to
-		 * line_mb. */
-		t = stat->line[stat->index];
-		stat->line[stat->index] = L'\0';
-
-		char *const line_mb = to_multibyte(stat->line);
-		stat->line[stat->index] = t;
-		if(line_mb == NULL)
+		if(start_completion(stat, /*inc_completion=*/0) != 0)
 		{
 			return -1;
 		}
-
-		const char *line_mb_cmd = line_mb;
-
-		vle_compl_reset();
-
-		compl_func_arg = CPP_NONE;
-		if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
-		{
-			line_mb_cmd = cmds_find_last(line_mb);
-
-			const CmdLineLocation ipt = cmds_classify_pos(line_mb,
-					line_mb + strlen(line_mb));
-			switch(ipt)
-			{
-				case CLL_OUT_OF_ARG:
-				case CLL_NO_QUOTING:
-				case CLL_R_QUOTING:
-					vle_compl_set_add_path_hook(&escaped_arg_hook);
-					compl_func_arg = CPP_PERCENT_UNESCAPE;
-					break;
-
-				case CLL_S_QUOTING:
-					vle_compl_set_add_path_hook(&squoted_arg_hook);
-					compl_func_arg = CPP_SQUOTES_UNESCAPE;
-					break;
-
-				case CLL_D_QUOTING:
-					vle_compl_set_add_path_hook(&dquoted_arg_hook);
-					compl_func_arg = CPP_DQUOTES_UNESCAPE;
-					break;
-			}
-		}
-
-		const int offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
-		if(offset >= 0 && offset < (int)strlen(line_mb_cmd))
-		{
-			line_mb[line_mb_cmd - line_mb + offset] = '\0';
-		}
-		stat->prefix_len = wide_len(line_mb);
-		free(line_mb);
-
-		vle_compl_set_add_path_hook(NULL);
 	}
 
 	vle_compl_set_reversed(stat->reverse_completion);
 
 	if(vle_compl_get_count() == 0)
+	{
 		return 0;
+	}
 
-	completion = vle_compl_next();
-	result = line_part_complete(stat, completion);
+	char *completion = vle_compl_next();
+	int result = line_part_complete(stat, completion);
 	free(completion);
 
 	if(vle_compl_get_count() >= 2)
+	{
 		stat->complete_continue = 1;
+	}
 
 	return result;
+}
+
+/* Generates completion entries for the current state of the command-line.
+ * Returns zero on success. */
+static int
+start_completion(line_stats_t *stat, int inc_completion)
+{
+	/* Only complete the part before the cursor so just copy that part to
+	 * line_mb. */
+	wchar_t t = stat->line[stat->index];
+	stat->line[stat->index] = L'\0';
+
+	char *const line_mb = to_multibyte(stat->line);
+	stat->line[stat->index] = t;
+	if(line_mb == NULL)
+	{
+		return -1;
+	}
+
+	const char *line_mb_cmd = line_mb;
+
+	vle_compl_reset();
+
+	CompletionPreProcessing compl_func_arg = CPP_NONE;
+	if(stat->sub_mode == CLS_COMMAND || stat->sub_mode == CLS_MENU_COMMAND)
+	{
+		line_mb_cmd = cmds_find_last(line_mb);
+
+		const CmdLineLocation ipt = cmds_classify_pos(line_mb,
+				line_mb + strlen(line_mb));
+		switch(ipt)
+		{
+			case CLL_OUT_OF_ARG:
+			case CLL_NO_QUOTING:
+			case CLL_R_QUOTING:
+				vle_compl_set_add_path_hook(&escaped_arg_hook);
+				compl_func_arg = CPP_PERCENT_UNESCAPE;
+				break;
+
+			case CLL_S_QUOTING:
+				vle_compl_set_add_path_hook(&squoted_arg_hook);
+				compl_func_arg = CPP_SQUOTES_UNESCAPE;
+				break;
+
+			case CLL_D_QUOTING:
+				vle_compl_set_add_path_hook(&dquoted_arg_hook);
+				compl_func_arg = CPP_DQUOTES_UNESCAPE;
+				break;
+		}
+	}
+
+	const int offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
+	if(offset >= 0 && offset < (int)strlen(line_mb_cmd))
+	{
+		line_mb[line_mb_cmd - line_mb + offset] = '\0';
+	}
+	stat->prefix_len = wide_len(line_mb);
+	free(line_mb);
+
+	stat->inc_completion = inc_completion;
+
+	vle_compl_set_add_path_hook(NULL);
+	return 0;
 }
 
 /* Processes completion match for insertion into command-line as escaped value.

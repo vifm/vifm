@@ -401,6 +401,30 @@ TEST(comma_escaping)
 	matcher_free(m);
 }
 
+TEST(forced_glob_matcher_does_not_strip_decorations)
+{
+	char *error;
+	matcher_t *m = matcher_alloc_glob("{abc}", &error);
+	assert_null(error);
+
+	assert_string_equal("{abc}", matcher_get_undec(m));
+	assert_false(matcher_matches(m, "abc"));
+	assert_true(matcher_matches(m, "{abc}"));
+
+	matcher_free(m);
+}
+
+TEST(empty_forced_glob_matcher_matches_nothing)
+{
+	char *error;
+	matcher_t *m = matcher_alloc_glob("", &error);
+	assert_string_equal(NULL, error);
+
+	assert_string_equal("", matcher_get_undec(m));
+	assert_false(matcher_matches(m, ""));
+	matcher_free(m);
+}
+
 TEST(mime_type_pattern, IF(has_mime_type_detection))
 {
 	char *error;
