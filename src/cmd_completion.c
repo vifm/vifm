@@ -961,7 +961,9 @@ complete_highlight_arg(const char *str)
 			{
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
 				{
-					vle_compl_add_match(XTERM256_COLOR_NAMES[i], "");
+					char as_number[8];
+					snprintf(as_number, sizeof(as_number), "%d", (int)i);
+					vle_compl_add_match(XTERM256_COLOR_NAMES[i], as_number);
 				}
 			}
 

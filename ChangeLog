@@ -150,6 +150,9 @@
 	`opt=<tab>`, but also on `opt='<tab>` and `opt="<tab>`.  Thanks to
 	aleksejrs.
 
+	Provide numerical value of a color as a description of a completion item
+	for it.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
