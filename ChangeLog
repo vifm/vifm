@@ -68,6 +68,9 @@
 	Added 'wildinc' option that defines which :commands should be completed as
 	they are edited.
 
+	Added WildBox highlight group.  It can be used to set background of
+	completion window.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

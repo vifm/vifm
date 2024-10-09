@@ -63,6 +63,7 @@ TEST(all_colors_are_printed)
 		"TopLine    cterm=none ctermfg=black   ctermbg=white\n"
 		"TopLineSel cterm=bold ctermfg=black   ctermbg=default\n"
 		"StatusLine cterm=bold ctermfg=black   ctermbg=white\n"
+		"WildBox    cterm=none ctermfg=default ctermbg=default\n"
 		"WildMenu   cterm=underline,reverse ctermfg=white   ctermbg=black\n"
 		"CmdLine    cterm=none ctermfg=white   ctermbg=black\n"
 		"ErrorMsg   cterm=none ctermfg=red     ctermbg=black\n"

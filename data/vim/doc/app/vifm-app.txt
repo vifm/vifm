@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 October 6
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 October 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1943,6 +1943,7 @@ Available group-name values:
  - ErrorMsg - color of error messages in the status bar
  - StatusLine - color of the line above the status bar
  - JobLine - color of job line that appears above the status line
+ - WildBox - color of the wild menu
  - WildMenu - color of the selected wild menu item
  - SuggestBox - color of key suggestion box
  - CurrLine - line at cursor position in active view
@@ -2124,7 +2125,8 @@ transparency:
   JobLine
   SuggestBox
   StatusLine
-    WildMenu
+    WildBox
+      WildMenu
     User1..User20
   Border
   CmdLine
@@ -6366,8 +6368,8 @@ Both types are set using |vifm-:colorscheme| command, but of different forms:
 Look of different parts of the TUI (Text User Interface) is determined in
 this way:
    - Border, TabLine, TabLineSel, TopLineSel, TopLine, CmdLine, ErrorMsg,
-     StatusLine, JobLine, SuggestBox and WildMenu are always determined by
-     the primary color scheme
+     StatusLine, JobLine, SuggestBox, WildBox and WildMenu are always determined
+     by the primary color scheme
    - CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device,
      Executable, Fifo, CmpMismatch, CmpUnmatched, CmpBlank, Win, AuxWin and
      OtherWin are determined by primary color scheme and a set of local color

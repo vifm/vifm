@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: October 6, 2024
+" Last Change: October 9, 2024
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -104,7 +104,7 @@ syntax keyword vifmHiArgs contained cterm ctermfg ctermbg gui guifg guibg
 syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
-		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg
+		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg WildBox
 		\ CmpMismatch CmpUnmatched CmpBlank
 		\ AuxWin OtherWin TabLine TabLineSel HardLink LineNr OddLine
 		\ User1 User2 User3 User4 User5 User6 User7 User8 User9 User10

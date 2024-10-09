@@ -588,7 +588,7 @@ TEST(tree_is_completed)
 TEST(highlight_is_completed)
 {
 	ASSERT_COMPLETION(L"hi ", L"hi AuxWin");
-	ASSERT_COMPLETION(L"hi wi", L"hi WildMenu");
+	ASSERT_COMPLETION(L"hi wi", L"hi WildBox");
 	ASSERT_COMPLETION(L"hi WildMenu cter", L"hi WildMenu cterm");
 
 	ASSERT_COMPLETION(L"hi WildMenu ctermfg=def", L"hi WildMenu ctermfg=default");

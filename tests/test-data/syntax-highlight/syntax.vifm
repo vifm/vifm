@@ -582,6 +582,7 @@ hi User19
 hi User20
 hi LineNr
 hi OddLine
+hi WildBox
 
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'
