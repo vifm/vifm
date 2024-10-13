@@ -225,6 +225,7 @@ static void update_line_stat(line_stats_t *stat, int new_len);
 static int esc_wcswidth(const wchar_t str[], size_t n);
 static int esc_wcwidth(wchar_t wc);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
+static void switch_to_editing(void);
 static void stop_completion(void);
 static void stop_dot_completion(void);
 static void stop_regular_completion(void);
@@ -1096,8 +1097,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index > 0)
 	{
@@ -1170,8 +1170,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index < input_stat.len)
 	{
@@ -1277,8 +1276,7 @@ cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(should_quit_on_backspace())
 	{
@@ -1659,8 +1657,7 @@ cmd_ctrl_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -2183,8 +2180,7 @@ hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 static void
 cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(!is_cmdmode(input_stat.prev_mode))
 	{
@@ -2233,8 +2229,7 @@ expr_reg_prompt_completion(const char cmd[], void *arg)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index == 0)
 		return;
@@ -2258,12 +2253,9 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 {
-	int old;
+	switch_to_editing();
 
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
-
-	old = input_stat.index;
+	int old = input_stat.index;
 
 	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
@@ -2717,8 +2709,7 @@ find_next_word(void)
 static void
 cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -3430,6 +3421,15 @@ wcsdel(wchar_t *src, int pos, int len)
 	src[pos-len] = src[pos];
 
 	return src;
+}
+
+/* Makes sure that current state is suitable for making changes to the
+ * command-line by aborting any search or completion activities. */
+static void
+switch_to_editing(void)
+{
+	input_stat.history_search = HIST_NONE;
+	stop_completion();
 }
 
 /* Disables all active completions. */
