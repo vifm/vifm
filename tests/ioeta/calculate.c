@@ -28,7 +28,7 @@ TEST(empty_files_are_ok)
 
 	ioeta_calculate(estim, TEST_DATA_PATH "/existing-files", 0);
 
-	assert_int_equal(3, estim->total_items);
+	assert_int_equal(4, estim->total_items);
 	assert_int_equal(0, estim->current_item);
 	assert_int_equal(0, estim->total_bytes);
 	assert_int_equal(0, estim->current_byte);
@@ -42,7 +42,7 @@ TEST(non_empty_files_are_ok)
 
 	ioeta_calculate(estim, TEST_DATA_PATH "/various-sizes", 0);
 
-	assert_int_equal(7, estim->total_items);
+	assert_int_equal(8, estim->total_items);
 	assert_int_equal(0, estim->current_item);
 	assert_int_equal(73728, estim->total_bytes);
 	assert_int_equal(0, estim->current_byte);

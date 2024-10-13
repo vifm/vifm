@@ -18,24 +18,41 @@ TEST(general)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("abc", ""));
-	assert_int_equal(0, vle_compl_add_match("acd", ""));
+	assert_int_equal(0, vle_compl_add_match("abc", "first"));
+	assert_int_equal(0, vle_compl_add_match("acd", "second"));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
+	assert_int_equal(3, vle_compl_get_count());
+	assert_string_equal("abc", vle_compl_get_items()[0].text);
+	assert_string_equal("first", vle_compl_get_items()[0].descr);
+	assert_string_equal("acd", vle_compl_get_items()[1].text);
+	assert_string_equal("second", vle_compl_get_items()[1].descr);
+	assert_string_equal("a", vle_compl_get_items()[2].text);
+	assert_string_equal("", vle_compl_get_items()[2].descr);
+
+	assert_int_equal(-1, vle_compl_get_pos());
 	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
+
+	assert_int_equal(0, vle_compl_get_pos());
 	buf = vle_compl_next();
 	assert_string_equal("acd", buf);
 	free(buf);
+
+	assert_int_equal(1, vle_compl_get_pos());
 	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
+
+	assert_int_equal(2, vle_compl_get_pos());
 	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
+
+	assert_int_equal(0, vle_compl_get_pos());
 	buf = vle_compl_next();
 	assert_string_equal("acd", buf);
 	free(buf);

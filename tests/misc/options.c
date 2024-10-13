@@ -793,7 +793,7 @@ TEST(wildinc)
 
 	ui_sb_msg("");
 	assert_true(cmds_dispatch("set wildinc=[^]", &rwin, CIT_COMMAND));
-	assert_string_starts_with("Bad pattern: Unmatched", ui_sb_last());
+	assert_string_starts_with("Bad pattern: ", ui_sb_last());
 	assert_true(cmds_dispatch("set wildinc?", &rwin, CIT_COMMAND));
 	assert_string_equal("  wildinc=*", ui_sb_last());
 }

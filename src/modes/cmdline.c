@@ -79,6 +79,15 @@
 /* Prompt prefix when navigation is enabled. */
 #define NAV_PREFIX L"(nav)"
 
+/* Operation on wild menu performed by wild_menu_op(). */
+typedef enum
+{
+	WMO_RESET,  /* Make the first completion item the current one in the state. */
+	WMO_DRAW,   /* Draw the menu for the first time. */
+	WMO_REDRAW, /* Redraw the menu. */
+}
+WildMenuOp;
+
 /* Stashed store of the state to support limited recursion. */
 static line_stats_t prev_input_stat;
 /* State of the command-line mode. */
@@ -130,9 +139,9 @@ static void do_completion(void);
 static void maybe_grab_statusline(void);
 static void go_to_search_match(line_stats_t *stat, view_t *view,
 		int in_reverse);
-static void draw_wild_menu(int op);
+static void wild_menu_op(WildMenuOp op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
-static int draw_wild_popup(int *last_pos, int *pos, int *len);
+static int draw_wild_popup(int *last_pos, int *pos);
 static int compute_wild_menu_height(void);
 static void cmd_ctrl_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
@@ -154,6 +163,7 @@ static int is_backward_search(CmdLineSubmode sub_mode);
 static int replace_wstring(wchar_t **str, const wchar_t with[]);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 static void hist_next(line_stats_t *stat, const hist_t *hist, size_t len);
+static void hist_search_reset_input(void);
 static void cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info);
 static void expr_reg_prompt_cb(const char expr[], void *arg);
 static int expr_reg_prompt_completion(const char cmd[], void *arg);
@@ -215,6 +225,7 @@ static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_page_up(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_page_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
+static int hist_search_setup(HIST kind);
 static void update_cmdline_size(void);
 TSTATIC int line_completion(line_stats_t *stat);
 static int start_completion(line_stats_t *stat, int inc_completion);
@@ -225,6 +236,7 @@ static void update_line_stat(line_stats_t *stat, int new_len);
 static int esc_wcswidth(const wchar_t str[], size_t n);
 static int esc_wcwidth(wchar_t wc);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
+static void switch_to_editing(void);
 static void stop_completion(void);
 static void stop_dot_completion(void);
 static void stop_regular_completion(void);
@@ -330,7 +342,7 @@ def_handler(wchar_t key)
 	void *p;
 	wchar_t buf[2] = {key, L'\0'};
 
-	input_stat.history_search = HIST_NONE;
+	input_stat.hist_search = HIST_NONE;
 
 	if(input_stat.complete_continue
 			&& input_stat.line[input_stat.index - 1] == L'/' && key == L'/')
@@ -525,15 +537,13 @@ wild_inc_completion(line_stats_t *stat)
 	if(wild_inc_applies(line_mb))
 	{
 		stop_completion();
-		if(cfg.wild_menu)
-			draw_wild_menu(1);
+		wild_menu_op(WMO_RESET);
 
 		if(start_completion(stat, /*inc_completion=*/1) == 0)
 		{
 			stat->complete_continue = 1;
 			maybe_grab_statusline();
-			if(cfg.wild_menu)
-				draw_wild_menu(0);
+			wild_menu_op(WMO_DRAW);
 		}
 	}
 
@@ -859,9 +869,9 @@ modcline_redraw(void)
 	update_cmdline_size();
 	draw_cmdline_text(&input_stat);
 
-	if(input_stat.complete_continue && cfg.wild_menu)
+	if(input_stat.complete_continue)
 	{
-		draw_wild_menu(-1);
+		wild_menu_op(WMO_REDRAW);
 	}
 
 	if(input_stat.prev_mode != MENU_MODE)
@@ -929,8 +939,8 @@ init_line_stats(line_stats_t *stat, const wchar_t prompt[],
 	stat->len = stat->index;
 	stat->cmd_pos = -1;
 	stat->complete_continue = 0;
-	stat->history_search = HIST_NONE;
-	stat->line_buf = NULL;
+	stat->hist_search = HIST_NONE;
+	stat->hist_search_stash = NULL;
 	stat->reverse_completion = 0;
 	stat->manual_completion = 0;
 	stat->inc_completion = 0;
@@ -1076,17 +1086,19 @@ free_line_stats(line_stats_t *stat)
 	free(input_stat.line);
 	free(input_stat.last_line);
 	free(input_stat.initial_line);
-	free(input_stat.line_buf);
+	free(input_stat.hist_search_stash);
 	input_stat.line = NULL;
 	input_stat.last_line = NULL;
 	input_stat.initial_line = NULL;
-	input_stat.line_buf = NULL;
+	input_stat.hist_search_stash = NULL;
 }
 
 /* Moves command-line cursor to the beginning of command-line. */
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
+	switch_to_editing();
+
 	input_stat.index = 0;
 	input_stat.curs_pos = input_stat.prompt_wid;
 	update_cursor();
@@ -1096,8 +1108,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index > 0)
 	{
@@ -1157,6 +1168,8 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
+	switch_to_editing();
+
 	if(input_stat.index == input_stat.len)
 		return;
 
@@ -1170,8 +1183,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index < input_stat.len)
 	{
@@ -1277,8 +1289,7 @@ cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(should_quit_on_backspace())
 	{
@@ -1337,15 +1348,14 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	if(!input_stat.complete_continue)
-		draw_wild_menu(1);
+		wild_menu_op(WMO_RESET);
 	input_stat.reverse_completion = 0;
 
 	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
-	if(cfg.wild_menu)
-		draw_wild_menu(0);
+	wild_menu_op(WMO_DRAW);
 }
 
 static void
@@ -1358,15 +1368,14 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	if(!input_stat.complete_continue)
-		draw_wild_menu(1);
+		wild_menu_op(WMO_RESET);
 	input_stat.reverse_completion = 1;
 
 	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
-	if(cfg.wild_menu)
-		draw_wild_menu(0);
+	wild_menu_op(WMO_DRAW);
 }
 
 /* Navigates to next/previous search match.  Relies on already available search
@@ -1427,28 +1436,28 @@ maybe_grab_statusline(void)
 	}
 }
 
-/*
- * op == 0 - draw
- * op < 0 - redraw
- * op > 0 - reset
- */
+/* Resets wild menu state or (re)draws it on the screen. */
 static void
-draw_wild_menu(int op)
+wild_menu_op(WildMenuOp op)
 {
 	static int last_pos;
 
-	int pos = vle_compl_get_pos();
-	const int count = vle_compl_get_count() - 1;
-	int i;
-	int len = getmaxx(stdscr);
-
 	/* This check should go first to ensure that resetting of wild menu is
 	 * processed and no returns will break the expected behaviour. */
-	if(op > 0)
+	if(op == WMO_RESET)
 	{
 		last_pos = 0;
 		return;
 	}
+
+	/* Quit after handling the reset to allow state updates even while wild menu
+	 * is off. */
+	if(!cfg.wild_menu)
+	{
+		return;
+	}
+
+	const int count = vle_compl_get_count() - 1;
 
 	/* Makes sense to show even single completion item for automatic
 	 * completion. */
@@ -1458,23 +1467,26 @@ draw_wild_menu(int op)
 		return;
 	}
 
+	int pos = vle_compl_get_pos();
+
 	if(pos == 0 || pos == count)
 		last_pos = 0;
 	if(last_pos == 0 && pos == count - 1)
 		last_pos = count;
 
-	i = cfg.wild_popup
-	  ? draw_wild_popup(&last_pos, &pos, &len)
-	  : draw_wild_bar(&last_pos, &pos, &len);
+	int width_left = getmaxx(stdscr);
+	int last_visible = cfg.wild_popup
+	                 ? draw_wild_popup(&last_pos, &pos)
+	                 : draw_wild_bar(&last_pos, &pos, &width_left);
 
 	if(pos > 0 && pos != count)
 	{
 		last_pos = pos;
-		draw_wild_menu(op);
+		wild_menu_op(op);
 		return;
 	}
-	if(op == 0 && len < 2 && i - 1 == pos)
-		last_pos = i;
+	if(op == WMO_DRAW && width_left < 2 && last_visible - 1 == pos)
+		last_pos = last_visible;
 	ui_refresh_win(stat_win);
 
 	update_cursor();
@@ -1565,7 +1577,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 
 /* Draws wild menu as a popup.  Returns index of the last displayed item. */
 static int
-draw_wild_popup(int *last_pos, int *pos, int *len)
+draw_wild_popup(int *last_pos, int *pos)
 {
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
@@ -1659,8 +1671,7 @@ cmd_ctrl_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -2071,21 +2082,6 @@ is_backward_search(CmdLineSubmode sub_mode)
 	    || sub_mode == CLS_VWBSEARCH;
 }
 
-static void
-save_users_input(void)
-{
-	(void)replace_wstring(&input_stat.line_buf, input_stat.line);
-}
-
-static void
-restore_user_input(void)
-{
-	input_stat.cmd_pos = -1;
-	(void)replace_wstring(&input_stat.line, input_stat.line_buf);
-	input_stat.len = wcslen(input_stat.line);
-	update_cmdline(&input_stat);
-}
-
 /* Replaces *str with a copy of the with string.  *str can be NULL or equal to
  * the with (then function does nothing).  Returns non-zero if memory allocation
  * failed. */
@@ -2120,11 +2116,7 @@ cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 
 	stop_completion();
 
-	if(input_stat.history_search == HIST_NONE)
-		save_users_input();
-
-	input_stat.history_search = HIST_GO;
-
+	(void)hist_search_setup(HIST_GO);
 	hist_next(&input_stat, pick_hist(), cfg.history_len);
 }
 
@@ -2138,11 +2130,11 @@ hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 		return;
 	}
 
-	if(stat->history_search != HIST_SEARCH)
+	if(stat->hist_search != HIST_SEARCH)
 	{
 		if(stat->cmd_pos <= 0)
 		{
-			restore_user_input();
+			hist_search_reset_input();
 			return;
 		}
 		--stat->cmd_pos;
@@ -2163,7 +2155,7 @@ hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 		}
 		if(pos < 0)
 		{
-			restore_user_input();
+			hist_search_reset_input();
 			return;
 		}
 		stat->cmd_pos = pos;
@@ -2179,12 +2171,21 @@ hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 	}
 }
 
+/* Restores original user input saved by hist_search_setup(). */
+static void
+hist_search_reset_input(void)
+{
+	input_stat.cmd_pos = -1;
+	(void)replace_wstring(&input_stat.line, input_stat.hist_search_stash);
+	input_stat.len = wcslen(input_stat.line);
+	update_cmdline(&input_stat);
+}
+
 /* Invokes expression register prompt. */
 static void
 cmd_ctrl_requals(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(!is_cmdmode(input_stat.prev_mode))
 	{
@@ -2233,8 +2234,7 @@ expr_reg_prompt_completion(const char cmd[], void *arg)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index == 0)
 		return;
@@ -2258,12 +2258,9 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 {
-	int old;
+	switch_to_editing();
 
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
-
-	old = input_stat.index;
+	int old = input_stat.index;
 
 	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
@@ -2717,8 +2714,7 @@ find_next_word(void)
 static void
 cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 {
-	input_stat.history_search = HIST_NONE;
-	stop_completion();
+	switch_to_editing();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -2788,11 +2784,7 @@ cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 
 	stop_completion();
 
-	if(input_stat.history_search == HIST_NONE)
-		save_users_input();
-
-	input_stat.history_search = HIST_GO;
-
+	(void)hist_search_setup(HIST_GO);
 	hist_prev(&input_stat, pick_hist(), cfg.history_len);
 }
 
@@ -2934,12 +2926,8 @@ cmd_down(key_info_t key_info, keys_info_t *keys_info)
 
 	stop_completion();
 
-	if(input_stat.history_search == HIST_NONE)
-		save_users_input();
-
-	if(input_stat.history_search != HIST_SEARCH)
+	if(hist_search_setup(HIST_SEARCH))
 	{
-		input_stat.history_search = HIST_SEARCH;
 		input_stat.hist_search_len = input_stat.len;
 	}
 
@@ -2959,12 +2947,8 @@ cmd_up(key_info_t key_info, keys_info_t *keys_info)
 
 	stop_completion();
 
-	if(input_stat.history_search == HIST_NONE)
-		save_users_input();
-
-	if(input_stat.history_search != HIST_SEARCH)
+	if(hist_search_setup(HIST_SEARCH))
 	{
-		input_stat.history_search = HIST_SEARCH;
 		input_stat.hist_search_len = input_stat.len;
 	}
 
@@ -3053,6 +3037,27 @@ cmd_page_down(key_info_t key_info, keys_info_t *keys_info)
 
 #endif /* ENABLE_EXTENDED_KEYS */
 
+/* Makes sure that a historical search of the specified kind is active, saving
+ * current command-line input if the search wasn't active at all.  Returns zero
+ * if the request kind was already active. */
+static int
+hist_search_setup(HIST kind)
+{
+	/* The input needs to be stored only when historical search is initiated. */
+	if(input_stat.hist_search == HIST_NONE)
+	{
+		(void)replace_wstring(&input_stat.hist_search_stash, input_stat.line);
+	}
+
+	if(input_stat.hist_search == kind)
+	{
+		return 0;
+	}
+
+	input_stat.hist_search = kind;
+	return 1;
+}
+
 /* Puts previous element in the history.  hist can be NULL, in which case
  * nothing happens. */
 TSTATIC void
@@ -3063,7 +3068,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 		return;
 	}
 
-	if(stat->history_search != HIST_SEARCH)
+	if(stat->hist_search != HIST_SEARCH)
 	{
 		if(stat->cmd_pos == hist->size - 1)
 		{
@@ -3430,6 +3435,15 @@ wcsdel(wchar_t *src, int pos, int len)
 	src[pos-len] = src[pos];
 
 	return src;
+}
+
+/* Makes sure that current state is suitable for making changes to the
+ * command-line by aborting any search or completion activities. */
+static void
+switch_to_editing(void)
+{
+	input_stat.hist_search = HIST_NONE;
+	stop_completion();
 }
 
 /* Disables all active completions. */

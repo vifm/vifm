@@ -90,8 +90,8 @@ SETUP()
 	stats.len = stats.index;
 	stats.cmd_pos = -1;
 	stats.complete_continue = 0;
-	stats.history_search = 0;
-	stats.line_buf = NULL;
+	stats.hist_search = 0;
+	stats.hist_search_stash = NULL;
 	stats.complete = &vle_cmds_complete;
 
 	curr_view = &lwin;
