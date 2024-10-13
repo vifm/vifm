@@ -79,6 +79,15 @@
 /* Prompt prefix when navigation is enabled. */
 #define NAV_PREFIX L"(nav)"
 
+/* Operation on wild menu performed by wild_menu_op(). */
+typedef enum
+{
+	WMO_RESET,  /* Make the first completion item the current one in the state. */
+	WMO_DRAW,   /* Draw the menu for the first time. */
+	WMO_REDRAW, /* Redraw the menu. */
+}
+WildMenuOp;
+
 /* Stashed store of the state to support limited recursion. */
 static line_stats_t prev_input_stat;
 /* State of the command-line mode. */
@@ -130,7 +139,7 @@ static void do_completion(void);
 static void maybe_grab_statusline(void);
 static void go_to_search_match(line_stats_t *stat, view_t *view,
 		int in_reverse);
-static void draw_wild_menu(int op);
+static void wild_menu_op(WildMenuOp op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
 static int draw_wild_popup(int *last_pos, int *pos, int *len);
 static int compute_wild_menu_height(void);
@@ -528,13 +537,13 @@ wild_inc_completion(line_stats_t *stat)
 	if(wild_inc_applies(line_mb))
 	{
 		stop_completion();
-		draw_wild_menu(1);
+		wild_menu_op(WMO_RESET);
 
 		if(start_completion(stat, /*inc_completion=*/1) == 0)
 		{
 			stat->complete_continue = 1;
 			maybe_grab_statusline();
-			draw_wild_menu(0);
+			wild_menu_op(WMO_DRAW);
 		}
 	}
 
@@ -862,7 +871,7 @@ modcline_redraw(void)
 
 	if(input_stat.complete_continue)
 	{
-		draw_wild_menu(-1);
+		wild_menu_op(WMO_REDRAW);
 	}
 
 	if(input_stat.prev_mode != MENU_MODE)
@@ -1339,14 +1348,14 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	if(!input_stat.complete_continue)
-		draw_wild_menu(1);
+		wild_menu_op(WMO_RESET);
 	input_stat.reverse_completion = 0;
 
 	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
-	draw_wild_menu(0);
+	wild_menu_op(WMO_DRAW);
 }
 
 static void
@@ -1359,14 +1368,14 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	if(!input_stat.complete_continue)
-		draw_wild_menu(1);
+		wild_menu_op(WMO_RESET);
 	input_stat.reverse_completion = 1;
 
 	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
-	draw_wild_menu(0);
+	wild_menu_op(WMO_DRAW);
 }
 
 /* Navigates to next/previous search match.  Relies on already available search
@@ -1427,19 +1436,15 @@ maybe_grab_statusline(void)
 	}
 }
 
-/*
- * op == 0 - draw
- * op < 0 - redraw
- * op > 0 - reset
- */
+/* Resets wild menu state or (re)draws it on the screen. */
 static void
-draw_wild_menu(int op)
+wild_menu_op(WildMenuOp op)
 {
 	static int last_pos;
 
 	/* This check should go first to ensure that resetting of wild menu is
 	 * processed and no returns will break the expected behaviour. */
-	if(op > 0)
+	if(op == WMO_RESET)
 	{
 		last_pos = 0;
 		return;
@@ -1477,10 +1482,10 @@ draw_wild_menu(int op)
 	if(pos > 0 && pos != count)
 	{
 		last_pos = pos;
-		draw_wild_menu(op);
+		wild_menu_op(op);
 		return;
 	}
-	if(op == 0 && len < 2 && i - 1 == pos)
+	if(op == WMO_DRAW && len < 2 && i - 1 == pos)
 		last_pos = i;
 	ui_refresh_win(stat_win);
 
