@@ -141,7 +141,7 @@ static void go_to_search_match(line_stats_t *stat, view_t *view,
 		int in_reverse);
 static void wild_menu_op(WildMenuOp op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
-static int draw_wild_popup(int *last_pos, int *pos, int *len);
+static int draw_wild_popup(int *last_pos, int *pos);
 static int compute_wild_menu_height(void);
 static void cmd_ctrl_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
@@ -1457,10 +1457,7 @@ wild_menu_op(WildMenuOp op)
 		return;
 	}
 
-	int pos = vle_compl_get_pos();
 	const int count = vle_compl_get_count() - 1;
-	int i;
-	int len = getmaxx(stdscr);
 
 	/* Makes sense to show even single completion item for automatic
 	 * completion. */
@@ -1470,14 +1467,17 @@ wild_menu_op(WildMenuOp op)
 		return;
 	}
 
+	int pos = vle_compl_get_pos();
+
 	if(pos == 0 || pos == count)
 		last_pos = 0;
 	if(last_pos == 0 && pos == count - 1)
 		last_pos = count;
 
-	i = cfg.wild_popup
-	  ? draw_wild_popup(&last_pos, &pos, &len)
-	  : draw_wild_bar(&last_pos, &pos, &len);
+	int width_left = getmaxx(stdscr);
+	int last_visible = cfg.wild_popup
+	                 ? draw_wild_popup(&last_pos, &pos)
+	                 : draw_wild_bar(&last_pos, &pos, &width_left);
 
 	if(pos > 0 && pos != count)
 	{
@@ -1485,8 +1485,8 @@ wild_menu_op(WildMenuOp op)
 		wild_menu_op(op);
 		return;
 	}
-	if(op == WMO_DRAW && len < 2 && i - 1 == pos)
-		last_pos = i;
+	if(op == WMO_DRAW && width_left < 2 && last_visible - 1 == pos)
+		last_pos = last_visible;
 	ui_refresh_win(stat_win);
 
 	update_cursor();
@@ -1577,7 +1577,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 
 /* Draws wild menu as a popup.  Returns index of the last displayed item. */
 static int
-draw_wild_popup(int *last_pos, int *pos, int *len)
+draw_wild_popup(int *last_pos, int *pos)
 {
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
