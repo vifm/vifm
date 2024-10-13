@@ -50,8 +50,8 @@ SETUP()
 	stats.len = stats.index;
 	stats.cmd_pos = -1;
 	stats.complete_continue = 0;
-	stats.history_search = HIST_NONE;
-	stats.line_buf = NULL;
+	stats.hist_search = HIST_NONE;
+	stats.hist_search_stash = NULL;
 }
 
 TEARDOWN()
@@ -73,7 +73,7 @@ TEST(entry_matching_input_is_skipped)
 	assert_success(hist_add(&hist, "newer", -1));
 
 	stats.line = wcsdup(L"newer");
-	stats.history_search = HIST_GO;
+	stats.hist_search = HIST_GO;
 	hist_prev(&stats, &hist, 10U);
 	assert_wstring_equal(L"older", stats.line);
 

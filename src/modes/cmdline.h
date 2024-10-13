@@ -154,9 +154,9 @@ typedef struct
 	complete_cmd_func complete; /* Completion function. */
 
 	/* History completion. */
-	HIST history_search; /* One of the HIST_* constants. */
-	int hist_search_len; /* Length of history search pattern. */
-	wchar_t *line_buf;   /* Content of line before using history. */
+	HIST hist_search;           /* One of the HIST_* constants. */
+	int hist_search_len;        /* Length of history search pattern. */
+	wchar_t *hist_search_stash; /* Content of line before using history. */
 
 	/* For search prompt. */
 	int search_mode;        /* If it's a file list or menu search prompt. */
