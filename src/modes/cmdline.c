@@ -1088,6 +1088,8 @@ free_line_stats(line_stats_t *stat)
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
+	switch_to_editing();
+
 	input_stat.index = 0;
 	input_stat.curs_pos = input_stat.prompt_wid;
 	update_cursor();
@@ -1157,6 +1159,8 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
+	switch_to_editing();
+
 	if(input_stat.index == input_stat.len)
 		return;
 

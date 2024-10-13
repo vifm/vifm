@@ -353,6 +353,9 @@
 	Fixed statusline having invalid colors when 'wildstyle' is "bar" and
 	completion is initiated by Shift-Tab.
 
+	Fixed CTRL-A and CTRL-E in command-line mode not stopping completion or
+	history search unlike other similar keys.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
