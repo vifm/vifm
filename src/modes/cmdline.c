@@ -528,15 +528,13 @@ wild_inc_completion(line_stats_t *stat)
 	if(wild_inc_applies(line_mb))
 	{
 		stop_completion();
-		if(cfg.wild_menu)
-			draw_wild_menu(1);
+		draw_wild_menu(1);
 
 		if(start_completion(stat, /*inc_completion=*/1) == 0)
 		{
 			stat->complete_continue = 1;
 			maybe_grab_statusline();
-			if(cfg.wild_menu)
-				draw_wild_menu(0);
+			draw_wild_menu(0);
 		}
 	}
 
@@ -862,7 +860,7 @@ modcline_redraw(void)
 	update_cmdline_size();
 	draw_cmdline_text(&input_stat);
 
-	if(input_stat.complete_continue && cfg.wild_menu)
+	if(input_stat.complete_continue)
 	{
 		draw_wild_menu(-1);
 	}
@@ -1348,8 +1346,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.complete_continue = 0;
 
 	do_completion();
-	if(cfg.wild_menu)
-		draw_wild_menu(0);
+	draw_wild_menu(0);
 }
 
 static void
@@ -1369,8 +1366,7 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.complete_continue = 0;
 
 	do_completion();
-	if(cfg.wild_menu)
-		draw_wild_menu(0);
+	draw_wild_menu(0);
 }
 
 /* Navigates to next/previous search match.  Relies on already available search
@@ -1441,11 +1437,6 @@ draw_wild_menu(int op)
 {
 	static int last_pos;
 
-	int pos = vle_compl_get_pos();
-	const int count = vle_compl_get_count() - 1;
-	int i;
-	int len = getmaxx(stdscr);
-
 	/* This check should go first to ensure that resetting of wild menu is
 	 * processed and no returns will break the expected behaviour. */
 	if(op > 0)
@@ -1453,6 +1444,18 @@ draw_wild_menu(int op)
 		last_pos = 0;
 		return;
 	}
+
+	/* Quit after handling the reset to allow state updates even while wild menu
+	 * is off. */
+	if(!cfg.wild_menu)
+	{
+		return;
+	}
+
+	int pos = vle_compl_get_pos();
+	const int count = vle_compl_get_count() - 1;
+	int i;
+	int len = getmaxx(stdscr);
 
 	/* Makes sense to show even single completion item for automatic
 	 * completion. */
