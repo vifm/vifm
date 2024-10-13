@@ -356,6 +356,9 @@
 	Fixed CTRL-A and CTRL-E in command-line mode not stopping completion or
 	history search unlike other similar keys.
 
+	Fixed directories not being accounted for in estimates.  Thanks to
+	justpretending2.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

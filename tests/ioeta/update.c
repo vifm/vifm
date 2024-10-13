@@ -40,11 +40,11 @@ TEST(add_dir_increments_number_of_bytes)
 	assert_int_equal(prev + 1024, estim->total_bytes);
 }
 
-TEST(add_dir_does_not_increment_number_of_items)
+TEST(add_dir_increments_number_of_items)
 {
 	const int prev = estim->total_items;
 	ioeta_add_dir(estim, "path");
-	assert_int_equal(prev, estim->total_items);
+	assert_int_equal(prev + 1, estim->total_items);
 }
 
 TEST(add_dir_does_not_increment_number_of_bytes)
