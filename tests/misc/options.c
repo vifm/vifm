@@ -105,7 +105,10 @@ TEST(nice_error_on_wrong_viewcolumn_name)
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("set viewcolumns={bad}", curr_view,
 				CIT_COMMAND));
+	/* The error is printed first for local option and then for global one. */
 	assert_string_equal("Failed to find column: bad\n"
+			"Invalid format of 'viewcolumns' option\n"
+			"Failed to find column: bad\n"
 			"Invalid format of 'viewcolumns' option\n"
 			"Invalid argument for :set command", ui_sb_last());
 

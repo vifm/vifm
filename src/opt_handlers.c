@@ -3394,7 +3394,22 @@ set_sortorder(view_t *view, int ascending, signed char sort_keys[])
 static void
 viewcolumns_global(OPT_OP op, optval_t val)
 {
-	replace_string(&curr_view->view_columns_g, val.str_val);
+	const char *new_value =
+		val.str_val[0] == '\0' ? DEFAULT_VIEW_COLUMNS : val.str_val;
+
+	if(parse_columns(/*columns=*/NULL, &add_column, &map_name, new_value,
+				curr_view) != 0)
+	{
+		vle_tb_append_line(vle_err, "Invalid format of 'viewcolumns' option");
+		error = 1;
+
+		val.str_val = curr_view->view_columns_g;
+		vle_opts_assign("viewcolumns", val, OPT_GLOBAL);
+	}
+	else
+	{
+		replace_string(&curr_view->view_columns_g, new_value);
+	}
 }
 
 /* Handler of local 'viewcolumns' option, which defines custom view columns. */
