@@ -362,6 +362,9 @@
 	Fixed global version of 'viewcolumns' not validating its value.  Thanks to
 	Vadim Curcă.
 
+	Fixed `&&` operator which was acting as binary `&` (in terms of
+	evaluation, the result was properly boolean).  Thanks to justpretending2.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before

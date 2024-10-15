@@ -391,9 +391,9 @@ eval_and_op(parse_context_t *ctx, int nops, expr_t ops[], var_t *result)
 		return 0;
 	}
 
-	/* Conversion to integer so that strings are converted into numbers instead of
-	 * checked to be empty. */
-	val = var_to_int(ops[0].value);
+	/* TODO: replace with var_to_bool() when it's OK to change semantics of
+	 *       strings by themselves. */
+	val = (var_to_int(ops[0].value) != 0);
 
 	for(i = 1; i < nops && val; ++i)
 	{
@@ -401,7 +401,9 @@ eval_and_op(parse_context_t *ctx, int nops, expr_t ops[], var_t *result)
 		{
 			return 1;
 		}
-		val &= var_to_int(ops[i].value);
+		/* TODO: replace with var_to_bool() when it's OK to change semantics of
+		 *       strings by themselves. */
+		val &= (var_to_int(ops[i].value) != 0);
 	}
 
 	*result = var_from_bool(val);

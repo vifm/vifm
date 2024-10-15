@@ -52,6 +52,11 @@ TEST(and_operates_ok)
 	ASSERT_OK("0 && 1", "0");
 	ASSERT_OK("1 && 0", "0");
 	ASSERT_OK("1 && 1", "1");
+
+	ASSERT_OK("1 && 1", "1");
+	ASSERT_OK("1 && 2", "1");
+	ASSERT_OK("2 && 1", "1");
+	ASSERT_OK("2 && 2", "1");
 }
 
 TEST(or_operates_ok)
@@ -60,6 +65,11 @@ TEST(or_operates_ok)
 	ASSERT_OK("0 || 1", "1");
 	ASSERT_OK("1 || 0", "1");
 	ASSERT_OK("1 || 1", "1");
+
+	ASSERT_OK("1 || 1", "1");
+	ASSERT_OK("1 || 2", "1");
+	ASSERT_OK("2 || 1", "1");
+	ASSERT_OK("2 || 2", "1");
 }
 
 TEST(priority_of_and_is_higher)
@@ -76,6 +86,10 @@ TEST(and_or_ignored_inside_strings)
 TEST(strings_are_converted_to_integers)
 {
 	ASSERT_OK("'a' && 'b' && 'c'", "0");
+	ASSERT_OK("'0' && '0' && '0'", "0");
+	ASSERT_OK("'1' && '2' && '4'", "1");
+	ASSERT_OK("'0' || '0' || '0'", "0");
+	ASSERT_OK("'1' || '2' || '4'", "1");
 }
 
 TEST(and_handles_errors_correctly)
