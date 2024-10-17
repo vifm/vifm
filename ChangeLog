@@ -71,6 +71,11 @@
 	Added WildBox highlight group.  It can be used to set background of
 	completion window.
 
+	Added a statusbar message and a dialog to warn about an upcoming fix for
+	strings in conditional expressions (e.g., `if $VAR` checks for `$VAR`
+	being non empty instead of converting it to an integer).  Thanks to
+	justpretending2.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

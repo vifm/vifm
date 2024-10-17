@@ -85,6 +85,13 @@ TEST(and_or_ignored_inside_strings)
 
 TEST(strings_are_converted_to_integers)
 {
+	ASSERT_BOOL_OK("''", 0);
+	/* The following checks must be inverted when the bug is fixed (breaks
+	 * compatibility). */
+	ASSERT_BOOL_OK("'a'", 1);
+	ASSERT_BOOL_OK("'0'", 1);
+	ASSERT_BOOL_OK("'0'", 1);
+
 	ASSERT_OK("'a' && 'b' && 'c'", "0");
 	ASSERT_OK("'0' && '0' && '0'", "0");
 	ASSERT_OK("'1' && '2' && '4'", "1");

@@ -39,6 +39,30 @@
 	while(0)
 
 /* This should be a macro to see what test has failed. */
+#define ASSERT_BOOL_OK(str, expected) \
+	do \
+	{ \
+		parsing_result_t result = vle_parser_eval((str), /*interactive=*/0); \
+		assert_int_equal(PE_NO_ERROR, result.error); \
+		\
+		if(result.value.type != VTYPE_ERROR) \
+		{ \
+			int bool_res = var_to_bool(result.value); \
+			if(expected) \
+			{ \
+				assert_true(bool_res); \
+			} \
+			else \
+			{ \
+				assert_false(bool_res); \
+			} \
+		} \
+		\
+		var_free(result.value); \
+	} \
+	while(0)
+
+/* This should be a macro to see what test has failed. */
 #define ASSERT_FAIL(str, error_code) \
 	do \
 	{ \
