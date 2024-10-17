@@ -2731,7 +2731,7 @@ goto_path_cmd(const cmd_info_t *cmd_info)
 
 	fname = strdup(get_last_path_component(abs_path));
 	remove_last_path_component(abs_path);
-	navigate_to_file(curr_view, abs_path, fname, 0);
+	navigate_to_file(curr_view, abs_path, fname, 1);
 	free(fname);
 	return 0;
 }

@@ -158,6 +158,9 @@
 	Provide numerical value of a color as a description of a completion item
 	for it.
 
+	Make :goto preserve custom and tree views.  Thanks to
+	asmodeus812 (Svetlozar Iliev).
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

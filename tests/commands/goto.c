@@ -56,6 +56,45 @@ TEST(goto_navigates)
 	assert_string_equal("tree", get_current_file_name(&lwin));
 }
 
+TEST(goto_preserves_cv)
+{
+	char path[PATH_MAX + 1];
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", NULL);
+
+	flist_custom_start(&lwin, "test");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/b");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(cmds_dispatch("goto b", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.list_pos);
+	assert_true(flist_custom_active(&lwin));
+
+	assert_success(cmds_dispatch("goto a", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.list_pos);
+	assert_true(flist_custom_active(&lwin));
+}
+
+TEST(goto_preserves_tree)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "tree",
+			NULL);
+	assert_success(cmds_dispatch1("tree", &lwin, CIT_COMMAND));
+	assert_true(cv_tree(lwin.custom.type));
+
+	assert_success(cmds_dispatch("goto dir1/file4", &lwin, CIT_COMMAND));
+	assert_int_equal(7, lwin.list_pos);
+	assert_true(cv_tree(lwin.custom.type));
+
+	assert_success(cmds_dispatch("goto dir5/file5", &lwin, CIT_COMMAND));
+	assert_int_equal(10, lwin.list_pos);
+	assert_true(cv_tree(lwin.custom.type));
+}
+
 TEST(goto_normalizes_slashes, IF(windows))
 {
 	char cmd[PATH_MAX*2];
