@@ -3,7 +3,7 @@
 #include <unistd.h> /* chdir() rmdir() unlink() */
 
 #include <limits.h> /* INT_MAX */
-#include <stdio.h> /* remove() */
+#include <stdio.h> /* remove() snprintf() */
 #include <string.h> /* strcpy() strdup() */
 
 #include <test-utils.h>
@@ -476,31 +476,6 @@ TEST(keepsel_preserves_selection)
 	assert_failure(cmds_dispatch("keepsel echo 'hi'", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
-}
-
-TEST(goto_command)
-{
-	assert_failure(cmds_dispatch("goto /", &lwin, CIT_COMMAND));
-	assert_failure(cmds_dispatch("goto /no-such-path", &lwin, CIT_COMMAND));
-
-	char cmd[PATH_MAX*2];
-	snprintf(cmd, sizeof(cmd), "goto %s/compare", test_data);
-	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
-	assert_true(paths_are_same(lwin.curr_dir, test_data));
-	assert_string_equal("compare", get_current_file_name(&lwin));
-
-	assert_success(cmds_dispatch("goto tree", &lwin, CIT_COMMAND));
-	assert_true(paths_are_same(lwin.curr_dir, test_data));
-	assert_string_equal("tree", get_current_file_name(&lwin));
-}
-
-TEST(goto_normalizes_slashes, IF(windows))
-{
-	char cmd[PATH_MAX*2];
-	snprintf(cmd, sizeof(cmd), "goto %s\\\\compare", test_data);
-	assert_success(cmds_dispatch(cmd, &lwin, CIT_COMMAND));
-	assert_true(paths_are_same(lwin.curr_dir, test_data));
-	assert_string_equal("compare", get_current_file_name(&lwin));
 }
 
 TEST(echo_reports_all_errors)

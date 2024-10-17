@@ -2731,7 +2731,7 @@ goto_path_cmd(const cmd_info_t *cmd_info)
 
 	fname = strdup(get_last_path_component(abs_path));
 	remove_last_path_component(abs_path);
-	navigate_to_file(curr_view, abs_path, fname, 0);
+	navigate_to_file(curr_view, abs_path, fname, 1);
 	free(fname);
 	return 0;
 }
@@ -3540,6 +3540,31 @@ eval_if_condition(int cmd_id, const cmd_info_t *cmd_info)
 	}
 	else
 	{
+		if(parsing_result.value.type == VTYPE_STRING)
+		{
+			static int printed_warning;
+
+			ui_sb_errf("warning: checking for string length using a boolean context "
+			           "is a bug, update `%s` to use `!= ''` to avoid issues in the "
+			           "future", cmd_info->args);
+			int num;
+			if(!printed_warning && !read_int(cmd_info->args, &num))
+			{
+				printed_warning = 1;
+
+				int save_msg = curr_stats.save_msg;
+				curr_stats.save_msg = 1;
+				show_error_msgf("Condition evaluation",
+						"The `%s` condition seems to be relying on a bug, please revise it "
+						"to add `!= ''` to check for an empty string or `+ 0` to suppress "
+						"this warning.\n"
+						"(This is a once per session warning, `:messages` can contain "
+						"more.)\n"
+						"(The need for `+ 0` will be gone along with the bug and this "
+						"warning in the next release.)", cmd_info->args);
+				curr_stats.save_msg = save_msg;
+			}
+		}
 		result = var_to_bool(parsing_result.value);
 	}
 
