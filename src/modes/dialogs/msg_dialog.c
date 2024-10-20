@@ -62,6 +62,7 @@ typedef enum
 {
 	DR_OK,     /* Agreed. */
 	DR_CANCEL, /* Cancelled. */
+	DR_CLOSE,  /* Closed. */
 	DR_YES,    /* Confirmed. */
 	DR_NO,     /* Denied. */
 	DR_CUSTOM, /* One of user-specified keys. */
@@ -89,6 +90,7 @@ static int def_handler(wchar_t key);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_esc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
 static void handle_response(dialog_data_t *data, DialogResult dr);
@@ -115,7 +117,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_c, {{&cmd_ctrl_c}, .descr = "cancel"}},
 	{WK_C_l, {{&cmd_ctrl_l}, .descr = "redraw"}},
 	{WK_C_m, {{&cmd_ctrl_m}, .descr = "agree to the query"}},
-	{WK_ESC, {{&cmd_ctrl_c}, .descr = "cancel"}},
+	{WK_ESC, {{&cmd_esc},    .descr = "close"}},
 	{WK_n,   {{&cmd_n},      .descr = "deny the query"}},
 	{WK_y,   {{&cmd_y},      .descr = "confirm the query"}},
 };
@@ -183,6 +185,13 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	handle_response(current_dialog, DR_OK);
 }
 
+/* Closes the query. */
+static void
+cmd_esc(key_info_t key_info, keys_info_t *keys_info)
+{
+	handle_response(current_dialog, DR_CLOSE);
+}
+
 /* Denies the query. */
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
@@ -205,10 +214,14 @@ handle_response(dialog_data_t *data, DialogResult dr)
 	/* Map result to corresponding input key to omit branching per handler. */
 	static const char r_to_c[] = {
 		[DR_OK]     = '\r',
+		/* DR_CLOSE used to be part of DR_CANCEL, update handlers if there is a need
+		 * to differentiate between them in handlers. */
 		[DR_CANCEL] = NC_C_c,
+		[DR_CLOSE]  = NC_C_c,
 		[DR_YES]    = 'y',
 		[DR_NO]     = 'n',
 	};
+	ARRAY_GUARD(r_to_c, DR_CUSTOM);
 
 	(void)def_handler(r_to_c[dr]);
 	/* Default handler might have already requested quitting. */
