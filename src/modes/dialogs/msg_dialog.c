@@ -362,10 +362,10 @@ prompt_msg(const char title[], const char message[])
 			.message = message,
 		},
 		.kind = D_QUERY_CENTER_EACH,
-		.accept_mask = MASK(DR_YES, DR_NO),
+		.accept_mask = MASK(DR_OK, DR_YES, DR_CLOSE, DR_NO),
 	};
 	prompt_msg_internal(&data);
-	return (data.result == DR_YES);
+	return ONE_OF(data.result, DR_OK, DR_YES);
 }
 
 int
@@ -510,7 +510,7 @@ get_control_msg(const dialog_data_t *data)
 	{
 		if(data->details.variants == NULL)
 		{
-			return "Enter [y]es or [n]o";
+			return "[y]es/Enter or [n]o/Escape";
 		}
 
 		return get_custom_control_msg(data->details.variants);
@@ -786,12 +786,12 @@ confirm_deletion(char *files[], int nfiles, int use_trash)
 			.message = msg,
 		},
 		.kind = D_QUERY_CENTER_FIRST,
-		.accept_mask = MASK(DR_YES, DR_NO),
+		.accept_mask = MASK(DR_OK, DR_YES, DR_CLOSE, DR_NO),
 	};
 	prompt_msg_internal(&data);
 	free(msg);
 
-	if(data.result != DR_YES)
+	if(!ONE_OF(data.result, DR_OK, DR_YES))
 	{
 		return 0;
 	}
