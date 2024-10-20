@@ -344,7 +344,7 @@ def_handler(wchar_t key)
 
 	input_stat.hist_search = HIST_NONE;
 
-	if(input_stat.complete_continue
+	if(input_stat.complete_continue && !input_stat.inc_completion
 			&& input_stat.line[input_stat.index - 1] == L'/' && key == L'/')
 	{
 		stop_completion();

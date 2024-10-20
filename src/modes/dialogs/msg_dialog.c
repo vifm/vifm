@@ -62,6 +62,7 @@ typedef enum
 {
 	DR_OK,     /* Agreed. */
 	DR_CANCEL, /* Cancelled. */
+	DR_CLOSE,  /* Closed. */
 	DR_YES,    /* Confirmed. */
 	DR_NO,     /* Denied. */
 	DR_CUSTOM, /* One of user-specified keys. */
@@ -89,6 +90,7 @@ static int def_handler(wchar_t key);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_esc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
 static void handle_response(dialog_data_t *data, DialogResult dr);
@@ -115,7 +117,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_c, {{&cmd_ctrl_c}, .descr = "cancel"}},
 	{WK_C_l, {{&cmd_ctrl_l}, .descr = "redraw"}},
 	{WK_C_m, {{&cmd_ctrl_m}, .descr = "agree to the query"}},
-	{WK_ESC, {{&cmd_ctrl_c}, .descr = "cancel"}},
+	{WK_ESC, {{&cmd_esc},    .descr = "close"}},
 	{WK_n,   {{&cmd_n},      .descr = "deny the query"}},
 	{WK_y,   {{&cmd_y},      .descr = "confirm the query"}},
 };
@@ -183,6 +185,13 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	handle_response(current_dialog, DR_OK);
 }
 
+/* Closes the query. */
+static void
+cmd_esc(key_info_t key_info, keys_info_t *keys_info)
+{
+	handle_response(current_dialog, DR_CLOSE);
+}
+
 /* Denies the query. */
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
@@ -205,10 +214,14 @@ handle_response(dialog_data_t *data, DialogResult dr)
 	/* Map result to corresponding input key to omit branching per handler. */
 	static const char r_to_c[] = {
 		[DR_OK]     = '\r',
+		/* DR_CLOSE used to be part of DR_CANCEL, update handlers if there is a need
+		 * to differentiate between them in handlers. */
 		[DR_CANCEL] = NC_C_c,
+		[DR_CLOSE]  = NC_C_c,
 		[DR_YES]    = 'y',
 		[DR_NO]     = 'n',
 	};
+	ARRAY_GUARD(r_to_c, DR_CUSTOM);
 
 	(void)def_handler(r_to_c[dr]);
 	/* Default handler might have already requested quitting. */
@@ -326,7 +339,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 		},
 		.kind = D_ERROR,
 		.prompt_skip = prompt_skip,
-		.accept_mask = MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0),
+		.accept_mask = MASK(DR_OK, DR_CLOSE) | (prompt_skip ? MASK(DR_CANCEL) : 0),
 	};
 	enter(&data);
 
@@ -349,10 +362,10 @@ prompt_msg(const char title[], const char message[])
 			.message = message,
 		},
 		.kind = D_QUERY_CENTER_EACH,
-		.accept_mask = MASK(DR_YES, DR_NO),
+		.accept_mask = MASK(DR_OK, DR_YES, DR_CLOSE, DR_NO),
 	};
 	prompt_msg_internal(&data);
-	return (data.result == DR_YES);
+	return ONE_OF(data.result, DR_OK, DR_YES);
 }
 
 int
@@ -497,7 +510,7 @@ get_control_msg(const dialog_data_t *data)
 	{
 		if(data->details.variants == NULL)
 		{
-			return "Enter [y]es or [n]o";
+			return "[y]es/Enter or [n]o/Escape";
 		}
 
 		return get_custom_control_msg(data->details.variants);
@@ -505,11 +518,11 @@ get_control_msg(const dialog_data_t *data)
 
 	if(data->prompt_skip)
 	{
-		return "Press Return to continue or "
+		return "Press Enter/Escape to continue or "
 		       "Ctrl-C to skip its future error messages";
 	}
 
-	return "Press Return to continue";
+	return "Press Enter/Escape to continue";
 }
 
 /* Formats dialog control message for custom set of responses.  Returns pointer
@@ -773,12 +786,12 @@ confirm_deletion(char *files[], int nfiles, int use_trash)
 			.message = msg,
 		},
 		.kind = D_QUERY_CENTER_FIRST,
-		.accept_mask = MASK(DR_YES, DR_NO),
+		.accept_mask = MASK(DR_OK, DR_YES, DR_CLOSE, DR_NO),
 	};
 	prompt_msg_internal(&data);
 	free(msg);
 
-	if(data.result != DR_YES)
+	if(!ONE_OF(data.result, DR_OK, DR_YES))
 	{
 		return 0;
 	}

@@ -658,12 +658,22 @@ TEST(wild_inc_completion)
 	cfg.wild_inc = matcher_alloc_glob(":plugin", &error);
 	assert_string_equal(NULL, error);
 
+	/* A :command that's auto-completed. */
 	(void)vle_keys_exec_timed_out(L":plugin");
 	assert_false(stats->inc_completion);
 	(void)vle_keys_exec_timed_out(L" ");
 	assert_true(stats->inc_completion);
+
+	/* Verify that slash isn't treated specially as it is for user-initiated
+	 * completion. */
+	(void)vle_keys_exec_timed_out(L"/");
+	assert_wstring_equal(L"plugin /", stats->line);
+	(void)vle_keys_exec_timed_out(L"/");
+	assert_wstring_equal(L"plugin //", stats->line);
+
 	(void)vle_keys_exec_timed_out(WK_C_c);
 
+	/* A :command that's not auto-completed. */
 	(void)vle_keys_exec_timed_out(L":set");
 	assert_false(stats->inc_completion);
 	(void)vle_keys_exec_timed_out(L" ");
