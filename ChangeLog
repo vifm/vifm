@@ -76,6 +76,9 @@
 	being non empty instead of converting it to an integer).  Thanks to
 	justpretending2.
 
+	Added handling of Escape to error dialogs.  Thanks to laur89, Alexandre
+	Viau and multiple other users who asked about this.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

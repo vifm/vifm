@@ -339,7 +339,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 		},
 		.kind = D_ERROR,
 		.prompt_skip = prompt_skip,
-		.accept_mask = MASK(DR_OK) | (prompt_skip ? MASK(DR_CANCEL) : 0),
+		.accept_mask = MASK(DR_OK, DR_CLOSE) | (prompt_skip ? MASK(DR_CANCEL) : 0),
 	};
 	enter(&data);
 
@@ -518,11 +518,11 @@ get_control_msg(const dialog_data_t *data)
 
 	if(data->prompt_skip)
 	{
-		return "Press Return to continue or "
+		return "Press Enter/Escape to continue or "
 		       "Ctrl-C to skip its future error messages";
 	}
 
-	return "Press Return to continue";
+	return "Press Enter/Escape to continue";
 }
 
 /* Formats dialog control message for custom set of responses.  Returns pointer
