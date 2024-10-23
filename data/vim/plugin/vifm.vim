@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2023 October 24
+" Last Change: 2024 October 23
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -298,7 +298,19 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 	endif
 
 	for file in flist
-		execute editcmd fnameescape(file)
+		if s:has_drop && editcmd == s:tab_drop_cmd && empty(glob(file))
+			try
+				let [wildignore, &wildignore] = [&wildignore, '']
+				execute editcmd fnameescape(file)
+			finally
+				" If some auto-command has changed 'wildignore', we'll overwrite it
+				" here...
+				let &wildignore = wildignore
+			endtry
+		else
+			execute editcmd fnameescape(file)
+		endif
+
 		let opened_bufnrs[bufnr(file)] = 1
 		if editcmd == 'edit' && len(flist) > 1
 			execute 'argadd' file
