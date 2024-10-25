@@ -251,7 +251,7 @@ job_exit_cb(struct bg_job_t *job, void *arg)
 	}
 }
 
-/* Method of of VifmJob that frees associated resources.  Doesn't return
+/* Method of VifmJob that frees associated resources.  Doesn't return
  * anything. */
 static int
 VLUA_API(vifmjob_gc)(lua_State *lua)
@@ -271,7 +271,7 @@ VLUA_API(vifmjob_gc)(lua_State *lua)
 	return 0;
 }
 
-/* Method of of VifmJob that waits for the job to finish.  Raises an error if
+/* Method of VifmJob that waits for the job to finish.  Raises an error if
  * waiting has failed.  Doesn't return anything. */
 static int
 VLUA_API(vifmjob_wait)(lua_State *lua)
@@ -314,7 +314,7 @@ VLUA_API(vifmjob_wait)(lua_State *lua)
 	return 0;
 }
 
-/* Method of of VifmJob that retrieves exit code of the job.  Waits for the job
+/* Method of VifmJob that retrieves exit code of the job.  Waits for the job
  * to finish if it hasn't already.  Raises an error if waiting has failed.
  * Returns an integer representing the exit code. */
 static int
