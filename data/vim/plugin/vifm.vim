@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2024 October 23
+" Last Change: 2024 October 25
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -313,7 +313,7 @@ function! s:OpenFiles(editcmd, flist, opentype) abort
 
 		let opened_bufnrs[bufnr(file)] = 1
 		if editcmd == 'edit' && len(flist) > 1
-			execute 'argadd' file
+			execute 'argadd' fnameescape(file)
 		endif
 	endfor
 
