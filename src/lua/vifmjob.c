@@ -54,6 +54,7 @@ vifm_job_t;
 static int VLUA_API(vifmjob_gc)(lua_State *lua);
 static int VLUA_API(vifmjob_wait)(lua_State *lua);
 static int VLUA_API(vifmjob_exitcode)(lua_State *lua);
+static int VLUA_API(vifmjob_pid)(lua_State *lua);
 static int VLUA_API(vifmjob_stdin)(lua_State *lua);
 static int VLUA_API(vifmjob_stdout)(lua_State *lua);
 static int VLUA_API(vifmjob_errors)(lua_State *lua);
@@ -66,6 +67,7 @@ static int VLUA_IMPL(jobstream_closef)(lua_State *lua);
 VLUA_DECLARE_SAFE(vifmjob_gc);
 VLUA_DECLARE_SAFE(vifmjob_wait);
 VLUA_DECLARE_SAFE(vifmjob_exitcode);
+VLUA_DECLARE_SAFE(vifmjob_pid);
 VLUA_DECLARE_SAFE(vifmjob_stdin);
 VLUA_DECLARE_SAFE(vifmjob_stdout);
 VLUA_DECLARE_SAFE(vifmjob_errors);
@@ -75,6 +77,7 @@ static const luaL_Reg vifmjob_methods[] = {
 	{ "__gc",     VLUA_REF(vifmjob_gc)       },
 	{ "wait",     VLUA_REF(vifmjob_wait)     },
 	{ "exitcode", VLUA_REF(vifmjob_exitcode) },
+	{ "pid",      VLUA_REF(vifmjob_pid)      },
 	{ "stdin",    VLUA_REF(vifmjob_stdin)    },
 	{ "stdout",   VLUA_REF(vifmjob_stdout)   },
 	{ "errors",   VLUA_REF(vifmjob_errors)   },
@@ -332,6 +335,16 @@ VLUA_API(vifmjob_exitcode)(lua_State *lua)
 	}
 
 	lua_pushinteger(lua, exit_code);
+	return 1;
+}
+
+/* Method of VifmJob that retrieves process ID of the job.  Returns an
+ * integer representing the ID. */
+static int
+VLUA_API(vifmjob_pid)(lua_State *lua)
+{
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+	lua_pushinteger(lua, vifm_job->job->pid);
 	return 1;
 }
 

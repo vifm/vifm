@@ -717,6 +717,7 @@ const char *tags[] = {
 	"vifm-l_VifmJob",
 	"vifm-l_VifmJob:errors()",
 	"vifm-l_VifmJob:exitcode()",
+	"vifm-l_VifmJob:pid()",
 	"vifm-l_VifmJob:stdin()",
 	"vifm-l_VifmJob:stdout()",
 	"vifm-l_VifmJob:wait()",

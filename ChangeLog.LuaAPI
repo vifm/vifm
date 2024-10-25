@@ -32,6 +32,8 @@ documented in the regular ChangeLog.
 	redirected (if it was redirected, i.e. original output wasn't connected to
 	a TTY or character device on Windows).  Thanks to gruvw.
 
+	Added VifmJob:pid() to retrieve process ID of the job.  Thanks to PRESFIL.
+
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 
 	Fixed jobs created via vifm.startjob() being displayed with "UNKNOWN" for
