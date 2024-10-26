@@ -7,7 +7,7 @@ documented in the regular ChangeLog.
 
 0.13 to current
 
-	Upgraded Lua from 5.4.4 to 5.4.6.
+	Upgraded Lua from 5.4.4 to 5.4.7.
 
 	Deprecated VifmView.currententry field in favour of VifmView.cursor.pos.
 	Patch by filterfalse.
@@ -31,6 +31,8 @@ documented in the regular ChangeLog.
 	Added vifm.stdout() to return stream to which Vifm's output was
 	redirected (if it was redirected, i.e. original output wasn't connected to
 	a TTY or character device on Windows).  Thanks to gruvw.
+
+	Added VifmJob:pid() to retrieve process ID of the job.  Thanks to PRESFIL.
 
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 

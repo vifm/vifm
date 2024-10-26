@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Mar 11
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Oct 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1229,6 +1229,12 @@ Return:~
 
 Raises an error:~
   If waiting has failed.
+
+VifmJob:pid()                                  *vifm-l_VifmJob:pid()*
+Retrieves process ID of a command that is (or was) associated with the job.
+
+Return:~
+  Returns an integer that represents the ID.
 
 VifmJob:stdin()                                *vifm-l_VifmJob:stdin()*
 Retrieves stream associated with standard input of the job.

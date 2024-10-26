@@ -2,7 +2,8 @@
 
 #include <unistd.h> /* usleep() */
 
-#include <stdlib.h> /* getenv() */
+#include <stdlib.h> /* free() getenv() */
+#include <string.h> /* strdup() */
 
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
@@ -260,6 +261,25 @@ TEST(vifmjob_onexit_bad)
 
 	assert_string_ends_with(": attempt to call a nil value (global 'fail_here')",
 			ui_sb_last());
+}
+
+TEST(vifmjob_pid_works)
+{
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = 'echo' }");
+	GLUA_EQ(vlua, "number", "print(type(job:pid()))");
+}
+
+TEST(vifmjob_pid_is_correct, IF(not_windows))
+{
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = 'echo $$' }"
+	                  "out = job:stdout():lines()()"
+	                  "job:wait()");
+
+	assert_success(vlua_run_string(vlua, "print(job:pid())"));
+	char *pid = strdup(ui_sb_last());
+
+	GLUA_EQ(vlua, pid, "print(out)");
+	free(pid);
 }
 
 static void
