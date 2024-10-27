@@ -4,6 +4,7 @@
 
 #include <stdlib.h> /* free() getenv() */
 #include <string.h> /* strdup() */
+#include <time.h> /* time() */
 
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
@@ -280,6 +281,24 @@ TEST(vifmjob_pid_is_correct, IF(not_windows))
 
 	GLUA_EQ(vlua, pid, "print(out)");
 	free(pid);
+}
+
+TEST(vifmjob_terminate_after_finish)
+{
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = 'echo' }"
+	                  "job:wait()");
+	GLUA_EQ(vlua, "true", "print(job:terminate() == nil)");
+}
+
+TEST(vifmjob_terminate_running)
+{
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = 'sleep 10' }");
+	GLUA_EQ(vlua, "true", "print(job:terminate() == nil)");
+
+	time_t t1 = time(NULL);
+	GLUA_EQ(vlua, "", "job:wait()");
+	time_t t2 = time(NULL);
+	assert_true(t2 - t1 < 10);
 }
 
 static void

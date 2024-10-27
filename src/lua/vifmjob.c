@@ -58,6 +58,7 @@ static int VLUA_API(vifmjob_pid)(lua_State *lua);
 static int VLUA_API(vifmjob_stdin)(lua_State *lua);
 static int VLUA_API(vifmjob_stdout)(lua_State *lua);
 static int VLUA_API(vifmjob_errors)(lua_State *lua);
+static int VLUA_API(vifmjob_terminate)(lua_State *lua);
 static void job_exit_cb(struct bg_job_t *job, void *arg);
 static job_stream_t * job_stream_open(lua_State *lua, bg_job_t *job,
 		FILE *stream);
@@ -71,17 +72,19 @@ VLUA_DECLARE_SAFE(vifmjob_pid);
 VLUA_DECLARE_SAFE(vifmjob_stdin);
 VLUA_DECLARE_SAFE(vifmjob_stdout);
 VLUA_DECLARE_SAFE(vifmjob_errors);
+VLUA_DECLARE_SAFE(vifmjob_terminate);
 
 /* Methods of VifmJob type. */
 static const luaL_Reg vifmjob_methods[] = {
-	{ "__gc",     VLUA_REF(vifmjob_gc)       },
-	{ "wait",     VLUA_REF(vifmjob_wait)     },
-	{ "exitcode", VLUA_REF(vifmjob_exitcode) },
-	{ "pid",      VLUA_REF(vifmjob_pid)      },
-	{ "stdin",    VLUA_REF(vifmjob_stdin)    },
-	{ "stdout",   VLUA_REF(vifmjob_stdout)   },
-	{ "errors",   VLUA_REF(vifmjob_errors)   },
-	{ NULL,       NULL                       }
+	{ "__gc",      VLUA_REF(vifmjob_gc)        },
+	{ "wait",      VLUA_REF(vifmjob_wait)      },
+	{ "exitcode",  VLUA_REF(vifmjob_exitcode)  },
+	{ "pid",       VLUA_REF(vifmjob_pid)       },
+	{ "stdin",     VLUA_REF(vifmjob_stdin)     },
+	{ "stdout",    VLUA_REF(vifmjob_stdout)    },
+	{ "errors",    VLUA_REF(vifmjob_errors)    },
+	{ "terminate", VLUA_REF(vifmjob_terminate) },
+	{ NULL,        NULL                        }
 };
 
 /*
@@ -427,6 +430,15 @@ VLUA_API(vifmjob_errors)(lua_State *lua)
 		free(errors);
 	}
 	return 1;
+}
+
+/* Method of VifmJob that forcefully stops the job.  Returns nothing. */
+static int
+VLUA_API(vifmjob_terminate)(lua_State *lua)
+{
+	vifm_job_t *vifm_job = luaL_checkudata(lua, 1, "VifmJob");
+	bg_job_terminate(vifm_job->job);
+	return 0;
 }
 
 /* Creates a job stream.  Returns a pointer to new user data. */

@@ -720,6 +720,7 @@ const char *tags[] = {
 	"vifm-l_VifmJob:pid()",
 	"vifm-l_VifmJob:stdin()",
 	"vifm-l_VifmJob:stdout()",
+	"vifm-l_VifmJob:terminate()",
 	"vifm-l_VifmJob:wait()",
 	"vifm-l_VifmTab",
 	"vifm-l_VifmTab:getlayout()",
