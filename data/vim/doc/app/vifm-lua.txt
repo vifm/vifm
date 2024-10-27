@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Oct 25
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Oct 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1256,6 +1256,10 @@ Return:~
 Raises an error:~
   If the job wasn't started with "r" I/O mode (see |vifm-l_vifm.startjob()|).
   If output stream object is already closed.
+
+VifmJob:terminate()                            *vifm-l_VifmJob:terminate()*
+Terminates a process without giving it a chance to respond.  Does nothing if
+the job has already stopped.
 
 VifmJob:errors()                               *vifm-l_VifmJob:errors()*
 Retrieves data collected from error stream of the job.  It's accumulated
