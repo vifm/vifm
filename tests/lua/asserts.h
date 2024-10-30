@@ -11,11 +11,12 @@
  * header.
  *
  * Macros name structure:
- *  - GLUA_   prefix means Lua code execution should succeed (Good)
- *  - BLUA_   prefix means Lua code execution should fail (Bad)
- *  - _EQ     suffix checks output match exactly (use "" for no output)
- *  - _STARTS suffix checks that output starts with a string
- *  - _ENDS   suffix checks that output ends with a string
+ *  - GLUA_     prefix means Lua code execution should succeed (Good)
+ *  - BLUA_     prefix means Lua code execution should fail (Bad)
+ *  - _EQ       suffix checks output match exactly (use "" for no output)
+ *  - _STARTS   suffix checks that output starts with a string
+ *  - _CONTAINS suffix checks that output contains a string
+ *  - _ENDS     suffix checks that output ends with a string
  */
 
 #define GLUA_EQ(vlua, expected_output, code) \
@@ -33,6 +34,15 @@
 		ui_sb_msg(""); \
 		assert_success(vlua_run_string(vlua, code)); \
 		assert_string_starts_with(expected_prefix, ui_sb_last()); \
+	} \
+	while(0)
+
+#define GLUA_CONTAINS(vlua, expected_substr, code) \
+	do \
+	{ \
+		ui_sb_msg(""); \
+		assert_success(vlua_run_string(vlua, code)); \
+		assert_string_contains(expected_substr, ui_sb_last()); \
 	} \
 	while(0)
 
@@ -60,6 +70,15 @@
 		ui_sb_msg(""); \
 		assert_failure(vlua_run_string(vlua, code)); \
 		assert_string_starts_with(expected_prefix, ui_sb_last()); \
+	} \
+	while(0)
+
+#define BLUA_CONTAINS(vlua, expected_substr, code) \
+	do \
+	{ \
+		ui_sb_msg(""); \
+		assert_failure(vlua_run_string(vlua, code)); \
+		assert_string_contains(expected_substr, ui_sb_last()); \
 	} \
 	while(0)
 

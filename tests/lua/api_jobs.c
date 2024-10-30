@@ -6,6 +6,7 @@
 #include <string.h> /* strdup() */
 #include <time.h> /* time() */
 
+#include "../../src/compat/os.h"
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
@@ -299,6 +300,33 @@ TEST(vifmjob_terminate_running)
 	GLUA_EQ(vlua, "", "job:wait()");
 	time_t t2 = time(NULL);
 	assert_true(t2 - t1 < 10);
+}
+
+TEST(vifmjob_good_pwd)
+{
+	assert_success(os_chdir(SANDBOX_PATH));
+	create_dir("sub");
+#ifndef _WIN32
+	GLUA_ENDS(vlua, "sub",
+			"job = vifm.startjob { cmd = 'pwd', pwd = 'sub' }"
+			"print(job:stdout():lines()())");
+#else
+	GLUA_CONTAINS(vlua, "sub",
+			"job = vifm.startjob { cmd = 'echo %CD%', pwd = 'sub' }"
+			"print(job:stdout():lines()())");
+#endif
+
+	/* Removal might require the job to stop. */
+	GLUA_EQ(vlua, "", "job:wait()");
+
+	remove_dir("sub");
+}
+
+TEST(vifmjob_bad_pwd_causes_error)
+{
+	BLUA_ENDS(vlua, ": Failed to start a job",
+			"job = vifm.startjob { cmd = 'echo', pwd = 'no-such-path' }"
+			"print(job:exitcode())");
 }
 
 static void

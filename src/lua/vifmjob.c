@@ -166,9 +166,15 @@ VLUA_API(vifmjob_new)(lua_State *lua)
 		descr = lua_tostring(lua, -1);
 	}
 
+	const char *pwd = NULL;
+	if(vlua_cmn_check_opt_field(lua, 1, "pwd", LUA_TSTRING))
+	{
+		pwd = lua_tostring(lua, -1);
+	}
+
 	int with_on_exit = vlua_cmn_check_opt_field(lua, 1, "onexit", LUA_TFUNCTION);
 
-	bg_job_t *job = bg_run_external_job(cmd, flags, descr, /*pwd=*/NULL);
+	bg_job_t *job = bg_run_external_job(cmd, flags, descr, pwd);
 	if(job == NULL)
 	{
 		return luaL_error(lua, "%s", "Failed to start a job");
