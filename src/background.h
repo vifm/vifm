@@ -149,10 +149,11 @@ int bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 /* Creates background job running external command which does not interact with
  * the user and is detached from controlling terminal.  Upon creation the job
  * has one extra use, which needs to be decremented for it to be freed.  The
- * optional description is for the job bar and can be NULL.  Returns the job or
- * NULL on error. */
+ * optional description is for the job bar and can be NULL.  descr and pwd can
+ * be NULL, non-NULL pwd should point to a directory that can be opened.
+ * Returns the job or NULL on error. */
 bg_job_t * bg_run_external_job(const char cmd[], BgJobFlags flags,
-		const char descr[]);
+		const char descr[], const char pwd[]);
 
 struct cancellation_t;
 

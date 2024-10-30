@@ -729,7 +729,8 @@ view_external(vcache_entry_t *centry, MacroFlags flags, const char **error)
 		bg_flags |= BJF_KEEP_IN_FG;
 	}
 
-	centry->job = bg_run_external_job(centry->viewer, bg_flags, /*descr=*/NULL);
+	centry->job =
+		bg_run_external_job(centry->viewer, bg_flags, /*descr=*/NULL, /*pwd=*/NULL);
 	if(centry->job == NULL)
 	{
 		*error = "Failed to start a viewer";

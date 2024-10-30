@@ -9,6 +9,7 @@
 #include <test-utils.h>
 
 #include "../../src/compat/pthread.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/var.h"
 #include "../../src/engine/variables.h"
 #include "../../src/utils/cancellation.h"
@@ -48,8 +49,8 @@ TEARDOWN()
  * are no other jobs which can slow down receiving errors from the process. */
 TEST(capture_error_of_external_command)
 {
-	bg_job_t *job =
-		bg_run_external_job("echo there 1>&2", BJF_CAPTURE_OUT, /*descr=*/NULL);
+	bg_job_t *job = bg_run_external_job("echo there 1>&2", BJF_CAPTURE_OUT,
+			/*descr=*/NULL, /*pwd=*/NULL);
 	assert_non_null(job);
 	assert_non_null(job->output);
 
@@ -176,8 +177,8 @@ TEST(explicitly_wait_for_a_job)
 
 TEST(create_a_job_explicitly)
 {
-	bg_job_t *job =
-		bg_run_external_job("exit 5", BJF_CAPTURE_OUT, /*descr=*/NULL);
+	bg_job_t *job = bg_run_external_job("exit 5", BJF_CAPTURE_OUT, /*descr=*/NULL,
+			/*pwd=*/NULL);
 	assert_non_null(job);
 
 	assert_success(bg_job_wait(job));
@@ -188,8 +189,8 @@ TEST(create_a_job_explicitly)
 
 TEST(capture_output_of_external_command)
 {
-	bg_job_t *job =
-		bg_run_external_job("echo there", BJF_CAPTURE_OUT, /*descr=*/NULL);
+	bg_job_t *job = bg_run_external_job("echo there", BJF_CAPTURE_OUT,
+			/*descr=*/NULL, /*pwd=*/NULL);
 	assert_non_null(job);
 	assert_non_null(job->output);
 
@@ -207,7 +208,8 @@ TEST(capture_output_of_external_command)
 
 TEST(jobs_exit_cb_is_called)
 {
-	bg_job_t *job = bg_run_external_job("echo there", BJF_NONE, /*descr=*/NULL);
+	bg_job_t *job = bg_run_external_job("echo there", BJF_NONE, /*descr=*/NULL,
+			/*pwd=*/NULL);
 	assert_non_null(job);
 
 	int called = 0;
@@ -237,10 +239,42 @@ on_job_exit(struct bg_job_t *job, void *data)
 	*called = 1;
 }
 
+TEST(bgjob_good_pwd)
+{
+	assert_success(os_chdir(SANDBOX_PATH));
+	create_dir("sub");
+#ifndef _WIN32
+	const char *cmd = "pwd";
+#else
+	const char *cmd = "echo %CD%";
+#endif
+	bg_job_t *job =
+		bg_run_external_job(cmd, BJF_CAPTURE_OUT, /*descr=*/NULL, "sub");
+
+	int nlines;
+	char **lines = read_stream_lines(job->output, &nlines, 0, NULL, NULL);
+	assert_int_equal(1, nlines);
+	assert_string_contains("sub", lines[0]);
+	free_string_array(lines, nlines);
+
+	/* Removal might require the job to stop. */
+	assert_success(bg_job_wait(job));
+	bg_job_decref(job);
+
+	remove_dir("sub");
+}
+
+TEST(bgjob_bad_pwd_causes_error)
+{
+	bg_job_t *job = bg_run_external_job("echo", BJF_CAPTURE_OUT, /*descr=*/NULL,
+			"no-such-path");
+	assert_null(job);
+}
+
 TEST(supply_input_to_external_command, IF(have_cat))
 {
 	bg_job_t *job = bg_run_external_job("cat", BJF_CAPTURE_OUT | BJF_SUPPLY_INPUT,
-			/*descr=*/NULL);
+			/*descr=*/NULL, /*pwd=*/NULL);
 	assert_non_null(job);
 	assert_non_null(job->input);
 	assert_non_null(job->output);
