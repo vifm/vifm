@@ -40,6 +40,7 @@
 #include <string.h> /* strdup() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "compat/pthread.h"
 #include "engine/var.h"
 #include "engine/variables.h"
@@ -126,8 +127,8 @@ static void rip_children(void);
 static void rip_child(pid_t pid, int status);
 static void report_error_msg(const char title[], const char text[]);
 #endif
-static bg_job_t * launch_external(const char cmd[], BgJobFlags flags,
-		ShellRequester by);
+static bg_job_t * launch_external(const char cmd[], const char pwd[],
+		BgJobFlags flags, ShellRequester by);
 #ifdef _WIN32
 static int finish_startup_info(STARTUPINFOW *startup);
 #endif
@@ -946,7 +947,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 	}
 
 	const BgJobFlags flags = (input == NULL ? BJF_NONE : BJF_SUPPLY_INPUT);
-	bg_job_t *job = launch_external(command, flags, by);
+	bg_job_t *job = launch_external(command, /*pwd=*/NULL, flags, by);
 	free(command);
 	if(job == NULL)
 	{
@@ -970,9 +971,10 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 }
 
 bg_job_t *
-bg_run_external_job(const char cmd[], BgJobFlags flags, const char descr[])
+bg_run_external_job(const char cmd[], BgJobFlags flags, const char descr[],
+		const char pwd[])
 {
-	bg_job_t *job = launch_external(cmd, flags, SHELL_BY_APP);
+	bg_job_t *job = launch_external(cmd, pwd, flags, SHELL_BY_APP);
 	if(job == NULL)
 	{
 		return NULL;
@@ -996,9 +998,11 @@ bg_run_external_job(const char cmd[], BgJobFlags flags, const char descr[])
 	return job;
 }
 
-/* Starts a new external command job.  Returns the new job or NULL on error. */
+/* Starts a new external command job.  pwd can be NULL, otherwise it should be
+ * a valid path.  Returns the new job or NULL on error. */
 static bg_job_t *
-launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
+launch_external(const char cmd[], const char pwd[], BgJobFlags flags,
+		ShellRequester by)
 {
 	/* TODO: simplify this function (launch_external()) somehow, maybe split in
 	 *       two. */
@@ -1019,6 +1023,13 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	if(!merge_streams && pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating error pipe");
+		return NULL;
+	}
+
+	if(pwd != NULL && (!is_dir(pwd) || os_access(pwd, X_OK) != 0))
+	{
+		/* CreateProcessW() on Windows fails in this case resulting in the function
+		 * returning NULL, do the same here for consistent behaviour. */
 		return NULL;
 	}
 
@@ -1066,6 +1077,12 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	if(pid == 0)
 	{
 		extern char **environ;
+
+		if(pwd != NULL && chdir(pwd) != 0)
+		{
+			perror("chdir");
+			_Exit(EXIT_FAILURE);
+		}
 
 		int stderr_pipe = (merge_streams ? output_pipe[1] : error_pipe[1]);
 
@@ -1177,7 +1194,6 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	};
 	PROCESS_INFORMATION pinfo;
 	char *sh_cmd;
-	wchar_t *wide_cmd;
 
 	HANDLE herr = INVALID_HANDLE_VALUE;
 	if(!merge_streams && !CreatePipe(&herr, &startup.hStdError, NULL, 16*1024))
@@ -1228,10 +1244,18 @@ launch_external(const char cmd[], BgJobFlags flags, ShellRequester by)
 	finish_startup_info(&startup);
 	sh_cmd = win_make_sh_cmd(cmd, by);
 
-	wide_cmd = to_wide(sh_cmd);
-	int started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, CREATE_SUSPENDED,
-			NULL, NULL, &startup, &pinfo);
+	wchar_t *wide_cmd = to_wide(sh_cmd);
+	wchar_t *wide_pwd = (pwd != NULL ? to_wide(pwd) : NULL);
+
+	int started = 0;
+	if(wide_cmd != NULL && (pwd == NULL || wide_pwd != NULL))
+	{
+		started = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, CREATE_SUSPENDED,
+				NULL, wide_pwd, &startup, &pinfo);
+	}
+
 	free(wide_cmd);
+	free(wide_pwd);
 
 	CloseHandle(startup.hStdInput);
 	CloseHandle(startup.hStdOutput);

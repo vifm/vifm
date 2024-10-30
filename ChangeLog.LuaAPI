@@ -38,6 +38,9 @@ documented in the regular ChangeLog.
 	Added VifmJob:terminate() to forcefully finish a job.  Thanks to The
 	Cyberduck.
 
+	Added "pwd" parameter to vifm.startjob() that specifies initial directory
+	of the process.  Thanks to PRESFIL.
+
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 
 	Fixed jobs created via vifm.startjob() being displayed with "UNKNOWN" for

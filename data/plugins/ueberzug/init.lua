@@ -96,6 +96,7 @@ local function get_pipe()
         local uberzug = vifm.startjob {
             cmd = cmd,
             iomode = 'w',
+            pwd = '/',
             onexit = function()
                 pipe_storage = nil
                 vifm.errordialog('ueberzug plugin',

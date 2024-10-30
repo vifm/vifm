@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Oct 27
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Oct 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -710,6 +710,8 @@ Possible fields of {job}:
    The handler is {delayed}.
  - "mergestreams" (boolean) (default: false)
    Whether to merge error stream of the command with its output stream.
+ - "pwd" (string) (default: ".")
+   Working directory of the new process.
  - "visible" (boolean) (default: false)
    Whether to show this job on a job bar.
 
@@ -721,6 +723,7 @@ Return:~
 
 Raises an error:~
   If "iomode" has incorrect value.
+  If "pwd" doesn't specify an existing path.
 
 vifm.stdout()                                  *vifm-l_vifm.stdout()*
 Retrieves stream to which Vifm's standard stream was redirected.

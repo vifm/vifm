@@ -382,6 +382,10 @@
 
 	Fixed Escape being handled as Ctrl+C in prompts (suppresses future errors).
 
+	Fixed outdated documentation on the behaviour of n/N when 'hlsearch' is
+	enabled since the introduction of highlighting of search matches.  Thanks
+	to James Dietrich.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
