@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 October 9
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 October 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -333,11 +333,13 @@ as local filter and other things detailed in the description of
     go to the previous file matching last search pattern.  Takes last search
     direction into account.
 
-If |vifm-'hlsearch'| option is set, hitting n/N to perform search and go to the
-first matching item resets current selection in normal mode.  It is not the
-case if search was already performed on files in the directory, thus selection
-is not reset after clearing selection with escape key and hitting n/N key
-again.
+If |vifm-'hlsearch'| option is set, hitting n/N to perform a search and go to
+a matching item can reset existing selection in normal mode.  It happens when
+there are no prior search results (i.e., no files with highlighting of the
+matched part), otherwise the selection is left as is.  Resetting search
+matches in any way (like running |vifm-:nohlsearch| or pressing |vifm-Escape|)
+will force the search next time n/N is pressed and cause matching files to be
+selected.
 
 See also |vifm-regexp|.
 

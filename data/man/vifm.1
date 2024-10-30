@@ -1,4 +1,4 @@
-.TH VIFM 1 "9 October 2024" "vifm 0.13"
+.TH VIFM 1 "30 October 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -393,10 +393,12 @@ into account.
 go to the previous file matching last search pattern.  Takes last search
 direction into account.
 .TP
-If 'hlsearch' option is set, hitting n/N to perform search and go to the first \
-matching item resets current selection in normal mode.  It is not the case if \
-search was already performed on files in the directory, thus selection is not \
-reset after clearing selection with escape key and hitting n/N key again.
+If 'hlsearch' option is set, hitting n/N to perform a search and go to \
+a matching item can reset existing selection in normal mode.  It happens when \
+there are no prior search results (i.e., no files with highlighting of the \
+matched part), otherwise the selection is left as is.  Resetting search \
+matches in any way (like running :nohlsearch or pressing Escape) will force \
+the search next time n/N is pressed and cause matching files to be selected.
 .LP
 See also "Regular expressions" section.
 
