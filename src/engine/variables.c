@@ -106,8 +106,8 @@ static void complete_envvars(const char var[], const char **start);
 static void complete_builtinvars(const char var[], const char **start);
 
 static int initialized;
-static envvar_t *vars;
-static size_t nvars;
+static envvar_t *env_vars;
+static size_t env_var_count;
 /* List of builtin variables. */
 static builtinvar_t *builtin_vars;
 /* Number of builtin variables. */
@@ -119,7 +119,7 @@ init_variables(void)
 	int env_count;
 	char **env_lst;
 
-	if(nvars > 0)
+	if(env_var_count > 0)
 	{
 		clear_envvars();
 	}
@@ -130,8 +130,8 @@ init_variables(void)
 		int i;
 
 		/* Allocate memory for environment variables. */
-		vars = reallocarray(NULL, env_count, sizeof(*vars));
-		assert(vars != NULL && "Failed to allocate memory for env vars.");
+		env_vars = reallocarray(NULL, env_count, sizeof(*env_vars));
+		assert(env_vars != NULL && "Failed to allocate memory for env vars.");
 
 		/* Initialize variable list. */
 		for(i = 0; i < env_count; ++i)
@@ -212,25 +212,25 @@ clear_envvars(void)
 	assert(initialized);
 
 	/* Free memory. */
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name == NULL)
+		if(env_vars[i].name == NULL)
 			continue;
 
-		if(vars[i].from_parent)
+		if(env_vars[i].from_parent)
 		{
-			set_envvar(vars[i].name, vars[i].initial);
+			set_envvar(env_vars[i].name, env_vars[i].initial);
 		}
 		else
 		{
-			env_remove(vars[i].name);
+			env_remove(env_vars[i].name);
 		}
-		free_record(&vars[i]);
+		free_record(&env_vars[i]);
 	}
 
-	nvars = 0;
-	free(vars);
-	vars = NULL;
+	env_var_count = 0;
+	free(env_vars);
+	env_vars = NULL;
 }
 
 int
@@ -583,23 +583,23 @@ get_record(const char *name)
 	size_t i;
 
 	/* Search for existing variable. */
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name == NULL)
-			p = &vars[i];
-		else if(strcmp(vars[i].name, name) == 0)
-			return &vars[i];
+		if(env_vars[i].name == NULL)
+			p = &env_vars[i];
+		else if(strcmp(env_vars[i].name, name) == 0)
+			return &env_vars[i];
 	}
 
 	if(p == NULL)
 	{
 		/* Try to reallocate list of variables. */
-		p = realloc(vars, sizeof(*vars)*(nvars + 1U));
+		p = realloc(env_vars, sizeof(*env_vars)*(env_var_count + 1U));
 		if(p == NULL)
 			return NULL;
-		vars = p;
-		p = &vars[nvars];
-		++nvars;
+		env_vars = p;
+		p = &env_vars[env_var_count];
+		++env_var_count;
 	}
 
 	/* Initialize new record. */
@@ -708,10 +708,10 @@ static envvar_t *
 find_record(const char *name)
 {
 	size_t i;
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name != NULL && stroscmp(vars[i].name, name) == 0)
-			return &vars[i];
+		if(env_vars[i].name != NULL && stroscmp(env_vars[i].name, name) == 0)
+			return &env_vars[i];
 	}
 	return NULL;
 }
@@ -767,14 +767,14 @@ complete_envvars(const char var[], const char **start)
 
 	/* Add all variables that start with given beginning. */
 	len = strlen(var);
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name == NULL)
+		if(env_vars[i].name == NULL)
 			continue;
-		if(vars[i].removed)
+		if(env_vars[i].removed)
 			continue;
-		if(strnoscmp(vars[i].name, var, len) == 0)
-			vle_compl_add_match(vars[i].name, vars[i].val);
+		if(strnoscmp(env_vars[i].name, var, len) == 0)
+			vle_compl_add_match(env_vars[i].name, env_vars[i].val);
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(var);
