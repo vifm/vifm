@@ -43,6 +43,7 @@
 typedef enum
 {
 	VT_ENVVAR,        /* Environment variable. */
+	VT_GVAR,          /* Global variable. */
 	VT_ANY_OPTION,    /* Global and local options (if local exists). */
 	VT_GLOBAL_OPTION, /* Global option. */
 	VT_LOCAL_OPTION,  /* Local option. */
@@ -59,13 +60,13 @@ typedef enum
 }
 VariableOperation;
 
-/* Description of a builtin variable. */
+/* Description of a variable. */
 typedef struct
 {
-	char *name; /* Name of the variable (including "v:" prefix). */
+	char *name; /* Name of the variable (including "[gv]:" prefix). */
 	var_t val;  /* Current value of the variable. */
 }
-builtinvar_t;
+var_info_t;
 
 typedef struct
 {
@@ -83,7 +84,7 @@ const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 static void init_var(const char name[], const char value[]);
-static void clear_builtinvars(void);
+static void clear_internal_vars(void);
 static int extract_name(const char **in, VariableType *type, size_t buf_len,
 		char buf[]);
 static int extract_op(const char **in, VariableOperation *vo);
@@ -91,10 +92,11 @@ static int parse_name(const char **in, const char first[], const char other[],
 		size_t buf_len, char buf[]);
 static int is_valid_op(const char name[], VariableType vt,
 		VariableOperation vo);
-static int perform_op(const char name[], VariableType vt,
-		VariableOperation vo, const char value[]);
+static int perform_op(const char name[], VariableType vt, VariableOperation vo,
+		var_t val, const char value[]);
 static void append_envvar(const char *name, const char *val);
 static void set_envvar(const char *name, const char *val);
+static int append_internal_var(var_info_t *var, var_t val);
 static int perform_opt_op(const char name[], VariableType vt,
 		VariableOperation vo, const char value[]);
 static envvar_t * get_record(const char *name);
@@ -103,15 +105,16 @@ static envvar_t * find_record(const char *name);
 static void free_record(envvar_t *record);
 static void clear_record(envvar_t *record);
 static void complete_envvars(const char var[], const char **start);
-static void complete_builtinvars(const char var[], const char **start);
+static void complete_internal_vars(const char var[], const char **start);
+static var_info_t * find_internal_var(const char varname[], int create);
 
 static int initialized;
-static envvar_t *vars;
-static size_t nvars;
-/* List of builtin variables. */
-static builtinvar_t *builtin_vars;
-/* Number of builtin variables. */
-static size_t nbuiltins;
+static envvar_t *env_vars;
+static size_t env_var_count;
+/* List of internal variables. */
+static var_info_t *internal_vars;
+/* Number of internal variables. */
+static size_t internal_var_count;
 
 void
 init_variables(void)
@@ -119,7 +122,7 @@ init_variables(void)
 	int env_count;
 	char **env_lst;
 
-	if(nvars > 0)
+	if(env_var_count > 0)
 	{
 		clear_envvars();
 	}
@@ -130,8 +133,8 @@ init_variables(void)
 		int i;
 
 		/* Allocate memory for environment variables. */
-		vars = reallocarray(NULL, env_count, sizeof(*vars));
-		assert(vars != NULL && "Failed to allocate memory for env vars.");
+		env_vars = reallocarray(NULL, env_count, sizeof(*env_vars));
+		assert(env_vars != NULL && "Failed to allocate memory for env vars.");
 
 		/* Initialize variable list. */
 		for(i = 0; i < env_count; ++i)
@@ -186,23 +189,23 @@ clear_variables(void)
 {
 	assert(initialized);
 
-	clear_builtinvars();
+	clear_internal_vars();
 	clear_envvars();
 }
 
-/* Clears the list of builtin variables. */
+/* Clears the list of internal variables. */
 static void
-clear_builtinvars(void)
+clear_internal_vars(void)
 {
 	size_t i;
-	for(i = 0U; i < nbuiltins; ++i)
+	for(i = 0U; i < internal_var_count; ++i)
 	{
-		free(builtin_vars[i].name);
-		var_free(builtin_vars[i].val);
+		free(internal_vars[i].name);
+		var_free(internal_vars[i].val);
 	}
-	nbuiltins = 0U;
-	free(builtin_vars);
-	builtin_vars = NULL;
+	internal_var_count = 0U;
+	free(internal_vars);
+	internal_vars = NULL;
 }
 
 void
@@ -212,25 +215,25 @@ clear_envvars(void)
 	assert(initialized);
 
 	/* Free memory. */
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name == NULL)
+		if(env_vars[i].name == NULL)
 			continue;
 
-		if(vars[i].from_parent)
+		if(env_vars[i].from_parent)
 		{
-			set_envvar(vars[i].name, vars[i].initial);
+			set_envvar(env_vars[i].name, env_vars[i].initial);
 		}
 		else
 		{
-			env_remove(vars[i].name);
+			env_remove(env_vars[i].name);
 		}
-		free_record(&vars[i]);
+		free_record(&env_vars[i]);
 	}
 
-	nvars = 0;
-	free(vars);
-	vars = NULL;
+	env_var_count = 0;
+	free(env_vars);
+	env_vars = NULL;
 }
 
 int
@@ -274,15 +277,21 @@ let_variables(const char cmd[])
 
 	if(!is_valid_op(name, type, op))
 	{
-		vle_tb_append_linef(vle_err, "Wrong variable type for this operation");
+		vle_tb_append_line(vle_err, "Wrong variable type for this operation");
 		goto fail;
 	}
 
 	str_val = var_to_str(result.value);
 
-	error = perform_op(name, type, op, str_val);
-
+	error = perform_op(name, type, op, result.value, str_val);
 	free(str_val);
+
+	if(error)
+	{
+		vle_tb_append_line(vle_err, "Failed to perform an operation");
+		goto fail;
+	}
+
 	var_free(result.value);
 	return error;
 
@@ -305,6 +314,14 @@ extract_name(const char **in, VariableType *type, size_t buf_len, char buf[])
 		error = (parse_name(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
 				buf_len, buf) != 0);
 		*type = VT_ENVVAR;
+	}
+	else if((*in)[0] == 'g' && (*in)[1] == ':')
+	{
+		*in += 2;
+		copy_str(buf, buf_len, "g:");
+		error = (parse_name(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
+				buf_len - 2, buf + 2) != 0);
+		*type = VT_GVAR;
 	}
 	else if(**in == '&')
 	{
@@ -416,6 +433,29 @@ is_valid_op(const char name[], VariableType vt, VariableOperation vo)
 		return (vo == VO_ASSIGN || vo == VO_APPEND);
 	}
 
+	if(vt == VT_GVAR)
+	{
+		var_info_t *var = find_internal_var(name, /*create=*/0);
+		if(var == NULL)
+		{
+			/* Let this error be handled somewhere else. */
+			return (vo == VO_ASSIGN);
+		}
+
+		switch(var->val.type)
+		{
+			case VTYPE_ERROR:
+				/* Unreachable. */
+				return 0;
+			case VTYPE_STRING:
+				return ONE_OF(vo, VO_ASSIGN, VO_APPEND);
+			case VTYPE_INT:
+				return ONE_OF(vo, VO_ASSIGN, VO_ADD, VO_SUB);
+		}
+		/* Unreachable. */
+		return 0;
+	}
+
 	opt = vle_opts_find(name, OPT_GLOBAL);
 	if(opt == NULL)
 	{
@@ -439,7 +479,7 @@ is_valid_op(const char name[], VariableType vt, VariableOperation vo)
 /* Performs operation on a value.  Returns zero on success, otherwise non-zero
  * is returned. */
 static int
-perform_op(const char name[], VariableType vt, VariableOperation vo,
+perform_op(const char name[], VariableType vt, VariableOperation vo, var_t val,
 		const char value[])
 {
 	if(vt == VT_ENVVAR)
@@ -454,6 +494,31 @@ perform_op(const char name[], VariableType vt, VariableOperation vo,
 			set_envvar(name, value);
 		}
 		return 0;
+	}
+
+	if(vt == VT_GVAR)
+	{
+		var_info_t *var = find_internal_var(name, vo == VO_ASSIGN);
+		switch(vo)
+		{
+			int a, b;
+
+			case VO_ASSIGN:
+				var_free(var->val);
+				var->val = var_clone(val);
+				return 0;
+			case VO_ADD:
+			case VO_SUB:
+				a = var_to_int(var->val);
+				b = var_to_int(val);
+				var_free(var->val);
+				var->val = var_from_int(vo == VO_ADD ? a + b : a - b);
+				return 0;
+			case VO_APPEND:
+				return append_internal_var(var, val);
+		}
+		/* Unreachable. */
+		return 1;
 	}
 
 	/* Update an option. */
@@ -526,6 +591,39 @@ set_envvar(const char *name, const char *val)
 	env_set(name, val);
 }
 
+/* Appends two variables as strings, updating LHS in place.  Returns zero on
+ * success. */
+static int
+append_internal_var(var_info_t *var, var_t val)
+{
+	char *current = var_to_str(var->val);
+	char *suffix = var_to_str(val);
+
+	if(current == NULL || suffix == NULL)
+	{
+		goto oom;
+	}
+
+	char *final = format_str("%s%s", current, suffix);
+	if(final == NULL)
+	{
+		goto oom;
+	}
+
+	var_free(var->val);
+	var->val = var_out_of_str(final);
+
+	free(current);
+	free(suffix);
+	return 0;
+
+oom:
+	vle_tb_append_line(vle_err, "Not enough memory");
+	free(current);
+	free(suffix);
+	return 1;
+}
+
 /* Performs operation on an option.  Returns zero on success, otherwise non-zero
  * is returned. */
 static int
@@ -583,23 +681,23 @@ get_record(const char *name)
 	size_t i;
 
 	/* Search for existing variable. */
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name == NULL)
-			p = &vars[i];
-		else if(strcmp(vars[i].name, name) == 0)
-			return &vars[i];
+		if(env_vars[i].name == NULL)
+			p = &env_vars[i];
+		else if(strcmp(env_vars[i].name, name) == 0)
+			return &env_vars[i];
 	}
 
 	if(p == NULL)
 	{
 		/* Try to reallocate list of variables. */
-		p = realloc(vars, sizeof(*vars)*(nvars + 1U));
+		p = realloc(env_vars, sizeof(*env_vars)*(env_var_count + 1U));
 		if(p == NULL)
 			return NULL;
-		vars = p;
-		p = &vars[nvars];
-		++nvars;
+		env_vars = p;
+		p = &env_vars[env_var_count];
+		++env_var_count;
 	}
 
 	/* Initialize new record. */
@@ -624,20 +722,33 @@ unlet_variables(const char cmd[])
 
 	while(*cmd != '\0')
 	{
-		envvar_t *record;
+		/* Options can't be removed, use this to mean "no value". */
+		VariableType type = VT_ANY_OPTION;
 
 		char name[VAR_NAME_MAX + 1];
-		char *p;
-		int envvar = 1;
+		char *p = name;
 
 		/* Check if it's environment variable. */
-		if(*cmd != '$')
-			envvar = 0;
-		else
+		if(*cmd == '$')
+		{
+			type = VT_ENVVAR;
 			cmd++;
+		}
+		else if(starts_with_lit(cmd, "g:"))
+		{
+			type = VT_GVAR;
+			*p++ = *cmd++;
+			*p++ = *cmd++;
+		}
+		else if(starts_with_lit(cmd, "v:"))
+		{
+			/* Parse the name, but don't set the type to get a sensible error message
+			 * about unsupported variable type. */
+			*p++ = *cmd++;
+			*p++ = *cmd++;
+		}
 
 		/* Copy variable name. */
-		p = name;
 		while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&
 				(size_t)(p - name) < sizeof(name) - 1)
 		{
@@ -654,8 +765,7 @@ unlet_variables(const char cmd[])
 
 		cmd = skip_whitespace(cmd);
 
-		/* Currently we support only environment variables. */
-		if(!envvar)
+		if(type == VT_ANY_OPTION)
 		{
 			vle_tb_append_linef(vle_err, "%s: %s", "Unsupported variable type", name);
 
@@ -673,19 +783,37 @@ unlet_variables(const char cmd[])
 			continue;
 		}
 
-		record = find_record(name);
-		if(record == NULL || record->removed)
+		if(type == VT_ENVVAR)
 		{
-			vle_tb_append_linef(vle_err, "%s: %s", "No such variable", name);
-			error++;
-			continue;
-		}
+			envvar_t *record = find_record(name);
+			if(record == NULL || record->removed)
+			{
+				vle_tb_append_linef(vle_err, "%s: %s", "No such variable", name);
+				error++;
+				continue;
+			}
 
-		if(record->from_parent)
-			record->removed = 1;
-		else
-			free_record(record);
-		env_remove(name);
+			if(record->from_parent)
+				record->removed = 1;
+			else
+				free_record(record);
+			env_remove(name);
+		}
+		else if(type == VT_GVAR)
+		{
+			var_info_t *var = find_internal_var(name, /*create=*/0);
+			if(var == NULL)
+			{
+				vle_tb_append_linef(vle_err, "%s: %s", "No such variable", name);
+				error++;
+				continue;
+			}
+
+			free(var->name);
+			var_free(var->val);
+			*var = internal_vars[internal_var_count - 1];
+			--internal_var_count;
+		}
 	}
 
 	return error;
@@ -708,10 +836,10 @@ static envvar_t *
 find_record(const char *name)
 {
 	size_t i;
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name != NULL && stroscmp(vars[i].name, name) == 0)
-			return &vars[i];
+		if(env_vars[i].name != NULL && stroscmp(env_vars[i].name, name) == 0)
+			return &env_vars[i];
 	}
 	return NULL;
 }
@@ -743,9 +871,9 @@ complete_variables(const char var[], const char **start)
 	{
 		complete_envvars(var, start);
 	}
-	else if(var[0] == 'v' && var[1] == ':')
+	else if(ONE_OF(var[0], 'v', 'g') && var[1] == ':')
 	{
-		complete_builtinvars(var, start);
+		complete_internal_vars(var, start);
 	}
 	else
 	{
@@ -767,23 +895,23 @@ complete_envvars(const char var[], const char **start)
 
 	/* Add all variables that start with given beginning. */
 	len = strlen(var);
-	for(i = 0U; i < nvars; ++i)
+	for(i = 0U; i < env_var_count; ++i)
 	{
-		if(vars[i].name == NULL)
+		if(env_vars[i].name == NULL)
 			continue;
-		if(vars[i].removed)
+		if(env_vars[i].removed)
 			continue;
-		if(strnoscmp(vars[i].name, var, len) == 0)
-			vle_compl_add_match(vars[i].name, vars[i].val);
+		if(strnoscmp(env_vars[i].name, var, len) == 0)
+			vle_compl_add_match(env_vars[i].name, env_vars[i].val);
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(var);
 }
 
-/* Completes builtin variable name.  var should point to "v:...".  *start is
- * set to completion insertion position in var. */
+/* Completes a variable name.  var should point to "[gv]:...".  *start is set to
+ * completion insertion position in var. */
 static void
-complete_builtinvars(const char var[], const char **start)
+complete_internal_vars(const char var[], const char **start)
 {
 	size_t i;
 	size_t len;
@@ -792,12 +920,12 @@ complete_builtinvars(const char var[], const char **start)
 
 	/* Add all variables that start with given beginning. */
 	len = strlen(var);
-	for(i = 0U; i < nbuiltins; ++i)
+	for(i = 0U; i < internal_var_count; ++i)
 	{
-		if(strncmp(builtin_vars[i].name, var, len) == 0)
+		if(strncmp(internal_vars[i].name, var, len) == 0)
 		{
-			char *const str_val = var_to_str(builtin_vars[i].val);
-			vle_compl_add_match(builtin_vars[i].name, str_val);
+			char *const str_val = var_to_str(internal_vars[i].val);
+			vle_compl_add_match(internal_vars[i].name, str_val);
 			free(str_val);
 		}
 	}
@@ -808,23 +936,19 @@ complete_builtinvars(const char var[], const char **start)
 var_t
 getvar(const char varname[])
 {
-	size_t i;
-	for(i = 0U; i < nbuiltins; ++i)
+	var_info_t *var = find_internal_var(varname, /*create=*/0);
+	if(var == NULL)
 	{
-		if(strcmp(builtin_vars[i].name, varname) == 0)
-		{
-			return builtin_vars[i].val;
-		}
+		return var_error();
 	}
 
-	return var_error();
+	return var->val;
 }
 
 int
 setvar(const char varname[], var_t val)
 {
-	builtinvar_t new_var;
-	size_t i;
+	var_info_t new_var;
 	void *p;
 
 	if(!starts_with_lit(varname, "v:"))
@@ -842,31 +966,67 @@ setvar(const char varname[], var_t val)
 		return 1;
 	}
 
-	/* Search for existing variable. */
-	for(i = 0U; i < nbuiltins; ++i)
+	/* Try updating an existing variable. */
+	var_info_t *var = find_internal_var(varname, /*create=*/0);
+	if(var != NULL)
 	{
-		if(strcmp(builtin_vars[i].name, varname) == 0)
-		{
-			free(builtin_vars[i].name);
-			var_free(builtin_vars[i].val);
-			builtin_vars[i] = new_var;
-			return 0;
-		}
+		free(var->name);
+		var_free(var->val);
+		*var = new_var;
+		return 0;
 	}
 
 	/* Try to reallocate list of variables. */
-	p = realloc(builtin_vars, sizeof(*builtin_vars)*(nbuiltins + 1U));
+	p = realloc(internal_vars, sizeof(*internal_vars)*(internal_var_count + 1U));
 	if(p == NULL)
 	{
 		free(new_var.name);
 		var_free(new_var.val);
 		return 1;
 	}
-	builtin_vars = p;
-	builtin_vars[nbuiltins] = new_var;
-	++nbuiltins;
+	internal_vars = p;
+	internal_vars[internal_var_count] = new_var;
+	++internal_var_count;
 
 	return 0;
+}
+
+/* Search for an existing variable by its name and optionally create it if
+ * missing.  Returns NULL on unsuccessful search. */
+static var_info_t *
+find_internal_var(const char varname[], int create)
+{
+	size_t i;
+	for(i = 0U; i < internal_var_count; ++i)
+	{
+		if(strcmp(internal_vars[i].name, varname) == 0)
+		{
+			return &internal_vars[i];
+		}
+	}
+
+	if(!create)
+	{
+		return NULL;
+	}
+
+	void *p =
+		realloc(internal_vars, sizeof(*internal_vars)*(internal_var_count + 1U));
+	if(p == NULL)
+	{
+		return NULL;
+	}
+
+	internal_vars = p;
+
+	internal_vars[internal_var_count].name = strdup(varname);
+	if(internal_vars[internal_var_count].name == NULL)
+	{
+		return NULL;
+	}
+
+	internal_vars[internal_var_count].val = var_error();
+	return &internal_vars[internal_var_count++];
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -178,7 +178,7 @@ static var_t parse_doubly_quoted_string(parse_context_t *ctx, const char **in);
 static int parse_doubly_quoted_char(parse_context_t *ctx, const char **in,
 		sbuffer *sbuf);
 static var_t eval_envvar(parse_context_t *ctx, const char **in);
-static var_t eval_builtinvar(parse_context_t *ctx, const char **in);
+static var_t eval_var(parse_context_t *ctx, const char **in);
 static var_t eval_opt(parse_context_t *ctx, const char **in);
 static expr_t parse_logical_not(parse_context_t *ctx, const char **in);
 static int parse_sequence(parse_context_t *ctx, const char **in,
@@ -849,8 +849,8 @@ parse_concat_expr(parse_context_t *ctx, const char **in)
 	return result;
 }
 
-/* term ::= signed_number | number | sqstr | dqstr | envvar | builtinvar |
- *          funccall | opt | logical_not | '(' or_expr ')' */
+/* term ::= signed_number | number | sqstr | dqstr | envvar | var | funccall |
+ *          opt | logical_not | '(' or_expr ')' */
 static expr_t
 parse_term(parse_context_t *ctx, const char **in)
 {
@@ -909,7 +909,7 @@ parse_term(parse_context_t *ctx, const char **in)
 			{
 				if(**in == ':')
 				{
-					result.value = eval_builtinvar(ctx, in);
+					result.value = eval_var(ctx, in);
 				}
 				else
 				{
@@ -1132,19 +1132,22 @@ eval_envvar(parse_context_t *ctx, const char **in)
 	return var_from_str(getenv_fu(name));
 }
 
-/* builtinvar ::= 'v:' varname */
+/* var ::= 'g:' varname | 'v:' varname */
 static var_t
-eval_builtinvar(parse_context_t *ctx, const char **in)
+eval_var(parse_context_t *ctx, const char **in)
 {
 	var_t var_value;
-	char name[VAR_NAME_LENGTH_MAX + 1];
-	strcpy(name, "v:");
 
-	if(ctx->last_token.c != 'v' || **in != ':')
+	if(!ONE_OF(ctx->last_token.c, 'v', 'g') || **in != ':')
 	{
 		ctx->last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
+
+	char name[VAR_NAME_LENGTH_MAX + 1];
+	name[0] = ctx->last_token.c;
+	name[1] = ':';
+	name[2] = '\0';
 
 	get_next(ctx, in);
 	get_next(ctx, in);

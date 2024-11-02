@@ -689,6 +689,7 @@ autocmd DirEnter ~/repos/vifm/**/* setl previewprg='git log --color -- %c 2>&1'
 33delete
 
 " variables
+echo g:somevar
 echo v:servername
 
 " ":echo" should be highlighted as :commands
