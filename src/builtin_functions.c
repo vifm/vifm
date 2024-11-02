@@ -178,10 +178,7 @@ escape_builtin(const call_info_t *call_info)
 		return var_error();
 	}
 
-	var_t result = var_from_str(escaped);
-	free(escaped);
-
-	return result;
+	return var_out_of_str(escaped);
 }
 
 /* Checks whether executable exists at absolute path or in directories listed in
@@ -222,10 +219,7 @@ expand_builtin(const call_info_t *call_info)
 	char *macro_expanded = ma_expand(env_expanded, NULL, NULL, MER_DISPLAY);
 	free(env_expanded);
 
-	var_t result = var_from_str(macro_expanded);
-	free(macro_expanded);
-
-	return result;
+	return var_out_of_str(macro_expanded);
 }
 
 /* Returns cached value of an external command.  Cache validity is bound to a
@@ -412,15 +406,11 @@ type_of_link_target(const dir_entry_t *entry)
 static var_t
 fnameescape_builtin(const call_info_t *call_info)
 {
-	var_t result;
-
 	char *const str_val = var_to_str(call_info->argv[0]);
 	char *const escaped = posix_like_escape(str_val, /*type=*/1);
 	free(str_val);
 
-	result = var_from_str(escaped);
-	free(escaped);
-	return result;
+	return var_out_of_str(escaped);
 }
 
 /* Retrieves type of current pane as a string. */
@@ -469,11 +459,8 @@ input_builtin(const call_info_t *call_info)
 
 	/* Not returning var_error() on cancellation to allow handling of it by the
 	 * user. */
-	var_t result = var_from_str(cb_data.response == NULL ? "" : cb_data.response);
-
-	free(cb_data.response);
-
-	return result;
+	return (cb_data.response == NULL) ? var_from_str("")
+	                                  : var_out_of_str(cb_data.response);
 
 fail:
 	free(prompt);
@@ -667,7 +654,6 @@ term_builtin(const call_info_t *call_info)
 static var_t
 execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 {
-	var_t result;
 	char *cmd;
 	FILE *cmd_stream;
 	size_t cmd_out_len;
@@ -703,9 +689,7 @@ execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 		--cmd_out_len;
 	}
 
-	result = var_from_str(result_str);
-	free(result_str);
-	return result;
+	return var_out_of_str(result_str);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

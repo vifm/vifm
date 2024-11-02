@@ -61,6 +61,16 @@ var_from_str(const char str_val[])
 }
 
 var_t
+var_out_of_str(char str_val[])
+{
+	/* Alternatively, could return var_error() in this case. */
+	assert(str_val != NULL && "Can't make a NULL string variable.");
+
+	var_t new_var = { .type = VTYPE_STRING, { .string = str_val } };
+	return new_var;
+}
+
+var_t
 var_error(void)
 {
 	static const var_t fail_var = { VTYPE_ERROR };

@@ -63,6 +63,10 @@ var_t var_from_int(int int_val);
  * variable. */
 var_t var_from_str(const char str_val[]);
 
+/* Takes ownership of the passed in non-NULL string to make a string variable.
+ * Never fails. */
+var_t var_out_of_str(char str_val[]);
+
 /* Returns variable, which signals about failed operation. */
 var_t var_error(void);
 
