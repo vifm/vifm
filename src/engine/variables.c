@@ -740,6 +740,13 @@ unlet_variables(const char cmd[])
 			*p++ = *cmd++;
 			*p++ = *cmd++;
 		}
+		else if(starts_with_lit(cmd, "v:"))
+		{
+			/* Parse the name, but don't set the type to get a sensible error message
+			 * about unsupported variable type. */
+			*p++ = *cmd++;
+			*p++ = *cmd++;
+		}
 
 		/* Copy variable name. */
 		while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&

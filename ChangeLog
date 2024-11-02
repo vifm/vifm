@@ -167,6 +167,8 @@
 	Make :goto preserve custom and tree views.  Thanks to
 	asmodeus812 (Svetlozar Iliev).
 
+	Improve error message on trying to :unlet a builtin variable.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
