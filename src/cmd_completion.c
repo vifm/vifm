@@ -515,7 +515,8 @@ complete_expr(const char str[], const char **start)
 
 		vle_opts_complete_real(*start, scope);
 	}
-	else if(dollar == NULL && !starts_with_lit(str, "v:"))
+	else if(dollar == NULL && !starts_with_lit(str, "v:") &&
+			!starts_with_lit(str, "g:"))
 	{
 		function_complete_name(str, start);
 	}

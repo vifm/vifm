@@ -3206,9 +3206,9 @@ dialogs" section for controls.
 .TP
 .BI "                                         :unlet"
 .TP
-.BI ":unl[et][!] $ENV_VAR1 $ENV_VAR2 ..."
-remove environment variables. Add ! to omit displaying of warnings about
-nonexistent variables.
+.BI ":unl[et][!] {var}..."
+remove one or more environment (`$VAR`) or global (`g:global`) variables.
+Use "!" to omit displaying warnings about nonexistent variables.
 .TP
 .BI "                                         :unselect"
 .TP
@@ -5832,6 +5832,7 @@ expr7      number                  number constant
            'string'                string constant, ' is doubled
            &option                 option value
            $VAR                    environment variable
+           g:var                   global variable
            v:var                   builtin variable (read-only)
            function(expr1, ...)    function call
            (expr1)                 nested expression
@@ -6062,6 +6063,15 @@ Examples:
   'This is my $PATH env: ' . $PATH
   'vifmrc at ' . $MYVIFMRC . ' is used.'
 .EE
+
+global variable
+.br
+---------------
+.br
+g:var                 global variable
+
+A typed storage of data for use in scripting.  Can be created/removed
+dynamically (via :let and :unlet) and used in expressions.
 
 builtin variable
 .br

@@ -2695,9 +2695,9 @@ yet supported) and might be changed in future releases, or get an alias.
     display list of latest changes.  Use "!" to see actual commands.
     See |vifm-menus-and-dialogs| for controls.
 
-:unl[et][!] $ENV_VAR1 $ENV_VAR2 ...            *vifm-:unlet* *vifm-:unl*
-    remove environment variables.  Use "!" to omit displaying of warnings
-    about nonexistent variables.
+:unl[et][!] {var}...                           *vifm-:unlet* *vifm-:unl*
+    remove one or more environment (`$VAR`) or global (`g:global`) variables.
+    Use "!" to omit displaying warnings about nonexistent variables.
 
                                                *vifm-:unselect*
 :[range]unselect
@@ -4907,6 +4907,7 @@ Expression syntax summary, from least to most significant:
            'string'                string constant, ' is doubled
            &option                 option value
            $VAR                    environment variable
+           g:var                   global variable
            v:var                   builtin variable (read-only)
            function(expr1, ...)    function call
            (expr1)                 nested expression
@@ -5079,7 +5080,15 @@ Examples: >
   'vifmrc at ' . $MYVIFMRC . ' is used.'
 <
 
-builtin variable                               *vifm-expr-variable*
+                                               *vifm-expr-variable*
+global variable
+---------------
+g:var                 global variable
+
+A typed storage of data for use in scripting.  Can be created/removed
+dynamically (via |vifm-:let| and |vifm-:unlet|) and used in expressions.
+
+builtin variable
 ----------------
 v:var                 builtin variable (read-only)
 

@@ -81,6 +81,27 @@ TEST(do_not_complete_removed_variables)
 	free(completed);
 }
 
+TEST(globals_completion)
+{
+	assert_success(let_variables("g:test1 = 1"));
+	assert_success(let_variables("g:test2 = 1"));
+
+	const char *start;
+	char buf[] = "g:";
+	complete_variables(buf, &start);
+	assert_string_equal(&buf[0], start);
+
+	char *completed;
+
+	completed = vle_compl_next();
+	assert_string_equal("g:test1", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("g:test2", completed);
+	free(completed);
+}
+
 TEST(builtinvars_completion)
 {
 	char buf[] = "v:";

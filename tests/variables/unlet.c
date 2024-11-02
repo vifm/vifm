@@ -20,5 +20,12 @@ TEST(envvar_table_updates_do_not_crash)
 	assert_int_equal(0, let_variables("$" VAR_NAME_BASE "3='VAL'"));
 }
 
+TEST(cannot_unlet_builtin_vars)
+{
+	assert_success(setvar("v:test", var_from_bool(1)));
+	assert_failure(unlet_variables("v:test"));
+	assert_true(getvar("v:test").type == VTYPE_INT);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

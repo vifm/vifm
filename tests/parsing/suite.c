@@ -4,7 +4,14 @@
 
 #include "../../src/engine/parsing.h"
 
+#include <test-utils.h>
+
 DEFINE_SUITE();
+
+SETUP_ONCE()
+{
+	fix_environ();
+}
 
 SETUP()
 {

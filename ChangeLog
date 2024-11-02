@@ -79,6 +79,9 @@
 	Added handling of Enter/Escape keys to prompts and error dialogs.  Thanks
 	to laur89, Alexandre Viau and multiple other users who asked about this.
 
+	Added global variables (with "g:" prefix) to avoid using environment
+	variables in their place as a workaround.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
