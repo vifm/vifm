@@ -59,13 +59,13 @@ typedef enum
 }
 VariableOperation;
 
-/* Description of a builtin variable. */
+/* Description of a variable. */
 typedef struct
 {
 	char *name; /* Name of the variable (including "v:" prefix). */
 	var_t val;  /* Current value of the variable. */
 }
-builtinvar_t;
+var_info_t;
 
 typedef struct
 {
@@ -83,7 +83,7 @@ const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 static void init_var(const char name[], const char value[]);
-static void clear_builtinvars(void);
+static void clear_internal_vars(void);
 static int extract_name(const char **in, VariableType *type, size_t buf_len,
 		char buf[]);
 static int extract_op(const char **in, VariableOperation *vo);
@@ -103,15 +103,15 @@ static envvar_t * find_record(const char *name);
 static void free_record(envvar_t *record);
 static void clear_record(envvar_t *record);
 static void complete_envvars(const char var[], const char **start);
-static void complete_builtinvars(const char var[], const char **start);
+static void complete_internal_vars(const char var[], const char **start);
 
 static int initialized;
 static envvar_t *env_vars;
 static size_t env_var_count;
-/* List of builtin variables. */
-static builtinvar_t *builtin_vars;
-/* Number of builtin variables. */
-static size_t nbuiltins;
+/* List of internal variables. */
+static var_info_t *internal_vars;
+/* Number of internal variables. */
+static size_t internal_var_count;
 
 void
 init_variables(void)
@@ -186,23 +186,23 @@ clear_variables(void)
 {
 	assert(initialized);
 
-	clear_builtinvars();
+	clear_internal_vars();
 	clear_envvars();
 }
 
-/* Clears the list of builtin variables. */
+/* Clears the list of internal variables. */
 static void
-clear_builtinvars(void)
+clear_internal_vars(void)
 {
 	size_t i;
-	for(i = 0U; i < nbuiltins; ++i)
+	for(i = 0U; i < internal_var_count; ++i)
 	{
-		free(builtin_vars[i].name);
-		var_free(builtin_vars[i].val);
+		free(internal_vars[i].name);
+		var_free(internal_vars[i].val);
 	}
-	nbuiltins = 0U;
-	free(builtin_vars);
-	builtin_vars = NULL;
+	internal_var_count = 0U;
+	free(internal_vars);
+	internal_vars = NULL;
 }
 
 void
@@ -745,7 +745,7 @@ complete_variables(const char var[], const char **start)
 	}
 	else if(var[0] == 'v' && var[1] == ':')
 	{
-		complete_builtinvars(var, start);
+		complete_internal_vars(var, start);
 	}
 	else
 	{
@@ -780,10 +780,10 @@ complete_envvars(const char var[], const char **start)
 	vle_compl_add_last_match(var);
 }
 
-/* Completes builtin variable name.  var should point to "v:...".  *start is
- * set to completion insertion position in var. */
+/* Completes a variable name.  var should point to "v:...".  *start is set to
+ * completion insertion position in var. */
 static void
-complete_builtinvars(const char var[], const char **start)
+complete_internal_vars(const char var[], const char **start)
 {
 	size_t i;
 	size_t len;
@@ -792,12 +792,12 @@ complete_builtinvars(const char var[], const char **start)
 
 	/* Add all variables that start with given beginning. */
 	len = strlen(var);
-	for(i = 0U; i < nbuiltins; ++i)
+	for(i = 0U; i < internal_var_count; ++i)
 	{
-		if(strncmp(builtin_vars[i].name, var, len) == 0)
+		if(strncmp(internal_vars[i].name, var, len) == 0)
 		{
-			char *const str_val = var_to_str(builtin_vars[i].val);
-			vle_compl_add_match(builtin_vars[i].name, str_val);
+			char *const str_val = var_to_str(internal_vars[i].val);
+			vle_compl_add_match(internal_vars[i].name, str_val);
 			free(str_val);
 		}
 	}
@@ -809,11 +809,11 @@ var_t
 getvar(const char varname[])
 {
 	size_t i;
-	for(i = 0U; i < nbuiltins; ++i)
+	for(i = 0U; i < internal_var_count; ++i)
 	{
-		if(strcmp(builtin_vars[i].name, varname) == 0)
+		if(strcmp(internal_vars[i].name, varname) == 0)
 		{
-			return builtin_vars[i].val;
+			return internal_vars[i].val;
 		}
 	}
 
@@ -823,7 +823,7 @@ getvar(const char varname[])
 int
 setvar(const char varname[], var_t val)
 {
-	builtinvar_t new_var;
+	var_info_t new_var;
 	size_t i;
 	void *p;
 
@@ -843,28 +843,28 @@ setvar(const char varname[], var_t val)
 	}
 
 	/* Search for existing variable. */
-	for(i = 0U; i < nbuiltins; ++i)
+	for(i = 0U; i < internal_var_count; ++i)
 	{
-		if(strcmp(builtin_vars[i].name, varname) == 0)
+		if(strcmp(internal_vars[i].name, varname) == 0)
 		{
-			free(builtin_vars[i].name);
-			var_free(builtin_vars[i].val);
-			builtin_vars[i] = new_var;
+			free(internal_vars[i].name);
+			var_free(internal_vars[i].val);
+			internal_vars[i] = new_var;
 			return 0;
 		}
 	}
 
 	/* Try to reallocate list of variables. */
-	p = realloc(builtin_vars, sizeof(*builtin_vars)*(nbuiltins + 1U));
+	p = realloc(internal_vars, sizeof(*internal_vars)*(internal_var_count + 1U));
 	if(p == NULL)
 	{
 		free(new_var.name);
 		var_free(new_var.val);
 		return 1;
 	}
-	builtin_vars = p;
-	builtin_vars[nbuiltins] = new_var;
-	++nbuiltins;
+	internal_vars = p;
+	internal_vars[internal_var_count] = new_var;
+	++internal_var_count;
 
 	return 0;
 }
