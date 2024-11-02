@@ -1,4 +1,4 @@
-.TH VIFM 1 "30 October 2024" "vifm 0.13"
+.TH VIFM 1 "2 November 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5832,7 +5832,7 @@ expr7      number                  number constant
            'string'                string constant, ' is doubled
            &option                 option value
            $VAR                    environment variable
-           v:var                   builtin variable
+           v:var                   builtin variable (read-only)
            function(expr1, ...)    function call
            (expr1)                 nested expression
 
@@ -6065,11 +6065,12 @@ Examples:
 
 builtin variable
 .br
---------------------
+----------------
 .br
 v:var                 builtin variable
 
-Information exposed by vifm for use in scripting.
+Information exposed by vifm for use in scripting.  Such variables are
+predefined and read-only, but not necessarily constant.
 
 .B "v:count"
 .br

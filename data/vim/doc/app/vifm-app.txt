@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 October 30
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 November 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4907,7 +4907,7 @@ Expression syntax summary, from least to most significant:
            'string'                string constant, ' is doubled
            &option                 option value
            $VAR                    environment variable
-           v:var                   builtin variable
+           v:var                   builtin variable (read-only)
            function(expr1, ...)    function call
            (expr1)                 nested expression
 
@@ -5080,10 +5080,11 @@ Examples: >
 <
 
 builtin variable                               *vifm-expr-variable*
---------------------
-v:var                 builtin variable
+----------------
+v:var                 builtin variable (read-only)
 
-Information exposed by vifm for use in scripting.
+Information exposed by vifm for use in scripting.  Such variables are
+predefined and read-only, but not necessarily constant.
 
                                                *vifm-v:count*
 v:count                                        *vifm-count-variable*
