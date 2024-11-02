@@ -277,7 +277,7 @@ let_variables(const char cmd[])
 
 	if(!is_valid_op(name, type, op))
 	{
-		vle_tb_append_linef(vle_err, "Wrong variable type for this operation");
+		vle_tb_append_line(vle_err, "Wrong variable type for this operation");
 		goto fail;
 	}
 
