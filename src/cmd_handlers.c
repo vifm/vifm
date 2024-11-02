@@ -921,7 +921,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &undolist_cmd,    .min_args = 0,   .max_args = 0, },
 	{ .name = "unlet",             .abbr = "unl",   .id = COM_UNLET,
-	  .descr = "undefine variable",
+	  .descr = "undefine one or more variables",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &unlet_cmd,       .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "unmap",             .abbr = "unm",   .id = -1,
