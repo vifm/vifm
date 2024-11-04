@@ -3774,7 +3774,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 	if(!is_path_absolute(expanded_path))
 	{
 		free(expanded_path);
-		ui_sb_err("Expected full path to the directory");
+		ui_sb_err("Expected full path to a directory");
 		return CMDS_ERR_CUSTOM;
 	}
 

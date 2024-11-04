@@ -787,6 +787,14 @@ TEST(open_command)
 	curr_stats.vlua = NULL;
 }
 
+TEST(mark_command)
+{
+	/* Relative paths are rejected. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("mark x aaaaa", &lwin, CIT_COMMAND));
+	assert_string_equal("Expected full path to a directory", ui_sb_last());
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {
