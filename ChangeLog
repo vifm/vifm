@@ -169,6 +169,9 @@
 
 	Improve error message on trying to :unlet a builtin variable.
 
+	Extended logging on spawning a command via a shell.  Thanks to Henrik
+	Holst (a.k.a. hholst80).
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
