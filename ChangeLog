@@ -20,6 +20,10 @@
 	errors which weren't displayed before.  Sample vifmrc files contain
 	detection of GNU find on startup.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Changed initialization to not create a copy of rendered man page at
+	$VIFM/vifm-help.txt, :help now opens the original file.  Thanks to
+	intelfx.
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It

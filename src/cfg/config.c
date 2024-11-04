@@ -101,7 +101,6 @@ static int try_exe_directory_for_vifmrc(void);
 static int try_vifm_vifmrc_for_vifmrc(void);
 static void store_config_paths(const char data_dir[]);
 static void setup_dirs(void);
-static void copy_help_file(void);
 static void create_scripts_dir(void);
 static void copy_rc_file(void);
 static void add_default_marks(void);
@@ -624,9 +623,6 @@ setup_dirs(void)
 
 	if(is_dir(cfg.config_dir))
 	{
-		/* We rely on this file for :help, so make sure it's there on every run. */
-		copy_help_file();
-
 		create_scripts_dir();
 		return;
 	}
@@ -638,7 +634,6 @@ setup_dirs(void)
 
 	/* This must be first run of Vifm in this environment. */
 
-	copy_help_file();
 	copy_rc_file();
 	cs_write();
 
@@ -647,29 +642,6 @@ setup_dirs(void)
 	env_set(MYVIFMRC_EV, rc_file);
 
 	add_default_marks();
-}
-
-/* Copies help file from shared files to the ~/.vifm directory if it's not
- * already there. */
-static void
-copy_help_file(void)
-{
-	LOG_FUNC_ENTER;
-
-	char src[PATH_MAX + 16];
-	char dst[PATH_MAX + 16];
-
-	io_args_t args = {
-		.arg1.src = src,
-		.arg2.dst = dst,
-		.arg3.crs = IO_CRS_FAIL,
-	};
-
-	snprintf(src, sizeof(src), "%s/" VIFM_HELP, get_installed_data_dir());
-	snprintf(dst, sizeof(dst), "%s/" VIFM_HELP, cfg.config_dir);
-
-	/* Don't care if it fails, also don't overwrite if file exists. */
-	(void)iop_cp(&args);
 }
 
 /* Responsible for creation of scripts/ directory if it doesn't exist (in which

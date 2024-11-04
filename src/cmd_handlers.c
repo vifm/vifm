@@ -2778,7 +2778,8 @@ help_cmd(const cmd_info_t *cmd_info)
 		}
 
 		char help_file[PATH_MAX + 1];
-		build_path(help_file, sizeof(help_file), cfg.config_dir, VIFM_HELP);
+		build_path(help_file, sizeof(help_file), get_installed_data_dir(),
+				VIFM_HELP);
 
 		if(use_handler)
 		{

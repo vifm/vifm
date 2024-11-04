@@ -842,7 +842,7 @@ int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
-	char *const escaped = posix_like_escape(cfg.config_dir, /*type=*/0);
+	char *const escaped = posix_like_escape(get_installed_data_dir(), /*type=*/0);
 	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, cfg_get_vicmd(&bg), escaped);
 	free(escaped);
 	return bg;

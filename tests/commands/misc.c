@@ -643,7 +643,6 @@ TEST(help_command)
 {
 	curr_stats.exec_env_type = EET_EMULATOR;
 	update_string(&cfg.vi_command, "#vifmtest#editor");
-	cfg.config_dir[0] = '\0';
 
 	curr_stats.vlua = vlua_init();
 
@@ -656,8 +655,12 @@ TEST(help_command)
 
 	assert_success(cmds_dispatch("help", &lwin, CIT_COMMAND));
 
+	char help_file[PATH_MAX + 1];
+	build_path(help_file, sizeof(help_file), get_installed_data_dir(),
+			VIFM_HELP);
+
 	GLUA_EQ(curr_stats.vlua, "edit-one", "print(ginfo.action)");
-	GLUA_EQ(curr_stats.vlua, "/vifm-help.txt", "print(ginfo.path)");
+	GLUA_EQ(curr_stats.vlua, help_file, "print(ginfo.path)");
 	GLUA_EQ(curr_stats.vlua, "false", "print(ginfo.mustwait)");
 	GLUA_EQ(curr_stats.vlua, "nil", "print(ginfo.line)");
 	GLUA_EQ(curr_stats.vlua, "nil", "print(ginfo.column)");
