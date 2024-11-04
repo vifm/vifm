@@ -661,7 +661,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "mark",              .abbr = "ma",    .id = -1,
 	  .descr = "set mark",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_QMARK_WITH_ARGS
-	         | HAS_MACROS_FOR_CMD,
+	         | HAS_MACROS_FOR_CMD | HAS_ENVVARS,
 	  .handler = &mark_cmd,        .min_args = 1,   .max_args = 3, },
 	{ .name = "marks",             .abbr = NULL,    .id = -1,
 	  .descr = "display marks",

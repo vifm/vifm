@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 November 2
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 November 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2285,6 +2285,7 @@ order using the '.' operator.  Any whitespace is ignored.
     directory is used.  If no filename was given and /full/path is current
     directory then last file in [range] is being used.  Using of macros is
     allowed.  Question mark stops command from overwriting existing marks.
+    Environment variables are expanded.
 
                                                *vifm-:marks*
 :marks

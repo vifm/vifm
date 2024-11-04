@@ -172,6 +172,9 @@
 	Extended logging on spawning a command via a shell.  Thanks to Henrik
 	Holst (a.k.a. hholst80).
 
+	Expand environment variables in the arguments of :mark command.  Thanks to
+	an anonymous at Vifm Q2A site.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

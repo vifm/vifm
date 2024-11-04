@@ -793,6 +793,13 @@ TEST(mark_command)
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch1("mark x aaaaa", &lwin, CIT_COMMAND));
 	assert_string_equal("Expected full path to a directory", ui_sb_last());
+
+	/* Environment variables are expanded. */
+	assert_success(cmds_dispatch1("let $TEST = '/'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("mark x $TEST", &lwin, CIT_COMMAND));
+	const mark_t *mark = get_mark_by_name(&lwin, 'x');
+	assert_non_null(mark);
+	assert_string_equal("/", mark->directory);
 }
 
 static void
