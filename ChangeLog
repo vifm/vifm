@@ -86,6 +86,8 @@
 	Added global variables (with "g:" prefix) to avoid using environment
 	variables in their place as a workaround.
 
+	Added inode number to File Info dialog.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
