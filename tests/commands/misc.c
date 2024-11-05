@@ -803,6 +803,13 @@ TEST(mark_command)
 	const mark_t *mark = get_mark_by_name(&lwin, 'x');
 	assert_non_null(mark);
 	assert_string_equal("/", mark->directory);
+
+	/* Question mark prevents mark overwrite. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("mark? x /tmp", &lwin, CIT_COMMAND));
+	assert_string_equal("Mark isn't empty: x", ui_sb_last());
+	/* Not an overwrite. */
+	assert_success(cmds_dispatch1("mark? y /tmp", &lwin, CIT_COMMAND));
 }
 
 static void
