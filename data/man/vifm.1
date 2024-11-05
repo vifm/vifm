@@ -1,4 +1,4 @@
-.TH VIFM 1 "5 November 2024" "vifm 0.13"
+.TH VIFM 1 "6 November 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2653,12 +2653,12 @@ original path of a deleted file, thus the list can contain duplicates.  See
 .TP
 .BI "                                         :mark"
 .TP
-.BI ":[range]ma[rk][?] x [/full/path] [filename]"
-Set mark x (a\-zA\-Z0\-9) at /full/path and filename.  By default current
-directory is being used.  If no filename was given and /full/path is current
-directory then last file in [range] is used.  Using of macros is allowed.
-Question mark will stop command from overwriting existing marks.
-Environment variables are expanded.
+.BI ":[range]ma[rk][?] x [/full/dir/path [filename]]"
+set mark x (a\-zA\-Z0\-9) at /full/dir/path and filename.  By default current
+file in current directory is used.  If no filename was given and /full/dir/path
+is current directory, then the last file of the [range] is used.  Question mark
+stops the command from overwriting an existing mark.  Macros and environment
+variables are expanded.
 .TP
 .BI "                                         :marks"
 .TP

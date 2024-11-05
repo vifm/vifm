@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 November 5
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 November 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2280,12 +2280,12 @@ order using the '.' operator.  Any whitespace is ignored.
     original path of a deleted file, thus the list can contain duplicates.
     See |vifm-menus-and-dialogs| for controls.
 
-:[range]ma[rk][?] x /full/path [filename]      *vifm-:mark* *vifm-:ma*
-    set mark x (a-zA-Z0-9) at /full/path and filename.  By default current
-    directory is used.  If no filename was given and /full/path is current
-    directory then last file in [range] is being used.  Using of macros is
-    allowed.  Question mark stops command from overwriting existing marks.
-    Environment variables are expanded.
+:[range]ma[rk][?] x [/full/dir/path [filename]]      *vifm-:mark* *vifm-:ma*
+    set mark x (a-zA-Z0-9) at /full/dir/path and filename.  By default current
+    file in current directory is used.  If no filename was given and
+    /full/dir/path is current directory, then the last file of the [range] is
+    used.  Question mark stops the command from overwriting an existing mark.
+    Macros and environment variables are expanded.
 
                                                *vifm-:marks*
 :marks
