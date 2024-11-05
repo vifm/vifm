@@ -24,6 +24,10 @@
 	$VIFM/vifm-help.txt, :help now opens the original file.  Thanks to
 	intelfx.
 
+	Changed filetype() to accept path in its first parameter.  This means that
+	passing it something like "15abc" will no longer be interpreted as 15.
+	Thanks to MikeLemon.
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It

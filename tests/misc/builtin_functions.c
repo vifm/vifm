@@ -395,6 +395,13 @@ TEST(filetype)
 	ASSERT_OK("filetype('3', 1)", "dir");
 	ASSERT_OK("filetype('4', 1)", "reg");
 	ASSERT_OK("filetype(5, 1)", "broken");
+
+	ASSERT_OK("filetype('" SANDBOX_PATH "/dir-link')", "link");
+	ASSERT_OK("filetype('" SANDBOX_PATH "/file-link')", "link");
+	ASSERT_OK("filetype('" SANDBOX_PATH "/dir-link', 1)", "dir");
+	ASSERT_OK("filetype('" SANDBOX_PATH "/file-link', 1)", "reg");
+	ASSERT_OK("filetype('" SANDBOX_PATH "/broken-link', 1)", "broken");
+	ASSERT_OK("filetype('no-such-file')", "");
 #endif
 
 	opt_handlers_teardown();

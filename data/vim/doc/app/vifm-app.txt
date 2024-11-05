@@ -5147,8 +5147,8 @@ extcached({cache}, {path}, {extcmd})
                                   {path} combination.
 filereadable({path})  Integer     Checks whether {expr} points to a
                                   non-directory that can be read.
-filetype({fnum} [, {resolve}])
-                      String      Returns file type from position.
+filetype({file} [, {resolve}])
+                      String      Returns file type from position/path.
 fnameescape({expr})   String      Escapes {expr} for use in a :command.
 getpanetype()         String      Returns type of current pane.
 has({property})       Integer     Checks whether instance has {property}.
@@ -5228,7 +5228,18 @@ Checks whether {path} exists and refers to a non-directory entry and its
 permissions allow reading.  Returns boolean value describing result of the
 check.
 
-filetype({fnum} [, {resolve}])                 *vifm-filetype()*
+filetype({file} [, {resolve}])                 *vifm-filetype()*
+
+Checks type of a view's entry or of a file specified by its path.
+
+Parameter {file} can be of the following forms:
+ - '.' to get type of file under the cursor in the active pane
+ - numerical value base 1 to get type of file on specified line number (only
+   if there are no charactes other than "+-0123456789")
+ - a path (prepend "./" to force interpretation of a number or '.' as a path)
+
+Optional parameter {resolve} is treated as a boolean and specifies whether
+symbolic links should be resolved.
 
 The result is a string, which represents file type and is one of the list:
     exe     executables
@@ -5244,13 +5255,6 @@ The result is a string, which represents file type and is one of the list:
             non-file (pseudo-entries in compare view)
 
 The result can also be an empty string in case of invalid argument.
-
-Parameter {fnum} can have following values:
-    - '.' to get type of file under the cursor in the active pane
-    - numerical value base 1 to get type of file on specified line number
-
-Optional parameter {resolve} is treated as a boolean and specifies whether
-symbolic links should be resolved.
 
 fnameescape({expr})                            *vifm-fnameescape()*
 

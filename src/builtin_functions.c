@@ -357,11 +357,30 @@ filetype_builtin(const call_info_t *call_info)
 			result_str = get_type_str(entry->type);
 		}
 	}
+	else if(fnum == -2)
+	{
+		struct stat s;
+		char *path = var_to_str(call_info->argv[0]);
+		if(path != NULL && os_lstat(path, &s) == 0)
+		{
+			if(resolve_links && os_stat(path, &s) != 0)
+			{
+				result_str = "broken";
+			}
+			else
+			{
+				result_str = get_type_str(get_type_from_mode(s.st_mode));
+			}
+		}
+
+		free(path);
+	}
+
 	return var_from_str(result_str);
 }
 
-/* Turns {fnum} into file position.  Returns the position or -1 if the argument
- * is wrong. */
+/* Turns {fnum} into file position.  Returns the position, -1 if the argument
+ * is a bad number and -2 if the argument is not a number. */
 static int
 get_fnum(var_t fnum)
 {
@@ -371,6 +390,11 @@ get_fnum(var_t fnum)
 	if(strcmp(str_val, ".") == 0)
 	{
 		pos = curr_view->list_pos;
+	}
+	else if(strspn(str_val, "+-0123456789") != strlen(str_val))
+	{
+		/* Doesn't look like a number. */
+		pos = -2;
 	}
 	else
 	{
