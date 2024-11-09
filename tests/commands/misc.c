@@ -792,6 +792,13 @@ TEST(open_command)
 
 TEST(mark_command)
 {
+	/* Bad mark name. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("mark ab", &lwin, CIT_COMMAND));
+	assert_string_equal("Invalid mark name: ab", ui_sb_last());
+	assert_failure(cmds_dispatch1("mark &", &lwin, CIT_COMMAND));
+	assert_string_equal("Invalid mark name: &", ui_sb_last());
+
 	/* Relative paths are rejected. */
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch1("mark x aaaaa", &lwin, CIT_COMMAND));

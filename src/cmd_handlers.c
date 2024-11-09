@@ -3745,8 +3745,12 @@ mark_cmd(const cmd_info_t *cmd_info)
 	const char *file;
 	char mark = cmd_info->argv[0][0];
 
-	if(cmd_info->argv[0][1] != '\0')
-		return CMDS_ERR_TRAILING_CHARS;
+	if(cmd_info->argv[0][1] != '\0' ||
+			!char_is_one_of(marks_all, cmd_info->argv[0][0]))
+	{
+		ui_sb_errf("Invalid mark name: %s", cmd_info->argv[0]);
+		return CMDS_ERR_CUSTOM;
+	}
 
 	if(cmd_info->qmark)
 	{
