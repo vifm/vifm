@@ -173,7 +173,7 @@ path_exists_internal(const char path[], const char filename[], int deref)
 	}
 	else
 	{
-		snprintf(full, sizeof(full), "%s/%s", path, filename);
+		build_path(full, sizeof(full), path, filename);
 	}
 
 	/* At least on Windows extra trailing slash can mess up the check, so get rid
@@ -288,7 +288,7 @@ get_link_target_abs(const char link[], const char cwd[], char buf[],
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s/%s", cwd, link_target);
+		build_path(buf, buf_len, cwd, link_target);
 	}
 	return 0;
 }
@@ -509,7 +509,7 @@ list_regular_files(const char path[], char *list[], int *len)
 	while((d = os_readdir(dir)) != NULL)
 	{
 		char full_path[PATH_MAX + 1];
-		snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
+		build_path(full_path, sizeof(full_path), path, d->d_name);
 
 		if(is_regular_file(full_path))
 		{

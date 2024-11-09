@@ -158,6 +158,7 @@ run_with_input(char command[], FILE *input, ShellRequester by)
 
 			if(dup2(fileno(input), STDIN_FILENO) == -1)
 			{
+				LOG_SERROR_MSG(errno, "Failed to duplicate stdin for `%s`", command);
 				_Exit(127);
 			}
 
@@ -167,6 +168,8 @@ run_with_input(char command[], FILE *input, ShellRequester by)
 		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 		execve(get_execv_path(cfg.shell),
 				make_execv_array(cfg.shell, sh_flag, command), environ);
+		LOG_SERROR_MSG(errno, "Failed to launch a shell: `%s` `%s` `%s`", cfg.shell,
+				sh_flag, command);
 		_Exit(127);
 	}
 
@@ -306,6 +309,8 @@ run_from_fork(int pipe[2], int err_only, int preserve_stdin, char cmd[],
 	prepare_for_exec();
 	char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 	execvp(get_execv_path(cfg.shell), make_execv_array(cfg.shell, sh_flag, cmd));
+	LOG_SERROR_MSG(errno, "Failed to launch a shell: `%s` `%s` `%s`", cfg.shell,
+			sh_flag, cmd);
 	_Exit(127);
 }
 
@@ -837,7 +842,7 @@ int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
-	char *const escaped = posix_like_escape(cfg.config_dir, /*type=*/0);
+	char *const escaped = posix_like_escape(get_installed_data_dir(), /*type=*/0);
 	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, cfg_get_vicmd(&bg), escaped);
 	free(escaped);
 	return bg;

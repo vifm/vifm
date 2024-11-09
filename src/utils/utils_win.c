@@ -716,9 +716,15 @@ shell_arg_escape(const char what[], ShellType shell_type)
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
+	char help_file[PATH_MAX + 1];
+	build_path(help_file, sizeof(help_file), get_installed_data_dir(), VIFM_HELP);
+
+	char *escaped = shell_arg_escape(help_file, curr_stats.shell_type);
+
 	int bg;
-	snprintf(cmd, cmd_size, "%s \"%s/" VIFM_HELP "\"", cfg_get_vicmd(&bg),
-			cfg.config_dir);
+	snprintf(cmd, cmd_size, "%s %s", cfg_get_vicmd(&bg), escaped);
+	free(escaped);
+
 	return bg;
 }
 

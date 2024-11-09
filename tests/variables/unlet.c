@@ -21,6 +21,11 @@ TEST(envvar_table_updates_do_not_crash)
 	assert_int_equal(0, let_variables("$" VAR_NAME_BASE "3='VAL'"));
 }
 
+TEST(cannot_unlet_unknown_global)
+{
+	assert_failure(unlet_variables("g:test"));
+}
+
 TEST(cannot_unlet_builtin_vars)
 {
 	assert_success(setvar("v:test", var_from_bool(1)));

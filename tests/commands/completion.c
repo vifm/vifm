@@ -282,6 +282,12 @@ TEST(bmark_tags_are_completed)
 	ASSERT_COMPLETION(L"bmark! fake/path2 tag", L"bmark! fake/path2 tag1");
 	ASSERT_NO_COMPLETION(L"bmark! fake/path2 ../");
 	ASSERT_COMPLETION(L"bmark! fake/path2 ", L"bmark! fake/path2 tag1");
+
+	/* Current tag is added to the list of completions unless it's a duplicate. */
+	ASSERT_COMPLETION(L"bmark tag1", L"bmark tag1");
+	assert_int_equal(2, vle_compl_get_count());
+	ASSERT_COMPLETION(L"bmark tag1 tag1", L"bmark tag1 tag1");
+	assert_int_equal(1, vle_compl_get_count());
 }
 
 TEST(bmark_path_is_completed)

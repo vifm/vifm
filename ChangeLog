@@ -20,6 +20,14 @@
 	errors which weren't displayed before.  Sample vifmrc files contain
 	detection of GNU find on startup.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Changed initialization to not create a copy of rendered man page at
+	$VIFM/vifm-help.txt, :help now opens the original file.  Thanks to
+	intelfx.
+
+	Changed filetype() to accept path in its first parameter.  This means that
+	passing it something like "15abc" will no longer be interpreted as 15.
+	Thanks to MikeLemon.
+
 	Added command-line history to menu mode.
 
 	Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It
@@ -81,6 +89,8 @@
 
 	Added global variables (with "g:" prefix) to avoid using environment
 	variables in their place as a workaround.
+
+	Added inode number to File Info dialog.
 
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
@@ -168,6 +178,14 @@
 	asmodeus812 (Svetlozar Iliev).
 
 	Improve error message on trying to :unlet a builtin variable.
+
+	Extended logging on spawning a command via a shell.  Thanks to Henrik
+	Holst (a.k.a. hholst80).
+
+	Expand environment variables in the arguments of :mark command.  Thanks to
+	an anonymous at Vifm Q2A site.
+
+	Improved detection and reporting of invalid marks by :mark command.
 
 	Fixed line number column not including padding to the left of it.
 

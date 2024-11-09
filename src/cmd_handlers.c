@@ -661,7 +661,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "mark",              .abbr = "ma",    .id = -1,
 	  .descr = "set mark",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_QMARK_WITH_ARGS
-	         | HAS_MACROS_FOR_CMD,
+	         | HAS_MACROS_FOR_CMD | HAS_ENVVARS,
 	  .handler = &mark_cmd,        .min_args = 1,   .max_args = 3, },
 	{ .name = "marks",             .abbr = NULL,    .id = -1,
 	  .descr = "display marks",
@@ -2778,7 +2778,8 @@ help_cmd(const cmd_info_t *cmd_info)
 		}
 
 		char help_file[PATH_MAX + 1];
-		build_path(help_file, sizeof(help_file), cfg.config_dir, VIFM_HELP);
+		build_path(help_file, sizeof(help_file), get_installed_data_dir(),
+				VIFM_HELP);
 
 		if(use_handler)
 		{
@@ -3744,8 +3745,12 @@ mark_cmd(const cmd_info_t *cmd_info)
 	const char *file;
 	char mark = cmd_info->argv[0][0];
 
-	if(cmd_info->argv[0][1] != '\0')
-		return CMDS_ERR_TRAILING_CHARS;
+	if(cmd_info->argv[0][1] != '\0' ||
+			!char_is_one_of(marks_all, cmd_info->argv[0][0]))
+	{
+		ui_sb_errf("Invalid mark name: %s", cmd_info->argv[0]);
+		return CMDS_ERR_CUSTOM;
+	}
 
 	if(cmd_info->qmark)
 	{
@@ -3774,7 +3779,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 	if(!is_path_absolute(expanded_path))
 	{
 		free(expanded_path);
-		ui_sb_err("Expected full path to the directory");
+		ui_sb_err("Expected full path to a directory");
 		return CMDS_ERR_CUSTOM;
 	}
 

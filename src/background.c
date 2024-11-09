@@ -764,6 +764,8 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 		prepare_for_exec();
 		execvp(get_execv_path(cfg.shell),
 				make_execv_array(cfg.shell, sh_flag, cmd));
+		LOG_SERROR_MSG(errno, "Failed to launch a shell: `%s` `%s` `%s`", cfg.shell,
+				sh_flag, cmd);
 		_Exit(127);
 	}
 
@@ -1144,6 +1146,8 @@ launch_external(const char cmd[], const char pwd[], BgJobFlags flags,
 		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 		execve(get_execv_path(cfg.shell),
 				make_execv_array(cfg.shell, sh_flag, strdup(cmd)), environ);
+		LOG_SERROR_MSG(errno, "Failed to launch a shell: `%s` `%s` `%s`", cfg.shell,
+				sh_flag, cmd);
 		_Exit(127);
 	}
 

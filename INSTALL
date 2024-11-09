@@ -75,8 +75,9 @@ when building with Cygwin):
     manually copy the vifm and vifm-pause executables from the src/ directory
     to where you want to run them.  Another possibility is to pass --prefix
     argument to the ./configure script, with path under the home directory,
-    e.g. --prefix=$HOME/local.  You will also need to copy vifm-help.txt and
-    vifmrc files from the data/ directory to ~/.vifm/.
+    e.g. --prefix=$HOME/local.  The first approach might cause vifm to find some
+    files which are normally installed under /usr/ directory, but the
+    application will be operational.
 
     After you start vifm for the first time, you can edit the configuration
     file.  It will be at ~/.config/vifm/vifmrc unless ~/.vifm/ exists.  See

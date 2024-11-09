@@ -193,6 +193,9 @@ fill_items(view_t *view, draw_ctx_t *ctx)
 	show_mime_type(view, ctx);
 
 #ifndef _WIN32
+	snprintf(buf, sizeof(buf), "%ld", (long)curr->inode);
+	print_item("Inode", buf, ctx);
+
 	snprintf(buf, sizeof(buf), "%d", curr->nlinks);
 	print_item("Hard Links", buf, ctx);
 #endif

@@ -643,7 +643,6 @@ TEST(help_command)
 {
 	curr_stats.exec_env_type = EET_EMULATOR;
 	update_string(&cfg.vi_command, "#vifmtest#editor");
-	cfg.config_dir[0] = '\0';
 
 	curr_stats.vlua = vlua_init();
 
@@ -656,8 +655,12 @@ TEST(help_command)
 
 	assert_success(cmds_dispatch("help", &lwin, CIT_COMMAND));
 
+	char help_file[PATH_MAX + 1];
+	build_path(help_file, sizeof(help_file), get_installed_data_dir(),
+			VIFM_HELP);
+
 	GLUA_EQ(curr_stats.vlua, "edit-one", "print(ginfo.action)");
-	GLUA_EQ(curr_stats.vlua, "/vifm-help.txt", "print(ginfo.path)");
+	GLUA_EQ(curr_stats.vlua, help_file, "print(ginfo.path)");
 	GLUA_EQ(curr_stats.vlua, "false", "print(ginfo.mustwait)");
 	GLUA_EQ(curr_stats.vlua, "nil", "print(ginfo.line)");
 	GLUA_EQ(curr_stats.vlua, "nil", "print(ginfo.column)");
@@ -785,6 +788,35 @@ TEST(open_command)
 
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;
+}
+
+TEST(mark_command)
+{
+	/* Bad mark name. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("mark ab", &lwin, CIT_COMMAND));
+	assert_string_equal("Invalid mark name: ab", ui_sb_last());
+	assert_failure(cmds_dispatch1("mark &", &lwin, CIT_COMMAND));
+	assert_string_equal("Invalid mark name: &", ui_sb_last());
+
+	/* Relative paths are rejected. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("mark x aaaaa", &lwin, CIT_COMMAND));
+	assert_string_equal("Expected full path to a directory", ui_sb_last());
+
+	/* Environment variables are expanded. */
+	assert_success(cmds_dispatch1("let $TEST = '/'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("mark x $TEST", &lwin, CIT_COMMAND));
+	const mark_t *mark = get_mark_by_name(&lwin, 'x');
+	assert_non_null(mark);
+	assert_string_equal("/", mark->directory);
+
+	/* Question mark prevents mark overwrite. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("mark? x /tmp", &lwin, CIT_COMMAND));
+	assert_string_equal("Mark isn't empty: x", ui_sb_last());
+	/* Not an overwrite. */
+	assert_success(cmds_dispatch1("mark? y /tmp", &lwin, CIT_COMMAND));
 }
 
 static void
