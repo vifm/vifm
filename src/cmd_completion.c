@@ -271,11 +271,11 @@ non_path_completion(completion_data_t *data)
 	}
 	else if(id == COM_BMARKS && (!emark || earg_num(argc, args) >= 2))
 	{
-		bmarks_complete(argc, argv, arg);
+		bmarks_complete(MAX(0, argc - 1), argv, arg);
 	}
 	else if(id == COM_DELBMARKS && !emark)
 	{
-		bmarks_complete(argc, argv, arg);
+		bmarks_complete(MAX(0, argc - 1), argv, arg);
 	}
 	else if(id == COM_COMPARE)
 	{
