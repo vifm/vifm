@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Oct 30
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -399,10 +399,12 @@ Fields of {info} argument:
 These are types of events that can be subscribed to via
 |vifm-l_vifm.events.listen()|.
 
+                                               *vifm-lua-event-app.exit*
 "app.exit" event~
 
 Occurs before Vifm exits normally.  Does not happen on |vifm-:restart|.
 
+                                               *vifm-lua-event-app.fsop*
 "app.fsop" event~
 
 Occurs after a successful execution of a file-system operation.

@@ -796,6 +796,8 @@ const char *tags[] = {
 	"vifm-lua-api",
 	"vifm-lua-caps",
 	"vifm-lua-design",
+	"vifm-lua-event-app.exit",
+	"vifm-lua-event-app.fsop",
 	"vifm-lua-events",
 	"vifm-lua-evolution",
 	"vifm-lua-handlers",
