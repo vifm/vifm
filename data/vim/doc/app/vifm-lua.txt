@@ -500,6 +500,9 @@ Table for managing command-line abbreviations.  See |vifm-l_vifm.abbrevs|.
 vifm.cmds
 Table for managing command-line commands.  See |vifm-l_vifm.cmds|.
 
+vifm.events
+Table for dealing with events.  See |vifm-l_vifm.events|.
+
 vifm.keys
 Table for managing keys.  See |vifm-l_vifm.keys|.
 
