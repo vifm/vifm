@@ -915,7 +915,7 @@ Raises an error:~
 
 This global `vifm.keys` table provides means of managing key bindings.
 
-vifm.keys.add({key})                           *vifm-l_vifm.keys.add()*
+keys.add({key})                                *vifm-l_vifm.keys.add()*
 Registers in one or several modes:
  * a new user-defined key which might replace an existing one
  * a new selector which must not conflict with an existing one
