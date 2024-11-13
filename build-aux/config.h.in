@@ -280,6 +280,9 @@
 #endif
 
 
+/* Make it so that utf8proc does not think it is a library. */
+#undef UTF8PROC_STATIC
+
 /* Version number of package */
 #undef VERSION
 
