@@ -195,6 +195,7 @@ vifm_SOURCES = \
 	lua/vifm_abbrevs.c lua/vifm_abbrevs.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
 	lua/vifm_events.c lua/vifm_events.h \
+	lua/vifm_fs.c lua/vifm_fs.h \
 	lua/vifm_handlers.c lua/vifm_handlers.h \
 	lua/vifm_keys.c lua/vifm_keys.h \
 	lua/vifm_tabs.c lua/vifm_tabs.h \

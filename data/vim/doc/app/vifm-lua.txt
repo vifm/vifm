@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 13
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -22,6 +22,7 @@ Current API version: v0.1.0
 |vifm-l_vifm.abbrevs|  `vifm.abbrevs` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
 |vifm-l_vifm.events|   `vifm.events` global table.
+|vifm-l_vifm.fs|       `vifm.fs` global table.
 |vifm-l_vifm.keys|     `vifm.keys` global table.
 |vifm-l_vifm.opts|     `vifm.opts` global table.
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
@@ -503,6 +504,9 @@ Table for managing command-line commands.  See |vifm-l_vifm.cmds|.
 vifm.events
 Table for dealing with events.  See |vifm-l_vifm.events|.
 
+vifm.fs
+Table for basic/low-level file-system operations.  See |vifm-l_vifm.fs|.
+
 vifm.keys
 Table for managing keys.  See |vifm-l_vifm.keys|.
 
@@ -657,6 +661,8 @@ Return:~
 
 vifm.makepath({path})                          *vifm-l_vifm.makepath()*
 Creates target path and missing intermediate directories.
+
+This is {deprecated}.  See |vifm-l_vifm.fs.mkdir()| instead.
 
 Parameters:~
   {path}  Path to create.
@@ -912,6 +918,113 @@ Return:~
 
 Raises an error:~
   On unknown event name.
+
+--------------------------------------------------------------------------------
+*vifm-l_vifm.fs*
+
+This global `vifm.fs` table provides basic/low-level file-system operations.
+
+The main purpose is to allow plugins to perform file manipulations the same
+way in different environment, avoid invoking external applications and
+dealing with things like escaping.
+
+The implementation is the same that is used when |vifm-'syscalls'| is enabled
+regardless of the value of the option.  This is to make behaviour more
+consistent across supported platforms and user configurations.
+
+These operations:
+ * synchronous
+ * non-interactive:
+   - no dialog on conflicts
+   - no dialog on errors
+   - can't be cancelled
+ * don't change undo history (can't be undone or redone)
+ * generate |vifm-lua-event-app.fsop| event
+
+fs.cp({from}, {to}, {onconflict})              *vifm-l_vifm.fs.cp()*
+Copies a file/directory from {from} to {to}.
+
+Possible values of {onconflict}:
+ - "append-tail"
+   For files: append the end of a file at {from} to the corresponding file at
+              {to} until they are of equal size if the latter is initially
+              shorter than the former.
+   For directories: fail if {to} exists.
+ - "overwrite"
+   For files: remove {to} file before placing a copy in its place.
+   For directories: merge {from} into {to} replacing matching files.
+ - "skip"
+   For files: avoid copying a path in {from} if a corresponding path exists in
+              {to}.
+   For directories: merge {from} into {to} skipping matching files.
+ - (default) "fail" or any other value
+   Return an error if {to} already exists.
+
+Parameters:~
+  {from}        Path to a file/directory to copy.
+  {to}          Where the copy should be placed.
+  {onconflict}  What to do if {to} already exists.
+
+Return:~
+  `true` on success.
+
+fs.ln({path}, {target})                        *vifm-l_vifm.fs.ln()*
+Creates or updates a symbolic link at {path}.
+
+Parameters:~
+  {path}    The path to a symbolic link.
+  {target}  Where the link should point.
+
+Return:~
+  `true` on success.
+
+fs.mkdir({path}, {onmissingparent})            *vifm-l_vifm.fs.mkdir()*
+Creates an empty directory at {path}.
+
+Possible values of {onmissingparent}:
+ - "create"
+   Try to create all missing path components.
+ - (default) "fail" or any other value
+   Return an error if parent of the {path} doesn't exist.
+
+Parameters:~
+  {path}             The path at which a new directory should be created.
+  {onmissingparent}  What to do if parent of the {path} doesn't exist.
+
+Return:~
+  `true` on success.
+
+fs.mkfile({path})                              *vifm-l_vifm.fs.mkfile()*
+Creates an empty file at {path}.  Fails if that path already exists.
+
+Parameters:~
+  {path}  The path at which a new file should be created.
+
+Return:~
+  `true` on success.
+
+fs.mv({from}, {to}, {onconflict})              *vifm-l_vifm.fs.mv()*
+The interface matches that of |vifm-l_vifm.fs.cp|, but {from} is moved instead
+of being copied.
+
+fs.rm({path})                                  *vifm-l_vifm.fs.rm()*
+Removes a single file or a directory with all of its contents.  Fails if
+{path} doesn't exist.
+
+Parameters:~
+  {path}  Path to a file/directory that should be removed.
+
+Return:~
+  `true` on success.
+
+fs.rmdir({path})                               *vifm-l_vifm.fs.rmdir()*
+Removes an empty directory.  Fails if {path} doesn't exist.
+
+Parameters:~
+  {path}  Path to the empty directory that should be removed.
+
+Return:~
+  `true` on success.
 
 --------------------------------------------------------------------------------
 *vifm-l_vifm.keys*

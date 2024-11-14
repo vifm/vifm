@@ -167,25 +167,25 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	lua/lua/lvm.$(OBJEXT) lua/lua/lzio.$(OBJEXT) \
 	lua/common.$(OBJEXT) lua/vifm.$(OBJEXT) \
 	lua/vifm_abbrevs.$(OBJEXT) lua/vifm_cmds.$(OBJEXT) \
-	lua/vifm_events.$(OBJEXT) lua/vifm_handlers.$(OBJEXT) \
-	lua/vifm_keys.$(OBJEXT) lua/vifm_tabs.$(OBJEXT) \
-	lua/vifm_viewcolumns.$(OBJEXT) lua/vifmentry.$(OBJEXT) \
-	lua/vifmjob.$(OBJEXT) lua/vifmtab.$(OBJEXT) \
-	lua/vifmview.$(OBJEXT) lua/vlua.$(OBJEXT) \
-	lua/vlua_cbacks.$(OBJEXT) lua/vlua_state.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
-	menus/cabbrevs_menu.$(OBJEXT) menus/chistory_menu.$(OBJEXT) \
-	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
-	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
-	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
-	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
-	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
-	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
-	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
-	menus/media_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
-	menus/plugins_menu.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
-	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
-	menus/vifm_menu.$(OBJEXT) \
+	lua/vifm_events.$(OBJEXT) lua/vifm_fs.$(OBJEXT) \
+	lua/vifm_handlers.$(OBJEXT) lua/vifm_keys.$(OBJEXT) \
+	lua/vifm_tabs.$(OBJEXT) lua/vifm_viewcolumns.$(OBJEXT) \
+	lua/vifmentry.$(OBJEXT) lua/vifmjob.$(OBJEXT) \
+	lua/vifmtab.$(OBJEXT) lua/vifmview.$(OBJEXT) \
+	lua/vlua.$(OBJEXT) lua/vlua_cbacks.$(OBJEXT) \
+	lua/vlua_state.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
+	menus/chistory_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
+	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
+	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
+	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
+	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
+	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
+	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
+	menus/marks_menu.$(OBJEXT) menus/media_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/plugins_menu.$(OBJEXT) \
+	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
+	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -319,29 +319,29 @@ am__depfiles_remade = ./$(DEPDIR)/args.Po ./$(DEPDIR)/background.Po \
 	io/private/$(DEPDIR)/traverser.Po lua/$(DEPDIR)/common.Po \
 	lua/$(DEPDIR)/vifm.Po lua/$(DEPDIR)/vifm_abbrevs.Po \
 	lua/$(DEPDIR)/vifm_cmds.Po lua/$(DEPDIR)/vifm_events.Po \
-	lua/$(DEPDIR)/vifm_handlers.Po lua/$(DEPDIR)/vifm_keys.Po \
-	lua/$(DEPDIR)/vifm_tabs.Po lua/$(DEPDIR)/vifm_viewcolumns.Po \
-	lua/$(DEPDIR)/vifmentry.Po lua/$(DEPDIR)/vifmjob.Po \
-	lua/$(DEPDIR)/vifmtab.Po lua/$(DEPDIR)/vifmview.Po \
-	lua/$(DEPDIR)/vlua.Po lua/$(DEPDIR)/vlua_cbacks.Po \
-	lua/$(DEPDIR)/vlua_state.Po lua/lua/$(DEPDIR)/lapi.Po \
-	lua/lua/$(DEPDIR)/lauxlib.Po lua/lua/$(DEPDIR)/lbaselib.Po \
-	lua/lua/$(DEPDIR)/lcode.Po lua/lua/$(DEPDIR)/lcorolib.Po \
-	lua/lua/$(DEPDIR)/lctype.Po lua/lua/$(DEPDIR)/ldblib.Po \
-	lua/lua/$(DEPDIR)/ldebug.Po lua/lua/$(DEPDIR)/ldo.Po \
-	lua/lua/$(DEPDIR)/ldump.Po lua/lua/$(DEPDIR)/lfunc.Po \
-	lua/lua/$(DEPDIR)/lgc.Po lua/lua/$(DEPDIR)/linit.Po \
-	lua/lua/$(DEPDIR)/liolib.Po lua/lua/$(DEPDIR)/llex.Po \
-	lua/lua/$(DEPDIR)/lmathlib.Po lua/lua/$(DEPDIR)/lmem.Po \
-	lua/lua/$(DEPDIR)/loadlib.Po lua/lua/$(DEPDIR)/lobject.Po \
-	lua/lua/$(DEPDIR)/lopcodes.Po lua/lua/$(DEPDIR)/loslib.Po \
-	lua/lua/$(DEPDIR)/lparser.Po lua/lua/$(DEPDIR)/lstate.Po \
-	lua/lua/$(DEPDIR)/lstring.Po lua/lua/$(DEPDIR)/lstrlib.Po \
-	lua/lua/$(DEPDIR)/ltable.Po lua/lua/$(DEPDIR)/ltablib.Po \
-	lua/lua/$(DEPDIR)/ltm.Po lua/lua/$(DEPDIR)/lundump.Po \
-	lua/lua/$(DEPDIR)/lutf8lib.Po lua/lua/$(DEPDIR)/lvm.Po \
-	lua/lua/$(DEPDIR)/lzio.Po menus/$(DEPDIR)/apropos_menu.Po \
-	menus/$(DEPDIR)/bmarks_menu.Po \
+	lua/$(DEPDIR)/vifm_fs.Po lua/$(DEPDIR)/vifm_handlers.Po \
+	lua/$(DEPDIR)/vifm_keys.Po lua/$(DEPDIR)/vifm_tabs.Po \
+	lua/$(DEPDIR)/vifm_viewcolumns.Po lua/$(DEPDIR)/vifmentry.Po \
+	lua/$(DEPDIR)/vifmjob.Po lua/$(DEPDIR)/vifmtab.Po \
+	lua/$(DEPDIR)/vifmview.Po lua/$(DEPDIR)/vlua.Po \
+	lua/$(DEPDIR)/vlua_cbacks.Po lua/$(DEPDIR)/vlua_state.Po \
+	lua/lua/$(DEPDIR)/lapi.Po lua/lua/$(DEPDIR)/lauxlib.Po \
+	lua/lua/$(DEPDIR)/lbaselib.Po lua/lua/$(DEPDIR)/lcode.Po \
+	lua/lua/$(DEPDIR)/lcorolib.Po lua/lua/$(DEPDIR)/lctype.Po \
+	lua/lua/$(DEPDIR)/ldblib.Po lua/lua/$(DEPDIR)/ldebug.Po \
+	lua/lua/$(DEPDIR)/ldo.Po lua/lua/$(DEPDIR)/ldump.Po \
+	lua/lua/$(DEPDIR)/lfunc.Po lua/lua/$(DEPDIR)/lgc.Po \
+	lua/lua/$(DEPDIR)/linit.Po lua/lua/$(DEPDIR)/liolib.Po \
+	lua/lua/$(DEPDIR)/llex.Po lua/lua/$(DEPDIR)/lmathlib.Po \
+	lua/lua/$(DEPDIR)/lmem.Po lua/lua/$(DEPDIR)/loadlib.Po \
+	lua/lua/$(DEPDIR)/lobject.Po lua/lua/$(DEPDIR)/lopcodes.Po \
+	lua/lua/$(DEPDIR)/loslib.Po lua/lua/$(DEPDIR)/lparser.Po \
+	lua/lua/$(DEPDIR)/lstate.Po lua/lua/$(DEPDIR)/lstring.Po \
+	lua/lua/$(DEPDIR)/lstrlib.Po lua/lua/$(DEPDIR)/ltable.Po \
+	lua/lua/$(DEPDIR)/ltablib.Po lua/lua/$(DEPDIR)/ltm.Po \
+	lua/lua/$(DEPDIR)/lundump.Po lua/lua/$(DEPDIR)/lutf8lib.Po \
+	lua/lua/$(DEPDIR)/lvm.Po lua/lua/$(DEPDIR)/lzio.Po \
+	menus/$(DEPDIR)/apropos_menu.Po menus/$(DEPDIR)/bmarks_menu.Po \
 	menus/$(DEPDIR)/cabbrevs_menu.Po \
 	menus/$(DEPDIR)/chistory_menu.Po \
 	menus/$(DEPDIR)/colorscheme_menu.Po \
@@ -921,6 +921,7 @@ vifm_SOURCES = \
 	lua/vifm_abbrevs.c lua/vifm_abbrevs.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
 	lua/vifm_events.c lua/vifm_events.h \
+	lua/vifm_fs.c lua/vifm_fs.h \
 	lua/vifm_handlers.c lua/vifm_handlers.h \
 	lua/vifm_keys.c lua/vifm_keys.h \
 	lua/vifm_tabs.c lua/vifm_tabs.h \
@@ -1380,6 +1381,8 @@ lua/vifm_cmds.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_events.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
+lua/vifm_fs.$(OBJEXT): lua/$(am__dirstamp) \
+	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_handlers.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_keys.$(OBJEXT): lua/$(am__dirstamp) \
@@ -1771,6 +1774,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_abbrevs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_cmds.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_events.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_fs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_handlers.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_keys.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_tabs.Po@am__quote@ # am--include-marker
@@ -2837,6 +2841,7 @@ distclean: distclean-am
 	-rm -f lua/$(DEPDIR)/vifm_abbrevs.Po
 	-rm -f lua/$(DEPDIR)/vifm_cmds.Po
 	-rm -f lua/$(DEPDIR)/vifm_events.Po
+	-rm -f lua/$(DEPDIR)/vifm_fs.Po
 	-rm -f lua/$(DEPDIR)/vifm_handlers.Po
 	-rm -f lua/$(DEPDIR)/vifm_keys.Po
 	-rm -f lua/$(DEPDIR)/vifm_tabs.Po
@@ -3105,6 +3110,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f lua/$(DEPDIR)/vifm_abbrevs.Po
 	-rm -f lua/$(DEPDIR)/vifm_cmds.Po
 	-rm -f lua/$(DEPDIR)/vifm_events.Po
+	-rm -f lua/$(DEPDIR)/vifm_fs.Po
 	-rm -f lua/$(DEPDIR)/vifm_handlers.Po
 	-rm -f lua/$(DEPDIR)/vifm_keys.Po
 	-rm -f lua/$(DEPDIR)/vifm_tabs.Po
