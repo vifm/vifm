@@ -12,6 +12,8 @@ documented in the regular ChangeLog.
 	Deprecated VifmView.currententry field in favour of VifmView.cursor.pos.
 	Patch by filterfalse.
 
+	Deprecated vifm.makepath() field in favour of vifm.fs.mkdir().
+
 	Added VifmView.cursor.pos that provides an index of an entry under the
 	cursor.  Patch by filterfalse.
 
@@ -40,6 +42,10 @@ documented in the regular ChangeLog.
 
 	Added "pwd" parameter to vifm.startjob() that specifies initial directory
 	of the process.  Thanks to PRESFIL.
+
+	Added vifm.fs table with file-system related operations: vifm.fs.cp(),
+	vifm.fs.ln(), vifm.fs.mkdir(), vifm.fs.mkfile(), vifm.fs.mv(),
+	vifm.fs.rm(), vifm.fs.rmdir().
 
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 

@@ -40,6 +40,7 @@
 #include "vifm_abbrevs.h"
 #include "vifm_cmds.h"
 #include "vifm_events.h"
+#include "vifm_fs.h"
 #include "vifm_handlers.h"
 #include "vifm_keys.h"
 #include "vifm_tabs.h"
@@ -173,6 +174,10 @@ vifm_init(lua_State *lua)
 	/* Setup vifm.events. */
 	vifm_events_init(lua);
 	lua_setfield(lua, -2, "events");
+
+	/* Setup vifm.fs. */
+	vifm_fs_init(lua);
+	lua_setfield(lua, -2, "fs");
 
 	/* Setup vifm.keys. */
 	vifm_keys_init(lua);

@@ -357,7 +357,7 @@ op_removesl(ops_t *ops, void *data, const char src[], const char dst[])
 	const char *const delete_prg = (ops == NULL)
 	                             ? cfg.delete_prg
 	                             : ops->delete_prg;
-	if(delete_prg[0] != '\0')
+	if(!is_null_or_empty(delete_prg))
 	{
 #ifndef _WIN32
 		char *escaped;

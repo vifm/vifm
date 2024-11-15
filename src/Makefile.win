@@ -57,10 +57,10 @@ lua := lapi.c lauxlib.c lbaselib.c lcode.c lcorolib.c lctype.c ldblib.c \
        lzio.c
 lua := $(addprefix lua/, $(lua))
 lua := $(addprefix lua/, $(lua) common.c vifm.c vifm_abbrevs.c vifm_cmds.c \
-                                vifm_events.c vifm_handlers.c vifm_keys.c \
-                                vifm_tabs.c vifm_viewcolumns.c vifmentry.c \
-                                vifmjob.c vifmtab.c vifmview.c vlua.c \
-                                vlua_cbacks.c vlua_state.c)
+                                vifm_events.c vifm_fs.c vifm_handlers.c \
+                                vifm_keys.c vifm_tabs.c vifm_viewcolumns.c \
+                                vifmentry.c vifmjob.c vifmtab.c vifmview.c \
+                                vlua.c vlua_cbacks.c vlua_state.c)
 
 menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c chistory_menu.c \
          colorscheme_menu.c commands_menu.c dirhistory_menu.c dirstack_menu.c \
