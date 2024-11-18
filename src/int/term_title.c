@@ -358,7 +358,7 @@ get_x11_disp_and_win(Display **disp, Window *win)
 static void
 get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 {
-	int (*old_handler)();
+	int (*old_handler)(Display *, XErrorEvent *);
 	XTextProperty text_prop;
 
 	old_handler = XSetErrorHandlerWrapper(x_error_check);
