@@ -1,4 +1,4 @@
-.TH VIFM 1 "6 November 2024" "vifm 0.13"
+.TH VIFM 1 "20 November 2024" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6166,6 +6166,8 @@ layoutis({type})      Integer     Checks whether layout is of type {type}.
 .br
 paneisat({loc})       Integer     Checks whether current pane is at {loc}.
 .br
+selected()            Integer     Returns number of currently selected files.
+.br
 system({command})     String      Executes shell command and returns its output.
 .br
 tabpagenr([{arg}])    Integer     Returns number of current or last tab.
@@ -6371,6 +6373,10 @@ following locations:
     left    pane reaches left border
     right   pane reaches right border
 .br
+
+.BI selected()
+
+Retrieves number of files selected in the active pane.
 
 .BI system({command})
 

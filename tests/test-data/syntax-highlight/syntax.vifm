@@ -642,6 +642,9 @@ set wildinc
 echo chooseopt('file')
 call chooseopt('file')
 
+" "selected" should be highlighted as a function()
+echo selected()
+
 " "term" should be highlighted as a function()
 echo term('cmd')
 

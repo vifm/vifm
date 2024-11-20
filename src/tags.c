@@ -953,6 +953,7 @@ const char *tags[] = {
 	"vifm-rl",
 	"vifm-scripts",
 	"vifm-see-also",
+	"vifm-selected()",
 	"vifm-selection",
 	"vifm-selectors",
 	"vifm-servername-variable",
