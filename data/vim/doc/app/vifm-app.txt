@@ -5275,7 +5275,6 @@ Retrieves string describing type of current pane.  Possible return values:
     tree         tree view
     compare      compare view
 
-
 has({property})                                *vifm-has()*
 
 Allows examining internal parameters from scripts to e.g. figure out
@@ -5293,7 +5292,6 @@ Usage example: >
   endif
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
-<
 
 input({prompt} [, {initial} [, {completion}]]) *vifm-input()*
 
@@ -5330,7 +5328,6 @@ Any other value yields 0.
 Usage example: >
   " automatically split vertically before enabling preview
   :nnoremap w :if layoutis('only') | vsplit | endif | view!<cr>
-<
 
 paneisat({loc})                                *vifm-paneisat()*
 
