@@ -190,6 +190,8 @@
 
 	Improved detection and reporting of invalid marks by :mark command.
 
+	Updated ncurses in AppImage to 6.5.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
