@@ -41,7 +41,7 @@ wget http://ftp.gnu.org/gnu/ncurses/ncurses-6.5.tar.gz
 tar -xf ncurses-6.5.tar.gz
 NCURSES_DIR="$PWD/ncurses-6.5"
 pushd "$NCURSES_DIR"
-./configure --without-shared --enable-widec --prefix=/ \
+./configure --without-shared --enable-widec --prefix=/usr \
     --without-normal --without-debug --without-cxx --without-cxx-binding \
     --without-ada --without-manpages --without-tests
 make -j4
@@ -49,7 +49,8 @@ make DESTDIR="$PWD/build" install
 popd
 
 # Configure vifm to use our libncursesw6
-./configure --sysconfdir=/etc --prefix=/usr --with-curses="$NCURSES_DIR/build" \
+./configure --sysconfdir=/etc --prefix=/usr \
+    --with-curses="$NCURSES_DIR/build/usr" \
     --without-glib --without-X11 --without-libmagic
 make -j4
 make DESTDIR="$BUILD_DIR/AppDir" install
@@ -64,7 +65,7 @@ mkdir -p "$BUILD_DIR/AppDir/usr/share/metainfo"
 cp "$BUILD_DIR/data/vifm.appdata.xml" "$BUILD_DIR/AppDir/usr/share/metainfo"
 
 # Copy terminfo database
-cp -r "$NCURSES_DIR/build/share/terminfo" "$BUILD_DIR/AppDir/usr/share"
+cp -r "$NCURSES_DIR/build/usr/share/terminfo" "$BUILD_DIR/AppDir/usr/share"
 
 # Prepare the binary
 strip "$BUILD_DIR/AppDir/usr/bin/vifm"

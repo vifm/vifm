@@ -414,6 +414,9 @@
 	enabled since the introduction of highlighting of search matches.  Thanks
 	to James Dietrich.
 
+	Fixed /usr/share/terminfo not being consulted when running from an
+	AppImage.  Thanks to anonymous at Vifm Q2A site.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
