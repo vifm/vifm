@@ -43,6 +43,9 @@ documented in the regular ChangeLog.
 	Added "pwd" parameter to vifm.startjob() that specifies initial directory
 	of the process.  Thanks to PRESFIL.
 
+	Added vifm.cmds.add({ withrange }) flag which allows :commands implemented
+	in Lua to handle ranges.  Thanks to Moin Khan.
+
 	Added vifm.fs table with file-system related operations: vifm.fs.cp(),
 	vifm.fs.ln(), vifm.fs.mkdir(), vifm.fs.mkfile(), vifm.fs.mv(),
 	vifm.fs.rm(), vifm.fs.rmdir().

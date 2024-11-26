@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 14
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 26
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -828,12 +828,22 @@ Possible fields of {cmd}:
    Minimal number of arguments.
  - "maxargs" (integer) (default: minargs)
    Maximal number of arguments.  Negative number means "indefinite".
+ - "withrange" (boolean) (default: false)
+   Whether this command accepts a range.
 
 Fields of {info} argument for "handler":
  - "args" (string)
    All arguments passed to the command.
  - "argv" (array of strings)
    Set of parsed arguments of the command.
+ - "range" (table)
+   Information about a range passed to the command or `nil` for commands that
+   don't accept a range or when none is supplied.  Fields:
+    - "from" (integer)
+      1-based index of the first entry in the range.
+    - "to" (integer)
+      1-based index of the last entry in the range.  Equal to "from" if there
+      is only one element in the range.
 
 Fields of {info} argument for "complete":
  - "arg" (string)
