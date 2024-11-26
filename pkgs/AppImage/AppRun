@@ -5,7 +5,10 @@
 # Reference: https://github.com/neovim/neovim/issues/9341
 unset ARGV0
 
+# Load bundled libraries.
 export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
+
+# Tell Vifm it's used from an AppImage and what it's root directory is.
 export VIFM_APPDIR_ROOT=$APPDIR
 
 # Make ncurses look into the bundled terminfo.  Using $TERMINFO_DIRS is better
