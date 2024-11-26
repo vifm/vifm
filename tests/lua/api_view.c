@@ -304,6 +304,37 @@ TEST(vifmview_unselect)
 	assert_false(lwin.dir_entry[1].selected);
 }
 
+TEST(vifmview_selected)
+{
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "file0", "print(selected().name)");
+	GLUA_EQ(vlua, "file1", "print(selected().name)");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 0;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "file0", "print(selected().name)");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+
+	lwin.dir_entry[0].selected = 0;
+	lwin.dir_entry[1].selected = 1;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "file1", "print(selected().name)");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+
+	lwin.dir_entry[0].selected = 0;
+	lwin.dir_entry[1].selected = 0;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+}
+
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))
 {
 	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(2):mimetype())");

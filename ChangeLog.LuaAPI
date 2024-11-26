@@ -50,6 +50,8 @@ documented in the regular ChangeLog.
 	vifm.fs.ln(), vifm.fs.mkdir(), vifm.fs.mkfile(), vifm.fs.mv(),
 	vifm.fs.rm(), vifm.fs.rmdir().
 
+	Added VifmView:selected() that returns an iterator over selected entries.
+
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 
 	Fixed jobs created via vifm.startjob() being displayed with "UNKNOWN" for

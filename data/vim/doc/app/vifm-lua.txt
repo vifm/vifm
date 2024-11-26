@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 26
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1264,8 +1264,9 @@ Return:~
 *vifm-l_VifmEntry*
 
 Instances of this type are used in filetype |vifm-lua-handlers| and in
-callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by
-|vifm-l_VifmView:entry()|.
+callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by:
+ * |vifm-l_VifmView:entry()|
+ * |vifm-l_VifmView:selected()| iterator
 
 Fields of this table are just copies, changing their values won't affect state
 of the application.
@@ -1518,6 +1519,15 @@ Parameters:~
 
 Return:~
   |vifm-l_VifmEntry| on success and `nil` on wrong index.
+
+VifmView:selected()                            *vifm-l_VifmView:selected()*
+Creates an iterator over selected entries of the view.  The behaviour is
+undefined if the list of entries changes while the iteration is in progress.
+The order in which the entries are returned is implementation-specific and is
+not guaranteed to remain the same between releases.
+
+Return:~
+  An iterator function that returns the next |vifm-l_VifmEntry| on each call.
 
 VifmView:select({entries})                     *vifm-l_VifmView:select()*
 Selects entries.  Does nothing in visual non-amend mode.  See
