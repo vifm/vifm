@@ -190,6 +190,11 @@
 
 	Improved detection and reporting of invalid marks by :mark command.
 
+	Updated ncurses in AppImage to 6.5.
+
+	Don't overwrite $TERMINFO in AppImage, set/append to $TERMINFO_DIRS
+	instead.  Thanks to anonymous at Vifm Q2A site.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -411,6 +416,9 @@
 	Fixed outdated documentation on the behaviour of n/N when 'hlsearch' is
 	enabled since the introduction of highlighting of search matches.  Thanks
 	to James Dietrich.
+
+	Fixed /usr/share/terminfo not being consulted when running from an
+	AppImage.  Thanks to anonymous at Vifm Q2A site.
 
 0.13-beta to 0.13 (2023-04-04)
 
