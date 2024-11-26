@@ -58,7 +58,7 @@ static int VLUA_API(vifmview_entry)(lua_State *lua);
 static int VLUA_API(vifmview_select)(lua_State *lua);
 static int VLUA_API(vifmview_unselect)(lua_State *lua);
 static int select_unselect(lua_State *lua, int select);
-static view_t * check_view(lua_State *lua);
+static view_t * check_view(lua_State *lua, int index);
 static view_t * find_view(lua_State *lua, unsigned int id);
 
 VLUA_DECLARE_SAFE(vifmview_index);
@@ -115,7 +115,7 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	}
 	else if(strcmp(key, "custom") == 0)
 	{
-		view_t *view = check_view(lua);
+		view_t *view = check_view(lua, 1);
 		if(!flist_custom_active(view))
 		{
 			lua_pushnil(lua);
@@ -131,19 +131,19 @@ VLUA_API(vifmview_index)(lua_State *lua)
 	}
 	else if(strcmp(key, "cwd") == 0)
 	{
-		view_t *view = check_view(lua);
+		view_t *view = check_view(lua, 1);
 		lua_pushstring(lua, flist_get_dir(view));
 		return 1;
 	}
 	else if(strcmp(key, "entrycount") == 0)
 	{
-		view_t *view = check_view(lua);
+		view_t *view = check_view(lua, 1);
 		lua_pushinteger(lua, view->list_rows);
 		return 1;
 	}
 	else if(strcmp(key, "currententry") == 0)
 	{
-		view_t *view = check_view(lua);
+		view_t *view = check_view(lua, 1);
 		lua_pushinteger(lua, view->list_pos + 1);
 		return 1;
 	}
@@ -430,7 +430,7 @@ VLUA_API(vifmview_otherview)(lua_State *lua)
 static int
 VLUA_API(vifmview_cd)(lua_State *lua)
 {
-	view_t *view = check_view(lua);
+	view_t *view = check_view(lua, 1);
 
 	const char *path = luaL_checkstring(lua, 2);
 	int success = (navigate_to(view, path) == 0);
@@ -443,7 +443,7 @@ VLUA_API(vifmview_cd)(lua_State *lua)
 static int
 VLUA_API(vifmview_entry)(lua_State *lua)
 {
-	view_t *view = check_view(lua);
+	view_t *view = check_view(lua, 1);
 
 	int idx = luaL_checkinteger(lua, 2) - 1;
 	if(idx < 0 || idx >= view->list_rows)
@@ -477,7 +477,7 @@ VLUA_API(vifmview_unselect)(lua_State *lua)
 static int
 select_unselect(lua_State *lua, int select)
 {
-	view_t *view = check_view(lua);
+	view_t *view = check_view(lua, 1);
 
 	if(vle_mode_is(VISUAL_MODE) && !modvis_is_amending())
 	{
@@ -504,12 +504,13 @@ select_unselect(lua_State *lua, int select)
 	return 1;
 }
 
-/* Resolves `VifmView` user data in the first argument.  Returns the pointer or
- * aborts (Lua does longjmp()) if the view doesn't exist anymore. */
+/* Resolves `VifmView` user data at the specified index on the stack.  Returns
+ * the pointer or aborts (Lua does longjmp()) if the view doesn't exist
+ * anymore. */
 static view_t *
-check_view(lua_State *lua)
+check_view(lua_State *lua, int index)
 {
-	unsigned int *id = luaL_checkudata(lua, 1, "VifmView");
+	unsigned int *id = luaL_checkudata(lua, index, "VifmView");
 	return find_view(lua, *id);
 }
 
