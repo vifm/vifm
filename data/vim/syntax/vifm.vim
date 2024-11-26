@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: October 9, 2024
+" Last Change: November 20, 2024
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -91,6 +91,7 @@ syntax match vifmBuiltinFunction
 		  \\|input
 		  \\|layoutis
 		  \\|paneisat
+		  \\|selected
 		  \\|system
 		  \\|tabpagenr
 		  \\|term

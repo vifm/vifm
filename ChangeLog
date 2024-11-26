@@ -92,6 +92,9 @@
 
 	Added inode number to File Info dialog.
 
+	Added selected() builtin function which returns number of currently
+	selected files.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

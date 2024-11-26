@@ -521,5 +521,16 @@ TEST(escape_strings)
 	ASSERT_OK("escape(' \t ', ' \t')", "\\ \\\t\\ ");
 }
 
+TEST(selected)
+{
+	ASSERT_FAIL("selected(0)", PE_INVALID_EXPRESSION);
+
+	curr_view->selected_files = 0;
+	ASSERT_OK("selected()", "0");
+
+	curr_view->selected_files = 1024;
+	ASSERT_OK("selected()", "1024");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

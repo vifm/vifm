@@ -123,7 +123,6 @@ Questionable things:
   * Ability to enter a mount with multiple vifm instances without
     reunpacking/reconnecting.
   * Consider conflict resolution for :move and alike.
-  * Builtin function (or variable?) to get number of selected files.
   * Make directory stack menu interactive?
   * Tree-like view with support of foldings (for each directory). (partially
     done)
