@@ -192,6 +192,9 @@
 
 	Updated ncurses in AppImage to 6.5.
 
+	Don't overwrite $TERMINFO in AppImage, set/append to $TERMINFO_DIRS
+	instead.  Thanks to anonymous at Vifm Q2A site.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

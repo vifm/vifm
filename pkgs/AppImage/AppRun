@@ -7,6 +7,15 @@ unset ARGV0
 
 export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
 export VIFM_APPDIR_ROOT=$APPDIR
-export TERMINFO=$APPDIR/usr/share/terminfo
+
+# Make ncurses look into the bundled terminfo.  Using $TERMINFO_DIRS is better
+# than $TERMINFO as it allows preserving any already specified paths.  See the
+# "ENVIRONMENT" section of `man ncurses` for more details including priority of
+# the lookup.
+if [ -z "$TERMINFO_DIRS" ]; then
+    export TERMINFO_DIRS="$APPDIR/usr/share/terminfo"
+else
+    export TERMINFO_DIRS="$TERMINFO_DIRS:$APPDIR/usr/share/terminfo"
+fi
 
 exec "$APPDIR/usr/bin/vifm" ${@+"$@"}
