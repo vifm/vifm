@@ -52,6 +52,8 @@ documented in the regular ChangeLog.
 
 	Added VifmView:selected() that returns an iterator over selected entries.
 
+	Added VifmView:entries() that returns an iterator over all entries.
+
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 
 	Fixed jobs created via vifm.startjob() being displayed with "UNKNOWN" for

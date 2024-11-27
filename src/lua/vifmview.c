@@ -54,6 +54,8 @@ static int VLUA_IMPL(restore_curr_view)(lua_State *lua);
 static int VLUA_IMPL(get_opt_wrapper)(lua_State *lua);
 static int VLUA_IMPL(set_opt_wrapper)(lua_State *lua);
 static int VLUA_API(vifmview_cd)(lua_State *lua);
+static int VLUA_API(vifmview_entries)(lua_State *lua);
+static int VLUA_IMPL(loop_all_entries)(lua_State *lua);
 static int VLUA_API(vifmview_entry)(lua_State *lua);
 static int VLUA_API(vifmview_select)(lua_State *lua);
 static int VLUA_API(vifmview_selected)(lua_State *lua);
@@ -72,6 +74,7 @@ VLUA_DECLARE_UNSAFE(viewopts_newindex);
 VLUA_DECLARE_SAFE(locopts_index);
 VLUA_DECLARE_UNSAFE(locopts_newindex);
 VLUA_DECLARE_UNSAFE(vifmview_cd);
+VLUA_DECLARE_SAFE(vifmview_entries);
 VLUA_DECLARE_SAFE(vifmview_entry);
 VLUA_DECLARE_UNSAFE(vifmview_select);
 VLUA_DECLARE_SAFE(vifmview_selected);
@@ -80,6 +83,7 @@ VLUA_DECLARE_UNSAFE(vifmview_unselect);
 /* Methods of VifmView type. */
 static const luaL_Reg vifmview_methods[] = {
 	{ "cd",       VLUA_REF(vifmview_cd)       },
+	{ "entries",  VLUA_REF(vifmview_entries)  },
 	{ "entry",    VLUA_REF(vifmview_entry)    },
 	{ "select",   VLUA_REF(vifmview_select)   },
 	{ "selected", VLUA_REF(vifmview_selected) },
@@ -439,6 +443,41 @@ VLUA_API(vifmview_cd)(lua_State *lua)
 	const char *path = luaL_checkstring(lua, 2);
 	int success = (navigate_to(view, path) == 0);
 	lua_pushboolean(lua, success);
+	return 1;
+}
+
+/* Method of `VifmView` that makes an iterator over all entries.  Returns the
+ * iterator function. */
+static int
+VLUA_API(vifmview_entries)(lua_State *lua)
+{
+	/* We don't need the value, but the check won't hurt. */
+	(void)check_view(lua, 1);
+
+	lua_pushvalue(lua, 1);   /* upvalue #1: `VifmView` */
+	lua_pushinteger(lua, 0); /* upvalue #2: index of the next entry */
+	lua_pushcclosure(lua, VLUA_IREF(loop_all_entries), 2);
+	return 1;
+}
+
+/* Implementation of an iterator over all entries.  Returns `VifmEntry` or `nil`
+ * when the iteration is over. */
+static int
+VLUA_IMPL(loop_all_entries)(lua_State *lua)
+{
+	view_t *view = check_view(lua, lua_upvalueindex(1));
+
+	int idx = luaL_checkinteger(lua, lua_upvalueindex(2));
+	if(idx < 0 || idx >= view->list_rows)
+	{
+		lua_pushnil(lua);
+		return 1;
+	}
+
+	lua_pushinteger(lua, idx + 1);
+	lua_copy(lua, -1, lua_upvalueindex(2));
+
+	vifmentry_new(lua, &view->dir_entry[idx]);
 	return 1;
 }
 

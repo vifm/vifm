@@ -335,6 +335,17 @@ TEST(vifmview_selected)
 	GLUA_EQ(vlua, "nil", "print(selected())");
 }
 
+TEST(vifmview_entries)
+{
+	GLUA_EQ(vlua, "", "entries = vifm.currview():entries()");
+	GLUA_EQ(vlua, "", "entry = entries()");
+	GLUA_EQ(vlua, "file0", "print(entry.name)");
+	GLUA_EQ(vlua, "", "entry = entries()");
+	GLUA_EQ(vlua, "file1", "print(entry.name)");
+	GLUA_EQ(vlua, "", "entry = entries()");
+	GLUA_EQ(vlua, "nil", "print(entry)");
+}
+
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))
 {
 	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(2):mimetype())");

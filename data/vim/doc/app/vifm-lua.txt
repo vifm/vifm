@@ -1265,6 +1265,7 @@ Return:~
 
 Instances of this type are used in filetype |vifm-lua-handlers| and in
 callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by:
+ * |vifm-l_VifmView:entries()| iterator
  * |vifm-l_VifmView:entry()|
  * |vifm-l_VifmView:selected()| iterator
 
@@ -1519,6 +1520,14 @@ Parameters:~
 
 Return:~
   |vifm-l_VifmEntry| on success and `nil` on wrong index.
+
+VifmView:entries()                             *vifm-l_VifmView:entries()*
+Creates an iterator over all entries of the view.  The behaviour is undefined
+if the list of entries changes while the iteration is in progress.  The entries
+are returned from first to last.
+
+Return:~
+  An iterator function that returns the next |vifm-l_VifmEntry| on each call.
 
 VifmView:selected()                            *vifm-l_VifmView:selected()*
 Creates an iterator over selected entries of the view.  The behaviour is
