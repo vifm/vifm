@@ -11,6 +11,7 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
@@ -29,9 +30,6 @@ static line_stats_t *stats;
 SETUP_ONCE()
 {
 	stub_colmgr();
-
-	curr_view = &lwin;
-	other_view = &lwin;
 
 	stats = get_line_stats();
 }
@@ -57,11 +55,25 @@ SETUP()
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].name = strdup("file1");
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	view_setup(&rwin);
+	strcpy(rwin.curr_dir, "/rwin");
+	rwin.list_rows = 1;
+	rwin.list_pos = 0;
+	rwin.top_line = 0;
+	rwin.dir_entry = dynarray_cextend(NULL,
+			rwin.list_rows*sizeof(*rwin.dir_entry));
+	rwin.dir_entry[0].name = strdup("ofile0");
+	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
+
+	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	vlua_finish(vlua);
 }
@@ -77,7 +89,8 @@ TEST(vifmview_entry)
 {
 	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(0))");
 	GLUA_EQ(vlua, "file0", "print(vifm.currview():entry(1).name)");
-	GLUA_EQ(vlua, "file1", "print(vifm.otherview():entry(2).name)");
+	GLUA_EQ(vlua, "file1", "print(vifm.currview():entry(2).name)");
+	GLUA_EQ(vlua, "ofile0", "print(vifm.otherview():entry(1).name)");
 	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(3))");
 }
 
@@ -344,6 +357,32 @@ TEST(vifmview_entries)
 	GLUA_EQ(vlua, "file1", "print(entry.name)");
 	GLUA_EQ(vlua, "", "entry = entries()");
 	GLUA_EQ(vlua, "nil", "print(entry)");
+}
+
+TEST(vifmview_focus)
+{
+	opt_handlers_setup();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+
+	GLUA_EQ(vlua, "", "curr_tab1 = vifm.currview()");
+	int curr_id = curr_view->id;
+
+	tabs_new(NULL, NULL);
+	GLUA_EQ(vlua, "", "other_tab2 = vifm.otherview()");
+	int other_id = other_view->id;
+
+	GLUA_EQ(vlua, "true", "print(curr_tab1:focus())");
+	assert_int_equal(curr_view->id, curr_id);
+
+	GLUA_EQ(vlua, "true", "print(other_tab2:focus())");
+	assert_int_equal(curr_view->id, other_id);
+
+	tabs_only(&lwin);
+
+	columns_teardown();
+	opt_handlers_teardown();
+
 }
 
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))

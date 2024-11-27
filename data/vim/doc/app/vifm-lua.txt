@@ -1529,6 +1529,14 @@ are returned from first to last.
 Return:~
   An iterator function that returns the next |vifm-l_VifmEntry| on each call.
 
+VifmView:focus()                               *vifm-l_VifmView:focus()*
+Makes this view the current one, switching tabs and/or windows if necessary.
+
+This function is {unsafe}.
+
+Return:~
+  `true` on success (should always succeed at the moment).
+
 VifmView:selected()                            *vifm-l_VifmView:selected()*
 Creates an iterator over selected entries of the view.  The behaviour is
 undefined if the list of entries changes while the iteration is in progress.

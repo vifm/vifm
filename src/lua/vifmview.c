@@ -57,6 +57,7 @@ static int VLUA_API(vifmview_cd)(lua_State *lua);
 static int VLUA_API(vifmview_entries)(lua_State *lua);
 static int VLUA_IMPL(loop_all_entries)(lua_State *lua);
 static int VLUA_API(vifmview_entry)(lua_State *lua);
+static int VLUA_API(vifmview_focus)(lua_State *lua);
 static int VLUA_API(vifmview_select)(lua_State *lua);
 static int VLUA_API(vifmview_selected)(lua_State *lua);
 static int VLUA_IMPL(loop_selected_entries)(lua_State *lua);
@@ -76,6 +77,7 @@ VLUA_DECLARE_UNSAFE(locopts_newindex);
 VLUA_DECLARE_UNSAFE(vifmview_cd);
 VLUA_DECLARE_SAFE(vifmview_entries);
 VLUA_DECLARE_SAFE(vifmview_entry);
+VLUA_DECLARE_UNSAFE(vifmview_focus);
 VLUA_DECLARE_UNSAFE(vifmview_select);
 VLUA_DECLARE_SAFE(vifmview_selected);
 VLUA_DECLARE_UNSAFE(vifmview_unselect);
@@ -85,6 +87,7 @@ static const luaL_Reg vifmview_methods[] = {
 	{ "cd",       VLUA_REF(vifmview_cd)       },
 	{ "entries",  VLUA_REF(vifmview_entries)  },
 	{ "entry",    VLUA_REF(vifmview_entry)    },
+	{ "focus",    VLUA_REF(vifmview_focus)    },
 	{ "select",   VLUA_REF(vifmview_select)   },
 	{ "selected", VLUA_REF(vifmview_selected) },
 	{ "unselect", VLUA_REF(vifmview_unselect) },
@@ -496,6 +499,16 @@ VLUA_API(vifmview_entry)(lua_State *lua)
 	}
 
 	vifmentry_new(lua, &view->dir_entry[idx]);
+	return 1;
+}
+
+/* Method of `VifmView` that attempts to make the view the current one.
+ * Returns true on success. */
+static int
+VLUA_API(vifmview_focus)(lua_State *lua)
+{
+	view_t *view = check_view(lua, 1);
+	lua_pushboolean(lua, ui_focus_view(view->id) == 0);
 	return 1;
 }
 
