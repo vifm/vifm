@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 27
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1536,6 +1536,17 @@ This function is {unsafe}.
 
 Return:~
   `true` on success (should always succeed at the moment).
+
+VifmView:gotopath({path})                      *vifm-l_VifmView:gotopath()*
+Changes directory, resets filters and/or moves the cursor to find a particular
+file.
+
+Parameters:~
+  {path}  Target path.
+
+Return:~
+  `false` if {path} is root or doesn't exist.
+  `true` on success.
 
 VifmView:selected()                            *vifm-l_VifmView:selected()*
 Creates an iterator over selected entries of the view.  The behaviour is

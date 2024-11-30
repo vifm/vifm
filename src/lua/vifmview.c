@@ -29,6 +29,8 @@
 #include "../modes/visual.h"
 #include "../ui/tabs.h"
 #include "../ui/ui.h"
+#include "../utils/fs.h"
+#include "../utils/path.h"
 #include "../filelist.h"
 #include "../flist_pos.h"
 #include "../flist_sel.h"
@@ -58,6 +60,7 @@ static int VLUA_API(vifmview_entries)(lua_State *lua);
 static int VLUA_IMPL(loop_all_entries)(lua_State *lua);
 static int VLUA_API(vifmview_entry)(lua_State *lua);
 static int VLUA_API(vifmview_focus)(lua_State *lua);
+static int VLUA_API(vifmview_gotopath)(lua_State *lua);
 static int VLUA_API(vifmview_select)(lua_State *lua);
 static int VLUA_API(vifmview_selected)(lua_State *lua);
 static int VLUA_IMPL(loop_selected_entries)(lua_State *lua);
@@ -78,6 +81,7 @@ VLUA_DECLARE_UNSAFE(vifmview_cd);
 VLUA_DECLARE_SAFE(vifmview_entries);
 VLUA_DECLARE_SAFE(vifmview_entry);
 VLUA_DECLARE_UNSAFE(vifmview_focus);
+VLUA_DECLARE_UNSAFE(vifmview_gotopath);
 VLUA_DECLARE_UNSAFE(vifmview_select);
 VLUA_DECLARE_SAFE(vifmview_selected);
 VLUA_DECLARE_UNSAFE(vifmview_unselect);
@@ -88,6 +92,7 @@ static const luaL_Reg vifmview_methods[] = {
 	{ "entries",  VLUA_REF(vifmview_entries)  },
 	{ "entry",    VLUA_REF(vifmview_entry)    },
 	{ "focus",    VLUA_REF(vifmview_focus)    },
+	{ "gotopath", VLUA_REF(vifmview_gotopath) },
 	{ "select",   VLUA_REF(vifmview_select)   },
 	{ "selected", VLUA_REF(vifmview_selected) },
 	{ "unselect", VLUA_REF(vifmview_unselect) },
@@ -509,6 +514,33 @@ VLUA_API(vifmview_focus)(lua_State *lua)
 {
 	view_t *view = check_view(lua, 1);
 	lua_pushboolean(lua, ui_focus_view(view->id) == 0);
+	return 1;
+}
+
+/* Method of `VifmView` that changes directory, resets filters and/or moves the
+ * cursor to find a particular file.  Returns true on success. */
+static int
+VLUA_API(vifmview_gotopath)(lua_State *lua)
+{
+	view_t *view = check_view(lua, 1);
+	const char *path = luaL_checkstring(lua, 2);
+
+	char abs_path[PATH_MAX + 1];
+	to_canonic_path(path, flist_get_dir(view), abs_path, sizeof(abs_path));
+
+	if(is_root_dir(abs_path) || !path_exists(abs_path, NODEREF))
+	{
+		lua_pushboolean(lua, 0);
+		return 1;
+	}
+
+	char *fname = strdup(get_last_path_component(abs_path));
+	remove_last_path_component(abs_path);
+
+	navigate_to_file(view, abs_path, fname, /*preserve_cv=*/1);
+	free(fname);
+
+	lua_pushboolean(lua, 1);
 	return 1;
 }
 

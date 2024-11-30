@@ -382,7 +382,22 @@ TEST(vifmview_focus)
 
 	columns_teardown();
 	opt_handlers_teardown();
+}
 
+TEST(vifmview_gotopath)
+{
+	conf_setup();
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+
+	GLUA_EQ(vlua, "false", "print(vifm.currview():gotopath('rename/wrong'))");
+
+	GLUA_EQ(vlua, "true", "print(vifm.currview():gotopath('rename/a'))");
+	assert_string_equal("a", lwin.dir_entry[lwin.list_pos].name);
+
+	GLUA_EQ(vlua, "true", "print(vifm.currview():gotopath('aa'))");
+	assert_string_equal("aa", lwin.dir_entry[lwin.list_pos].name);
+
+	conf_teardown();
 }
 
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))
