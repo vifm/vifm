@@ -61,6 +61,8 @@ documented in the regular ChangeLog.
 
 	Added VifmView:loadcustom() that sets list of paths as a custom view.
 
+	Added index of Lua API to the documentation for easier overview/lookup.
+
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 
 	Fixed jobs created via vifm.startjob() being displayed with "UNKNOWN" for

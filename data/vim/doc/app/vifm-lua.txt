@@ -35,6 +35,7 @@ Current API version: v0.1.0
 |vifm-l_VifmJob|       `VifmJob` type.
 |vifm-l_VifmTab|       `VifmTab` type.
 |vifm-l_VifmView|      `VifmView` type.
+|vifm-lua-index|       Index of all Vifm entities in the API.
 
 --------------------------------------------------------------------------------
 *vifm-lua-status*
@@ -1607,6 +1608,132 @@ Possible fields of {entries}:
 
 Return:~
   Number of new unselected entries.
+
+--------------------------------------------------------------------------------
+*vifm-lua-index*
+
+vifm (table)                               |vifm-l_vifm|
+vifm.addcolumntype({column})               |vifm-l_vifm.addcolumntype()|
+vifm.addhandler({handler})                 |vifm-l_vifm.addhandler()|
+vifm.currview()                            |vifm-l_vifm.currview()|
+vifm.errordialog({title}, {msg})           |vifm-l_vifm.errordialog()|
+vifm.escape({what})                        |vifm-l_vifm.escape()|
+vifm.executable({what})                    |vifm-l_vifm.executable()|
+vifm.exists({path})                        |vifm-l_vifm.exists()|
+vifm.expand({str})                         |vifm-l_vifm.expand()|
+vifm.fnamemodify({path}, {mods}[, {base}]) |vifm-l_vifm.fnamemodify()|
+vifm.input({info})                         |vifm-l_vifm.input()|
+vifm.makepath({path})                      |vifm-l_vifm.makepath()|
+vifm.otherview()                           |vifm-l_vifm.otherview()|
+vifm.run({info})                           |vifm-l_vifm.run()|
+vifm.startjob({job})                       |vifm-l_vifm.startjob()|
+vifm.stdout()                              |vifm-l_vifm.stdout()|
+
+vifm.abbrevs (table)                       |vifm-l_vifm.abbrevs|
+vifm.abbrevs.add({abbrev})                 |vifm-l_vifm.abbrevs.add()|
+
+vifm.cmds (table)                          |vifm-l_vifm.cmds|
+vifm.cmds.add({cmd})                       |vifm-l_vifm.cmds.add()|
+vifm.cmds.command({cmd})                   |vifm-l_vifm.cmds.command()|
+vifm.cmds.delcommand({name})               |vifm-l_vifm.cmds.delcommand()|
+
+vifm.events (table)                        |vifm-l_vifm.events|
+vifm.events.listen({event})                |vifm-l_vifm.events.listen()|
+
+vifm.fs (table)                            |vifm-l_vifm.fs|
+vifm.fs.cp({from}, {to}, {onconflict})     |vifm-l_vifm.fs.cp()|
+vifm.fs.ln({path}, {target})               |vifm-l_vifm.fs.ln()|
+vifm.fs.mkdir({path}, {onmissingparent})   |vifm-l_vifm.fs.mkdir()|
+vifm.fs.mkfile({path})                     |vifm-l_vifm.fs.mkfile()|
+vifm.fs.mv({from}, {to}, {onconflict})     |vifm-l_vifm.fs.mv()|
+vifm.fs.rm({path})                         |vifm-l_vifm.fs.rm()|
+vifm.fs.rmdir({path})                      |vifm-l_vifm.fs.rmdir()|
+
+vifm.keys (table)                          |vifm-l_vifm.keys|
+vifm.keys.add({key})                       |vifm-l_vifm.keys.add()|
+
+vifm.opts (table)                          |vifm-l_vifm.opts|
+vifm.opts.global (table)                   |vifm-l_vifm.opts.global|
+
+vifm.plugin (table)                        |vifm-l_vifm.plugin|
+vifm.plugin.name (string)                  |vifm-l_vifm.plugin.name|
+vifm.plugin.path (string)                  |vifm-l_vifm.plugin.path|
+vifm.plugin.require({modname})             |vifm-l_vifm.plugin.require()|
+
+vifm.plugins (table)                       |vifm-l_vifm.plugins|
+vifm.plugins.all (table)                   |vifm-l_vifm.plugins.all|
+
+vifm.sb (table)                            |vifm-l_vifm.sb|
+vifm.sb.error({msg})                       |vifm-l_vifm.sb.error()|
+vifm.sb.info({msg})                        |vifm-l_vifm.sb.info()|
+vifm.sb.quick({msg})                       |vifm-l_vifm.sb.quick()|
+
+vifm.sessions (table)                      |vifm-l_vifm.sessions|
+vifm.sessions.current()                    |vifm-l_vifm.sessions.current|
+
+vifm.tabs (table)                          |vifm-l_vifm.tabs|
+vifm.tabs.get([{query}])                   |vifm-l_vifm.tabs.get()|
+vifm.tabs.getcount([{query}])              |vifm-l_vifm.tabs.getcount()|
+vifm.tabs.getcurrent([{query}])            |vifm-l_vifm.tabs.getcurrent()|
+
+vifm.version (table)                       |vifm-l_vifm.version|
+vifm.version.api.atleast({major}, {minor}, {patch})
+                                           |vifm-l_vifm.version.api.atleast()|
+vifm.version.api.has({feature})            |vifm-l_vifm.version.api.has()|
+vifm.version.api.major (integer)           |vifm-l_vifm.version.api.major|
+vifm.version.api.minor (integer)           |vifm-l_vifm.version.api.minor|
+vifm.version.api.patch (integer)           |vifm-l_vifm.version.api.patch|
+vifm.version.app.str (string)              |vifm-l_vifm.version.app.str|
+
+VifmEntry (type)                           |vifm-l_VifmEntry|
+VifmEntry.atime (integer)                  |vifm-l_VifmEntry.atime|
+VifmEntry.classify (table)                 |vifm-l_VifmEntry.classify|
+VifmEntry.ctime (integer)                  |vifm-l_VifmEntry.ctime|
+VifmEntry.folded (boolean)                 |vifm-l_VifmEntry.folded|
+VifmEntry.isdir (boolean)                  |vifm-l_VifmEntry.isdir|
+VifmEntry.location (string)                |vifm-l_VifmEntry.location|
+VifmEntry.match (boolean)                  |vifm-l_VifmEntry.match|
+VifmEntry.matchend (integer)               |vifm-l_VifmEntry.matchend|
+VifmEntry.matchstart (integer)             |vifm-l_VifmEntry.matchstart|
+VifmEntry.mtime (integer)                  |vifm-l_VifmEntry.mtime|
+VifmEntry.name (string)                    |vifm-l_VifmEntry.name|
+VifmEntry.selected (boolean)               |vifm-l_VifmEntry.selected|
+VifmEntry.size (integer)                   |vifm-l_VifmEntry.size|
+VifmEntry.type (string)                    |vifm-l_VifmEntry.type|
+VifmEntry:gettarget()                      |vifm-l_VifmEntry.gettarget()|
+VifmEntry:mimetype()                       |vifm-l_VifmEntry.mimetype()|
+
+VifmJob (type)                             |vifm-l_VifmJob|
+VifmJob:errors()                           |vifm-l_VifmJob:errors()|
+VifmJob:exitcode()                         |vifm-l_VifmJob:exitcode()|
+VifmJob:pid()                              |vifm-l_VifmJob:pid()|
+VifmJob:stdin()                            |vifm-l_VifmJob:stdin()|
+VifmJob:stdout()                           |vifm-l_VifmJob:stdout()|
+VifmJob:terminate()                        |vifm-l_VifmJob:terminate()|
+VifmJob:wait()                             |vifm-l_VifmJob:wait()|
+
+VifmTab (type)                             |vifm-l_VifmTab|
+VifmTab:getlayout()                        |vifm-l_VifmTab:getlayout()|
+VifmTab:getname()                          |vifm-l_VifmTab:getname()|
+VifmTab:getview([{query}])                 |vifm-l_VifmTab:getview()|
+
+VifmView (type)                            |vifm-l_VifmView|
+VifmView.currententry (integer)            |vifm-l_VifmView.currententry|
+VifmView.cursor (table)                    |vifm-l_VifmView.cursor|
+VifmView.custom (table)                    |vifm-l_VifmView.custom|
+VifmView.cwd (string)                      |vifm-l_VifmView.cwd|
+VifmView.entrycount (integer)              |vifm-l_VifmView.entrycount|
+VifmView.locopts (table)                   |vifm-l_VifmView.viewopts|
+VifmView.viewopts (table)                  |vifm-l_VifmView.locopts|
+VifmView:cd({path})                        |vifm-l_VifmView:cd()|
+VifmView:entries()                         |vifm-l_VifmView:entries()|
+VifmView:entry({index})                    |vifm-l_VifmView:entry()|
+VifmView:focus()                           |vifm-l_VifmView:focus()|
+VifmView:gotopath({path})                  |vifm-l_VifmView:gotopath()|
+VifmView:loadcustom({info})                |vifm-l_VifmView:loadcustom()|
+VifmView:select({entries})                 |vifm-l_VifmView:select()|
+VifmView:selected()                        |vifm-l_VifmView:selected()|
+VifmView:unselect({entries})               |vifm-l_VifmView:unselect()|
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:sw=4:ft=help:norl:
