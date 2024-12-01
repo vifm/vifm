@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Dec 1
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Dec 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1332,7 +1332,7 @@ Raises an error:~
   If entry doesn't correspond to a symbolic link.
   If resolving symbolic link has failed.
 
-VifmEntry:mimetype()                          *vifm-l_VifmEntry.mimetype()*
+VifmEntry:mimetype()                           *vifm-l_VifmEntry.mimetype()*
 Gets a MIME type.  Resolves target of symbolic links.
 
 Return:~
