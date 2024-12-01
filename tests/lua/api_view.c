@@ -400,6 +400,80 @@ TEST(vifmview_gotopath)
 	conf_teardown();
 }
 
+TEST(vifmview_loadcustom)
+{
+	opt_handlers_setup();
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "rename",
+			NULL);
+
+	/* Missing required keys. */
+	BLUA_ENDS(vlua, ": `title` key is mandatory",
+			"print(vifm.currview():loadcustom({ }))");
+	assert_false(flist_custom_active(&lwin));
+	BLUA_ENDS(vlua, ": `paths` key is mandatory",
+			"print(vifm.currview():loadcustom({ title = 'title' }))");
+	assert_false(flist_custom_active(&lwin));
+
+	/* Invalid type field. */
+	BLUA_ENDS(vlua, ": Unknown type of custom view: 'bla'",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "paths = { },"
+			                                   "type = 'bla' }))");
+	assert_false(flist_custom_active(&lwin));
+
+	/* Good invocation. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "paths = { 'a', 'aa' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("aa", lwin.dir_entry[1].name);
+
+	/* Bad invocation doesn't ruin current custom view. */
+	BLUA_ENDS(vlua, "", "print(vifm.currview():loadcustom({ title = 'title' }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("aa", lwin.dir_entry[1].name);
+
+	/* Good invocation for unsorted view. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "type = 'very-custom',"
+			                                   "paths = { 'aa', 'a' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_VERY, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("aa", lwin.dir_entry[0].name);
+	assert_string_equal("a", lwin.dir_entry[1].name);
+
+	/* Good invocation for regular view requested explicitly.  Missing file is
+	 * silently ignored. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "type = 'custom',"
+			                                   "paths = { 'aa', 'a', 'x' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("aa", lwin.dir_entry[1].name);
+
+	/* List of files can be empty. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "paths = { 'nosuchfile' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+
+	opt_handlers_teardown();
+}
+
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))
 {
 	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(2):mimetype())");

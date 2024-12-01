@@ -739,6 +739,7 @@ const char *tags[] = {
 	"vifm-l_VifmView:entry()",
 	"vifm-l_VifmView:focus()",
 	"vifm-l_VifmView:gotopath()",
+	"vifm-l_VifmView:loadcustom()",
 	"vifm-l_VifmView:select()",
 	"vifm-l_VifmView:selected()",
 	"vifm-l_VifmView:unselect()",

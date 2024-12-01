@@ -18,6 +18,7 @@
 
 #include "vifmview.h"
 
+#include <assert.h> /* assert() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() */
 
@@ -61,6 +62,7 @@ static int VLUA_IMPL(loop_all_entries)(lua_State *lua);
 static int VLUA_API(vifmview_entry)(lua_State *lua);
 static int VLUA_API(vifmview_focus)(lua_State *lua);
 static int VLUA_API(vifmview_gotopath)(lua_State *lua);
+static int VLUA_API(vifmview_loadcustom)(lua_State *lua);
 static int VLUA_API(vifmview_select)(lua_State *lua);
 static int VLUA_API(vifmview_selected)(lua_State *lua);
 static int VLUA_IMPL(loop_selected_entries)(lua_State *lua);
@@ -82,21 +84,23 @@ VLUA_DECLARE_SAFE(vifmview_entries);
 VLUA_DECLARE_SAFE(vifmview_entry);
 VLUA_DECLARE_UNSAFE(vifmview_focus);
 VLUA_DECLARE_UNSAFE(vifmview_gotopath);
+VLUA_DECLARE_UNSAFE(vifmview_loadcustom);
 VLUA_DECLARE_UNSAFE(vifmview_select);
 VLUA_DECLARE_SAFE(vifmview_selected);
 VLUA_DECLARE_UNSAFE(vifmview_unselect);
 
 /* Methods of VifmView type. */
 static const luaL_Reg vifmview_methods[] = {
-	{ "cd",       VLUA_REF(vifmview_cd)       },
-	{ "entries",  VLUA_REF(vifmview_entries)  },
-	{ "entry",    VLUA_REF(vifmview_entry)    },
-	{ "focus",    VLUA_REF(vifmview_focus)    },
-	{ "gotopath", VLUA_REF(vifmview_gotopath) },
-	{ "select",   VLUA_REF(vifmview_select)   },
-	{ "selected", VLUA_REF(vifmview_selected) },
-	{ "unselect", VLUA_REF(vifmview_unselect) },
-	{ NULL,       NULL                        }
+	{ "cd",         VLUA_REF(vifmview_cd)         },
+	{ "entries",    VLUA_REF(vifmview_entries)    },
+	{ "entry",      VLUA_REF(vifmview_entry)      },
+	{ "focus",      VLUA_REF(vifmview_focus)      },
+	{ "gotopath",   VLUA_REF(vifmview_gotopath)   },
+	{ "loadcustom", VLUA_REF(vifmview_loadcustom) },
+	{ "select",     VLUA_REF(vifmview_select)     },
+	{ "selected",   VLUA_REF(vifmview_selected)   },
+	{ "unselect",   VLUA_REF(vifmview_unselect)   },
+	{ NULL,         NULL                          }
 };
 
 void
@@ -542,6 +546,52 @@ VLUA_API(vifmview_gotopath)(lua_State *lua)
 
 	lua_pushboolean(lua, 1);
 	return 1;
+}
+
+/* Method of `VifmView` that replaces view contents with a custom list of
+ * paths. */
+static int
+VLUA_API(vifmview_loadcustom)(lua_State *lua)
+{
+	view_t *view = check_view(lua, 1);
+
+	vlua_cmn_check_field(lua, 2, "title", LUA_TSTRING);
+	const char *title = lua_tostring(lua, -1);
+
+	CVType type = CV_REGULAR;
+	if(vlua_cmn_check_opt_field(lua, 2, "type", LUA_TSTRING))
+	{
+		const char *type_str = lua_tostring(lua, -1);
+		if(strcmp(type_str, "custom") == 0)
+		{
+			type = CV_REGULAR;
+		}
+		else if(strcmp(type_str, "very-custom") == 0)
+		{
+			type = CV_VERY;
+		}
+		else
+		{
+			return luaL_error(lua, "Unknown type of custom view: '%s'", type_str);
+		}
+	}
+
+	vlua_cmn_check_field(lua, 2, "paths", LUA_TTABLE);
+
+	flist_custom_start(view, title);
+
+	lua_pushnil(lua);
+	while(lua_next(lua, -2) != 0)
+	{
+		const char *path = lua_tostring(lua, -1);
+		(void)flist_custom_add(view, path);
+		lua_pop(lua, 1);
+	}
+
+	int success = (flist_custom_finish(view, type, /*allow_empty=*/1) == 0);
+	assert(success && "With allow_empty, the call should always succeed.");
+
+	return 0;
 }
 
 /* Method of `VifmView` that selects entries a view.  Returns number of new

@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 30
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Dec 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1547,6 +1547,29 @@ Parameters:~
 Return:~
   `false` if {path} is root or doesn't exist.
   `true` on success.
+
+VifmView:loadcustom({info})                    *vifm-l_VifmView:loadcustom()*
+Replaces view contents with a custom list of paths.  Loads the list even if it
+ends up being empty.
+
+Possible fields of {info}:
+ - "title" (string)
+   Title of the view.
+ - "paths" (array of strings)
+   List of paths.  Can be empty.  Paths that don't correspond to an existing
+   file or duplicates are ignored.
+ - "type" (string) (default: "custom")
+   What kind of custom view to create:
+    - "custom"
+      A normal sorted view.  Same as |vifm-%u|.
+    - "very-custom"
+      A view that preserves original order.  Same as |vifm-%U|.
+
+Parameters:~
+  {info}  Table with information about the custom view.
+
+Raises an error:~
+  If {info}.type has incorrect value.
 
 VifmView:selected()                            *vifm-l_VifmView:selected()*
 Creates an iterator over selected entries of the view.  The behaviour is

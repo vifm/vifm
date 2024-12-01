@@ -59,6 +59,8 @@ documented in the regular ChangeLog.
 	Added VifmView:gotopath() that navigates to a file (like :goto or
 	--select).
 
+	Added VifmView:loadcustom() that sets list of paths as a custom view.
+
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 
 	Fixed jobs created via vifm.startjob() being displayed with "UNKNOWN" for
