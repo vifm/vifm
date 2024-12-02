@@ -993,10 +993,11 @@ menus_def_khandler(view_t *view, menu_data_t *ms, const wchar_t keys[])
 }
 
 int
-menus_to_custom_view(menu_state_t *ms, view_t *view, int very)
+menus_to_custom_view(menu_state_t *ms, int very)
 {
 	int i;
 	char *current = NULL;
+	view_t *view = ms->view;
 	const char *const rel_base = get_relative_path_base(ms->d, view);
 
 	flist_custom_start(view, ms->d->title);

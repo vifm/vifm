@@ -143,7 +143,7 @@ const menu_data_t * menus_get_stash(int index, int *current);
 
 /* Moves menu items into custom view.  Returns zero on success, otherwise
  * non-zero is returned. */
-int menus_to_custom_view(menu_state_t *ms, struct view_t *view, int very);
+int menus_to_custom_view(menu_state_t *ms, int very);
 
 /* Either makes a menu or custom view out of command output.  Returns non-zero
  * if status bar message should be saved. */

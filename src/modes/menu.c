@@ -736,7 +736,7 @@ cmd_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 dump_into_custom_view(int very)
 {
-	if(menus_to_custom_view(menu->state, view, very) != 0)
+	if(menus_to_custom_view(menu->state, very) != 0)
 	{
 		show_error_msg("Menu transformation",
 				"No valid paths discovered in menu content");
