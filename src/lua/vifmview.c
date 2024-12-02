@@ -68,7 +68,6 @@ static int VLUA_API(vifmview_selected)(lua_State *lua);
 static int VLUA_IMPL(loop_selected_entries)(lua_State *lua);
 static int VLUA_API(vifmview_unselect)(lua_State *lua);
 static int select_unselect(lua_State *lua, int select);
-static view_t * check_view(lua_State *lua, int index);
 static view_t * find_view(lua_State *lua, unsigned int id);
 
 VLUA_DECLARE_SAFE(vifmview_index);
@@ -689,10 +688,7 @@ select_unselect(lua_State *lua, int select)
 	return 1;
 }
 
-/* Resolves `VifmView` user data at the specified index on the stack.  Returns
- * the pointer or aborts (Lua does longjmp()) if the view doesn't exist
- * anymore. */
-static view_t *
+view_t *
 check_view(lua_State *lua, int index)
 {
 	unsigned int *id = luaL_checkudata(lua, index, "VifmView");

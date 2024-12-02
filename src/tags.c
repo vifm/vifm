@@ -773,6 +773,8 @@ const char *tags[] = {
 	"vifm-l_vifm.keys",
 	"vifm-l_vifm.keys.add()",
 	"vifm-l_vifm.makepath()",
+	"vifm-l_vifm.menus",
+	"vifm-l_vifm.menus.loadcustom()",
 	"vifm-l_vifm.opts",
 	"vifm-l_vifm.opts.global",
 	"vifm-l_vifm.otherview()",

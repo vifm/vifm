@@ -63,6 +63,8 @@ documented in the regular ChangeLog.
 
 	Added index of Lua API to the documentation for easier overview/lookup.
 
+	Added vifm.menus.loadcustom() that makes a menu out of a list of strings.
+
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 
 	Fixed jobs created via vifm.startjob() being displayed with "UNKNOWN" for

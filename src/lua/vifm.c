@@ -22,6 +22,7 @@
 
 #include "../cfg/info.h"
 #include "../engine/options.h"
+#include "../menus/users_menu.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/cmdline.h"
 #include "../ui/statusbar.h"
@@ -78,6 +79,7 @@ static int VLUA_API(vifm_expand)(lua_State *lua);
 static int VLUA_API(vifm_fnamemodify)(lua_State *lua);
 static int VLUA_API(vifm_input)(lua_State *lua);
 static int VLUA_API(vifm_makepath)(lua_State *lua);
+static int VLUA_API(vifm_menus_loadcustom)(lua_State *lua);
 static int VLUA_API(vifm_run)(lua_State *lua);
 static int VLUA_API(vifm_sessions_current)(lua_State *lua);
 static int VLUA_API(vifm_stdout)(lua_State *lua);
@@ -101,6 +103,7 @@ VLUA_DECLARE_SAFE(vifm_expand);
 VLUA_DECLARE_SAFE(vifm_fnamemodify);
 VLUA_DECLARE_SAFE(vifm_input);
 VLUA_DECLARE_SAFE(vifm_makepath);
+VLUA_DECLARE_UNSAFE(vifm_menus_loadcustom);
 VLUA_DECLARE_SAFE(vifm_run);
 VLUA_DECLARE_SAFE(vifm_sessions_current);
 VLUA_DECLARE_SAFE(vifm_stdout);
@@ -186,6 +189,12 @@ vifm_init(lua_State *lua)
 	/* Setup vifm.tabs. */
 	vifm_tabs_init(lua);
 	lua_setfield(lua, -2, "tabs");
+
+	/* Setup vifm.menus. */
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/1);
+	lua_pushcfunction(lua, VLUA_REF(vifm_menus_loadcustom));
+	lua_setfield(lua, -2, "loadcustom"); /* vifm.menus.loadcustom */
+	lua_setfield(lua, -2, "menus");      /* vifm.menus */
 
 	/* Setup vifm.opts. */
 	lua_createtable(lua, /*narr=*/0, /*nrec=*/1); /* vifm.opts */
@@ -385,6 +394,69 @@ VLUA_API(vifm_makepath)(lua_State *lua)
 {
 	const char *path = luaL_checkstring(lua, 1);
 	lua_pushboolean(lua, make_path(path, 0755) == 0);
+	return 1;
+}
+
+/* Member of `vifm.menus` that creates a menu out of list of items.  Returns a
+ * boolean, which is true on success. */
+static int
+VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
+{
+	luaL_checktype(lua, 1, LUA_TTABLE);
+
+	view_t *view = curr_view;
+	if(vlua_cmn_check_opt_field(lua, 1, "view", LUA_TUSERDATA))
+	{
+		view = check_view(lua, -1);
+		if(view != &lwin && view != &rwin)
+		{
+			goto fail;
+		}
+	}
+
+	int with_navigation = 0;
+	if(vlua_cmn_check_opt_field(lua, 1, "withnavigation", LUA_TBOOLEAN))
+	{
+		with_navigation = lua_toboolean(lua, -1);
+	}
+
+	vlua_cmn_check_field(lua, 1, "title", LUA_TSTRING);
+	const char *title = lua_tostring(lua, -1);
+
+	vlua_cmn_check_field(lua, 1, "items", LUA_TTABLE);
+
+	lua_Integer len = luaL_len(lua, -1);
+	strlist_t items = {
+		.items = reallocarray(NULL, len, sizeof(char *)),
+		.nitems = len
+	};
+
+	if(items.items == NULL)
+	{
+		goto fail;
+	}
+
+	int i = 0;
+	lua_pushnil(lua);
+	while(lua_next(lua, -2) != 0)
+	{
+		char *item = strdup(lua_tostring(lua, -1));
+		if(item == NULL)
+		{
+			free_string_array(items.items, i);
+			goto fail;
+		}
+
+		items.items[i++] = item;
+		lua_pop(lua, 1);
+	}
+
+	int success = (show_custom_menu(view, title, items, with_navigation) == 0);
+	lua_pushboolean(lua, success);
+	return 1;
+
+fail:
+	lua_pushboolean(lua, 0);
 	return 1;
 }
 

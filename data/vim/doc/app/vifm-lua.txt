@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Dec 2
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Dec 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -24,6 +24,7 @@ Current API version: v0.1.0
 |vifm-l_vifm.events|   `vifm.events` global table.
 |vifm-l_vifm.fs|       `vifm.fs` global table.
 |vifm-l_vifm.keys|     `vifm.keys` global table.
+|vifm-l_vifm.menus|    `vifm.menus` global table.
 |vifm-l_vifm.opts|     `vifm.opts` global table.
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
@@ -510,6 +511,9 @@ Table for basic/low-level file-system operations.  See |vifm-l_vifm.fs|.
 
 vifm.keys
 Table for managing keys.  See |vifm-l_vifm.keys|.
+
+vifm.menus
+Table for managing menus.  See |vifm-l_vifm.menus|.
 
 vifm.opts
 Table for managing options.  See |vifm-l_vifm.opts|.
@@ -1092,6 +1096,38 @@ Return:~
   `true` on success.
 
 --------------------------------------------------------------------------------
+*vifm-l_vifm.menus*
+
+This global `vifm.menus` table groups items related to menus.
+
+vifm.menus.loadcustom({menu})                   *vifm-l_vifm.menus.loadcustom()*
+Loads a menu with a custom list of items.
+
+Possible fields of {menu}:
+ - "title" (string)
+   Title of the menu.
+ - "items" (array of strings)
+   List of items.  Shouldn't be empty.
+ - "view" (|vifm-l_VifmView|) (default: `vifm.currview()`)
+   View associated with the menu.  Navigation will happen in this view if
+   enabled.  Note: the value is currently limited to views of the current
+   tab(s).
+ - "withnavigation" (boolean) (default: false)
+   When true, the items are considered to be paths that terminate at `:`
+   optionally followed by line and column numbers (like for |vifm-%M|).
+   Otherwise, the behaviour is like for |vifm-%m|.
+
+This function is {unsafe}.
+
+Parameters:~
+  {menu}  Table with information about the custom view.
+
+Return:~
+  `false` if the list of items is empty or if {menu}.view doesn't refer to the
+        the view as `vifm.currview()` or `vifm.otherview()`.
+  `true` on success.
+
+--------------------------------------------------------------------------------
 *vifm-l_vifm.opts*
 
 This global `vifm.opts` table groups items related to options in general.
@@ -1651,6 +1687,9 @@ vifm.fs.rmdir({path})                      |vifm-l_vifm.fs.rmdir()|
 
 vifm.keys (table)                          |vifm-l_vifm.keys|
 vifm.keys.add({key})                       |vifm-l_vifm.keys.add()|
+
+vifm.menus (table)                         |vifm-l_vifm.menus|
+vifm.menus.loadcustom({menu})              |vifm-l_vifm.menus.loadcustom()|
 
 vifm.opts (table)                          |vifm-l_vifm.opts|
 vifm.opts.global (table)                   |vifm-l_vifm.opts.global|

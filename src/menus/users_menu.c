@@ -47,6 +47,39 @@ show_user_menu(view_t *view, const char command[], const char title[],
 	return menus_capture(view, command, 1, &m, flags);
 }
 
+int
+show_custom_menu(view_t *view, const char title[], strlist_t items,
+		int with_navigation)
+{
+	static menu_data_t m;
+
+	/* Avoid a dialog about the menu being empty by checking for this case
+	 * beforehand. */
+	if(items.nitems == 0)
+	{
+		free_string_array(items.items, items.nitems);
+		return 1;
+	}
+
+	menus_init_data(&m, view, strdup(title), strdup("No items"));
+
+	m.extra_data = with_navigation;
+	m.stashable = with_navigation;
+	m.execute_handler = &execute_users_cb;
+	m.key_handler = &users_khandler;
+
+	m.len = items.nitems;
+	m.items = items.items;
+
+	if(menus_enter(&m, view) != 0)
+	{
+		free_string_array(items.items, items.nitems);
+		return 1;
+	}
+
+	return 0;
+}
+
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int

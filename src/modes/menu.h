@@ -76,6 +76,7 @@ int modmenu_last_line(const menu_data_t *m);
 
 TSTATIC_DEFS(
 	menu_data_t * menu_get_current(void);
+	struct view_t * menu_get_view(void);
 )
 
 #endif /* VIFM__MODES__MENU_H__ */

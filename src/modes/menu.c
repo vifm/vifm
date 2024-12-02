@@ -1192,6 +1192,13 @@ menu_get_current(void)
 	return menu;
 }
 
+/* Provides access to a static variable from tests. */
+TSTATIC view_t *
+menu_get_view(void)
+{
+	return view;
+}
+
 /* Processes events from the mouse. */
 static void
 handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
