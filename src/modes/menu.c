@@ -338,7 +338,7 @@ key_handler(wchar_t key)
 }
 
 void
-modmenu_enter(menu_data_t *m, view_t *active_view)
+modmenu_enter(menu_data_t *m, view_t *target_view)
 {
 	if(curr_stats.load_stage >= 0 && curr_stats.load_stage < 2)
 	{
@@ -350,13 +350,20 @@ modmenu_enter(menu_data_t *m, view_t *active_view)
 	ui_hide_graphics();
 	werase(status_bar);
 
-	view = active_view;
+	view = target_view;
 	menu = m;
 	vle_mode_set(MENU_MODE, VMT_PRIMARY);
 	stats_refresh_later();
 	was_redraw = 0;
 
 	vle_cmds_init(0, &cmds_conf);
+}
+
+void
+modmenu_reenter(view_t *target_view)
+{
+	assert(vle_mode_is(MENU_MODE) && "Menu mode must be active!");
+	view = target_view;
 }
 
 void

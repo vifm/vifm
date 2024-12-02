@@ -78,7 +78,7 @@ static void draw_menu_frame(const menu_state_t *ms);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
-static void init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view);
+static void init_menu_state(menu_state_t *ms, menu_data_t *m);
 static void replace_menu_data(menu_data_t *m);
 static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
@@ -687,6 +687,10 @@ menus_enter(menu_data_t *m, view_t *view)
 		return 1;
 	}
 
+	/* The view should be set regardless whether we're already in the menu
+	 * mode. */
+	menu_state.view = view;
+
 	if(vle_mode_is(MENU_MODE))
 	{
 		menus_switch_to(m);
@@ -694,7 +698,7 @@ menus_enter(menu_data_t *m, view_t *view)
 	}
 
 	/* This moves data out of `m`, so don't use it below. */
-	init_menu_state(&menu_state, m, view);
+	init_menu_state(&menu_state, m);
 
 	ui_setup_for_menu_like();
 	term_title_update(menu_state.d->title);
@@ -706,7 +710,7 @@ menus_enter(menu_data_t *m, view_t *view)
 
 /* Initializes menu state structure with default/initial values. */
 static void
-init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
+init_menu_state(menu_state_t *ms, menu_data_t *m)
 {
 	free(ms->regexp);
 	free(ms->matches);
@@ -724,7 +728,6 @@ init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
 	ms->matches = NULL;
 	ms->regexp = NULL;
 	ms->search_repeat = 0;
-	ms->view = view;
 }
 
 void
@@ -764,6 +767,8 @@ replace_menu_data(menu_data_t *m)
 
 	move_menu_data(&menu_state.data_storage, m);
 	menu_state.d = &menu_state.data_storage;
+
+	modmenu_reenter(menu_state.view);
 
 	menus_partial_redraw(m->state);
 	menus_set_pos(m->state, m->pos);
