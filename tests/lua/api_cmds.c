@@ -123,6 +123,48 @@ TEST(cmds_command)
 			"if not r then print 'fail' end");
 }
 
+TEST(cmds_range)
+{
+	cmds_init();
+
+	curr_view->list_pos = 3;
+	curr_view->list_rows = 10;
+
+	GLUA_EQ(vlua, "",
+			"r = vifm.cmds.add {"
+			"  name = 'cmd',"
+			"  withrange = true,"
+			"  handler = function(info) handler(info) end,"
+			"}"
+			"if not r then print 'fail' end");
+
+	GLUA_EQ(vlua, "",
+			"function handler(info)"
+			"  print(info.range)"
+			"end");
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("cmd", curr_view, CIT_COMMAND));
+	assert_string_equal("nil", ui_sb_last());
+
+	GLUA_EQ(vlua, "",
+			"function handler(info)"
+			"  print(info.range.from, info.range.to)"
+			"end");
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("1,5cmd", curr_view, CIT_COMMAND));
+	assert_string_equal("1\t5", ui_sb_last());
+	assert_failure(cmds_dispatch1("1,$cmd", curr_view, CIT_COMMAND));
+	assert_string_equal("1\t10", ui_sb_last());
+	assert_failure(cmds_dispatch1("1,500cmd", curr_view, CIT_COMMAND));
+	assert_string_equal("1\t10", ui_sb_last());
+	assert_failure(cmds_dispatch1("2cmd", curr_view, CIT_COMMAND));
+	assert_string_equal("2\t2", ui_sb_last());
+	assert_failure(cmds_dispatch1(".cmd", curr_view, CIT_COMMAND));
+	assert_string_equal("4\t4", ui_sb_last());
+}
+
 TEST(cmds_names_with_numbers)
 {
 	GLUA_EQ(vlua, "",

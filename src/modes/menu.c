@@ -338,7 +338,7 @@ key_handler(wchar_t key)
 }
 
 void
-modmenu_enter(menu_data_t *m, view_t *active_view)
+modmenu_enter(menu_data_t *m, view_t *target_view)
 {
 	if(curr_stats.load_stage >= 0 && curr_stats.load_stage < 2)
 	{
@@ -350,13 +350,20 @@ modmenu_enter(menu_data_t *m, view_t *active_view)
 	ui_hide_graphics();
 	werase(status_bar);
 
-	view = active_view;
+	view = target_view;
 	menu = m;
 	vle_mode_set(MENU_MODE, VMT_PRIMARY);
 	stats_refresh_later();
 	was_redraw = 0;
 
 	vle_cmds_init(0, &cmds_conf);
+}
+
+void
+modmenu_reenter(view_t *target_view)
+{
+	assert(vle_mode_is(MENU_MODE) && "Menu mode must be active!");
+	view = target_view;
 }
 
 void
@@ -736,7 +743,7 @@ cmd_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 dump_into_custom_view(int very)
 {
-	if(menus_to_custom_view(menu->state, view, very) != 0)
+	if(menus_to_custom_view(menu->state, very) != 0)
 	{
 		show_error_msg("Menu transformation",
 				"No valid paths discovered in menu content");
@@ -1183,6 +1190,13 @@ TSTATIC menu_data_t *
 menu_get_current(void)
 {
 	return menu;
+}
+
+/* Provides access to a static variable from tests. */
+TSTATIC view_t *
+menu_get_view(void)
+{
+	return view;
 }
 
 /* Processes events from the mouse. */

@@ -43,9 +43,27 @@ documented in the regular ChangeLog.
 	Added "pwd" parameter to vifm.startjob() that specifies initial directory
 	of the process.  Thanks to PRESFIL.
 
+	Added vifm.cmds.add({ withrange }) flag which allows :commands implemented
+	in Lua to handle ranges.  Thanks to Moin Khan.
+
 	Added vifm.fs table with file-system related operations: vifm.fs.cp(),
 	vifm.fs.ln(), vifm.fs.mkdir(), vifm.fs.mkfile(), vifm.fs.mv(),
 	vifm.fs.rm(), vifm.fs.rmdir().
+
+	Added VifmView:selected() that returns an iterator over selected entries.
+
+	Added VifmView:entries() that returns an iterator over all entries.
+
+	Added VifmView:focus() that makes the view the current one.
+
+	Added VifmView:gotopath() that navigates to a file (like :goto or
+	--select).
+
+	Added VifmView:loadcustom() that sets list of paths as a custom view.
+
+	Added index of Lua API to the documentation for easier overview/lookup.
+
+	Added vifm.menus.loadcustom() that makes a menu out of a list of strings.
 
 	Made VifmJob:errors() wait for receiving errors if the job has finished.
 

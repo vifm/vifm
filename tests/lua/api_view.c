@@ -11,6 +11,7 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
@@ -29,9 +30,6 @@ static line_stats_t *stats;
 SETUP_ONCE()
 {
 	stub_colmgr();
-
-	curr_view = &lwin;
-	other_view = &lwin;
 
 	stats = get_line_stats();
 }
@@ -57,11 +55,25 @@ SETUP()
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].name = strdup("file1");
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	view_setup(&rwin);
+	strcpy(rwin.curr_dir, "/rwin");
+	rwin.list_rows = 1;
+	rwin.list_pos = 0;
+	rwin.top_line = 0;
+	rwin.dir_entry = dynarray_cextend(NULL,
+			rwin.list_rows*sizeof(*rwin.dir_entry));
+	rwin.dir_entry[0].name = strdup("ofile0");
+	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
+
+	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	vlua_finish(vlua);
 }
@@ -77,7 +89,8 @@ TEST(vifmview_entry)
 {
 	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(0))");
 	GLUA_EQ(vlua, "file0", "print(vifm.currview():entry(1).name)");
-	GLUA_EQ(vlua, "file1", "print(vifm.otherview():entry(2).name)");
+	GLUA_EQ(vlua, "file1", "print(vifm.currview():entry(2).name)");
+	GLUA_EQ(vlua, "ofile0", "print(vifm.otherview():entry(1).name)");
 	GLUA_EQ(vlua, "nil", "print(vifm.currview():entry(3))");
 }
 
@@ -302,6 +315,163 @@ TEST(vifmview_unselect)
 			"print(vifm.currview():unselect({ indexes = { 1, 2 } }))");
 	assert_false(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
+}
+
+TEST(vifmview_selected)
+{
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "file0", "print(selected().name)");
+	GLUA_EQ(vlua, "file1", "print(selected().name)");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 0;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "file0", "print(selected().name)");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+
+	lwin.dir_entry[0].selected = 0;
+	lwin.dir_entry[1].selected = 1;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "file1", "print(selected().name)");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+
+	lwin.dir_entry[0].selected = 0;
+	lwin.dir_entry[1].selected = 0;
+
+	GLUA_EQ(vlua, "", "selected = vifm.currview():selected()");
+	GLUA_EQ(vlua, "nil", "print(selected())");
+}
+
+TEST(vifmview_entries)
+{
+	GLUA_EQ(vlua, "", "entries = vifm.currview():entries()");
+	GLUA_EQ(vlua, "", "entry = entries()");
+	GLUA_EQ(vlua, "file0", "print(entry.name)");
+	GLUA_EQ(vlua, "", "entry = entries()");
+	GLUA_EQ(vlua, "file1", "print(entry.name)");
+	GLUA_EQ(vlua, "", "entry = entries()");
+	GLUA_EQ(vlua, "nil", "print(entry)");
+}
+
+TEST(vifmview_focus)
+{
+	opt_handlers_setup();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+
+	GLUA_EQ(vlua, "", "curr_tab1 = vifm.currview()");
+	int curr_id = curr_view->id;
+
+	tabs_new(NULL, NULL);
+	GLUA_EQ(vlua, "", "other_tab2 = vifm.otherview()");
+	int other_id = other_view->id;
+
+	GLUA_EQ(vlua, "true", "print(curr_tab1:focus())");
+	assert_int_equal(curr_view->id, curr_id);
+
+	GLUA_EQ(vlua, "true", "print(other_tab2:focus())");
+	assert_int_equal(curr_view->id, other_id);
+
+	tabs_only(&lwin);
+
+	columns_teardown();
+	opt_handlers_teardown();
+}
+
+TEST(vifmview_gotopath)
+{
+	conf_setup();
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+
+	GLUA_EQ(vlua, "false", "print(vifm.currview():gotopath('rename/wrong'))");
+
+	GLUA_EQ(vlua, "true", "print(vifm.currview():gotopath('rename/a'))");
+	assert_string_equal("a", lwin.dir_entry[lwin.list_pos].name);
+
+	GLUA_EQ(vlua, "true", "print(vifm.currview():gotopath('aa'))");
+	assert_string_equal("aa", lwin.dir_entry[lwin.list_pos].name);
+
+	conf_teardown();
+}
+
+TEST(vifmview_loadcustom)
+{
+	opt_handlers_setup();
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "rename",
+			NULL);
+
+	/* Missing required keys. */
+	BLUA_ENDS(vlua, ": `title` key is mandatory",
+			"print(vifm.currview():loadcustom({ }))");
+	assert_false(flist_custom_active(&lwin));
+	BLUA_ENDS(vlua, ": `paths` key is mandatory",
+			"print(vifm.currview():loadcustom({ title = 'title' }))");
+	assert_false(flist_custom_active(&lwin));
+
+	/* Invalid type field. */
+	BLUA_ENDS(vlua, ": Unknown type of custom view: 'bla'",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "paths = { },"
+			                                   "type = 'bla' }))");
+	assert_false(flist_custom_active(&lwin));
+
+	/* Good invocation. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "paths = { 'a', 'aa' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("aa", lwin.dir_entry[1].name);
+
+	/* Bad invocation doesn't ruin current custom view. */
+	BLUA_ENDS(vlua, "", "print(vifm.currview():loadcustom({ title = 'title' }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("aa", lwin.dir_entry[1].name);
+
+	/* Good invocation for unsorted view. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "type = 'very-custom',"
+			                                   "paths = { 'aa', 'a' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_VERY, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("aa", lwin.dir_entry[0].name);
+	assert_string_equal("a", lwin.dir_entry[1].name);
+
+	/* Good invocation for regular view requested explicitly.  Missing file is
+	 * silently ignored. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "type = 'custom',"
+			                                   "paths = { 'aa', 'a', 'x' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("aa", lwin.dir_entry[1].name);
+
+	/* List of files can be empty. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "paths = { 'nosuchfile' } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+
+	opt_handlers_teardown();
 }
 
 TEST(vifmview_entry_mimetype_unavailable, IF(has_no_mime_type_detection))

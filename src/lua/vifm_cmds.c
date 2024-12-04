@@ -130,6 +130,11 @@ parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd)
 	{
 		cmd->max_args = cmd->min_args;
 	}
+
+	if(vlua_cmn_check_opt_field(vlua->lua, 1, "withrange", LUA_TBOOLEAN))
+	{
+		cmd->flags |= HAS_RANGE;
+	}
 }
 
 /* Member of `vifm.command` that registers a new user-defined :command or raises
@@ -195,6 +200,17 @@ lua_cmd_handler(const cmd_info_t *cmd_info)
 	lua_setfield(lua, -2, "args");
 	vlua_cmn_push_str_array(lua, cmd_info->argv, cmd_info->argc);
 	lua_setfield(lua, -2, "argv");
+
+	if(cmd_info->begin != NOT_DEF)
+	{
+		lua_createtable(lua, /*narr=*/0, /*nrec=*/2);
+		lua_pushinteger(lua, cmd_info->begin + 1);
+		lua_setfield(lua, -2, "from");
+		lua_pushinteger(lua, cmd_info->end + 1);
+		lua_setfield(lua, -2, "to");
+
+		lua_setfield(lua, -2, "range");
+	}
 
 	curr_stats.save_msg = 0;
 

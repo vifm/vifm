@@ -707,6 +707,10 @@ execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 	}
 
 	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
+	/* XXX: a command can close its output stream before it exists, in which case
+	 *      this function returns prior to side-effects which a caller might
+	 *      expect to have already occured.  Should wait for the process to
+	 *      end? */
 	fclose(cmd_stream);
 
 	ui_cancellation_pop();

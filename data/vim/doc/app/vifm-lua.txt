@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Nov 14
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Dec 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -24,6 +24,7 @@ Current API version: v0.1.0
 |vifm-l_vifm.events|   `vifm.events` global table.
 |vifm-l_vifm.fs|       `vifm.fs` global table.
 |vifm-l_vifm.keys|     `vifm.keys` global table.
+|vifm-l_vifm.menus|    `vifm.menus` global table.
 |vifm-l_vifm.opts|     `vifm.opts` global table.
 |vifm-l_vifm.plugin|   `vifm.plugin` global table.
 |vifm-l_vifm.plugins|  `vifm.plugins` global table.
@@ -35,6 +36,7 @@ Current API version: v0.1.0
 |vifm-l_VifmJob|       `VifmJob` type.
 |vifm-l_VifmTab|       `VifmTab` type.
 |vifm-l_VifmView|      `VifmView` type.
+|vifm-lua-index|       Index of all Vifm entities in the API.
 
 --------------------------------------------------------------------------------
 *vifm-lua-status*
@@ -510,6 +512,9 @@ Table for basic/low-level file-system operations.  See |vifm-l_vifm.fs|.
 vifm.keys
 Table for managing keys.  See |vifm-l_vifm.keys|.
 
+vifm.menus
+Table for managing menus.  See |vifm-l_vifm.menus|.
+
 vifm.opts
 Table for managing options.  See |vifm-l_vifm.opts|.
 
@@ -828,12 +833,22 @@ Possible fields of {cmd}:
    Minimal number of arguments.
  - "maxargs" (integer) (default: minargs)
    Maximal number of arguments.  Negative number means "indefinite".
+ - "withrange" (boolean) (default: false)
+   Whether this command accepts a range.
 
 Fields of {info} argument for "handler":
  - "args" (string)
    All arguments passed to the command.
  - "argv" (array of strings)
    Set of parsed arguments of the command.
+ - "range" (table)
+   Information about a range passed to the command or `nil` for commands that
+   don't accept a range or when none is supplied.  Fields:
+    - "from" (integer)
+      1-based index of the first entry in the range.
+    - "to" (integer)
+      1-based index of the last entry in the range.  Equal to "from" if there
+      is only one element in the range.
 
 Fields of {info} argument for "complete":
  - "arg" (string)
@@ -1081,6 +1096,38 @@ Return:~
   `true` on success.
 
 --------------------------------------------------------------------------------
+*vifm-l_vifm.menus*
+
+This global `vifm.menus` table groups items related to menus.
+
+vifm.menus.loadcustom({menu})                   *vifm-l_vifm.menus.loadcustom()*
+Loads a menu with a custom list of items.
+
+Possible fields of {menu}:
+ - "title" (string)
+   Title of the menu.
+ - "items" (array of strings)
+   List of items.  Shouldn't be empty.
+ - "view" (|vifm-l_VifmView|) (default: `vifm.currview()`)
+   View associated with the menu.  Navigation will happen in this view if
+   enabled.  Note: the value is currently limited to views of the current
+   tab(s).
+ - "withnavigation" (boolean) (default: false)
+   When true, the items are considered to be paths that terminate at `:`
+   optionally followed by line and column numbers (like for |vifm-%M|).
+   Otherwise, the behaviour is like for |vifm-%m|.
+
+This function is {unsafe}.
+
+Parameters:~
+  {menu}  Table with information about the custom view.
+
+Return:~
+  `false` if the list of items is empty or if {menu}.view doesn't refer to the
+        the view as `vifm.currview()` or `vifm.otherview()`.
+  `true` on success.
+
+--------------------------------------------------------------------------------
 *vifm-l_vifm.opts*
 
 This global `vifm.opts` table groups items related to options in general.
@@ -1254,8 +1301,10 @@ Return:~
 *vifm-l_VifmEntry*
 
 Instances of this type are used in filetype |vifm-lua-handlers| and in
-callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by
-|vifm-l_VifmView:entry()|.
+callbacks of |vifm-l_vifm.addcolumntype()|.  They are also returned by:
+ * |vifm-l_VifmView:entries()| iterator
+ * |vifm-l_VifmView:entry()|
+ * |vifm-l_VifmView:selected()| iterator
 
 Fields of this table are just copies, changing their values won't affect state
 of the application.
@@ -1320,7 +1369,7 @@ Raises an error:~
   If entry doesn't correspond to a symbolic link.
   If resolving symbolic link has failed.
 
-VifmEntry:mimetype()                          *vifm-l_VifmEntry.mimetype()*
+VifmEntry:mimetype()                           *vifm-l_VifmEntry.mimetype()*
 Gets a MIME type.  Resolves target of symbolic links.
 
 Return:~
@@ -1509,6 +1558,65 @@ Parameters:~
 Return:~
   |vifm-l_VifmEntry| on success and `nil` on wrong index.
 
+VifmView:entries()                             *vifm-l_VifmView:entries()*
+Creates an iterator over all entries of the view.  The behaviour is undefined
+if the list of entries changes while the iteration is in progress.  The entries
+are returned from first to last.
+
+Return:~
+  An iterator function that returns the next |vifm-l_VifmEntry| on each call.
+
+VifmView:focus()                               *vifm-l_VifmView:focus()*
+Makes this view the current one, switching tabs and/or windows if necessary.
+
+This function is {unsafe}.
+
+Return:~
+  `true` on success (should always succeed at the moment).
+
+VifmView:gotopath({path})                      *vifm-l_VifmView:gotopath()*
+Changes directory, resets filters and/or moves the cursor to find a particular
+file.
+
+Parameters:~
+  {path}  Target path.
+
+Return:~
+  `false` if {path} is root or doesn't exist.
+  `true` on success.
+
+VifmView:loadcustom({info})                    *vifm-l_VifmView:loadcustom()*
+Replaces view contents with a custom list of paths.  Loads the list even if it
+ends up being empty.
+
+Possible fields of {info}:
+ - "title" (string)
+   Title of the view.
+ - "paths" (array of strings)
+   List of paths.  Can be empty.  Paths that don't correspond to an existing
+   file or duplicates are ignored.
+ - "type" (string) (default: "custom")
+   What kind of custom view to create:
+    - "custom"
+      A normal sorted view.  Same as |vifm-%u|.
+    - "very-custom"
+      A view that preserves original order.  Same as |vifm-%U|.
+
+Parameters:~
+  {info}  Table with information about the custom view.
+
+Raises an error:~
+  If {info}.type has incorrect value.
+
+VifmView:selected()                            *vifm-l_VifmView:selected()*
+Creates an iterator over selected entries of the view.  The behaviour is
+undefined if the list of entries changes while the iteration is in progress.
+The order in which the entries are returned is implementation-specific and is
+not guaranteed to remain the same between releases.
+
+Return:~
+  An iterator function that returns the next |vifm-l_VifmEntry| on each call.
+
 VifmView:select({entries})                     *vifm-l_VifmView:select()*
 Selects entries.  Does nothing in visual non-amend mode.  See
 |vifm-l_VifmView:unselect()| to unselect entries.
@@ -1536,6 +1644,135 @@ Possible fields of {entries}:
 
 Return:~
   Number of new unselected entries.
+
+--------------------------------------------------------------------------------
+*vifm-lua-index*
+
+vifm (table)                               |vifm-l_vifm|
+vifm.addcolumntype({column})               |vifm-l_vifm.addcolumntype()|
+vifm.addhandler({handler})                 |vifm-l_vifm.addhandler()|
+vifm.currview()                            |vifm-l_vifm.currview()|
+vifm.errordialog({title}, {msg})           |vifm-l_vifm.errordialog()|
+vifm.escape({what})                        |vifm-l_vifm.escape()|
+vifm.executable({what})                    |vifm-l_vifm.executable()|
+vifm.exists({path})                        |vifm-l_vifm.exists()|
+vifm.expand({str})                         |vifm-l_vifm.expand()|
+vifm.fnamemodify({path}, {mods}[, {base}]) |vifm-l_vifm.fnamemodify()|
+vifm.input({info})                         |vifm-l_vifm.input()|
+vifm.makepath({path})                      |vifm-l_vifm.makepath()|
+vifm.otherview()                           |vifm-l_vifm.otherview()|
+vifm.run({info})                           |vifm-l_vifm.run()|
+vifm.startjob({job})                       |vifm-l_vifm.startjob()|
+vifm.stdout()                              |vifm-l_vifm.stdout()|
+
+vifm.abbrevs (table)                       |vifm-l_vifm.abbrevs|
+vifm.abbrevs.add({abbrev})                 |vifm-l_vifm.abbrevs.add()|
+
+vifm.cmds (table)                          |vifm-l_vifm.cmds|
+vifm.cmds.add({cmd})                       |vifm-l_vifm.cmds.add()|
+vifm.cmds.command({cmd})                   |vifm-l_vifm.cmds.command()|
+vifm.cmds.delcommand({name})               |vifm-l_vifm.cmds.delcommand()|
+
+vifm.events (table)                        |vifm-l_vifm.events|
+vifm.events.listen({event})                |vifm-l_vifm.events.listen()|
+
+vifm.fs (table)                            |vifm-l_vifm.fs|
+vifm.fs.cp({from}, {to}, {onconflict})     |vifm-l_vifm.fs.cp()|
+vifm.fs.ln({path}, {target})               |vifm-l_vifm.fs.ln()|
+vifm.fs.mkdir({path}, {onmissingparent})   |vifm-l_vifm.fs.mkdir()|
+vifm.fs.mkfile({path})                     |vifm-l_vifm.fs.mkfile()|
+vifm.fs.mv({from}, {to}, {onconflict})     |vifm-l_vifm.fs.mv()|
+vifm.fs.rm({path})                         |vifm-l_vifm.fs.rm()|
+vifm.fs.rmdir({path})                      |vifm-l_vifm.fs.rmdir()|
+
+vifm.keys (table)                          |vifm-l_vifm.keys|
+vifm.keys.add({key})                       |vifm-l_vifm.keys.add()|
+
+vifm.menus (table)                         |vifm-l_vifm.menus|
+vifm.menus.loadcustom({menu})              |vifm-l_vifm.menus.loadcustom()|
+
+vifm.opts (table)                          |vifm-l_vifm.opts|
+vifm.opts.global (table)                   |vifm-l_vifm.opts.global|
+
+vifm.plugin (table)                        |vifm-l_vifm.plugin|
+vifm.plugin.name (string)                  |vifm-l_vifm.plugin.name|
+vifm.plugin.path (string)                  |vifm-l_vifm.plugin.path|
+vifm.plugin.require({modname})             |vifm-l_vifm.plugin.require()|
+
+vifm.plugins (table)                       |vifm-l_vifm.plugins|
+vifm.plugins.all (table)                   |vifm-l_vifm.plugins.all|
+
+vifm.sb (table)                            |vifm-l_vifm.sb|
+vifm.sb.error({msg})                       |vifm-l_vifm.sb.error()|
+vifm.sb.info({msg})                        |vifm-l_vifm.sb.info()|
+vifm.sb.quick({msg})                       |vifm-l_vifm.sb.quick()|
+
+vifm.sessions (table)                      |vifm-l_vifm.sessions|
+vifm.sessions.current()                    |vifm-l_vifm.sessions.current|
+
+vifm.tabs (table)                          |vifm-l_vifm.tabs|
+vifm.tabs.get([{query}])                   |vifm-l_vifm.tabs.get()|
+vifm.tabs.getcount([{query}])              |vifm-l_vifm.tabs.getcount()|
+vifm.tabs.getcurrent([{query}])            |vifm-l_vifm.tabs.getcurrent()|
+
+vifm.version (table)                       |vifm-l_vifm.version|
+vifm.version.api.atleast({major}, {minor}, {patch})
+                                           |vifm-l_vifm.version.api.atleast()|
+vifm.version.api.has({feature})            |vifm-l_vifm.version.api.has()|
+vifm.version.api.major (integer)           |vifm-l_vifm.version.api.major|
+vifm.version.api.minor (integer)           |vifm-l_vifm.version.api.minor|
+vifm.version.api.patch (integer)           |vifm-l_vifm.version.api.patch|
+vifm.version.app.str (string)              |vifm-l_vifm.version.app.str|
+
+VifmEntry (type)                           |vifm-l_VifmEntry|
+VifmEntry.atime (integer)                  |vifm-l_VifmEntry.atime|
+VifmEntry.classify (table)                 |vifm-l_VifmEntry.classify|
+VifmEntry.ctime (integer)                  |vifm-l_VifmEntry.ctime|
+VifmEntry.folded (boolean)                 |vifm-l_VifmEntry.folded|
+VifmEntry.isdir (boolean)                  |vifm-l_VifmEntry.isdir|
+VifmEntry.location (string)                |vifm-l_VifmEntry.location|
+VifmEntry.match (boolean)                  |vifm-l_VifmEntry.match|
+VifmEntry.matchend (integer)               |vifm-l_VifmEntry.matchend|
+VifmEntry.matchstart (integer)             |vifm-l_VifmEntry.matchstart|
+VifmEntry.mtime (integer)                  |vifm-l_VifmEntry.mtime|
+VifmEntry.name (string)                    |vifm-l_VifmEntry.name|
+VifmEntry.selected (boolean)               |vifm-l_VifmEntry.selected|
+VifmEntry.size (integer)                   |vifm-l_VifmEntry.size|
+VifmEntry.type (string)                    |vifm-l_VifmEntry.type|
+VifmEntry:gettarget()                      |vifm-l_VifmEntry.gettarget()|
+VifmEntry:mimetype()                       |vifm-l_VifmEntry.mimetype()|
+
+VifmJob (type)                             |vifm-l_VifmJob|
+VifmJob:errors()                           |vifm-l_VifmJob:errors()|
+VifmJob:exitcode()                         |vifm-l_VifmJob:exitcode()|
+VifmJob:pid()                              |vifm-l_VifmJob:pid()|
+VifmJob:stdin()                            |vifm-l_VifmJob:stdin()|
+VifmJob:stdout()                           |vifm-l_VifmJob:stdout()|
+VifmJob:terminate()                        |vifm-l_VifmJob:terminate()|
+VifmJob:wait()                             |vifm-l_VifmJob:wait()|
+
+VifmTab (type)                             |vifm-l_VifmTab|
+VifmTab:getlayout()                        |vifm-l_VifmTab:getlayout()|
+VifmTab:getname()                          |vifm-l_VifmTab:getname()|
+VifmTab:getview([{query}])                 |vifm-l_VifmTab:getview()|
+
+VifmView (type)                            |vifm-l_VifmView|
+VifmView.currententry (integer)            |vifm-l_VifmView.currententry|
+VifmView.cursor (table)                    |vifm-l_VifmView.cursor|
+VifmView.custom (table)                    |vifm-l_VifmView.custom|
+VifmView.cwd (string)                      |vifm-l_VifmView.cwd|
+VifmView.entrycount (integer)              |vifm-l_VifmView.entrycount|
+VifmView.locopts (table)                   |vifm-l_VifmView.viewopts|
+VifmView.viewopts (table)                  |vifm-l_VifmView.locopts|
+VifmView:cd({path})                        |vifm-l_VifmView:cd()|
+VifmView:entries()                         |vifm-l_VifmView:entries()|
+VifmView:entry({index})                    |vifm-l_VifmView:entry()|
+VifmView:focus()                           |vifm-l_VifmView:focus()|
+VifmView:gotopath({path})                  |vifm-l_VifmView:gotopath()|
+VifmView:loadcustom({info})                |vifm-l_VifmView:loadcustom()|
+VifmView:select({entries})                 |vifm-l_VifmView:select()|
+VifmView:selected()                        |vifm-l_VifmView:selected()|
+VifmView:unselect({entries})               |vifm-l_VifmView:unselect()|
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:sw=4:ft=help:norl:

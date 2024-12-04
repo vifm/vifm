@@ -78,7 +78,7 @@ static void draw_menu_frame(const menu_state_t *ms);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
-static void init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view);
+static void init_menu_state(menu_state_t *ms, menu_data_t *m);
 static void replace_menu_data(menu_data_t *m);
 static int can_stash_menu(const menu_data_t *m);
 static void stash_menu(menu_data_t *m);
@@ -87,7 +87,7 @@ static void unstash_menu_at(menu_state_t *ms, int index);
 static void move_menu_data(menu_data_t *to, menu_data_t *from);
 static const char * get_relative_path_base(const menu_data_t *m,
 		const view_t *view);
-static int menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view);
+static int menu_is_in_cwd(const menu_data_t *m, const view_t *view);
 static int search_menu(menu_state_t *ms, int print_errors);
 static int search_menu_forwards(menu_state_t *ms, int start_pos);
 static int search_menu_backwards(menu_state_t *ms, int start_pos);
@@ -95,6 +95,7 @@ static int navigate_to_match(menu_state_t *ms, int pos);
 static int get_match_index(const menu_state_t *ms);
 TSTATIC void menus_drop_stash(void);
 TSTATIC void menus_set_active(menu_data_t *m);
+TSTATIC view_t * menus_get_view(menu_data_t *m);
 
 struct menu_state_t
 {
@@ -616,7 +617,7 @@ draw_menu_frame(const menu_state_t *ms)
 char *
 menus_format_title(const menu_data_t *m, struct view_t *view)
 {
-	const char *const suffix = menu_and_view_are_in_sync(m, view)
+	const char *const suffix = menu_is_in_cwd(m, view)
 	                         ? ""
 	                         : replace_home_part(m->cwd);
 	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
@@ -687,6 +688,10 @@ menus_enter(menu_data_t *m, view_t *view)
 		return 1;
 	}
 
+	/* The view should be set regardless whether we're already in the menu
+	 * mode. */
+	menu_state.view = view;
+
 	if(vle_mode_is(MENU_MODE))
 	{
 		menus_switch_to(m);
@@ -694,7 +699,7 @@ menus_enter(menu_data_t *m, view_t *view)
 	}
 
 	/* This moves data out of `m`, so don't use it below. */
-	init_menu_state(&menu_state, m, view);
+	init_menu_state(&menu_state, m);
 
 	ui_setup_for_menu_like();
 	term_title_update(menu_state.d->title);
@@ -706,7 +711,7 @@ menus_enter(menu_data_t *m, view_t *view)
 
 /* Initializes menu state structure with default/initial values. */
 static void
-init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
+init_menu_state(menu_state_t *ms, menu_data_t *m)
 {
 	free(ms->regexp);
 	free(ms->matches);
@@ -724,7 +729,6 @@ init_menu_state(menu_state_t *ms, menu_data_t *m, view_t *view)
 	ms->matches = NULL;
 	ms->regexp = NULL;
 	ms->search_repeat = 0;
-	ms->view = view;
 }
 
 void
@@ -764,6 +768,8 @@ replace_menu_data(menu_data_t *m)
 
 	move_menu_data(&menu_state.data_storage, m);
 	menu_state.d = &menu_state.data_storage;
+
+	modmenu_reenter(menu_state.view);
 
 	menus_partial_redraw(m->state);
 	menus_set_pos(m->state, m->pos);
@@ -993,10 +999,11 @@ menus_def_khandler(view_t *view, menu_data_t *ms, const wchar_t keys[])
 }
 
 int
-menus_to_custom_view(menu_state_t *ms, view_t *view, int very)
+menus_to_custom_view(menu_state_t *ms, int very)
 {
 	int i;
 	char *current = NULL;
+	view_t *view = ms->view;
 	const char *const rel_base = get_relative_path_base(ms->d, view);
 
 	flist_custom_start(view, ms->d->title);
@@ -1062,20 +1069,19 @@ menus_to_custom_view(menu_state_t *ms, view_t *view, int very)
 static const char *
 get_relative_path_base(const menu_data_t *m, const view_t *view)
 {
-	if(menu_and_view_are_in_sync(m, view))
-	{
-		return ".";
-	}
-	return m->cwd;
+	return (menu_is_in_cwd(m, view) ? "." : m->cwd);
 }
 
-/* Checks whether menu working directory and current directory of the view are
- * in sync.  Returns non-zero if so, otherwise zero is returned. */
+/* Checks whether menu's working directory and current directory are in sync.
+ * Returns non-zero if so, otherwise zero is returned. */
 static int
-menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view)
+menu_is_in_cwd(const menu_data_t *m, const view_t *view)
 {
-	/* NULL check is for tests. */
-	return (view == NULL || paths_are_same(m->cwd, flist_get_dir(view)));
+	/* NULL check is for tests.  The application's working directory is that of
+	 * the current view, so ignore other views (shouldn't ignore those which are
+	 * at the same location?). */
+	return (view == NULL)
+	    || (view == curr_view && paths_are_same(m->cwd, flist_get_dir(view)));
 }
 
 int
@@ -1429,6 +1435,12 @@ TSTATIC void
 menus_set_active(menu_data_t *m)
 {
 	menu_state.d = m;
+}
+
+TSTATIC view_t *
+menus_get_view(menu_data_t *m)
+{
+	return m->state->view;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
