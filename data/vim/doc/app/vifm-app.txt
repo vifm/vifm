@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 November 20
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 December 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -710,10 +710,10 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 
 [s                                             *vifm-[s*
-    go to previous selected entry or do nothing.
+    go to the previous selected entry or do nothing.
 
 ]s                                             *vifm-]s*
-    go to next selected entry or do nothing.
+    go to the next selected entry or do nothing.
 
 Using Count~
                                                *vifm-count* *vifm-[count]*
