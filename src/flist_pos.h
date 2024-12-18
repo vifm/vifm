@@ -190,6 +190,12 @@ int fpos_next_selected(const struct view_t *view);
  * isn't changed if no previous selected entry is found. */
 int fpos_prev_selected(const struct view_t *view);
 
+/* Version of fpos_next_selected() that wraps. */
+int fpos_next_selected_wrap(const struct view_t *view);
+
+/* Version of fpos_prev_selected() that wraps. */
+int fpos_prev_selected_wrap(const struct view_t *view);
+
 /* Finds position of the next mismatched entry.  Returns new position which
  * isn't changed if no next such entry is found. */
 int fpos_next_mismatch(const struct view_t *view);

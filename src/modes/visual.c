@@ -156,6 +156,8 @@ static void cmd_lb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_s(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_S(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_S(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_z(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_z(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info);
@@ -266,6 +268,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_RB WK_d,    {{&cmd_rb_d}, .descr = "go to next dir"}},
 	{WK_LB WK_s,    {{&cmd_lb_s}, .descr = "go to previous selected entry"}},
 	{WK_RB WK_s,    {{&cmd_rb_s}, .descr = "go to next selected entry"}},
+	{WK_LB WK_S,    {{&cmd_lb_S}, .descr = "go to previous selected entry (wrap)"}},
+	{WK_RB WK_S,    {{&cmd_rb_S}, .descr = "go to next selected entry (wrap)"}},
 	{WK_LB WK_z,    {{&cmd_lb_z}, .descr = "go to first sibling"}},
 	{WK_RB WK_z,    {{&cmd_rb_z}, .descr = "go to last sibling"}},
 	{WK_LCB,        {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir group"}},
@@ -1217,6 +1221,20 @@ static void
 cmd_rb_s(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_pos(fpos_next_selected(view));
+}
+
+/* Go to previous selected entry wrapping if necessary or do nothing. */
+static void
+cmd_lb_S(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(fpos_prev_selected_wrap(view));
+}
+
+/* Go to next selected entry wrapping if necessary or do nothing. */
+static void
+cmd_rb_S(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(fpos_next_selected_wrap(view));
 }
 
 /* Go to first sibling of the current entry. */

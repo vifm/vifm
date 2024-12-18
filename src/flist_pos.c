@@ -47,8 +47,8 @@ static int get_column_top_pos(const view_t *view);
 static int get_column_bottom_pos(const view_t *view);
 static const char * get_last_ext(const char name[]);
 static int is_mismatched_entry(const dir_entry_t *entry);
-static int find_next(const view_t *view, entry_predicate pred);
-static int find_prev(const view_t *view, entry_predicate pred);
+static int find_next(const view_t *view, int from, entry_predicate pred);
+static int find_prev(const view_t *view, int from, entry_predicate pred);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 
 int
@@ -740,32 +740,54 @@ fpos_prev_dir_sibling(const view_t *view)
 int
 fpos_next_dir(const view_t *view)
 {
-	return find_next(view, &fentry_is_dir);
+	return find_next(view, view->list_pos, &fentry_is_dir);
 }
 
 int
 fpos_prev_dir(const view_t *view)
 {
-	return find_prev(view, &fentry_is_dir);
+	return find_prev(view, view->list_pos, &fentry_is_dir);
 }
 
 int
 fpos_next_selected(const view_t *view)
 {
-	return find_next(view, &is_entry_selected);
+	return find_next(view, view->list_pos, &is_entry_selected);
 }
 
 int
 fpos_prev_selected(const view_t *view)
 {
-	return find_prev(view, &is_entry_selected);
+	return find_prev(view, view->list_pos, &is_entry_selected);
+}
+
+int
+fpos_next_selected_wrap(const view_t *view)
+{
+	int pos = find_next(view, view->list_pos, &is_entry_selected);
+	if(pos == view->list_pos)
+	{
+		pos = find_next(view, -1, &is_entry_selected);
+	}
+	return pos;
+}
+
+int
+fpos_prev_selected_wrap(const view_t *view)
+{
+	int pos = find_prev(view, view->list_pos, &is_entry_selected);
+	if(pos == view->list_pos)
+	{
+		pos = find_prev(view, view->list_rows, &is_entry_selected);
+	}
+	return pos;
 }
 
 int
 fpos_next_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
-	     ? find_next(view, &is_mismatched_entry)
+	     ? find_next(view, view->list_pos, &is_mismatched_entry)
 	     : view->list_pos;
 }
 
@@ -773,7 +795,7 @@ int
 fpos_prev_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
-	     ? find_prev(view, &is_mismatched_entry)
+	     ? find_prev(view, view->list_pos, &is_mismatched_entry)
 	     : view->list_pos;
 }
 
@@ -800,9 +822,9 @@ is_mismatched_entry(const dir_entry_t *entry)
 /* Finds position of the next entry matching the predicate.  Returns new
  * position which isn't changed if no next directory is found. */
 static int
-find_next(const view_t *view, entry_predicate pred)
+find_next(const view_t *view, int from, entry_predicate pred)
 {
-	int pos = view->list_pos;
+	int pos = from;
 	while(++pos < view->list_rows)
 	{
 		if(pred(&view->dir_entry[pos]))
@@ -816,9 +838,9 @@ find_next(const view_t *view, entry_predicate pred)
 /* Finds position of the previous entry matching the predicate.  Returns new
  * position which isn't changed if no previous directory is found. */
 static int
-find_prev(const view_t *view, entry_predicate pred)
+find_prev(const view_t *view, int from, entry_predicate pred)
 {
-	int pos = view->list_pos;
+	int pos = from;
 	while(--pos >= 0)
 	{
 		if(pred(&view->dir_entry[pos]))
