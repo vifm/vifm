@@ -95,6 +95,9 @@
 	Added selected() builtin function which returns number of currently
 	selected files.
 
+	Added [S and ]S shortcuts as wrapping versions of [s and ]s.  Thanks to
+	aksr.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

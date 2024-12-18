@@ -715,6 +715,9 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 ]s                                             *vifm-]s*
     go to the next selected entry or do nothing.
 
+[S  same as |vifm-[s|, but wraps.              *vifm-[S*
+]S  same as |vifm-]s|, but wraps.              *vifm-]S*
+
 Using Count~
                                                *vifm-count* *vifm-[count]*
 You can use count with commands like yy.

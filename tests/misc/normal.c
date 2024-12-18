@@ -180,6 +180,70 @@ TEST(swapping_views_loads_options)
 	assert_string_equal("7", vle_opts_get("numberwidth", OPT_LOCAL));
 }
 
+TEST(lb_rb_S)
+{
+	/* Load file list. */
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
+	load_dir_list(&lwin, /*reload=*/0);
+
+	/* Make a selection. */
+	lwin.dir_entry[1].selected = 1;
+
+	lwin.list_pos = 0;
+	(void)vle_keys_exec_timed_out(WK_LB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+
+	lwin.list_pos = 0;
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+
+	lwin.list_pos = 1;
+	(void)vle_keys_exec_timed_out(WK_LB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+
+	lwin.list_pos = 1;
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+
+	lwin.list_pos = 2;
+	(void)vle_keys_exec_timed_out(WK_LB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+
+	lwin.list_pos = 2;
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+
+	/* Invert the selection to check for corner cases. */
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 0;
+	lwin.dir_entry[2].selected = 1;
+
+	lwin.list_pos = 0;
+	(void)vle_keys_exec_timed_out(WK_LB WK_S);
+	assert_int_equal(2, lwin.list_pos);
+
+	lwin.list_pos = 0;
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(2, lwin.list_pos);
+
+	lwin.list_pos = 1;
+	(void)vle_keys_exec_timed_out(WK_LB WK_S);
+	assert_int_equal(0, lwin.list_pos);
+
+	lwin.list_pos = 1;
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(2, lwin.list_pos);
+
+	lwin.list_pos = 2;
+	(void)vle_keys_exec_timed_out(WK_LB WK_S);
+	assert_int_equal(0, lwin.list_pos);
+
+	lwin.list_pos = 2;
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(0, lwin.list_pos);
+}
+
 TEST(gf, IF(not_windows))
 {
 	char dir_path[PATH_MAX + 1];

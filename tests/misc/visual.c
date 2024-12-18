@@ -141,6 +141,41 @@ TEST(modvis_update_after_av_and_cursor_movements)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(lb_rb_S)
+{
+	/* Load file list. */
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+
+	/* Make a selection. */
+	lwin.dir_entry[0].selected = 1;
+
+	/* More corner cases are tested in the normal mode, both modes use the same
+	 * underlying implementation. */
+
+	lwin.list_pos = 0;
+	(void)vle_keys_exec_timed_out(WK_a WK_v WK_LB WK_S);
+	assert_int_equal(0, lwin.list_pos);
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(0, lwin.list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	lwin.list_pos = 1;
+	(void)vle_keys_exec_timed_out(WK_a WK_v WK_LB WK_S);
+	assert_int_equal(0, lwin.list_pos);
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+
+	lwin.list_pos = 2;
+	(void)vle_keys_exec_timed_out(WK_a WK_v WK_LB WK_S);
+	assert_int_equal(0, lwin.list_pos);
+	(void)vle_keys_exec_timed_out(WK_RB WK_S);
+	assert_int_equal(1, lwin.list_pos);
+	(void)vle_keys_exec_timed_out(WK_C_c);
+}
+
 TEST(cl, IF(not_windows))
 {
 	conf_setup();

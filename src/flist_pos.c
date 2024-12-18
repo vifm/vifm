@@ -762,6 +762,28 @@ fpos_prev_selected(const view_t *view)
 }
 
 int
+fpos_next_selected_wrap(const view_t *view)
+{
+	int pos = find_next(view, view->list_pos, &is_entry_selected);
+	if(pos == view->list_pos)
+	{
+		pos = find_next(view, -1, &is_entry_selected);
+	}
+	return pos;
+}
+
+int
+fpos_prev_selected_wrap(const view_t *view)
+{
+	int pos = find_prev(view, view->list_pos, &is_entry_selected);
+	if(pos == view->list_pos)
+	{
+		pos = find_prev(view, view->list_rows, &is_entry_selected);
+	}
+	return pos;
+}
+
+int
 fpos_next_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
