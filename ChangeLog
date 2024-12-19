@@ -198,6 +198,10 @@
 	Don't overwrite $TERMINFO in AppImage, set/append to $TERMINFO_DIRS
 	instead.  Thanks to anonymous at Vifm Q2A site.
 
+	Upgraded to PDCurses 3.9 (was 3.8) for Windows.  Combined with some other
+	changes this improves the situation with handling of CJK characters.
+	Thanks to zzx41375004, vodbyte, Jeremy Yuan and others.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.

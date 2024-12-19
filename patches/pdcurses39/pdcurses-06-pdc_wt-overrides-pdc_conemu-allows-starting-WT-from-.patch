@@ -1,0 +1,27 @@
+From 9a9cc97f70ee0dcb3b4b4a5afd3dd0861d2cc35c Mon Sep 17 00:00:00 2001
+From: William McBrine <wmcbrine@gmail.com>
+Date: Mon, 5 Jul 2021 19:41:05 -0400
+Subject: [PATCH 06/10] pdc_wt overrides pdc_conemu -- allows starting WT from
+ ConEmu. (Note that the reverse seems unnecessary -- some of the ConEmu checks
+ may be unneeded?)
+
+---
+ wincon/pdcscrn.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/wincon/pdcscrn.c b/wincon/pdcscrn.c
+index 0d61f821..dc729748 100644
+--- a/wincon/pdcscrn.c
++++ b/wincon/pdcscrn.c
+@@ -414,7 +414,7 @@ int PDC_scr_open(int argc, char **argv)
+     is_nt = !(GetVersion() & 0x80000000);
+ 
+     pdc_wt = !!getenv("WT_SESSION");
+-    str = getenv("ConEmuANSI");
++    str = pdc_wt ? NULL : getenv("ConEmuANSI");
+     pdc_conemu = !!str;
+     pdc_ansi = pdc_wt ? TRUE : pdc_conemu ? !strcmp(str, "ON") : FALSE;
+ 
+-- 
+2.47.1
+

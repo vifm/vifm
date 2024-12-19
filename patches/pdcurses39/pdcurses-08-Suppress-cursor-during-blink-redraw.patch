@@ -1,0 +1,46 @@
+From d901bc7298c07af6297fb1739b24c3192762d112 Mon Sep 17 00:00:00 2001
+From: William McBrine <wmcbrine@gmail.com>
+Date: Wed, 7 Jul 2021 04:22:15 -0400
+Subject: [PATCH 08/10] Suppress cursor during blink redraw.
+
+---
+ wincon/pdcdisp.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/wincon/pdcdisp.c b/wincon/pdcdisp.c
+index 6786e839..b89485a9 100644
+--- a/wincon/pdcdisp.c
++++ b/wincon/pdcdisp.c
+@@ -276,7 +276,17 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
+ 
+ void PDC_blink_text(void)
+ {
++    CONSOLE_CURSOR_INFO cci;
+     int i, j, k;
++    bool oldvis;
++
++    GetConsoleCursorInfo(pdc_con_out, &cci);
++    oldvis = cci.bVisible;
++    if (oldvis)
++    {
++        cci.bVisible = FALSE;
++        SetConsoleCursorInfo(pdc_con_out, &cci);
++    }
+ 
+     if (!(SP->termattrs & A_BLINK))
+         blinked_off = FALSE;
+@@ -299,5 +309,11 @@ void PDC_blink_text(void)
+     }
+ 
+     PDC_gotoyx(SP->cursrow, SP->curscol);
++    if (oldvis)
++    {
++        cci.bVisible = TRUE;
++        SetConsoleCursorInfo(pdc_con_out, &cci);
++    }
++
+     pdc_last_blink = GetTickCount();
+ }
+-- 
+2.47.1
+

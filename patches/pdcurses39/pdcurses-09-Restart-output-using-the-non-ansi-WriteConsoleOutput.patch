@@ -1,0 +1,61 @@
+From 895986be99522d9c5314718234134042d7fa766b Mon Sep 17 00:00:00 2001
+From: William McBrine <wmcbrine@gmail.com>
+Date: Wed, 8 Dec 2021 18:04:46 -0500
+Subject: [PATCH 09/10] Restart output using the non-ansi (WriteConsoleOutput)
+ method when running under Windows Terminal, and printing an ACS character
+ below space (i.e. in the control character range). Partial reversal of
+ b6d6abbf -- extended attributes and redefined basic colors will be disabled
+ only in the case when printing one of these characters; i.e., testcurs looks
+ correct now. ;)
+
+---
+ wincon/pdcdisp.c | 6 ++++++
+ wincon/pdcscrn.c | 6 +-----
+ 2 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/wincon/pdcdisp.c b/wincon/pdcdisp.c
+index b89485a9..14418396 100644
+--- a/wincon/pdcdisp.c
++++ b/wincon/pdcdisp.c
+@@ -181,8 +181,13 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+             chtype ch = srcp[j];
+ 
+             if (ch & A_ALTCHARSET && !(ch & 0xff80))
++            {
+                 ch = acs_map[ch & 0x7f];
+ 
++                if (pdc_wt && (ch & A_CHARTEXT) < ' ')
++                    goto NONANSI;
++            }
++
+             if (blink && blinked_off)
+                 ch = ' ';
+ 
+@@ -198,6 +203,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+ #endif
+     }
+     else
++NONANSI:
+     {
+         CHAR_INFO buffer[512];
+         COORD bufSize, bufPos;
+diff --git a/wincon/pdcscrn.c b/wincon/pdcscrn.c
+index f1f5fdd3..dc729748 100644
+--- a/wincon/pdcscrn.c
++++ b/wincon/pdcscrn.c
+@@ -416,11 +416,7 @@ int PDC_scr_open(int argc, char **argv)
+     pdc_wt = !!getenv("WT_SESSION");
+     str = pdc_wt ? NULL : getenv("ConEmuANSI");
+     pdc_conemu = !!str;
+-    pdc_ansi =
+-#ifdef PDC_WIDE
+-        pdc_wt ? TRUE :
+-#endif
+-        pdc_conemu ? !strcmp(str, "ON") : FALSE;
++    pdc_ansi = pdc_wt ? TRUE : pdc_conemu ? !strcmp(str, "ON") : FALSE;
+ 
+     GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
+     GetConsoleScreenBufferInfo(pdc_con_out, &orig_scr);
+-- 
+2.47.1
+

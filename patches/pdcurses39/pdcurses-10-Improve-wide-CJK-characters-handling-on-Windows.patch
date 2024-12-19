@@ -1,0 +1,64 @@
+From 1c1201af763df6023bfe52b7a60d23d1688472bd Mon Sep 17 00:00:00 2001
+From: xaizek <xaizek@posteo.net>
+Date: Fri, 20 Dec 2024 01:15:31 +0200
+Subject: [PATCH 10/10] Improve wide (CJK) characters handling on Windows
+
+This change addresses issues with Windows Terminal of various versions
+and partially ConEmu.
+
+ConEmu works fine on Windows 10 unless colors >=16 are used.  On Windows
+7, it works better than before (was quite horrible), but there are still
+issues.
+---
+ wincon/pdcdisp.c | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/wincon/pdcdisp.c b/wincon/pdcdisp.c
+index 14418396..e3902c1e 100644
+--- a/wincon/pdcdisp.c
++++ b/wincon/pdcdisp.c
+@@ -176,6 +176,9 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+ #else
+         char buffer[512];
+ #endif
++        // Current offset in the output buffer, can be smaller than the offset
++        // in the input buffer (j).
++        int buf_len = 0;
+         for (j = 0; j < len; j++)
+         {
+             chtype ch = srcp[j];
+@@ -191,15 +194,28 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+             if (blink && blinked_off)
+                 ch = ' ';
+ 
+-            buffer[j] = ch & A_CHARTEXT;
++            buffer[buf_len] = ch & A_CHARTEXT;
++
++            // In case of CJK characters input buffer is padded to account for
++            // their width being larger than one.  This allows most of the code
++            // in the library which knows nothing of CJK to remain unchanged and
++            // naturaly take real width of such characters into account without
++            // handling them in any special way.  However, need to jump over the
++            // padding when drawing things to avoid having it in the output.
++            int char_width = compat_wcwidth(buffer[buf_len]);
++            if (char_width < 0)
++                char_width = 1;
++            j += char_width - 1;
++
++            ++buf_len;
+         }
+ 
+         PDC_gotoyx(lineno, x);
+         _set_ansi_color(fore, back, attr);
+ #ifdef PDC_WIDE
+-        WriteConsoleW(pdc_con_out, buffer, len, NULL, NULL);
++        WriteConsoleW(pdc_con_out, buffer, buf_len, NULL, NULL);
+ #else
+-        WriteConsoleA(pdc_con_out, buffer, len, NULL, NULL);
++        WriteConsoleA(pdc_con_out, buffer, buf_len, NULL, NULL);
+ #endif
+     }
+     else
+-- 
+2.47.1
+

@@ -1,0 +1,32 @@
+From dcd83e47788645ae2ed97700fd8e2b3674d67d95 Mon Sep 17 00:00:00 2001
+From: William McBrine <wmcbrine@gmail.com>
+Date: Tue, 6 Jul 2021 03:44:20 -0400
+Subject: [PATCH 07/10] ASCII control code processing appears to be
+ (incorrectly) always enabled for WriteConsole() in Windows Terminal, making
+ it impossible to pass some of the CP437 altcharset. The kludge is to fall
+ back to the non-ANSI mode (no extended attributes).
+
+---
+ wincon/pdcscrn.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/wincon/pdcscrn.c b/wincon/pdcscrn.c
+index dc729748..f1f5fdd3 100644
+--- a/wincon/pdcscrn.c
++++ b/wincon/pdcscrn.c
+@@ -416,7 +416,11 @@ int PDC_scr_open(int argc, char **argv)
+     pdc_wt = !!getenv("WT_SESSION");
+     str = pdc_wt ? NULL : getenv("ConEmuANSI");
+     pdc_conemu = !!str;
+-    pdc_ansi = pdc_wt ? TRUE : pdc_conemu ? !strcmp(str, "ON") : FALSE;
++    pdc_ansi =
++#ifdef PDC_WIDE
++        pdc_wt ? TRUE :
++#endif
++        pdc_conemu ? !strcmp(str, "ON") : FALSE;
+ 
+     GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
+     GetConsoleScreenBufferInfo(pdc_con_out, &orig_scr);
+-- 
+2.47.1
+
