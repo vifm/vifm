@@ -30,8 +30,7 @@
 
 SETUP()
 {
-	update_string(&cfg.shell, "sh");
-	update_string(&cfg.shell_cmd_flag, "-c");
+	conf_setup();
 
 	init_builtin_functions();
 	vle_parser_init(NULL);
@@ -48,8 +47,7 @@ TEARDOWN()
 {
 	clear_envvars();
 	function_reset_all();
-	update_string(&cfg.shell, NULL);
-	update_string(&cfg.shell_cmd_flag, NULL);
+	conf_teardown();
 
 	view_teardown(&lwin);
 	curr_view = NULL;

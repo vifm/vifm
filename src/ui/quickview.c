@@ -917,6 +917,8 @@ qv_cleanup_area(const preview_area_t *parea, const char cmd[])
 	}
 	else
 	{
+		/* XXX: this should probably get SHELL_BY_APP, otherwise preview command is
+		 *      called with SHELL_BY_APP, but clear command with SHELL_BY_USER. */
 		FILE *fp = read_cmd_output(expanded, /*preserve_stdin=*/0);
 		while(fgetc(fp) != EOF);
 		fclose(fp);
