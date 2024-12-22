@@ -61,16 +61,6 @@ TEARDOWN()
 
 TEST(merge_directories)
 {
-#ifndef _WIN32
-	replace_string(&cfg.shell, "/bin/sh");
-	replace_string(&cfg.shell_cmd_flag, "-c");
-#else
-	replace_string(&cfg.shell, "cmd");
-	replace_string(&cfg.shell_cmd_flag, "/C");
-#endif
-
-	stats_update_shell_type(cfg.shell);
-
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
 	{
@@ -112,14 +102,6 @@ TEST(merge_directories)
 
 TEST(merge_directories_creating_intermediate_parent_dirs_move)
 {
-#ifndef _WIN32
-	replace_string(&cfg.shell, "/bin/sh");
-#else
-	replace_string(&cfg.shell, "cmd");
-#endif
-
-	stats_update_shell_type(cfg.shell);
-
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
 	{
@@ -134,14 +116,6 @@ TEST(merge_directories_creating_intermediate_parent_dirs_move)
 
 TEST(merge_directories_creating_intermediate_parent_dirs_copy)
 {
-#ifndef _WIN32
-	replace_string(&cfg.shell, "/bin/sh");
-#else
-	replace_string(&cfg.shell, "cmd");
-#endif
-
-	stats_update_shell_type(cfg.shell);
-
 	/* More recent version of Wine fails this test when system calls aren't used,
 	 * must be something about xcopy utility. */
 	for(cfg.use_system_calls = not_wine() ? 0 : 1; cfg.use_system_calls < 2;
