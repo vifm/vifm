@@ -337,7 +337,8 @@
 	Shapovalov.
 
 	Fixed absolute paths not being completed when 'autocd' option is enabled.
-	Thanks to Taras Halturin (a.k.a. halturin).
+	Mind that it can't work on Windows due to ambiguity between a command and
+	a full path there.  Thanks to Taras Halturin (a.k.a. halturin).
 
 	Fixed individual error messages when 'syscalls' is on lacking system error
 	string which is present when errors are aggregated at the end of an
