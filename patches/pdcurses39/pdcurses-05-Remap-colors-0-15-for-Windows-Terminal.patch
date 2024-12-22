@@ -1,0 +1,34 @@
+From 766dd95a079677d40040970b8c48dfb46a6f82fe Mon Sep 17 00:00:00 2001
+From: William McBrine <wmcbrine@gmail.com>
+Date: Mon, 5 Jul 2021 16:26:59 -0400
+Subject: [PATCH 05/10] Remap colors 0-15 for Windows Terminal.
+
+---
+ wincon/pdcscrn.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/wincon/pdcscrn.c b/wincon/pdcscrn.c
+index c6436319..0d61f821 100644
+--- a/wincon/pdcscrn.c
++++ b/wincon/pdcscrn.c
+@@ -667,7 +667,7 @@ bool PDC_can_change_color(void)
+ 
+ int PDC_color_content(short color, short *red, short *green, short *blue)
+ {
+-    if (color < 16 && !pdc_conemu)
++    if (color < 16 && !(pdc_conemu || pdc_wt))
+     {
+         COLORREF *color_table = _get_colors();
+ 
+@@ -706,7 +706,7 @@ int PDC_init_color(short color, short red, short green, short blue)
+         return OK;
+     }
+ 
+-    if (color < 16 && !pdc_conemu)
++    if (color < 16 && !(pdc_conemu || pdc_wt))
+     {
+         COLORREF *color_table = _get_colors();
+ 
+-- 
+2.47.1
+

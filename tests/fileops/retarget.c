@@ -84,9 +84,6 @@ TEST(no_changes, IF(not_windows))
 	create_executable("script");
 	make_file("script", "#!/bin/sh\n");
 
-	update_string(&cfg.shell, "/bin/sh");
-	stats_update_shell_type(cfg.shell);
-
 	curr_stats.exec_env_type = EET_LINUX_NATIVE;
 	update_string(&cfg.vi_command, "./script");
 
@@ -120,9 +117,6 @@ TEST(retarget_files, IF(not_windows))
 				"#!/bin/sh\n"
 				"sed 's/get//' < $2 > $2_out\n"
 				"mv $2_out $2\n");
-
-		update_string(&cfg.shell, "/bin/sh");
-		stats_update_shell_type(cfg.shell);
 
 		curr_stats.exec_env_type = EET_LINUX_NATIVE;
 		update_string(&cfg.vi_command, "./script");

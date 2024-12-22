@@ -232,9 +232,6 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	}
 	char long_name[name_max + 1];
 
-	update_string(&cfg.shell, "/bin/sh");
-	stats_update_shell_type(cfg.shell);
-
 	FILE *fp = fopen("script", "w");
 	fputs("#!/bin/sh\n", fp);
 	fputs("sed 'y/1/2/' < $2 > $2_out\n", fp);
@@ -265,9 +262,6 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	assert_success(unlink("script"));
 
 	update_string(&cfg.vi_command, NULL);
-
-	update_string(&cfg.shell, NULL);
-	stats_update_shell_type("/bin/sh");
 }
 
 TEST(substitution_works)

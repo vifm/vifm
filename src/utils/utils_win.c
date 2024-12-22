@@ -926,8 +926,28 @@ read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 		return NULL;
 	}
 
-	const char *args[] = { "cmd", "/C", cmd, NULL };
-	const int retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
+	const char *args[4] = { };
+	char *modified_cmd = NULL;
+	char *shell;
+
+	if(curr_stats.shell_type == ST_CMD)
+	{
+		shell = "cmd";
+
+		args[0] = "cmd";
+		args[1] = "/C";
+		args[2] = cmd;
+	}
+	else
+	{
+		shell = cfg.shell;
+
+		modified_cmd = win_make_sh_cmd(cmd, SHELL_BY_USER);
+		args[0] = modified_cmd;
+	}
+
+	const int retcode = _spawnvp(P_NOWAIT, shell, &args[0]);
+	free(modified_cmd);
 
 	return (retcode == 0 ? NULL : _fdopen(out_pipe[0], "r"));
 }

@@ -9,7 +9,6 @@
 #include <test-utils.h>
 
 #include "../../src/compat/os.h"
-#include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
@@ -25,13 +24,6 @@ static mode_t get_perms(const char path[]);
 static int can_reset_x_on_files(void);
 
 static mode_t mask;
-
-SETUP_ONCE()
-{
-	replace_string(&cfg.shell, "/bin/sh");
-	replace_string(&cfg.shell_cmd_flag, "-c");
-	stats_update_shell_type(cfg.shell);
-}
 
 SETUP()
 {

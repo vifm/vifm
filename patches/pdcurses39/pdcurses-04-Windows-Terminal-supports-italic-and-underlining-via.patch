@@ -1,0 +1,51 @@
+From b8a6e979962f606ddeadd1e7a9eff0659c669bab Mon Sep 17 00:00:00 2001
+From: William McBrine <wmcbrine@gmail.com>
+Date: Mon, 5 Jul 2021 16:23:00 -0400
+Subject: [PATCH 04/10] Windows Terminal supports italic and underlining, via
+ escape codes.
+
+---
+ wincon/pdcscrn.c | 5 +++--
+ wincon/pdcwin.h  | 2 +-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/wincon/pdcscrn.c b/wincon/pdcscrn.c
+index e6640a37..c6436319 100644
+--- a/wincon/pdcscrn.c
++++ b/wincon/pdcscrn.c
+@@ -36,7 +36,7 @@ static short ansitocurs[16] =
+ 
+ short pdc_curstoreal[16], pdc_curstoansi[16];
+ short pdc_oldf, pdc_oldb, pdc_oldu;
+-bool pdc_conemu, pdc_ansi;
++bool pdc_conemu, pdc_wt, pdc_ansi;
+ 
+ enum { PDC_RESTORE_NONE, PDC_RESTORE_BUFFER };
+ 
+@@ -413,9 +413,10 @@ int PDC_scr_open(int argc, char **argv)
+ 
+     is_nt = !(GetVersion() & 0x80000000);
+ 
++    pdc_wt = !!getenv("WT_SESSION");
+     str = getenv("ConEmuANSI");
+     pdc_conemu = !!str;
+-    pdc_ansi = pdc_conemu ? !strcmp(str, "ON") : FALSE;
++    pdc_ansi = pdc_wt ? TRUE : pdc_conemu ? !strcmp(str, "ON") : FALSE;
+ 
+     GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
+     GetConsoleScreenBufferInfo(pdc_con_out, &orig_scr);
+diff --git a/wincon/pdcwin.h b/wincon/pdcwin.h
+index dab1f76b..08d3579d 100644
+--- a/wincon/pdcwin.h
++++ b/wincon/pdcwin.h
+@@ -22,6 +22,6 @@ extern DWORD pdc_quick_edit;
+ extern DWORD pdc_last_blink;
+ extern short pdc_curstoreal[16], pdc_curstoansi[16];
+ extern short pdc_oldf, pdc_oldb, pdc_oldu;
+-extern bool pdc_conemu, pdc_ansi;
++extern bool pdc_conemu, pdc_wt, pdc_ansi;
+ 
+ extern void PDC_blink_text(void);
+-- 
+2.47.1
+

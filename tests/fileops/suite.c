@@ -27,13 +27,6 @@ SETUP_ONCE()
 	cfg.sizefmt.base = 1024;
 	cfg.sizefmt.precision = 0;
 	cfg.sizefmt.space = 1;
-
-	cfg.shell = strdup("");
-}
-
-TEARDOWN_ONCE()
-{
-	free(cfg.shell);
 }
 
 SETUP()
@@ -45,6 +38,14 @@ SETUP()
 	cfg.use_system_calls = 1;
 	cfg.slow_fs_list = strdup("");
 	cfg.delete_prg = strdup("");
+
+#ifndef _WIN32
+	cfg.shell = strdup("/bin/sh");
+	cfg.shell_cmd_flag = strdup("-c");
+#else
+	cfg.shell = strdup("cmd");
+	cfg.shell_cmd_flag = strdup("/C");
+#endif
 
 	lwin.list_rows = 0;
 	lwin.dir_entry = NULL;
@@ -59,6 +60,8 @@ TEARDOWN()
 {
 	free(cfg.slow_fs_list);
 	free(cfg.delete_prg);
+	free(cfg.shell);
+	free(cfg.shell_cmd_flag);
 
 	un_reset();
 }

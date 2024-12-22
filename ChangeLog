@@ -198,6 +198,10 @@
 	Don't overwrite $TERMINFO in AppImage, set/append to $TERMINFO_DIRS
 	instead.  Thanks to anonymous at Vifm Q2A site.
 
+	Upgraded to PDCurses 3.9 (was 3.8) for Windows.  Combined with some other
+	changes this improves the situation with handling of CJK characters.
+	Thanks to zzx41375004, vodbyte, Jeremy Yuan and others.
+
 	Fixed line number column not including padding to the left of it.
 
 	Fixed local options not being loaded on Ctrl-W x.
@@ -333,7 +337,8 @@
 	Shapovalov.
 
 	Fixed absolute paths not being completed when 'autocd' option is enabled.
-	Thanks to Taras Halturin (a.k.a. halturin).
+	Mind that it can't work on Windows due to ambiguity between a command and
+	a full path there.  Thanks to Taras Halturin (a.k.a. halturin).
 
 	Fixed individual error messages when 'syscalls' is on lacking system error
 	string which is present when errors are aggregated at the end of an
@@ -422,6 +427,9 @@
 
 	Fixed /usr/share/terminfo not being consulted when running from an
 	AppImage.  Thanks to anonymous at Vifm Q2A site.
+
+	Fixed system() and term() not taking 'shell'/'shellcmdflag' into account
+	on Windows.  Thanks to spence91.
 
 0.13-beta to 0.13 (2023-04-04)
 
