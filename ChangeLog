@@ -431,6 +431,8 @@
 	Fixed system() and term() not taking 'shell'/'shellcmdflag' into account
 	on Windows.  Thanks to spence91.
 
+	Fixed a race condition on displaying errors of a job in :jobs menu.
+
 0.13-beta to 0.13 (2023-04-04)
 
 	Made "withicase" and "withrcase" affect how files are sorted before
