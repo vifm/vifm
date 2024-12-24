@@ -133,7 +133,7 @@ reload_jobs_list(menu_data_t *m)
 	m->items = NULL;
 	m->len = 0;
 
-	bg_check();
+	bg_check(/*show_errors=*/0);
 
 	int len = 0;
 	bg_job_t *p;

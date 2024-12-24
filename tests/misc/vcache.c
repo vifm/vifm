@@ -410,7 +410,7 @@ TEST(kill_all_async_previews_on_exit, IF(not_windows))
 	while(bg_jobs != NULL)
 	{
 		usleep(5000);
-		bg_check();
+		check_bg_jobs();
 		if(++counter > 100)
 		{
 			assert_fail("Waiting for too long.");

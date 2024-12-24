@@ -690,6 +690,14 @@ check_compare_invariants(int expected_len)
 }
 
 void
+check_bg_jobs(void)
+{
+	/* Won't hurt to exercise code for displaying errors which depends on thread
+	 * synchronization. */
+	bg_check(/*show_errors=*/1);
+}
+
+void
 wait_for_bg(void)
 {
 	int counter = 0;
@@ -713,7 +721,7 @@ wait_for_all_bg(void)
 	setvar("v:jobcount", var);
 	var_free(var);
 
-	bg_check();
+	check_bg_jobs();
 	while(bg_jobs != NULL)
 	{
 		if(++counter > 100)
@@ -723,7 +731,7 @@ wait_for_all_bg(void)
 		}
 
 		usleep(5000);
-		bg_check();
+		check_bg_jobs();
 	}
 }
 

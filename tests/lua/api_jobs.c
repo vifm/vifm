@@ -116,7 +116,7 @@ TEST(vifmjob_stdin_broken_pipe, IF(not_windows))
 			"stdin = vifm.startjob(info):stdin()"
 			"vifm.startjob({ cmd = 'sleep 0.01' }):wait()"
 			"print(stdin:write('text') == stdin)");
-	bg_check();
+	check_bg_jobs();
 	BLUA_ENDS(vlua, ": attempt to use a closed file",
 			"print(stdin:write('text') == stdin)");
 }
@@ -353,7 +353,7 @@ wait_for_job(void)
 	while(bg_job_is_running(job))
 	{
 		usleep(5000);
-		bg_check();
+		check_bg_jobs();
 		if(++counter > 100)
 		{
 			assert_fail("Waiting for too long.");
@@ -362,8 +362,8 @@ wait_for_job(void)
 	}
 
 	/* When the job is marked as not running, the callback might not yet been
-	 * dispatched, so call bg_check() once again to be sure. */
-	bg_check();
+	 * dispatched, so call check_bg_jobs() once again to be sure. */
+	check_bg_jobs();
 
 	assert_int_equal(0, job->exit_code);
 	bg_job_decref(job);

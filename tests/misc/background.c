@@ -116,13 +116,13 @@ TEST(jobcount_variable_gets_updated)
 	assert_success(bg_execute("", "", 0, 0, &task, (void *)locks));
 
 	wait_until_locked(&locks[0]);
-	bg_check();
+	check_bg_jobs();
 
 	assert_int_equal(1, var_to_int(getvar("v:jobcount")));
 	assert_true(stats_redraw_planned());
 
 	(void)stats_update_fetch();
-	bg_check();
+	check_bg_jobs();
 
 	assert_int_equal(1, var_to_int(getvar("v:jobcount")));
 	assert_false(stats_redraw_planned());
@@ -148,7 +148,7 @@ TEST(job_can_survive_on_its_own)
 	while(bg_job_is_running(job))
 	{
 		usleep(5000);
-		bg_check();
+		check_bg_jobs();
 		if(++counter > 100)
 		{
 			assert_fail("Waiting for too long.");
@@ -219,7 +219,7 @@ TEST(jobs_exit_cb_is_called)
 	while(bg_job_is_running(job))
 	{
 		usleep(5000);
-		bg_check();
+		check_bg_jobs();
 		if(++counter > 100)
 		{
 			assert_fail("Waiting for too long.");

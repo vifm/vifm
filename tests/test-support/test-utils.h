@@ -153,6 +153,9 @@ void init_view_list(struct view_t *view);
 /* Checks state of two-pane compare for sanity. */
 void check_compare_invariants(int expected_len);
 
+/* Checks currently running background tasks. */
+void check_bg_jobs(void);
+
 /* Waits termination of all background tasks. */
 void wait_for_bg(void);
 
