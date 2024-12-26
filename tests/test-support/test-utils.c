@@ -735,6 +735,35 @@ wait_for_all_bg(void)
 	}
 }
 
+int
+wait_for_job(struct bg_job_t *job)
+{
+	assert_non_null(job);
+
+	bg_job_incref(job);
+
+	int counter = 0;
+	while(bg_job_is_running(job))
+	{
+		usleep(5000);
+		check_bg_jobs();
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			return -1;
+		}
+	}
+
+	/* When the job is marked as not running, the callback might not yet been
+	 * dispatched, so call check_bg_jobs() once again to be sure. */
+	check_bg_jobs();
+
+	int exit_code = job->exit_code;
+	bg_job_decref(job);
+
+	return exit_code;
+}
+
 void
 file_is(const char path[], const char *lines[], int nlines)
 {

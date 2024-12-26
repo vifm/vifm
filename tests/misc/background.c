@@ -138,26 +138,7 @@ TEST(jobcount_variable_gets_updated)
 TEST(job_can_survive_on_its_own)
 {
 	assert_success(bg_run_external("exit 71", 1, SHELL_BY_APP, NULL));
-
-	bg_job_t *job = bg_jobs;
-	assert_non_null(job);
-
-	bg_job_incref(job);
-
-	int counter = 0;
-	while(bg_job_is_running(job))
-	{
-		usleep(5000);
-		check_bg_jobs();
-		if(++counter > 100)
-		{
-			assert_fail("Waiting for too long.");
-			return;
-		}
-	}
-
-	assert_int_equal(71, job->exit_code);
-	bg_job_decref(job);
+	assert_int_equal(71, wait_for_job(bg_jobs));
 }
 
 TEST(explicitly_wait_for_a_job)
@@ -215,21 +196,10 @@ TEST(jobs_exit_cb_is_called)
 	int called = 0;
 	bg_job_set_exit_cb(job, &on_job_exit, &called);
 
-	int counter = 0;
-	while(bg_job_is_running(job))
-	{
-		usleep(5000);
-		check_bg_jobs();
-		if(++counter > 100)
-		{
-			assert_fail("Waiting for too long.");
-			return;
-		}
-	}
+	assert_int_equal(0, wait_for_job(job));
+	bg_job_decref(job);
 
 	assert_int_equal(1, called);
-
-	bg_job_decref(job);
 }
 
 static void

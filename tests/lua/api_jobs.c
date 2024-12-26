@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* usleep() */
-
 #include <stdlib.h> /* free() getenv() */
 #include <string.h> /* strdup() */
 #include <time.h> /* time() */
@@ -18,7 +16,6 @@
 #include "asserts.h"
 
 static void setup_io_tester(void);
-static void wait_for_job(void);
 
 static vlua_t *vlua;
 
@@ -241,7 +238,7 @@ TEST(vifmjob_onexit_good)
 			"         onexit = function(job) print(job:exitcode()) end }"
 			"vifm.startjob(info)");
 
-	wait_for_job();
+	assert_int_equal(0, wait_for_job(bg_jobs));
 	vlua_process_callbacks(vlua);
 
 	assert_string_equal("0", ui_sb_last());
@@ -258,7 +255,7 @@ TEST(vifmjob_onexit_bad)
 			"         onexit = function(job) fail_here() end }"
 			"vifm.startjob(info)");
 
-	wait_for_job();
+	assert_int_equal(0, wait_for_job(bg_jobs));
 	vlua_process_callbacks(vlua);
 
 	assert_string_ends_with(": attempt to call a nil value (global 'fail_here')",
@@ -339,34 +336,6 @@ setup_io_tester(void)
 	snprintf(set_cmd_lua, sizeof(set_cmd_lua),
 			"io_tester = '%s" SL "io_tester_app'", bin_path);
 	assert_success(vlua_run_string(vlua, set_cmd_lua));
-}
-
-static void
-wait_for_job(void)
-{
-	bg_job_t *job = bg_jobs;
-	assert_non_null(job);
-
-	bg_job_incref(job);
-
-	int counter = 0;
-	while(bg_job_is_running(job))
-	{
-		usleep(5000);
-		check_bg_jobs();
-		if(++counter > 100)
-		{
-			assert_fail("Waiting for too long.");
-			return;
-		}
-	}
-
-	/* When the job is marked as not running, the callback might not yet been
-	 * dispatched, so call check_bg_jobs() once again to be sure. */
-	check_bg_jobs();
-
-	assert_int_equal(0, job->exit_code);
-	bg_job_decref(job);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
