@@ -499,6 +499,12 @@ perform_op(const char name[], VariableType vt, VariableOperation vo, var_t val,
 	if(vt == VT_GVAR)
 	{
 		var_info_t *var = find_internal_var(name, vo == VO_ASSIGN);
+		if(var == NULL)
+		{
+			/* Must have failed to allocate new variable. */
+			return 0;
+		}
+
 		switch(vo)
 		{
 			int a, b;
