@@ -994,7 +994,10 @@ bg_run_external_job(const char cmd[], BgJobFlags flags, const char descr[],
 	{
 		/* Set description before placing the job on the bar so that the first
 		 * redraw will already have the description. */
-		bg_op_set_descr(&job->bg_op, descr);
+		if(descr != NULL)
+		{
+			bg_op_set_descr(&job->bg_op, descr);
+		}
 		place_on_job_bar(job);
 	}
 

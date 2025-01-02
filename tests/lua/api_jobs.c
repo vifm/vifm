@@ -67,10 +67,27 @@ TEST(vifm_startjob)
 TEST(vifmjob_exitcode)
 {
 	GLUA_EQ(vlua, "41",
+			"job = vifm.startjob { cmd = 'exit 41' }"
+			"print(job:exitcode())");
+}
+
+TEST(vifmjob_visible)
+{
+	/* With description. */
+	GLUA_EQ(vlua, "3",
 			"info = {"
-			"  cmd = 'exit 41',"
+			"  cmd = 'exit 3',"
 			"  visible = true,"
 			"  description = 'exit 41'"
+			"}"
+			"job = vifm.startjob(info)"
+			"print(job:exitcode())");
+
+	/* Without description. */
+	GLUA_EQ(vlua, "3",
+			"info = {"
+			"  cmd = 'exit 3',"
+			"  visible = true,"
 			"}"
 			"job = vifm.startjob(info)"
 			"print(job:exitcode())");
