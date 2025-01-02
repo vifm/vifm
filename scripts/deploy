@@ -21,6 +21,11 @@ case "$ver" in
         exit 1
 esac
 
+IFS=. read -r -a ver_components <<< "${ver%-beta/}"
+ver_num=$(( ver_components[0]*10000 +
+            ver_components[1]*100 +
+            ver_components[2] ))
+
 target="all"
 
 if [ $# -eq 2 ]; then
@@ -55,8 +60,9 @@ if [ "$target" = all ] || [ "$target" = update ]; then
 
     # update version in configure script
     sed -i "/AC_INIT(/s/,\\[[^,]\\+/,[$ver]/" configure.ac
+    sed -i "/VERSION_NUM/s/\\[[0-9]\\+\\]/[$ver_num]/" configure.ac
 
-    if [ "$OS" != Windows_NT ]; then
+    if false && [ "$OS" != Windows_NT ]; then
         # regenerate autotools files
         autoreconf
         # some voodoo magic to preserve old version of aclocal.m4 file
@@ -71,6 +77,7 @@ if [ "$target" = all ] || [ "$target" = update ]; then
     # update version in src/Makefile.win
     makefile=src/Makefile.win
     sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$ver\"/" "${makefile}"
+    sed -i "/define VERSION_NUM/s/[0-9]\\+/$ver_num/" "${makefile}"
 
     vimplugindoc=data/vim/doc/plugin/vifm-plugin.txt
     vimappdoc=data/vim/doc/app/vifm-app.txt

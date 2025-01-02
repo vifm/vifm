@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2024 December 18
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2025 January 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5115,6 +5115,16 @@ v:jobcount                                     *vifm-jobcount-variable*
                                                *vifm-v:session*
 v:session                                      *vifm-session-variable*
     name of the current session or empty string.
+
+                                               *vifm-v:version*
+v:version                                      *vifm-version-variable*
+    version of the application as an integer.  Version `x.y.z` becomes number
+    `x*100*100 + y*100 + z`, examples:
+     - v0.14 (that is v0.14.0) is 1400 (leading zeroes omitted)
+     - v1.0.2 is 10002
+
+    Release candidates aren't real releases, they report the number of a
+    corresponding release.
 
 See also |vifm-v:servername|.
 

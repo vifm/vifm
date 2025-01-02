@@ -462,6 +462,10 @@ create_builtin_vars(void)
 	var = var_from_int(0);
 	setvar("v:jobcount", var);
 	var_free(var);
+
+	var = var_from_int(VERSION_NUM);
+	setvar("v:version", var);
+	var_free(var);
 }
 
 /* Callback to be invoked when active session has changed. */

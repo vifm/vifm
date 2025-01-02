@@ -98,6 +98,9 @@
 	Added [S and ]S shortcuts as wrapping versions of [s and ]s.  Thanks to
 	aksr.
 
+	Added v:version builtin variable that exposes version as an integer which
+	can be meaningfully compared.  Thanks to an anonymous at Vifm Q2A site.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

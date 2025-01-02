@@ -3527,6 +3527,10 @@ ac_config_headers="$ac_config_headers build-aux/config.h"
 
 
 
+printf "%s\n" "#define VERSION_NUM 1300" >>confdefs.h
+
+
+
 printf "%s\n" "#define PACKAGE_SYSCONF_DIR /**/" >>confdefs.h
 
 
