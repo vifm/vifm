@@ -23,7 +23,7 @@
 #include <ctype.h> /* isdigit() tolower() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* realloc() free() calloc() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memset() strncat() strcpy() strlen() strdup() */
 
 #include "cfg/config.h"
@@ -73,22 +73,19 @@ static char * expand_macros(const char command[], const char args[],
 		MacroFlags *flags, int for_shell, int for_op, int single_only);
 static macro_info_t find_next_macro(const char str[]);
 static void limit_to_single_only(macro_info_t *info, int ncurr, int nother);
-TSTATIC char * append_selected_files(view_t *view, char expanded[],
+TSTATIC void append_selected_files(str_buf_t *expanded, view_t *view,
 		int under_cursor, int quotes, const char mod[], iter_func iter,
 		int for_shell);
-static char * append_entry(view_t *view, char expanded[], PathType type,
+static void append_entry(str_buf_t *expanded, view_t *view, PathType type,
 		dir_entry_t *entry, int quotes, const char mod[], int for_shell);
-static char * expand_directory_path(view_t *view, char *expanded, int quotes,
-		const char *mod, int for_shell);
-static char * expand_register(const reg_t *reg, const char curr_dir[],
-		char expanded[], int quotes, const char mod[], int for_shell);
-static char * expand_preview(char expanded[], MacroKind kind);
+static void expand_directory_path(str_buf_t *expanded, view_t *view, int quotes,
+		const char mod[], int for_shell);
+static void expand_register(str_buf_t *expanded, const reg_t *reg, const char
+		curr_dir[], int quotes, const char mod[], int for_shell);
+static void expand_preview(str_buf_t *expanded, MacroKind kind);
 static preview_area_t get_preview_area(view_t *view);
-static char * append_path_to_expanded(char expanded[], int quotes,
+static void append_path_to_expanded(str_buf_t *expanded, int quotes,
 		const char path[]);
-static char * append_to_expanded(char expanded[], const char str[]);
-static char * append_to_expanded_n(char expanded[], const char str[],
-		size_t str_len);
 static cline_t expand_custom(const char **pattern, size_t nmacros,
 		custom_macro_t macros[], int with_opt, int in_opt);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
@@ -164,10 +161,10 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 		regs_sync_from_shared_memory();
 	}
 
-	char *expanded = strdup("");
-	if(expanded == NULL)
+	str_buf_t expanded = { .data = strdup("") };
+	if(expanded.data == NULL)
 	{
-		return NULL;
+		goto exit;
 	}
 
 	const char *tail;
@@ -177,11 +174,7 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 		info = find_next_macro(tail);
 
 		/* Append prefix until the current macro to result. */
-		expanded = append_to_expanded_n(expanded, tail, info.begin - tail);
-		if(expanded == NULL)
-		{
-			return NULL;
-		}
+		str_buf_append_n(&expanded, tail, info.begin - tail);
 
 		if(info.kind == MK_NONE)
 		{
@@ -198,58 +191,58 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case MK_NONE:           /* Handled above.  Pass-through. */
 			case MK_INVALID: break; /* Just skip over it. */
 			case MK_PERCENT:
-				expanded = append_to_expanded(expanded, "%");
+				str_buf_append(&expanded, "%");
 				break;
 
 			case MK_a:
 				if(args != NULL)
 				{
-					expanded = append_to_expanded(expanded, args);
+					str_buf_append(&expanded, args);
 				}
 				break;
 
 			case MK_b:
-				expanded = append_selected_files(curr_view, expanded, 0, info.quoted,
-						info.mod, iter, for_shell);
-				expanded = append_to_expanded(expanded, " ");
-				expanded = append_selected_files(other_view, expanded, 0, info.quoted,
-						info.mod, iter, for_shell);
+				append_selected_files(&expanded, curr_view, 0, info.quoted, info.mod,
+						iter, for_shell);
+				str_buf_append(&expanded, " ");
+				append_selected_files(&expanded, other_view, 0, info.quoted, info.mod,
+						iter, for_shell);
 				break;
 
 			case MK_c:
-				expanded = append_selected_files(curr_view, expanded, 1, info.quoted,
-						info.mod, iter, for_shell);
+				append_selected_files(&expanded, curr_view, 1, info.quoted, info.mod,
+						iter, for_shell);
 				break;
 			case MK_C:
-				expanded = append_selected_files(other_view, expanded, 1, info.quoted,
-						info.mod, iter, for_shell);
+				append_selected_files(&expanded, other_view, 1, info.quoted, info.mod,
+						iter, for_shell);
 				break;
 
 			case MK_f:
-				expanded = append_selected_files(curr_view, expanded, 0, info.quoted,
-						info.mod, iter, for_shell);
+				append_selected_files(&expanded, curr_view, 0, info.quoted, info.mod,
+						iter, for_shell);
 				break;
 			case MK_F:
-				expanded = append_selected_files(other_view, expanded, 0, info.quoted,
-						info.mod, iter, for_shell);
+				append_selected_files(&expanded, other_view, 0, info.quoted, info.mod,
+						iter, for_shell);
 				break;
 
 			case MK_l:
-				expanded = append_selected_files(curr_view, expanded, 0, info.quoted,
-						info.mod, &iter_selected_entries, for_shell);
+				append_selected_files(&expanded, curr_view, 0, info.quoted, info.mod,
+						&iter_selected_entries, for_shell);
 				break;
 			case MK_L:
-				expanded = append_selected_files(other_view, expanded, 0, info.quoted,
-						info.mod, &iter_selected_entries, for_shell);
+				append_selected_files(&expanded, other_view, 0, info.quoted, info.mod,
+						&iter_selected_entries, for_shell);
 				break;
 
 			case MK_d:
-				expanded = expand_directory_path(curr_view, expanded, info.quoted,
-						info.mod, for_shell);
+				expand_directory_path(&expanded, curr_view, info.quoted, info.mod,
+						for_shell);
 				break;
 			case MK_D:
-				expanded = expand_directory_path(other_view, expanded, info.quoted,
-						info.mod, for_shell);
+				expand_directory_path(&expanded, other_view, info.quoted, info.mod,
+						for_shell);
 				break;
 
 			case MK_n: ma_flags_set(flags, MF_NO_TERM_MUX); break;
@@ -265,7 +258,7 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case MK_i: ma_flags_set(flags, MF_IGNORE); break;
 
 			case MK_r:
-				expanded = expand_register(info.reg, flist_get_dir(curr_view), expanded,
+				expand_register(&expanded, info.reg, flist_get_dir(curr_view),
 						info.quoted, info.mod, for_shell);
 				break;
 
@@ -276,7 +269,7 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case MK_Pz: ma_flags_set(flags, MF_PIPE_FILE_LIST_Z); break;
 
 			case MK_pc:
-				return expanded;
+				goto exit;
 			case MK_pd:
 				/* Just skip %pd. */
 				break;
@@ -287,12 +280,19 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case MK_pw:
 			case MK_px:
 			case MK_py:
-				expanded = expand_preview(expanded, info.kind);
+				expand_preview(&expanded, info.kind);
 				break;
 		}
 	}
 
-	return expanded;
+exit:
+	if(expanded.data == NULL)
+	{
+		show_error_msg("Memory Error",
+				"Failed to allocate enough memory for macro expansion");
+	}
+
+	return expanded.data;
 }
 
 /* Finds first macro in the string.  Returns information about the macro from
@@ -469,15 +469,15 @@ ma_flags_set(MacroFlags *flags, MacroFlags flag)
 	}
 }
 
-TSTATIC char *
-append_selected_files(view_t *view, char expanded[], int under_cursor,
+TSTATIC void
+append_selected_files(str_buf_t *expanded, view_t *view, int under_cursor,
 		int quotes, const char mod[], iter_func iter, int for_shell)
 {
 	const PathType type = (view == other_view)
 	                    ? PT_FULL
 	                    : (flist_custom_active(view) ? PT_REL : PT_NAME);
 #ifdef _WIN32
-	size_t old_len = strlen(expanded);
+	size_t old_len = expanded->len;
 #endif
 
 	if(!under_cursor)
@@ -488,11 +488,10 @@ append_selected_files(view_t *view, char expanded[], int under_cursor,
 		{
 			if(!first)
 			{
-				expanded = append_to_expanded(expanded, " ");
+				str_buf_append(expanded, " ");
 			}
 
-			expanded = append_entry(view, expanded, type, entry, quotes, mod,
-					for_shell);
+			append_entry(expanded, view, type, entry, quotes, mod, for_shell);
 			first = 0;
 		}
 	}
@@ -501,24 +500,20 @@ append_selected_files(view_t *view, char expanded[], int under_cursor,
 		dir_entry_t *const curr = get_current_entry(view);
 		if(!fentry_is_fake(curr))
 		{
-			expanded = append_entry(view, expanded, type, curr, quotes, mod,
-					for_shell);
+			append_entry(expanded, view, type, curr, quotes, mod, for_shell);
 		}
 	}
 
-	if(for_shell && curr_stats.shell_type == ST_CMD)
+	if(expanded->data != NULL && for_shell && curr_stats.shell_type == ST_CMD)
 	{
-		internal_to_system_slashes(expanded + old_len);
+		internal_to_system_slashes(expanded->data + old_len);
 	}
-
-	return expanded;
 }
 
-/* Appends path to the entry to the expanded string.  Returns new value of
- * expanded string. */
-static char *
-append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
-		int quotes, const char mod[], int for_shell)
+/* Appends path to the entry to the expanded string. */
+static void
+append_entry(str_buf_t *expanded, view_t *view, PathType type,
+		dir_entry_t *entry, int quotes, const char mod[], int for_shell)
 {
 	char path[PATH_MAX + 1];
 	const char *modified;
@@ -542,32 +537,27 @@ append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
 	}
 
 	modified = mods_apply(path, flist_get_dir(view), mod, for_shell);
-	expanded = append_path_to_expanded(expanded, quotes, modified);
-
-	return expanded;
+	append_path_to_expanded(expanded, quotes, modified);
 }
 
-static char *
-expand_directory_path(view_t *view, char *expanded, int quotes, const char *mod,
-		int for_shell)
+static void
+expand_directory_path(str_buf_t *expanded, view_t *view, int quotes,
+		const char mod[], int for_shell)
 {
 	const char *modified = mods_apply(flist_get_dir(view), "/", mod, for_shell);
-	char *const result = append_path_to_expanded(expanded, quotes, modified);
+	append_path_to_expanded(expanded, quotes, modified);
 
-	if(for_shell && curr_stats.shell_type == ST_CMD)
+	if(expanded->data != NULL && for_shell && curr_stats.shell_type == ST_CMD)
 	{
 		/* XXX: why update slashes in the whole result instead of only in the just
 		 *      added path? */
-		internal_to_system_slashes(result);
+		internal_to_system_slashes(expanded->data);
 	}
-
-	return result;
 }
 
-/* Expands content of a register specified considering filename-modifiers.
- * Reallocates the expanded string and returns result (possibly NULL). */
-static char *
-expand_register(const reg_t *reg, const char curr_dir[], char expanded[],
+/* Expands content of a register considering filename-modifiers. */
+static void
+expand_register(str_buf_t *expanded, const reg_t *reg, const char curr_dir[],
 		int quotes, const char mod[], int for_shell)
 {
 	int i;
@@ -575,30 +565,23 @@ expand_register(const reg_t *reg, const char curr_dir[], char expanded[],
 	{
 		const char *const modified = mods_apply(reg->files[i], curr_dir, mod,
 				for_shell);
-		expanded = append_path_to_expanded(expanded, quotes, modified);
-		if(expanded == NULL)
-		{
-			return NULL;
-		}
+		append_path_to_expanded(expanded, quotes, modified);
 
 		if(i != reg->nfiles - 1)
 		{
-			expanded = append_to_expanded(expanded, " ");
+			str_buf_append(expanded, " ");
 		}
 	}
 
-	if(for_shell && curr_stats.shell_type == ST_CMD)
+	if(expanded->data != NULL && for_shell && curr_stats.shell_type == ST_CMD)
 	{
-		internal_to_system_slashes(expanded);
+		internal_to_system_slashes(expanded->data);
 	}
-
-	return expanded;
 }
 
-/* Expands preview parameter macros specified by the key argument.  Reallocates
- * the expanded string and returns result (possibly NULL). */
-static char *
-expand_preview(char expanded[], MacroKind kind)
+/* Expands preview parameter macro specified by the key argument. */
+static void
+expand_preview(str_buf_t *expanded, MacroKind kind)
 {
 	const preview_area_t parea = get_preview_area(curr_view);
 
@@ -619,7 +602,7 @@ expand_preview(char expanded[], MacroKind kind)
 	char num_str[32];
 	snprintf(num_str, sizeof(num_str), "%d", param);
 
-	return append_to_expanded(expanded, num_str);
+	str_buf_append(expanded, num_str);
 }
 
 /* Applies heuristics to determine area that is going to be used for preview.
@@ -652,62 +635,27 @@ get_preview_area(view_t *view)
 }
 
 /* Appends the path to the expanded string with either proper escaping or
- * quoting.  Returns NULL on not enough memory error. */
-static char *
-append_path_to_expanded(char expanded[], int quotes, const char path[])
+ * quoting. */
+static void
+append_path_to_expanded(str_buf_t *expanded, int quotes, const char path[])
 {
 	if(quotes)
 	{
 		const char *const dquoted = enclose_in_dquotes(path, curr_stats.shell_type);
-		expanded = append_to_expanded(expanded, dquoted);
+		str_buf_append(expanded, dquoted);
 	}
 	else
 	{
 		char *const escaped = posix_like_escape(path, /*type=*/0);
 		if(escaped == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			free(expanded);
-			return NULL;
+			str_buf_fail(expanded);
+			return;
 		}
 
-		expanded = append_to_expanded(expanded, escaped);
+		str_buf_append(expanded, escaped);
 		free(escaped);
 	}
-
-	return expanded;
-}
-
-/* Appends str to expanded with reallocation.  Returns address of the new
- * string or NULL on reallocation error. */
-static char *
-append_to_expanded(char expanded[], const char str[])
-{
-	return append_to_expanded_n(expanded, str, strlen(str));
-}
-
-/* Appends at most str_len characters at the beginning of str to expanded with
- * reallocation.  Returns address of the new string or NULL on reallocation
- * error. */
-static char *
-append_to_expanded_n(char expanded[], const char str[], size_t str_len)
-{
-	if(str_len == 0)
-	{
-		return expanded;
-	}
-
-	/* XXX: strlen() would be unnecessary if we cached it. */
-	const size_t old_len = strlen(expanded);
-	char *t = realloc(expanded, old_len + str_len + 1);
-	if(t == NULL)
-	{
-		free(expanded);
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return NULL;
-	}
-	copy_str(t + old_len, str_len + 1, str);
-	return t;
 }
 
 const char *

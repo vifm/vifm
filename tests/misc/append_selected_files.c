@@ -12,6 +12,8 @@
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
 
+static void reset_buf(str_buf_t *buf, const char value[]);
+
 static iter_func iter = &iter_marked_entries;
 
 SETUP()
@@ -82,56 +84,61 @@ TEARDOWN()
 
 TEST(f)
 {
-	char *expanded;
+	str_buf_t expanded = {};
 
-	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 0, 0, "", iter, 1);
-	assert_string_equal("lfile0 lfile2", expanded);
-	free(expanded);
+	reset_buf(&expanded, "");
+	append_selected_files(&expanded, &lwin, 0, 0, "", iter, 1);
+	assert_string_equal("lfile0 lfile2", expanded.data);
 
-	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 0, 0, "", iter, 1);
-	assert_string_equal("/lfile0 lfile2", expanded);
-	free(expanded);
+	reset_buf(&expanded, "/");
+	append_selected_files(&expanded, &lwin, 0, 0, "", iter, 1);
+	assert_string_equal("/lfile0 lfile2", expanded.data);
 
-	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 0, 0, "", iter, 1);
+	reset_buf(&expanded, "");
+	append_selected_files(&expanded, &rwin, 0, 0, "", iter, 1);
 	assert_string_equal(SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 "
 	                    SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
-			expanded);
-	free(expanded);
+			expanded.data);
 
-	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 0, 0, "", iter, 1);
+	reset_buf(&expanded, "/");
+	append_selected_files(&expanded, &rwin, 0, 0, "", iter, 1);
 	assert_string_equal("/" SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 "
 	                    SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
-			expanded);
-	free(expanded);
+			expanded.data);
+
+	free(expanded.data);
 }
 
 TEST(c)
 {
-	char *expanded;
+	str_buf_t expanded = {};
 
-	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 1, 0, "", iter, 1);
-	assert_string_equal("lfile2", expanded);
-	free(expanded);
+	reset_buf(&expanded, "");
+	append_selected_files(&expanded, &lwin, 1, 0, "", iter, 1);
+	assert_string_equal("lfile2", expanded.data);
 
-	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 1, 0, "", iter, 1);
-	assert_string_equal("/lfile2", expanded);
-	free(expanded);
+	reset_buf(&expanded, "/");
+	append_selected_files(&expanded, &lwin, 1, 0, "", iter, 1);
+	assert_string_equal("/lfile2", expanded.data);
 
-	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 1, 0, "", iter, 1);
-	assert_string_equal("" SL "rwin" SL "rfile5", expanded);
-	free(expanded);
+	reset_buf(&expanded, "");
+	append_selected_files(&expanded, &rwin, 1, 0, "", iter, 1);
+	assert_string_equal("" SL "rwin" SL "rfile5", expanded.data);
 
-	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 1, 0, "", iter, 1);
-	assert_string_equal("/" SL "rwin" SL "rfile5", expanded);
-	free(expanded);
+	reset_buf(&expanded, "/");
+	append_selected_files(&expanded, &rwin, 1, 0, "", iter, 1);
+	assert_string_equal("/" SL "rwin" SL "rfile5", expanded.data);
+
+	free(expanded.data);
+}
+
+static void
+reset_buf(str_buf_t *buf, const char value[])
+{
+	free(buf->data);
+
+	buf->data = strdup(value);
+	buf->len = strlen(value);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

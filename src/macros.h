@@ -227,9 +227,10 @@ const char * ma_flags_to_str(MacroFlags flags);
 
 TSTATIC_DEFS(
 	struct dir_entry_t;
+	struct str_buf_t;
 	struct view_t;
 	typedef int (*iter_func)(struct view_t *view, struct dir_entry_t **entry);
-	char * append_selected_files(struct view_t *view, char expanded[],
+	void append_selected_files(struct str_buf_t *expanded, struct view_t *view,
 		int under_cursor, int quotes, const char mod[], iter_func iter,
 		int for_shell);
 )
