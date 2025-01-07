@@ -955,7 +955,7 @@ read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 const char *
 get_installed_data_dir(void)
 {
-	static char data_dir[PATH_MAX + 1];
+	static char data_dir[PATH_MAX + 16];
 	if(data_dir[0] == '\0')
 	{
 		char exe_dir[PATH_MAX + 1];
@@ -968,7 +968,7 @@ get_installed_data_dir(void)
 const char *
 get_sys_conf_dir(int idx)
 {
-	static char sys_conf_dir[PATH_MAX + 1];
+	static char sys_conf_dir[PATH_MAX + 32];
 	if(sys_conf_dir[0] == '\0')
 	{
 		snprintf(sys_conf_dir, sizeof(sys_conf_dir), "%s/etc",
