@@ -879,7 +879,7 @@ op_symlink(ops_t *ops, void *data, const char src[], const char dst[])
 
 		internal_to_system_slashes(exe_dir);
 
-		char helper[PATH_MAX + 2];
+		char helper[PATH_MAX + 16];
 		snprintf(helper, sizeof(helper), "%s\\win_helper", exe_dir);
 
 		char *escaped_helper = shell_arg_escape(helper, shell_type);
