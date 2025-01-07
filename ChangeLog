@@ -98,6 +98,9 @@
 	Added [S and ]S shortcuts as wrapping versions of [s and ]s.  Thanks to
 	aksr.
 
+	Added v:version builtin variable that exposes version as an integer which
+	can be meaningfully compared.  Thanks to an anonymous at Vifm Q2A site.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
@@ -201,6 +204,9 @@
 	Upgraded to PDCurses 3.9 (was 3.8) for Windows.  Combined with some other
 	changes this improves the situation with handling of CJK characters.
 	Thanks to zzx41375004, vodbyte, Jeremy Yuan and others.
+
+	Constrained background error dialogs to appearing only in normal mode when
+	not much is going on.
 
 	Fixed line number column not including padding to the left of it.
 
@@ -430,6 +436,8 @@
 
 	Fixed system() and term() not taking 'shell'/'shellcmdflag' into account
 	on Windows.  Thanks to spence91.
+
+	Fixed a race condition on displaying errors of a job in :jobs menu.
 
 0.13-beta to 0.13 (2023-04-04)
 

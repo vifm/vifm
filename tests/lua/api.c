@@ -213,7 +213,7 @@ TEST(vifm_version)
 {
 	GLUA_EQ(vlua, "false", "print(vifm.version.api.has('feature'))");
 
-	GLUA_EQ(vlua, "0\t1\t0",
+	GLUA_EQ(vlua, "0\t2\t0",
 			"print(vifm.version.api.major,"
 			"      vifm.version.api.minor,"
 			"      vifm.version.api.patch)");
@@ -222,9 +222,14 @@ TEST(vifm_version)
 	GLUA_EQ(vlua, "true", "print(vifm.version.api.atleast(0, 0, 1))");
 	GLUA_EQ(vlua, "true", "print(vifm.version.api.atleast(0, 1))");
 
-	GLUA_EQ(vlua, "false", "print(vifm.version.api.atleast(0, 1, 1))");
-	GLUA_EQ(vlua, "false", "print(vifm.version.api.atleast(0, 2))");
-	GLUA_EQ(vlua, "false", "print(vifm.version.api.atleast(1))");
+	GLUA_EQ(vlua, "", "v = vifm.version.api");
+	GLUA_EQ(vlua, "false", "print(v.atleast(v.major, v.minor, v.patch + 1))");
+	GLUA_EQ(vlua, "false", "print(v.atleast(v.major, v.minor + 1))");
+	GLUA_EQ(vlua, "false", "print(v.atleast(v.major + 1))");
+
+	GLUA_EQ(vlua, "false", "print(vifm.version.api.atleast(0, 99, 1))");
+	GLUA_EQ(vlua, "false", "print(vifm.version.api.atleast(0, 99))");
+	GLUA_EQ(vlua, "false", "print(vifm.version.api.atleast(99))");
 }
 
 TEST(vifm_run)

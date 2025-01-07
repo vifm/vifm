@@ -115,7 +115,7 @@ typedef struct
 background_task_args;
 
 static void set_jobcount_var(int count);
-static void job_check(bg_job_t *job);
+static void show_job_errors(bg_job_t *job);
 static void job_free(bg_job_t *job);
 static void * error_thread(void *p);
 static void update_error_jobs(bg_job_t **jobs);
@@ -188,7 +188,7 @@ bg_init(void)
 }
 
 void
-bg_check(void)
+bg_check(int show_errors)
 {
 	static int checking;
 	if(checking)
@@ -222,7 +222,13 @@ bg_check(void)
 	bg_job_t *prev = NULL;
 	while(p != NULL)
 	{
-		job_check(p);
+		if(show_errors)
+		{
+			show_job_errors(p);
+		}
+
+		/* Checks status of the job (exit code isn't of much use here). */
+		(void)update_job_status(p);
 
 		/* In case of lock failure, assume the job is active. */
 		int running = 1;
@@ -294,10 +300,9 @@ set_jobcount_var(int count)
 	}
 }
 
-/* Checks status of the job.  Processes error stream or checks whether process
- * is still running. */
+/* Processes error stream or checks whether process is still running. */
 static void
-job_check(bg_job_t *job)
+show_job_errors(bg_job_t *job)
 {
 	char *new_errors;
 
@@ -321,8 +326,6 @@ job_check(bg_job_t *job)
 		free(new_errors);
 	}
 	while(new_errors != NULL);
-
-	(void)update_job_status(job);
 }
 
 /* Frees resources allocated by the job as well as the bg_job_t structure
@@ -991,7 +994,10 @@ bg_run_external_job(const char cmd[], BgJobFlags flags, const char descr[],
 	{
 		/* Set description before placing the job on the bar so that the first
 		 * redraw will already have the description. */
-		bg_op_set_descr(&job->bg_op, descr);
+		if(descr != NULL)
+		{
+			bg_op_set_descr(&job->bg_op, descr);
+		}
 		place_on_job_bar(job);
 	}
 

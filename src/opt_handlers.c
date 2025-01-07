@@ -2161,6 +2161,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 	if(cfg.vborder_filler == NULL || cfg.hborder_filler == NULL ||
 			cfg.millersep_filler == NULL)
 	{
+		free(new_val);
 		put_string(&cfg.vborder_filler, old_vborder);
 		put_string(&cfg.hborder_filler, old_hborder);
 		put_string(&cfg.millersep_filler, old_millersep);

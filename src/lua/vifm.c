@@ -52,7 +52,7 @@
 
 /* Lua API version. */
 #define API_VER_MAJOR 0
-#define API_VER_MINOR 1
+#define API_VER_MINOR 2
 #define API_VER_PATCH 0
 
 /*

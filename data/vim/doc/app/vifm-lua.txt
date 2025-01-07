@@ -1,11 +1,11 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2024 Dec 3
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2025 Jan 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
 Note: this is very much work in progress.  Everything can change up to
 complete removal of this interface (that's an unlikely scenario though).
 
-Current API version: v0.1.0
+Current API version: v0.2.0
 
 |vifm-lua-status|      Status of plugins.
 |vifm-lua-plugins|     Sample plugins.

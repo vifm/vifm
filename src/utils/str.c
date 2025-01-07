@@ -57,6 +57,42 @@ static size_t copy_substr(char dst[], size_t dst_len, const char src[],
 		char terminator);
 
 void
+str_buf_append(str_buf_t *buf, const char str[])
+{
+	str_buf_append_n(buf, str, strlen(str));
+}
+
+void
+str_buf_append_n(str_buf_t *buf, const char str[], size_t str_len)
+{
+	if(str_len == 0 || buf->data == NULL)
+	{
+		return;
+	}
+
+	char *new_data = realloc(buf->data, buf->len + str_len + 1);
+	if(new_data == NULL)
+	{
+		str_buf_fail(buf);
+		return;
+	}
+
+	buf->data = new_data;
+
+	memcpy(buf->data + buf->len, str, str_len);
+	buf->data[buf->len + str_len] = '\0';
+	buf->len += str_len;
+}
+
+void
+str_buf_fail(str_buf_t *buf)
+{
+	free(buf->data);
+	buf->data = NULL;
+	buf->len = 0;
+}
+
+void
 chomp(char str[])
 {
 	if(str[0] != '\0')

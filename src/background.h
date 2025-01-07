@@ -171,9 +171,9 @@ pid_t bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out,
 		FILE **err);
 
 /* Checks status of background jobs (their streams and state).  Removes finished
- * ones from the list, displays any pending error messages, corrects job bar if
- * needed. */
-void bg_check(void);
+ * ones from the list, optionally displays any pending error messages, corrects
+ * job bar if needed. */
+void bg_check(int show_errors);
 
 /* Starts new background task, which is run in a separate thread.  Returns zero
  * on success, otherwise non-zero is returned. */

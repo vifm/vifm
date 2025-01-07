@@ -286,6 +286,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Program version as a comparable integer. */
+#undef VERSION_NUM
+
 /* Define to 1 to embed compilation date into executable. */
 #undef WITH_BUILD_TIMESTAMP
 

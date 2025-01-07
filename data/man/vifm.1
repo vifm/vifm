@@ -1,4 +1,4 @@
-.TH VIFM 1 "18 December 2024" "vifm 0.13"
+.TH VIFM 1 "2 January 2025" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6109,6 +6109,16 @@ the count to a different command.
 .B "v:servername"
 .br
   See below.
+.br
+.B "v:version"
+.br
+  version of the application as an integer.  Version `x.y.z` becomes number
+`x*100*100 + y*100 + z`, examples:
+   - v0.14 (that is v0.14.0) is 1400 (leading zeroes omitted)
+   - v1.0.2 is 10002
+  Release candidates aren't real releases, they report the number of a
+corresponding release.
+.br
 
 function call
 .br

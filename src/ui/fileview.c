@@ -1218,7 +1218,6 @@ column_line_print(const char buf[], int offset, AlignType align,
 		strncpy(print_buf, buf, extra_prefix);
 		print_buf[extra_prefix] = '\0';
 		buf += extra_prefix;
-		full_column += extra_prefix;
 
 		checked_wmove(view->win, cdt->current_line, final_offset - extra_prefix);
 		cchar_t cch = prepare_col_color(view, 0, 0, cdt, /*real_id=*/-1);

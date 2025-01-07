@@ -38,6 +38,35 @@
 #define PRINTF_ULL "llu"
 #endif
 
+/*
+ * A string buffer that can be in one of the two states:
+ *  - normal: data != NULL && len >= 0
+ *  - failed: data == NULL && len == 0
+ *
+ * "Normal" is a state in which a string can be updated.  A memory allocation
+ * error during an update results in switching to the "failed" state.
+ *
+ * "Failed" is a well-defined state in which all update operations silently do
+ * nothing.
+ */
+typedef struct str_buf_t
+{
+	char *data; /* NULL after memory allocation error. */
+	size_t len; /* Length, not including NULL-terminator. */
+}
+str_buf_t;
+
+/* Appends str to the buffer.  Fails the buffer on failed reallocation. */
+void str_buf_append(str_buf_t *buf, const char str[]);
+
+/* Appends at most str_len characters at the beginning of str to the buffer.
+ * Fails the buffer on failed reallocation. */
+void str_buf_append_n(str_buf_t *buf, const char str[], size_t str_len);
+
+/* Fails the buffer.  To be used to fail a string construction for reasons
+ * other than operations on the string. */
+void str_buf_fail(str_buf_t *buf);
+
 /* Various string functions. */
 
 /* Checks whether str starts with the given prefix, which should be string

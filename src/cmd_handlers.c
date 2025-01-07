@@ -5603,7 +5603,7 @@ wingo_cmd(const cmd_info_t *cmd_info)
 {
 	unsigned int win_id;
 	if(!isdigit(cmd_info->argv[0][0]) || !read_uint(cmd_info->argv[0], &win_id) ||
-			win_id <= 0)
+			win_id == 0)
 	{
 		int matches = complete_to_view_id(cmd_info->args, &win_id);
 		if(matches == 0)

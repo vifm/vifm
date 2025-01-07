@@ -150,7 +150,9 @@ event_loop(const int *quit, int manage_marking)
 
 			modes_periodic();
 
-			bg_check();
+			/* Leave displaying errors to get_char_async_loop() which invokes
+			 * bg_check() only when nothing else is going on. */
+			bg_check(/*show_errors=*/0);
 
 			/* We're not waiting for anything, so side-effects of callbacks
 			 * shouldn't be disruptive to the user. */
@@ -404,7 +406,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout, int process_callbacks)
 
 			if(process_callbacks)
 			{
-				bg_check();
+				bg_check(/*show_errors=*/1);
 				vlua_process_callbacks(curr_stats.vlua);
 			}
 

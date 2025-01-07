@@ -690,6 +690,14 @@ check_compare_invariants(int expected_len)
 }
 
 void
+check_bg_jobs(void)
+{
+	/* Won't hurt to exercise code for displaying errors which depends on thread
+	 * synchronization. */
+	bg_check(/*show_errors=*/1);
+}
+
+void
 wait_for_bg(void)
 {
 	int counter = 0;
@@ -713,7 +721,7 @@ wait_for_all_bg(void)
 	setvar("v:jobcount", var);
 	var_free(var);
 
-	bg_check();
+	check_bg_jobs();
 	while(bg_jobs != NULL)
 	{
 		if(++counter > 100)
@@ -723,8 +731,37 @@ wait_for_all_bg(void)
 		}
 
 		usleep(5000);
-		bg_check();
+		check_bg_jobs();
 	}
+}
+
+int
+wait_for_job(struct bg_job_t *job)
+{
+	assert_non_null(job);
+
+	bg_job_incref(job);
+
+	int counter = 0;
+	while(bg_job_is_running(job))
+	{
+		usleep(5000);
+		check_bg_jobs();
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			return -1;
+		}
+	}
+
+	/* When the job is marked as not running, the callback might not yet been
+	 * dispatched, so call check_bg_jobs() once again to be sure. */
+	check_bg_jobs();
+
+	int exit_code = job->exit_code;
+	bg_job_decref(job);
+
+	return exit_code;
 }
 
 void

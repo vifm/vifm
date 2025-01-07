@@ -133,7 +133,7 @@ reload_jobs_list(menu_data_t *m)
 	m->items = NULL;
 	m->len = 0;
 
-	bg_check();
+	bg_check(/*show_errors=*/0);
 
 	int len = 0;
 	bg_job_t *p;
@@ -203,28 +203,31 @@ format_job_item(bg_job_t *job)
 static void
 show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job)
 {
-	char *cmd = NULL, *errors = NULL;
-	size_t errors_len = 0U;
-	bg_job_t *p;
-
-	/* We have to make sure the job pointer is still valid and the job is
-	 * running. */
-	for(p = bg_jobs; p != NULL; p = p->next)
+	/* Make sure the job pointer is still valid. */
+	bg_job_t *p = bg_jobs;
+	while(p != NULL && p != job)
 	{
-		if(p == job)
-		{
-			cmd = strdup(job->cmd);
-			errors = strdup(job->errors == NULL ? "" : job->errors);
-			errors_len = job->errors_len;
-			break;
-		}
+		p = p->next;
 	}
 
 	if(p == NULL)
 	{
 		show_error_msg("Job errors", "The job has already finished");
+		return;
 	}
-	else if(is_null_or_empty(errors))
+
+	char *cmd = NULL, *errors = NULL;
+	size_t errors_len = 0U;
+
+	if(pthread_spin_lock(&job->errors_lock) == 0)
+	{
+		cmd = strdup(job->cmd);
+		errors = (job->errors == NULL ? NULL : strdup(job->errors));
+		errors_len = job->errors_len;
+		(void)pthread_spin_unlock(&job->errors_lock);
+	}
+
+	if(is_null_or_empty(errors))
 	{
 		show_error_msg("Job errors", "No errors to show");
 	}
@@ -238,6 +241,7 @@ show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job)
 
 		menus_rotate(&m, &jobs_m);
 	}
+
 	free(cmd);
 	free(errors);
 }

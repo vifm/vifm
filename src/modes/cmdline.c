@@ -2125,7 +2125,7 @@ cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 {
-	if(hist == NULL || hist_is_empty(hist))
+	if(len == 0 || hist == NULL || hist_is_empty(hist))
 	{
 		return;
 	}
@@ -3063,7 +3063,7 @@ hist_search_setup(HIST kind)
 TSTATIC void
 hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 {
-	if(hist == NULL || hist_is_empty(hist))
+	if(len == 0 || hist == NULL || hist_is_empty(hist))
 	{
 		return;
 	}

@@ -7,8 +7,6 @@
 
 #include <test-utils.h>
 
-#include "../../src/engine/var.h"
-#include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
@@ -394,10 +392,6 @@ TEST(vcache_check_reports_correct_status)
 
 TEST(kill_all_async_previews_on_exit, IF(not_windows))
 {
-	var_t var = var_from_int(0);
-	setvar("v:jobcount", var);
-	var_free(var);
-
 	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/two-lines", "sleep 100",
 			MF_NONE, VK_TEXTUAL, 10, VC_ASYNC, &error);
 	assert_string_equal(NULL, error);
@@ -406,17 +400,7 @@ TEST(kill_all_async_previews_on_exit, IF(not_windows))
 
 	vcache_finish();
 
-	int counter = 0;
-	while(bg_jobs != NULL)
-	{
-		usleep(5000);
-		bg_check();
-		if(++counter > 100)
-		{
-			assert_fail("Waiting for too long.");
-			break;
-		}
-	}
+	wait_for_all_bg();
 }
 
 static int

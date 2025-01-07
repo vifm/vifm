@@ -18,6 +18,7 @@
 #define SL "/"
 #endif
 
+struct bg_job_t;
 struct view_t;
 
 /* _wenviron used on Windows gets created only if we invoke __wgetmainargs(), so
@@ -153,11 +154,18 @@ void init_view_list(struct view_t *view);
 /* Checks state of two-pane compare for sanity. */
 void check_compare_invariants(int expected_len);
 
+/* Checks currently running background tasks. */
+void check_bg_jobs(void);
+
 /* Waits termination of all background tasks. */
 void wait_for_bg(void);
 
 /* Waits termination of all background jobs including external applications. */
 void wait_for_all_bg(void);
+
+/* Waits termination of a particular task.  Returns job's exit code or -1 on
+ * error. */
+int wait_for_job(struct bg_job_t *job);
 
 /* Verifies that file at specified path consists of specified list of lines. */
 void file_is(const char path[], const char *lines[], int nlines);
