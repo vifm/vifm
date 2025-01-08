@@ -13,11 +13,13 @@
 
 	<launchable type="desktop-id">vifm.desktop</launchable>
 
-	<screenshot type="default">
-		<image>
-			https://raw.githubusercontent.com/vifm/vifm/master/data/graphics/screenshot.png
-		</image>
-	</screenshot>
+	<screenshots>
+		<screenshot type="default">
+			<image>
+				https://raw.githubusercontent.com/vifm/vifm/master/data/graphics/screenshot.png
+			</image>
+		</screenshot>
+	</screenshots>
 
 	<url type="homepage">https://vifm.info/</url>
 	<update_contact>xaizek@posteo.net</update_contact>
