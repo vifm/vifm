@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2025 January 2
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2025 January 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4321,7 +4321,9 @@ are supported:
     %a - amount of free space available on current FS
     %c - size of current FS
     %z - short tips/tricks/hints that chosen randomly after one minute period
-    `%{<expr>}` - evaluate arbitrary vifm expression `<expr>`, e.g. `&sort`
+    `%{<expr>}` - evaluate arbitrary vifm expression `<expr>`, e.g. `&sort` or
+                `expand('%d')`; a raw `}` can be inserted as `\}` (mind that
+                the slash doesn't need to be doubled to be inserted literally)
     %* - resets or applies one of User1..User20 highlight groups; reset happens
          when width field is 0 or not specified, one of the groups gets picked
          when width field is in the range from 1 to 20

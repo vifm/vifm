@@ -60,10 +60,13 @@ static cline_t parse_view_macros(view_t *view, const char **format,
 		const char macros[], int opt);
 static int expand_num(char buf[], size_t buf_len, int val);
 static const char * get_tip(void);
+static char * extract_unescaping_closing_brace(const char from[],
+		const char to[]);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
 static char * fetch_status_line(view_t *view, int width);
 TSTATIC char * find_view_macro(const char **format, const char macros[],
 		char macro, int opt);
+static const char * find_closing_brace(const char str[]);
 static pthread_spinlock_t * get_job_bar_changed_lock(void);
 static void init_job_bar_changed_lock(void);
 static int is_job_bar_visible(void);
@@ -491,41 +494,36 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				break;
 			case '{':
 				{
-					/* Try to find matching closing bracket
-					 * TODO: implement the way to escape it, so that the expr may contain
-					 * closing brackets */
-					const char *e = strchr(*format, '}');
-					char *expr = NULL, *resstr = NULL;
+					/* Try to find matching closing bracket. */
+					const char *e = find_closing_brace(*format);
 
 					/* If there's no matching closing bracket, just add the opening one
-					 * literally */
+					 * literally. */
 					if(e == NULL)
 					{
 						ok = 0;
 						break;
 					}
 
-					/* Create a NULL-terminated copy of the given expr.
-					 * TODO: we could temporarily use buf for that, to avoid extra
-					 * allocation, but explicitly named variable reads better. */
-					expr = calloc(e - (*format) + 1 /* NUL-term */, 1);
+					char *expr = extract_unescaping_closing_brace(*format, e);
 					if(expr == NULL)
 					{
 						ok = 0;
 						break;
 					}
-					memcpy(expr, *format, e - (*format));
 
 					/* Try to parse expr and convert the result to string on success. */
 					parsing_result_t result = vle_parser_eval(expr, /*interactive=*/0);
+
+					char *res_str = NULL;
 					if(result.error == PE_NO_ERROR)
 					{
-						resstr = var_to_str(result.value);
+						res_str = var_to_str(result.value);
 					}
 
-					if(resstr != NULL)
+					if(res_str != NULL)
 					{
-						copy_str(buf, sizeof(buf), resstr);
+						copy_str(buf, sizeof(buf), res_str);
 					}
 					else
 					{
@@ -533,7 +531,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					}
 
 					var_free(result.value);
-					free(resstr);
+					free(res_str);
 					free(expr);
 
 					*format = e + 1 /* closing bracket */;
@@ -653,6 +651,30 @@ get_tip(void)
 		last_item = (last_item + 1U)%ARRAY_LEN(tips);
 	}
 	return tips[last_item];
+}
+
+/* Makes a copy of the range defined by [from; to).  Returns a newly allocated
+ * string or NULL on memory error. */
+static char *
+extract_unescaping_closing_brace(const char from[], const char to[])
+{
+	char *result = malloc(to - from + 1);
+	if(result == NULL)
+	{
+		return NULL;
+	}
+
+	char *o;
+	const char *i;
+	for(o = result, i = from; i != to; ++i)
+	{
+		if(i[0] != '\\' || i[1] != '}')
+		{
+			*o++ = *i;
+		}
+	}
+	*o = '\0';
+	return result;
 }
 
 /* Examines expansion buffer to check whether expansion took place.  Updates
@@ -800,7 +822,7 @@ find_view_macro(const char **format, const char macros[], char macro, int opt)
 		}
 		else if(c == '{')
 		{
-			const char *e = strchr(*format, '}');
+			const char *e = find_closing_brace(*format);
 			if(e == NULL)
 			{
 				break;
@@ -817,6 +839,24 @@ find_view_macro(const char **format, const char macros[], char macro, int opt)
 		{
 			*format = next;
 		}
+	}
+
+	return NULL;
+}
+
+/* Finds the first '}' which isn't preceeded by a '\'.  Returns pointer to that
+ * '}' or NULL. */
+static const char *
+find_closing_brace(const char str[])
+{
+	const char *e = str;
+	while(*e != '\0')
+	{
+		if(e[0] != '\\' && e[1] == '}')
+		{
+			return &e[1];
+		}
+		++e;
 	}
 
 	return NULL;

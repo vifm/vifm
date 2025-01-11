@@ -1,4 +1,4 @@
-.TH VIFM 1 "2 January 2025" "vifm 0.13"
+.TH VIFM 1 "11 January 2025" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5139,7 +5139,9 @@ since it cannot be selected
 .IP \- 2
 %z - short tips/tricks/hints that chosen randomly after one minute period
 .IP \- 2
-%{<expr>} - evaluate arbitrary vifm expression '<expr>', e.g. '&sort'
+%{<expr>} - evaluate arbitrary vifm expression '<expr>', e.g. '&sort' or
+`expand('%d')`; a raw `}` can be inserted as `\\}` (mind that
+the slash doesn't need to be doubled to be inserted literally)
 .IP \- 2
 %* - resets or applies one of User1..User20 highlight groups; reset happens
 when width field is 0 or not specified, one of the groups gets picked
