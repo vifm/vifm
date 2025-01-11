@@ -313,6 +313,25 @@ TEST(ignore_mismatched_opening_curly_bracket)
 	ASSERT_EXPANDED_TO("<%{abcdef>", "<%{abcdef>");
 }
 
+TEST(closing_curly_bracket_escaping)
+{
+	ASSERT_EXPANDED_TO("<%{ '}' }>", "<<Invalid expr>' }>");
+	ASSERT_EXPANDED_TO("<%{ '{}' }>", "<<Invalid expr>' }>");
+
+	ASSERT_EXPANDED_TO("<%{ '\\' }>", "<\\>");
+	ASSERT_EXPANDED_TO("<%{ '\\\\' }>", "<\\\\>");
+	ASSERT_EXPANDED_TO("<%{ '\\\\\\' }>", "<\\\\\\>");
+	ASSERT_EXPANDED_TO("<%{ '\\\\}\\' }>", "<\\}\\>");
+
+	ASSERT_EXPANDED_TO("<%{ '\\}' }>", "<}>");
+	ASSERT_EXPANDED_TO("<%{ '{\\}' }>", "<{}>");
+
+	ASSERT_EXPANDED_TO("<%{ '\\\\}' }>", "<\\}>");
+	ASSERT_EXPANDED_TO("<%{ '{\\\\}' }>", "<{\\}>");
+
+	ASSERT_EXPANDED_TO("<%{ '{\\} {\\}' }>", "<{} {}>");
+}
+
 TEST(highlighting_is_set_correctly)
 {
 	ASSERT_EXPANDED_TO_WITH_HI("[%1*%t%*]",

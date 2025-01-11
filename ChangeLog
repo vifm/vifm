@@ -101,6 +101,9 @@
 	Added v:version builtin variable that exposes version as an integer which
 	can be meaningfully compared.  Thanks to an anonymous at Vifm Q2A site.
 
+	Added a way to insert "}" inside of %{expr} macro of 'statusline'.  Thanks
+	to vuenn.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
