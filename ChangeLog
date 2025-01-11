@@ -3,9 +3,9 @@
 	Changed --with-gtk flag to --with-glib (old name is still available).  GTK
 	was pulled in by mistake, only GIO/GLib was ever used...
 
-	Change %N macro to not be mutually exclusive with most of other
-	macros (it wasn't documented and didn't make much sense).  Thanks to James
-	Dietrich.
+	Changed %N macro to not be mutually exclusive with most of other
+	macros (the limitation wasn't documented and didn't make much sense).
+	Thanks to James Dietrich.
 
 	Changed handling of Ctrl-Z to not suspend the application if a
 	corresponding user mapping exists.  Patch 高浩亮 (a.k.a. haolian9).
@@ -42,8 +42,8 @@
 
 	Added :chi[story] command to menu mode.
 
-	Added 'hloptions' option to configure which columns get colored.  Thanks to
-	qsmodo.
+	Added 'hloptions' option to configure which view colums get affected by
+	file highlighting.  Thanks to qsmodo.
 
 	Added "column:{name}" form of argument to :highlight command to specify
 	style of a separate column.  Thanks to Anton Gepting.
@@ -107,7 +107,7 @@
 	Made register's content being listed in normal rather then reversed order
 	in :registers/:display menu.
 
-	Don't even try to clear graphics when menu-like mode is active.  The
+	Don't attempt clearing graphics when menu-like mode is active.  The
 	graphics should have been hidden on entering the mode.
 
 	Allowed wild menu popup to take up up to 40% of the screen.
@@ -119,35 +119,36 @@
 	Increase line length limit used during formatting output of :highlight
 	command to allow longer strings.
 
-	Display number of color pairs in use to :version/:vifm menu.
+	Display number of color pairs in use in :version/:vifm menu.
 
 	Don't show a message at the end of 'incsearch' if the cursor was moved not
 	by the search.  Patch by filterfalse.
 
-	Clarify documentation on column literals and escaping.  Thanks to
+	Clarified documentation on column literals and escaping.  Thanks to
 	chelovechishko.
 
 	Allow and skip !/!! prefix of custom external :commands for more
 	macros (%S, %q, %i, %m, %M, %s, %v, %u, %U, %Iu, %IU).
 
-	Slightly expand documentation on %N macro.  Thanks to James Dietrich.
+	Slightly expanded documentation on %N macro.  Thanks to James Dietrich.
 
 	Made Tab and Shift-Tab in interactive search prompts (including when
 	navigating) move cursor to next/previous search match.  Thanks to
 	David Sierra DiazGranados (a.k.a. davidsierradz).
 
-	Somewhat improve documentation on functional keys.
+	Somewhat improved documentation on functional keys.
 
-	Updated autotools scripts.  Thanks to phanium (a.k.a. phanen).
+	Updated autotools scripts to their newer versions.  Thanks to phanium
+	(a.k.a. phanen).
 
 	Perform sorting of completion items after doing Unicode normalization.
 
 	Perform sorting of file names after doing Unicode normalization.  Thanks
 	to hacksenwerk.
 
-	Make :compare treat non-regular files (pipes, sockets, etc.) as empty.
+	Made :compare treat non-regular files (pipes, sockets, etc.) as empty.
 
-	Slightly improve performance of comparing files by content.
+	Slightly improved performance of comparing files by content.
 
 	Configure 'vifminfo' in sample vifmrcs to store most of the things in
 	vifminfo by default (add missing histories and tabs).  Thanks to Christoph
@@ -156,18 +157,18 @@
 	Adjusted heuristic for determining previewer type to allow use of %px and
 	%py with %pd without any implications.  Thanks to iambumblehead.
 
-	Document how use of different preview macros affect classification of the
-	previewer.  Thanks to iambumblehead.
+	Document how the use of different preview macros affects classification of
+	a previewer.  Thanks to iambumblehead.
 
 	When processing multiple files in background, show current position in the
 	list on the job bar.
 
-	Shorten home directory in paths shown on job bar.
+	Shorten home directory in paths shown on the job bar.
 
 	Commented out one of MC-like shortcuts in sample vifmrc files, Ctrl-U, to
 	avoid confusing Vim users with default configuration.  Thanks to midrare.
 
-	Make vifm-media not offer partitioned drives as they aren't mountable as a
+	Made vifm-media not offer partitioned drives as they aren't mountable as a
 	whole.
 
 	Extended vifm-media script to support MTP devices if simple-mtpfs tool is
@@ -183,10 +184,10 @@
 	Provide numerical value of a color as a description of a completion item
 	for it.
 
-	Make :goto preserve custom and tree views.  Thanks to
-	asmodeus812 (Svetlozar Iliev).
+	Made :goto preserve custom and tree views.  Thanks to
+	Svetlozar Iliev (a.k.a. asmodeus812).
 
-	Improve error message on trying to :unlet a builtin variable.
+	Improved error message on trying to :unlet a builtin variable.
 
 	Extended logging on spawning a command via a shell.  Thanks to Henrik
 	Holst (a.k.a. hholst80).
@@ -205,7 +206,7 @@
 	changes this improves the situation with handling of CJK characters.
 	Thanks to zzx41375004, vodbyte, Jeremy Yuan and others.
 
-	Constrained background error dialogs to appearing only in normal mode when
+	Constrained background error dialogs to appear only in normal mode when
 	not much is going on.
 
 	Fixed line number column not including padding to the left of it.
@@ -337,7 +338,7 @@
 
 	Fixed colors sometimes (rarely) changing in seemingly random ways.
 
-	Fixed some :jobs showing some already dead jobs as running.
+	Fixed :jobs showing some already dead jobs as running.
 
 	Fixed running external commands which start with a dash.  Patch by Ivan
 	Shapovalov.
@@ -425,7 +426,8 @@
 	for an empty string should be done explicitly with `==` or `!=`.  Thanks
 	to justpretending2.
 
-	Fixed Escape being handled as Ctrl+C in prompts (suppresses future errors).
+	Fixed Escape being handled as Ctrl+C in prompts which suppresses future
+	errors.
 
 	Fixed outdated documentation on the behaviour of n/N when 'hlsearch' is
 	enabled since the introduction of highlighting of search matches.  Thanks
