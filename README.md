@@ -22,7 +22,7 @@ functionality should be enough for most of use cases.
 ## Resources and Contacts ##
 
 | Usage     | Link                     |
-| :-------: | :----:                   |
+| :---:     | :--:                     |
 | Website   | https://vifm.info/       |
 | Wiki      | https://wiki.vifm.info/  |
 | Q & A     | https://q2a.vifm.info/   |
@@ -30,7 +30,7 @@ functionality should be enough for most of use cases.
 ### Communication ###
 
 | Reason                                           | Channel                                                         |
-| :-------:                                        | :------:                                                        |
+| :----:                                           | :-----:                                                         |
 | Bugs & Feature Requests                          | [GitHub][bugs-gh], [SourceForge][bugs-sf] or via [email][email] |
 | Preferred place for asking usage questions       | Posting on the [Q&A][q2a] site                                  |
 | Read-only and very low traffic news mailing list | [vifm-announce][list]                                           |
@@ -38,7 +38,7 @@ functionality should be enough for most of use cases.
 ### Other resources ###
 
 | Usage                     | Where to find                                                           |
-| :---:                     | :---:                                                                   |
+| :---:                     | :-----------:                                                           |
 | Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                            |
 | Vim Plugin                | [Repository][vim-plugin]                                                |
 | Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]    |
