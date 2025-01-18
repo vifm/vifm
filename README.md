@@ -74,14 +74,14 @@ GNU General Public License, version 2 or later.
 [vifmimg]: https://github.com/cirala/vifmimg
 [sixel-preview]: https://github.com/eylles/vifm-sixel-preview
 [thu.sh]: https://github.com/iambumblehead/thu.sh
-[Überzug]: https://github.com/seebye/ueberzug
+[Überzug]: https://github.com/jstkdng/ueberzugpp/
 [bugs-gh]: https://github.com/vifm/vifm/issues
 [bugs-sf]: https://sourceforge.net/p/vifm/_list/tickets
 [repo-gh]: https://github.com/vifm/vifm
 [repo-sf]: https://sourceforge.net/projects/vifm/
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
-[Sixel]: https://en.wikipedia.org/wiki/Sixel
+[Sixel]: https://www.arewesixelyet.com/
 
 [AA]: https://ci.appveyor.com/api/projects/status/ywfhdev1l3so1f5e/branch/master?svg=true
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
