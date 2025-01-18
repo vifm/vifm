@@ -1,4 +1,4 @@
-.TH VIFM 1 "11 January 2025" "vifm 0.13"
+.TH VIFM 1 "18 January 2025" "vifm 0.13"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5444,6 +5444,16 @@ pane.  This can be modified with:
 l \- truncation is always on the left.
 .br
 r \- truncation is always on the right.
+.TP
+.BI 'uioptions'
+type: set
+.br
+default:
+.br
+Tweaks UI behaviour.  The following values are available:
+ \- iodetails \- show I/O progress details dialog automatically instead of
+displaying progress on statusbar until user presses "i" to see
+the dialog.
 .TP
 .BI "'undolevels' 'ul'"
 type: integer

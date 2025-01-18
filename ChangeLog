@@ -104,6 +104,9 @@
 	Added a way to insert "}" inside of %{expr} macro of 'statusline'.  Thanks
 	to vuenn.
 
+	Added 'uioptions' option with possible "iodetails" value to display
+	progress dialog by default.  Thanks to Ralf Schmitt.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 

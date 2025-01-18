@@ -62,13 +62,6 @@ TEARDOWN()
 	columns_teardown();
 }
 
-static void
-print_func(const char buf[], int offset, AlignType align,
-		const char full_column[], const format_info_t *info)
-{
-	ncols += (info->id != FILL_COLUMN_ID);
-}
-
 TEST(lsview_block_columns_update_on_sort_change)
 {
 	assert_success(cmds_dispatch("set viewcolumns=", curr_view, CIT_COMMAND));
@@ -799,6 +792,22 @@ TEST(wildinc)
 	assert_string_starts_with("Bad pattern: ", ui_sb_last());
 	assert_true(cmds_dispatch("set wildinc?", &rwin, CIT_COMMAND));
 	assert_string_equal("  wildinc=*", ui_sb_last());
+}
+
+TEST(uioptions)
+{
+	assert_success(cmds_dispatch("set uioptions=iodetails", &lwin, CIT_COMMAND));
+	assert_true(cfg.always_show_io_details);
+
+	assert_success(cmds_dispatch("set uioptions=", &lwin, CIT_COMMAND));
+	assert_false(cfg.always_show_io_details);
+}
+
+static void
+print_func(const char buf[], int offset, AlignType align,
+		const char full_column[], const format_info_t *info)
+{
+	ncols += (info->id != FILL_COLUMN_ID);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

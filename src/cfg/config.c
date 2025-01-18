@@ -204,6 +204,8 @@ cfg_init(void)
 
 	cfg.set_title = term_title_restorable();
 
+	cfg.always_show_io_details = 0;
+
 	cfg.chase_links = 0;
 
 	cfg.graphics_delay = 50000;

@@ -108,6 +108,7 @@ static void init_relativenumber(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_tuioptions(optval_t *val);
+static void init_uioptions(optval_t *val);
 static void init_wildinc(optval_t *val);
 static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
@@ -239,6 +240,7 @@ static void title_handler(OPT_OP op, optval_t val);
 static void trash_handler(OPT_OP op, optval_t val);
 static void trashdir_handler(OPT_OP op, optval_t val);
 static void tuioptions_handler(OPT_OP op, optval_t val);
+static void uioptions_handler(OPT_OP op, optval_t val);
 static void undolevels_handler(OPT_OP op, optval_t val);
 static void vicmd_handler(OPT_OP op, optval_t val);
 static void vixcmd_handler(OPT_OP op, optval_t val);
@@ -400,6 +402,11 @@ static const char *tuioptions_vals[][2] = {
 	{ "s",      "display side borders" },
 	{ "u",      "use Unicode characters in the TUI" },
 	{ "v",      "vary width of middle border to equalize view sizes" },
+};
+
+/* Possible flags of 'uioptions'. */
+static const char *uioptions_vals[][2] = {
+	{ "iodetails", "show I/O progress details dialog automatically" },
 };
 
 /* Possible values of 'dirsize' option. */
@@ -868,6 +875,11 @@ options[] = {
 	  OPT_CHARSET, ARRAY_LEN(tuioptions_vals), tuioptions_vals,
 	  &tuioptions_handler, NULL,
 	  { .init = &init_tuioptions },
+	},
+	{ "uioptions", "", "tweaks of UI behaviour",
+	  OPT_SET, ARRAY_LEN(uioptions_vals), uioptions_vals,
+	  &uioptions_handler, NULL,
+	  { .init = &init_uioptions },
 	},
 	{ "undolevels", "ul", "number of file operations to remember",
 	  OPT_INT, 0, NULL, &undolevels_handler, NULL,
@@ -1369,6 +1381,13 @@ init_tuioptions(optval_t *val)
 			cfg.use_unicode_characters ? "u" : "",
 			cfg.flexible_splitter ? "v" : "");
 	val->str_val = buf;
+}
+
+/* Composes initial value of 'uioptions' from current configuration. */
+static void
+init_uioptions(optval_t *val)
+{
+	val->set_items = (cfg.always_show_io_details != 0) << 0;
 }
 
 /* Composes initial value of 'wildinc' from current configuration. */
@@ -3904,6 +3923,13 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	columns_set_ellipsis(curr_stats.ellipsis);
 
 	stats_redraw_later();
+}
+
+/* Applies new value of 'uioptions' to configuration. */
+static void
+uioptions_handler(OPT_OP op, optval_t val)
+{
+	cfg.always_show_io_details = ((val.set_items & 1) != 0);
 }
 
 static void
