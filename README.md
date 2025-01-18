@@ -4,7 +4,7 @@
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
-_Latest release is 0.13.  This file last updated on 04 April 2023._
+_Latest release is 0.13.  This file last updated on 18 January 2025._
 
 ## Brief Description ##
 
@@ -45,6 +45,7 @@ functionality should be enough for most of use cases.
 | Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                    |
 | vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images) |
 | sixel image preview       | [Repository][sixel-preview] (for [Sixel][wiki-sixel]-capable terminals) |
+| thu.sh (image preview)    | [Repository][thu.sh] (Sixel or Kitty)                                   |
 
 ## Screenshots ##
 
@@ -72,6 +73,7 @@ GNU General Public License, version 2 or later.
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 [vifmimg]: https://github.com/cirala/vifmimg
 [sixel-preview]: https://github.com/eylles/vifm-sixel-preview
+[thu.sh]: https://github.com/iambumblehead/thu.sh
 [ueberzug]: https://github.com/seebye/ueberzug
 [bugs-gh]: https://github.com/vifm/vifm/issues
 [bugs-sf]: https://sourceforge.net/p/vifm/_list/tickets
