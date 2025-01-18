@@ -21,31 +21,31 @@ functionality should be enough for most of use cases.
 
 ## Resources and Contacts ##
 
-| Usage     | Link                     |
-| :---:     | :--:                     |
-| Website   | https://vifm.info/       |
-| Wiki      | https://wiki.vifm.info/  |
-| Q & A     | https://q2a.vifm.info/   |
+| Usage   | Link
+| :---:   | :--:
+| Website | https://vifm.info/
+| Wiki    | https://wiki.vifm.info/
+| Q & A   | https://q2a.vifm.info/
 
 ### Communication ###
 
-| Reason                                           | Channel                                                         |
-| :----:                                           | :-----:                                                         |
-| Bugs & Feature Requests                          | [GitHub][bugs-gh], [SourceForge][bugs-sf] or via [email][email] |
-| Preferred place for asking usage questions       | Posting on the [Q&A][q2a] site                                  |
-| Read-only and very low traffic news mailing list | [vifm-announce][list]                                           |
+| Reason                                           | Channel
+| :----:                                           | :-----:
+| Bugs & Feature Requests                          | [GitHub][bugs-gh], [SourceForge][bugs-sf] or via [email]
+| Preferred place for asking usage questions       | Posting on the [Q&A] site
+| Read-only and very low traffic news mailing list | [vifm-announce]
 
 ### Other resources ###
 
-| Usage                     | Where to find                                                           |
-| :---:                     | :-----------:                                                           |
-| Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]                            |
-| Vim Plugin                | [Repository][vim-plugin]                                                |
-| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews][colorscheme-preview]    |
-| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]                                    |
-| vifmimg (image preview)   | [Repository][vifmimg] (using [überzug][ueberzug] to display the images) |
-| sixel image preview       | [Repository][sixel-preview] (for [Sixel][wiki-sixel]-capable terminals) |
-| thu.sh (image preview)    | [Repository][thu.sh] (Sixel or Kitty)                                   |
+| Usage                     | Where to find
+| :---:                     | :-----------:
+| Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]
+| Vim Plugin                | [Repository][vim-plugin]
+| Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews]
+| Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]
+| vifmimg (image preview)   | [Repository][vifmimg] (using [Überzug] to display the images)
+| sixel image preview       | [Repository][sixel-preview] (for [Sixel]-capable terminals)
+| thu.sh (image preview)    | [Repository][thu.sh] (Sixel or Kitty)
 
 ## Screenshots ##
 
@@ -54,8 +54,8 @@ functionality should be enough for most of use cases.
 
 ## Getting Started ##
 
-A good idea for quick start might be skimming over [cheatsheet][cheatsheet] for
-the main mode (that is Normal mode), reading some sections on basic usage on
+A good idea for quick start might be skimming over [cheatsheet] for the main
+mode (that is Normal mode), reading some sections on basic usage on
 [the wiki][wiki-manual] and looking at sample configuration file (run
 `:edit $MYVIFMRC`).
 
@@ -63,25 +63,25 @@ the main mode (that is Normal mode), reading some sections on basic usage on
 
 GNU General Public License, version 2 or later.
 
-[q2a]: https://q2a.vifm.info/
+[Q&A]: https://q2a.vifm.info/
 [email]: mailto:xaizek@posteo.net
-[list]: https://lists.sourceforge.net/lists/listinfo/vifm-announce
+[vifm-announce]: https://lists.sourceforge.net/lists/listinfo/vifm-announce
 [vim-plugin]: https://github.com/vifm/vifm.vim
 [colors]: https://github.com/vifm/vifm-colors
-[colorscheme-preview]: https://vifm.info/colorschemes.shtml
+[colorscheme-previews]: https://vifm.info/colorschemes.shtml
 [devicons-1]: https://github.com/cirala/vifm_devicons
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 [vifmimg]: https://github.com/cirala/vifmimg
 [sixel-preview]: https://github.com/eylles/vifm-sixel-preview
 [thu.sh]: https://github.com/iambumblehead/thu.sh
-[ueberzug]: https://github.com/seebye/ueberzug
+[Überzug]: https://github.com/seebye/ueberzug
 [bugs-gh]: https://github.com/vifm/vifm/issues
 [bugs-sf]: https://sourceforge.net/p/vifm/_list/tickets
 [repo-gh]: https://github.com/vifm/vifm
 [repo-sf]: https://sourceforge.net/projects/vifm/
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
-[wiki-sixel]: https://en.wikipedia.org/wiki/Sixel
+[Sixel]: https://en.wikipedia.org/wiki/Sixel
 
 [AA]: https://ci.appveyor.com/api/projects/status/ywfhdev1l3so1f5e/branch/master?svg=true
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
