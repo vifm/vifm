@@ -62,7 +62,7 @@ if [ "$target" = all ] || [ "$target" = update ]; then
     sed -i "/AC_INIT(/s/,\\[[^,]\\+/,[$ver]/" configure.ac
     sed -i "/VERSION_NUM/s/\\[[0-9]\\+\\]/[$ver_num]/" configure.ac
 
-    if false && [ "$OS" != Windows_NT ]; then
+    if [ "$OS" != Windows_NT ]; then
         # regenerate autotools files
         autoreconf
         # some voodoo magic to preserve old version of aclocal.m4 file
