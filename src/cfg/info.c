@@ -2326,6 +2326,8 @@ store_global_options(JSON_Object *root)
 	append_dstr(options, format_str("%strash", cfg.use_trash ? "" : "no"));
 	append_dstr(options, format_str("tuioptions=%s",
 			escape_spaces(vle_opts_get("tuioptions", OPT_GLOBAL))));
+	append_dstr(options, format_str("uioptions=%s",
+			escape_spaces(vle_opts_get("uioptions", OPT_GLOBAL))));
 	append_dstr(options, format_str("undolevels=%d", cfg.undo_levels));
 	append_dstr(options, format_str("vicmd=%s%s", escape_spaces(cfg.vi_command),
 			cfg.vi_cmd_bg ? " &" : ""));

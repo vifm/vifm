@@ -104,6 +104,9 @@
 	Added a way to insert "}" inside of %{expr} macro of 'statusline'.  Thanks
 	to vuenn.
 
+	Added 'uioptions' option with possible "iodetails" value to display
+	progress dialog by default.  Thanks to Ralf Schmitt.
+
 	Don't draw right padding on a truncated rightmost column of a transposed
 	ls-like view.
 
@@ -379,7 +382,7 @@
 	Fixed :rename not recognizing identical paths in source and destination
 	lists if they were edited (e.g., to contain extra slashes, "./" or "../").
 
-	Fixed weird character appearing on Ctrl+Space combination in command-line
+	Fixed weird character appearing on Ctrl-Space combination in command-line
 	mode.
 
 	Fixed :restart leaving histories disabled unless 'history' is set to a
@@ -413,7 +416,7 @@
 	Fixed statusline having invalid colors when 'wildstyle' is "bar" and
 	completion is initiated by Shift-Tab.
 
-	Fixed CTRL-A and CTRL-E in command-line mode not stopping completion or
+	Fixed Ctrl-A and Ctrl-E in command-line mode not stopping completion or
 	history search unlike other similar keys.
 
 	Fixed directories not being accounted for in estimates.  Thanks to
@@ -429,7 +432,7 @@
 	for an empty string should be done explicitly with `==` or `!=`.  Thanks
 	to justpretending2.
 
-	Fixed Escape being handled as Ctrl+C in prompts which suppresses future
+	Fixed Escape being handled as Ctrl-C in prompts which suppresses future
 	errors.
 
 	Fixed outdated documentation on the behaviour of n/N when 'hlsearch' is

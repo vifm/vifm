@@ -338,6 +338,9 @@ typedef struct config_t
 	/* Whether terminal title should be updated or not. */
 	int set_title;
 
+	/* Show I/O progress details dialog automatically. */
+	int always_show_io_details;
+
 	/* Whether directory path should always be resolved to real path (all symbolic
 	 * link expanded). */
 	int chase_links;

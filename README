@@ -1,9 +1,9 @@
 Vifm - Vim-like file manager
-2001 - 2023
+2001 - 2025
 
 Version: 0.13
 
-This file last updated: 04 April 2023
+This file last updated: 18 January 2025
 
 Brief Description
 
@@ -58,3 +58,4 @@ Contacts
     Preview scripts:
     * https://github.com/cirala/vifmimg
     * https://github.com/eylles/vifm-sixel-preview
+    * https://github.com/iambumblehead/thu.sh

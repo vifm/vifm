@@ -961,6 +961,8 @@ fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
 	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = alloc_progress_data(ops->bg, ops);
+		pdata->dialog = cfg.always_show_io_details;
+
 		const io_cancellation_t cancellation = { .hook = &ui_cancellation_hook };
 		ops->estim = ioeta_alloc(pdata, cancellation);
 	}

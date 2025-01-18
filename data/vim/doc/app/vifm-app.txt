@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.13  Last change: 2025 January 11
+*vifm-app.txt*    For Vifm version 0.13  Last change: 2025 January 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4586,6 +4586,16 @@ pane.  This can be modified with:
 l - truncation is always on the left.
                                                *vifm-to-r*
 r - truncation is always on the right.
+
+                                               *vifm-'uioptions'*
+uioptions
+type: set
+default:
+
+Tweaks UI behaviour.  The following values are available:
+ - iodetails - show I/O progress details dialog automatically instead of
+               displaying progress on statusbar until user presses "i" to see
+               the dialog.
 
                                                *vifm-'undolevels'* *vifm-'ul'*
 undolevels ul
