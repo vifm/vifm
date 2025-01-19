@@ -83,27 +83,27 @@ echo ::: VERIFYING PACKAGES... :::
 unzip "$w32.zip"
 unzip "$w64.zip"
 
-x32_exe='PE32 executable (console) Intel 80386 (stripped to external PDB), for MS Windows'
-x64_exe='PE32+ executable (console) x86-64 (stripped to external PDB), for MS Windows'
+x32_exe='Intel i386'
+x64_exe='x86-64'
 
 ret=0
 
-if [ "$(file -b "$w32/vifm.exe")" != "$x32_exe" ]; then
+if [[ ! "$(file -b "$w32/vifm.exe")" =~ "$x32_exe" ]]; then
     echo "ERROR: Wrong type of $w32/vifm.exe:"
     file -b "$w32/vifm.exe"
     ret=1
 fi
-if [ "$(file -b "$w32/win_helper.exe")" != "$x32_exe" ]; then
+if [[ ! "$(file -b "$w32/win_helper.exe")" =~ "$x32_exe" ]]; then
     echo "ERROR: Wrong type of $w32/win_helper.exe:"
     file -b "$w32/win_helper.exe"
     ret=1
 fi
-if [ "$(file -b "$w64/vifm.exe")" != "$x64_exe" ]; then
+if [[ ! "$(file -b "$w64/vifm.exe")" =~ "$x64_exe" ]]; then
     echo "ERROR: Wrong type of $w64/vifm.exe:"
     file -b "$w64/vifm.exe"
     ret=1
 fi
-if [ "$(file -b "$w64/win_helper.exe")" != "$x64_exe" ]; then
+if [[ ! "$(file -b "$w64/win_helper.exe")" =~ "$x64_exe" ]]; then
     echo "ERROR: Wrong type of $w64/win_helper.exe:"
     file -b "$w64/win_helper.exe"
     ret=1
@@ -132,10 +132,11 @@ for test in bin/*; do
     basename="\${test#*/}"
     name="\${basename%.*}"
     mkdir -p "sandbox/\$name"
-    if [ "\$name" = "fuzz" ] || [ "\$name" = "regs_shmem_app" ]; then
+    if [ "\$name" = "fuzz" ] || [ "\$name" = "io_tester_app" ] || [ "\$name" = "regs_shmem_app" ]; then
         continue
     fi
     if ! \$test -s; then
+        echo "FAILED: \$test (32-bit)"
         exit 1
     fi
 done
@@ -145,10 +146,11 @@ for test in bin/*; do
     basename="\${test#*/}"
     name="\${basename%.*}"
     mkdir -p "sandbox/\$name"
-    if [ "\$name" = "fuzz" ] || [ "\$name" = "regs_shmem_app" ]; then
+    if [ "\$name" = "fuzz" ] || [ "\$name" = "io_tester_app" ] || [ "\$name" = "regs_shmem_app" ]; then
         continue
     fi
     if ! \$test -s; then
+        echo "FAILED: \$test (64-bit)"
         exit 1
     fi
 done
