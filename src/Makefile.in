@@ -1087,6 +1087,7 @@ EXTRA_DIST = \
 						 menus/volumes_menu.c \
 						 vifm.rc \
 						 win_helper.c \
+						 utils/event_win.c \
 						 utils/fswatch_win.c \
 						 utils/gmux_win.c \
 						 utils/selector_win.c \
