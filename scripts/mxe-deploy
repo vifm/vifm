@@ -136,6 +136,7 @@ for test in bin/*; do
         continue
     fi
     if ! \$test -s; then
+        echo "FAILED: \$test (32-bit)"
         exit 1
     fi
 done
@@ -149,6 +150,7 @@ for test in bin/*; do
         continue
     fi
     if ! \$test -s; then
+        echo "FAILED: \$test (64-bit)"
         exit 1
     fi
 done
