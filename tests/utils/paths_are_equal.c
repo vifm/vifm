@@ -4,6 +4,15 @@
 
 TEST(dotdirs_in_relative_paths_normalized)
 {
+	assert_false(paths_are_equal("/a", "./a"));
+	assert_false(paths_are_equal("/a", "a"));
+
+	assert_false(paths_are_equal("/a/b/c", "./a/b/c"));
+	assert_false(paths_are_equal("/a/b/c", "a/b/c"));
+
+	assert_true(paths_are_equal("/a", "////a"));
+	assert_true(paths_are_equal("/a/b/./c", "/a//b/c/d/.."));
+
 	assert_true(paths_are_equal("a", "./a"));
 	assert_true(paths_are_equal("./a", "././a"));
 	assert_true(paths_are_equal("a", "./././a"));
