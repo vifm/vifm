@@ -3043,9 +3043,9 @@ effect.
 Note that %Pl and %Pz are mutually exclusive.  Only the last one of them in
 the command will take effect.
 
-Note that a previewer with both %px and %py is considered to be a graphical
-previewer, a previewr with %pd is considered a pass through previewer, the
-rest are treated as text.
+Note that a previewer containing %pd is considered a pass-through previewer,
+otherwise a previewer containing both %px and %py is considered to be a
+graphical previewer, the rest are treated as text previewers.
 
                                                      *vifm-filename-modifiers*
 You can use file name modifiers after %c, %C, %f, %F, %b, %d and %D macros.

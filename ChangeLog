@@ -2,6 +2,9 @@
 
 	Improved documentation on zh/zl menu keys a bit.
 
+	Corrected documentation on how the use of different preview macros affects
+	classification of a previewer.
+
 0.13 to 0.14-beta (2025-01-19)
 
 	Changed --with-gtk flag to --with-glib (old name is still available).  GTK
