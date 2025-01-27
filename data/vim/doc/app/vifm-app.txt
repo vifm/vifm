@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14-beta  Last change: 2025 Jan 19
+*vifm-app.txt*    For Vifm version 0.14-beta  Last change: 2025 Jan 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5482,10 +5482,10 @@ zb, zt, zz                                     *vifm-m_zb* *vifm-m_zt*
                                                *vifm-m_zz*
     these keys have the same meaning as in normal mode.
 
-zh                                             *vifm-m_zh*
-    scroll menu items [count] characters to the right.
-zl                                             *vifm-m_zl*
-    scroll menu items [count] characters to the left.
+[count]zh                                      *vifm-m_zh*
+    scroll menu items [count] characters (1 by default) to the right.
+[count]zl                                      *vifm-m_zl*
+    scroll menu items [count] characters (1 by default) to the left.
 
 zH                                             *vifm-m_zH*
     scroll menu items half the screen width to the right.
