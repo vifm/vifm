@@ -154,8 +154,8 @@
 
 	Somewhat improved documentation on functional keys.
 
-	Updated autotools scripts to their newer versions.  Thanks to phanium
-	(a.k.a. phanen).
+	Updated autotools scripts to their newer versions.  Thanks to
+	phanium (a.k.a. phanen).
 
 	Perform sorting of completion items after doing Unicode normalization.
 
