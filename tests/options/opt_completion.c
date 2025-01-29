@@ -229,8 +229,17 @@ TEST(after_equal_sign_completion_corner_cases)
 	val.str_val = "'''";
 	vle_opts_assign("fusehome", val, OPT_GLOBAL);
 	vle_compl_reset();
+	vle_opts_complete("fusehome=", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\\'\\'\\'");
+	vle_compl_reset();
 	vle_opts_complete("fusehome='", &start, OPT_GLOBAL);
 	ASSERT_NEXT_MATCH("\\'\\'\\'");
+
+	val.str_val = "\"";
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
+	vle_compl_reset();
+	vle_opts_complete("fusehome=", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\\\"");
 
 	val.str_val = "";
 	vle_opts_assign("fusehome", val, OPT_GLOBAL);

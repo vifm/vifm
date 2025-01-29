@@ -11,6 +11,9 @@
 	Fixed single quotes escaping for completion of option values via
 	`opt='<tab>` (related to a change in 0.14-beta).
 
+	Fixed quotes not being escaped on completion of option values via
+	`opt=<tab>`.
+
 0.13 to 0.14-beta (2025-01-19)
 
 	Changed --with-gtk flag to --with-glib (old name is still available).  GTK

@@ -1406,7 +1406,7 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 
 			if(*p == '\0')
 			{
-				vle_compl_put_match(escape_chars(str_val, " |\\"), "");
+				vle_compl_put_match(escape_chars(str_val, " |\\'\""), "");
 			}
 			else if(strcmp(p, "'") == 0)
 			{
