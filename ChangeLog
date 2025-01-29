@@ -8,6 +8,8 @@
 	Fixed absolute paths comparing equal to similar relative paths (regression
 	in 0.14-beta).
 
+	Fixed single quotes escaping for completion of option value.
+
 0.13 to 0.14-beta (2025-01-19)
 
 	Changed --with-gtk flag to --with-glib (old name is still available).  GTK
