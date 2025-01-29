@@ -40,7 +40,8 @@ typedef int (*vle_compl_sorter_f)(const char a[], const char b[]);
 int vle_compl_add_match(const char match[], const char descr[]);
 
 /* Puts raw match as completion match, takes ownership of the match string.
- * Returns zero on success, otherwise non-zero is returned. */
+ * Returns zero on success, otherwise non-zero is returned (including when match
+ * is NULL). */
 int vle_compl_put_match(char match[], const char descr[]);
 
 /* Adds path as completion match.  Path is preprocessed with path add hook.
