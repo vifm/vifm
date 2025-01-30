@@ -14,6 +14,8 @@
 	Fixed quotes not being escaped on completion of option values via
 	`opt=<tab>`.
 
+	Fixed output of :highlight command truncating names of some colors.
+
 0.13 to 0.14-beta (2025-01-19)
 
 	Changed --with-gtk flag to --with-glib (old name is still available).  GTK
