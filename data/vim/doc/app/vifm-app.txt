@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14-beta  Last change: 2025 Jan 27
+*vifm-app.txt*    For Vifm version 0.14-beta  Last change: 2025 Feb 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5954,7 +5954,7 @@ Comparison tweaks:
 
 Which results to show (has no effect for single pane comparison):
  - showidentical   - toggle showing of identical files;
- - showdifferent   - toggle showing of different files;
+ - showdifferent   - toggle showing of changed files;
  - showuniqueleft  - toggle showing of unique top/left files;
  - showuniqueright - toggle showing of unique bottom/right files.
 

@@ -548,7 +548,7 @@ complete_compare(const char str[])
 		{ "skipempty",       "exclude empty files from comparison" },
 
 		{ "showidentical",   "toggle identical files viewing into comparison" },
-		{ "showdifferent",   "toggle different files viewing into comparison" },
+		{ "showdifferent",   "toggle changed files viewing into comparison" },
 		{ "showuniqueleft",  "toggle unique left files viewing into comparison" },
 		{ "showuniqueright", "toggle unique right files viewing into comparison" },
 

@@ -5,6 +5,9 @@
 	Corrected documentation on how the use of different preview macros affects
 	classification of a previewer.
 
+	Say "changed" when describing the meaning of "showdifferent" of :compare.
+	Thanks to aleksejrs.
+
 	Fixed absolute paths comparing equal to similar relative paths (regression
 	in 0.14-beta).
 
