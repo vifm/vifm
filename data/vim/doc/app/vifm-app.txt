@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14-beta  Last change: 2025 Jan 19
+*vifm-app.txt*    For Vifm version 0.14-beta  Last change: 2025 Feb 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3043,9 +3043,9 @@ effect.
 Note that %Pl and %Pz are mutually exclusive.  Only the last one of them in
 the command will take effect.
 
-Note that a previewer with both %px and %py is considered to be a graphical
-previewer, a previewr with %pd is considered a pass through previewer, the
-rest are treated as text.
+Note that a previewer containing %pd is considered a pass-through previewer,
+otherwise a previewer containing both %px and %py is considered to be a
+graphical previewer, the rest are treated as text previewers.
 
                                                      *vifm-filename-modifiers*
 You can use file name modifiers after %c, %C, %f, %F, %b, %d and %D macros.
@@ -5482,10 +5482,10 @@ zb, zt, zz                                     *vifm-m_zb* *vifm-m_zt*
                                                *vifm-m_zz*
     these keys have the same meaning as in normal mode.
 
-zh                                             *vifm-m_zh*
-    scroll menu items [count] characters to the right.
-zl                                             *vifm-m_zl*
-    scroll menu items [count] characters to the left.
+[count]zh                                      *vifm-m_zh*
+    scroll menu items [count] characters (1 by default) to the right.
+[count]zl                                      *vifm-m_zl*
+    scroll menu items [count] characters (1 by default) to the left.
 
 zH                                             *vifm-m_zH*
     scroll menu items half the screen width to the right.
@@ -5953,10 +5953,10 @@ Comparison tweaks:
  - withrcase - respect case when comparing file names/paths.
 
 Which results to show (has no effect for single pane comparison):
- - showidentical   - toggle showing of identical files;
- - showdifferent   - toggle showing of different files;
- - showuniqueleft  - toggle showing of unique top/left files;
- - showuniqueright - toggle showing of unique bottom/right files.
+ - showidentical   - control visibility of identical files;
+ - showdifferent   - control visibility of changed files;
+ - showuniqueleft  - control visibility of unique top/left files;
+ - showuniqueright - control visibility of unique bottom/right files.
 
 Each argument can appear multiple times, the rightmost one of the group is
 considered.  Arguments alter default behaviour instead of substituting it.

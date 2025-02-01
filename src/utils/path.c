@@ -148,10 +148,10 @@ make_canonic_path(const char directory[], char buf[], size_t buf_size,
 	}
 	else /* note this else */
 #endif
-	if(strict_rel_paths)
+	if(strict_rel_paths && !is_path_absolute(directory))
 	{
 		strcpy(buf, "./");
-		q += 2;;
+		q += 2;
 	}
 
 	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1U)

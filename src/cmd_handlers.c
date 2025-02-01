@@ -3162,7 +3162,7 @@ get_hi_str(const char title[], const col_attr_t *col)
 	static char buf[512];
 	static char gui_buf[2*sizeof(buf)];
 
-	char fg_buf[16], bg_buf[16];
+	char fg_buf[32], bg_buf[32];
 
 	cs_color_to_str(col->fg, sizeof(fg_buf), fg_buf, /*is_gui=*/0);
 	cs_color_to_str(col->bg, sizeof(bg_buf), bg_buf, /*is_gui=*/0);

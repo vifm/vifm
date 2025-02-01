@@ -94,6 +94,7 @@ static int find_val(const opt_t *opt, const char value[]);
 static int set_print(const opt_t *opt);
 static char * extract_option(const char **argsp, int completion);
 static char * skip_alphas(const char str[]);
+static char * escape_as_squoted(const char str[]);
 static void complete_option_name(const char buf[], int bool_only, int pseudo,
 		OPT_SCOPE scope);
 static int option_matches(const opt_t *opt, OPT_SCOPE scope);
@@ -1405,16 +1406,11 @@ vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 
 			if(*p == '\0')
 			{
-				vle_compl_put_match(escape_chars(str_val, " |\\"), "");
+				vle_compl_put_match(escape_chars(str_val, " |\\'\""), "");
 			}
 			else if(strcmp(p, "'") == 0)
 			{
-				char *escaped = escape_for_squotes(str_val, /*offset=*/0);
-				if(escaped != NULL)
-				{
-					vle_compl_put_match(format_str("'%s'", escaped), "");
-					free(escaped);
-				}
+				vle_compl_put_match(escape_as_squoted(str_val), "");
 			}
 			else if(strcmp(p, "\"") == 0)
 			{
@@ -1570,6 +1566,72 @@ skip_alphas(const char str[])
 	while(isalpha(*str))
 		str++;
 	return (char *)str;
+}
+
+/* Produces a value quoted in single quotes as much as possible (embedded single
+ * quotes have to be escaped with a slash outside of single quotes).  Returns
+ * newly allocated memory or NULL on error. */
+static char *
+escape_as_squoted(const char str[])
+{
+	enum
+	{
+		START,
+		NONQUOTE,
+		QUOTE,
+	}
+	state = START;
+
+	/* The worst case is when quotes are interleaved with non-quotes: x'y'z'...
+	 * That gets expanded to 3 characters per non-quote and 2 per quote, so each
+	 * pair of input characters becomes 5 characters. */
+	const size_t max_escaped = strlen(str)*5/2;
+
+	char *escaped = malloc(MAX(2U, max_escaped) + 1);
+	if(escaped == NULL)
+	{
+		return NULL;
+	}
+
+	char *out = escaped;
+
+	while(*str != '\0')
+	{
+		if(*str == '\'')
+		{
+			if(state == NONQUOTE)
+			{
+				*out++ = '\'';
+			}
+
+			*out++ = '\\';
+			*out++ = *str++;
+			state = QUOTE;
+		}
+		else
+		{
+			if(state != NONQUOTE)
+			{
+				*out++ = '\'';
+			}
+
+			*out++ = *str++;
+			state = NONQUOTE;
+		}
+	}
+
+	if(state == START)
+	{
+		*out++ = '\'';
+	}
+	if(state != QUOTE)
+	{
+		*out++ = '\'';
+	}
+
+	*out = '\0';
+
+	return escaped;
 }
 
 void

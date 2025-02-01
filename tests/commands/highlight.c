@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <limits.h> /* INT_MAX */
+#include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() */
 
 #include <test-utils.h>
@@ -39,7 +40,7 @@ TEARDOWN()
 
 /* General behaviour. */
 
-TEST(all_colors_are_printed)
+TEST(all_groups_are_printed)
 {
 	/* On PDCurses A_STANDOUT == (A_REVERSE | A_BOLD). */
 #if __PDCURSES__
@@ -117,6 +118,26 @@ TEST(all_colors_are_printed)
 }
 
 /* Colors. */
+
+TEST(all_xterm_colors_are_printed)
+{
+	size_t i;
+
+	for(i = 0U; i < ARRAY_LEN(XTERM256_COLOR_NAMES); ++i)
+	{
+		cfg.cs.color[WIN_COLOR].bg = i;
+		cfg.cs.color[WIN_COLOR].fg = i;
+
+		char expected[128];
+		snprintf(expected, sizeof(expected),
+				"Win        cterm=none ctermfg=%-7s ctermbg=%s",
+				XTERM256_COLOR_NAMES[i], XTERM256_COLOR_NAMES[i]);
+
+		ui_sb_msg("");
+		assert_failure(cmds_dispatch("hi Win", &lwin, CIT_COMMAND));
+		assert_string_equal(expected, ui_sb_last());
+	}
+}
 
 TEST(wrong_gui_color_causes_error)
 {

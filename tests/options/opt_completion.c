@@ -214,6 +214,40 @@ TEST(after_equal_sign_completion_spaces_ok)
 	ASSERT_NEXT_MATCH("\"8\"");
 }
 
+TEST(after_equal_sign_completion_corner_cases)
+{
+	const char *start;
+
+	optval_t val;
+
+	val.str_val = "/home' 'directory/tmp";
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
+	vle_compl_reset();
+	vle_opts_complete("fusehome='", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("'/home'\\'' '\\''directory/tmp'");
+
+	val.str_val = "'''";
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
+	vle_compl_reset();
+	vle_opts_complete("fusehome=", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\\'\\'\\'");
+	vle_compl_reset();
+	vle_opts_complete("fusehome='", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\\'\\'\\'");
+
+	val.str_val = "\"";
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
+	vle_compl_reset();
+	vle_opts_complete("fusehome=", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("\\\"");
+
+	val.str_val = "";
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
+	vle_compl_reset();
+	vle_opts_complete("fusehome='", &start, OPT_GLOBAL);
+	ASSERT_NEXT_MATCH("''");
+}
+
 TEST(after_fake_equal_sign_completion_fail)
 {
 	const char *start;
