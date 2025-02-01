@@ -5953,10 +5953,10 @@ Comparison tweaks:
  - withrcase - respect case when comparing file names/paths.
 
 Which results to show (has no effect for single pane comparison):
- - showidentical   - toggle showing of identical files;
- - showdifferent   - toggle showing of changed files;
- - showuniqueleft  - toggle showing of unique top/left files;
- - showuniqueright - toggle showing of unique bottom/right files.
+ - showidentical   - control visibility of identical files;
+ - showdifferent   - control visibility of changed files;
+ - showuniqueleft  - control visibility of unique top/left files;
+ - showuniqueright - control visibility of unique bottom/right files.
 
 Each argument can appear multiple times, the rightmost one of the group is
 considered.  Arguments alter default behaviour instead of substituting it.

@@ -547,10 +547,10 @@ complete_compare(const char str[])
 
 		{ "skipempty",       "exclude empty files from comparison" },
 
-		{ "showidentical",   "toggle identical files viewing into comparison" },
-		{ "showdifferent",   "toggle changed files viewing into comparison" },
-		{ "showuniqueleft",  "toggle unique left files viewing into comparison" },
-		{ "showuniqueright", "toggle unique right files viewing into comparison" },
+		{ "showidentical",   "control visibility of identical files" },
+		{ "showdifferent",   "control visibility of changed files" },
+		{ "showuniqueleft",  "control visibility of unique top/left files" },
+		{ "showuniqueright", "control visibility of unique bottom/right files" },
 
 		{ "withicase",       "force ignoring case on comparing names" },
 		{ "withrcase",       "force respecting case on comparing names" },
