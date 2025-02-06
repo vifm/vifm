@@ -322,7 +322,7 @@
 	alignment and wrapping).
 
 	Fixed environment variables not being expanded on checking that a
-	:file[x]type or :fileviewer command exists.  Thanks to Ben Elan.
+	:file[x]type or :fileviewer command exists in $PATH.  Thanks to Ben Elan.
 
 	Fixed search match highlighting when the match is cut off due lack of
 	space.  Patch by Vadim Curcă.
@@ -350,9 +350,6 @@
 	Fixed weird sorting of filenames with non-Latin characters when
 	'sortnumbers' option is set and strverscmp() is not provided by the
 	system (like on Windows).
-
-	Fixed "Querying... (??%)" message on :compare having an extra space in
-	parenthesis.
 
 	Fixed :compare hanging on trying to compare non-regular files like pipes
 	by contents.
@@ -439,8 +436,8 @@
 	Fixed statusline having invalid colors when 'wildstyle' is "bar" and
 	completion is initiated by Shift-Tab.
 
-	Fixed Ctrl-A and Ctrl-E in command-line mode not stopping completion or
-	history search unlike other similar keys.
+	Fixed Ctrl-A and Ctrl-E in command-line mode not stopping completion
+	unlike other similar keys.
 
 	Fixed directories not being accounted for in estimates.  Thanks to
 	justpretending2.
