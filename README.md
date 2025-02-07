@@ -4,7 +4,7 @@
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
-_Latest release is 0.14-beta.  This file last updated on 19 January 2025._
+_Latest release is 0.14.  This file last updated on 08 February 2025._
 
 ## Brief Description ##
 
