@@ -1,3 +1,375 @@
+08 February 2025
+================
+
+Vifm v0.14
+----------
+
+Thanks to everyone who tried out the beta.
+
+Highlights:
+
+ - Somewhat incompatible changes.
+
+   This release contains a number of changes which are technically
+   non-backwards compatible.  However, all of them should have very little
+   negative impact (i.e., hard to notice the change without reading the
+   changelog).
+
+   At the same time, a bug, fixing which is likely to have an impact on user
+   configuration, has been identified but not yet fixed to give a chance to
+   update all affected `vifmrc` files.  If a bug is likely to be relied on by
+   the configuration, a dialog with the explanation and instructions will
+   appear.
+
+ - Sorting and non-Latin characters.
+
+   Until this release Vifm has always used byte sorting (effectively, sorting
+   of UTF-8 byte sequences).  From now on a form of Unicode normalization is
+   applied to strings when sorting views and completion results.  The change
+   can be expanded to other cases in future releases.  The measured performance
+   impact is negligible (several percent).
+
+   Practically, this means that characters like `a` and `ä` are now grouped
+   together regardless of the way in which diacritic is being encoded.  Some
+   characters can still appear in weird non-alphabetic positions because full
+   Unicode normalization results in losing case sensitivity and is therefore
+   not applied.
+
+ - Addressing some longtime woes.
+
+   For one reason or another some inconvenient peculiarities have accumulated
+   over the years.  Time has come to replace workarounds with something better:
+
+    * global variables (`g:var`) replace the use of environmental variables for
+      internal purposes, thus avoiding polluting environment of child processes
+    * use of `:let` to invoke a builtin function discarding its result is
+      superseded by a proper `:call` command
+    * use of `execute 'normal! gl'` to run selection now has `:open` command as
+      a better alternative
+    * size of selection can now be queried via `selected()` (previous releases
+      required `expand('%c') == expand('%f')` or an equivalent trick)
+    * `%{expression}` macro in `'statusline'` can now have `}` embedded as
+      `\}` (`\\` still means two slashes)
+    * dialogs now recognize `Enter` and `Escape` keys as "yes" and "no" replies
+
+ - More useful menus.
+
+   `:copen` recalled last navigation menu for years, but that's not always
+   enough.  Now up to 25 such menus are stored after their use and can be
+   navigated to via `:chistory`/`:colder`/`:cnewer`.
+
+   In addition, `:grep` or `:find` can be rerun on the same set of commands
+   right from the menu which previously required leaving the menu just to get
+   back to it.
+
+   History of command-line in menus is now also managed and stored, making
+   staying in menu mode for longer a more pleasant experience.
+
+ - UI improvements.
+
+   Navigation between views/tabs via new `:wingo` command with optional
+   incremental completion thanks to new `'wildinc'` option (applicable to any
+   other command or all of them at once).
+
+   Ability to highlight a view column (`:highlight column:size ...`), specify
+   how highlighting applies (`'hloptions'`), set a separator between miller
+   columns in `set fillchars+=millersep:'|'`, shorten columns in the
+   middle (`^` in `'viewcolumn'`).
+
+   Also, displaying of CJK characters on Windows should have much fewer issues
+   now.
+
+ - Lua API.
+
+   Slowly adding new functionality.  This batch comes with things like
+   primitive file operations, ability to create custom views or menus and
+   handling ranges of :commands.
+
+ - Other.
+
+   Search matches can be traversed via `Tab` and `Shift-Tab` while in the
+   prompt (applies to navigation mode as well).
+
+   An invalid expression in `:if` or `:elseif` no longer just skips that
+   command, now all commands up to and including matching `:endif` are skipped
+   to avoid executing half-random sequences of commands due to a mistake, which
+   also results in better error messages.  Previously, `:elseif` was also
+   evaluating its expression even some earlier branch was already taken.
+
+   `:rename` now asks whether file move is intended instead of assuming a user
+   mistake and refusing to proceed.
+
+   Support MTP devices by bundled `vifm-media` script if simple-mtpfs is
+   installed.  Also improve what devices are offered for mounting (e.g., don't
+   offer a whole drive if it contains partitions).
+
+   `v:version` to branch depending on release.
+
+ - Fixes.
+
+   Get preview graphics out of the way in more cases (like when opening menus).
+   Terminals with more than 32768 color pairs should not cause visual defects
+   or crashes anymore.
+
+   Merging of directories was either not asking for confirmation or aborting
+   after skipping a file.  Paths with some unreadable characters were not
+   processed due to a regression.  Directories weren't counted in estimates of
+   file operations.
+
+   `&&` operator was always evaluating both branches instead of properly
+   short-circuiting.  `%a` macro of `'statusline'` was displaying wrong values
+   on non-Linux Unix-like systems.  `:compare` falsely claimed that files of
+   identical size and with common prefix are identical.
+
+Building:
+ - Changed --with-gtk flag to --with-glib (old name is still available).  GTK
+   was pulled in by mistake, only GIO/GLib was ever used...
+ - Updated autotools scripts to their newer versions (thanks to phanium, a.k.a.
+   phanen).
+ - Fixed running tests with locales that use comma for decimal point (thanks to
+   PRESFIL).
+ - Fixed running tests with musl libc (thanks to Henrik Holst, a.k.a. hholst80).
+
+:set command and options:
+ - Changed default value of 'findprg' to avoid the use of syntax specific to
+   GNU find.  The only difference is that now one can see "Permission denied"
+   errors which weren't displayed before.  Sample vifmrc files contain
+   detection of GNU find on startup (thanks to Jose Riha, a.k.a. jose1711).
+ - Added "mchistory" value to 'vifminfo' and 'sessionoptions' option.  It
+   manages storing of command-line history of menus.
+ - Added 'hloptions' option to configure which view colums get affected by file
+   highlighting (thanks to qsmodo).
+ - Added "millersep:" value to 'fillchars' that allows customizing the border
+   between miller columns (thanks to Shuo, a.k.a. shenqshuoh).
+ - Added 'wildinc' option that defines which :commands should be completed as
+   they are edited.
+ - Added 'uioptions' option with possible "iodetails" value to display progress
+   dialog by default (thanks to Ralf Schmitt).
+ - Added middle view column alignment (specified by "^" in 'viewcolumns'
+   option).  Part of the text is replaced with ellipsis to keep both start and
+   end visible (patch by Vadim Curcă).
+ - Made completion of an option with its current value work not only on
+   `opt=<tab>`, but also on `opt='<tab>` and `opt="<tab>` (thanks to
+   aleksejrs).
+
+Command-line mode:
+ - Added ":history mcmd" menu for displaying command-line history of menus.
+ - Added :col[der] and :cnew[er] commands to menu mode to traverse history of
+   navigation menus.
+ - Added :chi[story] command that opens a menu of saved menus (available in all
+   menus as well).
+ - Added "column:{name}" form of argument to :highlight command to specify
+   style of a separate column (thanks to Anton Gepting).
+ - Added :wingo command to navigate to a view by substring matching against its
+   title or path (thanks to iSeeU816 and Alexandre Viau).
+ - Added :cal[l] command to run a function discarding its return value (thanks
+   to anyone asking about simply running a function).
+ - Added :o[pen] command to open current file, selection or range as if Enter
+   was pressed (thanks to Safal Piya, a.k.a. mrsafalpiya).
+ - Added a way to insert "}" inside of %{expr} macro of 'statusline' (thanks to
+   vuenn).
+ - Made :goto preserve custom and tree views (thanks to Svetlozar Iliev, a.k.a.
+   asmodeus812).
+ - Made :compare treat non-regular files (pipes, sockets, etc.) as empty.
+ - Allowed moving files via :rename (requires an interactive confirmation)
+   (thanks to aleksejrs).
+ - Improved error message on trying to :unlet a builtin variable.
+ - Expand environment variables in the arguments of :mark command (thanks to an
+   anonymous at Vifm Q2A site).
+ - Improved detection and reporting of invalid mark name by :mark command.
+ - Made Tab and Shift-Tab in interactive search prompts (including when
+   navigating) move cursor to next/previous search match (thanks to David
+   Sierra DiazGranados, a.k.a. davidsierradz).
+
+Macros:
+ - Allow and skip !/!! prefix of custom external :commands for more macros (%S,
+   %q, %i, %m, %M, %s, %v, %u, %U, %Iu, %IU).
+ - Adjusted heuristic for determining previewer type to allow use of %px and
+   %py with %pd without any implications (thanks to iambumblehead).
+
+Core:
+ - Changed initialization to not create a copy of rendered man page at
+   $VIFM/vifm-help.txt, :help now opens the original file (thanks to intelfx).
+ - Changed handling of Ctrl-Z to not suspend the application if a corresponding
+   user mapping exists (patch 高浩亮, a.k.a. haolian9).
+ - Perform sorting of completion items after doing Unicode normalization.
+ - Perform sorting of file names after doing Unicode normalization (thanks to
+   hacksenwerk).
+
+Normal and visual modes:
+ - Added [S and ]S shortcuts as wrapping versions of [s and ]s (thanks to
+   aksr).
+
+Integration:
+ - Made vifm-media not offer partitioned drives as they aren't mountable as a
+   whole.
+ - Extended vifm-media script to support MTP devices if simple-mtpfs tool is
+   installed (thanks to FlyCat, a.k.a. yanwh0311, and Alexandre Viau).
+ - Fixed vifm-media script not listing external drives with udevil and udisks.
+ - Fixed vifm-media script not listing removable drives with udisks marked as
+   non-removable by udisks.
+
+AppImage:
+ - Updated ncurses in AppImage to 6.5.
+ - Don't overwrite $TERMINFO in AppImage, set/append to $TERMINFO_DIRS instead
+   (thanks to anonymous at Vifm Q2A site).
+ - Fixed /usr/share/terminfo not being consulted when running from an AppImage
+   (thanks to anonymous at Vifm Q2A site).
+
+Menus and dialogs:
+ - Added command-line history to menu mode.
+ - Added :gr[ep] and :fin[d] commands to menu mode.  They allow (re)running the
+   commands on the same set of files without leaving the mode.
+ - Added inode number to File Info dialog.
+ - Added handling of Enter/Escape keys to prompts and error dialogs (thanks to
+   laur89, Alexandre Viau and multiple other users who asked about this).
+ - List register's content listed in normal rather then reversed order in
+   :registers/:display menu.
+ - Display number of color pairs in use in :version/:vifm menu.
+ - Constrained background error dialogs to appear only in normal mode when not
+   much is going on.
+
+Macros:
+ - Changed %N macro to not be mutually exclusive with most of other macros (the
+   limitation wasn't documented and didn't make much sense) (thanks to James
+   Dietrich).
+
+Scripting:
+ - Added a statusbar message and a dialog to warn about an upcoming fix for
+   strings in conditional expressions (e.g., `if $VAR` checks for `$VAR` being
+   non empty instead of converting it to an integer) (thanks to
+   justpretending2).
+ - Changed behaviour on failure to evaluate an expression of :if or :elseif.
+   Previously this resulted in trying to execute any commands until and
+   including :endif (all branches taken).  Now everything up to :endif will not
+   be executed (no branches taken) (thanks to Ed Pavlov).
+ - Changed filetype() to accept path in its first parameter.  This means that
+   passing it something like "15abc" will no longer be interpreted as 15
+   (thanks to MikeLemon).
+ - Added escape() builtin function to escape specific characters in strings
+   (thanks to The Cyberduck).
+ - Added selected() builtin function which returns number of currently selected
+   files.
+ - Added global variables (with "g:" prefix) to avoid using environment
+   variables in their place as a workaround.
+ - Added v:version builtin variable that exposes version as an integer which
+   can be meaningfully compared (thanks to an anonymous at Vifm Q2A site).
+
+Performance:
+ - Slightly improved performance of comparing files by content.
+ - Fixed performance degradation after preview consumes lots of color pairs.
+
+Documentation:
+ - Clarified documentation on column literals and escaping (thanks to
+   chelovechishko).
+ - Made documentation of 'vifminfo' more readable.
+ - Rewrote "Menus and dialogs" section.
+ - Document how the use of different preview macros affects classification of a
+   previewer (thanks to iambumblehead).
+ - Slightly expanded documentation on %N macro (thanks to James Dietrich).
+ - Somewhat improved documentation on functional keys.
+ - Fixed documentation on yy, Y, dd and DD not mentioning how "s" flag of
+   'cpoptions' affects their behaviour (thanks to James Dietrich).
+ - Fixed outdated documentation on the behaviour of n/N when 'hlsearch' is
+   enabled since the introduction of highlighting of search matches (thanks to
+   James Dietrich).
+
+TUI (Text User Interface):
+ - When processing multiple files in background, show current position in the
+   list on the job bar.
+ - Shorten home directory in paths shown on the job bar.
+ - Provide numerical value of a color as a description of a completion item for
+   it.
+ - Don't attempt clearing graphics when menu-like mode is active.  The graphics
+   should have been hidden on entering the mode.
+ - Allowed wild menu popup to take up up to 40% of the screen.
+
+Only on Windows:
+ - Upgraded to PDCurses 3.9 (was 3.8).  Combined with some other changes this
+   improves the situation with handling of CJK characters (thanks to
+   zzx41375004, vodbyte, Jeremy Yuan and others).
+ - Fixed `data/vifmrc` next to vifm.exe being used as global vifmrc file
+   (thanks to midrare).
+ - Fixed incorrectly determining whether a directory is writable (primarily C:\
+   could be reported as non-writable) (thanks to theorlangur and bitraid).
+ - Fixed system() and term() not taking 'shell'/'shellcmdflag' into account
+   (thanks to spence91).
+
+Color schemes:
+ - Added WildBox highlight group.  It can be used to set background of
+   completion window.
+
+Noteworthy fixes:
+ - Fixed graphics of view mode not being hidden on activating menu, more or
+   file info modes.
+ - Fixed graphics not being cleared on switching to single-pane view (thanks to
+   ret2src).
+ - Fixed a historical omission of Ctrl-G not being available in some prompts:
+   file rename on conflict; owner, group and symbolic link target change
+   (thanks to Branislav Gerazov).
+ - Fixed display issues or a crash when using a terminal with more than 32768
+   color pairs (thanks to iboggs and itshog).
+ - Fixed %a 'statusline' macro producing wrong values on non-Linux Unix-like
+   systems (thanks to voh9eepah).
+ - Fixed merging directories on copying not asking for overwrite confirmations
+   (thanks to aleksejrs).
+ - Fixed skipping of file move during merging aborting the whole operation
+   (thanks to aleksejrs).
+ - Fixed `:[un]select !<text/html>` treating "<text/html>" as an external
+   command.
+ - Fixed environment variables not being expanded on checking that a
+   :file[x]type or :fileviewer command exists in $PATH (thanks to Ben Elan).
+ - Fixed weird sorting of filenames with non-Latin characters when
+   'sortnumbers' option is set and strverscmp() is not provided by the system
+   (like on Windows).
+ - Fixed :compare reporting identical files as changed when there were more
+   than a couple of files with identical size and 4096-byte prefix.  A
+   regression in 0.13-beta (thanks to Alexandr Keyp, a.k.a. IAmKapuze).
+ - Fixed :compare hanging on trying to compare non-regular files like pipes by
+   contents.
+ - Fixed :substitute, :tr, gu* and gU* detecting a non-existent target name
+   conflict when rename in a custom view would produce an identically named
+   files in different directories (thanks to aleksejrs).
+ - Fixed :restart leaving histories disabled unless 'history' is set to a
+   non-default value in vifmrc (thanks to James Dietrich).
+ - Fixed processing of file names and paths that undergo escaping in the UI,
+   like inability to externally rename them (regression in 0.12.1 beta) (thanks
+   to jc-SpaceXp).
+ - Fixed rules for handling of selection by :file[x]type not taking
+   %"c/%"C/%"f/%"F macros into account (relevant mostly to Windows) (thanks to
+   %smoothdad).
+ - Fixed :elseif evaluating its expression even if an earlier conditional
+   branch was already taken.
+ - Fixed loading a session with global tabs when 'tabscope' is "pane" resulting
+   in global tabs being invisible.
+ - Fixed Ctrl-A and Ctrl-E in command-line mode not stopping completion unlike
+   other similar keys.
+ - Fixed directories not being accounted for in estimates (thanks to
+   justpretending2).
+ - Fixed Escape being handled as Ctrl-C in prompts which suppresses future
+   errors.
+ - Fixed !! not affecting commands that include %s or %v macro (thanks to James
+   Dietrich).
+ - Fixed a crash after a memory corruption when running an external command via
+   expansion of an environment variable when 'fastrun' is set (e.g.,
+   `!$EDITOR`) (thanks to Quaddroo).
+ - Fixed abort on instance sending something over IPC to itself (thanks to
+   Marcin Kurczewski, a.k.a. rr-).
+ - Fixed `&&` operator which was acting as binary `&` (in terms of evaluation,
+   the result was properly boolean) (thanks to justpretending2).
+
+Other changes:
+ - Configure 'vifminfo' in sample vifmrc files to store most of the things in
+   vifminfo by default (add missing histories and tabs) (thanks to Christoph
+   Schmidpeter).
+ - Commented out one of MC-like shortcuts in sample vifmrc files, Ctrl-U, to
+   avoid confusing Vim users with default configuration (thanks to midrare).
+
+See change log for the full list of changes and by whom they were suggested or
+implemented.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 19 January 2025
 ===============
 
