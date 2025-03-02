@@ -112,11 +112,14 @@ AC_CHECK_TYPE([direntry_t])
 if test -n "$HAVE_MNTENT_H" ; then
     AC_CHECK_TYPE([mntent])
 else
-    AC_CHECK_TYPES([getmntinfo], [], [], [[
-                     #include <sys/param.h>
-                     #include <sys/ucred.h>
-                     #include <sys/mount.h>
-                   ]])
+    AC_CHECK_FUNC([getmntinfo],
+                  [AC_DEFINE([HAVE_GETMNTINFO], [1], [getmntinfo() function is available.])],
+                  [],
+                  [[
+                    #include <sys/param.h>
+                    #include <sys/ucred.h>
+                    #include <sys/mount.h>
+                  ]])
 fi
 AC_CHECK_TYPE([stat])
 AC_CHECK_TYPE([FILE])

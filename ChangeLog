@@ -1,3 +1,9 @@
+0.14 to current
+
+	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
+	instead of getmntent() API).  The regression was apparently introduced in
+	v0.9.1-beta.  Thanks to sublimal.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
