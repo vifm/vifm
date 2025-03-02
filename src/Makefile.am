@@ -374,8 +374,6 @@ EXTRA_DIST = \
 						 compat/wcwidth.c \
 						 compat/wcwidth.h \
 						 Makefile.win \
-						 lcov.css \
-						 lcovrc \
 						 ../data/graphics/vifm.ico \
 						 ../data/graphics/vifm.svg \
 						 ../data/vifmrc \
@@ -399,18 +397,7 @@ runtests:
 	chmod +x $@_ && \
 	mv $@_ $@
 
-coverage: check
-	lcov --directory $(builddir)/ --base-directory . \
-	     --capture --output-file $(builddir)/lcov-all.info --config-file \
-	     $(srcdir)/lcovrc --test-name unit_tests --quiet
-	lcov --remove $(builddir)/lcov-all.info -o $(builddir)/lcov.info \
-	     '/usr/*'
-	genhtml --output-directory $(builddir)/cov-report/ \
-	     $(builddir)/lcov.info --config-file $(srcdir)/lcovrc \
-	     --show-details --css-file $(srcdir)/lcov.css
-
-CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) \
-                                              $(vifm_OBJECTS:.o=.gcda)
+CLEANFILES = runtests $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda)
 
 distclean-local:
 	$(MAKE) -C "$(abs_top_srcdir)/tests" B="$(abs_top_builddir)/tests/" clean
