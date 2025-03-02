@@ -6455,17 +6455,11 @@ then :
 fi
 
 else
-    ac_fn_c_check_type "$LINENO" "getmntinfo" "ac_cv_type_getmntinfo" "
-                     #include <sys/param.h>
-                     #include <sys/ucred.h>
-                     #include <sys/mount.h>
-
-"
-if test "x$ac_cv_type_getmntinfo" = xyes
+    ac_fn_c_check_func "$LINENO" "getmntinfo" "ac_cv_func_getmntinfo"
+if test "x$ac_cv_func_getmntinfo" = xyes
 then :
 
 printf "%s\n" "#define HAVE_GETMNTINFO 1" >>confdefs.h
-
 
 fi
 

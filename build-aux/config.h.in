@@ -44,7 +44,7 @@
 /* Define to 1 if you have the 'futimens' function. */
 #undef HAVE_FUTIMENS
 
-/* Define to 1 if the system has the type 'getmntinfo'. */
+/* getmntinfo() function is available. */
 #undef HAVE_GETMNTINFO
 
 /* use glib2 to determine mime type */
