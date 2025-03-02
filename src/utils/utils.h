@@ -382,6 +382,11 @@ void vifm_srand(unsigned int seed);
 /* Produces a random number in the ranage [min; max].  Returns the number. */
 int vifm_rand(int min, int max);
 
+#ifndef HAVE_WCWIDTH
+/* An emulation of wcwidth(). */
+int wcwidth(wchar_t c);
+#endif
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

@@ -371,8 +371,6 @@ EXTRA_DIST = \
 						 utils/xxhash.c \
 						 modes/dialogs/attr_dialog_win.h \
 						 modes/dialogs/attr_dialog_win.c \
-						 compat/wcwidth.c \
-						 compat/wcwidth.h \
 						 Makefile.win \
 						 ../data/graphics/vifm.ico \
 						 ../data/graphics/vifm.svg \

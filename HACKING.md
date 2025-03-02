@@ -95,8 +95,7 @@ of changes of each kind.
     |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- os.c - very thin abstraction layer over basic OS facilities
     |  |  |-- pthread.c - spinlock shim for OS X
-    |  |  |-- reallocarray.c - more convenient and safe realloc() for arrays
-    |  |  `-- wcwidth.c - wcwidth() implementation for Windows
+    |  |  `-- reallocarray.c - more convenient and safe realloc() for arrays
     |  |
     |  |-- engine/ - the core of vi[m]-like functionality
     |  |  |

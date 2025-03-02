@@ -36,7 +36,6 @@ cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
 compat := curses.c dtype.c getopt.c getopt1.c os.c pthread.c reallocarray.c
-compat += wcwidth.c
 compat := $(addprefix compat/, $(compat))
 
 engine := abbrevs.c autocmds.c cmds.c functions.c completion.c keys.c mode.c \

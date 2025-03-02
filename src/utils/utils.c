@@ -66,6 +66,7 @@
 #include "str.h"
 #include "string_array.h"
 #include "utf8.h"
+#include "utf8proc.h"
 
 /* Prefer random() over rand() because the former is non-linear. */
 #if defined(HAVE_RANDOM) && defined(HAVE_SRANDOM)
@@ -1129,6 +1130,15 @@ vifm_rand(int min, int max)
 #endif
 	return min + value*(max - min + 1);
 }
+
+#ifndef HAVE_WCWIDTH
+int
+wcwidth(wchar_t c)
+{
+	const int width = utf8proc_charwidth(c);
+	return (width == 0 && c != L'\0' && !unichar_isprint(c) ? -1 : width);
+}
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
