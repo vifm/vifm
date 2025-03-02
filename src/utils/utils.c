@@ -482,6 +482,8 @@ vifm_wcwidth(wchar_t wc)
 int
 vifm_wcswidth(const wchar_t str[], size_t n)
 {
+	/* Simply reimplementing wcswidth(), it's too trivial to check for its
+	 * presence in any way. */
 	int width = 0;
 	while(*str != L'\0' && n--)
 	{

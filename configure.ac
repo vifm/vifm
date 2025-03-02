@@ -256,7 +256,6 @@ AC_CHECK_FUNC([wcsncpy], [], [AC_MSG_ERROR([wcsncpy() function not found.])])
 AC_CHECK_FUNC([wcstof], [], [AC_MSG_ERROR([wcstof() function not found.])])
 AC_CHECK_FUNC([wcstol], [], [AC_MSG_ERROR([wcstol() function not found.])])
 AC_CHECK_FUNC([wcstombs], [], [AC_MSG_ERROR([wcstombs() function not found.])])
-AC_CHECK_FUNC([wcswidth], [], [AC_MSG_ERROR([wcswidth() function not found.])])
 AC_CHECK_FUNC([wcwidth],
               [AC_DEFINE([HAVE_WCWIDTH], [1], [wcwidth() function is available.])])
 
