@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Feb 08
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Mar 08
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1240,8 +1240,11 @@ Commented out lines should start with the double quote symbol ("), which may be
 preceded by whitespace characters intermixed with colons.  Inline comments can
 be added at the end of the line after double quote symbol, only last line of a
 multi-line command can contain such comment.  Not all commands support inline
-comments as their syntax conflicts with names of registers and fields where
-double quotes are allowed.
+comments as it's not always possible to identify one unambiguously:
+ - the syntax conflicts with names of registers
+ - the syntax conflicts with quoting arguments to commands
+ - mapping/abbreviation commands can expand to arbitrary sequences which can
+   look like a comment without being one
 
 Most of the commands have two forms: complete and the short one.
 Example: >

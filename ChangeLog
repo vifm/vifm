@@ -2,6 +2,9 @@
 
 	Updated utf8proc to v2.10.0.
 
+	Made documentation on which :commands can have comments a bit more
+	verbose.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
