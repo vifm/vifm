@@ -25,7 +25,6 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint32_t */
 #include <stdio.h> /* FILE */
-#include <wchar.h> /* wchar_t */
 
 #include "macros.h"
 #include "test_helpers.h"
@@ -42,8 +41,6 @@
 
 #define PAUSE_CMD "vifm-pause"
 #define PAUSE_STR " && pause || pause"
-
-int wcwidth(wchar_t c);
 
 /* Executes a command (full_cmd) using CreateProcess() API function.  Expects
  * path that contain spaces to be enclosed in double quotes.  cmd can equal

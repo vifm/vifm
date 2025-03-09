@@ -137,6 +137,9 @@
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
+/* wcwidth() function is available. */
+#undef HAVE_WCWIDTH
+
 /* use X11 to determine terminal emulator title */
 #undef HAVE_X11
 

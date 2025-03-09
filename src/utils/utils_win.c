@@ -43,7 +43,6 @@
 #include "../compat/fs_limits.h"
 #include "../compat/mntent.h"
 #include "../compat/os.h"
-#include "../compat/wcwidth.h"
 #include "../ui/ui.h"
 #include "../running.h"
 #include "../status.h"
@@ -231,12 +230,6 @@ unsigned int
 get_pid(void)
 {
 	return GetCurrentProcessId();
-}
-
-int
-wcwidth(wchar_t c)
-{
-	return compat_wcwidth(c);
 }
 
 int

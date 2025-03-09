@@ -7650,22 +7650,12 @@ else case e in #(
 esac
 fi
 
-ac_fn_c_check_func "$LINENO" "wcswidth" "ac_cv_func_wcswidth"
-if test "x$ac_cv_func_wcswidth" = xyes
-then :
-
-else case e in #(
-  e) as_fn_error $? "wcswidth() function not found." "$LINENO" 5 ;;
-esac
-fi
-
 ac_fn_c_check_func "$LINENO" "wcwidth" "ac_cv_func_wcwidth"
 if test "x$ac_cv_func_wcwidth" = xyes
 then :
 
-else case e in #(
-  e) as_fn_error $? "wcwidth() function not found." "$LINENO" 5 ;;
-esac
+printf "%s\n" "#define HAVE_WCWIDTH 1" >>confdefs.h
+
 fi
 
 

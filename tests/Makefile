@@ -113,7 +113,7 @@ ifndef unix_env
                              $(vifm_src))
 endif
 ifndef win_env
-    vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
+    vifm_src := $(filter-out %/volumes_menu.c %_win.c, $(vifm_src))
 endif
 
 vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o)
