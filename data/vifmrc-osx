@@ -357,19 +357,6 @@ fileviewer {*.docx},
 filetype * open
 
 " ------------------------------------------------------------------------------
-" Panel configuration examples
-" ------------------------------------------------------------------------------
-
-" Customize view columns a bit (enable ellipsis for truncated file names)
-" set viewcolumns=-{name}..,6{}.
-
-" Show vertical border
-" set fillchars=vborder:│
-
-" Filter-out build and temporary files
-" filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
-
-" ------------------------------------------------------------------------------
 " Sample keyboard mappings
 " ------------------------------------------------------------------------------
 
@@ -433,6 +420,19 @@ nnoremap <a-i> :sync<cr>
 nnoremap <a-o> :sync %c<cr>
 " Swap panes (uncomment if you don't need builtin behaviour of Ctrl-U)
 nnoremap <c-u> <c-w>x
+
+" ------------------------------------------------------------------------------
+" Panel configuration examples
+" ------------------------------------------------------------------------------
+
+" Customize view columns a bit (enable ellipsis for truncated file names)
+" set viewcolumns=-{name}..,6{}.
+
+" Show vertical border
+" set fillchars=vborder:│
+
+" Filter-out build and temporary files
+" filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
 
 " ------------------------------------------------------------------------------
 " Various customization examples
