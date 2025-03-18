@@ -431,7 +431,7 @@ nnoremap <c-u> <c-w>x
 " Show vertical border
 " set fillchars=vborder:│
 
-" Filter-out build and temporary files
+" Filter-out build artifacts and temporary files
 " filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
 
 " ------------------------------------------------------------------------------
@@ -444,7 +444,7 @@ nnoremap <c-u> <c-w>x
 " Add additional place to look for executables
 " let $PATH = $HOME.'/bin/fuse:'.$PATH
 
-" Block particular shortcut
+" Disable particular shortcut
 " nnoremap <left> <nop>
 
 " Export IPC name of current instance as environment variable and use it to
