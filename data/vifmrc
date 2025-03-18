@@ -5,6 +5,25 @@
 " You can edit this file by hand.  The " character at the beginning of a line
 " comments out the line.  Blank lines are ignored.  The basic format for each
 " item is shown with an example.
+"
+" The purpose of this file
+" ========================
+" 1. Provide a sensible default configuration out of the box.
+" 2. Demonstrate how a typical configuration file might look like.
+" 3. Familiarize a user with commonly used features.
+" 4. Provide some ideas/settings for various use cases.
+"
+" How to use this file
+" ====================
+" - Go through it top to bottom while reading comments.
+" - Adjust/remove/comment/uncomment lines as you see fit.
+" - Look up :commands or 'options' in the documentation to learn more.
+"
+" Some settings are set to provide more useful defaults without breaking
+" compatibility and others are just a great fit (e.g., some bindings) and are
+" almost universally useful, but most lines are provided simply as usage
+" examples and can be removed without hesitation.  Make configuration specific
+" to your needs using this file as a starting point.
 
 " ------------------------------------------------------------------------------
 " Main settings
