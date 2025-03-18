@@ -1,6 +1,6 @@
 " vim: filetype=vifm :
 "
-" Sample configuration file for vifm (last updated: 18 December, 2024)
+" Sample configuration file for vifm (last updated: 18 March, 2025)
 "
 " You can edit this file by hand.  The " character at the beginning of a line
 " comments out the line.  Blank lines are ignored.  The basic format for each
@@ -115,6 +115,10 @@ endif
 
 " Add -s to the default value to suppress "Permission denied" errors
 set grepprg="grep -n -H -I -r -s %i %a %s"
+
+" Enable preview of files in the right miller column (add `set miller` to turn
+" it on)
+set milleroptions+=rpreview:all
 
 " List of color schemes to try (picks the first one supported by the terminal)
 colorscheme Default-256 Default
