@@ -1,9 +1,29 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 18 December, 2024)
-" You can edit this file by hand.
-" The " character at the beginning of a line comments out the line.
-" Blank lines are ignored.
-" The basic format for each item is shown with an example.
+"
+" Sample configuration file for vifm (last updated: 18 March, 2025)
+"
+" You can edit this file by hand.  The " character at the beginning of a line
+" comments out the line.  Blank lines are ignored.  The basic format for each
+" item is shown with an example.
+"
+" The purpose of this file
+" ========================
+" 1. Provide a sensible default configuration out of the box.
+" 2. Demonstrate how a typical configuration file might look like.
+" 3. Familiarize a user with commonly used features.
+" 4. Provide some ideas/settings for various use cases.
+"
+" How to use this file
+" ====================
+" - Go through it top to bottom while reading comments.
+" - Adjust/remove/comment/uncomment lines as you see fit.
+" - Look up :commands or 'options' in the documentation to learn more.
+"
+" Some settings are set to provide more useful defaults without breaking
+" compatibility and others are just a great fit (e.g., some bindings) and are
+" almost universally useful, but most lines are provided simply as usage
+" examples and can be removed without hesitation.  Make configuration specific
+" to your needs using this file as a starting point.
 
 " ------------------------------------------------------------------------------
 " Main settings
@@ -114,6 +134,10 @@ endif
 
 " Add -s to the default value to suppress "Permission denied" errors
 set grepprg="grep -n -H -I -r -s %i %a %s"
+
+" Enable preview of files in the right miller column (add `set miller` to turn
+" it on)
+set milleroptions+=rpreview:all
 
 " List of color schemes to try (picks the first one supported by the terminal)
 colorscheme Default-256 Default
@@ -442,19 +466,6 @@ filextype */
 " filetype * explorer %"f &
 
 " ------------------------------------------------------------------------------
-" Panel configuration examples
-" ------------------------------------------------------------------------------
-
-" Customize view columns a bit (enable ellipsis for truncated file names)
-" set viewcolumns=-{name}..,6{}.
-
-" Show vertical border
-" set fillchars=vborder:│
-
-" Filter-out build and temporary files
-" filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
-
-" ------------------------------------------------------------------------------
 " Sample keyboard mappings
 " ------------------------------------------------------------------------------
 
@@ -554,6 +565,19 @@ nnoremap <a-o> :sync %c<cr>
 " nnoremap <c-u> <c-w>x
 
 " ------------------------------------------------------------------------------
+" Panel configuration examples
+" ------------------------------------------------------------------------------
+
+" Customize view columns a bit (enable ellipsis for truncated file names)
+" set viewcolumns=-{name}..,6{}.
+
+" Show vertical border
+" set fillchars=vborder:│
+
+" Filter-out build artifacts and temporary files
+" filter! {*.lo,*.o,*.d,*.class,*.pyc,*.pyo,.*~}
+
+" ------------------------------------------------------------------------------
 " Various customization examples
 " ------------------------------------------------------------------------------
 
@@ -563,7 +587,7 @@ nnoremap <a-o> :sync %c<cr>
 " Add additional place to look for executables
 " let $PATH = $HOME.'/bin/fuse:'.$PATH
 
-" Block particular shortcut
+" Disable particular shortcut
 " nnoremap <left> <nop>
 
 " Export IPC name of current instance as environment variable and use it to
