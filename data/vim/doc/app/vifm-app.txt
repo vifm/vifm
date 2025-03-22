@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Mar 08
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Mar 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4781,9 +4781,9 @@ Map arguments~
 LHS of mappings can be preceded by arguments which take the form of special
 sequences:
 
-<silent>
+<silent>                                       *vifm-:map-<silent>*
     Postpone UI updates until RHS is completely processed.
-<wait>
+<wait>                                         *vifm-:map-<wait>*
     In case of builtin mapping causing conflict for a user-defined mapping
     (e.g., `t` builtin to a partially typed `ta` user-defined mapping), ignore
     the builtin mapping and wait for input indefinitely as opposed to
