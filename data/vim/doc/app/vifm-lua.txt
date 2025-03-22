@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2025 Jan 2
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2025 Mar 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -685,7 +685,7 @@ ignored.
 
 Possible fields of {info}:
  - "cmd" (string)
-   Comand to execute.
+   Command to execute.
  - "pause" (string) (default: "onerror")
    When to pause after command execution: "never", "onerror", "always".
  - "usetermmux" (boolean) (default: true)
@@ -712,12 +712,12 @@ ignored.
 
 Possible fields of {job}:
  - "cmd" (string)
-   Comand to execute.
+   Command to execute.
  - "description" (string) (default: "")
    Description of the job to be displayed on the job bar (when "visible" key
    is set to true).
  - "iomode" (string) (default: "r")
-   Specififes mode of interaction with the job:
+   Specifies mode of interaction with the job:
     - "r" - reading output of the process (see |vifm-l_VifmJob:stdout()|)
     - "w" - providing input to the process (see |vifm-l_VifmJob:stdin()|)
     - ""  - no I/O interaction
