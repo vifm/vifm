@@ -3553,16 +3553,23 @@ eval_if_condition(int cmd_id, const cmd_info_t *cmd_info)
 			{
 				printed_warning = 1;
 
+				const char *from_note = (curr_stats.sourcing_state != SOURCING_NONE)
+				                      ? " (likely in your vifmrc)"
+				                      : "";
+
 				int save_msg = curr_stats.save_msg;
 				curr_stats.save_msg = 1;
 				show_error_msgf("Condition evaluation",
-						"The `%s` condition seems to be relying on a bug, please revise it "
-						"to add `!= ''` to check for an empty string or `+ 0` to suppress "
+						"Please take a moment and make your configuration future proof.\n"
+						" \n"
+						"The `%s` condition%s seems to be relying on "
+						"a bug, revise it to add `!= ''` to check for an empty string or `+ 0` to suppress "
 						"this warning.\n"
+						" \n"
 						"(This is a once per session warning, `:messages` can contain "
 						"more.)\n"
 						"(The need for `+ 0` will be gone along with the bug and this "
-						"warning in the next release.)", cmd_info->args);
+						"warning in a future release.)", cmd_info->args, from_note);
 				curr_stats.save_msg = save_msg;
 			}
 		}
