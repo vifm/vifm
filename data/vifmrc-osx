@@ -1,6 +1,6 @@
 " vim: filetype=vifm :
 "
-" Sample configuration file for vifm on OSX (last updated: 18 March, 2025)
+" Sample configuration file for vifm on OSX (last updated: 23 March, 2025)
 "
 " You can edit this file by hand.  The " character at the beginning of a line
 " comments out the line.  Blank lines are ignored.  The basic format for each
@@ -394,10 +394,12 @@ nnoremap S :sort<cr>
 nnoremap w :view<cr>
 vnoremap w :view<cr>gv
 
-" Open file in new MacVim tab
-nnoremap o :!mvim --remote-tab-silent %f<cr>
-" Open file in new MacVim window
-nnoremap O :!mvim %f<cr>
+if executable('mvim')
+    " Open file in new MacVim tab
+    nnoremap o :!mvim --remote-tab-silent %f<cr>
+    " Open file in new MacVim window
+    nnoremap O :!mvim %f<cr>
+endif
 
 " Open file in the background using its default program
 nnoremap gb :!open -g %f<cr>
@@ -423,8 +425,11 @@ nnoremap A cw
 
 " Open editor to edit vifmrc and apply settings after returning to vifm
 nnoremap ,c :write | edit $MYVIFMRC | restart full<cr>
+
 " Open MacVim to edit vifmrc
-nnoremap ,C :!mvim --remote-tab-silent $MYVIFMRC &<cr>
+if executable('mvim')
+    nnoremap ,C :!mvim --remote-tab-silent $MYVIFMRC &<cr>
+endif
 
 " Toggle wrap setting on ,w key
 nnoremap ,w :set wrap!<cr>
