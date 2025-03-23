@@ -5,6 +5,11 @@
 	Made documentation on which :commands can have comments a bit more
 	verbose.
 
+	Made `%i` keep access to the terminal instead of acting like `%i &` .
+	This restores the behavior prior to v0.12.1-beta (can be considered a
+	regression as this breaks several use cases).  Thanks to an anonymous at
+	Vifm Q2A site.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
