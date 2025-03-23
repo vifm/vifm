@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Mar 22
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Mar 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3004,7 +3004,10 @@ The command macros may be used in user commands.
             otherwise.
                                                                *vifm-%i*
   %i        run in background and suppress error dialogs, but collect
-            errors internally for viewing via |vifm-:jobs| menu.
+            errors internally for viewing via |vifm-:jobs| menu.  This macro
+            doesn't detach the command from terminal session (`/dev/tty`) on
+            its own, add " &" to leave the command without access to the
+            terminal.
 
                                                                *vifm-%Pl*
   %Pl       pipe list of files to standard input of a command.

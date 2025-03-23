@@ -1254,8 +1254,8 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 		int error = 0;
 
 		setup_shellout_env();
-		if(bg_run_external(cmd, /*keep_in_fg=*/0, /*skip_errors=*/1, SHELL_BY_USER,
-					input_ptr) != 0)
+		if(bg_run_external(cmd, /*keep_in_fg=*/!bg, /*skip_errors=*/1,
+					SHELL_BY_USER, input_ptr) != 0)
 		{
 			error = 1;
 		}
