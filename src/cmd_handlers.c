@@ -2801,7 +2801,8 @@ help_cmd(const cmd_info_t *cmd_info)
 
 	if(bg)
 	{
-		bg_run_external(cmd, 0, SHELL_BY_APP, NULL);
+		bg_run_external(cmd, /*keep_in_fg=*/0, /*skip_errors=*/0, SHELL_BY_APP,
+				NULL);
 	}
 	else
 	{
@@ -5921,7 +5922,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		{
 			if(bg)
 			{
-				bg_run_external(ext_cmd, 0, SHELL_BY_USER, NULL);
+				bg_run_external(ext_cmd, /*keep_in_fg=*/0, /*skip_errors=*/0,
+						SHELL_BY_USER, NULL);
 			}
 			else
 			{
