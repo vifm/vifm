@@ -84,7 +84,8 @@ TEST(provide_input_to_external_command_no_job, IF(have_cat))
 	assert_success(chdir(SANDBOX_PATH));
 
 	FILE *input;
-	assert_success(bg_run_external("cat > file", 1, SHELL_BY_USER, &input));
+	assert_success(bg_run_external("cat > file", /*keep_in_fg=*/0,
+				/*skip_errors=*/1, SHELL_BY_USER, &input));
 	assert_non_null(input);
 
 	fputs("input", input);
@@ -137,13 +138,15 @@ TEST(jobcount_variable_gets_updated)
 
 TEST(job_can_survive_on_its_own)
 {
-	assert_success(bg_run_external("exit 71", 1, SHELL_BY_APP, NULL));
+	assert_success(bg_run_external("exit 71", /*keep_in_fg=*/0, /*skip_errors=*/1,
+				SHELL_BY_APP, NULL));
 	assert_int_equal(71, wait_for_job(bg_jobs));
 }
 
 TEST(explicitly_wait_for_a_job)
 {
-	assert_success(bg_run_external("exit 99", 1, SHELL_BY_APP, NULL));
+	assert_success(bg_run_external("exit 99", /*keep_in_fg=*/0, /*skip_errors=*/1,
+				SHELL_BY_APP, NULL));
 
 	bg_job_t *job = bg_jobs;
 	assert_non_null(job);

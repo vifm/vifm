@@ -942,8 +942,8 @@ bg_run_and_capture(char cmd[], int user_sh, FILE *in, FILE **out, FILE **err)
 #endif
 
 int
-bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
-		FILE **input)
+bg_run_external(const char cmd[], int keep_in_fg, int skip_errors,
+		ShellRequester by, FILE **input)
 {
 	char *command = (cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd));
 	if(command == NULL)
@@ -951,7 +951,9 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by,
 		return 1;
 	}
 
-	const BgJobFlags flags = (input == NULL ? BJF_NONE : BJF_SUPPLY_INPUT);
+	BgJobFlags flags = (keep_in_fg ? BJF_KEEP_IN_FG : BJF_NONE)
+	                 | (input != NULL ? BJF_SUPPLY_INPUT : BJF_NONE);
+
 	bg_job_t *job = launch_external(command, /*pwd=*/NULL, flags, by);
 	free(command);
 	if(job == NULL)

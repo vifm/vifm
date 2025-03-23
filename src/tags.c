@@ -309,6 +309,8 @@ const char *tags[] = {
 	"vifm-:m_chi",
 	"vifm-:ma",
 	"vifm-:map",
+	"vifm-:map-<silent>",
+	"vifm-:map-<wait>",
 	"vifm-:mark",
 	"vifm-:marks",
 	"vifm-:media",

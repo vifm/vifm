@@ -1,4 +1,4 @@
-.TH VIFM 1 "08 March 2025" "vifm 0.14"
+.TH VIFM 1 "23 March 2025" "vifm 0.14"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3642,7 +3642,10 @@ otherwise.
 .TP
 .BI %i
 Run in background and suppress error dialogs, but collect
-errors internally for viewing via :jobs menu.
+errors internally for viewing via :jobs menu.  This macro
+doesn't detach the command from terminal session (`/dev/tty`) on
+its own, add " &" to leave the command without access to the
+terminal.
 .TP
 .BI %Pl
 Pipe list of files to standard input of a command.

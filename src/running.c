@@ -635,7 +635,8 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 
 	if(bg)
 	{
-		(void)bg_run_external(cmd, 0, SHELL_BY_USER, NULL);
+		(void)bg_run_external(cmd, /*keep_in_fg=*/0, /*skip_errors=*/0,
+				SHELL_BY_USER, NULL);
 	}
 	else
 	{
@@ -1253,7 +1254,8 @@ rn_ext(view_t *view, const char cmd[], const char title[], MacroFlags flags,
 		int error = 0;
 
 		setup_shellout_env();
-		if(bg_run_external(cmd, 1, SHELL_BY_USER, input_ptr) != 0)
+		if(bg_run_external(cmd, /*keep_in_fg=*/!bg, /*skip_errors=*/1,
+					SHELL_BY_USER, input_ptr) != 0)
 		{
 			error = 1;
 		}
@@ -1438,8 +1440,9 @@ rn_start_bg_command(view_t *view, const char cmd[], MacroFlags flags)
 	                      || ma_flags_present(flags, MF_PIPE_FILE_LIST_Z);
 	FILE *input = NULL;
 
-	bg_run_external(cmd, ma_flags_present(flags, MF_IGNORE), SHELL_BY_USER,
-			supply_input ? &input : NULL);
+	const int skip_errors = ma_flags_present(flags, MF_IGNORE);
+	FILE **input_ptr = (supply_input ? &input : NULL);
+	bg_run_external(cmd, /*keep_in_fg=*/0, skip_errors, SHELL_BY_USER, input_ptr);
 
 	if(input != NULL)
 	{
