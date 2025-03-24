@@ -1256,6 +1256,9 @@ column_line_print(const char buf[], int offset, AlignType align,
 		wprinta(view->win, print_buf + match_from, &line_attrs,
 				A_REVERSE | A_UNDERLINE);
 	}
+
+	/* Use a given prefix value at most once. */
+	*cdt->prefix_len = 0;
 }
 
 /* Draws current line number at specified column. */
