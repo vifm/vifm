@@ -31,7 +31,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* abs() malloc() */
-#include <string.h> /* memset() strcpy() strlen() */
+#include <string.h> /* memset() strlen() */
 
 #include "../cfg/config.h"
 #include "../compat/pthread.h"
@@ -1233,7 +1233,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	}
 	else
 	{
-		strcpy(print_buf, buf);
+		copy_str(print_buf, sizeof(print_buf), buf);
 	}
 	width_left = cdt->total_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
