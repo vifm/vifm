@@ -8,12 +8,16 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/color_scheme.h"
 #include "../../src/ui/colored_line.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/statusline.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
+
+#include "utils.h"
 
 static void check_tab_title(const tab_info_t *tab_info, const char text[]);
 static char * identity(const char path[]);
@@ -564,6 +568,33 @@ TEST(mouse_map_tlsview)
 	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 4, 5));
 	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 5, 5));
 	assert_int_equal(FVM_NONE, fview_map_coordinates(&lwin, 6, 5));
+}
+
+TEST(prefix_len_is_reset_by_column_line_print)
+{
+	curr_view = &lwin;
+	fview_setup();
+	cmds_init();
+	opt_handlers_setup();
+
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree", NULL));
+	assert_true(lwin.list_rows > 6);
+	lwin.list_pos = 6;
+	lwin.columns = columns_create();
+
+	assert_success(cmds_dispatch("set viewcolumns={name},{ext}", &lwin,
+				CIT_COMMAND));
+	curr_stats.load_stage = 2;
+	/* If this doesn't cause a crash or a memory issue, then there should be no
+	 * bug related to tree prefix length computed for the {name} column being used
+	 * for drawing {ext}. */
+	fview_cursor_redraw(&lwin);
+	curr_stats.load_stage = 0;
+
+	curr_view = NULL;
+	vle_cmds_reset();
+	opt_handlers_teardown();
+	columns_teardown();
 }
 
 static void
