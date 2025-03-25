@@ -379,6 +379,16 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout, int process_callbacks)
 		int i;
 
 		int delay_slice = DIV_ROUND_UP(MIN(cfg.min_timeout_len, timeout), IPC_F);
+
+		/* Timeout can be zero only on the first iteration of this loop.  Make sure
+		 * that the input reading loop below is still run (only once) in this
+		 * case. */
+		if(timeout == 0)
+		{
+			timeout = 1;
+			delay_slice = 1;
+		}
+
 #ifdef __PDCURSES__
 		/* pdcurses performs delays in 50 ms intervals (1/20 of a second). */
 		delay_slice = MAX(50, delay_slice);
