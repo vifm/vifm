@@ -26,6 +26,8 @@
 	Fixed trailing slash at the bottom of overwrite confirmation dialog
 	displayed on merging directories.
 
+	Fixed :restart not resetting abbreviations.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
