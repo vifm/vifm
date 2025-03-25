@@ -1126,7 +1126,7 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 		{ .key = 'y', .descr = "[y]es/", },
 		{ .key = 'Y', .descr = "[Y]es for all/", },
 		{ .key = 'n', .descr = "[n]o/", },
-		{ .key = 'N', .descr = "[N]o for all/", },
+		{ .key = 'N', .descr = "[N]o for all", },
 		{ },
 	};
 
