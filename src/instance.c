@@ -20,6 +20,7 @@
 #include "instance.h"
 
 #include "cfg/config.h"
+#include "engine/abbrevs.h"
 #include "engine/autocmds.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
@@ -65,6 +66,9 @@ instance_start_restart(void)
 
 	/* Autocommands. */
 	vle_aucmd_remove(NULL, NULL);
+
+	/* Abbreviations. */
+	vle_abbr_reset();
 
 	/* All kinds of histories. */
 	cfg_clear_histories(tabs_count(&lwin) == 0 && tabs_count(&rwin) == 0);
