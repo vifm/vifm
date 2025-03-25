@@ -5,7 +5,6 @@ SUBDIRS = src
 EXTRA_DIST = COPYING.3party ChangeLog.LuaAPI FAQ BUGS patches pkgs tests
 dist-hook:
 	make -C "$(distdir)/tests" clean
-	rm -f "$(distdir)/tests/.in.vim"
 
 # enable generating tags files in particular directories
 distcheck-hook:

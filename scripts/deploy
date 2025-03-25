@@ -126,7 +126,16 @@ if [ "$target" = all ] || [ "$target" = archive ]; then
     # make archive
     if [ "$OS" != Windows_NT ]; then
         archive_name="vifm-$ver.tar.bz2"
-        make distcheck
+
+        # perform build in a temporary directory to avoid picking up untracked
+        # files in tests/ which is listed in EXTRA_DIST of Makefile.am
+        build_dir=$(mktemp --directory --tmpdir vifm-release-XXXXXX)
+        trap 'rm -rf "$build_dir"' EXIT
+
+        git clone . "$build_dir"
+        ( cd "$build_dir" && scripts/fix-timestamps && ./configure )
+        make -C "$build_dir" distcheck
+        mv "$build_dir/$archive_name" .
     else
         # remove config.h to make Makefile.win install default configuration
         rm -f build-aux/config.h
