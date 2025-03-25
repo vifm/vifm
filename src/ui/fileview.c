@@ -123,9 +123,10 @@ static void column_line_print(const char buf[], int offset, AlignType align,
 static void column_line_match(const char full_column[],
 		const format_info_t *info, int *match_from, int *match_to);
 static void draw_line_number(const column_data_t *cdt, int column);
+static int is_primary_colored_column_id(int id);
 static int is_primary_column_id(int id);
-static cchar_t prepare_col_color(const view_t *view, int primary, int line_nr,
-		const column_data_t *cdt, int real_id);
+static cchar_t prepare_col_color(const view_t *view, int is_primary_colored,
+		int line_nr, const column_data_t *cdt, int real_id);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
 		dir_entry_t *entry, int line_color);
 static void mix_in_file_hi(const view_t *view, dir_entry_t *entry, int type_hi,
@@ -1182,12 +1183,13 @@ column_line_print(const char buf[], int offset, AlignType align,
 	const int numbers_visible = (offset == 0 && cdt->number_width > 0);
 	const int padding = (cfg.extra_padding != 0);
 
-	const int primary = is_primary_column_id(info->id);
+	const int is_primary_colored = is_primary_colored_column_id(info->id);
 	const cchar_t line_attrs =
-		prepare_col_color(view, primary, 0, cdt, info->real_id);
+		prepare_col_color(view, is_primary_colored, 0, cdt, info->real_id);
 
 	/* Non-empty prefix contains tree pseudo-graphics. */
-	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
+	const int is_treeable_column = is_primary_column_id(info->id);
+	size_t extra_prefix = is_treeable_column ? *cdt->prefix_len : 0U;
 
 	if(extra_prefix != 0U && align == AT_RIGHT)
 	{
@@ -1292,8 +1294,8 @@ column_line_match(const char full_column[], const format_info_t *info,
 	const column_data_t *cdt = info->data;
 	dir_entry_t *entry = cdt->entry;
 
-	int primary = is_primary_column_id(info->id);
-	if(!primary || cdt->view->matches == 0 || !entry->search_match ||
+	int is_searchable_column = is_primary_column_id(info->id);
+	if(!is_searchable_column || cdt->view->matches == 0 || !entry->search_match ||
 			cdt->custom_match)
 	{
 		return;
@@ -1326,8 +1328,19 @@ column_line_match(const char full_column[], const format_info_t *info,
 	}
 }
 
-/* Checks whether column id corresponds to a column that displays part of
- * entry's path or name.  Returns non-zero if so. */
+/* Checks whether column id corresponds to a column that is affected by a
+ * highlight derived from file's type/path/name.  Returns non-zero if so. */
+static int
+is_primary_colored_column_id(int id)
+{
+	return id == SK_BY_EXTENSION
+	    || id == SK_BY_FILEEXT
+	    || is_primary_column_id(id);
+}
+
+/* Checks whether column id corresponds to a column that displays a substantial
+ * part of entry's path.  Such columns can be searched and also display
+ * pseudographics of a tree.  Returns non-zero if so. */
 static int
 is_primary_column_id(int id)
 {
@@ -1335,15 +1348,13 @@ is_primary_column_id(int id)
 	    || id == SK_BY_INAME
 	    || id == SK_BY_ROOT
 	    || id == SK_BY_FILEROOT
-	    || id == SK_BY_EXTENSION
-	    || id == SK_BY_FILEEXT
 	    || vlua_viewcolumn_is_primary(curr_stats.vlua, id);
 }
 
 /* Calculate color attributes for a view column.  Returns attributes that can be
  * used for drawing on a window. */
 static cchar_t
-prepare_col_color(const view_t *view, int primary, int line_nr,
+prepare_col_color(const view_t *view, int is_primary_colored, int line_nr,
 		const column_data_t *cdt, int real_id)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
@@ -1371,7 +1382,7 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 
 		/* Highlight derived from file type/path/name always affects primary field,
 		 * but the rest depends on configuration. */
-		const int with_line_hi = primary
+		const int with_line_hi = is_primary_colored
 		                      || (cfg.color_what == CW_ONE_ROW && is_current)
 		                      || (cfg.color_what == CW_ALL_ROWS);
 		const int line_color = with_line_hi ? cdt->line_hi_group : -1;
@@ -1381,8 +1392,8 @@ prepare_col_color(const view_t *view, int primary, int line_nr,
 		{
 			int color = (view == curr_view || !cdt->is_main) ? CURR_LINE_COLOR
 			                                                 : OTHER_LINE_COLOR;
-			/* Avoid combining attributes for non-primary column. */
-			if(!primary)
+			/* Avoid combining attributes for non-primary columns. */
+			if(!is_primary_colored)
 			{
 				cs_overlap_colors(&col, &cs->color[color]);
 			}
