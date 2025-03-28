@@ -26,6 +26,10 @@
 
 	Fixed :restart not resetting abbreviations.
 
+	Fixed crashes in terminals that handle ANSI output on Windows when
+	previewing binary or some complicated UTF-8 text files.  Thanks to Phil
+	Runninger.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
