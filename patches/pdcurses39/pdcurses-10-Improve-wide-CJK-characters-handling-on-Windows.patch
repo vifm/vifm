@@ -41,7 +41,7 @@ index 14418396..e3902c1e 100644
 +            // handling them in any special way.  However, need to jump over the
 +            // padding when drawing things to avoid having it in the output.
 +            int char_width = compat_wcwidth(buffer[buf_len]);
-+            if (char_width < 0)
++            if (char_width <= 0)
 +                char_width = 1;
 +            j += char_width - 1;
 +
