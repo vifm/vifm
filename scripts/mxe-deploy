@@ -20,6 +20,17 @@ if [ $# -ne 1 ]; then
 fi
 
 version="$1"
+case "$version" in
+    [0-9].[0-9][0-9].[0-9]-beta);;
+    [0-9].[0-9][0-9]-beta);;
+    [0-9].[0-9]-beta);;
+    [0-9].[0-9][0-9].[0-9]);;
+    [0-9].[0-9][0-9]);;
+    [0-9].[0-9]);;
+    *)
+        echo "ERROR: unrecognized version format: $version"
+        exit 1
+esac
 
 REMOTE_NAME="${REMOTE_NAME:-win}"
 REMOTE_DIR="${REMOTE_DIR:-/c/repos/vifm}"
@@ -33,8 +44,9 @@ set -e
 
 echo ::: BUILDING... :::
 
-( cd "$W32_DIR" && "$W32_BUILD_SCR" "$version" )
-( cd "$W64_DIR" && "$W64_BUILD_SCR" "$version" )
+tag="v$version"
+( cd "$W32_DIR" && "$W32_BUILD_SCR" "$tag" )
+( cd "$W64_DIR" && "$W64_BUILD_SCR" "$tag" )
 
 echo ::: CLEANING UP REMOTE DIRECTORIES... :::
 
