@@ -3,6 +3,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/abbrevs.h"
 #include "../../src/engine/keys.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/column_view.h"
@@ -131,6 +132,19 @@ TEST(full_restart_drops_tabs)
 	setup_tabs();
 	assert_success(cmds_dispatch("restart full", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_count(&lwin));
+}
+
+TEST(restart_resets_abbreviations)
+{
+	assert_success(cmds_dispatch("cabbrev lhs rhs", &lwin, CIT_COMMAND));
+
+	assert_success(cmds_dispatch("restart", &lwin, CIT_COMMAND));
+
+	void *state = NULL;
+	const wchar_t *lhs, *rhs;
+	const char *descr;
+	int no_remap = -1;
+	assert_false(vle_abbr_iter(&lhs, &rhs, &descr, &no_remap, &state));
 }
 
 static void

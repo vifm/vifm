@@ -20,6 +20,18 @@
 	Fixed unintended (and incorrect) highlighting of search matches in {ext}
 	and {fileext} columns.
 
+	Fixed setting 'timeoutlen' to zero resulting in high CPU use and ignoring
+	user input.
+
+	Fixed trailing slash at the bottom of overwrite confirmation dialog
+	displayed on merging directories.
+
+	Fixed :restart not resetting abbreviations.
+
+	Fixed crashes in terminals that handle ANSI output on Windows when
+	previewing binary or some complicated UTF-8 text files.  Thanks to Phil
+	Runninger.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
