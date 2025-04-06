@@ -1,4 +1,4 @@
-.TH VIFM 1 "23 March 2025" "vifm 0.14"
+.TH VIFM 1 "06 April 2025" "vifm 0.14"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -696,7 +696,7 @@ yank files specified by motion/selector.
 .BI p
 copy yanked files to the current directory or move the files to the current
 directory if they were deleted with dd or :d[elete] or if the files were yanked
-from trash directory.  See "Trash directory" and "FILE COPYING" sections below.
+from trash directory.  See "Trash directory" and "File copying" sections below.
 .TP
 .BI P
 move the last yanked files.  The advantage of using P instead of d followed by
@@ -1876,18 +1876,20 @@ See also "Menus history" section.
 .TP
 .BI ":[range]co[py][!?][ &]"
 copy files to directory of other view.  With "?" prompts for destination file
-names in an editor.  "!" forces overwrite. See "FILE COPYING" section below.
+names in an editor.  "!" forces overwrite.
 .TP
 .BI ":[range]co[py][!] path[ &]"
 copy files to directory specified with the path (absolute or relative to
-directory of other view).  "!" forces overwrite. See "FILE COPYING" section below.
+directory of other view).  "!" forces overwrite.
 .TP
 .BI ":[range]co[py][!] name1 name2...[ &]"
 copy files to directory of other view giving each next file a corresponding name
-from the argument list.  "!" forces overwrite. See "FILE COPYING" section below.
+from the argument list.  "!" forces overwrite
 .TP
 .BI ":[range]co[py][!?] -skip ...[ &]"
-see "\-skip parameter" and "FILE COPYING" sections below.
+see "\-skip parameter" below.
+.LP
+Also see "File copying" section below.
 .TP
 .BI "                                         :cquit"
 .TP
@@ -3787,8 +3789,7 @@ commands have progress instead of process id at the line beginning.
 
 Background operations cannot be undone.
 
-See "FILE COPYING" section below.
-
+See "File copying" section below.
 .\" ---------------------------------------------------------------------------
 .SH Cancellation
 .\" ---------------------------------------------------------------------------
@@ -7739,6 +7740,14 @@ directory was modified not by operation that are meant for it.  But this
 won't lead to any issues with operations, since they ignore nonexistent
 files.
 .\" ---------------------------------------------------------------------------
+.SH File copying
+.\" ---------------------------------------------------------------------------
+File copying within an XFS file system uses reflinks by default.  Any file
+copied from another file system will be copied without reflinks even if it has
+a matching list of XFS extents.  Reflinks are not guaranteed when using
+external programs.  This behaviour was observed on Linux and doesn't
+necessarily hold for other environments.
+.\" ---------------------------------------------------------------------------
 .SH Client\-Server
 .\" ---------------------------------------------------------------------------
 vifm supports remote execution of command-line mode commands, remote changing of
@@ -7961,14 +7970,6 @@ used to initiate FUSE mount of the closest mount point from current pane's
 directory up.  It's not set when outside FUSE mount point.  When vifm is used
 inside terminal multiplexer, it tries to set this variable as well (it doesn't
 work this way on its own).
-.\" ---------------------------------------------------------------------------
-.SH FILE COPYING
-.\" ---------------------------------------------------------------------------
-
-File copy inside XFS file system use a reflinks by default. Any file from other
-filesystems will be copied without reflinks despite if it has the same extents
-inside XFS. Reflinks not guaranted when using external programs.
-
 .\" ---------------------------------------------------------------------------
 .SH SEE ALSO
 .\" ---------------------------------------------------------------------------
