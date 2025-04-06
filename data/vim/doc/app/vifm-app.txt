@@ -3121,15 +3121,16 @@ mark (" &") as it doesn't make much sense.
 --------------------------------------------------------------------------------
 *vifm-commands-bg*
 
-Copy and move operation can take a lot of time to proceed.  That's why vifm
-supports backgrounding of this two operations.  To run :copy, :move or :delete
-command in the background just add " &" at the end of a command.
+File system operations can take a lot of time to proceed.  That's why vifm
+supports backgrounding them.  To run |vifm-:copy|, |vifm-:move| or |vifm-:delete|
+command in background just append " &" to it.
 
 For each background operation a new thread is created.  Job cancellation can
 be requested in the |vifm-:jobs| menu via dd shortcut.
 
-You can see if command is still running in the :jobs menu.  Backgrounded
-commands have progress instead of process id at the line beginning.
+You can check if a command is still running in the |vifm-:jobs| menu.
+Backgrounded commands have progress instead of process id at the beginning of
+the line.
 
 Background operations cannot be undone.
 
