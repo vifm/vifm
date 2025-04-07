@@ -1,4 +1,4 @@
-.TH VIFM 1 "23 March 2025" "vifm 0.14"
+.TH VIFM 1 "07 April 2025" "vifm 0.14"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -696,7 +696,7 @@ yank files specified by motion/selector.
 .BI p
 copy yanked files to the current directory or move the files to the current
 directory if they were deleted with dd or :d[elete] or if the files were yanked
-from trash directory.  See "Trash directory" section below.
+from trash directory.  See "Trash directory" and "File copying" sections below.
 .TP
 .BI P
 move the last yanked files.  The advantage of using P instead of d followed by
@@ -1884,10 +1884,12 @@ directory of other view).  "!" forces overwrite.
 .TP
 .BI ":[range]co[py][!] name1 name2...[ &]"
 copy files to directory of other view giving each next file a corresponding name
-from the argument list.  "!" forces overwrite.
+from the argument list.  "!" forces overwrite
 .TP
 .BI ":[range]co[py][!?] -skip ...[ &]"
-see "\-skip parameter" section below.
+see "\-skip parameter" below.
+.LP
+Also see "File copying" section below.
 .TP
 .BI "                                         :cquit"
 .TP
@@ -3775,17 +3777,20 @@ as it doesn't make much sense.
 .\" ---------------------------------------------------------------------------
 .SH Command backgrounding
 .\" ---------------------------------------------------------------------------
-Copy and move operation can take a lot of time to proceed.  That's why vifm
-supports backgrounding of this two operations.  To run :copy, :move or :delete
-command in the background just add " &" at the end of a command.
+File system operations can take a lot of time to proceed.  That's why vifm
+supports backgrounding them.  To run :copy, :move or :delete
+command in background just append " &" to it.
 
 For each background operation a new thread is created.  Job cancellation can
 be requested in the :jobs menu via dd shortcut.
 
-You can see if command is still running in the :jobs menu.  Backgrounded
-commands have progress instead of process id at the line beginning.
+You can check if a command is still running in the :jobs menu.
+Backgrounded commands have progress instead of process id at the beginning of
+the line.
 
 Background operations cannot be undone.
+
+See "File copying" section below.
 .\" ---------------------------------------------------------------------------
 .SH Cancellation
 .\" ---------------------------------------------------------------------------
@@ -7735,6 +7740,17 @@ shouldn't expect value of registers to be absolutely correct if trash
 directory was modified not by operation that are meant for it.  But this
 won't lead to any issues with operations, since they ignore nonexistent
 files.
+.\" ---------------------------------------------------------------------------
+.SH File copying
+.\" ---------------------------------------------------------------------------
+For enabling copy-on-write of BTRFS on Linux, set "fastfilecloning" flag of
+\(aqiooptions\(aq option.
+
+File copying within an XFS file system uses reflinks by default.  Any file
+copied from another file system will be copied without reflinks even if it has
+a matching list of XFS extents.  Reflinks are not guaranteed when using
+external programs.  This behaviour was observed on Linux and doesn't
+necessarily hold for other environments.
 .\" ---------------------------------------------------------------------------
 .SH Client\-Server
 .\" ---------------------------------------------------------------------------

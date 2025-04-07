@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Mar 23
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 07
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -34,6 +34,7 @@
 |vifm-column-view|        Column view configuration details.
 |vifm-color-schemes|      Details on using color schemes in vifm.
 |vifm-trash|              Details about trash directory in vifm.
+|vifm-file-copying|       Additional information of file copying.
 |vifm-clientserver|       Client-server communication.
 |vifm-ext-rename|         About editing buffer of file names in an editor.
 |vifm-mouse-using|        Using the mouse.
@@ -609,7 +610,7 @@ y[count]<selector>                             *vifm-y*
 p                                              *vifm-p*
     copy yanked files to the current directory or move the files to the
     current directory if they were deleted with dd or :d[elete] or yanked
-    from |vifm-trash| directory.
+    from |vifm-trash| directory.  Also see |vifm-file-copying|.
 
 P                                              *vifm-P*
     move the last yanked files.  The advantage of using P instead of d
@@ -1630,6 +1631,8 @@ The builtin commands are:
     corresponding name from the argument list.  "!" forces overwrite.
 :[range]co[py][!?] -skip ...
     see |vifm-skip-param|.
+
+Also see |vifm-file-copying|.
 
 :cq[uit][!]                                    *vifm-:cquit* *vifm-:cq*
     same as |vifm-:quit|, but also aborts directory choosing via
@@ -3118,17 +3121,20 @@ mark (" &") as it doesn't make much sense.
 --------------------------------------------------------------------------------
 *vifm-commands-bg*
 
-Copy and move operation can take a lot of time to proceed.  That's why vifm
-supports backgrounding of this two operations.  To run :copy, :move or :delete
-command in the background just add " &" at the end of a command.
+File system operations can take a lot of time to proceed.  That's why vifm
+supports backgrounding them.  To run |vifm-:copy|, |vifm-:move| or |vifm-:delete|
+command in background just append " &" to it.
 
 For each background operation a new thread is created.  Job cancellation can
 be requested in the |vifm-:jobs| menu via dd shortcut.
 
-You can see if command is still running in the :jobs menu.  Backgrounded
-commands have progress instead of process id at the line beginning.
+You can check if a command is still running in the |vifm-:jobs| menu.
+Backgrounded commands have progress instead of process id at the beginning of
+the line.
 
 Background operations cannot be undone.
+
+Also see |vifm-file-copying|.
 
 --------------------------------------------------------------------------------
 *vifm-cancellation*
@@ -6493,6 +6499,18 @@ shouldn't expect value of registers to be absolutely correct if trash
 directory was modified not by operation that are meant for it.  But this
 won't lead to any issues with operations, since they ignore nonexistent
 files.
+
+--------------------------------------------------------------------------------
+*vifm-file-copying*
+
+For enabling copy-on-write of BTRFS on Linux, set "fastfilecloning" flag of
+|vifm-'iooptions'|.
+
+File copying within an XFS file system uses reflinks by default.  Any file
+copied from another file system will be copied without reflinks even if it has
+a matching list of XFS extents.  Reflinks are not guaranteed when using
+external programs.  This behaviour was observed on Linux and doesn't
+necessarily hold for other environments.
 
 --------------------------------------------------------------------------------
 *vifm-clientserver*

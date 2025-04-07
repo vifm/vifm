@@ -9,10 +9,9 @@
 #  * REMOTE_NAME    -- ssh-friendly remote Windows machine address
 #  * REMOTE_DIR     -- absolute path on remote Windows machine
 #  * REMOTE_WIN_DIR -- absolute path on remote Windows machine in Windows format
-#  * W32_DIR        -- root directory where Win32 build happens
-#  * W64_DIR        -- root directory where Win64 build happens
-#  * W32_BUILD_SCR  -- script that builds Win32 release
-#  * W64_BUILD_SCR  -- script that builds Win64 release
+#  * W32_DIR        -- root directory where MXE Win32 build happens
+#  * W64_DIR        -- root directory where MXE Win64 build happens
+#  * MXE_BUILD_SCR  -- script that crossbuilds for Windows using MXE
 
 if [ $# -ne 1 ]; then
     echo "Usage: $(basename $0) version"
@@ -37,16 +36,15 @@ REMOTE_DIR="${REMOTE_DIR:-/c/repos/vifm}"
 REMOTE_WIN_DIR="${REMOTE_WIN_DIR:-c:/repos/vifm}"
 W32_DIR="${W32_DIR:-../vifm-mxe-w32/}"
 W64_DIR="${W64_DIR:-../vifm-mxe-w64}"
-W32_BUILD_SCR="${W32_BUILD_SCR:-../build_release_x86}"
-W64_BUILD_SCR="${W64_BUILD_SCR:-../build_release_x64}"
+MXE_BUILD_SCR="${MXE_BUILD_SCR:-../build-mxe-vifm}"
 
 set -e
 
 echo ::: BUILDING... :::
 
 tag="v$version"
-( cd "$W32_DIR" && "$W32_BUILD_SCR" "$tag" )
-( cd "$W64_DIR" && "$W64_BUILD_SCR" "$tag" )
+( cd "$W32_DIR" && "$MXE_BUILD_SCR" --32 "$tag" )
+( cd "$W64_DIR" && "$MXE_BUILD_SCR" --64 "$tag" )
 
 echo ::: CLEANING UP REMOTE DIRECTORIES... :::
 
