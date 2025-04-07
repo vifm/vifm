@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 06
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 07
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -6502,6 +6502,9 @@ files.
 
 --------------------------------------------------------------------------------
 *vifm-file-copying*
+
+For enabling copy-on-write of BTRFS on Linux, set "fastfilecloning" flag of
+|vifm-'iooptions'|.
 
 File copying within an XFS file system uses reflinks by default.  Any file
 copied from another file system will be copied without reflinks even if it has
