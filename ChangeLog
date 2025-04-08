@@ -32,6 +32,9 @@
 	previewing binary or some complicated UTF-8 text files.  Thanks to Phil
 	Runninger.
 
+	Fixed `:restart full` ignoring `set tabscope=...` in vifmrc which is how
+	:restart behaves.  Thanks to martinengelke (a.k.a., sHii).
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
