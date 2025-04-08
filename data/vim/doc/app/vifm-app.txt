@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 07
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 08
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -580,9 +580,8 @@ cg - change file group.                        {only for *nix}
     for non-recursive `chmod` command (of the form `[0-7]{3,4}`).  See
     |vifm-menus-and-dialogs| for controls.
 
-
 [count]C                                       *vifm-C*
-    clone file [count] times.
+    clone file(s) [count] times.
 
 [count]dd                                      *vifm-dd*
     move files to |vifm-trash| directory if |vifm-'trash'| option is set,
