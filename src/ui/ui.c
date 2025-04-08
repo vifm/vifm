@@ -805,7 +805,7 @@ update_start(UpdateType update_kind)
 
 	ui_resize_all();
 
-	if(curr_stats.restart_in_progress)
+	if(curr_stats.restart_in_progress != RT_NONE)
 	{
 		return 0;
 	}
@@ -1588,7 +1588,7 @@ expand_ruler_macros(view_t *view, const char format[])
 void
 refresh_view_win(view_t *view)
 {
-	if(curr_stats.restart_in_progress)
+	if(curr_stats.restart_in_progress != RT_NONE)
 	{
 		return;
 	}

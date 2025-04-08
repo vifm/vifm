@@ -881,7 +881,7 @@ consider_scroll_bind(view_t *view)
 void
 redraw_view(view_t *view)
 {
-	if(!stats_redraw_planned() && !curr_stats.restart_in_progress &&
+	if(!stats_redraw_planned() && curr_stats.restart_in_progress == RT_NONE &&
 			window_shows_dirlist(view))
 	{
 		/* Make sure cursor is visible and relevant part of the view is
@@ -2249,7 +2249,7 @@ static void
 reset_view_columns(view_t *view)
 {
 	if(!ui_view_displays_columns(view) ||
-			(curr_stats.restart_in_progress && flist_custom_active(view) &&
+			(curr_stats.restart_in_progress != RT_NONE && flist_custom_active(view) &&
 			 ui_view_unsorted(view)))
 	{
 		return;

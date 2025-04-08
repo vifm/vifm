@@ -52,11 +52,11 @@ instance_stop(void)
 }
 
 void
-instance_start_restart(void)
+instance_start_restart(RestartType type)
 {
 	view_t *tmp_view;
 
-	curr_stats.restart_in_progress = 1;
+	curr_stats.restart_in_progress = type;
 
 	/* All user mappings in all modes. */
 	vle_keys_user_clear();
@@ -145,7 +145,7 @@ instance_finish_restart(void)
 
 	vifm_reexec_startup_commands();
 
-	curr_stats.restart_in_progress = 0;
+	curr_stats.restart_in_progress = RT_NONE;
 
 	if(cfg.use_trash)
 	{

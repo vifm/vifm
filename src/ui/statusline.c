@@ -95,7 +95,7 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	}
 
 	/* Don't redraw anything until :restart command is finished. */
-	if(curr_stats.restart_in_progress)
+	if(curr_stats.restart_in_progress != RT_NONE)
 	{
 		return;
 	}

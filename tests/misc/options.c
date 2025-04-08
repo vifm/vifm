@@ -225,9 +225,9 @@ TEST(sorting_is_set_correctly_on_restart)
 	lwin.sort_g[0] = SK_BY_NAME;
 	ui_view_sort_list_ensure_well_formed(&lwin, lwin.sort_g);
 
-	curr_stats.restart_in_progress = 1;
+	curr_stats.restart_in_progress = RT_FULL;
 	assert_success(cmds_dispatch("set sort=+iname", &lwin, CIT_COMMAND));
-	curr_stats.restart_in_progress = 0;
+	curr_stats.restart_in_progress = RT_NONE;
 
 	assert_int_equal(SK_BY_INAME, lwin.sort[0]);
 	assert_int_equal(SK_BY_INAME, lwin.sort_g[0]);
