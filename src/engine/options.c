@@ -1482,7 +1482,7 @@ extract_option(const char **argsp, int completion)
 				goto error;
 			}
 		}
-		else if(*args == ' ' && quote == 0)
+		else if(isspace(*args) && quote == 0)
 		{
 			const char *p = args;
 			args = skip_whitespace(args);
