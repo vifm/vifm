@@ -3767,7 +3767,8 @@ tabprefix_handler(OPT_OP op, optval_t val)
 static void
 tabscope_handler(OPT_OP op, optval_t val)
 {
-	if(curr_stats.restart_in_progress != RT_NONE)
+	/* Full restart doesn't try to preserve tabs. */
+	if(curr_stats.restart_in_progress == RT_MOST)
 	{
 		return;
 	}
