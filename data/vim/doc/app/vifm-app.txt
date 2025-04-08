@@ -583,35 +583,35 @@ cg - change file group.                        {only for *nix}
 [count]C                                       *vifm-C*
     clone file(s) [count] times.
 
-[count]dd                                      *vifm-dd*
+[reg][count]dd                                 *vifm-dd*
     move files to |vifm-trash| directory if |vifm-'trash'| option is set,
     otherwise delete them permanently.
 
     When |vifm-cpo-s| is present in |vifm-'cpoptions'|, operates on selected
     files or, in the absence of selection, the current one.  When the flag
     isn't set, always operates on the current file only.
-d[count]<selector>                             *vifm-d*
+[reg]d[count]<selector>                        *vifm-d*
     like dd, but accepts motions/selectors.
 
 [count]DD and D[count]<selector>               *vifm-D* *vifm-DD*
     like dd and d<selector>, but always omits |vifm-trash| directory (even
     when |vifm-'trash'| option is set).  Affected by |vifm-cpo-s|.
 
-[count]yy or [count]Y                          *vifm-yy* *vifm-Y*
+[reg][count]yy or [reg][count]Y                *vifm-yy* *vifm-Y*
     yank files.
 
     When |vifm-cpo-s| is present in |vifm-'cpoptions'|, operates on selected
     files or, in the absence of selection, the current one.  When the flag
     isn't set, always operates on the current file only.
-y[count]<selector>                             *vifm-y*
+[reg]y[count]<selector>                        *vifm-y*
     yank files specified by motion/selector.
 
-p                                              *vifm-p*
+[reg]p                                         *vifm-p*
     copy yanked files to the current directory or move the files to the
     current directory if they were deleted with dd or :d[elete] or yanked
     from |vifm-trash| directory.  Also see |vifm-file-copying|.
 
-P                                              *vifm-P*
+[reg]P                                         *vifm-P*
     move the last yanked files.  The advantage of using P instead of d
     followed by p is that P moves files only once.  This isn't important in
     case you're moving files in the same file system where your home
@@ -619,8 +619,10 @@ P                                              *vifm-P*
     file systems, in case you want to move files from fs1 to fs2 and your
     home is on fs3) can save your time.
 
-al - put symbolic links with absolute paths.   *vifm-al*
-rl - put symbolic links with relative paths.   *vifm-rl*
+                                               *vifm-al*
+[reg]al - put symbolic links with absolute paths.
+                                               *vifm-rl*
+[reg]rl - put symbolic links with relative paths.
 
 t - select or unselect (tag) the current file. *vifm-t*
 
