@@ -19,11 +19,13 @@
 #ifndef VIFM__INSTANCE_H__
 #define VIFM__INSTANCE_H__
 
+#include "status.h"
+
 /* Stops the process by send itself SIGSTOP. */
 void instance_stop(void);
 
 /* Resets internal state to default/empty value. */
-void instance_start_restart(void);
+void instance_start_restart(RestartType type);
 
 /* Loads color scheme, processes configuration file and so on to finish restart.
  * Does NOT load state of the application, it's expected to be done between

@@ -73,6 +73,15 @@ typedef enum
 }
 UpdateType;
 
+/* Type of an ongoing restart of the application. */
+typedef enum
+{
+	RT_NONE, /* No restart in the process. */
+	RT_MOST, /* Most of the things excepting tabs and current view location. */
+	RT_FULL, /* Not trying to preserve anything. */
+}
+RestartType;
+
 /* Possible states of terminal with regard to its size. */
 typedef enum
 {
@@ -160,8 +169,9 @@ typedef struct
 
 	SourcingState sourcing_state;
 
-	/* Set while executing :restart command to prevent excess screen updates. */
-	int restart_in_progress;
+	/* Set while executing :restart command to prevent excess screen updates and
+	 * adjust some behaviour. */
+	RestartType restart_in_progress;
 
 	/* Status line is enabled, but is being reused for wild menu completion. */
 	int reusing_statusline;

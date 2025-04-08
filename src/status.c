@@ -191,7 +191,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->sourcing_state = SOURCING_NONE;
 
-	stats->restart_in_progress = 0;
+	stats->restart_in_progress = RT_NONE;
 
 	stats->reusing_statusline = 0;
 
@@ -517,7 +517,7 @@ hists_commands_save(const char command[])
 {
 	if(cmds_goes_to_history(command))
 	{
-		if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
+		if(curr_stats.restart_in_progress == RT_NONE && curr_stats.load_stage == 3)
 		{
 			set_last_cmdline_command(command);
 		}

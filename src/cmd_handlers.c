@@ -283,7 +283,7 @@ static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
 static int session_cmd(const cmd_info_t *cmd_info);
 static int switch_to_a_session(const char session_name[]);
-static int restart_into_session(const char session[], int full);
+static int restart_into_session(const char session[], RestartType type);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
@@ -4352,7 +4352,7 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	int full = 0;
+	RestartType type = RT_MOST;
 	if(cmd_info->argc == 1)
 	{
 		if(strcmp(cmd_info->argv[0], "full") != 0)
@@ -4360,10 +4360,10 @@ restart_cmd(const cmd_info_t *cmd_info)
 			ui_sb_errf("Unexpected argument: %s", cmd_info->argv[0]);
 			return CMDS_ERR_CUSTOM;
 		}
-		full = 1;
+		type = RT_FULL;
 	}
 
-	(void)restart_into_session(cfg.session, full);
+	(void)restart_into_session(cfg.session, type);
 	return 0;
 }
 
@@ -4638,11 +4638,11 @@ switch_to_a_session(const char session_name[])
 /* Performs restart and optional (re)loading of a session.  Returns zero on
  * success, otherwise non-zero is returned. */
 static int
-restart_into_session(const char session[], int full)
+restart_into_session(const char session[], RestartType type)
 {
-	instance_start_restart();
+	instance_start_restart(type);
 
-	if(full || session != NULL)
+	if(type == RT_FULL || session != NULL)
 	{
 		tabs_reinit();
 	}
@@ -4650,7 +4650,7 @@ restart_into_session(const char session[], int full)
 	int result;
 	if(session == NULL)
 	{
-		state_load(!full);
+		state_load(type != RT_FULL);
 		result = 0;
 	}
 	else

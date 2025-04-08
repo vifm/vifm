@@ -3224,7 +3224,7 @@ sort_local(OPT_OP op, optval_t val)
 {
 	/* Make sure we don't sort unsorted custom view on :restart or when it's a
 	 * compare view. */
-	signed char *const sort = (curr_stats.restart_in_progress ||
+	signed char *const sort = (curr_stats.restart_in_progress != RT_NONE ||
 	                           cv_compare(curr_view->custom.type))
 	                        ? ui_view_sort_list_get(curr_view, curr_view->sort)
 	                        : curr_view->sort;
@@ -3767,7 +3767,7 @@ tabprefix_handler(OPT_OP op, optval_t val)
 static void
 tabscope_handler(OPT_OP op, optval_t val)
 {
-	if(curr_stats.restart_in_progress)
+	if(curr_stats.restart_in_progress != RT_NONE)
 	{
 		return;
 	}
@@ -3853,7 +3853,7 @@ trash_handler(OPT_OP op, optval_t val)
 static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
-	if(curr_stats.restart_in_progress && op == OP_RESET)
+	if(curr_stats.restart_in_progress != RT_NONE && op == OP_RESET)
 	{
 		/* This must be a valid value, just set it without checks.  It will be
 		 * applied at the end of the restart.  This avoids creation of unwanted
