@@ -4,6 +4,16 @@
 
 extern const char *value;
 
+TEST(tabulation_separator)
+{
+	optval_t val = { .str_val = "/home/tmp" };
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
+
+	assert_success(vle_opts_set("fusehome=/first\tfusehome=/second\t\"bla",
+				OPT_GLOBAL));
+	assert_string_equal("/second", value);
+}
+
 TEST(colon)
 {
 	optval_t val = { .str_val = "/home/tmp" };
@@ -23,6 +33,9 @@ TEST(comments)
 
 	assert_true(vle_opts_set("fusehome=/tmp \"bla", OPT_GLOBAL) == 0);
 	assert_string_equal("/tmp", value);
+
+	assert_true(vle_opts_set("fusehome=/tab\t\"bla", OPT_GLOBAL) == 0);
+	assert_string_equal("/tab", value);
 
 	assert_true(vle_opts_set("fusehome:/var/fuse \"comment", OPT_GLOBAL) == 0);
 	assert_string_equal("/var/fuse", value);

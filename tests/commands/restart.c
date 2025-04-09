@@ -9,6 +9,7 @@
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/env.h"
 #include "../../src/cmd_core.h"
 #include "../../src/flist_hist.h"
 #include "../../src/status.h"
@@ -132,6 +133,26 @@ TEST(full_restart_drops_tabs)
 	setup_tabs();
 	assert_success(cmds_dispatch("restart full", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_count(&lwin));
+}
+
+TEST(full_restart_can_change_tab_scope)
+{
+	env_set("MYVIFMRC", SANDBOX_PATH "/vifmrc");
+
+	assert_success(cmds_dispatch1("set tabscope=global", &lwin, CIT_COMMAND));
+	assert_false(cfg.pane_tabs);
+
+	make_file(SANDBOX_PATH "/vifmrc", "set tabscope=pane");
+	assert_success(cmds_dispatch1("restart full", &lwin, CIT_COMMAND));
+	assert_true(cfg.pane_tabs);
+
+	/* The scope is set to global by default, but let's check for completeness. */
+	make_file(SANDBOX_PATH "/vifmrc", "set tabscope=global");
+	assert_success(cmds_dispatch1("restart full", &lwin, CIT_COMMAND));
+	assert_false(cfg.pane_tabs);
+
+	remove_file(SANDBOX_PATH "/vifmrc");
+	env_remove("MYVIFMRC");
 }
 
 TEST(restart_resets_abbreviations)

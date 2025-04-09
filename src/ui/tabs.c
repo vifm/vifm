@@ -355,7 +355,7 @@ tabs_goto_pane(int idx)
 
 	const int prev = ptabs->current;
 
-	if(curr_stats.load_stage >= 3 && !curr_stats.restart_in_progress)
+	if(curr_stats.load_stage >= 3 && curr_stats.restart_in_progress == RT_NONE)
 	{
 		/* Mark the tab we started at as visited. */
 		ptabs->tabs[ptabs->current]->init_mark = init_counter;
@@ -407,7 +407,7 @@ tabs_goto_global(int idx)
 	global_tab_t *old_gtab = &gtabs[current_gtab];
 	global_tab_t *new_gtab = &gtabs[idx];
 
-	if(curr_stats.load_stage >= 3 && !curr_stats.restart_in_progress)
+	if(curr_stats.load_stage >= 3 && curr_stats.restart_in_progress == RT_NONE)
 	{
 		/* Mark the tab we started at as visited. */
 		old_gtab->init_mark = init_counter;

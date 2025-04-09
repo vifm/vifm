@@ -291,9 +291,9 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread_on_restart)
 
 	/* ls-like view blocks view column updates. */
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
-	curr_stats.restart_in_progress = 1;
+	curr_stats.restart_in_progress = RT_FULL;
 	state_load(1);
-	curr_stats.restart_in_progress = 0;
+	curr_stats.restart_in_progress = RT_NONE;
 
 	assert_true(lwin.custom.type == CV_VERY);
 	assert_int_equal(SK_NONE, lwin.sort[0]);

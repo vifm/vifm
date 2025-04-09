@@ -1,4 +1,4 @@
-.TH VIFM 1 "07 April 2025" "vifm 0.14"
+.TH VIFM 1 "08 April 2025" "vifm 0.14"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -666,9 +666,9 @@ change file attributes (permission on *nix and properties on Windows).  If
 controls.
 .TP
 .BI [count]C
-clone file [count] times.
+clone file(s) [count] times.
 .TP
-.BI "[count]dd"
+.BI "[reg][count]dd"
 move files to trash directory if 'trash' option is set,
 otherwise delete them permanently.  See "Trash directory" section below.
 
@@ -676,39 +676,39 @@ When "s" is present in 'cpoptions', operates on selected
 files or, in the absence of selection, the current one.  When the flag
 isn't set, always operates on the current file only.
 .TP
-.BI "d[count]<selector>"
+.BI "[reg]d[count]<selector>"
 like dd, but accepts motions/selectors.
 .TP
 .BI "[count]DD or D[count]<selector>"
 like dd and d<selector>, but always omits trash directory (even
 when 'trash' option is set).  Affected by "s" flag in 'cpoptions'.
 .TP
-.BI "[count]Y or [count]yy"
+.BI "[reg][count]Y or [reg][count]yy"
 yank files.
 
 When "s" is present in 'cpoptions', operates on selected
 files or, in the absence of selection, the current one.  When the flag
 isn't set, always operates on the current file only.
 .TP
-.BI "y[count]<selector>"
+.BI "[reg]y[count]<selector>"
 yank files specified by motion/selector.
 .TP
-.BI p
+.BI [reg]p
 copy yanked files to the current directory or move the files to the current
 directory if they were deleted with dd or :d[elete] or if the files were yanked
 from trash directory.  See "Trash directory" and "File copying" sections below.
 .TP
-.BI P
+.BI [reg]P
 move the last yanked files.  The advantage of using P instead of d followed by
 p is that P moves files only once.  This isn't important in case you're moving
 files in the same file system where your home directory is, but using P to
 move files on some other file system (or file systems, in case you want to move
 files from fs1 to fs2 and your home is on fs3) can save your time.
 .TP
-.BI al
+.BI [reg]al
 put symbolic links with absolute paths.
 .TP
-.BI rl
+.BI [reg]rl
 put symbolic links with relative paths.
 .TP
 .BI t

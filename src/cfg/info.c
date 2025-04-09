@@ -1197,7 +1197,7 @@ load_sorting(JSON_Object *ptab, view_t *view)
 		return;
 	}
 
-	signed char *const sort = curr_stats.restart_in_progress
+	signed char *const sort = (curr_stats.restart_in_progress != RT_NONE)
 	                        ? ui_view_sort_list_get(view, view->sort)
 	                        : view->sort;
 
