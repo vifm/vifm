@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 08
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3152,7 +3152,7 @@ There are two types of operations that can be cancelled:
 Note that vifm never terminates applications, it sends SIGINT signal and lets
 the application quit normally.
 
-When one of set of operations is cancelled (e.g. copying of 5th file of 10
+When one of a set of operations is cancelled (e.g. copying of 5th file of 10
 files), further operations are cancelled too.  In this case undo history will
 contain only actually performed operations.
 
@@ -3176,12 +3176,12 @@ These commands can't be cancelled: |vifm-:empty|, |vifm-:rename|,
 
 Mounting with FUSE~
 
-It's not considered to be an error, so only notification on the status bar is
+It's not considered to be an error, so only a notification on the status bar is
 shown.
 
 External application calls~
 
-Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
+Each of these operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
 |vifm-:grep|, |vifm-:locate|.
 
 --------------------------------------------------------------------------------
