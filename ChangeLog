@@ -40,6 +40,10 @@
 	Fixed tabulation breaking parsing of :set command.  Thanks to
 	martinengelke (a.k.a., sHii).
 
+	Fixed :file[x]type commands being run in startup directory instead of
+	view's directory when file was passed on command-line.  Thanks to
+	ThePlaguebump.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
