@@ -10,6 +10,8 @@
 
 	Documented extra information on file copying.  Patch by EA1A87.
 
+	Improved documentation on cancelling operations.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
