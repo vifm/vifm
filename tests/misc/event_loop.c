@@ -15,10 +15,12 @@
 #include "../../src/status.h"
 
 static void x_key(key_info_t key_info, keys_info_t *keys_info);
+static void X_key(key_info_t key_info, keys_info_t *keys_info);
 static void set_pending_key(key_info_t key_info, keys_info_t *keys_info);
 static void check_pending_key(key_info_t key_info, keys_info_t *keys_info);
 
 static int quit;
+static char last_key;
 
 SETUP()
 {
@@ -32,6 +34,8 @@ SETUP()
 	cmds_init();
 
 	cfg.timeout_len = 1;
+
+	last_key = '\0';
 }
 
 TEARDOWN()
@@ -73,6 +77,63 @@ TEST(quit_on_key_press_user_defined_ctrl_z)
 	event_loop(&quit, /*manage_marking=*/1);
 }
 
+TEST(escape_cancels_waiting_of_key_sequence)
+{
+	keys_add_info_t keys[] = {
+		{ WK_x, { {&x_key} } },
+		{ WK_X, { {&X_key} } },
+	};
+	vle_keys_add(keys, 2U, NORMAL_MODE);
+
+	key_conf_t x_key_info = { { &x_key } };
+	assert_success(vle_keys_foreign_add(WK_x WK_X, &x_key_info, /*is_selector=*/0,
+				NORMAL_MODE));
+
+	feed_keys(WK_x WK_ESC WK_X);
+
+	quit = 0;
+	event_loop(&quit, /*manage_marking=*/1);
+
+	assert_int_equal('X', last_key);
+}
+
+/* Verify that Escape doesn't cancel input if it completes a mapping. */
+TEST(can_have_escape_key_at_the_end)
+{
+	keys_add_info_t keys = { WK_x, { {&x_key} } };
+	vle_keys_add(&keys, 1U, NORMAL_MODE);
+
+	key_conf_t X_key_info = { { &X_key } };
+	assert_success(vle_keys_foreign_add(WK_x WK_ESC, &X_key_info,
+				/*is_selector=*/0, NORMAL_MODE));
+
+	feed_keys(WK_x WK_ESC);
+
+	quit = 0;
+	event_loop(&quit, /*manage_marking=*/1);
+
+	assert_int_equal('X', last_key);
+}
+
+/* Verify that Escape doesn't cancel input if there is a mapping which includes
+ * it. */
+TEST(can_have_escape_key_in_the_middle)
+{
+	keys_add_info_t keys = { WK_x, { {&x_key} } };
+	vle_keys_add(&keys, 1U, NORMAL_MODE);
+
+	key_conf_t X_key_info = { { &X_key } };
+	assert_success(vle_keys_foreign_add(WK_x WK_ESC WK_X, &X_key_info,
+				/*is_selector=*/0, NORMAL_MODE));
+
+	feed_keys(WK_x WK_ESC WK_X);
+
+	quit = 0;
+	event_loop(&quit, /*manage_marking=*/1);
+
+	assert_int_equal('X', last_key);
+}
+
 TEST(pending_flags_are_reset)
 {
 	/* This is just to test more parts of the loop. */
@@ -99,6 +160,14 @@ TEST(pending_flags_are_reset)
 static void
 x_key(key_info_t key_info, keys_info_t *keys_info)
 {
+	last_key = 'x';
+	quit = 1;
+}
+
+static void
+X_key(key_info_t key_info, keys_info_t *keys_info)
+{
+	last_key = 'X';
 	quit = 1;
 }
 
