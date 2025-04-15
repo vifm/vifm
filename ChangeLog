@@ -47,6 +47,9 @@
 	Fixed false-positive on detecting ambiguity of commands with numbers in
 	their names.  Thanks to CaptainFantastic.
 
+	Fixed Escape not cancelling waiting for the next input key.  Thanks to an
+	anonymous at Vifm Q2A site.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

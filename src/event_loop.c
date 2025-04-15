@@ -218,14 +218,33 @@ event_loop(const int *quit, int manage_marking)
 				continue;
 			}
 
+			int drop_all_input = 0;
+
 			if(input_buf_pos < ARRAY_LEN(input_buf) - 2)
 			{
 				input_buf[input_buf_pos++] = c;
 				input_buf[input_buf_pos] = L'\0';
+
+				/* Allow Escape key to cancel waiting for the next key unless there is
+				 * a mapping having current input as its prefix. */
+				if(c == WC_ESC &&
+						ONE_OF(last_result, KEYS_WAIT, KEYS_WAIT_SHORT) &&
+						!vle_keys_user_exists(input_buf, vle_mode_get()))
+				{
+					drop_all_input = 1;
+				}
 			}
 			else
 			{
 				/* Recover from input buffer overflow by resetting its contents. */
+				drop_all_input = 1;
+			}
+
+			if(drop_all_input)
+			{
+				last_result = 0;
+				timeout = cfg.timeout_len;
+
 				reset_input_buf(input_buf, &input_buf_pos);
 				modes_input_bar_clear();
 				continue;

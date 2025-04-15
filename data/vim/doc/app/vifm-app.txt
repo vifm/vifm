@@ -148,6 +148,8 @@ See |vifm-startup| section below for the explanations on |vifm-$VIFM|.
 
 Ctrl-C or Escape                               *vifm-Escape* *vifm-CTRL-C*
     cancel most operations (see |vifm-cancellation|), clear all selected files.
+    In addition to that Escape also aborts waiting for more input when the
+    current input is insufficient for determining the shortcut.
 
 Ctrl-L                                         *vifm-CTRL-L*
     clear and redraw the screen.  Can also reload file list in appropriate
