@@ -263,6 +263,9 @@ TEST(names_with_numbers)
 	assert_int_equal(0, vle_cmds_run("command mp4! test"));
 	assert_int_equal(0, vle_cmds_run("command mp4? test"));
 
+	assert_int_equal(0, vle_cmds_run("mp2"));
+	assert_int_equal(0, vle_cmds_run("mp4"));
+
 	vle_cmds_clear();
 
 	/* Bad. */

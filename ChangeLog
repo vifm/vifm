@@ -44,6 +44,9 @@
 	view's directory when file was passed on command-line.  Thanks to
 	ThePlaguebump.
 
+	Fixed false-positive on detecting ambiguity of commands with numbers in
+	their names.  Thanks to CaptainFantastic.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

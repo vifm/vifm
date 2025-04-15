@@ -775,13 +775,17 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 		++t;
 	while(isalnum(*t))
 	{
+		/* If we found a digit, check portion of the name up to and including the
+		 * digit against the list of commands.  If there is a match, keep adding
+		 * more letters, otherwise break without including that digit in the command
+		 * name. */
 		if(isdigit(*t))
 		{
-			size_t len = MIN((size_t)(t - cmd), buf_len - 1);
+			size_t len = MIN((size_t)(t - cmd + 1), buf_len - 1);
 			copy_str(buf, len + 1, cmd);
 
 			c = find_cmd_advance(c, buf);
-			if(find_cmd_match(c, buf) && c->name[len] != *t)
+			if(!find_cmd_match(c, buf))
 			{
 				break;
 			}
