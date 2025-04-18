@@ -52,6 +52,8 @@
 	Fixed Escape not cancelling waiting for the next input key.  Thanks to an
 	anonymous at Vifm Q2A site.
 
+	Fixed a crash after `:winrun , normal e` followed by `q`.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
