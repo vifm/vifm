@@ -5986,6 +5986,15 @@ substituting it.
 When neither `withicase` nor `withrcase` is specified, case depends on the
 running operating system and the file system on which the files are located.
 
+Exiting~
+
+Comparing two views results in them entering a special state implemented on
+top of custom views.  Both views leave this state when either of them stops
+being custom.  Custom views terminate on changing to a different location or
+as a result of a command like |vifm-:regular|, going into the parent directory
+(like with |vifm-h| key or `:cd ..` command) returns to a regular state
+without changing the location.  See |vifm-custom-views| for more details.
+
 Examples~
 
 The defaults correspond to probably the most common use case of comparing
