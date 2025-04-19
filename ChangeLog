@@ -12,6 +12,9 @@
 
 	Documented extra information on file copying.  Patch by EA1A87.
 
+	Improved/extended/updated documentation on cancelling operations, compare
+	and custom views.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
@@ -39,6 +42,18 @@
 
 	Fixed tabulation breaking parsing of :set command.  Thanks to
 	martinengelke (a.k.a., sHii).
+
+	Fixed :file[x]type commands being run in startup directory instead of
+	view's directory when file was passed on command-line.  Thanks to
+	ThePlaguebump.
+
+	Fixed false-positive on detecting ambiguity of commands with numbers in
+	their names.  Thanks to CaptainFantastic.
+
+	Fixed Escape not cancelling waiting for the next input key.  Thanks to an
+	anonymous at Vifm Q2A site.
+
+	Fixed a crash after `:winrun , normal e` followed by `q`.
 
 0.14-beta to 0.14 (2025-02-08)
 

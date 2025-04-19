@@ -152,6 +152,7 @@
 #define WC_C_w L'\x17'
 #define WC_C_z L'\x1a'
 #define WC_CR  WC_C_m
+#define WC_ESC L'\x1b'
 #define WC_z   L'z'
 #define NC_C_c '\x03'
 #define NC_C_w '\x17'

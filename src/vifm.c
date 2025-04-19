@@ -497,7 +497,11 @@ check_path_for_file(view_t *view, const char path[], int handle)
 	{
 		if(handle)
 		{
-			rn_open(view, FHE_RUN);
+			/* Make sure we're running handlers in the correct directory. */
+			if(vifm_chdir(flist_get_dir(view)) == 0)
+			{
+				rn_open(view, FHE_RUN);
+			}
 		}
 	}
 }

@@ -1,4 +1,4 @@
-.TH VIFM 1 "08 April 2025" "vifm 0.14"
+.TH VIFM 1 "19 April 2025" "vifm 0.14"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -122,7 +122,8 @@ See "Startup" section below for the explanations on $VIFM.
 .TP
 .BI "Ctrl-C or Escape"
 cancel most operations (see "Cancellation" section below), clear all selected
-files.
+files.  In addition to that Escape also aborts waiting for more input when the
+current input is insufficient for determining the shortcut.
 .TP
 .BI Ctrl-L
 clear and redraw the screen.  Can also reload file list in appropriate
@@ -3811,7 +3812,7 @@ calls of external applications.
 Note that vifm never terminates applications, it sends SIGINT signal and lets
 the application quit normally.
 
-When one of set of operations is cancelled (e.g. copying of 5th file of 10
+When one of a set of operations is cancelled (e.g. copying of 5th file of 10
 files), further operations are cancelled too.  In this case undo history will
 contain only actually performed operations.
 
@@ -3833,12 +3834,12 @@ These commands can't be cancelled: :empty, :rename, :substitute, :tr.
 
 .B Mounting with FUSE
 
-It's not considered to be an error, so only notification on the status bar is
+It's not considered to be an error, so only a notification on the status bar is
 shown.
 
 .B External application calls
 
-Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
+Each of these operations can be cancelled: :apropos, :find, :grep, :locate.
 .\" ---------------------------------------------------------------------------
 .SH Selection
 .\" ---------------------------------------------------------------------------
@@ -6967,54 +6968,59 @@ Menu commands: :chistory, :colder, :cnewer
 .\" ---------------------------------------------------------------------------
 .B Definition
 
-Normally file views contain list of files from a single directory, but
-sometimes it's useful to populate them with list of files that do not belong
-to the same directory, which is what custom views are for.
+Normally, file views present a list of files from a single directory, but
+sometimes it's useful to populate them with files from unrelated locations.
+This is what custom views are mainly for.
 
 .B Presentation
 
-Custom views are still related to directory they were in before custom list
-was loaded.  Path to that directory (original directory) can be seen in the
-title of a custom view.
+Custom views are still related to the directory they were in before custom
+list was loaded.  Path to that directory (original directory) can be seen in
+the title of a custom view.
 
-Files in same directory have to be named differently, this doesn't hold for
-custom views thus seeing just file names might be rather confusing.  In order
-to give an idea where files come from and when possible, relative paths to
-original directory of the view is displayed, otherwise full path is used
-instead.
+Files in the same directory have to be named differently but custom views are
+free from this constraint, hence seeing file names alone might be rather
+confusing.  In order to give an idea where files come from paths relative to
+the original directory of the view are used, when that's not possible full
+paths are shown.
 
 Custom views normally don't contain any inexistent files.
 
-.B Navigation
+.B Navigation/exiting
 
-Custom views have some differences related to navigation in regular views.
+Navigation in custom views somewhat differs compared to regular views.
 
 gf - acts similar to gf on symbolic links and navigates to the file at its real
      location.
 
-h - go to the closest parent node in the tree view; otherwise, return to the
-    original directory.
+h - goes to the closest parent node in the tree view or terminates the custom
+    view returning to the original directory.
 
-gh - return to the original directory.
+gh - terminates the custom view returning to the original directory.
 
-Opening ".." entry also causes return to the original directory.
+Going to the parent directory in other ways (whether by opening ".." entry or
+executing `:cd ..`) also causes termination and return to the original
+location.
+
+All other ways of changing location (e.g., marks, bookmarks, :cd,
+:sync) also cause termination of the custom view.
 
 .B History
 
 Custom list exists only while it's visible, once left one can't return to it,
-so there is no appearances of it in any history.
+so there is no traces of it in any history.
 
 .B Filters
 
-Only local filter affects content of the view.  This is intentional,
-presumably if one loads list, precisely that list should be displayed (except
-for inexistent paths, which are ignored).
+Only local filter affects contents of the view.  This is intentional.
+Presumably, if one loads a particular list, precisely that list should be
+displayed (except for inexistent paths, which are ignored).
 
 .B Search
 
 Although directory names are visible in listing, they are not searchable.  Only
-file names are taken into account (might be changed in future, searching whole
-lines seems quite reasonable).
+file names are taken into account (might be changed in the future, searching
+whole lines seems quite reasonable).
 
 .B Sorting
 
@@ -7028,45 +7034,46 @@ elements.
 .B Updates
 
 Reloads can occur, though they are not automatic due to files being scattered
-among different places.  On a reload, inexistent files are removed and meta-data
-of all other files is updated.
+among different places.  On a reload inexistent files are removed and
+meta-data of all other files is updated.
 
 Once custom view forgets about the file, it won't add it back even if it's
-created again.  So not seeing file previously affected by an operation, which
-was undone is normal.
+created again.  So not seeing file previously affected by an operation which
+was later undone is normal.
 
 .B Operations
 
 All operations that add files are forbidden for custom views.  For example,
-moving/copying/putting files into a custom view doesn't work, because it doesn't
-make much sense.
+moving/copying/putting files into a custom view doesn't work, because that's
+not a real file system location.
 
 On the other hand, operations that use files of a custom view as a source
-(e.g. yanking, copying, moving file from custom view, deletion) and operations
-that modify names are all allowed.
+(e.g., yanking, copying, moving file from a custom view, deletion) and
+operations that modify names are all allowed.
 .\" ---------------------------------------------------------------------------
 .SH Compare views
 .\" ---------------------------------------------------------------------------
 .B Kinds
 
 :compare can produce four different results depending on arguments:
- \- single compare view (ofone and either listall or listdups);
- \- single custom view (ofone and listunique);
- \- two compare views (ofboth and either listall or listdups);
- \- two custom views (ofboth and listunique).
+ \- single compare view ("ofone" and either "listall" or "listdups");
+ \- single custom view ("ofone" and "listunique");
+ \- two compare views ("ofboth" and either "listall" or "listdups");
+ \- two custom views ("ofboth" and "listunique").
 
-The first two display files of one file system tree.  Here duplicates are
+The first two display files of a single file system tree.  Here duplicates are
 files that have at least one copy in the same tree.  The other two kinds of
 operation compare two trees, in which duplicates are files that are found in
 both trees.
 
 Lists of unique files are presented in custom views because there is no file
-grouping to preserve as all file ids are guaranteed to be distinct.
+grouping to preserve as all file ids are guaranteed to be distinct.  See
+"Custom views" section.
 
 .B Creation
 
 Arguments passed to :compare form seven categories each with its own
-prefix and is responsible for particular property of operation.
+prefix and is responsible for particular property of the operation.
 
 Which files to compare:
  \- ofboth \- compares files of two panes against each other;
@@ -7102,15 +7109,25 @@ Which results to show (has no effect for single pane comparison):
  \- showuniqueleft  \- control visibility of unique top/left files;
  \- showuniqueright \- control visibility of unique bottom/right files.
 
-Each argument can appear multiple times, the rightmost one of the group is
-considered.  Arguments alter default behaviour instead of substituting it.
+Each argument can appear multiple times, the rightmost one of the group
+defines the behaviour.  All arguments alter default behaviour instead of
+substituting it.
 
 When neither "withicase" nor "withrcase" is specified, case depends on the
 running operating system and the file system on which the files are located.
 
+.B Exiting
+
+Comparing two views results in them entering a special state implemented on
+top of custom views.  Both views leave this state when either of them stops
+being custom.  Custom views terminate on changing to a different location or
+as a result of a command like :regular, going into the parent directory
+(like with h key or `:cd ..` command) returns to a regular state without
+changing the location.  See "Custom views" section for more details.
+
 .B Examples
 
-The defaults corresponds to probably the most common use case of comparing
+The defaults correspond to probably the most common use case of comparing
 files in two trees with grouping by paths, so the following are equivalent:
 
 .EX
@@ -7137,15 +7154,16 @@ The following command lists files that are unique to each pane:
 The view can't switch to ls-like view as it's unable to display diff-like
 data.
 
-Comparison views have second column displaying id of the file, files with same
-id are considered to be equal.  The view columns configuration is predefined.
+Comparison views have second column displaying id of the file, files with the
+same id are considered to be equal.  The view columns configuration is
+predefined.
 
 The status bar displays only the initial result of the comparison and can be
 out of date.
 
 .B Behaviour
 
-When two views are being compared against each other the following changes to
+When two views are being compared against one another the following changes to
 the regular behaviour apply:
  \- views are scrolled synchronously (as if 'scrollbind' was set);
  \- views' cursors are synchronized;
@@ -7158,8 +7176,8 @@ the regular behaviour apply:
 require regeneration of comparison;
  \- entries which indicate absence of equivalent file have empty names and can \
 be matched as such;
- \- when unique files of both views are listed custom views can be empty, this \
-absence of unique files is stated clearly.
+ \- when unique files of both views are listed, custom views can be empty, \
+ this absence of unique files is stated clearly.
 
 One compare view has similar properties (those that are applicable for single
 pane).

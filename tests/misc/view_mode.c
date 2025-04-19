@@ -15,6 +15,7 @@
 #include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/running.h"
@@ -60,7 +61,6 @@ TEARDOWN()
 	other_view = NULL;
 
 	vle_keys_reset();
-	vle_cmds_reset();
 	ft_reset(0);
 }
 
@@ -352,6 +352,43 @@ TEST(previewprg_is_applied)
 
 	qv_hide();
 	opt_handlers_teardown();
+}
+
+/* This test is based on an actual reproducer. */
+TEST(quitting_explore_mode_uses_correct_view)
+{
+	cmds_init();
+	opt_handlers_setup();
+
+	make_abs_path(other_view->curr_dir, sizeof(other_view->curr_dir),
+			TEST_DATA_PATH, "read", NULL);
+	populate_dir_list(other_view, 0);
+
+	assert_true(vle_mode_is(NORMAL_MODE));
+	assert_success(cmds_dispatch1("winrun , normal e", curr_view, CIT_COMMAND));
+	assert_true(vle_mode_is(VIEW_MODE));
+	(void)vle_keys_exec_timed_out(WK_q);
+	assert_true(vle_mode_is(NORMAL_MODE));
+
+	vle_cmds_reset();
+	opt_handlers_teardown();
+}
+
+/* This test is based on what's going on in the code and excludes :commands. */
+TEST(quitting_explore_mode_after_forced_view_switch)
+{
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "read", NULL);
+	populate_dir_list(curr_view, 0);
+
+	assert_true(vle_mode_is(NORMAL_MODE));
+	(void)vle_keys_exec_timed_out(WK_e);
+	assert_true(vle_mode_is(VIEW_MODE));
+
+	swap_view_roles();
+
+	(void)vle_keys_exec_timed_out(WK_q);
+	assert_true(vle_mode_is(NORMAL_MODE));
 }
 
 static int

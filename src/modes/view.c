@@ -520,7 +520,9 @@ try_redraw_explore_view(const view_t *view)
 void
 modview_leave(void)
 {
-	if(vi->kind != VK_TEXTUAL && vi->view->explore_mode)
+	view_t *view = vi->view;
+
+	if(vi->kind != VK_TEXTUAL && view->explore_mode)
 	{
 		cleanup(vi);
 	}
@@ -529,9 +531,9 @@ modview_leave(void)
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
-	if(curr_view->explore_mode)
+	if(view->explore_mode)
 	{
-		curr_view->explore_mode = 0;
+		view->explore_mode = 0;
 		redraw_current_view();
 	}
 	else
