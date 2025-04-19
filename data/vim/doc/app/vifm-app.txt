@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 15
+*vifm-app.txt*    For Vifm version 0.14  Last change: 2025 Apr 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5920,23 +5920,24 @@ that modify names are all allowed.
 Kinds~
 
 |vifm-:compare| can produce four different results depending on arguments:
- - single compare view (ofone and either listall or listdups);
- - single custom view (ofone and listunique);
- - two compare views (ofboth and either listall or listdups);
- - two custom views (ofboth and listunique).
+ - single compare view (`ofone` and either `listall` or `listdups`);
+ - single custom view (`ofone` and `listunique`);
+ - two compare views (`ofboth` and either `listall` or `listdups`);
+ - two custom views (`ofboth` and `listunique`).
 
-The first two display files of one file system tree.  Here duplicates are
+The first two display files of a single file system tree.  Here duplicates are
 files that have at least one copy in the same tree.  The other two kinds of
 operation compare two trees, in which duplicates are files that are found in
 both trees.
 
 Lists of unique files are presented in custom views because there is no file
-grouping to preserve as all file ids are guaranteed to be distinct.
+grouping to preserve as all file ids are guaranteed to be distinct.  See
+|vifm-custom-views|.
 
 Creation~
 
 Arguments passed to |vifm-:compare| form seven categories each with its own
-prefix and is responsible for particular property of operation.
+prefix and is responsible for particular property of the operation.
 
 Which files to compare:
  - ofboth - compares files of two panes against each other;
@@ -5973,15 +5974,16 @@ Which results to show (has no effect for single pane comparison):
  - showuniqueleft  - control visibility of unique top/left files;
  - showuniqueright - control visibility of unique bottom/right files.
 
-Each argument can appear multiple times, the rightmost one of the group is
-considered.  Arguments alter default behaviour instead of substituting it.
+Each argument can appear multiple times, the rightmost one of the group
+defines the behaviour.  All arguments alter default behaviour instead of
+substituting it.
 
 When neither `withicase` nor `withrcase` is specified, case depends on the
 running operating system and the file system on which the files are located.
 
 Examples~
 
-The defaults corresponds to probably the most common use case of comparing
+The defaults correspond to probably the most common use case of comparing
 files in two trees with grouping by paths, so the following are equivalent: >
 
  :compare
@@ -6002,15 +6004,16 @@ Look~
 The view can't switch to ls-like view as it's unable to display diff-like
 data.
 
-Comparison views have second column displaying id of the file, files with same
-id are considered to be equal.  The view columns configuration is predefined.
+Comparison views have second column displaying id of the file, files with the
+same id are considered to be equal.  The view columns configuration is
+predefined.
 
 The status bar displays only the initial result of the comparison and can be
 out of date.
 
 Behaviour~
 
-When two views are being compared against each other the following changes to
+When two views are being compared against one another the following changes to
 the regular behaviour apply:
  - views are scrolled synchronously (as if |vifm-'scrollbind'| was set);
  - views' cursors are synchronized;
@@ -6024,8 +6027,8 @@ the regular behaviour apply:
    require regeneration of comparison;
  - entries which indicate absence of equivalent file have empty names and can
    be matched as such;
- - when unique files of both views are listed custom views can be empty, this
-   absence of unique files is stated clearly.
+ - when unique files of both views are listed, custom views can be empty,
+   this absence of unique files is stated clearly.
 
 One compare view has similar properties (those that are applicable for single
 pane).

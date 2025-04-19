@@ -10,7 +10,8 @@
 
 	Documented extra information on file copying.  Patch by EA1A87.
 
-	Improved documentation on cancelling operations.
+	Improved/extended/updated documentation on cancelling operations and
+	compare views.
 
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
