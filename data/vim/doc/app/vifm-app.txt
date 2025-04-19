@@ -5836,54 +5836,59 @@ Menu commands: |vifm-m_:chistory|, |vifm-m_:colder|, |vifm-m_:cnewer|
 
 Definition~
 
-Normally file views contain list of files from a single directory, but
-sometimes it's useful to populate them with list of files that do not belong
-to the same directory, which is what custom views are for.
+Normally, file views present a list of files from a single directory, but
+sometimes it's useful to populate them with files from unrelated locations.
+This is what custom views are mainly for.
 
 Presentation~
 
-Custom views are still related to directory they were in before custom list
-was loaded.  Path to that directory (original directory) can be seen in the
-title of a custom view.
+Custom views are still related to the directory they were in before custom
+list was loaded.  Path to that directory (original directory) can be seen in
+the title of a custom view.
 
-Files in same directory have to be named differently, this doesn't hold for
-custom views thus seeing just file names might be rather confusing.  In order
-to give an idea where files come from and when possible, relative paths to
-original directory of the view is displayed, otherwise full path is used
-instead.
+Files in the same directory have to be named differently but custom views are
+free from this constraint, hence seeing file names alone might be rather
+confusing.  In order to give an idea where files come from paths relative to
+the original directory of the view are used, when that's not possible full
+paths are shown.
 
 Custom views normally don't contain any inexistent files.
 
-Navigation~
+Navigation/exiting~
 
-Custom views have some differences related to navigation in regular views.
+Navigation in custom views somewhat differs compared to regular views.
 
 gf - acts similar to |vifm-gf| on symbolic links and navigates to the file at
-     its real location
+     its real location.
 
-h - go to the closest parent node in the tree view; otherwise, return to the
-    original directory.
+h - goes to the closest parent node in the tree view or terminates the custom
+    view returning to the original directory.
 
-gh - return to the original directory.
+gh - terminates the custom view returning to the original directory.
 
-Opening ".." entry also causes return to the original directory.
+Going to the parent directory in other ways (whether by opening ".." entry or
+executing `:cd ..`) also causes termination and return to the original
+location.
+
+All other ways of changing location (e.g., marks, bookmarks, |vifm-:cd|,
+|vifm-:sync|) also cause termination of the custom view.
 
 History~
 
 Custom list exists only while it's visible, once left one can't return to it,
-so there is no appearances of it in any history.
+so there is no traces of it in any history.
 
 Filters~
 
-Only local filter affects content of the view.  This is intentional,
-presumably if one loads list, precisely that list should be displayed (except
-for inexistent paths, which are ignored).
+Only local filter affects contents of the view.  This is intentional.
+Presumably, if one loads a particular list, precisely that list should be
+displayed (except for inexistent paths, which are ignored).
 
 Search~
 
 Although directory names are visible in listing, they are not searchable.  Only
-file names are taken into account (might be changed in future, searching whole
-lines seems quite reasonable).
+file names are taken into account (might be changed in the future, searching
+whole lines seems quite reasonable).
 
 Sorting~
 
@@ -5897,22 +5902,22 @@ elements.
 Updates~
 
 Reloads can occur, though they are not automatic due to files being scattered
-among different places.  On a reload, inexistent files are removed and
+among different places.  On a reload inexistent files are removed and
 meta-data of all other files is updated.
 
 Once custom view forgets about the file, it won't add it back even if it's
-created again.  So not seeing file previously affected by an operation, which
-was undone is normal.
+created again.  So not seeing file previously affected by an operation which
+was later undone is normal.
 
 Operations~
 
 All operations that add files are forbidden for custom views.  For example,
-moving/copying/putting files into a custom view doesn't work, because it
-doesn't make much sense.
+moving/copying/putting files into a custom view doesn't work, because that's
+not a real file system location.
 
 On the other hand, operations that use files of a custom view as a source
-(e.g. yanking, copying, moving file from custom view, deletion) and operations
-that modify names are all allowed.
+(e.g., yanking, copying, moving file from a custom view, deletion) and
+operations that modify names are all allowed.
 
 --------------------------------------------------------------------------------
 *vifm-compare-views*
