@@ -177,3 +177,5 @@ highlighting when the match is cut off due lack of space.
 Ivan Shapovalov fixed running external commands which start with a dash.
 
 EA1A87 documented file copying behaviour for XFS.
+
+Kirill Rekhov fixed typos and groff syntax in documentation.

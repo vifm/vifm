@@ -109,9 +109,9 @@ The other command line arguments are:
     added has the highest priority.
 --logging[=<startup log path>]                 *vifm---logging*
     log some operational details to $XDG_DATA_HOME/vifm/log or $VIFM/log.  If
-    the optional startup log path is specified and permissions allow to open
-    it for writing, then logging of early initialization (before configuration
-    directories are determined) is put there.
+    the optional startup log path is specified and permissions allow one to
+    open it for writing, then logging of early initialization (before
+    configuration directories are determined) is put there.
 --server-list                                  *vifm---server-list*
     list available server names and exit.
 --server-name <name>                           *vifm---server-name*
@@ -2009,7 +2009,7 @@ Available colors:
  - 0-255 - corresponding colors from 256-color palette
            (for ctermfg and ctermbg)
  - #rrggbb - direct ("gui", "true", 24-bit) color in hex-notation, each of
-             the three compontents are in the range 0x00 to 0xff
+             the three components are in the range 0x00 to 0xff
              (for guifg and guibg)
 
 Light versions of colors are regular colors with bold attribute set
@@ -2489,7 +2489,7 @@ yet supported) and might be changed in future releases, or get an alias.
 :session name
     create or load and switch to a session with the specified name.  Name
     can't contain slashes.  Session active at the moment is saved before the
-    switch.  Session is also automatically saved when quiting the
+    switch.  Session is also automatically saved when quitting the
     application in usual ways.  Sets |vifm-v:session|.
 :session -
     switch to a previous session if it still exists (wasn't removed or
@@ -5276,7 +5276,7 @@ Checks type of a view's entry or of a file specified by its path.
 Parameter {file} can be of the following forms:
  - '.' to get type of file under the cursor in the active pane
  - numerical value base 1 to get type of file on specified line number (only
-   if there are no charactes other than "+-0123456789")
+   if there are no characters other than "+-0123456789")
  - a path (prepend "./" to force interpretation of a number or '.' as a path)
 
 Optional parameter {resolve} is treated as a boolean and specifies whether
@@ -5787,8 +5787,8 @@ Re-opening the last viewed menu of relevant type is done by running
 menus and |vifm-m_:cnewer| to view newer ones.
 
 Closing a menu after moving through the history remembers the position such
-that running |vifm-:copen| again will open the last viewed menu and allow to
-continue exploring history in both directions.
+that running |vifm-:copen| again will open the last viewed menu and allow one
+to continue exploring history in both directions.
 
 The history always contains menus sorted from oldest to newest.  After opening
 more than 25 menus the oldest one is likely to be forgotten.  It's not
