@@ -245,6 +245,11 @@ event_loop(const int *quit, int manage_marking)
 				last_result = 0;
 				timeout = cfg.timeout_len;
 
+				if(suggestions_were_visible)
+				{
+					hide_suggestion_box();
+				}
+
 				reset_input_buf(input_buf, &input_buf_pos);
 				modes_input_bar_clear();
 				continue;
