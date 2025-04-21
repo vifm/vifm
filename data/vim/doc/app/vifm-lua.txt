@@ -9,7 +9,7 @@ Current API version: v0.2.0
 
 |vifm-lua-status|      Status of plugins.
 |vifm-lua-plugins|     Sample plugins.
-|vifm-lua-lua|         Generic reasoning behind this API.
+|vifm-lua-why|         Generic reasoning behind this API.
 |vifm-lua-design|      Generic ideas about the design.
 |vifm-lua-evolution|   Plans on Lua API.
 |vifm-lua-loading|     Which plugins get loaded.
@@ -1019,7 +1019,7 @@ Return:~
   `true` on success.
 
 fs.mv({from}, {to}, {onconflict})              *vifm-l_vifm.fs.mv()*
-The interface matches that of |vifm-l_vifm.fs.cp|, but {from} is moved instead
+The interface matches that of |vifm-l_vifm.fs.cp()|, but {from} is moved instead
 of being copied.
 
 fs.rm({path})                                  *vifm-l_vifm.fs.rm()*
