@@ -1,18 +1,18 @@
 [Desktop Entry]
 Categories=System;FileManager;Utility;ConsoleOnly;
-Comment=Vi[m] like ncurses based file manager
-Comment[ca]=Gestor de fitxers semblant a Vi[m] basat en ncurses
-Comment[cs]=Správce souborů podobný Vi[m], podle ncurses
-Comment[es]=Administrador de archivos basado en ncurses tipo Vi[m]
-Comment[id]=VI[m] seperti ncurses berbasis pengelola berkas
-Comment[it]=File manager basato su ncurses simile a vi[m]
-Comment[ja]=Vi[m] に似た ncurses ベースのファイルマネージャ
-Comment[nl]=Vi[m]-achtig op ncurses gebaseerde bestandsbeheerder
-Comment[pt_BR]=Gerenciador de arquivos com base no ncurses tipo Vi[m]
-Comment[ru]=Файловый менеджер на базе ncurses в стиле Vi[m]
-Comment[sk]=Správca súborov podobný Vi[m] založený na ncurses
-Comment[uk]=Менеджер файлів Vi[m] на кшталт ncurses
-Comment[zh_CN]=像 Vi[m] 的基于 ncurses 的文件管理器
+Comment=Vim-like ncurses based file manager
+Comment[ca]=Gestor de fitxers semblant a Vim basat en ncurses
+Comment[cs]=Správce souborů podobný Vim, podle ncurses
+Comment[es]=Administrador de archivos basado en ncurses tipo Vim
+Comment[id]=Vim seperti ncurses berbasis pengelola berkas
+Comment[it]=File manager basato su ncurses simile a Vim
+Comment[ja]=Vim に似た ncurses ベースのファイルマネージャ
+Comment[nl]=Vim-achtig op ncurses gebaseerde bestandsbeheerder
+Comment[pt_BR]=Gerenciador de arquivos com base no ncurses tipo Vim
+Comment[ru]=Файловый менеджер на базе ncurses в стиле Vim
+Comment[sk]=Správca súborov podobný Vim založený na ncurses
+Comment[uk]=Vim-подібний менеджер файлів на базі ncurses
+Comment[zh_CN]=像 Vim 的基于 ncurses 的文件管理器
 Exec=vifm %F
 GenericName=File Manager
 GenericName[ar]=مدير الملفات
@@ -63,4 +63,3 @@ Keywords[ru]=Файл;Каталог;Обзор;
 Keywords[sk]=Súbor;Adresár;Prehliadať;
 Keywords[zh_CN]=File;Directory;Browse;文件;目录;文件夹;浏览;
 MimeType=inode/directory;
-
