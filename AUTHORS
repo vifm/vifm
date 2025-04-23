@@ -179,3 +179,6 @@ Ivan Shapovalov fixed running external commands which start with a dash.
 EA1A87 documented file copying behaviour for XFS.
 
 Kirill Rekhov fixed typos and groff syntax in documentation.
+
+Matěj Cepl (a.k.a. mcepl) updated .desktop-file to add localizations and be
+more up-to-date with modern recommendations.
