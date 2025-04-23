@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# this is a MXE part of deploy script, which should be run after GNU/Linux and
-# regular Windows builds are done
+# this is Windows-specific portion of the release script, which should be run
+# after making GNU/Linux and regular Windows builds
 #
 # the script is expected to be run from the root of the repository
 #

@@ -15,6 +15,9 @@
 	Improved/extended/updated documentation on cancelling operations, compare
 	and custom views.
 
+	Updated .desktop-file to add localizations and be more up-to-date with
+	modern recommendations.  Patch by Matěj Cepl (a.k.a. mcepl).
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
