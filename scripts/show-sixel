@@ -1,0 +1,45 @@
+#!/bin/bash
+# Requires: exiftool, img2sixel
+set -eu
+
+STY=${STY:-}
+popt=${popt:-}
+
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 filename width height"
+    exit 1
+fi
+
+# shellcheck disable=SC2016
+IFS=" " read -r -a dim <<< "$(exiftool -p '$ImageWidth $ImageHeight' "$1")"
+
+pw=$(($2*8))
+ph=$(($3*14))
+
+w=${dim[0]}
+h=${dim[1]}
+
+height=auto
+width=auto
+if [ "$pw" -lt "$w" ] && [ "$ph" -lt "$h" ]; then
+    newh=$(echo "($h*$pw)/$w" | bc)
+    # neww=$(echo "($w*$ph)/$h" | bc)
+
+    if [ "$newh" -le "$ph" ]; then
+        width=$pw
+    else
+        height=$ph
+    fi
+elif [ "$pw" -lt "$w" ]; then
+    width=$pw
+elif [ "$ph" -lt "$h" ]; then
+    height=$ph
+fi
+
+# account for GNU screen
+if [ -n "$STY" ]; then
+    popt=-P
+fi
+
+# shellcheck disable=SC2086
+exec img2sixel $popt --width="$width" --height="$height" "$1"
