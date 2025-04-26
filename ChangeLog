@@ -39,10 +39,10 @@
 	Runninger.
 
 	Fixed `:restart full` ignoring `set tabscope=...` in vifmrc which is how
-	:restart behaves.  Thanks to martinengelke (a.k.a., sHii).
+	:restart behaves.  Thanks to martinengelke (a.k.a. sHii).
 
 	Fixed tabulation breaking parsing of :set command.  Thanks to
-	martinengelke (a.k.a., sHii).
+	martinengelke (a.k.a. sHii).
 
 	Fixed :file[x]type commands being run in startup directory instead of
 	view's directory when file was passed on command-line.  Thanks to
