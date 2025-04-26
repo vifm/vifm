@@ -1521,14 +1521,13 @@ static void
 update_statusbar_layout(void)
 {
 	int screen_x, screen_y;
-
-	int ruler_width;
-	int fields_pos;
-
 	getmaxyx(stdscr, screen_y, screen_x);
 
-	ruler_width = get_ruler_width(curr_view);
-	fields_pos = screen_x - (INPUT_WIN_WIDTH + ruler_width);
+	int max_ruler_width = screen_x - INPUT_WIN_WIDTH - 1;
+	int ruler_width = MIN(get_ruler_width(curr_view), max_ruler_width);
+	/* The minimal start position is 1, not 0, because otherwise the ruler is
+	 * hidden by a single-character status bar window. */
+	int fields_pos = screen_x - (INPUT_WIN_WIDTH + ruler_width);
 
 	wresize(ruler_win, 1, ruler_width);
 	mvwin(ruler_win, screen_y - 1, fields_pos + INPUT_WIN_WIDTH);
