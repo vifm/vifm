@@ -60,6 +60,9 @@
 
 	Fixes of typos and groff syntax in documentation.  Patch by Kirill Rekhov.
 
+	Fixed ruler in menu mode not growing in size to accomodate its content.
+	Thanks to CaptainFantastic.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

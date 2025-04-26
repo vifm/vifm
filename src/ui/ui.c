@@ -50,6 +50,7 @@
 #include "../int/term_title.h"
 #include "../lua/vlua.h"
 #include "../modes/dialogs/msg_dialog.h"
+#include "../modes/menu.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
 #include "../modes/wk.h"
@@ -1562,6 +1563,11 @@ get_ruler_width(view_t *view)
 	char *expanded;
 	int len;
 	int list_pos;
+
+	if(vle_mode_is(MENU_MODE))
+	{
+		return modmenu_get_ruler_width();
+	}
 
 	/* Size must correspond to the "worst case" of the last list item. */
 	list_pos = view->list_pos;
