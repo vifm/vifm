@@ -1118,6 +1118,13 @@ modmenu_restore_pos(void)
 	menu->pos = saved_pos;
 }
 
+int
+modmenu_get_ruler_width(void)
+{
+	assert(vle_mode_is(MENU_MODE) && "Menu mode must be active!");
+	return menus_get_ruler_width(menu);
+}
+
 void
 modmenu_morph_into_cline(CmdLineSubmode submode, const char input[],
 		int external)

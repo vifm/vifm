@@ -221,6 +221,10 @@ KHandlerResponse menus_def_khandler(struct view_t *view, menu_data_t *m,
  * string. */
 char * menus_format_title(const menu_data_t *m, struct view_t *view);
 
+/* Retrieves "recommended" width of the ruler for the menu.  Returns the
+ * width. */
+int menus_get_ruler_width(const menu_data_t *m);
+
 TSTATIC_DEFS(
 	void menus_drop_stash(void);
 	void menus_set_active(menu_data_t *m);
