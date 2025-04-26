@@ -66,6 +66,9 @@
 #include "../search.h"
 #include "../status.h"
 
+/* Format string used for displaying menu's position and size. */
+#define RULER_FORMAT " %d-%d "
+
 static void deinit_menu_data(menu_data_t *m);
 static void show_position_in_menu(const menu_data_t *m);
 static void open_selected_file(const char path[], int line_num);
@@ -312,7 +315,7 @@ show_position_in_menu(const menu_data_t *m)
 	}
 
 	char pos_buf[32];
-	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
+	snprintf(pos_buf, sizeof(pos_buf), RULER_FORMAT, m->pos + 1, m->len);
 
 	ui_ruler_set(pos_buf);
 }
@@ -622,6 +625,12 @@ menus_format_title(const menu_data_t *m, struct view_t *view)
 	                         : replace_home_part(m->cwd);
 	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
 	return format_str("%s%s%s", m->title, at, suffix);
+}
+
+int
+menus_get_ruler_width(const menu_data_t *m)
+{
+	return snprintf(NULL, 0, RULER_FORMAT, m->len, m->len);
 }
 
 /* Implements process_cmd_output() callback that loads lines to a menu. */

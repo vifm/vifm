@@ -60,6 +60,10 @@ void modmenu_save_pos(void);
 /* Restores previously saved position information. */
 void modmenu_restore_pos(void);
 
+/* Retrieves "recommended" width of the ruler for current menu.  Returns the
+ * width. */
+int modmenu_get_ruler_width(void);
+
 /* Leaves menu and starts command-line mode.  external flag shows whether
  * cmd should be prepended with ":!".  To be used from keyboard handlers, which
  * in this case must return KHR_MORPHED_MENU. */
