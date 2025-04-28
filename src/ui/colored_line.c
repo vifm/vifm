@@ -212,6 +212,19 @@ cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[])
 	strprepend(&cline->attrs, &cline->attrs_len, spaces);
 }
 
+cline_t
+cline_steal(cline_t *cline)
+{
+	cline_t result = *cline;
+
+	cline->line = NULL;
+	cline->line_len = 0;
+	cline->attrs = NULL;
+	cline->attrs_len = 0;
+
+	return result;
+}
+
 void
 cline_dispose(cline_t *cline)
 {
