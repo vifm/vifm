@@ -88,7 +88,7 @@ cline_append(cline_t *cline, cline_t *admixture)
 {
 	cline_splice_attrs(cline, admixture);
 	strappend(&cline->line, &cline->line_len, admixture->line);
-	free(admixture->line);
+	cline_dispose(admixture);
 }
 
 void
@@ -104,7 +104,9 @@ cline_splice_attrs(cline_t *cline, cline_t *admixture)
 		++attrs;
 	}
 	strappend(&cline->attrs, &cline->attrs_len, attrs);
-	free(admixture->attrs);
+
+	update_string(&admixture->attrs, NULL);
+	admixture->attrs_len = 0;
 }
 
 void
