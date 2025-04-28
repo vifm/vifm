@@ -2384,7 +2384,7 @@ format_tab_labels(view_t *view, int max_width, path_func pf)
 			cline_t *tab_label = DA_EXTEND(tab_labels);
 			if(tab_label != NULL)
 			{
-				*tab_label = prefix;
+				*tab_label = cline_steal(&prefix);
 				cline_append(tab_label, &title);
 				cline_append(tab_label, &suffix);
 				DA_COMMIT(tab_labels);
@@ -2392,6 +2392,10 @@ format_tab_labels(view_t *view, int max_width, path_func pf)
 		}
 
 		width_used += real_width;
+
+		cline_dispose(&prefix);
+		cline_dispose(&title);
+		cline_dispose(&suffix);
 	}
 
 	tab_line_info_t result = {
