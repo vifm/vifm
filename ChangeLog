@@ -63,6 +63,8 @@
 
 	Fixed a memory leak on formatting tab line when there is not enough space.
 
+	Fixed an unlikely memory leak on parsing of malformed 'viewcolumns'.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
