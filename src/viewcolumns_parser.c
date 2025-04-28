@@ -87,13 +87,20 @@ parse_all(map_name_cb cn, const char str[], size_t *len, void *arg)
 		{
 			break;
 		}
+
 		if(info.sizing == ST_PERCENT && (percents += info.full_width) > 100)
 		{
+			free_info(&info);
 			break;
 		}
+
 		if(extend_column_list(&list, &list_len) == 0)
 		{
 			list[list_len - 1] = info;
+		}
+		else
+		{
+			free_info(&info);
 		}
 	}
 	free(str_copy);
@@ -169,7 +176,14 @@ parse(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 		}
 	}
 
-	return str == NULL || *str != '\0';
+	/* Either something has failed or we didn't parse format until the end. */
+	if(str == NULL || *str != '\0')
+	{
+		free_info(info);
+		return 1;
+	}
+
+	return 0;
 }
 
 /* Initializes info structure with default values. */
