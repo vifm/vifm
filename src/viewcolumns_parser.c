@@ -277,7 +277,7 @@ parse_name(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 }
 
 /* Parses cropping part of format string.  Always sets *present to indicate
- * whether cropping field was present.  RReturns pointer to next char to parse
+ * whether cropping field was present.  Returns pointer to next char to parse
  * or NULL on error. */
 static const char *
 parse_cropping(const char str[], column_info_t *info, int *present)
