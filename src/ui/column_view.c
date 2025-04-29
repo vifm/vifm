@@ -354,15 +354,15 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 		 * character inside previous column. */
 		if(prev_col_end > print_start)
 		{
-			const int prev_col_max_width = (print_start > prev_col_start)
-			                             ? (print_start - prev_col_start)
+			const int prev_col_max_width = (cur_col_start > prev_col_start)
+			                             ? (cur_col_start - prev_col_start)
 			                             : 0;
 			const size_t break_point = utf8_strsnlen(prev_col_buf,
 					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
 			int real_prev_end = prev_col_start + get_width_on_screen(prev_col_buf);
 			fill_gap_pos(format_data, real_prev_end, print_start, prev_col_id);
-			print_start = prev_col_end;
+			print_start = real_prev_end;
 		}
 		else
 		{
