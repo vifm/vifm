@@ -88,7 +88,7 @@ cline_append(cline_t *cline, cline_t *admixture)
 {
 	cline_splice_attrs(cline, admixture);
 	strappend(&cline->line, &cline->line_len, admixture->line);
-	free(admixture->line);
+	cline_dispose(admixture);
 }
 
 void
@@ -104,7 +104,9 @@ cline_splice_attrs(cline_t *cline, cline_t *admixture)
 		++attrs;
 	}
 	strappend(&cline->attrs, &cline->attrs_len, attrs);
-	free(admixture->attrs);
+
+	update_string(&admixture->attrs, NULL);
+	admixture->attrs_len = 0;
 }
 
 void
@@ -208,6 +210,19 @@ cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[])
 	memset(spaces, ' ', sizeof(spaces) - 1);
 	spaces[ell_width] = '\0';
 	strprepend(&cline->attrs, &cline->attrs_len, spaces);
+}
+
+cline_t
+cline_steal(cline_t *cline)
+{
+	cline_t result = *cline;
+
+	cline->line = NULL;
+	cline->line_len = 0;
+	cline->attrs = NULL;
+	cline->attrs_len = 0;
+
+	return result;
 }
 
 void

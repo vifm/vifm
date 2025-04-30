@@ -76,6 +76,9 @@ void cline_print(const cline_t *cline, WINDOW *win,
  * needed. */
 void cline_left_ellipsis(cline_t *cline, size_t max_width, const char ell[]);
 
+/* Copies the fields and clears the passed in cline. */
+cline_t cline_steal(cline_t *cline);
+
 /* Frees all resources allocated by cline.  The parameter can't be NULL. */
 void cline_dispose(cline_t *cline);
 

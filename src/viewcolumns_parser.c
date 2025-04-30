@@ -31,7 +31,8 @@
 
 static column_info_t * parse_all(map_name_cb cn, const char str[], size_t *len,
 		void *arg);
-static void free_list(column_info_t *list, size_t list_len);
+static void free_info_list(column_info_t *list, size_t list_len);
+static void free_info(column_info_t *info);
 static int parse(map_name_cb cn, const char str[], column_info_t *info,
 		void *arg);
 static void load_defaults(column_info_t *info);
@@ -55,7 +56,7 @@ parse_columns(columns_t *columns, add_column_cb ac, map_name_cb cn,
 	if((list = parse_all(cn, str, &list_len, arg)) != NULL)
 	{
 		add_all(columns, ac, list, list_len);
-		free_list(list, list_len);
+		free_info_list(list, list_len);
 		return 0;
 	}
 	return 1;
@@ -86,20 +87,27 @@ parse_all(map_name_cb cn, const char str[], size_t *len, void *arg)
 		{
 			break;
 		}
+
 		if(info.sizing == ST_PERCENT && (percents += info.full_width) > 100)
 		{
+			free_info(&info);
 			break;
 		}
+
 		if(extend_column_list(&list, &list_len) == 0)
 		{
 			list[list_len - 1] = info;
+		}
+		else
+		{
+			free_info(&info);
 		}
 	}
 	free(str_copy);
 
 	if(token != NULL)
 	{
-		free_list(list, list_len);
+		free_info_list(list, list_len);
 		return NULL;
 	}
 	else
@@ -111,7 +119,7 @@ parse_all(map_name_cb cn, const char str[], size_t *len, void *arg)
 
 /* Frees list of column info structures. */
 static void
-free_list(column_info_t *list, size_t list_len)
+free_info_list(column_info_t *list, size_t list_len)
 {
 	if(list == NULL)
 	{
@@ -121,9 +129,19 @@ free_list(column_info_t *list, size_t list_len)
 	size_t i;
 	for(i = 0U; i < list_len; ++i)
 	{
-		free(list[i].literal);
+		free_info(&list[i]);
 	}
 	free(list);
+}
+
+/* Frees data of a single column info structure.  The parameter can be NULL. */
+static void
+free_info(column_info_t *info)
+{
+	if(info != NULL)
+	{
+		update_string(&info->literal, NULL);
+	}
 }
 
 /* Parses single column description.  Returns zero on successful parsing. */
@@ -158,7 +176,14 @@ parse(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 		}
 	}
 
-	return str == NULL || *str != '\0';
+	/* Either something has failed or we didn't parse format until the end. */
+	if(str == NULL || *str != '\0')
+	{
+		free_info(info);
+		return 1;
+	}
+
+	return 0;
 }
 
 /* Initializes info structure with default values. */
@@ -277,7 +302,7 @@ parse_name(map_name_cb cn, const char str[], column_info_t *info, void *arg)
 }
 
 /* Parses cropping part of format string.  Always sets *present to indicate
- * whether cropping field was present.  RReturns pointer to next char to parse
+ * whether cropping field was present.  Returns pointer to next char to parse
  * or NULL on error. */
 static const char *
 parse_cropping(const char str[], column_info_t *info, int *present)

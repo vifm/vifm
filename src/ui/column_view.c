@@ -350,37 +350,53 @@ columns_format_line(columns_t *cols, void *format_data, int max_line_width)
 		const int cur_col_start = calculate_start_pos(col, col_buffer, align);
 		int print_start = MIN(cur_col_start, col->start);
 
-		/* Ensure that we are not trying to draw current column in the middle of a
-		 * character inside previous column. */
+		/* Draw trailing gap of the previous column. */
 		if(prev_col_end > print_start)
 		{
-			const int prev_col_max_width = (print_start > prev_col_start)
-			                             ? (print_start - prev_col_start)
+			/* Difficult case, need to make sure that we are not trying to draw
+			 * current column in the middle of a character from a previous column.
+			 * This is harder than it seems due to existence of wide characters.  Must
+			 * determine a point where the previous column has to end and clear after
+			 * it to not leave any partial characters. */
+
+			/* Allow the previous column to end right before the first printed
+			 * character of the current one. */
+			const int prev_col_max_width = (cur_col_start > prev_col_start)
+			                             ? (cur_col_start - prev_col_start)
 			                             : 0;
+
+			/* Cut the previous column at that width. */
 			const size_t break_point = utf8_strsnlen(prev_col_buf,
 					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
+
+			/* This is where the previous column has really ended, clear from
+			 * there. */
 			int real_prev_end = prev_col_start + get_width_on_screen(prev_col_buf);
 			fill_gap_pos(format_data, real_prev_end, print_start, prev_col_id);
-			print_start = prev_col_end;
+
+			/* Start printing the current column right after the previous one. */
+			print_start = real_prev_end;
 		}
 		else
 		{
+			/* Easy case, contents of columns doesn't overlap. */
 			fill_gap_pos(format_data, prev_col_end, print_start, prev_col_id);
 		}
 
-		/* Gap filling is done per column.  This one is for the current one. */
+		/* Gap filling is done per column.  This draws leading gap of the current
+		 * one. */
 		fill_gap_pos(format_data, print_start, cur_col_start, col->info.column_id);
 
 		print_func(col_buffer, cur_col_start, align, full_column, &info);
 
+		prev_col_start = cur_col_start;
 		prev_col_end = cur_col_start + get_width_on_screen(col_buffer);
 		prev_col_id = col->info.column_id;
 
 		/* Store information about the current column for usage on the next
 		 * iteration. */
 		strcpy(prev_col_buf, col_buffer);
-		prev_col_start = cur_col_start;
 	}
 
 	fill_gap_pos(format_data, prev_col_end, max_line_width, prev_col_id);

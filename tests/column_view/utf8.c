@@ -22,6 +22,7 @@ static const size_t MAX_WIDTH = 20;
 static char print_buffer[80 + 1];
 
 static const char *col1_str;
+static const char *col2_str;
 
 SETUP_ONCE()
 {
@@ -39,6 +40,7 @@ SETUP()
 	col2_next = &column2_func;
 
 	col1_str = "师从螺丝刀йклмнопрстуфхцчшщьыъэюя";
+	col2_str = "яюэъыьщшчцхфутсрпонмлкйизжёедгв推";
 }
 
 TEARDOWN()
@@ -64,7 +66,7 @@ column1_func(void *data, size_t buf_len, char buf[], const format_info_t *info)
 static void
 column2_func(void *data, size_t buf_len, char buf[], const format_info_t *info)
 {
-	snprintf(buf, buf_len + 1, "%s", "яюэъыьщшчцхфутсрпонмлкйизжёедгв推");
+	snprintf(buf, buf_len + 1, "%s", col2_str);
 }
 
 static void
@@ -138,6 +140,31 @@ TEST(none_cropping_allows_for_correct_gaps, IF(locale_works))
 	perform_test(column_infos, 2, 38);
 
 	assert_string_equal(expected, print_buffer);
+}
+
+TEST(none_cropping_cuts_wide_strings_correctly, IF(locale_works))
+{
+	static column_info_t column_infos[2] = {
+		{ .column_id = COL1_ID, .full_width = 10UL,    .text_width = 10UL,
+		  .align = AT_LEFT,     .sizing = ST_AUTO,     .cropping = CT_NONE, },
+		{ .column_id = COL2_ID, .full_width = 4UL,     .text_width = 4UL,
+		  .align = AT_RIGHT,    .sizing = ST_AUTO,     .cropping = CT_NONE, },
+	};
+
+	col1_str = "师从螺丝";
+	col2_str = "xyz";
+
+	perform_test(column_infos, 2, 9);
+	assert_string_equal("师从螺xyz", print_buffer);
+
+	perform_test(column_infos, 2, 10);
+	assert_string_equal("师从螺 xyz", print_buffer);
+
+	perform_test(column_infos, 2, 11);
+	assert_string_equal("师从螺丝xyz", print_buffer);
+
+	perform_test(column_infos, 2, 12);
+	assert_string_equal("师从螺丝 xyz", print_buffer);
 }
 
 TEST(add_ellipsis_ok, IF(locale_works))
