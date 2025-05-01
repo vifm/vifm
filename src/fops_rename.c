@@ -600,7 +600,7 @@ incdec_name(const char fname[], int k)
 	static char result[NAME_MAX + 1];
 	char format[16];
 	char *b, *e;
-	int i, n;
+	int n;
 
 	b = strpbrk(fname, "0123456789");
 	if(b == NULL)
@@ -620,7 +620,7 @@ incdec_name(const char fname[], int k)
 		--b;
 	}
 
-	i = strtol(b, &e, 10);
+	long long i = strtoll(b, &e, 10);
 
 	if(i + k < 0)
 	{
@@ -628,7 +628,7 @@ incdec_name(const char fname[], int k)
 	}
 
 	copy_str(result, b - fname + 1, fname);
-	snprintf(format, sizeof(format), "%%0%dd%%s", n + count_digits(i));
+	snprintf(format, sizeof(format), "%%0%dlld%%s", n + count_digits(i));
 	snprintf(result + (b - fname), sizeof(result) - (b - fname), format, i + k,
 			e);
 
