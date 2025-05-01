@@ -68,6 +68,9 @@
 	Fixed truncating wide characters on drawing columns broken on introducing
 	column-specific highlighting in 0.14-beta.  Thanks to Snake52996.
 
+	Fixed :clone producing weird results on trying to increment numbers
+	greater than `2**31 - 1`.  Thanks to CaptainFantastic.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

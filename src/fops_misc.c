@@ -919,7 +919,7 @@ gen_clone_name(const char dir[], const char normal_name[])
 	static char result[NAME_MAX + 1];
 
 	char extension[NAME_MAX + 1];
-	int i;
+	long long i;
 	size_t len;
 	char *p;
 
@@ -934,8 +934,8 @@ gen_clone_name(const char dir[], const char normal_name[])
 	if(result[len - 1] == ')' && (p = strrchr(result, '(')) != NULL)
 	{
 		char *t;
-		long l;
-		if((l = strtol(p + 1, &t, 10)) > 0 && t[1] == '\0')
+		long long l;
+		if((l = strtoll(p + 1, &t, 10)) > 0 && t[1] == '\0' && l != LONG_LONG_MAX)
 		{
 			len = p - result;
 			i = l + 1;
@@ -944,7 +944,7 @@ gen_clone_name(const char dir[], const char normal_name[])
 
 	do
 	{
-		snprintf(result + len, sizeof(result) - len, "(%d)%s%s", i++,
+		snprintf(result + len, sizeof(result) - len, "(%lld)%s%s", i++,
 				(extension[0] == '\0') ? "" : ".", extension);
 	}
 	while(path_exists_at(dir, result, NODEREF));
