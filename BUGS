@@ -22,3 +22,5 @@
   'syscalls' is on, this is some subtle issue, because the code looks fine.
 * Commands starting with a dash don't work in fish shell and maybe some other
   non-POSIX shells which have `-c` option accept a value.
+* Incrementing/decrementing file names doesn't work as expected for numbers
+  outside [-2**63; -2**63) range.

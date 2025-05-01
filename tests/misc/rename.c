@@ -190,6 +190,19 @@ TEST(incdec_leaves_zeros)
 	assert_string_equal("a01.", incdec_name("a00.", 1));
 }
 
+TEST(incdec_handles_large_numbers)
+{
+	/* 2**31-1 / 2**31 / 2**31+1 */
+	assert_string_equal("2147483648", incdec_name("2147483647", 1));
+	assert_string_equal("2147483649", incdec_name("2147483648", 1));
+	assert_string_equal("2147483650", incdec_name("2147483649", 1));
+
+	/* 2**32-1 / 2**32 / 2**32+1 */
+	assert_string_equal("4294967296", incdec_name("4294967295", 1));
+	assert_string_equal("4294967297", incdec_name("4294967296", 1));
+	assert_string_equal("4294967298", incdec_name("4294967297", 1));
+}
+
 TEST(single_file_rename)
 {
 	char *error = NULL;
