@@ -1,3 +1,97 @@
+2 May 2025
+==========
+
+Vifm v0.14.1
+------------
+
+Highlights:
+
+ - Fixes
+
+   Fixed a preview-related crash on Windows easily reproducible using binary
+   files.
+
+   Fixed a tree-related crash when using `{fileext}` or `{ext}` columns.
+
+   Fixed 'trashdir' with "%r" not working on BSD-like systems.
+
+   Fixed `vifm path/to/file` incorrectly running file handling in current
+   working directory.
+
+   Restored terminal access for commands that use `%i` macro (so `:!echo ... %i`
+   can affect the terminal as before v0.12.1).  Use `%i &` for ignoring output
+   while denying terminal accesses.
+
+   Fixed occasional incorrect truncation of wide characters on drawing columns
+   broken while introducing column-specific highlighting in 0.14-beta.
+
+ - Documentation updates
+
+   Clarified information on comments after :commands.  Provided some information
+   on copy-on-write file copying.  Improved documentation on leaving compare and
+   custom views.
+
+Documentation:
+ - Made documentation on which :commands can have comments a bit more verbose.
+ - Documented extra information on file copying.  Patch by EA1A87.
+ - Improved/extended/updated documentation on cancelling operations, compare
+   and custom views.
+ - Fixes of typos and groff syntax in documentation.  Patch by Kirill Rekhov.
+
+Integration:
+ - Updated .desktop-file to add localizations and be more up-to-date with
+   modern recommendations.  Patch by Matěj Cepl (a.k.a. mcepl).
+
+File operations:
+ - Extended range of numbers Ctrl-A/Ctrl-X can deal with from [-2**31; 2**31)
+   to [-2**63; 2**63).  Thanks to CaptainFantastic.
+
+Only on Windows:
+ - Fixed crashes in terminals that handle ANSI output on Windows when
+   previewing binary or some complicated UTF-8 text files.  Thanks to Phil
+   Runninger.
+
+Fixes:
+ - Made `%i` keep access to the terminal instead of acting like `%i &` . This
+   restores the behavior prior to v0.12.1-beta (can be considered a regression
+   as this breaks several use cases).  Thanks to an anonymous at Vifm Q2A site.
+ - Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
+   instead of getmntent() API).  The regression was apparently introduced in
+   v0.9.1-beta.  Thanks to sublimal.
+ - Fixed a crash on drawing a tree-view when {ext} or {fileext} follows {name},
+   {iname}, {root} or {fileroot}.  Thanks to aw-cloud.
+ - Fixed unintended (and incorrect) highlighting of search matches in {ext} and
+   {fileext} columns.
+ - Fixed setting 'timeoutlen' to zero resulting in high CPU use and ignoring
+   user input.
+ - Fixed trailing slash at the bottom of overwrite confirmation dialog
+   displayed on merging directories.
+ - Fixed :restart not resetting abbreviations.
+ - Fixed `:restart full` ignoring `set tabscope=...` in vifmrc which is how
+   :restart behaves.  Thanks to martinengelke (a.k.a. sHii).
+ - Fixed tabulation breaking parsing of :set command.  Thanks to martinengelke
+   (a.k.a., sHii).
+ - Fixed :file[x]type commands being run in startup directory instead of view's
+   directory when file was passed on command-line.  Thanks to ThePlaguebump.
+ - Fixed false-positive on detecting ambiguity of commands with numbers in
+   their names.  Thanks to CaptainFantastic.
+ - Fixed Escape not cancelling waiting for the next input key.  Thanks to an
+   anonymous at Vifm Q2A site.
+ - Fixed a crash after `:winrun , normal e` followed by `q`.
+ - Fixed ruler in menu mode not growing in size to accomodate its content.
+   Thanks to CaptainFantastic.
+ - Fixed a memory leak on formatting tab line when there is not enough space.
+ - Fixed an unlikely memory leak on parsing of malformed 'viewcolumns'.
+ - Fixed truncating wide characters on drawing columns broken on introducing
+   column-specific highlighting in 0.14-beta.  Thanks to Snake52996.
+ - Fixed :clone producing weird results on trying to increment numbers greater
+   than `2**31 - 1`.  Thanks to CaptainFantastic.
+
+See the ChangeLog file for the full list of changes and by whom they were
+suggested or implemented.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 08 February 2025
 ================
 
