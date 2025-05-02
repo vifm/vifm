@@ -598,7 +598,7 @@ TSTATIC const char *
 incdec_name(const char fname[], int k)
 {
 	static char result[NAME_MAX + 1];
-	char format[16];
+	char format[32];
 	char *b, *e;
 	int n;
 
