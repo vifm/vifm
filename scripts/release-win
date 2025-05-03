@@ -220,4 +220,13 @@ for test in bin/*; do
 done
 EOF
 
+echo ::: CLEANING UP REMOTE DIRECTORIES... :::
+
+ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
+rm -rf "$REMOTE_DIR/w32/" "$REMOTE_DIR/w64/"
+rm -rf "$REMOTE_DIR/$win" "$REMOTE_DIR/$w32" "$REMOTE_DIR/$w64"
+EOF
+
 echo SUCCESS: everything is fine
