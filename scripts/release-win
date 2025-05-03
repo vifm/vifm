@@ -13,6 +13,8 @@
 #  * W64_DIR        -- root directory where MXE Win64 build happens
 #  * MXE_BUILD_SCR  -- script that crossbuilds for Windows using MXE
 
+set -eu
+
 if [ $# -ne 1 ]; then
     echo "Usage: $(basename $0) version"
     exit 1
@@ -31,6 +33,12 @@ case "$version" in
         exit 1
 esac
 
+tag="v$version"
+if ! commit=$(git rev-parse "$tag"); then
+    echo "ERROR: failed to resolve tag: '$commit'"
+    exit 1
+fi
+
 REMOTE_NAME="${REMOTE_NAME:-win}"
 REMOTE_DIR="${REMOTE_DIR:-/c/repos/vifm}"
 REMOTE_WIN_DIR="${REMOTE_WIN_DIR:-c:/repos/vifm}"
@@ -38,17 +46,38 @@ W32_DIR="${W32_DIR:-../vifm-mxe-w32/}"
 W64_DIR="${W64_DIR:-../vifm-mxe-w64}"
 MXE_BUILD_SCR="${MXE_BUILD_SCR:-../build-mxe-vifm}"
 
-set -e
+echo ::: PREPARING WINDOWS REPOSITORY... :::
+
+ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
+cd "$REMOTE_DIR/"
+if ! git diff --quiet; then
+    echo "Windows repository contains changes.  Aborting."
+    exit 1
+fi
+
+# pull remote tags discarding any conflicting local ones
+git fetch --tags --force
+
+if [ "\$(git rev-parse "$tag")" != "$commit" ]; then
+    echo "Windows repository resolves tag differently.  Aborting."
+    exit 1
+fi
+
+git checkout "$tag"
+EOF
 
 echo ::: BUILDING... :::
 
-tag="v$version"
 ( cd "$W32_DIR" && "$MXE_BUILD_SCR" --32 "$tag" )
 ( cd "$W64_DIR" && "$MXE_BUILD_SCR" --64 "$tag" )
 
-echo ::: CLEANING UP REMOTE DIRECTORIES... :::
+echo ::: PREPARING REMOTE DIRECTORIES... :::
 
 ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
 rm -rf "$REMOTE_DIR/w32/" "$REMOTE_DIR/w64/"
 mkdir -p "$REMOTE_DIR/w32/" "$REMOTE_DIR/w64/"
 EOF
@@ -58,38 +87,51 @@ echo ::: COPYING EXECUTABLES TO THE REMOTE... :::
 scp "$W32_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_WIN_DIR/w32/"
 scp "$W64_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_WIN_DIR/w64/"
 
+echo ::: BUILDING AND PACKAGING WINDOWS VERSION... :::
+
+ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
+cd "$REMOTE_DIR/"
+scripts/release "$version" archive
+EOF
+
 echo ::: PACKAGING SINGLE-EXECUTABLE VERSIONS... :::
 
-maindir="vifm-w32-$version-binary"
+win="vifm-w32-$version-binary"
 w32="vifm-w32-se-$version-binary"
 w64="vifm-w64-se-$version-binary"
 
 ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
 cd "$REMOTE_DIR/"
 
 rm -rf "$w32.zip" "$w32"
-cp -r "$maindir" "$w32"
+cp -r "$win" "$w32"
 chmod -R u=rw,go=r,a+X "$w32"
 rm "$w32"/*.dll
 cp w32/*.exe "$w32"
 zip -9 -r "$w32.zip" "$w32"
 
 rm -rf "$w64.zip" "$w64"
-cp -r "$maindir" "$w64"
+cp -r "$win" "$w64"
 chmod -R u=rw,go=r,a+X "$w64"
 rm "$w64"/*.dll
 cp w64/*.exe "$w64"
 zip -9 -r "$w64.zip" "$w64"
 EOF
 
-echo ::: COPYING SINGLE-EXECUTABLE VERSIONS LOCALLY... :::
+echo ::: COPYING WINDOWS VERSIONS LOCALLY... :::
 
-scp "$REMOTE_NAME:$REMOTE_WIN_DIR/$w32.zip" \
+scp "$REMOTE_NAME:$REMOTE_WIN_DIR/$win.zip" \
+    "$REMOTE_NAME:$REMOTE_WIN_DIR/$w32.zip" \
     "$REMOTE_NAME:$REMOTE_WIN_DIR/$w64.zip" .
-chmod -x "$w32.zip" "$w64.zip"
+chmod -x "$win.zip" "$w32.zip" "$w64.zip"
 
 echo ::: VERIFYING PACKAGES... :::
 
+unzip "$win.zip"
 unzip "$w32.zip"
 unzip "$w64.zip"
 
@@ -98,6 +140,16 @@ x64_exe='x86-64'
 
 ret=0
 
+if [[ ! "$(file -b "$win/vifm.exe")" =~ "$x32_exe" ]]; then
+    echo "ERROR: Wrong type of $win/vifm.exe:"
+    file -b "$win/vifm.exe"
+    ret=1
+fi
+if [[ ! "$(file -b "$win/win_helper.exe")" =~ "$x32_exe" ]]; then
+    echo "ERROR: Wrong type of $win/win_helper.exe:"
+    file -b "$win/win_helper.exe"
+    ret=1
+fi
 if [[ ! "$(file -b "$w32/vifm.exe")" =~ "$x32_exe" ]]; then
     echo "ERROR: Wrong type of $w32/vifm.exe:"
     file -b "$w32/vifm.exe"
@@ -119,13 +171,13 @@ if [[ ! "$(file -b "$w64/win_helper.exe")" =~ "$x64_exe" ]]; then
     ret=1
 fi
 
-rm -rf "$w32" "$w64"
+rm -rf "$win" "$w32" "$w64"
 
 if [ "$ret" -ne 0 ]; then
     exit "$ret"
 fi
 
-echo ::: COPYING TESTS... :::
+echo ::: COPYING SE TESTS... :::
 
 rm -r "$W32_DIR/tests/bin/build" "$W64_DIR/tests/bin/build"
 
@@ -134,9 +186,11 @@ scp -r "$W32_DIR/tests/bin" "$W32_DIR/tests/test-data" \
 scp -r "$W64_DIR/tests/bin" "$W64_DIR/tests/test-data" \
        "$REMOTE_NAME:$REMOTE_WIN_DIR/w64/"
 
-echo ::: RUNNING TESTS... :::
+echo ::: RUNNING SE TESTS... :::
 
 ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
 cd "$REMOTE_DIR/w32/"
 for test in bin/*; do
     basename="\${test#*/}"
@@ -164,6 +218,15 @@ for test in bin/*; do
         exit 1
     fi
 done
+EOF
+
+echo ::: CLEANING UP REMOTE DIRECTORIES... :::
+
+ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
+rm -rf "$REMOTE_DIR/w32/" "$REMOTE_DIR/w64/"
+rm -rf "$REMOTE_DIR/$win" "$REMOTE_DIR/$w32" "$REMOTE_DIR/$w64"
 EOF
 
 echo SUCCESS: everything is fine
