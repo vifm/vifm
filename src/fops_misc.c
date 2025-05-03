@@ -935,7 +935,7 @@ gen_clone_name(const char dir[], const char normal_name[])
 	{
 		char *t;
 		long long l;
-		if((l = strtoll(p + 1, &t, 10)) > 0 && t[1] == '\0' && l != LONG_LONG_MAX)
+		if((l = strtoll(p + 1, &t, 10)) > 0 && t[1] == '\0' && l != LLONG_MAX)
 		{
 			len = p - result;
 			i = l;
