@@ -67,7 +67,7 @@ scp "$W64_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_WIN_DIR/w64/"
 
 echo ::: PACKAGING SINGLE-EXECUTABLE VERSIONS... :::
 
-maindir="vifm-w32-$version-binary"
+win="vifm-w32-$version-binary"
 w32="vifm-w32-se-$version-binary"
 w64="vifm-w64-se-$version-binary"
 
@@ -77,14 +77,14 @@ set -eu
 cd "$REMOTE_DIR/"
 
 rm -rf "$w32.zip" "$w32"
-cp -r "$maindir" "$w32"
+cp -r "$win" "$w32"
 chmod -R u=rw,go=r,a+X "$w32"
 rm "$w32"/*.dll
 cp w32/*.exe "$w32"
 zip -9 -r "$w32.zip" "$w32"
 
 rm -rf "$w64.zip" "$w64"
-cp -r "$maindir" "$w64"
+cp -r "$win" "$w64"
 chmod -R u=rw,go=r,a+X "$w64"
 rm "$w64"/*.dll
 cp w64/*.exe "$w64"
