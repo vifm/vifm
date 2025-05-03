@@ -1,3 +1,8 @@
+0.14.1 to latest
+
+	Fixed build issue with musl due to use of non-standard LONG_LONG_MAX.
+	Thanks to NRK.
+
 0.14 to 0.14.1 (2025-05-02)
 
 	Made documentation on which :commands can have comments a bit more
