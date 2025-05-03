@@ -33,6 +33,12 @@ case "$version" in
         exit 1
 esac
 
+tag="v$version"
+if ! commit=$(git rev-parse "$tag"); then
+    echo "ERROR: failed to resolve tag: '$commit'"
+    exit 1
+fi
+
 REMOTE_NAME="${REMOTE_NAME:-win}"
 REMOTE_DIR="${REMOTE_DIR:-/c/repos/vifm}"
 REMOTE_WIN_DIR="${REMOTE_WIN_DIR:-c:/repos/vifm}"
@@ -42,7 +48,6 @@ MXE_BUILD_SCR="${MXE_BUILD_SCR:-../build-mxe-vifm}"
 
 echo ::: BUILDING... :::
 
-tag="v$version"
 ( cd "$W32_DIR" && "$MXE_BUILD_SCR" --32 "$tag" )
 ( cd "$W64_DIR" && "$MXE_BUILD_SCR" --64 "$tag" )
 
