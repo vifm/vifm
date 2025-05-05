@@ -3,6 +3,9 @@
 	Fixed build issue with musl due to use of non-standard LONG_LONG_MAX.
 	Thanks to NRK.
 
+	Fixed user-specific trash directory (absolute path, `%u` and no `%r`)
+	created on setting 'trashdir' not having reduced set of permissions.
+
 0.14 to 0.14.1 (2025-05-02)
 
 	Made documentation on which :commands can have comments a bit more

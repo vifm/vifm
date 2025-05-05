@@ -220,7 +220,7 @@ create_trash_dir(const char trash_dir[], int user_specific)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_create_trash_dir(trash_dir, 0) != 0)
+	if(try_create_trash_dir(trash_dir, user_specific) != 0)
 	{
 		show_error_msgf("Error Setting Trash Directory",
 				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
