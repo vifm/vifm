@@ -495,10 +495,24 @@ TSTATIC int
 strnumcmp(const char s[], const char t[])
 {
 #if HAVE_STRVERSCMP_FUNC
-	const char *new_s = skip_leading_zeros(s);
-	const char *new_t = skip_leading_zeros(t);
-	return strverscmp(new_s, new_t);
-#else
+	static int buggy_musl = -1;
+	if(buggy_musl < 0)
+	{
+		/* "A" has an empty sequence of digits, so byte sorting should be used. */
+		buggy_musl = (strverscmp("A", "10") < 0);
+	}
+
+	if(!buggy_musl)
+	{
+		const char *new_s = skip_leading_zeros(s);
+		const char *new_t = skip_leading_zeros(t);
+		return strverscmp(new_s, new_t);
+	}
+
+	/* Fall through to the custom implementation which is aligned with the correct
+	 * version. */
+#endif
+
 	while(*s != '\0' && *t != '\0')
 	{
 		if(isdigit(*s) && isdigit(*t))
@@ -528,7 +542,6 @@ strnumcmp(const char s[], const char t[])
 	}
 
 	return SORT_CMP((unsigned char)*s, (unsigned char)*t);
-#endif
 }
 
 #if HAVE_STRVERSCMP_FUNC
