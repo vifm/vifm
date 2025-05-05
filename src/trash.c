@@ -92,7 +92,8 @@ get_list_of_trashes_traverser_state;
 
 static int validate_spec(const char spec[]);
 static int create_trash_dir(const char trash_dir[], int user_specific);
-static int try_create_trash_dir(const char trash_dir[], int user_specific);
+static int try_create_trash_dir(const char trash_dir[], int user_specific,
+		int interactive);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[], int can_delete);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
@@ -220,7 +221,7 @@ create_trash_dir(const char trash_dir[], int user_specific)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_create_trash_dir(trash_dir, user_specific) != 0)
+	if(try_create_trash_dir(trash_dir, user_specific, /*interactive=*/1) != 0)
 	{
 		show_error_msgf("Error Setting Trash Directory",
 				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
@@ -233,7 +234,7 @@ create_trash_dir(const char trash_dir[], int user_specific)
 /* Tries to create trash directory.  Returns zero on success, otherwise non-zero
  * value is returned. */
 static int
-try_create_trash_dir(const char trash_dir[], int user_specific)
+try_create_trash_dir(const char trash_dir[], int user_specific, int interactive)
 {
 	LOG_FUNC_ENTER;
 
@@ -242,11 +243,12 @@ try_create_trash_dir(const char trash_dir[], int user_specific)
 		if(make_path(trash_dir, 0777) != 0)
 		{
 #ifndef _WIN32
-			/* Do not treat it as an error if trash is not writable because
-			 * file-system is mounted read-only.  User should be aware of it. */
-			return (errno != EROFS);
-#else
-			return 1;
+			if(interactive)
+			{
+				/* Do not treat it as an error if the trash is not writable because
+				 * file-system is mounted read-only.  User should be aware of it. */
+				return (errno != EROFS);
+			}
 #endif
 		}
 	}
@@ -684,7 +686,7 @@ static int
 pick_trash_dir_traverser(const char base_path[], const char trash_dir[],
 		int user_specific, void *arg)
 {
-	if(try_create_trash_dir(trash_dir, user_specific) == 0)
+	if(try_create_trash_dir(trash_dir, user_specific, /*interactive=*/0) == 0)
 	{
 		char **const result = arg;
 		*result = strdup(trash_dir);
