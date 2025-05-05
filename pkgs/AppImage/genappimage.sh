@@ -3,6 +3,7 @@
 
 set -x
 set -e
+set -u
 
 # Reference: https://docs.appimage.org/packaging-guide/from-source/native-binaries.html#id2
 
