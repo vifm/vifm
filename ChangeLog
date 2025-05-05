@@ -76,6 +76,9 @@
 	Fixed :clone producing weird results on trying to increment numbers
 	greater than `2**31 - 1`.  Thanks to CaptainFantastic.
 
+	Fixed user-specific trash directory (absolute path, `%u` and no `%r`)
+	created on setting 'trashdir' not having reduced set of permissions.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
