@@ -79,6 +79,9 @@
 	Fixed user-specific trash directory (absolute path, `%u` and no `%r`)
 	created on setting 'trashdir' not having reduced set of permissions.
 
+	Fixed treating a failure to create a trash directory on a read-only
+	file-system in a Unix environment as a success.  Thanks to feekApp.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
