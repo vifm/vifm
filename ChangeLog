@@ -82,6 +82,9 @@
 	Fixed treating a failure to create a trash directory on a read-only
 	file-system in a Unix environment as a success.  Thanks to feekApp.
 
+	Fixed odd sorting with musl caused by its buggy strverscmp().  The
+	ordering shouldn't depend on libc in use.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
