@@ -96,9 +96,7 @@ static char * map_ascii(const char str[], int ignore_case);
 static char * lowerdup(const char str[]);
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
-#if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
-static int vercmp(const char s[], const char t[]);
-#else
+#if HAVE_STRVERSCMP_FUNC
 static char * skip_leading_zeros(const char str[]);
 #endif
 static int compare_file_names(const dir_entry_t *f, const dir_entry_t *s,
@@ -496,19 +494,11 @@ lowerdup(const char str[])
 TSTATIC int
 strnumcmp(const char s[], const char t[])
 {
-#if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
-	return vercmp(s, t);
-#else
+#if HAVE_STRVERSCMP_FUNC
 	const char *new_s = skip_leading_zeros(s);
 	const char *new_t = skip_leading_zeros(t);
 	return strverscmp(new_s, new_t);
-#endif
-}
-
-#if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
-static int
-vercmp(const char s[], const char t[])
-{
+#else
 	while(*s != '\0' && *t != '\0')
 	{
 		if(isdigit(*s) && isdigit(*t))
@@ -538,8 +528,10 @@ vercmp(const char s[], const char t[])
 	}
 
 	return SORT_CMP((unsigned char)*s, (unsigned char)*t);
+#endif
 }
-#else
+
+#if HAVE_STRVERSCMP_FUNC
 /* Skips all zeros in front of numbers (correctly handles zero).  Returns str, a
  * pointer to '0' or a pointer to non-zero digit. */
 static char *
