@@ -3,6 +3,7 @@
 
 set -x
 set -e
+set -u
 
 # Reference: https://docs.appimage.org/packaging-guide/from-source/native-binaries.html#id2
 
@@ -44,7 +45,7 @@ pushd "$NCURSES_DIR"
 ./configure --without-shared --enable-widec --prefix=/usr \
     --without-normal --without-debug --without-cxx --without-cxx-binding \
     --without-ada --without-manpages --without-tests
-make -j4
+make -j"$(nproc)"
 make DESTDIR="$PWD/build" install
 popd
 
@@ -52,7 +53,7 @@ popd
 ./configure --sysconfdir=/etc --prefix=/usr \
     --with-curses="$NCURSES_DIR/build/usr" \
     --without-glib --without-X11 --without-libmagic
-make -j4
+make -j"$(nproc)"
 make DESTDIR="$BUILD_DIR/AppDir" install
 
 # Setup root files
