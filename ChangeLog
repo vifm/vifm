@@ -63,7 +63,7 @@
 
 	Fixes of typos and groff syntax in documentation.  Patch by Kirill Rekhov.
 
-	Fixed ruler in menu mode not growing in size to accomodate its content.
+	Fixed ruler in menu mode not growing in size to accommodate its content.
 	Thanks to CaptainFantastic.
 
 	Fixed a memory leak on formatting tab line when there is not enough space.
