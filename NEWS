@@ -1,3 +1,34 @@
+07 May 2025
+===========
+
+Vifm v0.14.2
+------------
+
+Thanks for the bug reports.  This is a follow-up on v0.14.1 which revealed an
+issue with `%r` in 'trashdir' when root file-system is read-only (like on macOS)
+and also broke build with musl libc.
+
+Two other fixes:
+
+ - Trash directories specified via an absolute path and containing `%u` weren't
+   created with `700` permissions.
+
+ - Don't use `strverscmp()` of musl if it doesn't sort things correctly (`A`
+   must be greater than `0`).  This avoids numerical sorting results looking
+   different with musl.
+
+Fixes:
+ - Fixed build issue with musl due to use of non-standard LONG_LONG_MAX in
+   v0.14.1.  Thanks to NRK.
+ - Fixed user-specific trash directory (absolute path, `%u` and no `%r`)
+   created on setting 'trashdir' not having reduced set of permissions.
+ - Fixed treating a failure to create a trash directory on a read-only
+   file-system in a Unix environment as a success.  Thanks to feekApp.
+ - Fixed odd sorting with musl caused by its buggy strverscmp().  The ordering
+   shouldn't depend on libc in use.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 02 May 2025
 ===========
 
