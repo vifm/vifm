@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# This is macOS-specific portion of the release script.
+#
+# Assumptions:
+#  - "macos" alias in ~/.ssh/config or defined $REMOTE_NAME
+
+set -eu
+
+REMOTE_NAME=${REMOTE_NAME:-macos}
+
+function die() {
+    echo "error:" "$@" 1>&2
+    exit 1
+}
+
+function usage() {
+    echo "Usage: $0 version"
+    exit 1
+}
+
+function report() {
+    echo ">>>" "$@"
+}
+
+if [ $# -ne 1 ]; then
+    usage
+fi
+
+version=$1
+
+case "${version/%-beta}" in
+    [0-9].[0-9][0-9].[0-9]);;
+    [0-9].[0-9].[0-9]);;
+    [0-9].[0-9][0-9]);;
+    [0-9].[0-9]);;
+    *)
+        die "unrecognized version format: '$version'"
+esac
+
+dir=vifm-$version
+archive=$dir.tar.bz2
+
+report "Uploading '$archive'..."
+scp "$archive" "$REMOTE_NAME:"
+report "Building v$version remotely..."
+ssh "$REMOTE_NAME" bash - << EOF
+set -eu
+
+rm -rf "$dir"
+tar xf "$archive"
+( cd "$dir" && ./configure && make -j$(nproc) && make -j$(nproc) check )
+EOF
+
+report Success
