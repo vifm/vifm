@@ -1,13 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([vifm],[0.14.1],[xaizek@posteo.net],[vifm],[https://vifm.info])
+AC_INIT([vifm],[0.14.2],[xaizek@posteo.net],[vifm],[https://vifm.info])
 AC_CONFIG_SRCDIR(src/vifm.c)
 AC_CONFIG_AUX_DIR(build-aux)
 AC_CONFIG_MACRO_DIR(build-aux/m4)
 AM_INIT_AUTOMAKE([no-dist-gzip dist-bzip2])
 AC_CONFIG_HEADERS(build-aux/config.h)
 
-AC_DEFINE([VERSION_NUM], [1401], [Program version as a comparable integer.])
+AC_DEFINE([VERSION_NUM], [1402], [Program version as a comparable integer.])
 
 AC_DEFINE([PACKAGE_SYSCONF_DIR], [], [Configuration directory of the package.])
 AC_DEFINE([PACKAGE_DATA_DIR], [], [Data directory of the package.])
