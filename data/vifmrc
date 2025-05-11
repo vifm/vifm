@@ -1,6 +1,6 @@
 " vim: filetype=vifm :
 "
-" Sample configuration file for vifm (last updated: 18 December, 2024)
+" Sample configuration file for vifm (last updated: 11 May, 2025)
 "
 " You can edit this file by hand.  The " character at the beginning of a line
 " comments out the line.  Blank lines are ignored.  The basic format for each
@@ -177,17 +177,39 @@ command! vgrep vim "+grep %a"
 command! reload :write | restart full
 
 " ------------------------------------------------------------------------------
-" File types association
+" File handlers and previewers
 " ------------------------------------------------------------------------------
 
-" :filetype pattern1,pattern2 defaultprogram,program2
-" :fileviewer pattern1,pattern2 consoleviewer
+" Setting up handlers that are considered in all environments:
+"   filetype {pattern1,pattern2} program1,{Optional description}program2
 "
-" The first entry is the default program to be used with a matching file.
-" The other programs for the file type can be accessed via :file command.
-" The command macros like %f, %F, %d, %D may be used in the commands.
-" The %a macro is ignored.  To use a % you must put %%.
-" Spaces in an app name must be escaped, for example: QuickTime\ Player.app
+" Setting up handlers that are considered only in a graphical environment:
+"   filextype {pattern} graphical-program %c
+"
+" Setting up previewers:
+"   fileviewer {pattern1,pattern2} console-viewer1,console-viewer2
+"
+" ORDER MATTERS!  Both handlers and previewers are considered in the order of
+" their definition, therefore they should be defined from most to least
+" specific.  In particular, catch-all patterns like `*`, `*/`, `.*`, `*.*`
+" should be defined after all others.
+"
+" All entries matching a particular file are considered in order until an
+" existing command is found.  Other entries are accessible via :file command
+" for handlers or via `a` and `A` keys for previewers in view mode.
+"
+" The ordering can be checked at run-time by running
+" :filetype/:filextype/:fileviewer with a file name as the only argument.
+" This displays a menu of defined entries annotated with availability of
+" commands.
+"
+" More on syntax and usage:
+"  - macros like %c, %f, %d, etc. may be used in the commands
+"  - the %a macro is ignored
+"  - to insert a literal % use %%
+"  - spaces in an app name must be escaped, for example:
+"    + QuickTime\ Player.app
+"    + "c:/Program Files (x86)/app/app.exe"
 
 " For automated FUSE mounts, you must register an extension with :file[x]type
 " in one of the following formats:

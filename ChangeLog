@@ -1,4 +1,8 @@
-0.14.1 to latest
+0.14.2 to current
+
+	Provided more details on file handlers and viewers in sample vifmrc files.
+
+0.14.1 to 0.14.2 (2025-05-07)
 
 	Fixed build issue with musl due to use of non-standard LONG_LONG_MAX.
 	Thanks to NRK.
