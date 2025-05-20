@@ -91,7 +91,7 @@ FILE * qv_view_dir(const char path[], int max_lines);
 void qv_get_path_to_explore(const struct dir_entry_t *entry, char buf[],
 		size_t buf_len);
 
-/* Informs this unit that it's data was probably erased from the screen. */
+/* Informs this unit that its data was probably erased from the screen. */
 void qv_ui_updated(void);
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */

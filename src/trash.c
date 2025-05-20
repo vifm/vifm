@@ -243,13 +243,14 @@ try_create_trash_dir(const char trash_dir[], int user_specific, int interactive)
 		if(make_path(trash_dir, 0777) != 0)
 		{
 #ifndef _WIN32
-			if(interactive)
+			if(interactive && errno == EROFS)
 			{
 				/* Do not treat it as an error if the trash is not writable because
 				 * file-system is mounted read-only.  User should be aware of it. */
-				return (errno != EROFS);
+				return 0;
 			}
 #endif
+			return 1;
 		}
 	}
 

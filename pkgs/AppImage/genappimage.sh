@@ -12,7 +12,7 @@ set -u
 # like Travis, and RAM disk is available)
 # DISABLED: It seems that linuxdeploy won't be executable on shared memory,
 # maybe /dev/shm is marked as non-executable?
-if [ "$CI" == "" ] && [ -d /dev/shm ] && false; then
+if [ -z "${CI:-}" ] && [ -d /dev/shm ] && false; then
     TEMP_BASE=/dev/shm
 else
     TEMP_BASE=/tmp
