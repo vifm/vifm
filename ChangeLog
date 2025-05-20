@@ -2,6 +2,9 @@
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
 
+	Fixed picking trash directory when rooted trash is included in 'trashdir'
+	and root is writable.  Regression in v0.14.2.
+
 0.14.1 to 0.14.2 (2025-05-07)
 
 	Fixed build issue with musl due to use of non-standard LONG_LONG_MAX.
