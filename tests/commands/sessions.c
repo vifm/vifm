@@ -41,6 +41,10 @@ SETUP()
 	columns_setup_column(SK_BY_NAME);
 	columns_setup_column(SK_BY_SIZE);
 
+	/* Test a realistic configuration. */
+	cfg_init();
+	histories_init(cfg.history_len);
+
 	cmds_init();
 	opt_handlers_setup();
 }
@@ -53,7 +57,10 @@ TEARDOWN()
 	cfg.session_options = 0;
 
 	opt_handlers_teardown();
+	conf_teardown();
 	vle_keys_reset();
+
+	histories_init(0);
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
@@ -166,8 +173,6 @@ TEST(can_load_a_session)
 	remove_file(SANDBOX_PATH "/sessions/sess.json");
 	remove_dir(SANDBOX_PATH "/sessions");
 	remove_file(SANDBOX_PATH "/vifminfo.json");
-
-	histories_init(0);
 }
 
 TEST(can_delete_a_session)

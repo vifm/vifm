@@ -11,6 +11,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
+#include "../../src/engine/keys.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matcher.h"
@@ -20,6 +21,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filetype.h"
 #include "../../src/flist_hist.h"
+#include "../../src/instance.h"
 #include "../../src/opt_handlers.h"
 #include "../../src/status.h"
 
@@ -42,6 +44,7 @@ SETUP()
 	view_setup(&lwin);
 	view_setup(&rwin);
 	curr_view = &lwin;
+	other_view = &rwin;
 
 	cfg_resize_histories(10);
 
@@ -50,6 +53,9 @@ SETUP()
 
 TEARDOWN()
 {
+	curr_view = NULL;
+	other_view = NULL;
+
 	cfg_resize_histories(0);
 
 	view_teardown(&lwin);
@@ -468,6 +474,35 @@ TEST(dhistory_is_merged_correctly)
 	assert_int_equal(6, lwin.history[2].rel_pos);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
+}
+
+TEST(size_of_dhistory_is_limited)
+{
+	cfg.vifm_info = VINFO_DHISTORY;
+
+	/* Short history to fill it easily. */
+	cfg.history_len = 2;
+	opt_handlers_setup();
+	cmds_init();
+
+	/* Adding 3 items to make sure the limit is in effect. */
+	flist_hist_setup(&lwin, "/dir1", "file1", 1, 1);
+	flist_hist_setup(&lwin, "/dir2", "file2", 2, 2);
+	flist_hist_setup(&lwin, "/dir3", "file3", 3, 3);
+	assert_int_equal(2, lwin.history_num);
+
+	/* Write the history to a file. */
+	state_store();
+	/* Reload the state and config (which should be empty in tests). */
+	instance_start_restart(RT_MOST);
+	state_load(0);
+	instance_finish_restart();
+	/* Verify that history was trimmed to the set limit. */
+	assert_int_equal(2, lwin.history_num);
+
+	opt_handlers_teardown();
+	vle_cmds_reset();
+	vle_keys_reset();
 }
 
 TEST(things_missing_from_vifminfo_option_are_dropped)
