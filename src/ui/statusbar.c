@@ -215,7 +215,8 @@ status_bar_message(const char msg[], int error)
 
 	if(lines > 1)
 	{
-		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation)
+		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation &&
+				status_bar_lines == 1)
 		{
 			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH(),
 					truncated_msg);
