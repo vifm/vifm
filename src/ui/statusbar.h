@@ -43,9 +43,6 @@ int ui_sb_locked(void);
  * message is NULL. */
 void ui_sb_msg(const char message[]);
 
-/* Same as ui_sb_msg(), but never truncates long lines. */
-void ui_sb_msg_full(const char message[]);
-
 /* Prints informational message on the status bar specified as format string. */
 void ui_sb_msgf(const char format[], ...) _gnuc_printf(1, 2);
 
@@ -54,6 +51,10 @@ void ui_sb_err(const char message[]);
 
 /* Prints error message on the status bar specified as format string. */
 void ui_sb_errf(const char message[], ...) _gnuc_printf(1, 2);
+
+/* Displays some of the most recent statusbar messages.  Returns non-zero if
+ * anything was displayed (i.e., there were previous messages). */
+int ui_sb_msg_show_history(void);
 
 /* Quick messages (which aren't stored in history). */
 

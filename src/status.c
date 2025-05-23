@@ -176,7 +176,6 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->msg_head = 0;
 	stats->msg_tail = 0;
-	stats->save_msg_in_list = 1;
 	size_t i;
 	for(i = 0U; i < ARRAY_LEN(stats->msgs); ++i)
 	{
@@ -353,7 +352,7 @@ stats_file_choose_action_set(void)
 void
 stats_save_msg(const char msg[])
 {
-	if(!curr_stats.save_msg_in_list || msg[0] == '\0')
+	if(msg[0] == '\0')
 	{
 		return;
 	}

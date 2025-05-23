@@ -3860,42 +3860,11 @@ media_cmd(const cmd_info_t *cmd_info)
 
 #endif
 
+/* Displays some of the most recent statusbar messages. */
 static int
 messages_cmd(const cmd_info_t *cmd_info)
 {
-	/* TODO: move this code to ui.c */
-	char *lines;
-	size_t len;
-	int count;
-	int t;
-
-	lines = NULL;
-	len = 0;
-	count = curr_stats.msg_tail - curr_stats.msg_head;
-	if(count < 0)
-		count += ARRAY_LEN(curr_stats.msgs);
-	t = (curr_stats.msg_head + 1) % ARRAY_LEN(curr_stats.msgs);
-	while(count-- > 0)
-	{
-		const char *msg = curr_stats.msgs[t];
-		char *new_lines = realloc(lines, len + 1 + strlen(msg) + 1);
-		if(new_lines != NULL)
-		{
-			lines = new_lines;
-			len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", msg);
-			t = (t + 1) % ARRAY_LEN(curr_stats.msgs);
-		}
-	}
-
-	if(lines == NULL)
-		return 0;
-
-	curr_stats.save_msg_in_list = 0;
-	ui_sb_msg_full(lines);
-	curr_stats.save_msg_in_list = 1;
-
-	free(lines);
-	return 1;
+	return (ui_sb_msg_show_history() != 0);
 }
 
 /* :mkdir creates sub-directory.  :mkdir! creates chain of directories.  In

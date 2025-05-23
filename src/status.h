@@ -154,7 +154,6 @@ typedef struct
 
 	int msg_head, msg_tail;
 	char *msgs[51];
-	int save_msg_in_list;
 
 	int scroll_bind_off;
 	SPLIT split;

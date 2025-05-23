@@ -37,8 +37,7 @@
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
-static void status_bar_message(const char message[], int error,
-		int can_truncate);
+static void status_bar_message(const char message[], int error, int is_history);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 
@@ -120,13 +119,42 @@ ui_sb_quick_msg_clear(void)
 void
 ui_sb_msg(const char message[])
 {
-	status_bar_message(message, /*error=*/0, /*can_truncate=*/1);
+	status_bar_message(message, /*error=*/0, /*is_history=*/0);
 }
 
-void
-ui_sb_msg_full(const char message[])
+int
+ui_sb_msg_show_history(void)
 {
-	status_bar_message(message, /*error=*/0, /*can_truncate=*/0);
+	char *lines;
+	size_t len;
+	int count;
+	int t;
+
+	lines = NULL;
+	len = 0;
+	count = curr_stats.msg_tail - curr_stats.msg_head;
+	if(count < 0)
+		count += ARRAY_LEN(curr_stats.msgs);
+	t = (curr_stats.msg_head + 1) % ARRAY_LEN(curr_stats.msgs);
+	while(count-- > 0)
+	{
+		const char *msg = curr_stats.msgs[t];
+		char *new_lines = realloc(lines, len + 1 + strlen(msg) + 1);
+		if(new_lines != NULL)
+		{
+			lines = new_lines;
+			len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", msg);
+			t = (t + 1) % ARRAY_LEN(curr_stats.msgs);
+		}
+	}
+
+	if(lines == NULL)
+		return 0;
+
+	status_bar_message(lines, /*error=*/0, /*is_history=*/1);
+
+	free(lines);
+	return 1;
 }
 
 void
@@ -144,7 +172,7 @@ ui_sb_msgf(const char format[], ...)
 void
 ui_sb_err(const char message[])
 {
-	status_bar_message(message, /*error=*/1, /*can_truncate=*/1);
+	status_bar_message(message, /*error=*/1, /*is_history=*/0);
 }
 
 void
@@ -165,11 +193,13 @@ vstatus_bar_messagef(int error, const char format[], va_list ap)
 	char buf[1024];
 
 	vsnprintf(buf, sizeof(buf), format, ap);
-	status_bar_message(buf, error, /*can_truncate=*/1);
+	status_bar_message(buf, error, /*is_history=*/0);
 }
 
+/* Displays an informational or an error message.  If is_history is non-zero,
+ * the message is not truncated and is not added to history. */
 static void
-status_bar_message(const char msg[], int error, int can_truncate)
+status_bar_message(const char msg[], int error, int is_history)
 {
 	/* TODO: Refactor this function status_bar_message() */
 
@@ -190,7 +220,10 @@ status_bar_message(const char msg[], int error, int can_truncate)
 
 		err = error;
 
-		stats_save_msg(last_message);
+		if(!is_history)
+		{
+			stats_save_msg(last_message);
+		}
 	}
 	else
 	{
@@ -222,8 +255,7 @@ status_bar_message(const char msg[], int error, int can_truncate)
 
 	if(lines > 1)
 	{
-		if(cfg.trunc_normal_sb_msgs && !err && can_truncate &&
-				status_bar_lines == 1)
+		if(cfg.trunc_normal_sb_msgs && !err && !is_history && status_bar_lines == 1)
 		{
 			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH(),
 					truncated_msg);
