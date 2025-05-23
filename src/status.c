@@ -226,8 +226,6 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->global_local_settings = 0;
 
-	stats->history_size = 0;
-
 	ipc_free(stats->ipc);
 	plugs_free(stats->plugs);
 	vlua_finish(stats->vlua);
@@ -502,8 +500,6 @@ stats_unsilence_ui(void)
 void
 hists_resize(int new_size)
 {
-	curr_stats.history_size = new_size;
-
 	hist_resize(&curr_stats.cmd_hist, new_size);
 	hist_resize(&curr_stats.menucmd_hist, new_size);
 	hist_resize(&curr_stats.exprreg_hist, new_size);
