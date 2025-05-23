@@ -43,6 +43,9 @@ int ui_sb_locked(void);
  * message is NULL. */
 void ui_sb_msg(const char message[]);
 
+/* Same as ui_sb_msg(), but never truncates long lines. */
+void ui_sb_msg_full(const char message[]);
+
 /* Prints informational message on the status bar specified as format string. */
 void ui_sb_msgf(const char format[], ...) _gnuc_printf(1, 2);
 

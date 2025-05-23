@@ -177,7 +177,6 @@ load_def_values(status_t *stats, config_t *config)
 	stats->msg_head = 0;
 	stats->msg_tail = 0;
 	stats->save_msg_in_list = 1;
-	stats->allow_sb_msg_truncation = 1;
 	size_t i;
 	for(i = 0U; i < ARRAY_LEN(stats->msgs); ++i)
 	{

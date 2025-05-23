@@ -3891,9 +3891,7 @@ messages_cmd(const cmd_info_t *cmd_info)
 		return 0;
 
 	curr_stats.save_msg_in_list = 0;
-	curr_stats.allow_sb_msg_truncation = 0;
-	ui_sb_msg(lines);
-	curr_stats.allow_sb_msg_truncation = 1;
+	ui_sb_msg_full(lines);
 	curr_stats.save_msg_in_list = 1;
 
 	free(lines);

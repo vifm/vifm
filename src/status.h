@@ -155,7 +155,6 @@ typedef struct
 	int msg_head, msg_tail;
 	char *msgs[51];
 	int save_msg_in_list;
-	int allow_sb_msg_truncation; /* Whether truncation can be performed. */
 
 	int scroll_bind_off;
 	SPLIT split;

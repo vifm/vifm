@@ -37,7 +37,8 @@
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
-static void status_bar_message(const char message[], int error);
+static void status_bar_message(const char message[], int error,
+		int can_truncate);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 
@@ -119,7 +120,13 @@ ui_sb_quick_msg_clear(void)
 void
 ui_sb_msg(const char message[])
 {
-	status_bar_message(message, 0);
+	status_bar_message(message, /*error=*/0, /*can_truncate=*/1);
+}
+
+void
+ui_sb_msg_full(const char message[])
+{
+	status_bar_message(message, /*error=*/0, /*can_truncate=*/0);
 }
 
 void
@@ -137,7 +144,7 @@ ui_sb_msgf(const char format[], ...)
 void
 ui_sb_err(const char message[])
 {
-	status_bar_message(message, 1);
+	status_bar_message(message, /*error=*/1, /*can_truncate=*/1);
 }
 
 void
@@ -158,11 +165,11 @@ vstatus_bar_messagef(int error, const char format[], va_list ap)
 	char buf[1024];
 
 	vsnprintf(buf, sizeof(buf), format, ap);
-	status_bar_message(buf, error);
+	status_bar_message(buf, error, /*can_truncate=*/1);
 }
 
 static void
-status_bar_message(const char msg[], int error)
+status_bar_message(const char msg[], int error, int can_truncate)
 {
 	/* TODO: Refactor this function status_bar_message() */
 
@@ -215,7 +222,7 @@ status_bar_message(const char msg[], int error)
 
 	if(lines > 1)
 	{
-		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation &&
+		if(cfg.trunc_normal_sb_msgs && !err && can_truncate &&
 				status_bar_lines == 1)
 		{
 			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH(),
