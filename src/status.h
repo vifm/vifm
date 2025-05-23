@@ -152,6 +152,8 @@ typedef struct
 	/* Whether terminal uses direct colors. */
 	int direct_color;
 
+	/* A circular buffer containing the most recent messages displayed on the
+	 * command-line. */
 	int msg_head, msg_tail;
 	char *msgs[51];
 

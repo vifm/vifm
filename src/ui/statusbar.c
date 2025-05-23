@@ -248,6 +248,7 @@ status_bar_message(const char msg[], int error, int is_history)
 	lines = status_bar_lines;
 	if(status_bar_lines > 1 || utf8_strsw(msg) > (size_t)getmaxx(status_bar))
 	{
+		/* Need one more line to display PRESS_ENTER_MSG. */
 		++lines;
 	}
 
