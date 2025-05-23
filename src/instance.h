@@ -32,6 +32,10 @@ void instance_start_restart(RestartType type);
  * calls to instance_start_restart() and this function. */
 void instance_finish_restart(void);
 
+/* Loads configuration file taking care of anything that needs to be done before
+ * or after it. */
+void instance_load_config(void);
+
 #endif /* VIFM__INSTANCE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

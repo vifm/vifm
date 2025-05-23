@@ -19,6 +19,8 @@
 
 #include "instance.h"
 
+#include <assert.h> /* assert() */
+
 #include "cfg/config.h"
 #include "engine/abbrevs.h"
 #include "engine/autocmds.h"
@@ -140,7 +142,7 @@ instance_finish_restart(void)
 	}
 	cs_load_pairs();
 
-	cfg_load();
+	instance_load_config();
 	plugs_load(curr_stats.plugs, curr_stats.plugins_dirs);
 
 	vifm_reexec_startup_commands();
@@ -159,6 +161,22 @@ instance_finish_restart(void)
 	vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
 
 	update_screen(UT_REDRAW);
+}
+
+void
+instance_load_config(void)
+{
+	cfg_load();
+
+	/* Directory history is filled with data read from the state before its size
+	 * limit is known.  For this reason it's allowed to grow unlimited and
+	 * diverge from the size limit imposed by the 'history' option.  Setting an
+	 * option in the configuration to the default value of 15 or not setting it
+	 * there at all leaves the directory history size larger than it should be.
+	 * Enforce the expected size here to avoid the history growing unbounded. */
+	opt_t *history_opt = vle_opts_find("history", OPT_GLOBAL);
+	assert(history_opt != NULL && "'history' option must be there.");
+	cfg_resize_histories(history_opt->val.int_val);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

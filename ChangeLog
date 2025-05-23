@@ -5,6 +5,9 @@
 	Fixed picking trash directory when rooted trash is included in 'trashdir'
 	and root is writable.  Regression in v0.14.2.
 
+	Fixed unlimited growth of directory histories when 'history' is set to its
+	default value or not set at all in vifmrc.  Thanks to zoj613.
+
 0.14.1 to 0.14.2 (2025-05-07)
 
 	Fixed build issue with musl due to use of non-standard LONG_LONG_MAX.
