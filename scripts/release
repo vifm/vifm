@@ -4,7 +4,7 @@
 #  * VIFM_DATE_OVERRIDE -- date to use instead of "now"
 
 if [ "$#" -lt "1" ] || [ "$#" -gt "2" ]; then
-    echo "Usage: $0 version [all|update|commit|archive]"
+    echo "Usage: $0 version [all|bump|update|commit|archive]"
     exit 1
 fi
 
@@ -51,12 +51,14 @@ if [ "$OS" = Windows_NT ]; then
     fi
 fi
 
-if [ "$target" = all ] || [ "$target" = update ]; then
+if [ "$target" = all ] || [ "$target" = update ] || [ "$target" = bump ]; then
     echo "Updating version number..."
 
-    # update version in ChangeLogs
-    sed -i "s/to current\$/to $ver ($(date '+%Y-%m-%d'))/" \
-           ChangeLog ChangeLog.LuaAPI
+    if [ "$target" != bump ]; then
+        # update version in ChangeLogs
+        sed -i "s/to current\$/to $ver ($(date '+%Y-%m-%d'))/" \
+               ChangeLog ChangeLog.LuaAPI
+    fi
 
     # update version in configure script
     sed -i "/AC_INIT(/s/,\\[[^,]\\+/,[$ver]/" configure.ac
@@ -103,9 +105,11 @@ if [ "$target" = all ] || [ "$target" = update ]; then
     # update man pages
     sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%d %B %Y')\" \"vifm $ver\"/" data/man/*.1
 
-    # update first header in the NEWS file
-    sed -i -e "1s/.*/$(date '+%d %B %Y')/" \
-           -e "2{s/.*/$(date '+%d %B %Y')/;s/./=/g}" NEWS
+    if [ "$target" != bump ]; then
+        # update first header in the NEWS file
+        sed -i -e "1s/.*/$(date '+%d %B %Y')/" \
+               -e "2{s/.*/$(date '+%d %B %Y')/;s/./=/g}" NEWS
+    fi
 fi
 
 if [ "$target" = all ] || [ "$target" = commit ]; then
