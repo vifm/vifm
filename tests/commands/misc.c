@@ -664,6 +664,53 @@ TEST(mark_command)
 	assert_success(cmds_dispatch1("mark? y /tmp", &lwin, CIT_COMMAND));
 }
 
+TEST(messages_command)
+{
+	assert_success(stats_init(&cfg));
+
+	/* Nothing is printed when the history is empty. */
+	ui_sb_msg("");
+	assert_success(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_equal("", ui_sb_last());
+
+	/* An informational message is stored. */
+	ui_sb_msg("1 info");
+	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_equal("1 info", ui_sb_last());
+
+	/* An empty message isn't stored. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_equal("1 info", ui_sb_last());
+
+	/* Error messages are stored as well.  All messages are appened together. */
+	ui_sb_err("2 error");
+	ui_sb_err("3 error");
+	ui_sb_msg("4 info");
+	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_equal("1 info\n2 error\n3 error\n4 info", ui_sb_last());
+
+	/* Output of the command is not stored in history. */
+	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_equal("1 info\n2 error\n3 error\n4 info", ui_sb_last());
+
+	/* History is limited in its size. */
+	unsigned int i;
+	for(i = 0; i < ARRAY_LEN(curr_stats.msgs) - 4; ++i)
+	{
+		ui_sb_msgf("%d info", 4 + i);
+	}
+	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_starts_with("1 info\n", ui_sb_last());
+	assert_string_ends_with("\n50 info", ui_sb_last());
+
+	/* History only keeps the most recent entries. */
+	ui_sb_msg("51 info");
+	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_starts_with("2 error\n", ui_sb_last());
+	assert_string_ends_with("\n51 info", ui_sb_last());
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {
