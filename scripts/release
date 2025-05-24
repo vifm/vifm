@@ -96,9 +96,9 @@ if [ "$target" = all ] || [ "$target" = update ]; then
     sed -i "/^2001 - /s/-.*/$(date '+- %Y')/" README
 
     # update date in README.md
-    sed -i "/^_Latest release is /s/on .*/on $(date '+%d %B %Y')._/" README.md
+    sed -i "/^_Version /s/ on .*/ on $(date '+%d %B %Y')._/" README.md
     # update version in README.md
-    sed -i "/^_Latest release is /s/is .*\.  /is ${ver}.  /" README.md
+    sed -i "/^_Version /s/ .*\.  / ${ver}.  /" README.md
 
     # update man pages
     sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%d %B %Y')\" \"vifm $ver\"/" data/man/*.1
