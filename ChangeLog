@@ -2,6 +2,8 @@
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
 
+	Say "primary" instead of "default" in the title of :colorscheme menu.
+
 	Fixed picking trash directory when rooted trash is included in 'trashdir'
 	and root is writable.  Regression in v0.14.2.
 

@@ -37,7 +37,7 @@ int
 show_colorschemes_menu(view_t *view)
 {
 	static menu_data_t m;
-	menus_init_data(&m, view, strdup("Choose the default Color Scheme"),
+	menus_init_data(&m, view, strdup("Choose the primary Color Scheme"),
 			strdup("No color schemes found"));
 	m.execute_handler = &execute_colorscheme_cb;
 
