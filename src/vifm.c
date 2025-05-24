@@ -81,6 +81,7 @@
 #include "flist_hist.h"
 #include "flist_pos.h"
 #include "fops_common.h"
+#include "instance.h"
 #include "ipc.h"
 #include "marks.h"
 #include "ops.h"
@@ -313,7 +314,7 @@ vifm_main(int argc, char *argv[])
 	if(!vifm_args.no_configs)
 	{
 		load_scheme();
-		cfg_load();
+		instance_load_config();
 	}
 
 	if(lwin_cv || rwin_cv)

@@ -176,8 +176,6 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->msg_head = 0;
 	stats->msg_tail = 0;
-	stats->save_msg_in_list = 1;
-	stats->allow_sb_msg_truncation = 1;
 	size_t i;
 	for(i = 0U; i < ARRAY_LEN(stats->msgs); ++i)
 	{
@@ -225,8 +223,6 @@ load_def_values(status_t *stats, config_t *config)
 	stats->plugins_dirs.nitems = 0;
 
 	stats->global_local_settings = 0;
-
-	stats->history_size = 0;
 
 	ipc_free(stats->ipc);
 	plugs_free(stats->plugs);
@@ -356,7 +352,7 @@ stats_file_choose_action_set(void)
 void
 stats_save_msg(const char msg[])
 {
-	if(!curr_stats.save_msg_in_list || msg[0] == '\0')
+	if(msg[0] == '\0')
 	{
 		return;
 	}
@@ -502,8 +498,6 @@ stats_unsilence_ui(void)
 void
 hists_resize(int new_size)
 {
-	curr_stats.history_size = new_size;
-
 	hist_resize(&curr_stats.cmd_hist, new_size);
 	hist_resize(&curr_stats.menucmd_hist, new_size);
 	hist_resize(&curr_stats.exprreg_hist, new_size);

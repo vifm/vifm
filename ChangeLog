@@ -87,6 +87,12 @@
 	Fixed odd sorting with musl caused by its buggy strverscmp().  The
 	ordering shouldn't depend on libc in use.
 
+	Fixed unlimited growth of directory histories when 'history' is set to its
+	default value or not set at all in vifmrc.  Thanks to zoj613.
+
+	Fixed abort due to assertion on displaying a statusbar message with a
+	newline when 'shortmess' includes "T".  Thanks to agguser.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

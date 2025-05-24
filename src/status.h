@@ -152,10 +152,10 @@ typedef struct
 	/* Whether terminal uses direct colors. */
 	int direct_color;
 
+	/* A circular buffer containing the most recent messages displayed on the
+	 * command-line. */
 	int msg_head, msg_tail;
 	char *msgs[51];
-	int save_msg_in_list;
-	int allow_sb_msg_truncation; /* Whether truncation can be performed. */
 
 	int scroll_bind_off;
 	SPLIT split;
@@ -212,7 +212,6 @@ typedef struct
 
 	int global_local_settings; /* Set local settings globally. */
 
-	int history_size;    /* Number of elements in histories. */
 	hist_t cmd_hist;     /* History of command-line commands. */
 	hist_t menucmd_hist; /* History of command-line commands in menus. */
 	hist_t exprreg_hist; /* History of expression register. */

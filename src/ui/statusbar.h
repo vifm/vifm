@@ -52,6 +52,10 @@ void ui_sb_err(const char message[]);
 /* Prints error message on the status bar specified as format string. */
 void ui_sb_errf(const char message[], ...) _gnuc_printf(1, 2);
 
+/* Displays some of the most recent statusbar messages.  Returns non-zero if
+ * anything was displayed (i.e., there were previous messages). */
+int ui_sb_msg_show_history(void);
+
 /* Quick messages (which aren't stored in history). */
 
 /* Immediately (UI is updated) displays message on the status bar without

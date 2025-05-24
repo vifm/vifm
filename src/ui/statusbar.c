@@ -37,7 +37,7 @@
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
-static void status_bar_message(const char message[], int error);
+static void status_bar_message(const char message[], int error, int is_history);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 
@@ -119,7 +119,42 @@ ui_sb_quick_msg_clear(void)
 void
 ui_sb_msg(const char message[])
 {
-	status_bar_message(message, 0);
+	status_bar_message(message, /*error=*/0, /*is_history=*/0);
+}
+
+int
+ui_sb_msg_show_history(void)
+{
+	char *lines;
+	size_t len;
+	int count;
+	int t;
+
+	lines = NULL;
+	len = 0;
+	count = curr_stats.msg_tail - curr_stats.msg_head;
+	if(count < 0)
+		count += ARRAY_LEN(curr_stats.msgs);
+	t = (curr_stats.msg_head + 1) % ARRAY_LEN(curr_stats.msgs);
+	while(count-- > 0)
+	{
+		const char *msg = curr_stats.msgs[t];
+		char *new_lines = realloc(lines, len + 1 + strlen(msg) + 1);
+		if(new_lines != NULL)
+		{
+			lines = new_lines;
+			len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", msg);
+			t = (t + 1) % ARRAY_LEN(curr_stats.msgs);
+		}
+	}
+
+	if(lines == NULL)
+		return 0;
+
+	status_bar_message(lines, /*error=*/0, /*is_history=*/1);
+
+	free(lines);
+	return 1;
 }
 
 void
@@ -137,7 +172,7 @@ ui_sb_msgf(const char format[], ...)
 void
 ui_sb_err(const char message[])
 {
-	status_bar_message(message, 1);
+	status_bar_message(message, /*error=*/1, /*is_history=*/0);
 }
 
 void
@@ -158,21 +193,17 @@ vstatus_bar_messagef(int error, const char format[], va_list ap)
 	char buf[1024];
 
 	vsnprintf(buf, sizeof(buf), format, ap);
-	status_bar_message(buf, error);
+	status_bar_message(buf, error, /*is_history=*/0);
 }
 
+/* Displays an informational or an error message.  If is_history is non-zero,
+ * the message is not truncated and is not added to history. */
 static void
-status_bar_message(const char msg[], int error)
+status_bar_message(const char msg[], int error, int is_history)
 {
 	/* TODO: Refactor this function status_bar_message() */
 
 	static int err;
-
-	int len;
-	int lines;
-	int status_bar_lines;
-	const char *out_msg;
-	char truncated_msg[2048];
 
 	if(msg != NULL)
 	{
@@ -183,7 +214,10 @@ status_bar_message(const char msg[], int error)
 
 		err = error;
 
-		stats_save_msg(last_message);
+		if(!is_history)
+		{
+			stats_save_msg(last_message);
+		}
 	}
 	else
 	{
@@ -202,48 +236,49 @@ status_bar_message(const char msg[], int error)
 		return;
 	}
 
-	len = getmaxx(stdscr);
-	status_bar_lines = count_lines(msg, len);
+	int max_width = getmaxx(stdscr);
+	int msg_lines = count_lines(msg, max_width);
 
-	lines = status_bar_lines;
-	if(status_bar_lines > 1 || utf8_strsw(msg) > (size_t)getmaxx(status_bar))
+	int output_lines = msg_lines;
+	if(msg_lines > 1 || utf8_strsw(msg) > (size_t)getmaxx(status_bar))
 	{
-		++lines;
+		/* Need one more line to display PRESS_ENTER_MSG. */
+		++output_lines;
 	}
 
-	out_msg = msg;
+	const char *output_msg = msg;
+	char truncated_msg[2048];
 
-	if(lines > 1)
+	if(output_lines > 1)
 	{
-		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation)
+		if(cfg.trunc_normal_sb_msgs && !err && !is_history && msg_lines == 1)
 		{
-			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH(),
-					truncated_msg);
-			out_msg = truncated_msg;
-			lines = 1;
+			truncate_with_ellipsis(msg, max_width - FIELDS_WIDTH(), truncated_msg);
+			output_msg = truncated_msg;
+			output_lines = 1;
 		}
 		else
 		{
-			const int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, len) - 1;
-			lines += extra;
+			int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, max_width) - 1;
+			output_lines += extra;
 		}
 	}
 
-	if(lines > getmaxy(stdscr))
+	if(output_lines > getmaxy(stdscr))
 	{
 		modmore_enter(msg);
 		return;
 	}
 
-	(void)ui_stat_reposition(lines, 0);
-	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
-	if(lines == 1)
+	(void)ui_stat_reposition(output_lines, 0);
+	mvwin(status_bar, getmaxy(stdscr) - output_lines, 0);
+	if(output_lines == 1)
 	{
-		wresize(status_bar, lines, getmaxx(stdscr) - FIELDS_WIDTH());
+		wresize(status_bar, output_lines, max_width - FIELDS_WIDTH());
 	}
 	else
 	{
-		wresize(status_bar, lines, getmaxx(stdscr));
+		wresize(status_bar, output_lines, max_width);
 	}
 	checked_wmove(status_bar, 0, 0);
 
@@ -260,15 +295,15 @@ status_bar_message(const char msg[], int error)
 	}
 	werase(status_bar);
 
-	wprint(status_bar, out_msg);
-	multiline_status_bar = lines > 1;
+	wprint(status_bar, output_msg);
+	multiline_status_bar = output_lines > 1;
 	if(multiline_status_bar)
 	{
 		checked_wmove(status_bar,
-				lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len), 0);
+				output_lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), max_width), 0);
 		wclrtoeol(status_bar);
-		if(lines < status_bar_lines)
-			wprintw(status_bar, "%d of %d lines.  ", lines, status_bar_lines);
+		if(output_lines < msg_lines)
+			wprintw(status_bar, "%d of %d lines.  ", output_lines, msg_lines);
 		wprintw(status_bar, "%s", PRESS_ENTER_MSG);
 	}
 

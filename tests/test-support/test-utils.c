@@ -160,6 +160,10 @@ conf_teardown(void)
 	update_string(&cfg.shell, NULL);
 	update_string(&cfg.shell_cmd_flag, NULL);
 
+	/* Non-zero history size has implications for views and status, so reset
+	 * it. */
+	cfg.history_len = 0;
+
 	cfg.dot_dirs = 0;
 
 	cfg.sizefmt.base = 0;
