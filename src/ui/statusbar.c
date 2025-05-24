@@ -205,12 +205,6 @@ status_bar_message(const char msg[], int error, int is_history)
 
 	static int err;
 
-	int len;
-	int lines;
-	int status_bar_lines;
-	const char *out_msg;
-	char truncated_msg[2048];
-
 	if(msg != NULL)
 	{
 		if(replace_string(&last_message, msg))
@@ -242,49 +236,49 @@ status_bar_message(const char msg[], int error, int is_history)
 		return;
 	}
 
-	len = getmaxx(stdscr);
-	status_bar_lines = count_lines(msg, len);
+	int max_width = getmaxx(stdscr);
+	int msg_lines = count_lines(msg, max_width);
 
-	lines = status_bar_lines;
-	if(status_bar_lines > 1 || utf8_strsw(msg) > (size_t)getmaxx(status_bar))
+	int output_lines = msg_lines;
+	if(msg_lines > 1 || utf8_strsw(msg) > (size_t)getmaxx(status_bar))
 	{
 		/* Need one more line to display PRESS_ENTER_MSG. */
-		++lines;
+		++output_lines;
 	}
 
-	out_msg = msg;
+	const char *output_msg = msg;
+	char truncated_msg[2048];
 
-	if(lines > 1)
+	if(output_lines > 1)
 	{
-		if(cfg.trunc_normal_sb_msgs && !err && !is_history && status_bar_lines == 1)
+		if(cfg.trunc_normal_sb_msgs && !err && !is_history && msg_lines == 1)
 		{
-			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH(),
-					truncated_msg);
-			out_msg = truncated_msg;
-			lines = 1;
+			truncate_with_ellipsis(msg, max_width - FIELDS_WIDTH(), truncated_msg);
+			output_msg = truncated_msg;
+			output_lines = 1;
 		}
 		else
 		{
-			const int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, len) - 1;
-			lines += extra;
+			int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, max_width) - 1;
+			output_lines += extra;
 		}
 	}
 
-	if(lines > getmaxy(stdscr))
+	if(output_lines > getmaxy(stdscr))
 	{
 		modmore_enter(msg);
 		return;
 	}
 
-	(void)ui_stat_reposition(lines, 0);
-	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
-	if(lines == 1)
+	(void)ui_stat_reposition(output_lines, 0);
+	mvwin(status_bar, getmaxy(stdscr) - output_lines, 0);
+	if(output_lines == 1)
 	{
-		wresize(status_bar, lines, getmaxx(stdscr) - FIELDS_WIDTH());
+		wresize(status_bar, output_lines, max_width - FIELDS_WIDTH());
 	}
 	else
 	{
-		wresize(status_bar, lines, getmaxx(stdscr));
+		wresize(status_bar, output_lines, max_width);
 	}
 	checked_wmove(status_bar, 0, 0);
 
@@ -301,15 +295,15 @@ status_bar_message(const char msg[], int error, int is_history)
 	}
 	werase(status_bar);
 
-	wprint(status_bar, out_msg);
-	multiline_status_bar = lines > 1;
+	wprint(status_bar, output_msg);
+	multiline_status_bar = output_lines > 1;
 	if(multiline_status_bar)
 	{
 		checked_wmove(status_bar,
-				lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len), 0);
+				output_lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), max_width), 0);
 		wclrtoeol(status_bar);
-		if(lines < status_bar_lines)
-			wprintw(status_bar, "%d of %d lines.  ", lines, status_bar_lines);
+		if(output_lines < msg_lines)
+			wprintw(status_bar, "%d of %d lines.  ", output_lines, msg_lines);
 		wprintw(status_bar, "%s", PRESS_ENTER_MSG);
 	}
 
