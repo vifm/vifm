@@ -23,6 +23,8 @@
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
 
+	Say "primary" instead of "default" in the title of :colorscheme menu.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
