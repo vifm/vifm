@@ -4,6 +4,8 @@
 
 	Say "primary" instead of "default" in the title of :colorscheme menu.
 
+	Improved documentation on the use registers.  Thanks to aleksejrs.
+
 	Fixed picking trash directory when rooted trash is included in 'trashdir'
 	and root is writable.  Regression in v0.14.2.
 
