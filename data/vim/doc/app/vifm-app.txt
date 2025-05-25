@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 May 24
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 May 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -736,43 +736,41 @@ downward.
 
 Registers~
                                                *vifm-registers*
-vifm supports multiple registers for temporary storing list of yanked or
+vifm supports multiple registers to temporary store lists of yanked and/or
 deleted files.
 
-Registers should be specified by hitting double quote key followed by a
-register name.  Count is specified after register name.  By default
-commands use unnamed register, which has double quote as its name.
+Registers are specified by pressing double quote key followed by a register
+name before typing a command.  Count is specified after a register name.
+By default commands use unnamed register, which has double quote as its name.
 
-Though all commands accept registers, most of commands ignores them (for
-example H or Ctrl-U).  Other commands can fill register or append new
-files to it.
+Though all commands accept registers, most commands ignore them (for
+example, |vifm-H| or |vifm-CTRL-U|).  Other commands fill a register, append
+new files to it or use it as a source of list of files.
 
 Presently vifm supports ", _, a-z and A-Z characters as register names.
+
+As mentioned above " is unnamed register and has special meaning of the
+default register.  Every time a named register (a-z and A-Z) is used, unnamed
+register is updated to contain the same list of files.
 
 _ is black hole register.  It can be used for writing, but its list is always
 empty.
 
-As mentioned above " is unnamed register and has special meaning of the
-default register.  Every time when you use named registers (a-z and A-Z)
-unnamed register is updated to contain same list of files as the last
-used register.
-
 Registers with names from a to z and from A to Z are named ones.
-Lowercase registers are cleared before adding new files, while uppercase
+Lowercase registers are cleared before adding new files, while uppercase ones
 aren't and should be used to append new files to the existing file list
-of appropriate lowercase register (A for a, B for b, ...).
+of a corresponding lowercase register (A for a, B for b, ...).
 
-Registers can be changed on :empty command if they contain files under
-|vifm-trash| directory.
+Registers contain each file at most once.  Nonexistent files are dropped from
+them.  In particular, registers can be changed on |vifm-:empty| command if
+they include files under |vifm-trash| directory.
 
-Registers do not contain one file more than once.
-
-Example:
+Example: >
   "a2yy
-puts names of two files to register a (and to the unnamed register).
-  "Ad
+puts names of two files to register a (and to the unnamed register), >
+  "Add
 removes one file and append its name to register a (and to the unnamed
-register).
+register), >
   p or "ap or "Ap
 inserts previously yanked and deleted files into current directory.
 
