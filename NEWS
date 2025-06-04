@@ -1,3 +1,35 @@
+04 June 2025
+============
+
+Vifm v0.14.3
+------------
+
+Thanks for the bug reports.  The 'trashdir' saga continues, sorry for the
+inconveniences.
+
+Documentation:
+ - Improved documentation on the use of registers.  Thanks to aleksejrs.
+
+Menus and dialogs:
+ - Say "primary" instead of "default" in the title of :colorscheme menu.
+
+Other changes:
+ - Provided more details on file handlers and viewers in sample vifmrc files.
+
+Fixes:
+ - Fixed picking trash directory when rooted trash is included in 'trashdir'
+   and root is writable.  Regression in v0.14.2 (unfortunately, testing this
+   automatically is problematic).
+ - Fixed unlimited growth of directory histories when 'history' is set to its
+   default value or not set at all in vifmrc.  Thanks to zoj613.
+ - Fixed abort due to assertion on displaying a statusbar message with a
+   newline when 'shortmess' includes "T".  Thanks to agguser.
+
+See the ChangeLog file for the full list of changes and by whom they were
+suggested or implemented.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 07 May 2025
 ===========
 
