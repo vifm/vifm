@@ -1,5 +1,8 @@
 0.14 to current
 
+	Changed default of 'iooptions' to have "fastfilecloning" enabled by
+	default.  Thanks to v-Nyo.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more

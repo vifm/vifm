@@ -236,7 +236,7 @@ cfg_init(void)
 	cfg.name_decs = NULL;
 	cfg.name_dec_count = 0;
 
-	cfg.fast_file_cloning = 0;
+	cfg.fast_file_cloning = 1;
 	cfg.data_sync = 1;
 
 	cfg.cvoptions = 0;
