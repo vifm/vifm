@@ -3,6 +3,10 @@
 	Changed default of 'iooptions' to have "fastfilecloning" enabled by
 	default.  Thanks to v-Nyo.
 
+	Changed "/" suffix in suggestions for marks to indicate a mark pointing
+	inside of a directory, instead of to indicate directories.  Thanks to
+	CaptainFantastic.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more

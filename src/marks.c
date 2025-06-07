@@ -442,14 +442,17 @@ marks_suggest(view_t *view, mark_suggest_cb cb, int local_only)
 			continue;
 		}
 
-		if(marks_is_valid(view, m) && !is_parent_dir(mark->file))
+		if(marks_is_valid(view, m))
 		{
-			char path[PATH_MAX + 1];
-			file = mark->file;
-			snprintf(path, sizeof(path), "%s/%s", mark->directory, file);
-			if(is_dir(path))
+			if(is_parent_dir(mark->file))
 			{
+				/* Indicate to the user that the mark is pointing inside the
+				 * directory. */
 				suffix = "/";
+			}
+			else
+			{
+				file = mark->file;
 			}
 		}
 
