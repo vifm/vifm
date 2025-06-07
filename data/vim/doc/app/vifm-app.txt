@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 May 25
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 June 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3785,7 +3785,7 @@ changed.
                                                *vifm-'iooptions'*
 iooptions
 type: set
-default: datasync
+default: datasync,fastfilecloning
 
 Controls details of file operations.  The following values are available:
  - datasync - periodically synchronize writes on copying files when
