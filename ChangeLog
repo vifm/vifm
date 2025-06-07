@@ -34,6 +34,9 @@
 
 	Improved documentation on the use registers.  Thanks to aleksejrs.
 
+	Display descriptions as "{...}" rather than "[...]" in :file and
+	:file[x]type menus.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.

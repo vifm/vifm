@@ -121,7 +121,7 @@ TEST(pseudo_entry_is_always_present_for_directories)
 	assert_success(cmds_dispatch("filetype bla-dir/", &lwin, CIT_COMMAND));
 
 	assert_int_equal(2, menu_get_current()->len);
-	assert_string_equal("[present] [Enter directory] " VIFM_PSEUDO_CMD,
+	assert_string_equal("[present] {Enter directory} " VIFM_PSEUDO_CMD,
 			menu_get_current()->items[0]);
 	assert_string_equal("[present]                   abc-run %c",
 			menu_get_current()->items[1]);
