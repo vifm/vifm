@@ -81,6 +81,37 @@ environments using methods most native to them.
 | Slackware                                            | `sbopkg -i vifm`
 | macOS                                                | `brew install vifm` or `port install vifm`
 
+### AppImage ###
+
+In case of a Linux distribution which doesn't package Vifm or which offers an
+outdated version, an AppImage binary can be used to avoid compiling from
+sources.  This method of installation requires downloading an `.AppImage` file
+on a system younger than 10 years with a FUSE-capable kernel and marking that
+file as executable.
+
+As a convenience, here are commands that download AppImage binary for the latest
+release and save it as `~/.local/bin/vifm` (thanks to [@benelan], see
+[GitHub#975]).
+
+#### `curl` + `sed` ####
+
+```bash
+curl -Lso ~/.local/bin/vifm \
+    "https://github.com/vifm/vifm/releases/latest/download/vifm-v$(
+        curl -Ls "https://api.github.com/repos/vifm/vifm/releases/latest" |
+        sed -nE '/"tag_name":/s/.*"v*([^"]+)".*/\1/p'
+    )-x86_64.AppImage" && chmod +x ~/.local/bin/vifm
+```
+
+#### `wget` + `jq` ####
+
+```bash
+wget -qO ~/.local/bin/vifm "$(
+        wget -qO - "https://api.github.com/repos/vifm/vifm/releases/latest" |
+        jq -r '.assets[] | select(.name|endswith(".AppImage")) | .browser_download_url'
+    )" && chmod +x ~/.local/bin/vifm
+```
+
 ## License ##
 
 GNU General Public License, version 2 or later.
@@ -104,6 +135,8 @@ GNU General Public License, version 2 or later.
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
 [Sixel]: https://www.arewesixelyet.com/
+[@benelan]: https://github.com/benelan
+[GitHub#975]: https://github.com/vifm/vifm/issues/975
 
 [AA]: https://ci.appveyor.com/api/projects/status/ywfhdev1l3so1f5e/branch/master?svg=true
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
