@@ -5,6 +5,7 @@
 #include "../../src/modes/modes.h"
 
 #include "builtin_keys.h"
+#include "suite.h"
 
 static int handler(wchar_t key);
 
@@ -13,8 +14,8 @@ static int mapping_states;
 SETUP()
 {
 	vle_keys_set_def_handler(CMDLINE_MODE, &handler);
-	vle_keys_user_add(L"s", L":shell", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"M", L"mx", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"s", L":shell", NORMAL_MODE));
+	assert_success(set_user_key(L"M", L"mx", NORMAL_MODE));
 }
 
 TEARDOWN()

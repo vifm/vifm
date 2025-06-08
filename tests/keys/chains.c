@@ -5,10 +5,11 @@
 #include "../../src/modes/modes.h"
 
 #include "builtin_keys.h"
+#include "suite.h"
 
 SETUP()
 {
-	vle_keys_user_add(L"d", L"vz", VISUAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"d", L"vz", VISUAL_MODE));
 }
 
 TEST(do_not_rerun_chain_on_failure)

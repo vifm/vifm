@@ -5,6 +5,8 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
+#include "suite.h"
+
 static void process_listing(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 
@@ -12,11 +14,11 @@ static int nitems;
 
 SETUP()
 {
-	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"hi", L"j", NORMAL_MODE));
+	assert_success(set_user_key(L"hi2", L"hi", NORMAL_MODE));
 
-	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"ho", L"j", NORMAL_MODE));
+	assert_success(set_user_key(L"ha2", L"ho", NORMAL_MODE));
 
 	nitems = 0;
 }

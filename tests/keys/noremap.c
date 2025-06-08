@@ -4,6 +4,7 @@
 #include "../../src/modes/modes.h"
 
 #include "builtin_keys.h"
+#include "suite.h"
 
 TEST(without_noremap)
 {
@@ -13,10 +14,8 @@ TEST(without_noremap)
 	assert_int_equal(0, vle_keys_exec(L"j"));
 	assert_int_equal(2, last);
 
-	assert_int_equal(0, vle_keys_user_add(L"j", L"k", NORMAL_MODE,
-				KEYS_FLAG_NONE));
-	assert_int_equal(0, vle_keys_user_add(L"q", L"j", NORMAL_MODE,
-				KEYS_FLAG_NONE));
+	assert_success(set_user_key(L"j", L"k", NORMAL_MODE));
+	assert_success(set_user_key(L"q", L"j", NORMAL_MODE));
 
 	assert_int_equal(0, vle_keys_exec(L"j"));
 	assert_int_equal(1, last);
@@ -33,10 +32,9 @@ TEST(with_noremap)
 	assert_int_equal(0, vle_keys_exec(L"j"));
 	assert_int_equal(2, last);
 
-	assert_int_equal(0, vle_keys_user_add(L"j", L"k", NORMAL_MODE,
-				KEYS_FLAG_NONE));
-	assert_int_equal(0, vle_keys_user_add(L"q", L"j", NORMAL_MODE,
-				KEYS_FLAG_NOREMAP));
+	assert_success(set_user_key(L"j", L"k", NORMAL_MODE));
+	assert_success(set_user_key(L"q", L"j", NORMAL_MODE));
+	assert_success(vle_keys_user_add(L"q", L"j", NORMAL_MODE, KEYS_FLAG_NOREMAP));
 
 	assert_int_equal(0, vle_keys_exec(L"j"));
 	assert_int_equal(1, last);
@@ -47,7 +45,7 @@ TEST(with_noremap)
 
 TEST(noremap_functions)
 {
-	assert_success(vle_keys_user_add(L"w", L"k", NORMAL_MODE, KEYS_FLAG_NONE));
+	assert_success(set_user_key(L"w", L"k", NORMAL_MODE));
 
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"w")));
 	assert_true(IS_KEYS_RET_CODE(vle_keys_exec_no_remap(L"w")));

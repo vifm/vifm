@@ -4,10 +4,11 @@
 #include "../../src/modes/modes.h"
 
 #include "builtin_keys.h"
+#include "suite.h"
 
 SETUP()
 {
-	vle_keys_user_add(L"abc", L"", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"abc", L"", NORMAL_MODE));
 }
 
 TEST(nop_no_follow_ok)

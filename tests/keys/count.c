@@ -9,10 +9,11 @@
 #include "../../src/utils/str.h"
 
 #include "builtin_keys.h"
+#include "suite.h"
 
 SETUP()
 {
-	vle_keys_user_add(L"abc", L"", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"abc", L"", NORMAL_MODE));
 }
 
 TEST(no_number_get_not_def)

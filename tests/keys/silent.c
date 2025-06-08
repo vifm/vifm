@@ -27,7 +27,7 @@ TEST(removing_user_mapping_from_a_mapping_is_fine)
 	vle_keys_add(&keys, 1U, NORMAL_MODE);
 
 	assert_int_equal(0, silence);
-	vle_keys_user_add(L"a", L"x", NORMAL_MODE, KEYS_FLAG_SILENT);
+	assert_success(vle_keys_user_add(L"a", L"x", NORMAL_MODE, KEYS_FLAG_SILENT));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"a")));
 	assert_int_equal(0, silence);
 }

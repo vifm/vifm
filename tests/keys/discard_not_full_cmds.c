@@ -3,9 +3,11 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
+#include "suite.h"
+
 SETUP()
 {
-	vle_keys_user_add(L"ui", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"ui", L"k", NORMAL_MODE));
 }
 
 TEST(wait_full_command)

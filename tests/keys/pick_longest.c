@@ -3,15 +3,17 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
+#include "suite.h"
+
 SETUP()
 {
-	vle_keys_user_add(L"a", L"z", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"ab", L"x", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"abc", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"a", L"z", NORMAL_MODE));
+	assert_success(set_user_key(L"ab", L"x", NORMAL_MODE));
+	assert_success(set_user_key(L"abc", L"k", NORMAL_MODE));
 
-	vle_keys_user_add(L"q", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"qb", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"qbc", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"q", L"k", NORMAL_MODE));
+	assert_success(set_user_key(L"qb", L"k", NORMAL_MODE));
+	assert_success(set_user_key(L"qbc", L"k", NORMAL_MODE));
 }
 
 TEST(when_previous_unknown)
