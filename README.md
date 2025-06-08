@@ -59,6 +59,28 @@ mode (that is Normal mode), reading some sections on basic usage on
 [the wiki][wiki-manual] and looking at sample configuration file (run
 `:edit $MYVIFMRC`).
 
+## Installation ##
+
+Below are some suggestions on how Vifm can be installed in various
+environments using methods most native to them.
+
+| OS, distribution or package manager                  | Installation command
+| :----------------------------------                  | :-------------------
+| Alpine                                               | `apk add vifm`
+| Arch and derivatives (e.g., Manjaro)                 | `pacman -S vifm`
+| Debian and derivatives (e.g., Ubuntu)                | `apt install vifm`
+| Fedora and derivatives (e.g., Rocky, Qubes OS, RHEL) | `dnf install vifm` or `yum install vifm`
+| FreeBSD                                              | `pkg install vifm`
+| Gentoo                                               | `emerge vifm`
+| Guix                                                 | `guix package -i vifm`
+| Linuxbrew                                            | `brew install vifm`
+| NetBSD                                               | `pkg_add vifm` or `pkgin install vifm`
+| Nix                                                  | `nix-env -i vifm`
+| OpenBSD                                              | `pkg_add vifm`
+| OpenSUSE                                             | `zypper install vifm`
+| Slackware                                            | `sbopkg -i vifm`
+| macOS                                                | `brew install vifm` or `port install vifm`
+
 ## License ##
 
 GNU General Public License, version 2 or later.
