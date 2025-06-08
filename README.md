@@ -1,6 +1,6 @@
 # Vifm – Vim-like file manager
 
-![Vifm logo](data/graphics/vifm-96px.png)
+![Vifm logo](data/graphics/vifm.svg)
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
