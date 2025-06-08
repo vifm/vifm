@@ -1,14 +1,10 @@
 # Vifm – Vim-like file manager
 
-![Vifm logo](data/graphics/vifm.svg)
+<img align="left" src="data/graphics/vifm.svg"/>
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
-_Version 0.15.  This file last updated on 24 May 2025._
-
-## Brief Description ##
-
-**Vifm** is a curses based Vim-like file manager extended with some useful
+Vifm is a curses based Vim-like file manager extended with some useful
 ideas from mutt.  If you use Vim, Vifm gives you complete keyboard control
 over your files without having to learn a new set of commands.  It goes not
 just about Vim-like keybindings, but also about modes, options, registers,
@@ -18,6 +14,8 @@ Just like Vim, Vifm tries to adhere to the Unix philosophy.  So instead of
 working solutions which are set in stone user is provided with a set of
 means for customization of Vifm to one's likings.  Though builtin
 functionality should be enough for most of use cases.
+
+_Version 0.15.  This file last updated on 8 June 2025._
 
 ## Resources and Contacts ##
 
