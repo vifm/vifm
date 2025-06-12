@@ -50,6 +50,10 @@ _Version 0.15.  This file last updated on 12 June 2025._
 ![Screenshot](data/graphics/screenshot.png)
 ![Screenshot](data/graphics/screenshot2.png)
 
+More screenshots are [here][gallery].
+
+[gallery]: https://vifm.info/gallery
+
 ## Getting Started ##
 
 A good idea for quick start might be skimming over [cheatsheet] for the main
