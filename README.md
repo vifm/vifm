@@ -15,7 +15,7 @@ working solutions which are set in stone user is provided with a set of
 means for customization of Vifm to one's likings.  Though builtin
 functionality should be enough for most of use cases.
 
-_Version 0.15.  This file last updated on 8 June 2025._
+_Version 0.15.  This file last updated on 12 June 2025._
 
 ## Resources and Contacts ##
 
@@ -56,6 +56,15 @@ A good idea for quick start might be skimming over [cheatsheet] for the main
 mode (that is Normal mode), reading some sections on basic usage on
 [the wiki][wiki-manual] and looking at sample configuration file (run
 `:edit $MYVIFMRC`).
+
+How well Vifm will serve you in part depends on how well you understand its
+Vim-like nature.  The following posts are highly recommended reads to help you
+improve with that:
+ - [Seven habits of effective text editing][7-habits] by Bram Moolenar
+ - [Your problem with Vim is that you don't grok vi][grok-vim] by Jim Dennis
+
+[7-habits]: https://www.moolenaar.net/habits.html
+[grok-vim]: https://stackoverflow.com/a/1220118/1535516
 
 ## Installation ##
 
