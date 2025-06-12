@@ -4,6 +4,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/engine/completion.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/lua/vlua.h"
@@ -155,6 +156,33 @@ TEST(pending_flags_are_reset)
 
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;
+}
+
+TEST(key_suggestions)
+{
+	cfg.sug.flags = SF_NORMAL | SF_KEYS;
+	cfg.min_timeout_len = 1;
+
+	keys_add_info_t x_key = { WK_X, { {&X_key} } };
+	vle_keys_add(&x_key, 1U, NORMAL_MODE);
+
+	assert_success(vle_keys_user_add(L"Xj", L"j", NORMAL_MODE, KEYS_FLAG_NONE));
+	assert_success(vle_keys_user_add(L"Xk", L"k", NORMAL_MODE, KEYS_FLAG_NONE));
+
+	feed_keys(L"X");
+
+	quit = 0;
+	event_loop(&quit, /*manage_marking=*/1);
+
+	const vle_compl_t *items = vle_compl_get_items();
+	assert_int_equal(2, vle_compl_get_count());
+	assert_string_equal("key: j", items[0].text);
+	assert_string_equal("j", items[0].descr);
+	assert_string_equal("key: k", items[1].text);
+	assert_string_equal("k", items[1].descr);
+
+	cfg.sug.flags = 0;
+	cfg.min_timeout_len = 0;
 }
 
 static void
