@@ -1,14 +1,10 @@
 # Vifm – Vim-like file manager
 
-![Vifm logo](data/graphics/vifm-96px.png)
+<img align="left" src="data/graphics/vifm.svg"/>
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
-_Version 0.15.  This file last updated on 24 May 2025._
-
-## Brief Description ##
-
-**Vifm** is a curses based Vim-like file manager extended with some useful
+Vifm is a curses based Vim-like file manager extended with some useful
 ideas from mutt.  If you use Vim, Vifm gives you complete keyboard control
 over your files without having to learn a new set of commands.  It goes not
 just about Vim-like keybindings, but also about modes, options, registers,
@@ -18,6 +14,8 @@ Just like Vim, Vifm tries to adhere to the Unix philosophy.  So instead of
 working solutions which are set in stone user is provided with a set of
 means for customization of Vifm to one's likings.  Though builtin
 functionality should be enough for most of use cases.
+
+_Version 0.15.  This file last updated on 12 June 2025._
 
 ## Resources and Contacts ##
 
@@ -52,12 +50,78 @@ functionality should be enough for most of use cases.
 ![Screenshot](data/graphics/screenshot.png)
 ![Screenshot](data/graphics/screenshot2.png)
 
+More screenshots are [here][gallery].
+
+[gallery]: https://vifm.info/gallery
+
 ## Getting Started ##
 
 A good idea for quick start might be skimming over [cheatsheet] for the main
 mode (that is Normal mode), reading some sections on basic usage on
 [the wiki][wiki-manual] and looking at sample configuration file (run
 `:edit $MYVIFMRC`).
+
+How well Vifm will serve you in part depends on how well you understand its
+Vim-like nature.  The following posts are highly recommended reads to help you
+improve with that:
+ - [Seven habits of effective text editing][7-habits] by Bram Moolenar
+ - [Your problem with Vim is that you don't grok vi][grok-vim] by Jim Dennis
+
+[7-habits]: https://www.moolenaar.net/habits.html
+[grok-vim]: https://stackoverflow.com/a/1220118/1535516
+
+## Installation ##
+
+Below are some suggestions on how Vifm can be installed in various
+environments using methods most native to them.
+
+| OS, distribution or package manager                  | Installation command
+| :----------------------------------                  | :-------------------
+| Alpine                                               | `apk add vifm`
+| Arch and derivatives (e.g., Manjaro)                 | `pacman -S vifm`
+| Debian and derivatives (e.g., Ubuntu)                | `apt install vifm`
+| Fedora and derivatives (e.g., Rocky, Qubes OS, RHEL) | `dnf install vifm` or `yum install vifm`
+| FreeBSD                                              | `pkg install vifm`
+| Gentoo                                               | `emerge vifm`
+| Guix                                                 | `guix package -i vifm`
+| Linuxbrew                                            | `brew install vifm`
+| NetBSD                                               | `pkg_add vifm` or `pkgin install vifm`
+| Nix                                                  | `nix-env -i vifm`
+| OpenBSD                                              | `pkg_add vifm`
+| OpenSUSE                                             | `zypper install vifm`
+| Slackware                                            | `sbopkg -i vifm`
+| macOS                                                | `brew install vifm` or `port install vifm`
+
+### AppImage ###
+
+In case of a Linux distribution which doesn't package Vifm or which offers an
+outdated version, an AppImage binary can be used to avoid compiling from
+sources.  This method of installation requires downloading an `.AppImage` file
+on a system younger than 10 years with a FUSE-capable kernel and marking that
+file as executable.
+
+As a convenience, here are commands that download AppImage binary for the latest
+release and save it as `~/.local/bin/vifm` (thanks to [@benelan], see
+[GitHub#975]).
+
+#### `curl` + `sed` ####
+
+```bash
+curl -Lso ~/.local/bin/vifm \
+    "https://github.com/vifm/vifm/releases/latest/download/vifm-v$(
+        curl -Ls "https://api.github.com/repos/vifm/vifm/releases/latest" |
+        sed -nE '/"tag_name":/s/.*"v*([^"]+)".*/\1/p'
+    )-x86_64.AppImage" && chmod +x ~/.local/bin/vifm
+```
+
+#### `wget` + `jq` ####
+
+```bash
+wget -qO ~/.local/bin/vifm "$(
+        wget -qO - "https://api.github.com/repos/vifm/vifm/releases/latest" |
+        jq -r '.assets[] | select(.name|endswith(".AppImage")) | .browser_download_url'
+    )" && chmod +x ~/.local/bin/vifm
+```
 
 ## License ##
 
@@ -82,6 +146,8 @@ GNU General Public License, version 2 or later.
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
 [Sixel]: https://www.arewesixelyet.com/
+[@benelan]: https://github.com/benelan
+[GitHub#975]: https://github.com/vifm/vifm/issues/975
 
 [AA]: https://ci.appveyor.com/api/projects/status/ywfhdev1l3so1f5e/branch/master?svg=true
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
