@@ -305,6 +305,11 @@ free_chunk_data(key_chunk_t *chunk)
 	{
 		free(chunk->conf.data.cmd);
 	}
+
+	if(chunk->foreign)
+	{
+		free((char *)chunk->conf.descr);
+	}
 }
 
 void
@@ -1015,16 +1020,27 @@ vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 		return -1;
 	}
 
+	key_conf_t conf = *info;
+	if(conf.descr != NULL)
+	{
+		conf.descr = strdup(conf.descr);
+		if(conf.descr == NULL)
+		{
+			return -1;
+		}
+	}
+
 	key_chunk_t *curr = add_keys_inner(root, lhs);
 	if(curr == NULL)
 	{
+		free((char *)conf.descr);
 		return -1;
 	}
 
 	curr->type = (info->followed == FOLLOWED_BY_NONE) ? BUILTIN_KEYS
 	                                                  : BUILTIN_WAIT_POINT;
 	curr->foreign = 1;
-	curr->conf = *info;
+	curr->conf = conf;
 	return 0;
 }
 

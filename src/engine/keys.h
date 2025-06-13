@@ -129,7 +129,9 @@ typedef struct
 
 	vle_suggest_func suggest; /* Suggestion function (can be NULL).  Invoked for
 	                             multikeys. */
-	const char *descr;        /* Brief description of the key (can be NULL). */
+	const char *descr;        /* Brief description of the key (can be NULL).
+	                             Not a literal for foreign keys, but needs
+	                             to be `const` for arrays of builtin keys. */
 	void *user_data;          /* User data for the key (can be NULL). */
 }
 key_conf_t;
@@ -180,8 +182,9 @@ int vle_keys_add(keys_add_info_t cmds[], size_t len, int mode);
 int vle_keys_add_selectors(keys_add_info_t cmds[], size_t len, int mode);
 
 /* Registers a foreign builtin-like key (but among user's keys) or a selector
- * (among builtin selectors, so they can't clash).  Returns non-zero on error,
- * otherwise zero is returned. */
+ * (among builtin selectors, so they can't clash).  The string pointed to by
+ * info->descr field is copied.  Returns non-zero on error, otherwise zero is
+ * returned. */
 int vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 		int is_selector, int mode);
 
