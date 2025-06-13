@@ -188,7 +188,8 @@ fuzz_keys(const char input[])
 	vle_keys_exec_timed_out(winput);
 	vle_keys_exec_timed_out_no_remap(winput);
 	vle_keys_user_exists(winput, 0);
-	vle_keys_user_add(winput, winput, 0, KEYS_FLAG_NOREMAP);
+	assert_success(vle_keys_user_add(winput, winput, "descr", 0,
+				KEYS_FLAG_NOREMAP));
 	vle_keys_user_exists(winput, 0);
 	vle_keys_user_remove(winput, 0);
 
@@ -198,7 +199,8 @@ fuzz_keys(const char input[])
 	vle_keys_exec_timed_out(winput);
 	vle_keys_exec_timed_out_no_remap(winput);
 	vle_keys_user_exists(winput, 1);
-	vle_keys_user_add(winput, winput, 1, KEYS_FLAG_NOREMAP);
+	assert_success(vle_keys_user_add(winput, winput, "descr", 1,
+				KEYS_FLAG_NOREMAP));
 	vle_keys_user_exists(winput, 1);
 	vle_keys_user_remove(winput, 1);
 

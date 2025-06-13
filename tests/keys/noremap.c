@@ -34,7 +34,8 @@ TEST(with_noremap)
 
 	assert_success(set_user_key(L"j", L"k", NORMAL_MODE));
 	assert_success(set_user_key(L"q", L"j", NORMAL_MODE));
-	assert_success(vle_keys_user_add(L"q", L"j", NORMAL_MODE, KEYS_FLAG_NOREMAP));
+	assert_success(vle_keys_user_add(L"q", L"j", "descr", NORMAL_MODE,
+				KEYS_FLAG_NOREMAP));
 
 	assert_int_equal(0, vle_keys_exec(L"j"));
 	assert_int_equal(1, last);
@@ -56,7 +57,8 @@ TEST(noremap_functions)
 
 TEST(remap_selector_waitpoint)
 {
-	assert_success(vle_keys_user_add(L"y", L"d", NORMAL_MODE, KEYS_FLAG_NOREMAP));
+	assert_success(vle_keys_user_add(L"y", L"d", "descr", NORMAL_MODE,
+				KEYS_FLAG_NOREMAP));
 
 	last = -1;
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"yj")));
@@ -70,7 +72,8 @@ TEST(remap_selector_waitpoint)
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"2yk")));
 	assert_int_equal(4, last);
 
-	assert_success(vle_keys_user_add(L"z", L"d", NORMAL_MODE, KEYS_FLAG_NOREMAP));
+	assert_success(vle_keys_user_add(L"z", L"d", "descr", NORMAL_MODE,
+				KEYS_FLAG_NOREMAP));
 
 	last = -1;
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"zj")));

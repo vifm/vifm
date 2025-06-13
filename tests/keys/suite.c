@@ -38,7 +38,7 @@ TEARDOWN()
 int
 set_user_key(const wchar_t keys[], const wchar_t rhs[], int mode)
 {
-	return vle_keys_user_add(keys, rhs, mode, KEYS_FLAG_NONE);
+	return vle_keys_user_add(keys, rhs, /*descr=*/"", mode, KEYS_FLAG_NONE);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

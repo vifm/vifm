@@ -82,26 +82,31 @@ TEST(entry_matching_input_is_skipped)
 
 TEST(entering_and_leaving_via_the_same_mapping_skips_cmdline_history)
 {
-	vle_keys_user_add(L"x", L":cmd" WK_CR, NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(vle_keys_user_add(L"x", L":cmd" WK_CR, "descr", NORMAL_MODE,
+				KEYS_FLAG_NONE));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"x")));
 	assert_true(hist_is_empty(&curr_stats.cmd_hist));
 
-	vle_keys_user_add(L"x", L"/spattern" WK_CR, NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(vle_keys_user_add(L"x", L"/spattern" WK_CR, "descr",
+				NORMAL_MODE, KEYS_FLAG_NONE));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"x")));
 	assert_false(hist_is_empty(&curr_stats.search_hist));
 
-	vle_keys_user_add(L"x", L"=fpattern" WK_CR, NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(vle_keys_user_add(L"x", L"=fpattern" WK_CR, "descr",
+				NORMAL_MODE, KEYS_FLAG_NONE));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"x")));
 	assert_false(hist_is_empty(&curr_stats.filter_hist));
 
-	vle_keys_user_add(L"x", L"cwname" WK_CR, NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(vle_keys_user_add(L"x", L"cwname" WK_CR, "descr", NORMAL_MODE,
+				KEYS_FLAG_NONE));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"x")));
 	assert_false(hist_is_empty(&curr_stats.prompt_hist));
 }
 
 TEST(just_entering_via_a_mapping_does_not_skip_cmdline_history)
 {
-	vle_keys_user_add(L";", L":", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(vle_keys_user_add(L";", L":", "descr", NORMAL_MODE,
+				KEYS_FLAG_NONE));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L";")));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"cmd" WK_CR)));
 	assert_false(hist_is_empty(&curr_stats.cmd_hist));
@@ -109,15 +114,18 @@ TEST(just_entering_via_a_mapping_does_not_skip_cmdline_history)
 
 TEST(just_leaving_via_a_mapping_does_not_skip_cmdline_history)
 {
-	vle_keys_user_add(L"x", WK_CR, CMDLINE_MODE, KEYS_FLAG_NONE);
+	assert_success(vle_keys_user_add(L"x", WK_CR, "descr", CMDLINE_MODE,
+				KEYS_FLAG_NONE));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L":cmdx")));
 	assert_false(hist_is_empty(&curr_stats.cmd_hist));
 }
 
 TEST(entering_and_leaving_via_different_mappings_does_not_skip_cmdline_history)
 {
-	vle_keys_user_add(L";", L":", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"x", WK_CR, CMDLINE_MODE, KEYS_FLAG_NONE);
+	assert_success(vle_keys_user_add(L";", L":", "descr", NORMAL_MODE,
+				KEYS_FLAG_NONE));
+	assert_success(vle_keys_user_add(L"x", WK_CR, "descr", CMDLINE_MODE,
+				KEYS_FLAG_NONE));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L";cmdx")));
 	assert_false(hist_is_empty(&curr_stats.cmd_hist));
 }

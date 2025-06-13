@@ -166,8 +166,10 @@ TEST(key_suggestions)
 	keys_add_info_t x_key = { WK_X, { {&X_key} } };
 	vle_keys_add(&x_key, 1U, NORMAL_MODE);
 
-	assert_success(vle_keys_user_add(L"Xj", L"j", NORMAL_MODE, KEYS_FLAG_NONE));
-	assert_success(vle_keys_user_add(L"Xk", L"k", NORMAL_MODE, KEYS_FLAG_NONE));
+	assert_success(vle_keys_user_add(L"Xj", L"j", "Xj help", NORMAL_MODE,
+				KEYS_FLAG_NONE));
+	assert_success(vle_keys_user_add(L"Xk", L"k", "Xk help", NORMAL_MODE,
+				KEYS_FLAG_NONE));
 
 	feed_keys(L"X");
 

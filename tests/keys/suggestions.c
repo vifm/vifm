@@ -24,6 +24,7 @@ SETUP()
 	assert_success(set_user_key(L"ha2", L"ho", NORMAL_MODE));
 
 	nsuggestions = 0;
+	rhs = NULL;
 	descr = NULL;
 }
 
@@ -116,7 +117,8 @@ TEST(suggestions_after_user_mapped_builtin_prefix)
 
 TEST(suggestions_after_user_noremapped_builtin_prefix)
 {
-	assert_success(vle_keys_user_add(L"x", L"g", NORMAL_MODE, KEYS_FLAG_NOREMAP));
+	assert_success(vle_keys_user_add(L"x", L"g", "descr", NORMAL_MODE,
+				KEYS_FLAG_NOREMAP));
 
 	vle_keys_suggest(L"x", &process_suggestion, 0, 0);
 	assert_int_equal(3, nsuggestions);
@@ -131,6 +133,17 @@ TEST(suggestions_on_common_selector_or_command_prefix)
 	assert_int_equal(2, nsuggestions);
 	assert_wstring_equal(L"", rhs);
 	assert_string_equal("", descr);
+}
+
+TEST(user_help_message_is_used_as_a_description)
+{
+	assert_success(vle_keys_user_add(L"hx", L"G", "hx help", NORMAL_MODE,
+				KEYS_FLAG_NONE));
+
+	vle_keys_suggest(L"h", &process_suggestion, 0, 0);
+	assert_int_equal(5, nsuggestions);
+	assert_wstring_equal(L"G", rhs);
+	assert_string_equal("hx help", descr);
 }
 
 static void

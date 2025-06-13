@@ -28,14 +28,14 @@ TEST(cancel_on_ctrl_c_and_escape)
 
 TEST(rhs_multikeys_only)
 {
-	assert_success(vle_keys_user_add(L"a", L"mg", NORMAL_MODE,
+	assert_success(vle_keys_user_add(L"a", L"mg", "descr", NORMAL_MODE,
 				KEYS_FLAG_NOREMAP));
 	assert_success(vle_keys_exec(L"a"));
 }
 
 TEST(rhs_multikeys_and_full_command)
 {
-	assert_success(vle_keys_user_add(L"b", L"mbj", NORMAL_MODE,
+	assert_success(vle_keys_user_add(L"b", L"mbj", "descr", NORMAL_MODE,
 				KEYS_FLAG_NOREMAP));
 	last = 0;
 	assert_success(vle_keys_exec(L"b"));
@@ -44,7 +44,7 @@ TEST(rhs_multikeys_and_full_command)
 
 TEST(rhs_multikeys_and_partial_command)
 {
-	assert_success(vle_keys_user_add(L"b", L"mbg", NORMAL_MODE,
+	assert_success(vle_keys_user_add(L"b", L"mbg", "descr", NORMAL_MODE,
 				KEYS_FLAG_NOREMAP));
 	last = 0;
 	assert_true(IS_KEYS_RET_CODE(vle_keys_exec(L"b")));

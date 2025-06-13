@@ -5418,7 +5418,7 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	wchar_t *mapping = substitute_specs(rhs);
 	if(keys != NULL && mapping != NULL)
 	{
-		if(vle_keys_user_add(keys, mapping, mode, flags) != 0)
+		if(vle_keys_user_add(keys, mapping, /*descr=*/NULL, mode, flags) != 0)
 		{
 			show_error_msg("Mapping Error", "Unable to allocate enough memory");
 		}

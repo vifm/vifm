@@ -99,8 +99,8 @@ keys_info_t;
 typedef void (*vle_keys_handler)(key_info_t key_info, keys_info_t *keys_info);
 /* Type of function invoked by vle_keys_list() and vle_keys_suggest().  rhs is
  * provided for user-defined keys and is empty otherwise.  Description is empty
- * for user-defined keys or when not set.  Extra messages have empty lhs and
- * rhs, but can have non-empty description. */
+ * when unset.  Extra messages have empty lhs and rhs, but can have non-empty
+ * description. */
 typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 /* User-provided suggestion callback for multikeys. */
@@ -130,7 +130,7 @@ typedef struct
 	vle_suggest_func suggest; /* Suggestion function (can be NULL).  Invoked for
 	                             multikeys. */
 	const char *descr;        /* Brief description of the key (can be NULL).
-	                             Not a literal for foreign keys, but needs
+	                             Not a literal for user or foreign keys, but needs
 	                             to be `const` for arrays of builtin keys. */
 	void *user_data;          /* User data for the key (can be NULL). */
 }
@@ -189,9 +189,10 @@ int vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 		int is_selector, int mode);
 
 /* Registers user key mapping.  The flags parameter accepts combinations of
- * KEYS_FLAG_*.  Returns non-zero or error, otherwise zero is returned. */
-int vle_keys_user_add(const wchar_t keys[], const wchar_t rhs[], int mode,
-		int flags);
+ * KEYS_FLAG_*.  The descr parameter can be NULL.  Returns non-zero or error,
+ * otherwise zero is returned. */
+int vle_keys_user_add(const wchar_t keys[], const wchar_t rhs[],
+		const char descr[], int mode, int flags);
 
 /* Checks whether given user mapping exists.  Returns non-zero if so, otherwise
  * zero is returned. */

@@ -306,7 +306,7 @@ free_chunk_data(key_chunk_t *chunk)
 		free(chunk->conf.data.cmd);
 	}
 
-	if(chunk->foreign)
+	if(chunk->type == USER_CMD || chunk->foreign)
 	{
 		free((char *)chunk->conf.descr);
 	}
@@ -1045,17 +1045,37 @@ vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 }
 
 int
-vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
-		int flags)
+vle_keys_user_add(const wchar_t keys[], const wchar_t rhs[], const char descr[],
+		int mode, int flags)
 {
-	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
-	if(curr == NULL)
+	wchar_t *rhs_copy = vifm_wcsdup(rhs);
+	if(rhs_copy == NULL)
 	{
 		return -1;
 	}
 
+	char *descr_copy = NULL;
+	if(descr != NULL)
+	{
+		descr_copy = strdup(descr);
+		if(descr_copy == NULL)
+		{
+			free(rhs_copy);
+			return -1;
+		}
+	}
+
+	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], keys);
+	if(curr == NULL)
+	{
+		free(rhs_copy);
+		free(descr_copy);
+		return -1;
+	}
+
 	curr->type = USER_CMD;
-	curr->conf.data.cmd = vifm_wcsdup(rhs);
+	curr->conf.descr = descr_copy;
+	curr->conf.data.cmd = rhs_copy;
 	curr->no_remap = ((flags & KEYS_FLAG_NOREMAP) != 0);
 	curr->silent = ((flags & KEYS_FLAG_SILENT) != 0);
 	curr->wait = ((flags & KEYS_FLAG_WAIT) != 0);
@@ -1558,7 +1578,8 @@ suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 
 	if(chunk->type == USER_CMD)
 	{
-		cb(lhs, chunk->conf.data.cmd, "");
+		cb(lhs, chunk->conf.data.cmd,
+				(chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
 	}
 	else if(chunk->children_count == 0 ||
 			chunk->conf.followed != FOLLOWED_BY_NONE)
