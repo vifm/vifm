@@ -108,6 +108,7 @@ static void remove_foreign_in_forest(key_chunk_t *forest, size_t size);
 static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
+static void free_chunk_data(key_chunk_t *chunk);
 static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
 		int mapped, int no_remap);
 static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
@@ -263,6 +264,8 @@ free_forest(key_chunk_t *forest, size_t size)
 	free(forest);
 }
 
+/* Frees memory used by a specific chunk and all of its children except those
+ * which are still in use in which case their deletion is postponed. */
 static void
 free_tree(key_chunk_t *root)
 {
@@ -277,23 +280,30 @@ free_tree(key_chunk_t *root)
 		free_tree(root->next);
 		free_chunk(root->next);
 	}
-
-	if(root->type == USER_CMD)
-	{
-		free(root->conf.data.cmd);
-	}
 }
 
+/* Frees memory of a specific chunk unless it's still in use in which case its
+ * deletion is postponed. */
 static void
 free_chunk(key_chunk_t *chunk)
 {
-	if(chunk->enters == 0)
-	{
-		free(chunk);
-	}
-	else
+	if(chunk->enters != 0)
 	{
 		chunk->deleted = 1;
+		return;
+	}
+
+	free_chunk_data(chunk);
+	free(chunk);
+}
+
+/* Frees data referenced by the chunk without freeing the chunk itself. */
+static void
+free_chunk_data(key_chunk_t *chunk)
+{
+	if(chunk->type == USER_CMD)
+	{
+		free(chunk->conf.data.cmd);
 	}
 }
 
@@ -899,7 +909,7 @@ leave_chunk(key_chunk_t *chunk)
 	{
 		/* Removal of the chunk was postponed because it was in use, proceed with
 		 * this now. */
-		free(chunk);
+		free_chunk(chunk);
 	}
 }
 
@@ -1081,11 +1091,7 @@ find_keys(key_chunk_t *root, const wchar_t keys[])
 static void
 remove_chunk(key_chunk_t *chunk)
 {
-	if(chunk->type == USER_CMD)
-	{
-		free(chunk->conf.data.cmd);
-	}
-
+	free_chunk_data(chunk);
 	chunk->type = BUILTIN_WAIT_POINT;
 	chunk->conf.data.handler = NULL;
 
@@ -1216,10 +1222,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 
 	/* Reset most of the fields of a previously existing key before returning
 	 * it. */
-	if(curr->type == USER_CMD)
-	{
-		free(curr->conf.data.cmd);
-	}
+	free_chunk_data(curr);
 	init_chunk_data(curr, curr->key, BUILTIN_KEYS);
 
 	return curr;
