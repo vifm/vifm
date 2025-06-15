@@ -179,9 +179,9 @@ TEST(key_suggestions)
 	const vle_compl_t *items = vle_compl_get_items();
 	assert_int_equal(2, vle_compl_get_count());
 	assert_string_equal("key: j", items[0].text);
-	assert_string_equal("j", items[0].descr);
+	assert_string_equal("Xj help", items[0].descr);
 	assert_string_equal("key: k", items[1].text);
-	assert_string_equal("k", items[1].descr);
+	assert_string_equal("Xk help", items[1].descr);
 
 	cfg.sug.flags = 0;
 	cfg.min_timeout_len = 0;

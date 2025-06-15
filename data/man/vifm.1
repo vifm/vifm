@@ -1,4 +1,4 @@
-.TH VIFM 1 "7 June 2025" "vifm 0.15"
+.TH VIFM 1 "15 June 2025" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3358,6 +3358,15 @@ map lhs key sequence to rhs in normal and visual modes.
 .BI ":map! lhs rhs"
 map lhs key sequence to rhs in command line mode.
 
+Generic syntax of mapping commands:
+.EX
+
+    mapcommand [<map-arguments>] lhs rhs
+    mapcommand [<map-arguments>] <help> lhs {help text} rhs
+
+.EE
+See "Mappings" section for more details.
+
 .TP
 .BI "                                 :amap :cmap :dmap :mmap :nmap :qmap :vmap"
 .TP
@@ -5662,7 +5671,11 @@ the mapping was started and can span multiple modes.
 .B Map arguments
 
 LHS of mappings can be preceded by arguments which take the form of special
-sequences:
+sequences.  They can appear in any order relative to each other.
+.TP
+.BI <help>
+Indicates that the RHS is optionally preceded by a description enclosed in
+curly braces.
 .TP
 .BI <silent>
 Postpone UI updates until RHS is completely processed.

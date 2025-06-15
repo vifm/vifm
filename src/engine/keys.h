@@ -21,6 +21,8 @@
 
 #include <stddef.h> /* size_t wchar_t */
 
+#include "../utils/test_helpers.h"
+
 enum
 {
 	MAX_LHS_LEN = 4
@@ -220,6 +222,10 @@ int vle_keys_mapping_state(void);
  * fold_subkeys enables folding of multiple keys with common prefix. */
 void vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb,
 		int custom_only, int fold_subkeys);
+
+TSTATIC_DEFS(
+	const key_conf_t * vle_keys_get_user_key(const wchar_t lhs[], int mode);
+)
 
 #endif /* VIFM__ENGINE__KEYS_H__ */
 

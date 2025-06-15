@@ -37,6 +37,7 @@
 
 #include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../utils/test_helpers.h"
 #include "mode.h"
 
 /* Type of key chunk. */
@@ -141,6 +142,7 @@ static const wchar_t * get_reg(const wchar_t *keys, int *reg);
 static const wchar_t * get_count(const wchar_t keys[], int *count);
 static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
+TSTATIC const key_conf_t * vle_keys_get_user_key(const wchar_t lhs[], int mode);
 static key_chunk_t * find_keys(key_chunk_t *root, const wchar_t keys[]);
 static void remove_chunk(key_chunk_t *chunk);
 static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
@@ -1086,6 +1088,15 @@ int
 vle_keys_user_exists(const wchar_t keys[], int mode)
 {
 	return find_keys(&user_cmds_root[mode], keys) != NULL;
+}
+
+/* Retrieves configuration of a user key.  Returns a pointer to it or NULL if
+ * the mapping doesn't exist. */
+TSTATIC const key_conf_t *
+vle_keys_get_user_key(const wchar_t lhs[], int mode)
+{
+	key_chunk_t *chunk = find_keys(&user_cmds_root[mode], lhs);
+	return (chunk == NULL ? NULL : &chunk->conf);
 }
 
 int

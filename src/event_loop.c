@@ -703,7 +703,7 @@ process_suggestion(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 	if(rhs[0] != '\0')
 	{
 		char *const mb_rhs = wstr_to_spec(rhs);
-		vle_compl_put_match(wstr_to_spec(lhs), mb_rhs);
+		vle_compl_put_match(wstr_to_spec(lhs), *descr != '\0' ? descr : mb_rhs);
 		free(mb_rhs);
 	}
 	else

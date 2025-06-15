@@ -7,6 +7,9 @@
 	inside of a directory, instead of to indicate directories.  Thanks to
 	CaptainFantastic.
 
+	Added <help> :*map argument that enables providing description for the
+	mapping with the same curly braces syntax as used by :file[x]type.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more
