@@ -143,5 +143,25 @@ TEST(builtin_key_description_is_displayed)
 	modes_abort_menu_like();
 }
 
+TEST(user_key_description_is_displayed)
+{
+	assert_success(cmds_dispatch("nmap helpno {nohelp}  rhs", &lwin,
+				CIT_COMMAND));
+	assert_success(cmds_dispatch("nmap <help> help {help}   rhs", &lwin,
+				CIT_COMMAND));
+
+	assert_success(cmds_dispatch("nmap help", &lwin, CIT_COMMAND));
+
+	assert_int_equal(5, menu_get_current()->len);
+	assert_string_equal("User mappings:", menu_get_current()->items[0]);
+	assert_string_equal("help        {help} rhs", menu_get_current()->items[1]);
+	assert_string_equal("helpno      {nohelp}  rhs",
+			menu_get_current()->items[2]);
+	assert_string_equal("", menu_get_current()->items[3]);
+	assert_string_equal("Builtin mappings:", menu_get_current()->items[4]);
+
+	modes_abort_menu_like();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

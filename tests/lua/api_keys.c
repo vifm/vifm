@@ -231,7 +231,7 @@ TEST(keys_add)
 			"end");
 
 	/* Create a mapping. */
-	assert_success(vle_keys_user_add(L"X", L"x", NORMAL_MODE, 0));
+	assert_success(vle_keys_user_add(L"X", L"x", "descr", NORMAL_MODE, 0));
 
 	/* Replace a mapping. */
 	GLUA_EQ(vlua, "true",

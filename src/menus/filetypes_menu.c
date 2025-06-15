@@ -131,7 +131,7 @@ form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 		}
 		else
 		{
-			snprintf(format, sizeof(format), "[%%-%ds] ", descr_width);
+			snprintf(format, sizeof(format), "{%%-%ds} ", descr_width);
 		}
 		snprintf(descr, sizeof(descr), format, prog.description);
 	}

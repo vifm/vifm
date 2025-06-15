@@ -119,12 +119,22 @@ add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 	}
 	else if(rhs[0] == L'\0')
 	{
+		/* RHS is empty, but description isn't.  This is a builtin key. */
 		m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, descr);
 	}
 	else
 	{
+		/* RHS isn't empty.  This is a user key with optional description. */
 		char *const mb_rhs = wstr_to_spec(rhs);
-		m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
+		if(descr[0] == '\0')
+		{
+			m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
+		}
+		else
+		{
+			m.items[m.len++] =
+				format_str("%-*s {%s} %s", MAP_WIDTH, mb_lhs, descr, mb_rhs);
+		}
 		free(mb_rhs);
 	}
 

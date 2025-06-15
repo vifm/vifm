@@ -4,21 +4,23 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 
+#include "suite.h"
+
 SETUP()
 {
-	vle_keys_user_add(L"jo", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"jl", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"jo", L"k", NORMAL_MODE));
+	assert_success(set_user_key(L"jl", L"k", NORMAL_MODE));
 
-	vle_keys_user_add(L"S", L"dd", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"Sj", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"S", L"dd", NORMAL_MODE));
+	assert_success(set_user_key(L"Sj", L"k", NORMAL_MODE));
 
-	vle_keys_user_add(L"dp", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"dp", L"k", NORMAL_MODE));
 
-	vle_keys_user_add(L"ZD", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"ZD", L"k", NORMAL_MODE));
 
-	vle_keys_user_add(L"abc", L"", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"abc", L"", NORMAL_MODE));
 
-	vle_keys_user_add(L"ZT", L"ykk", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"ZT", L"ykk", NORMAL_MODE));
 }
 
 TEST(builtin_key_at_sequence_begin)

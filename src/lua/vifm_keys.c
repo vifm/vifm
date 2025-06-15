@@ -80,10 +80,10 @@ VLUA_API(keys_add)(lua_State *lua)
 	wcscpy(lhs, tmp_lhs);
 	free(tmp_lhs);
 
-	const char *descr = "";
+	const char *descr = NULL;
 	if(vlua_cmn_check_opt_field(lua, 1, "description", LUA_TSTRING))
 	{
-		descr = vlua_state_store_string(vlua, lua_tostring(lua, -1));
+		descr = lua_tostring(lua, -1);
 	}
 
 	int is_selector = 0;

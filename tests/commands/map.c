@@ -3,6 +3,7 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
@@ -86,6 +87,33 @@ TEST(map_parses_args)
 	/* <wait> */
 	assert_success(cmds_dispatch("map <wait>xj j", &lwin, CIT_COMMAND));
 	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"x"));
+
+	/* <help> */
+	ui_sb_msg("");
+	/* Help text must be followed by something. */
+	assert_failure(cmds_dispatch("map <help> Xj {j}", &lwin, CIT_COMMAND));
+	assert_string_equal("<nop> is required to map to nothing", ui_sb_last());
+	assert_failure(cmds_dispatch("map <help> Xj {j} ", &lwin, CIT_COMMAND));
+	assert_string_equal("<nop> is required to map to nothing", ui_sb_last());
+	/* Help text is parsed. */
+	assert_success(cmds_dispatch("map <help> Xj {help}j", &lwin, CIT_COMMAND));
+	assert_wstring_equal(L"j",
+			vle_keys_get_user_key(L"Xj", NORMAL_MODE)->data.cmd);
+	assert_string_equal("help", vle_keys_get_user_key(L"Xj", NORMAL_MODE)->descr);
+	/* Help text is optional. */
+	assert_success(cmds_dispatch("map <help> Xj {j", &lwin, CIT_COMMAND));
+	assert_wstring_equal(L"{j",
+			vle_keys_get_user_key(L"Xj", NORMAL_MODE)->data.cmd);
+	assert_string_equal(NULL, vle_keys_get_user_key(L"Xj", NORMAL_MODE)->descr);
+	assert_success(cmds_dispatch("map <help> Xj j", &lwin, CIT_COMMAND));
+	assert_wstring_equal(L"j",
+			vle_keys_get_user_key(L"Xj", NORMAL_MODE)->data.cmd);
+	assert_string_equal(NULL, vle_keys_get_user_key(L"Xj", NORMAL_MODE)->descr);
+	/* No help text by default. */
+	assert_success(cmds_dispatch("map Xj j", &lwin, CIT_COMMAND));
+	assert_wstring_equal(L"j",
+			vle_keys_get_user_key(L"Xj", NORMAL_MODE)->data.cmd);
+	assert_string_equal(NULL, vle_keys_get_user_key(L"Xj", NORMAL_MODE)->descr);
 }
 
 TEST(dialogs_exit_silent_mode)

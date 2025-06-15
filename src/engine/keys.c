@@ -37,6 +37,7 @@
 
 #include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../utils/test_helpers.h"
 #include "mode.h"
 
 /* Type of key chunk. */
@@ -108,6 +109,7 @@ static void remove_foreign_in_forest(key_chunk_t *forest, size_t size);
 static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
+static void free_chunk_data(key_chunk_t *chunk);
 static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
 		int mapped, int no_remap);
 static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
@@ -140,6 +142,7 @@ static const wchar_t * get_reg(const wchar_t *keys, int *reg);
 static const wchar_t * get_count(const wchar_t keys[], int *count);
 static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
+TSTATIC const key_conf_t * vle_keys_get_user_key(const wchar_t lhs[], int mode);
 static key_chunk_t * find_keys(key_chunk_t *root, const wchar_t keys[]);
 static void remove_chunk(key_chunk_t *chunk);
 static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
@@ -263,6 +266,8 @@ free_forest(key_chunk_t *forest, size_t size)
 	free(forest);
 }
 
+/* Frees memory used by a specific chunk and all of its children except those
+ * which are still in use in which case their deletion is postponed. */
 static void
 free_tree(key_chunk_t *root)
 {
@@ -277,23 +282,35 @@ free_tree(key_chunk_t *root)
 		free_tree(root->next);
 		free_chunk(root->next);
 	}
-
-	if(root->type == USER_CMD)
-	{
-		free(root->conf.data.cmd);
-	}
 }
 
+/* Frees memory of a specific chunk unless it's still in use in which case its
+ * deletion is postponed. */
 static void
 free_chunk(key_chunk_t *chunk)
 {
-	if(chunk->enters == 0)
-	{
-		free(chunk);
-	}
-	else
+	if(chunk->enters != 0)
 	{
 		chunk->deleted = 1;
+		return;
+	}
+
+	free_chunk_data(chunk);
+	free(chunk);
+}
+
+/* Frees data referenced by the chunk without freeing the chunk itself. */
+static void
+free_chunk_data(key_chunk_t *chunk)
+{
+	if(chunk->type == USER_CMD)
+	{
+		free(chunk->conf.data.cmd);
+	}
+
+	if(chunk->type == USER_CMD || chunk->foreign)
+	{
+		free((char *)chunk->conf.descr);
 	}
 }
 
@@ -899,7 +916,7 @@ leave_chunk(key_chunk_t *chunk)
 	{
 		/* Removal of the chunk was postponed because it was in use, proceed with
 		 * this now. */
-		free(chunk);
+		free_chunk(chunk);
 	}
 }
 
@@ -1005,31 +1022,62 @@ vle_keys_foreign_add(const wchar_t lhs[], const key_conf_t *info,
 		return -1;
 	}
 
+	key_conf_t conf = *info;
+	if(conf.descr != NULL)
+	{
+		conf.descr = strdup(conf.descr);
+		if(conf.descr == NULL)
+		{
+			return -1;
+		}
+	}
+
 	key_chunk_t *curr = add_keys_inner(root, lhs);
 	if(curr == NULL)
 	{
+		free((char *)conf.descr);
 		return -1;
 	}
 
 	curr->type = (info->followed == FOLLOWED_BY_NONE) ? BUILTIN_KEYS
 	                                                  : BUILTIN_WAIT_POINT;
 	curr->foreign = 1;
-	curr->conf = *info;
+	curr->conf = conf;
 	return 0;
 }
 
 int
-vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
-		int flags)
+vle_keys_user_add(const wchar_t keys[], const wchar_t rhs[], const char descr[],
+		int mode, int flags)
 {
-	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
-	if(curr == NULL)
+	wchar_t *rhs_copy = vifm_wcsdup(rhs);
+	if(rhs_copy == NULL)
 	{
 		return -1;
 	}
 
+	char *descr_copy = NULL;
+	if(descr != NULL)
+	{
+		descr_copy = strdup(descr);
+		if(descr_copy == NULL)
+		{
+			free(rhs_copy);
+			return -1;
+		}
+	}
+
+	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], keys);
+	if(curr == NULL)
+	{
+		free(rhs_copy);
+		free(descr_copy);
+		return -1;
+	}
+
 	curr->type = USER_CMD;
-	curr->conf.data.cmd = vifm_wcsdup(rhs);
+	curr->conf.descr = descr_copy;
+	curr->conf.data.cmd = rhs_copy;
 	curr->no_remap = ((flags & KEYS_FLAG_NOREMAP) != 0);
 	curr->silent = ((flags & KEYS_FLAG_SILENT) != 0);
 	curr->wait = ((flags & KEYS_FLAG_WAIT) != 0);
@@ -1040,6 +1088,15 @@ int
 vle_keys_user_exists(const wchar_t keys[], int mode)
 {
 	return find_keys(&user_cmds_root[mode], keys) != NULL;
+}
+
+/* Retrieves configuration of a user key.  Returns a pointer to it or NULL if
+ * the mapping doesn't exist. */
+TSTATIC const key_conf_t *
+vle_keys_get_user_key(const wchar_t lhs[], int mode)
+{
+	key_chunk_t *chunk = find_keys(&user_cmds_root[mode], lhs);
+	return (chunk == NULL ? NULL : &chunk->conf);
 }
 
 int
@@ -1081,11 +1138,7 @@ find_keys(key_chunk_t *root, const wchar_t keys[])
 static void
 remove_chunk(key_chunk_t *chunk)
 {
-	if(chunk->type == USER_CMD)
-	{
-		free(chunk->conf.data.cmd);
-	}
-
+	free_chunk_data(chunk);
 	chunk->type = BUILTIN_WAIT_POINT;
 	chunk->conf.data.handler = NULL;
 
@@ -1216,10 +1269,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 
 	/* Reset most of the fields of a previously existing key before returning
 	 * it. */
-	if(curr->type == USER_CMD)
-	{
-		free(curr->conf.data.cmd);
-	}
+	free_chunk_data(curr);
 	init_chunk_data(curr, curr->key, BUILTIN_KEYS);
 
 	return curr;
@@ -1539,7 +1589,8 @@ suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 
 	if(chunk->type == USER_CMD)
 	{
-		cb(lhs, chunk->conf.data.cmd, "");
+		cb(lhs, chunk->conf.data.cmd,
+				(chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
 	}
 	else if(chunk->children_count == 0 ||
 			chunk->conf.followed != FOLLOWED_BY_NONE)

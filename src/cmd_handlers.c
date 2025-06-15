@@ -332,7 +332,7 @@ static int vsplit_cmd(const cmd_info_t *cmd_info);
 static int do_split(const cmd_info_t *cmd_info, SPLIT orientation);
 static int do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		int no_remap);
-static int parse_map_args(const char **args);
+static int parse_map_args(const char **args, int *with_help);
 static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int wincmd_cmd(const cmd_info_t *cmd_info);
@@ -5407,18 +5407,38 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	}
 
 	const char *args = cmd_info->args;
+	int with_help;
 	const int flags = (no_remap ? KEYS_FLAG_NOREMAP : KEYS_FLAG_NONE)
-	                | parse_map_args(&args);
+	                | parse_map_args(&args, &with_help);
 
 	char *raw_rhs = vle_cmds_past_arg(args);
 	*raw_rhs = '\0';
 
 	char *rhs = vle_cmds_at_arg(raw_rhs + 1);
+
+	const char *descr = NULL;
+	if(with_help && *rhs == '{')
+	{
+		char *p = strchr(rhs + 1, '}');
+		if(p != NULL)
+		{
+			*p = '\0';
+			descr = rhs + 1;
+			rhs = vle_cmds_at_arg(p + 1);
+		}
+
+		if(*rhs == '\0')
+		{
+			ui_sb_err("<nop> is required to map to nothing");
+			return CMDS_ERR_CUSTOM;
+		}
+	}
+
 	wchar_t *keys = substitute_specs(args);
 	wchar_t *mapping = substitute_specs(rhs);
 	if(keys != NULL && mapping != NULL)
 	{
-		if(vle_keys_user_add(keys, mapping, mode, flags) != 0)
+		if(vle_keys_user_add(keys, mapping, descr, mode, flags) != 0)
 		{
 			show_error_msg("Mapping Error", "Unable to allocate enough memory");
 		}
@@ -5434,11 +5454,13 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	return 0;
 }
 
-/* Parses <*> :*map arguments removing them from the line.  Returns flags
- * collected. */
+/* Parses <*> :*map arguments removing them from the line.  Returns a
+ * combination of KEYS_FLAG_* flags and sets *with_help. */
 static int
-parse_map_args(const char **args)
+parse_map_args(const char **args, int *with_help)
 {
+	*with_help = 0;
+
 	int flags = 0;
 	do
 	{
@@ -5449,6 +5471,10 @@ parse_map_args(const char **args)
 		else if(skip_prefix(args, "<wait>"))
 		{
 			flags |= KEYS_FLAG_WAIT;
+		}
+		else if(skip_prefix(args, "<help>"))
+		{
+			*with_help = 1;
 		}
 		else
 		{

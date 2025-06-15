@@ -37,8 +37,10 @@ nnoremap ,b :set viewcolumns="-{name}..,6{}."<cr>
 " "<left>" and "<cr>" should be highlighted as angle bracket notation
 nnoremap s :let $a <left>= 'a'<cr>
 
+" "<help>" should be highlighted as angle bracket notation
 " "<silent>" should be highlighted as angle bracket notation
 " "<wait>" should be highlighted as angle bracket notation
+map <help><silent> xy {help text} 123
 map <silent> ,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silent>,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silent><silent>,b :set viewcolumns="-{name}..,6{}."<cr>

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 June 7
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 June 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2806,6 +2806,11 @@ yet supported) and might be changed in future releases, or get an alias.
 :map! lhs rhs
     map lhs key sequence to rhs in command line mode.
 
+Generic syntax of mapping commands: >
+ mapcommand [<map-arguments>] lhs rhs
+ mapcommand [<map-arguments>] <help> lhs {help text} rhs
+See |vifm-mappings| for more details.
+
                                                *vifm-:amap*
                                                *vifm-:cmap* *vifm-:cm*
                                                *vifm-:dmap* *vifm-:dm*
@@ -4789,8 +4794,11 @@ the mapping was started and can span multiple modes.
 Map arguments~
 
 LHS of mappings can be preceded by arguments which take the form of special
-sequences:
+sequences.  They can appear in any order relative to each other.
 
+<help>                                         *vifm-:map-<help>*
+    Indicates that the RHS is optionally preceded by a description enclosed in
+    curly braces.
 <silent>                                       *vifm-:map-<silent>*
     Postpone UI updates until RHS is completely processed.
 <wait>                                         *vifm-:map-<wait>*

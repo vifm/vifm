@@ -6,6 +6,8 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
+#include "suite.h"
+
 static void process_suggestion(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 
@@ -15,13 +17,14 @@ static const char *descr;
 
 SETUP()
 {
-	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"hi", L"j", NORMAL_MODE));
+	assert_success(set_user_key(L"hi2", L"hi", NORMAL_MODE));
 
-	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"ho", L"j", NORMAL_MODE));
+	assert_success(set_user_key(L"ha2", L"ho", NORMAL_MODE));
 
 	nsuggestions = 0;
+	rhs = NULL;
 	descr = NULL;
 }
 
@@ -45,7 +48,7 @@ TEST(user_keys_with_prefix_are_listed_no_folding)
 
 TEST(user_keys_with_prefix_are_listed_folding)
 {
-	vle_keys_user_add(L"ha3", L"a", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"ha3", L"a", NORMAL_MODE));
 
 	vle_keys_suggest(L"h", &process_suggestion, 0, 1);
 	assert_int_equal(4, nsuggestions);
@@ -94,7 +97,7 @@ TEST(only_custom_suggestions)
 
 TEST(suggestions_after_user_mapped_user_prefix)
 {
-	vle_keys_user_add(L"x", L"h", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"x", L"h", NORMAL_MODE));
 
 	vle_keys_suggest(L"x", &process_suggestion, 0, 0);
 	assert_int_equal(4, nsuggestions);
@@ -104,7 +107,7 @@ TEST(suggestions_after_user_mapped_user_prefix)
 
 TEST(suggestions_after_user_mapped_builtin_prefix)
 {
-	vle_keys_user_add(L"x", L"g", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"x", L"g", NORMAL_MODE));
 
 	vle_keys_suggest(L"x", &process_suggestion, 0, 0);
 	assert_int_equal(3, nsuggestions);
@@ -114,7 +117,8 @@ TEST(suggestions_after_user_mapped_builtin_prefix)
 
 TEST(suggestions_after_user_noremapped_builtin_prefix)
 {
-	vle_keys_user_add(L"x", L"g", NORMAL_MODE, KEYS_FLAG_NOREMAP);
+	assert_success(vle_keys_user_add(L"x", L"g", "descr", NORMAL_MODE,
+				KEYS_FLAG_NOREMAP));
 
 	vle_keys_suggest(L"x", &process_suggestion, 0, 0);
 	assert_int_equal(3, nsuggestions);
@@ -129,6 +133,17 @@ TEST(suggestions_on_common_selector_or_command_prefix)
 	assert_int_equal(2, nsuggestions);
 	assert_wstring_equal(L"", rhs);
 	assert_string_equal("", descr);
+}
+
+TEST(user_help_message_is_used_as_a_description)
+{
+	assert_success(vle_keys_user_add(L"hx", L"G", "hx help", NORMAL_MODE,
+				KEYS_FLAG_NONE));
+
+	vle_keys_suggest(L"h", &process_suggestion, 0, 0);
+	assert_int_equal(5, nsuggestions);
+	assert_wstring_equal(L"G", rhs);
+	assert_string_equal("hx help", descr);
 }
 
 static void

@@ -4,6 +4,8 @@
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 
+#include "suite.h"
+
 static int def_handler(wchar_t keys);
 static void silence(int more);
 
@@ -19,7 +21,7 @@ SETUP()
 	vle_keys_init(MODES_COUNT, mode_flags, &silence);
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 	vle_keys_set_def_handler(CMDLINE_MODE, def_handler);
-	vle_keys_user_add(L"asdf", L"ddd", CMDLINE_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"asdf", L"ddd", CMDLINE_MODE));
 }
 
 static int

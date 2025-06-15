@@ -4,6 +4,8 @@
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 
+#include "suite.h"
+
 static int handler(wchar_t key);
 
 static int counter;
@@ -11,8 +13,8 @@ static int counter;
 SETUP()
 {
 	vle_keys_set_def_handler(CMDLINE_MODE, &handler);
-	vle_keys_user_add(L"s", L":shell", NORMAL_MODE, KEYS_FLAG_NONE);
-	vle_keys_user_add(L"q", L"toto", CMDLINE_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"s", L":shell", NORMAL_MODE));
+	assert_success(set_user_key(L"q", L"toto", CMDLINE_MODE));
 }
 
 TEARDOWN()

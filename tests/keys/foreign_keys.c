@@ -5,6 +5,7 @@
 #include "../../src/modes/wk.h"
 
 #include "builtin_keys.h"
+#include "suite.h"
 
 static void key_X(key_info_t key_info, keys_info_t *keys_info);
 static void selector_X(key_info_t key_info, keys_info_t *keys_info);
@@ -31,7 +32,7 @@ TEST(add_foreign_key)
 
 TEST(replace_user_key_by_foreign_key)
 {
-	assert_success(vle_keys_user_add(L"X", L"dd", NORMAL_MODE, KEYS_FLAG_NONE));
+	assert_success(set_user_key(L"X", L"dd", NORMAL_MODE));
 
 	key_conf_t key = { { &key_X } };
 	assert_success(vle_keys_foreign_add(L"X", &key, /*is_selector=*/0,
@@ -112,7 +113,7 @@ TEST(foreign_key_with_selector_can_be_redefined)
 				NORMAL_MODE));
 	assert_true(vle_keys_user_exists(L"X", NORMAL_MODE));
 
-	vle_keys_user_add(L"X", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+	assert_success(set_user_key(L"X", L"j", NORMAL_MODE));
 
 	last = 0;
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"X")));
