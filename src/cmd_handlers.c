@@ -3992,11 +3992,11 @@ map_or_remap(const cmd_info_t *cmd_info, int no_remap)
 static int
 normal_cmd(const cmd_info_t *cmd_info)
 {
-	wchar_t *const wide = to_wide(cmd_info->args);
+	wchar_t *const wide = to_wide(cmd_info->raw_args);
 	if(wide == NULL)
 	{
 		show_error_msgf("Command Error", "Failed to convert to wide string: %s",
-				cmd_info->args);
+				cmd_info->raw_args);
 		return 0;
 	}
 

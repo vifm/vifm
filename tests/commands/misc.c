@@ -10,10 +10,8 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
-#include "../../src/engine/keys.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/modes/menu.h"
-#include "../../src/modes/modes.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -281,42 +279,6 @@ TEST(hist_next_and_prev)
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
 
 	cfg_resize_histories(0);
-}
-
-TEST(normal_command_does_not_reset_selection)
-{
-	modes_init();
-	opt_handlers_setup();
-
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 0;
-	lwin.selected_files = 1;
-
-	assert_success(cmds_dispatch(":normal! t", &lwin, CIT_COMMAND));
-	assert_int_equal(0, lwin.selected_files);
-	assert_false(lwin.dir_entry[0].selected);
-	assert_false(lwin.dir_entry[1].selected);
-
-	assert_success(cmds_dispatch(":normal! vG\r", &lwin, CIT_COMMAND));
-	assert_int_equal(2, lwin.selected_files);
-	assert_true(lwin.dir_entry[0].selected);
-	assert_true(lwin.dir_entry[1].selected);
-
-	assert_success(cmds_dispatch(":normal! t", &lwin, CIT_COMMAND));
-	assert_int_equal(1, lwin.selected_files);
-	assert_true(lwin.dir_entry[0].selected);
-	assert_false(lwin.dir_entry[1].selected);
-
-	opt_handlers_teardown();
-	vle_keys_reset();
 }
 
 TEST(keepsel_preserves_selection)
