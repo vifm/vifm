@@ -90,9 +90,9 @@ typedef struct cmd_info_t
 
 	char *post_name; /* Points to the first character after the name (optional !
 	                    or ? are considered part of the name). */
-	char *raw_args;  /* Arguments as they were passed in. */
-	char *args;      /* Arguments after macro and envvar expansions (points into
-	                    raw_args buffer). */
+	char *raw_args;  /* Arguments as they were passed in without truncation of
+	                    trailing whitespace (points into post_name buffer). */
+	char *args;      /* Arguments after macro and envvar expansions. */
 	int argc;        /* Number of arguments. */
 	char **argv;     /* Values of arguments. */
 	int (*argvp)[2]; /* Start/end positions of arguments in args. */
