@@ -110,6 +110,8 @@
 	Fixed abort due to assertion on displaying a statusbar message with a
 	newline when 'shortmess' includes "T".  Thanks to agguser.
 
+	Fixed :normal not being able to run commands which end with whitespace.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

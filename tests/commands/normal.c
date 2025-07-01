@@ -49,6 +49,17 @@ TEARDOWN()
 	opt_handlers_teardown();
 }
 
+TEST(normal_command_can_run_whitespace_commands)
+{
+	assert_true(curr_view == &lwin);
+
+	assert_success(cmds_dispatch("normal 1 ", &lwin, CIT_COMMAND));
+	assert_true(curr_view == &rwin);
+
+	assert_success(cmds_dispatch("normal 1 ", &lwin, CIT_COMMAND));
+	assert_true(curr_view == &lwin);
+}
+
 TEST(normal_command_exits_cmdline_mode)
 {
 	assert_true(vle_mode_is(NORMAL_MODE));
