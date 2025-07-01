@@ -5,6 +5,7 @@
 #include <test-utils.h>
 
 #include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -17,6 +18,18 @@ SETUP()
 
 	curr_view = &lwin;
 	other_view = &rwin;
+
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].name = strdup("b");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].selected = 0;
+	lwin.selected_files = 1;
 
 	cmds_init();
 	modes_init();
@@ -36,20 +49,22 @@ TEARDOWN()
 	opt_handlers_teardown();
 }
 
+TEST(normal_command_exits_cmdline_mode)
+{
+	assert_true(vle_mode_is(NORMAL_MODE));
+
+	assert_success(cmds_dispatch("normal :", &lwin, CIT_COMMAND));
+	assert_true(vle_mode_is(NORMAL_MODE));
+
+	assert_success(cmds_dispatch("normal /", &lwin, CIT_COMMAND));
+	assert_true(vle_mode_is(NORMAL_MODE));
+
+	assert_success(cmds_dispatch("normal =", &lwin, CIT_COMMAND));
+	assert_true(vle_mode_is(NORMAL_MODE));
+}
+
 TEST(normal_command_does_not_reset_selection)
 {
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 0;
-	lwin.selected_files = 1;
-
 	assert_success(cmds_dispatch(":normal! t", &lwin, CIT_COMMAND));
 	assert_int_equal(0, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
