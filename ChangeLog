@@ -1,3 +1,7 @@
+0.14.3 to current
+
+	Fixed :normal not being able to run commands which end with whitespace.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
