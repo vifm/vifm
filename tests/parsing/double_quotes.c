@@ -35,6 +35,11 @@ TEST(concatenation)
 	ASSERT_OK("\"NV\" . \"AR\"", "NVAR");
 }
 
+TEST(unterminated_escaping)
+{
+	ASSERT_FAIL("\"\\", PE_INVALID_EXPRESSION);
+}
+
 TEST(double_quote_escaping_ok)
 {
 	ASSERT_OK("\"\\\"\"", "\"");
