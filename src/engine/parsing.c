@@ -1034,7 +1034,7 @@ parse_singly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 	return 1;
 }
 
-/* dqstr ::= ''' dqchar { dqchar } ''' */
+/* dqstr ::= '"' dqchar { dqchar } '"' */
 static var_t
 parse_doubly_quoted_string(parse_context_t *ctx, const char **in)
 {
