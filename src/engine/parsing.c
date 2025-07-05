@@ -1065,6 +1065,14 @@ parse_doubly_quoted_string(parse_context_t *ctx, const char **in)
 int
 parse_doubly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 {
+	/*
+	 * 0x30 \0 -> 0x00  XXX: useful to have?
+	 * 0x62 \b -> 0x08
+	 * 0x65 \e -> 0x1b
+	 * 0x6e \n -> 0x0a
+	 * 0x72 \r -> 0x0d
+	 * 0x74 \t -> 0x09
+	 */
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
 	/* 00 */	"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
