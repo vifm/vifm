@@ -48,8 +48,9 @@
 #include <ctype.h> /* isalnum() isalpha() tolower() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcat() strcmp() strncpy() */
+#include <wchar.h> /* wchar_t */
 
 #include "../compat/reallocarray.h"
 #include "../utils/str.h"
@@ -59,6 +60,7 @@
 #include "var.h"
 #include "variables.h"
 
+#define NOTATION_LENGTH_MAX   16
 #define VAR_NAME_LENGTH_MAX 1024
 #define CMD_LINE_LENGTH_MAX 4096
 
@@ -177,6 +179,8 @@ static int parse_singly_quoted_char(parse_context_t *ctx, const char **in,
 static var_t parse_doubly_quoted_string(parse_context_t *ctx, const char **in);
 static int parse_doubly_quoted_char(parse_context_t *ctx, const char **in,
 		sbuffer *sbuf);
+static int parse_doubly_quoted_notation(parse_context_t *ctx, const char **in,
+		sbuffer *sbuf);
 static var_t eval_envvar(parse_context_t *ctx, const char **in);
 static var_t eval_var(parse_context_t *ctx, const char **in);
 static var_t eval_opt(parse_context_t *ctx, const char **in);
@@ -191,6 +195,7 @@ static void get_next(parse_context_t *ctx, const char **in);
 
 static int initialized;
 static getenv_func getenv_fu;
+static notation_func notation_fu; /* Can be NULL. */
 
 /* Empty expression to be returned on errors. */
 static expr_t null_expr;
@@ -201,7 +206,15 @@ void
 vle_parser_init(getenv_func getenv_f)
 {
 	getenv_fu = getenv_f;
+	notation_fu = NULL;
 	initialized = 1;
+}
+
+void
+vle_parser_set_notation(notation_func notation_f)
+{
+	assert(initialized && "Parser must be initialized before configuration.");
+	notation_fu = notation_f;
 }
 
 parsing_result_t
@@ -1060,7 +1073,8 @@ parse_doubly_quoted_string(parse_context_t *ctx, const char **in)
 	return var_false();
 }
 
-/* dqchar
+/* dqchar ::= [^"\] | '\' dqesc
+ * dqesc  ::= '\\' | '\0' | '\b' | '\e' | '\n' | '\r' | '\t' | dqbn
  * Returns non-zero if there are more characters in the string. */
 int
 parse_doubly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
@@ -1107,6 +1121,25 @@ parse_doubly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 			ctx->last_error = PE_INVALID_EXPRESSION;
 			return 0;
 		}
+
+		if(ctx->last_token.c == '<')
+		{
+			parse_context_t tmp_ctx = *ctx;
+			const char *tmp_in = *in;
+			if(parse_doubly_quoted_notation(&tmp_ctx, &tmp_in, sbuf) == 0)
+			{
+				*ctx = tmp_ctx;
+				*in = tmp_in;
+				return 1;
+			}
+
+			if(tmp_ctx.last_error != PE_NO_ERROR)
+			{
+				*ctx = tmp_ctx;
+				return 0;
+			}
+		}
+
 		ok = sstrappendch(sbuf->data, &sbuf->len, sbuf->size,
 				table[(unsigned char)ctx->last_token.c]);
 	}
@@ -1123,6 +1156,60 @@ parse_doubly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 
 	get_next(ctx, in);
 	return 1;
+}
+
+/* dqbn ::= '<' [^>]* '>'
+ * Parses bracket notation (like <cr>).  Returns zero on success. */
+static int
+parse_doubly_quoted_notation(parse_context_t *ctx, const char **in,
+		sbuffer *sbuf)
+{
+	if(notation_fu == NULL)
+	{
+		return 1;
+	}
+
+	char notation[NOTATION_LENGTH_MAX + 1];
+	notation[0] = '\0';
+	size_t len = 0;
+	while(ctx->last_token.type != END && ctx->last_token.c != '>' &&
+			len < sizeof(notation) - 1)
+	{
+		(void)sstrappendch(notation, &len, sizeof(notation), ctx->last_token.c);
+		get_next(ctx, in);
+	}
+
+	if(ctx->last_token.c != '>')
+	{
+		return 1;
+	}
+
+	(void)sstrappendch(notation, &len, sizeof(notation), '>');
+	get_next(ctx, in);
+
+	const wchar_t *expanded = notation_fu(notation);
+	if(expanded == NULL)
+	{
+		return 1;
+	}
+
+	char *expanded_mb = to_multibyte(expanded);
+	if(expanded_mb == NULL)
+	{
+		ctx->last_error = PE_INTERNAL;
+		return 1;
+	}
+
+	int err = sstrappend(sbuf->data, &sbuf->len, sbuf->size, expanded_mb);
+	free(expanded_mb);
+
+	if(err != 0)
+	{
+		ctx->last_error = PE_INTERNAL;
+		return 1;
+	}
+
+	return 0;
 }
 
 /* envvar ::= '$' envvarname */

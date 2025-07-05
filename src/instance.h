@@ -21,6 +21,9 @@
 
 #include "status.h"
 
+/* Makes sure variables are ready to be used. */
+void instance_init_variables(void);
+
 /* Stops the process by send itself SIGSTOP. */
 void instance_stop(void);
 

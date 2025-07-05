@@ -32,6 +32,10 @@ wchar_t * substitute_specs(const char cmd[]);
  * Returns newly allocated wide string, which should be freed by the caller. */
 wchar_t * substitute_specsw(const wchar_t cmd[]);
 
+/* Looks up the notation.  Returns pointer to a literal which corresponds to the
+ * notation or NULL on lookup failure. */
+const wchar_t * spec_to_wstr(const char str[]);
+
 /* Converts sequence of keys into user-friendly printable string.  Spaces are
  * left as is, without converting them into <space>.  Returns newly allocated
  * string. */

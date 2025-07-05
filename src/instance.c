@@ -27,6 +27,7 @@
 #include "engine/cmds.h"
 #include "engine/keys.h"
 #include "engine/options.h"
+#include "engine/parsing.h"
 #include "engine/variables.h"
 #include "int/path_env.h"
 #include "lua/vlua.h"
@@ -34,6 +35,7 @@
 #include "ui/ui.h"
 #include "utils/str.h"
 #include "utils/utils.h"
+#include "bracket_notation.h"
 #include "bmarks.h"
 #include "dir_stack.h"
 #include "filelist.h"
@@ -45,6 +47,13 @@
 #include "trash.h"
 #include "undo.h"
 #include "vifm.h"
+
+void
+instance_init_variables(void)
+{
+	init_variables();
+	vle_parser_set_notation(&spec_to_wstr);
+}
 
 void
 instance_stop(void)
@@ -111,7 +120,7 @@ instance_start_restart(RestartType type)
 
 	/* Reset variables. */
 	clear_envvars();
-	init_variables();
+	instance_init_variables();
 	/* This update is needed as clear_variables() will reset $PATH. */
 	update_path_env(1);
 

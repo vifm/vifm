@@ -704,6 +704,28 @@ substitute_specsw(const wchar_t cmd[])
 	return buf;
 }
 
+const wchar_t *
+spec_to_wstr(const char str[])
+{
+	wchar_t wide[strlen(str) + 1];
+
+	int i;
+	for(i = 0; str[i] != '\0'; ++i)
+	{
+		/* The notation uses Latin characters only. */
+		wide[i] = (unsigned char)str[i];
+	}
+	wide[i] = L'\0';
+
+	const key_pair_t *pair = find_notation(wide);
+	if(pair == NULL)
+	{
+		return NULL;
+	}
+
+	return pair->key;
+}
+
 /* Performs binary search in the list of bracket notations.  Returns NULL if
  * str wasn't found in the list. */
 static const key_pair_t *

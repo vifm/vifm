@@ -19,6 +19,8 @@
 #ifndef VIFM__ENGINE__PARSING_H__
 #define VIFM__ENGINE__PARSING_H__
 
+#include <wchar.h> /* wchar_t */
+
 #include "var.h"
 
 /* An enumeration of possible parsing errors. */
@@ -55,11 +57,20 @@ parsing_result_t;
  * string. The function should not allocate new string. */
 typedef const char * (*getenv_func)(const char *envname);
 
+/* Type of a function that will be used to resolve bracket notation (e.g.,
+ * <cr>) to its value.  If the notation doesn't exist, the function must return
+ * NULL.  The function must not allocate a new string. */
+typedef const wchar_t * (*notation_func)(const char str[]);
+
 /* A type of function that will be used to print error messages. */
 typedef void (*print_error_func)(const char msg[]);
 
 /* Can be called several times.  getenv_f can be NULL. */
 void vle_parser_init(getenv_func getenv_f);
+
+/* Sets optional function which resolves bracket notation (like <cr>).  The
+ * parameter can be NULL. */
+void vle_parser_set_notation(notation_func notation_f);
 
 /* Performs parsing and evaluation.  Returns structure describing the outcome.
  * Field value of the result should be freed by the caller. */

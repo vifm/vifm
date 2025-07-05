@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 June 15
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5062,7 +5062,7 @@ string                                         *vifm-expr-string*
 
 Note that double quotes are used.
 
-A string constant accepts these special characters:
+A string constant expands the following special sequences:
 \b      backspace <bs>
 \e      escape <esc>
 \n      newline
@@ -5070,10 +5070,12 @@ A string constant accepts these special characters:
 \t      tab <tab>
 \\      backslash
 \"      double quote
+\<key>  value of that key
 
 Examples: >
   "\"Hello,\tWorld!\""
   "Hi,\nthere!"
+  "Whitespace:\<space>\<tab>."
 <
 
 literal-string                                 *vifm-literal-string*
