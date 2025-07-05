@@ -1062,7 +1062,7 @@ parse_doubly_quoted_string(parse_context_t *ctx, const char **in)
 
 /* dqchar
  * Returns non-zero if there are more characters in the string. */
-int
+static int
 parse_doubly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 {
 	static const char table[] =
