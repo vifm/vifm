@@ -8,6 +8,8 @@
 	Fixed printing newline on cancelling choosing a directory via
 	`--choose-dir` option.  Thanks to The Cyberduck.
 
+	Fixed escaping characters with codes greater than 127 producing garbage.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
