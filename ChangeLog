@@ -112,6 +112,8 @@
 
 	Fixed :normal not being able to run commands which end with whitespace.
 
+	Fixed escaping characters with codes greater than 127 producing garbage.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

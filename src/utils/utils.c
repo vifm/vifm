@@ -800,7 +800,7 @@ expand_dquotes_escaping(char s[])
 			LOG_ERROR_MSG("Escaped eol in \"%s\"", str);
 			break;
 		}
-		*p++ = table[(int)*s++];
+		*p++ = table[(unsigned char)*s++];
 	}
 	*p = '\0';
 }

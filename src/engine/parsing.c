@@ -1108,7 +1108,7 @@ parse_doubly_quoted_char(parse_context_t *ctx, const char **in, sbuffer *sbuf)
 			return 0;
 		}
 		ok = sstrappendch(sbuf->data, &sbuf->len, sbuf->size,
-				table[(int)ctx->last_token.c]);
+				table[(unsigned char)ctx->last_token.c]);
 	}
 	else
 	{

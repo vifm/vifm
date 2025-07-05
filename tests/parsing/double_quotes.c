@@ -51,6 +51,11 @@ TEST(dot_ok)
 	ASSERT_OK("\"a . c\"", "a . c");
 }
 
+TEST(escaping_char_with_highest_bit)
+{
+	ASSERT_OK("\"\\\x80 \\\xff\"", "\x80 \xff");
+}
+
 TEST(very_long_string)
 {
 	char string[8192];
