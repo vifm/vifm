@@ -739,6 +739,12 @@ TEST(non_printable_arg)
 	assert_string_equal("\x0C", arg);
 }
 
+TEST(escaping_char_with_highest_bit)
+{
+	assert_int_equal(0, vle_cmds_run("delete \"\\\x80 \\\xff\""));
+	assert_string_equal("\x80 \xff", arg);
+}
+
 TEST(closing_double_quote_is_taken_as_comment)
 {
 	/* That's result of ambiguity of parsing, instead real :set doesn't have

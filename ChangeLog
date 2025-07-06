@@ -10,6 +10,10 @@
 	Added <help> :*map argument that enables providing description for the
 	mapping with the same curly braces syntax as used by :file[x]type.
 
+	Added escape sequences for expanding bracket notation in strings in double
+	quotes (e.g., `:echo "This is \<space>."`) that appear in expressions (so
+	won't work, say, in `:set grepprg="\<space>"`).  Thanks to agguser.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more
@@ -111,6 +115,8 @@
 	newline when 'shortmess' includes "T".  Thanks to agguser.
 
 	Fixed :normal not being able to run commands which end with whitespace.
+
+	Fixed escaping characters with codes greater than 127 producing garbage.
 
 0.14-beta to 0.14 (2025-02-08)
 

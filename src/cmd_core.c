@@ -71,6 +71,7 @@
 #include "filelist.h"
 #include "filtering.h"
 #include "flist_sel.h"
+#include "instance.h"
 #include "macros.h"
 #include "marks.h"
 #include "opt_handlers.h"
@@ -438,7 +439,7 @@ cmds_init(void)
 
 	/* Initialize modules used by this one. */
 	init_bracket_notation();
-	init_variables();
+	instance_init_variables();
 
 	create_builtin_vars();
 	sessions_set_callback(&session_changed_callback);

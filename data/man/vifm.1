@@ -1,4 +1,4 @@
-.TH VIFM 1 "15 June 2025" "vifm 0.15"
+.TH VIFM 1 "5 July 2025" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6037,7 +6037,7 @@ string
 
 Note that double quotes are used.
 
-A string constant accepts these special characters:
+A string constant expands the following special sequences:
 .br
   \\b      backspace <bs>
 .br
@@ -6053,12 +6053,15 @@ A string constant accepts these special characters:
 .br
   \\"      double quote
 .br
+  \\<key>  value of that key
+.br
 
 Examples:
 
 .EX
   "\\"Hello,\\tWorld!\\""
   "Hi,\\nthere!"
+  "Whitespace:\\<space>\\<tab>."
 .EE
 
 literal-string

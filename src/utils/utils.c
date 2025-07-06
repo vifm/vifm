@@ -753,6 +753,17 @@ expand_squotes_escaping(char s[])
 void
 expand_dquotes_escaping(char s[])
 {
+	/*
+	 * 0x30 \0 -> 0x00  XXX: useful to have?
+	 * 0x61 \a -> 0x07  XXX: any practical uses?
+	 * 0x62 \b -> 0x0b  XXX: looks like a bug, should be 0x08
+	 *                  XXX: useful to add 0x65 \e -> 0x1b?
+	 * 0x66 \f -> 0x0c  XXX: any practical uses?
+	 * 0x6e \n -> 0x0a
+	 * 0x72 \r -> 0x0d
+	 * 0x74 \t -> 0x09
+	 * 0x76 \v -> 0x0b  XXX: any practical uses?
+	 */
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
 	/* 00 */	"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
@@ -789,7 +800,7 @@ expand_dquotes_escaping(char s[])
 			LOG_ERROR_MSG("Escaped eol in \"%s\"", str);
 			break;
 		}
-		*p++ = table[(int)*s++];
+		*p++ = table[(unsigned char)*s++];
 	}
 	*p = '\0';
 }

@@ -16,6 +16,7 @@
 SETUP_ONCE()
 {
 	try_enable_utf8_locale();
+	init_bracket_notation();
 }
 
 TEST(c_h_is_bs_at_start_only, IF(utf8_locale))
@@ -200,6 +201,14 @@ TEST(known_sequences)
 		assert_string_equal(matches[i].to, spec);
 		free(spec);
 	}
+}
+
+TEST(notation_lookup)
+{
+	/* Known notation. */
+	assert_wstring_equal(L" ", spec_to_wstr("<space>"));
+	/* Unknown notation. */
+	assert_wstring_equal(NULL, spec_to_wstr("<unknown>"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
