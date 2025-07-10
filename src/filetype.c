@@ -37,8 +37,6 @@
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
-static void assoc_programs(matchers_t *matchers,
-		const assoc_records_t *programs, int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
@@ -198,21 +196,13 @@ ft_set_programs(matchers_t *matchers, const char programs[], int for_x,
 		int in_x)
 {
 	assoc_records_t prog_records = parse_command_list(programs, 1);
-	assoc_programs(matchers, &prog_records, for_x, in_x);
-	ft_assoc_records_free(&prog_records);
-}
 
-/* Associates pattern with the list of programs either for X or non-X
- * associations and depending on current execution environment. */
-static void
-assoc_programs(matchers_t *matchers, const assoc_records_t *programs, int for_x,
-		int in_x)
-{
 	const assoc_t assoc = {
 		.matchers = matchers,
-		.records = clone_assoc_records(programs, matchers_get_expr(matchers),
+		.records = clone_assoc_records(&prog_records, matchers_get_expr(matchers),
 				for_x ? &xfiletypes : &filetypes),
 	};
+	ft_assoc_records_free(&prog_records);
 
 	register_assoc(assoc, for_x, in_x);
 }
