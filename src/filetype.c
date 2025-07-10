@@ -44,7 +44,6 @@ static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static int add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
-static void assoc_viewers(matchers_t *matchers, const assoc_records_t *viewers);
 static assoc_records_t clone_assoc_records(const assoc_records_t *records,
 		const char pattern[], const assoc_list_t *dst);
 static void reset_all_lists(void);
@@ -300,19 +299,13 @@ void
 ft_set_viewers(matchers_t *matchers, const char viewers[])
 {
 	assoc_records_t view_records = parse_command_list(viewers, 0);
-	assoc_viewers(matchers, &view_records);
-	ft_assoc_records_free(&view_records);
-}
 
-/* Associates pattern with the list of viewers. */
-static void
-assoc_viewers(matchers_t *matchers, const assoc_records_t *viewers)
-{
 	const assoc_t assoc = {
 		.matchers = matchers,
-		.records = clone_assoc_records(viewers, matchers_get_expr(matchers),
+		.records = clone_assoc_records(&view_records, matchers_get_expr(matchers),
 				&fileviewers),
 	};
+	ft_assoc_records_free(&view_records);
 
 	(void)add_assoc(&fileviewers, assoc);
 }
