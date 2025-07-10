@@ -38,7 +38,6 @@ static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
-static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static int add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
@@ -204,7 +203,14 @@ ft_set_programs(matchers_t *matchers, const char programs[], int for_x,
 	};
 	ft_assoc_records_free(&prog_records);
 
-	register_assoc(assoc, for_x, in_x);
+	/* On error, add_assoc() frees assoc, so just exit then. */
+	if(add_assoc(for_x ? &xfiletypes : &filetypes, assoc) == 0)
+	{
+		if(!for_x || in_x)
+		{
+			(void)add_assoc(&active_filetypes, assoc);
+		}
+	}
 }
 
 /* Parses comma separated list of commands into array of associations.  Returns
@@ -241,22 +247,6 @@ parse_command_list(const char cmds[], int with_descr)
 	free(free_this);
 
 	return records;
-}
-
-/* Registers association in appropriate associations list and possibly in list
- * of active associations, which depends on association type and execution
- * environment. */
-static void
-register_assoc(assoc_t assoc, int for_x, int in_x)
-{
-	/* On error, add_assoc() frees assoc, so just exit then. */
-	if(add_assoc(for_x ? &xfiletypes : &filetypes, assoc) == 0)
-	{
-		if(!for_x || in_x)
-		{
-			(void)add_assoc(&active_filetypes, assoc);
-		}
-	}
 }
 
 assoc_records_t
