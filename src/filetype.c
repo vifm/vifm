@@ -287,6 +287,7 @@ ft_set_viewers(matchers_t *matchers, const char viewers[])
 	};
 	ft_assoc_records_free(&view_records);
 
+	/* On error, add_assoc() frees assoc, so just exit then. */
 	(void)add_assoc(&fileviewers, assoc);
 }
 
@@ -311,7 +312,8 @@ clone_assoc_records(const assoc_records_t *records, const char pattern[],
 }
 
 /* Adds association to the list of associations.  Returns non-zero on
- * out of memory error, otherwise zero is returned. */
+ * out of memory error, otherwise zero is returned.  Frees resources of assoc
+ * on error. */
 static int
 add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 {
@@ -319,6 +321,7 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 	p = reallocarray(assoc_list->list, assoc_list->count + 1, sizeof(assoc_t));
 	if(p == NULL)
 	{
+		free_assoc(&assoc);
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 1;
 	}
