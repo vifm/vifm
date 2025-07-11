@@ -41,8 +41,7 @@ static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static int add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
-static assoc_records_t clone_assoc_records(const assoc_records_t *records,
-		const char pattern[], const assoc_list_t *dst);
+static int is_assoc_equal(const assoc_t *a, const assoc_t *b);
 static void reset_all_lists(void);
 static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
@@ -194,14 +193,10 @@ void
 ft_set_programs(matchers_t *matchers, const char programs[], int for_x,
 		int in_x)
 {
-	assoc_records_t prog_records = parse_command_list(programs, 1);
-
 	const assoc_t assoc = {
 		.matchers = matchers,
-		.records = clone_assoc_records(&prog_records, matchers_get_expr(matchers),
-				for_x ? &xfiletypes : &filetypes),
+		.records = parse_command_list(programs, 1),
 	};
-	ft_assoc_records_free(&prog_records);
 
 	/* On error, add_assoc() frees assoc, so just exit then. */
 	if(add_assoc(for_x ? &xfiletypes : &filetypes, assoc) == 0)
@@ -278,45 +273,31 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 void
 ft_set_viewers(matchers_t *matchers, const char viewers[])
 {
-	assoc_records_t view_records = parse_command_list(viewers, 0);
-
 	const assoc_t assoc = {
 		.matchers = matchers,
-		.records = clone_assoc_records(&view_records, matchers_get_expr(matchers),
-				&fileviewers),
+		.records = parse_command_list(viewers, 0),
 	};
-	ft_assoc_records_free(&view_records);
-
 	/* On error, add_assoc() frees assoc, so just exit then. */
 	(void)add_assoc(&fileviewers, assoc);
 }
 
-/* Clones list of association records.  Returns the clone. */
-static assoc_records_t
-clone_assoc_records(const assoc_records_t *records, const char pattern[],
-		const assoc_list_t *dst)
-{
-	int i;
-	assoc_records_t list = {};
-
-	for(i = 0; i < records->count; ++i)
-	{
-		if(!ft_assoc_exists(dst, pattern, records->list[i].command))
-		{
-			ft_assoc_record_add(&list, records->list[i].command,
-					records->list[i].description);
-		}
-	}
-
-	return list;
-}
-
-/* Adds association to the list of associations.  Returns non-zero on
- * out of memory error, otherwise zero is returned.  Frees resources of assoc
- * on error. */
+/* Adds association to the list of associations, takes ownership of it
+ * regardless of the outcome.  Returns non-zero on out of memory error,
+ * otherwise zero is returned. */
 static int
 add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 {
+	int i;
+	for(i = 0; i < assoc_list->count; ++i)
+	{
+		if(is_assoc_equal(&assoc_list->list[i], &assoc))
+		{
+			/* Not adding duplicates. */
+			free_assoc(&assoc);
+			return 0;
+		}
+	}
+
 	void *p;
 	p = reallocarray(assoc_list->list, assoc_list->count + 1, sizeof(assoc_t));
 	if(p == NULL)
@@ -330,6 +311,33 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 	assoc_list->list[assoc_list->count] = assoc;
 	assoc_list->count++;
 	return 0;
+}
+
+/* Compares two associations for equality.  Returns non-zero if they are equal,
+ * otherwise zero is returned. */
+static int
+is_assoc_equal(const assoc_t *a, const assoc_t *b)
+{
+	if(a->records.count != b->records.count)
+	{
+		return 0;
+	}
+
+	if(strcmp(matchers_get_expr(a->matchers),
+				matchers_get_expr(b->matchers)) != 0)
+	{
+		return 0;
+	}
+
+	int i;
+	for(i = 0; i < a->records.count; ++i)
+	{
+		if(strcmp(a->records.list[i].command, b->records.list[i].command) != 0)
+		{
+			return 0;
+		}
+	}
+	return 1;
 }
 
 ViewerKind
