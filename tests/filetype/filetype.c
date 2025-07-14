@@ -164,6 +164,22 @@ TEST(zero_length_match)
 	assert_null(prog_cmd = ft_get_program("git"));
 }
 
+TEST(existence_check)
+{
+	assoc_programs("*.git", "tig", 0, 0);
+
+	assert_false(ft_assoc_exists(&filetypes, "git", "tig"));
+
+	assert_false(ft_assoc_exists(&filetypes, "*.git", "ti"));
+	assert_false(ft_assoc_exists(&filetypes, "*.git", "{tig"));
+	assert_false(ft_assoc_exists(&filetypes, "*.git", "{tig}"));
+
+	assert_true(ft_assoc_exists(&filetypes, "*.git", "tig"));
+	assert_true(ft_assoc_exists(&filetypes, "*.git", "{}tig"));
+	assert_true(ft_assoc_exists(&filetypes, "*.git", "{help text}tig"));
+	assert_true(ft_assoc_exists(&filetypes, "*.git", "{help text}\t tig"));
+}
+
 TEST(pattern_list, IF(has_mime_type_detection))
 {
 	char cmd[1024];

@@ -471,7 +471,7 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		const char *const descr_end = strchr(cmd + 1, '}');
 		if(descr_end != NULL)
 		{
-			cmd = descr_end + 1;
+			cmd = skip_whitespace(descr_end + 1);
 		}
 	}
 
