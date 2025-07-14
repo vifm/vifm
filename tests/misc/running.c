@@ -28,9 +28,7 @@
 static int prog_exists(const char name[]);
 static void start_use_script(void);
 static void stop_use_script(void);
-static void assoc_a(char macro);
-static void assoc_b(char macro);
-static void assoc_common(void);
+static void assoc_script(const char pattern[], const char param[], char macro);
 
 static char cwd[PATH_MAX + 1];
 static char script_path[PATH_MAX + 1];
@@ -215,7 +213,7 @@ TEST(selection_uses_vim_on_all_undefs, IF(not_windows))
 TEST(selection_uses_vim_on_at_least_one_undef_non_current, IF(not_windows))
 {
 	start_use_script();
-	assoc_a('c');
+	assoc_script("{a}", "a", 'c');
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -231,7 +229,7 @@ TEST(selection_uses_vim_on_at_least_one_undef_non_current, IF(not_windows))
 TEST(selection_uses_vim_on_at_least_one_undef_current, IF(not_windows))
 {
 	start_use_script();
-	assoc_b('c');
+	assoc_script("{b}", "b", 'c');
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -247,7 +245,7 @@ TEST(selection_uses_vim_on_at_least_one_undef_current, IF(not_windows))
 TEST(selection_uses_common_handler, IF(not_windows))
 {
 	start_use_script();
-	assoc_common();
+	assoc_script("{a,b}", "common", 'f');
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -263,8 +261,8 @@ TEST(selection_uses_common_handler, IF(not_windows))
 TEST(selection_is_incompatible, IF(not_windows))
 {
 	start_use_script();
-	assoc_a('c');
-	assoc_b('f');
+	assoc_script("{a}", "a", 'c');
+	assoc_script("{b}", "b", 'f');
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -672,27 +670,11 @@ stop_use_script(void)
 }
 
 static void
-assoc_a(char macro)
+assoc_script(const char pattern[], const char param[], char macro)
 {
 	char cmd[PATH_MAX + 1];
-	snprintf(cmd, sizeof(cmd), "%s a %%%c", script_path, macro);
-	assoc_programs("{a}", cmd, 0, 0);
-}
-
-static void
-assoc_b(char macro)
-{
-	char cmd[PATH_MAX + 1];
-	snprintf(cmd, sizeof(cmd), "%s b %%%c", script_path, macro);
-	assoc_programs("{b}", cmd, 0, 0);
-}
-
-static void
-assoc_common(void)
-{
-	char cmd[PATH_MAX + 1];
-	snprintf(cmd, sizeof(cmd), "%s common %%f", script_path);
-	assoc_programs("{a,b}", cmd, 0, 0);
+	snprintf(cmd, sizeof(cmd), "%s %s %%%c", script_path, param, macro);
+	assoc_programs(pattern, cmd, 0, 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
