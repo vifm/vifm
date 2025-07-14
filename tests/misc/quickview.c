@@ -55,12 +55,7 @@ TEST(preview_can_match_agains_full_paths)
 {
 	ft_init(NULL);
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{{*/*}}", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_viewers(mg, "the-viewer");
+	assoc_viewers("{{*/*}}", "the-viewer");
 
 	assert_string_equal("the-viewer",
 			qv_get_viewer(TEST_DATA_PATH "/read/two-lines"));
@@ -72,12 +67,7 @@ TEST(preview_prg_overrules_fileviewer)
 {
 	ft_init(NULL);
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("file", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_viewers(mg, "the-viewer");
+	assoc_viewers("file", "the-viewer");
 
 	assert_string_equal("the-viewer", qv_get_viewer("file"));
 	update_string(&curr_view->preview_prg, "override");
@@ -156,12 +146,7 @@ TEST(quick_view_picks_parent_directory_if_there_is_a_match)
 	dir_entry_t entry = { .origin = origin, .name = name, .type = FT_DIR };
 	char path[PATH_MAX + 1];
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("../", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_viewers(mg, "do something");
+	assoc_viewers("../", "do something");
 
 	qv_get_path_to_explore(&entry, path, sizeof(path));
 	assert_string_equal("/path/..", path);

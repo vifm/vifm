@@ -31,7 +31,6 @@ static void stop_use_script(void);
 static void assoc_a(char macro);
 static void assoc_b(char macro);
 static void assoc_common(void);
-static void assoc(const char pattern[], const char cmd[]);
 
 static char cwd[PATH_MAX + 1];
 static char script_path[PATH_MAX + 1];
@@ -101,13 +100,7 @@ TEST(full_path_regexps_are_handled_for_selection)
 
 	char pattern[PATH_MAX + 16];
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
-
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string(pattern, &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_programs(mg, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
+	assoc_programs(pattern, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -123,15 +116,10 @@ TEST(full_path_regexps_are_handled_for_selection2)
 	char pattern[PATH_MAX + 16];
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string(pattern, &mg, &error));
-	assert_string_equal(NULL, error);
-
 #ifndef _WIN32
-	ft_set_programs(mg, "echo > /dev/null %c &", 0, 1);
+	assoc_programs(pattern, "echo > /dev/null %c &", 0, 1);
 #else
-	ft_set_programs(mg, "echo > NUL %c &", 0, 1);
+	assoc_programs(pattern, "echo > NUL %c &", 0, 1);
 #endif
 
 	rn_open(&lwin, FHE_NO_RUN);
@@ -148,12 +136,7 @@ TEST(can_open_via_plugin)
 	GLUA_EQ(curr_stats.vlua, "",
 			"vifm.addhandler{ name = 'open', handler = open }");
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("*", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_programs(mg, "#vifmtest#open", /*for_x=*/0, /*in_x=*/1);
+	assoc_programs("*", "#vifmtest#open", /*for_x=*/0, /*in_x=*/1);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -294,8 +277,8 @@ TEST(selection_is_incompatible, IF(not_windows))
 TEST(selection_is_compatible, IF(not_windows))
 {
 	start_use_script();
-	assoc("{a}", "echo > /dev/null %c &");
-	assoc("{b}", "echo > /dev/null %c &");
+	assoc_programs("{a}", "echo > /dev/null %c &", 0, 0);
+	assoc_programs("{b}", "echo > /dev/null %c &", 0, 0);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -430,14 +413,9 @@ TEST(macro_can_be_added_implicitly, IF(not_windows))
 	lwin.dir_entry[1].selected = 0;
 	--lwin.selected_files;
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{a}", &mg, &error));
-	assert_string_equal(NULL, error);
-
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s a", script_path);
-	ft_set_programs(mg, cmd, 0, 0);
+	assoc_programs("{a}", cmd, 0, 0);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -456,14 +434,9 @@ TEST(handler_can_be_matched_by_a_prefix, IF(not_windows))
 	lwin.dir_entry[1].selected = 0;
 	--lwin.selected_files;
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{a}", &mg, &error));
-	assert_string_equal(NULL, error);
-
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "{wrong}no-such-cmd a, {right}%s a", script_path);
-	ft_set_programs(mg, cmd, 0, 0);
+	assoc_programs("{a}", cmd, 0, 0);
 
 	rn_open_with_match(&lwin, script_path, 0);
 
@@ -482,18 +455,11 @@ TEST(selection_multi_run, IF(not_windows))
 
 	char cmd[PATH_MAX + 1];
 
-	char *error;
-	matchers_group_t mg;
-
-	assert_success(ft_mg_from_string("{a}", &mg, &error));
-	assert_string_equal(NULL, error);
 	snprintf(cmd, sizeof(cmd), "%s a %%c &", script_path);
-	ft_set_programs(mg, cmd, /*for_x=*/0, /*in_x=*/0);
+	assoc_programs("{a}", cmd, /*for_x=*/0, /*in_x=*/0);
 
-	assert_success(ft_mg_from_string("{b}", &mg, &error));
-	assert_string_equal(NULL, error);
 	snprintf(cmd, sizeof(cmd), "%s b %%\"c &", script_path);
-	ft_set_programs(mg, cmd, /*for_x=*/0, /*in_x=*/0);
+	assoc_programs("{b}", cmd, /*for_x=*/0, /*in_x=*/0);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -708,51 +674,25 @@ stop_use_script(void)
 static void
 assoc_a(char macro)
 {
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{a}", &mg, &error));
-	assert_string_equal(NULL, error);
-
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s a %%%c", script_path, macro);
-	ft_set_programs(mg, cmd, 0, 0);
+	assoc_programs("{a}", cmd, 0, 0);
 }
 
 static void
 assoc_b(char macro)
 {
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{b}", &mg, &error));
-	assert_string_equal(NULL, error);
-
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s b %%%c", script_path, macro);
-	ft_set_programs(mg, cmd, 0, 0);
+	assoc_programs("{b}", cmd, 0, 0);
 }
 
 static void
 assoc_common(void)
 {
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{a,b}", &mg, &error));
-	assert_string_equal(NULL, error);
-
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s common %%f", script_path);
-	ft_set_programs(mg, cmd, 0, 0);
-}
-
-static void
-assoc(const char pattern[], const char cmd[])
-{
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string(pattern, &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_programs(mg, cmd, 0, 0);
+	assoc_programs("{a,b}", cmd, 0, 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

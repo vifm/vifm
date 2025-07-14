@@ -93,13 +93,8 @@ TEST(filetypes_are_deduplicated)
 	cfg.vifm_info = VINFO_FILETYPES;
 	cmds_init();
 
-	char *error;
-	matchers_group_t mg;
-
 	/* Add a filetype. */
-	assert_success(ft_mg_from_string("*.c", &mg, &error));
-	assert_string_equal(NULL, error);
-	ft_set_programs(mg, "{Description}com,,mand,{descr2}cmd", 0, 1);
+	assoc_programs("*.c", "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Write it first time. */
 	write_info_file();
@@ -107,9 +102,7 @@ TEST(filetypes_are_deduplicated)
 	assert_success(stat(SANDBOX_PATH "/vifminfo.json", &first));
 
 	/* Add filetype again (as if it was read from vifmrc). */
-	assert_success(ft_mg_from_string("*.c", &mg, &error));
-	assert_string_equal(NULL, error);
-	ft_set_programs(mg, "{Description}com,,mand,{descr2}cmd", 0, 1);
+	assoc_programs("*.c", "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Update vifminfo second time. */
 	write_info_file();

@@ -329,12 +329,7 @@ TEST(previewprg_is_applied)
 	opt_handlers_setup();
 	update_string(&lwin.preview_prg, "echo previewprg_is_applied%%");
 
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("*", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_viewers(mg, "echo viewer%%");
+	assoc_viewers("*", "echo viewer%%");
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
 			NULL);
@@ -398,12 +393,7 @@ start_view_mode(const char pattern[], const char viewers[],
 {
 	if(viewers != NULL)
 	{
-		char *error;
-		matchers_group_t mg;
-		assert_success(ft_mg_from_string(pattern, &mg, &error));
-		assert_string_equal(NULL, error);
-
-		ft_set_viewers(mg, viewers);
+		assoc_viewers(pattern, viewers);
 	}
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), base_dir, sub_path, NULL);

@@ -111,12 +111,7 @@ TEST(unknown_key_is_ignored)
 
 TEST(pseudo_entry_is_always_present_for_directories)
 {
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{bla-*/}", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_programs(mg, "abc-run %c", 0, 0);
+	assoc_programs("{bla-*/}", "abc-run %c", 0, 0);
 
 	assert_success(cmds_dispatch("filetype bla-dir/", &lwin, CIT_COMMAND));
 
@@ -136,12 +131,7 @@ TEST(no_menu_if_no_handlers)
 
 TEST(filetypes_menu)
 {
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{a,b,c}", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_programs(mg, "abc-run %c", 0, 0);
+	assoc_programs("{a,b,c}", "abc-run %c", 0, 0);
 
 	assert_success(cmds_dispatch("filetype b", &lwin, CIT_COMMAND));
 
@@ -153,12 +143,7 @@ TEST(filetypes_menu)
 
 TEST(fileviewers_menu)
 {
-	char *error;
-	matchers_group_t mg;
-	assert_success(ft_mg_from_string("{a,b,c}", &mg, &error));
-	assert_string_equal(NULL, error);
-
-	ft_set_viewers(mg, "abc-view %c");
+	assoc_viewers("{a,b,c}", "abc-view %c");
 
 	assert_success(cmds_dispatch("fileviewer c", &lwin, CIT_COMMAND));
 
