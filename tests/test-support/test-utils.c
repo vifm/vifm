@@ -39,6 +39,7 @@
 #include "../../src/background.h"
 #include "../../src/cmd_completion.h"
 #include "../../src/filelist.h"
+#include "../../src/filetype.h"
 #include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
 #include "../../src/plugins.h"
@@ -875,6 +876,28 @@ reset_timestamp(const char path[])
 		CloseHandle(file);
 	}
 #endif
+}
+
+void
+assoc_programs(const char mg_str[], const char programs[], int for_x, int in_x)
+{
+	char *error;
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string(mg_str, &mg, &error));
+	assert_string_equal(NULL, error);
+
+	ft_set_programs(mg, programs, for_x, in_x);
+}
+
+void
+assoc_viewers(const char mg_str[], const char viewers[])
+{
+	char *error;
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string(mg_str, &mg, &error));
+	assert_string_equal(NULL, error);
+
+	ft_set_viewers(mg, viewers);
 }
 
 void

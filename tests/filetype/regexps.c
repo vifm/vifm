@@ -2,15 +2,16 @@
 
 #include <stdlib.h>
 
+#include <test-utils.h>
+
 #include "../../src/filetype.h"
 #include "../../src/status.h"
-#include "test.h"
 
 TEST(regexp)
 {
 	const char *prog_cmd;
 
-	set_programs("/.*\\.[ch]$/", "c file", 0, 0);
+	assoc_programs("/.*\\.[ch]$/", "c file", 0, 0);
 
 	assert_null(ft_get_program("main.cpp"));
 	assert_null(ft_get_program("main.hpp"));
