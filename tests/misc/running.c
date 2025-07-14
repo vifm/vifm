@@ -17,7 +17,6 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
-#include "../../src/utils/matchers.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
@@ -97,17 +96,18 @@ TEARDOWN()
 
 TEST(full_path_regexps_are_handled_for_selection)
 {
-	matchers_t *ms;
-	char pattern[PATH_MAX + 16];
-	char *error;
-
 	/* Mind that there is no chdir(), this additionally checks that origins are
 	 * being used by the code. */
 
+	char pattern[PATH_MAX + 16];
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
-	ms = matchers_alloc(pattern, 0, 1, "", &error);
-	assert_non_null(ms);
-	ft_set_programs(ms, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
+
+	char *error;
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string(pattern, &mg, &error));
+	assert_string_equal(NULL, error);
+
+	ft_set_programs(mg, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -117,20 +117,21 @@ TEST(full_path_regexps_are_handled_for_selection)
 
 TEST(full_path_regexps_are_handled_for_selection2)
 {
-	matchers_t *ms;
-	char pattern[PATH_MAX + 16];
-	char *error;
-
 	/* Mind that there is no chdir(), this additionally checks that origins are
 	 * being used by the code. */
 
+	char pattern[PATH_MAX + 16];
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
-	ms = matchers_alloc(pattern, 0, 1, "", &error);
-	assert_non_null(ms);
+
+	char *error;
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string(pattern, &mg, &error));
+	assert_string_equal(NULL, error);
+
 #ifndef _WIN32
-	ft_set_programs(ms, "echo > /dev/null %c &", 0, 1);
+	ft_set_programs(mg, "echo > /dev/null %c &", 0, 1);
 #else
-	ft_set_programs(ms, "echo > NUL %c &", 0, 1);
+	ft_set_programs(mg, "echo > NUL %c &", 0, 1);
 #endif
 
 	rn_open(&lwin, FHE_NO_RUN);
@@ -148,9 +149,11 @@ TEST(can_open_via_plugin)
 			"vifm.addhandler{ name = 'open', handler = open }");
 
 	char *error;
-	matchers_t *ms = matchers_alloc("*", 0, 1, "", &error);
-	assert_non_null(ms);
-	ft_set_programs(ms, "#vifmtest#open", /*for_x=*/0, /*in_x=*/1);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("*", &mg, &error));
+	assert_string_equal(NULL, error);
+
+	ft_set_programs(mg, "#vifmtest#open", /*for_x=*/0, /*in_x=*/1);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -428,12 +431,13 @@ TEST(macro_can_be_added_implicitly, IF(not_windows))
 	--lwin.selected_files;
 
 	char *error;
-	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{a}", &mg, &error));
+	assert_string_equal(NULL, error);
 
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s a", script_path);
-	ft_set_programs(ms, cmd, 0, 0);
+	ft_set_programs(mg, cmd, 0, 0);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -453,12 +457,13 @@ TEST(handler_can_be_matched_by_a_prefix, IF(not_windows))
 	--lwin.selected_files;
 
 	char *error;
-	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{a}", &mg, &error));
+	assert_string_equal(NULL, error);
 
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "{wrong}no-such-cmd a, {right}%s a", script_path);
-	ft_set_programs(ms, cmd, 0, 0);
+	ft_set_programs(mg, cmd, 0, 0);
 
 	rn_open_with_match(&lwin, script_path, 0);
 
@@ -475,19 +480,20 @@ TEST(selection_multi_run, IF(not_windows))
 {
 	start_use_script();
 
-	char *error;
-	matchers_t *ms;
 	char cmd[PATH_MAX + 1];
 
-	ms = matchers_alloc("{a}", 0, 1, "", &error);
-	assert_non_null(ms);
-	snprintf(cmd, sizeof(cmd), "%s a %%c &", script_path);
-	ft_set_programs(ms, cmd, /*for_x=*/0, /*in_x=*/0);
+	char *error;
+	matchers_group_t mg;
 
-	ms = matchers_alloc("{b}", 0, 1, "", &error);
-	assert_non_null(ms);
+	assert_success(ft_mg_from_string("{a}", &mg, &error));
+	assert_string_equal(NULL, error);
+	snprintf(cmd, sizeof(cmd), "%s a %%c &", script_path);
+	ft_set_programs(mg, cmd, /*for_x=*/0, /*in_x=*/0);
+
+	assert_success(ft_mg_from_string("{b}", &mg, &error));
+	assert_string_equal(NULL, error);
 	snprintf(cmd, sizeof(cmd), "%s b %%\"c &", script_path);
-	ft_set_programs(ms, cmd, /*for_x=*/0, /*in_x=*/0);
+	ft_set_programs(mg, cmd, /*for_x=*/0, /*in_x=*/0);
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -703,46 +709,50 @@ static void
 assoc_a(char macro)
 {
 	char *error;
-	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{a}", &mg, &error));
+	assert_string_equal(NULL, error);
 
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s a %%%c", script_path, macro);
-	ft_set_programs(ms, cmd, 0, 0);
+	ft_set_programs(mg, cmd, 0, 0);
 }
 
 static void
 assoc_b(char macro)
 {
 	char *error;
-	matchers_t *ms = matchers_alloc("{b}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{b}", &mg, &error));
+	assert_string_equal(NULL, error);
 
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s b %%%c", script_path, macro);
-	ft_set_programs(ms, cmd, 0, 0);
+	ft_set_programs(mg, cmd, 0, 0);
 }
 
 static void
 assoc_common(void)
 {
 	char *error;
-	matchers_t *ms = matchers_alloc("{a,b}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{a,b}", &mg, &error));
+	assert_string_equal(NULL, error);
 
 	char cmd[PATH_MAX + 1];
 	snprintf(cmd, sizeof(cmd), "%s common %%f", script_path);
-	ft_set_programs(ms, cmd, 0, 0);
+	ft_set_programs(mg, cmd, 0, 0);
 }
 
 static void
 assoc(const char pattern[], const char cmd[])
 {
 	char *error;
-	matchers_t *ms = matchers_alloc(pattern, 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string(pattern, &mg, &error));
+	assert_string_equal(NULL, error);
 
-	ft_set_programs(ms, cmd, 0, 0);
+	ft_set_programs(mg, cmd, 0, 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

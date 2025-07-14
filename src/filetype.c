@@ -53,6 +53,8 @@ static int assoc_records_contains(assoc_records_t *assocs, const char command[],
 		const char description[]);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
+static int mg_match(const matchers_group_t *mg, const char str[]);
+static void mg_free(matchers_group_t *mg);
 
 const assoc_record_t NONE_PSEUDO_PROG = {
 	.command = "",
@@ -116,7 +118,7 @@ ft_get_viewers(const char file[])
 	{
 		assoc_t *const assoc = &fileviewers.list[i];
 
-		if(!matchers_match(assoc->matchers, file))
+		if(!mg_match(&assoc->mg, file))
 		{
 			continue;
 		}
@@ -149,7 +151,7 @@ find_existing_cmd(const assoc_list_t *record_list, const char file[])
 		assoc_record_t prog;
 		assoc_t *const assoc = &record_list->list[i];
 
-		if(!matchers_match(assoc->matchers, file))
+		if(!mg_match(&assoc->mg, file))
 		{
 			continue;
 		}
@@ -190,16 +192,15 @@ ft_get_all_programs(const char file[])
 }
 
 void
-ft_set_programs(matchers_t *matchers, const char programs[], int for_x,
-		int in_x)
+ft_set_programs(matchers_group_t mg, const char programs[], int for_x, int in_x)
 {
 	const assoc_t assoc = {
-		.matchers = matchers,
+		.mg = mg,
 		.records = parse_command_list(programs, 1),
 	};
 
 	/* On error, add_assoc() frees assoc, so just exit then. */
-	if(add_assoc(for_x ? &xfiletypes : &filetypes, assoc) == 0)
+	if(add_assoc(for_x ? &xfiletypes : &filetypes, assoc))
 	{
 		if(!for_x || in_x)
 		{
@@ -261,7 +262,7 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 	for(i = 0; i < record_list->count; ++i)
 	{
 		assoc_t *const assoc = &record_list->list[i];
-		if(matchers_match(assoc->matchers, file))
+		if(mg_match(&assoc->mg, file))
 		{
 			ft_assoc_record_add_all(&result, &assoc->records);
 		}
@@ -271,10 +272,10 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 }
 
 void
-ft_set_viewers(matchers_t *matchers, const char viewers[])
+ft_set_viewers(matchers_group_t mg, const char viewers[])
 {
 	const assoc_t assoc = {
-		.matchers = matchers,
+		.mg = mg,
 		.records = parse_command_list(viewers, 0),
 	};
 	/* On error, add_assoc() frees assoc, so just exit then. */
@@ -282,8 +283,8 @@ ft_set_viewers(matchers_t *matchers, const char viewers[])
 }
 
 /* Adds association to the list of associations, takes ownership of it
- * regardless of the outcome.  Returns non-zero on out of memory error,
- * otherwise zero is returned. */
+ * regardless of the outcome.  Returns non-zero if the element was added,
+ * otherwise it's freed. */
 static int
 add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 {
@@ -304,13 +305,13 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 	{
 		free_assoc(&assoc);
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return 1;
+		return 0;
 	}
 
 	assoc_list->list = p;
 	assoc_list->list[assoc_list->count] = assoc;
 	assoc_list->count++;
-	return 0;
+	return 1;
 }
 
 /* Compares two associations for equality.  Returns non-zero if they are equal,
@@ -323,13 +324,25 @@ is_assoc_equal(const assoc_t *a, const assoc_t *b)
 		return 0;
 	}
 
-	if(strcmp(matchers_get_expr(a->matchers),
-				matchers_get_expr(b->matchers)) != 0)
+	if(a->mg.count != b->mg.count)
 	{
 		return 0;
 	}
 
 	int i;
+
+	/* In principle, we're only interested whether we have the same set of
+	 * matchers or not regardless of their order, but since the goal is to avoid
+	 * essentially identical duplicates, just do pair-wise comparison. */
+	for(i = 0; i < a->mg.count; ++i)
+	{
+		if(strcmp(matchers_get_expr(a->mg.list[i]),
+					matchers_get_expr(b->mg.list[i])) != 0)
+		{
+			return 0;
+		}
+	}
+
 	for(i = 0; i < a->records.count; ++i)
 	{
 		if(strcmp(a->records.list[i].command, b->records.list[i].command) != 0)
@@ -337,6 +350,7 @@ is_assoc_equal(const assoc_t *a, const assoc_t *b)
 			return 0;
 		}
 	}
+
 	return 1;
 }
 
@@ -389,11 +403,14 @@ static void
 add_defaults(int in_x)
 {
 	char *error;
-	matchers_t *const m = matchers_alloc("{*/}", 0, 1, "", &error);
-	assert(m != NULL && "Failed to allocate builtin matcher!");
+	matchers_group_t mg;
+	if(ft_mg_from_string("{*/}", &mg, &error) != 0)
+	{
+		assert(0 && "Failed to allocate builtin matcher!");
+	}
 
 	new_records_type = ART_BUILTIN;
-	ft_set_programs(m, "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
+	ft_set_programs(mg, "{Enter directory}" VIFM_PSEUDO_CMD, /*for_x=*/0, in_x);
 	new_records_type = ART_CUSTOM;
 }
 
@@ -419,7 +436,7 @@ reset_list_head(assoc_list_t *assoc_list)
 static void
 free_assoc(assoc_t *assoc)
 {
-	matchers_free(assoc->matchers);
+	mg_free(&assoc->mg);
 	ft_assoc_records_free(&assoc->records);
 }
 
@@ -472,10 +489,20 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		int j;
 
 		const assoc_t assoc = assocs->list[i];
-		if(strcmp(matchers_get_expr(assoc.matchers), pattern) != 0)
+
+		char *mg_str = ft_mg_to_string(&assoc.mg);
+		if(mg_str == NULL)
 		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			return 0;
+		}
+
+		if(strcmp(mg_str, pattern) != 0)
+		{
+			free(mg_str);
 			continue;
 		}
+		free(mg_str);
 
 		for(j = 0; j < assoc.records.count; ++j)
 		{
@@ -605,6 +632,114 @@ static int
 is_assoc_record_empty(const assoc_record_t *record)
 {
 	return record->command == NULL && record->description == NULL;
+}
+
+/* Checks whether given string matches.  Returns non-zero if so, otherwise zero
+ * is returned. */
+static int
+mg_match(const matchers_group_t *mg, const char str[])
+{
+	int i;
+	for(i = 0; i < mg->count; ++i)
+	{
+		if(matchers_match(mg->list[i], str))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int
+ft_mg_from_string(const char str[], matchers_group_t *mg, char **error)
+{
+	*error = NULL;
+
+	int nexprs;
+	char **exprs = matchers_list(str, &nexprs);
+	if(exprs == NULL)
+	{
+		update_string(error, "Failed to parse list of matchers.");
+		return 1;
+	}
+
+	matchers_group_t result = {
+		.list = reallocarray(NULL, nexprs, sizeof(*result.list)),
+		.count = 0,
+	};
+	if(result.list == NULL)
+	{
+		free_string_array(exprs, nexprs);
+		update_string(error, "Failed to allocate matchers.");
+		return 1;
+	}
+
+	int i;
+	for(i = 0; i < nexprs; ++i, ++result.count)
+	{
+		char *matcher_error;
+		result.list[i] = matchers_alloc(exprs[i], /*cs_by_def=*/0,
+				/*glob_by_def=*/1, /*on_empty_re=*/"", &matcher_error);
+		if(result.list[i] == NULL)
+		{
+			put_string(error, format_str("Wrong pattern (%s): %s", exprs[i],
+						matcher_error));
+			free(matcher_error);
+			break;
+		}
+	}
+
+	free_string_array(exprs, nexprs);
+
+	if(i < nexprs)
+	{
+		mg_free(&result);
+		return 1;
+	}
+
+	*mg = result;
+	return 0;
+}
+
+/* Frees matchers in a group of matchers. */
+static void
+mg_free(matchers_group_t *mg)
+{
+	int i;
+	for(i = 0; i < mg->count; ++i)
+	{
+		matchers_free(mg->list[i]);
+	}
+	free(mg->list);
+}
+
+char *
+ft_mg_to_string(const matchers_group_t *mg)
+{
+	char *str = NULL;
+	size_t len = 0;
+
+	int i;
+	for(i = 0; i < mg->count; ++i)
+	{
+		if(i != 0 && strappendch(&str, &len, ',') != 0)
+		{
+			break;
+		}
+
+		if(strappend(&str, &len, matchers_get_expr(mg->list[i])) != 0)
+		{
+			break;
+		}
+	}
+
+	if(i < mg->count)
+	{
+		free(str);
+		return NULL;
+	}
+
+	return str;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

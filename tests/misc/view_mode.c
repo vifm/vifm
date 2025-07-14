@@ -12,7 +12,6 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/cmd_core.h"
@@ -331,9 +330,11 @@ TEST(previewprg_is_applied)
 	update_string(&lwin.preview_prg, "echo previewprg_is_applied%%");
 
 	char *error;
-	matchers_t *ms = matchers_alloc("*", 0, 1, "", &error);
-	assert_non_null(ms);
-	ft_set_viewers(ms, "echo viewer%%");
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("*", &mg, &error));
+	assert_string_equal(NULL, error);
+
+	ft_set_viewers(mg, "echo viewer%%");
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
 			NULL);
@@ -398,9 +399,11 @@ start_view_mode(const char pattern[], const char viewers[],
 	if(viewers != NULL)
 	{
 		char *error;
-		matchers_t *ms = matchers_alloc(pattern, 0, 1, "", &error);
-		assert_non_null(ms);
-		ft_set_viewers(ms, viewers);
+		matchers_group_t mg;
+		assert_success(ft_mg_from_string(pattern, &mg, &error));
+		assert_string_equal(NULL, error);
+
+		ft_set_viewers(mg, viewers);
 	}
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), base_dir, sub_path, NULL);

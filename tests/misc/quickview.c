@@ -17,7 +17,6 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/file_streams.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/filelist.h"
@@ -54,15 +53,14 @@ TEST(no_extra_line_without_extra_padding)
 
 TEST(preview_can_match_agains_full_paths)
 {
-	char *error;
-	matchers_t *ms;
-
 	ft_init(NULL);
 
-	assert_non_null(ms = matchers_alloc("{{*/*}}", 0, 1, "", &error));
-	assert_null(error);
+	char *error;
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{{*/*}}", &mg, &error));
+	assert_string_equal(NULL, error);
 
-	ft_set_viewers(ms, "the-viewer");
+	ft_set_viewers(mg, "the-viewer");
 
 	assert_string_equal("the-viewer",
 			qv_get_viewer(TEST_DATA_PATH "/read/two-lines"));
@@ -72,15 +70,14 @@ TEST(preview_can_match_agains_full_paths)
 
 TEST(preview_prg_overrules_fileviewer)
 {
-	char *error;
-	matchers_t *ms;
-
 	ft_init(NULL);
 
-	assert_non_null(ms = matchers_alloc("file", 0, 1, "", &error));
-	assert_null(error);
+	char *error;
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("file", &mg, &error));
+	assert_string_equal(NULL, error);
 
-	ft_set_viewers(ms, "the-viewer");
+	ft_set_viewers(mg, "the-viewer");
 
 	assert_string_equal("the-viewer", qv_get_viewer("file"));
 	update_string(&curr_view->preview_prg, "override");
@@ -160,9 +157,11 @@ TEST(quick_view_picks_parent_directory_if_there_is_a_match)
 	char path[PATH_MAX + 1];
 
 	char *error;
-	matchers_t *ms = matchers_alloc("../", 0, 1, "", &error);
-	assert_non_null(ms);
-	ft_set_viewers(ms, "do something");
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("../", &mg, &error));
+	assert_string_equal(NULL, error);
+
+	ft_set_viewers(mg, "do something");
 
 	qv_get_path_to_explore(&entry, path, sizeof(path));
 	assert_string_equal("/path/..", path);

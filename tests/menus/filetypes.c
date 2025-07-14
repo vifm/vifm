@@ -14,7 +14,6 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/matchers.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
@@ -113,10 +112,11 @@ TEST(unknown_key_is_ignored)
 TEST(pseudo_entry_is_always_present_for_directories)
 {
 	char *error;
-	matchers_t *ms = matchers_alloc("{bla-*/}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{bla-*/}", &mg, &error));
+	assert_string_equal(NULL, error);
 
-	ft_set_programs(ms, "abc-run %c", 0, 0);
+	ft_set_programs(mg, "abc-run %c", 0, 0);
 
 	assert_success(cmds_dispatch("filetype bla-dir/", &lwin, CIT_COMMAND));
 
@@ -137,10 +137,11 @@ TEST(no_menu_if_no_handlers)
 TEST(filetypes_menu)
 {
 	char *error;
-	matchers_t *ms = matchers_alloc("{a,b,c}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{a,b,c}", &mg, &error));
+	assert_string_equal(NULL, error);
 
-	ft_set_programs(ms, "abc-run %c", 0, 0);
+	ft_set_programs(mg, "abc-run %c", 0, 0);
 
 	assert_success(cmds_dispatch("filetype b", &lwin, CIT_COMMAND));
 
@@ -153,10 +154,11 @@ TEST(filetypes_menu)
 TEST(fileviewers_menu)
 {
 	char *error;
-	matchers_t *ms = matchers_alloc("{a,b,c}", 0, 1, "", &error);
-	assert_non_null(ms);
+	matchers_group_t mg;
+	assert_success(ft_mg_from_string("{a,b,c}", &mg, &error));
+	assert_string_equal(NULL, error);
 
-	ft_set_viewers(ms, "abc-view %c");
+	ft_set_viewers(mg, "abc-view %c");
 
 	assert_success(cmds_dispatch("fileviewer c", &lwin, CIT_COMMAND));
 
