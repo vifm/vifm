@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <test-utils.h>
+
 #include "../../src/int/file_magic.h"
 #include "../../src/filetype.h"
 #include "../../src/status.h"
@@ -37,8 +39,8 @@ TEST(multiple_choice_separated)
 {
 	const char *viewer;
 
-	set_viewers("*.tar.bz2", "prog1");
-	set_viewers("*.tar.bz2", "prog2");
+	assoc_viewers("*.tar.bz2", "prog1");
+	assoc_viewers("*.tar.bz2", "prog2");
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
@@ -57,7 +59,7 @@ TEST(multiple_choice_joined)
 {
 	const char *viewer;
 
-	set_viewers("*.tar.bz2", "prog1,prog2");
+	assoc_viewers("*.tar.bz2", "prog1,prog2");
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
@@ -76,7 +78,7 @@ TEST(description_is_not_allowed)
 {
 	const char *viewer;
 
-	set_viewers("*.tar.bz2", "{archives} prog1");
+	assoc_viewers("*.tar.bz2", "{archives} prog1");
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
@@ -85,7 +87,7 @@ TEST(description_is_not_allowed)
 
 TEST(several_patterns)
 {
-	set_viewers("*.tbz,*.tbz2,*.tar.bz2", "prog1");
+	assoc_viewers("*.tbz,*.tbz2,*.tar.bz2", "prog1");
 
 	ft_init(&prog1_available);
 
@@ -96,10 +98,10 @@ TEST(several_patterns)
 
 TEST(multiple_viewers)
 {
-	set_viewers("*.tbz", "prog1 a");
-	set_viewers("*.tba", "prog2 a");
-	set_viewers("*.tbz", "prog2 b");
-	set_viewers("*.tbz", "prog1 b");
+	assoc_viewers("*.tbz", "prog1 a");
+	assoc_viewers("*.tba", "prog2 a");
+	assoc_viewers("*.tbz", "prog2 b");
+	assoc_viewers("*.tbz", "prog1 b");
 
 	ft_init(&prog1_available);
 
@@ -116,7 +118,7 @@ TEST(pattern_list, IF(has_mime_type_detection))
 
 	snprintf(cmd, sizeof(cmd), "<%s>{binary-data}",
 			get_mimetype(TEST_DATA_PATH "/read/binary-data", 0));
-	set_viewers(cmd, "prog1");
+	assoc_viewers(cmd, "prog1");
 
 	ft_init(&prog1_available);
 

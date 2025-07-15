@@ -2,15 +2,16 @@
 
 #include <stdlib.h>
 
+#include <test-utils.h>
+
 #include "../../src/filetype.h"
 #include "../../src/status.h"
-#include "test.h"
 
 TEST(one_pattern)
 {
 	assoc_records_t ft;
 
-	set_programs("*.tar", "{description} tar prog", 0, 0);
+	assoc_programs("*.tar", "{description} tar prog", 0, 0);
 
 	ft = ft_get_all_programs("file.version.tar");
 	assert_int_equal(1, ft.count);
@@ -25,7 +26,7 @@ TEST(double_comma_in_description)
 {
 	assoc_records_t ft;
 
-	set_programs("*.tar", "{description,,is,,here} tar prog", 0, 0);
+	assoc_programs("*.tar", "{description,,is,,here} tar prog", 0, 0);
 
 	ft = ft_get_all_programs("file.version.tar");
 	assert_int_equal(1, ft.count);
@@ -38,7 +39,7 @@ TEST(two_patterns)
 {
 	assoc_records_t ft;
 
-	set_programs("*.tar,*.zip", "{archives} prog", 0, 0);
+	assoc_programs("*.tar,*.zip", "{archives} prog", 0, 0);
 
 	{
 		ft = ft_get_all_programs("file.version.tar");
@@ -65,7 +66,7 @@ TEST(two_programs)
 {
 	assoc_records_t ft;
 
-	set_programs("*.tar", "{rar} rarprog, {zip} zipprog", 0, 0);
+	assoc_programs("*.tar", "{rar} rarprog, {zip} zipprog", 0, 0);
 
 	ft = ft_get_all_programs("a.tar");
 

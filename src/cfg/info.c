@@ -47,7 +47,6 @@
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/matcher.h"
-#include "../utils/matchers.h"
 #include "../utils/parson.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -985,16 +984,19 @@ load_assocs(JSON_Object *root, const char node[], int for_x)
 		if(get_str(entry, "matchers", &matchers) && get_str(entry, "cmd", &cmd))
 		{
 			char *error;
-			matchers_t *const ms = matchers_alloc(matchers, 0, 1, "", &error);
-			if(ms == NULL)
+			matchers_group_t mg;
+			if(ft_mg_from_string(matchers, &mg, &error) != 0)
 			{
-				LOG_ERROR_MSG("Error with matchers of an assoc `%s`: %s", matchers,
-						error);
-				free(error);
+				if(error != NULL)
+				{
+					LOG_ERROR_MSG("Error with matchers of an assoc `%s`: %s", matchers,
+							error);
+					free(error);
+				}
 			}
 			else
 			{
-				ft_set_programs(ms, cmd, for_x, in_x);
+				ft_set_programs(mg, cmd, for_x, in_x);
 			}
 		}
 	}
@@ -1015,16 +1017,19 @@ load_viewers(JSON_Object *root)
 		if(get_str(viewer, "matchers", &matchers) && get_str(viewer, "cmd", &cmd))
 		{
 			char *error;
-			matchers_t *const ms = matchers_alloc(matchers, 0, 1, "", &error);
-			if(ms == NULL)
+			matchers_group_t mg;
+			if(ft_mg_from_string(matchers, &mg, &error) != 0)
 			{
-				LOG_ERROR_MSG("Error with matchers of a viewer `%s`: %s", matchers,
-						error);
-				free(error);
+				if(error != NULL)
+				{
+					LOG_ERROR_MSG("Error with matchers of a viewer `%s`: %s", matchers,
+							error);
+					free(error);
+				}
 			}
 			else
 			{
-				ft_set_viewers(ms, cmd);
+				ft_set_viewers(mg, cmd);
 			}
 		}
 	}
@@ -2421,7 +2426,14 @@ store_assocs(JSON_Object *root, const char node[], assoc_list_t *assocs)
 			char *doubled_commas_cmd = double_char(ft_record.command, ',');
 
 			JSON_Object *entry = append_object(entries);
-			set_str(entry, "matchers", matchers_get_expr(assoc.matchers));
+
+			/* Just make an incomplete object on error, parsing will discard it. */
+			char *mg_str = ft_mg_to_string(&assoc.mg);
+			if(mg_str != NULL)
+			{
+				set_str(entry, "matchers", mg_str);
+				free(mg_str);
+			}
 
 			if(ft_record.description[0] == '\0')
 			{

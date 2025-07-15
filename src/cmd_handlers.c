@@ -2503,9 +2503,6 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 static int
 add_assoc(const cmd_info_t *cmd_info, int viewer, int for_x)
 {
-	char **matchers;
-	int nmatchers;
-	int i;
 	const int in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 	const char *const records = vle_cmds_next_arg(cmd_info->args);
 
@@ -2516,35 +2513,29 @@ add_assoc(const cmd_info_t *cmd_info, int viewer, int for_x)
 		     : (show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0);
 	}
 
-	matchers = matchers_list(cmd_info->argv[0], &nmatchers);
-	if(matchers == NULL)
+	char *error;
+	matchers_group_t mg;
+	if(ft_mg_from_string(cmd_info->argv[0], &mg, &error) != 0)
 	{
-		return CMDS_ERR_NO_MEM;
+		if(error == NULL)
+		{
+			return CMDS_ERR_NO_MEM;
+		}
+
+		ui_sb_err(error);
+		free(error);
+		return CMDS_ERR_CUSTOM;
 	}
 
-	for(i = 0; i < nmatchers; ++i)
+	if(viewer)
 	{
-		char *error;
-		matchers_t *const ms = matchers_alloc(matchers[i], 0, 1, "", &error);
-		if(ms == NULL)
-		{
-			ui_sb_errf("Wrong pattern (%s): %s", matchers[i], error);
-			free(error);
-			free_string_array(matchers, nmatchers);
-			return CMDS_ERR_CUSTOM;
-		}
-
-		if(viewer)
-		{
-			ft_set_viewers(ms, records);
-		}
-		else
-		{
-			ft_set_programs(ms, records, for_x, in_x);
-		}
+		ft_set_viewers(mg, records);
+	}
+	else
+	{
+		ft_set_programs(mg, records, for_x, in_x);
 	}
 
-	free_string_array(matchers, nmatchers);
 	return 0;
 }
 

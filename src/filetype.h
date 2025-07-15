@@ -58,11 +58,19 @@ typedef struct
 }
 assoc_records_t;
 
+/* List of matchers which matches if any matcher does. */
+typedef struct
+{
+	struct matchers_t **list; /* Disjunction of matching mechanisms. */
+	int count;                /* Size of the list. */
+}
+matchers_group_t;
+
 /* Single file association entry. */
 typedef struct
 {
-	struct matchers_t *matchers; /* Matching mechanism. */
-	assoc_records_t records;     /* Associated programs. */
+	matchers_group_t mg;     /* Matching mechanism. */
+	assoc_records_t records; /* Associated programs. */
 }
 assoc_t;
 
@@ -111,11 +119,11 @@ const char * ft_get_program(const char file[]);
  * Caller should free the result by calling ft_assoc_records_free() on it. */
 assoc_records_t ft_get_all_programs(const char file[]);
 
-/* Associates list of comma separated patterns with each item in the list of
- * comma separated programs either for X or non-X associations and depending on
- * current execution environment.  Takes over ownership of the matchers. */
-void ft_set_programs(struct matchers_t *matchers, const char programs[],
-		int for_x, int in_x);
+/* Associates a group of matchers with each item in the list of comma separated
+ * programs either for X or non-X associations and depending on current
+ * execution environment.  Takes over ownership of the matchers group. */
+void ft_set_programs(matchers_group_t mg, const char programs[], int for_x,
+		int in_x);
 
 /* Viewers. */
 
@@ -132,9 +140,9 @@ struct strlist_t ft_get_viewers(const char file[]);
  * Caller should free the result by calling ft_assoc_records_free() on it. */
 assoc_records_t ft_get_all_viewers(const char file[]);
 
-/* Associates list of comma separated patterns with each item in the list of
- * comma separated viewers. */
-void ft_set_viewers(struct matchers_t *matchers, const char viewers[]);
+/* Associates a group of matchers with each item in the list of comma separated
+ * viewers.  Takes ownership over the matchers group. */
+void ft_set_viewers(matchers_group_t mg, const char viewers[]);
 
 /* Guesses kind of viewer from the invocation command.  The parameter can be
  * empty or NULL in which case textual kind is implied.  Returns the kind. */
@@ -155,6 +163,16 @@ void ft_assoc_record_add_all(assoc_records_t *assocs,
 
 /* After this call the structure contains NULL values. */
 void ft_assoc_records_free(assoc_records_t *records);
+
+/* Matchers group. */
+
+/* Parses comma-separated list of matchers.  Returns zero on success and sets
+ * *error to NULL, otherwise *error is set to an error message. */
+int ft_mg_from_string(const char str[], matchers_group_t *mg, char **error);
+
+/* Turns group of matchers into a comma-separated list.  Returns NULL on
+ * errors. */
+char * ft_mg_to_string(const matchers_group_t *mg);
 
 #endif /* VIFM__FILETYPE_H__ */
 

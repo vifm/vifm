@@ -15,7 +15,6 @@
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matcher.h"
-#include "../../src/utils/matchers.h"
 #include "../../src/utils/parson.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -90,16 +89,12 @@ TEST(view_sorting_is_read_from_vifminfo)
 TEST(filetypes_are_deduplicated)
 {
 	struct stat first, second;
-	char *error;
-	matchers_t *ms;
 
 	cfg.vifm_info = VINFO_FILETYPES;
 	cmds_init();
 
 	/* Add a filetype. */
-	ms = matchers_alloc("*.c", 0, 1, "", &error);
-	assert_non_null(ms);
-	ft_set_programs(ms, "{Description}com,,mand,{descr2}cmd", 0, 1);
+	assoc_programs("*.c", "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Write it first time. */
 	write_info_file();
@@ -107,9 +102,7 @@ TEST(filetypes_are_deduplicated)
 	assert_success(stat(SANDBOX_PATH "/vifminfo.json", &first));
 
 	/* Add filetype again (as if it was read from vifmrc). */
-	ms = matchers_alloc("*.c", 0, 1, "", &error);
-	assert_non_null(ms);
-	ft_set_programs(ms, "{Description}com,,mand,{descr2}cmd", 0, 1);
+	assoc_programs("*.c", "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Update vifminfo second time. */
 	write_info_file();

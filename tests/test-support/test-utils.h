@@ -183,6 +183,13 @@ void stub_colmgr(void);
 /* Changes time attributes of a file to something "long time ago". */
 void reset_timestamp(const char path[]);
 
+/* Associates matchers group with a comma-separated list of programs. */
+void assoc_programs(const char mg_str[], const char programs[], int for_x,
+		int in_x);
+
+/* Associates matchers group with a comma-separated list of viewers. */
+void assoc_viewers(const char mg_str[], const char viewers[]);
+
 struct plugs_t;
 
 /* Appends "/plugins" to the passed in directory and loads plugins from
