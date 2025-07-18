@@ -87,7 +87,7 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 
 	while(!done)
 	{
-		switch(getopt_long(argc, argv, "-c:fhv", long_opts, NULL))
+		switch(getopt_long(argc, argv, "-c:fhv1", long_opts, NULL))
 		{
 			char path_buf[PATH_MAX + 1];
 
@@ -106,6 +106,9 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 			case 'o': /* --on-choose <cmd> */
 				args->on_choose = optarg;
+				break;
+			case '1': /* -1 */
+				args->choose_one = 1;
 				break;
 
 			case 'L': /* --server-list */
@@ -420,6 +423,8 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm --on-choose <command>");
 	puts("    sets command to be executed on selected files instead of opening");
 	puts("    them.  Command can use any of command macros.\n");
+	puts("  vifm --choose-files|--on-choose <arg> -1");
+	puts("    choose at most one item.\n");
 	puts("  vifm --plugins-dir <path>");
 	puts("    additional plugins directory (can appear multiple times).\n");
 	puts("  vifm --logging[=<startup log path>]");
@@ -533,6 +538,8 @@ process_other_args(args_t *args)
 	{
 		stats_set_on_choose(args->on_choose);
 	}
+
+	curr_stats.choose_one = args->choose_one;
 
 	free_string_array(curr_stats.plugins_dirs.items,
 			curr_stats.plugins_dirs.nitems);

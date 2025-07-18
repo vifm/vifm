@@ -46,6 +46,7 @@ typedef struct
 	int no_configs;  /* Skip reading configuration files. */
 	int file_picker; /* Use predefined $VIFM/vimfiles for list of files. */
 
+	int choose_one;                      /* Choose at most one item. */
 	char chosen_files_out[PATH_MAX + 1]; /* Output for file picking. */
 	char chosen_dir_out[PATH_MAX + 1];   /* Output for directory picking. */
 	const char *delimiter;               /* Delimiter for list of picked files. */

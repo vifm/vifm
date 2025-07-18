@@ -30,6 +30,7 @@
 #include "engine/parsing.h"
 #include "engine/variables.h"
 #include "int/path_env.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "lua/vlua.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
@@ -186,6 +187,35 @@ instance_load_config(void)
 	opt_t *history_opt = vle_opts_find("history", OPT_GLOBAL);
 	assert(history_opt != NULL && "'history' option must be there.");
 	cfg_resize_histories(history_opt->val.int_val);
+}
+
+void
+instance_try_choose_files(view_t *view, int nfiles, char *files[])
+{
+	flist_set_marking(view, 1);
+
+	if(curr_stats.choose_one)
+	{
+		int real_nfiles = nfiles;
+		if(real_nfiles == 0)
+		{
+			dir_entry_t *entry = NULL;
+			while(iter_marked_entries(view, &entry))
+			{
+				++real_nfiles;
+			}
+		}
+
+		if(real_nfiles > 1)
+		{
+			show_error_msgf("File Choosing Error",
+					"A single-item choice was requested, but %d items are selected.",
+					real_nfiles);
+			return;
+		}
+	}
+
+	vifm_choose_files(view, nfiles, files);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

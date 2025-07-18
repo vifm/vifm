@@ -2322,8 +2322,8 @@ edit_cmd(const cmd_info_t *cmd_info)
 	{
 		if(stats_file_choose_action_set())
 		{
-			/* The call below does not return. */
-			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
+			instance_try_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
+			return 0;
 		}
 
 		(void)vim_edit_files(cmd_info->argc, cmd_info->argv);
@@ -2350,8 +2350,8 @@ edit_cmd(const cmd_info_t *cmd_info)
 		/* Reuse marking second time. */
 		curr_view->pending_marking = 1;
 
-		/* The call below does not return. */
-		vifm_choose_files(curr_view, 0, NULL);
+		instance_try_choose_files(curr_view, 0, NULL);
+		return 0;
 	}
 
 	if(vim_edit_marking(curr_view) != 0)

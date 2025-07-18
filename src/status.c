@@ -208,6 +208,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->original_stdout = NULL;
 
+	stats->choose_one = 0;
 	update_string(&stats->chosen_files_out, NULL);
 	update_string(&stats->chosen_dir_out , NULL);
 	(void)replace_string(&stats->output_delimiter, "\n");

@@ -197,6 +197,7 @@ typedef struct
 
 	FILE *original_stdout; /* Saved original standard output. */
 
+	int choose_one;         /* Choose at most one item. */
 	char *chosen_files_out; /* Destination for writing chosen files. */
 	char *chosen_dir_out;   /* Destination for writing chosen directory. */
 	char *output_delimiter; /* Delimiter for writing out list of paths. */

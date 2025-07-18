@@ -67,6 +67,7 @@
 #include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
+#include "instance.h"
 #include "macros.h"
 #include "opt_handlers.h"
 #include "status.h"
@@ -199,8 +200,8 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		/* Reuse marking second time. */
 		view->pending_marking = 1;
-		/* The call below does not return. */
-		vifm_choose_files(view, 0, NULL);
+		instance_try_choose_files(view, 0, NULL);
+		return;
 	}
 
 	if(executable && !fentry_is_dir(curr))

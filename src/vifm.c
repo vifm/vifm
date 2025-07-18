@@ -619,8 +619,6 @@ vifm_choose_files(view_t *view, int nfiles, char *files[])
 	 * before writing anything to the screen. */
 	ui_shutdown();
 
-	flist_set_marking(view, 1);
-
 	int exit_code = EXIT_SUCCESS;
 
 	if(vim_write_file_list(view, nfiles, files) != 0)

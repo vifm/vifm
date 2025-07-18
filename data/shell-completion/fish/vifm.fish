@@ -13,6 +13,7 @@ end
 complete -c vifm    -F                            -a "(__fish_complete_hyphen)"
 complete -c vifm -r -F        -l "select"                                               -d "Open parent directory of the given path and select specified file in it"
 complete -c vifm    -f -s "f"                                                           -d "Make vifm instead of opening files write selection to \$VIFM/vifmfiles and quit"
+complete -c vifm    -f -s "1"                                                           -d "Accept at most 1 item when choosing"
 complete -c vifm -r -F        -l "choose-files"                                         -d "Set output file to write selection into on exit instead of opening files"
 complete -c vifm -r -F        -l "choose-dir"                                           -d "Set output file to write last visited directory into on exit"
 complete -c vifm -r -F        -l "plugins-dir"                                          -d "Additional plugins directory (can appear multiple times)"

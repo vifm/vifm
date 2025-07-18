@@ -14,6 +14,10 @@
 	quotes (e.g., `:echo "This is \<space>."`) that appear in expressions (so
 	won't work, say, in `:set grepprg="\<space>"`).  Thanks to agguser.
 
+	Added -1 command-line switch which constraints choosing to at most 1 item.
+	Attempt to choose more than 1 item results in an error dialog.  Thanks to
+	The Cyberduck.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more

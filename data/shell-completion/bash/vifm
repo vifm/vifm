@@ -58,7 +58,7 @@ _vifm() {
     esac
 
     if [[ $cur == -* ]]; then
-        COMPREPLY=( $( compgen -W '--select -f --choose-files --choose-dir
+        COMPREPLY=( $( compgen -W '--select -f -1 --choose-files --choose-dir
             --delimiter --on-choose --logging= --server-list --server-name
             --remote --remote-expr -c -h --help -v --version --no-configs
             --plugins-dir' \

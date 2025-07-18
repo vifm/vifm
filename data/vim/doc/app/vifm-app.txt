@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 5
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -91,6 +91,9 @@ The other command line arguments are:
 -f                                             *vifm--f*
     makes vifm instead of opening files write selection to $VIFM/vimfiles and
     quit.
+-1                                             *vifm--1*
+    accept at most 1 item when choosing.  An error dialog is shown for
+    multiple selection.
 --choose-files <path>|-                        *vifm---choose-files*
     sets output file to write selection into on exit instead of opening files.
     "-" means standard output.  Use empty value to disable it.
@@ -5217,6 +5220,7 @@ Retrieves values of options related to file choosing.  {opt} can be one of:
     dir        returns argument of |vifm---choose-dir| or empty string
     cmd        returns argument of |vifm---on-choose| or empty string
     delimiter  returns argument of |vifm---delimiter| or the default one ("\n")
+    1          returns a boolean indicating whether |vifm--1| is in effect
 
 escape({string}, {chars})                      *vifm-escape()*
 

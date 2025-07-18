@@ -1,4 +1,4 @@
-.TH VIFM 1 "5 July 2025" "vifm 0.15"
+.TH VIFM 1 "18 July 2025" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -50,6 +50,10 @@ Open parent directory of the given path and select specified file in it.
 .TP
 .BI \-f
 Makes vifm instead of opening files write selection to $VIFM/vimfiles and quit.
+.TP
+.BI \-1
+Accept at most 1 item when choosing.  An error dialog is shown for
+multiple selection.
 .TP
 .BI "\-\-choose-files <path>|\-"
 Sets output file to write selection into on exit instead of opening files.
@@ -6242,6 +6246,7 @@ Retrieves values of options related to file choosing.  {opt} can be one of:
     dir        returns argument of \-\-choose-dir or empty string
     cmd        returns argument of \-\-on-choose or empty string
     delimiter  returns argument of \-\-delimiter or the default one (\\n)
+    1          returns a boolean indicating whether \-1 is in effect
 
 .BI escape({string}, {chars})
 
