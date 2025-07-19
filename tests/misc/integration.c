@@ -40,6 +40,23 @@ TEARDOWN()
 /* Because of fmemopen(). */
 #if !defined(_WIN32) && !defined(__APPLE__)
 
+TEST(writing_no_dir_choice_on_stdout_omits_newline)
+{
+	char out_buf[100] = { };
+	char out_spec[] = "-";
+
+	curr_stats.chosen_dir_out = out_spec;
+	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
+
+	vim_write_dir("");
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+	curr_stats.chosen_dir_out = NULL;
+
+	assert_string_equal("", out_buf);
+}
+
 TEST(writing_directory_on_stdout_prints_newline)
 {
 	char out_buf[100] = { };
@@ -55,6 +72,24 @@ TEST(writing_directory_on_stdout_prints_newline)
 	curr_stats.chosen_dir_out = NULL;
 
 	assert_string_equal("/some/path\n", out_buf);
+}
+
+TEST(writing_no_dir_choice_to_a_file_omits_newline)
+{
+	char out_buf[100] = { };
+	char out_spec[] = SANDBOX_PATH "/out";
+
+	curr_stats.chosen_dir_out = out_spec;
+	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
+
+	vim_write_dir("");
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+	curr_stats.chosen_dir_out = NULL;
+
+	assert_int_equal(0, get_file_size(out_spec));
+	remove_file(out_spec);
 }
 
 TEST(writing_directory_to_a_file_prints_newline)

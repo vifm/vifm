@@ -345,8 +345,11 @@ vim_write_dir(const char path[])
 
 	if(strcmp(dir_out, "-") == 0)
 	{
-		fputs(path, curr_stats.original_stdout);
-		putc('\n', curr_stats.original_stdout);
+		if(strcmp(path, "") != 0)
+		{
+			fputs(path, curr_stats.original_stdout);
+			putc('\n', curr_stats.original_stdout);
+		}
 		return;
 	}
 
@@ -357,8 +360,11 @@ vim_write_dir(const char path[])
 		return;
 	}
 
-	fputs(path, fp);
-	putc('\n', fp);
+	if(strcmp(path, "") != 0)
+	{
+		fputs(path, fp);
+		putc('\n', fp);
+	}
 	fclose(fp);
 }
 

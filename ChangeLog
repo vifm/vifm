@@ -5,6 +5,9 @@
 
 	Fixed :normal not being able to run commands which end with whitespace.
 
+	Fixed printing newline on cancelling choosing a directory via
+	`--choose-dir` option.  Thanks to The Cyberduck.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
