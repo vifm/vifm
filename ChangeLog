@@ -48,6 +48,9 @@
 	Display descriptions as "{...}" rather than "[...]" in :file and
 	:file[x]type menus.
 
+	Improved potentially confusing wording in the dialog confirming exit while
+	background jobs are running.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
