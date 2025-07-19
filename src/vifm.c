@@ -577,8 +577,8 @@ vifm_try_leave(int store_state, int cquit, int force)
 {
 	if(!force && bg_has_active_jobs(1))
 	{
-		if(!prompt_msg("Warning", "Some of backgrounded commands are still "
-					"working.  Quit?"))
+		if(!prompt_msg("Warning", "Some of background jobs are still running.  "
+					"Quit anyway?"))
 		{
 			return;
 		}
