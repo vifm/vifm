@@ -125,6 +125,9 @@
 
 	Fixed escaping characters with codes greater than 127 producing garbage.
 
+	Fixed printing newline on cancelling choosing a directory via
+	`--choose-dir` option.  Thanks to The Cyberduck.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
