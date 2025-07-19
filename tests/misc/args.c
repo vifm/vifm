@@ -112,6 +112,17 @@ TEST(can_output_choice_on_stdout)
 	args_free(&args);
 }
 
+TEST(choose_one)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "-1", "--choose-file", "-", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_string_equal("-", args.chosen_files_out);
+	assert_true(args.choose_one);
+	args_free(&args);
+}
+
 TEST(select_accepts_dash_if_such_directory_exists)
 {
 	args_t args = { };

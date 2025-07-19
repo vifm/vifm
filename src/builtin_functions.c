@@ -152,6 +152,11 @@ chooseopt_builtin(const call_info_t *call_info)
 	{
 		result = curr_stats.output_delimiter;
 	}
+	else if(strcmp(type, "1") == 0)
+	{
+		free(type);
+		return var_from_bool(curr_stats.choose_one);
+	}
 	free(type);
 
 	return var_from_str(result == NULL ? "" : result);

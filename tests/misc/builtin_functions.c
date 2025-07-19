@@ -312,6 +312,7 @@ TEST(chooseopt_options_are_set)
 	                 "--choose-dir", "dir-file",
 	                 "--on-choose", "cmd",
 	                 "--delimiter", "delim",
+	                 "-1",
 	                 NULL };
 
 	assert_success(stats_init(&cfg));
@@ -325,6 +326,7 @@ TEST(chooseopt_options_are_set)
 	ASSERT_OK("chooseopt('dir')", "/dir-file");
 	ASSERT_OK("chooseopt('cmd')", "cmd");
 	ASSERT_OK("chooseopt('delimiter')", "delim");
+	ASSERT_OK("chooseopt('1')", "1");
 
 	assert_success(stats_reset(&cfg));
 

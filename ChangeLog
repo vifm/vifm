@@ -14,6 +14,10 @@
 	quotes (e.g., `:echo "This is \<space>."`) that appear in expressions (so
 	won't work, say, in `:set grepprg="\<space>"`).  Thanks to agguser.
 
+	Added -1 command-line switch which constraints choosing to at most 1 item.
+	Attempt to choose more than 1 item results in an error dialog.  Thanks to
+	The Cyberduck.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more
@@ -43,6 +47,9 @@
 
 	Display descriptions as "{...}" rather than "[...]" in :file and
 	:file[x]type menus.
+
+	Improved potentially confusing wording in the dialog confirming exit while
+	background jobs are running.
 
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
@@ -117,6 +124,9 @@
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed escaping characters with codes greater than 127 producing garbage.
+
+	Fixed printing newline on cancelling choosing a directory via
+	`--choose-dir` option.  Thanks to The Cyberduck.
 
 0.14-beta to 0.14 (2025-02-08)
 

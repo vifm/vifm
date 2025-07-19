@@ -21,6 +21,8 @@
 
 #include "status.h"
 
+struct view_t;
+
 /* Makes sure variables are ready to be used. */
 void instance_init_variables(void);
 
@@ -38,6 +40,9 @@ void instance_finish_restart(void);
 /* Loads configuration file taking care of anything that needs to be done before
  * or after it. */
 void instance_load_config(void);
+
+/* Exits the application if the files were chosen. */
+void instance_try_choose_files(struct view_t *view, int nfiles, char *files[]);
 
 #endif /* VIFM__INSTANCE_H__ */
 
