@@ -397,61 +397,62 @@ show_help_msg(const char wrong_arg[])
 		fprintf(stderr, "Wrong argument: %s\n\n", wrong_arg);
 	}
 
-	puts("vifm usage:\n");
-	puts("  To read list of files from stdin use\n");
-	puts("    vifm -\n");
-	puts("  To start in a specific directory give the directory path.\n");
-	puts("    vifm /path/to/start/dir/one");
-	puts("    or");
-	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
-	puts("  To open file using associated program pass its path to vifm.\n");
-	puts("  If no path is given vifm will start in the current working directory.\n");
-	puts("  vifm --select <path>");
-	puts("    open parent directory of the given path and select specified file");
-	puts("    in it.\n");
-	puts("  vifm -f");
-	puts("    makes vifm instead of opening files write selection to");
-	puts("    $VIFM/vimfiles and quit.\n");
-	puts("  vifm --choose-files <path>|-");
-	puts("    sets output file to write selection into on exit instead of");
-	puts("    opening files.  \"-\" means standard output.\n");
-	puts("  vifm --choose-dir <path>|-");
-	puts("    sets output file to write last visited directory into on exit.");
-	puts("    \"-\" means standard output.\n");
-	puts("  vifm --delimiter <delimiter>");
-	puts("    sets separator for list of file paths written out by vifm.\n");
-	puts("  vifm --on-choose <command>");
-	puts("    sets command to be executed on selected files instead of opening");
-	puts("    them.  Command can use any of command macros.\n");
-	puts("  vifm --choose-files|--on-choose <arg> -1");
-	puts("    choose at most one item.\n");
-	puts("  vifm --plugins-dir <path>");
-	puts("    additional plugins directory (can appear multiple times).\n");
-	puts("  vifm --logging[=<startup log path>]");
-	puts("    log some operational details to $XDG_DATA_HOME/vifm/log or");
-	puts("    $VIFM/log.  If the optional startup log path is specified and");
-	puts("    permissions allow to open it for writing, then logging of early");
-	puts("    initialization (before configuration directories are determined)");
-	puts("    is put there.\n");
+	puts("Usage: vifm [OPTION]... [ [--select] PATH [ [--select] PATH ] ]");
+	puts("");
+	puts("Forms of a PATH:");
+	puts("  * \"-\" specifies reading list of paths from stdin");
+	puts("  * a relative path to an existing directory to open");
+	puts("  * an absolute path whose deepest existing parent will be opened");
+	puts("  * a path to an existing file to open with a handler/editor");
+	puts("  * when omitted, a pane starts in current or its last visited "
+			"directory");
+
+	puts("");
+	puts("Generic OPTIONs:");
+	puts("  --select <path>");
+	puts("      navigate to <path> instead of entering/opening it (can appear before");
+	puts("      each PATH).");
+	puts("  -c <command> | +<command>");
+	puts("      run command-line mode <command> after startup.");
+	puts("  --no-configs");
+	puts("      don't process vifmrc and vifminfo on startup.");
+	puts("  --plugins-dir <path>");
+	puts("      add an additional plugins directory (can appear multiple times).");
+	puts("  --logging[=<startup log path>]");
+	puts("      log some operational details to $XDG_DATA_HOME/vifm/log or $VIFM/log.");
+	puts("      If <startup log path> is specified and writable, early initialization");
+	puts("      logs (before configuration directories are determined) are put there.");
+	puts("  --help | -h");
+	puts("      print this help message and exit.");
+	puts("  --version | -v");
+	puts("      print version information and exit.");
+
+	puts("");
+	puts("File-choosing OPTIONs:");
+	puts("  --choose-files <path>|-");
+	puts("      on file open, store selection in <path> or print it (\"-\") and exit.");
+	puts("  --delimiter <delimiter>");
+	puts("      separator of multiple paths for --choose-files (newline by default).");
+	puts("  --choose-dir <path>|-");
+	puts("      on exit, write current location to <path> or print it (\"-\").");
+	puts("  --on-choose <command>");
+	puts("      on file open, run <command> with expanded macros in a shell and exit.");
+	puts("  -1");
+	puts("      constrain --choose-files and --on-choose to at most one item.");
+	puts("  -f");
+	puts("      on file open, store selection in $VIFM/vimfiles and exit (prefer");
+	puts("      using --choose-* or --on-choose options over this one).");
 
 #ifdef ENABLE_REMOTE_CMDS
-	puts("  vifm --server-list");
-	puts("    list available server names and exit.\n");
-	puts("  vifm --server-name <name>");
-	puts("    name of target or this instance.\n");
-	puts("  vifm --remote");
-	puts("    passes all arguments that left in command line to vifm server.\n");
-	puts("  vifm --remote-expr <expr>");
-	puts("    passes expression to vifm server and prints result.\n");
+	puts("");
+	puts("Client-server OPTIONs:");
+	puts("  --server-list         print names of active servers and exit.");
+	puts("  --server-name <name>  name of a target or this instance.");
+	puts("  --remote              send all arguments that are left on the "
+			"command line");
+	puts("                        to a server.");
+	puts("  --remote-expr <expr>  evaluate <expr> remotely and print the result.");
 #endif
-	puts("  vifm -c <command> | +<command>");
-	puts("    run command-line mode <command> on startup.\n");
-	puts("  vifm --help | -h");
-	puts("    show this help message and quit.\n");
-	puts("  vifm --version | -v");
-	puts("    show version number and quit.\n");
-	puts("  vifm --no-configs");
-	puts("    don't read vifmrc and vifminfo.");
 }
 
 /* Prints detailed version information to the screen. */

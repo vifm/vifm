@@ -51,6 +51,8 @@
 	Improved potentially confusing wording in the dialog confirming exit while
 	background jobs are running.
 
+	Reworked --help output to be more compact and readable.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
