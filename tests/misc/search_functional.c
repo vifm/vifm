@@ -187,7 +187,7 @@ TEST(correct_match_number_is_shown_for_search_in_visual_mode)
 	assert_int_equal(0, lwin.dir_entry[0].search_match);
 	assert_int_equal(1, lwin.dir_entry[1].search_match);
 	assert_int_equal(2, lwin.dir_entry[2].search_match);
-	assert_string_starts_with("1 of 2 matching files", ui_sb_last());
+	assert_string_starts_with("1 of 2 matching items", ui_sb_last());
 }
 
 TEST(correct_cursor_position_for_incsearch_with_a_count)
@@ -228,7 +228,7 @@ TEST(message_is_shown_after_incsearch_with_hlsearch_in_visual_mode)
 
 	(void)vle_keys_exec_timed_out(WK_v WK_SLASH L"." WK_CR);
 
-	assert_string_starts_with("2 of 6 matching files", ui_sb_last());
+	assert_string_starts_with("2 of 6 matching items", ui_sb_last());
 }
 
 TEST(selection_isnt_dropped_on_empty_input_during_incsearch_with_hls_in_vismode)
@@ -288,7 +288,7 @@ TEST(message_after_cursor_movements_during_incsearch)
 	assert_int_equal(1, lwin.list_pos);
 	fpos_set_pos(&lwin, 2);
 	(void)vle_keys_exec_timed_out(WK_CR);
-	assert_string_starts_with("2 of 2 matching files", ui_sb_last());
+	assert_string_starts_with("2 of 2 matching items", ui_sb_last());
 
 	/* Show a message if no matches found. */
 	ui_sb_msg("");

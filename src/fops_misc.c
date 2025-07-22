@@ -472,7 +472,7 @@ fops_yank(view_t *view, int reg)
 
 	regs_update_unnamed(reg);
 
-	ui_sb_msgf("%d file%s yanked", nyanked_files,
+	ui_sb_msgf("%d item%s yanked", nyanked_files,
 			(nyanked_files == 1) ? "" : "s");
 
 	regs_sync_to_shared_memory();
@@ -892,7 +892,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		free_string_array(list, nlines);
 	}
 
-	ui_sb_msgf("%d file%s cloned%s", ops->succeeded,
+	ui_sb_msgf("%d item%s cloned%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
@@ -1129,7 +1129,7 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 		go_to_first_file(view, names, count);
 	}
 
-	ui_sb_msgf("%d file%s created%s", n, (n == 1) ? "" : "s",
+	ui_sb_msgf("%d item%s created%s", n, (n == 1) ? "" : "s",
 			fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
@@ -1444,7 +1444,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 	}
 	un_group_close();
 
-	ui_sb_msgf("%d file%s fully processed%s", ops->succeeded,
+	ui_sb_msgf("%d item%s fully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 	fops_free_ops(ops);
 

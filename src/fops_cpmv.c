@@ -207,7 +207,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int flags)
 		free_string_array(list, nlines);
 	}
 
-	ui_sb_msgf("%d file%s successfully processed%s", ops->succeeded,
+	ui_sb_msgf("%d item%s successfully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);

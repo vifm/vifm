@@ -354,7 +354,7 @@ TEST(rename_can_move_files)
 
 	ui_sb_msg("");
 	(void)fops_rename(&lwin, names, /*nlines=*/1, /*recursive=*/0);
-	assert_string_equal("1 file renamed", ui_sb_last());
+	assert_string_equal("1 item renamed", ui_sb_last());
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -422,7 +422,7 @@ TEST(case_change_works, IF(on_case_sensitive_fs))
 
 	ui_sb_msg("");
 	(void)fops_case(&lwin, /*to_upper=*/0);
-	assert_string_equal("2 files renamed", ui_sb_last());
+	assert_string_equal("2 items renamed", ui_sb_last());
 
 	assert_failure(unlink(SANDBOX_PATH "/fIlE1"));
 	assert_failure(unlink(SANDBOX_PATH "/FiLe2"));
@@ -466,7 +466,7 @@ TEST(substitution_and_idential_names_in_different_dirs)
 
 	ui_sb_msg("");
 	(void)fops_subst(&lwin, "$", "d", /*ic=*/0, /*glob=*/0);
-	assert_string_equal("2 files renamed", ui_sb_last());
+	assert_string_equal("2 items renamed", ui_sb_last());
 
 	assert_failure(unlink(SANDBOX_PATH "/adir/abc"));
 	assert_success(unlink(SANDBOX_PATH "/adir/abcd"));
@@ -494,7 +494,7 @@ TEST(translation_and_idential_names_in_different_dirs)
 
 	ui_sb_msg("");
 	(void)fops_tr(&lwin, "abc", "xyz");
-	assert_string_equal("2 files renamed", ui_sb_last());
+	assert_string_equal("2 items renamed", ui_sb_last());
 
 	assert_failure(unlink(SANDBOX_PATH "/adir/abc"));
 	assert_success(unlink(SANDBOX_PATH "/adir/xyz"));
@@ -522,7 +522,7 @@ TEST(case_change_and_idential_names_in_different_dirs, IF(on_case_sensitive_fs))
 
 	ui_sb_msg("");
 	(void)fops_case(&lwin, /*to_upper=*/1);
-	assert_string_equal("2 files renamed", ui_sb_last());
+	assert_string_equal("2 items renamed", ui_sb_last());
 
 	assert_failure(unlink(SANDBOX_PATH "/adir/abc"));
 	assert_success(unlink(SANDBOX_PATH "/adir/ABC"));
@@ -537,7 +537,7 @@ allow_move_dlg_cb(const char type[], const char title[], const char message[])
 {
 	assert_string_equal("prompt", type);
 	assert_string_equal("Rename", title);
-	assert_string_starts_with("It appears that the rename list has 1 file move,",
+	assert_string_starts_with("It appears that the rename list has 1 move,",
 			message);
 
 	dlg_set_callback(NULL);
@@ -549,7 +549,7 @@ deny_move_dlg_cb(const char type[], const char title[], const char message[])
 {
 	assert_string_equal("prompt", type);
 	assert_string_equal("Rename", title);
-	assert_string_starts_with("It appears that the rename list has 1 file move,",
+	assert_string_starts_with("It appears that the rename list has 1 move,",
 			message);
 
 	dlg_set_callback(NULL);

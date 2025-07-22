@@ -316,7 +316,7 @@ print_search_msg(const view_t *view, int backward)
 	}
 	else
 	{
-		ui_sb_msgf("%d of %d matching file%s for: %s",
+		ui_sb_msgf("%d of %d matching item%s for: %s",
 				get_current_entry(view)->search_match, view->matches,
 				(view->matches == 1) ? "" : "s", hists_search_last());
 	}
