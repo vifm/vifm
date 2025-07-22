@@ -3,6 +3,8 @@
 	Improved potentially confusing wording in the dialog confirming exit while
 	background jobs are running.
 
+	Reworked --help output to be more compact and readable.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
