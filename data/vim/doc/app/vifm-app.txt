@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 18
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1925,7 +1925,7 @@ Also see |vifm-file-copying|.
 :hi[ghlight]
     display information about all highlight groups active at the moment.
 :hi[ghlight] clear
-    reset all highlighting to builtin defaults and removed all
+    reset all highlighting to builtin defaults and remove all
     filename-specific rules.
 :hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )
     remove specified rule.
@@ -3247,10 +3247,10 @@ There are six possible ways to write a single pattern:
 First five forms can include leading exclamation mark that negates pattern
 matching.
 
-The last form is implicitly refers to one of the others.  |vifm-:highlight|
+The last form implicitly refers to one of the others.  |vifm-:highlight|
 does not accept undecorated form, while |vifm-:filetype|, |vifm-:filextype|,
 |vifm-:fileviewer|, |vifm-:select|, |vifm-:unselect| and |vifm-'classify'|
-treat it as list of name globs.
+treat it as a list of name globs.
 
 Path patterns receive absolute path of the file that includes its name
 component as well.

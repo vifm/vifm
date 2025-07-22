@@ -1,4 +1,4 @@
-.TH VIFM 1 "18 July 2025" "vifm 0.15"
+.TH VIFM 1 "22 July 2025" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2255,7 +2255,7 @@ hide interface to show previous commands' output.
 display information about all highlight groups active at the moment.
 .TP
 .BI ":hi[ghlight] clear"
-reset all highlighting to builtin defaults and removed all filename-specific
+reset all highlighting to builtin defaults and remove all filename-specific
 rules.
 .TP
 .BI ":hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )"
@@ -3921,9 +3921,9 @@ undecorated-pattern
 First five forms can include leading exclamation mark that negates pattern
 matching.
 
-The last form is implicitly refers to one of others.  :highlight does not accept
-undecorated form, while :filetype, :filextype, :fileviewer, :select, :unselect
-and 'classify' treat it as list of name globs.
+The last form implicitly refers to one of the others.  :highlight does not
+accept undecorated form, while :filetype, :filextype, :fileviewer, :select,
+:unselect and 'classify' treat it as a list of name globs.
 
 Path patterns receive absolute path of the file that includes its name
 component as well.
