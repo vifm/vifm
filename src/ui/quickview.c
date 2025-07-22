@@ -512,7 +512,7 @@ print_tree_stats(tree_print_state_t *s)
 	fprintf(s->fp, "%s%d director%s, %d file%s\n",
 			ui_cancellation_requested() ? "(cancelled)\n" : "",
 			s->ndirs, (s->ndirs == 1) ? "y" : "ies",
-			s->nfiles, (s->nfiles == 1) ? "" : "s");
+			s->nfiles, psuffix(s->nfiles));
 }
 
 /* Produces tree preview of the path.  Returns non-zero to request stopping of

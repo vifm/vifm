@@ -1275,6 +1275,12 @@ str_is_ascii(const char str[])
 	return 1;
 }
 
+const char *
+psuffix(int count)
+{
+	return (count == 1 ? "" : "s");
+}
+
 #ifndef HAVE_STRCASESTR
 
 char *
