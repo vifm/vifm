@@ -2260,7 +2260,7 @@ important in certain cases.
 :let $ENV_VAR .= <expr>
     append value to environment variable.
 :let &[l:|g:]opt = <expr>
-    sets option value.
+    assign an option.
 :let &[l:|g:]opt .= <expr>
     append value to string option.
 :let &[l:|g:]opt += <expr>
@@ -2284,12 +2284,12 @@ order using the '.' operator.  Any whitespace is ignored.
     repeat last :locate command.
 
 :ls                                            *vifm-:ls*
-    list windows of active terminal multiplexer (only when terminal
-    multiplexer is used).  This is achieved by issuing proper command for
-    active terminal multiplexer, thus the list is not handled by vifm.
+    list windows of an active terminal multiplexer if one is in use.
+    This is achieved by issuing a proper command to the terminal multiplexer,
+    thus the list is not handled by vifm.
 
 :lstrash                                       *vifm-:lstrash*
-    display a menu with list of files in trash.  Each element of the list is
+    display a menu listing files in a trash.  Each element of the list is the
     original path of a deleted file, thus the list can contain duplicates.
     See |vifm-menus-and-dialogs| for controls.
 
