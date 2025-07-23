@@ -41,8 +41,7 @@ def list(args):
     """List media"""
     try:
         # Use '-plist' to get XML output
-        output = subprocess.check_output(
-            [DISKUTIL, "list", "-plist"])
+        output = subprocess.check_output([DISKUTIL, "list", "-plist"])
     except subprocess.CalledProcessError:
         print("Failed to execute '{}'".format(DISKUTIL), file=sys.stderr)
         return(1)
