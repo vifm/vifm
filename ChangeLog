@@ -136,6 +136,9 @@
 	Fixed printing newline on cancelling choosing a directory via
 	`--choose-dir` option.  Thanks to The Cyberduck.
 
+	Fixed vifm-media-osx script for modern versions of OS X.  Thanks to
+	vulpes-vulpeos.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
