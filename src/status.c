@@ -174,13 +174,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->direct_color = 0;
 
-	stats->msg_head = 0;
-	stats->msg_tail = 0;
-	size_t i;
-	for(i = 0U; i < ARRAY_LEN(stats->msgs); ++i)
-	{
-		update_string(&stats->msgs[i], NULL);
-	}
+	stats_clear_msgs(stats);
 
 	stats->scroll_bind_off = 0;
 	stats->split = VSPLIT;
@@ -371,6 +365,19 @@ stats_save_msg(const char msg[])
 		curr_stats.msg_head = (curr_stats.msg_head + 1)%ARRAY_LEN(curr_stats.msgs);
 	}
 	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
+}
+
+void
+stats_clear_msgs(status_t *stats)
+{
+	stats->msg_head = 0;
+	stats->msg_tail = 0;
+
+	size_t i;
+	for(i = 0U; i < ARRAY_LEN(stats->msgs); ++i)
+	{
+		update_string(&stats->msgs[i], NULL);
+	}
 }
 
 void

@@ -270,6 +270,9 @@ int stats_file_choose_action_set(void);
 /* Records status bar message. */
 void stats_save_msg(const char msg[]);
 
+/* Clears history of the most recent statusbar messages. */
+void stats_clear_msgs(status_t *stats);
+
 /* Updates curr_stats.preview.on field and performs necessary updates in other
  * parts of the application. */
 void stats_set_quickview(int on);

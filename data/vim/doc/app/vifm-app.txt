@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 22
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2311,8 +2311,11 @@ order using the '.' operator.  Any whitespace is ignored.
     display media management menu.  See |vifm-menus-and-dialogs| for
     controls.  See also |vifm-'mediaprg'| option.
 
-:mes[sages]                                    *vifm-:messages* *vifm-:mes*
-    display previously given status bar messages (up to 50).
+                                               *vifm-:messages* *vifm-:mes*
+:mes[sages]
+    display the history of the status bar messages (up to 50 items).
+:mes[sages] clear
+    clear the history of the most recent status bar messages.
 
 :[line]mkdir[!] dir...                         *vifm-:mkdir*
     create directories at specified paths.  The [line] can be used to pick

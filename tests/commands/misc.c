@@ -671,6 +671,21 @@ TEST(messages_command)
 	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
 	assert_string_starts_with("2 error\n", ui_sb_last());
 	assert_string_ends_with("\n51 info", ui_sb_last());
+
+	/* History can be cleared. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("messages typo", &lwin, CIT_COMMAND));
+	assert_string_equal("Invalid argument: typo", ui_sb_last());
+	ui_sb_msg("");
+	assert_success(cmds_dispatch1("messages clear", &lwin, CIT_COMMAND));
+	assert_string_equal("", ui_sb_last());
+	assert_success(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_equal("", ui_sb_last());
+	/* And repopulated. */
+	ui_sb_msg("new 1");
+	ui_sb_msg("new 2");
+	assert_failure(cmds_dispatch1("messages", &lwin, CIT_COMMAND));
+	assert_string_equal("new 1\nnew 2", ui_sb_last());
 }
 
 static void
