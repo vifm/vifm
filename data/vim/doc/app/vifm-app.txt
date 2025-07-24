@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 18
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1925,7 +1925,7 @@ Also see |vifm-file-copying|.
 :hi[ghlight]
     display information about all highlight groups active at the moment.
 :hi[ghlight] clear
-    reset all highlighting to builtin defaults and removed all
+    reset all highlighting to builtin defaults and remove all
     filename-specific rules.
 :hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )
     remove specified rule.
@@ -2260,7 +2260,7 @@ important in certain cases.
 :let $ENV_VAR .= <expr>
     append value to environment variable.
 :let &[l:|g:]opt = <expr>
-    sets option value.
+    assign an option.
 :let &[l:|g:]opt .= <expr>
     append value to string option.
 :let &[l:|g:]opt += <expr>
@@ -2284,12 +2284,12 @@ order using the '.' operator.  Any whitespace is ignored.
     repeat last :locate command.
 
 :ls                                            *vifm-:ls*
-    list windows of active terminal multiplexer (only when terminal
-    multiplexer is used).  This is achieved by issuing proper command for
-    active terminal multiplexer, thus the list is not handled by vifm.
+    list windows of an active terminal multiplexer if one is in use.
+    This is achieved by issuing a proper command to the terminal multiplexer,
+    thus the list is not handled by vifm.
 
 :lstrash                                       *vifm-:lstrash*
-    display a menu with list of files in trash.  Each element of the list is
+    display a menu listing files in a trash.  Each element of the list is the
     original path of a deleted file, thus the list can contain duplicates.
     See |vifm-menus-and-dialogs| for controls.
 
@@ -2311,8 +2311,11 @@ order using the '.' operator.  Any whitespace is ignored.
     display media management menu.  See |vifm-menus-and-dialogs| for
     controls.  See also |vifm-'mediaprg'| option.
 
-:mes[sages]                                    *vifm-:messages* *vifm-:mes*
-    display previously given status bar messages (up to 50).
+                                               *vifm-:messages* *vifm-:mes*
+:mes[sages]
+    display the history of the status bar messages (up to 50 items).
+:mes[sages] clear
+    clear the history of the most recent status bar messages.
 
 :[line]mkdir[!] dir...                         *vifm-:mkdir*
     create directories at specified paths.  The [line] can be used to pick
@@ -3247,10 +3250,10 @@ There are six possible ways to write a single pattern:
 First five forms can include leading exclamation mark that negates pattern
 matching.
 
-The last form is implicitly refers to one of the others.  |vifm-:highlight|
+The last form implicitly refers to one of the others.  |vifm-:highlight|
 does not accept undecorated form, while |vifm-:filetype|, |vifm-:filextype|,
 |vifm-:fileviewer|, |vifm-:select|, |vifm-:unselect| and |vifm-'classify'|
-treat it as list of name globs.
+treat it as a list of name globs.
 
 Path patterns receive absolute path of the file that includes its name
 component as well.

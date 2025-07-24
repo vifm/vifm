@@ -87,7 +87,7 @@ TEST(copy_can_skip_existing_files)
 {
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("%copy -skip", &lwin, CIT_COMMAND));
-	assert_string_equal("2 files successfully processed", ui_sb_last());
+	assert_string_equal("2 items successfully processed", ui_sb_last());
 
 	assert_int_equal(2, get_file_size(SANDBOX_PATH "/right/a"));
 	remove_file(SANDBOX_PATH "/right/b");
@@ -97,7 +97,7 @@ TEST(link_can_skip_existing_files, IF(not_windows))
 {
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("%alink -skip", &lwin, CIT_COMMAND));
-	assert_string_equal("2 files successfully processed", ui_sb_last());
+	assert_string_equal("2 items successfully processed", ui_sb_last());
 
 	assert_int_equal(2, get_file_size(SANDBOX_PATH "/right/a"));
 	remove_file(SANDBOX_PATH "/right/b");
@@ -107,7 +107,7 @@ TEST(file_name_can_start_with_a_dash)
 {
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("%copy -- -test -skip", &lwin, CIT_COMMAND));
-	assert_string_equal("2 files successfully processed", ui_sb_last());
+	assert_string_equal("2 items successfully processed", ui_sb_last());
 
 	remove_file(SANDBOX_PATH "/right/-test");
 	remove_file(SANDBOX_PATH "/right/-skip");

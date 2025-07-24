@@ -1,4 +1,4 @@
-.TH VIFM 1 "18 July 2025" "vifm 0.15"
+.TH VIFM 1 "23 July 2025" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2255,7 +2255,7 @@ hide interface to show previous commands' output.
 display information about all highlight groups active at the moment.
 .TP
 .BI ":hi[ghlight] clear"
-reset all highlighting to builtin defaults and removed all filename-specific
+reset all highlighting to builtin defaults and remove all filename-specific
 rules.
 .TP
 .BI ":hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )"
@@ -2630,7 +2630,7 @@ string on Windows removes it.
 append value to environment variable.
 .TP
 .BI ":let &[l:|g:]opt = <expr>"
-sets option value.
+assign an option.
 .TP
 .BI ":let &[l:|g:]opt .= <expr>"
 append value to string option.
@@ -2661,14 +2661,14 @@ repeat last :locate command.
 .BI "                                         :ls"
 .TP
 .BI :ls
-lists windows of active terminal multiplexer (only when terminal multiplexer is
-used).  This is achieved by issuing proper command for active terminal
-multiplexer, thus the list is not handled by vifm.
+list windows of an active terminal multiplexer if one is in use.
+This is achieved by issuing a proper command to the terminal multiplexer,
+thus the list is not handled by vifm.
 .TP
 .BI "                                         :lstrash"
 .TP
 .BI :lstrash
-display a menu with list of files in trash.  Each element of the list is
+display a menu listing files in a trash.  Each element of the list is the
 original path of a deleted file, thus the list can contain duplicates.  See
 "Menus and dialogs" section for controls.
 .TP
@@ -2700,7 +2700,10 @@ See also 'mediaprg' option.
 .BI "                                         :messages"
 .TP
 .BI ":mes[sages]"
-shows previously given messages (up to 50).
+display the history of the status bar messages (up to 50 items).
+.TP
+.BI ":mes[sages] clear"
+clear the history of the most recent status bar messages.
 .TP
 .BI "                                         :mkdir"
 .TP
@@ -3921,9 +3924,9 @@ undecorated-pattern
 First five forms can include leading exclamation mark that negates pattern
 matching.
 
-The last form is implicitly refers to one of others.  :highlight does not accept
-undecorated form, while :filetype, :filextype, :fileviewer, :select, :unselect
-and 'classify' treat it as list of name globs.
+The last form implicitly refers to one of the others.  :highlight does not
+accept undecorated form, while :filetype, :filextype, :fileviewer, :select,
+:unselect and 'classify' treat it as a list of name globs.
 
 Path patterns receive absolute path of the file that includes its name
 component as well.

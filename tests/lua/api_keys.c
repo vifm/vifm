@@ -190,7 +190,7 @@ TEST(keys_selector_duplicated_indexes)
 	ui_sb_msg("");
 	(void)vle_keys_exec_timed_out(L"yX");
 	assert_int_equal(1, curr_stats.save_msg);
-	assert_string_equal("1 file yanked", ui_sb_last());
+	assert_string_equal("1 item yanked", ui_sb_last());
 }
 
 TEST(keys_bad_selector_cursorpos)
@@ -280,7 +280,7 @@ TEST(keys_add_selector)
 
 	(void)vle_keys_exec_timed_out(L"yX");
 	assert_int_equal(1, curr_stats.save_msg);
-	assert_string_equal("2 files yanked", ui_sb_last());
+	assert_string_equal("2 items yanked", ui_sb_last());
 
 	const reg_t *reg = regs_find(DEFAULT_REG_NAME);
 	assert_non_null(reg);

@@ -216,7 +216,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 			const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 			if(renamed >= 0)
 			{
-				ui_sb_msgf("%d file%s renamed", renamed, (renamed == 1) ? "" : "s");
+				ui_sb_msgf("%d item%s renamed", renamed, psuffix(renamed));
 			}
 
 			flist_sel_stash(view);
@@ -287,11 +287,11 @@ verify_list(char *files[], int nfiles, char *names[], int nnames, char **error,
 		}
 		else if(moves > 0)
 		{
-			const char *suffix = (moves == 1 ? "" : "s");
+			const char *suffix = psuffix(moves);
 			/* Stray space prevents removal of the line. */
 			if(!prompt_msgf("Rename",
-						"It appears that the rename list has %d file move%s, which could "
-						"have happened by mistake."
+						"It appears that the rename list has %d move%s, which could have "
+						"happened by mistake."
 						"\n \n"
 						"Perform the move%s?",
 						moves, suffix, suffix))
@@ -586,7 +586,7 @@ fops_incdec(view_t *view, int k)
 	}
 	else if(err == 0)
 	{
-		ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
+		ui_sb_msgf("%d item%s renamed", nrenamed, psuffix(nrenamed));
 	}
 
 	return 1;
@@ -944,7 +944,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 		ui_view_schedule_redraw(view);
 	}
 
-	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
+	ui_sb_msgf("%d item%s renamed", nrenamed, psuffix(nrenamed));
 	return 1;
 }
 

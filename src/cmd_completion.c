@@ -258,6 +258,17 @@ non_path_completion(completion_data_t *data)
 		if(argc == 0)
 			complete_winrun(args);
 	}
+	else if(id == COM_MESSAGES)
+	{
+		if(earg_num(argc, args) <= 1)
+		{
+			static const char *parameters[][2] = {
+				{ "clear", "clears the history of recent statusbar messages" },
+			};
+			complete_from_string_list(args, parameters, ARRAY_LEN(parameters),
+					/*ignore_case=*/0);
+		}
+	}
 	else if(id == COM_AUTOCMD)
 	{
 		/* Complete only first argument. */

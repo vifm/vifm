@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """vifm mediaprg for Mac OSX"""
 
@@ -41,12 +41,11 @@ def list(args):
     """List media"""
     try:
         # Use '-plist' to get XML output
-        output = subprocess.check_output(
-            [DISKUTIL, "list", "-plist"])
+        output = subprocess.check_output([DISKUTIL, "list", "-plist"])
     except subprocess.CalledProcessError:
         print("Failed to execute '{}'".format(DISKUTIL), file=sys.stderr)
         return(1)
-    root = plistlib.readPlistFromString(output)
+    root = plistlib.loads(output)
     for disk in root["AllDisksAndPartitions"]:
         # By experimentation, these seem to be root and other uninteresting
         # disks

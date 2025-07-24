@@ -367,6 +367,10 @@ char * double_char(const char str[], char c);
  * so. */
 int str_is_ascii(const char str[]);
 
+/* Retrieves a suffix for a plural depending on the number of something.
+ * Returns either "" or "s". */
+const char * psuffix(int count);
+
 #ifndef HAVE_STRCASESTR
 
 /* Same as strstr(), but in case insensitive way. */

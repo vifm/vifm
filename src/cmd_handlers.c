@@ -673,10 +673,10 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_COMMENT,
 	  .handler = &media_cmd,       .min_args = 0,   .max_args = 0, },
 #endif
-	{ .name = "messages",          .abbr = "mes",   .id = -1,
-	  .descr = "display previous status bar messages",
+	{ .name = "messages",          .abbr = "mes",   .id = COM_MESSAGES,
+	  .descr = "display or clear previous status bar messages",
 	  .flags = HAS_COMMENT,
-	  .handler = &messages_cmd,    .min_args = 0,   .max_args = 0, },
+	  .handler = &messages_cmd,    .min_args = 0,   .max_args = 1, },
 	{ .name = "mkdir",             .abbr = NULL,    .id = COM_MKDIR,
 	  .descr = "create directories",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT
@@ -3851,10 +3851,22 @@ media_cmd(const cmd_info_t *cmd_info)
 
 #endif
 
-/* Displays some of the most recent statusbar messages. */
+/* Displays or clears the history of the most recent statusbar messages. */
 static int
 messages_cmd(const cmd_info_t *cmd_info)
 {
+	if(cmd_info->argc == 1)
+	{
+		if(strcmp(cmd_info->argv[0], "clear") != 0)
+		{
+			ui_sb_errf("Invalid argument: %s", cmd_info->argv[0]);
+			return CMDS_ERR_CUSTOM;
+		}
+
+		stats_clear_msgs(&curr_stats);
+		return 0;
+	}
+
 	return (ui_sb_msg_show_history() != 0);
 }
 

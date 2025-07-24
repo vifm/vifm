@@ -18,6 +18,9 @@
 	Attempt to choose more than 1 item results in an error dialog.  Thanks to
 	The Cyberduck.
 
+	Added `:messages clear` to clear the history of the most recent status bar
+	messages.  Thanks to qadzek.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more
@@ -50,6 +53,11 @@
 
 	Improved potentially confusing wording in the dialog confirming exit while
 	background jobs are running.
+
+	Reworked --help output to be more compact and readable.
+
+	Prefer to use more generic "items" instead of "files" when referring to
+	file-system objects.  Thanks to qadzek.
 
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
@@ -127,6 +135,9 @@
 
 	Fixed printing newline on cancelling choosing a directory via
 	`--choose-dir` option.  Thanks to The Cyberduck.
+
+	Fixed vifm-media-osx script for modern versions of OS X.  Thanks to
+	vulpes-vulpeos.
 
 0.14-beta to 0.14 (2025-02-08)
 

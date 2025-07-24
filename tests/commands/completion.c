@@ -669,6 +669,16 @@ dummy_handler(OPT_OP op, optval_t val)
 	ASSERT_NO_COMPLETION(L"nosuchcommand a");
 }
 
+TEST(messages_is_completed)
+{
+	ASSERT_COMPLETION(L"messages d", L"messages d");
+
+	ASSERT_COMPLETION(L"messages ", L"messages clear");
+	ASSERT_COMPLETION(L"messages c", L"messages clear");
+
+	ASSERT_COMPLETION(L"messages c c", L"messages c c");
+}
+
 static void
 prepare_for_line_completion(const wchar_t str[])
 {
