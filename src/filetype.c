@@ -37,7 +37,7 @@
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
-static assoc_records_t parse_command_list(const char cmds[], int with_descr);
+static assoc_records_t parse_command_list(const char cmds[]);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static int add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
@@ -196,7 +196,7 @@ ft_set_programs(matchers_group_t mg, const char programs[], int for_x, int in_x)
 {
 	const assoc_t assoc = {
 		.mg = mg,
-		.records = parse_command_list(programs, 1),
+		.records = parse_command_list(programs),
 	};
 
 	/* On error, add_assoc() frees assoc, so just exit then. */
@@ -212,7 +212,7 @@ ft_set_programs(matchers_group_t mg, const char programs[], int for_x, int in_x)
 /* Parses comma separated list of commands into array of associations.  Returns
  * the list. */
 static assoc_records_t
-parse_command_list(const char cmds[], int with_descr)
+parse_command_list(const char cmds[])
 {
 	assoc_records_t records = {};
 
@@ -223,7 +223,7 @@ parse_command_list(const char cmds[], int with_descr)
 	{
 		const char *description = "";
 
-		if(with_descr && *part == '{')
+		if(*part == '{')
 		{
 			char *p = strchr(part + 1, '}');
 			if(p != NULL)
@@ -276,7 +276,7 @@ ft_set_viewers(matchers_group_t mg, const char viewers[])
 {
 	const assoc_t assoc = {
 		.mg = mg,
-		.records = parse_command_list(viewers, 0),
+		.records = parse_command_list(viewers),
 	};
 	/* On error, add_assoc() frees assoc, so just exit then. */
 	(void)add_assoc(&fileviewers, assoc);

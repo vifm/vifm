@@ -2133,14 +2133,15 @@ name.  Same as ":filetype filename".
 .TP
 .BI "                                         :fileviewer"
 .TP
-.BI ":filev[iewer] pattern-list command1,command2,..."
+.BI ":filev[iewer] pattern-list [{ descr }]command1,[{ descr }]command2,..."
 register specified list of commands as viewers for each of the patterns.
 Viewer is a command which output is captured and displayed in one of the panes
-of vifm after pressing "e" or running :view command.  When the command doesn't
-contain any of vifm macros, name of current file is appended as if command
-ended with %c macro.  Comma escaping and missing commands processing rules as
-for :filetype apply to this command.  See "Patterns" section below for pattern
-definition.  Supports Lua handlers.
+of vifm after pressing "e" or running :view command.  Optional description can
+be given to each command to ease understanding of what the command does in UI.
+When the command doesn't contain any of vifm macros, name of current file is
+appended as if command ended with %c macro.  Comma escaping and missing commands
+processing rules as for :filetype apply to this command.  See "Patterns"
+section below for pattern definition.  Supports Lua handlers.
 
 Example for zip archives:
 .EX
