@@ -4,15 +4,13 @@
 #include <unistd.h> /* chdir() unlink() */
 
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/fops_put.h"
@@ -29,23 +27,12 @@ SETUP()
 	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
-	/* lwin */
 	strcpy(lwin.curr_dir, ".");
-
 	view_setup(&lwin);
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "file");
 
-	/* rwin */
 	strcpy(rwin.curr_dir, ".");
-
 	view_setup(&rwin);
-	rwin.filtered = 0;
-	rwin.list_pos = 0;
 
 	curr_view = &lwin;
 	other_view = &rwin;

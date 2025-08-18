@@ -3,13 +3,11 @@
 #include <unistd.h> /* chdir() */
 
 #include <stdio.h> /* remove() */
-#include <string.h> /* strcpy() strdup() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -303,17 +301,8 @@ TEST(select_directory_supplied_by_external_command)
 {
 	create_dir(SANDBOX_PATH "/selection");
 
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("selection");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].type = FT_DIR;
-	lwin.dir_entry[1].name = strdup("a.c");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[1];
-	lwin.dir_entry[1].type = FT_REG;
-	lwin.selected_files = 0;
+	append_view_entry(&lwin, "selection")->type = FT_DIR;
+	append_view_entry(&lwin, "a.c");
 
 	assert_success(cmds_dispatch("select! !echo selection", &lwin,
 				CIT_COMMAND));
@@ -343,23 +332,10 @@ TEST(select_directory_supplied_by_external_command)
 
 TEST(select_and_unselect_consider_trailing_slash)
 {
-	lwin.list_rows = 4;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].type = FT_REG;
-	lwin.dir_entry[1].name = strdup("a");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].type = FT_DIR;
-	lwin.dir_entry[2].name = strdup("b");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].type = FT_REG;
-	lwin.dir_entry[3].name = strdup("b");
-	lwin.dir_entry[3].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[3].type = FT_DIR;
-	lwin.selected_files = 0;
+	append_view_entry(&lwin, "a");
+	append_view_entry(&lwin, "a")->type = FT_DIR;
+	append_view_entry(&lwin, "b");
+	append_view_entry(&lwin, "b")->type = FT_DIR;
 
 	/* Select only directories. */
 	assert_success(cmds_dispatch("select */", &lwin, CIT_COMMAND));
@@ -407,14 +383,7 @@ TEST(symlinks_are_not_resolved_in_cwd, IF(not_windows))
 	assert_success(make_symlink(TEST_DATA_PATH "/existing-files",
 				SANDBOX_PATH "/link"));
 
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].type = FT_REG;
-	lwin.selected_files = 0;
+	append_view_entry(&lwin, "a");
 
 	/* Select only directories. */
 	assert_success(cmds_dispatch("select !echo a", &lwin, CIT_COMMAND));
@@ -479,17 +448,9 @@ TEST(negated_mimetype_matcher_is_handled)
 static void
 add_some_files_to_view(view_t *view)
 {
-	view->list_rows = 3;
-	view->list_pos = 0;
-	view->dir_entry = dynarray_cextend(NULL,
-			view->list_rows*sizeof(*view->dir_entry));
-	view->dir_entry[0].name = strdup("a.c");
-	view->dir_entry[0].origin = &view->curr_dir[0];
-	view->dir_entry[1].name = strdup("b.cc");
-	view->dir_entry[1].origin = &view->curr_dir[0];
-	view->dir_entry[2].name = strdup("c.c");
-	view->dir_entry[2].origin = &view->curr_dir[0];
-	view->selected_files = 0;
+	append_view_entry(&lwin, "a.c");
+	append_view_entry(&lwin, "b.cc");
+	append_view_entry(&lwin, "c.c");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

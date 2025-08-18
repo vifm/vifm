@@ -9,9 +9,7 @@
 #include "../../src/engine/parsing.h"
 #include "../../src/ui/statusline.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
-#include "../../src/utils/str.h"
 #include "../../src/status.h"
 
 /*
@@ -67,14 +65,10 @@ SETUP_ONCE()
 
 SETUP()
 {
-	update_string(&cfg.time_format, "+");
+	conf_setup();
 
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	view_setup(&lwin);
+	append_view_entry(&lwin, "file");
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -87,15 +81,8 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		free(lwin.dir_entry[i].name);
-	}
-	dynarray_free(lwin.dir_entry);
-
-	update_string(&cfg.time_format, NULL);
+	view_teardown(&lwin);
+	conf_teardown();
 }
 
 TEST(empty_format)

@@ -1,8 +1,7 @@
 #include <stic.h>
 
 #include <stdio.h> /* remove() */
-#include <stdlib.h> /* free() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
@@ -10,7 +9,6 @@
 #include "../../src/cfg/config.h"
 #include "../../src/modes/normal.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
 
@@ -49,13 +47,7 @@ TEST(file_mode_is_changed, IF(not_windows))
 	assert_success(chmod(SANDBOX_PATH "/empty", 0000));
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	lwin.list_rows = 1;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("empty");
-	lwin.dir_entry[0].type = FT_REG;
-	lwin.dir_entry[0].origin = lwin.curr_dir;
-	lwin.list_pos = 0;
+	append_view_entry(&lwin, "empty");
 
 	replace_string(&cfg.shell, "/bin/sh");
 	update_string(&cfg.shell_cmd_flag, "-c");

@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
@@ -9,7 +9,6 @@
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/sort.h"
 #include "../../src/marks.h"
 
@@ -22,24 +21,13 @@ SETUP_ONCE()
 SETUP()
 {
 	modes_init();
-	view_setup(&lwin);
 	opt_handlers_setup();
 
+	view_setup(&lwin);
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	lwin.list_rows = 3;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file0");
-	lwin.dir_entry[0].origin = lwin.curr_dir;
-	lwin.dir_entry[0].selected = 0;
-	lwin.dir_entry[1].name = strdup("file1");
-	lwin.dir_entry[1].origin = lwin.curr_dir;
-	lwin.dir_entry[1].selected = 0;
-	lwin.dir_entry[2].name = strdup("file2");
-	lwin.dir_entry[2].origin = lwin.curr_dir;
-	lwin.dir_entry[2].selected = 0;
-	lwin.selected_files = 0;
+	append_view_entry(&lwin, "file0");
+	append_view_entry(&lwin, "file1");
+	append_view_entry(&lwin, "file2");
 
 	view_set_sort(lwin.sort, SK_BY_INAME, SK_NONE);
 	sort_view(&lwin);

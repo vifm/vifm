@@ -1,12 +1,11 @@
 #include <stic.h>
 
-#include <string.h>
+#include <string.h> /* strcpy() */
 
 #include "../../src/engine/keys.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/bracket_notation.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
@@ -35,14 +34,8 @@ SETUP()
 
 	view_setup(&lwin);
 	strcpy(lwin.curr_dir, "/lwin");
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file0");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("file1");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "file0");
+	append_view_entry(&lwin, "file1");
 
 	modes_init();
 	regs_init();

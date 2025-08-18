@@ -14,7 +14,6 @@
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/gmux.h"
 #include "../../src/utils/shmem.h"
 #include "../../src/utils/str.h"

@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <string.h> /* strdup() */
-
 #include <test-utils.h>
 
 #include "../../src/engine/keys.h"
@@ -9,7 +7,6 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 
@@ -68,12 +65,7 @@ TEST(count_vars_are_set_to_passed_value_visual)
 {
 	var_t var;
 
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("lfile0");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "lfile0");
 
 	(void)vle_keys_exec_timed_out(L"v1:");
 

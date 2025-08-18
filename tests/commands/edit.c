@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
@@ -11,7 +11,6 @@
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -63,14 +62,8 @@ TEST(edit_handles_ranges, IF(not_windows))
 	assert_success(os_chmod(SANDBOX_PATH "/script", 0777));
 
 	strcpy(lwin.curr_dir, sandbox);
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file1");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("file2");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "file1");
+	append_view_entry(&lwin, "file2");
 
 	(void)cmds_dispatch("%edit", &lwin, CIT_COMMAND);
 
@@ -128,12 +121,7 @@ TEST(edit_broken_symlink, IF(not_windows))
 	assert_success(chdir(sandbox));
 
 	strcpy(lwin.curr_dir, sandbox);
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("broken");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "broken");
 
 	(void)cmds_dispatch("edit", &lwin, CIT_COMMAND);
 

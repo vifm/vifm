@@ -1,14 +1,11 @@
 #include <stic.h>
 
-#include <string.h> /* strdup() */
-
 #include <test-utils.h>
 
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/cmd_core.h"
 
 SETUP()
@@ -19,16 +16,8 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 0;
+	append_view_entry(&lwin, "a")->selected = 1;
+	append_view_entry(&lwin, "b");
 	lwin.selected_files = 1;
 
 	cmds_init();

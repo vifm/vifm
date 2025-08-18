@@ -3,7 +3,7 @@
 #include <unistd.h> /* chdir() rmdir() */
 
 #include <stdio.h> /* remove() snprintf() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
@@ -14,7 +14,6 @@
 #include "../../src/modes/menu.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
@@ -571,15 +570,9 @@ TEST(open_command)
 	create_file(SANDBOX_PATH "/to-open");
 	create_file(SANDBOX_PATH "/to-open-2");
 
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("to-open");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("to-open-2");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 	strcpy(lwin.curr_dir, sandbox);
+	append_view_entry(&lwin, "to-open");
+	append_view_entry(&lwin, "to-open-2");
 
 	assert_success(cmds_dispatch1("open \"comment", &lwin, CIT_COMMAND));
 	GLUA_EQ(curr_stats.vlua, "1", "print(#info.paths)");

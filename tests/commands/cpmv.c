@@ -2,14 +2,13 @@
 
 #include <unistd.h> /* chdir() */
 
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -124,24 +123,14 @@ TEST(cpmv_does_not_crash_on_wrong_list_access)
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(path));
 
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
 	strcpy(lwin.curr_dir, path);
 	strcpy(rwin.curr_dir, sandbox);
-
-	free_dir_entries(&lwin.dir_entry, &lwin.list_rows);
-
-	lwin.list_rows = 3;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 1;
-	lwin.dir_entry[2].name = strdup("c");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].selected = 1;
+	append_view_entry(&lwin, "a")->selected = 1;
+	append_view_entry(&lwin, "b")->selected = 1;
+	append_view_entry(&lwin, "c")->selected = 1;
 	lwin.selected_files = 3;
 
 	/* cpmv used to use presence of the argument as indication of availability of

@@ -1,16 +1,14 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() rmdir() */
+#include <unistd.h> /* rmdir() */
 
-#include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/modes/dialogs/attr_dialog.h"
 #include "../../src/filelist.h"
@@ -18,7 +16,6 @@
 #ifndef _WIN32
 
 static void set_file_perms(const int perms[13]);
-static void alloc_file_list(view_t *view, const char filename[]);
 static mode_t perms_to_mode(const int perms[13]);
 static mode_t get_perms(const char path[]);
 static int can_reset_x_on_files(void);
@@ -75,7 +72,7 @@ set_file_perms(const int perms[13])
 	}
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	alloc_file_list(&lwin, "file");
+	append_view_entry(&lwin, "file");
 	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
 
@@ -107,7 +104,7 @@ TEST(reset_executable_bits_from_files_only, IF(can_reset_x_on_files))
 	}
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	alloc_file_list(&lwin, "dir");
+	append_view_entry(&lwin, "dir")->type = FT_DIR;
 	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
 
@@ -141,7 +138,7 @@ TEST(set_executable_bit_via_X_flag)
 	}
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	alloc_file_list(&lwin, "dir");
+	append_view_entry(&lwin, "dir")->type = FT_DIR;
 	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
 
@@ -150,17 +147,6 @@ TEST(set_executable_bit_via_X_flag)
 
 	assert_success(unlink(SANDBOX_PATH "/dir/file"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
-}
-
-static void
-alloc_file_list(view_t *view, const char filename[])
-{
-	view->list_rows = 1;
-	view->list_pos = 0;
-	view->dir_entry = dynarray_cextend(NULL,
-			view->list_rows*sizeof(*view->dir_entry));
-	view->dir_entry[0].name = strdup(filename);
-	view->dir_entry[0].origin = &view->curr_dir[0];
 }
 
 static mode_t
