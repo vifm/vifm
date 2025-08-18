@@ -189,9 +189,8 @@ fops_delete(view_t *view, int reg, int use_trash)
 	ui_view_reset_selection_and_reload(view);
 	ui_view_schedule_reload(view == curr_view ? other_view : curr_view);
 
-	ui_sb_msgf("%d %s %celeted%s", ops->succeeded,
-			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
-			fops_get_cancellation_suffix());
+	ui_sb_msgf("%d item%s %celeted%s", ops->succeeded, psuffix(ops->succeeded),
+			use_trash ? 'd' : 'D', fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
 	regs_sync_to_shared_memory();
