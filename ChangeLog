@@ -139,6 +139,9 @@
 	Fixed vifm-media-osx script for modern versions of OS X.  Thanks to
 	vulpes-vulpeos.
 
+	Fixed weird delays in FUSE when running an AppImage caused by a trailing
+	colon in $LD_LIBRARY_PATH.  Thanks to qadzek.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
