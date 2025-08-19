@@ -15,6 +15,7 @@ SETUP()
 {
 	modes_init();
 	cmds_init();
+	conf_setup();
 
 	curr_view = &lwin;
 	view_setup(&lwin);
@@ -43,6 +44,7 @@ TEARDOWN()
 	vle_keys_reset();
 
 	cfg_resize_histories(0);
+	conf_teardown();
 }
 
 TEST(history_symbols)
