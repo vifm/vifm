@@ -74,8 +74,7 @@ show_map_menu(view_t *view, const char mode_str[], int mode,
 	 * menu. */
 	if(m.len == 3)
 	{
-		free(m.items[0]);
-		free(m.items);
+		free_string_array(m.items, m.len);
 		m.items = NULL;
 		m.len = 0;
 	}

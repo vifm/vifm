@@ -18,6 +18,9 @@
 	Fixed weird delays in FUSE when running an AppImage caused by a trailing
 	colon in $LD_LIBRARY_PATH.  Thanks to qadzek.
 
+	Fixed a small memory leak on trying to display a map menu which doesn't
+	show up because it would be empty.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
