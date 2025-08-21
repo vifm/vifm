@@ -39,6 +39,13 @@ TEARDOWN()
 	curr_stats.load_stage = 0;
 }
 
+TEST(no_menu_if_no_matches)
+{
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("nmap nothing", &lwin, CIT_COMMAND));
+	assert_string_equal("No mappings found", ui_sb_last());
+}
+
 TEST(nop_rhs_is_displayed)
 {
 	assert_success(cmds_dispatch("nmap lhs <nop>", &lwin, CIT_COMMAND));
