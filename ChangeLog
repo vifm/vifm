@@ -5,6 +5,8 @@
 
 	Reworked --help output to be more compact and readable.
 
+	Display an error on trying to switch from external preview to raw mode.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
