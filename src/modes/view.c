@@ -1319,6 +1319,10 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 		vi->raw = !vi->raw;
 		reload_view(vi, NOSILENT);
 	}
+	else
+	{
+		display_error("No raw mode for an external viewer.");
+	}
 }
 
 static void
