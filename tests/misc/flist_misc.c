@@ -16,7 +16,6 @@
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/cancellation.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/compare.h"
@@ -464,15 +463,8 @@ TEST(root_path_does_not_get_more_than_one_slash, IF(not_windows))
 
 TEST(duplicated_entries_detected)
 {
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.top_line = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("lfile0");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("lfile0");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "lfile0");
+	append_view_entry(&lwin, "lfile0");
 
 	check_file_uniqueness(&lwin);
 
@@ -614,15 +606,9 @@ TEST(filename_is_escaped_only_for_display)
 
 TEST(fview_previews_works)
 {
-	lwin.list_rows = 2;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("dir");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].type = FT_DIR;
 	strcpy(lwin.curr_dir, "/tests/fake");
+	append_view_entry(&lwin, "file");
+	append_view_entry(&lwin, "dir")->type = FT_DIR;
 
 	lwin.miller_preview = MP_DIRS;
 

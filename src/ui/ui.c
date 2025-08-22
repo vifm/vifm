@@ -150,6 +150,7 @@ static WINDOW *lborder;
 static WINDOW *mborder;
 static WINDOW *rborder;
 
+static void set_ruler_text(const char val[], int lazy_redraw);
 static int init_pair_wrapper(int pair, int fg, int bg);
 static int pair_content_wrapper(int pair, int *fg, int *bg);
 static int pair_in_use(int pair);
@@ -219,23 +220,34 @@ ui_ruler_update(view_t *view, int lazy_redraw)
 	expanded = expand_ruler_macros(view, cfg.ruler_format);
 	expanded = break_in_two(expanded, getmaxx(ruler_win), "%=");
 
-	ui_ruler_set(expanded);
-	if(!lazy_redraw)
-	{
-		ui_refresh_win(ruler_win);
-	}
-
+	set_ruler_text(expanded, lazy_redraw);
 	free(expanded);
 }
 
 void
 ui_ruler_set(const char val[])
 {
+	update_statusbar_layout();
+	set_ruler_text(val, /*lazy_redraw=*/1);
+}
+
+/* Sets text to be displayed on the ruler and updates the ruler on the screen
+ * (possibly lazily). */
+static void
+set_ruler_text(const char val[], int lazy_redraw)
+{
 	const int x = getmaxx(ruler_win) - strlen(val);
 
 	werase(ruler_win);
 	mvwaddstr(ruler_win, 0, MAX(x, 0), val);
-	wnoutrefresh(ruler_win);
+	if(lazy_redraw)
+	{
+		update_window_lazy(ruler_win);
+	}
+	else
+	{
+		ui_refresh_win(ruler_win);
+	}
 }
 
 int

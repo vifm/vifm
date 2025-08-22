@@ -221,8 +221,8 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	mvwaddstr(stat_win, 0, cur_x, perm_buf);
 	cur_x += 11;
 
-	snprintf(name_buf, sizeof(name_buf), "%d %s filtered", view->filtered,
-			(view->filtered == 1) ? "file" : "files");
+	snprintf(name_buf, sizeof(name_buf), "%d item%s filtered", view->filtered,
+			psuffix(view->filtered));
 	if(view->filtered > 0)
 		mvwaddstr(stat_win, 0, x - (strlen(name_buf) + 2), name_buf);
 

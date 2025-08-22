@@ -3,7 +3,7 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* rmdir() unlink() */
 
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 #include <time.h> /* time() time_t */
 
 #include <test-utils.h>
@@ -11,13 +11,11 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
 #include "../../src/status.h"
 
-static void setup_single_entry(view_t *view, const char name[]);
 static uint64_t wait_for_size(const char path[]);
 
 SETUP()
@@ -38,7 +36,7 @@ TEARDOWN()
 TEST(directory_size_is_calculated_in_bg)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	setup_single_entry(&lwin, "various-sizes");
+	append_view_entry(&lwin, "various-sizes")->type = FT_DIR;
 	lwin.dir_entry[0].selected = 1;
 
 	fops_size_bg(&lwin, 0);
@@ -48,7 +46,7 @@ TEST(directory_size_is_calculated_in_bg)
 TEST(parent_dir_entry_triggers_calculation_of_current_dir)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/various-sizes");
-	setup_single_entry(&lwin, "..");
+	append_view_entry(&lwin, "..")->type = FT_DIR;
 
 	fops_size_bg(&lwin, 0);
 	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
@@ -67,7 +65,7 @@ TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
 	}
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH "/dir");
-	setup_single_entry(&lwin, "subdir");
+	append_view_entry(&lwin, "subdir")->type = FT_DIR;
 
 	fops_size_bg(&lwin, 0);
 	assert_int_equal(4, wait_for_size(SANDBOX_PATH "/dir/subdir"));
@@ -76,7 +74,7 @@ TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
 	view_teardown(&lwin);
 	view_setup(&lwin);
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	setup_single_entry(&lwin, "dir");
+	append_view_entry(&lwin, "dir")->type = FT_DIR;
 
 	fops_size_bg(&lwin, 0);
 	assert_int_equal(0, wait_for_size(SANDBOX_PATH "/dir"));
@@ -88,7 +86,7 @@ TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
 TEST(directory_size_is_not_recalculated)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	setup_single_entry(&lwin, ".");
+	append_view_entry(&lwin, ".")->type = FT_DIR;
 	lwin.dir_entry[0].selected = 1;
 
 	fops_size_bg(&lwin, 0);
@@ -127,18 +125,6 @@ TEST(symlinks_to_dirs, IF(not_windows))
 
 	assert_success(unlink(SANDBOX_PATH "/link"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
-}
-
-static void
-setup_single_entry(view_t *view, const char name[])
-{
-	view->list_rows = 1;
-	view->list_pos = 0;
-	view->dir_entry = dynarray_cextend(NULL,
-			view->list_rows*sizeof(*view->dir_entry));
-	view->dir_entry[0].name = strdup(name);
-	view->dir_entry[0].origin = &view->curr_dir[0];
-	view->dir_entry[0].type = FT_DIR;
 }
 
 static uint64_t

@@ -13,7 +13,6 @@
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/ui/column_view.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/cmd_core.h"

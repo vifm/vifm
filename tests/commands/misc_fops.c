@@ -4,7 +4,7 @@
 
 #include <limits.h> /* INT_MAX */
 #include <stdio.h> /* remove() snprintf() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
@@ -12,7 +12,6 @@
 #include "../../src/compat/os.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/cmd_core.h"
@@ -64,16 +63,10 @@ TEST(tr_extends_second_field)
 	assert_success(chdir(sandbox));
 
 	strcpy(lwin.curr_dir, sandbox);
+	append_view_entry(&lwin, "a b");
 
 	snprintf(path, sizeof(path), "%s/a b", sandbox);
 	create_file(path);
-
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a b");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
 	(void)cmds_dispatch("tr/ ?<>\\\\:*|\"/_", &lwin, CIT_COMMAND);
 
@@ -88,20 +81,13 @@ TEST(substitute_works)
 	assert_success(chdir(sandbox));
 
 	strcpy(lwin.curr_dir, sandbox);
+	append_view_entry(&lwin, "a b b");
+	append_view_entry(&lwin, "B c");
 
 	snprintf(path, sizeof(path), "%s/a b b", sandbox);
 	create_file(path);
 	snprintf(path, sizeof(path), "%s/B c", sandbox);
 	create_file(path);
-
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a b b");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("B c");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 
 	(void)cmds_dispatch("%substitute/b/c/Iig", &lwin, CIT_COMMAND);
 
@@ -118,20 +104,13 @@ TEST(chmod_works, IF(not_windows))
 	assert_success(chdir(sandbox));
 
 	strcpy(lwin.curr_dir, sandbox);
+	append_view_entry(&lwin, "file1");
+	append_view_entry(&lwin, "file2");
 
 	snprintf(path, sizeof(path), "%s/file1", sandbox);
 	create_file(path);
 	snprintf(path, sizeof(path), "%s/file2", sandbox);
 	create_file(path);
-
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file1");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("file2");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 
 	(void)cmds_dispatch("1,2chmod +x", &lwin, CIT_COMMAND);
 

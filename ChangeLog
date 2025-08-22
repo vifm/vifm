@@ -59,6 +59,10 @@
 	Prefer to use more generic "items" instead of "files" when referring to
 	file-system objects.  Thanks to qadzek.
 
+	Allowed descriptions for commands of `:fileviewer`.
+
+	Display an error on trying to switch from external preview to raw mode.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
@@ -138,6 +142,12 @@
 
 	Fixed vifm-media-osx script for modern versions of OS X.  Thanks to
 	vulpes-vulpeos.
+
+	Fixed weird delays in FUSE when running an AppImage caused by a trailing
+	colon in $LD_LIBRARY_PATH.  Thanks to qadzek.
+
+	Fixed a small memory leak on trying to display a map menu which doesn't
+	show up because it would be empty.
 
 0.14-beta to 0.14 (2025-02-08)
 

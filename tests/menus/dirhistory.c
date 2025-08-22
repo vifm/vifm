@@ -1,13 +1,12 @@
 #include <stic.h>
 
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/menus/dirhistory_menu.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
@@ -17,20 +16,10 @@ SETUP()
 	enum { HISTORY_SIZE = 10 };
 
 	view_setup(&lwin);
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("lfile0");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "lfile0");
 
 	view_setup(&rwin);
-	rwin.list_rows = 1;
-	rwin.list_pos = 0;
-	rwin.dir_entry = dynarray_cextend(NULL,
-			rwin.list_rows*sizeof(*rwin.dir_entry));
-	rwin.dir_entry[0].name = strdup("lfile0");
-	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
+	append_view_entry(&rwin, "rfile0");
 
 	/* Emulate proper history initialization (must happen after view
 	 * initialization). */

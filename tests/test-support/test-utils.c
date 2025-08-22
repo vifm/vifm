@@ -263,6 +263,8 @@ view_setup(view_t *view)
 	view->window_rows = 0;
 	view->run_size = 1;
 	view->pending_marking = 0;
+	view->top_line = 0;
+	view->column_count = 1;
 
 	assert_success(filter_init(&view->local_filter.filter, 1));
 	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
@@ -673,6 +675,28 @@ init_list(view_t *view)
 		view->dir_entry[i].type = FT_REG;
 		view->dir_entry[i].origin = view->curr_dir;
 	}
+}
+
+struct dir_entry_t *
+append_view_entry(struct view_t *view, const char name[])
+{
+	void *p = dynarray_cextend(view->dir_entry,
+			(view->list_rows + 1)*sizeof(*view->dir_entry));
+	assert_non_null(p);
+	if(p == NULL)
+	{
+		return NULL;
+	}
+
+	view->dir_entry = p;
+
+	struct dir_entry_t *e = &view->dir_entry[view->list_rows++];
+	e->name = strdup(name);
+	e->type = FT_REG;
+	e->origin = view->curr_dir;
+
+	assert_non_null(e->name);
+	return (e->name == NULL ? NULL : e);
 }
 
 void

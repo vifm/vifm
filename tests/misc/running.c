@@ -5,7 +5,6 @@
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() snprintf() */
-#include <string.h> /* strdup() */
 
 #include <test-utils.h>
 
@@ -14,7 +13,6 @@
 #include "../../src/cfg/config.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/statusbar.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
@@ -55,17 +53,8 @@ SETUP()
 	stats_update_shell_type(cfg.shell);
 
 	view_setup(&lwin);
-
-	lwin.list_rows = 2;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 1;
+	append_view_entry(&lwin, "a")->selected = 1;
+	append_view_entry(&lwin, "b")->selected = 1;
 	lwin.selected_files = 2;
 
 	curr_view = &lwin;
@@ -370,21 +359,10 @@ TEST(entering_an_unselected_directory, IF(not_windows))
 	view_setup(&lwin);
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", cwd);
 
-	lwin.list_rows = 3;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("existing-files");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 0;
-	lwin.dir_entry[0].type = FT_DIR;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 1;
-	lwin.dir_entry[2].name = strdup("c");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].selected = 1;
-	lwin.selected_files = 3;
+	append_view_entry(&lwin, "existing-files")->type = FT_DIR;
+	append_view_entry(&lwin, "b")->selected = 1;
+	append_view_entry(&lwin, "c")->selected = 1;
+	lwin.selected_files = 2;
 
 	char out_file[PATH_MAX + 1];
 	make_abs_path(out_file, sizeof(out_file), SANDBOX_PATH, "chosen", cwd);

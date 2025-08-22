@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 July 23
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 August 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -932,11 +932,11 @@ F                                              *vifm-q_F*
     key in less.
 
 a                                              *vifm-q_a*
-    switch to the next viewer.  Does nothing for preview constructed via `%q`
-    macro.
+    switch to the next viewer.  Does nothing for preview constructed via
+    |vifm-%q| macro.
 A                                              *vifm-q_A*
     switch to the previous viewer.  Does nothing for preview constructed
-    via `%q` macro.
+    via |vifm-%q| macro.
 i                                              *vifm-q_i*
     toggle raw mode (ignoring of defined viewers).  Does nothing for preview
     constructed via `%q` macro.
@@ -1826,15 +1826,16 @@ Also see |vifm-file-copying|.
     file name.  Same as ":filetype filename".
 
                                                *vifm-:fileviewer* *vifm-:filev*
-:filev[iewer] pattern-list command1,command2,...
+:filev[iewer] pattern-list [{ descr }]command1,[{ descr }]command2,...
     register specified list of commands as viewers for each of the patterns.
     Viewer is a command which output is captured and displayed in one of the
     panes of vifm after pressing |vifm-e| or running |vifm-:view| command.
-    When the command doesn't contain any of vifm macros, name of current file
-    is appended as if command ended with |vifm-%c| macro.  Comma escaping and
-    missing commands processing rules as for |vifm-:filetype| apply to this
-    command.  See |vifm-patterns| for pattern definition.  Supports
-    |vifm-lua-handlers|.
+    Optional description can be given to each command to ease understanding of
+    what the command does in UI.  When the command doesn't contain any of vifm
+    macros, name of current file is appended as if command ended with
+    |vifm-%c| macro.  Comma escaping and missing commands processing rules as
+    for |vifm-:filetype| apply to this command.  See |vifm-patterns| for
+    pattern definition.  Supports |vifm-lua-handlers|.
 
     Example for zip archives: >
 
@@ -6720,6 +6721,7 @@ work this way on its own).
 Vim plugin documentation: |vifm-plugin.txt|
 
 Website: https://vifm.info/
+Q&A: https://q2a.vifm.info/
 Wiki: https://wiki.vifm.info/
 
 --------------------------------------------------------------------------------

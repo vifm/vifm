@@ -151,6 +151,11 @@ void setup_transposed_grid(struct view_t *view, int column_count, int list_rows,
  * entry. */
 void init_view_list(struct view_t *view);
 
+/* Appends a new entry to the view of type FT_REG setting up its name and
+ * origin.  Returns pointer to the entry for further customization or NULL on
+ * memory error. */
+struct dir_entry_t * append_view_entry(struct view_t *view, const char name[]);
+
 /* Checks state of two-pane compare for sanity. */
 void check_compare_invariants(int expected_len);
 

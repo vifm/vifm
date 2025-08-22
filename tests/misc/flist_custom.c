@@ -17,7 +17,6 @@
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
@@ -76,6 +75,9 @@ TEARDOWN()
 	view_teardown(&lwin);
 
 	vle_cmds_reset();
+
+	curr_view = NULL;
+	other_view = NULL;
 }
 
 TEST(empty_list_is_not_accepted)

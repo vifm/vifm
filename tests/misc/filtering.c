@@ -11,7 +11,6 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
@@ -46,76 +45,28 @@ SETUP()
 	cfg.filter_inverted_by_default = 1;
 
 	view_setup(&lwin);
-
-	lwin.list_rows = 7;
-	lwin.list_pos = 2;
 	strcpy(lwin.curr_dir, "/some/path");
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("with(round)");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("with[square]");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].name = strdup("with{curly}");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[3].name = strdup("with<angle>");
-	lwin.dir_entry[3].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[4].name = strdup("withSPECS+*^$?|\\");
-	lwin.dir_entry[4].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[5].name = strdup("with....dots");
-	lwin.dir_entry[5].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[6].name = strdup("withnonodots");
-	lwin.dir_entry[6].origin = &lwin.curr_dir[0];
-
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].selected = 1;
-	lwin.dir_entry[2].selected = 1;
-	lwin.dir_entry[3].selected = 1;
-	lwin.dir_entry[4].selected = 1;
-	lwin.dir_entry[5].selected = 1;
-	lwin.dir_entry[6].selected = 0;
+	append_view_entry(&lwin, "with(round)")->selected = 1;
+	append_view_entry(&lwin, "with[square]")->selected = 1;
+	append_view_entry(&lwin, "with{curly}")->selected = 1;
+	append_view_entry(&lwin, "with<angle>")->selected = 1;
+	append_view_entry(&lwin, "withSPECS+*^$?|\\")->selected = 1;
+	append_view_entry(&lwin, "with....dots")->selected = 1;
+	append_view_entry(&lwin, "withnonodots");
 	lwin.selected_files = 6;
-
 	lwin.invert = cfg.filter_inverted_by_default;
 
-	lwin.column_count = 1;
-
 	view_setup(&rwin);
-
-	rwin.list_rows = 8;
+	append_view_entry(&rwin, "dir1.d");
+	append_view_entry(&rwin, "dir2.d");
+	append_view_entry(&rwin, "dir3.d");
+	append_view_entry(&rwin, "file1.d");
+	append_view_entry(&rwin, "file2.d");
+	append_view_entry(&rwin, "file3.d");
+	append_view_entry(&rwin, "withnonodots");
+	append_view_entry(&rwin, "somedir");
 	rwin.list_pos = 2;
-	rwin.dir_entry = dynarray_cextend(NULL,
-			rwin.list_rows*sizeof(*rwin.dir_entry));
-	rwin.dir_entry[0].name = strdup("dir1.d");
-	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[1].name = strdup("dir2.d");
-	rwin.dir_entry[1].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[2].name = strdup("dir3.d");
-	rwin.dir_entry[2].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[3].name = strdup("file1.d");
-	rwin.dir_entry[3].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[4].name = strdup("file2.d");
-	rwin.dir_entry[4].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[5].name = strdup("file3.d");
-	rwin.dir_entry[5].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[6].name = strdup("withnonodots");
-	rwin.dir_entry[6].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[7].name = strdup("somedir");
-	rwin.dir_entry[7].origin = &rwin.curr_dir[0];
-
-	rwin.dir_entry[0].selected = 0;
-	rwin.dir_entry[1].selected = 0;
-	rwin.dir_entry[2].selected = 0;
-	rwin.dir_entry[3].selected = 0;
-	rwin.dir_entry[4].selected = 0;
-	rwin.dir_entry[5].selected = 0;
-	rwin.dir_entry[6].selected = 0;
-	rwin.dir_entry[7].selected = 0;
-	rwin.selected_files = 0;
-
 	rwin.invert = cfg.filter_inverted_by_default;
-
-	rwin.column_count = 1;
 
 	update_string(&lwin.prev_manual_filter, "");
 	update_string(&lwin.prev_auto_filter, "");

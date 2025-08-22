@@ -2,8 +2,7 @@
 
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
-#include <string.h> /* memset() strcpy() strdup() */
+#include <string.h> /* memset() strcpy() */
 
 #include <test-utils.h>
 
@@ -18,7 +17,6 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/str.h"
@@ -42,6 +40,9 @@ SETUP()
 
 	curr_view = &lwin;
 	view_setup(&lwin);
+	strcpy(lwin.curr_dir, "tests/fake/tail");
+	append_view_entry(&lwin, "\265");
+	append_view_entry(&lwin, "root.ext");
 
 	char *error;
 	matcher_free(curr_view->manual_filter);
@@ -50,26 +51,10 @@ SETUP()
 	assert_success(filter_set(&curr_view->auto_filter, "auto-filter"));
 	assert_success(filter_set(&curr_view->local_filter.filter, "local-filter"));
 
-	lwin.list_pos = 0;
-	lwin.list_rows = 2;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("\265");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("root.ext");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	strcpy(lwin.curr_dir, "tests/fake/tail");
-
 	other_view = &rwin;
 	view_setup(&rwin);
-
-	rwin.list_pos = 0;
-	rwin.list_rows = 1;
-	rwin.dir_entry = dynarray_cextend(NULL,
-			rwin.list_rows*sizeof(*rwin.dir_entry));
-	rwin.dir_entry[0].name = strdup("otherroot.otherext");
-	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 	strcpy(rwin.curr_dir, "other/dir/othertail");
+	append_view_entry(&rwin, "otherroot.otherext");
 
 	opt_handlers_setup();
 }

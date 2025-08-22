@@ -5,14 +5,12 @@
 
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
@@ -35,19 +33,12 @@ SETUP()
 	view_setup(&lwin);
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	/* An extra item is to simplify test that needs two files. */
-	lwin.dir_entry = dynarray_cextend(NULL, 2*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	append_view_entry(&lwin, "file");
 
 	/* rwin */
 	view_setup(&rwin);
 	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);
-	rwin.filtered = 0;
-	rwin.list_pos = 0;
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -205,19 +196,9 @@ TEST(cpmv_crash_on_wrong_list_access)
 				saved_cwd, TEST_DATA_PATH);
 	}
 
-	lwin.list_rows = 3;
-	lwin.list_pos = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[1].name = strdup("b");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].selected = 1;
-	lwin.dir_entry[2].name = strdup("c");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].selected = 1;
+	append_view_entry(&lwin, "a")->selected = 1;
+	append_view_entry(&lwin, "b")->selected = 1;
+	append_view_entry(&lwin, "c")->selected = 1;
 	lwin.selected_files = 3;
 
 	check_marking(&lwin, 0, NULL);
@@ -515,10 +496,7 @@ TEST(bg_jog_has_correct_title)
 
 	lwin.dir_entry[0].marked = 1;
 
-	lwin.list_rows = 2;
-	lwin.dir_entry[1].name = strdup("file2");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].marked = 1;
+	append_view_entry(&lwin, "file2")->marked = 1;
 
 	wait_for_all_bg();
 	(void)fops_cpmv_bg(&lwin, NULL, 0, CMLO_COPY, CMLF_SKIP);

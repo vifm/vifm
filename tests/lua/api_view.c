@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <string.h> /* strdup() */
+#include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
@@ -13,7 +13,6 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
@@ -46,25 +45,13 @@ SETUP()
 
 	view_setup(&lwin);
 	strcpy(lwin.curr_dir, "/lwin");
-	lwin.list_rows = 2;
+	append_view_entry(&lwin, "file0");
+	append_view_entry(&lwin, "file1");
 	lwin.list_pos = 1;
-	lwin.top_line = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("file0");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("file1");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 
 	view_setup(&rwin);
 	strcpy(rwin.curr_dir, "/rwin");
-	rwin.list_rows = 1;
-	rwin.list_pos = 0;
-	rwin.top_line = 0;
-	rwin.dir_entry = dynarray_cextend(NULL,
-			rwin.list_rows*sizeof(*rwin.dir_entry));
-	rwin.dir_entry[0].name = strdup("ofile0");
-	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
+	append_view_entry(&rwin, "ofile0");
 
 	curr_view = &lwin;
 	other_view = &rwin;

@@ -30,6 +30,7 @@
 #include "../ui/ui.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../utils/str.h"
 #include "../compare.h"
 #include "../event_loop.h"
 #include "../status.h"
@@ -215,8 +216,8 @@ modes_statusbar_update(void)
 	}
 	else if(curr_view->selected_files)
 	{
-		ui_sb_msgf("%d %s selected", curr_view->selected_files,
-				curr_view->selected_files == 1 ? "file" : "files");
+		ui_sb_msgf("%d item%s selected", curr_view->selected_files,
+				psuffix(curr_view->selected_files));
 		curr_stats.save_msg = 2;
 	}
 	else if(cv_compare(curr_view->custom.type))

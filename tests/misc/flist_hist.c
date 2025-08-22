@@ -1,12 +1,10 @@
 #include <stic.h>
 
-#include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/flist_hist.h"
@@ -32,52 +30,24 @@ SETUP()
 	update_string(&cfg.slow_fs_list, "");
 
 	view_setup(&lwin);
-
-	/* lwin */
 	strcpy(lwin.curr_dir, "/lwin");
+	append_view_entry(&lwin, "lfile0");
 
-	lwin.list_rows = 1;
-	lwin.list_pos = 0;
-	lwin.top_line = 0;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("lfile0");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-
-	/* rwin */
+	view_setup(&rwin);
 	strcpy(rwin.curr_dir, "/rwin");
+	append_view_entry(&rwin, "rfile0");
 
-	rwin.list_rows = 1;
-	rwin.list_pos = 0;
-	rwin.top_line = 0;
-	rwin.dir_entry = dynarray_cextend(NULL,
-			rwin.list_rows*sizeof(*rwin.dir_entry));
-	rwin.dir_entry[0].name = strdup("rfile0");
-	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
-
-	/* Emulate proper history initialization (must happen after view
-	 * initialization). */
-	cfg_resize_histories(INITIAL_SIZE);
-	cfg_resize_histories(0);
-
-	cfg_resize_histories(INITIAL_SIZE);
-
-	curr_view = NULL;
+	histories_init(INITIAL_SIZE);
 }
 
 TEARDOWN()
 {
-	int i;
-
 	update_string(&cfg.slow_fs_list, NULL);
 
 	cfg_resize_histories(0);
 
 	view_teardown(&lwin);
-
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	dynarray_free(rwin.dir_entry);
+	view_teardown(&rwin);
 }
 
 static void

@@ -11,6 +11,7 @@
 #include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/quickview.h"
+#include "../../src/ui/statusline.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
@@ -87,6 +88,28 @@ TEST(toggling_raw_mode)
 	assert_true(modview_is_raw(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_i);
 	assert_false(modview_is_raw(lwin.vi));
+}
+
+TEST(no_raw_mode_for_external_viewer)
+{
+	opt_handlers_setup();
+	curr_stats.number_of_windows = 2;
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			NULL);
+	populate_dir_list(&lwin, 0);
+
+	int save_msg;
+	rn_ext(&lwin, "echo 1", "title", MF_PREVIEW_OUTPUT | MF_NO_CACHE, /*pause=*/0,
+			/*bg=*/0, &save_msg);
+	(void)vle_keys_exec_timed_out(WK_C_w WK_w);
+	assert_true(vle_mode_is(VIEW_MODE));
+
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(WK_i);
+	assert_string_equal("No raw mode for an external viewer.", ui_sb_last());
+
+	qv_hide();
+	opt_handlers_teardown();
 }
 
 TEST(switching_between_viewers)

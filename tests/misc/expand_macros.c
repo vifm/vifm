@@ -2,15 +2,14 @@
 
 #include <unistd.h> /* chdir() */
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h> /* free() */
+#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_sel.h"
@@ -24,62 +23,6 @@
 #define SL "/"
 #endif
 
-static void
-setup_lwin(void)
-{
-	view_setup(&lwin);
-	strcpy(lwin.curr_dir, "/lwin");
-
-	lwin.list_rows = 4;
-	lwin.list_pos = 2;
-	lwin.dir_entry = dynarray_cextend(NULL,
-			lwin.list_rows*sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("lfi le0");
-	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[1].name = strdup("lfile1");
-	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[2].name = strdup("lfile\"2");
-	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[3].name = strdup("lfile3");
-	lwin.dir_entry[3].origin = &lwin.curr_dir[0];
-
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[2].selected = 1;
-	lwin.selected_files = 2;
-}
-
-static void
-setup_rwin(void)
-{
-	view_setup(&rwin);
-	strcpy(rwin.curr_dir, "/rwin");
-
-	rwin.list_rows = 7;
-	rwin.list_pos = 5;
-	rwin.dir_entry = dynarray_cextend(NULL,
-			rwin.list_rows*sizeof(*rwin.dir_entry));
-	rwin.dir_entry[0].name = strdup("rfile0");
-	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[1].name = strdup("rfile1");
-	rwin.dir_entry[1].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[2].name = strdup("rfile2");
-	rwin.dir_entry[2].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[3].name = strdup("rfile3");
-	rwin.dir_entry[3].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[4].name = strdup("rfile4");
-	rwin.dir_entry[4].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[5].name = strdup("rfile5");
-	rwin.dir_entry[5].origin = &rwin.curr_dir[0];
-	rwin.dir_entry[6].name = strdup("rdir6");
-	rwin.dir_entry[6].type = FT_DIR;
-	rwin.dir_entry[6].origin = &rwin.curr_dir[0];
-
-	rwin.dir_entry[1].selected = 1;
-	rwin.dir_entry[3].selected = 1;
-	rwin.dir_entry[5].selected = 1;
-	rwin.selected_files = 3;
-}
-
 SETUP_ONCE()
 {
 	stats_update_shell_type("/bin/sh");
@@ -87,8 +30,26 @@ SETUP_ONCE()
 
 SETUP()
 {
-	setup_lwin();
-	setup_rwin();
+	view_setup(&lwin);
+	strcpy(lwin.curr_dir, "/lwin");
+	append_view_entry(&lwin, "lfi le0")->selected = 1;
+	append_view_entry(&lwin, "lfile1");
+	append_view_entry(&lwin, "lfile\"2")->selected = 1;
+	append_view_entry(&lwin, "lfile3");
+	lwin.list_pos = 2;
+	lwin.selected_files = 2;
+
+	view_setup(&rwin);
+	strcpy(rwin.curr_dir, "/rwin");
+	append_view_entry(&rwin, "rfile0");
+	append_view_entry(&rwin, "rfile1")->selected = 1;
+	append_view_entry(&rwin, "rfile2");
+	append_view_entry(&rwin, "rfile3")->selected = 1;
+	append_view_entry(&rwin, "rfile4");
+	append_view_entry(&rwin, "rfile5")->selected = 1;
+	append_view_entry(&rwin, "rdir6")->type = FT_DIR;
+	rwin.list_pos = 5;
+	rwin.selected_files = 3;
 
 	curr_view = &lwin;
 	other_view = &rwin;

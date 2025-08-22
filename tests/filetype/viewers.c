@@ -74,15 +74,12 @@ TEST(multiple_choice_joined)
 	assert_true(viewer == NULL);
 }
 
-TEST(description_is_not_allowed)
+TEST(description_is_allowed)
 {
-	const char *viewer;
-
 	assoc_viewers("*.tar.bz2", "{archives} prog1");
 
 	ft_init(&prog1_available);
-	viewer = ft_get_viewer("file.version.tar.bz2");
-	assert_true(viewer == NULL);
+	assert_string_equal("prog1", ft_get_viewer("file.version.tar.bz2"));
 }
 
 TEST(several_patterns)
