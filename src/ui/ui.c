@@ -1223,9 +1223,12 @@ static void
 update_window_lazy(WINDOW *win)
 {
 	touchwin(win);
-	/* Tell curses that it shouldn't assume that screen isn't messed up in any
-	 * way. */
-	redrawwin(win);
+	if(curr_stats.load_stage > 0)
+	{
+		/* Tell curses that it shouldn't assume that screen isn't messed up in any
+		 * way. */
+		redrawwin(win);
+	}
 	wnoutrefresh(win);
 }
 
