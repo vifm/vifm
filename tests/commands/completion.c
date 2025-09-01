@@ -679,6 +679,16 @@ TEST(messages_is_completed)
 	ASSERT_COMPLETION(L"messages c c", L"messages c c");
 }
 
+TEST(view_is_completed)
+{
+	ASSERT_NO_COMPLETION(L"view! n");
+
+	ASSERT_COMPLETION(L"view ", L"view next");
+	ASSERT_NEXT_MATCH("prev");
+	ASSERT_NEXT_MATCH("");
+	ASSERT_NEXT_MATCH("next");
+}
+
 static void
 prepare_for_line_completion(const wchar_t str[])
 {

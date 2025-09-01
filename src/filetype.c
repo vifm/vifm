@@ -63,7 +63,9 @@ reordering_data_t;
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
+static int pick_out_until_last(const char file[], reordering_data_t *d);
 static void make_pivot_first(reordering_data_t *d);
+static void make_pivot_last(reordering_data_t *d);
 static int pick_out_until_first(const char file[], const char viewer[],
 		reordering_data_t *d);
 static int split_assoc(assoc_t *assoc, int at_record_idx, assoc_t *out_prefix);
@@ -238,6 +240,96 @@ ft_move_viewer_to_top(const char file[], const char viewer[])
 	DA_REMOVE_ALL(d.prefix);
 }
 
+void
+ft_move_viewer_cycle_prev(const char file[])
+{
+	reordering_data_t d = {};
+
+	/*
+	 * Overall approach:
+	 *  1. Find the last entry with an existing program record.
+	 *  2. Move all of its matching predecessors to the end of the list.
+	 *  3. Special case: if that record is not the first one, cut the entry at it
+	 *                   and make it last.
+	 */
+	if(pick_out_until_last(file, &d) == 0)
+	{
+		make_pivot_first(&d);
+	}
+
+	free(d.list);
+	DA_REMOVE_ALL(d.prefix);
+}
+
+/* Finds the last matching entry in the list of viewers that's also present.
+ * Collects all entries that match file and precede the found entry in
+ * d->prefix.  Returns zero on successfully finding a viewer. */
+static int
+pick_out_until_last(const char file[], reordering_data_t *d)
+{
+	int l;
+	for(l = fileviewers.count - 1; l >= 0; --l)
+	{
+		assoc_t *assoc = &fileviewers.list[l];
+
+		if(!mg_match(&assoc->mg, file))
+		{
+			continue;
+		}
+
+		for(d->k = assoc->records.count - 1; d->k >= 0; --d->k)
+		{
+			if(ft_exists(assoc->records.list[d->k].command))
+			{
+				break;
+			}
+		}
+
+		if(d->k >= 0)
+		{
+			break;
+		}
+	}
+
+	if(l < 0)
+	{
+		/* No present viewers for the file. */
+		return 1;
+	}
+
+	/* The new list needs to have room for an extra element in case a matching
+	 * entry needs to be split in two. */
+	d->list = malloc((fileviewers.count + 1)*sizeof(*d->list));
+	if(d->list == NULL)
+	{
+		return 1;
+	}
+
+	/* Make the last entry the top one by moving all matching predecessors
+	 * directly below it (rotate matching viewers around the last of them). */
+	for(d->i = 0, d->j = 0; d->i < l; ++d->i)
+	{
+		assoc_t *assoc = &fileviewers.list[d->i];
+
+		if(!mg_match(&assoc->mg, file))
+		{
+			d->list[d->j++] = *assoc;
+			continue;
+		}
+
+		assoc_t *another = DA_EXTEND(d->prefix);
+		if(another == NULL)
+		{
+			return 1;
+		}
+
+		*another = *assoc;
+		DA_COMMIT(d->prefix);
+	}
+
+	return 0;
+}
+
 /* Makes a "pivot" element the first one among subset of matching file viewers.
  * This is done by putting the element, the tail of the original list and all
  * subset elements in front of the pivot in the right order. */
@@ -275,6 +367,75 @@ make_pivot_first(reordering_data_t *d)
 	if(need_split)
 	{
 		fileviewers.list[fileviewers.count++] = split_prefix;
+	}
+}
+
+void
+ft_move_viewer_cycle_next(const char file[])
+{
+	reordering_data_t d = {};
+
+	/*
+	 * Overall approach:
+	 *  1. Find the first entry with an existing program record.
+	 *  2. Move it after the last matching entry.
+	 *  3. Special case: if the record is not the last one, cut the entry after
+	 *                   the record and move only this prefix.
+	 */
+	if(pick_out_until_first(file, /*viewer=*/NULL, &d) == 0)
+	{
+		make_pivot_last(&d);
+	}
+
+	free(d.list);
+	DA_REMOVE_ALL(d.prefix);
+}
+
+/* Makes a "pivot" element the last one among subset of matching file viewers.
+ * This is done by putting the element, the tail of the original list and all
+ * subset elements in front of the pivot in the right order. */
+static void
+make_pivot_last(reordering_data_t *d)
+{
+	assoc_t last_item;
+	int need_split = (d->k != fileviewers.list[d->i].records.count - 1);
+	if(need_split)
+	{
+		/* The viewer is not the last in the list, so split the association at
+		 * the viewer.  The code below ensures the viewer will be at the new top
+		 * for the subset matching this file and then the prefix will be
+		 * appended-> */
+		if(split_assoc(&fileviewers.list[d->i], d->k + 1, &last_item) != 0)
+		{
+			return;
+		}
+	}
+	else
+	{
+		last_item = fileviewers.list[d->i++];
+	}
+
+	mem_cpy(&d->list[d->j], &fileviewers.list[d->i], fileviewers.count - d->i,
+			sizeof(d->list[0]));
+	d->j += fileviewers.count - d->i;
+
+	mem_cpy(&d->list[d->j], &d->prefix[0], DA_SIZE(d->prefix),
+			sizeof(d->prefix[0]));
+	d->j += DA_SIZE(d->prefix);
+
+	free(fileviewers.list);
+	fileviewers.list = d->list;
+	d->list = NULL;
+
+	if(need_split)
+	{
+		assert(d->j == fileviewers.count);
+		fileviewers.list[fileviewers.count++] = last_item;
+	}
+	else
+	{
+		assert(d->j == fileviewers.count - 1);
+		fileviewers.list[d->j] = last_item;
 	}
 }
 

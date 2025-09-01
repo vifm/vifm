@@ -936,10 +936,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display version information",
 	  .flags = HAS_COMMENT,
 	  .handler = &vifm_cmd,        .min_args = 0,   .max_args = 0, },
-	{ .name = "view",              .abbr = "vie",   .id = -1,
+	{ .name = "view",              .abbr = "vie",   .id = COM_VIEW,
 	  .descr = "control visibility of preview",
 	  .flags = HAS_EMARK | HAS_COMMENT,
-	  .handler = &view_cmd,        .min_args = 0,   .max_args = 0, },
+	  .handler = &view_cmd,        .min_args = 0,   .max_args = 1, },
 	{ .name = "vifm",              .abbr = NULL,    .id = -1,
 	  .descr = "display version information",
 	  .flags = HAS_COMMENT,
@@ -5355,21 +5355,90 @@ unselect_cmd(const cmd_info_t *cmd_info)
 	return (error ? CMDS_ERR_CUSTOM : 0);
 }
 
+/* Enables/disables/toggles quickview and switches viewers. */
 static int
 view_cmd(const cmd_info_t *cmd_info)
 {
 	cmds_preserve_selection();
 
-	if((!curr_stats.preview.on || cmd_info->emark) && !qv_can_show())
+	if(cmd_info->emark && cmd_info->argc != 0)
 	{
+		ui_sb_err("No arguments are allowed if you use \"!\"");
 		return CMDS_ERR_CUSTOM;
 	}
-	if(curr_stats.preview.on && cmd_info->emark)
+
+	if(cmd_info->argc == 0)
 	{
+		if((!curr_stats.preview.on || cmd_info->emark) && !qv_can_show())
+		{
+			return CMDS_ERR_CUSTOM;
+		}
+		if(curr_stats.preview.on && cmd_info->emark)
+		{
+			return 0;
+		}
+		qv_toggle();
 		return 0;
 	}
-	qv_toggle();
-	return 0;
+
+	if(strcmp(cmd_info->argv[0], "prev") != 0 &&
+			strcmp(cmd_info->argv[0], "next") != 0)
+	{
+		ui_sb_errf("Unexpected action: %s", cmd_info->argv[0]);
+		return CMDS_ERR_CUSTOM;
+	}
+
+	char *typed_fpath = get_typed_entry_fpath(get_current_entry(curr_view));
+	if(typed_fpath == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 0;
+	}
+
+	assoc_records_t viewers = ft_get_all_viewers(typed_fpath);
+	if(viewers.count == 0)
+	{
+		free(typed_fpath);
+		ft_assoc_records_free(&viewers);
+		ui_sb_msg("No viewers for the current file");
+		return 1;
+	}
+
+	if(viewers.count != 1)
+	{
+		if(strcmp(cmd_info->argv[0], "next") == 0)
+		{
+			ft_move_viewer_cycle_next(typed_fpath);
+		}
+		else
+		{
+			ft_move_viewer_cycle_prev(typed_fpath);
+		}
+
+		ft_assoc_records_free(&viewers);
+		viewers = ft_get_all_viewers(typed_fpath);
+
+		stats_redraw_later();
+
+		if(viewers.count == 0)
+		{
+			free(typed_fpath);
+			ft_assoc_records_free(&viewers);
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			return 0;
+		}
+	}
+
+	const char *text = viewers.list[0].description;
+	if(is_null_or_empty(text))
+	{
+		text = viewers.list[0].command;
+	}
+	ui_sb_msgf("Top viewer (out of %d): %s", viewers.count, text);
+
+	ft_assoc_records_free(&viewers);
+	free(typed_fpath);
+	return 1;
 }
 
 static int

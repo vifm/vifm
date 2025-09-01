@@ -24,6 +24,9 @@
 	Added P view mode key to make choice of a viewer via a and A keys
 	persistent for the session.  Thanks to j-xella, durcheinandr and vuenn.
 
+	Added optional "next" and "prev" actions to :view command to switch
+	default previewer for the current and similar files.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more

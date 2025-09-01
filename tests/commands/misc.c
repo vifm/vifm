@@ -506,6 +506,36 @@ TEST(view_command)
 	assert_success(cmds_dispatch("view", &lwin, CIT_COMMAND));
 	assert_false(curr_stats.preview.on);
 
+	/* Reordering viewers. */
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("view! next", &lwin, CIT_COMMAND));
+	assert_string_equal("No arguments are allowed if you use \"!\"",
+			ui_sb_last());
+
+	assert_failure(cmds_dispatch("view n", &lwin, CIT_COMMAND));
+	assert_string_equal("Unexpected action: n", ui_sb_last());
+
+	append_view_entry(&lwin, "file.zip");
+
+	assert_failure(cmds_dispatch("view next", &lwin, CIT_COMMAND));
+	assert_string_equal("No viewers for the current file", ui_sb_last());
+
+	assoc_viewers("*.zip", "archiver1, {custom name}archiver2");
+	assert_string_equal("archiver1", ft_get_viewer("file.zip"));
+
+	assert_failure(cmds_dispatch("view next", &lwin, CIT_COMMAND));
+	assert_string_equal("archiver2", ft_get_viewer("file.zip"));
+	assert_string_equal("Top viewer (out of 2): custom name", ui_sb_last());
+
+	assert_failure(cmds_dispatch("view next", &lwin, CIT_COMMAND));
+	assert_string_equal("archiver1", ft_get_viewer("file.zip"));
+	assert_string_equal("Top viewer (out of 2): archiver1", ui_sb_last());
+
+	assert_failure(cmds_dispatch("view prev", &lwin, CIT_COMMAND));
+	assert_string_equal("archiver2", ft_get_viewer("file.zip"));
+	assert_string_equal("Top viewer (out of 2): custom name", ui_sb_last());
+
 	opt_handlers_teardown();
 }
 
