@@ -127,12 +127,56 @@ TEST(switching_between_viewers)
 	(void)vle_keys_exec_timed_out(WK_A);
 	assert_string_equal("echo 3", modview_current_viewer(lwin.vi));
 
+	/* Switching viewers is local to the view mode. */
+	assert_string_equal("echo 1", ft_get_viewer("read"));
+
 	(void)vle_keys_exec_timed_out(WK_i);
 	assert_true(modview_is_raw(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_a);
 	assert_string_equal("echo 3", modview_current_viewer(lwin.vi));
 	(void)vle_keys_exec_timed_out(WK_A);
 	assert_string_equal("echo 3", modview_current_viewer(lwin.vi));
+}
+
+TEST(no_persisting_for_external_viewer)
+{
+	opt_handlers_setup();
+	curr_stats.number_of_windows = 2;
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			NULL);
+	populate_dir_list(&lwin, 0);
+
+	int save_msg;
+	rn_ext(&lwin, "echo 1", "title", MF_PREVIEW_OUTPUT | MF_NO_CACHE, /*pause=*/0,
+			/*bg=*/0, &save_msg);
+	(void)vle_keys_exec_timed_out(WK_C_w WK_w);
+	assert_true(vle_mode_is(VIEW_MODE));
+
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(WK_P);
+	assert_string_equal("Can't persist an external viewer.", ui_sb_last());
+
+	qv_hide();
+	opt_handlers_teardown();
+}
+
+TEST(persisting_a_viewer_choice)
+{
+	assert_true(start_view_mode("bin*", "echo 1, echo 2, echo 3", TEST_DATA_PATH,
+				"read"));
+	assert_string_equal("echo 1", ft_get_viewer("binary-data"));
+
+	ui_sb_msg("");
+	(void)vle_keys_exec_timed_out(WK_i);
+	(void)vle_keys_exec_timed_out(WK_P);
+	assert_string_equal("No viewer to persist, raw previewing is active.",
+			ui_sb_last());
+	(void)vle_keys_exec_timed_out(WK_i);
+
+	(void)vle_keys_exec_timed_out(WK_a);
+	assert_string_equal("echo 2", modview_current_viewer(lwin.vi));
+	(void)vle_keys_exec_timed_out(WK_P);
+	assert_string_equal("echo 2", ft_get_viewer("binary-data"));
 }
 
 TEST(directories_are_matched_separately)

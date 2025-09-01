@@ -21,6 +21,9 @@
 	Added `:messages clear` to clear the history of the most recent status bar
 	messages.  Thanks to qadzek.
 
+	Added P view mode key to make choice of a viewer via a and A keys
+	persistent for the session.  Thanks to j-xella, durcheinandr and vuenn.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more

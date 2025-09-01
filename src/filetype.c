@@ -28,15 +28,46 @@
 #include "compat/fs_limits.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "utils/darray.h"
 #include "utils/matchers.h"
+#include "utils/mem.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/path.h"
 #include "utils/utils.h"
 
+/*
+ * Temporary state used while reordering viewers.
+ *
+ * We're always collecting a prefix because regardless whether the pivot is
+ * moved to the top or the bottom of a matching subset, we group the subset
+ * around bottom of the list of viewers where catch-all viewers are likely to
+ * appear.  Moving items down rather than up isolates the subset more from the
+ * rest of the viewers and does not mess up matching by putting a catch-all
+ * viewer above entries which did not participate in a rotation.
+ */
+typedef struct
+{
+	assoc_t *list; /* Storage for the new list. */
+
+	/* Matching associations that precede the pivot in fileviewers. */
+	assoc_t *prefix;
+	DA_INSTANCE_FIELD(prefix);
+
+	int i; /* Index of an association in fileviewers used as a "pivot". */
+	int j; /* Number of associations copied to .list array. */
+	int k; /* Matching record number within fileviewers.list[i].records[]. */
+}
+reordering_data_t;
+
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
+static void make_pivot_first(reordering_data_t *d);
+static int pick_out_until_first(const char file[], const char viewer[],
+		reordering_data_t *d);
+static int split_assoc(assoc_t *assoc, int at_record_idx, assoc_t *out_prefix);
+static int mg_clone(const matchers_group_t *from, matchers_group_t *to);
 static assoc_records_t parse_command_list(const char cmds[]);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
@@ -183,6 +214,192 @@ find_existing_cmd_record(const assoc_records_t *records)
 	}
 
 	return empty_record;
+}
+
+void
+ft_move_viewer_to_top(const char file[], const char viewer[])
+{
+	reordering_data_t d = {};
+
+	/*
+	 * Overall approach:
+	 *  1. Find an entry with a matching program record.
+	 *  2. Move it and all predecessors matching file after the last matching
+	 *     entry.
+	 *  3. Special case: if the record is not the last one, cut the entry after
+	 *                   the record and move only this prefix.
+	 */
+	if(pick_out_until_first(file, viewer, &d) == 0)
+	{
+		make_pivot_first(&d);
+	}
+
+	free(d.list);
+	DA_REMOVE_ALL(d.prefix);
+}
+
+/* Makes a "pivot" element the first one among subset of matching file viewers.
+ * This is done by putting the element, the tail of the original list and all
+ * subset elements in front of the pivot in the right order. */
+static void
+make_pivot_first(reordering_data_t *d)
+{
+	assoc_t split_prefix;
+	int need_split = (d->k != 0);
+	if(need_split)
+	{
+		/* The viewer is not the first in the list, so split the association at
+		 * the viewer.  The code below ensures the viewer will be at the new top
+		 * for the subset matching this file and then the prefix will be
+		 * appended. */
+		if(split_assoc(&fileviewers.list[d->i], d->k, &split_prefix) != 0)
+		{
+			return;
+		}
+	}
+
+	mem_cpy(&d->list[d->j], &fileviewers.list[d->i], fileviewers.count - d->i,
+			sizeof(d->list[0]));
+	d->j += fileviewers.count - d->i;
+
+	mem_cpy(&d->list[d->j], &d->prefix[0], DA_SIZE(d->prefix),
+			sizeof(d->list[0]));
+	d->j += DA_SIZE(d->prefix);
+
+	assert(d->j == fileviewers.count);
+
+	free(fileviewers.list);
+	fileviewers.list = d->list;
+	d->list = NULL;
+
+	if(need_split)
+	{
+		fileviewers.list[fileviewers.count++] = split_prefix;
+	}
+}
+
+/* Finds a matching entry in the list of viewers either by checking for its
+ * existence (viewer is NULL) or by matching it against a passed in string
+ * (viewer is not NULL).  Collects all entries matching file in d->prefix array
+ * while walking the list.  Returns zero on successfully finding a viewer. */
+static int
+pick_out_until_first(const char file[], const char viewer[],
+		reordering_data_t *d)
+{
+	/* The new list needs to have room for an extra element in case a matching
+	 * entry needs to be split in two. */
+	d->list = malloc((fileviewers.count + 1)*sizeof(*d->list));
+	if(d->list == NULL)
+	{
+		return 1;
+	}
+
+	for(d->i = 0, d->j = 0; d->i < fileviewers.count; ++d->i)
+	{
+		assoc_t *assoc = &fileviewers.list[d->i];
+
+		if(!mg_match(&assoc->mg, file))
+		{
+			d->list[d->j++] = *assoc;
+			continue;
+		}
+
+		for(d->k = 0; d->k < assoc->records.count; ++d->k)
+		{
+			if(viewer != NULL)
+			{
+				if(strcmp(assoc->records.list[d->k].command, viewer) == 0)
+				{
+					return 0;
+				}
+			}
+			else
+			{
+				if(ft_exists(assoc->records.list[d->k].command))
+				{
+					return 0;
+				}
+			}
+		}
+
+		assoc_t *another = DA_EXTEND(d->prefix);
+		if(another == NULL)
+		{
+			return 1;
+		}
+
+		*another = *assoc;
+		DA_COMMIT(d->prefix);
+	}
+
+	/* No matching viewer was found. */
+	return 1;
+}
+
+/* Leaves assoc->records[0..at_record_idx] in *assoc and creates *out_prefix
+ * with assoc->records[at_record_idx+1..].  Returns zero on success. */
+static int
+split_assoc(assoc_t *assoc, int at_record_idx, assoc_t *out_prefix)
+{
+	assoc_t prefix;
+	if(mg_clone(&assoc->mg, &prefix.mg) != 0)
+	{
+		return 1;
+	}
+
+	prefix.records.list =
+		reallocarray(NULL, at_record_idx, sizeof(*prefix.records.list));
+	if(prefix.records.list == NULL)
+	{
+		mg_free(&prefix.mg);
+		return 1;
+	}
+
+	mem_cpy(prefix.records.list, assoc->records.list, at_record_idx,
+			sizeof(*prefix.records.list));
+	mem_shl(assoc->records.list, assoc->records.count,
+			sizeof(*assoc->records.list), at_record_idx);
+
+	prefix.records.count = at_record_idx;
+	assoc->records.count -= at_record_idx;
+
+	*out_prefix = prefix;
+	return 0;
+}
+
+/* Clones a group of matchers.  Returns zero on success. */
+static int
+mg_clone(const matchers_group_t *from, matchers_group_t *to)
+{
+	if(from->count == 0)
+	{
+		to->list = NULL;
+		to->count = 0;
+		return 0;
+	}
+
+	matchers_group_t result = {
+		.list = reallocarray(NULL, from->count, sizeof(*result.list)),
+		.count = 0,
+	};
+	if(result.list == NULL)
+	{
+		return 1;
+	}
+
+	int i;
+	for(i = 0; i < from->count; ++i, ++result.count)
+	{
+		result.list[i] = matchers_clone(from->list[i]);
+		if(result.list[i] == NULL)
+		{
+			mg_free(&result);
+			return 1;
+		}
+	}
+
+	*to = result;
+	return 0;
 }
 
 assoc_records_t
