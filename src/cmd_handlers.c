@@ -5371,6 +5371,7 @@ view_cmd(const cmd_info_t *cmd_info)
 	{
 		if((!curr_stats.preview.on || cmd_info->emark) && !qv_can_show())
 		{
+			/* qv_can_show() printed the error. */
 			return CMDS_ERR_CUSTOM;
 		}
 		if(curr_stats.preview.on && cmd_info->emark)

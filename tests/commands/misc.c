@@ -506,6 +506,13 @@ TEST(view_command)
 	assert_success(cmds_dispatch("view", &lwin, CIT_COMMAND));
 	assert_false(curr_stats.preview.on);
 
+	curr_stats.number_of_windows = 1;
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("view", &lwin, CIT_COMMAND));
+	assert_false(curr_stats.preview.on);
+	assert_string_equal("Cannot view files in one window mode", ui_sb_last());
+	curr_stats.number_of_windows = 2;
+
 	/* Reordering viewers. */
 
 	ui_sb_msg("");
