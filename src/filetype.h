@@ -136,6 +136,16 @@ struct strlist_t;
 /* Gets all existing viewers for file.  Returns the list, which can be empty. */
 struct strlist_t ft_get_viewers(const char file[]);
 
+/* Moves the specified viewer to the top by rotating the subset of viewers that
+ * match the specified files. */
+void ft_move_viewer_to_top(const char file[], const char viewer[]);
+
+/* Moves the bottom viewer to the top, top to the second place, etc. */
+void ft_move_viewer_cycle_prev(const char file[]);
+
+/* Moves the current top viewer to the bottom, second place to the top, etc. */
+void ft_move_viewer_cycle_next(const char file[]);
+
 /* Gets list of programs associated with specified file name.  Returns the list.
  * Caller should free the result by calling ft_assoc_records_free() on it. */
 assoc_records_t ft_get_all_viewers(const char file[]);

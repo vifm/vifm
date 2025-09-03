@@ -165,6 +165,7 @@ static void cmd_A(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_F(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_P(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(modview_info_t *vi, const char action[],
 		const char file_to_view[], int silent);
@@ -279,6 +280,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_G,             {{&cmd_G}, .descr = "scroll to the end"}},
 	{WK_N,             {{&cmd_N}, .descr = "go to previous search match"}},
 	{WK_Q,             {{&cmd_q}, .descr = "leave view mode"}},
+	{WK_P,             {{&cmd_P}, .descr = "preserve the current viewer choice"}},
 	{WK_R,             {{&cmd_R}, .descr = "reload view contents"}},
 	{WK_Z WK_Q,        {{&cmd_q}, .descr = "leave view mode"}},
 	{WK_Z WK_Z,        {{&cmd_q}, .descr = "leave view mode"}},
@@ -1061,6 +1063,25 @@ static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_search_result(key_info.count, 1);
+}
+
+/* Preserves current previewer for the duration of the session. */
+static void
+cmd_P(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(vi->curr_viewer == vi->ext_viewer)
+	{
+		display_error("Can't persist an external viewer.");
+		return;
+	}
+
+	if(vi->raw)
+	{
+		display_error("No viewer to persist, raw previewing is active.");
+		return;
+	}
+
+	ft_move_viewer_to_top(vi->filename, vi->curr_viewer);
 }
 
 /* Handles view data reloading key. */

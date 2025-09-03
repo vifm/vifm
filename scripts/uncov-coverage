@@ -24,14 +24,17 @@ fi
 git stash save --include-untracked 'temporary stash of uncov-coverage script'
 git stash apply --index
 
-if [ -d "$coverage_worktree" ]; then
-    cd "$coverage_worktree/src"
-else
+# add a worktree if it doesn't exist already
+if [ ! -e "$coverage_worktree" ]; then
     git worktree add --detach "$coverage_worktree"
-    cd "$coverage_worktree"
-    ./configure --enable-coverage CFLAGS=-O0
-    cd src
 fi
+cd "$coverage_worktree"
+
+# configure the source tree unless it's already configured
+if [ ! -e build-aux/config.h ]; then
+    ./configure --enable-coverage CFLAGS=-O0
+fi
+cd src
 
 git clean --force -d ..
 git checkout --force stash@{0}^

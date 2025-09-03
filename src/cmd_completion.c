@@ -119,6 +119,7 @@ static void complete_wingo(const char str[]);
 static int wingo_sorter(const char a[], const char b[]);
 static const char * skip_number(const char str[]);
 static void complete_winrun(const char str[]);
+static void complete_view(const char str[]);
 static void complete_from_string_list(const char str[], const char *items[][2],
 		size_t item_count, int ignore_case);
 static void complete_command_name(const char beginning[]);
@@ -321,6 +322,13 @@ non_path_completion(completion_data_t *data)
 			{ "-skip", "skip files with conflicting names" }
 		};
 		complete_from_string_list(arg, lines, ARRAY_LEN(lines), /*ignore_case=*/0);
+	}
+	else if(id == COM_VIEW)
+	{
+		if(!emark)
+		{
+			complete_view(arg);
+		}
 	}
 	else
 	{
@@ -547,7 +555,7 @@ complete_compare(const char str[])
 		{ "bycontents",      "compare by file size and hash" },
 
 		{ "ofboth",          "use files of two views" },
-		{ "ofone",           "use files of two current view only" },
+		{ "ofone",           "use files of the current view only" },
 
 		{ "listall",         "list all files" },
 		{ "listunique",      "list only unique files" },
@@ -1122,6 +1130,17 @@ complete_winrun(const char str[])
 		{ ",", "inactive view" },
 	};
 	complete_from_string_list(str, win_marks, ARRAY_LEN(win_marks), 0);
+}
+
+/* Completes the first argument of :view. */
+static void
+complete_view(const char str[])
+{
+	static const char *lines[][2] = {
+		{ "next", "make the next previewer the default one" },
+		{ "prev", "make the last previewer the default one" },
+	};
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), /*ignore_case=*/0);
 }
 
 /* Performs str completion using items in the list of length item_count. */

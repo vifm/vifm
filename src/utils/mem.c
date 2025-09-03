@@ -57,5 +57,14 @@ mem_shr(void *ptr, size_t count, size_t item_len, int offset)
 	memmove(p + item_len*offset, p, (count - offset)*item_len);
 }
 
+void
+mem_cpy(void *dst, void *src, size_t count, size_t item_len)
+{
+	if(count != 0)
+	{
+		memcpy(dst, src, count*item_len);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -12,6 +12,8 @@
 #include "../../src/utils/string_array.h"
 #include "test.h"
 
+static int name_based_exists(const char name[]);
+
 static int
 prog1_available(const char name[])
 {
@@ -143,6 +145,235 @@ TEST(viewer_kind)
 	assert_int_equal(VK_PASS_THROUGH, ft_viewer_kind("echo %px %py %pw %ph %pd"));
 	assert_int_equal(VK_TEXTUAL, ft_viewer_kind("echo %%pd"));
 	assert_int_equal(VK_GRAPHICAL, ft_viewer_kind("echo %px %py %pw %ph %%pd"));
+}
+
+TEST(viewer_topping_1file_2separate_viewers)
+{
+	assoc_viewers("*.tar.bz2", "prog1");
+	assoc_viewers("*.tar.bz2", "prog2");
+
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+
+	/* Already the top one. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog1");
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+
+	/* Swap the order. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+
+	/* Swap the order again. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+}
+
+TEST(viewer_topping_1file_2joined_viewers)
+{
+	assoc_viewers("*.tar.bz2", "prog1, prog2");
+
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+
+	/* Already the top one. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog1");
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+
+	/* Swap the order. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+
+	/* Swap the order again. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+}
+
+TEST(viewer_topping_2files_2joined_viewers)
+{
+	assoc_viewers("*.tar.bz2,*.zip", "prog1, prog2");
+
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog1", ft_get_viewer("archive.zip"));
+
+	/* Already the top one. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog1");
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog1", ft_get_viewer("archive.zip"));
+
+	/* Swap the order. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog2", ft_get_viewer("archive.zip"));
+
+	/* Swap the order again. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog2", ft_get_viewer("archive.zip"));
+}
+
+TEST(viewer_topping_2files_mixed_viewers)
+{
+	assoc_viewers("*.tar.bz2,*.zip", "prog1, prog2");
+	assoc_viewers("*.zip", "prog4");
+	assoc_viewers("*.tar.bz2", "prog3");
+	assoc_viewers("*", "defprog");
+
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog1", ft_get_viewer("archive.zip"));
+
+	/* Already the top one. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog1");
+	assert_string_equal("prog1", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog1", ft_get_viewer("archive.zip"));
+
+	/* Swap the order. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog3");
+	assert_string_equal("prog3", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog4", ft_get_viewer("archive.zip"));
+
+	/* Swap the order again. */
+	ft_move_viewer_to_top("archive.tar.bz2", "prog2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+	assert_string_equal("prog4", ft_get_viewer("archive.zip"));
+}
+
+TEST(viewer_cycling_1file_overlap_next)
+{
+	assoc_viewers("{*.png}", "unrelated");
+	assoc_viewers("{*.tar.bz2},{*.tar.*},{*.bz2}", "prog,prog2");
+	assoc_viewers("{*}", "defprog");
+
+	assert_string_equal("unrelated", ft_get_viewer("file.png"));
+	assert_string_equal("prog", ft_get_viewer("archive.tar.bz2"));
+
+	ft_move_viewer_cycle_next("archive.tar.bz2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+	ft_move_viewer_cycle_next("archive.tar.bz2");
+	assert_string_equal("defprog", ft_get_viewer("archive.tar.bz2"));
+	ft_move_viewer_cycle_next("archive.tar.bz2");
+	assert_string_equal("prog", ft_get_viewer("archive.tar.bz2"));
+	ft_move_viewer_cycle_next("archive.tar.bz2");
+	assert_string_equal("prog2", ft_get_viewer("archive.tar.bz2"));
+
+	/* Verifying that nothing unexpected has happened to this file. */
+	assert_string_equal("unrelated", ft_get_viewer("file.png"));
+}
+
+TEST(viewer_cycling_1file_overlap_prev)
+{
+	assoc_viewers("{*.png}", "unrelated");
+	assoc_viewers("{*.tar.bz2},{*.tar.*},{*.bz2}", "prog");
+	assoc_viewers("{*}", "defprog");
+
+	assert_string_equal("unrelated", ft_get_viewer("file.png"));
+	assert_string_equal("prog", ft_get_viewer("archive.tar.bz2"));
+
+	ft_move_viewer_cycle_prev("archive.tar.bz2");
+	assert_string_equal("defprog", ft_get_viewer("archive.tar.bz2"));
+	ft_move_viewer_cycle_prev("archive.tar.bz2");
+	assert_string_equal("prog", ft_get_viewer("archive.tar.bz2"));
+	ft_move_viewer_cycle_prev("archive.tar.bz2");
+	assert_string_equal("defprog", ft_get_viewer("archive.tar.bz2"));
+
+	/* Verifying that nothing unexpected has happened to this file. */
+	assert_string_equal("unrelated", ft_get_viewer("file.png"));
+}
+
+TEST(viewer_cycling_1file_overlap)
+{
+	assoc_viewers("{*.mp3}", "prog1");
+	assoc_viewers("{*.mp3}", "prog2");
+	assoc_viewers("{*}", "defprog");
+
+	assert_string_equal("prog1", ft_get_viewer("file.mp3"));
+
+	/* Forwards. */
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("prog2", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("defprog", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("prog1", ft_get_viewer("file.mp3"));
+
+	/* Backwards. */
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("defprog", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("prog2", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("prog1", ft_get_viewer("file.mp3"));
+}
+
+TEST(viewer_reordering_1file_missing_viewers)
+{
+	ft_init(&name_based_exists);
+
+	assoc_viewers("{*.mp3}", "m1");
+	assoc_viewers("{*.mp3}", "p2");
+	assoc_viewers("{*.mp3}", "p3");
+
+	assert_string_equal("p2", ft_get_viewer("file.mp3"));
+
+	/* Forwards. */
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("p3", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("p2", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("p3", ft_get_viewer("file.mp3"));
+	ft_init(NULL);
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("m1", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("p2", ft_get_viewer("file.mp3"));
+
+	ft_init(&name_based_exists);
+
+	/* Backwards. */
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("p3", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("p2", ft_get_viewer("file.mp3"));
+	ft_init(NULL);
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("m1", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("p3", ft_get_viewer("file.mp3"));
+	ft_move_viewer_cycle_prev("file.mp3");
+	assert_string_equal("p2", ft_get_viewer("file.mp3"));
+
+	ft_init(&name_based_exists);
+
+	/* To the top. */
+	ft_move_viewer_to_top("file.mp3", "p3");
+	assert_string_equal("p3", ft_get_viewer("file.mp3"));
+	ft_init(NULL);
+	ft_move_viewer_cycle_next("file.mp3");
+	assert_string_equal("m1", ft_get_viewer("file.mp3"));
+	ft_init(&name_based_exists);
+	assert_string_equal("p2", ft_get_viewer("file.mp3"));
+}
+
+TEST(viewer_reordering_file_with_no_viewers)
+{
+	assoc_viewers("{*.png}", "unrelated");
+
+	assert_string_equal("unrelated", ft_get_viewer("file.png"));
+
+	ft_move_viewer_cycle_prev("archive.tar.bz2");
+	assert_string_equal(NULL, ft_get_viewer("archive.tar.bz2"));
+	ft_move_viewer_cycle_next("archive.tar.bz2");
+	assert_string_equal(NULL, ft_get_viewer("archive.tar.bz2"));
+	ft_move_viewer_to_top("archive.tar.bz2", "nope");
+	assert_string_equal(NULL, ft_get_viewer("archive.tar.bz2"));
+
+	/* Verifying that nothing unexpected has happened to this file. */
+	assert_string_equal("unrelated", ft_get_viewer("file.png"));
+}
+
+static int
+name_based_exists(const char name[])
+{
+	/* 'p' for "present". */
+	return (name[0] == 'p');
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

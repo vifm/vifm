@@ -32,6 +32,9 @@ void mem_shl(void *ptr, size_t count, size_t item_len, int offset);
  *   0 -> 1, 1 -> 2, ... */
 void mem_shr(void *ptr, size_t count, size_t item_len, int offset);
 
+/* A super thin wrapper over memcpy() for copying arrays. */
+void mem_cpy(void *dst, void *src, size_t count, size_t item_len);
+
 #endif /* VIFM__UTILS__MEM_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
