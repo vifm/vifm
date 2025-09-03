@@ -555,7 +555,7 @@ complete_compare(const char str[])
 		{ "bycontents",      "compare by file size and hash" },
 
 		{ "ofboth",          "use files of two views" },
-		{ "ofone",           "use files of two current view only" },
+		{ "ofone",           "use files of the current view only" },
 
 		{ "listall",         "list all files" },
 		{ "listunique",      "list only unique files" },
