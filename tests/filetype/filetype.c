@@ -178,6 +178,20 @@ TEST(existence_check)
 	assert_true(ft_assoc_exists(&filetypes, "*.git", "{}tig"));
 	assert_true(ft_assoc_exists(&filetypes, "*.git", "{help text}tig"));
 	assert_true(ft_assoc_exists(&filetypes, "*.git", "{help text}\t tig"));
+
+	/* Multiple programs and comma escaping. */
+	assoc_programs("*.png", "p1, p2,,", 0, 0);
+	assert_true(ft_assoc_exists(&filetypes, "*.png", "p1"));
+	assert_true(ft_assoc_exists(&filetypes, "*.png", "p2,,"));
+
+	/* Multiple matchers must have the same structure and all elements. */
+	assoc_programs("{*.mp3},{*.flac}", "mplayer", 0, 0);
+	assert_false(ft_assoc_exists(&filetypes, "{*.mp3}", "mplayer"));
+	assert_false(ft_assoc_exists(&filetypes, "{*.flac}", "mplayer"));
+	assert_false(ft_assoc_exists(&filetypes, "*.mp3,*.flac", "mplayer"));
+	assert_false(ft_assoc_exists(&filetypes, "{*.mp3,*.flac}", "mplayer"));
+	assert_false(ft_assoc_exists(&filetypes, "{*.flac},{*.mp3}", "mplayer"));
+	assert_true(ft_assoc_exists(&filetypes, "{*.mp3},{*.flac}", "mplayer"));
 }
 
 TEST(pattern_list, IF(has_mime_type_detection))
