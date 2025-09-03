@@ -354,8 +354,7 @@ make_pivot_first(reordering_data_t *d)
 			sizeof(d->list[0]));
 	d->j += fileviewers.count - d->i;
 
-	mem_cpy(&d->list[d->j], &d->prefix[0], DA_SIZE(d->prefix),
-			sizeof(d->list[0]));
+	mem_cpy(&d->list[d->j], d->prefix, DA_SIZE(d->prefix), sizeof(d->list[0]));
 	d->j += DA_SIZE(d->prefix);
 
 	assert(d->j == fileviewers.count);
@@ -419,8 +418,7 @@ make_pivot_last(reordering_data_t *d)
 			sizeof(d->list[0]));
 	d->j += fileviewers.count - d->i;
 
-	mem_cpy(&d->list[d->j], &d->prefix[0], DA_SIZE(d->prefix),
-			sizeof(d->prefix[0]));
+	mem_cpy(&d->list[d->j], d->prefix, DA_SIZE(d->prefix), sizeof(d->prefix[0]));
 	d->j += DA_SIZE(d->prefix);
 
 	free(fileviewers.list);
