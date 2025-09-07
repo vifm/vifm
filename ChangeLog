@@ -69,6 +69,8 @@
 
 	Display an error on trying to switch from external preview to raw mode.
 
+	Updated sample vifmrc files to use `vi` as a last resort if it exists.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
