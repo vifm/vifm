@@ -7,6 +7,8 @@
 
 	Display an error on trying to switch from external preview to raw mode.
 
+	Updated sample vifmrc files to use `vi` as a last resort if it exists.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
