@@ -1,6 +1,6 @@
 " Mail file type extension to pick files for attachments via vifm
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: June 22, 2020
+" Last Change: 28 September 2025
 
 " Insert attachment picked via vifm after 'Subject' header
 function! s:AddMailAttachments()
@@ -28,7 +28,7 @@ function! s:AddMailAttachments()
 		let callback = { 'listf': l:listf }
 		function! callback.on_exit(id, code, event)
 			buffer #
-			silent! bdelete! #
+			silent! bwipeout! #
 			call s:HandleRunResults(a:code, self.listf)
 		endfunction
 		enew
