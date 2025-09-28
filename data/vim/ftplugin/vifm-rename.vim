@@ -1,6 +1,6 @@
 " Filetype plugin for vifm rename buffer
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: May 29, 2021
+" Last Change: 28 September 2025
 
 if exists("b:did_ftplugin")
 	finish
@@ -73,7 +73,7 @@ function! s:QuitIfOnlyWindow()
 
 	" Just close tab with this single window or quit Vim with last tab
 	if tabpagenr('$') == 1
-		bdelete
+		bwipeout
 		quit
 	else
 		close
