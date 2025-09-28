@@ -15,7 +15,7 @@ else
     export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
 fi
 
-# Tell Vifm it's used from an AppImage and what it's root directory is.
+# Tell Vifm it's used from an AppImage and what its root directory is.
 export VIFM_APPDIR_ROOT=$APPDIR
 
 # Make ncurses look into the bundled terminfo.  Using $TERMINFO_DIRS is better
@@ -27,5 +27,8 @@ if [ -z "$TERMINFO_DIRS" ]; then
 else
     export TERMINFO_DIRS="$TERMINFO_DIRS:$APPDIR/usr/share/terminfo"
 fi
+
+# Expose bundled vifm-pause, other helpers and the bundled binary.
+PATH="$APPDIR/usr/bin:$PATH"
 
 exec "$APPDIR/usr/bin/vifm" ${@+"$@"}

@@ -15,7 +15,7 @@ working solutions which are set in stone user is provided with a set of
 means for customization of Vifm to one's likings.  Though builtin
 functionality should be enough for most of use cases.
 
-_Version 0.15.  This file last updated on 12 June 2025._
+_Version 0.15.  This file last updated on 28 September 2025._
 
 ## Resources and Contacts ##
 
@@ -102,7 +102,8 @@ file as executable.
 
 As a convenience, here are commands that download AppImage binary for the latest
 release and save it as `~/.local/bin/vifm` (thanks to [@benelan], see
-[GitHub#975]).
+[GitHub#975]).  **Note** that helpers like `vifm-pause` (used by `:!!`) aren't
+accessible in AppImage before v0.15.
 
 #### `curl` + `sed` ####
 

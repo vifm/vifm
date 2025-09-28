@@ -157,6 +157,9 @@
 	Fixed a small memory leak on trying to display a map menu which doesn't
 	show up because it would be empty.
 
+	Fixed `vifm-pause` and other helpers not being available from within
+	AppImage.  Thanks to Marcin Kowalski (a.k.a., mrkowalski).
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
