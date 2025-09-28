@@ -21,9 +21,9 @@ _Version 0.15.  This file last updated on 28 September 2025._
 
 | Usage   | Link
 | :---:   | :--:
-| Website | https://vifm.info/
-| Wiki    | https://wiki.vifm.info/
-| Q & A   | https://q2a.vifm.info/
+| Website | <https://vifm.info/>
+| Wiki    | <https://wiki.vifm.info/>
+| Q & A   | <https://q2a.vifm.info/>
 
 ### Communication ###
 
