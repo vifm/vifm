@@ -25,6 +25,9 @@
 	Fixed a small memory leak on trying to display a map menu which doesn't
 	show up because it would be empty.
 
+	Fixed `vifm-pause` and other helpers not being available from within
+	AppImage.  Thanks to Marcin Kowalski (a.k.a., mrkowalski).
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
