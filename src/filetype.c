@@ -354,8 +354,7 @@ make_pivot_first(reordering_data_t *d)
 			sizeof(d->list[0]));
 	d->j += fileviewers.count - d->i;
 
-	mem_cpy(&d->list[d->j], &d->prefix[0], DA_SIZE(d->prefix),
-			sizeof(d->list[0]));
+	mem_cpy(&d->list[d->j], d->prefix, DA_SIZE(d->prefix), sizeof(d->list[0]));
 	d->j += DA_SIZE(d->prefix);
 
 	assert(d->j == fileviewers.count);
@@ -419,8 +418,7 @@ make_pivot_last(reordering_data_t *d)
 			sizeof(d->list[0]));
 	d->j += fileviewers.count - d->i;
 
-	mem_cpy(&d->list[d->j], &d->prefix[0], DA_SIZE(d->prefix),
-			sizeof(d->prefix[0]));
+	mem_cpy(&d->list[d->j], d->prefix, DA_SIZE(d->prefix), sizeof(d->prefix[0]));
 	d->j += DA_SIZE(d->prefix);
 
 	free(fileviewers.list);
@@ -871,6 +869,7 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		char *mg_str = ft_mg_to_string(&assoc.mg);
 		if(mg_str == NULL)
 		{
+			free(undoubled);
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return 0;
 		}

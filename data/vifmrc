@@ -1,6 +1,6 @@
 " vim: filetype=vifm :
 "
-" Sample configuration file for vifm (last updated: 11 May, 2025)
+" Sample configuration file for vifm (last updated: 7 September 2025)
 "
 " You can edit this file by hand.  The " character at the beginning of a line
 " comments out the line.  Blank lines are ignored.  The basic format for each
@@ -43,6 +43,8 @@ elseif executable('vile')
 elseif $EDITOR != ''
     echo 'Note: using `'.$EDITOR.'` as an editor'
     let &vicmd = $EDITOR
+elseif executable('vi')
+    set vicmd=vi
 endif
 
 " This makes vifm perform file operations on its own instead of relying on

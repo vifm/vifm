@@ -1,8 +1,8 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2024 October 25
+" Last Change: 28 September 2025
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
-" Last Change: 2001 November 29
+" Last Change: 29 November 2001
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -70,7 +70,7 @@ if !has('nvim') && exists('*term_start')
 		else
 			silent! buffer #
 		endif
-		silent! bdelete! #
+		silent! bwipeout! #
 		if data.split
 			silent! close
 		endif
@@ -165,7 +165,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 				else
 					silent! buffer #
 				endif
-				silent! bdelete! #
+				silent! bwipeout! #
 				if self.split
 					silent! close
 				endif
@@ -500,7 +500,7 @@ if get(g:, 'vifm_replace_netrw')
 			else
 				enew
 			endif
-			silent! bdelete! #
+			silent! bwipeout! #
 
 			let embed_split = get(g:, 'vifm_embed_split', 0)
 			let g:vifm_embed_split = 0

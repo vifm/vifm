@@ -69,6 +69,8 @@
 
 	Display an error on trying to switch from external preview to raw mode.
 
+	Updated sample vifmrc files to use `vi` as a last resort if it exists.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
@@ -154,6 +156,13 @@
 
 	Fixed a small memory leak on trying to display a map menu which doesn't
 	show up because it would be empty.
+
+	Fixed `vifm-pause` and other helpers not being available from within
+	AppImage.  Thanks to Marcin Kowalski (a.k.a., mrkowalski).
+
+	Fixed vifm.vim not cleaning up buffers properly when used as a netrw
+	replacement.  Thanks to Ivan Shapovalov (a.k.a., intelfx) and
+	pascualpobil.
 
 0.14-beta to 0.14 (2025-02-08)
 
