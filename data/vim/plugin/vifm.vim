@@ -1,5 +1,5 @@
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2024 October 25
+" Last Change: 2025 September 28
 
 " Author: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
@@ -500,7 +500,7 @@ if get(g:, 'vifm_replace_netrw')
 			else
 				enew
 			endif
-			silent! bdelete! #
+			silent! bwipeout! #
 
 			let embed_split = get(g:, 'vifm_embed_split', 0)
 			let g:vifm_embed_split = 0
