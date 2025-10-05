@@ -31,7 +31,7 @@
 	editor automatically when "path" value is included in the value.  Patch by
 	Kaspars Vandans.
 
-	Updated utf8proc to v2.10.0.
+	Updated utf8proc to v2.11.2.
 
 	Made documentation on which :commands can have comments a bit more
 	verbose.
