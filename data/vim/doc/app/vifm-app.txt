@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 December 20
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 December 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -429,10 +429,10 @@ zd                                             *vifm-zd*
     returned unless view is reloaded.
 
 =regular expression                            *vifm-=*
-    filter out files that don't match regular expression.  Whether view is
-    updated as regular expression is changed depends on the value of the
-    |vifm-'incsearch'| option.  This kind of filter is automatically reset
-    when directory is changed.
+    only keep files matching the regular expression.  This is called a local
+    filter.  Whether view is updated as regular expression is changed depends
+    on the value of the |vifm-'incsearch'| option.  This kind of filter is
+    automatically reset when directory is changed.
 
 Tree-related Keys~
 

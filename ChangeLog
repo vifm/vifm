@@ -78,6 +78,9 @@
 	Fall back to using standard::fast-content-type from GLib if
 	standard::content-type is missing.  Patch by Jan Palus (a.k.a. jpalus).
 
+	Improved description of the local filter in the documentation.  Thanks to
+	CaptainFantastic.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
