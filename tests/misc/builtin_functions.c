@@ -119,12 +119,14 @@ TEST(expand_does_not_need_double_escaping)
 	ASSERT_OK("expand('%c:p:gs!/!\\\\!')", "\\\\dir\\\\file");
 }
 
-TEST(system_catches_stdout)
+/* 32-bit Wine doesn't catch output or maybe every time. */
+TEST(system_catches_stdout, IF(not_wine32))
 {
 	ASSERT_OK("system('echo a')", "a");
 }
 
-TEST(system_catches_stderr)
+/* 32-bit Wine doesn't catch output or maybe every time. */
+TEST(system_catches_stderr, IF(not_wine32))
 {
 #ifndef _WIN32
 	ASSERT_OK("system('echo a 1>&2')", "a");
@@ -135,7 +137,8 @@ TEST(system_catches_stderr)
 #endif
 }
 
-TEST(system_catches_stdout_and_err)
+/* 32-bit Wine doesn't catch output or maybe every time. */
+TEST(system_catches_stdout_and_err, IF(not_wine32))
 {
 #ifndef _WIN32
 	ASSERT_OK("system('echo a && echo b 1>&2')", "a\nb");
@@ -146,8 +149,8 @@ TEST(system_catches_stdout_and_err)
 #endif
 }
 
-/* Something doesn't work on 32-bit Wine. */
-TEST(term_catches_stdout, IF(not_wine))
+/* 32-bit Wine doesn't catch output or maybe every time. */
+TEST(term_catches_stdout, IF(not_wine32))
 {
 	ASSERT_OK("term('echo a')", "a");
 }
