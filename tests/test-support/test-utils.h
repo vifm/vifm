@@ -116,6 +116,10 @@ int not_windows(void);
  * returned. */
 int not_wine(void);
 
+/* Whether running outside of WINE or in 32-bit WINE.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int not_wine32(void);
+
 /* Attempts to switch to UTF-8 capable locale.  Use utf8_locale() to check if
  * successful. */
 void try_enable_utf8_locale(void);
