@@ -12,6 +12,9 @@
 	Fall back to using standard::fast-content-type from GLib if
 	standard::content-type is missing.  Patch by Jan Palus (a.k.a. jpalus).
 
+	Improved description of the local filter in the documentation.  Thanks to
+	CaptainFantastic.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
