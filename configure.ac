@@ -680,7 +680,8 @@ if test "$use_glib" = "yes"; then
             LIBS="$LIBS $(pkg-config --libs glib-2.0 gio-2.0)"
             AC_CHECK_HEADER([gio/gio.h], [], [AC_MSG_ERROR([gio/gio.h header not found.])], [[#include <gio/gio.h>]])
             AC_CHECK_HEADER([glib.h], [], [AC_MSG_ERROR([glib.h header not found.])], [[#include <glib.h>]])
-            AC_CHECK_FUNC([g_file_info_get_content_type], [], [AC_MSG_ERROR([g_file_info_get_content_type() function not found.])])
+            AC_CHECK_FUNC([g_file_info_has_attribute], [], [AC_MSG_ERROR([g_file_info_has_attribute() function not found.])])
+            AC_CHECK_FUNC([g_file_info_get_attribute_string], [], [AC_MSG_ERROR([g_file_info_get_attribute_string() function not found.])])
             AC_CHECK_FUNC([g_file_new_for_path], [], [AC_MSG_ERROR([g_file_new_for_path() function not found.])])
             AC_CHECK_FUNC([g_file_query_info], [], [AC_MSG_ERROR([g_file_query_info() function not found.])])
             AC_CHECK_FUNC([g_object_unref], [], [AC_MSG_ERROR([g_object_unref() function not found.])])
