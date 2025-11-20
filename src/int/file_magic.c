@@ -180,6 +180,13 @@ get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
 #ifdef HAVE_GLIB
 	GFile *file;
 	GFileInfo *info;
+	int result;
+	static const char *attrs[] = {
+		G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+		G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE,
+		NULL
+	};
+	const char **attr;
 
 	file = g_file_new_for_path(filename);
 	info = g_file_query_info(file, "standard::", G_FILE_QUERY_INFO_NONE, NULL,
@@ -190,10 +197,20 @@ get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
 		return -1;
 	}
 
-	copy_str(buf, buf_sz, g_file_info_get_content_type(info));
+	result = -1;
+	for(attr = attrs; *attr != NULL; ++attr)
+	{
+		if(g_file_info_has_attribute(info, *attr))
+		{
+			copy_str(buf, buf_sz, g_file_info_get_attribute_string(info, *attr));
+			result = 0;
+			break;
+		}
+	}
+
 	g_object_unref(info);
 	g_object_unref(file);
-	return 0;
+	return result;
 #else /* #ifdef HAVE_GLIB */
 	return -1;
 #endif /* #ifdef HAVE_GLIB */
