@@ -9,6 +9,9 @@
 
 	Updated sample vifmrc files to use `vi` as a last resort if it exists.
 
+	Fall back to using standard::fast-content-type from GLib if
+	standard::content-type is missing.  Patch by Jan Palus (a.k.a. jpalus).
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
@@ -31,6 +34,9 @@
 	Fixed vifm.vim not cleaning up buffers properly when used as a netrw
 	replacement.  Thanks to Ivan Shapovalov (a.k.a., intelfx) and
 	pascualpobil.
+
+	Fixed a crash if GLib didn't return a file type.  Patch by Jan
+	Palus (a.k.a. jpalus).
 
 0.14.2 to 0.14.3 (2025-06-04)
 
