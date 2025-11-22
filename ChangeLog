@@ -161,10 +161,10 @@
 	show up because it would be empty.
 
 	Fixed `vifm-pause` and other helpers not being available from within
-	AppImage.  Thanks to Marcin Kowalski (a.k.a., mrkowalski).
+	AppImage.  Thanks to Marcin Kowalski (a.k.a. mrkowalski).
 
 	Fixed vifm.vim not cleaning up buffers properly when used as a netrw
-	replacement.  Thanks to Ivan Shapovalov (a.k.a., intelfx) and
+	replacement.  Thanks to Ivan Shapovalov (a.k.a. intelfx) and
 	pascualpobil.
 
 	Fixed a crash if GLib didn't return a file type.  Patch by Jan
