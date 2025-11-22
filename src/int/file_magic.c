@@ -57,7 +57,7 @@ static int lookup_in_cache(fsddata_t *cache, const char path[],
 		filemon_t *filemon, cache_data_t **data);
 static void update_cache(fsddata_t *cache, const char path[],
 		const char mimetype[], filemon_t *filemon, cache_data_t *data);
-static int get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz);
+static int get_glib_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_magic_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_file_mimetype(const char filename[], char buf[], size_t buf_sz);
 static assoc_records_t get_handlers(const char mime_type[]);
@@ -96,7 +96,7 @@ get_mimetype(const char file[], int resolve_symlinks)
 		return mimetype;
 	}
 
-	if(get_gtk_mimetype(file, mimetype, sizeof(mimetype)) == -1)
+	if(get_glib_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 	{
 		if(get_magic_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 		{
@@ -175,11 +175,18 @@ update_cache(fsddata_t *cache, const char path[], const char mimetype[],
 }
 
 static int
-get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
+get_glib_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
 #ifdef HAVE_GLIB
 	GFile *file;
 	GFileInfo *info;
+	int result;
+	static const char *attrs[] = {
+		G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+		G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE,
+		NULL
+	};
+	const char **attr;
 
 	file = g_file_new_for_path(filename);
 	info = g_file_query_info(file, "standard::", G_FILE_QUERY_INFO_NONE, NULL,
@@ -190,10 +197,20 @@ get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
 		return -1;
 	}
 
-	copy_str(buf, buf_sz, g_file_info_get_content_type(info));
+	result = -1;
+	for(attr = attrs; *attr != NULL; ++attr)
+	{
+		if(g_file_info_has_attribute(info, *attr))
+		{
+			copy_str(buf, buf_sz, g_file_info_get_attribute_string(info, *attr));
+			result = 0;
+			break;
+		}
+	}
+
 	g_object_unref(info);
 	g_object_unref(file);
-	return 0;
+	return result;
 #else /* #ifdef HAVE_GLIB */
 	return -1;
 #endif /* #ifdef HAVE_GLIB */

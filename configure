@@ -11179,12 +11179,21 @@ else case e in #(
 esac
 fi
 
-            ac_fn_c_check_func "$LINENO" "g_file_info_get_content_type" "ac_cv_func_g_file_info_get_content_type"
-if test "x$ac_cv_func_g_file_info_get_content_type" = xyes
+            ac_fn_c_check_func "$LINENO" "g_file_info_has_attribute" "ac_cv_func_g_file_info_has_attribute"
+if test "x$ac_cv_func_g_file_info_has_attribute" = xyes
 then :
 
 else case e in #(
-  e) as_fn_error $? "g_file_info_get_content_type() function not found." "$LINENO" 5 ;;
+  e) as_fn_error $? "g_file_info_has_attribute() function not found." "$LINENO" 5 ;;
+esac
+fi
+
+            ac_fn_c_check_func "$LINENO" "g_file_info_get_attribute_string" "ac_cv_func_g_file_info_get_attribute_string"
+if test "x$ac_cv_func_g_file_info_get_attribute_string" = xyes
+then :
+
+else case e in #(
+  e) as_fn_error $? "g_file_info_get_attribute_string() function not found." "$LINENO" 5 ;;
 esac
 fi
 
