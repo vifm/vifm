@@ -57,7 +57,7 @@ static int lookup_in_cache(fsddata_t *cache, const char path[],
 		filemon_t *filemon, cache_data_t **data);
 static void update_cache(fsddata_t *cache, const char path[],
 		const char mimetype[], filemon_t *filemon, cache_data_t *data);
-static int get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz);
+static int get_glib_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_magic_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_file_mimetype(const char filename[], char buf[], size_t buf_sz);
 static assoc_records_t get_handlers(const char mime_type[]);
@@ -96,7 +96,7 @@ get_mimetype(const char file[], int resolve_symlinks)
 		return mimetype;
 	}
 
-	if(get_gtk_mimetype(file, mimetype, sizeof(mimetype)) == -1)
+	if(get_glib_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 	{
 		if(get_magic_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 		{
@@ -175,7 +175,7 @@ update_cache(fsddata_t *cache, const char path[], const char mimetype[],
 }
 
 static int
-get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
+get_glib_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
 #ifdef HAVE_GLIB
 	GFile *file;
