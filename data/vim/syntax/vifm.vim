@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: June 15, 2025
+" Last Change: December 10, 2025
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -172,7 +172,7 @@ syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ tabline tabprefix tabscope tabstop tabsuffix tal timefmt timeoutlen title
 		\ tm trash trashdir ts tuioptions to uioptions undolevels ul vicmd
 		\ viewcolumns vifminfo vimhelp vixcmd wildinc wildmenu wmnu wildstyle
-		\ wordchars wrap wrapscan ws
+		\ wordchars wrap wrapscan ws extpromptpath
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks
@@ -180,7 +180,7 @@ syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks
 		\ noic noincsearch nois nolaststatus nols nolsview nomillerview nonumber
 		\ nonu noquickview norelativenumber nornu noscrollbind noscb norunexec
 		\ nosmartcase noscs nosortnumbers nosyscalls notitle notrash novimhelp
-		\ nowildmenu nowmnu nowrap nowrapscan nows
+		\ nowildmenu nowmnu nowrap nowrapscan nows noextpromptpath
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautocd invautochpos invcf invchaselinks
@@ -189,7 +189,7 @@ syntax keyword vifmOption contained invautocd invautochpos invcf invchaselinks
 		\ invmillerview invnumber invnu invquickview invrelativenumber invrnu
 		\ invscrollbind invscb invrunexec invsmartcase invscs invsortnumbers
 		\ invsyscalls invtitle invtrash invvimhelp invwildmenu invwmnu invwrap
-		\ invwrapscan invws
+		\ invwrapscan invws invextpromptpath
 
 " Expressions
 syntax region vifmStatement start='^\(\s\|:\)*'

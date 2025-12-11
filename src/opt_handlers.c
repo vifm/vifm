@@ -255,6 +255,7 @@ static int parse_endpoint(const char **str, int *endpoint);
 static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
+static void extpromptpath_handler(OPT_OP op, optval_t val);
 
 /* Possible values of 'caseoptions'. */
 static const char *caseoptions_vals[][2] = {
@@ -925,6 +926,10 @@ options[] = {
 	{ "wrapscan", "ws", "wrap search around top/bottom",
 	  OPT_BOOL, 0, NULL, &wrapscan_handler, NULL,
 	  { .ref.bool_val = &cfg.wrap_scan },
+	},
+	{ "extpromptpath", "", "open path/file name input in external editor",
+  	OPT_BOOL, 0, NULL, &extpromptpath_handler, NULL,
+  	{ .ref.bool_val = &cfg.ext_prompt_path },
 	},
 
 	/* Local options must be grouped here. */
@@ -4123,6 +4128,13 @@ wrapscan_handler(OPT_OP op, optval_t val)
 {
 	cfg.wrap_scan = val.bool_val;
 }
+
+static void
+extpromptpath_handler(OPT_OP op, optval_t val)
+{
+	cfg.ext_prompt_path = val.bool_val;
+}
+
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

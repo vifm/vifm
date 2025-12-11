@@ -1,4 +1,4 @@
-.TH VIFM 1 "2 September 2025" "vifm 0.15"
+.TH VIFM 1 "10 December 2025" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5672,6 +5672,14 @@ type: boolean
 default: true
 .br
 Searches wrap around end of the list.
+.TP
+.BI "'extpromptpath'"
+type: boolean
+.br
+default: false
+.br
+When vifm prompts to amend paths or file names, use the external editor instead
+of the built-in line-prompt. This may happen, for example, during renaming.
 .\" ---------------------------------------------------------------------------
 .SH Mappings
 .\" ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 September 2
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 December 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4791,7 +4791,15 @@ default: true
 
 Searches wrap around end of the list.
 
---------------------------------------------------------------------------------
+                                               *vifm-'extpromptpath'*
+extpromptpath
+type: boolean
+default: false
+
+When vifm prompts to amend paths, use the external editor instead of the
+built-in line-prompt. This may happen, for example, during renaming.
+-------------------------------------------------------------------------------
+
 *vifm-mappings*
 
 A user mapping like `nnoremap lhs rhs` defines a substitution of the

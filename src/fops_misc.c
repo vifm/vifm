@@ -591,8 +591,8 @@ retarget_one(view_t *view)
 		return 0;
 	}
 
-	fops_line_prompt("Link target: ", linkto, &change_link_cb, /*cb_arg=*/NULL,
-			&complete_filename);
+	fops_prompt_path("Link target: ", linkto, &change_link_cb, /*cb_arg=*/NULL, 
+		&complete_filename);
 	return 0;
 }
 

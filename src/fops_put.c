@@ -1178,8 +1178,9 @@ prompt_dst_name(const char src_name[])
 	char prompt[128 + PATH_MAX];
 
 	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
-	fops_line_prompt(prompt, src_name, &prompt_dst_name_cb, /*cb_arg=*/NULL,
-			/*complete=*/NULL);
+	
+	fops_prompt_path(prompt, src_name, &prompt_dst_name_cb, /*cb_arg=*/NULL, 
+		/*complete=*/NULL);
 }
 
 /* Callback for line prompt result. */

@@ -27,6 +27,8 @@
 	Added optional "next" and "prev" actions to :view command to switch
 	default previewer for the current and similar files.
 
+	Added extpromptpath option to open path input boxes in external editor.
+
 	Updated utf8proc to v2.10.0.
 
 	Made documentation on which :commands can have comments a bit more

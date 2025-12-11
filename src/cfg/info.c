@@ -2372,6 +2372,7 @@ store_global_options(JSON_Object *root)
 	append_dstr(options, format_str("wordchars=%s",
 			escape_spaces(vle_opts_get("wordchars", OPT_GLOBAL))));
 	append_dstr(options, format_str("%swrap", cfg.wrap_quick_view ? "" : "no"));
+	append_dstr(options, format_str("%sextpromptpath", cfg.ext_prompt_path ? "" : "no"));
 }
 
 /* Serializes view-specific options into JSON table. */
