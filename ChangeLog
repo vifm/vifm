@@ -28,6 +28,7 @@
 	default previewer for the current and similar files.
 
 	Added extpromptpath option to open path input boxes in external editor.
+	Patch by Kaspars Vandans.
 
 	Updated utf8proc to v2.10.0.
 

@@ -133,6 +133,7 @@ static void cvoptions_handler(OPT_OP op, optval_t val);
 static void deleteprg_handler(OPT_OP op, optval_t val);
 static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
+static void extpromptpath_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
 static void fillchars_handler(OPT_OP op, optval_t val);
 static void load_fillchars(void);
@@ -255,7 +256,6 @@ static int parse_endpoint(const char **str, int *endpoint);
 static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
-static void extpromptpath_handler(OPT_OP op, optval_t val);
 
 /* Possible values of 'caseoptions'. */
 static const char *caseoptions_vals[][2] = {
@@ -928,8 +928,8 @@ options[] = {
 	  { .ref.bool_val = &cfg.wrap_scan },
 	},
 	{ "extpromptpath", "", "open path/file name input in external editor",
-  	OPT_BOOL, 0, NULL, &extpromptpath_handler, NULL,
-  	{ .ref.bool_val = &cfg.ext_prompt_path },
+	  OPT_BOOL, 0, NULL, &extpromptpath_handler, NULL,
+	  { .ref.bool_val = &cfg.ext_prompt_path },
 	},
 
 	/* Local options must be grouped here. */
@@ -2153,6 +2153,12 @@ dotdirs_handler(OPT_OP op, optval_t val)
 {
 	cfg.dot_dirs = val.set_items;
 	update_screen(UT_FULL);
+}
+
+static void
+extpromptpath_handler(OPT_OP op, optval_t val)
+{
+	cfg.ext_prompt_path = val.bool_val;
 }
 
 static void
@@ -4128,13 +4134,6 @@ wrapscan_handler(OPT_OP op, optval_t val)
 {
 	cfg.wrap_scan = val.bool_val;
 }
-
-static void
-extpromptpath_handler(OPT_OP op, optval_t val)
-{
-	cfg.ext_prompt_path = val.bool_val;
-}
-
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -67,6 +67,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "cmd_core.h"
 #include "filelist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
@@ -76,7 +77,6 @@
 #include "trash.h"
 #include "types.h"
 #include "undo.h"
-#include "cmd_core.h"
 
 /* 10 to the power of number of digits after decimal point to take into account
  * on progress percentage counting. */
@@ -166,6 +166,7 @@ TSTATIC char ** edit_list(struct ext_edit_t *ext_edit, size_t orig_len,
 		char *orig[], int *edited_len, int load_always);
 TSTATIC progress_data_t * alloc_progress_data(int bg, void *info);
 static long long time_in_ms(void);
+static void fops_extedit_path(const char path[], fo_prompt_cb cb, void *cb_arg);
 
 line_prompt_func fops_line_prompt;
 options_prompt_func fops_options_prompt;
@@ -1434,11 +1435,26 @@ fops_is_dir_writable(DirRole dir_role, const char path[])
 	return 0;
 }
 
-/* Queries prompt input using external editor. 
- * Analogous to cmdline/extedit_prompt. */
 void
+fops_prompt_path(const char prompt[], const char path[], fo_prompt_cb cb,
+	void *cb_arg, fo_complete_cmd_func complete)
+{
+	if(cfg.ext_prompt_path)
+	{
+		fops_extedit_path(path, cb, cb_arg);
+	}
+	else
+	{
+		fops_line_prompt(prompt, path, cb, cb_arg, complete);
+	}
+}
+
+/* Prompts the user to amend path using the external editor. */
+static void
 fops_extedit_path(const char path[], fo_prompt_cb cb, void *cb_arg)
 {
+	/* XXX: modes/cmdline.c:extedit_prompt() is similar to this function. */
+
 	char *ext_cmd = cmds_get_ext(path, /*line_pos=*/0, CIT_PROMPT_INPUT);
 
 	if(ext_cmd != NULL)
@@ -1455,22 +1471,6 @@ fops_extedit_path(const char path[], fo_prompt_cb cb, void *cb_arg)
 	cb(ext_cmd, cb_arg);
 	free(ext_cmd);
 }
-
-/* Prompts the user to input/amend a path. */
-void
-fops_prompt_path(const char prompt[], const char path[], fo_prompt_cb cb, 
-	void *cb_arg, fo_complete_cmd_func complete) 
-{
-	if(cfg.ext_prompt_path)
-	{
-		fops_extedit_path(path, cb, cb_arg);
-	}
-	else
-	{
-		fops_line_prompt(prompt, path, cb, cb_arg, complete);
-	}
-}
-
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

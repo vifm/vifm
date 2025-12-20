@@ -160,7 +160,7 @@ syntax match vifmHiGroups contained
 " Options
 syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ cdpath cd chaselinks classify columns co confirm cf cpoptions cpo
-		\ cvoptions deleteprg dotdirs dotfiles dirsize fastrun fillchars fcs findprg
+		\ cvoptions deleteprg dotdirs dotfiles dirsize extpromptpath fastrun fillchars fcs findprg
 		\ followlinks fusehome gdefault grepprg histcursor history hi hloptions
 		\ hlsearch hls iec ignorecase ic iooptions incsearch is laststatus lines
 		\ locateprg ls lsoptions lsview mediaprg milleroptions millerview
@@ -172,24 +172,24 @@ syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ tabline tabprefix tabscope tabstop tabsuffix tal timefmt timeoutlen title
 		\ tm trash trashdir ts tuioptions to uioptions undolevels ul vicmd
 		\ viewcolumns vifminfo vimhelp vixcmd wildinc wildmenu wmnu wildstyle
-		\ wordchars wrap wrapscan ws extpromptpath
+		\ wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks
-		\ nodotfiles nofastrun nofollowlinks nohlsearch nohls noiec noignorecase
+		\ nodotfiles noextpromptpath nofastrun nofollowlinks nohlsearch nohls noiec noignorecase
 		\ noic noincsearch nois nolaststatus nols nolsview nomillerview nonumber
 		\ nonu noquickview norelativenumber nornu noscrollbind noscb norunexec
 		\ nosmartcase noscs nosortnumbers nosyscalls notitle notrash novimhelp
-		\ nowildmenu nowmnu nowrap nowrapscan nows noextpromptpath
+		\ nowildmenu nowmnu nowrap nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautocd invautochpos invcf invchaselinks
-		\ invdotfiles invfastrun invfollowlinks invhlsearch invhls inviec
+		\ invdotfiles invextpromptpath invfastrun invfollowlinks invhlsearch invhls inviec
 		\ invignorecase invic invincsearch invis invlaststatus invls invlsview
 		\ invmillerview invnumber invnu invquickview invrelativenumber invrnu
 		\ invscrollbind invscb invrunexec invsmartcase invscs invsortnumbers
 		\ invsyscalls invtitle invtrash invvimhelp invwildmenu invwmnu invwrap
-		\ invwrapscan invws invextpromptpath
+		\ invwrapscan invws
 
 " Expressions
 syntax region vifmStatement start='^\(\s\|:\)*'

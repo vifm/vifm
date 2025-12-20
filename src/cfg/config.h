@@ -399,7 +399,8 @@ typedef struct config_t
 	int auto_ch_pos; /* Weird option that drops positions from histories. */
 	int ch_pos_on;   /* List of cases when historical cursor position is used. */
 
-	/* Whether to open path/filename amendment prompts in external editor */
+	/* Whether to open path/filename amendment prompts in external editor
+	 * automatically. */
 	int ext_prompt_path;
 }
 config_t;
