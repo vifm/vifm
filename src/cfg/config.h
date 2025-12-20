@@ -171,6 +171,15 @@ typedef enum
 }
 ColorWhat;
 
+/* Conditions to open external editor instead of builtin command-line. */
+typedef enum
+{
+	EP_NONE        =      0, /* Never. */
+	EP_PATH        = 1 << 0, /* On path/filename amendment prompts. */
+	NUM_EXT_PROMPT =      1  /* Number of options for compile checks. */
+}
+ExtPrompt;
+
 /* File decoration description. */
 typedef struct
 {
@@ -398,6 +407,9 @@ typedef struct config_t
 	/* Control over automatic cursor positioning. */
 	int auto_ch_pos; /* Weird option that drops positions from histories. */
 	int ch_pos_on;   /* List of cases when historical cursor position is used. */
+
+	/* When to open external editor instead of builtin command-line. */
+	int ext_prompt; /* Bit mask of EP_* (ExtPrompt enum). */
 }
 config_t;
 

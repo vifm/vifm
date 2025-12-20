@@ -222,6 +222,11 @@ const char * fops_get_dst_dir(const struct view_t *view, int at);
  * returned. */
 int fops_is_dir_writable(DirRole dir_role, const char path[]);
 
+/* Prompts the user to amend path either on command-line or via the external
+ * editor. */
+void fops_prompt_path(const char prompt[], const char path[], fo_prompt_cb cb,
+	   void *cb_arg, fo_complete_cmd_func complete);
+
 TSTATIC_DEFS(
 	struct ext_edit_t;
 	struct progress_data_t;

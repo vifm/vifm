@@ -186,3 +186,6 @@ more up-to-date with modern recommendations.
 Jan Palus (a.k.a. jpalus) fixed a crash when GLib doesn't return a file type and
 added a fallback to standard::fast-content-type if standard::content-type is
 missing.
+
+Kaspars Vandans implemented an option for automatically spawning external
+editor for path prompts.

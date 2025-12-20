@@ -2254,6 +2254,8 @@ store_global_options(JSON_Object *root)
 			escape_spaces(vle_opts_get("cpoptions", OPT_GLOBAL))));
 	append_dstr(options, format_str("deleteprg=%s",
 				escape_spaces(cfg.delete_prg)));
+	append_dstr(options, format_str("extprompt=%s",
+				escape_spaces(vle_opts_get("extprompt", OPT_GLOBAL))));
 	append_dstr(options, format_str("%sfastrun", cfg.fast_run ? "" : "no"));
 	append_dstr(options, format_str("fillchars+=vborder:%s,hborder:%s",
 				escape_spaces(cfg.vborder_filler),

@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: June 15, 2025
+" Last Change: December 20, 2025
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -160,10 +160,10 @@ syntax match vifmHiGroups contained
 " Options
 syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ cdpath cd chaselinks classify columns co confirm cf cpoptions cpo
-		\ cvoptions deleteprg dotdirs dotfiles dirsize fastrun fillchars fcs findprg
-		\ followlinks fusehome gdefault grepprg histcursor history hi hloptions
-		\ hlsearch hls iec ignorecase ic iooptions incsearch is laststatus lines
-		\ locateprg ls lsoptions lsview mediaprg milleroptions millerview
+		\ cvoptions deleteprg dotdirs dotfiles dirsize extprompt fastrun fillchars
+		\ fcs findprg followlinks fusehome gdefault grepprg histcursor history hi
+		\ hloptions hlsearch hls iec ignorecase ic iooptions incsearch is laststatus
+		\ lines locateprg ls lsoptions lsview mediaprg milleroptions millerview
 		\ mintimeoutlen mouse navoptions number nu numberwidth nuw previewoptions
 		\ previewprg quickview relativenumber rnu rulerformat ruf runexec scrollbind
 		\ scb scrolloff sessionoptions ssop so sort sortgroups sortorder sortnumbers
