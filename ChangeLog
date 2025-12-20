@@ -27,8 +27,9 @@
 	Added optional "next" and "prev" actions to :view command to switch
 	default previewer for the current and similar files.
 
-	Added extpromptpath option to open path input boxes in external editor.
-	Patch by Kaspars Vandans.
+	Added 'extprompt' option to allow opening path input boxes in external
+	editor automatically when "path" value is included in the value.  Patch by
+	Kaspars Vandans.
 
 	Updated utf8proc to v2.10.0.
 

@@ -613,6 +613,7 @@ hi WildBox
 " "hloptions" should be highlighted as 'option'
 " "wildinc" should be highlighted as 'option'
 " "uioptions" should be highlighted as 'option'
+" "extprompt" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -639,6 +640,7 @@ set tabline tal
 set hloptions
 set wildinc
 set uioptions
+set extprompt
 
 " "echo" and "call" should be highlighted as :command
 " "chooseopt" should be highlighted as builtin function

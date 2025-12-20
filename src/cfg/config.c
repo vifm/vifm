@@ -258,7 +258,7 @@ cfg_init(void)
 	cfg.auto_ch_pos = 1;
 	cfg.ch_pos_on = CHPOS_STARTUP | CHPOS_DIRMARK | CHPOS_ENTER;
 
-	cfg.ext_prompt_path = 0;
+	cfg.ext_prompt = EP_NONE;
 }
 
 void

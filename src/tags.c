@@ -59,7 +59,7 @@ const char *tags[] = {
 	"vifm-'dirsize'",
 	"vifm-'dotdirs'",
 	"vifm-'dotfiles'",
-	"vifm-'extpromptpath'",
+	"vifm-'extprompt'",
 	"vifm-'fastrun'",
 	"vifm-'fcs'",
 	"vifm-'fillchars'",

@@ -1,4 +1,4 @@
-.TH VIFM 1 "10 December 2025" "vifm 0.15"
+.TH VIFM 1 "20 December 2025" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4319,13 +4319,16 @@ default: false
 .br
 Whether dot files are shown in the view.  Can be controlled with z* bindings.
 .TP
-.BI "'extpromptpath'"
-type: boolean
+.BI 'extprompt'
+type: set
 .br
-default: false
+default:
 .br
-When vifm prompts to amend paths or file names, use the external editor instead
-of the built-in line-prompt.  This may happen, for example, during renaming.
+When vifm should use the external editor instead of the built-in line-prompt.
+
+Possible values:
+ \- path \- prompt to amend paths or file names (this may happen, for example,
+during renaming)
 .TP
 .BI 'fastrun'
 type: boolean

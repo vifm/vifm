@@ -1439,7 +1439,7 @@ void
 fops_prompt_path(const char prompt[], const char path[], fo_prompt_cb cb,
 	void *cb_arg, fo_complete_cmd_func complete)
 {
-	if(cfg.ext_prompt_path)
+	if(cfg.ext_prompt & EP_PATH)
 	{
 		fops_extedit_path(path, cb, cb_arg);
 	}

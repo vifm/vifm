@@ -22,6 +22,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
+#include "../../src/fops_rename.h"
 #include "../../src/status.h"
 
 SETUP()
@@ -291,6 +292,51 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 	columns_teardown();
 
 	restore_cwd(saved_cwd);
+}
+
+TEST(extprompt_rename, IF(not_windows))
+{
+	undo_setup();
+
+	curr_view = &lwin;
+	view_setup(&lwin);
+	lwin.columns = columns_create();
+
+	cfg.ext_prompt = EP_PATH;
+	opt_handlers_setup();
+
+	create_file(SANDBOX_PATH "/old-name");
+
+	/* Capture state of the directory with "old-name" file. */
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", NULL);
+	load_dir_list(&lwin, 0);
+
+	update_string(&cfg.shell, "/bin/sh");
+	stats_update_shell_type(cfg.shell);
+
+	create_executable(SANDBOX_PATH "/script");
+	make_file(SANDBOX_PATH "/script",
+			"#!/bin/sh\n"
+			"echo new-name > $3");
+
+	char script_path[PATH_MAX + 1];
+	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", NULL);
+	update_string(&cfg.vi_command, script_path);
+
+	fops_rename_current(&lwin, /*name_only=*/0);
+
+	remove_file(SANDBOX_PATH "/script");
+	no_remove_file(SANDBOX_PATH "/old-name");
+	remove_file(SANDBOX_PATH "/new-name");
+
+	view_teardown(&lwin);
+
+	vle_keys_reset();
+	opt_handlers_teardown();
+	columns_teardown();
+	undo_teardown();
+
+	cfg.ext_prompt = EP_NONE;
 }
 
 TEST(title_support_is_detected_correctly)

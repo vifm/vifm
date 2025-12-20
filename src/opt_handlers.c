@@ -133,7 +133,7 @@ static void cvoptions_handler(OPT_OP op, optval_t val);
 static void deleteprg_handler(OPT_OP op, optval_t val);
 static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
-static void extpromptpath_handler(OPT_OP op, optval_t val);
+static void extprompt_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
 static void fillchars_handler(OPT_OP op, optval_t val);
 static void load_fillchars(void);
@@ -298,6 +298,12 @@ static const char *dotdirs_vals[][2] = {
 	                                "show .. in empty directories of :tree" },
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
+
+/* Possible values of 'extprompt'. */
+static const char *extprompt_vals[][2] = {
+	[BIT(EP_PATH)] = { "path", "on path/filename amendment prompts" },
+};
+ARRAY_GUARD(extprompt_vals, NUM_EXT_PROMPT);
 
 /* Possible values of 'histcursor'. */
 static const char *histcursor_vals[][2] = {
@@ -651,6 +657,11 @@ options[] = {
 	  OPT_SET, ARRAY_LEN(dotdirs_vals), dotdirs_vals, &dotdirs_handler, NULL,
 	  { .ref.set_items = &cfg.dot_dirs },
 	},
+	{ "extprompt", "", "when to open external editor instead of command-line",
+	  OPT_SET, ARRAY_LEN(extprompt_vals), extprompt_vals,
+	  &extprompt_handler, NULL,
+	  { .ref.set_items = &cfg.ext_prompt },
+	},
 	{ "fastrun", "", "autocomplete unambiguous prefixes for :!",
 	  OPT_BOOL, 0, NULL, &fastrun_handler, NULL,
 	  { .ref.bool_val = &cfg.fast_run },
@@ -926,10 +937,6 @@ options[] = {
 	{ "wrapscan", "ws", "wrap search around top/bottom",
 	  OPT_BOOL, 0, NULL, &wrapscan_handler, NULL,
 	  { .ref.bool_val = &cfg.wrap_scan },
-	},
-	{ "extpromptpath", "", "open path/file name input in external editor",
-	  OPT_BOOL, 0, NULL, &extpromptpath_handler, NULL,
-	  { .ref.bool_val = &cfg.ext_prompt_path },
 	},
 
 	/* Local options must be grouped here. */
@@ -2155,10 +2162,11 @@ dotdirs_handler(OPT_OP op, optval_t val)
 	update_screen(UT_FULL);
 }
 
+/* Assigns new value for 'extprompt' option. */
 static void
-extpromptpath_handler(OPT_OP op, optval_t val)
+extprompt_handler(OPT_OP op, optval_t val)
 {
-	cfg.ext_prompt_path = val.bool_val;
+	cfg.ext_prompt = val.set_items;
 }
 
 static void

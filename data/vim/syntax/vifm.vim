@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: December 10, 2025
+" Last Change: December 20, 2025
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -160,10 +160,10 @@ syntax match vifmHiGroups contained
 " Options
 syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ cdpath cd chaselinks classify columns co confirm cf cpoptions cpo
-		\ cvoptions deleteprg dotdirs dotfiles dirsize extpromptpath fastrun fillchars fcs findprg
-		\ followlinks fusehome gdefault grepprg histcursor history hi hloptions
-		\ hlsearch hls iec ignorecase ic iooptions incsearch is laststatus lines
-		\ locateprg ls lsoptions lsview mediaprg milleroptions millerview
+		\ cvoptions deleteprg dotdirs dotfiles dirsize extprompt fastrun fillchars
+		\ fcs findprg followlinks fusehome gdefault grepprg histcursor history hi
+		\ hloptions hlsearch hls iec ignorecase ic iooptions incsearch is laststatus
+		\ lines locateprg ls lsoptions lsview mediaprg milleroptions millerview
 		\ mintimeoutlen mouse navoptions number nu numberwidth nuw previewoptions
 		\ previewprg quickview relativenumber rnu rulerformat ruf runexec scrollbind
 		\ scb scrolloff sessionoptions ssop so sort sortgroups sortorder sortnumbers
@@ -176,7 +176,7 @@ syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks
-		\ nodotfiles noextpromptpath nofastrun nofollowlinks nohlsearch nohls noiec noignorecase
+		\ nodotfiles nofastrun nofollowlinks nohlsearch nohls noiec noignorecase
 		\ noic noincsearch nois nolaststatus nols nolsview nomillerview nonumber
 		\ nonu noquickview norelativenumber nornu noscrollbind noscb norunexec
 		\ nosmartcase noscs nosortnumbers nosyscalls notitle notrash novimhelp
@@ -184,7 +184,7 @@ syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautocd invautochpos invcf invchaselinks
-		\ invdotfiles invextpromptpath invfastrun invfollowlinks invhlsearch invhls inviec
+		\ invdotfiles invfastrun invfollowlinks invhlsearch invhls inviec
 		\ invignorecase invic invincsearch invis invlaststatus invls invlsview
 		\ invmillerview invnumber invnu invquickview invrelativenumber invrnu
 		\ invscrollbind invscb invrunexec invsmartcase invscs invsortnumbers

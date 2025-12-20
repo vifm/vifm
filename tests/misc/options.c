@@ -731,6 +731,26 @@ TEST(uioptions)
 	assert_false(cfg.always_show_io_details);
 }
 
+TEST(extprompt)
+{
+	assert_int_equal(EP_NONE, cfg.ext_prompt);
+
+	assert_success(cmds_dispatch("set extprompt=path", &lwin, CIT_COMMAND));
+	assert_int_equal(EP_PATH, cfg.ext_prompt);
+
+	assert_success(cmds_dispatch("set extprompt=", &lwin, CIT_COMMAND));
+	assert_int_equal(EP_NONE, cfg.ext_prompt);
+
+	assert_success(cmds_dispatch("set extprompt=path", &lwin, CIT_COMMAND));
+	assert_int_equal(EP_PATH, cfg.ext_prompt);
+
+	/* Unknown values of set options are discarded (intentionally?). */
+	ui_sb_msg("");
+	assert_success(cmds_dispatch("set extprompt=bad", &lwin, CIT_COMMAND));
+	assert_int_equal(EP_NONE, cfg.ext_prompt);
+	assert_string_equal("", ui_sb_last());
+}
+
 static void
 print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)
