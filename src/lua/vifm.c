@@ -440,6 +440,12 @@ VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
 	lua_pushnil(lua);
 	while(lua_next(lua, -2) != 0)
 	{
+		if(!lua_isstring(lua, -1))
+		{
+			free_string_array(items.items, i);
+			goto fail;
+		}
+
 		char *item = strdup(lua_tostring(lua, -1));
 		if(item == NULL)
 		{
