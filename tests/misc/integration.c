@@ -13,6 +13,7 @@
 #include "../../src/engine/keys.h"
 #include "../../src/int/term_title.h"
 #include "../../src/int/vim.h"
+#include "../../src/modes/dialogs/msg_dialog.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/column_view.h"
@@ -24,6 +25,9 @@
 #include "../../src/filelist.h"
 #include "../../src/fops_rename.h"
 #include "../../src/status.h"
+
+static int bad_editor_call(const char type[], const char title[],
+		const char message[]);
 
 SETUP()
 {
@@ -339,6 +343,43 @@ TEST(extprompt_rename, IF(not_windows))
 	cfg.ext_prompt = EP_NONE;
 }
 
+TEST(extprompt_rename_fail, IF(not_windows))
+{
+	undo_setup();
+
+	curr_view = &lwin;
+	view_setup(&lwin);
+	lwin.columns = columns_create();
+
+	cfg.ext_prompt = EP_PATH;
+	opt_handlers_setup();
+
+	create_file(SANDBOX_PATH "/old-name");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", NULL);
+	load_dir_list(&lwin, 0);
+
+	/* Not providing a shell to cause a failure. */
+	update_string(&cfg.shell, "not-a-shell");
+	stats_update_shell_type("/bin/sh");
+
+	dlg_set_callback(&bad_editor_call);
+
+	fops_rename_current(&lwin, /*name_only=*/0);
+
+	remove_file(SANDBOX_PATH "/old-name");
+	no_remove_file(SANDBOX_PATH "/new-name");
+
+	view_teardown(&lwin);
+
+	vle_keys_reset();
+	opt_handlers_teardown();
+	columns_teardown();
+	undo_teardown();
+
+	cfg.ext_prompt = EP_NONE;
+}
+
 TEST(title_support_is_detected_correctly)
 {
 	static char *XTERM_LIKE[] = {
@@ -406,6 +447,18 @@ TEST(paths_are_escaped_for_the_editor)
 	conf_teardown();
 
 	restore_cwd(saved_cwd);
+}
+
+static int
+bad_editor_call(const char type[], const char title[], const char message[])
+{
+	assert_string_equal("error", type);
+	assert_string_equal("Editing", title);
+	assert_string_starts_with("Error querying data from external source.",
+			message);
+
+	dlg_set_callback(NULL);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
