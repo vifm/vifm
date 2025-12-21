@@ -485,7 +485,7 @@ fi
 dnl Quit with appropriate error message if ncurses library wasn't found.
 if test "x$ncurses_found" != "xyes"; then
     if test -z "$OSX_HOST"; then
-        AC_MSG_ERROR([libncursesw not found])
+        AC_MSG_ERROR([libncursesw not found (on Debian/Ubuntu install libncurses-dev)])
     else
         AC_MSG_ERROR([libncursesw and libncurses not found])
     fi
