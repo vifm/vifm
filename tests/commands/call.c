@@ -46,7 +46,10 @@ TEST(good_call)
 	check_and_remove_file();
 }
 
-TEST(good_call_with_comment)
+// Disabled on Wine because when running both good_call() and
+// good_call_with_comment() on Wine 10.0 only the first one seems to work
+// (doesn't matter which one).  Hard to say why.
+TEST(good_call_with_comment, IF(not_wine))
 {
 	assert_success(cmds_dispatch1("call system('echo call> file') \" comment",
 				&lwin, CIT_COMMAND));

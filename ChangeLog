@@ -31,7 +31,7 @@
 	editor automatically when "path" value is included in the value.  Patch by
 	Kaspars Vandans.
 
-	Updated utf8proc to v2.10.0.
+	Updated utf8proc to v2.11.2.
 
 	Made documentation on which :commands can have comments a bit more
 	verbose.
@@ -77,6 +77,9 @@
 
 	Fall back to using standard::fast-content-type from GLib if
 	standard::content-type is missing.  Patch by Jan Palus (a.k.a. jpalus).
+
+	Improved description of the local filter in the documentation.  Thanks to
+	CaptainFantastic.
 
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in

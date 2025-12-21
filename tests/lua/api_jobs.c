@@ -307,7 +307,13 @@ TEST(vifmjob_terminate_after_finish)
 
 TEST(vifmjob_terminate_running)
 {
-	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = 'sleep 10' }");
+	// Building with sanitizers using `gcc (Debian 14.2.0-19) 14.2.0` resulted in
+	// this test failing without `exec` because it apparently kills parent of
+	// `sleep 10` without getting a notification about it (while `sleep 10` keeps
+	// running in background).
+	//
+	// This has never showed up without sanitizers, so assuming its a bug there.
+	GLUA_EQ(vlua, "", "job = vifm.startjob { cmd = 'exec sleep 10' }");
 	GLUA_EQ(vlua, "true", "print(job:terminate() == nil)");
 
 	time_t t1 = time(NULL);

@@ -23,6 +23,12 @@
 }
 
 {
+   wcscat-avx2-wrong-read
+   Memcheck:Addr32
+   fun:__wcscat_avx2
+}
+
+{
    wcscmp-wrong-read
    Memcheck:Addr8
    fun:wcscmp
@@ -53,6 +59,18 @@
    match-leak-kinds: possible
    fun:calloc
    fun:_dl_allocate_tls
+   fun:pthread_create*
+}
+
+{
+   thread-tls-3
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
    fun:pthread_create*
 }
 

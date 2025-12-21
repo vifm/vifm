@@ -575,6 +575,18 @@ not_wine(void)
 }
 
 int
+not_wine32(void)
+{
+#if defined(_WIN32) && !defined(__x86_64__)
+	if(!not_wine())
+	{
+		return 0;
+	}
+#endif
+	return 1;
+}
+
+int
 regular_unix_user(void)
 {
 #ifdef _WIN32
