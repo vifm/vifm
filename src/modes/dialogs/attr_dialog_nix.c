@@ -499,7 +499,7 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		char inv_mode[16];
-		snprintf(inv_mode, sizeof(inv_mode), "0%o", entry->mode & 0xff);
+		snprintf(inv_mode, sizeof(inv_mode), "0%o", entry->mode & 0777);
 
 		char path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(path), path);
