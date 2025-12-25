@@ -615,6 +615,7 @@ const char *tags[] = {
 	"vifm-commands",
 	"vifm-commands-and-selection",
 	"vifm-commands-bg",
+	"vifm-commands-quoting",
 	"vifm-compare-views",
 	"vifm-configure",
 	"vifm-count",

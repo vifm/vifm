@@ -16,7 +16,6 @@ Basic things:
 
 Documentation:
   * State the need of *nix tools on Windows more explicitly.
-  * Document single and double quotes treating in the command-line mode.
   * Divide docs into several files (as it's quite big now).
   * Document name conflict resolution options.
   * Add separate section on bookmarks.

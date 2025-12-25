@@ -1259,6 +1259,49 @@ Example: >
     :noh[lsearch]
 This means the complete command is nohlsearch, and the short one is noh.
 
+                                               *vifm-commands-quoting*
+Parsing of text after the colon is based on quoting and escaping rules. These
+rules determine how Vifm splits the entered text into arguments. (Note: some
+commands, such as :echo, interpret their arguments as an expression, but the
+quoting rules themselves remain the same.)
+
+Supported mechanisms:
+
+  - single quotes '...'
+    The content is taken literally.
+    Backslash escaping does not work inside.
+    However, '' inside single quotes is replaced with ' (same as in Vim).
+    Everything between the quotes becomes a single argument.
+
+  - double quotes "..."
+    Also form a single argument.
+    A backslash inside double quotes escapes the next character
+    (for example \" becomes a quote, \\ becomes a backslash).
+    Some C‑style escape sequences are interpreted (e.g. \n, \t).
+
+    Example:
+        :echo "a b\ c \"x\""
+        output: a b c "x"
+
+  - backslash escaping \
+    Outside quotes, it allows including spaces, quotes, or a backslash
+    into an argument.
+    Inside double quotes it works the same way.
+    It does not work inside single quotes.
+
+    Example (visible behavior):
+        :command Foo touch a\ b
+        defines the Foo command with a single argument: a b
+
+        Calling it:
+            :Foo
+        creates a file named:
+            a b
+
+After processing quotes and backslashes, most commands split the line into
+arguments by spaces. Some commands (such as :substitute or :tr) use different
+separators.
+
                                                *vifm-commands-and-selection*
 Most of command-line commands completely reset selection in the current view.
 However, there are several exceptions:
