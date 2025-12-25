@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2025 December 21
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 January 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -34,6 +34,7 @@
 |vifm-column-view|        Column view configuration details.
 |vifm-color-schemes|      Details on using color schemes in vifm.
 |vifm-trash|              Details about trash directory in vifm.
+|vifm-name-conflicts|     Resolving file name conflicts during operations.
 |vifm-file-copying|       Additional information of file copying.
 |vifm-clientserver|       Client-server communication.
 |vifm-ext-rename|         About editing buffer of file names in an editor.
@@ -6598,6 +6599,53 @@ shouldn't expect value of registers to be absolutely correct if trash
 directory was modified not by operation that are meant for it.  But this
 won't lead to any issues with operations, since they ignore nonexistent
 files.
+
+--------------------------------------------------------------------------------
+*vifm-name-conflicts*
+
+When copying, moving, or creating symbolic links, Vifm can encounter a name
+conflict: a file with the same name already exists in the target directory.
+In such cases Vifm shows a dialog asking how to resolve the conflict.
+
+Available actions:
+
+  - overwrite
+    Replace the existing file with the incoming one.
+
+  - overwrite all
+    Apply the overwrite action to all further conflicts during the same
+    operation without asking again.
+
+  - skip
+    Do not copy or move the file that caused the conflict.
+
+  - skip all
+    Skip all further conflicting files without prompting.
+
+  - rename
+    Enter a new name for the incoming file.
+    Pressing Enter without typing a new name keeps the old name and causes
+    the dialog to appear again.
+
+  - merge
+    For directories: copy only missing files from the source directory into
+    the existing one.
+
+  - merge all
+    Apply the merge action to all further directory conflicts.
+
+  - append
+    If the destination file is shorter, append the missing tail bytes from the
+    source file. Example: if source is 1000 bytes and destination is 300 bytes,
+    the last 700 bytes of the source are appended. This is intended for
+    resuming interrupted copy operations.
+
+Notes:
+
+  - The conflict dialog appears for :copy, :move, and for link creation
+    commands (like al or ar).
+  - File extensions are not modified automatically when renaming.
+  - Conflict resolution choices apply only to the current operation.
 
 --------------------------------------------------------------------------------
 *vifm-file-copying*

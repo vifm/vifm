@@ -902,6 +902,7 @@ const char *tags[] = {
 	"vifm-mouse-overview",
 	"vifm-mouse-using",
 	"vifm-n",
+	"vifm-name-conflicts",
 	"vifm-normal",
 	"vifm-options",
 	"vifm-p",
