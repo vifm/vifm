@@ -17,7 +17,6 @@ Basic things:
 Documentation:
   * State the need of *nix tools on Windows more explicitly.
   * Divide docs into several files (as it's quite big now).
-  * Document name conflict resolution options.
   * Add separate section on bookmarks.
 
 Vi(m) specific features:
