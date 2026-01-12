@@ -73,6 +73,10 @@ TEST(menus_loadcustom)
 	GLUA_ENDS(vlua, "false",
 			"print(vifm.menus.loadcustom { title = 't', items = { } })");
 
+	/* Items of invalid type. */
+	GLUA_EQ(vlua, "false",
+			"print(vifm.menus.loadcustom({ title = 'title', items = { {} } }))");
+
 	/* Non-navigatable menu. */
 	GLUA_ENDS(vlua, "true",
 			"print(vifm.menus.loadcustom { title = 't', items = { 'a', 'b' } })");

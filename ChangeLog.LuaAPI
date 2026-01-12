@@ -12,6 +12,9 @@ documented in the regular ChangeLog.
 	Fixed a crash on passing a value that's not convertible to a string to
 	VifmView:loadcustom().
 
+	Fixed a crash on passing a value that's not convertible to a string to
+	vifm.menus.loadcustom().  Thanks to PRESFIL.  Patch by Kirill Rekhov.
+
 0.13 to 0.14-beta (2025-01-19)
 
 	Bumped API version to v0.2.0.
