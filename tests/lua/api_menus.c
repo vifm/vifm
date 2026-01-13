@@ -70,11 +70,15 @@ TEST(menus_loadcustom)
 			"print(vifm.menus.loadcustom { title = 't' })");
 
 	/* Empty items. */
-	GLUA_ENDS(vlua, "false",
+	GLUA_EQ(vlua, "false",
 			"print(vifm.menus.loadcustom { title = 't', items = { } })");
 
+	/* Items of invalid type. */
+	GLUA_EQ(vlua, "false",
+			"print(vifm.menus.loadcustom({ title = 'title', items = { {} } }))");
+
 	/* Non-navigatable menu. */
-	GLUA_ENDS(vlua, "true",
+	GLUA_EQ(vlua, "true",
 			"print(vifm.menus.loadcustom { title = 't', items = { 'a', 'b' } })");
 	assert_true(vle_mode_is(MENU_MODE));
 	assert_true(menus_get_view(menu_get_current()) == &lwin);
@@ -82,7 +86,7 @@ TEST(menus_loadcustom)
 	assert_false(menu_get_current()->extra_data);
 
 	/* Navigatable menu. */
-	GLUA_ENDS(vlua, "true",
+	GLUA_EQ(vlua, "true",
 			"print(vifm.menus.loadcustom {"
 			"  title = 't',"
 			"  items = { 'aaa', 'b' },"

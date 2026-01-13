@@ -10405,7 +10405,7 @@ fi
 fi
 if test "x$ncurses_found" != "xyes"; then
     if test -z "$OSX_HOST"; then
-        as_fn_error $? "libncursesw not found" "$LINENO" 5
+        as_fn_error $? "libncursesw not found (on Debian/Ubuntu install libncurses-dev)" "$LINENO" 5
     else
         as_fn_error $? "libncursesw and libncurses not found" "$LINENO" 5
     fi

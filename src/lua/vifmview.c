@@ -583,7 +583,10 @@ VLUA_API(vifmview_loadcustom)(lua_State *lua)
 	while(lua_next(lua, -2) != 0)
 	{
 		const char *path = lua_tostring(lua, -1);
-		(void)flist_custom_add(view, path);
+		if(path != NULL)
+		{
+			(void)flist_custom_add(view, path);
+		}
 		lua_pop(lua, 1);
 	}
 

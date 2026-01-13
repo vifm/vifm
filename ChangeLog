@@ -81,6 +81,10 @@
 	Improved description of the local filter in the documentation.  Thanks to
 	CaptainFantastic.
 
+	Documented quoting and escaping on command-line.  Patch by Kirill Rekhov.
+
+	Documented name conflict resolution dialog.  Patch by Kirill Rekhov.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
@@ -176,6 +180,9 @@
 
 	Fixed a crash if GLib didn't return a file type.  Patch by Jan
 	Palus (a.k.a. jpalus).
+
+	Fixed undoing of chmod operation not restoring owner's read permission.
+	Thanks to aleksejrs.  Patch by Kirill Rekhov.
 
 0.14-beta to 0.14 (2025-02-08)
 

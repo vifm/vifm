@@ -16,9 +16,7 @@ Basic things:
 
 Documentation:
   * State the need of *nix tools on Windows more explicitly.
-  * Document single and double quotes treating in the command-line mode.
   * Divide docs into several files (as it's quite big now).
-  * Document name conflict resolution options.
   * Add separate section on bookmarks.
 
 Vi(m) specific features:
@@ -150,13 +148,10 @@ Questionable things:
 
 Code improvements:
   * Write more tests. (partially done)
-  * Consider mentioning libncursesw5-dev in configuration error for
-    Debian-based systems.
   * Reduce number of magic numbers. (partially done)
   * Create separate utilities for engine/ part to make them self-contained.
   * Fix code duplication related to composing of undo messages.
   * Allow limiting input length for command-line prompt submode.
-  * Get rid of repeatable `menu->win_rows - 3` in menu.c.
   * Separate filelist data from view data (extract into separate structure).
   * Improve logging (print back trace in some cases, increase verbosity).
   * Try reimplementing cmd_core.c:line_pos by calling dispatch_line.

@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2025 Mar 22
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2026 Jan 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1123,8 +1123,9 @@ Parameters:~
   {menu}  Table with information about the custom view.
 
 Return:~
-  `false` if the list of items is empty or if {menu}.view doesn't refer to the
-        the view as `vifm.currview()` or `vifm.otherview()`.
+  `false` if the list of items is empty, one of the items can't be converted
+        to a string or if {menu}.view doesn't refer to the the view as
+        `vifm.currview()` or `vifm.otherview()`.
   `true` on success.
 
 --------------------------------------------------------------------------------
@@ -1593,8 +1594,8 @@ Possible fields of {info}:
  - "title" (string)
    Title of the view.
  - "paths" (array of strings)
-   List of paths.  Can be empty.  Paths that don't correspond to an existing
-   file or duplicates are ignored.
+   List of paths.  Can be empty.  Items that don't correspond to an existing
+   file, cannot be converted to a string or duplicates are ignored.
  - "type" (string) (default: "custom")
    What kind of custom view to create:
     - "custom"

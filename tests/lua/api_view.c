@@ -426,6 +426,15 @@ TEST(vifmview_loadcustom)
 	assert_string_equal("a", lwin.dir_entry[0].name);
 	assert_string_equal("aa", lwin.dir_entry[1].name);
 
+	/* Invalid type is filtered out. */
+	GLUA_ENDS(vlua, "",
+			"print(vifm.currview():loadcustom({ title = 'title',"
+			                                   "paths = { 'a', {} } }))");
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("a", lwin.dir_entry[0].name);
+
 	/* Good invocation for unsorted view. */
 	GLUA_ENDS(vlua, "",
 			"print(vifm.currview():loadcustom({ title = 'title',"
