@@ -128,6 +128,8 @@ vifm_obj += $(B)../src/compile_info.o
 
 make_args := -C $(B)../src/
 ifdef win_env
+    make_args  += -f $(abspath ../src/Makefile.win)
+    make_args  += "CFLAGS=$(TESTS_CFLAGS)" "LDFLAGS=$(TESTS_LDFLAGS)"
     exe_suffix := .exe
 endif
 
