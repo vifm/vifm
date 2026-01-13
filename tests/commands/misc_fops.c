@@ -10,13 +10,21 @@
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
+#include "../../src/ops.h"
 #include "../../src/registers.h"
+#include "../../src/undo.h"
+
+static OpsResult exec_func(OPS op, void *data, const char *src,
+		const char *dst);
+static int op_avail(OPS op);
 
 static char *saved_cwd;
 
@@ -124,6 +132,52 @@ TEST(chmod_works, IF(not_windows))
 	assert_success(remove(path));
 }
 
+TEST(chmod_undo_restores_all_bits, IF(not_windows))
+{
+	char path[PATH_MAX + 1];
+
+	modes_init();
+
+	undo_teardown();
+
+	static int max_undo_levels = 1;
+	un_init(&exec_func, &op_avail, NULL, &max_undo_levels);
+
+	assert_success(chdir(sandbox));
+
+	strcpy(lwin.curr_dir, sandbox);
+	append_view_entry(&lwin, "file");
+
+	snprintf(path, sizeof(path), "%s/file", sandbox);
+	create_file(path);
+	assert_success(os_chmod(path, 0777));
+
+	populate_dir_list(&lwin, /*reload=*/1);
+#ifndef _WIN32
+	/* Can't just assume 0777 because of umask. */
+	int expected_mode = lwin.dir_entry[0].mode & 0777;
+#endif
+
+	(void)cmds_dispatch("chmod 000", &lwin, CIT_COMMAND);
+
+	populate_dir_list(&lwin, /*reload=*/1);
+#ifndef _WIN32
+	assert_int_equal(0000, lwin.dir_entry[0].mode & 0777);
+#endif
+
+	(void)cmds_dispatch("normal u", &lwin, CIT_COMMAND);
+
+	populate_dir_list(&lwin, /*reload=*/1);
+#ifndef _WIN32
+	assert_int_equal(expected_mode, lwin.dir_entry[0].mode & 0777);
+#endif
+
+	snprintf(path, sizeof(path), "%s/file", sandbox);
+	remove_file(path);
+
+	vle_keys_reset();
+}
+
 TEST(putting_files_works)
 {
 	char path[PATH_MAX + 1];
@@ -188,6 +242,24 @@ TEST(zero_count_is_rejected)
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("yank a 0", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
+}
+
+static OpsResult
+exec_func(OPS op, void *data, const char *src, const char *dst)
+{
+	return perform_operation(op, NULL, data, src, dst);
+}
+
+static int
+op_avail(OPS op)
+{
+#ifndef _WIN32
+	if(op == OP_CHMOD)
+	{
+		return 1;
+	}
+#endif
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

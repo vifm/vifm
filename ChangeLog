@@ -177,6 +177,9 @@
 	Fixed a crash if GLib didn't return a file type.  Patch by Jan
 	Palus (a.k.a. jpalus).
 
+	Fixed undoing of chmod operation not restoring owner's read permission.
+	Thanks to aleksejrs.  Patch by Kirill Rekhov.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
