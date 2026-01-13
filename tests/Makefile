@@ -126,11 +126,8 @@ tests_lib_obj := $(patsubst %.c,$(BUILD)%.o,$(tests_lib_src))
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
 vifm_obj += $(B)../src/compile_info.o
 
-ifdef unix_env
-    make_args := -C $(B)../src/
-endif
+make_args := -C $(B)../src/
 ifdef win_env
-    make_args  := -C $(B)../src/ -f $(abspath ../src/Makefile.win)
     exe_suffix := .exe
 endif
 
