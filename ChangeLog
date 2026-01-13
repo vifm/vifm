@@ -15,6 +15,10 @@
 	Improved description of the local filter in the documentation.  Thanks to
 	CaptainFantastic.
 
+	Documented quoting and escaping on command-line.  Patch by Kirill Rekhov.
+
+	Documented name conflict resolution dialog.  Patch by Kirill Rekhov.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
