@@ -1261,10 +1261,10 @@ Example: >
 This means the complete command is nohlsearch, and the short one is noh.
 
                                                *vifm-commands-quoting*
-Parsing of text after the colon is based on quoting and escaping rules. These
-rules determine how Vifm splits the entered text into arguments. (Note: some
-commands, such as :echo, interpret their arguments as an expression, but the
-quoting rules themselves remain the same.)
+Parsing of the text after the colon is based on quoting and escaping rules.
+These rules determine how Vifm splits the entered text into arguments.  Note:
+some commands, such as |vifm-:echo|, interpret their arguments as expressions,
+which use their own syntax (see |vifm-expression-syntax|).
 
 Supported mechanisms:
 
@@ -1276,19 +1276,20 @@ Supported mechanisms:
 
   - double quotes "..."
     Also form a single argument.
-    A backslash inside double quotes escapes the next character
-    (for example \" becomes a quote, \\ becomes a backslash).
-    Some C‑style escape sequences are interpreted (e.g. \n, \t).
+    A backslash inside double quotes escapes the next character (for example,
+    \" becomes a quote, \\ becomes a backslash).
+    Some C‑style escape sequences are interpreted (`\a`, `\b`, `\f`, `\n`,
+    `\r`, `\t`, `\v`).
 
     Example:
         :echo "a b\ c \"x\""
-        output: a b c "x"
+    output:
+        a b c "x"
 
   - backslash escaping \
     Outside quotes, it allows including spaces, quotes, or a backslash
     into an argument.
-    Inside double quotes it works the same way.
-    It does not work inside single quotes.
+    Works similarly in double quotes and does not work inside single quotes.
 
     Example (visible behavior):
         :command Foo touch a\ b
@@ -1300,8 +1301,8 @@ Supported mechanisms:
             a b
 
 After processing quotes and backslashes, most commands split the line into
-arguments by spaces. Some commands (such as :substitute or :tr) use different
-separators.
+arguments by whitespace.  Some commands (such as |vifm-:substitute| or
+|vifm-:tr|) can use custom characters as separators.
 
                                                *vifm-commands-and-selection*
 Most of command-line commands completely reset selection in the current view.
@@ -6636,15 +6637,15 @@ Available actions:
 
   - append
     If the destination file is shorter, append the missing tail bytes from the
-    source file. Example: if source is 1000 bytes and destination is 300 bytes,
-    the last 700 bytes of the source are appended. This is intended for
-    resuming interrupted copy operations.
+    source file.
+    Example: if the source is 1000 bytes and the destination is 300
+    bytes, the last 700 bytes of the source are appended.  This is intended
+    for resuming interrupted copy operations.
 
 Notes:
 
-  - The conflict dialog appears for :copy, :move, and for link creation
-    commands (like al or ar).
-  - File extensions are not modified automatically when renaming.
+  - The conflict dialog appears for |vifm-:put|, |vifm-p|, |vifm-P|,
+    |vifm-al| and |vifm-rl| commands.
   - Conflict resolution choices apply only to the current operation.
 
 --------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-.TH VIFM 1 "21 December 2025" "vifm 0.15"
+.TH VIFM 1 "13 January 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1423,6 +1423,49 @@ Example:
 
 .EE
 This means the complete command is nohlsearch, and the short one is noh.
+
+Parsing of the text after the colon is based on quoting and escaping rules.
+These rules determine how Vifm splits the entered text into arguments.  Note:
+some commands, such as :echo, interpret their arguments as expressions,
+which use their own syntax (see "Expression syntax").
+
+Supported mechanisms:
+
+  - single quotes '...'
+    The content is taken literally.
+    Backslash escaping does not work inside.
+    However, '' inside single quotes is replaced with ' (same as in Vim).
+    Everything between the quotes becomes a single argument.
+
+  - double quotes "..."
+    Also form a single argument.
+    A backslash inside double quotes escapes the next character (for example,
+\\" becomes a quote, \\\\ becomes a backslash).
+    Some C‑style escape sequences are interpreted (\\a, \\b, \\f, \\n, \\r,
+\\t, \\v).
+
+    Example:
+        :echo "a b\ c \"x\""
+    output:
+        a b c "x"
+
+  - backslash escaping \\
+    Outside quotes, it allows including spaces, quotes, or a backslash
+into an argument.
+    Works similarly in double quotes and does not work inside single quotes.
+
+    Example (visible behavior):
+        :command Foo touch a\ b
+        defines the Foo command with a single argument: a b
+
+        Calling it:
+            :Foo
+        creates a file named:
+            a b
+
+After processing quotes and backslashes, most commands split the line into
+arguments by whitespace.  Some commands (such as :substitute or
+:tr) can use custom characters as separators.
 
 Most of command-line commands completely reset selection in the current view.
 However, there are several exceptions:
@@ -7807,6 +7850,51 @@ shouldn't expect value of registers to be absolutely correct if trash
 directory was modified not by operation that are meant for it.  But this
 won't lead to any issues with operations, since they ignore nonexistent
 files.
+.\" ---------------------------------------------------------------------------
+.SH Name conflicts
+.\" ---------------------------------------------------------------------------
+When copying, moving, or creating symbolic links, Vifm can encounter a name
+conflict: a file with the same name already exists in the target directory.
+In such cases Vifm shows a dialog asking how to resolve the conflict.
+
+Available actions:
+
+  - overwrite
+    Replace the existing file with the incoming one.
+
+  - overwrite all
+    Apply the overwrite action to all further conflicts during the same
+operation without asking again.
+
+  - skip
+    Do not copy or move the file that caused the conflict.
+
+  - skip all
+    Skip all further conflicting files without prompting.
+
+  - rename
+    Enter a new name for the incoming file.
+    Pressing Enter without typing a new name keeps the old name and causes
+the dialog to appear again.
+
+  - merge
+    For directories: copy only missing files from the source directory into
+the existing one.
+
+  - merge all
+    Apply the merge action to all further directory conflicts.
+
+  - append
+    If the destination file is shorter, append the missing tail bytes from the
+source file.
+    Example: if the source is 1000 bytes and the destination is 300
+bytes in size, the last 700 bytes of the source are appended.  This action
+is intended for resuming interrupted copy operations.
+
+Notes:
+
+  - The conflict dialog appears for :put, p, P, al and rl commands.
+  - Conflict resolution choices apply only to the current operation.
 .\" ---------------------------------------------------------------------------
 .SH File copying
 .\" ---------------------------------------------------------------------------

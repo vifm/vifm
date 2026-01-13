@@ -81,6 +81,10 @@
 	Improved description of the local filter in the documentation.  Thanks to
 	CaptainFantastic.
 
+	Documented quoting and escaping on command-line.  Patch by Kirill Rekhov.
+
+	Documented name conflict resolution dialog.  Patch by Kirill Rekhov.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
