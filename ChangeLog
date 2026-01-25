@@ -47,7 +47,8 @@
 	and custom views.
 
 	Updated .desktop-file to add localizations and be more up-to-date with
-	modern recommendations.  Patch by Matěj Cepl (a.k.a. mcepl).
+	modern recommendations.  Separate patches by Matěj Cepl (a.k.a. mcepl) and
+	Jared Cervantes (a.k.a. Jaredy899).
 
 	Extended range of numbers Ctrl-A/Ctrl-X can deal with from [-2**31; 2**31)
 	to [-2**63; 2**63).  Thanks to CaptainFantastic.
