@@ -188,3 +188,6 @@ added a fallback to standard::fast-content-type if standard::content-type is
 missing.
 
 Kirill Rekhov contributed multiple bug fixes and improvements.
+
+Jared Cervantes (a.k.a. Jaredy899) updated list of categories in the
+.desktop-file.

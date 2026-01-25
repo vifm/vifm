@@ -19,6 +19,9 @@
 
 	Documented name conflict resolution dialog.  Patch by Kirill Rekhov.
 
+	Updated list of categories in .desktop-file.  Patch by Jared
+	Cervantes (a.k.a. Jaredy899).
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
