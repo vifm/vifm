@@ -15,7 +15,7 @@ working solutions which are set in stone user is provided with a set of
 means for customization of Vifm to one's likings.  Though builtin
 functionality should be enough for most of use cases.
 
-_Version 0.15.  This file last updated on 28 September 2025._
+_Version 0.15.  This file last updated on 9 February 2026._
 
 ## Resources and Contacts ##
 
@@ -40,6 +40,7 @@ _Version 0.15.  This file last updated on 28 September 2025._
 | Repositories              | [GitHub][repo-gh] and [SourceForge][repo-sf]
 | Vim Plugin                | [Repository][vim-plugin]
 | Colorschemes (maintained) | [Repository][colors] and [colorscheme-previews]
+| Configuration example     | [vifmrc][vifmrc] and a [piece of .bashrc][bashrc]
 | Devicons/favicons         | [[1]][devicons-1], [[2]][devicons-2]
 | vifmimg (image preview)   | [Repository][vifmimg] (using [Überzug] to display the images)
 | sixel image preview       | [Repository][sixel-preview] (for [Sixel]-capable terminals)
@@ -144,6 +145,8 @@ GNU General Public License, version 2 or later.
 [bugs-sf]: https://sourceforge.net/p/vifm/_list/tickets
 [repo-gh]: https://github.com/vifm/vifm
 [repo-sf]: https://sourceforge.net/projects/vifm/
+[vifmrc]: https://github.com/xaizek/dotvifm/blob/master/vifmrc
+[bashrc]: https://github.com/xaizek/dotfiles/blob/404e0c5d94409a6a7342e52b84b4fff41e598597/bashrc#L538-L560
 [cheatsheet]: https://vifm.info/cheatsheets.shtml
 [wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
 [Sixel]: https://www.arewesixelyet.com/

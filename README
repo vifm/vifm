@@ -1,9 +1,9 @@
 Vifm - Vim-like file manager
-2001 - 2025
+2001 - 2026
 
 Version: 0.15
 
-This file last updated: 24 May 2025
+This file last updated: 9 February 2026
 
 Brief Description
 
@@ -60,6 +60,6 @@ Contacts
     * https://github.com/eylles/vifm-sixel-preview
     * https://github.com/iambumblehead/thu.sh
 
-    xaizek examples:
+    Configuration example:
     * https://github.com/xaizek/dotvifm
-    * https://github.com/xaizek/dotfiles
+    * https://github.com/xaizek/dotfiles/blob/master/bashrc (search for "vifm")
