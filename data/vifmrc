@@ -460,6 +460,10 @@ filextype */
         \ {View in thunar}
         \ Thunar %f &,
 
+" Deb packages
+fileviewer *.deb dpkg-deb -I %c; echo; dpkg-deb -c %c
+filetype *.deb echo "$(dpkg-deb -I %c; echo; dpkg-deb -c %c)" | less
+
 " Syntax highlighting in preview
 "
 " Explicitly set highlight type for some extensions
