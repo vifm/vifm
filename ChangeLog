@@ -1,5 +1,8 @@
 0.14.3 to current
 
+	Added example of handling .deb-files to sample vifmrc.  Patch by Kirill
+	Rekhov.
+
 	Improved potentially confusing wording in the dialog confirming exit while
 	background jobs are running.
 
