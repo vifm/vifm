@@ -31,6 +31,9 @@
 	editor automatically when "path" value is included in the value.  Patch by
 	Kaspars Vandans.
 
+	Added example of handling .deb-files to sample vifmrc.  Patch by Kirill
+	Rekhov.
+
 	Updated utf8proc to v2.11.2.
 
 	Made documentation on which :commands can have comments a bit more
