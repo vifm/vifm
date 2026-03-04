@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: January 18, 2025
+" Last Change: March 4, 2026
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -32,7 +32,7 @@ syntax keyword vifmCommandCN contained
 		\ di[splay] dirs e[dit] el[se] empty en[dif] exi[t] file fin[d] fini[sh]
 		\ go[to] gr[ep] h[elp] hideui histnext his[tory] histprev keepsel jobs
 		\ locate ls lstrash marks media mes[sages] mkdir m[ove] noh[lsearch]
-		\ on[ly] plugin plugins popd pushd pu[t] pw[d] qa[ll] q[uit] redr[aw]
+		\ on[ly] o[pen] plugin plugins popd pushd pu[t] pw[d] qa[ll] q[uit] redr[aw]
 		\ rege[dit] reg[isters] regular rename restart restore rlink screen sh[ell]
 		\ siblnext siblprev sor[t] sp[lit] st[op] s[ubstitute] tabc[lose] tabm[ove]
 		\ tabname tabnew tabn[ext] tabo[nly] tabp[revious] touch tr trashes tree

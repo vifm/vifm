@@ -9,6 +9,9 @@ nnoremap az : if expand('%c') == expand('%f')
           \ | endif
           \ | normal j<cr>
 
+" "open" should be highlighted as a :command
+nnoremap az :open
+
 " both occurrences of "<cr>" should be highlighted as angle bracket notation
 nnoremap bb :marks<cr><cr>
 
