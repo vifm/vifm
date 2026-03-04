@@ -697,6 +697,11 @@ execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 	cmd_stream = read_cmd_output(cmd, preserve_stdin);
 	free(cmd);
 
+	if(cmd_stream == NULL)
+	{
+		return var_error();
+	}
+
 	if(interactive)
 	{
 		ui_cancellation_push_on();
