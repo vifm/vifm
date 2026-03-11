@@ -106,6 +106,8 @@
 	Extended range of numbers Ctrl-A/Ctrl-X can deal with from [-2**31; 2**31)
 	to [-2**63; 2**63).  Thanks to CaptainFantastic.
 
+	Improved wording in documentation on gs and :copen.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.

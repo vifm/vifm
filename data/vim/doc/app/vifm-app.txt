@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 January 13
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 March 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -536,8 +536,8 @@ gv                                             *vifm-gv*
     When no register is specified, restore the last selection saved for this
     view (similar to what |vifm-gv| does for visual mode selection).  When you
     leave a directory, its saved selection is remembered for that path and
-    visiting the directory again restores it.  Selection for up to 10 distinct
-    file-system locations are remembered.
+    visiting the directory again restores it.  Selection is remembered for
+    up to 10 distinct file-system locations.
 
 
 gu<selector>                                   *vifm-gu*
@@ -1662,8 +1662,8 @@ The builtin commands are:
     options.
 
 :cope[n]                                       *vifm-:copen* *vifm-:cope*
-    reopens the last visible menu that has navigation to files by default, if
-    any.  See |vifm-menus-history|.
+    reopens the most recently closed navigation menu, if any.  See
+    |vifm-menus-history|.
 
                                                *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &]

@@ -1,4 +1,4 @@
-.TH VIFM 1 "13 January 2026" "vifm 0.15"
+.TH VIFM 1 "11 March 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -617,8 +617,8 @@ visible in current view are selected.
 When no register is specified, restore the last selection saved for this
 view (similar to what gv does for visual mode selection).  When you
 leave a directory, its saved selection is remembered for that path and
-visiting the directory again restores it.  Selection for up to 10 distinct
-file-system locations are remembered.
+visiting the directory again restores it.  Selection is remembered for
+up to 10 distinct file-system locations.
 .TP
 .BI gu<selector>
 make names of selected files lowercase.
@@ -1914,8 +1914,8 @@ options.
 .BI "                                         :copen"
 .TP
 .BI ":cope[n]"
-reopens the last visible menu that has navigation to files by default, if any.
-See also "Menus history" section.
+reopens the most recently closed navigation menu, if any.  See also
+"Menus history" section.
 .TP
 .BI "                                         :copy"
 .TP
