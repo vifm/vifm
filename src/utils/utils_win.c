@@ -765,15 +765,21 @@ update_terminal_settings(void)
 void
 get_uid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 {
-	/* Simply return empty buffer. */
-	buf[0] = '\0';
+	/* Simply return an empty buffer. */
+	if(buf_len != 0)
+	{
+		buf[0] = '\0';
+	}
 }
 
 void
 get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 {
-	/* Simply return empty buffer. */
-	buf[0] = '\0';
+	/* Simply return an empty buffer. */
+	if(buf_len != 0)
+	{
+		buf[0] = '\0';
+	}
 }
 
 FILE *
