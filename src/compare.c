@@ -1261,6 +1261,17 @@ compare_move(view_t *from, view_t *to)
 		return 1;
 	}
 
+	/* curr_view is used here and below because the from parameter can be equal to
+	 * either curr_view or other_view and the operation is framed in terms of the
+	 * current view. */
+	dir_entry_t *entry = NULL;
+	while(iter_selection_or_current_any(curr_view, &entry) && fops_active(ops))
+	{
+		char path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(path), path);
+		ops_enqueue(ops, path, flist_get_dir(to));
+	}
+
 	/* We're going at least to try to update one of the views (which might refer
 	 * to the same directory), so schedule a reload. */
 	ui_view_schedule_reload(from);
@@ -1268,10 +1279,13 @@ compare_move(view_t *from, view_t *to)
 
 	un_group_open(undo_msg);
 
-	dir_entry_t *entry = NULL;
+	entry = NULL;
 	while(iter_selection_or_current_any(curr_view, &entry) && fops_active(ops))
 	{
 		compare_move_entry(ops, from, to, entry_to_pos(curr_view, entry));
+
+		/* Assume a success, only interested in incrementing the counter. */
+		ops_advance(ops, /*succeeded=*/1);
 	}
 
 	un_group_close();

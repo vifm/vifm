@@ -252,7 +252,7 @@ fops_replace_entry(ops_t *ops, view_t *src, const dir_entry_t *src_entry,
 		fops_delete_entry(ops, dst, dst_entry, /*use_trash=*/1, /*nested=*/1);
 	}
 
-	fops_progress_msg("Copying files", 0, 1);
+	fops_progress_msg("Copying files", ops->current, ops->total);
 
 	if(fops_active(ops) && !is_valid_dir(dst_dir) &&
 			perform_operation(OP_MKDIR, ops, cp, dst_dir, NULL) == OPS_SUCCEEDED)
