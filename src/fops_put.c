@@ -1058,8 +1058,8 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 
 	if(!same_file)
 	{
-		if(cfg.use_system_calls && is_regular_file_noderef(dst_buf) &&
-				is_regular_file_noderef(caused_by))
+		if(cfg.use_system_calls && ONE_OF(put_confirm.op, CMLO_COPY, CMLO_MOVE) &&
+				is_regular_file_noderef(dst_buf) && is_regular_file_noderef(caused_by))
 		{
 			responses[i++] = append;
 		}

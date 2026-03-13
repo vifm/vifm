@@ -25,6 +25,9 @@
 	Updated list of categories in .desktop-file.  Patch by Jared
 	Cervantes (a.k.a. Jaredy899).
 
+	Don't offer "append the tail" conflict resolution option for al and rl
+	operations because it's inappropriate for creation of symbolic links.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via
