@@ -60,6 +60,10 @@
 	Fixed UID/GID occasionally not being formatted as requested (numeric vs.
 	symbolic form) in the UI.  Thanks to vuenn.
 
+	Fixed rl normal mode key sometimes not moving cursor to the newly inserted
+	link and simultaneously logging partial name in the undo history message,
+	which is merely informative.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.

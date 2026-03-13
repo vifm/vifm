@@ -553,7 +553,6 @@ static int
 put_next(int force)
 {
 	char *filename;
-	const char *dst_name;
 	const char *const dst_dir = put_confirm.dst_dir;
 	struct stat src_st;
 	char src_buf[PATH_MAX + 1], dst_buf[PATH_MAX + 1];
@@ -593,11 +592,17 @@ put_next(int force)
 
 	copy_str(src_buf, sizeof(src_buf), filename);
 
-	dst_name = put_confirm.dst_name;
+	const char *dst_name = put_confirm.dst_name;
 	if(dst_name == NULL)
 	{
 		dst_name = fops_get_dst_name(src_buf, from_trash);
 	}
+
+	/* Making a copy to avoid issues when src_buf is modified while dst_name
+	 * points into it. */
+	char dst_name_buf[NAME_MAX + 1];
+	copy_str(dst_name_buf, sizeof(dst_name_buf), dst_name);
+	dst_name = dst_name_buf;
 
 	build_path(dst_buf, sizeof(dst_buf), dst_dir, dst_name);
 	chosp(dst_buf);
