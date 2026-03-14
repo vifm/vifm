@@ -119,7 +119,9 @@ local function unpack_archive(archive, target, onexit) -- <<<
 
    local cmd
    if ext == 'tar' then
-      if cmp == "tgz" or cmp == "gz" then
+      if cmp == nil then
+         cmd = string.format('tar --force-local -C %s --no-auto-compress -vxf %s', eoutdir, efpath)
+      elseif cmp == "tgz" or cmp == "gz" then
          cmd = string.format('tar --force-local -C %s -vxzf %s', eoutdir, efpath)
       elseif cmp == "tbz2" or cmp == "bz2" then
          cmd = string.format('tar --force-local -C %s -vxjf %s', eoutdir, efpath)
