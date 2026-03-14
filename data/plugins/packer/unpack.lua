@@ -91,7 +91,7 @@ local function unpack_archive(archive, target, onexit) -- <<<
    end
 
    if prefix == nil then
-      if ext == 'tar' then
+      if vifm.fnamemodify(fname, ':r:e') == 'tar' then
          outdir = string.format("%s/%s", outdir, vifm.fnamemodify(fname, ':r:r'))
       else
          outdir = string.format("%s/%s", outdir, vifm.fnamemodify(fname, ':r'))
