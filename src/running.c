@@ -466,7 +466,7 @@ run_selection(view_t *view, int dont_execute)
 static void
 run_with_defaults(view_t *view)
 {
-	if(get_current_entry(view)->type == FT_DIR)
+	if(fentry_is_dir(get_current_entry(view)))
 	{
 		(void)rn_enter_dir(view);
 		return;

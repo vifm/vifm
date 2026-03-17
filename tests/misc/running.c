@@ -27,6 +27,7 @@
 #include "../lua/asserts.h"
 
 static int prog_exists(const char name[]);
+static int prog_does_not_exist(const char name[]);
 static void start_use_script(void);
 static void stop_use_script(void);
 static void assoc_a(char macro);
@@ -158,6 +159,31 @@ TEST(can_open_via_plugin)
 
 	vlua_finish(curr_stats.vlua);
 	curr_stats.vlua = NULL;
+}
+
+TEST(can_open_symlinked_directory, IF(not_windows))
+{
+	ft_init(&prog_does_not_exist);
+
+	create_dir(SANDBOX_PATH "/dir");
+	assert_success(make_symlink("dir", SANDBOX_PATH "/link"));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	populate_dir_list(&lwin, /*reload=*/0);
+
+	assert_int_equal(2, lwin.list_rows);
+	lwin.list_pos = 1;
+	lwin.dir_entry[lwin.list_pos].marked = 1;
+	lwin.pending_marking = 1;
+	assert_string_equal("link", lwin.dir_entry[lwin.list_pos].name);
+
+	rn_open(&lwin, FHE_RUN);
+	assert_success(chdir(cwd));
+
+	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH "/dir"));
+
+	remove_file(SANDBOX_PATH "/link");
+	remove_dir(SANDBOX_PATH "/dir");
 }
 
 TEST(following_resolves_links_in_origin, IF(not_windows))
@@ -672,6 +698,12 @@ static int
 prog_exists(const char name[])
 {
 	return 1;
+}
+
+static int
+prog_does_not_exist(const char name[])
+{
+	return 0;
 }
 
 static void
