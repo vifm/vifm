@@ -31,6 +31,9 @@
 	Rewrote documentation about command-line ranges to make it complete and
 	more readable.  Thanks to CaptainFantastic.
 
+	Improved wording in documentation describing general behaviour of visual
+	mode.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via

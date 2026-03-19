@@ -932,33 +932,37 @@ plain selection as it is in Vim;
 selection editing submode.
 .RE
 
-Both modes select files in range from cursor position at which visual mode was
-entered to current cursor position (let's call it "selection region").  Each of
-two borders can be adjusted by swapping them via "o" or "O" keys and updating
-cursor position with regular cursor motion keys.  Obviously, once initial cursor
-position is altered this way, real start position becomes unavailable.
+Both submodes select files in the range (let's call it "selection region")
+from the cursor position at which visual mode was started to the current
+cursor position.  Either end of the range can be adjusted by switching the
+active one via `o` or `O` keys and then updating cursor position
+via regular cursor motion keys.  After the initial cursor position is altered
+in this way it cannot be restored.
 
-Plain Vim-like visual mode starts with cleared selection, which is not restored
-on rejecting selection ("Escape", "Ctrl-C", "v", "V").  Contrary to it,
-selection editing doesn't clear previously selected files and restores them
-after reject.  Accepting selection by performing an operation on selected
-items (e.g. yanking them via "y") moves cursor to the top of current selection
-region (not to the top most selected file of the view).
+Plain Vim-like visual mode starts by clearing any selection.  If the mode is
+then aborted (via `Escape`, `CTRL-C`, `v` or `V`),
+the original selection is not restored automatically.  Contrary to it,
+selection editing preserves previously selected files and restores them in
+case the mode is aborted.  Accepting selection by performing an operation on
+the selected items (e.g., by yanking them via `y`) moves the cursor to
+the top of the current selection region, not to the top-most selected file of
+the view.
 
-In turn, selection editing supports three types of editing (look at status bar
-to know which one is currently active):
+Selection editing submode supports three types of editing (the status bar
+indicates which one is currently active):
 .RS 2
 .IP \- 2
-append \- amend selection by selecting elements in selection region;
+append \- amends selection by selecting elements in the selection region;
 .IP \- 2
-remove \- amend selection by deselecting elements in selection region;
+remove \- amends selection by deselecting elements in the selection region;
 .IP \- 2
-invert \- amend selection by inverting selection of elements in selection \
-region.
+invert \- amends selection by inverting selection of elements in the \
+selection region.
 .RE
 
-No matter how you activate selection editing it starts in "append".  One can
-switch type of operation (in the order given above) via "Ctrl-G" key.
+No matter how activated, selection editing starts with "append" operation
+active.  The operations can be cycled through (in the order given above) via
+`CTRL-G` key.
 
 Almost all normal mode keys work in visual mode, but instead of accepting
 selectors they operate on selected items.
