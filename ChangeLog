@@ -28,6 +28,9 @@
 	Don't offer "append the tail" conflict resolution option for al and rl
 	operations because it's inappropriate for creation of symbolic links.
 
+	Rewrote documentation about command-line ranges to make it complete and
+	more readable.  Thanks to CaptainFantastic.
+
 	Fixed :normal not being able to run commands which end with whitespace.
 
 	Fixed printing newline on cancelling choosing a directory via

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 March 11
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 March 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2965,24 +2965,61 @@ destination rather than refusing to perform the operation.
 
 Ranges~
                                                                *vifm-ranges*
-The ranges implemented include:
-  2,3 - from second to third file in the list (including it)
-  % - the entire directory.
-  . - the current position in the filelist.
-  $ - the end of the filelist.
-  't - the mark position t.
+A range is a sequence of one or more address elements separated by
+commas (`,`) or semicolons (`;`).  The addresses are processed left-to-right
+to produce a two-element range where the first element is not numerically
+larger than the second one:
+ - a single-element range `X` is equivalent to `X,X`
+ - a range with more than two elements is reduced to the last two, for
+   example: `X;Y,Z` becomes `Y,Z` (yet `X` is not completely ignored as it can
+   affect evaluation of `Y` and then `Z` through offsets)
+ - a user is prompted to determine whether a decreasing range should be
+   swapped instead of being rejected
+
+A range will be deemed invalid if:
+ - its second element is less than the first one
+ - it references a mark which doesn't point within the current file list
+
+Each address can take several forms described below, but all of them can be
+followed by an unspecified number of offsets: increments (`+{n}`) or
+decrements (`-{n}`).  When an element starts with an offset, the offset is
+applied to either the current position or the preceeding address depending on
+the separator:
+ - for `,` the current cursor position is used
+ - for `;` the previous range element is used
+
+Addresses are positive integers in the range from 1 (the first item, which
+could be ../) to the number of items in the list (inclusive, represents the last
+item).  All values are normalized to fit this range.
+
+The following addresses are supported:
+  .   - position of the cursor
+  {n} - position {n}
+  $   - position of the last item
+  't  - position of the mark `t`
+
+The following shorthand range also exists:
+  % - all items in the list (equivalent to `1,$`)
 
 Examples:
-  :%delete would delete all files in the directory.
-  :2,4delete would delete the files in the list positions 2 through 4.
-  :.,$delete would delete the files from the current position to the end
-    of the filelist.
-  :3delete4 would delete the files in the list positions 3, 4, 5, 6.
+  :.gr[ep] ...     grep the file under the cursor.
+  :.d[elete]       delete the file under the cursor.
+  :%d[elete]       delete all visible files.
+  :1,4d[elete]     delete the files at the list positions 1, 2, 3 and 4.
+                   Note: parent directory ../ is not handled by operations and
+                         can be safely included as part of various ranges.
+  :2,4d[elete]     delete the files at the list positions 2, 3 and 4.
+  :2d[elete]4      delete the files at the list positions 2, 3, 4 and 5.
+  :.,$d[elete]     delete the files from the current position to the end of
+                   the filelist.
+  :'a+1y[ank]      yank the file below the file marked with 'a.
+  :+1,+1y[ank]     yank the file below the cursor.
+  :+1;+1y[ank]     yank two files below the cursor.
+  :+1;+1;+1y[ank]  skip two files below and yank the next two.
+  :-3;+1           move two files up.
 
-If a backward range is given :4,2delete - an query message is given and
-user can chose what to do next.
-
-The builtin commands that accept a range are :d[elete] and :y[ank].
+All commands documented with `[range]` in front of them accept and handle
+ranges.  Those which accept a position use only the last element of the range.
 
 Command macros~
                                                                *vifm-macros*
