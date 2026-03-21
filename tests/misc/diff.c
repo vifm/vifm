@@ -19,7 +19,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/compare.h"
 #include "../../src/event_loop.h"
-#include "../../src/flist_sel.h"
+#include "../../src/filelist.h"
 #include "../../src/ops.h"
 #include "../../src/status.h"
 
@@ -190,7 +190,17 @@ TEST(can_move_selection)
 	strcpy(rwin.curr_dir, SANDBOX_PATH);
 
 	(void)compare_two_panes(CT_CONTENTS, LT_ALL, CF_GROUP_PATHS | CF_SHOW);
-	flist_sel_count(&lwin, 0, lwin.list_rows);
+
+	int i;
+	for(i = 0; i < lwin.list_rows; ++i)
+	{
+		if(fentry_is_valid(&lwin.dir_entry[i]))
+		{
+			lwin.dir_entry[i].selected = 1;
+			++lwin.selected_files;
+		}
+	}
+
 	(void)compare_move(&lwin, &rwin);
 	assert_int_equal(0, lwin.selected_files);
 

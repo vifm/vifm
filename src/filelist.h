@@ -229,6 +229,9 @@ void check_marking(view_t *view, int count, const int indexes[]);
  * marked.  Non-zero prefer_current parameter makes marking selection contingent
  * on current file being selected. */
 void flist_set_marking(view_t *view, int prefer_current);
+/* Marks up to count elements starting at position at (or the current cursor
+ * position, if at is negative). */
+void flist_mark_count(struct view_t *view, int at, int count);
 /* Unmarks all entries of the view. */
 void clear_marking(view_t *view);
 /* Marks files at positions specified in the indexes array of size count. */

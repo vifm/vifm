@@ -3711,6 +3711,28 @@ flist_set_marking(view_t *view, int prefer_current)
 }
 
 void
+flist_mark_count(view_t *view, int at, int count)
+{
+	/* Use current position if none given. */
+	if(at < 0)
+	{
+		at = view->list_pos;
+	}
+
+	clear_marking(view);
+
+	while(count-- > 0 && at < view->list_rows)
+	{
+		if(fentry_is_valid(&view->dir_entry[at]))
+		{
+			view->dir_entry[at].marked = 1;
+			++view->selected_files;
+		}
+		++at;
+	}
+}
+
+void
 mark_files_at(view_t *view, int count, const int indexes[])
 {
 	clear_marking(view);

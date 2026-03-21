@@ -403,28 +403,6 @@ flist_sel_by_pattern(view_t *view, const char pattern[], int erase_old,
 	return 0;
 }
 
-void
-flist_sel_count(view_t *view, int at, int count)
-{
-	/* Use current position if none given. */
-	if(at < 0)
-	{
-		at = view->list_pos;
-	}
-
-	flist_sel_stash(view);
-
-	while(count-- > 0 && at < view->list_rows)
-	{
-		if(fentry_is_valid(&view->dir_entry[at]))
-		{
-			view->dir_entry[at].selected = 1;
-			++view->selected_files;
-		}
-		++at;
-	}
-}
-
 int
 flist_sel_range(view_t *view, int begin, int end, int mark_current)
 {

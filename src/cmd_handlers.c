@@ -5806,7 +5806,7 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 			ui_sb_err("Count argument can't be zero");
 			return CMDS_ERR_CUSTOM;
 		}
-		flist_sel_count(curr_view, cmd_info->end, count);
+		flist_mark_count(curr_view, cmd_info->end, count);
 	}
 	else if(cmd_info->argc == 1)
 	{
@@ -5818,7 +5818,7 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 				ui_sb_err("Count argument can't be zero");
 				return CMDS_ERR_CUSTOM;
 			}
-			flist_sel_count(curr_view, cmd_info->end, count);
+			flist_mark_count(curr_view, cmd_info->end, count);
 		}
 		else
 		{
