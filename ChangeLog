@@ -79,6 +79,8 @@
 	Fixed :yank and :delete not handling optional count parameter correctly (a
 	regression since v0.11-beta).  Thanks to CaptainFantastic.
 
+	Fixed completion of :highlight truncating long custom column names.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.

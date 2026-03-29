@@ -620,10 +620,14 @@ TEST(highlight_columns_are_completed)
 	GLUA_EQ(curr_stats.vlua, "", "function handler() end");
 	GLUA_EQ(curr_stats.vlua, "",
 			"vifm.addcolumntype{ name = 'Test', handler = handler }");
+	GLUA_EQ(curr_stats.vlua, "",
+			"vifm.addcolumntype{ name = 'WhatAReallyLongAndAwkwardColumnName',"
+			                    "handler = handler }");
 
 	/* Completion doesn't require columns to be colored. */
 	ASSERT_COMPLETION(L"hi column:s", L"hi column:size");
 	ASSERT_COMPLETION(L"hi column:T", L"hi column:Test");
+	ASSERT_COMPLETION(L"hi column:W", L"hi column:WhatAReallyLongAndAwkwardColumnName");
 
 	assert_success(cmds_dispatch("hi column:size cterm=bold", &lwin, CIT_COMMAND));
 	ASSERT_COMPLETION(L"hi clear column:si", L"hi clear column:size");

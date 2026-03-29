@@ -836,7 +836,7 @@ complete_highlight_groups(const char str[], int for_clear)
 		char *lua_name = vlua_viewcolumn_map_back(curr_stats.vlua, i);
 		if(lua_name != NULL)
 		{
-			char name[16];
+			char name[128];
 			snprintf(name, sizeof(name), "column:%s", lua_name);
 			if(strncmp(str, name, len) == 0)
 			{
