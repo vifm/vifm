@@ -3,6 +3,8 @@
 	Added example of handling .deb-files to sample vifmrc.  Patch by Kirill
 	Rekhov.
 
+	Added menu index to the documentation.  Patch by CaptainFantastic.
+
 	Improved potentially confusing wording in the dialog confirming exit while
 	background jobs are running.
 

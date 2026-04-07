@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 March 19
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 April 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -40,6 +40,7 @@
 |vifm-ext-rename|         About editing buffer of file names in an editor.
 |vifm-mouse-using|        Using the mouse.
 |vifm-plugin|             Using the vifm.vim plugin.
+|vifm-menus-index|        Index of all menus.
 |vifm-reserved|           List of reserved commands.
 |vifm-env-vars|           Environment variables that affect vifm or set by it.
 |vifm-see-also|           Other resources about vifm.
@@ -6792,6 +6793,63 @@ view mode if it wasn't activated for exploring a file.
 *vifm-plugin*
 
 See |vifm-plugin.txt|.
+
+--------------------------------------------------------------------------------
+*vifm-menus-index*
+
+Mappings:
+  |vifm-:amap|, |vifm-:anoremap|        mappings in navigation mode
+  |vifm-:cmap|, |vifm-:cnoremap|        mappings in command-line mode
+  |vifm-:dmap|, |vifm-:dnoremap|        mappings in dialog mode
+  |vifm-:mmap|, |vifm-:mnoremap|        mappings in menu mode
+  |vifm-:nmap|, |vifm-:nnoremap|        mappings in normal mode
+  |vifm-:qmap|, |vifm-:qnoremap|        mappings in view mode
+  |vifm-:vmap|, |vifm-:vnoremap|        mappings in visual mode
+
+Expansions of command-line mode:
+  |vifm-:cabbrev|, |vifm-:cnoreabbrev|  command-line abbreviations
+  |vifm-:command|                     user commands
+
+Program associations:
+  |vifm-:file|                        programs set for the file type
+  |vifm-:filetype|                    program associations for a file
+  |vifm-:fileviewer|                  viewer associations for a file
+  |vifm-:filextype|                   graphical program associations for a file
+
+External commands:
+  |vifm-:apropos|                     results of running |vifm-'aproposprg'|
+  |vifm-:find|                        results of running |vifm-'findprg'|
+  |vifm-:grep|                        results of running |vifm-'grepprg'|
+  |vifm-:locate|                      results of running |vifm-'locateprg'|
+
+Marks and bookmarks:
+  |vifm-:bmarks|                      bookmarks (tag-like marks)
+  |vifm-:marks|                       marks
+
+History-like:
+  |vifm-:chistory|                    history of navigation menus
+  |vifm-:dirs|                        directory stack
+  |vifm-:history|                     histories of views and prompts
+  |vifm-:undolist|                    undo/redo history
+
+Trash directories and their contents:
+  |vifm-:lstrash|                     files in trash directories
+  |vifm-:trashes|                     usable non-empty trash directories
+
+Drives and volumes:
+  |vifm-:media|                       media management
+  |vifm-:volumes|                     volume list
+
+Other internal state:
+  |vifm-:colorscheme|                 color schemes
+  |vifm-:display|, |vifm-:registers|    contents of registers
+  |vifm-:jobs|                        current jobs and background processes
+  |vifm-:plugins|                     plugins
+  |vifm-:version|, |vifm-:vifm|         version and runtime information
+
+Macros that create menus:
+  |vifm-%m|                           captured output of a command
+  |vifm-%M|                           same as %m, but with navigation to files
 
 --------------------------------------------------------------------------------
 *vifm-reserved*

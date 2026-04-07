@@ -895,6 +895,7 @@ const char *tags[] = {
 	"vifm-mappings",
 	"vifm-menus-and-dialogs",
 	"vifm-menus-history",
+	"vifm-menus-index",
 	"vifm-more",
 	"vifm-mouse-overview",
 	"vifm-mouse-using",

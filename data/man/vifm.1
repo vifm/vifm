@@ -1,4 +1,4 @@
-.TH VIFM 1 "19 March 2026" "vifm 0.15"
+.TH VIFM 1 "7 April 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -8071,6 +8071,62 @@ directory add
 let loaded_vifm=1
 
 to your ~/.vimrc file.
+.\" ---------------------------------------------------------------------------
+.SH Index of menus
+.\" ---------------------------------------------------------------------------
+Mappings:
+  :amap, :anoremap          mappings in navigation mode
+  :cmap, :cnoremap          mappings in command-line mode
+  :dmap, :dnoremap          mappings in dialog mode
+  :mmap, :mnoremap          mappings in menu mode
+  :nmap, :nnoremap          mappings in normal mode
+  :qmap, :qnoremap          mappings in view mode
+  :vmap, :vnoremap          mappings in visual mode
+
+Expansions of command-line mode:
+  :cabbrev, :cnoreabbrev    command-line abbreviations
+  :command                  user commands
+
+Program associations:
+  :file                     programs set for the file type
+  :filetype                 program associations for a file
+  :fileviewer               viewer associations for a file
+  :filextype                graphical program associations for a file
+
+External commands:
+  :apropos                  results of running 'aproposprg'
+  :find                     results of running 'findprg'
+  :grep                     results of running 'grepprg'
+  :locate                   results of running 'locateprg'
+
+Marks and bookmarks:
+  :bmarks                   bookmarks (tag-like marks)
+  :marks                    marks
+
+History-like:
+  :chistory                 history of navigation menus
+  :dirs                     directory stack
+  :history                  histories of views and prompts
+  :undolist                 undo/redo history
+
+Trash directories and their contents:
+  :lstrash                  files in trash directories
+  :trashes                  usable non-empty trash directories
+
+Drives and volumes:
+  :media                    media management
+  :volumes                  volume list
+
+Other internal state:
+  :colorscheme              color schemes
+  :display, :registers      contents of registers
+  :jobs                     current jobs and background processes
+  :plugins                  plugins
+  :version, :vifm           version and runtime information
+
+Macros that create menus:
+  %m                        captured output of a command
+  %M                        same as %m, but with navigation to files
 .\" ---------------------------------------------------------------------------
 .SH Reserved
 .\" ---------------------------------------------------------------------------
