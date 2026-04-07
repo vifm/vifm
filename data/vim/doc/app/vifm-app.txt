@@ -1664,7 +1664,7 @@ The builtin commands are:
     options.
 
 :cope[n]                                       *vifm-:copen* *vifm-:cope*
-    reopens the most recently closed navigation menu, if any.  See
+    reopen the most recently closed navigation menu, if any.  See
     |vifm-menus-history|.
 
                                                *vifm-:copy* *vifm-:co*
