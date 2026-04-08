@@ -3369,8 +3369,8 @@ set_sortgroups(view_t *view, char **opt, char value[])
 static void
 sorting_changed(view_t *view, int defer_slow)
 {
-	/* Reset search results, which might be outdated after resorting. */
-	view->matches = 0;
+	/* Search results may be outdated after resorting. */
+	reset_search_results(view);
 	fview_sorting_updated(view);
 	if(!defer_slow)
 	{
