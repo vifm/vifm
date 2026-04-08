@@ -1176,7 +1176,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	size_t prefix_len, final_offset;
 	size_t width_left, trim_pos;
 
-	const column_data_t *const cdt = info->data;
+	column_data_t *const cdt = info->data;
 	view_t *view = cdt->view;
 	dir_entry_t *entry = cdt->entry;
 
@@ -1248,7 +1248,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	/* Draw match highlighting if there is any. */
 	int match_from = (cdt->custom_match ? cdt->match_from : info->match_from);
 	int match_to = (cdt->custom_match ? cdt->match_to : info->match_to);
-	if(match_from != match_to)
+	if(info->id != FILL_COLUMN_ID && match_from != match_to)
 	{
 		/* Calculate number of screen characters before the match. */
 		size_t match_start_col = utf8_nstrsw(print_buf, match_from);
@@ -1261,6 +1261,13 @@ column_line_print(const char buf[], int offset, AlignType align,
 
 	/* Use a given prefix value at most once. */
 	*cdt->prefix_len = 0;
+
+	if(info->id != FILL_COLUMN_ID)
+	{
+		/* Any match for this column has already been consumed, so reset it in
+		 * preparation of processing the next column. */
+		cdt->custom_match = 0;
+	}
 }
 
 /* Draws current line number at specified column. */

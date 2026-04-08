@@ -223,11 +223,6 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 	vifmentry_new(lua, entry);
 	lua_setfield(lua, -2, "entry");
 
-	/* No match highlighting by default. */
-	cdt->custom_match = 1;
-	cdt->match_from = 0;
-	cdt->match_to = 0;
-
 	const int sm_cookie = vlua_state_safe_mode_on(lua);
 	if(lua_pcall(lua, 1, 1, 0) != LUA_OK)
 	{
@@ -269,6 +264,7 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 
 		if(has_start && has_end && start >= 0 && end >= 0 && start <= end)
 		{
+			cdt->custom_match = 1;
 			cdt->match_from = start;
 			cdt->match_to = end;
 		}

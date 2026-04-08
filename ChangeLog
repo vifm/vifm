@@ -83,6 +83,9 @@
 
 	Fixed completion of :highlight truncating long custom column names.
 
+	Fixed a Lua column disabling search highlighting for all columns to its
+	right.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
