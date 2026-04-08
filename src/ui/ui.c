@@ -69,6 +69,7 @@
 #include "../flist_sel.h"
 #include "../macros.h"
 #include "../opt_handlers.h"
+#include "../search.h"
 #include "../sort.h"
 #include "../status.h"
 #include "../vifm.h"
@@ -2159,7 +2160,7 @@ ui_view_reset_search_highlight(view_t *view)
 {
 	if(view->matches != 0)
 	{
-		view->matches = 0;
+		reset_search_results(view);
 		ui_view_schedule_redraw(view);
 	}
 }
