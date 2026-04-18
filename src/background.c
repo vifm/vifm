@@ -37,7 +37,7 @@
 #include <stddef.h> /* NULL wchar_t */
 #include <stdint.h> /* uintptr_t */
 #include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
-#include <string.h> /* strdup() */
+#include <string.h> /* strdup() strerror() */
 
 #include "cfg/config.h"
 #include "compat/os.h"
@@ -1032,7 +1032,8 @@ launch_external(const char cmd[], const char pwd[], BgJobFlags flags,
 	int error_pipe[2] = { -1, -1 };
 	if(!merge_streams && pipe(error_pipe) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating error pipe");
+		show_error_msgf("File pipe error", "Error creating error pipe: %s",
+				strerror(errno));
 		return NULL;
 	}
 
@@ -1047,7 +1048,8 @@ launch_external(const char cmd[], const char pwd[], BgJobFlags flags,
 	{
 		if(pipe(input_pipe) != 0)
 		{
-			show_error_msg("File pipe error", "Error creating input pipe");
+			show_error_msgf("File pipe error", "Error creating input pipe: %s",
+					strerror(errno));
 			close(error_pipe[0]);
 			close(error_pipe[1]);
 			return NULL;
@@ -1058,9 +1060,13 @@ launch_external(const char cmd[], const char pwd[], BgJobFlags flags,
 	{
 		if(pipe(output_pipe) != 0)
 		{
-			show_error_msg("File pipe error", "Error creating output pipe");
-			close(input_pipe[0]);
-			close(input_pipe[1]);
+			show_error_msgf("File pipe error", "Error creating output pipe: %s",
+					strerror(errno));
+			if(supply_input)
+			{
+				close(input_pipe[0]);
+				close(input_pipe[1]);
+			}
 			close(error_pipe[0]);
 			close(error_pipe[1]);
 			return NULL;
