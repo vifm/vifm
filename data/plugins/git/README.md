@@ -113,7 +113,6 @@ similar to how `git status --short` does it.
 
 **Issues:**
 
- * Large repositories won't show complete status due to hitting pipe size limit.
  * Git status for a submodule isn't fetched immediately after entering it.
 
 **TODO:**
@@ -125,8 +124,3 @@ similar to how `git status --short` does it.
  * Reuse old cache for entire subtree while it's being updated (only a specific
    path gets to reuse it right now).
  * Make cache update faster if directory modification is detected.
- * Check if `!!` status can ever be seen.
- * Consider using `git status --porcelain=v2 -z` as it provides more
-   information.
- * Consider marking ignored files as such.
- * Using `libgit2` could improve performance.

@@ -52,6 +52,7 @@ vlua_state_alloc(void)
 	luaL_requiref(vlua->lua, LUA_MATHLIBNAME, &luaopen_math, 1);
 	luaL_requiref(vlua->lua, LUA_OSLIBNAME, &luaopen_os, 1);
 	luaL_requiref(vlua->lua, LUA_LOADLIBNAME, &luaopen_package, 1);
+	luaL_requiref(vlua->lua, LUA_COLIBNAME, &luaopen_coroutine, 1);
 	lua_pop(vlua->lua, 7);
 
 	return vlua;

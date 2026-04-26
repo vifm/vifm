@@ -39,6 +39,10 @@ case "$host_os" in
         ;;
 esac
 
+dnl Enable Lua dynamic library loading.
+CPPFLAGS="$CPPFLAGS -DLUA_USE_DLOPEN"
+LDFLAGS="-Wl,-E $LDFLAGS"
+
 dnl pass some CFLAGS to tests (TESTS_CFLAGS is also extended below)
 TESTS_CFLAGS="$CFLAGS"
 AC_SUBST([TESTS_CFLAGS])
