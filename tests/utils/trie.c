@@ -1,10 +1,12 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
-#include <string.h> /* strdup() */
+#include <stdlib.h> /* free() malloc() */
+#include <string.h> /* memset() strdup() */
 
 #include "../../src/utils/trie.h"
+
+static char * make_large_key(char filler, int len);
 
 TEST(freeing_new_trie_is_ok)
 {
@@ -178,6 +180,45 @@ TEST(assign_to_existing_prefix)
 	assert_success(trie_get(trie, "bcd", &data));
 
 	trie_free(trie);
+}
+
+TEST(huge_keys)
+{
+	char *a_key = make_large_key('a', 32768);
+	char *b_key = make_large_key('b', 12345);
+
+	trie_t *const trie = trie_create(/*free_func=*/NULL);
+	void *data = NULL;
+
+	/* One large key works. */
+	assert_success(trie_put(trie, a_key));
+	assert_success(trie_get(trie, a_key, &data));
+
+	/* Another large key works. */
+	assert_success(trie_put(trie, b_key));
+	assert_success(trie_get(trie, b_key, &data));
+
+	/* The first one is still there. */
+	assert_success(trie_get(trie, a_key, &data));
+
+	trie_free(trie);
+
+	free(a_key);
+	free(b_key);
+}
+
+static char *
+make_large_key(char filler, int len)
+{
+	char *key = malloc(len + 1);
+	/* assert_non_null() weirdly causes `'key' may be used uninitialized` (is it
+	 * about data not being initialized?). */
+	assert_true(key != NULL);
+
+	memset(key, filler, len);
+	key[len] = '\0';
+
+	return key;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

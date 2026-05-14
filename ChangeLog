@@ -86,6 +86,9 @@
 	Fixed a Lua column disabling search highlighting for all columns to its
 	right.
 
+	Fixed a buffer overflow in trie implementation.  Thanks to Michał
+	Majchrowicz and Marcin Wyczechowski.
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
