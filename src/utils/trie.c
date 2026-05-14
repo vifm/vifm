@@ -150,10 +150,16 @@ clone_nodes(trie_t *new_trie, const trie_node_t *node, int *error)
 		return NULL;
 	}
 
+	new_node->key = alloc_string(new_trie, node->key, node->key_len);
+	if(new_node->key == NULL)
+	{
+		*error = 1;
+		return NULL;
+	}
+
 	new_node->left = clone_nodes(new_trie, node->left, error);
 	new_node->right = clone_nodes(new_trie, node->right, error);
 	new_node->down = clone_nodes(new_trie, node->down, error);
-	new_node->key = alloc_string(new_trie, node->key, node->key_len);
 	new_node->first = node->key[0];
 	new_node->key_len = node->key_len;
 	new_node->exists = node->exists;
@@ -238,9 +244,16 @@ trie_set(trie_t *trie, const char str[], const void *data)
 			{
 				return -1;
 			}
+
 			node->key_len = strlen(str);
-			node->key = alloc_string(trie, str, node->key_len);
 			node->first = str[0];
+
+			node->key = alloc_string(trie, str, node->key_len);
+			if(node->key == NULL)
+			{
+				return -1;
+			}
+
 			*link = node;
 			break;
 		}
@@ -348,6 +361,10 @@ alloc_string(trie_t *trie, const char str[], int len)
 
 		trie->str_bufs = str_bufs;
 		trie->str_bufs[trie->str_buf_count] = malloc(MAX(MIN_STR_BUF_SIZE, len));
+		if(trie->str_bufs[trie->str_buf_count] == NULL)
+		{
+			return NULL;
+		}
 
 		++trie->str_buf_count;
 		trie->last_offset = 0;
