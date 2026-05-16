@@ -590,8 +590,10 @@ VLUA_API(vifmview_loadcustom)(lua_State *lua)
 		lua_pop(lua, 1);
 	}
 
-	int success = (flist_custom_finish(view, type, /*allow_empty=*/1) == 0);
-	assert(success && "With allow_empty, the call should always succeed.");
+	if(flist_custom_finish(view, type, /*allow_empty=*/1) != 0)
+	{
+		assert(0 && "With allow_empty, the call should always succeed.");
+	}
 
 	return 0;
 }
