@@ -308,9 +308,8 @@ view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 	return NULL;
 }
 
-/* Displays contents of file or output of its viewer in the other pane
- * starting from the second line and second column.  Returns preview clear
- * command or NULL. */
+/* Displays contents of a file or output of its viewer in a preview area.
+ * Returns preview clear command or NULL. */
 static const char *
 view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache)

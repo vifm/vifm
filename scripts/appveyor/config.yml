@@ -13,16 +13,19 @@ environment:
           CC: clang
           APPVEYOR_BUILD_WORKER_IMAGE: macOS
           CONFIGURE_EXTRA: --with-sanitize=basic
+          CFLAGS: -DNDEBUG
         - BUILDENV: nix
           CC: gcc
           APPVEYOR_BUILD_WORKER_IMAGE: macOS
         - PATH: c:/msys64/mingw32/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
           RELEASE: 1
           BUILDENV: win
+          CFLAGS: -DNDEBUG
           APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
         - PATH: c:/msys64/mingw64/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
           RELEASE: 1
           BUILDENV: win
+          CFLAGS: -DNDEBUG
           APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
         - PATH: c:/msys64/mingw32/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
           RELEASE: 0

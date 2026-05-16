@@ -41,7 +41,8 @@ if [ ! -d mingw-libgnurx-2.5.1/ ]; then
 wget 'https://downloads.sourceforge.net/project/mingw/Other/UserContributed/regex/mingw-regex-2.5.1/mingw-libgnurx-2.5.1-src.tar.gz'
 tar vxf mingw-libgnurx-2.5.1-src.tar.gz
 cd mingw-libgnurx-2.5.1/
-./configure
+# `bool`, `false` and `true` are keywords in C23 which breaks this library
+./configure CFLAGS=-std=gnu11
 make
 
 fi
