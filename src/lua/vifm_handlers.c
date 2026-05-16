@@ -100,8 +100,10 @@ vifm_handlers_view(vlua_t *vlua, const char viewer[], const char path[],
 
 	free(name);
 
-	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
-			"Handler must be a function here.");
+	if(lua_getfield(vlua->lua, -1, "handler") != LUA_TFUNCTION)
+	{
+		assert(0 && "A handler is not a function.");
+	}
 
 	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/6);
 	lua_pushstring(vlua->lua, viewer);
@@ -176,8 +178,10 @@ vifm_handlers_open(vlua_t *vlua, const char prog[], const dir_entry_t *entry)
 
 	free(name);
 
-	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
-			"Handler must be a function here.");
+	if(lua_getfield(vlua->lua, -1, "handler") != LUA_TFUNCTION)
+	{
+		assert(0 && "A handler is not a function.");
+	}
 
 	lua_createtable(vlua->lua, /*narr=*/0, /*nrec=*/2);
 	lua_pushstring(vlua->lua, prog);
@@ -249,8 +253,10 @@ run_format_handler(vlua_t *vlua, const char handler[])
 
 	free(name);
 
-	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
-			"Handler must be a function here.");
+	if(lua_getfield(vlua->lua, -1, "handler") != LUA_TFUNCTION)
+	{
+		assert(0 && "A handler is not a function.");
+	}
 
 	lua_pushvalue(vlua->lua, -4);
 
@@ -393,8 +399,10 @@ run_editor_handler(vlua_t *vlua, const char handler[])
 
 	free(name);
 
-	assert(lua_getfield(vlua->lua, -1, "handler") == LUA_TFUNCTION &&
-			"Handler must be a function here.");
+	if(lua_getfield(vlua->lua, -1, "handler") != LUA_TFUNCTION)
+	{
+		assert(0 && "A handler is not a function.");
+	}
 
 	lua_pushvalue(vlua->lua, -4);
 
