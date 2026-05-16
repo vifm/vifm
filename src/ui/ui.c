@@ -3085,6 +3085,7 @@ ui_pass_through(const strlist_t *lines, WINDOW *win, int x, int y)
 	{
 		puts(lines->items[i]);
 	}
+	fflush(stdout);
 
 	/* Make curses synchronize its idea about where cursor is with the terminal
 	 * state. */
