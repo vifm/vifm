@@ -1130,6 +1130,35 @@ Parameters:~
 Return:~
   `true` on success.
 
+keys.list([{query}])                            *vifm-l_vifm.keys.list()*
+Lists keys of a mode.
+
+Possible fields of {query}:
+ - "mode" (string) (default: "normal")
+   Mode to list: cmdline, nav, normal, visual, menus or view.
+ - "useronly" (boolean) (default: false)
+   Whether to list only user-defined keys.
+
+Return:~
+  Array of tables.  Each table contains:
+   - "shortcut" (string)
+     Left-hand side of the key.
+   - "action" (string)
+     Right-hand side for user-defined mappings or an empty string for builtin
+     and foreign keys.
+   - "description" (string)
+     Description of the key.
+
+keys.send({shortcut})                           *vifm-l_vifm.keys.send()*
+Executes a key sequence written in the same notation as "shortcut" of
+|vifm-l_vifm.keys.add()|.
+
+Parameters:~
+  {shortcut}  Key sequence to execute.
+
+Return:~
+  Integer result code of key execution.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm.menus*
 
@@ -1742,6 +1771,8 @@ vifm.fs.rmdir({path})                      |vifm-l_vifm.fs.rmdir()|
 
 vifm.keys (table)                          |vifm-l_vifm.keys|
 vifm.keys.add({key})                       |vifm-l_vifm.keys.add()|
+vifm.keys.list([{query}])                  |vifm-l_vifm.keys.list()|
+vifm.keys.send({shortcut})                 |vifm-l_vifm.keys.send()|
 
 vifm.menus (table)                         |vifm-l_vifm.menus|
 vifm.menus.loadcustom({menu})              |vifm-l_vifm.menus.loadcustom()|

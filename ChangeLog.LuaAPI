@@ -21,6 +21,9 @@ documented in the regular ChangeLog.
 
 	Added vifm.cmds.list() which lists known commands.
 
+	Added vifm.keys.list() and vifm.keys.send() for inspecting and executing
+	key bindings.
+
 	Added "specs" field to vifm.menus.loadcustom() which allows specifying
 	targets for navigation menus independently of whether and how they appear
 	in the menu.
