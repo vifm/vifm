@@ -694,20 +694,33 @@ Possible fields of {info}:
    Command to execute.
  - "pause" (string) (default: "onerror")
    When to pause after command execution: "never", "onerror", "always".
+   Ignored when "capture" is true.
  - "usetermmux" (boolean) (default: true)
    Whether to open terminal multiplexer if support was enabled via
-   |vifm-:screen|.
+   |vifm-:screen|.  Ignored when "capture" is true.
+ - "capture" (boolean) (default: false)
+   When true, runs the command with Vifm UI shut down (giving it full control
+   of the terminal) and captures its standard output.  Useful for interactive
+   programs which need a TTY and produce data on stdout (e.g. fuzzy finders).
+ - "mergestreams" (boolean) (default: false)
+   Only meaningful with "capture".  When true, the command is wrapped so that
+   its standard error is merged into the standard output.
 
 Parameters:~
   {info}  Table with information about what and how to run.
 
 Return:~
-  Exit code of the command, see |vifm-l_VifmJob:exitcode()| for details.
-  Mind that if terminal multiplexer is used, this will be exit code of a
-  command that communicates with the multiplexer.
+  When "capture" is false (default), returns exit code of the command, see
+  |vifm-l_VifmJob:exitcode()| for details.  Mind that if terminal multiplexer
+  is used, this will be exit code of a command that communicates with the
+  multiplexer.
+
+  When "capture" is true, returns captured standard output as a string with
+  trailing newlines stripped.
 
 Raises an error:~
   If {info}.pause has incorrect value.
+  When "capture" is true and the command cannot be started.
 
 vifm.startjob({job})                           *vifm-l_vifm.startjob()*
 Launches an external command as a background job.  Returns without waiting
