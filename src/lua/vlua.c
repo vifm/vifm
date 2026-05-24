@@ -106,7 +106,7 @@ patch_env(lua_State *lua)
 	lua_setglobal(lua, "print");
 
 	lua_getglobal(lua, "os");
-	lua_createtable(lua, /*narr=*/0, /*nrec=*/6);
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/7);
 	lua_getfield(lua, -2, "clock");
 	lua_setfield(lua, -2, "clock");
 	lua_getfield(lua, -2, "date");
@@ -115,6 +115,8 @@ patch_env(lua_State *lua)
 	lua_setfield(lua, -2, "difftime");
 	lua_pushcfunction(lua, VLUA_REF(os_getenv));
 	lua_setfield(lua, -2, "getenv");
+	lua_getfield(lua, -2, "remove");
+	lua_setfield(lua, -2, "remove");
 	lua_getfield(lua, -2, "time");
 	lua_setfield(lua, -2, "time");
 	lua_getfield(lua, -2, "tmpname");

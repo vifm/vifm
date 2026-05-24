@@ -56,6 +56,13 @@ TEST(os_getenv_works)
 	clear_variables();
 }
 
+TEST(os_remove_works)
+{
+	create_file(SANDBOX_PATH "/remove-me");
+	GLUA_EQ(vlua, "true", "print(os.remove('" SANDBOX_PATH "/remove-me'))");
+	no_remove_file(SANDBOX_PATH "/remove-me");
+}
+
 TEST(vifm_errordialog)
 {
 	BLUA_ENDS(vlua,

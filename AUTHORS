@@ -199,3 +199,5 @@ Steven Xu (a.k.a. stevenxxiu) provided improvements and fixes for the git
 plugin.
 
 cairo55 implemented 'keepsel' option.
+
+Vladimir Baranov exposed `os.remove()` in Lua.
