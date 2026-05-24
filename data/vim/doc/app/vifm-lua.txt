@@ -927,6 +927,22 @@ Parameters:~
 Return:~
   `true` on success.
 
+vifm.cmds.list()                               *vifm-l_vifm.cmds.list()*
+Lists known commands.
+
+Return:~
+  Array of tables.  Each table contains:
+   - "kind" (string)
+     Either "builtin" or "user".
+   - "name" (string)
+     Command name.
+   - "description" (string)
+     Command description.
+   - "minargs" (integer)
+     Minimal number of arguments.
+   - "maxargs" (integer)
+     Maximal number of arguments or -1 for no limit.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm.events*
 
@@ -1709,6 +1725,7 @@ vifm.cmds (table)                          |vifm-l_vifm.cmds|
 vifm.cmds.add({cmd})                       |vifm-l_vifm.cmds.add()|
 vifm.cmds.command({cmd})                   |vifm-l_vifm.cmds.command()|
 vifm.cmds.delcommand({name})               |vifm-l_vifm.cmds.delcommand()|
+vifm.cmds.list()                           |vifm-l_vifm.cmds.list()|
 
 vifm.events (table)                        |vifm-l_vifm.events|
 vifm.events.listen({event})                |vifm-l_vifm.events.listen()|

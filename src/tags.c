@@ -764,6 +764,7 @@ const char *tags[] = {
 	"vifm-l_vifm.cmds.add()",
 	"vifm-l_vifm.cmds.command()",
 	"vifm-l_vifm.cmds.delcommand()",
+	"vifm-l_vifm.cmds.list()",
 	"vifm-l_vifm.currview()",
 	"vifm-l_vifm.errordialog()",
 	"vifm-l_vifm.escape()",
