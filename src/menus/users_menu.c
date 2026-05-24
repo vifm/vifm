@@ -92,6 +92,48 @@ fail:
 	return 1;
 }
 
+int
+stash_custom_menu(view_t *view, const char title[], strlist_t items,
+		strlist_t specs, int with_navigation, int pos)
+{
+	static menu_data_t m;
+
+	/* Avoid saving menus that couldn't be reopened later. */
+	if(items.nitems == 0)
+	{
+		goto fail;
+	}
+
+	if(specs.nitems != 0 && specs.nitems != items.nitems)
+	{
+		goto fail;
+	}
+
+	menus_init_data(&m, view, strdup(title), strdup("No items"));
+
+	m.extra_data = with_navigation;
+	m.stashable = 1;
+	m.execute_handler = &execute_users_cb;
+	m.get_spec = &users_get_spec;
+	m.key_handler = &users_khandler;
+
+	m.len = items.nitems;
+	m.items = items.items;
+	m.data = specs.items;
+	if(pos >= 0 && pos < m.len)
+	{
+		m.pos = pos;
+	}
+
+	menus_stash(&m);
+	return 0;
+
+fail:
+	free_string_array(items.items, items.nitems);
+	free_string_array(specs.items, specs.nitems);
+	return 1;
+}
+
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
