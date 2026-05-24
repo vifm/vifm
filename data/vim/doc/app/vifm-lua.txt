@@ -1128,6 +1128,12 @@ Possible fields of {menu}:
    When true, the items are considered to be paths that terminate at `:`
    optionally followed by line and column numbers (like for |vifm-%M|).
    Otherwise, the behaviour is like for |vifm-%m|.
+ - "stash" (boolean) (default: false)
+   When true, the menu is saved for later use (e.g. with |vifm-:copen|) instead
+   of being displayed right away.
+ - "pos" (integer) (optional)
+   1-based cursor position to restore when the menu is reopened.  Useful with
+   "stash".
 
 This function is {unsafe}.
 

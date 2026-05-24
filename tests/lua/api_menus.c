@@ -112,6 +112,32 @@ TEST(menus_loadcustom_no_navigation)
 	assert_false(menu_get_current()->extra_data);
 }
 
+TEST(menus_loadcustom_stash)
+{
+	menus_drop_stash();
+
+	GLUA_EQ(vlua, "true",
+			"print(vifm.menus.loadcustom {"
+			"  title = 'saved',"
+			"  items = { 'a', 'b' },"
+			"  stash = true,"
+			"  pos = 2,"
+			"})");
+	assert_false(vle_mode_is(MENU_MODE));
+
+	assert_success(menus_unstash(&lwin));
+	assert_true(vle_mode_is(MENU_MODE));
+	assert_true(menus_get_view(menu_get_current()) == &lwin);
+	assert_string_equal("saved", menu_get_current()->title);
+	assert_int_equal(2, menu_get_current()->len);
+	assert_string_equal("a", menu_get_current()->items[0]);
+	assert_string_equal("b", menu_get_current()->items[1]);
+	assert_int_equal(1, menu_get_current()->pos);
+	assert_false(menu_get_current()->extra_data);
+
+	menus_drop_stash();
+}
+
 TEST(menus_loadcustom_navigation)
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), ".", "", NULL);

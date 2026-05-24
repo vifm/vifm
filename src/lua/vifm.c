@@ -402,8 +402,9 @@ VLUA_API(vifm_makepath)(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm.menus` that creates a menu out of list of items.  Returns a
- * boolean, which is true on success. */
+/* Member of `vifm.menus` that creates a menu out of list of items.  When
+ * "stash" field is true, menu is saved for later use without entering it.
+ * Returns a boolean, which is true on success. */
 static int
 VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
 {
@@ -423,6 +424,18 @@ VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
 	if(vlua_cmn_check_opt_field(lua, 1, "withnavigation", LUA_TBOOLEAN))
 	{
 		with_navigation = lua_toboolean(lua, -1);
+	}
+
+	int stash = 0;
+	if(vlua_cmn_check_opt_field(lua, 1, "stash", LUA_TBOOLEAN))
+	{
+		stash = lua_toboolean(lua, -1);
+	}
+
+	int pos = -1;
+	if(vlua_cmn_check_opt_field(lua, 1, "pos", LUA_TNUMBER))
+	{
+		pos = lua_tointeger(lua, -1) - 1;
 	}
 
 	vlua_cmn_check_field(lua, 1, "title", LUA_TSTRING);
@@ -452,8 +465,16 @@ VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
 		}
 	}
 
-	int success =
-		(show_custom_menu(view, title, items, specs, with_navigation) == 0);
+	int success;
+	if(stash)
+	{
+		success =
+			(stash_custom_menu(view, title, items, specs, with_navigation, pos) == 0);
+	}
+	else
+	{
+		success = (show_custom_menu(view, title, items, specs, with_navigation) == 0);
+	}
 	lua_pushboolean(lua, success);
 	return 1;
 

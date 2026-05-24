@@ -18,6 +18,10 @@ documented in the regular ChangeLog.
 	targets for navigation menus independently of whether and how they appear
 	in the menu.
 
+	Added "stash" and "pos" fields to vifm.menus.loadcustom() which save a
+	custom menu for later reopening (e.g. with :copen) without entering it
+	immediately.
+
 	Fixed a crash on passing a value that's not convertible to a string to
 	VifmView:loadcustom().
 
