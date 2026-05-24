@@ -14,6 +14,10 @@ documented in the regular ChangeLog.
 	Added vifm.redraw() which requests a UI redraw.  Thanks to Steven
 	Xu (stevenxxiu).
 
+	Added "capture" and "mergestreams" fields to vifm.run() to run a command
+	with Vifm UI shut down and return its standard output as a string.  Useful
+	for driving interactive terminal programs like fuzzy finders.
+
 	Added "specs" field to vifm.menus.loadcustom() which allows specifying
 	targets for navigation menus independently of whether and how they appear
 	in the menu.

@@ -274,6 +274,23 @@ TEST(vifm_run)
 	conf_teardown();
 }
 
+TEST(vifm_run_capture, IF(not_windows))
+{
+	conf_setup();
+
+	GLUA_EQ(vlua, "hi",
+			"print(vifm.run { cmd = 'printf hi', capture = true })");
+
+	GLUA_EQ(vlua, "outerr",
+			"print(vifm.run {"
+			"  cmd = '(printf out; printf err 1>&2)',"
+			"  capture = true,"
+			"  mergestreams = true,"
+			"})");
+
+	conf_teardown();
+}
+
 TEST(vifm_input)
 {
 	view_setup(&lwin);
