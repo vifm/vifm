@@ -787,11 +787,7 @@ fi
 
 if test "$use_dyn_libX11" = "yes"; then
     ORIG_LIBS="$LIBS"
-    AC_CHECK_LIB(dl, dlopen,
-                 [
-                 use_dyn_libX11=yes
-                 LIBS="$LIBS -ldl"
-                 ], [use_dyn_libX11=no])
+    AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"], [use_dyn_libX11=no])
 
     AC_CHECK_HEADER([dlfcn.h], [], [use_dyn_libX11=no])
     AC_CHECK_FUNC([dlsym], [], [use_dyn_libX11=no])

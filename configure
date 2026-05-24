@@ -11772,10 +11772,7 @@ fi
 printf '%s\n' "$ac_cv_lib_dl_dlopen" >&6; }
 if test "x$ac_cv_lib_dl_dlopen" = xyes
 then :
-
-                 use_dyn_libX11=yes
-                 LIBS="$LIBS -ldl"
-
+  LIBS="$LIBS -ldl"
 else case e in #(
   e) use_dyn_libX11=no ;;
 esac
