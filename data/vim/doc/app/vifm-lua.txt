@@ -171,7 +171,7 @@ The following standard libraries are enabled:
  * input and output (`io` table)
  * mathematical functions (`math` table)
  * time subset of OS facilities (`clock`, `date`, `difftime` and `time`
-   elements) and `tmpname` of `os` table
+   elements) and `remove`, `tmpname` of `os` table
 
 --------------------------------------------------------------------------------
 *vifm-plugins*

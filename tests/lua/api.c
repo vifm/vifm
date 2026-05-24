@@ -56,6 +56,19 @@ TEST(os_getenv_works)
 	clear_variables();
 }
 
+TEST(os_remove_works)
+{
+	FILE *fp = fopen(SANDBOX_PATH "/remove-me", "w");
+	assert_non_null(fp);
+	fclose(fp);
+
+	GLUA_EQ(vlua, "y", "print(vifm.exists('" SANDBOX_PATH "/remove-me')"
+			"      and 'y' or 'n')");
+	GLUA_EQ(vlua, "true", "print(os.remove('" SANDBOX_PATH "/remove-me'))");
+	GLUA_EQ(vlua, "n", "print(vifm.exists('" SANDBOX_PATH "/remove-me')"
+			"      and 'y' or 'n')");
+}
+
 TEST(vifm_errordialog)
 {
 	BLUA_ENDS(vlua,
