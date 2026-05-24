@@ -785,6 +785,8 @@ const char *tags[] = {
 	"vifm-l_vifm.input()",
 	"vifm-l_vifm.keys",
 	"vifm-l_vifm.keys.add()",
+	"vifm-l_vifm.keys.list()",
+	"vifm-l_vifm.keys.send()",
 	"vifm-l_vifm.makepath()",
 	"vifm-l_vifm.menus",
 	"vifm-l_vifm.menus.loadcustom()",

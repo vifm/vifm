@@ -21,6 +21,7 @@
 #include <stdlib.h> /* free() */
 #include <wchar.h>
 
+#include "../compat/curses.h"
 #include "../engine/keys.h"
 #include "../modes/modes.h"
 #include "../ui/statusbar.h"
@@ -37,18 +38,39 @@
 #include "vlua_state.h"
 
 static int VLUA_API(keys_add)(lua_State *lua);
+static int VLUA_API(keys_list)(lua_State *lua);
+static int VLUA_API(keys_send)(lua_State *lua);
 
 VLUA_DECLARE_SAFE(keys_add);
+VLUA_DECLARE_SAFE(keys_list);
+VLUA_DECLARE_SAFE(keys_send);
 
 static void parse_modes(vlua_t *vlua, char modes[MODES_COUNT]);
+static int parse_mode_name(const char name[]);
+static void list_key_cb(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
 static void lua_key_handler(key_info_t key_info, keys_info_t *keys_info);
 static void build_handler_args(lua_State *lua, key_info_t key_info,
 		const keys_info_t *keys_info);
 
+/* Per-call context for list_key_cb.  Stack form supports recursive
+ * invocations. */
+typedef struct keys_list_ctx_t
+{
+	lua_State *lua;
+	int index;
+	struct keys_list_ctx_t *prev;
+}
+keys_list_ctx_t;
+
+static keys_list_ctx_t *keys_list_top;
+
 /* Functions of `vifm.keys` table. */
 static const luaL_Reg vifm_keys_methods[] = {
-	{ "add", VLUA_REF(keys_add) },
-	{ NULL,  NULL               }
+	{ "add",  VLUA_REF(keys_add)  },
+	{ "list", VLUA_REF(keys_list) },
+	{ "send", VLUA_REF(keys_send) },
+	{ NULL,   NULL                }
 };
 
 void
@@ -196,6 +218,140 @@ parse_modes(vlua_t *vlua, char modes[MODES_COUNT])
 
 		lua_pop(vlua->lua, 1);
 	}
+}
+
+/* Member of `vifm.keys` that lists keys of a mode. */
+static int
+VLUA_API(keys_list)(lua_State *lua)
+{
+	int mode = NORMAL_MODE;
+	if(vlua_cmn_check_opt_arg(lua, 1, LUA_TTABLE))
+	{
+		if(vlua_cmn_check_opt_field(lua, 1, "mode", LUA_TSTRING))
+		{
+			mode = parse_mode_name(lua_tostring(lua, -1));
+			if(mode < 0)
+			{
+				return luaL_error(lua, "%s", "Unknown mode");
+			}
+		}
+	}
+
+	int user_only = 0;
+	if(lua_type(lua, 1) == LUA_TTABLE &&
+			vlua_cmn_check_opt_field(lua, 1, "useronly", LUA_TBOOLEAN))
+	{
+		user_only = lua_toboolean(lua, -1);
+	}
+
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/0);
+
+	keys_list_ctx_t ctx = { .lua = lua, .index = 1, .prev = keys_list_top };
+	keys_list_top = &ctx;
+	vle_keys_list(mode, &list_key_cb, user_only);
+	keys_list_top = ctx.prev;
+
+	return 1;
+}
+
+/* Member of `vifm.keys` that executes a key sequence. */
+static int
+VLUA_API(keys_send)(lua_State *lua)
+{
+	const char *shortcut = luaL_checkstring(lua, 1);
+
+	wchar_t *keys = substitute_specs(shortcut);
+	if(keys == NULL)
+	{
+		return luaL_error(lua, "%s", "Failed to parse keys");
+	}
+
+	const int result = vle_keys_exec(keys);
+	free(keys);
+
+	lua_pushinteger(lua, result);
+	return 1;
+}
+
+/* Converts a Lua mode name to the native mode id. */
+static int
+parse_mode_name(const char name[])
+{
+	if(strcmp(name, "cmdline") == 0)
+	{
+		return CMDLINE_MODE;
+	}
+	if(strcmp(name, "nav") == 0)
+	{
+		return NAV_MODE;
+	}
+	if(strcmp(name, "normal") == 0)
+	{
+		return NORMAL_MODE;
+	}
+	if(strcmp(name, "visual") == 0)
+	{
+		return VISUAL_MODE;
+	}
+	if(strcmp(name, "menus") == 0)
+	{
+		return MENU_MODE;
+	}
+	if(strcmp(name, "view") == 0)
+	{
+		return VIEW_MODE;
+	}
+
+	return -1;
+}
+
+/* Callback for collecting key descriptions into a Lua table. */
+static void
+list_key_cb(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
+{
+	keys_list_ctx_t *ctx = keys_list_top;
+	if(ctx == NULL)
+	{
+		return;
+	}
+
+	if(lhs == NULL || rhs == NULL)
+	{
+		return;
+	}
+
+	/* Skip mouse events: their lhs can't be printed in a meaningful form. */
+	if(lhs[0] == K(KEY_MOUSE))
+	{
+		return;
+	}
+
+	lua_State *lua = ctx->lua;
+
+	char *const shortcut = wstr_to_spec(lhs);
+	char *const action = wstr_to_spec(rhs);
+	if(shortcut == NULL || action == NULL)
+	{
+		free(shortcut);
+		free(action);
+		return;
+	}
+
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/3);
+
+	lua_pushstring(lua, shortcut);
+	lua_setfield(lua, -2, "shortcut");
+
+	lua_pushstring(lua, action);
+	lua_setfield(lua, -2, "action");
+
+	lua_pushstring(lua, descr == NULL ? "" : descr);
+	lua_setfield(lua, -2, "description");
+
+	lua_seti(lua, -2, ctx->index++);
+
+	free(shortcut);
+	free(action);
 }
 
 /* Handler of all foreign mappings registered from Lua. */
