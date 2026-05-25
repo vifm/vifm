@@ -10831,7 +10831,6 @@ if test "x$ncurses_found" != "xyes"; then
         as_fn_error $? "libncursesw and libncurses not found" "$LINENO" 5
     fi
 fi
-LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 ac_fn_c_check_header_compile "$LINENO" "curses.h" "ac_cv_header_curses_h" "$ac_includes_default"
 if test "x$ac_cv_header_curses_h" = xyes
