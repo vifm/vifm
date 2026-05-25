@@ -1316,4 +1316,5 @@ AC_SUBST(am__xargs_n)
 ])
 
 m4_include([build-aux/m4/ax_check_compile_flag.m4])
+m4_include([build-aux/m4/ax_check_link_flag.m4])
 m4_include([build-aux/m4/ax_pthread.m4])
