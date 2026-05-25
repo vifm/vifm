@@ -418,6 +418,20 @@ AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"])
 dnl Enable POSIX shared memory
 AC_CHECK_LIB(rt, shm_open, [LIBS="$LIBS -lrt"])
 
+dnl Used for Lua's loadable C modules, not failing when not present because its
+dnl existence depends on an operating system
+AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"])
+AX_CHECK_LINK_FLAG([-Wl,--export-dynamic-symbol=lua_*], [can_limit_symbols=yes])
+if test "$can_limit_symbols" = "yes"; then
+    dnl When supported, whitelist symbols to be exported by the executable
+    LDFLAGS="$LDFLAGS -Wl,--export-dynamic-symbol=lua_*"
+    LDFLAGS="$LDFLAGS -Wl,--export-dynamic-symbol=luaL_*"
+else
+    AX_CHECK_LINK_FLAG([-Wl,-E],
+                       [LDFLAGS="$LDFLAGS -Wl,-E"],
+                       [AC_MSG_ERROR([Linker doesn't support -E flag.])])
+fi
+
 dnl Use pthread library
 AX_PTHREAD([
              LIBS="$PTHREAD_LIBS $LIBS"
@@ -786,16 +800,16 @@ if test "$remote_cmds" = "yes"; then
 fi
 
 if test "$use_dyn_libX11" = "yes"; then
-    ORIG_LIBS="$LIBS"
-    AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"], [use_dyn_libX11=no])
+    if test "$ac_cv_lib_dl_dlopen" != yes; then
+        use_dyn_libX11=no
+    fi
 
     AC_CHECK_HEADER([dlfcn.h], [], [use_dyn_libX11=no])
     AC_CHECK_FUNC([dlsym], [], [use_dyn_libX11=no])
     AC_CHECK_FUNC([dlclose], [], [use_dyn_libX11=no])
 
     if test "$use_dyn_libX11" != "yes"; then
-        LIBS="$ORIG_LIBS"
-        AC_MSG_WARN(["libdl seems to don't work as expected.  No dynamic X11."])
+        AC_MSG_WARN(["libdl seems to not work as expected.  No dynamic X11."])
     fi
 fi
 

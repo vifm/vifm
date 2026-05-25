@@ -794,8 +794,9 @@
 ** without modifying the main part of the file.
 */
 
-#ifndef _WIN32
+#if !defined(LUA_USE_WINDOWS)
 #define LUA_USE_POSIX
+#define LUA_USE_DLOPEN		/* needs an extra library: -ldl */
 #endif
 
 #endif

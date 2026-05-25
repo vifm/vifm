@@ -89,6 +89,9 @@
 	Fixed a buffer overflow in trie implementation.  Thanks to Michał
 	Majchrowicz and Marcin Wyczechowski.
 
+	Fixed Lua modules written in C not being loaded on Unix-like systems.
+	Thanks to Steven Xu (a.k.a. stevenxxiu).
+
 0.14.2 to 0.14.3 (2025-06-04)
 
 	Provided more details on file handlers and viewers in sample vifmrc files.
