@@ -504,7 +504,6 @@ if test "x$ncurses_found" != "xyes"; then
         AC_MSG_ERROR([libncursesw and libncurses not found])
     fi
 fi
-LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 dnl Check for curses.h header and all its required elements.
 AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])
