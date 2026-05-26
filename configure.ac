@@ -421,15 +421,30 @@ AC_CHECK_LIB(rt, shm_open, [LIBS="$LIBS -lrt"])
 dnl Used for Lua's loadable C modules, not failing when not present because its
 dnl existence depends on an operating system
 AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"])
-AX_CHECK_LINK_FLAG([-Wl,--export-dynamic-symbol=lua_*], [can_limit_symbols=yes])
-if test "$can_limit_symbols" = "yes"; then
+export_some_opt=
+AX_CHECK_LINK_FLAG([-Wl,--export-dynamic-symbol=lua_*],
+                   [export_some_opt=-Wl,--export-dynamic-symbol=])
+if test -n "$OSX_HOST" && test -z "$export_some_opt"; then
+    # Not sure if underscore prefix is needed only on OS X and whether any other
+    # linker may accept `-exported_symbol` parameter, but assuming this is
+    # specific to OS X.
+    AX_CHECK_LINK_FLAG([-Wl,-exported_symbol -Wl,_lua_*],
+                       [export_some_opt='-Wl,-exported_symbol -Wl,_'])
+fi
+if test -n "$export_some_opt"; then
     dnl When supported, whitelist symbols to be exported by the executable
-    LDFLAGS="$LDFLAGS -Wl,--export-dynamic-symbol=lua_*"
-    LDFLAGS="$LDFLAGS -Wl,--export-dynamic-symbol=luaL_*"
+    LDFLAGS="$LDFLAGS ${export_some_opt}lua_* ${export_some_opt}luaL_*"
 else
-    AX_CHECK_LINK_FLAG([-Wl,-E],
-                       [LDFLAGS="$LDFLAGS -Wl,-E"],
-                       [AC_MSG_ERROR([Linker doesn't support -E flag.])])
+    export_all_opt=
+    AX_CHECK_LINK_FLAG([-Wl,-E], [export_all_opt=-Wl,-E])
+    if test -n "$OSX_HOST" && test -z "$export_all_opt"; then
+        AX_CHECK_LINK_FLAG([-Wl,-export_dynamic],
+                           [export_all_opt=-Wl,-export_dynamic])
+    fi
+    if test -z "$export_all_opt"; then
+        AC_MSG_ERROR([Linker doesn't support -E flag or an equivalent.])
+    fi
+    LDFLAGS="$LDFLAGS $export_all_opt"
 fi
 
 dnl Use pthread library
