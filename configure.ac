@@ -442,7 +442,7 @@ else
                            [export_all_opt=-Wl,-export_dynamic])
     fi
     if test -z "$export_all_opt"; then
-        AC_MSG_ERROR([Linker doesn't support -E flag or an equivalent.])
+        AC_MSG_WARN([Linker doesn't support -E flag or an equivalent.])
     fi
     LDFLAGS="$LDFLAGS $export_all_opt"
 fi

@@ -9458,7 +9458,8 @@ fi
 
     fi
     if test -z "$export_all_opt"; then
-        as_fn_error $? "Linker doesn't support -E flag or an equivalent." "$LINENO" 5
+        { printf '%s\n' "$as_me:${as_lineno-$LINENO}: WARNING: Linker doesn't support -E flag or an equivalent." >&5
+printf '%s\n' "$as_me: WARNING: Linker doesn't support -E flag or an equivalent." >&2;}
     fi
     LDFLAGS="$LDFLAGS $export_all_opt"
 fi
