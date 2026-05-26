@@ -9263,6 +9263,7 @@ then :
   LIBS="$LIBS -ldl"
 fi
 
+export_some_opt=
 as_CACHEVAR=`printf '%s\n' "ax_cv_check_ldflags__-Wl,--export-dynamic-symbol=lua_*" | sed "$as_sed_sh"`
 { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,--export-dynamic-symbol=lua_*" >&5
 printf %s "checking whether the linker accepts -Wl,--export-dynamic-symbol=lua_*... " >&6; }
@@ -9301,16 +9302,65 @@ eval ac_res=\$$as_CACHEVAR
 printf '%s\n' "$ac_res" >&6; }
 if eval test \"x\$"$as_CACHEVAR"\" = x"yes"
 then :
-  can_limit_symbols=yes
+  export_some_opt=-Wl,--export-dynamic-symbol=
 else case e in #(
   e) : ;;
 esac
 fi
 
-if test "$can_limit_symbols" = "yes"; then
-        LDFLAGS="$LDFLAGS -Wl,--export-dynamic-symbol=lua_*"
-    LDFLAGS="$LDFLAGS -Wl,--export-dynamic-symbol=luaL_*"
+if test -n "$OSX_HOST" && test -z "$export_some_opt"; then
+    # Not sure if underscore prefix is needed only on OS X and whether any other
+    # linker may accept `-exported_symbol` parameter, but assuming this is
+    # specific to OS X.
+    as_CACHEVAR=`printf '%s\n' "ax_cv_check_ldflags__-Wl,-exported_symbol -Wl,_lua_*" | sed "$as_sed_sh"`
+{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,-exported_symbol -Wl,_lua_*" >&5
+printf %s "checking whether the linker accepts -Wl,-exported_symbol -Wl,_lua_*... " >&6; }
+if eval test \${$as_CACHEVAR+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$LDFLAGS
+  LDFLAGS="$LDFLAGS  -Wl,-exported_symbol -Wl,_lua_*"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  eval "$as_CACHEVAR=yes"
+else case e in #(
+  e) eval "$as_CACHEVAR=no" ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LDFLAGS=$ax_check_save_flags ;;
+esac
+fi
+eval ac_res=\$$as_CACHEVAR
+	       { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf '%s\n' "$ac_res" >&6; }
+if eval test \"x\$"$as_CACHEVAR"\" = x"yes"
+then :
+  export_some_opt='-Wl,-exported_symbol -Wl,_'
+else case e in #(
+  e) : ;;
+esac
+fi
+
+fi
+if test -n "$export_some_opt"; then
+        LDFLAGS="$LDFLAGS ${export_some_opt}lua_* ${export_some_opt}luaL_*"
 else
+    export_all_opt=
     { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,-E" >&5
 printf %s "checking whether the linker accepts -Wl,-E... " >&6; }
 if test ${ax_cv_check_ldflags___Wl__E+y}
@@ -9347,12 +9397,60 @@ fi
 printf '%s\n' "$ax_cv_check_ldflags___Wl__E" >&6; }
 if test "x$ax_cv_check_ldflags___Wl__E" = xyes
 then :
-  LDFLAGS="$LDFLAGS -Wl,-E"
+  export_all_opt=-Wl,-E
 else case e in #(
-  e) as_fn_error $? "Linker doesn't support -E flag." "$LINENO" 5 ;;
+  e) : ;;
 esac
 fi
 
+    if test -n "$OSX_HOST" && test -z "$export_all_opt"; then
+        { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,-export_dynamic" >&5
+printf %s "checking whether the linker accepts -Wl,-export_dynamic... " >&6; }
+if test ${ax_cv_check_ldflags___Wl__export_dynamic+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$LDFLAGS
+  LDFLAGS="$LDFLAGS  -Wl,-export_dynamic"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ax_cv_check_ldflags___Wl__export_dynamic=yes
+else case e in #(
+  e) ax_cv_check_ldflags___Wl__export_dynamic=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LDFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___Wl__export_dynamic" >&5
+printf '%s\n' "$ax_cv_check_ldflags___Wl__export_dynamic" >&6; }
+if test "x$ax_cv_check_ldflags___Wl__export_dynamic" = xyes
+then :
+  export_all_opt=-Wl,-export_dynamic
+else case e in #(
+  e) : ;;
+esac
+fi
+
+    fi
+    if test -z "$export_all_opt"; then
+        as_fn_error $? "Linker doesn't support -E flag or an equivalent." "$LINENO" 5
+    fi
+    LDFLAGS="$LDFLAGS $export_all_opt"
 fi
 
 { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
