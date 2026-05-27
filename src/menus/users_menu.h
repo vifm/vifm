@@ -35,6 +35,12 @@ int show_user_menu(struct view_t *view, const char command[],
 int show_custom_menu(struct view_t *view, const char title[],
 		struct strlist_t items, struct strlist_t specs, int with_navigation);
 
+/* Stashes a menu with custom contents.  Takes ownership of items and specs.
+ * Returns zero on success. */
+int stash_custom_menu(struct view_t *view, const char title[],
+		struct strlist_t items, struct strlist_t specs, int with_navigation,
+		int pos);
+
 #endif /* VIFM__MENUS__USERS_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

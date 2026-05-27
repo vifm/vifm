@@ -56,6 +56,19 @@ TEST(os_getenv_works)
 	clear_variables();
 }
 
+TEST(os_remove_works)
+{
+	FILE *fp = fopen(SANDBOX_PATH "/remove-me", "w");
+	assert_non_null(fp);
+	fclose(fp);
+
+	GLUA_EQ(vlua, "y", "print(vifm.exists('" SANDBOX_PATH "/remove-me')"
+			"      and 'y' or 'n')");
+	GLUA_EQ(vlua, "true", "print(os.remove('" SANDBOX_PATH "/remove-me'))");
+	GLUA_EQ(vlua, "n", "print(vifm.exists('" SANDBOX_PATH "/remove-me')"
+			"      and 'y' or 'n')");
+}
+
 TEST(vifm_errordialog)
 {
 	BLUA_ENDS(vlua,
@@ -257,6 +270,23 @@ TEST(vifm_run)
 			"print(vifm.run({ cmd = 'exit 2',"
 			"                 usetermmux = false,"
 			"                 pause = 'never' }))");
+
+	conf_teardown();
+}
+
+TEST(vifm_run_capture, IF(not_windows))
+{
+	conf_setup();
+
+	GLUA_EQ(vlua, "hi",
+			"print(vifm.run { cmd = 'printf hi', capture = true })");
+
+	GLUA_EQ(vlua, "outerr",
+			"print(vifm.run {"
+			"  cmd = '(printf out; printf err 1>&2)',"
+			"  capture = true,"
+			"  mergestreams = true,"
+			"})");
 
 	conf_teardown();
 }

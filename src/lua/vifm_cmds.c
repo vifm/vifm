@@ -24,7 +24,9 @@
 #include "../engine/completion.h"
 #include "../ui/statusbar.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../cmd_completion.h"
+#include "../cmd_handlers.h"
 #include "../status.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
@@ -36,18 +38,23 @@ static int VLUA_API(cmds_add)(lua_State *lua);
 static void parse_cmd_params(vlua_t *vlua, cmd_add_t *cmd);
 static int VLUA_API(cmds_command)(lua_State *lua);
 static int VLUA_API(cmds_delcommand)(lua_State *lua);
+static int VLUA_API(cmds_list_api)(lua_State *lua);
+static void push_cmd_info(lua_State *lua, int index, const char kind[],
+		const char name[], const char descr[], int min_args, int max_args);
 static int lua_cmd_handler(const cmd_info_t *cmd_info);
 static int apply_completion(lua_State *lua, const char str[]);
 
 VLUA_DECLARE_SAFE(cmds_add);
 VLUA_DECLARE_SAFE(cmds_command);
 VLUA_DECLARE_SAFE(cmds_delcommand);
+VLUA_DECLARE_SAFE(cmds_list_api);
 
 /* Functions of `vifm.cmds` table. */
 static const luaL_Reg vifm_cmds_methods[] = {
 	{ "add",        VLUA_REF(cmds_add)        },
 	{ "command",    VLUA_REF(cmds_command)    },
 	{ "delcommand", VLUA_REF(cmds_delcommand) },
+	{ "list",       VLUA_REF(cmds_list_api)   },
 	{ NULL,         NULL                      }
 };
 
@@ -183,6 +190,73 @@ VLUA_API(cmds_delcommand)(lua_State *lua)
 	int success = (vle_cmds_del_user(name) == 0);
 	lua_pushboolean(lua, success);
 	return 1;
+}
+
+/* Member of `vifm.cmds` that lists builtin and custom commands. */
+static int
+VLUA_API(cmds_list_api)(lua_State *lua)
+{
+	lua_createtable(lua, /*narr=*/cmds_list_size, /*nrec=*/0);
+
+	int index = 1;
+	size_t i;
+	for(i = 0U; i < cmds_list_size; ++i)
+	{
+		const cmd_add_t *cmd = &cmds_list[i];
+		if(cmd->name == NULL || cmd->name[0] == '\0')
+		{
+			continue;
+		}
+
+		/* Skip internal placeholder entries like "<USERCMD>". */
+		if(cmd->name[0] == '<')
+		{
+			continue;
+		}
+
+		push_cmd_info(lua, index++, "builtin", cmd->name, cmd->descr,
+				cmd->min_args, cmd->max_args == NOT_DEF ? -1 : cmd->max_args);
+	}
+
+	char **custom_cmds = vle_cmds_list_udcs();
+	if(custom_cmds != NULL)
+	{
+		int j;
+		for(j = 0; custom_cmds[j] != NULL && custom_cmds[j + 1] != NULL; j += 2)
+		{
+			push_cmd_info(lua, index++, "user", custom_cmds[j], custom_cmds[j + 1],
+					0, -1);
+		}
+
+		free_string_array(custom_cmds, count_strings(custom_cmds));
+	}
+
+	return 1;
+}
+
+/* Adds a command description item to a Lua array. */
+static void
+push_cmd_info(lua_State *lua, int index, const char kind[], const char name[],
+		const char descr[], int min_args, int max_args)
+{
+	lua_createtable(lua, /*narr=*/0, /*nrec=*/5);
+
+	lua_pushstring(lua, kind);
+	lua_setfield(lua, -2, "kind");
+
+	lua_pushstring(lua, name);
+	lua_setfield(lua, -2, "name");
+
+	lua_pushstring(lua, descr == NULL ? "" : descr);
+	lua_setfield(lua, -2, "description");
+
+	lua_pushinteger(lua, min_args);
+	lua_setfield(lua, -2, "minargs");
+
+	lua_pushinteger(lua, max_args);
+	lua_setfield(lua, -2, "maxargs");
+
+	lua_seti(lua, -2, index);
 }
 
 /* Handler of all foreign :commands registered from Lua. */
