@@ -5,7 +5,7 @@ while stabilizing for v1.0 a bunch of breaking changes can happen at once.  API
 sections marked {deprecated} will be removed.  After that all changes will be
 documented in the regular ChangeLog.
 
-0.14.3 to current
+0.14.3 to 0.14.4 (2026-05-31)
 
 	Upgraded Lua from 5.4.7 to 5.4.8.
 
