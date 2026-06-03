@@ -9,6 +9,9 @@ documented in the regular ChangeLog.
 
 	Upgraded Lua from 5.4.7 to 5.4.8.
 
+	Additions to enabled standard libraries:
+	 * `os.remove()`.  Patch by Vladimir Baranov.
+
 	Added vifm.redraw() which requests a UI redraw.  Thanks to Steven
 	Xu (stevenxxiu).
 

@@ -3023,7 +3023,7 @@ A range will be deemed invalid if:
 Each address can take several forms described below, but all of them can be
 followed by an unspecified number of offsets: increments (`+{n}`) or
 decrements (`-{n}`).  When an element starts with an offset, the offset is
-applied to either the current position or the preceeding address depending on
+applied to either the current position or the preceding address depending on
 the separator:
  - for `,` the current cursor position is used
  - for `;` the previous range element is used
