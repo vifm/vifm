@@ -694,20 +694,33 @@ Possible fields of {info}:
    Command to execute.
  - "pause" (string) (default: "onerror")
    When to pause after command execution: "never", "onerror", "always".
+   Ignored when "capture" is true.
  - "usetermmux" (boolean) (default: true)
    Whether to open terminal multiplexer if support was enabled via
-   |vifm-:screen|.
+   |vifm-:screen|.  Ignored when "capture" is true.
+ - "capture" (boolean) (default: false)
+   When true, runs the command with Vifm UI shut down (giving it full control
+   of the terminal) and captures its standard output.  Useful for interactive
+   programs which need a TTY and produce data on stdout (e.g. fuzzy finders).
+ - "mergestreams" (boolean) (default: false)
+   Only meaningful with "capture".  When true, the command is wrapped so that
+   its standard error is merged into the standard output.
 
 Parameters:~
   {info}  Table with information about what and how to run.
 
 Return:~
-  Exit code of the command, see |vifm-l_VifmJob:exitcode()| for details.
-  Mind that if terminal multiplexer is used, this will be exit code of a
-  command that communicates with the multiplexer.
+  When "capture" is false (default), returns exit code of the command, see
+  |vifm-l_VifmJob:exitcode()| for details.  Mind that if terminal multiplexer
+  is used, this will be exit code of a command that communicates with the
+  multiplexer.
+
+  When "capture" is true, returns captured standard output as a string with
+  trailing newlines stripped.
 
 Raises an error:~
   If {info}.pause has incorrect value.
+  When "capture" is true and the command cannot be started.
 
 vifm.startjob({job})                           *vifm-l_vifm.startjob()*
 Launches an external command as a background job.  Returns without waiting
@@ -915,6 +928,22 @@ Parameters:~
 Return:~
   `true` on success.
 
+vifm.cmds.list()                               *vifm-l_vifm.cmds.list()*
+Lists known commands.
+
+Return:~
+  Array of tables.  Each table contains:
+   - "kind" (string)
+     Either "builtin" or "user".
+   - "name" (string)
+     Command name.
+   - "description" (string)
+     Command description.
+   - "minargs" (integer)
+     Minimal number of arguments.
+   - "maxargs" (integer)
+     Maximal number of arguments or -1 for no limit.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm.events*
 
@@ -1101,6 +1130,35 @@ Parameters:~
 Return:~
   `true` on success.
 
+keys.list([{query}])                            *vifm-l_vifm.keys.list()*
+Lists keys of a mode.
+
+Possible fields of {query}:
+ - "mode" (string) (default: "normal")
+   Mode to list: cmdline, nav, normal, visual, menus or view.
+ - "useronly" (boolean) (default: false)
+   Whether to list only user-defined keys.
+
+Return:~
+  Array of tables.  Each table contains:
+   - "shortcut" (string)
+     Left-hand side of the key.
+   - "action" (string)
+     Right-hand side for user-defined mappings or an empty string for builtin
+     and foreign keys.
+   - "description" (string)
+     Description of the key.
+
+keys.send({shortcut})                           *vifm-l_vifm.keys.send()*
+Executes a key sequence written in the same notation as "shortcut" of
+|vifm-l_vifm.keys.add()|.
+
+Parameters:~
+  {shortcut}  Key sequence to execute.
+
+Return:~
+  Integer result code of key execution.
+
 --------------------------------------------------------------------------------
 *vifm-l_vifm.menus*
 
@@ -1129,6 +1187,12 @@ Possible fields of {menu}:
    When true, the items are considered to be paths that terminate at `:`
    optionally followed by line and column numbers (like for |vifm-%M|).
    Otherwise, the behaviour is like for |vifm-%m|.
+ - "stash" (boolean) (default: false)
+   When true, the menu is saved for later use (e.g. with |vifm-:copen|) instead
+   of being displayed right away.
+ - "pos" (integer) (optional)
+   1-based cursor position to restore when the menu is reopened.  Useful with
+   "stash".
 
 This function is {unsafe}.
 
@@ -1691,6 +1755,7 @@ vifm.cmds (table)                          |vifm-l_vifm.cmds|
 vifm.cmds.add({cmd})                       |vifm-l_vifm.cmds.add()|
 vifm.cmds.command({cmd})                   |vifm-l_vifm.cmds.command()|
 vifm.cmds.delcommand({name})               |vifm-l_vifm.cmds.delcommand()|
+vifm.cmds.list()                           |vifm-l_vifm.cmds.list()|
 
 vifm.events (table)                        |vifm-l_vifm.events|
 vifm.events.listen({event})                |vifm-l_vifm.events.listen()|
@@ -1706,6 +1771,8 @@ vifm.fs.rmdir({path})                      |vifm-l_vifm.fs.rmdir()|
 
 vifm.keys (table)                          |vifm-l_vifm.keys|
 vifm.keys.add({key})                       |vifm-l_vifm.keys.add()|
+vifm.keys.list([{query}])                  |vifm-l_vifm.keys.list()|
+vifm.keys.send({shortcut})                 |vifm-l_vifm.keys.send()|
 
 vifm.menus (table)                         |vifm-l_vifm.menus|
 vifm.menus.loadcustom({menu})              |vifm-l_vifm.menus.loadcustom()|

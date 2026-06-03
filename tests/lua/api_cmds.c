@@ -214,6 +214,33 @@ TEST(cmds_names_with_numbers)
 			"if not r then print 'fail' end");
 }
 
+TEST(cmds_list)
+{
+	cmds_init();
+
+	GLUA_EQ(vlua, "",
+			"vifm.cmds.add {"
+			"  name = 'fzfsample',"
+			"  handler = function() end"
+			"}");
+
+	GLUA_EQ(vlua, "command\tbuiltin\t0\t-1",
+			"for _, cmd in ipairs(vifm.cmds.list()) do "
+			"  if cmd.name == 'command' then "
+			"    print(cmd.name, cmd.kind, cmd.minargs, cmd.maxargs) "
+			"    break "
+			"  end "
+			"end");
+
+	GLUA_EQ(vlua, "fzfsample\tuser\t0\t-1",
+			"for _, cmd in ipairs(vifm.cmds.list()) do "
+			"  if cmd.name == 'fzfsample' then "
+			"    print(cmd.name, cmd.kind, cmd.minargs, cmd.maxargs) "
+			"    break "
+			"  end "
+			"end");
+}
+
 TEST(cmds_delcommand)
 {
 	GLUA_EQ(vlua, "",

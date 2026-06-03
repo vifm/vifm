@@ -18,6 +18,9 @@
 
 #include "vifm.h"
 
+#include <stdio.h> /* FILE fclose() */
+#include <stdlib.h> /* free() */
+#include <sys/types.h> /* pid_t */
 #include <unistd.h> /* isatty() */
 
 #include "../cfg/info.h"
@@ -25,11 +28,15 @@
 #include "../menus/users_menu.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/cmdline.h"
+#include "../ui/cancellation.h"
 #include "../ui/statusbar.h"
+#include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/utils.h"
+#include "../background.h"
 #include "../event_loop.h"
 #include "../filelist.h"
 #include "../filename_modifiers.h"
@@ -402,8 +409,9 @@ VLUA_API(vifm_makepath)(lua_State *lua)
 	return 1;
 }
 
-/* Member of `vifm.menus` that creates a menu out of list of items.  Returns a
- * boolean, which is true on success. */
+/* Member of `vifm.menus` that creates a menu out of list of items.  When
+ * "stash" field is true, menu is saved for later use without entering it.
+ * Returns a boolean, which is true on success. */
 static int
 VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
 {
@@ -423,6 +431,18 @@ VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
 	if(vlua_cmn_check_opt_field(lua, 1, "withnavigation", LUA_TBOOLEAN))
 	{
 		with_navigation = lua_toboolean(lua, -1);
+	}
+
+	int stash = 0;
+	if(vlua_cmn_check_opt_field(lua, 1, "stash", LUA_TBOOLEAN))
+	{
+		stash = lua_toboolean(lua, -1);
+	}
+
+	int pos = -1;
+	if(vlua_cmn_check_opt_field(lua, 1, "pos", LUA_TNUMBER))
+	{
+		pos = lua_tointeger(lua, -1) - 1;
 	}
 
 	vlua_cmn_check_field(lua, 1, "title", LUA_TSTRING);
@@ -452,8 +472,16 @@ VLUA_API(vifm_menus_loadcustom)(lua_State *lua)
 		}
 	}
 
-	int success =
-		(show_custom_menu(view, title, items, specs, with_navigation) == 0);
+	int success;
+	if(stash)
+	{
+		success =
+			(stash_custom_menu(view, title, items, specs, with_navigation, pos) == 0);
+	}
+	else
+	{
+		success = (show_custom_menu(view, title, items, specs, with_navigation) == 0);
+	}
 	lua_pushboolean(lua, success);
 	return 1;
 
@@ -519,7 +547,8 @@ VLUA_API(vifm_redraw)(lua_State *lua)
 	return 0;
 }
 
-/* Runs an external command similar to :!. */
+/* Runs an external command similar to :!.  When "capture" field is set,
+ * captures and returns command's standard output. */
 static int
 VLUA_API(vifm_run)(lua_State *lua)
 {
@@ -527,6 +556,18 @@ VLUA_API(vifm_run)(lua_State *lua)
 
 	vlua_cmn_check_field(lua, 1, "cmd", LUA_TSTRING);
 	const char *cmd = lua_tostring(lua, -1);
+
+	int capture = 0;
+	if(vlua_cmn_check_opt_field(lua, 1, "capture", LUA_TBOOLEAN))
+	{
+		capture = lua_toboolean(lua, -1);
+	}
+
+	int merge_streams = 0;
+	if(vlua_cmn_check_opt_field(lua, 1, "mergestreams", LUA_TBOOLEAN))
+	{
+		merge_streams = lua_toboolean(lua, -1);
+	}
 
 	int use_term_mux = 1;
 	if(vlua_cmn_check_opt_field(lua, 1, "usetermmux", LUA_TBOOLEAN))
@@ -556,7 +597,58 @@ VLUA_API(vifm_run)(lua_State *lua)
 		}
 	}
 
-	lua_pushinteger(lua, rn_shell(cmd, pause, use_term_mux, SHELL_BY_APP));
+	if(!capture)
+	{
+		lua_pushinteger(lua, rn_shell(cmd, pause, use_term_mux, SHELL_BY_APP));
+		return 1;
+	}
+
+	ui_shutdown();
+
+	char *cmd_copy = merge_streams
+	               ? format_str("%s 2>&1", cmd)
+	               : strdup(cmd);
+	if(cmd_copy == NULL)
+	{
+		recover_after_shellout();
+		update_screen(UT_FULL);
+		return luaL_error(lua, "%s", "Out of memory");
+	}
+
+	FILE *output = NULL;
+	pid_t pid = bg_run_and_capture(cmd_copy, /*user_sh=*/1, /*in=*/NULL, &output,
+			/*err=*/NULL);
+	free(cmd_copy);
+	if(pid == (pid_t)-1 || output == NULL)
+	{
+		recover_after_shellout();
+		update_screen(UT_FULL);
+		return luaL_error(lua, "%s", "Failed to start command");
+	}
+
+	ui_cancellation_push_on();
+	size_t len;
+	char *result = read_nonseekable_stream(output, &len, /*cb=*/NULL,
+			/*arg=*/NULL);
+	fclose(output);
+	ui_cancellation_pop();
+
+	recover_after_shellout();
+	update_screen(UT_FULL);
+
+	if(result == NULL)
+	{
+		lua_pushstring(lua, "");
+		return 1;
+	}
+
+	while(len != 0U && result[len - 1] == '\n')
+	{
+		result[--len] = '\0';
+	}
+
+	lua_pushlstring(lua, result, len);
+	free(result);
 	return 1;
 }
 

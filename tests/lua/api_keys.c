@@ -251,6 +251,43 @@ TEST(keys_add)
 	assert_string_equal("22\"", ui_sb_last());
 }
 
+TEST(keys_list)
+{
+	GLUA_EQ(vlua, "true",
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  description = 'custom key',"
+			"  modes = { 'normal' },"
+			"  handler = function() end,"
+			"})");
+
+	GLUA_EQ(vlua, "X\tcustom key",
+			"for _, key in ipairs(vifm.keys.list {"
+			"  mode = 'normal',"
+			"  useronly = true,"
+			"}) do "
+			"  if key.shortcut == 'X' then "
+			"    print(key.shortcut, key.description) "
+			"    break "
+			"  end "
+			"end");
+}
+
+TEST(keys_send)
+{
+	GLUA_EQ(vlua, "true",
+			"handled = false "
+			"print(vifm.keys.add {"
+			"  shortcut = 'X',"
+			"  modes = { 'normal' },"
+			"  handler = function() handled = true end,"
+			"})");
+
+	GLUA_EQ(vlua, "true",
+			"vifm.keys.send('X')"
+			"print(handled)");
+}
+
 TEST(keys_add_selector)
 {
 	GLUA_EQ(vlua, "",

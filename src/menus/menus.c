@@ -882,6 +882,19 @@ menus_put_on_stash(menu_state_t *ms)
 	}
 }
 
+void
+menus_stash(menu_data_t *m)
+{
+	if(can_stash_menu(m))
+	{
+		stash_menu(m);
+	}
+	else if(m->initialized)
+	{
+		deinit_menu_data(m);
+	}
+}
+
 int
 menus_unstash(view_t *view)
 {

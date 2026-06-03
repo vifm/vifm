@@ -15,9 +15,22 @@ documented in the regular ChangeLog.
 	Added vifm.redraw() which requests a UI redraw.  Thanks to Steven
 	Xu (stevenxxiu).
 
+	Added "capture" and "mergestreams" fields to vifm.run() to run a command
+	with Vifm UI shut down and return its standard output as a string.  Useful
+	for driving interactive terminal programs like fuzzy finders.
+
+	Added vifm.cmds.list() which lists known commands.
+
+	Added vifm.keys.list() and vifm.keys.send() for inspecting and executing
+	key bindings.
+
 	Added "specs" field to vifm.menus.loadcustom() which allows specifying
 	targets for navigation menus independently of whether and how they appear
 	in the menu.
+
+	Added "stash" and "pos" fields to vifm.menus.loadcustom() which save a
+	custom menu for later reopening (e.g. with :copen) without entering it
+	immediately.
 
 	Fixed a crash on passing a value that's not convertible to a string to
 	VifmView:loadcustom().
