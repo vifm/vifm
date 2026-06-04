@@ -208,6 +208,14 @@ TEST(various_attributes_are_parsed)
 				CIT_COMMAND));
 	assert_int_equal(A_STANDOUT, curr_stats.cs->color[WIN_COLOR].attr);
 	assert_true(curr_stats.cs->color[WIN_COLOR].combine_attrs);
+
+	/* "none" must reset "combine". */
+	assert_success(cmds_dispatch("hi Win cterm=combine,none gui=combine,none",
+				&lwin, CIT_COMMAND));
+	assert_int_equal(A_NORMAL, curr_stats.cs->color[WIN_COLOR].attr);
+	assert_false(curr_stats.cs->color[WIN_COLOR].combine_attrs);
+	assert_int_equal(A_NORMAL, curr_stats.cs->color[WIN_COLOR].gui_attr);
+	assert_false(curr_stats.cs->color[WIN_COLOR].combine_gui_attrs);
 }
 
 TEST(attributes_are_printed_back_correctly)

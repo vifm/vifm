@@ -3441,7 +3441,7 @@ get_attrs(const char text[], int *combine_attrs)
 		else if(strcasecmp(buf, "italic") == 0)
 			result |= italic_attr;
 		else if(strcasecmp(buf, "none") == 0)
-			result = 0;
+			result = *combine_attrs = 0;
 		else if(strcasecmp(buf, "combine") == 0)
 			*combine_attrs = 1;
 		else
