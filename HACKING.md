@@ -212,6 +212,7 @@ of changes of each kind.
     |  |  |-- color_manager.c - manager of curses color pairs
     |  |  |-- color_scheme.c - color schemes
     |  |  |-- colored_line.c - text with %x* highlighting
+    |  |  |-- colors.c - utilities related to parsing of colors
     |  |  |-- column_view.c - column formatting unit
     |  |  |-- escape.c - escape sequences related stuff
     |  |  |-- fileview.c - display/redraw/manage file view

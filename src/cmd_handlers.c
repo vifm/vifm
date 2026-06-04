@@ -32,9 +32,9 @@
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
+#include <stdlib.h> /* EXIT_SUCCESS atoi() free() */
 #include <string.h> /* strchr() strcmp() strcspn() strcasecmp() strcpy()
-                       strdup() strerror() strlen() strrchr() strspn() */
+                       strdup() strerror() strlen() strrchr() */
 #include <wctype.h> /* iswspace() */
 #include <wchar.h> /* wcslen() wcsncmp() */
 
@@ -222,8 +222,6 @@ static int parse_highlight_attrs(const cmd_info_t *cmd_info,
 static int try_parse_cterm_color(const char str[], int is_fg,
 		col_attr_t *color);
 static int try_parse_gui_color(const char str[], int *color);
-static int parse_color_name_value(const char str[], int fg, int *attr);
-static int is_default_color(const char str[]);
 static int get_attrs(const char text[], int *combine_attrs);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int histnext_cmd(const cmd_info_t *cmd_info);
@@ -3291,7 +3289,7 @@ static int
 try_parse_cterm_color(const char str[], int is_fg, col_attr_t *color)
 {
 	col_scheme_t *const cs = curr_stats.cs;
-	const int col_num = parse_color_name_value(str, is_fg, &color->attr);
+	const int col_num = cols_parse_value(str, is_fg, &color->attr);
 
 	if(col_num < -1)
 	{
@@ -3321,22 +3319,7 @@ try_parse_cterm_color(const char str[], int is_fg, col_attr_t *color)
 static int
 try_parse_gui_color(const char str[], int *color)
 {
-	const char *hex_digits = "0123456789abcdefABCDEF";
-
-	if(is_default_color(str))
-	{
-		*color = -1;
-		return 0;
-	}
-
-	*color = string_array_pos_case(XTERM256_COLOR_NAMES,
-			ARRAY_LEN(XTERM256_COLOR_NAMES), str);
-	if(*color >= 0 && *color < 8)
-	{
-		return 0;
-	}
-
-	if(str[0] != '#' || strlen(str) != 7 || strspn(str + 1, hex_digits) != 6)
+	if(cols_parse_gui_value(str, color) != 0)
 	{
 		ui_sb_errf("Unrecognized color value format: %s", str);
 		if(curr_stats.cs->state == CSS_LOADING)
@@ -3346,65 +3329,7 @@ try_parse_gui_color(const char str[], int *color)
 		return 1;
 	}
 
-	unsigned int value;
-	(void)sscanf(str, "#%x", &value);
-
-	*color = value;
 	return 0;
-}
-
-/* Parses color string into color number and alters *attr in some cases.
- * Returns value less than -1 to indicate error as -1 is valid return value. */
-static int
-parse_color_name_value(const char str[], int fg, int *attr)
-{
-	int col_pos;
-	int light_col_pos;
-	int col_num;
-
-	if(is_default_color(str))
-	{
-		return -1;
-	}
-
-	light_col_pos = string_array_pos_case(LIGHT_COLOR_NAMES,
-			ARRAY_LEN(LIGHT_COLOR_NAMES), str);
-	if(light_col_pos >= 0 && COLORS < 16)
-	{
-		*attr |= (!fg && curr_stats.exec_env_type == EET_LINUX_NATIVE) ?
-				A_BLINK : A_BOLD;
-		return light_col_pos;
-	}
-
-	col_pos = string_array_pos_case(XTERM256_COLOR_NAMES,
-			ARRAY_LEN(XTERM256_COLOR_NAMES), str);
-	if(col_pos >= 0)
-	{
-		if(!fg && curr_stats.exec_env_type == EET_LINUX_NATIVE)
-		{
-			*attr &= ~A_BLINK;
-		}
-		return col_pos;
-	}
-
-	col_num = isdigit(*str) ? atoi(str) : -1;
-	if(col_num >= 0 && col_num < COLORS)
-	{
-		return col_num;
-	}
-
-	/* Fail if all possible parsing ways failed. */
-	return -2;
-}
-
-/* Checks whether a string signifies a default color.  Returns non-zero if so,
- * otherwise zero is returned. */
-static int
-is_default_color(const char str[])
-{
-	return (strcmp(str, "-1") == 0)
-	    || (strcasecmp(str, "default") == 0)
-	    || (strcasecmp(str, "none") == 0);
 }
 
 /* Parses comma-separated list of attributes.  Returns parsed result or -1 on
@@ -3412,13 +3337,6 @@ is_default_color(const char str[])
 static int
 get_attrs(const char text[], int *combine_attrs)
 {
-#ifdef HAVE_A_ITALIC_DECL
-	const int italic_attr = A_ITALIC;
-#else
-	/* If A_ITALIC is missing (it's an extension), use A_REVERSE instead. */
-	const int italic_attr = A_REVERSE;
-#endif
-
 	*combine_attrs = 0;
 
 	int result = 0;
@@ -3428,24 +3346,10 @@ get_attrs(const char text[], int *combine_attrs)
 		char buf[64];
 
 		copy_str(buf, p - text + 1, text);
-		if(strcasecmp(buf, "bold") == 0)
-			result |= A_BOLD;
-		else if(strcasecmp(buf, "underline") == 0)
-			result |= A_UNDERLINE;
-		else if(strcasecmp(buf, "reverse") == 0)
-			result |= A_REVERSE;
-		else if(strcasecmp(buf, "inverse") == 0)
-			result |= A_REVERSE;
-		else if(strcasecmp(buf, "standout") == 0)
-			result |= A_STANDOUT;
-		else if(strcasecmp(buf, "italic") == 0)
-			result |= italic_attr;
-		else if(strcasecmp(buf, "none") == 0)
-			result = *combine_attrs = 0;
-		else if(strcasecmp(buf, "combine") == 0)
-			*combine_attrs = 1;
-		else
+		if(cols_parse_attr(buf, &result, combine_attrs) != 0)
+		{
 			return -1;
+		}
 
 		text = (*p == '\0') ? p : p + 1;
 	}

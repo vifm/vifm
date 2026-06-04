@@ -102,6 +102,19 @@ enum
 /* The last of USER*_COLOR groups. */
 #define LAST_USER_COLOR 20
 
+/* Parses color string into color number and alters *attr in some cases.
+ * Returns a value less than -1 to indicate an error as -1 is a valid color
+ * value. */
+int cols_parse_value(const char str[], int is_fg, int *attr);
+
+/* Parses a direct color.  Returns non-zero on error, otherwise zero is
+ * returned. */
+int cols_parse_gui_value(const char str[], int *color);
+
+/* Parses single attribute value and updates *attrs or sets *combine_attrs.
+ * Returns zero on success, otherwise non-zero is returned. */
+int cols_parse_attr(const char str[], int *attrs, int *combine_attrs);
+
 #endif /* VIFM__UI__COLORS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

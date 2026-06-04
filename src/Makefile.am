@@ -256,7 +256,7 @@ vifm_SOURCES = \
 	ui/color_manager.c ui/color_manager.h \
 	ui/color_scheme.c ui/color_scheme.h \
 	ui/colored_line.c ui/colored_line.h \
-	ui/colors.h \
+	ui/colors.c ui/colors.h \
 	ui/column_view.c ui/column_view.h \
 	ui/escape.c ui/escape.h \
 	ui/fileview.c ui/fileview.h \
