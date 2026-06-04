@@ -56,7 +56,7 @@ typedef struct
 	                     * Should be zero first time, then auto reset. */
 	int is_main;        /* Whether this is main file list. */
 
-	int custom_match;   /* Whether the keys below have meaningful values. */
+	int custom_match;   /* Whether the fields below have meaningful values. */
 	int match_from;     /* Start offset of the match. */
 	int match_to;       /* End offset of the match. */
 }
