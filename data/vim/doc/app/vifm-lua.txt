@@ -1,4 +1,4 @@
-*vifm-lua.txt*    For Vifm version 1.0  Last change: 2026 June 3
+*vifm-lua.txt*    For Vifm version 1.0  Last change: 2026 June 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -21,6 +21,7 @@ Current API version: v0.2.0
 |vifm-l_vifm|          `vifm` global table.
 |vifm-l_vifm.abbrevs|  `vifm.abbrevs` global table.
 |vifm-l_vifm.cmds|     `vifm.cmds` global table.
+|vifm-l_vifm.color|    `vifm.color` global table.
 |vifm-l_vifm.events|   `vifm.events` global table.
 |vifm-l_vifm.fs|       `vifm.fs` global table.
 |vifm-l_vifm.keys|     `vifm.keys` global table.
@@ -32,6 +33,7 @@ Current API version: v0.2.0
 |vifm-l_vifm.sessions| `vifm.sessions` global table.
 |vifm-l_vifm.tabs|     `vifm.tabs` global table.
 |vifm-l_vifm.version|  `vifm.version` global table.
+|vifm-l_VifmColor|     `VifmColor` type.
 |vifm-l_VifmEntry|     `VifmEntry` type.
 |vifm-l_VifmJob|       `VifmJob` type.
 |vifm-l_VifmTab|       `VifmTab` type.
@@ -916,6 +918,40 @@ Return:~
   `true` on success.
 
 --------------------------------------------------------------------------------
+*vifm-l_vifm.color*
+
+This global `vifm.color` table exposes UI-related information and functions.
+It contains the following items:
+
+color.count (integer)                          *vifm-l_vifm.color.count*
+Number of available colors.
+
+color.gui (boolean)                            *vifm-l_vifm.color.gui*
+Indicates whether GUI/RGB/24-bit colors are in use.
+
+color.new({info})                              *vifm-l_vifm.color.new()*
+Creates a new instance of |vifm-l_VifmColor|.
+
+Possible fields of {info} (see |vifm-:highlight| for their meaning):
+ - "ctermfg" (integer or string) (optional)
+ - "ctermbg" (integer or string) (optional)
+ - "cterm" (array of strings) (optional)
+ - "guifg" (string) (optional)
+ - "guibg" (string) (optional)
+ - "gui" (array of strings) (optional)
+
+Fields that are not provided retain their default values which correspond to a
+transparent cterm color with no attributes (not even "combine" attribute, so
+the attributes of lower highlight groups are lost).
+
+Parameters:~
+  {info}  Table with information about the color.
+
+Return:~
+  On success: an instance of |vifm-l_VifmColor|.
+  On error: `nil` and a string describing the error.
+
+--------------------------------------------------------------------------------
 *vifm-l_vifm.events*
 
 This global `vifm.events` table groups items related to events.
@@ -1316,6 +1352,17 @@ Return:~
   `true` if the version is equal or more recent than the specified one.
 
 --------------------------------------------------------------------------------
+*vifm-l_VifmColor*
+
+Instances of this type are returned by:
+ * |vifm-l_vifm.color.new()|
+
+This type represents a combination of foreground color, background color and
+attributes for both cterm and GUI variants.  The data of each instance is fixed
+on construction and is not exposed in any way because it is meant to be consumed
+by Vifm while drawing TUI.
+
+--------------------------------------------------------------------------------
 *vifm-l_VifmEntry*
 
 Instances of this type are used in filetype |vifm-lua-handlers| and in
@@ -1692,6 +1739,11 @@ vifm.cmds.add({cmd})                       |vifm-l_vifm.cmds.add()|
 vifm.cmds.command({cmd})                   |vifm-l_vifm.cmds.command()|
 vifm.cmds.delcommand({name})               |vifm-l_vifm.cmds.delcommand()|
 
+vifm.color (table)                         |vifm-l_vifm.color|
+vifm.color.count (integer)                 |vifm-l_vifm.color.count|
+vifm.color.gui (boolean)                   |vifm-l_vifm.color.gui|
+vifm.color.new({info})                     |vifm-l_vifm.color.new()|
+
 vifm.events (table)                        |vifm-l_vifm.events|
 vifm.events.listen({event})                |vifm-l_vifm.events.listen()|
 
@@ -1742,6 +1794,8 @@ vifm.version.api.major (integer)           |vifm-l_vifm.version.api.major|
 vifm.version.api.minor (integer)           |vifm-l_vifm.version.api.minor|
 vifm.version.api.patch (integer)           |vifm-l_vifm.version.api.patch|
 vifm.version.app.str (string)              |vifm-l_vifm.version.app.str|
+
+VifmColor (type)                           |vifm-l_VifmColor|
 
 VifmEntry (type)                           |vifm-l_VifmEntry|
 VifmEntry.atime (integer)                  |vifm-l_VifmEntry.atime|

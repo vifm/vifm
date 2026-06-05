@@ -41,6 +41,7 @@
 #include "common.h"
 #include "vifm_abbrevs.h"
 #include "vifm_cmds.h"
+#include "vifm_color.h"
 #include "vifm_events.h"
 #include "vifm_fs.h"
 #include "vifm_handlers.h"
@@ -178,6 +179,10 @@ vifm_init(lua_State *lua)
 	/* Setup vifm.cmds. */
 	vifm_cmds_init(lua);
 	lua_setfield(lua, -2, "cmds");
+
+	/* Setup vifm.color. */
+	vifm_color_init(lua);
+	lua_setfield(lua, -2, "color");
 
 	/* Setup vifm.events. */
 	vifm_events_init(lua);

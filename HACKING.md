@@ -142,6 +142,7 @@ of changes of each kind.
     |  |  |-- vifm.c - implementation of `vifm`
     |  |  |-- vifm_abbrevs.c - implementation of `vifm.abbrevs`
     |  |  |-- vifm_cmds.c - implementation of `vifm.cmds`
+    |  |  |-- vifm_color.c - implementation of `vifm.color`
     |  |  |-- vifm_events.c - implementation of `vifm.events`
     |  |  |-- vifm_handlers.c - implementation of `vifm.addhandler`
     |  |  |-- vifm_tabs.c - implementation of `vifm.tabs`
