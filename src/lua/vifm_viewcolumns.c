@@ -231,7 +231,7 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 		const char *error = lua_tostring(lua, -1);
 		ui_sb_err(error);
 		copy_str(buf, buf_len, "ERROR");
-		lua_pop(lua, 1);
+		lua_pop(lua, 1); /* error */
 		return;
 	}
 
@@ -240,20 +240,20 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 	if(!lua_istable(lua, -1))
 	{
 		copy_str(buf, buf_len, "NOVALUE");
-		lua_pop(lua, 1);
+		lua_pop(lua, 1); /* handler's result */
 		return;
 	}
 
 	if(lua_getfield(lua, -1, "text") == LUA_TNIL)
 	{
 		copy_str(buf, buf_len, "NOVALUE");
-		lua_pop(lua, 2);
+		lua_pop(lua, 2); /* text, handler's result */
 		return;
 	}
 
 	const char *text = lua_tostring(lua, -1);
 	copy_str(buf, buf_len, (text == NULL ? "NOVALUE" : text));
-	lua_pop(lua, 1);
+	lua_pop(lua, 1); /* text */
 
 	int has_start = (lua_getfield(lua, -1, "matchstart") == LUA_TNUMBER);
 	int has_end = (lua_getfield(lua, -2, "matchend") == LUA_TNUMBER);
@@ -270,7 +270,7 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 		}
 	}
 
-	lua_pop(lua, 3);
+	lua_pop(lua, 3); /* matchend, matchstart, handler's result */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
