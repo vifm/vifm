@@ -970,9 +970,6 @@ Registering the same handler more than once for the same event has no effect.
 Parameters:~
   {event}  Table with information about event handling.
 
-Return:~
-  `nil`
-
 Raises an error:~
   On unknown event name.
 
