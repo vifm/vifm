@@ -123,7 +123,6 @@ static void column_line_print(const char buf[], int offset, AlignType align,
 static void column_line_match(const char full_column[],
 		const format_info_t *info, int *match_from, int *match_to);
 static void draw_line_number(const column_data_t *cdt, int column);
-static int is_primary_colored_column_id(int id);
 static int is_primary_column_id(int id);
 static cchar_t prepare_col_color(const view_t *view, int is_primary_colored,
 		int line_nr, const column_data_t *cdt, int real_id, int filling);
@@ -1184,12 +1183,19 @@ column_line_print(const char buf[], int offset, AlignType align,
 	const int padding = (cfg.extra_padding != 0);
 	const int filling = (info->id == FILL_COLUMN_ID);
 
-	const int is_primary_colored = is_primary_colored_column_id(info->id);
+	const int is_primary_column = is_primary_column_id(info->id);
+	/* Only primary columns can have tree pseudo-graphics. */
+	const int is_treeable_column = is_primary_column;
+	/* Primary and extension columns are affected by highlighting derived from
+	 * file's type, path or name. */
+	const int is_primary_colored = info->id == SK_BY_EXTENSION
+	                            || info->id == SK_BY_FILEEXT
+	                            || is_primary_column;
+
 	const cchar_t line_attrs =
 		prepare_col_color(view, is_primary_colored, 0, cdt, info->real_id, filling);
 
 	/* Non-empty prefix contains tree pseudo-graphics. */
-	const int is_treeable_column = is_primary_column_id(info->id);
 	size_t extra_prefix = is_treeable_column ? *cdt->prefix_len : 0U;
 
 	if(extra_prefix != 0U && align == AT_RIGHT)
@@ -1343,16 +1349,6 @@ column_line_match(const char full_column[], const format_info_t *info,
 			++*match_to;
 		}
 	}
-}
-
-/* Checks whether column id corresponds to a column that is affected by a
- * highlight derived from file's type/path/name.  Returns non-zero if so. */
-static int
-is_primary_colored_column_id(int id)
-{
-	return id == SK_BY_EXTENSION
-	    || id == SK_BY_FILEEXT
-	    || is_primary_column_id(id);
 }
 
 /* Checks whether column id corresponds to a column that displays a substantial
