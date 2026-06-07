@@ -1305,9 +1305,15 @@ column_line_match(const char full_column[], const format_info_t *info,
 	const column_data_t *cdt = info->data;
 	dir_entry_t *entry = cdt->entry;
 
-	int is_searchable_column = is_primary_column_id(info->id);
-	if(!is_searchable_column || cdt->view->matches == 0 || !entry->search_match ||
-			cdt->custom_match)
+	/* Check trivial conditions before invoking is_primary_column_id() as it can
+	 * reach into Lua data structures, which is slower than these checks. */
+	if(cdt->view->matches == 0 || !entry->search_match || cdt->custom_match)
+	{
+		return;
+	}
+
+	const int is_searchable_column = is_primary_column_id(info->id);
+	if(!is_searchable_column)
 	{
 		return;
 	}
