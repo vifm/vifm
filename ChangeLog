@@ -244,6 +244,9 @@
 	Fixed Lua modules written in C not being loaded on Unix-like systems.
 	Thanks to Steven Xu (a.k.a. stevenxxiu).
 
+	Fixed `:highlight Group cterm=combine,none gui=combine,none` resulting in
+	`cterm=combine` and `gui=combine`.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

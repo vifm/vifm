@@ -168,25 +168,26 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	lua/lua/lvm.$(OBJEXT) lua/lua/lzio.$(OBJEXT) \
 	lua/common.$(OBJEXT) lua/vifm.$(OBJEXT) \
 	lua/vifm_abbrevs.$(OBJEXT) lua/vifm_cmds.$(OBJEXT) \
-	lua/vifm_events.$(OBJEXT) lua/vifm_fs.$(OBJEXT) \
-	lua/vifm_handlers.$(OBJEXT) lua/vifm_keys.$(OBJEXT) \
-	lua/vifm_tabs.$(OBJEXT) lua/vifm_viewcolumns.$(OBJEXT) \
-	lua/vifmentry.$(OBJEXT) lua/vifmjob.$(OBJEXT) \
-	lua/vifmtab.$(OBJEXT) lua/vifmview.$(OBJEXT) \
-	lua/vlua.$(OBJEXT) lua/vlua_cbacks.$(OBJEXT) \
-	lua/vlua_state.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
-	menus/chistory_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
-	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
-	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
-	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
-	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
-	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
-	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
-	menus/marks_menu.$(OBJEXT) menus/media_menu.$(OBJEXT) \
-	menus/menus.$(OBJEXT) menus/plugins_menu.$(OBJEXT) \
-	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
-	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
+	lua/vifm_color.$(OBJEXT) lua/vifm_events.$(OBJEXT) \
+	lua/vifm_fs.$(OBJEXT) lua/vifm_handlers.$(OBJEXT) \
+	lua/vifm_keys.$(OBJEXT) lua/vifm_tabs.$(OBJEXT) \
+	lua/vifm_viewcolumns.$(OBJEXT) lua/vifmentry.$(OBJEXT) \
+	lua/vifmjob.$(OBJEXT) lua/vifmtab.$(OBJEXT) \
+	lua/vifmview.$(OBJEXT) lua/vlua.$(OBJEXT) \
+	lua/vlua_cbacks.$(OBJEXT) lua/vlua_state.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
+	menus/cabbrevs_menu.$(OBJEXT) menus/chistory_menu.$(OBJEXT) \
+	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
+	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
+	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
+	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
+	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
+	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
+	menus/media_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
+	menus/plugins_menu.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
+	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
+	menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -196,31 +197,31 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	modes/normal.$(OBJEXT) modes/view.$(OBJEXT) \
 	modes/visual.$(OBJEXT) ui/cancellation.$(OBJEXT) \
 	ui/color_manager.$(OBJEXT) ui/color_scheme.$(OBJEXT) \
-	ui/colored_line.$(OBJEXT) ui/column_view.$(OBJEXT) \
-	ui/escape.$(OBJEXT) ui/fileview.$(OBJEXT) \
-	ui/quickview.$(OBJEXT) ui/statusbar.$(OBJEXT) \
-	ui/statusline.$(OBJEXT) ui/tabs.$(OBJEXT) ui/ui.$(OBJEXT) \
-	utils/cancellation.$(OBJEXT) utils/dynarray.$(OBJEXT) \
-	utils/env.$(OBJEXT) utils/event_nix.$(OBJEXT) \
-	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
-	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/fsdata.$(OBJEXT) utils/fsddata.$(OBJEXT) \
-	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
-	utils/gmux_nix.$(OBJEXT) utils/hist.$(OBJEXT) \
-	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/matcher.$(OBJEXT) utils/matchers.$(OBJEXT) \
-	utils/mem.$(OBJEXT) utils/parson.$(OBJEXT) \
-	utils/path.$(OBJEXT) utils/regexp.$(OBJEXT) \
-	utils/selector_nix.$(OBJEXT) utils/shmem_nix.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utf8proc.$(OBJEXT) utils/utils.$(OBJEXT) \
-	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
-	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) cmd_actions.$(OBJEXT) \
-	cmd_completion.$(OBJEXT) cmd_core.$(OBJEXT) \
-	cmd_handlers.$(OBJEXT) compare.$(OBJEXT) dir_stack.$(OBJEXT) \
-	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	ui/colored_line.$(OBJEXT) ui/colors.$(OBJEXT) \
+	ui/column_view.$(OBJEXT) ui/escape.$(OBJEXT) \
+	ui/fileview.$(OBJEXT) ui/quickview.$(OBJEXT) \
+	ui/statusbar.$(OBJEXT) ui/statusline.$(OBJEXT) \
+	ui/tabs.$(OBJEXT) ui/ui.$(OBJEXT) utils/cancellation.$(OBJEXT) \
+	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
+	utils/event_nix.$(OBJEXT) utils/file_streams.$(OBJEXT) \
+	utils/filemon.$(OBJEXT) utils/filter.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/fsdata.$(OBJEXT) \
+	utils/fsddata.$(OBJEXT) utils/fswatch_nix.$(OBJEXT) \
+	utils/globs.$(OBJEXT) utils/gmux_nix.$(OBJEXT) \
+	utils/hist.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
+	utils/matchers.$(OBJEXT) utils/mem.$(OBJEXT) \
+	utils/parson.$(OBJEXT) utils/path.$(OBJEXT) \
+	utils/regexp.$(OBJEXT) utils/selector_nix.$(OBJEXT) \
+	utils/shmem_nix.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utf8proc.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	cmd_actions.$(OBJEXT) cmd_completion.$(OBJEXT) \
+	cmd_core.$(OBJEXT) cmd_handlers.$(OBJEXT) compare.$(OBJEXT) \
+	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fops_common.$(OBJEXT) \
 	fops_cpmv.$(OBJEXT) fops_misc.$(OBJEXT) fops_put.$(OBJEXT) \
 	fops_rename.$(OBJEXT) filetype.$(OBJEXT) filtering.$(OBJEXT) \
@@ -319,30 +320,31 @@ am__depfiles_remade = ./$(DEPDIR)/args.Po ./$(DEPDIR)/background.Po \
 	io/private/$(DEPDIR)/ionotif.Po \
 	io/private/$(DEPDIR)/traverser.Po lua/$(DEPDIR)/common.Po \
 	lua/$(DEPDIR)/vifm.Po lua/$(DEPDIR)/vifm_abbrevs.Po \
-	lua/$(DEPDIR)/vifm_cmds.Po lua/$(DEPDIR)/vifm_events.Po \
-	lua/$(DEPDIR)/vifm_fs.Po lua/$(DEPDIR)/vifm_handlers.Po \
-	lua/$(DEPDIR)/vifm_keys.Po lua/$(DEPDIR)/vifm_tabs.Po \
-	lua/$(DEPDIR)/vifm_viewcolumns.Po lua/$(DEPDIR)/vifmentry.Po \
-	lua/$(DEPDIR)/vifmjob.Po lua/$(DEPDIR)/vifmtab.Po \
-	lua/$(DEPDIR)/vifmview.Po lua/$(DEPDIR)/vlua.Po \
-	lua/$(DEPDIR)/vlua_cbacks.Po lua/$(DEPDIR)/vlua_state.Po \
-	lua/lua/$(DEPDIR)/lapi.Po lua/lua/$(DEPDIR)/lauxlib.Po \
-	lua/lua/$(DEPDIR)/lbaselib.Po lua/lua/$(DEPDIR)/lcode.Po \
-	lua/lua/$(DEPDIR)/lcorolib.Po lua/lua/$(DEPDIR)/lctype.Po \
-	lua/lua/$(DEPDIR)/ldblib.Po lua/lua/$(DEPDIR)/ldebug.Po \
-	lua/lua/$(DEPDIR)/ldo.Po lua/lua/$(DEPDIR)/ldump.Po \
-	lua/lua/$(DEPDIR)/lfunc.Po lua/lua/$(DEPDIR)/lgc.Po \
-	lua/lua/$(DEPDIR)/linit.Po lua/lua/$(DEPDIR)/liolib.Po \
-	lua/lua/$(DEPDIR)/llex.Po lua/lua/$(DEPDIR)/lmathlib.Po \
-	lua/lua/$(DEPDIR)/lmem.Po lua/lua/$(DEPDIR)/loadlib.Po \
-	lua/lua/$(DEPDIR)/lobject.Po lua/lua/$(DEPDIR)/lopcodes.Po \
-	lua/lua/$(DEPDIR)/loslib.Po lua/lua/$(DEPDIR)/lparser.Po \
-	lua/lua/$(DEPDIR)/lstate.Po lua/lua/$(DEPDIR)/lstring.Po \
-	lua/lua/$(DEPDIR)/lstrlib.Po lua/lua/$(DEPDIR)/ltable.Po \
-	lua/lua/$(DEPDIR)/ltablib.Po lua/lua/$(DEPDIR)/ltm.Po \
-	lua/lua/$(DEPDIR)/lundump.Po lua/lua/$(DEPDIR)/lutf8lib.Po \
-	lua/lua/$(DEPDIR)/lvm.Po lua/lua/$(DEPDIR)/lzio.Po \
-	menus/$(DEPDIR)/apropos_menu.Po menus/$(DEPDIR)/bmarks_menu.Po \
+	lua/$(DEPDIR)/vifm_cmds.Po lua/$(DEPDIR)/vifm_color.Po \
+	lua/$(DEPDIR)/vifm_events.Po lua/$(DEPDIR)/vifm_fs.Po \
+	lua/$(DEPDIR)/vifm_handlers.Po lua/$(DEPDIR)/vifm_keys.Po \
+	lua/$(DEPDIR)/vifm_tabs.Po lua/$(DEPDIR)/vifm_viewcolumns.Po \
+	lua/$(DEPDIR)/vifmentry.Po lua/$(DEPDIR)/vifmjob.Po \
+	lua/$(DEPDIR)/vifmtab.Po lua/$(DEPDIR)/vifmview.Po \
+	lua/$(DEPDIR)/vlua.Po lua/$(DEPDIR)/vlua_cbacks.Po \
+	lua/$(DEPDIR)/vlua_state.Po lua/lua/$(DEPDIR)/lapi.Po \
+	lua/lua/$(DEPDIR)/lauxlib.Po lua/lua/$(DEPDIR)/lbaselib.Po \
+	lua/lua/$(DEPDIR)/lcode.Po lua/lua/$(DEPDIR)/lcorolib.Po \
+	lua/lua/$(DEPDIR)/lctype.Po lua/lua/$(DEPDIR)/ldblib.Po \
+	lua/lua/$(DEPDIR)/ldebug.Po lua/lua/$(DEPDIR)/ldo.Po \
+	lua/lua/$(DEPDIR)/ldump.Po lua/lua/$(DEPDIR)/lfunc.Po \
+	lua/lua/$(DEPDIR)/lgc.Po lua/lua/$(DEPDIR)/linit.Po \
+	lua/lua/$(DEPDIR)/liolib.Po lua/lua/$(DEPDIR)/llex.Po \
+	lua/lua/$(DEPDIR)/lmathlib.Po lua/lua/$(DEPDIR)/lmem.Po \
+	lua/lua/$(DEPDIR)/loadlib.Po lua/lua/$(DEPDIR)/lobject.Po \
+	lua/lua/$(DEPDIR)/lopcodes.Po lua/lua/$(DEPDIR)/loslib.Po \
+	lua/lua/$(DEPDIR)/lparser.Po lua/lua/$(DEPDIR)/lstate.Po \
+	lua/lua/$(DEPDIR)/lstring.Po lua/lua/$(DEPDIR)/lstrlib.Po \
+	lua/lua/$(DEPDIR)/ltable.Po lua/lua/$(DEPDIR)/ltablib.Po \
+	lua/lua/$(DEPDIR)/ltm.Po lua/lua/$(DEPDIR)/lundump.Po \
+	lua/lua/$(DEPDIR)/lutf8lib.Po lua/lua/$(DEPDIR)/lvm.Po \
+	lua/lua/$(DEPDIR)/lzio.Po menus/$(DEPDIR)/apropos_menu.Po \
+	menus/$(DEPDIR)/bmarks_menu.Po \
 	menus/$(DEPDIR)/cabbrevs_menu.Po \
 	menus/$(DEPDIR)/chistory_menu.Po \
 	menus/$(DEPDIR)/colorscheme_menu.Po \
@@ -369,26 +371,26 @@ am__depfiles_remade = ./$(DEPDIR)/args.Po ./$(DEPDIR)/background.Po \
 	modes/dialogs/$(DEPDIR)/sort_dialog.Po \
 	ui/$(DEPDIR)/cancellation.Po ui/$(DEPDIR)/color_manager.Po \
 	ui/$(DEPDIR)/color_scheme.Po ui/$(DEPDIR)/colored_line.Po \
-	ui/$(DEPDIR)/column_view.Po ui/$(DEPDIR)/escape.Po \
-	ui/$(DEPDIR)/fileview.Po ui/$(DEPDIR)/quickview.Po \
-	ui/$(DEPDIR)/statusbar.Po ui/$(DEPDIR)/statusline.Po \
-	ui/$(DEPDIR)/tabs.Po ui/$(DEPDIR)/ui.Po \
-	utils/$(DEPDIR)/cancellation.Po utils/$(DEPDIR)/dynarray.Po \
-	utils/$(DEPDIR)/env.Po utils/$(DEPDIR)/event_nix.Po \
-	utils/$(DEPDIR)/file_streams.Po utils/$(DEPDIR)/filemon.Po \
-	utils/$(DEPDIR)/filter.Po utils/$(DEPDIR)/fs.Po \
-	utils/$(DEPDIR)/fsdata.Po utils/$(DEPDIR)/fsddata.Po \
-	utils/$(DEPDIR)/fswatch_nix.Po utils/$(DEPDIR)/globs.Po \
-	utils/$(DEPDIR)/gmux_nix.Po utils/$(DEPDIR)/hist.Po \
-	utils/$(DEPDIR)/int_stack.Po utils/$(DEPDIR)/log.Po \
-	utils/$(DEPDIR)/matcher.Po utils/$(DEPDIR)/matchers.Po \
-	utils/$(DEPDIR)/mem.Po utils/$(DEPDIR)/parson.Po \
-	utils/$(DEPDIR)/path.Po utils/$(DEPDIR)/regexp.Po \
-	utils/$(DEPDIR)/selector_nix.Po utils/$(DEPDIR)/shmem_nix.Po \
-	utils/$(DEPDIR)/str.Po utils/$(DEPDIR)/string_array.Po \
-	utils/$(DEPDIR)/trie.Po utils/$(DEPDIR)/utf8.Po \
-	utils/$(DEPDIR)/utf8proc.Po utils/$(DEPDIR)/utils.Po \
-	utils/$(DEPDIR)/utils_nix.Po
+	ui/$(DEPDIR)/colors.Po ui/$(DEPDIR)/column_view.Po \
+	ui/$(DEPDIR)/escape.Po ui/$(DEPDIR)/fileview.Po \
+	ui/$(DEPDIR)/quickview.Po ui/$(DEPDIR)/statusbar.Po \
+	ui/$(DEPDIR)/statusline.Po ui/$(DEPDIR)/tabs.Po \
+	ui/$(DEPDIR)/ui.Po utils/$(DEPDIR)/cancellation.Po \
+	utils/$(DEPDIR)/dynarray.Po utils/$(DEPDIR)/env.Po \
+	utils/$(DEPDIR)/event_nix.Po utils/$(DEPDIR)/file_streams.Po \
+	utils/$(DEPDIR)/filemon.Po utils/$(DEPDIR)/filter.Po \
+	utils/$(DEPDIR)/fs.Po utils/$(DEPDIR)/fsdata.Po \
+	utils/$(DEPDIR)/fsddata.Po utils/$(DEPDIR)/fswatch_nix.Po \
+	utils/$(DEPDIR)/globs.Po utils/$(DEPDIR)/gmux_nix.Po \
+	utils/$(DEPDIR)/hist.Po utils/$(DEPDIR)/int_stack.Po \
+	utils/$(DEPDIR)/log.Po utils/$(DEPDIR)/matcher.Po \
+	utils/$(DEPDIR)/matchers.Po utils/$(DEPDIR)/mem.Po \
+	utils/$(DEPDIR)/parson.Po utils/$(DEPDIR)/path.Po \
+	utils/$(DEPDIR)/regexp.Po utils/$(DEPDIR)/selector_nix.Po \
+	utils/$(DEPDIR)/shmem_nix.Po utils/$(DEPDIR)/str.Po \
+	utils/$(DEPDIR)/string_array.Po utils/$(DEPDIR)/trie.Po \
+	utils/$(DEPDIR)/utf8.Po utils/$(DEPDIR)/utf8proc.Po \
+	utils/$(DEPDIR)/utils.Po utils/$(DEPDIR)/utils_nix.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -921,6 +923,7 @@ vifm_SOURCES = \
 	lua/vifm.c lua/vifm.h \
 	lua/vifm_abbrevs.c lua/vifm_abbrevs.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
+	lua/vifm_color.c lua/vifm_color.h \
 	lua/vifm_events.c lua/vifm_events.h \
 	lua/vifm_fs.c lua/vifm_fs.h \
 	lua/vifm_handlers.c lua/vifm_handlers.h \
@@ -983,7 +986,7 @@ vifm_SOURCES = \
 	ui/color_manager.c ui/color_manager.h \
 	ui/color_scheme.c ui/color_scheme.h \
 	ui/colored_line.c ui/colored_line.h \
-	ui/colors.h \
+	ui/colors.c ui/colors.h \
 	ui/column_view.c ui/column_view.h \
 	ui/escape.c ui/escape.h \
 	ui/fileview.c ui/fileview.h \
@@ -1375,6 +1378,8 @@ lua/vifm_abbrevs.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_cmds.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
+lua/vifm_color.$(OBJEXT): lua/$(am__dirstamp) \
+	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_events.$(OBJEXT): lua/$(am__dirstamp) \
 	lua/$(DEPDIR)/$(am__dirstamp)
 lua/vifm_fs.$(OBJEXT): lua/$(am__dirstamp) \
@@ -1507,6 +1512,7 @@ ui/color_scheme.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/colored_line.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
+ui/colors.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
 ui/column_view.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/escape.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
@@ -1769,6 +1775,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_abbrevs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_cmds.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_events.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_fs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lua/$(DEPDIR)/vifm_handlers.Po@am__quote@ # am--include-marker
@@ -1855,6 +1862,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_manager.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_scheme.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/colored_line.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/colors.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/column_view.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/escape.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/fileview.Po@am__quote@ # am--include-marker
@@ -2837,6 +2845,7 @@ distclean: distclean-am
 	-rm -f lua/$(DEPDIR)/vifm.Po
 	-rm -f lua/$(DEPDIR)/vifm_abbrevs.Po
 	-rm -f lua/$(DEPDIR)/vifm_cmds.Po
+	-rm -f lua/$(DEPDIR)/vifm_color.Po
 	-rm -f lua/$(DEPDIR)/vifm_events.Po
 	-rm -f lua/$(DEPDIR)/vifm_fs.Po
 	-rm -f lua/$(DEPDIR)/vifm_handlers.Po
@@ -2923,6 +2932,7 @@ distclean: distclean-am
 	-rm -f ui/$(DEPDIR)/color_manager.Po
 	-rm -f ui/$(DEPDIR)/color_scheme.Po
 	-rm -f ui/$(DEPDIR)/colored_line.Po
+	-rm -f ui/$(DEPDIR)/colors.Po
 	-rm -f ui/$(DEPDIR)/column_view.Po
 	-rm -f ui/$(DEPDIR)/escape.Po
 	-rm -f ui/$(DEPDIR)/fileview.Po
@@ -3106,6 +3116,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f lua/$(DEPDIR)/vifm.Po
 	-rm -f lua/$(DEPDIR)/vifm_abbrevs.Po
 	-rm -f lua/$(DEPDIR)/vifm_cmds.Po
+	-rm -f lua/$(DEPDIR)/vifm_color.Po
 	-rm -f lua/$(DEPDIR)/vifm_events.Po
 	-rm -f lua/$(DEPDIR)/vifm_fs.Po
 	-rm -f lua/$(DEPDIR)/vifm_handlers.Po
@@ -3192,6 +3203,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ui/$(DEPDIR)/color_manager.Po
 	-rm -f ui/$(DEPDIR)/color_scheme.Po
 	-rm -f ui/$(DEPDIR)/colored_line.Po
+	-rm -f ui/$(DEPDIR)/colors.Po
 	-rm -f ui/$(DEPDIR)/column_view.Po
 	-rm -f ui/$(DEPDIR)/escape.Po
 	-rm -f ui/$(DEPDIR)/fileview.Po

@@ -56,10 +56,11 @@ lua := lapi.c lauxlib.c lbaselib.c lcode.c lcorolib.c lctype.c ldblib.c \
        lzio.c
 lua := $(addprefix lua/, $(lua))
 lua := $(addprefix lua/, $(lua) common.c vifm.c vifm_abbrevs.c vifm_cmds.c \
-                                vifm_events.c vifm_fs.c vifm_handlers.c \
-                                vifm_keys.c vifm_tabs.c vifm_viewcolumns.c \
-                                vifmentry.c vifmjob.c vifmtab.c vifmview.c \
-                                vlua.c vlua_cbacks.c vlua_state.c)
+                                vifm_color.c vifm_events.c vifm_fs.c \
+                                vifm_handlers.c vifm_keys.c vifm_tabs.c \
+                                vifm_viewcolumns.c vifmentry.c vifmjob.c \
+                                vifmtab.c vifmview.c vlua.c vlua_cbacks.c \
+                                vlua_state.c)
 
 menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c chistory_menu.c \
          colorscheme_menu.c commands_menu.c dirhistory_menu.c dirstack_menu.c \
@@ -76,8 +77,9 @@ modes := $(dialogs) cmdline.c file_info.c menu.c modes.c more.c normal.c \
          view.c visual.c
 modes := $(addprefix modes/, $(modes))
 
-ui := cancellation.c color_manager.c color_scheme.c colored_line.c column_view.c
-ui += escape.c fileview.c statusbar.c statusline.c tabs.c quickview.c ui.c
+ui := cancellation.c color_manager.c color_scheme.c colored_line.c colors.c
+ui += column_view.c escape.c fileview.c statusbar.c statusline.c tabs.c
+ui += quickview.c ui.c
 ui := $(addprefix ui/, $(ui))
 
 utilities := cancellation.c dynarray.c env.c event_win.c file_streams.c \

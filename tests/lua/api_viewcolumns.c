@@ -131,6 +131,45 @@ TEST(columns_are_used)
 	curr_stats.vlua = NULL;
 }
 
+TEST(columns_and_colors)
+{
+	opt_handlers_setup();
+	lwin.columns = columns_create();
+	curr_stats.vlua = vlua;
+
+	GLUA_EQ(vlua, "",
+			"function bad_type()"
+			"  return { text = 'table', color = { } }"
+			"end");
+	GLUA_EQ(vlua, "",
+			"function bad_user_data()"
+			"  return { text = 'udata', color = vifm.currview() }"
+			"end");
+	GLUA_EQ(vlua, "",
+			"function good(info)"
+			"  return { text = info.entry.name, color = vifm.color.new {} }"
+			"end");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype { name = 'BadType', handler = bad_type })");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype { name = 'BadUserData',"
+			"                           handler = bad_user_data })");
+	GLUA_EQ(vlua, "true",
+			"print(vifm.addcolumntype { name = 'Good', handler = good })");
+
+	process_set_args("viewcolumns=10{BadType},10{BadUserData},10{Good}", 0, 1);
+
+	dir_entry_t entry = { .name = "name", .origin = "origin" };
+	column_data_t cdt = { .view = &lwin, .entry = &entry };
+
+	columns_set_line_print_func(&column_line_print);
+	columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
+	assert_string_equal("     table     udata      name          ", print_buffer);
+
+	opt_handlers_teardown();
+	curr_stats.vlua = NULL;
+}
+
 TEST(symlinks, IF(not_windows))
 {
 	assert_success(make_symlink("something", SANDBOX_PATH "/symlink"));

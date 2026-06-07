@@ -194,6 +194,7 @@ vifm_SOURCES = \
 	lua/vifm.c lua/vifm.h \
 	lua/vifm_abbrevs.c lua/vifm_abbrevs.h \
 	lua/vifm_cmds.c lua/vifm_cmds.h \
+	lua/vifm_color.c lua/vifm_color.h \
 	lua/vifm_events.c lua/vifm_events.h \
 	lua/vifm_fs.c lua/vifm_fs.h \
 	lua/vifm_handlers.c lua/vifm_handlers.h \
@@ -256,7 +257,7 @@ vifm_SOURCES = \
 	ui/color_manager.c ui/color_manager.h \
 	ui/color_scheme.c ui/color_scheme.h \
 	ui/colored_line.c ui/colored_line.h \
-	ui/colors.h \
+	ui/colors.c ui/colors.h \
 	ui/column_view.c ui/column_view.h \
 	ui/escape.c ui/escape.h \
 	ui/fileview.c ui/fileview.h \

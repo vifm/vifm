@@ -15,9 +15,17 @@ documented in the regular ChangeLog.
 	Added vifm.redraw() which requests a UI redraw.  Thanks to Steven
 	Xu (stevenxxiu).
 
+	Added vifm.color with vifm.color.count (number of available colors),
+	vifm.color.gui (whether GUI colors are in use) and
+	vifm.color.new() (creates a color description).
+
 	Added "specs" field to vifm.menus.loadcustom() which allows specifying
 	targets for navigation menus independently of whether and how they appear
 	in the menu.
+
+	Added parsing of optional "color" field in the result of a handler set up
+	by vifm.addcolumntype() which allows adjusting color of the text in a cell.
+	Thanks to Steven Xu (a.k.a. stevenxxiu) and Dmitry Frank (a.k.a. dimonomid).
 
 	Fixed a crash on passing a value that's not convertible to a string to
 	VifmView:loadcustom().

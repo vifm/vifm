@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 May 5
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 June 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2217,10 +2217,11 @@ transparency:
                 CmpUnmatched
                 CmpBlank
                   Selected
-                    CurrLine
-                      LineNr (in active pane)
-                    OtherLine
-                      LineNr (in inactive pane)
+                    Cell-specific (returned by Lua columns)
+                      CurrLine
+                        LineNr (in active pane)
+                      OtherLine
+                        LineNr (in inactive pane)
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
