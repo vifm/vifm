@@ -126,7 +126,7 @@ static void draw_line_number(const column_data_t *cdt, int column);
 static int is_primary_colored_column_id(int id);
 static int is_primary_column_id(int id);
 static cchar_t prepare_col_color(const view_t *view, int is_primary_colored,
-		int line_nr, const column_data_t *cdt, int real_id);
+		int line_nr, const column_data_t *cdt, int real_id, int filling);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
 		dir_entry_t *entry, int line_color);
 static void mix_in_file_hi(const view_t *view, dir_entry_t *entry, int type_hi,
@@ -1182,10 +1182,11 @@ column_line_print(const char buf[], int offset, AlignType align,
 
 	const int numbers_visible = (offset == 0 && cdt->number_width > 0);
 	const int padding = (cfg.extra_padding != 0);
+	const int filling = (info->id == FILL_COLUMN_ID);
 
 	const int is_primary_colored = is_primary_colored_column_id(info->id);
 	const cchar_t line_attrs =
-		prepare_col_color(view, is_primary_colored, 0, cdt, info->real_id);
+		prepare_col_color(view, is_primary_colored, 0, cdt, info->real_id, filling);
 
 	/* Non-empty prefix contains tree pseudo-graphics. */
 	const int is_treeable_column = is_primary_column_id(info->id);
@@ -1222,7 +1223,8 @@ column_line_print(const char buf[], int offset, AlignType align,
 		buf += extra_prefix;
 
 		checked_wmove(view->win, cdt->current_line, final_offset - extra_prefix);
-		cchar_t cch = prepare_col_color(view, 0, 0, cdt, /*real_id=*/-1);
+		cchar_t cch =
+			prepare_col_color(view, 0, 0, cdt, /*real_id=*/-1, /*filling=*/0);
 		wprinta(view->win, print_buf, &cch, 0);
 	}
 
@@ -1248,7 +1250,7 @@ column_line_print(const char buf[], int offset, AlignType align,
 	/* Draw match highlighting if there is any. */
 	int match_from = (cdt->custom_match ? cdt->match_from : info->match_from);
 	int match_to = (cdt->custom_match ? cdt->match_to : info->match_to);
-	if(info->id != FILL_COLUMN_ID && match_from != match_to)
+	if(!filling && match_from != match_to)
 	{
 		/* Calculate number of screen characters before the match. */
 		size_t match_start_col = utf8_nstrsw(print_buf, match_from);
@@ -1262,11 +1264,12 @@ column_line_print(const char buf[], int offset, AlignType align,
 	/* Use a given prefix value at most once. */
 	*cdt->prefix_len = 0;
 
-	if(info->id != FILL_COLUMN_ID)
+	if(!filling)
 	{
-		/* Any match for this column has already been consumed, so reset it in
-		 * preparation of processing the next column. */
+		/* Custom match and color for this cell have already been consumed, so reset
+		 * them in preparation for processing the next column. */
 		cdt->custom_match = 0;
+		cdt->custom_color = 0;
 	}
 }
 
@@ -1289,7 +1292,8 @@ draw_line_number(const column_data_t *cdt, int column)
 			num);
 
 	checked_wmove(view->win, cdt->current_line, column);
-	cchar_t cch = prepare_col_color(view, 0, 1, cdt, /*real_id=*/-1);
+	cchar_t cch =
+		prepare_col_color(view, 0, 1, cdt, /*real_id=*/-1, /*filling=*/0);
 	wprinta(view->win, num_str, &cch, 0);
 }
 
@@ -1362,7 +1366,7 @@ is_primary_column_id(int id)
  * used for drawing on a window. */
 static cchar_t
 prepare_col_color(const view_t *view, int is_primary_colored, int line_nr,
-		const column_data_t *cdt, int real_id)
+		const column_data_t *cdt, int real_id, int filling)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	col_attr_t col = ui_get_win_color(view, cs);
@@ -1394,6 +1398,11 @@ prepare_col_color(const view_t *view, int is_primary_colored, int line_nr,
 		                      || (cfg.color_what == CW_ALL_ROWS);
 		const int line_color = with_line_hi ? cdt->line_hi_group : -1;
 		mix_in_common_colors(&col, view, cdt->entry, line_color);
+
+		if(!filling && cdt->custom_color)
+		{
+			cs_mix_colors(&col, &cdt->custom_hi);
+		}
 
 		if(is_current)
 		{

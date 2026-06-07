@@ -564,6 +564,8 @@ Fields of {info} argument for {column}.handler:
 Fields of table returned by {column}.handler:
  - "text" (string)
     Table cell's value as a string or convertible to it.
+ - "color" (|vifm-l_VifmColor|) (optional)
+    Color of the text (doesn't affect parts of a cell without the text).
  - "matchstart" (integer) (default: 0)
     For a search match this is the end position of a substring found in
     entry's name, zero otherwise.
@@ -1351,7 +1353,8 @@ Return:~
 --------------------------------------------------------------------------------
 *vifm-l_VifmColor*
 
-Instances of this type are returned by:
+Instances of this type can be returned from callbacks of
+|vifm-l_vifm.addcolumntype()|.  They are also returned by:
  * |vifm-l_vifm.color.new()|
 
 This type represents a combination of foreground color, background color and

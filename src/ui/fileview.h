@@ -23,6 +23,7 @@
 #include <stddef.h> /* size_t */
 
 #include "../utils/test_helpers.h"
+#include "colors.h"
 
 struct dir_entry_t;
 struct view_t;
@@ -59,6 +60,9 @@ typedef struct
 	int custom_match;   /* Whether the fields below have meaningful values. */
 	int match_from;     /* Start offset of the match. */
 	int match_to;       /* End offset of the match. */
+
+	int custom_color;     /* Whether custom_hi has a meaningful value. */
+	col_attr_t custom_hi; /* Custom cell-specific attribute. */
 }
 column_data_t;
 

@@ -1,4 +1,4 @@
-.TH VIFM 1 "5 May 2026" "vifm 0.15"
+.TH VIFM 1 "7 June 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2553,10 +2553,11 @@ transparency:
                 CmpUnmatched
                 CmpBlank
                   Selected
-                    CurrLine
-                      LineNr (in active pane)
-                    OtherLine
-                      LineNr (in inactive pane)
+                    Cell-specific (returned by Lua columns)
+                      CurrLine
+                        LineNr (in active pane)
+                      OtherLine
+                        LineNr (in inactive pane)
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)

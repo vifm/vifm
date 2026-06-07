@@ -270,7 +270,19 @@ lua_viewcolumn_handler(void *data, size_t buf_len, char buf[],
 		}
 	}
 
-	lua_pop(lua, 3); /* matchend, matchstart, handler's result */
+	lua_pop(lua, 2); /* matchend, matchstart */
+
+	if(lua_getfield(lua, -1, "color") == LUA_TUSERDATA)
+	{
+		col_attr_t *color = luaL_testudata(lua, -1, "VifmColor");
+		if(color != NULL)
+		{
+			cdt->custom_color = 1;
+			cdt->custom_hi = *color;
+		}
+	}
+
+	lua_pop(lua, 2); /* color, handler's result */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
