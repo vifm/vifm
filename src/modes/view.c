@@ -1922,6 +1922,16 @@ modview_info_free(modview_info_t *info)
 	}
 }
 
+int
+modview_get_ruler_width(void)
+{
+	assert(vle_mode_is(VIEW_MODE) && "View mode must be active!");
+
+	char buf[64];
+	format_ruler(vi, buf, sizeof(buf));
+	return strlen(buf);
+}
+
 /* Fills the buffer with the text to be displayed on the ruler. */
 static void
 format_ruler(const modview_info_t *vi, char buf[], size_t buf_len)

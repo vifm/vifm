@@ -1578,6 +1578,10 @@ get_ruler_width(view_t *view)
 	int len;
 	int list_pos;
 
+	if(vle_mode_is(VIEW_MODE))
+	{
+		return modview_get_ruler_width();
+	}
 	if(vle_mode_is(MENU_MODE))
 	{
 		return modmenu_get_ruler_width();
