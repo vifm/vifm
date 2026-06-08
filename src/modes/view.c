@@ -205,6 +205,7 @@ static void reload_view(modview_info_t *vi, int silent);
 static void cleanup(modview_info_t *vi);
 static modview_info_t * view_info_alloc(void);
 static void handle_mouse_event(key_info_t key_info, keys_info_t *keys_info);
+static void format_ruler(const modview_info_t *vi, char buf[], size_t buf_len);
 TSTATIC int modview_is_raw(modview_info_t *vi);
 TSTATIC int modview_is_detached(modview_info_t *vi);
 TSTATIC const char * modview_current_viewer(modview_info_t *vi);
@@ -481,14 +482,8 @@ modview_post(void)
 void
 modview_ruler_update(void)
 {
-	char rel_pos[32];
-	format_position(rel_pos, sizeof(rel_pos), vi->line, vi->nlines,
-			vi->view->window_rows);
-
 	char buf[64];
-	int curr_line = vi->line + (vi->nlines > 0 ? 1 : 0);
-	snprintf(buf, sizeof(buf), "%d-%d %s", curr_line, vi->nlines, rel_pos);
-
+	format_ruler(vi, buf, sizeof(buf));
 	ui_ruler_set(buf);
 }
 
@@ -1925,6 +1920,18 @@ modview_info_free(modview_info_t *info)
 			vi = NULL;
 		}
 	}
+}
+
+/* Fills the buffer with the text to be displayed on the ruler. */
+static void
+format_ruler(const modview_info_t *vi, char buf[], size_t buf_len)
+{
+	char rel_pos[32];
+	format_position(rel_pos, sizeof(rel_pos), vi->line, vi->nlines,
+			vi->view->window_rows);
+
+	int curr_line = vi->line + (vi->nlines > 0 ? 1 : 0);
+	snprintf(buf, buf_len, "%d-%d %s", curr_line, vi->nlines, rel_pos);
 }
 
 TSTATIC int
