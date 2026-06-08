@@ -94,6 +94,10 @@ const char * modview_detached_get_viewer(void);
 /* Frees view info.  The parameter can be NULL. */
 void modview_info_free(modview_info_t *vi);
 
+/* Retrieves "recommended" width of the ruler for the current preview.  Returns
+ * the width. */
+int modview_get_ruler_width(void);
+
 TSTATIC_DEFS(
 	int modview_is_raw(modview_info_t *vi);
 	int modview_is_detached(modview_info_t *vi);
