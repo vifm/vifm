@@ -1540,7 +1540,8 @@ update_statusbar_layout(void)
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	int max_ruler_width = screen_x - INPUT_WIN_WIDTH - 1;
-	int ruler_width = MIN(get_ruler_width(), max_ruler_width);
+	int ruler_width =
+		MIN(MAX(POS_WIN_MIN_WIDTH, get_ruler_width()), max_ruler_width);
 	/* The minimal start position is 1, not 0, because otherwise the ruler is
 	 * hidden by a single-character status bar window. */
 	int fields_pos = screen_x - (INPUT_WIN_WIDTH + ruler_width);
@@ -1601,7 +1602,7 @@ get_fileview_ruler_width(view_t *view)
 
 	view->list_pos = list_pos;
 
-	return MAX(POS_WIN_MIN_WIDTH, len);
+	return len;
 }
 
 /* Expands view macros to be displayed on the ruler line according to the format
