@@ -4,6 +4,7 @@
 
 #include <stdlib.h> /* free() */
 
+#include <stubs.h>
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -389,6 +390,26 @@ TEST(autocmd_is_called_for_all_pane_tabs)
 	vle_aucmd_remove(NULL, NULL);
 	curr_stats.load_stage = 0;
 	cfg.pane_tabs = 0;
+}
+
+TEST(session_switch_doesnt_run_startup_commands)
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+	cfg.session_options = VINFO_CHISTORY;
+
+	assert_failure(cmds_dispatch1("session session", &lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch1("session other", &lwin, CIT_COMMAND));
+
+	ui_sb_msg("");
+	vifm_startup_commands_executed = 0;
+	assert_failure(cmds_dispatch1("session session", &lwin, CIT_COMMAND));
+	assert_string_equal("Loaded session: session", ui_sb_last());
+	assert_false(vifm_startup_commands_executed);
+
+	remove_file(SANDBOX_PATH "/sessions/session.json");
+	remove_file(SANDBOX_PATH "/sessions/other.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+	remove_file(SANDBOX_PATH "/vifminfo.json");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
