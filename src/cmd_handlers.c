@@ -4572,13 +4572,14 @@ restart_into_session(const char session[], RestartType type)
 	{
 		state_load(type != RT_FULL);
 		result = 0;
+		instance_finish_restart(/*run_startup_commands=*/1);
 	}
 	else
 	{
 		result = sessions_load(session);
+		instance_finish_restart(/*run_startup_commands=*/0);
 	}
 
-	instance_finish_restart();
 	return result;
 }
 

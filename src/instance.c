@@ -135,7 +135,7 @@ instance_start_restart(RestartType type)
 }
 
 void
-instance_finish_restart(void)
+instance_finish_restart(int run_startup_commands)
 {
 	flist_hist_save(&lwin);
 	flist_hist_save(&rwin);
@@ -155,7 +155,10 @@ instance_finish_restart(void)
 	instance_load_config();
 	plugs_load(curr_stats.plugs, curr_stats.plugins_dirs);
 
-	vifm_reexec_startup_commands();
+	if(run_startup_commands)
+	{
+		vifm_reexec_startup_commands();
+	}
 
 	curr_stats.restart_in_progress = RT_NONE;
 

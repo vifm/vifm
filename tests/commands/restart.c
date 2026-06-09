@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <stubs.h>
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -166,6 +167,17 @@ TEST(restart_resets_abbreviations)
 	const char *descr;
 	int no_remap = -1;
 	assert_false(vle_abbr_iter(&lhs, &rhs, &descr, &no_remap, &state));
+}
+
+TEST(restart_runs_startup_commands)
+{
+	vifm_startup_commands_executed = 0;
+	assert_success(cmds_dispatch1("restart", &lwin, CIT_COMMAND));
+	assert_true(vifm_startup_commands_executed);
+
+	vifm_startup_commands_executed = 0;
+	assert_success(cmds_dispatch1("restart full", &lwin, CIT_COMMAND));
+	assert_true(vifm_startup_commands_executed);
 }
 
 static void

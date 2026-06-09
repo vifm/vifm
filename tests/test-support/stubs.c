@@ -7,11 +7,12 @@
 struct view_t;
 
 int vifm_tests_exited;
+int vifm_startup_commands_executed;
 
 void
 vifm_reexec_startup_commands(void)
 {
-	/* Do nothing. */
+	vifm_startup_commands_executed = 1;
 }
 
 void
