@@ -5174,7 +5174,7 @@ tree_cmd(const cmd_info_t *cmd_info)
 	int depth;
 	if(parse_tree_properties(cmd_info, &depth) != 0)
 	{
-			return CMDS_ERR_CUSTOM;
+		return CMDS_ERR_CUSTOM;
 	}
 
 	(void)flist_load_tree(curr_view, flist_get_dir(curr_view), depth);
