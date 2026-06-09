@@ -4537,7 +4537,7 @@ switch_to_a_session(const char session_name[])
 		return 0;
 	}
 
-	if(restart_into_session(session_name, 0) != 0)
+	if(restart_into_session(session_name, RT_NONE) != 0)
 	{
 		if(sessions_active())
 		{
