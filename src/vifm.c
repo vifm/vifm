@@ -505,7 +505,7 @@ check_path_for_file(view_t *view, const char path[], int handle)
 		return;
 	}
 
-	load_dir_list(view, 1);
+	load_dir_list(view, /*reload=*/0);
 	if(fpos_ensure_selected(view, after_last(path, '/')))
 	{
 		if(handle)
