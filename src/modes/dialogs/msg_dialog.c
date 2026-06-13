@@ -593,7 +593,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, /*skip_empty=*/0, &wctrl_msg),
 	                 1U);
 
-	int wmsg = measure_text_width(msg);
+	int wmsg = MAX(measure_text_width(title), measure_text_width(msg));
 
 	/* We start with maximum height and reduce is later. */
 	int max_h = sh - 2 - ui_stat_height();
