@@ -97,6 +97,7 @@
 
 static int vifm_main(int argc, char *argv[]);
 static int get_start_cwd(char buf[], size_t buf_len);
+static void set_view_path(view_t *view, const char path[]);
 static OpsResult undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
@@ -396,6 +397,17 @@ get_start_cwd(char buf[], size_t buf_len)
 		copy_str(buf, buf_len, pwd);
 	}
 	return 0;
+}
+
+/* Sets view's current directory from path value. */
+static void
+set_view_path(view_t *view, const char path[])
+{
+	if(view_needs_cd(view, path))
+	{
+		copy_str(view->curr_dir, sizeof(view->curr_dir), path);
+		exclude_file_name(view->curr_dir);
+	}
 }
 
 /* perform_operation() interface adaptor for the undo unit. */
