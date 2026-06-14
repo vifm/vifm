@@ -188,8 +188,6 @@ int is_dir_list_loaded(view_t *view);
 /* Checks whether view can and should be navigated to the path (no need to do
  * anything if already there).  Returns non-zero if path should be changed. */
 int view_needs_cd(const view_t *view, const char path[]);
-/* Sets view's current directory from path value. */
-void set_view_path(view_t *view, const char path[]);
 /* Retrieves size of the entry, possibly using cached or calculated value.
  * Returns the size. */
 uint64_t fentry_get_size(const view_t *view, const dir_entry_t *entry);

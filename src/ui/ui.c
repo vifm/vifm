@@ -171,7 +171,8 @@ static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void update_statusbar_layout(void);
 static int are_statusbar_widgets_visible(void);
-static int get_ruler_width(view_t *view);
+static int get_ruler_width(void);
+static int get_fileview_ruler_width(view_t *view);
 static char * expand_ruler_macros(view_t *view, const char format[]);
 static int locate_view(unsigned int id, int *tab_idx, view_t **side);
 static void switch_panes_content(void);
@@ -1539,7 +1540,8 @@ update_statusbar_layout(void)
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	int max_ruler_width = screen_x - INPUT_WIN_WIDTH - 1;
-	int ruler_width = MIN(get_ruler_width(curr_view), max_ruler_width);
+	int ruler_width =
+		MIN(MAX(POS_WIN_MIN_WIDTH, get_ruler_width()), max_ruler_width);
 	/* The minimal start position is 1, not 0, because otherwise the ruler is
 	 * hidden by a single-character status bar window. */
 	int fields_pos = screen_x - (INPUT_WIN_WIDTH + ruler_width);
@@ -1572,28 +1574,35 @@ are_statusbar_widgets_visible(void)
 
 /* Gets "recommended" width for the ruler.  Returns the width. */
 static int
-get_ruler_width(view_t *view)
+get_ruler_width(void)
 {
-	char *expanded;
-	int len;
-	int list_pos;
-
+	if(vle_mode_is(VIEW_MODE))
+	{
+		return modview_get_ruler_width();
+	}
 	if(vle_mode_is(MENU_MODE))
 	{
 		return modmenu_get_ruler_width();
 	}
+	return get_fileview_ruler_width(curr_view);
+}
 
-	/* Size must correspond to the "worst case" of the last list item. */
-	list_pos = view->list_pos;
+/* Computes "recommended" width for a fileview ruler.  Returns the width. */
+static int
+get_fileview_ruler_width(view_t *view)
+{
+	/* Size must correspond to the "worst case" of the last list item.
+	 * XXX: would be great to avoid modifying view for this. */
+	int list_pos = view->list_pos;
 	view->list_pos = (view->list_rows == 0) ? 0 : (view->list_rows - 1);
 
-	expanded = expand_ruler_macros(view, cfg.ruler_format);
-	len = strlen(expanded);
+	char *expanded = expand_ruler_macros(view, cfg.ruler_format);
+	int len = strlen(expanded);
 	free(expanded);
 
 	view->list_pos = list_pos;
 
-	return MAX(POS_WIN_MIN_WIDTH, len);
+	return len;
 }
 
 /* Expands view macros to be displayed on the ruler line according to the format

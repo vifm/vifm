@@ -4537,7 +4537,7 @@ switch_to_a_session(const char session_name[])
 		return 0;
 	}
 
-	if(restart_into_session(session_name, 0) != 0)
+	if(restart_into_session(session_name, RT_NONE) != 0)
 	{
 		if(sessions_active())
 		{
@@ -4572,13 +4572,14 @@ restart_into_session(const char session[], RestartType type)
 	{
 		state_load(type != RT_FULL);
 		result = 0;
+		instance_finish_restart(/*run_startup_commands=*/1);
 	}
 	else
 	{
 		result = sessions_load(session);
+		instance_finish_restart(/*run_startup_commands=*/0);
 	}
 
-	instance_finish_restart();
 	return result;
 }
 
@@ -5173,7 +5174,7 @@ tree_cmd(const cmd_info_t *cmd_info)
 	int depth;
 	if(parse_tree_properties(cmd_info, &depth) != 0)
 	{
-			return CMDS_ERR_CUSTOM;
+		return CMDS_ERR_CUSTOM;
 	}
 
 	(void)flist_load_tree(curr_view, flist_get_dir(curr_view), depth);

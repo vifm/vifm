@@ -97,6 +97,7 @@
 
 static int vifm_main(int argc, char *argv[]);
 static int get_start_cwd(char buf[], size_t buf_len);
+static void set_view_path(view_t *view, const char path[], int handle);
 static OpsResult undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
@@ -270,8 +271,8 @@ vifm_main(int argc, char *argv[])
 
 	fops_init(&modcline_prompt, &prompt_msg_custom);
 
-	set_view_path(&lwin, vifm_args.lwin_path);
-	set_view_path(&rwin, vifm_args.rwin_path);
+	set_view_path(&lwin, vifm_args.lwin_path, vifm_args.lwin_handle);
+	set_view_path(&rwin, vifm_args.rwin_path, vifm_args.rwin_handle);
 
 	if(need_to_switch_active_pane(vifm_args.lwin_path, vifm_args.rwin_path))
 	{
@@ -398,6 +399,25 @@ get_start_cwd(char buf[], size_t buf_len)
 	return 0;
 }
 
+/* Sets view's current directory from path value. */
+static void
+set_view_path(view_t *view, const char path[], int handle)
+{
+	if(path[0] == '\0')
+	{
+		return;
+	}
+
+	if(!handle || view_needs_cd(view, path))
+	{
+		copy_str(view->curr_dir, sizeof(view->curr_dir), path);
+		if(!handle && !is_root_dir(path))
+		{
+			remove_last_path_component(view->curr_dir);
+		}
+	}
+}
+
 /* perform_operation() interface adaptor for the undo unit. */
 static OpsResult
 undo_perform_func(OPS op, void *data, const char src[], const char dst[])
@@ -434,12 +454,12 @@ parse_received_arguments(char *argv[])
 	SetForegroundWindow(GetConsoleWindow());
 #endif
 
-	if(view_needs_cd(&lwin, args.lwin_path))
+	if(!args.lwin_handle || view_needs_cd(&lwin, args.lwin_path))
 	{
 		remote_cd(&lwin, args.lwin_path, args.lwin_handle);
 	}
 
-	if(view_needs_cd(&rwin, args.rwin_path))
+	if(!args.rwin_handle || view_needs_cd(&rwin, args.rwin_path))
 	{
 		remote_cd(&rwin, args.rwin_path, args.rwin_handle);
 	}
@@ -459,7 +479,10 @@ parse_received_arguments(char *argv[])
 static void
 remote_cd(view_t *view, const char path[], int handle)
 {
-	char buf[PATH_MAX + 1];
+	if(path[0] == '\0')
+	{
+		return;
+	}
 
 	if(view->explore_mode)
 	{
@@ -476,10 +499,18 @@ remote_cd(view_t *view, const char path[], int handle)
 		qv_toggle();
 	}
 
-	copy_str(buf, sizeof(buf), path);
-	exclude_file_name(buf);
+	char cd_path[PATH_MAX + 1];
+	copy_str(cd_path, sizeof(cd_path), path);
+	/* A view is navigated the to parent directory of a path that's being
+	 * selected or of a file that's being opened provided that the path exists and
+	 * has a parent. */
+	if((!handle || !is_dir(cd_path)) && !is_root_dir(cd_path) &&
+			path_exists(cd_path, handle ? DEREF : NODEREF))
+	{
+		remove_last_path_component(cd_path);
+	}
 
-	(void)cd(view, view->curr_dir, buf);
+	(void)cd(view, view->curr_dir, cd_path);
 	check_path_for_file(view, path, handle);
 }
 
@@ -488,12 +519,12 @@ remote_cd(view_t *view, const char path[], int handle)
 static void
 check_path_for_file(view_t *view, const char path[], int handle)
 {
-	if(path[0] == '\0' || is_dir(path) || (handle && strcmp(path, "-") == 0))
+	if(path[0] == '\0' || (handle && (is_dir(path) || strcmp(path, "-") == 0)))
 	{
 		return;
 	}
 
-	load_dir_list(view, 1);
+	load_dir_list(view, /*reload=*/0);
 	if(fpos_ensure_selected(view, after_last(path, '/')))
 	{
 		if(handle)

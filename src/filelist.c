@@ -3494,16 +3494,6 @@ view_needs_cd(const view_t *view, const char path[])
 	return 1;
 }
 
-void
-set_view_path(view_t *view, const char path[])
-{
-	if(view_needs_cd(view, path))
-	{
-		copy_str(view->curr_dir, sizeof(view->curr_dir), path);
-		exclude_file_name(view->curr_dir);
-	}
-}
-
 uint64_t
 fentry_get_size(const view_t *view, const dir_entry_t *entry)
 {

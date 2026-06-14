@@ -35,7 +35,7 @@ void instance_start_restart(RestartType type);
 /* Loads color scheme, processes configuration file and so on to finish restart.
  * Does NOT load state of the application, it's expected to be done between
  * calls to instance_start_restart() and this function. */
-void instance_finish_restart(void);
+void instance_finish_restart(int run_startup_commands);
 
 /* Loads configuration file taking care of anything that needs to be done before
  * or after it. */

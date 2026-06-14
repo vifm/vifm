@@ -489,7 +489,7 @@ TEST(size_of_dhistory_is_limited)
 	/* Reload the state and config (which should be empty in tests). */
 	instance_start_restart(RT_MOST);
 	state_load(0);
-	instance_finish_restart();
+	instance_finish_restart(/*run_startup_commands=*/1);
 	/* Verify that history was trimmed to the set limit. */
 	assert_int_equal(2, lwin.history_num);
 

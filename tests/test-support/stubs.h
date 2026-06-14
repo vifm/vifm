@@ -2,6 +2,7 @@
 #define VIFM_TESTS__TEST_SUPPORT__STUBS_H__
 
 extern int vifm_tests_exited;
+extern int vifm_startup_commands_executed;
 
 #endif /* VIFM_TESTS__TEST_SUPPORT__STUBS_H__ */
 
