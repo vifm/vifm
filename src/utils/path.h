@@ -110,9 +110,6 @@ void split_ext(char path[], int *root_len, const char **ext_pos);
  * extension, which points to trailing null character for an empty extension. */
 char * get_ext(const char path[]);
 
-/* Removes file name from path.  Does nothing if path refers to a directory. */
-void exclude_file_name(char path[]);
-
 /* Checks whether path equals to ".." or "../".  Returns non-zero if it is,
  * otherwise zero is returned. */
 int is_parent_dir(const char path[]);

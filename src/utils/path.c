@@ -696,15 +696,6 @@ find_ext_dot(const char path[])
 	return no_ext ? NULL : dot;
 }
 
-void
-exclude_file_name(char path[])
-{
-	if(path_exists(path, DEREF) && !is_valid_dir(path))
-	{
-		remove_last_path_component(path);
-	}
-}
-
 int
 is_parent_dir(const char path[])
 {

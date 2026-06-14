@@ -7,6 +7,11 @@
 	inside of a directory, instead of to indicate directories.  Thanks to
 	CaptainFantastic.
 
+	Changed `--select path/to/directory` to behave the same as with files
+	instead of opening a directory (doesn't apply to root directory which gets
+	opened as before).  Thanks to David Sierra DiazGranados (a.k.a.
+	davidsierradz).
+
 	Added <help> :*map argument that enables providing description for the
 	mapping with the same curly braces syntax as used by :file[x]type.
 
