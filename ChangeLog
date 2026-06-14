@@ -261,6 +261,8 @@
 	Fixed dialog's title being hidden when it's longer than the dialog's
 	message.
 
+	Fixed `--select path/to/broken/symlink` failing with an error.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

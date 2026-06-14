@@ -505,7 +505,7 @@ remote_cd(view_t *view, const char path[], int handle)
 	 * selected or of a file that's being opened provided that the path exists and
 	 * has a parent. */
 	if((!handle || !is_dir(cd_path)) && !is_root_dir(cd_path) &&
-			path_exists(cd_path, DEREF))
+			path_exists(cd_path, handle ? DEREF : NODEREF))
 	{
 		remove_last_path_component(cd_path);
 	}
