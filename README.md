@@ -4,7 +4,7 @@
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
-_Version 0.14.4.  This file last updated on 31 May 2026._
+_Version 0.14.4.  This file last updated on 17 June 2026._
 
 ## Brief Description ##
 
@@ -69,9 +69,9 @@ GNU General Public License, version 2 or later.
 [vim-plugin]: https://github.com/vifm/vifm.vim
 [colors]: https://github.com/vifm/vifm-colors
 [colorscheme-previews]: https://vifm.info/colorschemes.shtml
-[devicons-1]: https://github.com/cirala/vifm_devicons
+[devicons-1]: https://github.com/thimc/vifm_devicons
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
-[vifmimg]: https://github.com/cirala/vifmimg
+[vifmimg]: https://github.com/thimc/vifmimg
 [sixel-preview]: https://github.com/eylles/vifm-sixel-preview
 [thu.sh]: https://github.com/iambumblehead/thu.sh
 [Überzug]: https://github.com/jstkdng/ueberzugpp/

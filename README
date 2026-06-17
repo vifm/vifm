@@ -3,7 +3,7 @@ Vifm - Vim-like file manager
 
 Version: 0.14.4
 
-This file last updated: 31 May 2026
+This file last updated: 17 June 2026
 
 Brief Description
 
@@ -52,10 +52,10 @@ Contacts
     * https://vifm.info/colorschemes.shtml
 
     Configurations for iconic fonts:
-    * https://github.com/cirala/vifm_devicons
+    * https://github.com/thimc/vifm_devicons
     * https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 
     Preview scripts:
-    * https://github.com/cirala/vifmimg
+    * https://github.com/thimc/vifmimg
     * https://github.com/eylles/vifm-sixel-preview
     * https://github.com/iambumblehead/thu.sh
