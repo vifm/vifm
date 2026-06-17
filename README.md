@@ -69,7 +69,7 @@ GNU General Public License, version 2 or later.
 [vim-plugin]: https://github.com/vifm/vifm.vim
 [colors]: https://github.com/vifm/vifm-colors
 [colorscheme-previews]: https://vifm.info/colorschemes.shtml
-[devicons-1]: https://github.com/thimc/vifm_devicons
+[devicons-1]: https://github.com/jose1711/vifm_devicons
 [devicons-2]: https://github.com/yanzhang0219/dotfiles/tree/master/.config/vifm
 [vifmimg]: https://github.com/thimc/vifmimg
 [sixel-preview]: https://github.com/eylles/vifm-sixel-preview
