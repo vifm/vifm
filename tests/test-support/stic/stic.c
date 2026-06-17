@@ -342,6 +342,13 @@ void stic_assert_string_equal(const char* expected, const char* actual, const ch
 {
 	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
+	const char *quote;
+
+	quote = "\"";
+	if ((actual != NULL && strchr(actual, '\n') != NULL) || (expected != NULL && strchr(expected, '\n') != NULL))
+	{
+		quote = "\n\"\"\"\n";
+	}
 
 	if ((expected == (char *)0) && (actual == (char *)0))
 	{
@@ -350,18 +357,18 @@ void stic_assert_string_equal(const char* expected, const char* actual, const ch
 	}
 	else if (expected == (char *)0)
 	{
-		snprintf(s, sizeof(s), "Expected <NULL> but was \"%s\"", actual);
+		snprintf(s, sizeof(s), "Expected <NULL> but was %s%s%s", quote, actual, quote);
 		comparison = 0;
 	}
 	else if (actual == (char *)0)
 	{
-		snprintf(s, sizeof(s), "Expected \"%s\" but was <NULL>", expected);
+		snprintf(s, sizeof(s), "Expected %s%s%s but was <NULL>", quote, expected, quote);
 		comparison = 0;
 	}
 	else
 	{
 		comparison = strcmp(expected, actual) == 0;
-		snprintf(s, sizeof(s), "Expected \"%s\" but was \"%s\"", expected, actual);
+		snprintf(s, sizeof(s), "Expected %s%s%s but was %s%s%s", quote, expected, quote, quote, actual, quote);
 	}
 
 	stic_simple_test_result(comparison, s, function, file, line);
@@ -371,6 +378,13 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 {
 	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
+	const char *quote;
+
+	quote = "\"";
+	if ((actual != NULL && wcschr(actual, L'\n') != NULL) || (expected != NULL && wcschr(expected, L'\n') != NULL))
+	{
+		quote = "\n\"\"\"\n";
+	}
 
 	if ((expected == NULL) && (actual == NULL))
 	{
@@ -380,7 +394,7 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 	else if (expected == NULL)
 	{
 #ifdef STIC_C99
-		snprintf(s, sizeof(s), "Expected <NULL> but was \"%ls\"", actual);
+		snprintf(s, sizeof(s), "Expected <NULL> but was %s%ls%s", quote, actual, quote);
 #else
 		snprintf(s, sizeof(s), "Expected <NULL> but was wide string");
 #endif
@@ -389,7 +403,7 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 	else if (actual == NULL)
 	{
 #ifdef STIC_C99
-		snprintf(s, sizeof(s), "Expected \"%ls\" but was <NULL>", expected);
+		snprintf(s, sizeof(s), "Expected %s%ls%s but was <NULL>", quote, expected, quote);
 #else
 		snprintf(s, sizeof(s), "Expected wide string but was <NULL>");
 #endif
@@ -399,7 +413,7 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 	{
 		comparison = wcscmp(expected, actual) == 0;
 #ifdef STIC_C99
-		snprintf(s, sizeof(s), "Expected \"%ls\" but was \"%ls\"", expected, actual);
+		snprintf(s, sizeof(s), "Expected %s%ls%s but was %s%ls%s", quote, expected, quote, quote, actual, quote);
 #else
 		snprintf(s, sizeof(s), "Expected wide string doesn't match");
 #endif
