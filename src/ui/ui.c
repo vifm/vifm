@@ -1622,6 +1622,27 @@ refresh_view_win(view_t *view)
 		return;
 	}
 
+	/* Skip refreshing the preview pane's window when it's displaying
+	 * pass-through graphics (e.g. sixel).  wrefresh() would overwrite graphics
+	 * written directly to the terminal in ui_pass_through().  On PDCurses,
+	 * wrefresh() rewrites all character cells unconditionally via the Windows
+	 * Console API, erasing sixel pixels; on ncurses this call is a no-op when
+	 * the window is unchanged, so the guard is harmless on Linux too. */
+	if(curr_stats.preview.on && view == other_view && view->displays_graphics)
+	{
+		refresh_bottom_lines();
+		return;
+	}
+
+	/* When preview mode is off but the preview pane still has sixel graphics,
+	 * erase them before PDCurses redraws the main pane over that area.
+	 * Without this, sixel pixels show through the newly-drawn character cells. */
+	if(!curr_stats.preview.on && other_view->displays_graphics)
+	{
+		ui_pass_through_clear(other_view->win);
+		other_view->displays_graphics = 0;
+	}
+
 	ui_refresh_win(view->win);
 	refresh_bottom_lines();
 }
@@ -3063,6 +3084,50 @@ ui_drop_attr(WINDOW *win)
 }
 
 void
+ui_pass_through_clear(WINDOW *win)
+{
+#ifdef _WIN32
+	HANDLE hout = CreateFileA("\\\\.\\CONOUT$",
+			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE,
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(hout == INVALID_HANDLE_VALUE)
+		return;
+
+	DWORD mode_orig = 0;
+	GetConsoleMode(hout, &mode_orig);
+	SetConsoleMode(hout, mode_orig
+			| ENABLE_PROCESSED_OUTPUT
+			| ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
+	const int width = getmaxx(win);
+	const int height = getmaxy(win);
+	const int begy = getbegy(win);
+	const int begx = getbegx(win);
+
+	char *blanks = malloc(width);
+	if(blanks != NULL)
+	{
+		memset(blanks, ' ', width);
+		int row;
+		for(row = 0; row < height; ++row)
+		{
+			COORD pos = {(SHORT)begx, (SHORT)(begy + row)};
+			SetConsoleCursorPosition(hout, pos);
+			DWORD written;
+			/* SGR 0 resets colors to default (opaque), covering sixel pixels. */
+			WriteFile(hout, "\x1b[0m", 4, &written, NULL);
+			WriteFile(hout, blanks, (DWORD)width, &written, NULL);
+		}
+		free(blanks);
+	}
+
+	SetConsoleMode(hout, mode_orig);
+	CloseHandle(hout);
+#endif
+	(void)win;
+}
+
+void
 ui_pass_through(const strlist_t *lines, WINDOW *win, int x, int y)
 {
 	/* Position hardware cursor on the screen. */
@@ -3070,10 +3135,52 @@ ui_pass_through(const strlist_t *lines, WINDOW *win, int x, int y)
 	use_wrefresh(win);
 
 	int i;
+#ifdef _WIN32
+	/* On Windows, PDCurses calls SetConsoleActiveScreenBuffer() during
+	 * initscr(), so GetStdHandle(STD_OUTPUT_HANDLE) returns the old inactive
+	 * buffer — writing there is invisible.  Open CONOUT$ to get the currently
+	 * active screen buffer (whichever one PDCurses is rendering into). */
+	{
+		HANDLE hout = CreateFileA("\\\\.\\CONOUT$",
+				GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE,
+				NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if(hout != INVALID_HANDLE_VALUE)
+		{
+			/* PDCurses sets output mode to ENABLE_LVB_GRID_WORLDWIDE (0x10)
+			 * only — it strips ENABLE_PROCESSED_OUTPUT so that ESC bytes are
+			 * not interpreted as control characters.  Without PROCESSED_OUTPUT,
+			 * ENABLE_VIRTUAL_TERMINAL_PROCESSING has no effect (ESC is never
+			 * recognized as a sequence start).  Set both, write, then restore
+			 * the original mode so PDCurses' next redraw is unaffected. */
+			DWORD mode_orig = 0;
+			GetConsoleMode(hout, &mode_orig);
+			SetConsoleMode(hout, mode_orig
+					| ENABLE_PROCESSED_OUTPUT
+					| ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
+			COORD pos = {(SHORT)(getbegx(win) + x), (SHORT)(getbegy(win) + y)};
+
+			for(i = 0; i < lines->nitems; ++i)
+			{
+				COORD line_pos = {pos.X, (SHORT)(pos.Y + i)};
+				SetConsoleCursorPosition(hout, line_pos);
+				const char *line = lines->items[i];
+				DWORD written;
+				WriteFile(hout, line, (DWORD)strlen(line), &written, NULL);
+			}
+
+			/* Restore PDCurses' original console mode. */
+			SetConsoleMode(hout, mode_orig);
+			CloseHandle(hout);
+		}
+	}
+#else
 	for(i = 0; i < lines->nitems; ++i)
 	{
 		puts(lines->items[i]);
 	}
+	fflush(stdout);
+#endif
 
 	/* Make curses synchronize its idea about where cursor is with the terminal
 	 * state. */

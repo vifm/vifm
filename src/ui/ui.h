@@ -843,6 +843,11 @@ struct strlist_t;
  * specified point on the window beforehand. */
 void ui_pass_through(const struct strlist_t *lines, WINDOW *win, int x, int y);
 
+/* Erases pass-through graphics (e.g. sixel) from win by filling every cell
+ * with a space via the VT path so sixel pixels don't bleed through after the
+ * view switches back to text.  No-op on non-Windows builds. */
+void ui_pass_through_clear(WINDOW *win);
+
 /* Maps column name to column id.  Returns column id or -1 on error. */
 int ui_map_column_name(const char name[]);
 

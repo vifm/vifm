@@ -205,7 +205,17 @@ qv_draw(view_t *view)
 		return;
 	}
 
+	/* Clear any sixel graphics from the previous frame before erasing the
+	 * window and drawing new content.  PDCurses character cells alone do not
+	 * cover sixel pixels in Windows Terminal. */
+	if(other_view->displays_graphics)
+	{
+		ui_pass_through_clear(other_view->win);
+	}
+
 	ui_view_erase(other_view, 1);
+
+	other_view->displays_graphics = 0;
 
 	curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
@@ -220,6 +230,7 @@ qv_draw(view_t *view)
 			.h = ui_qv_height(other_view),
 		};
 		(void)view_entry(curr, &parea, &qv_cache);
+		other_view->displays_graphics = (qv_cache.kind != VK_TEXTUAL);
 	}
 
 	refresh_view_win(other_view);
@@ -357,6 +368,7 @@ view_file(const char path[], const preview_area_t *parea,
 
 	update_cache(cache, path, viewer, kind, parea, max_lines);
 	strlist_t lines = get_lines(cache);
+
 	draw_lines(&lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 
 	if(cache->kind != VK_TEXTUAL)
@@ -364,6 +376,14 @@ view_file(const char path[], const preview_area_t *parea,
 		free_string_array(cache->lines.items, cache->lines.nitems);
 		cache->lines.items = copy_string_array(lines.items, lines.nitems);
 		cache->lines.nitems = lines.nitems;
+
+		/* Pass-through output arrives asynchronously.  If no lines are available
+		 * yet, mark the cache stale so the next redraw re-fetches from vcache
+		 * instead of re-using empty cached lines. */
+		if(cache->kind == VK_PASS_THROUGH && lines.nitems == 0)
+		{
+			cache->graphics_lost = 1;
+		}
 	}
 
 	return clear_cmd;
@@ -435,8 +455,12 @@ get_lines(const quickview_cache_t *cache)
 	               ? NULL
 	               : qv_expand_viewer(cache->pa.source, cache->viewer, &flags);
 
+	/* Pass-through viewers (sixel etc.) must complete before we call puts() to
+	 * replay their output.  Force synchronous mode so the first render has
+	 * content rather than requiring an async redraw cycle. */
+	const int sync_mode = (cache->kind == VK_PASS_THROUGH) ? VC_SYNC : VC_ASYNC;
 	strlist_t lines = vcache_lookup(cache->path, expanded, flags, cache->kind,
-			cache->max_lines, VC_ASYNC, &error);
+			cache->max_lines, sync_mode, &error);
 	free(expanded);
 
 	if(error != NULL)
@@ -937,6 +961,11 @@ qv_cleanup_area(const preview_area_t *parea, const char cmd[])
 static void
 wipe_area(const preview_area_t *parea)
 {
+	if(curr_stats.preview.kind != VK_TEXTUAL)
+	{
+		ui_pass_through_clear(parea->view->win);
+	}
+
 	if(cfg.hard_graphics_clear)
 	{
 		wclear(parea->view->win);
