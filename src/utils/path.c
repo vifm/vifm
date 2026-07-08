@@ -754,7 +754,18 @@ build_path(char buf[], size_t buf_len, const char p1[], const char p2[])
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s%s%s", p1, ends_with_slash(p1) ? "" : "/", p2);
+		size_t nchars = copy_str(buf, buf_len, p1);
+		if(nchars == 1 || (nchars > 1 && buf[nchars - 2] != '/'))
+		{
+			/* p1 is either empty or doesn't end with a slash, so overwrite \0. */
+			buf[nchars - 1] = '/';
+		}
+		else if(nchars > 0)
+		{
+			/* p1 ends with a slash, don't count \0 so it gets overwritten. */
+			--nchars;
+		}
+		copy_str(buf + nchars, buf_len - nchars, p2);
 	}
 }
 
