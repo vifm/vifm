@@ -14,6 +14,9 @@
 	Fixed dialog's title being hidden when it's longer than the dialog's
 	message.
 
+	Fixed invocation form of :locate that passes parameters without escaping
+	not being documented.
+
 0.14.3 to 0.14.4 (2026-05-31)
 
 	Added example of handling .deb-files to sample vifmrc.  Patch by Kirill
