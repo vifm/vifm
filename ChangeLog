@@ -1,5 +1,7 @@
 0.14.4 to current
 
+	Improved wording of documentation section describing filters.
+
 	Fixed `:highlight Group cterm=combine,none gui=combine,none` resulting in
 	`cterm=combine` and `gui=combine`.
 
