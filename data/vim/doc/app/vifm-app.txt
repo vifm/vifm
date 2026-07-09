@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 July 9
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 July 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3096,8 +3096,8 @@ The command macros may be used in user commands.
                                                                *vifm-%m*
   %m        show command output in a menu.
                                                                *vifm-%M*
-  %M        same as %m, but l (or Enter) key is handled like for :locate
-            and :find commands.
+  %M        same as %m, but l (or Enter) key is handled like for
+            |vifm-:locate| and |vifm-:find| commands.
                                                                *vifm-%u*
   %u        process command output as list of paths and compose custom view
             out of it.
