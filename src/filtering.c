@@ -330,9 +330,7 @@ filters_file_is_visible(const view_t *view, const char dir[], const char name[],
 
 	if(matcher_is_full_path(view->manual_filter))
 	{
-		const size_t nchars = copy_str(path, sizeof(path) - 1, dir);
-		path[nchars - 1U] = '/';
-		copy_str(path + nchars, sizeof(path) - nchars, name);
+		build_path(path, sizeof(path), dir, name);
 		name = path;
 	}
 
