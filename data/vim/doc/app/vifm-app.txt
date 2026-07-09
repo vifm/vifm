@@ -2332,6 +2332,9 @@ order using the '.' operator.  Any whitespace is ignored.
     assumed that its database is already built), which can be customized by
     altering value of the |vifm-'locateprg'| option.  See
     |vifm-menus-and-dialogs| for controls.
+:locate -opt...
+    same as :locate above, but user defines all arguments, with none of them
+    being escaped.
 :locate
     repeat last :locate command.
 

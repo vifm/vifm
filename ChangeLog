@@ -265,6 +265,9 @@
 
 	Fixed `--select path/to/broken/symlink` failing with an error.
 
+	Fixed invocation form of :locate that passes parameters without escaping
+	not being documented.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
