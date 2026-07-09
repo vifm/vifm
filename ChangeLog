@@ -123,6 +123,8 @@
 	Updated :diff command in sample vifmrc files to be more useful.  Thanks to
 	an anonymous at Vifm Q2A site.
 
+	Improved wording of documentation section describing filters.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.

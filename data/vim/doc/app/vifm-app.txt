@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 June 7
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 July 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -368,18 +368,18 @@ alone and they don't wrap when they are used as selectors.
 
 Filters~
                                                *vifm-filters*
-There are three basic file filters:
+Each pane has three independent file filters:
  - dot files filter (does not affect "." and ".." special directories, whose
    appearance is controlled by the |vifm-'dotdirs'| option), see
    |vifm-'dotfiles'|
- - permanent filter
+ - permanent filter (see |vifm-:filter| and |vifm-zf|)
  - local filter (see |vifm-=|)
 
-Permanent filter essentially allows defining a group of files names which are
-not desirable to be seen by default, like temporary or backup files, which
-might be created alongside normal ones.  Just like you don't usually need to
-see hidden dot files (files starting with a dot).  Local filter on the other
-hand is for temporary immediate filtering of file list at hand, to get rid of
+Permanent filter allows defining a group of file names that are not desirable
+to be seen by default, like temporary or backup files, which might be created
+alongside normal ones.  That's rather similar to hidden files (those starting
+with a dot) that one doesn't usually need to see.  Local filter, on the other
+hand, is for immediate temporary filtering of file list at hand, to get rid of
 uninterested files in the view or to make it possible to use % range in a
 :command.
 
@@ -387,12 +387,9 @@ For the purposes of more deterministic editing permanent filter is split
 into two parts:
  - one edited explicitly via |vifm-:filter| command
  - another one which is edited implicitly via |vifm-zf| shortcut
-Files are tested against both parts and a match counts if at least one
-of the parts matched.
+Files are tested against both and a match counts if any of the parts matched.
 
-Each file list has its own copy of each filter.
-
-Filtered files are not checked in / search or :commands.
+Filtered out files are not checked in / search or :commands.
 
 Files and directories are filtered separately.  This is done by appending
 a slash to a directory name before testing whether it matches the filter.
@@ -434,7 +431,7 @@ zd                                             *vifm-zd*
     only keep files matching the regular expression.  This is called a local
     filter.  Whether view is updated as regular expression is changed depends
     on the value of the |vifm-'incsearch'| option.  This kind of filter is
-    automatically reset when directory is changed.
+    automatically reset on a directory change.
 
 Tree-related Keys~
 
