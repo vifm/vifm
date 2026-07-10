@@ -1,6 +1,7 @@
 0.14.4 to current
 
-	Improved wording of documentation section describing filters.
+	Improved wording of documentation sections describing filters and
+	patterns.
 
 	Fixed `:highlight Group cterm=combine,none gui=combine,none` resulting in
 	`cterm=combine` and `gui=combine`.
