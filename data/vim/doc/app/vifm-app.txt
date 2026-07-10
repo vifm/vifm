@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 July 10
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 July 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4731,6 +4731,7 @@ conditions:
  - equals "xterm" or starts with "xterm-"
  - equals "rxvt" or starts with "rxvt-"
  - equals "screen" or starts with "screen-"
+ - equals "tmux" or starts with "tmux-"
  - equals "aterm"
  - equals "Eterm"
 

@@ -260,7 +260,8 @@ title_kind_for_termenv(const char term[])
 		return TK_REGULAR;
 	}
 
-	if(strcmp(term, "screen") == 0 || starts_with_lit(term, "screen-"))
+	if(strcmp(term, "screen") == 0 || starts_with_lit(term, "screen-") ||
+			strcmp(term, "tmux") == 0 || starts_with_lit(term, "tmux-"))
 	{
 		return TK_SCREEN;
 	}
