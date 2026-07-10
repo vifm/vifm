@@ -1,4 +1,4 @@
-.TH VIFM 1 "9 July 2026" "vifm 0.15"
+.TH VIFM 1 "10 July 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4005,12 +4005,11 @@ parallel execution.
 .\" ---------------------------------------------------------------------------
 .SH Patterns
 .\" ---------------------------------------------------------------------------
-:highlight, :filetype, :filextype, :fileviewer commands and 'classify' option
-support globs, regular expressions and mime types to match file names or their
-paths.  Directory paths get an implicit trailing slash on matching against a
-pattern, keep that in mind for globs or regular expressions that end with `$`.
+Some commands and options use a special pattern syntax to accept globs,
+regular expressions or mime types.  This allows matching files by their names,
+paths and/or content type.
 
-There are six possible ways to write a single pattern:
+There are six forms a single pattern can take:
 .RS 2
 .IP 1. 3
 [!]{comma-separated-name-globs}
@@ -4026,53 +4025,75 @@ There are six possible ways to write a single pattern:
 undecorated-pattern
 .RE
 
-First five forms can include leading exclamation mark that negates pattern
-matching.
+The first five can include leading exclamation mark that negates pattern
+matching.  The last, undecorated, form implicitly refers to one of the others
+and is used to make typing easier and to maintain compatibility with syntax
+before patterns.  Undecorated patterns can't be negated or followed by other
+patterns.
 
-The last form implicitly refers to one of the others.  :highlight does not
-accept undecorated form, while :filetype, :filextype, :fileviewer, :select,
-:unselect and 'classify' treat it as a list of name globs.
+The patterns are accepted in the following places:
+     where       undecorated form resolves to
+  'classify'     {comma-separated-name-globs}
+  :filetype      {comma-separated-name-globs}
+  :filextype     {comma-separated-name-globs}
+  :fileviewer    {comma-separated-name-globs}
+  :filter          /name-regular-expression/
+  :highlight             unsupported
+  :select        {comma-separated-name-globs}
+  :unselect      {comma-separated-name-globs}
 
-Path patterns receive absolute path of the file that includes its name
-component as well.
+During a match:
+.RS 2
+.IP \- 2
+path patterns receive absolute path to the file including its name
+component
+.IP \- 2
+directory entries (directories and symbolic links to directories) get an
+implicit trailing slash; keep this in mind for globs or regular expressions
+that end with `$` anchor
+.RE
 
-To combine several patterns (AND them), make sure you're using one of the first
-five forms and write patterns one after another, like this:
+To combine several patterns (AND them), use one of the first five forms and
+write patterns one after another, like this:
 .EX
   <text/plain>{*.vifm}
 .EE
-Mind that if you make a mistake the whole string will be treated as the sixth
-form.
+Mind that an incorrect syntax can lead to the whole string being treated as the
+sixth form.
 
-:filetype, :filextype and :fileviewer commands accept comma-separated list of
-patterns instead of a single pattern, thus effectively handling OR operation on
-them:
+Forms that accept comma-separated lists process them as lists of alternatives.
+Additionally, :filetype, :filextype and :fileviewer
+commands accept comma-separated list of patterns instead of a single pattern,
+thus effectively implementing OR operation on them:
 .EX
   <text/plain>{*.vifm},<application/pdf>{*.pdf}
 .EE
-Forms that accept comma-separated lists of patterns also process them as
-lists of alternatives.
 
 .B Patterns with regular expressions
 
-Regular expression patterns are case insensitive by default, see description
-of commands, which might override default behaviour.
+Regular expression patterns are case insensitive by default unless documentation
+in place of a pattern use states otherwise.
 
-Flags of regular expressions mean the following:
-  - "i" makes filter case insensitive;
-  - "I" makes filter case sensitive.
-They can be repeated multiple times, but the later one takes precedence (e.g.
+Flags of regular expressions have the following meaning:
+ - "i" makes matching case insensitive;
+ - "I" makes matching case sensitive.
+.br
+Flags can appear multiple times with the last flag taking precedence (e.g.,
 "iiiI" is equivalent to "I" and "IiIi" is the same as "i").
 
-There are no implicit `^` or `$`, so make sure to specify them explicitly if
-the pattern should match the whole name or path.
+There are no implicit `^` or `$` anchores, so make sure to specify them
+explicitly if the pattern should match the whole name or path.  Don't forget
+about trailing slash appended to directory entries.
+
+See "Regular expressions" section for more details and another way of
+controlling case sensitivity.
 
 .B Patterns with globs
 
 "Globs" section below provides short overview of globs and some important points
-that one needs to know about them.
+worth knowing about.
 
-.B Patterns with mime-types
+.B Patterns with mime types
 
 Mime type matching is essentially globs matching applied to mime type of a file
 instead of its name/path.  Note: mime types aren't detected on Windows.
@@ -4103,7 +4124,7 @@ matched or not and exist to override 'ignorecase', 'smartcase' and
 If multiple sequences are present, the one which appears later takes
 precedence.
 
-Note that unlike in Vim character classes are affected by settings and
+Note that, unlike in Vim, character classes are affected by settings and
 sequences that control case sensitivity in regular expressions.
 .\" ---------------------------------------------------------------------------
 .SH Globs
