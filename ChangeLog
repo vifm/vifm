@@ -275,6 +275,8 @@
 	Fixed implementation of 'title' using tsl and fsl attributes from terminfo
 	only for restoring the title but not for setting it.
 
+	Fixed Alt-. command-line mode key not working on Windows.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

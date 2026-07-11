@@ -1,7 +1,7 @@
-From 1c1201af763df6023bfe52b7a60d23d1688472bd Mon Sep 17 00:00:00 2001
+From c84f27678c1aac7a94f3bb9d3fd0384cc8d3d0c1 Mon Sep 17 00:00:00 2001
 From: xaizek <xaizek@posteo.net>
 Date: Fri, 20 Dec 2024 01:15:31 +0200
-Subject: [PATCH 10/10] Improve wide (CJK) characters handling on Windows
+Subject: [PATCH 11/11] Improve wide (CJK) characters handling on Windows
 
 This change addresses issues with Windows Terminal of various versions
 and partially ConEmu.
@@ -14,7 +14,7 @@ issues.
  1 file changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/wincon/pdcdisp.c b/wincon/pdcdisp.c
-index 14418396..e3902c1e 100644
+index 14418396..23c4808c 100644
 --- a/wincon/pdcdisp.c
 +++ b/wincon/pdcdisp.c
 @@ -176,6 +176,9 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
@@ -60,5 +60,5 @@ index 14418396..e3902c1e 100644
      }
      else
 -- 
-2.47.1
+2.55.0
 
