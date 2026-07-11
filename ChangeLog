@@ -48,6 +48,9 @@
 	Added 'keepsel' option to retain selection across mode switches.  Patch by
 	cairo55.
 
+	Added angle-bracket notation for combinations Alt with comma and period.
+	Thanks to fugue.
+
 	Updated utf8proc to v2.11.3.
 
 	Made documentation on which :commands can have comments a bit more

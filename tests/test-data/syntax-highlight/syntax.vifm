@@ -203,6 +203,10 @@ cnoremap <s-delete> sdel
 cnoremap <s-insert> sins
 cnoremap <s-pageup> spu
 cnoremap <s-pagedown> spd
+cnoremap <a-.> adot
+cnoremap <m-.> mdot
+cnoremap <a-,> acomma
+cnoremap <m-,> mcomma
 
 " "windo" and "normal" should be highlighted as :command
 " "<cr>" should NOT be highlighted as bracket notation

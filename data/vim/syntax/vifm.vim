@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: May 5, 2026
+" Last Change: July 11, 2026
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -453,7 +453,7 @@ syntax match vifmMapArgList '\(<\(help\|silent\|wait\)>\s*\)*' contained
 
 " Ange-bracket notation
 syntax case ignore
-syntax match vifmNotation '<\(esc\|cr\|space\|del\|nop\|\%(s-\)\?tab\|\%(s-\)\?home\|\%(s-\)\?end\|\%(s-\)\?left\|\%(s-\)\?right\|\%(s-\)\?up\|\%(s-\)\?down\|bs\|\%(s-\)\?delete\|\%(s-\)\?insert\|\%(s-\)\?pageup\|\%(s-\)\?pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_@]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[0-9a-z]\|[am]-s-[a-z]\|s-[am]-[a-z]\)>'
+syntax match vifmNotation '<\(esc\|cr\|space\|del\|nop\|\%(s-\)\?tab\|\%(s-\)\?home\|\%(s-\)\?end\|\%(s-\)\?left\|\%(s-\)\?right\|\%(s-\)\?up\|\%(s-\)\?down\|bs\|\%(s-\)\?delete\|\%(s-\)\?insert\|\%(s-\)\?pageup\|\%(s-\)\?pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_@]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[0-9a-z.,]\|[am]-s-[a-z]\|s-[am]-[a-z]\)>'
 syntax case match
 
 " Whole line comment
