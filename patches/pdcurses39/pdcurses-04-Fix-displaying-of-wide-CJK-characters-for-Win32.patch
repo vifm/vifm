@@ -1,7 +1,7 @@
-From 205e39c3a5e2adc1da981fbb0f2861cd9f5139b9 Mon Sep 17 00:00:00 2001
+From 905c5008bdab9dacbab06f4278f7be678031e29a Mon Sep 17 00:00:00 2001
 From: xaizek <xaizek@posteo.net>
 Date: Mon, 25 Mar 2024 00:13:34 +0200
-Subject: [PATCH 03/10] Fix displaying of wide (CJK) characters for Win32
+Subject: [PATCH 04/11] Fix displaying of wide (CJK) characters for Win32
 
 ---
  common/libobjs.mif |   2 +-
@@ -332,5 +332,5 @@ index 00000000..9d117bf2
 +
 +#endif
 -- 
-2.47.1
+2.55.0
 

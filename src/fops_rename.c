@@ -312,7 +312,6 @@ add_files_to_list(const char base[], const char path[], char *files[], int *len)
 {
 	DIR *dir;
 	struct dirent *dentry;
-	const char *slash = "";
 
 	char full_path[PATH_MAX + 1];
 	to_canonic_path(path, base, full_path, sizeof(full_path));
@@ -327,16 +326,13 @@ add_files_to_list(const char base[], const char path[], char *files[], int *len)
 	if(dir == NULL)
 		return files;
 
-	if(path[strlen(path) - 1] != '/')
-		slash = "/";
-
 	while((dentry = os_readdir(dir)) != NULL)
 	{
 		if(!is_builtin_dir(dentry->d_name))
 		{
-			char buf[PATH_MAX + 1];
-			snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-			files = add_files_to_list(base, buf, files, len);
+			char subpath[PATH_MAX + 1];
+			build_path(subpath, sizeof(subpath), path, dentry->d_name);
+			files = add_files_to_list(base, subpath, files, len);
 		}
 	}
 

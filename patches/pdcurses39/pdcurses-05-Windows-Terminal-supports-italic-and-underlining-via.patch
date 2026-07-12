@@ -1,7 +1,7 @@
-From b8a6e979962f606ddeadd1e7a9eff0659c669bab Mon Sep 17 00:00:00 2001
+From a04a2aa072f6b51f3e593d2b0effdcad567883b0 Mon Sep 17 00:00:00 2001
 From: William McBrine <wmcbrine@gmail.com>
 Date: Mon, 5 Jul 2021 16:23:00 -0400
-Subject: [PATCH 04/10] Windows Terminal supports italic and underlining, via
+Subject: [PATCH 05/11] Windows Terminal supports italic and underlining, via
  escape codes.
 
 ---
@@ -47,5 +47,5 @@ index dab1f76b..08d3579d 100644
  
  extern void PDC_blink_text(void);
 -- 
-2.47.1
+2.55.0
 

@@ -98,7 +98,6 @@ add_dirs_to_path(const char *path)
 {
 	DIR *dir;
 	struct dirent *dentry;
-	const char *slash = "";
 
 	dir = os_opendir(path);
 	if(dir == NULL)
@@ -106,21 +105,17 @@ add_dirs_to_path(const char *path)
 		return;
 	}
 
-	slash = ends_with_slash(path) ? "" : "/";
-
 	add_to_path(path);
 
 	while((dentry = os_readdir(dir)) != NULL)
 	{
-		char full_path[PATH_MAX + 1];
-
 		if(is_builtin_dir(dentry->d_name))
 		{
 			continue;
 		}
 
-		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
-				dentry->d_name);
+		char full_path[PATH_MAX + 1];
+		build_path(full_path, sizeof(full_path), path, dentry->d_name);
 #ifndef _WIN32
 		if(get_dirent_type(dentry, full_path) == DT_DIR)
 #else

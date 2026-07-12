@@ -1,7 +1,7 @@
-From 895986be99522d9c5314718234134042d7fa766b Mon Sep 17 00:00:00 2001
+From eec34ee71ecf5d0c2460ffaaf93dacb19b0249d1 Mon Sep 17 00:00:00 2001
 From: William McBrine <wmcbrine@gmail.com>
 Date: Wed, 8 Dec 2021 18:04:46 -0500
-Subject: [PATCH 09/10] Restart output using the non-ansi (WriteConsoleOutput)
+Subject: [PATCH 10/11] Restart output using the non-ansi (WriteConsoleOutput)
  method when running under Windows Terminal, and printing an ACS character
  below space (i.e. in the control character range). Partial reversal of
  b6d6abbf -- extended attributes and redefined basic colors will be disabled
@@ -57,5 +57,5 @@ index f1f5fdd3..dc729748 100644
      GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
      GetConsoleScreenBufferInfo(pdc_con_out, &orig_scr);
 -- 
-2.47.1
+2.55.0
 

@@ -1328,7 +1328,6 @@ fops_dir_size(const char path[], int force_update,
 		const cancellation_t *cancellation)
 {
 	struct dirent *dentry;
-	const char *slash;
 	uint64_t size;
 
 	time_t mtime = 0;
@@ -1358,19 +1357,16 @@ fops_dir_size(const char path[], int force_update,
 		return 0U;
 	}
 
-	slash = (ends_with_slash(path) ? "" : "/");
 	size = 0U;
 	while((dentry = os_readdir(dir)) != NULL)
 	{
-		char full_path[PATH_MAX + 1];
-
 		if(is_builtin_dir(dentry->d_name))
 		{
 			continue;
 		}
 
-		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
-				dentry->d_name);
+		char full_path[PATH_MAX + 1];
+		build_path(full_path, sizeof(full_path), path, dentry->d_name);
 		if(fops_is_dir_entry(full_path, dentry))
 		{
 			size += fops_dir_size(full_path, force_update, cancellation);

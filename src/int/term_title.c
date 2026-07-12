@@ -260,7 +260,8 @@ title_kind_for_termenv(const char term[])
 		return TK_REGULAR;
 	}
 
-	if(strcmp(term, "screen") == 0 || starts_with_lit(term, "screen-"))
+	if(strcmp(term, "screen") == 0 || starts_with_lit(term, "screen-") ||
+			strcmp(term, "tmux") == 0 || starts_with_lit(term, "tmux-"))
 	{
 		return TK_SCREEN;
 	}
@@ -394,12 +395,12 @@ set_terminal_title(const char path[])
 	SetConsoleTitleW(utf16);
 	free(utf16);
 #else
-	char *const fmt = (title_state.kind == TK_REGULAR)
-	                ? "\033]2;%.*s - VIFM\007"
-	                : "\033k%.*s - VIFM\033\134";
-	char *const title = format_str(fmt, MAX_TITLE_MSG_LEN, path);
+	char *const title = format_str("%.*s - VIFM", MAX_TITLE_MSG_LEN, path);
 
+	/* Apparently tsl can take column in some cases. */
+	putp(tgoto(title_state.tsl, 0, 0));
 	putp(title);
+	putp(title_state.fsl);
 	fflush(stdout);
 
 	free(title);

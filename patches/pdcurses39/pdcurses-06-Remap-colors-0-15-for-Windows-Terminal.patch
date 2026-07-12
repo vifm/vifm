@@ -1,7 +1,7 @@
-From 766dd95a079677d40040970b8c48dfb46a6f82fe Mon Sep 17 00:00:00 2001
+From 2e63cabeb7e656bf3f9f6a0b54b2bc860eab4150 Mon Sep 17 00:00:00 2001
 From: William McBrine <wmcbrine@gmail.com>
 Date: Mon, 5 Jul 2021 16:26:59 -0400
-Subject: [PATCH 05/10] Remap colors 0-15 for Windows Terminal.
+Subject: [PATCH 06/11] Remap colors 0-15 for Windows Terminal.
 
 ---
  wincon/pdcscrn.c | 4 ++--
@@ -30,5 +30,5 @@ index c6436319..0d61f821 100644
          COLORREF *color_table = _get_colors();
  
 -- 
-2.47.1
+2.55.0
 

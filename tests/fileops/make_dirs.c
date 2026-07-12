@@ -51,9 +51,6 @@ TEST(make_dirs_does_nothing_for_custom_view)
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "",
 			saved_cwd);
 
-	filter_dispose(&lwin.local_filter.filter);
-	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
-
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "existing-files/a");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);

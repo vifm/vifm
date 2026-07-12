@@ -1,0 +1,25 @@
+From 3f2e7f382e1ec4fc9b6cd06a62901886d9a84943 Mon Sep 17 00:00:00 2001
+From: xaizek <xaizek@posteo.net>
+Date: Sat, 11 Jul 2026 15:32:30 +0300
+Subject: [PATCH 02/11] Handle ALT_COMMA on Windows
+
+---
+ wincon/pdckbd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/wincon/pdckbd.c b/wincon/pdckbd.c
+index fe863a9c..a8622746 100644
+--- a/wincon/pdckbd.c
++++ b/wincon/pdckbd.c
+@@ -196,7 +196,7 @@ static KPTAB kptab[] =
+    /* 180 */
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+-   {0,          0,         0,           0,          0   }, /* 188 */
++   {0,          0,         0,           ALT_COMMA,  0   }, /* 188 VK_OEM_COMMA */
+    {0,          0,         0,           0,          0   }, /* 189  */
+    {0,          0,         0,           ALT_PERIOD, 0   }, /* 190 VK_OEM_PERIOD */
+    {0,          0,         0,           0,          0   }, /* 191  */
+-- 
+2.55.0
+

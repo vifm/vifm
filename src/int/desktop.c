@@ -60,26 +60,21 @@ parse_desktop_files_internal(const char path[], const char mime_type[],
 {
 	DIR *dir;
 	struct dirent *dentry;
-	const char *slash;
 
 	if((dir = os_opendir(path)) == NULL)
 	{
 		return;
 	}
 
-	slash = ends_with_slash(path) ? "" : "/";
-
 	while((dentry = os_readdir(dir)) != NULL)
 	{
-		char full_path[PATH_MAX + 1];
-
 		if(is_builtin_dir(dentry->d_name))
 		{
 			continue;
 		}
 
-		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
-				dentry->d_name);
+		char full_path[PATH_MAX + 1];
+		build_path(full_path, sizeof(full_path), path, dentry->d_name);
 		if(get_dirent_type(dentry, full_path) == DT_DIR)
 		{
 			parse_desktop_files(full_path, mime_type);

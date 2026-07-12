@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 June 7
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 July 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -368,18 +368,18 @@ alone and they don't wrap when they are used as selectors.
 
 Filters~
                                                *vifm-filters*
-There are three basic file filters:
+Each pane has three independent file filters:
  - dot files filter (does not affect "." and ".." special directories, whose
    appearance is controlled by the |vifm-'dotdirs'| option), see
    |vifm-'dotfiles'|
- - permanent filter
+ - permanent filter (see |vifm-:filter| and |vifm-zf|)
  - local filter (see |vifm-=|)
 
-Permanent filter essentially allows defining a group of files names which are
-not desirable to be seen by default, like temporary or backup files, which
-might be created alongside normal ones.  Just like you don't usually need to
-see hidden dot files (files starting with a dot).  Local filter on the other
-hand is for temporary immediate filtering of file list at hand, to get rid of
+Permanent filter allows defining a group of file names that are not desirable
+to be seen by default, like temporary or backup files, which might be created
+alongside normal ones.  That's rather similar to hidden files (those starting
+with a dot) that one doesn't usually need to see.  Local filter, on the other
+hand, is for immediate temporary filtering of file list at hand, to get rid of
 uninterested files in the view or to make it possible to use % range in a
 :command.
 
@@ -387,12 +387,9 @@ For the purposes of more deterministic editing permanent filter is split
 into two parts:
  - one edited explicitly via |vifm-:filter| command
  - another one which is edited implicitly via |vifm-zf| shortcut
-Files are tested against both parts and a match counts if at least one
-of the parts matched.
+Files are tested against both and a match counts if any of the parts matched.
 
-Each file list has its own copy of each filter.
-
-Filtered files are not checked in / search or :commands.
+Filtered out files are not checked in / search or :commands.
 
 Files and directories are filtered separately.  This is done by appending
 a slash to a directory name before testing whether it matches the filter.
@@ -434,7 +431,7 @@ zd                                             *vifm-zd*
     only keep files matching the regular expression.  This is called a local
     filter.  Whether view is updated as regular expression is changed depends
     on the value of the |vifm-'incsearch'| option.  This kind of filter is
-    automatically reset when directory is changed.
+    automatically reset on a directory change.
 
 Tree-related Keys~
 
@@ -2335,6 +2332,9 @@ order using the '.' operator.  Any whitespace is ignored.
     assumed that its database is already built), which can be customized by
     altering value of the |vifm-'locateprg'| option.  See
     |vifm-menus-and-dialogs| for controls.
+:locate -opt...
+    same as :locate above, but user defines all arguments, with none of them
+    being escaped.
 :locate
     repeat last :locate command.
 
@@ -3096,8 +3096,8 @@ The command macros may be used in user commands.
                                                                *vifm-%m*
   %m        show command output in a menu.
                                                                *vifm-%M*
-  %M        same as %m, but l (or Enter) key is handled like for :locate
-            and :find commands.
+  %M        same as %m, but l (or Enter) key is handled like for
+            |vifm-:locate| and |vifm-:find| commands.
                                                                *vifm-%u*
   %u        process command output as list of paths and compose custom view
             out of it.
@@ -3345,13 +3345,11 @@ handle it:
 --------------------------------------------------------------------------------
 *vifm-patterns*
 
-|vifm-:highlight|, |vifm-:filetype|, |vifm-:filextype|, |vifm-:fileviewer|
-commands and |vifm-'classify'| option support globs, regular expressions and
-mime types to match file names or their paths.  Directory paths get an
-implicit trailing slash on matching against a pattern, keep that in mind for
-globs or regular expressions that end with `$`.
+Some commands and options use a special pattern syntax to accept globs,
+regular expressions or mime types.  This allows matching files by their names,
+paths and/or content type.
 
-There are six possible ways to write a single pattern:
+There are six forms a single pattern can take:
  1. [!]{comma-separated-name-globs}
  2. [!]{{comma-separated-path-globs}}
  3. [!]/name-regular-expression/[iI]
@@ -3359,50 +3357,67 @@ There are six possible ways to write a single pattern:
  5. [!]<comma-separated-mime-type-globs>
  6. undecorated-pattern
 
-First five forms can include leading exclamation mark that negates pattern
-matching.
+The first five can include leading exclamation mark that negates pattern
+matching.  The last, undecorated, form implicitly refers to one of the others
+and is used to make typing easier and to maintain compatibility with syntax
+before patterns.  Undecorated patterns can't be negated or followed by other
+patterns.
 
-The last form implicitly refers to one of the others.  |vifm-:highlight|
-does not accept undecorated form, while |vifm-:filetype|, |vifm-:filextype|,
-|vifm-:fileviewer|, |vifm-:select|, |vifm-:unselect| and |vifm-'classify'|
-treat it as a list of name globs.
+The patterns are accepted in the following places:
 
-Path patterns receive absolute path of the file that includes its name
-component as well.
+       where         undecorated form resolves to~
+  |vifm-'classify'|    {comma-separated-name-globs}
+  |vifm-:filetype|     {comma-separated-name-globs}
+  |vifm-:filextype|    {comma-separated-name-globs}
+  |vifm-:fileviewer|   {comma-separated-name-globs}
+  |vifm-:filter|         /name-regular-expression/
+  |vifm-:highlight|            unsupported
+  |vifm-:select|       {comma-separated-name-globs}
+  |vifm-:unselect|     {comma-separated-name-globs}
 
-To combine several patterns (AND them), make sure you're using one of the
-first five forms and write patterns one after another, like this: >
+During a match:
+ - path patterns receive absolute path to the file including its name
+   component
+ - directory entries (directories and symbolic links to directories) get an
+   implicit trailing slash; keep this in mind for globs or regular expressions
+   that end with `$` anchor
+
+To combine several patterns (AND them), use one of the first five forms and
+write patterns one after another, like this: >
  <text/plain>{*.vifm}
-Mind that if you make a mistake the whole string will be treated as the sixth
-form.
+Mind that an incorrect syntax can lead to the whole string being treated as the
+sixth form.
 
-|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands accept
-comma-separated list of patterns instead of a single pattern, thus effectively
-handling OR operation on them: >
+Forms that accept comma-separated lists process them as lists of alternatives.
+Additionally, |vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer|
+commands accept comma-separated list of patterns instead of a single pattern,
+thus effectively implementing OR operation on them: >
  <text/plain>{*.vifm},<application/pdf>{*.pdf}
-Forms that accept comma-separated lists of patterns also process them as
-lists of alternatives.
 
 Patterns with regular expressions~
 
-Regular expression patterns are case insensitive by default, see description
-of commands, which might override default behaviour.
+Regular expression patterns are case insensitive by default unless documentation
+in place of a pattern use states otherwise.
 
-Flags of regular expressions mean the following:
-  - "i" makes filter case insensitive;
-  - "I" makes filter case sensitive.
-They can be repeated multiple times, but the later one takes precedence (e.g.
+Flags of regular expressions have the following meaning:
+ - "i" makes matching case insensitive;
+ - "I" makes matching case sensitive.
+Flags can appear multiple times with the last flag taking precedence (e.g.,
 "iiiI" is equivalent to "I" and "IiIi" is the same as "i").
 
-There are no implicit `^` or `$`, so make sure to specify them explicitly if
-the pattern should match the whole name or path.
+There are no implicit `^` or `$` anchores, so make sure to specify them
+explicitly if the pattern should match the whole name or path.  Don't forget
+about trailing slash appended to directory entries.
+
+See |vifm-regexp| for more details and another way of controlling case
+sensitivity.
 
 Patterns with globs~
 
 |vifm-globs| section provides short overview of globs and some important points
-that one needs to know about them.
+worth knowing about.
 
-Patterns with mime-types~
+Patterns with mime types~
 
 Mime type matching is essentially globs matching applied to mime type of a file
 instead of its name/path.  Note: mime types aren't detected on Windows.
@@ -3416,8 +3431,8 @@ Associate `evince` to PDF-files only inside `/home/user/downloads/` directory
 --------------------------------------------------------------------------------
 *vifm-regexp*
 
-All regular expressions are extended.  See `man 7 regex` for more details on
-what's supported.
+All regular expressions are modern/extended.  See `man 7 regex` for more
+details on what's supported.
 
 The following special sequences are additionally parsed:
  - `\c` forces matching ignoring case of letters
@@ -3430,7 +3445,7 @@ or not and exist to override |vifm-'ignorecase'|, |vifm-'smartcase'| and
 If multiple sequences are present, the one which appears later takes
 precedence.
 
-Note that unlike in Vim character classes are affected by settings and
+Note that, unlike in Vim, character classes are affected by settings and
 sequences that control case sensitivity in regular expressions.
 
 --------------------------------------------------------------------------------
@@ -4716,6 +4731,7 @@ conditions:
  - equals "xterm" or starts with "xterm-"
  - equals "rxvt" or starts with "rxvt-"
  - equals "screen" or starts with "screen-"
+ - equals "tmux" or starts with "tmux-"
  - equals "aterm"
  - equals "Eterm"
 
@@ -4992,8 +5008,8 @@ sequences that can be used in place of them.  They are:
     Control + some key (see key conflict description below).
 <c-@>                                          {only for *nix}
     Control + Space.
-<a-a>,<a-b>,...,<a-z>
-<m-a>,<m-b>,...,<m-z>
+<a-a>,<a-b>,...,<a-z>,<a-.>,<a-,>
+<m-a>,<m-b>,...,<m-z>,<m-.>,<m-,>
 <a-0>,<a-1>,...,<a-9>                          {only for *nix}
 <m-0>,<m-1>,...,<m-9>                          {only for *nix}
     Alt + some key.

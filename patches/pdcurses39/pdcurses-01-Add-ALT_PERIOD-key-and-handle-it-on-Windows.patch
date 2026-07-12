@@ -1,12 +1,12 @@
-From 020f3950372b90240c88882193a8c75887ad54ae Mon Sep 17 00:00:00 2001
+From 6fd07b6f5c9a74769a51d0c914bdc9a2f59666fc Mon Sep 17 00:00:00 2001
 From: xaizek <xaizek@posteo.net>
-Date: Mon, 25 Mar 2024 00:11:58 +0200
-Subject: [PATCH 01/10] Add support for Alt-. shortcut on Win32
+Date: Sat, 11 Jul 2026 15:31:56 +0300
+Subject: [PATCH 01/11] Add ALT_PERIOD key and handle it on Windows
 
 ---
  curses.h        | 3 ++-
- wincon/pdckbd.c | 2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ wincon/pdckbd.c | 7 ++++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/curses.h b/curses.h
 index b5b91fda..f1ef17bc 100644
@@ -25,18 +25,27 @@ index b5b91fda..f1ef17bc 100644
  #define KEY_F(n)      (KEY_F0 + (n))
  
 diff --git a/wincon/pdckbd.c b/wincon/pdckbd.c
-index 95869714..cc53d8ea 100644
+index 95869714..fe863a9c 100644
 --- a/wincon/pdckbd.c
 +++ b/wincon/pdckbd.c
-@@ -197,7 +197,7 @@ static KPTAB kptab[] =
+@@ -193,11 +193,16 @@ static KPTAB kptab[] =
     {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
++   /* 180 */
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
++   {0,          0,         0,           0,          0   }, /* 188 */
++   {0,          0,         0,           0,          0   }, /* 189  */
++   {0,          0,         0,           ALT_PERIOD, 0   }, /* 190 VK_OEM_PERIOD */
++   {0,          0,         0,           0,          0   }, /* 191  */
     {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
 -   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-+   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, ALT_PERIOD, 0}, {0, 0, 0, 0, 0},
++   /* 200 */
     {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
 -- 
-2.47.1
+2.55.0
 

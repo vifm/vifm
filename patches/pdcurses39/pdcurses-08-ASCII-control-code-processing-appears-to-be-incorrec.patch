@@ -1,7 +1,7 @@
-From dcd83e47788645ae2ed97700fd8e2b3674d67d95 Mon Sep 17 00:00:00 2001
+From 6eb1afc3bf6f36029ab356b1482f2791e38d7ec6 Mon Sep 17 00:00:00 2001
 From: William McBrine <wmcbrine@gmail.com>
 Date: Tue, 6 Jul 2021 03:44:20 -0400
-Subject: [PATCH 07/10] ASCII control code processing appears to be
+Subject: [PATCH 08/11] ASCII control code processing appears to be
  (incorrectly) always enabled for WriteConsole() in Windows Terminal, making
  it impossible to pass some of the CP437 altcharset. The kludge is to fall
  back to the non-ANSI mode (no extended attributes).
@@ -28,5 +28,5 @@ index dc729748..f1f5fdd3 100644
      GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
      GetConsoleScreenBufferInfo(pdc_con_out, &orig_scr);
 -- 
-2.47.1
+2.55.0
 
