@@ -18,6 +18,10 @@
 	Fixed invocation form of :locate that passes parameters without escaping
 	not being documented.
 
+	Fixed external preview of directories being indefinitely refreshed when
+	'previewoptions' lists non-default values for builtin directory preview.
+	Thanks to Chris at Vifm Q2A site.
+
 0.14.3 to 0.14.4 (2026-05-31)
 
 	Added example of handling .deb-files to sample vifmrc.  Patch by Kirill

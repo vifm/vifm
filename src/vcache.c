@@ -67,6 +67,8 @@ typedef struct vcache_entry_t
 	int max_tree_depth;
 	/* Whether cache contains complete output of the viewer. */
 	unsigned int complete : 1;
+	/* Whether builtin directory preview is used. */
+	unsigned int builtin_dir : 1;
 	/* Whether last line is truncated. */
 	unsigned int truncated : 1;
 	/* Value of toptreestats for this entry. */
@@ -426,8 +428,8 @@ is_cache_valid(const vcache_entry_t *centry, const char path[],
 		}
 	}
 
-	if((centry->top_tree_stats != cfg.top_tree_stats ||
-			centry->max_tree_depth != cfg.max_tree_depth) && is_dir(path))
+	if(centry->builtin_dir && (centry->top_tree_stats != cfg.top_tree_stats ||
+				centry->max_tree_depth != cfg.max_tree_depth))
 	{
 		return 0;
 	}
@@ -450,6 +452,9 @@ update_cache_entry(vcache_entry_t *centry, const char path[],
 
 	if(centry->job == NULL)
 	{
+		/* Old and new cache isn't necessarily of the same kind. */
+		centry->builtin_dir = 0;
+
 		free_string_array(centry->lines.items, centry->lines.nitems);
 		centry->lines = view_entry(centry, flags, error);
 
@@ -673,8 +678,10 @@ view_builtin(vcache_entry_t *centry, const char **error)
 	FILE *fp = NULL;
 	if(dir)
 	{
+		centry->builtin_dir = 1;
 		centry->top_tree_stats = cfg.top_tree_stats;
 		centry->max_tree_depth = cfg.max_tree_depth;
+
 		fp = qv_view_dir(centry->path, centry->max_lines);
 	}
 	else

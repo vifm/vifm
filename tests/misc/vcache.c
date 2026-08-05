@@ -7,6 +7,9 @@
 
 #include <test-utils.h>
 
+#include "../../src/cfg/config.h"
+#include "../../src/engine/var.h"
+#include "../../src/engine/variables.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
@@ -388,6 +391,41 @@ TEST(vcache_check_reports_correct_status)
 	assert_false(vcache_check(&is_previewed));
 	assert_false(vcache_check(&is_previewed));
 	assert_false(vcache_check(&is_previewed));
+}
+
+TEST(dir_preview_options_do_not_break_caching)
+{
+	init_variables();
+	var_t var = var_from_int(0);
+	setvar("v:jobcount", var);
+	var_free(var);
+
+	cfg.top_tree_stats = 1;
+	cfg.max_tree_depth = 3;
+
+	strlist_t lines = vcache_lookup(TEST_DATA_PATH "/read/", "echo dir", MF_NONE,
+			VK_TEXTUAL, /*max_lines=*/10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("[...]", lines.items[0]);
+
+	assert_true(wait_for_cache());
+	if(bg_jobs != NULL)
+	{
+		wait_for_job(bg_jobs);
+	}
+	(void)vcache_check(&is_previewed);
+
+	lines = vcache_lookup(TEST_DATA_PATH "/read/", "echo dir", MF_NONE,
+			VK_TEXTUAL, /*max_lines=*/10, VC_ASYNC, &error);
+	assert_string_equal(NULL, error);
+	assert_int_equal(1, lines.nitems);
+	assert_string_starts_with("dir", lines.items[0]);
+
+	vcache_finish();
+	cfg.top_tree_stats = 0;
+	cfg.max_tree_depth = 0;
+	clear_variables();
 }
 
 TEST(kill_all_async_previews_on_exit, IF(not_windows))
