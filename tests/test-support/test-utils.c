@@ -110,6 +110,11 @@ conf_setup(void)
 	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.space = 0;
 
+	cfg.graphics_delay = 0;
+	cfg.hard_graphics_clear = 0;
+	cfg.max_tree_depth = 0;
+	cfg.top_tree_stats = 0;
+
 	cfg.tab_stop = 4;
 
 #ifndef _WIN32
