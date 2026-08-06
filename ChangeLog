@@ -22,6 +22,9 @@
 	'previewoptions' lists non-default values for builtin directory preview.
 	Thanks to Chris at Vifm Q2A site.
 
+	Fixed printing the value of 'previewoptions': remove trailing comma and
+	fix "maxtreedepth:" and "graphicsdelay:" being mutually exclusive.
+
 0.14.3 to 0.14.4 (2026-05-31)
 
 	Added example of handling .deb-files to sample vifmrc.  Patch by Kirill

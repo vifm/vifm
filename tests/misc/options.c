@@ -632,8 +632,7 @@ TEST(previewoptions)
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.top_tree_stats);
 
-	assert_failure(cmds_dispatch("set previewoptions=graphicsdelay:145,wtf",
-				&lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch("set previewoptions=graphicsdelay:145,wtf", &lwin, CIT_COMMAND));
 	assert_int_equal(12345, cfg.graphics_delay);
 	assert_false(cfg.hard_graphics_clear);
 	assert_int_equal(0, cfg.max_tree_depth);
@@ -641,22 +640,19 @@ TEST(previewoptions)
 	assert_string_equal("Unknown key for 'previewoptions' option: wtf",
 			vle_tb_get_data(vle_err));
 
-	assert_success(cmds_dispatch("set previewoptions=hardgraphicsclear", &lwin,
-				CIT_COMMAND));
+	assert_success(cmds_dispatch("set previewoptions=hardgraphicsclear", &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_true(cfg.hard_graphics_clear);
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.top_tree_stats);
 
-	assert_success(cmds_dispatch("set previewoptions=toptreestats", &lwin,
-				CIT_COMMAND));
+	assert_success(cmds_dispatch("set previewoptions=toptreestats", &lwin, CIT_COMMAND));
 	assert_true(cfg.top_tree_stats);
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.hard_graphics_clear);
 
-	assert_success(cmds_dispatch("set previewoptions=maxtreedepth:10", &lwin,
-				CIT_COMMAND));
+	assert_success(cmds_dispatch("set previewoptions=maxtreedepth:10", &lwin, CIT_COMMAND));
 	assert_false(cfg.top_tree_stats);
 	assert_int_equal(0, cfg.graphics_delay);
 	assert_int_equal(10, cfg.max_tree_depth);
@@ -667,6 +663,12 @@ TEST(previewoptions)
 	assert_false(cfg.hard_graphics_clear);
 	assert_int_equal(0, cfg.max_tree_depth);
 	assert_false(cfg.top_tree_stats);
+
+	/* Verify that all possible values are printed back correctly. */
+	assert_success(cmds_dispatch("set previewoptions=hardgraphicsclear," "toptreestats,maxtreedepth:2,graphicsdelay:20", &lwin, CIT_COMMAND));
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch("set previewoptions", &lwin, CIT_COMMAND));
+	assert_string_equal("  previewoptions=hardgraphicsclear,toptreestats," "maxtreedepth:2,graphicsdelay:20", ui_sb_last());
 }
 
 TEST(autocd)

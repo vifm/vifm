@@ -1289,11 +1289,19 @@ init_previewoptions(optval_t *val)
 	{
 		snprintf(buf + len, sizeof(buf) - len, "maxtreedepth:%d,",
 				cfg.max_tree_depth);
+		len += strlen(buf + len);
 	}
 	if(cfg.graphics_delay != 0)
 	{
 		snprintf(buf + len, sizeof(buf) - len, "graphicsdelay:%d,",
 				cfg.graphics_delay);
+		len += strlen(buf + len);
+	}
+
+	/* Remove trailing comma. */
+	if(len > 0)
+	{
+		buf[len - 1] = '\0';
 	}
 
 	val->str_val = buf;
