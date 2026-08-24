@@ -32,7 +32,8 @@
 struct fswatch_t
 {
 	FILETIME dir_mtime;
-	HANDLE dir_watcher;
+	HANDLE dir_watcher; /* INVALID_HANDLE_VALUE if unavailable (e.g., for a
+	                       network share). */
 	wchar_t *wpath;
 };
 
@@ -61,16 +62,12 @@ fswatch_create(const char path[])
 		return NULL;
 	}
 
+	/* INVALID_HANDLE_VALUE is acceptable, degrading to timestamp checks in this
+	 * case. */
 	w->dir_watcher = FindFirstChangeNotificationW(w->wpath, 1,
 			FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
 			FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
 			FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY);
-	if(w->dir_watcher == INVALID_HANDLE_VALUE)
-	{
-		free(w->wpath);
-		free(w);
-		return NULL;
-	}
 
 	return w;
 }
@@ -80,7 +77,10 @@ fswatch_free(fswatch_t *w)
 {
 	if(w != NULL)
 	{
-		FindCloseChangeNotification(w->dir_watcher);
+		if(w->dir_watcher != INVALID_HANDLE_VALUE)
+		{
+			FindCloseChangeNotification(w->dir_watcher);
+		}
 		free(w->wpath);
 		free(w);
 	}
@@ -98,7 +98,8 @@ fswatch_poll(fswatch_t *w)
 	int changed = CompareFileTime(&w->dir_mtime, &ft) != 0;
 	w->dir_mtime = ft;
 
-	if(WaitForSingleObject(w->dir_watcher, 0) == WAIT_OBJECT_0)
+	if(w->dir_watcher != INVALID_HANDLE_VALUE &&
+			WaitForSingleObject(w->dir_watcher, 0) == WAIT_OBJECT_0)
 	{
 		FindNextChangeNotification(w->dir_watcher);
 		changed = 1;
