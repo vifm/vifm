@@ -2925,28 +2925,24 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 	{
 		fswatch_free(cache->watch);
 
+		/* It's OK if this gets set to NULL.  Not caching is better than not loading
+		 * the file list at all. */
 		cache->watch = fswatch_create(path);
-		if(cache->watch == NULL)
-		{
-			/* Reset the cache on failure to create a watcher to do not accidentally
-			 * provide incorrect data. */
-			flist_free_cache(cache);
-			return 0;
-		}
 
 		replace_string(&cache->dir, path);
 
 		update = 1;
 	}
 
-	if(poll_watcher(cache->watch, path) != FSWS_UNCHANGED || update)
+	if(cache->watch != NULL &&
+			poll_watcher(cache->watch, path) == FSWS_UNCHANGED && !update)
 	{
-		free_dir_entries(&cache->entries.entries, &cache->entries.nentries);
-		cache->entries = flist_list_in(view, path, 0, 1);
-		return 1;
+		return 0;
 	}
 
-	return 0;
+	free_dir_entries(&cache->entries.entries, &cache->entries.nentries);
+	cache->entries = flist_list_in(view, path, 0, 1);
+	return 1;
 }
 
 /* Polls file-system watcher and re-enters current working directory of the
