@@ -208,6 +208,14 @@ vcache_lookup(const char full_path[], const char viewer[], MacroFlags flags,
 		wait_async_finish(centry);
 	}
 
+	if(kind == VK_PASS_THROUGH && !centry->complete)
+	{
+		/* An incomplete pass-through output must never be returned to not confuse
+		 * the terminal. */
+		strlist_t empty_list = {};
+		return empty_list;
+	}
+
 	if(kind != VK_PASS_THROUGH && centry->lines.nitems == 0 &&
 			centry->job != NULL)
 	{
