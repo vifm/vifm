@@ -1842,6 +1842,11 @@ fview_set_millerview(view_t *view, int enabled)
 {
 	if(view->miller_view != enabled)
 	{
+		if(!enabled)
+		{
+			hide_miller_graphics(view);
+		}
+
 		view->miller_view = enabled;
 		ui_view_schedule_redraw(view);
 	}
