@@ -763,6 +763,10 @@ int ui_view_is_visible(const view_t *view);
  * zero is returned. */
 int ui_view_displays_columns(const view_t *view);
 
+/* Whether miller columns should be displayed.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int ui_view_is_in_miller_view(const view_t *view);
+
 /* Gets width of part of the view that is available for the main file list.
  * Returns the width. */
 int ui_view_main_area(const view_t *view);

@@ -169,6 +169,7 @@ static void format_inode(void *data, size_t buf_len, char buf[],
 #endif
 static void format_id(void *data, size_t buf_len, char buf[],
 		const format_info_t *info);
+static void hide_miller_graphics(view_t *view);
 static size_t calculate_column_width(view_t *view);
 static size_t calculate_columns_count(view_t *view);
 static int has_extra_tls_col(const view_t *view, int col_width);
@@ -332,6 +333,7 @@ draw_dir_list_only(view_t *view)
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
+	hide_miller_graphics(view);
 	ui_view_erase(view, 0);
 
 	draw_left_column(view);
@@ -1842,6 +1844,44 @@ fview_set_millerview(view_t *view, int enabled)
 	{
 		view->miller_view = enabled;
 		ui_view_schedule_redraw(view);
+	}
+}
+
+/* Clears miller graphics if it's currently visible. */
+static void
+hide_miller_graphics(view_t *view)
+{
+	if(!ui_view_is_in_miller_view(view) || !view->displays_graphics)
+	{
+		return;
+	}
+
+	if(ui_view_right_reserved(view) == 0)
+	{
+		/*
+		 * This is a workaround for images staying visible after the cursor moves
+		 * from a file to "..".  Need to clear a preview area of the right column,
+		 * but hard to compute it here when the code thinks there is no right panel.
+		 *
+		 * TODO: do it properly after extending preview_area_t with:
+		 *       - clear command (drop view_t::file_preview_clear_cmd and wherever
+		 *         else it's stored, e.g. preview_t::cleanup_cmd)
+		 *       - ViewerKind to know what kind of clearing is necessary, like here
+		 *         (likely drop preview_t::kind)
+		 *       - a flag specifying whether preview has been cleared (set on draw,
+		 *         reset on cleanup; may need special handling for switching tabs or
+		 *         shell out: could add global a generation number and consider
+		 *         anything that doesn't match it outdated)
+		 */
+		qv_cleanup(view, view->file_preview_clear_cmd);
+	}
+	else
+	{
+		const preview_area_t parea = get_miller_preview_area(view);
+		qv_cleanup_area(&parea, view->file_preview_clear_cmd);
+
+		update_string(&view->file_preview_clear_cmd, NULL);
+		view->displays_graphics = 0;
 	}
 }
 
