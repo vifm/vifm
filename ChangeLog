@@ -3,6 +3,9 @@
 	Improved wording of documentation sections describing filters and
 	patterns.
 
+	Improved wording of documentation covering :view.  Thanks to
+	CaptainFantastic.
+
 	Fixed `:highlight Group cterm=combine,none gui=combine,none` resulting in
 	`cterm=combine` and `gui=combine`.
 

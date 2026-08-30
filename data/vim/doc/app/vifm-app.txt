@@ -2779,10 +2779,11 @@ yet supported) and might be changed in future releases, or get an alias.
 
                                                *vifm-:view* *vifm-:vie*
 :vie[w]
-    toggle on and off the quick file view (preview of file's contents).
-    See also |vifm-'quickview'| option and |vifm-commands-and-selection|.
+    toggle visibility of the quick view (displaying file's contents or a
+    directory tree over the inactive pane).  See also |vifm-'quickview'|
+    option and |vifm-commands-and-selection|.
 :vie[w]!
-    turn on quick file view if it's off.
+    turn on quick view if it's off.
 
                                                *vifm-:volumes*
 :volumes                                       {only for MS-Windows}
