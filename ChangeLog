@@ -18,6 +18,9 @@
 	Changed :filter to :filt[er].  :filt and :filte are now guaranteed to
 	invoke :filter.  Thanks to filterfalse.
 
+	Changed :sp[lit] and :vs[plit] to expand macros in their parameter.
+	Thanks to agguser.
+
 	Added <help> :*map argument that enables providing description for the
 	mapping with the same curly braces syntax as used by :file[x]type.
 

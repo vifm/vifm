@@ -2647,7 +2647,7 @@ yet supported) and might be changed in future releases, or get an alias.
 :sp[lit] path
     split window horizontally to show both file directories.  Also changes
     other pane to the path (absolute or relative to current directory of
-    active pane).
+    active pane).  Macros are expanded.
 
                                                *vifm-:stop* *vifm-:st*
 :st[op]
@@ -2823,7 +2823,7 @@ yet supported) and might be changed in future releases, or get an alias.
 :vs[plit] path
     split the window vertically to show both file directories.  Also changes
     other pane to the path (absolute or relative to current directory of active
-    pane).
+    pane).  Macros are expanded.
 
 :[count]winc[md] {arg}                         *vifm-:wincmd* *vifm-:winc*
     same as running Ctrl-W [count] {arg}.

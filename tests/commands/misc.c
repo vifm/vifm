@@ -773,6 +773,18 @@ TEST(split)
 	assert_int_equal(VSPLIT, curr_stats.split);
 	assert_int_equal(2, curr_stats.number_of_windows);
 	assert_string_ends_with("/read", rwin.curr_dir);
+
+	/* macros */
+
+	assert_success(cmds_dispatch1("split %D:t:s/ad$/name/", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/rename", rwin.curr_dir);
+
+	assert_success(cmds_dispatch1("vsplit %D:t:s/name$/ad/", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/read", rwin.curr_dir);
 }
 
 static void
