@@ -718,6 +718,63 @@ TEST(messages_command)
 	assert_string_equal("new 1\nnew 2", ui_sb_last());
 }
 
+TEST(split)
+{
+	curr_stats.split = VSPLIT;
+	curr_stats.number_of_windows = 1;
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "",
+			saved_cwd);
+
+	/* `:split`, `:split!`, `:split! path`, `:split path` */
+
+	assert_success(cmds_dispatch1("split", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("split!", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(1, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("split!", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split! ..", &lwin, CIT_COMMAND));
+	assert_string_equal("No arguments are allowed if you use \"!\"",
+			ui_sb_last());
+
+	assert_success(cmds_dispatch1("split read", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/read", rwin.curr_dir);
+
+	/* `:vsplit`, `:vsplit!`, `:vsplit! path`, `:vsplit path` */
+
+	assert_success(cmds_dispatch1("vsplit", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("vsplit!", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(1, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("vsplit!", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("vsplit! ..", &lwin, CIT_COMMAND));
+	assert_string_equal("No arguments are allowed if you use \"!\"",
+			ui_sb_last());
+
+	assert_success(cmds_dispatch1("vsplit read", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/read", rwin.curr_dir);
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {
