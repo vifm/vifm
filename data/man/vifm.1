@@ -1,4 +1,4 @@
-.TH VIFM 1 "30 August 2026" "vifm 0.15"
+.TH VIFM 1 "2 September 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2207,7 +2207,7 @@ list (in menu mode) currently registered patterns that match specified filename.
 .TP
 .BI "                                         :filter"
 .TP
-.BI ":filter[!] {pattern}"
+.BI ":filt[er][!] {pattern}"
 filter files matching the pattern out of directory listings.  '!' controls state
 of filter inversion after updating filter value (see also 'cpoptions'
 description).  Filter is matched case sensitively on *nix and case insensitively
@@ -2221,7 +2221,7 @@ Example:
 .EE
 
 .TP
-.BI ":filter[!] {empty-pattern}"
+.BI ":filt[er][!] {empty-pattern}"
 same as above, but use last search pattern as pattern value.
 
 Example:
@@ -2231,13 +2231,13 @@ Example:
 .EE
 
 .TP
-.BI ":filter"
+.BI ":filt[er]"
 reset filter (set it to an empty string) and show all files.
 .TP
-.BI ":filter!"
+.BI ":filt[er]!"
 same as :invert.
 .TP
-.BI :filter?
+.BI :filt[er]?
 show information on local, name and auto filters.
 .TP
 .BI "                                         :find"

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 August 30
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 September 2
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1897,7 +1897,7 @@ Also see |vifm-file-copying|.
     filename.
 
                                                *vifm-:filter*
-:filter[!] {pattern}
+:filt[er][!] {pattern}
     filter files matching the pattern out of directory listings.  '!'
     controls state of filter inversion after updating filter value
     (see |vifm-cpo-f|).  Filter is matched case sensitively on *nix and
@@ -1907,17 +1907,17 @@ Also see |vifm-file-copying|.
         " filter all files ending in .o from the filelist.
         :filter /\.o$/
 
-:filter[!] {empty-pattern}
+:filt[er][!] {empty-pattern}
     same as above, but use last search pattern as pattern value.
 
     Example: >
         :filter //I
 
-:filter
+:filt[er]
     reset filter (set it to an empty string) and show all files.
-:filter!
+:filt[er]!
     same as |vifm-:invert|.
-:filter?
+:filt[er]?
     display information on local, name and auto filters.
 
                                                *vifm-:find* *vifm-:fin*

@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: July 11, 2026
+" Last Change: September 2, 2026
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -68,7 +68,7 @@ syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 syntax keyword vifmExprCommand contained if cal[l] ec[ho] elsei[f] exe[cute]
 syntax keyword vifmNormalCommand contained norm[al]
 		\ nextgroup=vifmColonSubcommand
-syntax match vifmPatternCommands contained /\<\(filter\(!\|\>\)\|select\(!\|\>\)\|unselect\>\)/ skipwhite
+syntax match vifmPatternCommands contained /\<\(filt\%[er]\(!\|\>\)\|select\(!\|\>\)\|unselect\>\)/ skipwhite
 		\ nextgroup=vifmPatterns
 
 " List of event names for autocommands (case insensitive)

@@ -15,6 +15,9 @@
 	Changed output of `:filter?` to always state flags of the explicit filter
 	instead of referring to the value via `---->`.
 
+	Changed :filter to :filt[er].  :filt and :filte are now guaranteed to
+	invoke :filter.  Thanks to filterfalse.
+
 	Added <help> :*map argument that enables providing description for the
 	mapping with the same curly braces syntax as used by :file[x]type.
 

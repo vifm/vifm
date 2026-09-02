@@ -575,7 +575,7 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display/define file associations in X",
 	  .flags = 0,
 	  .handler = &filextype_cmd,   .min_args = 1,   .max_args = NOT_DEF, },
-	{ .name = "filter",            .abbr = NULL,    .id = COM_FILTER,
+	{ .name = "filter",            .abbr = "filt",  .id = COM_FILTER,
 	  .descr = "set/reset file filter",
 	  .flags = HAS_EMARK | HAS_REGEXP_ARGS | HAS_QMARK_NO_ARGS,
 	  .handler = &filter_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
