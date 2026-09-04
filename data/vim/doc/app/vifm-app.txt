@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 September 2
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 September 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2648,6 +2648,8 @@ yet supported) and might be changed in future releases, or get an alias.
     split window horizontally to show both file directories.  Also changes
     other pane to the path (absolute or relative to current directory of
     active pane).  Macros are expanded.
+:sp[lit] -focus ...
+    see |vifm-focus-param|.
 
                                                *vifm-:stop* *vifm-:st*
 :st[op]
@@ -2824,6 +2826,8 @@ yet supported) and might be changed in future releases, or get an alias.
     split the window vertically to show both file directories.  Also changes
     other pane to the path (absolute or relative to current directory of active
     pane).  Macros are expanded.
+:vs[plit] -focus ...
+    see |vifm-focus-param|.
 
 :[count]winc[md] {arg}                         *vifm-:wincmd* *vifm-:winc*
     same as running Ctrl-W [count] {arg}.
@@ -3001,6 +3005,10 @@ can't be meaningfully copied:
 In both cases `cp` prints an error and doesn't create anything at the
 destination but vifm copies symbolic links as is to preserve file structure.
 This implementation detail may change in the future or become configurable.
+
+-focus                                                     *vifm-focus-param*
+This parameter makes |vifm-:split| and |vifm-:vsplit| activate the other pane
+at the end of their operation.
 
 -skip                                                      *vifm-skip-param*
 This parameter makes |vifm-:copy|, |vifm-:move|, |vifm-:alink| and

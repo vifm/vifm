@@ -1,4 +1,4 @@
-.TH VIFM 1 "2 September 2026" "vifm 0.15"
+.TH VIFM 1 "4 September 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3125,6 +3125,9 @@ splits the window horizontally to show both file directories.  Also changes
 other pane to path (absolute or relative to current directory of active pane).
 Macros are expanded.
 .TP
+.BI ":sp[lit] -focus ..."
+see "\-focus parameter" below.
+.TP
 .BI "                                         :stop"
 .TP
 .BI :st[op]
@@ -3363,6 +3366,9 @@ toggle window vertical splitting.
 split the window vertically to show both file directories.  And changes other
 pane to path (absolute or relative to current directory of active pane).
 Macros are expanded.
+.TP
+.BI ":vs[plit] -focus ..."
+see "\-focus parameter" below.
 .TP
 .BI "                                         :wincmd"
 .TP
@@ -3675,6 +3681,11 @@ can't be meaningfully copied:
 In both cases `cp` prints an error and doesn't create anything at the
 destination but vifm copies symbolic links as is to preserve file structure.
 This implementation detail may change in the future or become configurable.
+
+.TP
+.BI "\-focus parameter"
+This parameter makes :split and :vsplit activate the other pane
+at the end of their operation.
 
 .TP
 .BI "\-skip parameter"

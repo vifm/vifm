@@ -785,6 +785,33 @@ TEST(split)
 	assert_int_equal(VSPLIT, curr_stats.split);
 	assert_int_equal(2, curr_stats.number_of_windows);
 	assert_string_ends_with("/read", rwin.curr_dir);
+
+	/* -focus */
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split -flag", &lwin, CIT_COMMAND));
+	assert_string_equal("Unrecognized :command option: -flag", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split ../tree -focus", &lwin, CIT_COMMAND));
+	assert_string_equal(":split expects at most 1 positional argument, got 2",
+			ui_sb_last());
+
+	assert_success(cmds_dispatch1("split -focus --", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_true(curr_view == &rwin);
+
+	assert_success(cmds_dispatch1("vsplit -focus ../tree", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_true(curr_view == &lwin);
+	assert_string_ends_with("/tree", lwin.curr_dir);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split! -focus", &lwin, CIT_COMMAND));
+	assert_string_equal("No arguments are allowed if you use \"!\"",
+			ui_sb_last());
 }
 
 static void

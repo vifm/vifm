@@ -330,6 +330,7 @@ static int volumes_cmd(const cmd_info_t *cmd_info);
 #endif
 static int vsplit_cmd(const cmd_info_t *cmd_info);
 static int do_split(const cmd_info_t *cmd_info, SPLIT orientation);
+static int parse_a_flag(int *argc, char ***argv, const char flag[]);
 static int do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		int no_remap);
 static int parse_map_args(const char **args, int *with_help);
@@ -857,7 +858,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "split",             .abbr = "sp",    .id = COM_SPLIT,
 	  .descr = "horizontal split layout",
 	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD,
-	  .handler = &split_cmd,       .min_args = 0,   .max_args = 1, },
+	  .handler = &split_cmd,       .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "stop",              .abbr = "st",    .id = -1,
 	  .descr = "suspend the process (same as pressing Ctrl-Z)",
 	  .flags = HAS_COMMENT,
@@ -961,7 +962,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "vsplit",            .abbr = "vs",    .id = COM_VSPLIT,
 	  .descr = "vertical split layout",
 	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD,
-	  .handler = &vsplit_cmd,      .min_args = 0,   .max_args = 1, },
+	  .handler = &vsplit_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "vunmap",            .abbr = "vu",    .id = -1,
 	  .descr = "unmap user keys in visual mode",
 	  .flags = HAS_RAW_ARGS,
@@ -5560,6 +5561,21 @@ do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 		return CMDS_ERR_CUSTOM;
 	}
 
+	int argc = cmd_info->argc;
+	char **argv = cmd_info->argv;
+	const int focus = parse_a_flag(&argc, &argv, "-focus");
+	if(focus < 0)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
+	if(argc > 1)
+	{
+		ui_sb_errf(":%s expects at most 1 positional argument, got %d",
+				orientation == HSPLIT ? "split" : "vsplit", argc);
+		return CMDS_ERR_CUSTOM;
+	}
+
 	if(cmd_info->emark)
 	{
 		if(curr_stats.number_of_windows == 1)
@@ -5569,12 +5585,67 @@ do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 	}
 	else
 	{
-		if(cmd_info->argc == 1)
-			cd(other_view, flist_get_dir(curr_view), cmd_info->argv[0]);
+		if(argc == 1)
+		{
+			cd(other_view, flist_get_dir(curr_view), argv[0]);
+		}
 		split_view(orientation);
 	}
+
+	if(focus)
+	{
+		swap_view_roles();
+	}
+
 	return 0;
 }
+
+/* Parses a single leading option and adjusts argc/argv to exclude it.  Returns
+ * a negative number on a parsing error, zero if the flag is not present, and a
+ * positive number if the flag is present. */
+static int
+parse_a_flag(int *argc, char ***argv, const char flag[])
+{
+	int present = 0;
+
+	if(*argc == 0)
+	{
+		/* To avoid incrementing NULL *argv by zero at the bottom. */
+		return present;
+	}
+
+	int i;
+	for(i = 0; i < *argc; ++i)
+	{
+		if(argv[0][i][0] != '-')
+		{
+			/* Implicit end of options. */
+			break;
+		}
+		if(strcmp(argv[0][i], "--") == 0)
+		{
+			++i;
+			/* Explicit end of options. */
+			break;
+		}
+
+		if(strcmp(argv[0][i], flag) == 0)
+		{
+			present = 1;
+		}
+		else
+		{
+			ui_sb_errf("Unrecognized :command option: %s", argv[0][i]);
+			return -1;
+		}
+	}
+
+	*argc -= i;
+	*argv += i;
+
+	return present;
+}
+
 
 static int
 vunmap_cmd(const cmd_info_t *cmd_info)

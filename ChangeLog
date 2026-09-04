@@ -68,6 +68,8 @@
 	Clearing doesn't happen if moving panes while Sixel is displayed, but it
 	works otherwise.  Patch by Maxim4711.
 
+	Added -focus parameter to :split and :vsplit.  Thanks to agguser.
+
 	Updated utf8proc to v2.11.3.
 
 	Made documentation on which :commands can have comments a bit more
