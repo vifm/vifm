@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 August 30
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 September 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1897,7 +1897,7 @@ Also see |vifm-file-copying|.
     filename.
 
                                                *vifm-:filter*
-:filter[!] {pattern}
+:filt[er][!] {pattern}
     filter files matching the pattern out of directory listings.  '!'
     controls state of filter inversion after updating filter value
     (see |vifm-cpo-f|).  Filter is matched case sensitively on *nix and
@@ -1907,17 +1907,17 @@ Also see |vifm-file-copying|.
         " filter all files ending in .o from the filelist.
         :filter /\.o$/
 
-:filter[!] {empty-pattern}
+:filt[er][!] {empty-pattern}
     same as above, but use last search pattern as pattern value.
 
     Example: >
         :filter //I
 
-:filter
+:filt[er]
     reset filter (set it to an empty string) and show all files.
-:filter!
+:filt[er]!
     same as |vifm-:invert|.
-:filter?
+:filt[er]?
     display information on local, name and auto filters.
 
                                                *vifm-:find* *vifm-:fin*
@@ -2647,7 +2647,9 @@ yet supported) and might be changed in future releases, or get an alias.
 :sp[lit] path
     split window horizontally to show both file directories.  Also changes
     other pane to the path (absolute or relative to current directory of
-    active pane).
+    active pane).  Macros and environment variables are expanded.
+:sp[lit] -focus ...
+    see |vifm-focus-param|.
 
                                                *vifm-:stop* *vifm-:st*
 :st[op]
@@ -2823,7 +2825,9 @@ yet supported) and might be changed in future releases, or get an alias.
 :vs[plit] path
     split the window vertically to show both file directories.  Also changes
     other pane to the path (absolute or relative to current directory of active
-    pane).
+    pane).  Macros and environment variables are expanded.
+:vs[plit] -focus ...
+    see |vifm-focus-param|.
 
 :[count]winc[md] {arg}                         *vifm-:wincmd* *vifm-:winc*
     same as running Ctrl-W [count] {arg}.
@@ -3001,6 +3005,10 @@ can't be meaningfully copied:
 In both cases `cp` prints an error and doesn't create anything at the
 destination but vifm copies symbolic links as is to preserve file structure.
 This implementation detail may change in the future or become configurable.
+
+-focus                                                     *vifm-focus-param*
+This parameter makes |vifm-:split| and |vifm-:vsplit| activate the other pane
+at the end of their operation.
 
 -skip                                                      *vifm-skip-param*
 This parameter makes |vifm-:copy|, |vifm-:move|, |vifm-:alink| and

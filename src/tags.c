@@ -676,6 +676,7 @@ const char *tags[] = {
 	"vifm-filetype()",
 	"vifm-filters",
 	"vifm-fnameescape()",
+	"vifm-focus-param",
 	"vifm-functions",
 	"vifm-fuse",
 	"vifm-gA",

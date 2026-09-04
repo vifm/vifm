@@ -15,6 +15,12 @@
 	Changed output of `:filter?` to always state flags of the explicit filter
 	instead of referring to the value via `---->`.
 
+	Changed :filter to :filt[er].  :filt and :filte are now guaranteed to
+	invoke :filter.  Thanks to filterfalse.
+
+	Changed :sp[lit] and :vs[plit] to expand macros and environment variables
+	in their parameter.  Thanks to agguser.
+
 	Added <help> :*map argument that enables providing description for the
 	mapping with the same curly braces syntax as used by :file[x]type.
 
@@ -61,6 +67,8 @@
 	Added somewhat incomplete handling of Sixel for Windows Terminal.
 	Clearing doesn't happen if moving panes while Sixel is displayed, but it
 	works otherwise.  Patch by Maxim4711.
+
+	Added -focus parameter to :split and :vsplit.  Thanks to agguser.
 
 	Updated utf8proc to v2.11.3.
 

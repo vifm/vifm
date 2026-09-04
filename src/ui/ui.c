@@ -1125,6 +1125,8 @@ swap_view_roles(void)
 	view_t *const tmp = curr_view;
 	curr_view = other_view;
 	other_view = tmp;
+
+	stats_redraw_later();
 }
 
 void

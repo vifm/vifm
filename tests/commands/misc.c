@@ -718,6 +718,116 @@ TEST(messages_command)
 	assert_string_equal("new 1\nnew 2", ui_sb_last());
 }
 
+TEST(split)
+{
+	curr_stats.split = VSPLIT;
+	curr_stats.number_of_windows = 1;
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "",
+			saved_cwd);
+
+	/* `:split`, `:split!`, `:split! path`, `:split path` */
+
+	assert_success(cmds_dispatch1("split", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("split!", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(1, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("split!", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split! ..", &lwin, CIT_COMMAND));
+	assert_string_equal("No arguments are allowed if you use \"!\"",
+			ui_sb_last());
+
+	assert_success(cmds_dispatch1("split read", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/read", rwin.curr_dir);
+
+	/* `:vsplit`, `:vsplit!`, `:vsplit! path`, `:vsplit path` */
+
+	assert_success(cmds_dispatch1("vsplit", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("vsplit!", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(1, curr_stats.number_of_windows);
+
+	assert_success(cmds_dispatch1("vsplit!", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("vsplit! ..", &lwin, CIT_COMMAND));
+	assert_string_equal("No arguments are allowed if you use \"!\"",
+			ui_sb_last());
+
+	assert_success(cmds_dispatch1("vsplit read", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/read", rwin.curr_dir);
+
+	/* macros */
+
+	assert_success(cmds_dispatch1("split %D:t:s/ad$/name/", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/rename", rwin.curr_dir);
+
+	assert_success(cmds_dispatch1("vsplit %D:t:s/name$/ad/", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/read", rwin.curr_dir);
+
+	/* environment variables */
+
+	assert_success(cmds_dispatch1("let $TEST = 'rename'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("split $TEST", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/rename", rwin.curr_dir);
+
+	assert_success(cmds_dispatch1("let $TEST = 'read'", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch1("vsplit $TEST", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_string_ends_with("/read", rwin.curr_dir);
+
+	/* -focus */
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split -flag", &lwin, CIT_COMMAND));
+	assert_string_equal("Unrecognized :command option: -flag", ui_sb_last());
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split ../tree -focus", &lwin, CIT_COMMAND));
+	assert_string_equal(":split expects at most 1 positional argument, got 2",
+			ui_sb_last());
+
+	assert_success(cmds_dispatch1("split -focus --", &lwin, CIT_COMMAND));
+	assert_int_equal(HSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_true(curr_view == &rwin);
+
+	assert_success(cmds_dispatch1("vsplit -focus ../tree", &lwin, CIT_COMMAND));
+	assert_int_equal(VSPLIT, curr_stats.split);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_true(curr_view == &lwin);
+	assert_string_ends_with("/tree", lwin.curr_dir);
+
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("split! -focus", &lwin, CIT_COMMAND));
+	assert_string_equal("No arguments are allowed if you use \"!\"",
+			ui_sb_last());
+}
+
 static void
 strings_list_is(const strlist_t expected, const strlist_t actual)
 {

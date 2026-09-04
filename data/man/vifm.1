@@ -1,4 +1,4 @@
-.TH VIFM 1 "30 August 2026" "vifm 0.15"
+.TH VIFM 1 "4 September 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2207,7 +2207,7 @@ list (in menu mode) currently registered patterns that match specified filename.
 .TP
 .BI "                                         :filter"
 .TP
-.BI ":filter[!] {pattern}"
+.BI ":filt[er][!] {pattern}"
 filter files matching the pattern out of directory listings.  '!' controls state
 of filter inversion after updating filter value (see also 'cpoptions'
 description).  Filter is matched case sensitively on *nix and case insensitively
@@ -2221,7 +2221,7 @@ Example:
 .EE
 
 .TP
-.BI ":filter[!] {empty-pattern}"
+.BI ":filt[er][!] {empty-pattern}"
 same as above, but use last search pattern as pattern value.
 
 Example:
@@ -2231,13 +2231,13 @@ Example:
 .EE
 
 .TP
-.BI ":filter"
+.BI ":filt[er]"
 reset filter (set it to an empty string) and show all files.
 .TP
-.BI ":filter!"
+.BI ":filt[er]!"
 same as :invert.
 .TP
-.BI :filter?
+.BI :filt[er]?
 show information on local, name and auto filters.
 .TP
 .BI "                                         :find"
@@ -3123,6 +3123,10 @@ toggle horizontal window splitting.
 .BI ":sp[lit] path"
 splits the window horizontally to show both file directories.  Also changes
 other pane to path (absolute or relative to current directory of active pane).
+Macros and environment variables are expanded.
+.TP
+.BI ":sp[lit] -focus ..."
+see "\-focus parameter" below.
 .TP
 .BI "                                         :stop"
 .TP
@@ -3361,6 +3365,10 @@ toggle window vertical splitting.
 .BI ":vs[plit] path"
 split the window vertically to show both file directories.  And changes other
 pane to path (absolute or relative to current directory of active pane).
+Macros and environment variables are expanded.
+.TP
+.BI ":vs[plit] -focus ..."
+see "\-focus parameter" below.
 .TP
 .BI "                                         :wincmd"
 .TP
@@ -3673,6 +3681,11 @@ can't be meaningfully copied:
 In both cases `cp` prints an error and doesn't create anything at the
 destination but vifm copies symbolic links as is to preserve file structure.
 This implementation detail may change in the future or become configurable.
+
+.TP
+.BI "\-focus parameter"
+This parameter makes :split and :vsplit activate the other pane
+at the end of their operation.
 
 .TP
 .BI "\-skip parameter"

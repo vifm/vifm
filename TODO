@@ -69,7 +69,6 @@ Possible things to add:
   * Better renaming keys.
   * Quad/multiple-views
   * Add a general file preview script.
-  * A more convenient shortcut for the :filter command (at least :filt).
   * Multiselect for items (menu and/or file list).
   * inotify support on Linux. (partially done)
   * :filter !filter-tool

@@ -542,6 +542,9 @@ o
 op
 ope
 open
+filt
+filte
+filter
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session
