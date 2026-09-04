@@ -857,7 +857,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &source_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "split",             .abbr = "sp",    .id = COM_SPLIT,
 	  .descr = "horizontal split layout",
-	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD,
+	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD | HAS_ENVVARS,
 	  .handler = &split_cmd,       .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "stop",              .abbr = "st",    .id = -1,
 	  .descr = "suspend the process (same as pressing Ctrl-Z)",
@@ -961,7 +961,7 @@ const cmd_add_t cmds_list[] = {
 #endif
 	{ .name = "vsplit",            .abbr = "vs",    .id = COM_VSPLIT,
 	  .descr = "vertical split layout",
-	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD,
+	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD | HAS_ENVVARS,
 	  .handler = &vsplit_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "vunmap",            .abbr = "vu",    .id = -1,
 	  .descr = "unmap user keys in visual mode",
