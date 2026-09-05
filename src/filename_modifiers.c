@@ -181,7 +181,7 @@ apply_dot_mod(const char *path, char *buf, size_t buf_len)
 static int
 apply_h_mod(const char *path, char *buf, size_t buf_len)
 {
-	char *p = strrchr(path, '/');
+	const char *p = strrchr(path, '/');
 	if(p == NULL)
 	{
 		snprintf(buf, buf_len, ".");
@@ -221,7 +221,7 @@ apply_u_mod(const char *path, char *buf, size_t buf_len)
 static int
 apply_t_mod(const char *path, char *buf, size_t buf_len)
 {
-	char *p = strrchr(path, '/');
+	const char *p = strrchr(path, '/');
 	copy_str(buf, buf_len, (p == NULL) ? path : (p + 1));
 	return 0;
 }

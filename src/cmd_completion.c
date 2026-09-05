@@ -714,17 +714,15 @@ static int
 complete_chown(const char *str)
 {
 #ifndef _WIN32
-	char *colon = strchr(str, ':');
+	const char *colon = strchr(str, ':');
 	if(colon == NULL)
 	{
 		complete_user_name(str);
 		return 0;
 	}
-	else
-	{
-		complete_group_name(colon + 1);
-		return colon - str + 1;
-	}
+
+	complete_group_name(colon + 1);
+	return colon - str + 1;
 #else
 	vle_compl_add_last_match(str);
 	return 0;
