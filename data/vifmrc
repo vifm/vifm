@@ -143,8 +143,8 @@ endif
 " Add -s to the default value to suppress "Permission denied" errors
 set grepprg="grep -n -H -I -r -s %i %a %s"
 
-" Enable preview of files in the right miller column (add `set miller` to turn
-" it on)
+" Enable preview of files in the right miller column (add `set millerview` to
+" turn it on)
 set milleroptions+=rpreview:all
 
 " List of color schemes to try (picks the first one supported by the terminal)
