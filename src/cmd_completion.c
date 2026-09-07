@@ -417,8 +417,15 @@ path_completion(completion_data_t *data)
 	}
 	else if(id == COM_SPLIT || id == COM_VSPLIT)
 	{
-		data->start += filename_completion_in_dir(flist_get_dir(curr_view), arg,
-				CT_DIRONLY);
+		if(is_option(data->cmd_info) && arg[0] == '-')
+		{
+			complete_option(id, arg);
+		}
+		else
+		{
+			data->start += filename_completion_in_dir(flist_get_dir(curr_view), arg,
+					CT_DIRONLY);
+		}
 	}
 	else if(id == COM_GREP)
 	{
@@ -714,17 +721,15 @@ static int
 complete_chown(const char *str)
 {
 #ifndef _WIN32
-	char *colon = strchr(str, ':');
+	const char *colon = strchr(str, ':');
 	if(colon == NULL)
 	{
 		complete_user_name(str);
 		return 0;
 	}
-	else
-	{
-		complete_group_name(colon + 1);
-		return colon - str + 1;
-	}
+
+	complete_group_name(colon + 1);
+	return colon - str + 1;
 #else
 	vle_compl_add_last_match(str);
 	return 0;
@@ -1140,10 +1145,20 @@ complete_option(int cmd_id, const char str[])
 		{ "-skip", "skip files with conflicting names" },
 	};
 
+	static const char *split_lines[][2] = {
+		{ "-focus", "change pane after splitting" },
+	};
+
 	const char *(*opts)[2];
 	int opt_count;
 	switch(cmd_id)
 	{
+		case COM_SPLIT:
+		case COM_VSPLIT:
+			opts = split_lines;
+			opt_count = ARRAY_LEN(split_lines);
+			break;
+
 		case COM_COPY:
 			opts = lines;
 			opt_count = 2;

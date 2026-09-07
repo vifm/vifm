@@ -595,7 +595,7 @@ incdec_name(const char fname[], int k)
 {
 	static char result[NAME_MAX + 1];
 	char format[32];
-	char *b, *e;
+	const char *b;
 	int n;
 
 	b = strpbrk(fname, "0123456789");
@@ -616,6 +616,7 @@ incdec_name(const char fname[], int k)
 		--b;
 	}
 
+	char *e;
 	long long i = strtoll(b, &e, 10);
 
 	if(i + k < 0)

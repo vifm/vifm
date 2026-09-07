@@ -1098,7 +1098,7 @@ gen_term_multiplexer_title_arg(const char cmd[])
 	}
 	else
 	{
-		char *const separator = strchr(cmd, ' ');
+		char *const separator = (char *)strchr(cmd, ' ');
 		if(separator != NULL)
 		{
 			*separator = '\0';

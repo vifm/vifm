@@ -588,7 +588,7 @@ read_legacy_info_file(const char info_file[])
 		}
 		else if(type == LINE_TYPE_REG)
 		{
-			char *pos = strchr(valid_registers, line_val[0]);
+			const char *pos = strchr(valid_registers, line_val[0]);
 			if(pos != NULL)
 			{
 				char name[] = { line_val[0], '\0' };

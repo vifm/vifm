@@ -675,6 +675,49 @@ TEST(wingo_is_completed)
 	cfg.shorten_title_paths = 0;
 }
 
+TEST(split_vsplit_are_completed)
+{
+	/* Path. */
+
+	ASSERT_COMPLETION(L"split ", L"split a/");
+	ASSERT_NEXT_MATCH("b/");
+
+	ASSERT_COMPLETION(L"vsplit ", L"vsplit a/");
+	ASSERT_NEXT_MATCH("b/");
+
+	/* Option. */
+
+	ASSERT_COMPLETION(L"split -", L"split -focus");
+	ASSERT_NEXT_MATCH("-focus");
+
+	ASSERT_COMPLETION(L"vsplit -", L"vsplit -focus");
+	ASSERT_NEXT_MATCH("-focus");
+
+	/* Option, twice. */
+
+	ASSERT_COMPLETION(L"split -focus -", L"split -focus -focus");
+	ASSERT_NEXT_MATCH("-focus");
+
+	ASSERT_COMPLETION(L"vsplit -focus -", L"vsplit -focus -focus");
+	ASSERT_NEXT_MATCH("-focus");
+
+	/* Path after an option. */
+
+	ASSERT_COMPLETION(L"split -focus ", L"split -focus a/");
+	ASSERT_NEXT_MATCH("b/");
+
+	ASSERT_COMPLETION(L"vsplit -focus ", L"vsplit -focus a/");
+	ASSERT_NEXT_MATCH("b/");
+
+	/* Path after the option separator. */
+
+	ASSERT_COMPLETION(L"split -- ", L"split -- a/");
+	ASSERT_NEXT_MATCH("b/");
+
+	ASSERT_COMPLETION(L"vsplit -- ", L"vsplit -- a/");
+	ASSERT_NEXT_MATCH("b/");
+}
+
 static void
 dummy_handler(OPT_OP op, optval_t val)
 {

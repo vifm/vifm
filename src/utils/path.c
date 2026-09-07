@@ -501,10 +501,10 @@ try_replace_tilde(const char path[])
 char *
 get_last_path_component(const char path[])
 {
-	char *slash = strrchr(path, '/');
+	const char *slash = strrchr(path, '/');
 	if(slash == NULL)
 	{
-		slash = (char *)path;
+		slash = path;
 	}
 	else if(slash[1] == '\0')
 	{
@@ -523,7 +523,7 @@ get_last_path_component(const char path[])
 	{
 		++slash;
 	}
-	return slash;
+	return (char *)slash;
 }
 
 void
@@ -622,12 +622,12 @@ contains_slash(const char path[])
 char *
 find_slashr(const char *path)
 {
-	char *result = strrchr(path, '/');
+	const char *result = strrchr(path, '/');
 #ifdef _WIN32
 	if(result == NULL)
 		result = strrchr(path, '\\');
 #endif
-	return result;
+	return (char *)result;
 }
 
 char *
@@ -689,11 +689,11 @@ static char *
 find_ext_dot(const char path[])
 {
 	const char *const basename = after_last(path, '/');
-	char *const dot = strrchr(basename, '.');
+	const char *const dot = strrchr(basename, '.');
 
 	const int no_ext = dot == NULL
 	                || dot == basename;
-	return no_ext ? NULL : dot;
+	return no_ext ? NULL : (char *)dot;
 }
 
 int

@@ -451,9 +451,9 @@ strossorter(const void *s, const void *t)
 char *
 after_last(const char *str, char c)
 {
-	char *result = strrchr(str, c);
+	const char *result = strrchr(str, c);
 	result = (result == NULL) ? ((char *)str) : (result + 1);
-	return result;
+	return (char *)result;
 }
 
 char *
