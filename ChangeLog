@@ -6,6 +6,8 @@
 	Improved wording of documentation covering :view.  Thanks to
 	CaptainFantastic.
 
+	Slightly improve documentation of "columncount:" in 'lsoptions'.
+
 	Fixed `:highlight Group cterm=combine,none gui=combine,none` resulting in
 	`cterm=combine` and `gui=combine`.
 
