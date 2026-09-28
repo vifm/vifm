@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 September 4
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 September 28
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4076,9 +4076,9 @@ scope: local
 
 Configures ls-like view.
 
-    item          used for ~
-    columncount   fixed number of columns to display or 0
-    transposed    filling view grid by columns rather than by lines
+    item            used for~
+    columncount:N   number of columns to display (zero means auto)
+    transposed      filling view grid by columns rather than by lines
 
                                                *vifm-'lsview'*
 lsview
