@@ -62,6 +62,7 @@ const char *tags[] = {
 	"vifm-'extprompt'",
 	"vifm-'fastrun'",
 	"vifm-'fcs'",
+	"vifm-'fileoptions'",
 	"vifm-'fillchars'",
 	"vifm-'findprg'",
 	"vifm-'followlinks'",

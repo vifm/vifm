@@ -768,6 +768,33 @@ TEST(keepsel)
 	assert_true(cfg.keep_sel);
 }
 
+TEST(fileoptions)
+{
+	/* Setting. */
+	assert_success(cmds_dispatch1("set fileoptions=hidemissing", &lwin,
+				CIT_COMMAND));
+	assert_true(cfg.hide_missing_progs);
+
+	/* Clearing. */
+	assert_success(cmds_dispatch1("set fileoptions=", &lwin, CIT_COMMAND));
+	assert_false(cfg.hide_missing_progs);
+
+	/* Wrong value is reported, intermediate state is discarded. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("set fileoptions=hidemissing,bad", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("Unknown key for 'fileoptions' option: bad",
+			ui_sb_last());
+	assert_false(cfg.hide_missing_progs);
+
+	/* Values are deduplicated. */
+	ui_sb_msg("");
+	assert_success(cmds_dispatch1("set fileoptions=hidemissing,hidemissing",
+				&lwin, CIT_COMMAND));
+	assert_failure(cmds_dispatch1("set fileoptions", &lwin, CIT_COMMAND));
+	assert_string_equal("  fileoptions=hidemissing", ui_sb_last());
+}
+
 static void
 print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)

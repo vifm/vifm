@@ -86,6 +86,7 @@ static void uni_handler(const char name[], optval_t val, OPT_SCOPE scope);
 static void init_classify(optval_t *val);
 static void init_cpoptions(optval_t *val);
 static void init_dirsize(optval_t *val);
+static void init_fileoptions(optval_t *val);
 static void init_fillchars(optval_t *val);
 static void init_hloptions(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
@@ -135,6 +136,8 @@ static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void extprompt_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
+static void fileoptions_handler(OPT_OP op, optval_t val);
+static void load_fileoptions(void);
 static void fillchars_handler(OPT_OP op, optval_t val);
 static void load_fillchars(void);
 static void findprg_handler(OPT_OP op, optval_t val);
@@ -305,6 +308,11 @@ static const char *extprompt_vals[][2] = {
 	[BIT(EP_PATH)] = { "path", "on path/filename amendment prompts" },
 };
 ARRAY_GUARD(extprompt_vals, NUM_EXT_PROMPT);
+
+/* Possible values of 'fileoptions' option. */
+static const char *fileoptions_enum[][2] = {
+	{ "hidemissing", "Don't list handlers which aren't present" },
+};
 
 /* Possible values of 'histcursor'. */
 static const char *histcursor_vals[][2] = {
@@ -666,6 +674,11 @@ options[] = {
 	{ "fastrun", "", "autocomplete unambiguous prefixes for :!",
 	  OPT_BOOL, 0, NULL, &fastrun_handler, NULL,
 	  { .ref.bool_val = &cfg.fast_run },
+	},
+	{ "fileoptions", "", ":file options",
+	  OPT_STRLIST, ARRAY_LEN(fileoptions_enum), fileoptions_enum,
+	  &fileoptions_handler, NULL,
+	  { .init = &init_fileoptions },
 	},
 	{ "fillchars", "fcs", "fillers for interface parts",
 	  OPT_STRLIST, ARRAY_LEN(fillchars_enum), fillchars_enum, &fillchars_handler,
@@ -1184,6 +1197,19 @@ static void
 init_dirsize(optval_t *val)
 {
 	val->enum_item = (cfg.view_dir_size == VDS_SIZE ? 0 : 1);
+}
+
+/* Initializes 'fileoptions' option. */
+static void
+init_fileoptions(optval_t *val)
+{
+	static char buf[128];
+
+	buf[0] = '\0';
+	if(cfg.hide_missing_progs)
+		snprintf(buf, sizeof(buf), "hidemissing");
+
+	val->str_val = buf;
 }
 
 /* Initializes 'fillchars' option. */
@@ -2186,6 +2212,59 @@ static void
 fastrun_handler(OPT_OP op, optval_t val)
 {
 	cfg.fast_run = val.bool_val;
+}
+
+/* Handles new value for 'fileoptions' option. */
+static void
+fileoptions_handler(OPT_OP op, optval_t val)
+{
+	char *new_val = strdup(val.str_val);
+	if(new_val == NULL)
+	{
+		load_fileoptions();
+		return;
+	}
+
+	char *part = new_val, *state = NULL;
+
+	int hide_missing_progs = 0;
+
+	int error = 0;
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(starts_with_lit(part, "hidemissing"))
+		{
+			hide_missing_progs = 1;
+		}
+		else
+		{
+			error = 1;
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err, "Unknown key for 'fileoptions' option: %s",
+					part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(!error)
+	{
+		cfg.hide_missing_progs = hide_missing_progs;
+	}
+
+	/* In case of error, restore previous value, otherwise reload it anyway to
+	 * remove any duplicates. */
+	load_fileoptions();
+}
+
+/* Sets value of 'fileoptions' option by composing it from the current
+ * configuration. */
+static void
+load_fileoptions(void)
+{
+	optval_t val;
+	init_fileoptions(&val);
+	vle_opts_assign("fileoptions", val, OPT_GLOBAL);
 }
 
 /* Handles new value for 'fillchars' option. */

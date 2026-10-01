@@ -625,6 +625,7 @@ hi WildBox
 " "uioptions" should be highlighted as 'option'
 " "extprompt" should be highlighted as 'option'
 " "keepsel", "nokeepsel" and "invkeepsel" should be highlighted as 'option'
+" "fileoptions" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -653,6 +654,7 @@ set wildinc
 set uioptions
 set extprompt
 set keepsel nokeepsel invkeepsel keepsel!
+set fileoptions
 
 " "echo" and "call" should be highlighted as :command
 " "chooseopt" should be highlighted as builtin function

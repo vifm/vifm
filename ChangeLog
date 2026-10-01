@@ -70,6 +70,9 @@
 
 	Added -focus parameter to :split and :vsplit.  Thanks to agguser.
 
+	Added 'fileoptions' option to allow hiding missing programs in the :file
+	menu.  Thanks to aksr.
+
 	Updated utf8proc to v2.11.3.
 
 	Made documentation on which :commands can have comments a bit more
@@ -153,6 +156,8 @@
 
 	Improved wording of documentation covering :view.  Thanks to
 	CaptainFantastic.
+
+	Slightly improve documentation of "columncount:" in 'lsoptions'.
 
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in

@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: September 2, 2026
+" Last Change: October 1, 2026
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -160,19 +160,19 @@ syntax match vifmHiGroups contained
 " Options
 syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ cdpath cd chaselinks classify columns co confirm cf cpoptions cpo
-		\ cvoptions deleteprg dotdirs dotfiles dirsize extprompt fastrun fillchars
-		\ fcs findprg followlinks fusehome gdefault grepprg histcursor history hi
-		\ hloptions hlsearch hls iec ignorecase ic iooptions incsearch is keepsel
-		\ laststatus lines locateprg ls lsoptions lsview mediaprg milleroptions
-		\ millerview mintimeoutlen mouse navoptions number nu numberwidth nuw
-		\ previewoptions previewprg quickview relativenumber rnu rulerformat ruf
-		\ runexec scrollbind scb scrolloff sessionoptions ssop so sort sortgroups
-		\ sortorder sortnumbers shell sh shellflagcmd shcf shortmess shm showtabline
-		\ stal sizefmt slowfs smartcase scs statusline stl suggestoptions syncregs
-		\ syscalls tablabel tabline tabprefix tabscope tabstop tabsuffix tal timefmt
-		\ timeoutlen title tm trash trashdir ts tuioptions to uioptions undolevels
-		\ ul vicmd viewcolumns vifminfo vimhelp vixcmd wildinc wildmenu wmnu
-		\ wildstyle wordchars wrap wrapscan ws
+		\ cvoptions deleteprg dotdirs dotfiles dirsize extprompt fastrun fileoptions
+		\ fillchars fcs findprg followlinks fusehome gdefault grepprg histcursor
+		\ history hi hloptions hlsearch hls iec ignorecase ic iooptions incsearch is
+		\ keepsel laststatus lines locateprg ls lsoptions lsview mediaprg
+		\ milleroptions millerview mintimeoutlen mouse navoptions number nu
+		\ numberwidth nuw previewoptions previewprg quickview relativenumber rnu
+		\ rulerformat ruf runexec scrollbind scb scrolloff sessionoptions ssop so
+		\ sort sortgroups sortorder sortnumbers shell sh shellflagcmd shcf shortmess
+		\ shm showtabline stal sizefmt slowfs smartcase scs statusline stl
+		\ suggestoptions syncregs syscalls tablabel tabline tabprefix tabscope
+		\ tabstop tabsuffix tal timefmt timeoutlen title tm trash trashdir ts
+		\ tuioptions to uioptions undolevels ul vicmd viewcolumns vifminfo vimhelp
+		\ vixcmd wildinc wildmenu wmnu wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks

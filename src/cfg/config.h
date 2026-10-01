@@ -413,6 +413,9 @@ typedef struct config_t
 
 	/* When to open external editor instead of builtin command-line. */
 	int ext_prompt; /* Bit mask of EP_* (ExtPrompt enum). */
+
+	/* Settings related to :file menu. */
+	int hide_missing_progs; /* Don't list programs deemed to not be present. */
 }
 config_t;
 

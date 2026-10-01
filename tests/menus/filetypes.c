@@ -1,10 +1,10 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
-#include <string.h> /* strcpy() */
 
 #include <test-utils.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
@@ -14,10 +14,14 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/status.h"
+
+static int fake_prog_exists(const char name[]);
+static void setup_file_test(void);
 
 static line_stats_t *stats;
 static char cwd[PATH_MAX + 1];
@@ -28,7 +32,7 @@ SETUP_ONCE()
 
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
-	ft_init(NULL);
+	ft_init(&fake_prog_exists);
 }
 
 SETUP()
@@ -109,6 +113,48 @@ TEST(unknown_key_is_ignored)
 	(void)vle_keys_exec(WK_ESC);
 }
 
+TEST(file_can_show_missing_entries)
+{
+	setup_file_test();
+
+	assert_success(cmds_dispatch1("file", &lwin, CIT_COMMAND));
+
+	assert_true(menu_get_current()->len >= 3);
+	assert_string_equal("          no-cat", menu_get_current()->items[0]);
+	assert_string_equal("[present] cat", menu_get_current()->items[1]);
+	assert_string_equal("          no-echo", menu_get_current()->items[2]);
+	if(menu_get_current()->len > 3)
+	{
+		assert_int_equal(4, menu_get_current()->len);
+		/* Separator. */
+		assert_string_equal("", menu_get_current()->items[3]);
+	}
+
+	(void)vle_keys_exec(WK_ESC);
+}
+
+TEST(file_can_hide_missing_entries)
+{
+	cfg.hide_missing_progs = 1;
+
+	setup_file_test();
+
+	assert_success(cmds_dispatch1("file", &lwin, CIT_COMMAND));
+
+	assert_true(menu_get_current()->len >= 1);
+	assert_string_equal("[present] cat", menu_get_current()->items[0]);
+	if(menu_get_current()->len > 1)
+	{
+		assert_int_equal(2, menu_get_current()->len);
+		/* Separator. */
+		assert_string_equal("", menu_get_current()->items[1]);
+	}
+
+	(void)vle_keys_exec(WK_ESC);
+
+	cfg.hide_missing_progs = 0;
+}
+
 TEST(pseudo_entry_is_always_present_for_directories)
 {
 	assoc_programs("{bla-*/}", "abc-run %c", 0, 0);
@@ -151,6 +197,27 @@ TEST(fileviewers_menu)
 	assert_string_equal("[present] abc-view %c", menu_get_current()->items[0]);
 
 	(void)vle_keys_exec(WK_ESC);
+}
+
+static int
+fake_prog_exists(const char name[])
+{
+	return !starts_with_lit(name, "no-");
+}
+
+static void
+setup_file_test(void)
+{
+	dir_entry_t *entry = get_current_entry(&lwin);
+
+	update_string(&entry->name, "test-file");
+	entry->type = FT_REG;
+
+	assert_success(cmds_dispatch("filetype test-file no-cat", &lwin,
+				CIT_COMMAND));
+	assert_success(cmds_dispatch("filetype test-file cat", &lwin, CIT_COMMAND));
+	assert_success(cmds_dispatch("filetype test-file no-echo", &lwin,
+				CIT_COMMAND));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
