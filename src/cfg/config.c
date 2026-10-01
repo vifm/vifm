@@ -260,6 +260,8 @@ cfg_init(void)
 	cfg.ch_pos_on = CHPOS_STARTUP | CHPOS_DIRMARK | CHPOS_ENTER;
 
 	cfg.ext_prompt = EP_NONE;
+
+	cfg.hide_missing_progs = 0;
 }
 
 void

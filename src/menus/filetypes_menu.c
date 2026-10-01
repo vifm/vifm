@@ -51,7 +51,7 @@ static void fill_menu_from_records(menu_data_t *m,
 static int max_desc_len(const assoc_records_t *records);
 
 int
-show_file_menu(view_t *view, int background)
+show_file_menu(view_t *view, int present_only, int background)
 {
 	static menu_data_t m;
 
@@ -83,31 +83,51 @@ show_file_menu(view_t *view, int background)
 
 	for(i = 0; i < ft.count; ++i)
 	{
+		const int present = ft_exists(ft.list[i].command);
+		if(present_only && !present)
+		{
+			continue;
+		}
+
 		(void)add_to_string_array(&m.data, m.len, ft.list[i].command);
-		const char *entry =
-			form_filetype_menu_entry(ft.list[i], max_len, /*present=*/-1);
+		const char *entry = form_filetype_menu_entry(ft.list[i], max_len, present);
 		m.len = add_to_string_array(&m.items, m.len, entry);
 	}
 
 #ifdef ENABLE_DESKTOP_FILES
-	/* Add empty line separator if there is at least one other item of either
-	 * kind. */
-	if(ft.count > 0 || magic.count > 0)
-	{
-		(void)add_to_string_array(&m.data, m.len, NONE_PSEUDO_PROG.command);
-		m.len = add_to_string_array(&m.items, m.len, "");
-	}
+	/* Always add empty line separator and handle the case when it's the only line
+	 * below. */
+	(void)add_to_string_array(&m.data, m.len, NONE_PSEUDO_PROG.command);
+	m.len = add_to_string_array(&m.items, m.len, "");
 #endif
 
 	ft_assoc_records_free(&ft);
 
 	for(i = 0; i < magic.count; ++i)
 	{
+		const int present = ft_exists(magic.list[i].command);
+		if(present_only && !present)
+		{
+			continue;
+		}
+
 		(void)add_to_string_array(&m.data, m.len, magic.list[i].command);
 		const char *entry =
-			form_filetype_menu_entry(magic.list[i], max_len, /*present=*/-1);
+			form_filetype_menu_entry(magic.list[i], max_len, present);
 		m.len = add_to_string_array(&m.items, m.len, entry);
 	}
+
+#ifdef ENABLE_DESKTOP_FILES
+	/* There is nothing but the separator, drop it. */
+	if(m.len == 1)
+	{
+		free_string_array(m.items, m.len);
+		free_string_array(m.data, m.len);
+		m.items = NULL;
+		m.data = NULL;
+		m.len = 0;
+	}
+#endif
 
 	return menus_enter(&m, view);
 }

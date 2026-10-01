@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 September 28
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3774,6 +3774,16 @@ default: false
 
 With this option turned on you can run partially entered commands with
 unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
+
+                                               *vifm-'fileoptions'*
+fileoptions
+type: string list
+default: ""
+
+Fine-tunes the behaviour of the |vifm-:file| menu.
+
+    item          used for~
+    hidemissing   omitting entries with handlers, that were found to not exist
 
                                                *vifm-'fillchars'* *vifm-'fcs'*
 fillchars fcs

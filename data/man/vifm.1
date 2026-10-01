@@ -1,4 +1,4 @@
-.TH VIFM 1 "28 September 2026" "vifm 0.15"
+.TH VIFM 1 "1 October 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4516,6 +4516,17 @@ default: false
 .br
 With this option turned on you can run partially entered commands with
 unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
+.TP
+.BI 'fileoptions'
+type: string list
+.br
+default: ""
+.br
+Fine-tunes the behaviour of the :file menu.
+
+  item          used for
+  hidemissing   omitting entries with handlers, that were found to not exist
+
 .TP
 .BI "'fillchars' 'fcs'"
 type: string list

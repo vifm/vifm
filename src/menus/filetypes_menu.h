@@ -24,7 +24,7 @@ struct view_t;
 
 /* Displays file handler picking menu.  Returns non-zero if status bar message
  * should be saved. */
-int show_file_menu(struct view_t *view, int background);
+int show_file_menu(struct view_t *view, int present_only, int background);
 
 /* Displays menu with list of programs registered for specified file name.
  * Returns non-zero if status bar message should be saved. */

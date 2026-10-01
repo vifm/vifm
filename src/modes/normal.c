@@ -2419,7 +2419,8 @@ handle_mouse_event(key_info_t key_info, keys_info_t *keys_info)
 		if(list_pos >= 0)
 		{
 			fpos_set_pos(curr_view, list_pos);
-			curr_stats.save_msg = show_file_menu(curr_view, 0);
+			curr_stats.save_msg =
+				show_file_menu(curr_view, cfg.hide_missing_progs, /*background=*/0);
 		}
 	}
 	else if(e.bstate & BUTTON4_PRESSED)
