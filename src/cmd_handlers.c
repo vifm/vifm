@@ -2459,7 +2459,8 @@ try_eval_args(const cmd_info_t *cmd_info)
 	return eval_result;
 }
 
-/* Displays file handler picking menu. */
+/* Displays file handler picking menu or runs an entry matching a given
+ * prefix. */
 static int
 file_cmd(const cmd_info_t *cmd_info)
 {
