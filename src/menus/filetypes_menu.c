@@ -42,7 +42,7 @@
 #include "menus.h"
 
 static const char * form_filetype_menu_entry(assoc_record_t prog,
-		int descr_width);
+		int descr_width, int present);
 static int execute_filetype_cb(view_t *view, menu_data_t *m);
 static KHandlerResponse filetypes_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
@@ -84,7 +84,8 @@ show_file_menu(view_t *view, int background)
 	for(i = 0; i < ft.count; ++i)
 	{
 		(void)add_to_string_array(&m.data, m.len, ft.list[i].command);
-		const char *entry = form_filetype_menu_entry(ft.list[i], max_len);
+		const char *entry =
+			form_filetype_menu_entry(ft.list[i], max_len, /*present=*/-1);
 		m.len = add_to_string_array(&m.items, m.len, entry);
 	}
 
@@ -103,21 +104,27 @@ show_file_menu(view_t *view, int background)
 	for(i = 0; i < magic.count; ++i)
 	{
 		(void)add_to_string_array(&m.data, m.len, magic.list[i].command);
-		const char *entry = form_filetype_menu_entry(magic.list[i], max_len);
+		const char *entry =
+			form_filetype_menu_entry(magic.list[i], max_len, /*present=*/-1);
 		m.len = add_to_string_array(&m.items, m.len, entry);
 	}
 
 	return menus_enter(&m, view);
 }
 
-/* Returns pointer to a statically allocated buffer */
+/* Composes a single menu entry.  The present parameter is tri-state with a
+ * negative value meaning "determine".  Returns pointer to a statically
+ * allocated buffer. */
 static const char *
-form_filetype_menu_entry(assoc_record_t prog, int descr_width)
+form_filetype_menu_entry(assoc_record_t prog, int descr_width, int present)
 {
 	static char result[PATH_MAX + 1];
 
-	int found = ft_exists(prog.command);
-	const char *found_msg = (found ? "[present] " : "          ");
+	if(present < 0)
+	{
+		present = ft_exists(prog.command);
+	}
+	const char *found_msg = (present ? "[present] " : "          ");
 
 	char descr[64];
 	descr[0] = '\0';
@@ -217,7 +224,8 @@ fill_menu_from_records(menu_data_t *m, const assoc_records_t *records)
 
 	for(i = 0; i < records->count; ++i)
 	{
-		const char *entry = form_filetype_menu_entry(records->list[i], max_len);
+		const char *entry =
+			form_filetype_menu_entry(records->list[i], max_len, /*present=*/-1);
 		m->len = add_to_string_array(&m->items, m->len, entry);
 	}
 }
