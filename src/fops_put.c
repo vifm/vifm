@@ -73,6 +73,7 @@ static int put_next(int force);
 static int unprocessed_dirs_present(void);
 TSTATIC OpsResult merge_dirs(const char src[], const char dst[], ops_t *ops);
 static int handle_clashing(int move, const char src[], const char dst[]);
+static int can_append(const char src[], const char dst[]);
 static void prompt_what_to_do(const char fname[], const char caused_by[]);
 static void handle_prompt_response(const char fname[], const char caused_by[],
 		char response);
@@ -99,6 +100,7 @@ static struct
 	int skip_all;        /* Skip all conflicting files/directories. */
 	int overwrite_all;   /* Overwrite all future conflicting files/directories. */
 	int append;          /* Whether we're appending ending of a file or not. */
+	int append_all;      /* Append tails of all future conflicting files. */
 	int allow_merge;     /* Allow merging of files in directories. */
 	int allow_merge_all; /* Allow merging of files in directories by default. */
 	int merge;           /* Merge conflicting directory once. */
@@ -622,6 +624,13 @@ put_next(int force)
 	build_path(dst_buf, sizeof(dst_buf), dst_dir, dst_name);
 	chosp(dst_buf);
 
+	if(put_confirm.append_all && !put_confirm.append &&
+			path_exists(dst_buf, NODEREF) && can_append(src_buf, dst_buf) &&
+			!paths_are_equal(src_buf, dst_buf))
+	{
+		put_confirm.append = 1;
+	}
+
 	if(!put_confirm.append && path_exists(dst_buf, NODEREF))
 	{
 		if(force)
@@ -1044,6 +1053,17 @@ handle_clashing(int move, const char src[], const char dst[])
 	return 0;
 }
 
+/* Checks whether tail of the source file can be appended to the destination
+ * file.  Returns non-zero if so, otherwise zero is returned. */
+static int
+can_append(const char src[], const char dst[])
+{
+	return cfg.use_system_calls
+	    && ONE_OF(put_confirm.op, CMLO_COPY, CMLO_MOVE)
+	    && is_regular_file_noderef(dst)
+	    && is_regular_file_noderef(src);
+}
+
 /* Prompt user for conflict resolution strategy about given filename. */
 static void
 prompt_what_to_do(const char fname[], const char caused_by[])
@@ -1055,7 +1075,8 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		enter          = { .key = '\r', .descr = "" },
 		skip           = { .key = 's', .descr = "[s]kip /" },
 		skip_all       = { .key = 'S', .descr = " [S]kip all\n" },
-		append         = { .key = 'a', .descr = "[a]ppend the tail\n" },
+		append         = { .key = 'a', .descr = "[a]ppend the tail /" },
+		append_all     = { .key = 'A', .descr = " [A]ppend all\n" },
 		overwrite      = { .key = 'o', .descr = "[o]verwrite /" },
 		overwrite_all  = { .key = 'O', .descr = " [O]verwrite all\n" },
 		merge          = { .key = 'm', .descr = "[m]erge /" },
@@ -1064,7 +1085,7 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		escape         = { .key = NC_C_c, .descr = "\n   Esc or Ctrl-C to abort" };
 
 	/* Last element is a terminator. */
-	response_variant responses[12] = {};
+	response_variant responses[13] = {};
 	size_t i = 0;
 
 	char dst_buf[PATH_MAX + 1];
@@ -1079,10 +1100,10 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 
 	if(!same_file)
 	{
-		if(cfg.use_system_calls && ONE_OF(put_confirm.op, CMLO_COPY, CMLO_MOVE) &&
-				is_regular_file_noderef(dst_buf) && is_regular_file_noderef(caused_by))
+		if(can_append(caused_by, dst_buf))
 		{
 			responses[i++] = append;
+			responses[i++] = append_all;
 		}
 		responses[i++] = overwrite;
 		responses[i++] = overwrite_all;
@@ -1162,6 +1183,12 @@ handle_prompt_response(const char fname[], const char caused_by[],
 	}
 	else if(response == 'a' && cfg.use_system_calls && !is_dir(fname))
 	{
+		put_confirm.append = 1;
+		put_continue(0);
+	}
+	else if(response == 'A' && cfg.use_system_calls && !is_dir(fname))
+	{
+		put_confirm.append_all = 1;
 		put_confirm.append = 1;
 		put_continue(0);
 	}
