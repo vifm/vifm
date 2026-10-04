@@ -2445,6 +2445,7 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 	int i;
 	int closest_dist;
 	const int prev_pos = view->list_pos;
+	const int top_delta = view->list_pos - view->top_line;
 	trie_t *prev_names = trie_create(/*free_func=*/NULL);
 
 	for(i = 0; i < len; ++i)
@@ -2476,6 +2477,11 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 		dist = (dir_entry_t *)data - entries - prev_pos;
 		closest_dist = correct_pos(view, i, dist, closest_dist);
 	}
+
+	/* When possible, preserve relative placement of the current entry in the
+	 * view.  Drawing code should handle out-of-range values (e.g., negative ones)
+	 * fine. */
+	view->top_line = view->list_pos - top_delta;
 
 	trie_free(prev_names);
 }

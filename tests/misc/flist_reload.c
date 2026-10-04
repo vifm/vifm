@@ -99,5 +99,24 @@ TEST(selection_is_preserved)
 	assert_int_equal(2, view->selected_files);
 }
 
+TEST(top_line_is_not_shifted_unnecessarily)
+{
+	view->window_rows = 4;
+	view->top_line = 2;
+	view->list_pos = 3;
+	remove_dir("0");
+	remove_dir("1");
+
+	assert_string_equal("2", view->dir_entry[view->top_line].name);
+	assert_string_equal("3", view->dir_entry[view->list_pos].name);
+
+	populate_dir_list(view, /*reload=*/1);
+
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(1, view->list_pos);
+	assert_string_equal("2", view->dir_entry[view->top_line].name);
+	assert_string_equal("3", view->dir_entry[view->list_pos].name);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
