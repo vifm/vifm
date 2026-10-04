@@ -44,6 +44,8 @@
 	Fixed cleaning up IPC pipe file on exiting after handling `--remote` or
 	`--remote-expr`.
 
+	Fixed an unlikely memory leak on discovering .desktop files.
+
 0.14.3 to 0.14.4 (2026-05-31)
 
 	Added example of handling .deb-files to sample vifmrc.  Patch by Kirill
