@@ -30,6 +30,8 @@ SETUP()
 	assert_success(os_mkdir("1", 0000));
 	assert_success(os_mkdir("2", 0000));
 	assert_success(os_mkdir("3", 0000));
+	assert_success(os_mkdir("4", 0000));
+	assert_success(os_mkdir("5", 0000));
 
 	populate_dir_list(view, 0);
 }
@@ -42,6 +44,8 @@ TEARDOWN()
 	(void)rmdir("1");
 	(void)rmdir("2");
 	(void)rmdir("3");
+	(void)rmdir("4");
+	(void)rmdir("5");
 }
 
 TEST(exact_match_is_preferred)
@@ -68,13 +72,13 @@ TEST(closest_match_below_is_choosen)
 
 TEST(closest_match_above_is_choosen)
 {
-	view->list_pos = 3;
-	(void)rmdir("3");
-	(void)rmdir("4");
+	view->list_pos = 5;
+	(void)rmdir("5");
+	(void)rmdir("6");
 
-	assert_string_equal("3", view->dir_entry[view->list_pos].name);
+	assert_string_equal("5", view->dir_entry[view->list_pos].name);
 	populate_dir_list(view, 1);
-	assert_string_equal("2", view->dir_entry[view->list_pos].name);
+	assert_string_equal("4", view->dir_entry[view->list_pos].name);
 }
 
 TEST(selection_is_preserved)
