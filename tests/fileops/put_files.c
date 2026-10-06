@@ -12,6 +12,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/modes/dialogs/msg_dialog.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_common.h"
@@ -31,6 +32,7 @@ static char options_prompt_abort(const custom_prompt_t *details);
 static char options_prompt_skip_all(const custom_prompt_t *details);
 static char options_prompt_merge(const custom_prompt_t *details);
 static char options_prompt_merge_no_overwrite(const custom_prompt_t *details);
+static char options_prompt_append(const custom_prompt_t *details);
 static char cm_overwrite(const custom_prompt_t *details);
 static char cm_no(const custom_prompt_t *details);
 static char cm_skip(const custom_prompt_t *details);
@@ -736,6 +738,38 @@ TEST(put_keeps_unmoved_files_that_were_denied_to_overwrite)
 	assert_success(rmdir(SANDBOX_PATH "/from"));
 }
 
+TEST(a_file_is_appended)
+{
+	const char *partial = "abc";
+	const char *full = "abcdef";
+
+	create_dir(SANDBOX_PATH "/from");
+	make_file(SANDBOX_PATH "/from/file", full);
+	create_dir(SANDBOX_PATH "/to");
+	make_file(SANDBOX_PATH "/to/file", partial);
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/file", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_append);
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/0, /*deep=*/0);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	const char *lines[] = { full };
+	file_is(SANDBOX_PATH "/to/file", lines, ARRAY_LEN(lines));
+
+	remove_file(SANDBOX_PATH "/from/file");
+	remove_dir(SANDBOX_PATH "/from");
+	remove_file(SANDBOX_PATH "/to/file");
+	remove_dir(SANDBOX_PATH "/to");
+}
+
 static void
 line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
 		void *cb_arg, fo_complete_cmd_func complete)
@@ -806,6 +840,12 @@ options_prompt_merge_no_overwrite(const custom_prompt_t *details)
 
 	++no_prompt_count;
 	return 'n';
+}
+
+static char
+options_prompt_append(const custom_prompt_t *details)
+{
+	return 'a';
 }
 
 static char
