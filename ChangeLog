@@ -21,9 +21,6 @@
 	Changed :sp[lit] and :vs[plit] to expand macros and environment variables
 	in their parameter.  Thanks to agguser.
 
-	Added "[A]ppend all" conflict resolution option, which appends tails
-	of all conflicting regular files without asking again.
-
 	Added <help> :*map argument that enables providing description for the
 	mapping with the same curly braces syntax as used by :file[x]type.
 
@@ -75,6 +72,9 @@
 
 	Added 'fileoptions' option to allow hiding missing programs in the :file
 	menu.  Thanks to aksr.
+
+	Added "[A]ppend all" conflict resolution option, which appends tails
+	of all conflicting regular files without asking again.  Patch by rr-.
 
 	Updated utf8proc to v2.11.3.
 

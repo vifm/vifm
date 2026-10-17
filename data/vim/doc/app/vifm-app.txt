@@ -6786,6 +6786,12 @@ Available actions:
     appended.  This action is intended for resuming interrupted copy
     operations.
 
+  - append all
+    Append the current file, then try appending all other files.  After this
+    option has been selected non-regular files or directories still present a
+    confirmation dialog.  The intended use case is resuming an interrupted
+    bulk copy without having to figure out which file got truncated.
+
 Notes:
 
   - The conflict dialog appears for |vifm-:put|, |vifm-p|, |vifm-P|,
