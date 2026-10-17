@@ -40,10 +40,11 @@
 # endif
 #endif
 
-#include <sys/stat.h> /* mkfifo() stat() */
+#include <sys/stat.h> /* fstat() mkfifo() stat() */
 #include <dirent.h> /* DIR closedir() opendir() readdir() */
 #include <fcntl.h>
-#include <unistd.h> /* close() open() select() unlink() usleep() */
+#include <unistd.h> /* close() getgid() getuid() open() select() unlink()
+                       usleep() */
 
 #include <errno.h> /* EACCES EEXIST EDQUOT ENOSPC ENXIO errno */
 #include <stddef.h> /* NULL size_t ssize_t */
@@ -394,13 +395,15 @@ static read_pipe_t
 try_use_pipe(const char path[], int *fatal)
 {
 #ifndef WIN32_PIPE_READ
+	enum { IPC_PIPE_PERMS = 0600 };
+
 	FILE *f;
 	int fd;
 
 	*fatal = 0;
 
 	/* Try to create a pipe. */
-	if(mkfifo(path, 0600) == 0)
+	if(mkfifo(path, IPC_PIPE_PERMS) == 0)
 	{
 		/* Open if created. */
 		const int fd = open(path, O_RDONLY | O_NONBLOCK);
@@ -429,9 +432,19 @@ try_use_pipe(const char path[], int *fatal)
 
 	/* Use this file if we're the only one willing to read from it. */
 	fd = open(path, O_RDONLY | O_NONBLOCK);
-
 	if(fd == -1)
 	{
+		return NULL_READ_PIPE;
+	}
+
+	struct stat statbuf;
+	if(fstat(fd, &statbuf) != 0 || statbuf.st_uid != getuid() ||
+			statbuf.st_gid != getgid() || !S_ISFIFO(statbuf.st_mode) ||
+			(statbuf.st_mode & 07777) != IPC_PIPE_PERMS)
+	{
+		(void)close(fd);
+		/* Either can't query file's metadata or its type, ownership or permissions
+		 * are incorrect.  Using such a pipe may be unsafe, so skip it. */
 		return NULL_READ_PIPE;
 	}
 
