@@ -282,8 +282,8 @@
 	Fixed a Lua column disabling search highlighting for all columns to its
 	right.
 
-	Fixed a buffer overflow in trie implementation.  Thanks to Michał
-	Majchrowicz and Marcin Wyczechowski.
+	Fixed a buffer overflow in trie implementation (CVE-2026-8997).  Thanks to
+	Michał Majchrowicz and Marcin Wyczechowski.
 
 	Fixed Lua modules written in C not being loaded on Unix-like systems.
 	Thanks to Steven Xu (a.k.a. stevenxxiu).
