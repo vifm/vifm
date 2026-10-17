@@ -84,6 +84,10 @@ void make_file(const char path[], const char contents[]);
  * returned.  */
 int make_symlink(const char target[], const char linkpath[]);
 
+/* Makes a named pipe.  Returns zero on success, otherwise non-zero is
+ * returned. */
+int make_fifo(const char path[], int mode);
+
 /* Removes empty directory at specified path. */
 void remove_dir(const char path[]);
 

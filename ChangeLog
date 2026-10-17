@@ -325,6 +325,9 @@
 	Fixed graphics from miller preview staying visible after switching
 	'millerview' off.
 
+	Fixed unsafe IPC pipe reuse (CVE-2026-110237).  Thanks to Andrew Savchenko
+	and Salvatore Bonaccorso (a.k.a. carnil).
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
