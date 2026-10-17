@@ -77,7 +77,7 @@ parse_desktop_files_internal(const char path[], const char mime_type[],
 		build_path(full_path, sizeof(full_path), path, dentry->d_name);
 		if(get_dirent_type(dentry, full_path) == DT_DIR)
 		{
-			parse_desktop_files(full_path, mime_type);
+			parse_desktop_files_internal(full_path, mime_type, result);
 		}
 		else
 		{

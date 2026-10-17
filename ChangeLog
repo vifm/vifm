@@ -162,6 +162,10 @@
 
 	Slightly improve documentation of "columncount:" in 'lsoptions'.
 
+	Avoid views scrolling unnecessarily in response to file-system changes
+	that add or remove files before the first visible line.  Thanks to
+	justpretending2.
+
 	Fixed 'trashdir' with "%r" on BSD-like systems (those with getmntinfo()
 	instead of getmntent() API).  The regression was apparently introduced in
 	v0.9.1-beta.  Thanks to sublimal.
@@ -330,6 +334,8 @@
 
 	Fixed cleaning up IPC pipe file on exiting after handling `--remote` or
 	`--remote-expr`.
+
+	Fixed an unlikely memory leak on discovering .desktop files.
 
 0.14-beta to 0.14 (2025-02-08)
 
