@@ -12,6 +12,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/modes/dialogs/msg_dialog.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_common.h"
@@ -28,10 +29,11 @@ static char options_prompt_rename(const custom_prompt_t *details);
 static char options_prompt_rename_rec(const custom_prompt_t *details);
 static char options_prompt_overwrite(const custom_prompt_t *details);
 static char options_prompt_abort(const custom_prompt_t *details);
-static char options_prompt_abort_and_record(const custom_prompt_t *details);
 static char options_prompt_skip_all(const custom_prompt_t *details);
 static char options_prompt_merge(const custom_prompt_t *details);
 static char options_prompt_merge_no_overwrite(const custom_prompt_t *details);
+static char options_prompt_append(const custom_prompt_t *details);
+static char options_prompt_append_all(const custom_prompt_t *details);
 static char cm_overwrite(const custom_prompt_t *details);
 static char cm_no(const custom_prompt_t *details);
 static char cm_skip(const custom_prompt_t *details);
@@ -42,7 +44,7 @@ static fo_prompt_cb rename_cb;
 static int merge_prompt_count;
 static int yes_prompt_count;
 static int no_prompt_count;
-static char response_options[32];
+static int append_all_prompt_count;
 
 static char *saved_cwd;
 
@@ -580,100 +582,6 @@ TEST(cursor_is_moved_even_if_no_file_was_processed)
 	assert_success(unlink(SANDBOX_PATH "/a"));
 }
 
-TEST(show_merge_all_option_if_paths_include_dir)
-{
-	char path[PATH_MAX + 1];
-
-	create_file(SANDBOX_PATH "/a");
-	create_dir(SANDBOX_PATH "/dir");
-	create_file(SANDBOX_PATH "/dir/a");
-	create_file(SANDBOX_PATH "/dir/b");
-	create_dir(SANDBOX_PATH "/dir/sub");
-
-	fops_init(&line_prompt, &options_prompt_abort_and_record);
-
-	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/a", saved_cwd);
-	assert_success(regs_append('a', path));
-	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/b", saved_cwd);
-	assert_success(regs_append('a', path));
-
-	response_options[0] = '\0';
-	(void)fops_put(&lwin, -1, 'a', 0, /*deep=*/0);
-	assert_string_doesnt_contain("M", response_options);
-
-	restore_cwd(saved_cwd);
-	saved_cwd = save_cwd();
-
-	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/sub", saved_cwd);
-	assert_success(regs_append('a', path));
-
-	response_options[0] = '\0';
-	(void)fops_put(&lwin, -1, 'a', 0, /*deep=*/0);
-	assert_string_contains("M", response_options);
-
-	restore_cwd(saved_cwd);
-	saved_cwd = save_cwd();
-
-	assert_success(unlink(SANDBOX_PATH "/dir/a"));
-	assert_success(unlink(SANDBOX_PATH "/dir/b"));
-	assert_success(rmdir(SANDBOX_PATH "/dir/sub"));
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
-	assert_success(unlink(SANDBOX_PATH "/a"));
-	/* This one doesn't always get copied. */
-	(void)unlink(SANDBOX_PATH "/b");
-}
-
-TEST(no_append_option_on_putting_file_links)
-{
-	create_file(SANDBOX_PATH "/dos-eof");
-
-	fops_init(&line_prompt, &options_prompt_abort_and_record);
-
-	char path[PATH_MAX + 1];
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "/read/dos-eof", saved_cwd);
-	assert_success(regs_append('a', path));
-
-	response_options[0] = '\0';
-	(void)fops_put_links(&lwin, 'a', 0);
-	assert_string_doesnt_contain("a", response_options);
-	/* These are for directories, but won't hurt to check. */
-	assert_string_doesnt_contain("m", response_options);
-	assert_string_doesnt_contain("M", response_options);
-
-	restore_cwd(saved_cwd);
-	saved_cwd = save_cwd();
-
-	remove_file(SANDBOX_PATH "/dos-eof");
-}
-
-TEST(no_merge_options_on_putting_dir_links)
-{
-	char path[PATH_MAX + 1];
-
-	create_dir(SANDBOX_PATH "/sub");
-	create_dir(SANDBOX_PATH "/dir");
-	create_dir(SANDBOX_PATH "/dir/sub");
-
-	fops_init(&line_prompt, &options_prompt_abort_and_record);
-
-	make_abs_path(path, sizeof(path), SANDBOX_PATH, "/dir/sub", saved_cwd);
-	assert_success(regs_append('a', path));
-
-	response_options[0] = '\0';
-	(void)fops_put_links(&lwin, 'a', 0);
-	assert_string_doesnt_contain("m", response_options);
-	assert_string_doesnt_contain("M", response_options);
-	/* This is for files, but won't hurt to check. */
-	assert_string_doesnt_contain("a", response_options);
-
-	restore_cwd(saved_cwd);
-	saved_cwd = save_cwd();
-
-	assert_success(rmdir(SANDBOX_PATH "/dir/sub"));
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
-	assert_success(rmdir(SANDBOX_PATH "/sub"));
-}
-
 TEST(merging_on_copy_confirms_overwrites)
 {
 	create_dir(SANDBOX_PATH "/from");
@@ -832,6 +740,91 @@ TEST(put_keeps_unmoved_files_that_were_denied_to_overwrite)
 	assert_success(rmdir(SANDBOX_PATH "/from"));
 }
 
+TEST(a_file_is_appended)
+{
+	const char *partial = "abc";
+	const char *full = "abcdef";
+
+	create_dir(SANDBOX_PATH "/from");
+	make_file(SANDBOX_PATH "/from/file", full);
+	create_dir(SANDBOX_PATH "/to");
+	make_file(SANDBOX_PATH "/to/file", partial);
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/file", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_append);
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/0, /*deep=*/0);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	const char *lines[] = { full };
+	file_is(SANDBOX_PATH "/to/file", lines, ARRAY_LEN(lines));
+
+	remove_file(SANDBOX_PATH "/from/file");
+	remove_dir(SANDBOX_PATH "/from");
+	remove_file(SANDBOX_PATH "/to/file");
+	remove_dir(SANDBOX_PATH "/to");
+}
+
+TEST(files_are_appended)
+{
+	create_dir(SANDBOX_PATH "/from");
+	make_file(SANDBOX_PATH "/from/a", "aaaaaaaaaa");
+	create_dir(SANDBOX_PATH "/from/b");
+	make_file(SANDBOX_PATH "/from/c", "cccccccccc");
+	make_file(SANDBOX_PATH "/from/d", "ddddd");
+	create_dir(SANDBOX_PATH "/to");
+	make_file(SANDBOX_PATH "/to/a", "a-part-");
+	make_file(SANDBOX_PATH "/to/c", "c-part-");
+	make_file(SANDBOX_PATH "/to/d", "d-part-");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/a", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/b", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/c", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/d", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_append_all);
+	append_all_prompt_count = 0;
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/0, /*deep=*/0);
+	assert_int_equal(1, append_all_prompt_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	const char *lines[1];
+	lines[0] = "a-part-aaa";
+	file_is(SANDBOX_PATH "/to/a", lines, ARRAY_LEN(lines));
+	lines[0] = "c-part-ccc";
+	file_is(SANDBOX_PATH "/to/c", lines, ARRAY_LEN(lines));
+	lines[0] = "d-part-";
+	file_is(SANDBOX_PATH "/to/d", lines, ARRAY_LEN(lines));
+
+	remove_file(SANDBOX_PATH "/from/a");
+	remove_dir(SANDBOX_PATH "/from/b");
+	remove_file(SANDBOX_PATH "/from/c");
+	remove_file(SANDBOX_PATH "/from/d");
+	remove_dir(SANDBOX_PATH "/from");
+	remove_file(SANDBOX_PATH "/to/a");
+	remove_dir(SANDBOX_PATH "/to/b");
+	remove_file(SANDBOX_PATH "/to/c");
+	remove_file(SANDBOX_PATH "/to/d");
+	remove_dir(SANDBOX_PATH "/to");
+}
+
 static void
 line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
 		void *cb_arg, fo_complete_cmd_func complete)
@@ -873,28 +866,6 @@ options_prompt_abort(const custom_prompt_t *details)
 }
 
 static char
-options_prompt_abort_and_record(const custom_prompt_t *details)
-{
-	const response_variant *variants = details->variants;
-
-	int options_count = 0;
-	while(variants->key != '\0')
-	{
-		if(options_count + 1 == sizeof(response_options))
-		{
-			assert_fail("Can't fit all prompt options!");
-			break;
-		}
-
-		response_options[options_count++] = (variants++)->key;
-	}
-
-	response_options[options_count] = '\0';
-
-	return '\x03';
-}
-
-static char
 options_prompt_skip_all(const custom_prompt_t *details)
 {
 	return 'S';
@@ -924,6 +895,19 @@ options_prompt_merge_no_overwrite(const custom_prompt_t *details)
 
 	++no_prompt_count;
 	return 'n';
+}
+
+static char
+options_prompt_append(const custom_prompt_t *details)
+{
+	return 'a';
+}
+
+static char
+options_prompt_append_all(const custom_prompt_t *details)
+{
+	++append_all_prompt_count;
+	return 'A';
 }
 
 static char

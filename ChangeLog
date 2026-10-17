@@ -73,6 +73,9 @@
 	Added 'fileoptions' option to allow hiding missing programs in the :file
 	menu.  Thanks to aksr.
 
+	Added "[A]ppend all" conflict resolution option, which appends tails
+	of all conflicting regular files without asking again.  Patch by rr-.
+
 	Updated utf8proc to v2.11.3.
 
 	Made documentation on which :commands can have comments a bit more
