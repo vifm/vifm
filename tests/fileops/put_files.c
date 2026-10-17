@@ -33,6 +33,7 @@ static char options_prompt_skip_all(const custom_prompt_t *details);
 static char options_prompt_merge(const custom_prompt_t *details);
 static char options_prompt_merge_no_overwrite(const custom_prompt_t *details);
 static char options_prompt_append(const custom_prompt_t *details);
+static char options_prompt_append_all(const custom_prompt_t *details);
 static char cm_overwrite(const custom_prompt_t *details);
 static char cm_no(const custom_prompt_t *details);
 static char cm_skip(const custom_prompt_t *details);
@@ -43,6 +44,7 @@ static fo_prompt_cb rename_cb;
 static int merge_prompt_count;
 static int yes_prompt_count;
 static int no_prompt_count;
+static int append_all_prompt_count;
 
 static char *saved_cwd;
 
@@ -770,6 +772,59 @@ TEST(a_file_is_appended)
 	remove_dir(SANDBOX_PATH "/to");
 }
 
+TEST(files_are_appended)
+{
+	create_dir(SANDBOX_PATH "/from");
+	make_file(SANDBOX_PATH "/from/a", "aaaaaaaaaa");
+	create_dir(SANDBOX_PATH "/from/b");
+	make_file(SANDBOX_PATH "/from/c", "cccccccccc");
+	make_file(SANDBOX_PATH "/from/d", "ddddd");
+	create_dir(SANDBOX_PATH "/to");
+	make_file(SANDBOX_PATH "/to/a", "a-part-");
+	make_file(SANDBOX_PATH "/to/c", "c-part-");
+	make_file(SANDBOX_PATH "/to/d", "d-part-");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "to",
+			saved_cwd);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/a", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/b", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/c", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "from/d", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	fops_init(&line_prompt, &options_prompt_append_all);
+	append_all_prompt_count = 0;
+	(void)fops_put(&lwin, /*at=*/-1, /*reg_name=*/'a', /*move=*/0, /*deep=*/0);
+	assert_int_equal(1, append_all_prompt_count);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	const char *lines[1];
+	lines[0] = "a-part-aaa";
+	file_is(SANDBOX_PATH "/to/a", lines, ARRAY_LEN(lines));
+	lines[0] = "c-part-ccc";
+	file_is(SANDBOX_PATH "/to/c", lines, ARRAY_LEN(lines));
+	lines[0] = "d-part-";
+	file_is(SANDBOX_PATH "/to/d", lines, ARRAY_LEN(lines));
+
+	remove_file(SANDBOX_PATH "/from/a");
+	remove_dir(SANDBOX_PATH "/from/b");
+	remove_file(SANDBOX_PATH "/from/c");
+	remove_file(SANDBOX_PATH "/from/d");
+	remove_dir(SANDBOX_PATH "/from");
+	remove_file(SANDBOX_PATH "/to/a");
+	remove_dir(SANDBOX_PATH "/to/b");
+	remove_file(SANDBOX_PATH "/to/c");
+	remove_file(SANDBOX_PATH "/to/d");
+	remove_dir(SANDBOX_PATH "/to");
+}
+
 static void
 line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
 		void *cb_arg, fo_complete_cmd_func complete)
@@ -846,6 +901,13 @@ static char
 options_prompt_append(const custom_prompt_t *details)
 {
 	return 'a';
+}
+
+static char
+options_prompt_append_all(const custom_prompt_t *details)
+{
+	++append_all_prompt_count;
+	return 'A';
 }
 
 static char
