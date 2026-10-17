@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 1
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -6781,10 +6781,10 @@ Available actions:
 
   - append
     If the destination file is shorter, append the missing tail bytes from the
-    source file.
-    Example: if the source is 1000 bytes and the destination is 300
-    bytes in size, the last 700 bytes of the source are appended.  This action
-    is intended for resuming interrupted copy operations.
+    source file.  As an example, if the source is 1000 bytes long and the
+    destination is 300 bytes in size, the last 700 bytes of the source are
+    appended.  This action is intended for resuming interrupted copy
+    operations.
 
 Notes:
 
