@@ -1,11 +1,15 @@
 #include <stic.h>
 
+#include <unistd.h> /* chown() getgid() getuid() */
+
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strcmp() strdup() */
 
 #include <test-utils.h>
 
+#include "../../src/compat/fs_limits.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/background.h"
@@ -20,7 +24,8 @@ static void other_instance(bg_op_t *bg_op, void *arg);
 static int enabled_and_not_in_wine(void);
 static int enabled_and_not_windows(void);
 
-static const char NAME[] = "vifm-test";
+#define NAME "vifm-test"
+
 static int nmessages;
 static char *message;
 static int nmessages2;
@@ -249,6 +254,66 @@ TEST(no_eval_to_self, IF(enabled_and_not_in_wine))
 
 	assert_int_equal(0, nmessages);
 	assert_string_equal(NULL, message);
+}
+
+TEST(pipe_is_reused_safely, IF(enabled_and_not_windows))
+{
+	char ipc_dir[PATH_MAX + 1];
+	make_abs_path(ipc_dir, sizeof(ipc_dir), SANDBOX_PATH, "", /*cwd=*/NULL);
+
+	/* $TMPDIR because of how get_tmpdir() is implemented. */
+	env_set("TMPDIR", ipc_dir);
+
+	ipc_t *ipc;
+
+	/* There are no other pipes. */
+	ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	assert_string_equal(NAME, ipc_get_name(ipc));
+	ipc_free(ipc);
+
+	/* The default pipe name is in use by a regular file. */
+	create_file(SANDBOX_PATH "/vifm-ipc-" NAME);
+	ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	assert_string_equal(NAME "1", ipc_get_name(ipc));
+	ipc_free(ipc);
+	remove_file(SANDBOX_PATH "/vifm-ipc-" NAME);
+
+	/* The default pipe name is in use by a pipe with bad permissions. */
+	assert_success(make_fifo(SANDBOX_PATH "/vifm-ipc-" NAME, 0660));
+	ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	assert_string_equal(NAME "1", ipc_get_name(ipc));
+	ipc_free(ipc);
+	remove_file(SANDBOX_PATH "/vifm-ipc-" NAME);
+
+#ifndef _WIN32
+	if(!regular_unix_user())
+	{
+		/* The default pipe name is in use by a pipe with a bad owner. */
+		assert_success(make_fifo(SANDBOX_PATH "/vifm-ipc-" NAME, 0600));
+		assert_success(chown(SANDBOX_PATH "/vifm-ipc-" NAME, 1234, getgid()));
+		ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+		assert_string_equal(NAME "1", ipc_get_name(ipc));
+		ipc_free(ipc);
+		remove_file(SANDBOX_PATH "/vifm-ipc-" NAME);
+
+		/* The default pipe name is in use by a pipe with a bad group. */
+		assert_success(make_fifo(SANDBOX_PATH "/vifm-ipc-" NAME, 0600));
+		assert_success(chown(SANDBOX_PATH "/vifm-ipc-" NAME, getuid(), 1234));
+		ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+		assert_string_equal(NAME "1", ipc_get_name(ipc));
+		ipc_free(ipc);
+		remove_file(SANDBOX_PATH "/vifm-ipc-" NAME);
+	}
+#endif
+
+	/* The default pipe name is in use by an abandoned pipe. */
+	assert_success(make_fifo(SANDBOX_PATH "/vifm-ipc-" NAME, 0600));
+	ipc = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	assert_string_equal(NAME, ipc_get_name(ipc));
+	ipc_free(ipc);
+	no_remove_file(SANDBOX_PATH "/vifm-ipc-" NAME);
+
+	env_remove("TMPDIR");
 }
 
 static void

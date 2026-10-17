@@ -2,7 +2,7 @@
 
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod() */
+#include <sys/stat.h> /* chmod() mkfifo() */
 #include <sys/time.h> /* timeval utimes() */
 #include <unistd.h> /* access() geteuid() rmdir() symlink() usleep() */
 
@@ -467,6 +467,17 @@ make_symlink(const char target[], const char linkpath[])
 	return symlink(target, linkpath);
 #else
 	assert_fail("No creation of symbolic links on Windows.");
+	return 1;
+#endif
+}
+
+int
+make_fifo(const char path[], int mode)
+{
+#ifndef _WIN32
+	return mkfifo(path, mode);
+#else
+	assert_fail("No creation of named pipes on Windows' file-systems.");
 	return 1;
 #endif
 }

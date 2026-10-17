@@ -209,7 +209,11 @@ vifm_main(int argc, char *argv[])
 		fputs("Failed to initialize IPC unit", stderr);
 		return -1;
 	}
+	/* This is temporarily assigned to make vifm_exit() clean up the IPC when the
+	 * exit happens during argument parsing. */
+	curr_stats.ipc = ipc;
 	args_process(&vifm_args, AS_IPC, ipc);
+	curr_stats.ipc = NULL;
 
 	cfg_init();
 	init_filelists();
