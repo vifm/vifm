@@ -4,7 +4,7 @@
 
 [![][AA]][A]  [![][FF]][F]  [![][UU]][U]  [![][SS]][S]
 
-_Version 0.14.4.  This file last updated on 17 June 2026._
+_Version 0.14.5.  This file last updated on 20 October 2026._
 
 ## Brief Description ##
 
