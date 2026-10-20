@@ -38,9 +38,10 @@ cd "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/AppDir/usr"
 
 # Obtain and compile libncursesw6 so that we get 256 color support
-wget https://ftp.gnu.org/gnu/ncurses/ncurses-6.5.tar.gz
-tar -xf ncurses-6.5.tar.gz
-NCURSES_DIR="$PWD/ncurses-6.5"
+NCURSES_VER=6.6
+wget "https://ftp.gnu.org/gnu/ncurses/ncurses-$NCURSES_VER.tar.gz"
+tar -xf "ncurses-$NCURSES_VER.tar.gz"
+NCURSES_DIR="$PWD/ncurses-$NCURSES_VER"
 pushd "$NCURSES_DIR"
 ./configure --without-shared --enable-widec --prefix=/usr \
     --without-normal --without-debug --without-cxx --without-cxx-binding \
