@@ -1,3 +1,85 @@
+20 October 2026
+===============
+
+Vifm v0.14.5
+------------
+
+Thanks for the bug reports.  This is another bugfix release for the v0.14.x
+series, done primarily to fix a CVE.  The other backported changes since
+v0.14.4 make documentation more complete and readable along with fixing various
+bugs.
+
+The CVE may allow a local user of a Unix-like system to send commands to a Vifm
+instance of another user.  Making `$TMPDIR`, `$TEMP`, `$TEMPDIR` or `$TMP`
+point at a location that's writable only by the current user is enough to make
+it impossible, but it needs to be done outside of Vifm (i.e., don't put
+`let $TMPDIR = ...` to `vifmrc`, it won't have the desired effect).
+
+Security:
+ - Fixed unsafe IPC pipe reuse (CVE-2026-110237).  Thanks to Andrew Savchenko
+   and Salvatore Bonaccorso (a.k.a. carnil).
+
+AppImage:
+ - Updated AppImage runtime to a recent version.  Thanks to Alexander
+   Gottweis (a.k.a. stablestud).
+
+Documentation:
+ - Improved wording of documentation sections describing filters and patterns.
+ - Improved wording of documentation covering `:view`.  Thanks to
+   CaptainFantastic.
+ - Slightly improve documentation of `columncount:` in `'lsoptions'`.
+ - Fixed invocation form of `:locate` that passes parameters without escaping
+   not being documented.
+
+:set command and options:
+ - Fixed printing the value of `'previewoptions'`: remove trailing comma and fix
+   `maxtreedepth:` and `graphicsdelay:` being mutually exclusive.
+
+File list:
+ - Avoid views scrolling unnecessarily in response to file-system changes that
+   add or remove files before the first visible line.  Thanks to
+   justpretending2.
+
+File preview:
+ - Fixed external preview of directories being indefinitely refreshed when
+   `'previewoptions'` lists non-default values for builtin directory preview.
+   Thanks to Chris at Vifm Q2A site.
+ - Fixed graphics from miller preview staying visible after switching away from
+   a file entry.
+ - Fixed graphics from miller preview staying visible after switching
+   `'millerview'` off.
+
+Command-line mode:
+ - Fixed `:highlight Group cterm=combine,none gui=combine,none` resulting in
+   `cterm=combine` and `gui=combine`.
+
+Menus and dialogs:
+ - Fixed dialog's title being hidden when it's longer than the dialog's message.
+
+Core:
+ - Fixed startup commands being executed on loading sessions.  Thanks to
+   maxigaz.
+ - Fixed cleaning up IPC pipe file on exiting after handling `--remote` or
+   `--remote-expr`.
+ - Fixed an unlikely memory leak on discovering `.desktop` files.
+
+TUI (Text User Interface):
+ - Fixed ruler in view mode not growing in size to accommodate its content.
+   Thanks to Dennis Preiser (a.k.a. 0xDP).
+
+Integration:
+ - Fixed FUSE unmounting not working on FreeBSD 15.0 or later, which has added
+   an implementation of inotify that, unlike on Linux, counts as a directory
+   use and prevents unmounting.  Thanks to abi at Vifm Q2A site.
+
+Only on Windows:
+ - Fixed miller columns not being filled on Windows for UNC paths.
+
+See the ChangeLog file for the full list of changes and by whom they were
+suggested or implemented.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 31 May 2026
 ===========
 
