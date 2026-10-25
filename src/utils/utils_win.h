@@ -45,7 +45,8 @@
 /* State of a process opened for reading its output. */
 typedef struct proc_out_t
 {
-	FILE *out; /* Output stream.  Non-NULL if the process is open. */
+	FILE *out;       /* Output stream.  Non-NULL if the process is open. */
+	HANDLE hprocess; /* Process handle. */
 }
 proc_out_t;
 

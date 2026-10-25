@@ -340,7 +340,8 @@ int proc_is_open(const struct proc_out_t *proc);
 /* Retrieves output stream of an open proc.  Returns the file handle. */
 FILE * proc_get_output(const struct proc_out_t *proc);
 
-/* Closes the process.  Closing a closed proc is not an error. */
+/* Closes the process waiting for it to finish.  Closing a closed proc is not
+ * an error. */
 void proc_close(struct proc_out_t *proc);
 
 /* Gets path to directory where files bundled with Vifm are stored.  Returns

@@ -33,6 +33,7 @@
 typedef struct proc_out_t
 {
 	FILE *out; /* Output stream.  Non-NULL if the process is open. */
+	pid_t pid; /* Process ID. */
 }
 proc_out_t;
 

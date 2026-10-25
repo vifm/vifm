@@ -344,6 +344,9 @@
 	Fixed :echo and :execute reporting invalid expression when hitting a
 	runtime error.
 
+	Fixed system() and term() possibly returning before the process has
+	exited.
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.

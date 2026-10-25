@@ -963,13 +963,13 @@ proc_open_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 		return proc;
 	}
 
-	CloseHandle((HANDLE)result);
-
 	proc.out = _fdopen(out_pipe[0], "r");
+	proc.hprocess = (HANDLE)result;
 
 	if(proc.out == NULL)
 	{
 		close(out_pipe[0]);
+		CloseHandle(proc.hprocess);
 	}
 
 	return proc;
@@ -995,11 +995,10 @@ proc_close(struct proc_out_t *proc)
 		return;
 	}
 
-	/* XXX: a command can close its output stream before it exits, in which case
-	 *      this function returns prior to side-effects which a caller might
-	 *      expect to have already occured.  Should wait for the process to
-	 *      end? */
 	(void)fclose(proc->out);
+
+	(void)WaitForSingleObject(proc->hprocess, INFINITE);
+	CloseHandle(proc->hprocess);
 
 	proc->out = NULL;
 }

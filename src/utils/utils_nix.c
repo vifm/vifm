@@ -1113,6 +1113,7 @@ proc_open(const char cmd[], int preserve_stdin)
 	}
 
 	proc.out = fp;
+	proc.pid = pid;
 	return proc;
 }
 
@@ -1136,11 +1137,8 @@ proc_close(struct proc_out_t *proc)
 		return;
 	}
 
-	/* XXX: a command can close its output stream before it exits, in which case
-	 *      this function returns prior to side-effects which a caller might
-	 *      expect to have already occured.  Should wait for the process to
-	 *      end? */
 	(void)fclose(proc->out);
+	(void)get_proc_exit_status(proc->pid, &no_cancellation);
 
 	proc->out = NULL;
 }
