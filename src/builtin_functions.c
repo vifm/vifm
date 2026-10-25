@@ -314,7 +314,10 @@ extcached_builtin(const call_info_t *call_info)
 	free(path);
 
 	var_t output = execute_cmd(call_info->argv[2], call_info->interactive, 0);
-	(void)fsddata_set(cached->caches, cache_name, var_to_str(output));
+	if(output.type != VTYPE_ERROR)
+	{
+		(void)fsddata_set(cached->caches, cache_name, var_to_str(output));
+	}
 	free(cache_name);
 
 	return output;
