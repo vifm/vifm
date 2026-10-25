@@ -953,10 +953,25 @@ proc_open_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 		args[0] = modified_cmd;
 	}
 
-	const int retcode = _spawnvp(P_NOWAIT, shell, &args[0]);
+	intptr_t result = _spawnvp(P_NOWAIT, shell, &args[0]);
+	int saved_errno = errno;
 	free(modified_cmd);
 
-	proc.out = (retcode == 0 ? NULL : _fdopen(out_pipe[0], "r"));
+	if(result == -1 && saved_errno != 0)
+	{
+		close(out_pipe[0]);
+		return proc;
+	}
+
+	CloseHandle((HANDLE)result);
+
+	proc.out = _fdopen(out_pipe[0], "r");
+
+	if(proc.out == NULL)
+	{
+		close(out_pipe[0]);
+	}
+
 	return proc;
 }
 
