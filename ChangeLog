@@ -76,7 +76,7 @@
 	Added "[A]ppend all" conflict resolution option, which appends tails
 	of all conflicting regular files without asking again.  Patch by rr-.
 
-	Updated utf8proc to v2.11.3.
+	Updated utf8proc to v2.12.0.
 
 	Made documentation on which :commands can have comments a bit more
 	verbose.
@@ -336,6 +336,10 @@
 	`--remote-expr`.
 
 	Fixed an unlikely memory leak on discovering .desktop files.
+
+	Fixed FUSE unmounting not working on FreeBSD 15.0 or later, which has
+	added an implementation of inotify that, unlike on Linux, counts as a
+	directory use and prevents unmounting.  Thanks to abi at Vifm Q2A site.
 
 0.14-beta to 0.14 (2025-02-08)
 

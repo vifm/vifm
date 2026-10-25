@@ -551,6 +551,13 @@ fuse_try_unmount(view_t *view)
 			return -1;
 		}
 
+		/* This is motivated by FreeBSD's implementation of inotify which prevents
+		 * unmounting, but may as well do it everywhere just in case FreeBSD isn't
+		 * the only one.  This shouldn't affect performance much and the watcher
+		 * will be restored on its next use. */
+		fswatch_free(view->watch);
+		view->watch = NULL;
+
 		ui_sb_msg("FUSE unmounting selected file, please stand by...");
 		int status = run_fuse_command(unmount_cmd, /*cancelled=*/NULL,
 				/*errors=*/NULL);
