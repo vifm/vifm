@@ -76,7 +76,7 @@ static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static char * base64_encode(const char str[]);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
-static FILE * read_cmd_output_internal(const char cmd[], int out_pipe[2],
+static proc_out_t proc_open_internal(const char cmd[], int out_pipe[2],
 		int preserve_stdin);
 static int get_set_owner_privilege(void);
 static char * get_root_path(const char path[]);
@@ -856,23 +856,24 @@ reopen_term_stdin(void)
 	return 0;
 }
 
-FILE *
-read_cmd_output(const char cmd[], int preserve_stdin)
+proc_out_t
+proc_open(const char cmd[], int preserve_stdin)
 {
+	proc_out_t proc = { .out = NULL };
+
 	int in_fd, out_fd, err_fd;
 	int out_pipe[2];
-	FILE *result;
 
 	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
 	{
-		return NULL;
+		return proc;
 	}
 
 	in_fd = dup(_fileno(stdin));
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	result = read_cmd_output_internal(cmd, out_pipe, preserve_stdin);
+	proc = proc_open_internal(cmd, out_pipe, preserve_stdin);
 
 	_dup2(in_fd, _fileno(stdin));
 	_dup2(out_fd, _fileno(stdout));
@@ -881,39 +882,41 @@ read_cmd_output(const char cmd[], int preserve_stdin)
 	close(out_fd);
 	close(err_fd);
 
-	if(result == NULL)
+	if(proc.out == NULL)
 	{
 		close(out_pipe[0]);
 	}
 	close(out_pipe[1]);
 
-	return result;
+	return proc;
 }
 
-/* Performs redirection and execution of the command.  Returns file descriptor
- * bound to stdout of the command. */
-static FILE *
-read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
+/* Performs redirection and execution of the command.  Returns state describing
+ * the open process. */
+static proc_out_t
+proc_open_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 {
+	proc_out_t proc = { .out = NULL };
+
 	if(!preserve_stdin)
 	{
 		HANDLE h = CreateFileA("\\\\.\\NUL", GENERIC_READ, 0, NULL, OPEN_EXISTING,
 				FILE_ATTRIBUTE_NORMAL, NULL);
 		if(h == INVALID_HANDLE_VALUE)
 		{
-			return NULL;
+			return proc;
 		}
 
 		const int fd = _open_osfhandle((intptr_t)h, _O_RDWR);
 		if(fd == -1)
 		{
 			CloseHandle(h);
-			return NULL;
+			return proc;
 		}
 
 		if(_dup2(fd, _fileno(stdin)) != 0)
 		{
-			return NULL;
+			return proc;
 		}
 		if(fd != _fileno(stdin))
 		{
@@ -923,11 +926,11 @@ read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
 	{
-		return NULL;
+		return proc;
 	}
 	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
 	{
-		return NULL;
+		return proc;
 	}
 
 	const char *args[4] = { };
@@ -953,7 +956,37 @@ read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 	const int retcode = _spawnvp(P_NOWAIT, shell, &args[0]);
 	free(modified_cmd);
 
-	return (retcode == 0 ? NULL : _fdopen(out_pipe[0], "r"));
+	proc.out = (retcode == 0 ? NULL : _fdopen(out_pipe[0], "r"));
+	return proc;
+}
+
+int
+proc_is_open(const struct proc_out_t *proc)
+{
+	return (proc->out != NULL);
+}
+
+FILE *
+proc_get_output(const struct proc_out_t *proc)
+{
+	return proc->out;
+}
+
+void
+proc_close(struct proc_out_t *proc)
+{
+	if(!proc_is_open(proc))
+	{
+		return;
+	}
+
+	/* XXX: a command can close its output stream before it exits, in which case
+	 *      this function returns prior to side-effects which a caller might
+	 *      expect to have already occured.  Should wait for the process to
+	 *      end? */
+	(void)fclose(proc->out);
+
+	proc->out = NULL;
 }
 
 const char *
