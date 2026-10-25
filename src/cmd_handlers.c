@@ -2452,7 +2452,8 @@ try_eval_args(const cmd_info_t *cmd_info)
 
 	if(eval_result == NULL)
 	{
-		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression", error_pos);
+		vle_tb_append_linef(vle_err, "%s: %s", "Bad expression or execution error",
+				error_pos);
 		ui_sb_err(vle_tb_get_data(vle_err));
 	}
 

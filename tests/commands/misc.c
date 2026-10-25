@@ -302,14 +302,14 @@ TEST(echo_reports_all_errors)
 	const char *expected;
 
 	expected = "Expression is missing closing quote: \"hi\n"
-	           "Invalid expression: \"hi";
+	           "Bad expression or execution error: \"hi";
 
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("echo \"hi", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 
 	expected = "Expression is missing closing parenthesis: (1\n"
-	           "Invalid expression: (1";
+	           "Bad expression or execution error: (1";
 
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch("echo (1", &lwin, CIT_COMMAND));
