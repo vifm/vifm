@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 17
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -571,7 +571,7 @@ cW                                             *vifm-cW*
     change WORD is used to change only name of file (without extension).
 
 cl                                             *vifm-cl*
-    change link target.  If multiple files are selected, an editor is spawn
+    change link target.  If multiple files are selected, an editor is spawned
     to edit paths.
 
                                                *vifm-co*
