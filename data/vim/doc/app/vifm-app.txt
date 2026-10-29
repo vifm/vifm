@@ -199,8 +199,8 @@ L                                              *vifm-L*
 Ctrl-F or Page Down - move forward one page.   *vifm-CTRL-F* *vifm-PageDown*
 Ctrl-B or Page Up   - move back one page.      *vifm-CTRL-B* *vifm-PageUp*
 
-Ctrl-D - jump back one half page.              *vifm-CTRL-D*
-Ctrl-U - jump forward one half page.           *vifm-CTRL-U*
+Ctrl-D - move the cursor down one half page.   *vifm-CTRL-D*
+Ctrl-U - move the cursor up one half page.     *vifm-CTRL-U*
 
 {n}%                                           *vifm-%*
     move to the file that is {n} percent from the top of the list (for
