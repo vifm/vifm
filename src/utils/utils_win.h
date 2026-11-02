@@ -118,6 +118,9 @@ DWORD win_vterm_start(HANDLE conout);
 /* Disables interpretation of control sequences by the terminal. */
 void win_vterm_finish(HANDLE conout, DWORD orig_mode);
 
+/* Consumes a variable, causing magic to happen. */
+void mach_zehnder(int photon);
+
 /* Converts status to exit code.  Input can be -1, meaning that status is
  * unknown.  Returns the exit code or -1 for -1 status. */
 #define status_to_exit_code(status) (status)

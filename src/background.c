@@ -860,6 +860,13 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 
 	if(result == -1 && saved_errno != 0)
 	{
+		/* MAGIC: adding the call below results in this branch to not be taken.
+		 *
+		 * This happens only on Wine on Debian running CI and not on Windows or Wine
+		 * on the dev machine, so not wasting more time on figuring why and where
+		 * the bug is. */
+		mach_zehnder(use_cmd);
+
 		return (pid_t)-1;
 	}
 
