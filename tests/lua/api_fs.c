@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/lua/vlua.h"
 #include "../../src/utils/fs.h"
 #include "../../src/status.h"
@@ -18,6 +19,8 @@ static void (*rm_src_dir)(const char path[]);
 
 SETUP()
 {
+	assert_success(os_chdir(SANDBOX_PATH));
+
 	vlua = vlua_init();
 	curr_stats.vlua = vlua;
 }
