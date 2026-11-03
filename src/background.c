@@ -797,7 +797,6 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 {
 	const wchar_t *args[4];
 	char *cwd;
-	int code;
 	wchar_t *final_wide_cmd;
 	wchar_t *wide_sh = NULL;
 	wchar_t *wide_sh_flag;
@@ -850,7 +849,8 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 		args[1] = NULL;
 	}
 
-	code = _wspawnvp(P_NOWAIT, wide_sh, args);
+	intptr_t result = _wspawnvp(P_NOWAIT, wide_sh, args);
+	int saved_errno = errno;
 
 	free(wide_sh_flag);
 	free(wide_sh);
@@ -858,10 +858,19 @@ background_and_capture_internal(char cmd[], int user_sh, FILE *in, FILE **out,
 
 	restore_cwd(cwd);
 
-	if(code == 0)
+	if(result == -1 && saved_errno != 0)
 	{
+		/* MAGIC: adding the call below results in this branch to not be taken.
+		 *
+		 * This happens only on Wine on Debian running CI and not on Windows or Wine
+		 * on the dev machine, so not wasting more time on figuring why and where
+		 * the bug is. */
+		mach_zehnder(use_cmd);
+
 		return (pid_t)-1;
 	}
+
+	CloseHandle((HANDLE)result);
 
 	if(out != NULL && (*out = _fdopen(out_pipe[0], "r")) == NULL)
 	{

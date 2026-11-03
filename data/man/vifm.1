@@ -1,4 +1,4 @@
-.TH VIFM 1 "17 October 2026" "vifm 0.15"
+.TH VIFM 1 "29 October 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -180,10 +180,10 @@ move forward one page.
 move back one page.
 .TP
 .BI Ctrl-D
-jump back one half page.
+move the cursor down one half page.
 .TP
 .BI Ctrl-U
-jump forward one half page.
+move the cursor up one half page.
 .TP
 .BI n%
 move to the file that is n percent from the top of the list (for example 25%).
@@ -650,7 +650,7 @@ behaves as :rename command run without arguments.
 change WORD is used to change only name of file (without extension).
 .TP
 .BI cl
-change link target.  If multiple files are selected, an editor is spawn
+change link target.  If multiple files are selected, an editor is spawned
 to edit paths.
 .TP
 .BI co

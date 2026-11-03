@@ -29,6 +29,14 @@
 #define PAUSE_CMD "vifm-pause"
 #define PAUSE_STR "; "PAUSE_CMD
 
+/* State of a process opened for reading its output. */
+typedef struct proc_out_t
+{
+	FILE *out; /* Output stream.  Non-NULL if the process is open. */
+	pid_t pid; /* Process ID. */
+}
+proc_out_t;
+
 struct cancellation_t;
 
 /* Waits for a process to finish and queries its exit status.  Cancellation

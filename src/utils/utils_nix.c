@@ -1077,28 +1077,30 @@ open_tty(void)
 	return fd;
 }
 
-FILE *
-read_cmd_output(const char cmd[], int preserve_stdin)
+proc_out_t
+proc_open(const char cmd[], int preserve_stdin)
 {
+	proc_out_t proc = { .out = NULL };
+
 	FILE *fp;
 	pid_t pid;
 	int out_pipe[2];
 
 	if(pipe(out_pipe) != 0)
 	{
-		return NULL;
+		return proc;
 	}
 
 	pid = fork();
 	if(pid == (pid_t)-1)
 	{
-		return NULL;
+		return proc;
 	}
 
 	if(pid == 0)
 	{
 		run_from_fork(out_pipe, 0, preserve_stdin, (char *)cmd, SHELL_BY_USER);
-		return NULL;
+		return proc;
 	}
 
 	/* Close write end of pipe. */
@@ -1109,7 +1111,36 @@ read_cmd_output(const char cmd[], int preserve_stdin)
 	{
 		close(out_pipe[0]);
 	}
-	return fp;
+
+	proc.out = fp;
+	proc.pid = pid;
+	return proc;
+}
+
+int
+proc_is_open(const struct proc_out_t *proc)
+{
+	return (proc->out != NULL);
+}
+
+FILE *
+proc_get_output(const struct proc_out_t *proc)
+{
+	return proc->out;
+}
+
+void
+proc_close(struct proc_out_t *proc)
+{
+	if(proc_is_open(proc))
+	{
+		return;
+	}
+
+	(void)fclose(proc->out);
+	(void)get_proc_exit_status(proc->pid, &no_cancellation);
+
+	proc->out = NULL;
 }
 
 const char *

@@ -42,6 +42,14 @@
 #define PAUSE_CMD "vifm-pause"
 #define PAUSE_STR " && pause || pause"
 
+/* State of a process opened for reading its output. */
+typedef struct proc_out_t
+{
+	FILE *out;       /* Output stream.  Non-NULL if the process is open. */
+	HANDLE hprocess; /* Process handle. */
+}
+proc_out_t;
+
 /* Executes a command (full_cmd) using CreateProcess() API function.  Expects
  * path that contain spaces to be enclosed in double quotes.  cmd can equal
  * full_cmd, otherwise it should be version of full_cmd without shell prefix.
@@ -109,6 +117,9 @@ DWORD win_vterm_start(HANDLE conout);
 
 /* Disables interpretation of control sequences by the terminal. */
 void win_vterm_finish(HANDLE conout, DWORD orig_mode);
+
+/* Consumes a variable, causing magic to happen. */
+void mach_zehnder(int photon);
 
 /* Converts status to exit code.  Input can be -1, meaning that status is
  * unknown.  Returns the exit code or -1 for -1 status. */

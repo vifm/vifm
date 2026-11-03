@@ -82,6 +82,7 @@ ExpandEnvFlags;
 
 /* Forward declarations. */
 struct dir_entry_t;
+struct proc_out_t;  /* TODO: consider using bg_job_t in its place. */
 struct view_t;
 
 /* Callback for process_cmd_output() function. */
@@ -328,9 +329,20 @@ FILE * reopen_term_stdout(void);
  * (message is printed to stderr) and zero otherwise. */
 int reopen_term_stdin(void);
 
-/* Executes the command via shell and opens its output for reading.  Returns
- * NULL on error, otherwise stream valid for reading is returned. */
-FILE * read_cmd_output(const char cmd[], int preserve_stdin);
+/* Executes the command via a shell and opens its output for reading.  Use
+ * proc_is_open() on the result to check the outcome and finish with
+ * proc_close(). */
+struct proc_out_t proc_open(const char cmd[], int preserve_stdin);
+
+/* Checks whether a proc is open.  Returns non-zero if so. */
+int proc_is_open(const struct proc_out_t *proc);
+
+/* Retrieves output stream of an open proc.  Returns the file handle. */
+FILE * proc_get_output(const struct proc_out_t *proc);
+
+/* Closes the process waiting for it to finish.  Closing a closed proc is not
+ * an error. */
+void proc_close(struct proc_out_t *proc);
 
 /* Gets path to directory where files bundled with Vifm are stored.  Returns
  * pointer to a statically allocated buffer. */

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 17
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -199,8 +199,8 @@ L                                              *vifm-L*
 Ctrl-F or Page Down - move forward one page.   *vifm-CTRL-F* *vifm-PageDown*
 Ctrl-B or Page Up   - move back one page.      *vifm-CTRL-B* *vifm-PageUp*
 
-Ctrl-D - jump back one half page.              *vifm-CTRL-D*
-Ctrl-U - jump forward one half page.           *vifm-CTRL-U*
+Ctrl-D - move the cursor down one half page.   *vifm-CTRL-D*
+Ctrl-U - move the cursor up one half page.     *vifm-CTRL-U*
 
 {n}%                                           *vifm-%*
     move to the file that is {n} percent from the top of the list (for
@@ -571,7 +571,7 @@ cW                                             *vifm-cW*
     change WORD is used to change only name of file (without extension).
 
 cl                                             *vifm-cl*
-    change link target.  If multiple files are selected, an editor is spawn
+    change link target.  If multiple files are selected, an editor is spawned
     to edit paths.
 
                                                *vifm-co*

@@ -314,7 +314,10 @@ extcached_builtin(const call_info_t *call_info)
 	free(path);
 
 	var_t output = execute_cmd(call_info->argv[2], call_info->interactive, 0);
-	(void)fsddata_set(cached->caches, cache_name, var_to_str(output));
+	if(output.type != VTYPE_ERROR)
+	{
+		(void)fsddata_set(cached->caches, cache_name, var_to_str(output));
+	}
 	free(cache_name);
 
 	return output;
@@ -694,15 +697,14 @@ static var_t
 execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 {
 	char *cmd;
-	FILE *cmd_stream;
 	size_t cmd_out_len;
 	char *result_str;
 
 	cmd = var_to_str(cmd_arg);
-	cmd_stream = read_cmd_output(cmd, preserve_stdin);
+	proc_out_t proc = proc_open(cmd, preserve_stdin);
 	free(cmd);
 
-	if(cmd_stream == NULL)
+	if(!proc_is_open(&proc))
 	{
 		return var_error();
 	}
@@ -716,12 +718,9 @@ execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 		ui_cancellation_push_off();
 	}
 
-	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
-	/* XXX: a command can close its output stream before it exits, in which case
-	 *      this function returns prior to side-effects which a caller might
-	 *      expect to have already occured.  Should wait for the process to
-	 *      end? */
-	fclose(cmd_stream);
+	result_str =
+		read_nonseekable_stream(proc_get_output(&proc), &cmd_out_len, NULL, NULL);
+	proc_close(&proc);
 
 	ui_cancellation_pop();
 
