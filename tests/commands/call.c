@@ -1,12 +1,12 @@
 #include <stic.h>
 
-#include "../../src/cmd_core.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/cmd_core.h"
 
 #include <test-utils.h>
 
