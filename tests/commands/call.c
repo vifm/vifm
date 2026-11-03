@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include "../../src/compat/os.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
@@ -29,6 +30,8 @@ TEARDOWN_ONCE()
 
 SETUP()
 {
+	assert_success(os_chdir(SANDBOX_PATH));
+
 	curr_view = &lwin;
 	other_view = &rwin;
 }
