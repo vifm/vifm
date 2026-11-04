@@ -1,6 +1,5 @@
 #include <stic.h>
 
-#include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() */
 
@@ -534,21 +533,21 @@ TEST(mime_type_of_link_is_that_of_its_ultimate_target,
 	char *error;
 	matcher_t *m;
 
-	assert_success(make_symlink(".", "link"));
-	assert_success(make_symlink("link", "link2"));
+	assert_success(make_symlink(".", SANDBOX_PATH "/link"));
+	assert_success(make_symlink("link", SANDBOX_PATH "/link2"));
 
 	char *expr = format_str("<%s>", get_mimetype(SANDBOX_PATH, 0));
 
 	assert_non_null(m = matcher_alloc(expr, 0, ME_DEF_GLOB, "", &error));
 	assert_null(error);
-	assert_true(matcher_matches(m, "link"));
-	assert_true(matcher_matches(m, "link2"));
+	assert_true(matcher_matches(m, SANDBOX_PATH "/link"));
+	assert_true(matcher_matches(m, SANDBOX_PATH "/link2"));
 	matcher_free(m);
 
 	free(expr);
 
-	assert_success(remove("link"));
-	assert_success(remove("link2"));
+	remove_file(SANDBOX_PATH "/link");
+	remove_file(SANDBOX_PATH "/link2");
 }
 
 static void

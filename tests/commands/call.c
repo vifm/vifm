@@ -1,12 +1,13 @@
 #include <stic.h>
 
-#include "../../src/cmd_core.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/cmd_core.h"
 
 #include <test-utils.h>
 
@@ -29,6 +30,8 @@ TEARDOWN_ONCE()
 
 SETUP()
 {
+	assert_success(os_chdir(SANDBOX_PATH));
+
 	curr_view = &lwin;
 	other_view = &rwin;
 }

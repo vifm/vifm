@@ -7,6 +7,7 @@
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/str.h"
 
 #include "utils.h"
 
@@ -59,8 +60,8 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 
 	{
 		io_args_t args = {
-			.arg1.path = FILE_NAME,
-			.arg2.target = "link",
+			.arg1.path = after_last(FILE_NAME, '/'),
+			.arg2.target = SANDBOX_PATH "/link",
 		};
 		ioe_errlst_init(&args.result.errors);
 
@@ -68,11 +69,11 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_success(access("link", F_OK));
+	assert_success(access(SANDBOX_PATH "/link", F_OK));
 
 	{
 		io_args_t args = {
-			.arg1.path = "link",
+			.arg1.path = SANDBOX_PATH "/link",
 		};
 		ioe_errlst_init(&args.result.errors);
 
@@ -80,7 +81,7 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_failure(access("link", F_OK));
+	assert_failure(access(SANDBOX_PATH "/link", F_OK));
 
 	{
 		io_args_t args = {
