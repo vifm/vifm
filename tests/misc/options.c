@@ -783,7 +783,7 @@ TEST(fileoptions)
 	ui_sb_msg("");
 	assert_failure(cmds_dispatch1("set fileoptions=hidemissing,bad", &lwin,
 				CIT_COMMAND));
-	assert_string_equal("Unknown key for 'fileoptions' option: bad",
+	assert_string_equal("Unknown value for 'fileoptions' option: bad",
 			ui_sb_last());
 	assert_false(cfg.hide_missing_progs);
 

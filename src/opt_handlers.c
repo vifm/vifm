@@ -2232,15 +2232,14 @@ fileoptions_handler(OPT_OP op, optval_t val)
 	int error = 0;
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
-		if(starts_with_lit(part, "hidemissing"))
+		if(strcmp(part, "hidemissing") == 0)
 		{
 			hide_missing_progs = 1;
 		}
 		else
 		{
 			error = 1;
-			break_at(part, ':');
-			vle_tb_append_linef(vle_err, "Unknown key for 'fileoptions' option: %s",
+			vle_tb_append_linef(vle_err, "Unknown value for 'fileoptions' option: %s",
 					part);
 			break;
 		}
