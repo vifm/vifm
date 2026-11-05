@@ -29,6 +29,11 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 
+static int add_match(char match[], const char descr[]);
+static void group_unique_sort(size_t start_index, size_t len);
+static int sorter(const void *first, const void *second);
+static void remove_duplicates(vle_compl_t arr[], size_t count);
+
 static enum
 {
 	NOT_STARTED,
@@ -54,11 +59,6 @@ static char **sort_keys;
 
 /* Function called to pre-process path for completion list. */
 static vle_compl_add_path_hook_f add_path_hook = &strdup;
-
-static int add_match(char match[], const char descr[]);
-static void group_unique_sort(size_t start_index, size_t len);
-static int sorter(const void *first, const void *second);
-static void remove_duplicates(vle_compl_t arr[], size_t count);
 
 void
 vle_compl_reset(void)
