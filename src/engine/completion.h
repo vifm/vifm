@@ -81,6 +81,10 @@ int vle_compl_get_count(void);
  * direction can be changed at any moment. */
 void vle_compl_set_reversed(int reversed);
 
+/* Sets whether the longest prefix should be completed instead of the next full
+ * match (the default). */
+void vle_compl_set_longest(int longest);
+
 /* Sets or resets (when the parameter is NULL) a custom completion sorter.  The
  * sorter is always reset by vle_compl_reset().  Must be called after
  * vle_compl_reset() before adding any matches or querying completions. */

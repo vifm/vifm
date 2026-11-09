@@ -336,6 +336,36 @@ TEST(removes_duplicates)
 	free(buf);
 }
 
+TEST(longest_completion)
+{
+	vle_compl_set_longest(1);
+
+	assert_int_equal(0, vle_compl_add_match("vifm", ""));
+	assert_int_equal(0, vle_compl_add_match("vifm.lua", ""));
+	assert_int_equal(0, vle_compl_add_match("vifm.vim", ""));
+	vle_compl_finish_group();
+
+	assert_int_equal(0, vle_compl_add_last_match("v"));
+
+	char *buf;
+
+	/* Completing the longest prefix and staying at it. */
+	assert_string_equal("vifm", buf = vle_compl_next());
+	free(buf);
+	assert_string_equal("vifm", buf = vle_compl_next());
+	free(buf);
+
+	/* In Vim reversed completion always seems to be "full" completion, be
+	 * compatible. */
+	vle_compl_set_reversed(1);
+	assert_string_equal("vifm.vim", buf = vle_compl_next());
+	free(buf);
+	assert_string_equal("vifm.lua", buf = vle_compl_next());
+	free(buf);
+	assert_string_equal("vifm", buf = vle_compl_next());
+	free(buf);
+}
+
 TEST(unicode_sorting, IF(utf8_locale))
 {
 	/* Hex-coded names are öäüßÖÄÜ written with and without compount
