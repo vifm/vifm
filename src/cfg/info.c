@@ -2372,6 +2372,8 @@ store_global_options(JSON_Object *root)
 
 	append_dstr(options, format_str("%svimhelp", cfg.use_vim_help ? "" : "no"));
 	append_dstr(options, format_str("%swildmenu", cfg.wild_menu ? "" : "no"));
+	append_dstr(options, format_str("wildmode=%s",
+				escape_spaces(vle_opts_get("wildmode", OPT_GLOBAL))));
 	append_dstr(options, format_str("wildstyle=%s",
 				cfg.wild_popup ? "popup" : "bar"));
 	append_dstr(options, format_str("wordchars=%s",

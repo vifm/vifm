@@ -655,6 +655,7 @@ set uioptions
 set extprompt
 set keepsel nokeepsel invkeepsel keepsel!
 set fileoptions
+set wildmode wim
 
 " "echo" and "call" should be highlighted as :command
 " "chooseopt" should be highlighted as builtin function

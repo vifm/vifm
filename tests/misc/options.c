@@ -795,6 +795,28 @@ TEST(fileoptions)
 	assert_string_equal("  fileoptions=hidemissing", ui_sb_last());
 }
 
+TEST(wildmode)
+{
+	/* Setting. */
+	assert_success(cmds_dispatch1("set wildmode=longest", &lwin, CIT_COMMAND));
+	assert_true(cfg.wild_mode_longest);
+	assert_success(cmds_dispatch1("set wildmode=full", &lwin, CIT_COMMAND));
+	assert_false(cfg.wild_mode_longest);
+	assert_success(cmds_dispatch1("set wildmode=longest", &lwin, CIT_COMMAND));
+	assert_true(cfg.wild_mode_longest);
+
+	/* Clearing. */
+	assert_success(cmds_dispatch1("set wildmode=", &lwin, CIT_COMMAND));
+	assert_false(cfg.wild_mode_longest);
+
+	/* Wrong value is reported, intermediate state is discarded. */
+	ui_sb_msg("");
+	assert_failure(cmds_dispatch1("set wildmode=longest,bad", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("Unknown value for 'wildmode' option: bad", ui_sb_last());
+	assert_false(cfg.wild_mode_longest);
+}
+
 static void
 print_func(const char buf[], int offset, AlignType align,
 		const char full_column[], const format_info_t *info)

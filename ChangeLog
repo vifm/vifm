@@ -76,6 +76,9 @@
 	Added "[A]ppend all" conflict resolution option, which appends tails
 	of all conflicting regular files without asking again.  Patch by rr-.
 
+	Added 'wildmode' option to allow completing the longest prefix.  Thanks to
+	James Dietrich and niklassc at Vifm Q2A site.
+
 	Updated utf8proc to v2.12.0.
 
 	Made documentation on which :commands can have comments a bit more

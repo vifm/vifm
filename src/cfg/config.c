@@ -132,6 +132,7 @@ cfg_init(void)
 
 	cfg.wild_menu = 0;
 	cfg.wild_popup = 0;
+	cfg.wild_mode_longest = 0;
 
 	char *error;
 	cfg.wild_inc = matcher_alloc_glob("", &error);

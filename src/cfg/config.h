@@ -232,6 +232,9 @@ typedef struct config_t
 	int wild_menu;
 	/* Whether wild menu should be a popup instead of a bar. */
 	int wild_popup;
+	/* Whether wild menu should be completing the longest prefix instead of full
+	 * matches in order. */
+	int wild_mode_longest;
 	/* Things (mainly :commands) which match this matcher are to be completed
 	 * automatically. */
 	matcher_t *wild_inc;

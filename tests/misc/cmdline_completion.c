@@ -270,6 +270,22 @@ TEST(percent_completion)
 	ASSERT_NEXT_MATCH("%%%%");
 }
 
+TEST(longest_completion)
+{
+	cfg.wild_mode_longest = 1;
+
+	ASSERT_COMPLETION(L"command ", L"command ");
+	ASSERT_NEXT_MATCH("");
+
+	ASSERT_COMPLETION(L"command b", L"command ba");
+	vle_compl_set_reversed(1);
+	ASSERT_NEXT_MATCH("baz");
+	ASSERT_NEXT_MATCH("bar");
+	ASSERT_NEXT_MATCH("b");
+
+	cfg.wild_mode_longest = 0;
+}
+
 TEST(failure_to_turn_input_into_multibyte_is_handled, IF(not_windows))
 {
 	/* On Windows narrow locale doesn't really matter because UTF-8 is used
