@@ -29,6 +29,13 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 
+static int add_match(char match[], const char descr[]);
+static void group_unique_sort(size_t start_index, size_t len);
+static int sorter(const void *first, const void *second);
+static char * complete_longest(void);
+static size_t common_prefix_len(const char s[], const char t[]);
+static void remove_duplicates(vle_compl_t arr[], size_t count);
+
 static enum
 {
 	NOT_STARTED,
@@ -45,6 +52,8 @@ static int curr = -1;
 static int group_begin;
 /* Whether the next item is selected from the backward direction. */
 static int compl_is_reversed;
+/* Complete the longest prefix instead of full matches. */
+static int compl_longest;
 /* Optional custom sorter of completion items. */
 static vle_compl_sorter_f compl_sorter;
 /* Cached sorting keys after Unicode normalization if it was necessary.  If it
@@ -54,11 +63,6 @@ static char **sort_keys;
 
 /* Function called to pre-process path for completion list. */
 static vle_compl_add_path_hook_f add_path_hook = &strdup;
-
-static int add_match(char match[], const char descr[]);
-static void group_unique_sort(size_t start_index, size_t len);
-static int sorter(const void *first, const void *second);
-static void remove_duplicates(vle_compl_t arr[], size_t count);
 
 void
 vle_compl_reset(void)
@@ -76,6 +80,7 @@ vle_compl_reset(void)
 	curr = -1;
 	group_begin = 0;
 	compl_is_reversed = 0;
+	compl_longest = 0;
 	compl_sorter = NULL;
 }
 
@@ -315,6 +320,13 @@ vle_compl_next(void)
 		return strdup(items[idx].text);
 	}
 
+	/* Matching Vim (could be a bug, but the behaviour seems useful): reversed
+	 * longest completion is full completion. */
+	if(compl_longest && !compl_is_reversed)
+	{
+		return complete_longest();
+	}
+
 	if(compl_is_reversed)
 	{
 		/* Backward. */
@@ -351,6 +363,46 @@ remove_duplicates(vle_compl_t arr[], size_t count)
 	}
 }
 
+/* Performs the longest completion. */
+static char *
+complete_longest(void)
+{
+	const char *first = items[0].text;
+	size_t match_len = (size_t)-1;
+
+	size_t i;
+	for(i = 0U; i < DA_SIZE(items) - 1; ++i)
+	{
+		size_t prefix_len = common_prefix_len(first, items[i].text);
+		if(match_len == (size_t)-1 || prefix_len < match_len)
+		{
+			match_len = prefix_len;
+		}
+
+		if(match_len == 0)
+		{
+			/* Can't go any lower. */
+			break;
+		}
+	}
+
+	return format_str("%.*s", (int)match_len, first);
+}
+
+/* Counts length of the matching prefix of two strings.  Returns the length. */
+static size_t
+common_prefix_len(const char s[], const char t[])
+{
+	size_t len = 0U;
+	while(*s == *t && *s != '\0')
+	{
+		++len;
+		++s;
+		++t;
+	}
+	return len;
+}
+
 int
 vle_compl_get_count(void)
 {
@@ -361,6 +413,12 @@ void
 vle_compl_set_reversed(int reversed)
 {
 	compl_is_reversed = reversed;
+}
+
+void
+vle_compl_set_longest(int longest)
+{
+	compl_longest = longest;
 }
 
 void

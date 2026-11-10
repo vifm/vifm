@@ -111,6 +111,7 @@ static void init_sortorder(optval_t *val);
 static void init_tuioptions(optval_t *val);
 static void init_uioptions(optval_t *val);
 static void init_wildinc(optval_t *val);
+static void init_wildmode(optval_t *val);
 static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
@@ -253,6 +254,7 @@ static void vifminfo_handler(OPT_OP op, optval_t val);
 static void vimhelp_handler(OPT_OP op, optval_t val);
 static void wildinc_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
+static void wildmode_handler(OPT_OP op, optval_t val);
 static void wildstyle_handler(OPT_OP op, optval_t val);
 static void wordchars_handler(OPT_OP op, optval_t val);
 static int parse_range(const char range[], int *from, int *to);
@@ -579,6 +581,14 @@ static const char *vifminfo_set[][2] = {
 	[BIT(VINFO_TABS)]      = { "tabs",      "global or pane tabs" },
 };
 ARRAY_GUARD(vifminfo_set, NUM_VINFO);
+
+/* Possible values of 'wildmode'. */
+static const char *wildmode_vals[][2] = {
+	{ "full",    "complete each match in turn" },
+	{ "longest", "complete the shared prefix of all matches" },
+};
+/* This is backed up by a boolean option at the moment. */
+ARRAY_GUARD(wildmode_vals, 2);
 
 /* Possible values of 'wildstyle'. */
 static const char *wildstyle_vals[][2] = {
@@ -938,6 +948,11 @@ options[] = {
 	{ "wildmenu", "wmnu", "display completion matches in TUI",
 	  OPT_BOOL, 0, NULL, &wildmenu_handler, NULL,
 	  { .ref.bool_val = &cfg.wild_menu },
+	},
+	{ "wildmode", "", "how to perform completion",
+	  OPT_STRLIST, ARRAY_LEN(wildmode_vals), wildmode_vals, &wildmode_handler,
+	  NULL,
+	  { .init = &init_wildmode },
 	},
 	{ "wildstyle", "", "how to display completion matches",
 	  OPT_ENUM, ARRAY_LEN(wildstyle_vals), wildstyle_vals, &wildstyle_handler,
@@ -1446,6 +1461,13 @@ static void
 init_wildinc(optval_t *val)
 {
 	val->str_val = (char *)matcher_get_undec(cfg.wild_inc);
+}
+
+/* Composes initial value of 'wildmode' from the current configuration. */
+static void
+init_wildmode(optval_t *val)
+{
+	val->str_val = (cfg.wild_mode_longest ? "longest" : "full");
 }
 
 /* Formats 'wordchars' initial value from cfg.word_chars array. */
@@ -2232,15 +2254,14 @@ fileoptions_handler(OPT_OP op, optval_t val)
 	int error = 0;
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
-		if(starts_with_lit(part, "hidemissing"))
+		if(strcmp(part, "hidemissing") == 0)
 		{
 			hide_missing_progs = 1;
 		}
 		else
 		{
 			error = 1;
-			break_at(part, ':');
-			vle_tb_append_linef(vle_err, "Unknown key for 'fileoptions' option: %s",
+			vle_tb_append_linef(vle_err, "Unknown value for 'fileoptions' option: %s",
 					part);
 			break;
 		}
@@ -4108,6 +4129,47 @@ static void
 wildmenu_handler(OPT_OP op, optval_t val)
 {
 	cfg.wild_menu = val.bool_val;
+}
+
+/* Wild menu mode, which defines how completion is done. */
+static void
+wildmode_handler(OPT_OP op, optval_t val)
+{
+	char *new_val = strdup(val.str_val);
+	if(new_val == NULL)
+	{
+		/* Not much to do.  Try recording an error and exit. */
+		vle_tb_append_line(vle_err, "Out of memory, when handling 'wildmode'.");
+		return;
+	}
+
+	int longest = 0;
+
+	char *part = new_val, *state = NULL;
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(strcmp(part, "full") == 0)
+		{
+			longest = 0;
+		}
+		else if(strcmp(part, "longest") == 0)
+		{
+			longest = 1;
+		}
+		else
+		{
+			vle_tb_append_linef(vle_err, "Unknown value for 'wildmode' option: %s",
+					part);
+			break;
+		}
+	}
+
+	free(new_val);
+
+	if(part == NULL)
+	{
+		cfg.wild_mode_longest = longest;
+	}
 }
 
 /* Wild menu style, which defines how it's presented. */

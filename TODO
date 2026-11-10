@@ -87,7 +87,6 @@ Possible things to add:
   * Like gv but to select just pasted files (gp?).
   * g~<selector> and g?.
   * Add trashes bang to list empty trashes or all of them.
-  * 'wildmode' option.
   * Try to make it work in monochrome terminal.
   * Support of command line arguments like ~/some.ssh/server/path (for FUSE).
   * Treat `:filter pattern` as `:filter \<pattern\>`.

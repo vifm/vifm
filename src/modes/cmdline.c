@@ -3269,6 +3269,7 @@ line_completion(line_stats_t *stat)
 	}
 
 	vle_compl_set_reversed(stat->reverse_completion);
+	vle_compl_set_longest(cfg.wild_mode_longest);
 
 	if(vle_compl_get_count() == 0)
 	{

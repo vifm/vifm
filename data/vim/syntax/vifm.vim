@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: October 1, 2026
+" Last Change: November 9, 2026
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -172,7 +172,8 @@ syntax keyword vifmOption contained aproposprg autocd autochpos caseoptions
 		\ suggestoptions syncregs syscalls tablabel tabline tabprefix tabscope
 		\ tabstop tabsuffix tal timefmt timeoutlen title tm trash trashdir ts
 		\ tuioptions to uioptions undolevels ul vicmd viewcolumns vifminfo vimhelp
-		\ vixcmd wildinc wildmenu wmnu wildstyle wordchars wrap wrapscan ws
+		\ vixcmd wildinc wildmenu wmnu wildmode wim wildstyle wordchars wrap
+		\ wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautocd noautochpos nocf nochaselinks

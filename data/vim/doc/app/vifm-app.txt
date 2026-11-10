@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 October 29
+*vifm-app.txt*    For Vifm version 0.15  Last change: 2026 November 9
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4942,6 +4942,18 @@ default: false
 
 Controls whether possible matches of completion will be shown above the
 command line.
+
+                                               *vifm-'wildmode'* *vifm-'wim'*
+wildmode wim
+type: string list
+default: "full"
+
+Selects how completion is performed.  Possible values:
+ - full    - each match is completed in turn (in effect if the option is empty)
+ - longest - the longest common prefix of all matches is inserted
+
+The option is of the string list type to match Vim, but so far behaves as an
+enumeration with the last value taking precedence.
 
                                                *vifm-'wildstyle'*
 wildstyle

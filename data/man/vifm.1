@@ -1,4 +1,4 @@
-.TH VIFM 1 "29 October 2026" "vifm 0.15"
+.TH VIFM 1 "9 November 2026" "vifm 0.15"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5834,6 +5834,18 @@ default: false
 .br
 Controls whether possible matches of completion will be shown above the command
 line.
+.TP
+.BI "'wildmode' 'wim'"
+type: string list
+.br
+default: "full"
+.br
+Selects how completion is performed.  Possible values:
+ - full    - each match is completed in turn (in effect if the option is empty)
+ - longest - the longest common prefix of all matches is inserted
+
+The option is of the string list type to match Vim, but so far behaves as an
+enumeration with the last value taking precedence.
 .TP
 .BI 'wildstyle'
 type: enumeration

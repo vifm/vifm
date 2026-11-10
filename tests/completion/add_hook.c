@@ -14,8 +14,6 @@ add_dquotes(const char match[])
 
 TEST(set_add_path_hook_sets_hook)
 {
-	char *match;
-
 	vle_compl_set_add_path_hook(&add_dquotes);
 
 	assert_int_equal(0, vle_compl_add_path_match("a b c"));
@@ -24,16 +22,12 @@ TEST(set_add_path_hook_sets_hook)
 	vle_compl_finish_group();
 	assert_int_equal(3, vle_compl_get_count());
 
-	match = vle_compl_next();
-	assert_string_equal("\"a b c\"", match);
+	char *match;
+	assert_string_equal("\"a b c\"", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("\"a b\"", match);
+	assert_string_equal("\"a b\"", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("\"a\"", match);
+	assert_string_equal("\"a\"", match = vle_compl_next());
 	free(match);
 
 	vle_compl_set_add_path_hook(NULL);
@@ -41,8 +35,6 @@ TEST(set_add_path_hook_sets_hook)
 
 TEST(set_add_path_hook_resets_hook)
 {
-	char *match;
-
 	vle_compl_set_add_path_hook(&add_dquotes);
 	assert_int_equal(0, vle_compl_add_path_match("a b"));
 	assert_int_equal(0, vle_compl_add_path_match("x y"));
@@ -53,23 +45,17 @@ TEST(set_add_path_hook_resets_hook)
 	vle_compl_finish_group();
 	assert_int_equal(3, vle_compl_get_count());
 
-	match = vle_compl_next();
-	assert_string_equal("\"a b\"", match);
+	char *match;
+	assert_string_equal("\"a b\"", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("\"x y\"", match);
+	assert_string_equal("\"x y\"", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("a b c", match);
+	assert_string_equal("a b c", match = vle_compl_next());
 	free(match);
 }
 
 TEST(last_match_is_pre_processed)
 {
-	char *match;
-
 	vle_compl_set_add_path_hook(&add_dquotes);
 	assert_int_equal(0, vle_compl_add_path_match("a b"));
 	assert_int_equal(0, vle_compl_add_path_match("a b c"));
@@ -78,23 +64,17 @@ TEST(last_match_is_pre_processed)
 
 	assert_int_equal(3, vle_compl_get_count());
 
-	match = vle_compl_next();
-	assert_string_equal("\"a b c\"", match);
+	char *match;
+	assert_string_equal("\"a b c\"", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("\"a b\"", match);
+	assert_string_equal("\"a b\"", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("\"a\"", match);
+	assert_string_equal("\"a\"", match = vle_compl_next());
 	free(match);
 }
 
 TEST(set_add_path_hook_does_not_affect_non_path_functions)
 {
-	char *match;
-
 	vle_compl_set_add_path_hook(&add_dquotes);
 	assert_int_equal(0, vle_compl_add_match("a b", ""));
 	assert_int_equal(0, vle_compl_add_match("a b c", ""));
@@ -103,16 +83,12 @@ TEST(set_add_path_hook_does_not_affect_non_path_functions)
 
 	assert_int_equal(3, vle_compl_get_count());
 
-	match = vle_compl_next();
-	assert_string_equal("a b", match);
+	char *match;
+	assert_string_equal("a b", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("a b c", match);
+	assert_string_equal("a b c", match = vle_compl_next());
 	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("a", match);
+	assert_string_equal("a", match = vle_compl_next());
 	free(match);
 }
 
