@@ -321,7 +321,7 @@ os_getcwd(char buf[], size_t size)
 {
 	char *utf8_buf;
 	wchar_t wbuf[size];
-	if(_wgetcwd(wbuf, sizeof(wbuf)) == NULL)
+	if(_wgetcwd(wbuf, size) == NULL)
 	{
 		return NULL;
 	}
