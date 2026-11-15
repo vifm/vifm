@@ -403,7 +403,22 @@ is_dir_writable(const char path[])
 	if(ret != ERROR_SUCCESS)
 	{
 		LOG_ERROR_MSG("Failed to get security info");
-		LOG_WERROR(GetLastError());
+		LOG_WERROR(ret);
+
+		/* Some network shares (NAS, Samba, etc.) don't support security
+		 * descriptors, so ACLs tell nothing.  Fall back to checking that the path
+		 * is a directory and let the actual operation report real errors.
+		 * FILE_ATTRIBUTE_READONLY on a directory doesn't prevent creating files in
+		 * it (it's often set on share roots), so it's ignored. */
+		if(ret == ERROR_NOT_SUPPORTED || ret == ERROR_INVALID_FUNCTION ||
+				ret == ERROR_CALL_NOT_IMPLEMENTED)
+		{
+			/* Another potential option to consider is trying to open directory for
+			 * writing, like was done prior to the ACL checks.  However, it may have
+			 * problems, so it needs testing in environment where querying ACLs
+			 * fails. */
+			return is_dir(path);
+		}
 		return 0;
 	}
 

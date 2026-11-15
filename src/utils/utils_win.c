@@ -1201,9 +1201,6 @@ win_to_unix_time(FILETIME ft)
 DWORD
 win_get_file_attrs(const char path[])
 {
-	DWORD attr;
-	wchar_t *utf16_path;
-
 	if(is_path_absolute(path) && !is_unc_path(path))
 	{
 		if(isalpha(path[0]) && !drive_exists(path[0]))
@@ -1212,8 +1209,13 @@ win_get_file_attrs(const char path[])
 		}
 	}
 
-	utf16_path = utf8_to_utf16(path);
-	attr = GetFileAttributesW(utf16_path);
+	wchar_t *utf16_path = utf8_to_utf16(path);
+	if(utf16_path == NULL)
+	{
+		return INVALID_FILE_ATTRIBUTES;
+	}
+
+	DWORD attr = GetFileAttributesW(utf16_path);
 	free(utf16_path);
 
 	return attr;

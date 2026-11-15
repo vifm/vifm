@@ -350,6 +350,11 @@
 	Fixed system() and term() possibly returning before the process has
 	exited.
 
+	Fixed an assumption that lack of ACLs on Windows implies directory isn't
+	writable.  This avoids refusing to write to some network shares which are
+	actually writable, but the UX might be different (no dialog).  Patch by
+	Sergei Khorev (a.k.a. khorser).
+
 0.14-beta to 0.14 (2025-02-08)
 
 	Improved documentation on zh/zl menu keys a bit.
