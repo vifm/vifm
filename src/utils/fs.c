@@ -413,15 +413,11 @@ is_dir_writable(const char path[])
 		if(ret == ERROR_NOT_SUPPORTED || ret == ERROR_INVALID_FUNCTION ||
 				ret == ERROR_CALL_NOT_IMPLEMENTED)
 		{
-			wchar_t *utf16_path_fb = utf8_to_utf16(path);
-			if(utf16_path_fb == NULL)
-			{
-				return 0;
-			}
-			const DWORD attrs = GetFileAttributesW(utf16_path_fb);
-			free(utf16_path_fb);
-			return attrs != INVALID_FILE_ATTRIBUTES &&
-				(attrs & FILE_ATTRIBUTE_DIRECTORY);
+			/* Another potential option to consider is trying to open directory for
+			 * writing, like was done prior to the ACL checks.  However, it may have
+			 * problems, so it needs testing in environment where querying ACLs
+			 * fails. */
+			return is_dir(path);
 		}
 		return 0;
 	}
