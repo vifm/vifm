@@ -158,7 +158,7 @@ static void add_to_trie(trie_t *trie, view_t *view, dir_entry_t *entry);
 static int is_in_trie(trie_t *trie, view_t *view, dir_entry_t *entry,
 		void **data);
 static void merge_entries(dir_entry_t *new, const dir_entry_t *prev);
-static int correct_pos(view_t *view, int pos, int dist, int closest);
+static void pick_position(int *best_pos, int *best_offset, int pos, int offset);
 static int rescue_from_empty_filelist(view_t *view);
 static void add_parent_entry(view_t *view, dir_entry_t **entries, int *count);
 static void init_dir_entry(view_t *view, dir_entry_t *entry, const char name[]);
@@ -2446,9 +2446,8 @@ static void
 merge_lists(view_t *view, dir_entry_t *entries, int len)
 {
 	int i;
-	int closest_dist;
 	const int prev_pos = view->list_pos;
-	const int top_delta = view->list_pos - view->top_line;
+	const int prev_top = view->top_line;
 	trie_t *prev_names = trie_create(/*free_func=*/NULL);
 
 	for(i = 0; i < len; ++i)
@@ -2459,10 +2458,10 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 		update_string(&entries[i].name, NULL);
 	}
 
-	closest_dist = INT_MIN;
+	int best_pos_offset = INT_MIN;
+	int best_top_offset = INT_MIN;
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		int dist;
 		void *data;
 		dir_entry_t *const entry = &view->dir_entry[i];
 		if(!is_in_trie(prev_names, view, entry, &data))
@@ -2476,15 +2475,11 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 		/* Update number of selected files (should have been zeroed beforehand). */
 		view->selected_files += (entry->selected != 0);
 
-		/* Update cursor position in a smart way. */
-		dist = (dir_entry_t *)data - entries - prev_pos;
-		closest_dist = correct_pos(view, i, dist, closest_dist);
+		/* Update top and cursor positions in a smart way. */
+		int old_i = (dir_entry_t *)data - entries;
+		pick_position(&view->list_pos, &best_pos_offset, i, old_i - prev_pos);
+		pick_position(&view->top_line, &best_top_offset, i, old_i - prev_top);
 	}
-
-	/* When possible, preserve relative placement of the current entry in the
-	 * view.  Drawing code should handle out-of-range values (e.g., negative ones)
-	 * fine. */
-	view->top_line = view->list_pos - top_delta;
 
 	trie_free(prev_names);
 }
@@ -2585,22 +2580,29 @@ merge_entries(dir_entry_t *new, const dir_entry_t *prev)
 	}
 }
 
-/* Corrects selected item position in the list.  Returns updated value of the
- * closest variable, which initially should be INT_MIN. */
-static int
-correct_pos(view_t *view, int pos, int dist, int closest)
+/* Determines an updated position close to the original one, looking at one
+ * candidate at a time.  *best_offset should initially be set to INT_MIN. */
+static void
+pick_position(int *best_pos, int *best_offset, int pos, int offset)
 {
-	if(dist == 0)
+	/*
+	 * Unlike `labs(offset) <= labs(*best_offset)` (`labs()` because
+	 * `abs(INT_MIN) == INT_MIN`), this gives preference to elements following the
+	 * original position over the closest element that can preceded it.
+	 *
+	 * offset == 0:     best possible match, use it (should only happen once)
+	 * best_offset < 0: pick any mathematically larger offset, allowing positive
+	 *                  ones to override any negative one
+	 * best_offset > 0: only permit smaller positive offsets, honing in on the
+	 *                  position closest to the original one
+	 */
+	if(offset == 0 ||
+			(*best_offset < 0 && offset > *best_offset) ||
+			(*best_offset > 0 && offset > 0 && offset < *best_offset))
 	{
-		closest = 0;
-		view->list_pos = pos;
+		*best_offset = offset;
+		*best_pos = pos;
 	}
-	else if((closest < 0 && dist > closest) || (closest > 0 && dist < closest))
-	{
-		closest = dist;
-		view->list_pos = pos;
-	}
-	return closest;
 }
 
 /* Performs actions needed to rescue from abnormal situation with empty
