@@ -86,7 +86,17 @@ TEST(selection_is_preserved)
 	assert_int_equal(2, view->selected_files);
 }
 
-TEST(top_line_is_not_shifted_unnecessarily)
+/*
+ *        Original     Updated
+ *
+ *           | 0 | del
+ *           | 1 | del
+ *    top -> | 2 | ==> | 2 | <- top
+ * cursor -> | 3 |     | 3 | <- cursor
+ *           | 4 |     | 4 |
+ * bottom -> | 5 |     | 5 | <- bottom
+ */
+TEST(top_line_is_preserved_when_prefix_shortens)
 {
 	view->window_rows = 4;
 	view->top_line = 2;
@@ -103,6 +113,38 @@ TEST(top_line_is_not_shifted_unnecessarily)
 	assert_int_equal(1, view->list_pos);
 	assert_string_equal("2", view->dir_entry[view->top_line].name);
 	assert_string_equal("3", view->dir_entry[view->list_pos].name);
+}
+
+/*
+ *        Original     Updated
+ *
+ *           | 0 |     | 0 |
+ *    top -> | 1 |     | 1 | <- top
+ *           | 2 | ==> | 2 |
+ * cursor v  | 3 | del | 4 | <- cursor
+ * bottom -> | 4 |     | 5 | <- bottom
+ *           | 5 |
+ *
+ * Despite the cursor not on the file being deleted, this is a test for deletion
+ * of the current file.  This is because file removal moves the cursor to the
+ * next file (if it exists) to get predictable cursor movement.
+ */
+TEST(top_line_is_preserved_when_middle_shortens)
+{
+	view->window_rows = 4;
+	view->top_line = 1;
+	view->list_pos = 4;
+	remove_dir("3");
+
+	assert_string_equal("1", view->dir_entry[view->top_line].name);
+	assert_string_equal("4", view->dir_entry[view->list_pos].name);
+
+	populate_dir_list(view, /*reload=*/1);
+
+	assert_int_equal(1, view->top_line);
+	assert_int_equal(3, view->list_pos);
+	assert_string_equal("1", view->dir_entry[view->top_line].name);
+	assert_string_equal("4", view->dir_entry[view->list_pos].name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -2447,7 +2447,7 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 {
 	int i;
 	const int prev_pos = view->list_pos;
-	const int top_delta = view->list_pos - view->top_line;
+	const int prev_top = view->top_line;
 	trie_t *prev_names = trie_create(/*free_func=*/NULL);
 
 	for(i = 0; i < len; ++i)
@@ -2459,6 +2459,7 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 	}
 
 	int best_pos_offset = INT_MIN;
+	int best_top_offset = INT_MIN;
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		void *data;
@@ -2474,15 +2475,11 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 		/* Update number of selected files (should have been zeroed beforehand). */
 		view->selected_files += (entry->selected != 0);
 
-		/* Update cursor position in a smart way. */
+		/* Update top and cursor positions in a smart way. */
 		int old_i = (dir_entry_t *)data - entries;
 		pick_position(&view->list_pos, &best_pos_offset, i, old_i - prev_pos);
+		pick_position(&view->top_line, &best_top_offset, i, old_i - prev_top);
 	}
-
-	/* When possible, preserve relative placement of the current entry in the
-	 * view.  Drawing code should handle out-of-range values (e.g., negative ones)
-	 * fine. */
-	view->top_line = view->list_pos - top_delta;
 
 	trie_free(prev_names);
 }
