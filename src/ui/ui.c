@@ -150,6 +150,14 @@ static WINDOW *lborder;
 static WINDOW *mborder;
 static WINDOW *rborder;
 
+#ifdef _WIN32
+/* Window and screen position at which the last pass-through output started.
+ * The window is NULL when there is nothing recorded. */
+static WINDOW *pass_through_win;
+static int pass_through_x;
+static int pass_through_y;
+#endif
+
 static void set_ruler_text(const char val[], int lazy_redraw);
 static int init_pair_wrapper(int pair, int fg, int bg);
 static int pair_content_wrapper(int pair, int *fg, int *bg);
@@ -3078,6 +3086,32 @@ ui_pass_through_clear(const preview_area_t *parea)
 	const int begy = getbegy(parea->view->win) + parea->y;
 	const int begx = getbegx(parea->view->win) + parea->x;
 
+	/* Kitty graphics (e.g., in Ghostty) live on a layer of their own which
+	 * blanks don't erase.  Delete placements intersecting the cell at which
+	 * pass-through output started (it's not the top-left corner of the area when
+	 * the whole window is cleared while preview is drawn with 'padding') and free
+	 * their data.  Terminals without kitty graphics ignore the APC sequence. */
+	int kitty_x = begx;
+	int kitty_y = begy;
+	if(pass_through_win == parea->view->win &&
+			pass_through_x >= begx && pass_through_x < begx + width &&
+			pass_through_y >= begy && pass_through_y < begy + height)
+	{
+		kitty_x = pass_through_x;
+		kitty_y = pass_through_y;
+		pass_through_win = NULL;
+	}
+
+	DWORD written;
+
+	char kitty_delete[sizeof("\x1b_Ga=d,d=P,x=32767,y=32767\x1b\\")];
+	int len = snprintf(kitty_delete, sizeof(kitty_delete),
+			"\x1b_Ga=d,d=P,x=%d,y=%d\x1b\\", kitty_x + 1, kitty_y + 1);
+	if(len > 0 && (size_t)len < sizeof(kitty_delete))
+	{
+		WriteFile(hout, kitty_delete, len, &written, NULL);
+	}
+
 	char *blanks = malloc(width);
 	if(blanks != NULL)
 	{
@@ -3090,7 +3124,6 @@ ui_pass_through_clear(const preview_area_t *parea)
 			SetConsoleCursorPosition(hout, pos);
 
 			/* SGR 0 resets colors to default (opaque), covering sixel pixels. */
-			DWORD written;
 			WriteFile(hout, "\x1b[0m", 4, &written, NULL);
 			WriteFile(hout, blanks, width, &written, NULL);
 		}
@@ -3116,6 +3149,10 @@ ui_pass_through(const strlist_t *lines, WINDOW *win, int x, int y)
 		DWORD orig_mode = win_vterm_start(hout);
 
 		COORD pos = { getbegx(win) + x, getbegy(win) + y };
+
+		pass_through_win = win;
+		pass_through_x = pos.X;
+		pass_through_y = pos.Y;
 
 		int i;
 		for(i = 0; i < lines->nitems; ++i)
