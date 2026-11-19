@@ -1460,21 +1460,18 @@ win_vterm_start(HANDLE conout)
 	 * is needed to interpret escape sequences.  The latter has no effect without
 	 * the former. */
 	DWORD orig_mode;
-	if(GetConsoleMode(conout, &orig_mode))
+	if(!GetConsoleMode(conout, &orig_mode))
 	{
 		DWORD last_error = GetLastError();
 		LOG_ERROR_MSG("Failed to get console mode of CONOUT (%p).", conout);
 		LOG_WERROR(last_error);
-	}
-	else
-	{
 		orig_mode = 0;
 	}
 
 	DWORD new_mode = orig_mode
 	               | ENABLE_PROCESSED_OUTPUT
 	               | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	if(SetConsoleMode(conout, new_mode))
+	if(!SetConsoleMode(conout, new_mode))
 	{
 		DWORD last_error = GetLastError();
 		LOG_ERROR_MSG("Failed to set console mode (0x%08lx) of CONOUT (%p).",

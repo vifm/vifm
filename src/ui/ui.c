@@ -3073,6 +3073,13 @@ ui_pass_through_clear(const preview_area_t *parea)
 
 	DWORD orig_mode = win_vterm_start(hout);
 
+	/* Kitty graphics (e.g., in Ghostty) live on a layer of their own which
+	 * blanks don't erase, so delete images on the screen and free their data.
+	 * Terminals that don't support kitty graphics ignore the APC sequence. */
+	static const char kitty_delete[] = "\x1b_Ga=d,d=A\x1b\\";
+	DWORD written;
+	WriteFile(hout, kitty_delete, sizeof(kitty_delete) - 1, &written, NULL);
+
 	const int width = parea->w;
 	const int height = parea->h;
 	const int begy = getbegy(parea->view->win) + parea->y;
@@ -3090,7 +3097,6 @@ ui_pass_through_clear(const preview_area_t *parea)
 			SetConsoleCursorPosition(hout, pos);
 
 			/* SGR 0 resets colors to default (opaque), covering sixel pixels. */
-			DWORD written;
 			WriteFile(hout, "\x1b[0m", 4, &written, NULL);
 			WriteFile(hout, blanks, width, &written, NULL);
 		}
