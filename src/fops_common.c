@@ -200,12 +200,17 @@ io_progress_changed(const io_progress_t *state)
 	{
 		redraw = (stats_update_fetch() != UT_NONE);
 
-		if(!pdata->dialog)
+		if(ui_char_pressed(IO_DETAILS_KEY))
 		{
-			if(ui_char_pressed(IO_DETAILS_KEY))
+			pdata->dialog = !pdata->dialog;
+
+			if(pdata->dialog)
 			{
-				pdata->dialog = 1;
 				ui_sb_clear();
+			}
+			else
+			{
+				redraw = 1;
 			}
 		}
 	}
@@ -502,7 +507,7 @@ io_progress_fg(const io_progress_t *state, int progress)
 	remove_last_path_component(src_path);
 
 	title = ops_describe(ops);
-	ctrl_msg = "Press Ctrl-C to cancel";
+	ctrl_msg = "Press Ctrl-C to cancel or i to hide";
 	if(state->stage == IO_PS_ESTIMATING)
 	{
 		char pretty_path[PATH_MAX + 1];
