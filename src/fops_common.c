@@ -83,7 +83,7 @@
 #define IO_PRECISION 10
 
 /* Maximum value of progress_data_t::last_progress. */
-#define IO_MAX_PROGRESS (100*(IO_PRECISION))
+#define IO_MAX_PROGRESS (100*IO_PRECISION)
 
 /* Key used to switch to progress dialog. */
 #define IO_DETAILS_KEY 'i'
