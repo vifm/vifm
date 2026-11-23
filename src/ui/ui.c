@@ -534,11 +534,6 @@ ui_keys_pressed(const wint_t set[])
 				break;
 			}
 		}
-
-		if(set[i] == 0 && ch == NC_C_c)
-		{
-			ui_cancellation_request();
-		}
 	}
 
 	ui_cancellation_pop();
