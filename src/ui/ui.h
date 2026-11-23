@@ -539,9 +539,12 @@ void ui_ruler_set(const char val[]);
  * term_state in status structure. */
 void ui_update_term_state(void);
 
-/* Checks whether given character was pressed discarding any other characters
- * from the input stream. */
-int ui_char_pressed(wint_t c);
+/* Checks whether specified characters were pressed since the last input
+ * handling.  The list of characters must be terminated with a zero.  All other
+ * characters in the input stream are discarded.  Returns a bit mask indicating
+ * which items in the set have been pressed (1 for set[0], 2 for set[1],
+ * etc.). */
+uint32_t ui_keys_pressed(const wint_t set[]);
 
 /* Reads buffered input until it's empty. */
 void ui_drain_input(void);

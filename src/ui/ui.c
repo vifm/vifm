@@ -505,8 +505,8 @@ ui_update_term_state(void)
 	(void)stats_update_term_state(screen_x, screen_y);
 }
 
-int
-ui_char_pressed(wint_t c)
+uint32_t
+ui_keys_pressed(const wint_t set[])
 {
 	if(curr_stats.load_stage < 2)
 	{
@@ -514,31 +514,36 @@ ui_char_pressed(wint_t c)
 	}
 
 	ui_cancellation_push_off();
-	wint_t pressed;
 
+	uint32_t mask = 0;
 	while(1)
 	{
-		pressed = L'\0';
-		/* Query single character in non-blocking mode. */
-		if(compat_wget_wch(no_delay_window, &pressed) == ERR)
+		wint_t ch = 0;
+		/* Query a single character in non-blocking mode. */
+		if(compat_wget_wch(no_delay_window, &ch) == ERR)
 		{
 			break;
 		}
 
-		if(c != NC_C_c && pressed == NC_C_c)
+		int i;
+		for(i = 0; set[i] != 0; ++i)
+		{
+			if(set[i] == ch)
+			{
+				mask |= 1U << i;
+				break;
+			}
+		}
+
+		if(set[i] == 0 && ch == NC_C_c)
 		{
 			ui_cancellation_request();
-		}
-
-		if(pressed == c)
-		{
-			break;
 		}
 	}
 
 	ui_cancellation_pop();
 
-	return (pressed == c);
+	return mask;
 }
 
 void

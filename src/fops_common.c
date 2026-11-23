@@ -200,7 +200,9 @@ io_progress_changed(const io_progress_t *state)
 	{
 		redraw = (stats_update_fetch() != UT_NONE);
 
-		if(ui_char_pressed(IO_DETAILS_KEY))
+		const wint_t chars[] = { IO_DETAILS_KEY, 0 };
+		const uint32_t pressed = ui_keys_pressed(chars);
+		if(pressed & (1 << 0))
 		{
 			pdata->dialog = !pdata->dialog;
 
