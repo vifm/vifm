@@ -88,6 +88,9 @@
 /* Key used to switch to progress dialog. */
 #define IO_DETAILS_KEY 'i'
 
+/* Key used to stop I/O estimation. */
+#define IO_STOP_ESTIMATION 's'
+
 /* Number of entries in history windows used to compute ETA. */
 #define ETA_HISTORY_SIZE 10
 
@@ -144,6 +147,7 @@ progress_data_t;
 typedef float (*weight_f)(int idx, float last_weight);
 
 static void io_progress_changed(const io_progress_t *state);
+static int io_cancelled(void *arg);
 static int calc_io_progress(const io_progress_t *state, int *skip);
 static void update_io_stats(progress_data_t *pdata, const ioeta_estim_t *estim);
 static void window_add(history_window_t *win, uint64_t value);
@@ -183,7 +187,7 @@ fops_init(line_prompt_func line_func, options_prompt_func options_func)
 static void
 io_progress_changed(const io_progress_t *state)
 {
-	const ioeta_estim_t *const estim = state->estim;
+	ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
 
 	int redraw = 0;
@@ -200,8 +204,8 @@ io_progress_changed(const io_progress_t *state)
 	{
 		redraw = (stats_update_fetch() != UT_NONE);
 
-		const wint_t chars[] = { IO_DETAILS_KEY, 0 };
-		const uint32_t pressed = ui_keys_pressed(chars);
+		const wint_t keys[] = { IO_DETAILS_KEY, IO_STOP_ESTIMATION, 0 };
+		const uint32_t pressed = ui_keys_pressed(keys);
 		if(pressed & (1 << 0))
 		{
 			pdata->dialog = !pdata->dialog;
@@ -214,6 +218,19 @@ io_progress_changed(const io_progress_t *state)
 			{
 				redraw = 1;
 			}
+		}
+		if(pressed & (1 << 1))
+		{
+			/* Tell ioeta to cancel whatever it's doing and everything it may be asked
+			 * to do in the future.  This doesn't affect cancellation of the operation
+			 * itself. */
+			io_cancellation_t cancellation = { .hook = &io_cancelled };
+			estim->cancellation = cancellation;
+
+			/* This makes ops_enqueue() -> ioeta_calculate() at least count submitted
+			 * items, otherwise ioeta_calculate() does nothing due to the
+			 * cancellation. */
+			pdata->ops->shallow_eta = 1;
 		}
 	}
 
@@ -245,6 +262,14 @@ io_progress_changed(const io_progress_t *state)
 	{
 		io_progress_fg(state, progress);
 	}
+}
+
+/* An io_cancellation_hook which unconditionally reports that cancellation has
+ * been requested.  Returns non-zero. */
+static int
+io_cancelled(void *arg)
+{
+	return 1;
 }
 
 /* Calculates current IO operation progress.  *skip will be set to non-zero
@@ -640,8 +665,18 @@ io_progress_fg_sb(const io_progress_t *state, int progress)
 			break;
 	}
 
-	ui_sb_quick_msgf("(hit %c for details) %s: %s", IO_DETAILS_KEY,
-			ops_describe(ops), suffix);
+	/* Don't mention how to stop estimation after it's over. */
+	if(state->stage == IO_PS_ESTIMATING)
+	{
+		ui_sb_quick_msgf("deta[%c]ls, [%c]top estimation | %s: %s", IO_DETAILS_KEY,
+				IO_STOP_ESTIMATION, ops_describe(ops), suffix);
+	}
+	else
+	{
+		ui_sb_quick_msgf("deta[%c]ls | %s: %s", IO_DETAILS_KEY, ops_describe(ops),
+				suffix);
+	}
+
 	free(suffix);
 }
 

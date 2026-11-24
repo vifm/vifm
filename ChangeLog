@@ -83,6 +83,9 @@
 	which can be used in combination with `set uioptions=iodetails`.  Thanks
 	to an anonymous at Vifm Q2A site.
 
+	Added stopping I/O estimation by pressing s key while it's happening.
+	Thanks to aleksejrs.
+
 	Updated utf8proc to v2.12.0.
 
 	Made documentation on which :commands can have comments a bit more
