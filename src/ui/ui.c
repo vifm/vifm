@@ -3090,7 +3090,12 @@ ui_pass_through_clear(const preview_area_t *parea)
 	 * blanks don't erase.  Delete placements intersecting the cell at which
 	 * pass-through output started (it's not the top-left corner of the area when
 	 * the whole window is cleared while preview is drawn with 'padding') and free
-	 * their data.  Terminals without kitty graphics ignore the APC sequence. */
+	 * their data.  Terminals without kitty graphics ignore the APC sequence.
+	 *
+	 * TODO: remove this workaround after changing preview_area_t into a more
+	 *       permanent data that keeps track of what's actually on the screen.
+	 *       This is unlikely to work with multiple image previews.
+	 */
 	int kitty_x = begx;
 	int kitty_y = begy;
 	if(pass_through_win == parea->view->win &&
