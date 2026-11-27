@@ -205,6 +205,4 @@ Vladimir Baranov exposed `os.remove()` in Lua.
 
 Maxim4711 provided a patch to make dispalaying Sixel on Windows Terminal work.
 
-Sergei Khorev (a.k.a. khorser) fixed a buffer bug in os_getcwd() and made
-is_dir_writable() handle the case of ACLs not being supported (e.g., by a
-network share).
+Sergei Khorev (a.k.a. khorser) provided fixes and improvements for Windows.

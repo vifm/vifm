@@ -86,6 +86,10 @@
 	Added stopping I/O estimation by pressing s key while it's happening.
 	Thanks to aleksejrs.
 
+	Added clearing of Kitty graphics on Windows (at least for terminals like
+	noctty (ex-winghostty) and ghostty-windows), building on the introduced
+	Sixel support.  Patch by Sergei Khorev (a.k.a. khorser).
+
 	Updated utf8proc to v2.12.0.
 
 	Made documentation on which :commands can have comments a bit more
