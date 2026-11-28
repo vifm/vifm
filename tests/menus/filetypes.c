@@ -1,6 +1,8 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
+#include <stdio.h> /* snprintf() */
+#include <string.h> /* strcpy() strstr() */
 
 #include <test-utils.h>
 
@@ -8,11 +10,13 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
+#include "../../src/int/file_magic.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/modes/menu.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -21,6 +25,9 @@
 #include "../../src/status.h"
 
 static int fake_prog_exists(const char name[]);
+#ifdef ENABLE_DESKTOP_FILES
+static void check_desktop_items(int from);
+#endif
 static void setup_file_test(void);
 
 static line_stats_t *stats;
@@ -119,16 +126,10 @@ TEST(file_can_show_missing_entries)
 
 	assert_success(cmds_dispatch1("file", &lwin, CIT_COMMAND));
 
-	assert_true(menu_get_current()->len >= 3);
+	assert_int_equal(3, menu_get_current()->len);
 	assert_string_equal("          no-cat", menu_get_current()->items[0]);
 	assert_string_equal("[present] cat", menu_get_current()->items[1]);
 	assert_string_equal("          no-echo", menu_get_current()->items[2]);
-	if(menu_get_current()->len > 3)
-	{
-		assert_int_equal(4, menu_get_current()->len);
-		/* Separator. */
-		assert_string_equal("", menu_get_current()->items[3]);
-	}
 
 	(void)vle_keys_exec(WK_ESC);
 }
@@ -141,18 +142,58 @@ TEST(file_can_hide_missing_entries)
 
 	assert_success(cmds_dispatch1("file", &lwin, CIT_COMMAND));
 
-	assert_true(menu_get_current()->len >= 1);
+	assert_int_equal(1, menu_get_current()->len);
 	assert_string_equal("[present] cat", menu_get_current()->items[0]);
-	if(menu_get_current()->len > 1)
-	{
-		assert_int_equal(2, menu_get_current()->len);
-		/* Separator. */
-		assert_string_equal("", menu_get_current()->items[1]);
-	}
 
 	(void)vle_keys_exec(WK_ESC);
 
 	cfg.hide_missing_progs = 0;
+}
+
+TEST(separator_is_added_only_between_two_groups)
+{
+#ifdef ENABLE_DESKTOP_FILES
+	create_dir(SANDBOX_PATH "/applications");
+	create_dir(SANDBOX_PATH "/files");
+	make_file(SANDBOX_PATH "/files/file.txt", "some text\n");
+
+	/* Can't test desktop files without knowing mime type. */
+	const char *mime = get_mimetype(SANDBOX_PATH "/files/file.txt", 0);
+	if(mime != NULL)
+	{
+		char desktop[256];
+		snprintf(desktop, sizeof(desktop),
+				"[Desktop Entry]\nName=DesktopProg\nExec=desktop-prog %%f\n"
+				"MimeType=%s;\n", mime);
+		make_file(SANDBOX_PATH "/applications/vifm-test.desktop", desktop);
+		env_set("XDG_DATA_HOME", SANDBOX_PATH);
+
+		strcpy(lwin.curr_dir, SANDBOX_PATH "/files");
+		populate_dir_list(&lwin, 0);
+
+		/* Only desktop handlers. */
+		assert_success(cmds_dispatch1("file", &lwin, CIT_COMMAND));
+		check_desktop_items(0);
+		(void)vle_keys_exec(WK_ESC);
+
+		/* Both kinds of handlers. */
+		assert_success(cmds_dispatch("filetype file.txt cat", &lwin,
+					CIT_COMMAND));
+		assert_success(cmds_dispatch1("file", &lwin, CIT_COMMAND));
+		assert_true(menu_get_current()->len >= 3);
+		assert_true(ends_with(menu_get_current()->items[0], " cat"));
+		assert_string_equal("", menu_get_current()->items[1]);
+		check_desktop_items(2);
+		(void)vle_keys_exec(WK_ESC);
+
+		env_remove("XDG_DATA_HOME");
+		remove_file(SANDBOX_PATH "/applications/vifm-test.desktop");
+	}
+
+	remove_file(SANDBOX_PATH "/files/file.txt");
+	remove_dir(SANDBOX_PATH "/files");
+	remove_dir(SANDBOX_PATH "/applications");
+#endif
 }
 
 TEST(pseudo_entry_is_always_present_for_directories)
@@ -219,6 +260,24 @@ setup_file_test(void)
 	assert_success(cmds_dispatch("filetype test-file no-echo", &lwin,
 				CIT_COMMAND));
 }
+
+#ifdef ENABLE_DESKTOP_FILES
+/* Checks that menu items starting at the specified index aren't separators and
+ * that the test desktop entry is among them. */
+static void
+check_desktop_items(int from)
+{
+	const menu_data_t *m = menu_get_current();
+	int found = 0;
+	int i;
+	for(i = from; i < m->len; ++i)
+	{
+		assert_false(m->items[i][0] == '\0');
+		found |= (strstr(m->items[i], "desktop-prog") != NULL);
+	}
+	assert_true(found);
+}
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -94,15 +94,10 @@ show_file_menu(view_t *view, int present_only, int background)
 		m.len = add_to_string_array(&m.items, m.len, entry);
 	}
 
-#ifdef ENABLE_DESKTOP_FILES
-	/* Always add empty line separator and handle the case when it's the only line
-	 * below. */
-	(void)add_to_string_array(&m.data, m.len, NONE_PSEUDO_PROG.command);
-	m.len = add_to_string_array(&m.items, m.len, "");
-#endif
-
 	ft_assoc_records_free(&ft);
 
+	/* Separate handlers from desktop files only if both groups are visible. */
+	int need_separator = (m.len > 0);
 	for(i = 0; i < magic.count; ++i)
 	{
 		const int present = ft_exists(magic.list[i].command);
@@ -111,23 +106,18 @@ show_file_menu(view_t *view, int present_only, int background)
 			continue;
 		}
 
+		if(need_separator)
+		{
+			(void)add_to_string_array(&m.data, m.len, NONE_PSEUDO_PROG.command);
+			m.len = add_to_string_array(&m.items, m.len, "");
+			need_separator = 0;
+		}
+
 		(void)add_to_string_array(&m.data, m.len, magic.list[i].command);
 		const char *entry =
 			form_filetype_menu_entry(magic.list[i], max_len, present);
 		m.len = add_to_string_array(&m.items, m.len, entry);
 	}
-
-#ifdef ENABLE_DESKTOP_FILES
-	/* There is nothing but the separator, drop it. */
-	if(m.len == 1)
-	{
-		free_string_array(m.items, m.len);
-		free_string_array(m.data, m.len);
-		m.items = NULL;
-		m.data = NULL;
-		m.len = 0;
-	}
-#endif
 
 	return menus_enter(&m, view);
 }
